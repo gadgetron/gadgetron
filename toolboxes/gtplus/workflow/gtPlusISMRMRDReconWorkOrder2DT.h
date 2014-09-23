@@ -125,6 +125,9 @@ public:
     using BaseClass::spirit_kSize_RO_;
     using BaseClass::spirit_kSize_E1_;
     using BaseClass::spirit_kSize_E2_;
+    using BaseClass::spirit_oSize_RO_;
+    using BaseClass::spirit_oSize_E1_;
+    using BaseClass::spirit_oSize_E2_;
     using BaseClass::spirit_reg_lamda_;
     using BaseClass::spirit_use_gpu_;
     using BaseClass::spirit_iter_max_;
@@ -140,6 +143,11 @@ public:
     using BaseClass::spirit_ncg_iter_thres_;
     using BaseClass::spirit_ncg_scale_factor_;
     using BaseClass::spirit_ncg_print_iter_;
+    using BaseClass::spirit_slep_iter_max_;
+    using BaseClass::spirit_slep_iter_thres_;
+    using BaseClass::spirit_slep_print_iter_;
+    using BaseClass::spirit_slep_keep_third_dimension_coeff_;
+    using BaseClass::spirit_slep_scale_factor_;
     using BaseClass::spirit_use_coil_sen_map_;
     using BaseClass::spirit_use_moco_enhancement_;
     using BaseClass::spirit_recon_moco_images_;

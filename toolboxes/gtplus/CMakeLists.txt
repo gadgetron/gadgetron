@@ -257,10 +257,6 @@ if ( HAS_64_BIT )
                           gtplus_io 
                           cpucore_math )
 
-    if (CUDA_FOUND)
-      target_link_libraries(gtplus gpuparallelmri cpucore_math)
-    endif (CUDA_FOUND)
-
     install(TARGETS gtplus DESTINATION lib)
     install(TARGETS gtplus_io DESTINATION lib)
 
@@ -274,6 +270,7 @@ if ( HAS_64_BIT )
             ${solver_header_files} 
             ${application_header_files} 
             ${gtplus_io_header_files} 
+            ${matlab_files}
             DESTINATION include)
 
     # install gadgetron program files

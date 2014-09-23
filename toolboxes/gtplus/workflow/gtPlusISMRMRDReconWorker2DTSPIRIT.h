@@ -46,6 +46,7 @@ public:
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
+    using BaseClass::gtPlus_util_cplx_;
     using BaseClass::gtPlus_mem_manager_;
 
     using BaseClass::buffer2DT_;
@@ -82,8 +83,10 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         size_t kRO = workOrder2DT->spirit_kSize_RO_;
         size_t kE1 = workOrder2DT->spirit_kSize_E1_;
+        size_t oRO = workOrder2DT->spirit_oSize_RO_;
+        size_t oE1 = workOrder2DT->spirit_oSize_E1_;
 
-        workOrder2DT->kernel_->create(kRO, kE1, srcCHA, dstCHA, 1, 1, refN, S);
+        workOrder2DT->kernel_->create(kRO, kE1, srcCHA, dstCHA, oRO, oE1, refN, S);
         workOrder2DT->kernelIm_->create(RO, E1, srcCHA, dstCHA, refN, S);
     }
     catch(...)
@@ -157,6 +160,8 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         size_t kRO = workOrder2DT->spirit_kSize_RO_;
         size_t kE1 = workOrder2DT->spirit_kSize_E1_;
+        size_t oRO = workOrder2DT->spirit_oSize_RO_;
+        size_t oE1 = workOrder2DT->spirit_oSize_E1_;
 
         ho3DArray<T> acsSrc(refRO, refE1, srcCHA, const_cast<T*>(ref_src.begin()+n*refRO*refE1*srcCHA+usedS*refRO*refE1*srcCHA*refN));
         ho3DArray<T> acsDst(refRO, refE1, dstCHA, const_cast<T*>(ref_dst.begin()+n*refRO*refE1*dstCHA+usedS*refRO*refE1*dstCHA*refN));
@@ -164,24 +169,24 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
 
-        ho6DArray<T> ker(kRO, kE1, srcCHA, dstCHA, 1, 1, 
+        ho6DArray<T> ker(kRO, kE1, srcCHA, dstCHA, oRO, oE1, 
                             workOrder2DT->kernel_->begin()
-                            +n*kRO*kE1*srcCHA*dstCHA
-                            +usedS*kRO*kE1*srcCHA*dstCHA*refN);
+                            +n*kRO*kE1*srcCHA*dstCHA*oRO*oE1
+                            +usedS*kRO*kE1*srcCHA*dstCHA*oRO*oE1*refN);
 
         gtPlusSPIRIT2DOperator<T> spirit;
         spirit.setMemoryManager(gtPlus_mem_manager_);
 
         spirit.calib_use_gpu_ = workOrder2DT->spirit_use_gpu_;
 
-        spirit.calib(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, kRO, kE1, 1, 1, ker);
+        spirit.calib(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, kRO, kE1, oRO, oE1, ker);
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
 
         bool minusI = true;
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
-        GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, kRO, kE1, 1, 1, RO, E1, kIm, minusI));
+        GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, kRO, kE1, oRO, oE1, RO, E1, kIm, minusI));
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
     }
     catch(...)

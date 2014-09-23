@@ -24,12 +24,12 @@ public:
 
     virtual void printInfo(std::ostream& os);
 
-    // forward operator
+    // forward operator, perform wavelet transform
     // x: [RO E1 ...]
     // y: [RO E1 W ...]
     virtual bool forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y);
 
-    // adjoint operator
+    // adjoint operator, perform inverse transform
     // x: [RO E1 W ...]
     // y: [RO E1 ...]
     virtual bool adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y);

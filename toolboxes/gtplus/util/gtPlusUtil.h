@@ -33,13 +33,6 @@
     #include <omp.h>
 #endif // USE_OMP
 
-#ifdef USE_CUDA
-    #include "GPUTimer.h"
-    #include "b1_map.h"
-    #include "cudaDeviceManager.h"
-    #include "cuNDArray_elemwise.h"
-#endif // USE_CUDA
-
 #include "GtPlusDefinition.h"
 
 namespace Gadgetron { namespace gtPlus {
