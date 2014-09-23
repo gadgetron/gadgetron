@@ -63,6 +63,8 @@ std::string get_date_time_string()
     return ret;
 }
 
+ACE_Thread_Mutex mtx;
+
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
     static const ACE_TCHAR options[] = ACE_TEXT(":p:h:d:x:c:l:o:g:G:F:");
@@ -193,9 +195,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
         //con.register_writer(GADGET_MESSAGE_ACQUISITION, new GadgetAcquisitionMessageWriter());
         con.register_writer(GADGET_MESSAGE_ISMRMRD_ACQUISITION, new GadgetIsmrmrdAcquisitionMessageWriter());
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT, new HDF5ImageWriter<ACE_UINT16>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT, new HDF5ImageWriter<float>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT, new HDF5ImageWriter< std::complex<float> >(std::string(hdf5_out_file), std::string(hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT, new HDF5ImageWriter<ACE_UINT16>(std::string(hdf5_out_file), std::string(hdf5_out_group), mtx));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT, new HDF5ImageWriter<float>(std::string(hdf5_out_file), std::string(hdf5_out_group), mtx));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT, new HDF5ImageWriter< std::complex<float> >(std::string(hdf5_out_file), std::string(hdf5_out_group), mtx));
 
         if ( (out_format_str == "analyze") || (out_format_str == "hdr") )
         {
@@ -205,9 +207,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
         }
         else
         {
-            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT, new HDF5ImageAttribWriter<ACE_UINT16>(std::string(hdf5_out_file), std::string(hdf5_out_group), prefix));
-            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, new HDF5ImageAttribWriter<float>(std::string(hdf5_out_file), std::string(hdf5_out_group), prefix));
-            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, new HDF5ImageAttribWriter< std::complex<float> >(std::string(hdf5_out_file), std::string(hdf5_out_group), prefix));
+            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT, new HDF5ImageAttribWriter<ACE_UINT16>(std::string(hdf5_out_file), std::string(hdf5_out_group), mtx, prefix));
+            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, new HDF5ImageAttribWriter<float>(std::string(hdf5_out_file), std::string(hdf5_out_group), mtx, prefix));
+            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, new HDF5ImageAttribWriter< std::complex<float> >(std::string(hdf5_out_file), std::string(hdf5_out_group), mtx, prefix));
         }
 
         con.register_reader(GADGET_MESSAGE_DICOM, new BlobFileWriter(std::string(hdf5_out_group), std::string("dcm")));
@@ -230,12 +232,20 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
             return -1;
         }
 
-        unsigned long acquisitions = ismrmrd_dataset->getNumberOfAcquisitions();//HDF5GetLengthOfFirstDimension(hdf5_in_data_file, hdf5_data_varname.c_str());
+        unsigned long acquisitions = 0;
+        {
+            ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx, -1);
+            acquisitions = ismrmrd_dataset->getNumberOfAcquisitions();//HDF5GetLengthOfFirstDimension(hdf5_in_data_file, hdf5_data_varname.c_str());
+        }
 
         for (unsigned long int i = 0; i < acquisitions; i++) {
             GadgetContainerMessage<ISMRMRD::Acquisition>* acq = new GadgetContainerMessage<ISMRMRD::Acquisition>();
-	    ismrmrd_dataset->readAcquisition(i, *acq->getObjectPtr());
-            
+
+            {
+                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx, -1);
+                ismrmrd_dataset->readAcquisition(i, *acq->getObjectPtr());
+            }
+
             GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
                     new GadgetContainerMessage<GadgetMessageIdentifier>();
 

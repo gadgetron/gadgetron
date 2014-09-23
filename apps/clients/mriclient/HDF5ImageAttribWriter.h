@@ -22,11 +22,12 @@ namespace Gadgetron
         typedef ImageAttribWriter<T> BaseClass;
         typedef typename BaseClass::size_t_type size_t_type;
 
-        HDF5ImageAttribWriter(std::string filename, std::string groupname, std::string prefix=std::string())
+        HDF5ImageAttribWriter(std::string filename, std::string groupname, ACE_Thread_Mutex& mtx, std::string prefix=std::string())
             : ImageAttribWriter<T>()
             , file_name_(filename)
             , group_name_(groupname)
             , prefix_(prefix)
+            , mtx_(&mtx)
             , dataset_(filename.c_str(), groupname.c_str())
         {
 
@@ -132,11 +133,13 @@ namespace Gadgetron
 		img.setAttributeString(attrib);
                 memcpy(img.getData(), data->get_data_ptr(), img.getDataSize());
 
-                if (dataset_.appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, img) < 0) {
-                    GADGET_DEBUG1("Failed to write image.\n");
-                    return GADGET_FAIL;
+                {
+                    ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, *mtx_, -1);
+                    if (dataset_.appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, img) < 0) {
+                        GADGET_DEBUG1("Failed to write image.\n");
+                        return GADGET_FAIL;
+                    }
                 }
-
             }
             catch (...)
             {
@@ -152,6 +155,8 @@ namespace Gadgetron
         std::string file_name_;
         std::string prefix_;
         ISMRMRD::Dataset dataset_;
+
+        ACE_Thread_Mutex* mtx_;
     };
 }
 
