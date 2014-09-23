@@ -113,10 +113,32 @@ namespace Gadgetron
     {
         try
         {
-            MKL_INT n = x.get_number_of_elements();
+            /*MKL_INT n = x.get_number_of_elements();
             MKL_INT incx = 1;
-            ind = (size_t)(isamin(&n, x.begin(), &incx));
-            r = x.at(ind);
+            ind = (size_t)(cblas_isamin(n, x.begin(), incx));
+            r = x.at(ind);*/
+
+           size_t n = x.get_number_of_elements();
+           GADGET_CHECK_RETURN_FALSE(n>0);
+           if ( n == 1 )
+           {
+               r = x(0);
+               ind = 0;
+               return true;
+           }
+
+           const float* pX = x.begin();
+           r = pX[0];
+           ind = 0;
+
+           for ( size_t ii=1; ii<n; ii++ )
+           {
+               if ( GT_ABS(pX[ii]) < r )
+               {
+                   r = pX[ii];
+                   ind = ii;
+               }
+           }
         }
         catch(...)
         {
@@ -130,10 +152,32 @@ namespace Gadgetron
     {
         try
         {
-            MKL_INT n = x.get_number_of_elements();
+            /*MKL_INT n = x.get_number_of_elements();
             MKL_INT incx = 1;
-            ind = (size_t)(isamax(&n, x.begin(), &incx));
-            r = x.at(ind);
+            ind = (size_t)(cblas_isamax(n, x.begin(), incx));
+            r = x.at(ind);*/
+
+           size_t n = x.get_number_of_elements();
+           GADGET_CHECK_RETURN_FALSE(n>0);
+           if ( n == 1 )
+           {
+               r = x(0);
+               ind = 0;
+               return true;
+           }
+
+           const float* pX = x.begin();
+           r = pX[0];
+           ind = 0;
+
+           for ( size_t ii=1; ii<n; ii++ )
+           {
+               if ( GT_ABS(pX[ii]) > r )
+               {
+                   r = pX[ii];
+                   ind = ii;
+               }
+           }
         }
         catch(...)
         {
@@ -331,10 +375,32 @@ namespace Gadgetron
     {
         try
         {
-            MKL_INT n = x.get_number_of_elements();
-            MKL_INT incx = 1;
-            ind = (size_t)(idamin(&n, x.begin(), &incx));
-            r = x.at(ind);
+            //MKL_INT n = x.get_number_of_elements();
+            //MKL_INT incx = 1;
+            //ind = (size_t)(idamin(&n, x.begin(), &incx));
+            //r = x.at(ind);
+
+           size_t n = x.get_number_of_elements();
+           GADGET_CHECK_RETURN_FALSE(n>0);
+           if ( n == 1 )
+           {
+               r = x(0);
+               ind = 0;
+               return true;
+           }
+
+           const double* pX = x.begin();
+           r = pX[0];
+           ind = 0;
+
+           for ( size_t ii=1; ii<n; ii++ )
+           {
+               if ( GT_ABS(pX[ii]) < r )
+               {
+                   r = pX[ii];
+                   ind = ii;
+               }
+           }
         }
         catch(...)
         {
@@ -348,10 +414,32 @@ namespace Gadgetron
     {
         try
         {
-            MKL_INT n = x.get_number_of_elements();
-            MKL_INT incx = 1;
-            ind = (size_t)(idamax(&n, x.begin(), &incx));
-            r = x.at(ind);
+            //MKL_INT n = x.get_number_of_elements();
+            //MKL_INT incx = 1;
+            //ind = (size_t)(idamax(&n, x.begin(), &incx));
+            //r = x.at(ind);
+
+           size_t n = x.get_number_of_elements();
+           GADGET_CHECK_RETURN_FALSE(n>0);
+           if ( n == 1 )
+           {
+               r = x(0);
+               ind = 0;
+               return true;
+           }
+
+           const double* pX = x.begin();
+           r = pX[0];
+           ind = 0;
+
+           for ( size_t ii=1; ii<n; ii++ )
+           {
+               if ( GT_ABS(pX[ii]) > r )
+               {
+                   r = pX[ii];
+                   ind = ii;
+               }
+           }
         }
         catch(...)
         {
