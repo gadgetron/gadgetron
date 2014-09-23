@@ -128,7 +128,13 @@ if ( HAS_64_BIT )
             algorithm/gtPlusWavelet3DOperator.h 
             algorithm/gtPlusWaveletNoNullSpace2DOperator.h 
             algorithm/gtPlusWaveletNoNullSpace3DOperator.h 
-            algorithm/gtPlusDataFidelityOperator.h )
+            algorithm/gtPlusDataFidelityOperator.h 
+            algorithm/FreeFormDeformation/gtplusFFDBase.h
+            algorithm/FreeFormDeformation/gtplusBSplineFFD.h
+            algorithm/FreeFormDeformation/gtplusMLFFD.h
+            algorithm/FreeFormDeformation/gtplusBSplineFFD2D.h
+            algorithm/FreeFormDeformation/gtplusBSplineFFD3D.h 
+            algorithm/FreeFormDeformation/gtplusBSplineFFD4D.h )
 
         set( algorithm_src_files )
 

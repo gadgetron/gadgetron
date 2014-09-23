@@ -7,9 +7,14 @@
     endif(WIN32)
 
     include_directories(
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/transformation
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/solver
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/warper
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/dissimilarity
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
         ${CMAKE_SOURCE_DIR}/toolboxes/core
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
@@ -42,11 +47,50 @@
                 hoOpticalFlowSolver.cpp
                 hoOpticalFlowSolver.h )
 
+    set(transformation_files transformation/hoImageRegTransformation.h
+                             transformation/hoImageRegParametricTransformation.h 
+                             transformation/hoImageRegHomogenousTransformation.h 
+                             transformation/hoImageRegRigid2DTransformation.h 
+                             transformation/hoImageRegRigid3DTransformation.h 
+                             transformation/hoImageRegNonParametricTransformation.h 
+                             transformation/hoImageRegDeformationField.h )
+
+    set(solver_files solver/hoImageRegSolver.h 
+                     solver/hoImageRegParametricSolver.h
+                     solver/hoImageRegParametricDownHillSolver.h
+                     solver/hoImageRegParametricGradientDescentSolver.h
+                     solver/hoImageRegNonParametricSolver.h
+                     solver/hoImageRegDeformationFieldSolver.h 
+                     solver/hoImageRegDeformationFieldBidirectionalSolver.h )
+
+    set(warper_files warper/hoImageRegWarper.h)
+
+    set(similarity_files dissimilarity/hoImageRegDissimilarity.h
+                         dissimilarity/hoImageRegDissimilarityHistogramBased.h
+                         dissimilarity/hoImageRegDissimilarityLocalCCR.h
+                         dissimilarity/hoImageRegDissimilarityMutualInformation.h
+                         dissimilarity/hoImageRegDissimilarityNormalizedMutualInformation.h
+                         dissimilarity/hoImageRegDissimilaritySSD.h )
+
+    set(register_files register/hoImageRegRegister.h
+                       register/hoImageRegParametricRegister.h
+                       register/hoImageRegNonParametricRegister.h
+                       register/hoImageRegDeformationFieldRegister.h 
+                       register/hoImageRegDeformationFieldBidirectionalRegister.h )
+
+    set(application_files application/hoImageRegContainer2DRegistration.h )
+
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
 
         add_library(cpureg ${LIBTYPE} 
                     cpureg_export.h
-                    ${opticalflow_files} )
+                    ${opticalflow_files} 
+                    ${transformation_files} 
+                    ${solver_files} 
+                    ${warper_files}
+                    ${similarity_files} 
+                    ${register_files}
+                    ${application_files} )
 
         target_link_libraries(cpureg 
                 cpucore
@@ -57,12 +101,28 @@
     else ( BUILD_CPU_OPTIMAL_FLOW_REG )
         message("cpureg library will not be built ... ")
     endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
-   
+
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
         source_group(opticalflow FILES ${opticalflow_files})
         install(FILES ${opticalflow_files} DESTINATION include)
     endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
 
+    source_group(transformation FILES ${transformation_files})
+    source_group(solver FILES ${solver_files})
+    source_group(warper FILES ${warper_files})
+    source_group(similarity FILES ${similarity_files})
+    source_group(register FILES ${register_files})
+    source_group(application FILES ${application_files})
+
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
         install(TARGETS cpureg DESTINATION lib)
     endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
+
+    install(FILES
+        ${transformation_files}
+        ${solver_files}
+        ${warper_files}
+        ${similarity_files}
+        ${register_files}
+        ${application_files}
+        DESTINATION include)

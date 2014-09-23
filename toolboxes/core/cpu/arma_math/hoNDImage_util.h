@@ -90,6 +90,10 @@ namespace Gadgetron
     /// compute a gaussian kernel
     template<class T> EXPORTCPUCOREMATH bool gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoNDArray<T>& ker);
 
+    /// perform the gaussian filter for every dimension
+    /// sigma is in the unit of pixel
+    template<class ArrayType, class T2> EXPORTCPUCOREMATH bool filterGaussian(ArrayType& x, T2 sigma[], typename ArrayType::value_type* mem=NULL);
+
     /// perform midian filter
     /// w is the window size
     template<class ArrayType> bool filterMedian(const ArrayType& img, size_t w[], ArrayType& img_out);
