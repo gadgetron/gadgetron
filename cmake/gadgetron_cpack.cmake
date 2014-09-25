@@ -8,11 +8,6 @@ if(UNIX)
   if(EXISTS ${DPKG_PROGRAM})
     list(APPEND CPACK_GENERATOR "DEB")
   endif(EXISTS ${DPKG_PROGRAM})
-  # RPM
-  find_program(RPMBUILD_PROGRAM rpmbuild)
-  if(EXISTS ${RPMBUILD_PROGRAM})
-    list(APPEND CPACK_GENERATOR "RPM")
-  endif(EXISTS ${RPMBUILD_PROGRAM})
 endif(UNIX)
 
 if(WIN32)
@@ -26,8 +21,7 @@ list(APPEND CPACK_SOURCE_IGNORE_FILES ";.git;.gitignore;todo.txt;_clang-format;b
 
 # set dependencies explictly
 include(InstallRequiredSystemLibraries)
-set(DEBIAN_PACKAGE_DEPENDS "libhdf5-dev")
-set(RPM_PACKAGE_DEPENDS "hdf5-devel")
+set(DEBIAN_PACKAGE_DEPENDS "libhdf5-serial-dev, git-core, libboost-all-dev, build-essential, libfftw3-dev, h5utils, hdf5-tools, libqt4-dev, libglew1.6-dev, xsltproc, fop, python-dev, python-numpy, freeglut3-dev, libxi-dev, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-h5py, python-matplotlib, python-libxml2, gcc-multilib, python-psutil, libgtest-dev, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, python-twisted")
 
 # where the package metadata are
 set(GADGETRON_CPACK_CFG_FILE "${PROJECT_BINARY_DIR}/cpack_options.cmake")
