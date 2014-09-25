@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
+# version of gadgetron
+set(GADGETRON_VERSION_MAJOR 3)
+set(GADGETRON_VERSION_MINOR 0)
+set(GADGETRON_VERSION_PATCH 1) 
+
+set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
+set(GADGETRON_SOVERSION ${ISMRMRD_VERSION_MAJOR}.${ISMRMRD_VERSION_MINOR})
+
 #Set the build type to Release if not specified
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -60,6 +68,11 @@ else (WIN32)
             SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libgfortran")
         endif (APPLE)
     endif (UNIX)
+endif (WIN32)
+
+# whether to install dependencies
+if (WIN32)
+    OPTION(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies in windows" Off)
 endif (WIN32)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
@@ -226,3 +239,16 @@ endif()
 add_subdirectory(test)
 add_subdirectory(cmake)
 add_subdirectory(doc)
+
+#  ---   Main Library  (end) ----
+
+# Create package
+string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
+if(CPACK_GENERATOR)
+  message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+  configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in"
+    ${GADGETRON_CPACK_CFG_FILE} @ONLY)
+  set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
+  include (CPack)
+endif()
