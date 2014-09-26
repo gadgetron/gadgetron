@@ -51,3 +51,5 @@ install(FILES
 install(FILES 
   schema/gadgetron.xsd
   DESTINATION schema)
+
+add_subdirectory(webapp)
