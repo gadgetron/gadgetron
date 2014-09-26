@@ -89,15 +89,15 @@ def run_test(environment, testcase_cfg_file):
                     print("Running Gadgetron recon on the first dependency measurement")
                     r = 0
                     if platform.system() != "Windows":
-                        r = subprocess.call(["mriclient", "-p", "9003", "-d", dependency_1, "-c",
+                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", dependency_1, "-c",
                                         "default_measurement_dependencies.xml"],
                                 env=environment, stdout=cf, stderr=cf)
                     else:
-                        r = subprocess.call(["mriclient", "-p", "9003", "-d" , dependency_1, "-c",
+                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , dependency_1, "-c",
                                         "default_measurement_dependencies.xml"],
                                 stdout=cf, stderr=cf)
                     if r != 0:
-                        print("Failed to run mriclient on the first dependency measurement!")
+                        print("Failed to run gadgetron_ismrmrd_client on the first dependency measurement!")
                         success = False
 
                 # ------------------------------------------------------------
@@ -115,15 +115,15 @@ def run_test(environment, testcase_cfg_file):
                     print("Running Gadgetron recon on the second dependency measurement")
                     r = 0
                     if platform.system() != "Windows":
-                        r = subprocess.call(["mriclient", "-p", "9003", "-d", dependency_2, "-c",
+                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", dependency_2, "-c",
                                         "default_measurement_dependencies.xml"],
                                 env=environment, stdout=cf, stderr=cf)
                     else:
-                        r = subprocess.call(["mriclient", "-p", "9003", "-d" , dependency_2, "-c",
+                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , dependency_2, "-c",
                                         "default_measurement_dependencies.xml"],
                                 stdout=cf, stderr=cf)
                     if r != 0:
-                        print("Failed to run mriclient on the second dependency measurement!")
+                        print("Failed to run gadgetron_ismrmrd_client on the second dependency measurement!")
                         success = False
 
                 # ------------------------------------------------------------
@@ -141,15 +141,15 @@ def run_test(environment, testcase_cfg_file):
                     print("Running Gadgetron recon on the third dependency measurement")
                     r = 0
                     if platform.system() != "Windows":
-                        r = subprocess.call(["mriclient", "-p", "9003", "-d", dependency_3, "-c",
+                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", dependency_3, "-c",
                                         "default_measurement_dependencies.xml"],
                                 env=environment, stdout=cf, stderr=cf)
                     else:
-                        r = subprocess.call(["mriclient", "-p", "9003", "-d" , dependency_3, "-c",
+                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , dependency_3, "-c",
                                         "default_measurement_dependencies.xml"],
                                 stdout=cf, stderr=cf)
                     if r != 0:
-                        print("Failed to run mriclient on the third dependency measurement!")
+                        print("Failed to run gadgetron_ismrmrd_client on the third dependency measurement!")
                         success = False
 
             # ---------------------------------------------------------------------------------------------
@@ -167,17 +167,17 @@ def run_test(environment, testcase_cfg_file):
             print("Running Gadgetron recon on data measurement")
             r = 0
             if platform.system() != "Windows":
-                r = subprocess.call(["mriclient", "-p", "9003", "-d", ismrmrd, "-c",
+                r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", ismrmrd, "-c",
                                 gadgetron_configuration, "-G", gadgetron_configuration,
                                 "-o", result_h5],
                         env=environment, stdout=cf, stderr=cf)
             else:
-                r = subprocess.call(["mriclient", "-p", "9003", "-d" , ismrmrd, "-c",
+                r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , ismrmrd, "-c",
                                 gadgetron_configuration, "-G", gadgetron_configuration,
                                 "-o", result_h5],
                         stdout=cf, stderr=cf)
             if r != 0:
-                print("Failed to run mriclient!")
+                print("Failed to run gadgetron_ismrmrd_client!")
                 success = False
 
         p.terminate()
