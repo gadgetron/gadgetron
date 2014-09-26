@@ -9,6 +9,7 @@
 
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
+#include <map>
 
 namespace Gadgetron{
 struct EXPORTGADGETSGRAPPA GrappaBufferInfo
@@ -31,6 +32,7 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   virtual ~GrappaGadget();
 
  protected:
+
   virtual int process_config(ACE_Message_Block* mb);
   virtual int process( GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1,
 		  GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2 );
@@ -44,6 +46,8 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 
   bool first_call_;
  private:
+  typedef std::map< std::string, int > map_type_;
+
   std::vector< GrappaCalibrationBuffer* > buffers_;
   std::vector<unsigned int> fov_;
   std::vector<size_t> dimensions_;
@@ -57,6 +61,8 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   int target_coils_;
   float phase_encoding_resolution_;
   unsigned int line_offset_;
+  
+  map_type_ channel_map_;
 };
 }
 #endif //GRAPPAGADGET_H
