@@ -28,6 +28,9 @@ set(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\gadgetron.sourceforge.net")
 set(CPACK_NSIS_MODIFY_PATH ON)
 set(CPACK_NSIS_DISPLAY_NAME "gadgetron")
 
+set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
+    "ExecWait '$INSTDIR/cmake/InstallWinGadgetron.bat'")
+
 # Output filename of the generated tarball / package
 set(CPACK_PACKAGE_FILE_NAME "@PROJECT_NAME_LOWER@-@GADGETRON_VERSION_STRING@")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "@PROJECT_NAME_LOWER@-@GADGETRON_VERSION_STRING@")

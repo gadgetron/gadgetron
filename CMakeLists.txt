@@ -25,6 +25,11 @@ else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
   set( HAS_64_BIT Off CACHE BOOL "64bit build")
 endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 
+# whether to install dependencies
+if (WIN32)
+    OPTION(GADGETRON_INSTALL_DEPENDENCIES "Install ismrmrd dependencies in windows" Off)
+endif (WIN32)
+
 # build options for OpenMP support
 find_package(OpenMP)
 OPTION(USE_OPENMP "Use OpenMP" On)
@@ -239,6 +244,13 @@ endif()
 add_subdirectory(test)
 add_subdirectory(cmake)
 add_subdirectory(doc)
+
+# install dependencies for WIN32
+if (WIN32)
+    if (GADGETRON_INSTALL_DEPENDENCIES)
+        include(${CMAKE_SOURCE_DIR}/cmake/InstallWinDependencies.cmake)
+    endif (GADGETRON_INSTALL_DEPENDENCIES)
+endif (WIN32)
 
 #  ---   Main Library  (end) ----
 
