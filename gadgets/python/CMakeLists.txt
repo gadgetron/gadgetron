@@ -13,6 +13,7 @@ message(STATUS ${Boost_INCLUDE_DIR} ${Boost_LIBRARIES})
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
+  ${CMAKE_BINARY_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${PYTHON_INCLUDE_PATH}
   ${NUMPY_INCLUDE_DIRS}
@@ -50,7 +51,8 @@ ENDIF(WIN32)
 
 set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 	
-install(TARGETS gadgetron_python GadgetronPythonMRI DESTINATION lib)
+install(TARGETS gadgetron_python DESTINATION lib)
+install(TARGETS GadgetronPythonMRI DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH})
 
 install(FILES 
 	rms_coil_combine.py
@@ -59,8 +61,8 @@ install(FILES
 	accumulate_and_recon.py
 	GadgetronXML.py
 	image_viewer.py 
-DESTINATION lib)
+DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH})
 
 install(FILES
 	python.xml python_short.xml
-DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
+	DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})

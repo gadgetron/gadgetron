@@ -64,5 +64,4 @@ target_link_libraries(mriclient gadgetron_mricore)
 
 install(TARGETS mriclient gt_alive gtdependencyquery DESTINATION bin)
 install(FILES ImageWriter.h HDF5ImageWriter.h ImageAttribWriter.h HDF5ImageAttribWriter.h BlobFileWriter.h BlobFileWithAttribWriter.h DependencyQueryReader.h DESTINATION include)
-install(FILES ${ISMRMRD_LIBRARIES} DESTINATION lib)
 install(FILES isalive.xml gtquery.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
