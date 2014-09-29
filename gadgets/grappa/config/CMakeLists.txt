@@ -1,5 +1,5 @@
-install (FILES grappa_unoptimized.xml grappa_unoptimized_float.xml DESTINATION config)
+install (FILES grappa_unoptimized.xml grappa_unoptimized_float.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
 
 if(ARMADILLO_FOUND)
-  install (FILES grappa.xml grappa_float.xml grappa_device.xml DESTINATION config)
+  install (FILES grappa.xml grappa_float.xml grappa_device.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
 endif(ARMADILLO_FOUND)

@@ -48,7 +48,7 @@ if (ARMADILLO_FOUND)
     list(APPEND OPTIMIZED_GADGETS PCACoilGadget.cpp)
     list(APPEND OPTIMIZED_GADGET_HEADERS NoiseAdjustGadget.h)
     list(APPEND OPTIMIZED_GADGET_HEADERS PCACoilGadget.h)
-    list(APPEND OPTIMIZED_GADGET_LIBS cpucore_math ${ARMADILLO_LIBRARIES})
+    list(APPEND OPTIMIZED_GADGET_LIBS gadgetron_toolbox_cpucore_math ${ARMADILLO_LIBRARIES})
 elseif (ARMADILLO_FOUND)
     MESSAGE("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
 endif (ARMADILLO_FOUND)
@@ -131,8 +131,8 @@ add_library(gadgetron_mricore SHARED
 )
 
 target_link_libraries(gadgetron_mricore 
-    cpucore
-    cpufft
+    gadgetron_toolbox_cpucore
+    gadgetron_toolbox_cpufft
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
@@ -147,9 +147,9 @@ install(FILES
     DESTINATION include)
 
 if (ARMADILLO_FOUND)
-    install(FILES ${gadgetron_mricore_config_files} DESTINATION config)
+    install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
 endif (ARMADILLO_FOUND)
 
-install(FILES ismrmrd_dump.xml DESTINATION config)
+install(FILES ismrmrd_dump.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
 
 install(TARGETS gadgetron_mricore DESTINATION lib)

@@ -38,16 +38,16 @@ link_libraries(optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
                 ${GTEST_LIBRARIES} 
                 ${Boost_LIBRARIES} 
                 ${ISMRMRD_LIBRARIES} 
-                cpucore 
-                cpucore_math 
+                gadgetron_toolbox_cpucore 
+                gadgetron_toolbox_cpucore_math 
                 # cpureg
-                cpufft
-                gtplus 
-                gadgettools 
+                gadgetron_toolbox_cpufft
+                gadgetron_toolbox_gtplus 
+                gadgetron_toolbox_gadgettools 
                 gadgetronPlus)
 
 if (CUDA_FOUND)
-    link_libraries(gtplus gpuparallelmri gpucore)
+    link_libraries(gadgetron_toolbox_gtplus gadgetron_toolbox_gpuparallelmri gadgetron_toolbox_gpucore)
 endif (CUDA_FOUND)
 
 if (CUDA_FOUND)

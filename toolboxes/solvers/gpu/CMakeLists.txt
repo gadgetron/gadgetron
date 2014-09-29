@@ -14,19 +14,19 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
   )
 
-cuda_add_library(gpusolvers SHARED 
+cuda_add_library(gadgetron_toolbox_gpusolvers SHARED 
     gpusolvers_export.h
     cuSolverUtils.cu
   )
 
-target_link_libraries(gpusolvers 
-  gpucore 
+target_link_libraries(gadgetron_toolbox_gpusolvers 
+  gadgetron_toolbox_gpucore 
   ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES}
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gpusolvers DESTINATION lib)
+install(TARGETS gadgetron_toolbox_gpusolvers DESTINATION lib)
 
 install(FILES 	
   cuSbCgSolver.h

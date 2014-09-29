@@ -14,13 +14,13 @@ add_library(gadgetron_cartesian SHARED
   CartesianToGenericGadget.cpp
 )
 
-target_link_libraries(gadgetron_cartesian cpucore 
+target_link_libraries(gadgetron_cartesian gadgetron_toolbox_cpucore 
   ${ISMRMRD_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
 if(ARMADILLO_FOUND)
-    target_link_libraries(gadgetron_cartesian cpucore_math )
+    target_link_libraries(gadgetron_cartesian gadgetron_toolbox_cpucore_math )
 endif(ARMADILLO_FOUND)
 
 install (FILES  gadgetron_cartesian_export.h

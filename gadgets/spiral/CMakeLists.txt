@@ -25,12 +25,12 @@ add_library(gadgetron_spiral SHARED
   SpiralToGenericGadget.h SpiralToGenericGadget.cpp)
 
 target_link_libraries(gadgetron_spiral
-  cpucore gpucore gpunfft gpusolvers gpuoperators
+  gadgetron_toolbox_cpucore gadgetron_toolbox_gpucore gadgetron_toolbox_gpunfft gadgetron_toolbox_gpusolvers gadgetron_toolbox_gpuoperators
   ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
-target_link_libraries(gadgetron_spiral gpuparallelmri)
+target_link_libraries(gadgetron_spiral gadgetron_toolbox_gpuparallelmri)
 
 install (TARGETS gadgetron_spiral DESTINATION lib)
 install (FILES vds.h gadgetron_spiral_export.h 

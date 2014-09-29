@@ -16,7 +16,7 @@ if (ARMADILLO_FOUND)
     fixed_radial_mode1_gpu_ktsense.xml 
     golden_radial_mode2_gpu_ktsense.xml 
     spirit.xml
-    DESTINATION config)
+    DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
 elseif (ARMADILLO_FOUND)
   MESSAGE("Armadillo not found, only unoptimized radial config files will be available")
 endif (ARMADILLO_FOUND)
@@ -29,4 +29,4 @@ install (FILES
   fixed_radial_mode0_gpusense_sb_unoptimized.xml 
   fixed_radial_mode1_gpusense_sb_unoptimized.xml 
   golden_radial_mode2_gpusense_sb_unoptimized.xml 
-  DESTINATION config)
+  DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})

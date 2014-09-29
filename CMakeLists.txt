@@ -8,6 +8,9 @@ set(GADGETRON_VERSION_PATCH 0)
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
 set(GADGETRON_INSTALL_CONFIG_PATH config)
+set(GADGETRON_INSTALL_MATLAB_PATH share/gadgetron/matlab)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 #Set the build type to Release if not specified
 IF(NOT CMAKE_BUILD_TYPE)
@@ -69,13 +72,6 @@ else (WIN32)
         endif (APPLE)
     endif (UNIX)
 endif (WIN32)
-
-set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
-# uncomment these if all compiled targets are to be stored in the same directory
-# SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the executables")
-# SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the libraries")
 
 # whether to suppress compilation warnings
 OPTION(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)

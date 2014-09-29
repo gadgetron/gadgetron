@@ -15,8 +15,8 @@ endif(UNIX)
 add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp)
 target_link_libraries(
     gadgetron_matlab
-    cpucore
-    cpucore_math
+    gadgetron_toolbox_cpucore
+    gadgetron_toolbox_cpucore_math
     ${MATLAB_LIBRARIES}
     ${ISMRMRD_LIBRARIES}
     optimized ${ACE_LIBRARIES}
@@ -45,4 +45,4 @@ endif(UNIX)
 install(TARGETS gadgetron_matlab DESTINATION lib)
 install(FILES MatlabGadget.h gadgetron_matlab_export.h DESTINATION include)
 install(FILES BaseGadget.m scale.m accumulate_and_recon.m mask_image.m DESTINATION matlab)
-install(FILES matlab.xml DESTINATION config)
+install(FILES matlab.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})

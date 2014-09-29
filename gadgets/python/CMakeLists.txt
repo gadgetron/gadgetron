@@ -63,4 +63,4 @@ DESTINATION lib)
 
 install(FILES
 	python.xml python_short.xml
-DESTINATION config)
+DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})

@@ -30,7 +30,7 @@ add_executable(gadgetron
   )
 
 target_link_libraries(gadgetron 
-  gadgettools 
+  gadgetron_toolbox_gadgettools 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
@@ -49,7 +49,7 @@ install(FILES
 
 install(FILES 
   gadgetron.xml.example
-  DESTINATION config)
+  DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
 
 install(FILES 
   schema/gadgetron.xsd

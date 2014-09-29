@@ -12,7 +12,7 @@ if(ARMADILLO_FOUND)
     
     set(CPU_REG 1)
     list(APPEND CPU_GADGETS cpuRegistrationAveragingGadget.cpp)
-    list(APPEND CPU_LIBS cpucore_math cpureg)
+    list(APPEND CPU_LIBS gadgetron_toolbox_cpucore_math gadgetron_toolbox_cpureg)
     
   elseif(ARMADILLO_VERSION_STRING VERSION_GREATER "3.819" )
     MESSAGE("Armadillo of at least version 3.820 not found, not compiling cpu-based registration gadgets")
@@ -24,7 +24,7 @@ endif (ARMADILLO_FOUND)
 if(CUDA_FOUND)
   set(GPU_REG 1)
   list(APPEND GPU_GADGETS gpuRegistrationAveragingGadget.cpp gpuRegistrationScatteringGadget.cpp)
-  list(APPEND GPU_LIBS gpucore gpureg ${CUDA_LIBRARIES})
+  list(APPEND GPU_LIBS gadgetron_toolbox_gpucore gadgetron_toolbox_gpureg ${CUDA_LIBRARIES})
 elseif (CUDA_FOUND)
   MESSAGE("Cuda not found, not compiling gpu-based registration gadgets")
 endif (CUDA_FOUND)
@@ -71,7 +71,7 @@ add_library(gadgetron_moco SHARED
   )
 
 target_link_libraries(gadgetron_moco
-  cpucore gadgetron_mricore ${CPU_LIBS} ${GPU_LIBS}
+  gadgetron_toolbox_cpucore gadgetron_mricore ${CPU_LIBS} ${GPU_LIBS}
   ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   )

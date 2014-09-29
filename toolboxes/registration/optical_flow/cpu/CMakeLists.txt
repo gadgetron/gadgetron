@@ -82,7 +82,7 @@
 
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
 
-        add_library(cpureg ${LIBTYPE} 
+        add_library(gadgetron_toolbox_cpureg ${LIBTYPE} 
                     cpureg_export.h
                     ${opticalflow_files} 
                     ${transformation_files} 
@@ -92,9 +92,9 @@
                     ${register_files}
                     ${application_files} )
 
-        target_link_libraries(cpureg 
-                cpucore
-                cpucore_math 
+        target_link_libraries(gadgetron_toolbox_cpureg 
+                gadgetron_toolbox_cpucore
+                gadgetron_toolbox_cpucore_math 
                 ${ARMADILLO_LIBRARIES}
                 optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 
@@ -115,7 +115,7 @@
     source_group(application FILES ${application_files})
 
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
-        install(TARGETS cpureg DESTINATION lib)
+        install(TARGETS gadgetron_toolbox_cpureg DESTINATION lib)
     endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
 
     install(FILES

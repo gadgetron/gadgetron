@@ -22,7 +22,7 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS} 
   )
 
-cuda_add_library(gpuparallelmri SHARED 
+cuda_add_library(gadgetron_toolbox_gpuparallelmri SHARED 
     b1_map.h
     spirit_calibration.h
     cuCartesianSenseOperator.h
@@ -53,11 +53,11 @@ cuda_add_library(gpuparallelmri SHARED
     htgrappa.cu
   )
 
-target_link_libraries(gpuparallelmri 
-  gpucore 
-  gpunfft 
-  cpucore
-  cpucore_math
+target_link_libraries(gadgetron_toolbox_gpuparallelmri 
+  gadgetron_toolbox_gpucore 
+  gadgetron_toolbox_gpunfft 
+  gadgetron_toolbox_cpucore
+  gadgetron_toolbox_cpucore_math
   ${Boost_LIBRARIES}
   ${FFTW3_LIBRARIES} 
   ${CUDA_LIBRARIES} 
@@ -65,7 +65,7 @@ target_link_libraries(gpuparallelmri
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gpuparallelmri DESTINATION lib)
+install(TARGETS gadgetron_toolbox_gpuparallelmri DESTINATION lib)
 
 install(FILES 
 	b1_map.h
@@ -76,8 +76,8 @@ install(FILES
 	cuCartesianSenseOperator.h
 	cuNonCartesianSenseOperator.h
 	cuNonCartesianKtSenseOperator.h
-  cuSpiritOperator.h
-  cuBuffer.h
+        cuSpiritOperator.h
+        cuBuffer.h
 	cuSenseBuffer.h
 	cuSenseBufferCg.h
 	cuSpiritBuffer.h

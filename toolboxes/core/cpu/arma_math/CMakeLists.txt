@@ -50,26 +50,26 @@ if (ARMADILLO_FOUND)
 
 endif (ARMADILLO_FOUND)
 
-add_library(cpucore_math ${LIBTYPE} ${cpucore_math_header_files} ${cpucore_math_src_files})
+add_library(gadgetron_toolbox_cpucore_math ${LIBTYPE} ${cpucore_math_header_files} ${cpucore_math_src_files})
 
 if (MKL_FOUND)
-    target_link_libraries(cpucore_math 
-        cpucore
+    target_link_libraries(gadgetron_toolbox_cpucore_math 
+        gadgetron_toolbox_cpucore
         ${ARMADILLO_LIBRARIES}
         ${ISMRMRD_LIBRARIES}
         ${FFTW3_LIBRARIES} 
         ${MKL_LIBRARIES}
     )
 else (MKL_FOUND)
-    target_link_libraries(cpucore_math 
-        cpucore
+    target_link_libraries(gadgetron_toolbox_cpucore_math 
+        gadgetron_toolbox_cpucore
         ${ARMADILLO_LIBRARIES}
         ${ISMRMRD_LIBRARIES}
         ${FFTW3_LIBRARIES}
     )
 endif (MKL_FOUND)
 
-install(TARGETS cpucore_math DESTINATION lib)
+install(TARGETS gadgetron_toolbox_cpucore_math DESTINATION lib)
 
 install(FILES 
     ${cpucore_math_header_files}

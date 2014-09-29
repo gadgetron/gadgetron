@@ -25,9 +25,9 @@ add_library(gadgetron_epi SHARED
 
 target_link_libraries(
   gadgetron_epi
-  cpucore
-  cpufft
-  cpucore_math
+  gadgetron_toolbox_cpucore
+  gadgetron_toolbox_cpufft
+  gadgetron_toolbox_cpucore_math
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
 )
 
@@ -43,5 +43,5 @@ install(TARGETS gadgetron_epi DESTINATION lib)
 install(FILES
   epi.xml
   epi_gtplus_grappa.xml
-  DESTINATION config)
+  DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
 

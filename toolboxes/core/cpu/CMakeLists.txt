@@ -65,16 +65,16 @@ set(algorithm_files algorithm/hoNDBSpline.h algorithm/hoNDBSpline.hxx)
 source_group(algorithm FILES ${algorithm_files})
 source_group(image FILES ${image_files})
 
-add_library(cpucore ${LIBTYPE}
+add_library(gadgetron_toolbox_cpucore ${LIBTYPE}
                     hoMatrix.cpp 
                     ${header_files} 
                     ${image_files}  
                     ${algorithm_files} )
 
-target_link_libraries(cpucore 
+target_link_libraries(gadgetron_toolbox_cpucore 
                     ${Boost_LIBRARIES})
 
-install(TARGETS cpucore DESTINATION lib)
+install(TARGETS gadgetron_toolbox_cpucore DESTINATION lib)
 
 install(FILES
         ${header_files}

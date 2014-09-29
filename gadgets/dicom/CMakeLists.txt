@@ -70,15 +70,14 @@ include_directories(
         ${ARMADILLO_INCLUDE_DIRS}
         )
 
-set(GT_DICOM_LIB gadgetron_dicom)
-add_library(${GT_DICOM_LIB} SHARED
+add_library(gadgetron_dicom SHARED
     DicomFinishGadget.h DicomFinishGadget.cpp
     DicomFinishAttribGadget.h DicomFinishAttribGadget.cpp
     DicomImageWriter.h DicomImageWriter.cpp)
 
 target_link_libraries(
-    ${GT_DICOM_LIB}
-    cpucore 
+  gadgetron_dicom
+    gadgetron_toolbox_cpucore 
     ${ISMRMRD_LIBRARIES}
     optimized ${ACE_LIBRARIES}
     debug ${ACE_DEBUG_LIBRARY}
@@ -86,17 +85,17 @@ target_link_libraries(
     ${GT_DICOM_LIBRARIES} )
 
 if(ARMADILLO_FOUND)
-    target_link_libraries(${GT_DICOM_LIB} cpucore_math )
+    target_link_libraries(gadgetron_dicom gadgetron_toolbox_cpucore_math )
 endif(ARMADILLO_FOUND)
 
 if(MKL_FOUND)
-    target_link_libraries(${GT_DICOM_LIB} gtplus )
+    target_link_libraries(gadgetron_dicom gadgetron_toolbox_gtplus )
 endif(MKL_FOUND)
 
 install(
     FILES DicomFinishGadget.h DicomImageWriter.h gadgetron_dicom_export.h
     DESTINATION include)
 
-install(TARGETS ${GT_DICOM_LIB} DESTINATION lib)
+install(TARGETS gadgetron_dicom DESTINATION lib)
 
-install(FILES dicom.xml DESTINATION config)
+install(FILES dicom.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})

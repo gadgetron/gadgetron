@@ -18,9 +18,9 @@ include_directories(
 add_executable(cpu_denoise_TV denoise_TV.cpp)
 
 target_link_libraries(cpu_denoise_TV 
-                    cpucore 
-                    cpucore_math 
-                    hostutils
+                    gadgetron_toolbox_cpucore 
+                    gadgetron_toolbox_cpucore_math 
+                    gadgetron_toolbox_hostutils
                     ${ARMADILLO_LIBRARIES} )
 
 install(TARGETS cpu_denoise_TV DESTINATION bin)

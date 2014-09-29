@@ -25,18 +25,18 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
 )
 
-cuda_add_library(gpuxray SHARED
+cuda_add_library(gadgetron_toolbox_gpuxray SHARED
   conebeam_projection.cu 
   hoCuConebeamProjectionOperator.cpp 
   )
 
 target_link_libraries(
-  gpuxray gpucore gpunfft
-  cpucore_math
+  gadgetron_toolbox_gpuxray gadgetron_toolbox_gpucore gadgetron_toolbox_gpunfft
+  gadgetron_toolbox_cpucore_math
   ${CUDA_LIBRARIES}
 )
 
-install(TARGETS gpuxray DESTINATION lib)
+install(TARGETS gadgetron_toolbox_gpuxray DESTINATION lib)
 
 install(FILES 
   CBCT_acquisition.h

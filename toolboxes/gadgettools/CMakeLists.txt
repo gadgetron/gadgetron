@@ -21,7 +21,7 @@ if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
-add_library(gadgettools SHARED
+add_library(gadgetron_toolbox_gadgettools SHARED
   gadgettools_export.h 
   GadgetronSlotContainer.h 
   GadgetronConnector.h 
@@ -29,9 +29,9 @@ add_library(gadgettools SHARED
   GadgetCloudController.h 
   GadgetronCloudConnector.h )
 
-target_link_libraries(gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(gadgetron_toolbox_gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${Boost_LIBRARIES})
 
-install(TARGETS gadgettools DESTINATION lib)
+install(TARGETS gadgetron_toolbox_gadgettools DESTINATION lib)
 
 install (FILES 
             GadgetCloudController.h 

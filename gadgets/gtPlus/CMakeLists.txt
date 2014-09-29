@@ -89,11 +89,11 @@ add_library(gadgetronPlus SHARED
 	    )
 
 target_link_libraries(gadgetronPlus 
-    cpucore 
-    cpucore_math 
-    cpufft
-    gtplus 
-    gadgettools 
+    gadgetron_toolbox_cpucore 
+    gadgetron_toolbox_cpucore_math 
+    gadgetron_toolbox_cpufft
+    gadgetron_toolbox_gtplus 
+    gadgetron_toolbox_gadgettools 
     ${Boost_LIBRARIES}
     ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
@@ -103,7 +103,7 @@ if (CUDA_FOUND)
   include_directories( 
     ${CUDA_INCLUDE_DIRS}
     )
-  target_link_libraries(gadgetronPlus gpuparallelmri)
+  target_link_libraries(gadgetronPlus gadgetron_toolbox_gpuparallelmri)
 endif(CUDA_FOUND)
 
 install (FILES 
