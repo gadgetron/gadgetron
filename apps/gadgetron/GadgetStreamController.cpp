@@ -9,6 +9,7 @@
 #include "GadgetContainerMessage.h"
 #include "Gadget.h"
 #include "EndGadget.h"
+#include "gadgetron_config.h"
 
 #include "gadgetron_xml.h"
 #include "url_encode.h"
@@ -215,10 +216,8 @@ void GadgetStreamController::set_global_gadget_parameters(const std::map<std::st
 
 int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 {
-
-	char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
 	ACE_TCHAR config_file_name[4096];
-	ACE_OS::sprintf(config_file_name, "%s/config/%s", gadgetron_home, config_xml_filename.c_str());
+	ACE_OS::sprintf(config_file_name, "%s/%s/%s", gadgetron_home_.c_str(), GADGETRON_CONFIG_PATH, config_xml_filename.c_str());
 
 	GADGET_DEBUG2("Running configuration: %s\n", config_file_name);
 

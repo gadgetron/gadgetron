@@ -2,6 +2,8 @@
 #include "FileInfo.h"
 #include "url_encode.h"
 #include "gadgetron_xml.h"
+#include "gadgetron_config.h"
+#include "gadgetron_paths.h"
 
 #include <ace/Log_Msg.h>
 #include <ace/Service_Config.h>
@@ -16,6 +18,8 @@
 
 #ifdef _WIN32
     #include <windows.h>
+    #include <Shlwapi.h>
+    #pragma comment(lib, "shlwapi.lib")
 #else
     #include <sys/types.h>
     #include <sys/stat.h>
@@ -29,6 +33,7 @@ using namespace Gadgetron;
 #define GT_WORKING_DIRECTORY "workingDirectory"
 
 namespace Gadgetron {
+
 
 bool create_folder_with_all_permissions(const std::string& workingdirectory)
 {
@@ -79,13 +84,13 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     ACE_LOG_MSG->priority_mask( LM_INFO | LM_NOTICE | LM_ERROR| LM_DEBUG,
             ACE_Log_Msg::PROCESS);
 
-    char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
+    std::string  gadgetron_home = get_gadgetron_home();
 
-    if (!gadgetron_home || (std::string(gadgetron_home).size() == 0)) {
+    if (gadgetron_home.size() == 0) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("GADGETRON_HOME variable not set.\n")),-1);
     }
 
-    std::string gcfg = std::string(gadgetron_home) + std::string("/config/gadgetron.xml");
+    std::string gcfg = gadgetron_home + std::string("/config/gadgetron.xml");
     if (!FileInfo(gcfg).exists()) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Gadgetron configuration file %s not found.\n"), gcfg.c_str()),-1);
     }

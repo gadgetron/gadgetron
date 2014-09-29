@@ -1,4 +1,7 @@
+configure_file(gadgetron_config.in gadgetron_config.h)
+
 include_directories(
+  ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -6,7 +9,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
   ${Boost_INCLUDE_DIR}
-  ${ACE_INCLUDE_DIR} 
+  ${ACE_INCLUDE_DIR}
   )
 
 add_executable(gadgetron 

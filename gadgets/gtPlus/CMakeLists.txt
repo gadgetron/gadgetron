@@ -35,6 +35,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/apps/gadgetron
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
     ${CMAKE_SOURCE_DIR}/gadgets/gtPlus 
+    ${CMAKE_SOURCE_DIR}/apps/gadgetron
   )
 
 IF (WIN32)
