@@ -2,7 +2,6 @@
 #define GADGETRON_PATHS_H
 
 #include <limits.h>
-#include <unistd.h>
 #include <string>
 #include <iostream>
 
@@ -10,6 +9,8 @@
 #include <windows.h>
 #include <Shlwapi.h>
 #pragma comment(lib, "shlwapi.lib")
+#else
+#include <unistd.h>
 #endif // _WIN32
 
 #ifdef __APPLE__
