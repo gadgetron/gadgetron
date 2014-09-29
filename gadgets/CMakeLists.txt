@@ -45,10 +45,6 @@ else (CUDA_FOUND)
   message("Cuda NOT found, NOT compiling gpu accelerated gadgets")
 endif(CUDA_FOUND)
 
-#find_package(Octave)
-#if (OCTAVE_FOUND)
-#  add_subdirectory(octave)
-#endif(OCTAVE_FOUND)
 
 if (MATLAB_FOUND)
   message("Compilng MATLAB gadgets")

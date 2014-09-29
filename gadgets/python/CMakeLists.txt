@@ -12,6 +12,7 @@ find_package(Ismrmrd REQUIRED)
 message(STATUS ${Boost_INCLUDE_DIR} ${Boost_LIBRARIES})
 
 include_directories(
+  ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${PYTHON_INCLUDE_PATH}
   ${NUMPY_INCLUDE_DIRS}

@@ -57,8 +57,8 @@ namespace Gadgetron
             }
             else
             {
-                noise_dependency_folder_ = ACE_OS::getenv("GADGETRON_HOME");
-                noise_dependency_folder_.append("/dependencies/noise");
+	      //This is an error, we should not be writing dependencies without having a working directory
+	      return GADGET_FAIL;
             }
             GADGET_MSG("Folder to store noise dependencies is " << noise_dependency_folder_);
 

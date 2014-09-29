@@ -1,6 +1,7 @@
 
 #include "GtPlusReconGadget.h"
 #include "GtPlusGadgetOpenMP.h"
+#include "gadgetron_paths.h"
 #include <iomanip>
 
 using namespace Gadgetron::gtPlus;
@@ -555,7 +556,7 @@ namespace Gadgetron
 
     bool GtPlusReconGadget::parseGTCloudNodeFile(const std::string& filename, CloudType& gtCloud)
     {
-        std::string nodeFileName = ACE_OS::getenv("GADGETRON_HOME");
+      std::string nodeFileName = get_gadgetron_home();
         nodeFileName.append("/config/gtCloud/");
         nodeFileName.append(filename);
         GADGET_CONDITION_MSG(verboseMode_, "Cloud node file name is " << nodeFileName);
