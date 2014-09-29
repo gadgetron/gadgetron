@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # add the user 'gadgetron'
-sudo adduser --system --no-create-home gadgetron
+# sudo adduser --system --no-create-home gadgetron
+sudo useradd -M gadgetron
+sudo usermod -L gadgetron
 
 # copy the gadgetron.xml
 sudo cp -i ../config/gadgetron.xml.example ../config/gadgetron.xml

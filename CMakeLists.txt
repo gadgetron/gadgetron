@@ -252,6 +252,14 @@ if (WIN32)
     endif (GADGETRON_INSTALL_DEPENDENCIES)
 endif (WIN32)
 
+if (UNIX)
+    if (NOT APPLE)
+        if (GADGETRON_INSTALL_DEPENDENCIES)
+            include(${CMAKE_SOURCE_DIR}/cmake/InstallLinuxDependencies.cmake)
+        endif (GADGETRON_INSTALL_DEPENDENCIES)
+    endif (NOT APPLE)
+endif (UNIX)
+
 #  ---   Main Library  (end) ----
 
 # Create package
