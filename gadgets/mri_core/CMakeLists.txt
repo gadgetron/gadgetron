@@ -130,6 +130,8 @@ add_library(gadgetron_mricore SHARED
     ${OPTIMIZED_GADGET_HEADERS}
 )
 
+set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                      
+
 target_link_libraries(gadgetron_mricore 
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpufft

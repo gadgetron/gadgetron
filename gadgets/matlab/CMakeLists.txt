@@ -13,6 +13,8 @@ else(UNIX)
 endif(UNIX)
 
 add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp)
+set_target_properties(gadgetron_matlab PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(
     gadgetron_matlab
     gadgetron_toolbox_cpucore
@@ -37,12 +39,12 @@ if (UNIX)
         COMMENT "Generating Matlab Command Server class" VERBATIM
     )
     add_custom_target(matlab_command_server ALL DEPENDS ${JAVA_MATLAB_SERVER_CLASS})
-    install(FILES ${JAVA_MATLAB_SERVER_CLASS} DESTINATION matlab)
+    install(FILES ${JAVA_MATLAB_SERVER_CLASS} DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH})
 else(UNIX)
         MESSAGE( "Don't know how to build the Matlab Command Server class on Windows" )
 endif(UNIX)
 
 install(TARGETS gadgetron_matlab DESTINATION lib)
 install(FILES MatlabGadget.h gadgetron_matlab_export.h DESTINATION include)
-install(FILES BaseGadget.m scale.m accumulate_and_recon.m mask_image.m DESTINATION matlab)
+install(FILES BaseGadget.m scale.m accumulate_and_recon.m mask_image.m DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH})
 install(FILES matlab.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})

@@ -70,6 +70,8 @@ add_library(gadgetron_moco SHARED
     ${GPU_GADGETS}
   )
 
+set_target_properties(gadgetron_moco PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                         
+
 target_link_libraries(gadgetron_moco
   gadgetron_toolbox_cpucore gadgetron_mricore ${CPU_LIBS} ${GPU_LIBS}
   ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES}

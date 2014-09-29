@@ -21,12 +21,15 @@ include_directories(
   )
 
 add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp)
+set_target_properties(GadgetronPythonMRI PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 add_library(gadgetron_python SHARED       		
 	PythonGadget.cpp
 	GadgetReference.cpp
 	GadgetronPythonMRI.cpp
 	PythonCommunicator.cpp)
+
+set_target_properties(gadgetron_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_python
 	${ISMRMRD_LIBRARIES} 

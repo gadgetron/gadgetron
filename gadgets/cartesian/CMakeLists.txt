@@ -14,6 +14,8 @@ add_library(gadgetron_cartesian SHARED
   CartesianToGenericGadget.cpp
 )
 
+set_target_properties(gadgetron_cartesian PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_cartesian gadgetron_toolbox_cpucore 
   ${ISMRMRD_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}

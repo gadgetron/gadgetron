@@ -23,6 +23,8 @@ add_library(gadgetron_epi SHARED
   epi_gtplus_grappa.xml
 )
 
+set_target_properties(gadgetron_epi PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(
   gadgetron_epi
   gadgetron_toolbox_cpucore

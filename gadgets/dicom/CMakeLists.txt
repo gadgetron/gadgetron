@@ -75,6 +75,8 @@ add_library(gadgetron_dicom SHARED
     DicomFinishAttribGadget.h DicomFinishAttribGadget.cpp
     DicomImageWriter.h DicomImageWriter.cpp)
 
+set_target_properties(gadgetron_dicom PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(
   gadgetron_dicom
     gadgetron_toolbox_cpucore 

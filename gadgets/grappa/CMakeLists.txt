@@ -31,6 +31,8 @@ add_library(gadgetron_grappa SHARED
     GrappaUnmixingGadget.cpp
     )
 
+set_target_properties(gadgetron_grappa PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_grappa 
   gadgetron_toolbox_gpuparallelmri
   gadgetron_toolbox_cpucore

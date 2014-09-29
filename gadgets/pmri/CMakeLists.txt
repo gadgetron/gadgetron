@@ -37,6 +37,8 @@ add_library(gadgetron_gpuparallelmri SHARED
     gpuCgSpiritGadget.cpp 
   )
 
+set_target_properties(gadgetron_gpuparallelmri PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_gpuparallelmri 
   gadgetron_toolbox_cpucore gadgetron_toolbox_gpucore gadgetron_toolbox_gpusolvers gadgetron_toolbox_gpuoperators
   ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
