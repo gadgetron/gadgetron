@@ -51,6 +51,7 @@ if (ARMADILLO_FOUND)
 endif (ARMADILLO_FOUND)
 
 add_library(gadgetron_toolbox_cpucore_math ${LIBTYPE} ${cpucore_math_header_files} ${cpucore_math_src_files})
+set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 if (MKL_FOUND)
     target_link_libraries(gadgetron_toolbox_cpucore_math 

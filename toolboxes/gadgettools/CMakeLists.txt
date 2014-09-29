@@ -29,6 +29,8 @@ add_library(gadgetron_toolbox_gadgettools SHARED
   GadgetCloudController.h 
   GadgetronCloudConnector.h )
 
+set_target_properties(gadgetron_toolbox_gadgettools PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_toolbox_gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${Boost_LIBRARIES})
 
 install(TARGETS gadgetron_toolbox_gadgettools DESTINATION lib)

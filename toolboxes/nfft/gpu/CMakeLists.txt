@@ -25,6 +25,8 @@ cuda_add_library(gadgetron_toolbox_gpunfft SHARED
     cuNFFTOperator.cu
   )
 
+set_target_properties(gadgetron_toolbox_gpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_toolbox_gpunfft 
   gadgetron_toolbox_gpufft
   gadgetron_toolbox_gpucore 

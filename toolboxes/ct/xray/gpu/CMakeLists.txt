@@ -30,6 +30,8 @@ cuda_add_library(gadgetron_toolbox_gpuxray SHARED
   hoCuConebeamProjectionOperator.cpp 
   )
 
+set_target_properties(gadgetron_toolbox_gpuxray PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(
   gadgetron_toolbox_gpuxray gadgetron_toolbox_gpucore gadgetron_toolbox_gpunfft
   gadgetron_toolbox_cpucore_math

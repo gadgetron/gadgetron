@@ -44,6 +44,8 @@ cuda_add_library(gadgetron_toolbox_gpucore SHARED
     cudaDeviceManager.cpp
   )
 
+set_target_properties(gadgetron_toolbox_gpucore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_toolbox_gpucore 
   gadgetron_toolbox_cpucore 
   ${Boost_LIBRARIES}

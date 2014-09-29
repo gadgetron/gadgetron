@@ -92,6 +92,9 @@
                     ${register_files}
                     ${application_files} )
 
+        set_target_properties(gadgetron_toolbox_cpureg PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
+
         target_link_libraries(gadgetron_toolbox_cpureg 
                 gadgetron_toolbox_cpucore
                 gadgetron_toolbox_cpucore_math 

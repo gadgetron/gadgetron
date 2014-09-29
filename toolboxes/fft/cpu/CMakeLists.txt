@@ -20,6 +20,8 @@ add_library(gadgetron_toolbox_cpufft ${LIBTYPE}
   hoNDFFT.cpp
   )
 
+set_target_properties(gadgetron_toolbox_cpufft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_toolbox_cpufft
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpucore_math

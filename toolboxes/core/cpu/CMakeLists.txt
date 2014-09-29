@@ -71,6 +71,8 @@ add_library(gadgetron_toolbox_cpucore ${LIBTYPE}
                     ${image_files}  
                     ${algorithm_files} )
 
+set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_toolbox_cpucore 
                     ${Boost_LIBRARIES})
 

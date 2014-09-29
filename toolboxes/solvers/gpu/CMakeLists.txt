@@ -19,6 +19,8 @@ cuda_add_library(gadgetron_toolbox_gpusolvers SHARED
     cuSolverUtils.cu
   )
 
+set_target_properties(gadgetron_toolbox_gpusolvers PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_toolbox_gpusolvers 
   gadgetron_toolbox_gpucore 
   ${Boost_LIBRARIES}

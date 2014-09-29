@@ -53,6 +53,8 @@ cuda_add_library(gadgetron_toolbox_gpuparallelmri SHARED
     htgrappa.cu
   )
 
+set_target_properties(gadgetron_toolbox_gpuparallelmri PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_toolbox_gpuparallelmri 
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpunfft 

@@ -43,6 +43,7 @@
      EPIReconXObjectFlat.h
      EPIReconXObjectTrapezoid.h)
 
+    set_target_properties(gadgetron_toolbox_epi PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
     set_target_properties(gadgetron_toolbox_epi PROPERTIES LINKER_LANGUAGE CXX)
 
     target_link_libraries(gadgetron_toolbox_epi gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math ${ARMADILLO_LIBRARIES})

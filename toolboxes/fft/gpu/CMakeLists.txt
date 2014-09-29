@@ -15,6 +15,8 @@ cuda_add_library(gadgetron_toolbox_gpufft SHARED
     cuNDFFT.cpp
   )
 
+set_target_properties(gadgetron_toolbox_gpufft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_toolbox_gpufft 
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_gpucore 
