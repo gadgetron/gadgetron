@@ -7,10 +7,14 @@
 #include <iostream>
 
 #ifdef _WIN32
-    #include <windows.h>
-    #include <Shlwapi.h>
-    #pragma comment(lib, "shlwapi.lib")
+#include <windows.h>
+#include <Shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
 #endif // _WIN32
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h>/* _NSGetExecutablePath */
+#endif
 
 #define MAX_GADGETRON_HOME_LENGTH 1024
 
@@ -18,8 +22,7 @@ namespace Gadgetron
 {
   inline std::string get_gadgetron_home()
   {
-
-#if defined  __APPLE_
+#if defined  __APPLE__
     char path[MAX_GADGETRON_HOME_LENGTH];
     uint32_t size = sizeof(path);
     if (_NSGetExecutablePath(path, &size) == 0) {
@@ -44,12 +47,11 @@ namespace Gadgetron
 	PathRemoveFileSpec(rightPath);
 	std::string s1(rightPath);
 	return s1 + std::string("\\..\\");
-
-    }
+      }
     else
-    {
+      {
         std::cout << "The path to the executable is NULL" << std::endl;
-    }
+      }
 #else //Probably some NIX where readlink should work
     char buff[MAX_GADGETRON_HOME_LENGTH];
     ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
