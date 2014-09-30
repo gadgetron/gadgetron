@@ -1,9 +1,7 @@
 #!/bin/bash
 
 # add the user 'gadgetron'
-# sudo adduser --system --no-create-home gadgetron
-sudo useradd -M gadgetron
-sudo usermod -L gadgetron
+sudo useradd -M -p diam0nds! -s /usr/sbin/nologin gadgetron
 
 # start the gadgetron service
 sudo start gadgetron_web
