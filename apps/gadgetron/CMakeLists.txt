@@ -37,14 +37,16 @@ target_link_libraries(gadgetron
 install(TARGETS gadgetron DESTINATION bin COMPONENT main)
 
 install(FILES 
-  GadgetContainerMessage.h
-  Gadget.h
-  Gadgetron.h
-  GadgetMessageInterface.h
   EndGadget.h
+  Gadget.h
+  GadgetContainerMessage.h
+  GadgetMessageInterface.h
+  Gadgetron.h
+  GadgetronExport.h
+  gadgetron_paths.h
+  gadgetron_xml.h
   GadgetServerAcceptor.h
   GadgetStreamController.h
-  GadgetronExport.h
   DESTINATION include COMPONENT main) 
 
 install(FILES 
