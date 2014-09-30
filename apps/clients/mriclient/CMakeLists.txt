@@ -44,25 +44,24 @@ add_executable(gt_alive gt_alive.cpp)
 
 add_executable(gtdependencyquery gt_query.cpp DependencyQueryReader.h gtquery.xml)
 
-target_link_libraries(mriclient cpucore gtplus_io)
+target_link_libraries(mriclient gadgetron_toolbox_cpucore gadgetron_toolbox_gtplus_io)
 
-target_link_libraries(gt_alive cpucore 
-                               gadgettools 
+target_link_libraries(gt_alive gadgetron_toolbox_cpucore 
+                               gadgetron_toolbox_gadgettools 
                                optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
                                ${Boost_LIBRARIES} 
                                ${ISMRMRD_LIBRARIES} )
 
-target_link_libraries(gtdependencyquery cpucore 
-                                        gadgettools 
+target_link_libraries(gtdependencyquery gadgetron_toolbox_cpucore 
+                                        gadgetron_toolbox_gadgettools 
                                         optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
                                         ${Boost_LIBRARIES} 
                                         ${ISMRMRD_LIBRARIES} )
 
-target_link_libraries(mriclient gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(mriclient gadgetron_toolbox_gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
 
 target_link_libraries(mriclient gadgetron_mricore)
 
 install(TARGETS mriclient gt_alive gtdependencyquery DESTINATION bin COMPONENT main)
 install(FILES ImageWriter.h HDF5ImageWriter.h ImageAttribWriter.h HDF5ImageAttribWriter.h BlobFileWriter.h BlobFileWithAttribWriter.h DependencyQueryReader.h DESTINATION include COMPONENT main)
-install(FILES ${ISMRMRD_LIBRARIES} DESTINATION lib COMPONENT main)
-install(FILES isalive.xml gtquery.xml DESTINATION config COMPONENT main)
+install(FILES isalive.xml gtquery.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

@@ -8,7 +8,7 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
 )
 
-cuda_add_library(gpureg SHARED 
+cuda_add_library(gadgetron_toolbox_gpureg SHARED 
   cuOpticalFlowSolver.cu 
   cuHSOpticalFlowSolver.cu 
   cuCKOpticalFlowSolver.cu 
@@ -17,12 +17,14 @@ cuda_add_library(gpureg SHARED
 #  cuRegistration_utils.cu
   )
 
-target_link_libraries(gpureg 
-  gpucore 
+set_target_properties(gadgetron_toolbox_gpureg PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
+target_link_libraries(gadgetron_toolbox_gpureg 
+  gadgetron_toolbox_gpucore 
   ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}
   )
 
-install(TARGETS gpureg DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_gpureg DESTINATION lib COMPONENT main)
 
 install(FILES
   cuOpticalFlowSolver.h

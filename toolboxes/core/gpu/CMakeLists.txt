@@ -12,7 +12,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
 )
 
-cuda_add_library(gpucore SHARED 
+cuda_add_library(gadgetron_toolbox_gpucore SHARED 
     check_CUDA.h
     CUBLASContextProvider.h
     cudaDeviceManager.h
@@ -44,8 +44,10 @@ cuda_add_library(gpucore SHARED
     cudaDeviceManager.cpp
   )
 
-target_link_libraries(gpucore 
-  cpucore 
+set_target_properties(gadgetron_toolbox_gpucore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
+target_link_libraries(gadgetron_toolbox_gpucore 
+  gadgetron_toolbox_cpucore 
   ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
@@ -53,7 +55,7 @@ target_link_libraries(gpucore
   ${MKL_LIBRARIES}
   )
 
-install(TARGETS gpucore DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_gpucore DESTINATION lib COMPONENT main)
 
 install(FILES
   gpucore_export.h

@@ -1,3 +1,7 @@
+if (WIN32)
+    ADD_DEFINITIONS(-D__BUILD_GADGETRON_GADGETTOOLS__)
+endif (WIN32)
+
 include_directories(
                     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
                     ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -21,7 +25,7 @@ if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
-add_library(gadgettools SHARED
+add_library(gadgetron_toolbox_gadgettools SHARED
   gadgettools_export.h 
   GadgetronSlotContainer.h 
   GadgetronConnector.h 
@@ -29,9 +33,13 @@ add_library(gadgettools SHARED
   GadgetCloudController.h 
   GadgetronCloudConnector.h )
 
-target_link_libraries(gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${Boost_LIBRARIES})
+set_target_properties(gadgetron_toolbox_gadgettools PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-install(TARGETS gadgettools DESTINATION lib COMPONENT main)
+target_link_libraries(gadgetron_toolbox_gadgettools
+                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+                      ${Boost_LIBRARIES})
+
+install(TARGETS gadgetron_toolbox_gadgettools DESTINATION lib COMPONENT main)
 
 install (FILES 
             GadgetCloudController.h 

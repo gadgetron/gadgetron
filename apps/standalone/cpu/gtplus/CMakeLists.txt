@@ -17,10 +17,10 @@ if (MATLAB_FOUND)
     link_libraries(${MATLAB_LIBRARIES} 
                     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
                     ${ISMRMRD_LIBRARIES} 
-                    gtplus 
-                    cpucore 
-                    cpucore_math
-                    cpureg )
+                    gadgetron_toolbox_gtplus 
+                    gadgetron_toolbox_cpucore 
+                    gadgetron_toolbox_cpucore_math
+                    gadgetron_toolbox_cpureg )
 
     if (WIN32)
         if ( HAS_64_BIT )
@@ -48,11 +48,11 @@ if (MATLAB_FOUND)
 
         add_library(Matlab_gt_read_analyze SHARED Matlab_gt_read_analyze.cpp)
         SET_TARGET_PROPERTIES(Matlab_gt_read_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
-        install(TARGETS Matlab_gt_read_analyze DESTINATION bin COMPONENT main)
+        install(TARGETS Matlab_gt_read_analyze DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
         add_library(Matlab_gt_write_analyze SHARED Matlab_gt_write_analyze.cpp)
         SET_TARGET_PROPERTIES(Matlab_gt_write_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
-        install(TARGETS Matlab_gt_write_analyze DESTINATION bin COMPONENT main)
+        install(TARGETS Matlab_gt_write_analyze DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
     endif ( MKL_FOUND AND FFTW3_FOUND )
 

@@ -7,7 +7,7 @@
 
 
 #if defined (WIN32)
-#if defined (__BUILD_GADGETRON_GADGETTOOLS__) || defined (gadgettools_EXPORTS)
+#if defined (__BUILD_GADGETRON_GADGETTOOLS__) || defined (gadgetron_toolbox_gadgettools_EXPORTS)
 #define EXPORTGADGETTOOLS __declspec(dllexport)
 #else
 #define EXPORTGADGETTOOLS __declspec(dllimport)

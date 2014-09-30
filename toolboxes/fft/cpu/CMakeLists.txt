@@ -14,20 +14,22 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
   )
 
-add_library(cpufft ${LIBTYPE} 
+add_library(gadgetron_toolbox_cpufft ${LIBTYPE} 
   cpufft_export.h 
   hoNDFFT.h
   hoNDFFT.cpp
   )
 
-target_link_libraries(cpufft
-  cpucore
-  cpucore_math
+set_target_properties(gadgetron_toolbox_cpufft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
+target_link_libraries(gadgetron_toolbox_cpufft
+  gadgetron_toolbox_cpucore
+  gadgetron_toolbox_cpucore_math
   ${FFTW3_LIBRARIES} 
   ${Boost_LIBRARIES} 
   )
 
-install(TARGETS cpufft DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_cpufft DESTINATION lib COMPONENT main)
 
 install(FILES
   cpufft_export.h 

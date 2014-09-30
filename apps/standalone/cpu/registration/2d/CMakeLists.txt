@@ -8,18 +8,18 @@ add_executable(register_HS_2d_cpu register_HS_2d.cpp)
 add_executable(register_CK_2d_cpu register_CK_2d.cpp)
 
 target_link_libraries(register_HS_2d_cpu 
-  hostutils 
-  cpureg 
-  cpucore 
-  cpucore_math
+  gadgetron_toolbox_hostutils 
+  gadgetron_toolbox_cpureg 
+  gadgetron_toolbox_cpucore 
+  gadgetron_toolbox_cpucore_math
   ${ARMADILLO_LIBRARIES}
   )
 
 target_link_libraries(register_CK_2d_cpu 
-  hostutils 
-  cpureg 
-  cpucore
-  cpucore_math
+  gadgetron_toolbox_hostutils 
+  gadgetron_toolbox_cpureg 
+  gadgetron_toolbox_cpucore
+  gadgetron_toolbox_cpucore_math
   ${ARMADILLO_LIBRARIES}
   )
 
@@ -35,11 +35,11 @@ if (MATLAB_FOUND)
   if (WIN32)
     include_directories( ${MATLAB_INCLUDE_DIR} )
     add_library(Matlab_register_CK_2d_cpu SHARED Matlab_register_CK_2d.cpp)
-    target_link_libraries(Matlab_register_CK_2d_cpu ${MATLAB_LIBRARIES} hostutils cpureg cpucore cpucore_math)
+    target_link_libraries(Matlab_register_CK_2d_cpu ${MATLAB_LIBRARIES} gadgetron_toolbox_hostutils gadgetron_toolbox_cpureg gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math)
     if ( HAS_64_BIT )				
       SET_TARGET_PROPERTIES(Matlab_register_CK_2d_cpu PROPERTIES SUFFIX .mexw64)
     endif ( HAS_64_BIT )    
-    install(TARGETS Matlab_register_CK_2d_cpu DESTINATION bin COMPONENT main)
+    install(TARGETS Matlab_register_CK_2d_cpu DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
   endif (WIN32)
 else(MATLAB_FOUND)
   message("Matlab not found. Matlab wrapper for registration toolbox will not be compiled.")

@@ -31,11 +31,13 @@ add_library(gadgetron_grappa SHARED
     GrappaUnmixingGadget.cpp
     )
 
+set_target_properties(gadgetron_grappa PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(gadgetron_grappa 
-  gpuparallelmri
-  cpucore
-  cpufft
-  gpufft
+  gadgetron_toolbox_gpuparallelmri
+  gadgetron_toolbox_cpucore
+  gadgetron_toolbox_cpufft
+  gadgetron_toolbox_gpufft
   ${Boost_LIBRARIES}
   ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
