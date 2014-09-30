@@ -677,9 +677,9 @@ namespace Gadgetron
         // e.g. for FLASH PAT reference scans.
         if (h.encoding.size() == 2)
         {
-            if (! ((h.encoding[0].reconSpace.matrixSize.x != h.encoding[1].reconSpace.matrixSize.x) && 
-                (h.encoding[0].reconSpace.matrixSize.y != h.encoding[1].reconSpace.matrixSize.y) && 
-                (h.encoding[0].reconSpace.matrixSize.z != h.encoding[1].reconSpace.matrixSize.z) && 
+            if (! ((h.encoding[0].reconSpace.matrixSize.x == h.encoding[1].reconSpace.matrixSize.x) && 
+                (h.encoding[0].reconSpace.matrixSize.y == h.encoding[1].reconSpace.matrixSize.y) && 
+                (h.encoding[0].reconSpace.matrixSize.z == h.encoding[1].reconSpace.matrixSize.z) && 
                 (h.encoding[0].reconSpace.fieldOfView_mm.x == h.encoding[1].reconSpace.fieldOfView_mm.x) &&
                 (h.encoding[0].reconSpace.fieldOfView_mm.y == h.encoding[1].reconSpace.fieldOfView_mm.y) &&
                 (h.encoding[0].reconSpace.fieldOfView_mm.z == h.encoding[1].reconSpace.fieldOfView_mm.z)) )
