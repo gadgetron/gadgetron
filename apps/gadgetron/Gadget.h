@@ -17,6 +17,8 @@
 #include "GadgetContainerMessage.h"
 #include "GadgetronExport.h"
 #include "Gadgetron.h"
+#include "gadgetron_config.h"
+
 #include <stdexcept>
 
 namespace Gadgetron{
@@ -40,12 +42,17 @@ namespace Gadgetron{
             , pass_on_undesired_data_(false)
             , controller_(0)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::Gadget") ));
+	  gadgetron_version_ = std::string(GADGETRON_VERSION_STRING) + std::string(" (") + 
+	    std::string(GADGETRON_GIT_SHA1_HASH) + std::string(")");
+
+	  ACE_TRACE(( ACE_TEXT("Gadget::Gadget") ));
         }
 
         virtual ~Gadget()
         {
+	  if (this->module()) {
             GADGET_DEBUG2("Shutting down Gadget (%s)\n", this->module()->name());
+	  }
         }
 
 
@@ -235,6 +242,10 @@ namespace Gadgetron{
             return GADGET_OK;
         }
 
+	const char* get_gadgetron_version() {
+	  return gadgetron_version_.c_str();
+	}
+
     protected:
         virtual int next_step(ACE_Message_Block *m)
         {
@@ -253,6 +264,7 @@ namespace Gadgetron{
 
     private:
         std::map<std::string, std::string> parameters_;
+	std::string gadgetron_version_;
     };
 
     template <class P1> class Gadget1 : public Gadget

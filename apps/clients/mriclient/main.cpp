@@ -4,7 +4,6 @@
 #include <ace/Log_Msg.h>
 #include <ace/Get_Opt.h>
 #include <ace/OS_NS_string.h>
-
 #include "GadgetronConnector.h"
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
