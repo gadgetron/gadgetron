@@ -38,7 +38,7 @@ namespace Gadgetron
 
                 // TODO this makes a copy of the data
                 // what's the best way to do it without copies?
-                ISMRMRD::Image img;
+                ISMRMRD::Image<T> img;
                 img.setHead(*img_head);
                 memcpy(img.getData(), data->get_data_ptr(), img.getDataSize());
 
