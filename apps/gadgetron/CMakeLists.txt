@@ -34,7 +34,10 @@ target_link_libraries(gadgetron
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
-install(TARGETS gadgetron DESTINATION bin)
+add_executable(gadgetron_info
+  gadgetron_info.cpp)
+
+install(TARGETS gadgetron gadgetron_info DESTINATION bin)
 
 install(FILES 
   GadgetContainerMessage.h
