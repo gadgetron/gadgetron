@@ -49,4 +49,4 @@ install(TARGETS
   register_HS_2d_gpu
   register_CGHS_2d_gpu  
   register_CK_2d_gpu 
-  DESTINATION bin)
+  DESTINATION bin COMPONENT main)

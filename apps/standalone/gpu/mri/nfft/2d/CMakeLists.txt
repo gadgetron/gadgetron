@@ -14,4 +14,4 @@ target_link_libraries(nffth_2d_radial gpucore gpuoperators gpunfft hostutils ${C
 target_link_libraries(nffth_cg_2d_radial gpusolvers gpuoperators gpucore gpunfft hostutils ${CUDA_LIBRARIES})
 target_link_libraries(nffth_sb_2d_radial gpusolvers gpuoperators gpucore gpunfft hostutils ${CUDA_LIBRARIES})
 
-install(TARGETS nfft_2d_radial nffth_2d_radial nffth_cg_2d_radial nffth_sb_2d_radial DESTINATION bin)
+install(TARGETS nfft_2d_radial nffth_2d_radial nffth_cg_2d_radial nffth_sb_2d_radial DESTINATION bin COMPONENT main)

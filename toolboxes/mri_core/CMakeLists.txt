@@ -1,3 +1,3 @@
 install(FILES
   mri_core_data.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

@@ -23,4 +23,4 @@ target_link_libraries(cpu_denoise_TV
                     hostutils
                     ${ARMADILLO_LIBRARIES} )
 
-install(TARGETS cpu_denoise_TV DESTINATION bin)
+install(TARGETS cpu_denoise_TV DESTINATION bin COMPONENT main)

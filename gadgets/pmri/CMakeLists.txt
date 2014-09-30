@@ -45,7 +45,7 @@ target_link_libraries(gadgetron_gpuparallelmri
 
 target_link_libraries(gadgetron_gpuparallelmri gpuparallelmri)
 
-install (TARGETS gadgetron_gpuparallelmri DESTINATION lib)
+install (TARGETS gadgetron_gpuparallelmri DESTINATION lib COMPONENT main)
 
 install (FILES  gadgetron_gpupmri_export.h
                 GenericReconJob.h
@@ -54,6 +54,6 @@ install (FILES  gadgetron_gpupmri_export.h
                 gpuCgSpiritGadget.h
                 gpuGenericSensePrepGadget.h
                 gpuSbSenseGadget.h
-                DESTINATION include)
+                DESTINATION include COMPONENT main)
 
 add_subdirectory(config)

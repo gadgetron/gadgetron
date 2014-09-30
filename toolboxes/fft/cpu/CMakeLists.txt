@@ -27,9 +27,9 @@ target_link_libraries(cpufft
   ${Boost_LIBRARIES} 
   )
 
-install(TARGETS cpufft DESTINATION lib)
+install(TARGETS cpufft DESTINATION lib COMPONENT main)
 
 install(FILES
   cpufft_export.h 
   hoNDFFT.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

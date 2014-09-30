@@ -26,7 +26,7 @@ target_link_libraries(register_CK_2d_cpu
 install(TARGETS 
   register_HS_2d_cpu
   register_CK_2d_cpu 
-  DESTINATION bin)
+  DESTINATION bin COMPONENT main)
 
 # matlab wrapper
 if (MATLAB_FOUND)
@@ -39,7 +39,7 @@ if (MATLAB_FOUND)
     if ( HAS_64_BIT )				
       SET_TARGET_PROPERTIES(Matlab_register_CK_2d_cpu PROPERTIES SUFFIX .mexw64)
     endif ( HAS_64_BIT )    
-    install(TARGETS Matlab_register_CK_2d_cpu DESTINATION bin )
+    install(TARGETS Matlab_register_CK_2d_cpu DESTINATION bin COMPONENT main)
   endif (WIN32)
 else(MATLAB_FOUND)
   message("Matlab not found. Matlab wrapper for registration toolbox will not be compiled.")

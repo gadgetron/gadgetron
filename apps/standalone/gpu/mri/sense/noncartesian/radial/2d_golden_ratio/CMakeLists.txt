@@ -8,4 +8,4 @@ target_link_libraries(sense_sbc_radial_2d gpuoperators cpucore gpucore gpuparall
 target_link_libraries(sense_gpbb_radial_2d gpuoperators cpucore gpucore gpuparallelmri gpunfft hostutils gpusolvers ${CUDA_LIBRARIES})
 target_link_libraries(sense_nlcg_radial_2d gpuoperators cpucore gpucore gpuparallelmri gpunfft hostutils gpusolvers ${CUDA_LIBRARIES})
 
-install(TARGETS sense_cg_radial_2d sense_sbc_radial_2d sense_gpbb_radial_2d sense_nlcg_radial_2d DESTINATION bin)
+install(TARGETS sense_cg_radial_2d sense_sbc_radial_2d sense_gpbb_radial_2d sense_nlcg_radial_2d DESTINATION bin COMPONENT main)

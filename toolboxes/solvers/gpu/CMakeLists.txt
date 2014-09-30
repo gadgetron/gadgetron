@@ -26,7 +26,7 @@ target_link_libraries(gpusolvers
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gpusolvers DESTINATION lib)
+install(TARGETS gpusolvers DESTINATION lib COMPONENT main)
 
 install(FILES 	
   cuSbCgSolver.h
@@ -45,4 +45,4 @@ install(FILES
   hoCuGpBbSolver.h
   cuSolverUtils.h
   gpusolvers_export.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

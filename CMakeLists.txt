@@ -26,9 +26,7 @@ else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 
 # whether to install dependencies
-if (WIN32)
-    OPTION(GADGETRON_INSTALL_DEPENDENCIES "Install ismrmrd dependencies in windows" Off)
-endif (WIN32)
+OPTION(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
 
 # build options for OpenMP support
 find_package(OpenMP)
@@ -73,11 +71,6 @@ else (WIN32)
             SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libgfortran")
         endif (APPLE)
     endif (UNIX)
-endif (WIN32)
-
-# whether to install dependencies
-if (WIN32)
-    OPTION(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies in windows" Off)
 endif (WIN32)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
@@ -262,13 +255,43 @@ endif (UNIX)
 
 #  ---   Main Library  (end) ----
 
-# Create package
-string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
-include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
-if(CPACK_GENERATOR)
-  message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
-  configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in"
-    ${GADGETRON_CPACK_CFG_FILE} @ONLY)
-  set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
-  include (CPack)
-endif()
+# whether to install dependencies
+OPTION(GADGETRON_PERFORM_PACKAGING "Perform gadgetron packaging" Off)
+
+if (GADGETRON_PERFORM_PACKAGING)
+	if (NOT GADGETRON_COMPONENT)
+	    set(GADGETRON_COMPONENT main CACHE STRING "gadgetron component")
+	endif (NOT GADGETRON_COMPONENT)
+
+        if (GADGETRON_COMPONENT STREQUAL main)
+            message("Packaging gadgetron  ${PROJECT_NAME} ")
+        else (GADGETRON_COMPONENT STREQUAL main)
+            set(PROJECT_NAME ${PROJECT_NAME}_${GADGETRON_COMPONENT})
+            message("Packaging gadgetron component ${GADGETRON_COMPONENT} ... ")
+        endif (GADGETRON_COMPONENT STREQUAL main)
+
+	# Create package
+	string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+
+        if (GADGETRON_COMPONENT STREQUAL main)
+	    include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
+	    if(CPACK_GENERATOR)
+	      message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+	      configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
+	      set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
+	    endif(CPACK_GENERATOR)
+        endif (GADGETRON_COMPONENT STREQUAL main)
+
+        if (GADGETRON_COMPONENT STREQUAL web)
+	    include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_web_cpack.cmake)
+	    if(CPACK_GENERATOR)
+	      message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+	      configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options_web.cmake.in" ${GADGETRON_WEB_CPACK_CFG_FILE} @ONLY)
+	      set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_WEB_CPACK_CFG_FILE})
+	    endif(CPACK_GENERATOR)
+        endif (GADGETRON_COMPONENT STREQUAL web)
+
+        set(CPACK_COMPONENTS_ALL ${GADGETRON_COMPONENT})
+        include (CPack)	
+endif (GADGETRON_PERFORM_PACKAGING)
+

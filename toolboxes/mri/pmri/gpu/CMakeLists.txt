@@ -65,7 +65,7 @@ target_link_libraries(gpuparallelmri
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gpuparallelmri DESTINATION lib)
+install(TARGETS gpuparallelmri DESTINATION lib COMPONENT main)
 
 install(FILES 
 	b1_map.h
@@ -76,10 +76,10 @@ install(FILES
 	cuCartesianSenseOperator.h
 	cuNonCartesianSenseOperator.h
 	cuNonCartesianKtSenseOperator.h
-  cuSpiritOperator.h
-  cuBuffer.h
+        cuSpiritOperator.h
+        cuBuffer.h
 	cuSenseBuffer.h
 	cuSenseBufferCg.h
 	cuSpiritBuffer.h
 	gpupmri_export.h
-DESTINATION include)
+DESTINATION include COMPONENT main)

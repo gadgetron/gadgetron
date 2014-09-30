@@ -9,4 +9,4 @@ target_link_libraries(register_CK_3d_gpu
   ${CUDA_LIBRARIES}
   )
 
-install(TARGETS register_CK_3d_gpu DESTINATION bin)
+install(TARGETS register_CK_3d_gpu DESTINATION bin COMPONENT main)

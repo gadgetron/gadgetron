@@ -8,4 +8,4 @@ target_link_libraries(register_CK_3d_cpu
   ${ARMADILLO_LIBRARIES}
   )
 
-install(TARGETS register_CK_3d_cpu DESTINATION bin)
+install(TARGETS register_CK_3d_cpu DESTINATION bin COMPONENT main)

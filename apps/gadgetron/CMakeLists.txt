@@ -34,7 +34,7 @@ target_link_libraries(gadgetron
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
-install(TARGETS gadgetron DESTINATION bin)
+install(TARGETS gadgetron DESTINATION bin COMPONENT main)
 
 install(FILES 
   GadgetContainerMessage.h
@@ -45,14 +45,14 @@ install(FILES
   GadgetServerAcceptor.h
   GadgetStreamController.h
   GadgetronExport.h
-  DESTINATION include) 
+  DESTINATION include COMPONENT main) 
 
 install(FILES 
   gadgetron.xml.example
-  DESTINATION config)
+  DESTINATION config COMPONENT main)
 
 install(FILES 
   schema/gadgetron.xsd
-  DESTINATION schema)
+  DESTINATION schema COMPONENT main)
 
 add_subdirectory(webapp)

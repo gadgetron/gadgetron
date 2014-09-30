@@ -38,7 +38,7 @@ target_link_libraries(gpuoperators
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gpuoperators DESTINATION lib)
+install(TARGETS gpuoperators DESTINATION lib COMPONENT main)
 
 install(FILES 
   cuImageOperator.h
@@ -60,4 +60,4 @@ install(FILES
   hoCuEncodingOperatorContainer.h
   gpuoperators_export.h
   hoCuOperator.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

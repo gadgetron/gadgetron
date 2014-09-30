@@ -25,6 +25,6 @@ endif(ARMADILLO_FOUND)
 
 install (FILES  gadgetron_cartesian_export.h
                 CartesianToGenericGadget.h
-                DESTINATION include)
+                DESTINATION include COMPONENT main)
 
-install (TARGETS gadgetron_cartesian DESTINATION lib)
+install (TARGETS gadgetron_cartesian DESTINATION lib COMPONENT main)

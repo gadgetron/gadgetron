@@ -48,11 +48,11 @@ if (MATLAB_FOUND)
 
         add_library(Matlab_gt_read_analyze SHARED Matlab_gt_read_analyze.cpp)
         SET_TARGET_PROPERTIES(Matlab_gt_read_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
-        install(TARGETS Matlab_gt_read_analyze DESTINATION bin )
+        install(TARGETS Matlab_gt_read_analyze DESTINATION bin COMPONENT main)
 
         add_library(Matlab_gt_write_analyze SHARED Matlab_gt_write_analyze.cpp)
         SET_TARGET_PROPERTIES(Matlab_gt_write_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
-        install(TARGETS Matlab_gt_write_analyze DESTINATION bin )
+        install(TARGETS Matlab_gt_write_analyze DESTINATION bin COMPONENT main)
 
     endif ( MKL_FOUND AND FFTW3_FOUND )
 

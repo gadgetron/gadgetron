@@ -36,7 +36,7 @@ target_link_libraries(
   ${CUDA_LIBRARIES}
 )
 
-install(TARGETS gpuxray DESTINATION lib)
+install(TARGETS gpuxray DESTINATION lib COMPONENT main)
 
 install(FILES 
   CBCT_acquisition.h
@@ -44,4 +44,4 @@ install(FILES
   conebeam_projection.h
   hoCuConebeamProjectionOperator.h
   gpuxray_export.h 
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

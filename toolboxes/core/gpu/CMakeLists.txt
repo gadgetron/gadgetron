@@ -53,7 +53,7 @@ target_link_libraries(gpucore
   ${MKL_LIBRARIES}
   )
 
-install(TARGETS gpucore DESTINATION lib)
+install(TARGETS gpucore DESTINATION lib COMPONENT main)
 
 install(FILES
   gpucore_export.h
@@ -78,4 +78,4 @@ install(FILES
   cudaDeviceManager.h
   CUBLASContextProvider.h
   setup_grid.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

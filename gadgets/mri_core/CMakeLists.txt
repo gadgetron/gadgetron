@@ -144,12 +144,12 @@ install(FILES
     gadgetron_mricore_export.h
     ${gadgetron_mricore_header_files}
     ${OPTIMIZED_GADGET_HEADERS}
-    DESTINATION include)
+    DESTINATION include COMPONENT main)
 
 if (ARMADILLO_FOUND)
-    install(FILES ${gadgetron_mricore_config_files} DESTINATION config)
+    install(FILES ${gadgetron_mricore_config_files} DESTINATION config COMPONENT main)
 endif (ARMADILLO_FOUND)
 
-install(FILES ismrmrd_dump.xml DESTINATION config)
+install(FILES ismrmrd_dump.xml DESTINATION config COMPONENT main)
 
-install(TARGETS gadgetron_mricore DESTINATION lib)
+install(TARGETS gadgetron_mricore DESTINATION lib COMPONENT main)

@@ -74,7 +74,7 @@ add_library(cpucore ${LIBTYPE}
 target_link_libraries(cpucore 
                     ${Boost_LIBRARIES})
 
-install(TARGETS cpucore DESTINATION lib)
+install(TARGETS cpucore DESTINATION lib COMPONENT main)
 
 install(FILES
         ${header_files}
@@ -83,7 +83,7 @@ install(FILES
         image/hoNDImageContainer2D.h 
         algorithm/hoNDBSpline.h
         algorithm/hoNDBSpline.hxx 
-        DESTINATION include)
+        DESTINATION include COMPONENT main)
 
 add_subdirectory(arma_math)
 add_subdirectory(hostutils)

@@ -9,7 +9,7 @@ set(CPACK_PACKAGE_VERSION_MINOR "@GADGETRON_VERSION_MINOR@")
 set(CPACK_PACKAGE_VERSION_PATCH "@GADGETRON_VERSION_PATCH@")
 set(CPACK_PACKAGE_NAME "@PROJECT_NAME@")
 set(CPACK_PACKAGE_VENDOR "http://gadgetron.sourceforge.net/")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Gadgetron framwork")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Gadgetron web service")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "@PROJECT_NAME_LOWER@")
 set(CPACK_RESOURCE_FILE_LICENSE "@CMAKE_CURRENT_SOURCE_DIR@/LICENSE")
 set(CPACK_PACKAGE_MAINTAINER "Michael S. Hansen <michael.hansen@nih.gov>")
@@ -23,18 +23,15 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "@DEBIAN_PACKAGE_DEPENDS@")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Implementation of the Gadgetron.")
-set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_SOURCE_DIR}/cmake/debian/postinst")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Implementation of the Gadgetron web server.")
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_SOURCE_DIR}/cmake/debian/postinst_web")
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 
 # NSIS specific
 set(CPACK_NSIS_HELP_LINK "http:\\\\\\\\gadgetron.sourceforge.net")
 set(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\gadgetron.sourceforge.net")
 set(CPACK_NSIS_MODIFY_PATH ON)
-set(CPACK_NSIS_DISPLAY_NAME "gadgetron")
-
-set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
-    "ExecWait '$INSTDIR/cmake/InstallWinGadgetron.bat'")
+set(CPACK_NSIS_DISPLAY_NAME "gadgetron_web")
 
 # Output filename of the generated tarball / package
 set(CPACK_PACKAGE_FILE_NAME "@PROJECT_NAME_LOWER@-@GADGETRON_VERSION_STRING@")

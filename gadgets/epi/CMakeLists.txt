@@ -36,12 +36,12 @@ install(FILES
   EPICorrGadget.h
   FFTXGadget.h
   gadgetron_epi_export.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)
 
-install(TARGETS gadgetron_epi DESTINATION lib)
+install(TARGETS gadgetron_epi DESTINATION lib COMPONENT main)
 
 install(FILES
   epi.xml
   epi_gtplus_grappa.xml
-  DESTINATION config)
+  DESTINATION config COMPONENT main)
 

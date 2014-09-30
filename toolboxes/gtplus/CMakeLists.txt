@@ -263,8 +263,8 @@ if ( HAS_64_BIT )
                           gtplus_io 
                           cpucore_math )
 
-    install(TARGETS gtplus DESTINATION lib)
-    install(TARGETS gtplus_io DESTINATION lib)
+    install(TARGETS gtplus DESTINATION lib COMPONENT main)
+    install(TARGETS gtplus_io DESTINATION lib COMPONENT main)
 
     # install gtplus files
     install (FILES  
@@ -277,17 +277,17 @@ if ( HAS_64_BIT )
             ${application_header_files} 
             ${gtplus_io_header_files} 
             ${matlab_files}
-            DESTINATION include)
+            DESTINATION include COMPONENT main)
 
     # install gadgetron program files
     install (FILES  ${config_files} 
-                    DESTINATION config)
+                    DESTINATION config COMPONENT main)
 
     install (FILES  ${gtCloud_files} 
-                    DESTINATION config/gtCloud)
+                    DESTINATION config/gtCloud COMPONENT main)
 
     install (FILES  ${schema_files} 
-                    DESTINATION schema)
+                    DESTINATION schema COMPONENT main)
 
     # This one depends on the gadgets being compiled
     if (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND)

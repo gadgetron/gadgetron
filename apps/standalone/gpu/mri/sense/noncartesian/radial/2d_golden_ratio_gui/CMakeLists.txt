@@ -28,4 +28,4 @@ if (WIN32)
 set_target_properties( sense_2d_golden_radial_gui PROPERTIES LINK_FLAGS "/FORCE:MULTIPLE") 
 endif (WIN32)
 
-install(TARGETS sense_2d_golden_radial_gui DESTINATION bin)
+install(TARGETS sense_2d_golden_radial_gui DESTINATION bin COMPONENT main)

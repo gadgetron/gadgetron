@@ -82,8 +82,8 @@ install(FILES   cpuRegistrationAveragingGadget.h
                 gpuRegistrationScatteringGadget.h
                 RegistrationAveragingGadget.h
                 RegistrationScatteringGadget.h
-                DESTINATION include)
+                DESTINATION include COMPONENT main)
 
-install (TARGETS gadgetron_moco DESTINATION lib)
+install (TARGETS gadgetron_moco DESTINATION lib COMPONENT main)
 
 add_subdirectory(config)

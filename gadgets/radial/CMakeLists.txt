@@ -24,7 +24,7 @@ include_directories(${CUDA_INCLUDE_DIRS})
 
 if (ARMADILLO_FOUND)
   list(APPEND PHASE_GADGET RadialPhaseCorrectionGadget.h RadialPhaseCorrectionGadget.cpp)
-  install (FILES  RadialPhaseCorrectionGadget.h DESTINATION include)
+  install (FILES  RadialPhaseCorrectionGadget.h DESTINATION include COMPONENT main)
 elseif (ARMADILLO_FOUND)
   MESSAGE("Armadillo not found, not compiling radial phase correction gadget")
 endif (ARMADILLO_FOUND)
@@ -50,8 +50,8 @@ install (FILES  gadgetron_radial_export.h
                 gpuRadialSensePrepGadget.h 
                 gpuRadialSpiritPrepGadget.h 
                 gpuRetroGatedSensePrepGadget.h 
-                DESTINATION include)
+                DESTINATION include COMPONENT main)
 
-install (TARGETS gadgetron_gpuradial DESTINATION lib)
+install (TARGETS gadgetron_gpuradial DESTINATION lib COMPONENT main)
 
 add_subdirectory(config)

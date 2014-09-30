@@ -22,7 +22,7 @@ target_link_libraries(gpureg
   ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}
   )
 
-install(TARGETS gpureg DESTINATION lib)
+install(TARGETS gpureg DESTINATION lib COMPONENT main)
 
 install(FILES
   cuOpticalFlowSolver.h
@@ -33,4 +33,4 @@ install(FILES
   cuLinearResampleOperator.h
 #  cuRegistration_utils.h
   cuCGHSOFSolver.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

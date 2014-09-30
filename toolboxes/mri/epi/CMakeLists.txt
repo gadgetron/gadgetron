@@ -52,7 +52,7 @@
         EPIReconXObject.h
         EPIReconXObjectFlat.h
         EPIReconXObjectTrapezoid.h
-        DESTINATION include)
+        DESTINATION include COMPONENT main)
 
     # install(TARGETS epi DESTINATION lib)
 

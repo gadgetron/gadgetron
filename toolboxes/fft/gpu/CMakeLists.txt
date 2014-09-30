@@ -23,9 +23,9 @@ target_link_libraries(gpufft
   ${CUDA_CUFFT_LIBRARIES} 
   )
 
-install(TARGETS gpufft DESTINATION lib)
+install(TARGETS gpufft DESTINATION lib COMPONENT main)
 
 install(FILES
   gpufft_export.h
   cuNDFFT.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

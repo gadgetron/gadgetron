@@ -10,5 +10,5 @@ target_link_libraries(deblur_2d_cg gpucore hostutils gpuoperators gpusolvers ${C
 target_link_libraries(deblur_2d_sb gpucore hostutils gpuoperators gpusolvers ${CUDA_LIBRARIES})
 target_link_libraries(blur_2d gpucore hostutils gpuoperators gpusolvers ${CUDA_LIBRARIES})
 
-install(TARGETS blur_2d deblur_2d_cg deblur_2d_sb DESTINATION bin)
+install(TARGETS blur_2d deblur_2d_cg deblur_2d_sb DESTINATION bin COMPONENT main)
 

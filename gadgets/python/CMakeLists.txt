@@ -50,7 +50,7 @@ ENDIF(WIN32)
 
 set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 	
-install(TARGETS gadgetron_python GadgetronPythonMRI DESTINATION lib)
+install(TARGETS gadgetron_python GadgetronPythonMRI DESTINATION lib COMPONENT main)
 
 install(FILES 
 	rms_coil_combine.py
@@ -59,8 +59,8 @@ install(FILES
 	accumulate_and_recon.py
 	GadgetronXML.py
 	image_viewer.py 
-DESTINATION lib)
+DESTINATION lib COMPONENT main)
 
 install(FILES
 	python.xml python_short.xml
-DESTINATION config)
+DESTINATION config COMPONENT main)

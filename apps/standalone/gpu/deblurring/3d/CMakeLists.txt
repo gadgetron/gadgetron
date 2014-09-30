@@ -10,4 +10,4 @@ target_link_libraries(deblur_3d_cg gpucore hostutils gpuoperators gpusolvers gpu
 target_link_libraries(deblur_3d_sb gpucore hostutils gpuoperators gpusolvers gpunfft ${CUDA_LIBRARIES})
 target_link_libraries(blur_3d gpucore hostutils gpuoperators gpusolvers gpunfft ${CUDA_LIBRARIES})
 
-install(TARGETS blur_3d deblur_3d_cg deblur_3d_sb DESTINATION bin)
+install(TARGETS blur_3d deblur_3d_cg deblur_3d_sb DESTINATION bin COMPONENT main)

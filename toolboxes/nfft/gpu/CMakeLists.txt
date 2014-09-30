@@ -34,10 +34,10 @@ target_link_libraries(gpunfft
   ${CUDA_CUBLAS_LIBRARIES}
   )
 
-install(TARGETS gpunfft DESTINATION lib)
+install(TARGETS gpunfft DESTINATION lib COMPONENT main)
 
 install(FILES 
   cuNFFT.h 
   cuNFFTOperator.h 
   gpunfft_export.h 
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

@@ -69,8 +69,8 @@ else (MKL_FOUND)
     )
 endif (MKL_FOUND)
 
-install(TARGETS cpucore_math DESTINATION lib)
+install(TARGETS cpucore_math DESTINATION lib COMPONENT main)
 
 install(FILES 
     ${cpucore_math_header_files}
-    DESTINATION include)
+    DESTINATION include COMPONENT main)

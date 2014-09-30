@@ -8,11 +8,11 @@ add_library(hostutils SHARED
 
 install(TARGETS 
   hostutils 
-  DESTINATION lib)
+  DESTINATION lib COMPONENT main)
 
 install(FILES 
   hostutils_export.h 
   parameterparser.h 
   url_encode.h 
   FileInfo.h 
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

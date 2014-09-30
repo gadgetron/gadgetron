@@ -32,10 +32,10 @@ target_link_libraries(gadgetron_spiral
 
 target_link_libraries(gadgetron_spiral gpuparallelmri)
 
-install (TARGETS gadgetron_spiral DESTINATION lib)
+install (TARGETS gadgetron_spiral DESTINATION lib COMPONENT main)
 install (FILES vds.h gadgetron_spiral_export.h 
                      gpuSpiralSensePrepGadget.h 
                      SpiralToGenericGadget.h 
-                     DESTINATION include)
+                     DESTINATION include COMPONENT main)
 
 add_subdirectory(config)

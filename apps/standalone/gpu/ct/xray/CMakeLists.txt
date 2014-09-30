@@ -61,4 +61,4 @@ install(TARGETS
   CBCT_reconstruct_NLCG
   CBCT_reconstruct_SB
   CBCT_forwards_projection
-  DESTINATION bin)
+  DESTINATION bin COMPONENT main)

@@ -31,7 +31,7 @@ add_library(gadgettools SHARED
 
 target_link_libraries(gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${Boost_LIBRARIES})
 
-install(TARGETS gadgettools DESTINATION lib)
+install(TARGETS gadgettools DESTINATION lib COMPONENT main)
 
 install (FILES 
             GadgetCloudController.h 
@@ -39,7 +39,7 @@ install (FILES
             GadgetronConnector.h
             gadgettools_export.h
             GadgetronSlotContainer.h
-            DESTINATION include)
+            DESTINATION include COMPONENT main)
 
 if(ISMRMRD_FOUND)
   add_subdirectory(ismrmrd)

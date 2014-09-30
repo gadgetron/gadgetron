@@ -95,8 +95,8 @@ endif(MKL_FOUND)
 
 install(
     FILES DicomFinishGadget.h DicomImageWriter.h gadgetron_dicom_export.h
-    DESTINATION include)
+    DESTINATION include COMPONENT main)
 
-install(TARGETS ${GT_DICOM_LIB} DESTINATION lib)
+install(TARGETS ${GT_DICOM_LIB} DESTINATION lib COMPONENT main)
 
-install(FILES dicom.xml DESTINATION config)
+install(FILES dicom.xml DESTINATION config COMPONENT main)

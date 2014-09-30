@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# add the user 'gadgetron'
-# sudo adduser --system --no-create-home gadgetron
-sudo useradd -M gadgetron
-sudo usermod -L gadgetron
-
 # copy the gadgetron.xml
 sudo cp -i ../config/gadgetron.xml.example ../config/gadgetron.xml
 
@@ -20,7 +15,4 @@ sudo ln -s /usr/local/gadgetron/bin/gt_alive /usr/local/bin/gt_alive
 
 # load library path
 sudo ldconfig
-
-# start the gadgetron service
-sudo start gadgetron_web
 
