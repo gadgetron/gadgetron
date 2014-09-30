@@ -7,8 +7,8 @@ sudo cp -i ../config/gadgetron.xml.example ../config/gadgetron.xml
 sudo rm /usr/local/bin/gadgetron
 sudo ln -s /usr/local/gadgetron/bin/gadgetron /usr/local/bin/gadgetron
 
-sudo rm /usr/local/bin/ismrmrd_client
-sudo ln -s /usr/local/gadgetron/bin/ismrmrd_client /usr/local/bin/ismrmrd_client
+sudo rm /usr/local/bin/gadgetron_ismrmrd_client
+sudo ln -s /usr/local/gadgetron/bin/gadgetron_ismrmrd_client /usr/local/bin/gadgetron_ismrmrd_client
 
 sudo rm /usr/local/bin/gt_alive
 sudo ln -s /usr/local/gadgetron/bin/gt_alive /usr/local/bin/gt_alive
