@@ -4,13 +4,13 @@
 sudo cp -i ../config/gadgetron.xml.example ../config/gadgetron.xml
 
 # create the symbolic link for gadgetron
-sudo rm /usr/local/bin/gadgetron
+sudo rm -f /usr/local/bin/gadgetron
 sudo ln -s /usr/local/gadgetron/bin/gadgetron /usr/local/bin/gadgetron
 
-sudo rm /usr/local/bin/ismrmrd_client
+sudo rm -f /usr/local/bin/ismrmrd_client
 sudo ln -s /usr/local/gadgetron/bin/ismrmrd_client /usr/local/bin/ismrmrd_client
 
-sudo rm /usr/local/bin/gt_alive
+sudo rm -f /usr/local/bin/gt_alive
 sudo ln -s /usr/local/gadgetron/bin/gt_alive /usr/local/bin/gt_alive
 
 # load library path
