@@ -7,11 +7,15 @@ FILE(GLOB TEST_CASE_ALWAYS RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cas
 FILE(GLOB TEST_CASE_WITH_MKL RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/mkl/*.cfg  )
 FILE(GLOB TEST_CASE_WITH_GPU RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/gpu/*.cfg  )
 FILE(GLOB TEST_CASE_WITH_PYTHON RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/python/*.cfg  )
+# We are skipping one gpu test, since it can not run on the win buildbot (not enough memory)
+FILE(GLOB TEST_CASE_LINUX_MAC_ONLY RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/linux_mac_only/*.cfg  )
 
 message("Test cases found : ${TEST_CASE_ALWAYS}")
 message("Test cases with MKL found : ${TEST_CASE_WITH_MKL}")
 message("Test cases with_GPU : ${TEST_CASE_WITH_GPU}")
 message("Test cases with python : ${TEST_CASE_WITH_PYTHON}")
+message("Test cases with python : ${TEST_CASE_LINUX_MAC_ONLY}")
+
 
 # according to the building environment, generate the list of available test cases
 
@@ -28,6 +32,12 @@ endif (CUDA_FOUND)
 if (PYTHONLIBS_FOUND)
     set(TEST_CASE ${TEST_CASE} ${TEST_CASE_WITH_PYTHON})
 endif (PYTHONLIBS_FOUND)
+
+if (WIN32)
+
+else (WIN32)
+    set(TEST_CASE ${TEST_CASE} ${TEST_CASE_LINUX_MAC_ONLY})
+endif (WIN32)
 
 message("Test cases to be performed : ${TEST_CASE}")
 
