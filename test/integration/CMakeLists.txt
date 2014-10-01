@@ -27,17 +27,16 @@ endif (MKL_FOUND)
 
 if (CUDA_FOUND)
     set(TEST_CASE ${TEST_CASE} ${TEST_CASE_WITH_GPU})
+    if (WIN32)
+
+    else (WIN32)
+        set(TEST_CASE ${TEST_CASE} ${TEST_CASE_LINUX_MAC_ONLY})
+    endif (WIN32)
 endif (CUDA_FOUND)
 
 if (PYTHONLIBS_FOUND)
     set(TEST_CASE ${TEST_CASE} ${TEST_CASE_WITH_PYTHON})
 endif (PYTHONLIBS_FOUND)
-
-if (WIN32)
-
-else (WIN32)
-    set(TEST_CASE ${TEST_CASE} ${TEST_CASE_LINUX_MAC_ONLY})
-endif (WIN32)
 
 message("Test cases to be performed : ${TEST_CASE}")
 
