@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# stop the gadgetron service
+sudo service gadgetron_web stop
+
+# remove the user gadgetron
+sudo deluser gadgetron

@@ -142,9 +142,15 @@ if (CUDA_FOUND)
   # Support compute model 3.0 from Cuda 4.2 and up
   # Support compute model 3.5 from Cuda 5 and up
 
+  OPTION(GADGETRON_CUDA_ALL_COMPUTE_MODEL "Build CUDA components for all computing models" Off)
+  if (GADGETRON_CUDA_ALL_COMPUTE_MODEL)
+    MESSAGE("Compiling CUDA components to support compute model 2.0, 3.0 and 3.5") 
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_20,code=sm_20")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_30,code=sm_30")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_35,code=sm_35")
+  endif (GADGETRON_CUDA_ALL_COMPUTE_MODEL)
 
   MESSAGE("Compiling with ${CUDA_NVCC_FLAGS}")
-  
 
 else (CUDA_FOUND)
   MESSAGE("CUDA not found. CUDA components will not be compiled.")
@@ -256,9 +262,9 @@ endif (UNIX)
 OPTION(GADGETRON_PERFORM_PACKAGING "Perform gadgetron packaging" Off)
 
 if (GADGETRON_PERFORM_PACKAGING)
-	if (NOT GADGETRON_COMPONENT)
-	    set(GADGETRON_COMPONENT main CACHE STRING "gadgetron component")
-	endif (NOT GADGETRON_COMPONENT)
+    if (NOT GADGETRON_COMPONENT)
+        set(GADGETRON_COMPONENT main CACHE STRING "gadgetron component")
+    endif (NOT GADGETRON_COMPONENT)
 
         if (GADGETRON_COMPONENT STREQUAL main)
             message("Packaging gadgetron  ${PROJECT_NAME} ")
@@ -267,28 +273,28 @@ if (GADGETRON_PERFORM_PACKAGING)
             message("Packaging gadgetron component ${GADGETRON_COMPONENT} ... ")
         endif (GADGETRON_COMPONENT STREQUAL main)
 
-	# Create package
-	string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+    # Create package
+    string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
         if (GADGETRON_COMPONENT STREQUAL main)
-	    include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
-	    if(CPACK_GENERATOR)
-	      message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
-	      configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
-	      set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
-	    endif(CPACK_GENERATOR)
+        include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
+        if(CPACK_GENERATOR)
+          message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+          configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
+          set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
+        endif(CPACK_GENERATOR)
         endif (GADGETRON_COMPONENT STREQUAL main)
 
         if (GADGETRON_COMPONENT STREQUAL web)
-	    include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_web_cpack.cmake)
-	    if(CPACK_GENERATOR)
-	      message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
-	      configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options_web.cmake.in" ${GADGETRON_WEB_CPACK_CFG_FILE} @ONLY)
-	      set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_WEB_CPACK_CFG_FILE})
-	    endif(CPACK_GENERATOR)
+        include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_web_cpack.cmake)
+        if(CPACK_GENERATOR)
+          message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+          configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options_web.cmake.in" ${GADGETRON_WEB_CPACK_CFG_FILE} @ONLY)
+          set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_WEB_CPACK_CFG_FILE})
+        endif(CPACK_GENERATOR)
         endif (GADGETRON_COMPONENT STREQUAL web)
 
         set(CPACK_COMPONENTS_ALL ${GADGETRON_COMPONENT})
-        include (CPack)	
+        include (CPack)    
 endif (GADGETRON_PERFORM_PACKAGING)
 
