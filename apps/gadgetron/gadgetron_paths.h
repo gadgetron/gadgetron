@@ -46,8 +46,11 @@ namespace Gadgetron
 	GetModuleFileName(hModule, fullPath, (sizeof(fullPath))); 
 	rightPath = fullPath;
 	PathRemoveFileSpec(rightPath);
+	for(int i = 0; i < strlen(rightPath); i++)
+	  if(rightPath[i] == '\\') rightPath[i] = '/';
+
 	std::string s1(rightPath);
-	return s1 + std::string("\\..\\");
+	return s1 + std::string("/../");
       }
     else
       {
