@@ -4,5 +4,4 @@
 sudo adduser --no-create-home --disabled-password --gecos "" gadgetron
 
 # start the gadgetron service
-sudo start gadgetron_web
-
+sudo service gadgetron_web start
