@@ -162,7 +162,7 @@ public:
         //Read the image from the socket
         ISMRMRD::ImageHeader h;
         boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
-        ISMRMRD::Image im; 
+        ISMRMRD::Image<T> im; 
         im.setHead(h);
         boost::asio::read(*stream, boost::asio::buffer(im.getData(), im.getDataSize()));
         {
@@ -217,7 +217,7 @@ public:
         //Read the image headerfrom the socket
         ISMRMRD::ImageHeader h;
         boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
-        ISMRMRD::Image im;
+        ISMRMRD::Image<T> im;
         im.setHead(h);
 
         typedef unsigned long long size_t_type;
