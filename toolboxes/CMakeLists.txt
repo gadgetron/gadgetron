@@ -29,3 +29,10 @@ ENDIF()
 IF (FFTW3_FOUND AND ISMRMRD_FOUND)
   add_subdirectory(gtplus)
 ENDIF()
+
+find_package(BLAS)
+find_package(LAPACK)
+
+if (BLAS_FOUND AND LAPACK_FOUND)
+  add_subdirectory(linalg)
+endif()
