@@ -50,15 +50,13 @@ def main():
     print("  -- PATH            : " +  myenv["PATH"])
     print("  -- " + libpath + " : " +  myenv[libpath])
     
-    success = True
-    
     r = subprocess.call("test_all.exe", env=myenv)
     
     if r != 0:
         print("Failed to run unit tests!")
-        success = False
+        return -100
 
-    return success
+    return 0
 
 if __name__=="__main__":
     sys.exit(main())
