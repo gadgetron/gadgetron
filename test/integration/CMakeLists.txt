@@ -14,7 +14,7 @@ message("Test cases found : ${TEST_CASE_ALWAYS}")
 message("Test cases with MKL found : ${TEST_CASE_WITH_MKL}")
 message("Test cases with_GPU : ${TEST_CASE_WITH_GPU}")
 message("Test cases with python : ${TEST_CASE_WITH_PYTHON}")
-message("Test cases with python : ${TEST_CASE_LINUX_MAC_ONLY}")
+message("Test cases for linux and mac only : ${TEST_CASE_LINUX_MAC_ONLY}")
 
 
 # according to the building environment, generate the list of available test cases
