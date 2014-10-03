@@ -162,6 +162,8 @@ public:
         //Read the image from the socket
         ISMRMRD::ImageHeader h;
         boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
+
+        // TODO check the datatype!
         ISMRMRD::Image<T> im; 
         im.setHead(h);
         boost::asio::read(*stream, boost::asio::buffer(im.getData(), im.getDataSize()));

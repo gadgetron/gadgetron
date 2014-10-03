@@ -13,6 +13,7 @@ if(WIN32)
 endif(WIN32)
 
 include_directories(
+    ${CMAKE_BINARY_DIR}/apps/gadgetron
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
     ${CMAKE_SOURCE_DIR}/apps/gadgetron
     ${CMAKE_SOURCE_DIR}/toolboxes/core

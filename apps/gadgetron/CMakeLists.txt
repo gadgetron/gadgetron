@@ -34,7 +34,14 @@ target_link_libraries(gadgetron
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
-install(TARGETS gadgetron DESTINATION bin COMPONENT main)
+add_executable(gadgetron_info
+  gadgetron_info.cpp)
+
+target_link_libraries(gadgetron_info 
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+ )
+
+install(TARGETS gadgetron gadgetron_info DESTINATION bin COMPONENT main)
 
 install(FILES 
   EndGadget.h

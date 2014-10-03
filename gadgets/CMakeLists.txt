@@ -8,7 +8,8 @@ find_package(ACE)
 find_package(FFTW3 COMPONENTS single double)
 find_package(Ismrmrd)
 
-include_directories(   
+include_directories(
+  ${CMAKE_BINARY_DIR}/apps/gadgetron
   ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR}
   ${FFTW3_INCLUDE_DIR}

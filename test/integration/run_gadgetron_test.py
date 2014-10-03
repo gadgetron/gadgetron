@@ -62,11 +62,7 @@ def run_test(environment, testcase_cfg_file):
 
     success = True
     with open(gadgetron_log_filename, "w") as gf:
-        if platform.system() != "Windows":
-            p = subprocess.Popen(["gadgetron", "-p", "9003"], env=environment,
-                stdout=gf, stderr=gf)
-        else:
-            p = subprocess.Popen(["gadgetron", "-p", "9003"], stdout=gf, stderr=gf)
+        p = subprocess.Popen(["gadgetron", "-p", "9003"], env=environment, stdout=gf, stderr=gf)
 
         time.sleep(2)
 
@@ -79,23 +75,18 @@ def run_test(environment, testcase_cfg_file):
                 if siemens_dependency_measurement1 >= 0:
                     print("Converting Siemens .dat file to ISMRMRD for the first dependency measurement.")
                     r = subprocess.call(["siemens_to_ismrmrd", "-X","-f", siemens_dat, "-m",
-                                    siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
-                                    dependency_1, "-z", str(siemens_dependency_measurement1+1)],
-                            env=environment, stdout=cf, stderr=cf)
+                                        siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
+                                        dependency_1, "-z", str(siemens_dependency_measurement1+1)],
+                                        env=environment, stdout=cf, stderr=cf)
                     if r != 0:
                         print("Failed to run siemens_to_ismrmrd for the first dependency measurement!")
                         success = False
 
                     print("Running Gadgetron recon on the first dependency measurement")
                     r = 0
-                    if platform.system() != "Windows":
-                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", dependency_1, "-c",
-                                        "default_measurement_dependencies.xml"],
-                                env=environment, stdout=cf, stderr=cf)
-                    else:
-                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , dependency_1, "-c",
-                                        "default_measurement_dependencies.xml"],
-                                stdout=cf, stderr=cf)
+                    r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", dependency_1, "-c",
+                                            "default_measurement_dependencies.xml"],
+                                            env=environment, stdout=cf, stderr=cf)
                     if r != 0:
                         print("Failed to run gadgetron_ismrmrd_client on the first dependency measurement!")
                         success = False
@@ -105,23 +96,19 @@ def run_test(environment, testcase_cfg_file):
                 if siemens_dependency_measurement2 >= 0:
                     print("Converting Siemens .dat file to ISMRMRD for the second dependency measurement.")
                     r = subprocess.call(["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
-                                    siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
-                                    dependency_2, "-z", str(siemens_dependency_measurement2+1)],
-                            env=environment, stdout=cf, stderr=cf)
+                                        siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
+                                        dependency_2, "-z", str(siemens_dependency_measurement2+1)],
+                                        env=environment, stdout=cf, stderr=cf)
                     if r != 0:
                         print("Failed to run siemens_to_ismrmrd for the second dependency measurement!")
                         success = False
 
                     print("Running Gadgetron recon on the second dependency measurement")
                     r = 0
-                    if platform.system() != "Windows":
-                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", dependency_2, "-c",
-                                        "default_measurement_dependencies.xml"],
-                                env=environment, stdout=cf, stderr=cf)
-                    else:
-                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , dependency_2, "-c",
-                                        "default_measurement_dependencies.xml"],
-                                stdout=cf, stderr=cf)
+                    r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , dependency_2, "-c",
+                                            "default_measurement_dependencies.xml"],
+                                            env=environment, stdout=cf, stderr=cf)
+                    
                     if r != 0:
                         print("Failed to run gadgetron_ismrmrd_client on the second dependency measurement!")
                         success = False
@@ -131,23 +118,19 @@ def run_test(environment, testcase_cfg_file):
                 if siemens_dependency_measurement3 >= 0:
                     print("Converting Siemens .dat file to ISMRMRD for the third dependency measurement.")
                     r = subprocess.call(["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
-                                    siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
-                                    dependency_3, "-z", str(siemens_dependency_measurement3+1)],
-                            env=environment, stdout=cf, stderr=cf)
+                                        siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
+                                        dependency_3, "-z", str(siemens_dependency_measurement3+1)],
+                                        env=environment, stdout=cf, stderr=cf)
                     if r != 0:
                         print("Failed to run siemens_to_ismrmrd for the third dependency measurement!")
                         success = False
 
                     print("Running Gadgetron recon on the third dependency measurement")
                     r = 0
-                    if platform.system() != "Windows":
-                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", dependency_3, "-c",
-                                        "default_measurement_dependencies.xml"],
-                                env=environment, stdout=cf, stderr=cf)
-                    else:
-                        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , dependency_3, "-c",
-                                        "default_measurement_dependencies.xml"],
-                                stdout=cf, stderr=cf)
+                    r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", dependency_3, "-c",
+                                            "default_measurement_dependencies.xml"],
+                                            env=environment, stdout=cf, stderr=cf)
+                    
                     if r != 0:
                         print("Failed to run gadgetron_ismrmrd_client on the third dependency measurement!")
                         success = False
@@ -166,16 +149,10 @@ def run_test(environment, testcase_cfg_file):
 
             print("Running Gadgetron recon on data measurement")
             r = 0
-            if platform.system() != "Windows":
-                r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", ismrmrd, "-c",
-                                gadgetron_configuration, "-G", gadgetron_configuration,
-                                "-o", result_h5],
-                        env=environment, stdout=cf, stderr=cf)
-            else:
-                r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , ismrmrd, "-c",
-                                gadgetron_configuration, "-G", gadgetron_configuration,
-                                "-o", result_h5],
-                        stdout=cf, stderr=cf)
+            r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , ismrmrd, "-c",
+                                    gadgetron_configuration, "-G", gadgetron_configuration, "-o", result_h5],
+                                    env=environment, stdout=cf, stderr=cf)
+            
             if r != 0:
                 print("Failed to run gadgetron_ismrmrd_client!")
                 success = False
@@ -258,7 +235,17 @@ def main():
         libpath = "DYLD_FALLBACK_LIBRARY_PATH"
 
     if platform.system() == "Windows":
-        myenv[libpath] = os.environ.get('Path', "");
+        myenv["SystemRoot"] = os.environ.get('SystemRoot', "")
+        myenv["PATH"] = os.environ.get('Path', "")
+        myenv["PATH"] += myenv["ISMRMRD_HOME"] + "/lib;"
+        #myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/lib;" + myenv["PATH"]
+        myenv["PATH"] += myenv["ISMRMRD_HOME"] + "/bin;"
+        #myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin;" + myenv["PATH"]
+        myenv["PATH"] += myenv["GADGETRON_HOME"] + "/lib;"
+        #myenv["PATH"] = myenv["GADGETRON_HOME"] + "/lib;" + myenv["PATH"]
+        myenv["PATH"] += myenv["GADGETRON_HOME"] + "/bin;"
+        #myenv["PATH"] = myenv["GADGETRON_HOME"] + "/bin;" + myenv["PATH"]
+        myenv[libpath] = ""
     else:
         myenv[libpath] = myenv["ISMRMRD_HOME"] + "/lib:"
         myenv[libpath] += myenv["GADGETRON_HOME"] + "/lib:"
@@ -269,14 +256,13 @@ def main():
         myenv[libpath] += "/opt/intel/lib/intel64:"
         if os.environ.get(libpath, None) is not None:
             myenv[libpath] += os.environ[libpath]
-
-    if platform.system() == "Windows":
-        myenv["PATH"] = myenv[libpath]
-    else:
         myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin" + ":" + myenv["GADGETRON_HOME"] + "/bin"
 
     myenv["ACE_DEBUG"] = "1"
 
+    if platform.system() == "Windows":
+        os.putenv('PATH', myenv['PATH'])
+    
     print("Running Gadgetron test with: ")
     print("  -- ISMRMRD_HOME  : " +  myenv["ISMRMRD_HOME"])
     print("  -- GADGETRON_HOME  : " +  myenv["GADGETRON_HOME"])

@@ -3,6 +3,7 @@ if (WIN32)
 endif (WIN32)
 
 include_directories(
+                    ${CMAKE_BINARY_DIR}/apps/gadgetron
                     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
                     ${CMAKE_SOURCE_DIR}/toolboxes/core
                     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image

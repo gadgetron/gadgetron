@@ -4,7 +4,8 @@ if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
-include_directories( ${GTEST_INCLUDE_DIRS} 
+include_directories( ${GTEST_INCLUDE_DIRS}
+                     ${CMAKE_BINARY_DIR}/apps/gadgetron
                      ${CMAKE_SOURCE_DIR}/gadgets/core 
                      ${ACE_INCLUDE_DIR} 
                      ${Boost_INCLUDE_DIR}
