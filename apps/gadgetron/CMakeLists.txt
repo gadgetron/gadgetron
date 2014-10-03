@@ -54,6 +54,7 @@ install(FILES
   gadgetron_xml.h
   GadgetServerAcceptor.h
   GadgetStreamController.h
+  ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_config.h
   DESTINATION include COMPONENT main) 
 
 install(FILES 
