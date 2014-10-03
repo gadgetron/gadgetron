@@ -1,152 +1,10 @@
 
 #include "hoMatrix_util.h"
 
-#ifdef USE_MKL
-
-    #include "mkl.h"
-
-    #define sgemm_ sgemm
-    #define dgemm_ dgemm
-    #define cgemm_ cgemm
-    #define zgemm_ zgemm
-
-#else
-
-    #ifdef USE_LAPACK
-        #ifndef lapack_complex_float
-            #define lapack_complex_float GT_Complex8
-        #endif // lapack_complex_float
-
-        #ifndef lapack_complex_double
-            #define lapack_complex_double GT_Complex16
-        #endif // #ifndef lapack_complex_double
-
-        extern "C" void sgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
-                    const float *alpha, const float *a, const lapack_int *lda, const float *b, const lapack_int *ldb,
-                    const float *beta, float *c, const lapack_int *ldc);
-
-        extern "C" void dgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
-                    const double *alpha, const double *a, const lapack_int *lda, const double *b, const lapack_int *ldb,
-                    const double *beta, double *c, const lapack_int *ldc);
-
-        extern "C" void cgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
-                            const lapack_complex_float *alpha, const lapack_complex_float *a, const lapack_int *lda,
-                            const lapack_complex_float *b, const lapack_int *ldb, const lapack_complex_float *beta,
-                            lapack_complex_float *c, const lapack_int *ldc);
-
-        extern "C" void zgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
-                    const lapack_complex_double *alpha, const lapack_complex_double *a, const lapack_int *lda,
-                    const lapack_complex_double *b, const lapack_int *ldb, const lapack_complex_double *beta,
-                    lapack_complex_double *c, const lapack_int *ldc);
-
-        extern "C" void spotrf_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda, lapack_int* info );
-        extern "C" void dpotrf_( const char* uplo, const lapack_int* n, double* a, const lapack_int* lda, lapack_int* info );
-        extern "C" void cpotrf_( const char* uplo, const lapack_int* n, lapack_complex_float* a, const lapack_int* lda, lapack_int* info );
-        extern "C" void zpotrf_( const char* uplo, const lapack_int* n, lapack_complex_double* a, const lapack_int* lda, lapack_int* info );
-
-        extern "C" void ssyev_( const char* jobz, const char* uplo, const lapack_int* n, float* a,
-                const lapack_int* lda, float* w, float* work, const lapack_int* lwork,
-                lapack_int* info );
-
-        extern "C" void dsyev_( const char* jobz, const char* uplo, const lapack_int* n, double* a,
-                const lapack_int* lda, double* w, double* work, const lapack_int* lwork,
-                lapack_int* info );
-
-        extern "C" void cheev_( const char* jobz, const char* uplo, const lapack_int* n,
-                lapack_complex_float* a, const lapack_int* lda, float* w, lapack_complex_float* work,
-                const lapack_int* lwork, float* rwork, lapack_int* info );
-
-        extern "C" void zheev_( const char* jobz, const char* uplo, const lapack_int* n,
-                lapack_complex_double* a, const lapack_int* lda, double* w,
-                lapack_complex_double* work, const lapack_int* lwork, double* rwork,
-                lapack_int* info );
-
-        extern "C" void spotrf_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda,
-                lapack_int* info );
-
-        extern "C" void spotri_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda,
-                lapack_int* info );
-
-        extern "C" void dpotrf_( const char* uplo, const lapack_int* n, double* a,
-                const lapack_int* lda, lapack_int* info );
-
-        extern "C" void dpotri_( const char* uplo, const lapack_int* n, double* a,
-                const lapack_int* lda, lapack_int* info );
-
-        extern "C" void cpotrf_( const char* uplo, const lapack_int* n, lapack_complex_float* a,
-                const lapack_int* lda, lapack_int* info );
-
-        extern "C" void cpotri_( const char* uplo, const lapack_int* n, lapack_complex_float* a,
-                const lapack_int* lda, lapack_int* info );
-
-        extern "C" void zpotrf_( const char* uplo, const lapack_int* n, lapack_complex_double* a,
-                const lapack_int* lda, lapack_int* info );
-
-        extern "C" void zpotri_( const char* uplo, const lapack_int* n, lapack_complex_double* a,
-                const lapack_int* lda, lapack_int* info );
-
-        extern "C" void strtri_( const char* uplo, const char* diag, const lapack_int* n, float* a,
-                const lapack_int* lda, lapack_int* info );
-
-        extern "C" void dtrtri_( const char* uplo, const char* diag, const lapack_int* n, double* a,
-                const lapack_int* lda, lapack_int* info );
-
-        extern "C" void ctrtri_( const char* uplo, const char* diag, const lapack_int* n,
-                lapack_complex_float* a, const lapack_int* lda, lapack_int* info );
-
-        extern "C" void ztrtri_( const char* uplo, const char* diag, const lapack_int* n,
-                lapack_complex_double* a, const lapack_int* lda, lapack_int* info );
-
-        extern "C" void sposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs, float* a,
-                const lapack_int* lda, float* b, const lapack_int* ldb, lapack_int* info );
-
-        extern "C" void dposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs,
-                double* a, const lapack_int* lda, double* b, const lapack_int* ldb,
-                lapack_int* info );
-
-        extern "C" void cposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs,
-                lapack_complex_float* a, const lapack_int* lda, lapack_complex_float* b,
-                const lapack_int* ldb, lapack_int* info );
-
-        extern "C" void zposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs,
-                lapack_complex_double* a, const lapack_int* lda, lapack_complex_double* b,
-                const lapack_int* ldb, lapack_int* info );
-
-        extern "C" void sgetrf_( const lapack_int* m, const lapack_int* n, float* a, const lapack_int* lda,
-                lapack_int* ipiv, lapack_int* info );
-
-        extern "C" void dgetrf_( const lapack_int* m, const lapack_int* n, double* a,
-                const lapack_int* lda, lapack_int* ipiv, lapack_int* info );
-
-        extern "C" void cgetrf_( const lapack_int* m, const lapack_int* n, lapack_complex_float* a,
-                const lapack_int* lda, lapack_int* ipiv, lapack_int* info );
-
-        extern "C" void zgetrf_( const lapack_int* m, const lapack_int* n, lapack_complex_double* a,
-                const lapack_int* lda, lapack_int* ipiv, lapack_int* info );
-
-        extern "C" void sgetri_( const lapack_int* n, float* a, const lapack_int* lda,
-                const lapack_int* ipiv, float* work, const lapack_int* lwork,
-                lapack_int* info );
-
-        extern "C" void dgetri_( const lapack_int* n, double* a, const lapack_int* lda,
-                const lapack_int* ipiv, double* work, const lapack_int* lwork,
-                lapack_int* info );
-
-        extern "C" void cgetri_( const lapack_int* n, lapack_complex_float* a, const lapack_int* lda,
-                const lapack_int* ipiv, lapack_complex_float* work, const lapack_int* lwork,
-                lapack_int* info );
-
-        extern "C" void zgetri_( const lapack_int* n, lapack_complex_double* a, const lapack_int* lda,
-                const lapack_int* ipiv, lapack_complex_double* work, const lapack_int* lwork,
-                lapack_int* info );
-
-    #endif // USE_LAPACK
-#endif // USE_MKL
-
 namespace Gadgetron
 {
 
-#if defined(USE_MKL) || defined(USE_LAPACK) || defined(USE_ARMADILLO)
+#if defined(USE_MKL) || defined(USE_ARMADILLO)
 
 template<typename T> 
 bool EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue)
@@ -224,10 +82,10 @@ template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<double>& A, 
 template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& b, hoMatrix<GT_Complex8>& x, double lamda);
 template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& b, hoMatrix<GT_Complex16>& x, double lamda);
 
-#endif // defined(USE_MKL) || defined(USE_LAPACK) || defined(USE_ARMADILLO)
+#endif // defined(USE_MKL) || defined(USE_ARMADILLO)
 
 // following matrix computation calls MKL functions
-#if defined(USE_MKL) || defined(USE_LAPACK)
+#ifdef USE_MKL
 
 bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
 {
@@ -236,16 +94,16 @@ bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const h
     {
         char TA, TB;
 
-        lapack_int lda = A.get_size(0);
-        lapack_int ldb = B.get_size(0);
+        MKL_INT lda = A.get_size(0);
+        MKL_INT ldb = B.get_size(0);
         const T* pA = A.begin(); 
         const T* pB = B.begin(); 
 
-        lapack_int M = A.get_size(0);
-        lapack_int K = A.get_size(1);
+        MKL_INT M = A.get_size(0);
+        MKL_INT K = A.get_size(1);
 
-        lapack_int K2 = B.get_size(0);
-        lapack_int N = B.get_size(1);
+        MKL_INT K2 = B.get_size(0);
+        MKL_INT N = B.get_size(1);
 
         GADGET_CHECK_RETURN_FALSE(K==K2);
         if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
@@ -254,14 +112,14 @@ bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const h
         }
 
         T* pC = C.begin();
-        lapack_int ldc = C.get_size(0);
+        MKL_INT ldc = C.get_size(0);
 
         GT_Complex8 alpha(1), beta(0);
 
         TA = 'N';
         TB = 'N';
 
-        cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<const lapack_complex_float*>(pA), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
+        cgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex8*>(&alpha), reinterpret_cast<const MKL_Complex8*>(pA), &lda, reinterpret_cast<const MKL_Complex8*>(pB), &ldb, reinterpret_cast<MKL_Complex8*>(&beta), reinterpret_cast<MKL_Complex8*>(pC), &ldc);
     }
     catch(...)
     {
@@ -280,21 +138,21 @@ bool GeneralMatrixProduct_gemm(hoNDArray<T>& C,
     {
         char TA, TB;
 
-        lapack_int lda = A.get_size(0);
-        lapack_int ldb = B.get_size(0);
+        MKL_INT lda = A.get_size(0);
+        MKL_INT ldb = B.get_size(0);
         const T* pA = A.begin(); 
         const T* pB = B.begin(); 
 
-        lapack_int M = A.get_size(0);
-        lapack_int K = A.get_size(1);
+        MKL_INT M = A.get_size(0);
+        MKL_INT K = A.get_size(1);
         if ( transA )
         { 
             M = A.get_size(1);
             K = A.get_size(0);
         }
 
-        lapack_int K2 = B.get_size(0);
-        lapack_int N = B.get_size(1);
+        MKL_INT K2 = B.get_size(0);
+        MKL_INT N = B.get_size(1);
         if ( transB )
         {
             K2 = B.get_size(1);
@@ -308,7 +166,7 @@ bool GeneralMatrixProduct_gemm(hoNDArray<T>& C,
         }
 
         T* pC = C.begin();
-        lapack_int ldc = C.get_size(0);
+        MKL_INT ldc = C.get_size(0);
 
         if ( typeid(T)==typeid(float) )
         {
@@ -334,13 +192,13 @@ bool GeneralMatrixProduct_gemm(hoNDArray<T>& C,
 
             if ( &A != &C )
             {
-                sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
+                sgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pATmp), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
+                sgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pATmp), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(double) )
@@ -367,13 +225,13 @@ bool GeneralMatrixProduct_gemm(hoNDArray<T>& C,
 
             if ( &A != &C )
             {
-                dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
+                dgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pATmp), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
+                dgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pATmp), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
@@ -400,13 +258,13 @@ bool GeneralMatrixProduct_gemm(hoNDArray<T>& C,
 
             if ( &A != &C )
             {
-                cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<const lapack_complex_float*>(pA), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
+                cgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex8*>(&alpha), reinterpret_cast<const MKL_Complex8*>(pA), &lda, reinterpret_cast<const MKL_Complex8*>(pB), &ldb, reinterpret_cast<MKL_Complex8*>(&beta), reinterpret_cast<MKL_Complex8*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<lapack_complex_float*>(pATmp), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
+                cgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex8*>(&alpha), reinterpret_cast<MKL_Complex8*>(pATmp), &lda, reinterpret_cast<const MKL_Complex8*>(pB), &ldb, reinterpret_cast<MKL_Complex8*>(&beta), reinterpret_cast<MKL_Complex8*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
@@ -433,13 +291,13 @@ bool GeneralMatrixProduct_gemm(hoNDArray<T>& C,
 
             if ( &A != &C )
             {
-                zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<const lapack_complex_double*>(pA), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
+                zgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex16*>(&alpha), reinterpret_cast<const MKL_Complex16*>(pA), &lda, reinterpret_cast<const MKL_Complex16*>(pB), &ldb, reinterpret_cast<MKL_Complex16*>(&beta), reinterpret_cast<MKL_Complex16*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<lapack_complex_double*>(pATmp), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
+                zgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex16*>(&alpha), reinterpret_cast<MKL_Complex16*>(pATmp), &lda, reinterpret_cast<const MKL_Complex16*>(pB), &ldb, reinterpret_cast<MKL_Complex16*>(&beta), reinterpret_cast<MKL_Complex16*>(pC), &ldc);
             }
         }
         else
@@ -465,21 +323,21 @@ bool GeneralMatrixProduct_gemm(hoMatrix<T>& C,
     {
         char TA, TB;
 
-        lapack_int lda = A.rows();
-        lapack_int ldb = B.rows();
+        MKL_INT lda = A.rows();
+        MKL_INT ldb = B.rows();
         const T* pA = A.begin(); 
         const T* pB = B.begin(); 
 
-        lapack_int M = A.rows();
-        lapack_int K = A.cols();
+        MKL_INT M = A.rows();
+        MKL_INT K = A.cols();
         if ( transA )
         {
             M = A.cols();
             K = A.rows();
         }
 
-        lapack_int K2 = B.rows();
-        lapack_int N = B.cols();
+        MKL_INT K2 = B.rows();
+        MKL_INT N = B.cols();
         if ( transB )
         {
             K2 = B.cols();
@@ -493,7 +351,7 @@ bool GeneralMatrixProduct_gemm(hoMatrix<T>& C,
         }
 
         T* pC = C.begin();
-        lapack_int ldc = C.rows();
+        MKL_INT ldc = C.rows();
 
         if ( typeid(T)==typeid(float) )
         {
@@ -519,13 +377,13 @@ bool GeneralMatrixProduct_gemm(hoMatrix<T>& C,
 
             if ( &A != &C )
             {
-                sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
+                sgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pATmp), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
+                sgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pATmp), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(double) )
@@ -552,13 +410,13 @@ bool GeneralMatrixProduct_gemm(hoMatrix<T>& C,
 
             if ( &A != &C )
             {
-                dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
+                dgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pATmp), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
+                dgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pATmp), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
@@ -585,13 +443,13 @@ bool GeneralMatrixProduct_gemm(hoMatrix<T>& C,
 
             if ( &A != &C )
             {
-                cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<const lapack_complex_float*>(pA), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
+                cgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex8*>(&alpha), reinterpret_cast<const MKL_Complex8*>(pA), &lda, reinterpret_cast<const MKL_Complex8*>(pB), &ldb, reinterpret_cast<MKL_Complex8*>(&beta), reinterpret_cast<MKL_Complex8*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<lapack_complex_float*>(pATmp), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
+                cgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex8*>(&alpha), reinterpret_cast<MKL_Complex8*>(pATmp), &lda, reinterpret_cast<const MKL_Complex8*>(pB), &ldb, reinterpret_cast<MKL_Complex8*>(&beta), reinterpret_cast<MKL_Complex8*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
@@ -618,13 +476,13 @@ bool GeneralMatrixProduct_gemm(hoMatrix<T>& C,
 
             if ( &A != &C )
             {
-                zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<const lapack_complex_double*>(pA), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
+                zgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex16*>(&alpha), reinterpret_cast<const MKL_Complex16*>(pA), &lda, reinterpret_cast<const MKL_Complex16*>(pB), &ldb, reinterpret_cast<MKL_Complex16*>(&beta), reinterpret_cast<MKL_Complex16*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<lapack_complex_double*>(pATmp), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
+                zgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex16*>(&alpha), reinterpret_cast<MKL_Complex16*>(pATmp), &lda, reinterpret_cast<const MKL_Complex16*>(pB), &ldb, reinterpret_cast<MKL_Complex16*>(&beta), reinterpret_cast<MKL_Complex16*>(pC), &ldc);
             }
         }
         else
@@ -649,26 +507,26 @@ bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo)
         if( A.get_number_of_elements()==0 ) return true;
         GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
 
-        lapack_int info;
+        MKL_INT info;
         lapack_int n = (lapack_int)(A.rows());
         T* pA = A.begin();
         lapack_int lda = (lapack_int)(A.rows());
 
         if ( typeid(T)==typeid(float) )
         {
-            spotrf_(&uplo, &n, reinterpret_cast<float*>(pA), &lda, &info);
+            spotrf(&uplo, &n, reinterpret_cast<float*>(pA), &lda, &info);
         }
         else if ( typeid(T)==typeid(double) )
         {
-            dpotrf_(&uplo, &n, reinterpret_cast<double*>(pA), &lda, &info);
+            dpotrf(&uplo, &n, reinterpret_cast<double*>(pA), &lda, &info);
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            cpotrf_(&uplo, &n, reinterpret_cast<lapack_complex_float*>(pA), &lda, &info);
+            cpotrf(&uplo, &n, reinterpret_cast<MKL_Complex8*>(pA), &lda, &info);
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            zpotrf_(&uplo, &n, reinterpret_cast<lapack_complex_double*>(pA), &lda, &info);
+            zpotrf(&uplo, &n, reinterpret_cast<MKL_Complex16*>(pA), &lda, &info);
         }
         else
         {
@@ -700,7 +558,7 @@ bool EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type
 {
     try
     {
-        lapack_int M = (lapack_int)A.rows();
+        long long M = (long long)A.rows();
         GADGET_CHECK_RETURN_FALSE(A.cols() == M);
 
         if ( (eigenValue.rows()!=M) || (eigenValue.cols()!=1) )
@@ -708,64 +566,64 @@ bool EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type
             GADGET_CHECK_RETURN_FALSE(eigenValue.createMatrix(M, 1));
         }
 
-        lapack_int info;
+        MKL_INT info;
         char jobz = 'V';
         char uplo = 'L';
         T* pA = A.begin();
         typename realType<T>::Type* pEV = eigenValue.begin();
 
-        //if ( typeid(T)==typeid(float) )
-        //{
-        //    info = LAPACKE_ssyev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<float*>(pA), M, reinterpret_cast<float*>(pEV));
-        //}
-        //else if ( typeid(T)==typeid(double) )
-        //{
-        //    info = LAPACKE_dsyev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<double*>(pA), M, reinterpret_cast<double*>(pEV));
-        //}
-        //else if ( typeid(T)==typeid(GT_Complex8) )
-        //{
-        //    info = LAPACKE_cheev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<lapack_complex_float*>(pA), M, reinterpret_cast<float*>(pEV));
-        //}
-        //else if ( typeid(T)==typeid(GT_Complex16) )
-        //{
-        //    info = LAPACKE_zheev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<lapack_complex_double*>(pA), M, reinterpret_cast<double*>(pEV));
-        //}
-        //else
-        //{
-        //    GADGET_ERROR_MSG("EigenAnalysis_syev_heev : unsupported type " << typeid(T).name());
-        //    return false;
-        //}
-
-        lapack_int lwork;
-        lwork = M*M;
-
         if ( typeid(T)==typeid(float) )
         {
-            hoNDArray<float> work(M, M);
-            ssyev_(&jobz, &uplo, &M, reinterpret_cast<float*>(pA), &M, reinterpret_cast<float*>(pEV), work.begin(), &lwork, &info);
+            info = LAPACKE_ssyev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<float*>(pA), M, reinterpret_cast<float*>(pEV));
         }
         else if ( typeid(T)==typeid(double) )
         {
-            hoNDArray<double> work(M, M);
-            dsyev_(&jobz, &uplo, &M, reinterpret_cast<double*>(pA), &M, reinterpret_cast<double*>(pEV), work.begin(), &lwork, &info);
+            info = LAPACKE_dsyev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<double*>(pA), M, reinterpret_cast<double*>(pEV));
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            hoNDArray<GT_Complex8> work(M, M);
-            hoNDArray<float> rwork(3*M);
-            cheev_(&jobz, &uplo, &M, reinterpret_cast<lapack_complex_float*>(pA), &M, reinterpret_cast<float*>(pEV), reinterpret_cast<lapack_complex_float*>(work.begin()), &lwork, rwork.begin(), &info);
+            info = LAPACKE_cheev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<MKL_Complex8*>(pA), M, reinterpret_cast<float*>(pEV));
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            hoNDArray<GT_Complex16> work(M, M);
-            hoNDArray<double> rwork(3*M);
-            zheev_(&jobz, &uplo, &M, reinterpret_cast<lapack_complex_double*>(pA), &M, reinterpret_cast<double*>(pEV), reinterpret_cast<lapack_complex_double*>(work.begin()), &lwork, rwork.begin(), &info);
+            info = LAPACKE_zheev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<MKL_Complex16*>(pA), M, reinterpret_cast<double*>(pEV));
         }
         else
         {
             GADGET_ERROR_MSG("EigenAnalysis_syev_heev : unsupported type " << typeid(T).name());
             return false;
         }
+
+        /*long long lwork;
+        lwork = M*M;
+
+        if ( typeid(T)==typeid(float) )
+        {
+            hoNDArray<float> work(M, M);
+            ssyev(&jobz, &uplo, &M, reinterpret_cast<float*>(pA), &M, reinterpret_cast<float*>(pEV), work.begin(), &lwork, &info);
+        }
+        else if ( typeid(T)==typeid(double) )
+        {
+            hoNDArray<double> work(M, M);
+            dsyev(&jobz, &uplo, &M, reinterpret_cast<double*>(pA), &M, reinterpret_cast<double*>(pEV), work.begin(), &lwork, &info);
+        }
+        else if ( typeid(T)==typeid(GT_Complex8) )
+        {
+            hoNDArray<GT_Complex8> work(M, M);
+            hoNDArray<float> rwork(3*M);
+            cheev(&jobz, &uplo, &M, reinterpret_cast<MKL_Complex8*>(pA), &M, reinterpret_cast<float*>(pEV), reinterpret_cast<MKL_Complex8*>(work.begin()), &lwork, rwork.begin(), &info);
+        }
+        else if ( typeid(T)==typeid(GT_Complex16) )
+        {
+            hoNDArray<GT_Complex16> work(M, M);
+            hoNDArray<double> rwork(3*M);
+            zheev(&jobz, &uplo, &M, reinterpret_cast<MKL_Complex16*>(pA), &M, reinterpret_cast<double*>(pEV), reinterpret_cast<MKL_Complex16*>(work.begin()), &lwork, rwork.begin(), &info);
+        }
+        else
+        {
+            GADGET_ERROR_MSG("EigenAnalysis_syev_heev : unsupported type " << typeid(T).name());
+            return false;
+        }*/
 
         GADGET_CHECK_RETURN_FALSE(info==0);
     }
@@ -785,80 +643,42 @@ bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A)
         if( A.get_number_of_elements()==0 ) return true;
         GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
 
-        lapack_int info;
+        MKL_INT info;
         char uplo = 'L';
         lapack_int n = (lapack_int)A.rows();
         T* pA = A.begin();
         lapack_int lda = (lapack_int)A.rows();
 
-        //if ( typeid(T)==typeid(float) )
-        //{
-        //    info = LAPACKE_spotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
-
-        //    info = LAPACKE_spotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
-        //}
-        //else if ( typeid(T)==typeid(double) )
-        //{
-        //    info = LAPACKE_dpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
-
-        //    info = LAPACKE_dpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
-        //}
-        //else if ( typeid(T)==typeid(GT_Complex8) )
-        //{
-        //    info = LAPACKE_cpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<lapack_complex_float*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
-
-        //    info = LAPACKE_cpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<lapack_complex_float*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
-        //}
-        //else if ( typeid(T)==typeid(GT_Complex16) )
-        //{
-        //    info = LAPACKE_zpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<lapack_complex_double*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
-
-        //    info = LAPACKE_zpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<lapack_complex_double*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
-        //}
-        //else
-        //{
-        //    GADGET_ERROR_MSG("SymmetricHermitianPositiveDefiniteInverse_potri : unsupported type " << typeid(T).name());
-        //    return false;
-        //}
-
         if ( typeid(T)==typeid(float) )
         {
-            spotrf_(&uplo, &n, reinterpret_cast<float*>(pA), &lda, &info);
+            info = LAPACKE_spotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
 
-            spotri_(&uplo, &n, reinterpret_cast<float*>(pA), &lda, &info);
+            info = LAPACKE_spotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
         }
         else if ( typeid(T)==typeid(double) )
         {
-            dpotrf_(&uplo, &n, reinterpret_cast<double*>(pA), &lda, &info);
+            info = LAPACKE_dpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
 
-            dpotri_(&uplo, &n, reinterpret_cast<double*>(pA), &lda, &info);
+            info = LAPACKE_dpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            cpotrf_(&uplo, &n, reinterpret_cast<lapack_complex_float*>(pA), &lda, &info);
+            info = LAPACKE_cpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
 
-            cpotri_(&uplo, &n, reinterpret_cast<lapack_complex_float*>(pA), &lda, &info);
+            info = LAPACKE_cpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            zpotrf_(&uplo, &n, reinterpret_cast<lapack_complex_double*>(pA), &lda, &info);
+            info = LAPACKE_zpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
 
-            zpotri_(&uplo, &n, reinterpret_cast<lapack_complex_double*>(pA), &lda, &info);
+            info = LAPACKE_zpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
         }
         else
@@ -883,13 +703,13 @@ bool TriangularInverse_trtri(hoMatrix<T>& A, char uplo)
         if( A.get_number_of_elements()==0 ) return true;
         GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
 
-        lapack_int info;
+        MKL_INT info;
         char diag = 'N';
         lapack_int n = (lapack_int)A.rows();
         T* pA = A.begin();
         lapack_int lda = (lapack_int)A.rows();
 
-        /*if ( typeid(T)==typeid(float) )
+        if ( typeid(T)==typeid(float) )
         {
             info = LAPACKE_strtri(LAPACK_COL_MAJOR, uplo, diag, n, reinterpret_cast<float*>(pA), lda);
         }
@@ -899,33 +719,11 @@ bool TriangularInverse_trtri(hoMatrix<T>& A, char uplo)
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            info = LAPACKE_ctrtri(LAPACK_COL_MAJOR, uplo, diag, n, reinterpret_cast<lapack_complex_float*>(pA), lda);
+            info = LAPACKE_ctrtri(LAPACK_COL_MAJOR, uplo, diag, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            info = LAPACKE_ztrtri(LAPACK_COL_MAJOR, uplo, diag, n, reinterpret_cast<lapack_complex_double*>(pA), lda);
-        }
-        else
-        {
-            GADGET_ERROR_MSG("TriangularInverse_trtri : unsupported type " << typeid(T).name());
-            return false;
-        }*/
-
-        if ( typeid(T)==typeid(float) )
-        {
-            strtri_(&uplo, &diag, &n, reinterpret_cast<float*>(pA), &lda, &info);
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            dtrtri_(&uplo, &diag, &n, reinterpret_cast<double*>(pA), &lda, &info);
-        }
-        else if ( typeid(T)==typeid(GT_Complex8) )
-        {
-            ctrtri_(&uplo, &diag, &n, reinterpret_cast<lapack_complex_float*>(pA), &lda, &info);
-        }
-        else if ( typeid(T)==typeid(GT_Complex16) )
-        {
-            ztrtri_(&uplo, &diag, &n, reinterpret_cast<lapack_complex_double*>(pA), &lda, &info);
+            info = LAPACKE_ztrtri(LAPACK_COL_MAJOR, uplo, diag, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
         }
         else
         {
@@ -952,7 +750,7 @@ bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatri
         if( b.get_number_of_elements()==0 ) return true;
         GADGET_CHECK_RETURN_FALSE(A.rows()==b.rows());
 
-        lapack_int info;
+        MKL_INT info;
         char uplo = 'L';
         lapack_int n = (lapack_int)A.rows();
         lapack_int nrhs = (lapack_int)b.cols();
@@ -961,7 +759,7 @@ bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatri
         T* pB = b.begin();
         lapack_int ldb = (lapack_int)b.rows();
 
-        /*if ( typeid(T)==typeid(float) )
+        if ( typeid(T)==typeid(float) )
         {
             info = LAPACKE_sposv(LAPACK_COL_MAJOR, uplo, n, nrhs, reinterpret_cast<float*>(pA), lda, reinterpret_cast<float*>(pB), ldb);
         }
@@ -971,33 +769,11 @@ bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatri
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            info = LAPACKE_cposv(LAPACK_COL_MAJOR, uplo, n, nrhs, reinterpret_cast<lapack_complex_float*>(pA), lda, reinterpret_cast<lapack_complex_float*>(pB), ldb);
+            info = LAPACKE_cposv(LAPACK_COL_MAJOR, uplo, n, nrhs, reinterpret_cast<MKL_Complex8*>(pA), lda, reinterpret_cast<MKL_Complex8*>(pB), ldb);
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            info = LAPACKE_zposv(LAPACK_COL_MAJOR, uplo, n, nrhs, reinterpret_cast<lapack_complex_double*>(pA), lda, reinterpret_cast<lapack_complex_double*>(pB), ldb);
-        }
-        else
-        {
-            GADGET_ERROR_MSG("SymmetricHermitianPositiveDefiniteLinearSystem_posv : unsupported type " << typeid(T).name());
-            return false;
-        }*/
-
-        if ( typeid(T)==typeid(float) )
-        {
-            sposv_(&uplo, &n, &nrhs, reinterpret_cast<float*>(pA), &lda, reinterpret_cast<float*>(pB), &ldb, &info);
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            dposv_(&uplo, &n, &nrhs, reinterpret_cast<double*>(pA), &lda, reinterpret_cast<double*>(pB), &ldb, &info);
-        }
-        else if ( typeid(T)==typeid(GT_Complex8) )
-        {
-            cposv_(&uplo, &n, &nrhs, reinterpret_cast<lapack_complex_float*>(pA), &lda, reinterpret_cast<lapack_complex_float*>(pB), &ldb, &info);
-        }
-        else if ( typeid(T)==typeid(GT_Complex16) )
-        {
-            zposv_(&uplo, &n, &nrhs, reinterpret_cast<lapack_complex_double*>(pA), &lda, reinterpret_cast<lapack_complex_double*>(pB), &ldb, &info);
+            info = LAPACKE_zposv(LAPACK_COL_MAJOR, uplo, n, nrhs, reinterpret_cast<MKL_Complex16*>(pA), lda, reinterpret_cast<MKL_Complex16*>(pB), ldb);
         }
         else
         {
@@ -1024,7 +800,7 @@ bool LUFactorizationGeneralMatrix_getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& i
     {
         if( A.get_number_of_elements()==0 ) return true;
 
-        lapack_int info;
+        MKL_INT info;
         lapack_int m = (lapack_int)A.rows();
         lapack_int n = (lapack_int)A.cols();
 
@@ -1034,43 +810,21 @@ bool LUFactorizationGeneralMatrix_getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& i
         ipiv.create( GT_MIN(m, n) );
         lapack_int* pIPIV = ipiv.begin();
 
-        //if ( typeid(T)==typeid(float) )
-        //{
-        //    info = LAPACKE_sgetrf(LAPACK_COL_MAJOR, m, n, reinterpret_cast<float*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
-        //}
-        //else if ( typeid(T)==typeid(double) )
-        //{
-        //    info = LAPACKE_dgetrf(LAPACK_COL_MAJOR, m, n, reinterpret_cast<double*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
-        //}
-        //else if ( typeid(T)==typeid(GT_Complex8) )
-        //{
-        //    info = LAPACKE_cgetrf(LAPACK_COL_MAJOR, m, n, reinterpret_cast<lapack_complex_float*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
-        //}
-        //else if ( typeid(T)==typeid(GT_Complex16) )
-        //{
-        //    info = LAPACKE_zgetrf(LAPACK_COL_MAJOR, m, n, reinterpret_cast<lapack_complex_double*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
-        //}
-        //else
-        //{
-        //    GADGET_ERROR_MSG("LUFactorizationGeneralMatrix_getrf : unsupported type " << typeid(T).name());
-        //    return false;
-        //}
-
         if ( typeid(T)==typeid(float) )
         {
-            sgetrf_(&m, &n, reinterpret_cast<float*>(pA), &lda, reinterpret_cast<lapack_int*>(pIPIV), &info);
+            info = LAPACKE_sgetrf(LAPACK_COL_MAJOR, m, n, reinterpret_cast<float*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
         }
         else if ( typeid(T)==typeid(double) )
         {
-            dgetrf_(&m, &n, reinterpret_cast<double*>(pA), &lda, reinterpret_cast<lapack_int*>(pIPIV), &info);
+            info = LAPACKE_dgetrf(LAPACK_COL_MAJOR, m, n, reinterpret_cast<double*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            cgetrf_(&m, &n, reinterpret_cast<lapack_complex_float*>(pA), &lda, reinterpret_cast<lapack_int*>(pIPIV), &info);
+            info = LAPACKE_cgetrf(LAPACK_COL_MAJOR, m, n, reinterpret_cast<MKL_Complex8*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            zgetrf_(&m, &n, reinterpret_cast<lapack_complex_double*>(pA), &lda, reinterpret_cast<lapack_int*>(pIPIV), &info);
+            info = LAPACKE_zgetrf(LAPACK_COL_MAJOR, m, n, reinterpret_cast<MKL_Complex16*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
         }
         else
         {
@@ -1096,7 +850,7 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
     {
         if( A.get_number_of_elements()==0 ) return true;
 
-        lapack_int info;
+        MKL_INT info;
         lapack_int m = (lapack_int)A.rows();
         lapack_int n = (lapack_int)A.cols();
         GADGET_CHECK_RETURN_FALSE(m==n);
@@ -1109,9 +863,7 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
 
         lapack_int* pIPIV = ipiv.begin();
 
-        lapack_int lwork = m*m;
-
-        /*if ( typeid(T)==typeid(float) )
+        if ( typeid(T)==typeid(float) )
         {
             info = LAPACKE_sgetri(LAPACK_COL_MAJOR, m, reinterpret_cast<float*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
         }
@@ -1121,37 +873,11 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            info = LAPACKE_cgetri(LAPACK_COL_MAJOR, m, reinterpret_cast<lapack_complex_float*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
+            info = LAPACKE_cgetri(LAPACK_COL_MAJOR, m, reinterpret_cast<MKL_Complex8*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            info = LAPACKE_zgetri(LAPACK_COL_MAJOR, m, reinterpret_cast<lapack_complex_double*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("InverseGeneralMatrix_getri : unsupported type " << typeid(T).name());
-            return false;
-        }*/
-
-        if ( typeid(T)==typeid(float) )
-        {
-            hoNDArray<float> work(m, m);
-            sgetri_(&m, reinterpret_cast<float*>(pA), &lda, reinterpret_cast<lapack_int*>(pIPIV), work.begin(), &lwork, &info);
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            hoNDArray<double> work(m, m);
-            dgetri_(&m, reinterpret_cast<double*>(pA), &lda, reinterpret_cast<lapack_int*>(pIPIV), work.begin(), &lwork, &info);
-        }
-        else if ( typeid(T)==typeid(GT_Complex8) )
-        {
-            hoNDArray<GT_Complex8> work(m, m);
-            cgetri_(&m, reinterpret_cast<lapack_complex_float*>(pA), &lda, reinterpret_cast<lapack_int*>(pIPIV), reinterpret_cast<lapack_complex_float*>(work.begin()), &lwork, &info);
-        }
-        else if ( typeid(T)==typeid(GT_Complex16) )
-        {
-            hoNDArray<GT_Complex16> work(m, m);
-            zgetri_(&m, reinterpret_cast<lapack_complex_double*>(pA), &lda, reinterpret_cast<lapack_int*>(pIPIV), reinterpret_cast<lapack_complex_double*>(work.begin()), &lwork, &info);
+            info = LAPACKE_zgetri(LAPACK_COL_MAJOR, m, reinterpret_cast<MKL_Complex16*>(pA), lda, reinterpret_cast<lapack_int*>(pIPIV));
         }
         else
         {
@@ -1610,6 +1336,7 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
 
     #endif // USE_ARMADILLO
 
-#endif // defined(USE_MKL) || defined(USE_LAPACK)
+#endif // USE_MKL
 
+    
 }
