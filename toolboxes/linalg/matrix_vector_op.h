@@ -13,37 +13,11 @@
 
 #include "linalg_export.h"
 
-//Declaration of BLAS routines
-/*
- * We will opt to not use the easier CBLAS interface to give us the best change of being compatible on all platforms.
- * We will declare the BLAS (and LAPACK) routines ourselves.
- *
- */
-extern "C" {
-	//GEMM - Generalized matrix-matrix multiplication
-	void sgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
-				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
-	void dgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
-				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
-	void cgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
-				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
-	void zgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
-				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
-
-	//TRMM - Multiplication with a triangular matrix
-	void strmm_(char* SIDE, char* UPLO, char* TRANSA, char* DIAG, int* M,int* N,
-			void* ALPHA,void* A,int* LDA,void* B, int* LDB);
-	void dtrmm_(char* SIDE, char* UPLO, char* TRANSA, char* DIAG, int* M,int* N,
-			void* ALPHA,void* A,int* LDA,void* B, int* LDB);
-	void ctrmm_(char* SIDE, char* UPLO, char* TRANSA, char* DIAG, int* M,int* N,
-			void* ALPHA,void* A,int* LDA,void* B, int* LDB);
-	void ztrmm_(char* SIDE, char* UPLO, char* TRANSA, char* DIAG, int* M,int* N,
-			void* ALPHA,void* A,int* LDA,void* B, int* LDB);
-}
-
-
 namespace Gadgetron
 {
+
+  template <typename T> EXPORTLINALG double hoNDArray_norm2(hoNDArray<T>* X);
+  template <typename T> EXPORTLINALG double hoNDArray_asum(hoNDArray<T>* X);
 
 /**
  *
@@ -52,6 +26,14 @@ namespace Gadgetron
  */
 template <typename T> EXPORTLINALG void hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha,  hoNDArray<T>* C, T beta);
 
+
+/**
+ *
+ *  Performs Y = A*X+Y
+ *
+ */
+ template <typename T> EXPORTLINALG void hoNDArray_axpy( T* A, hoNDArray<T>* X, hoNDArray<T>* Y); 
+
 /**
  *  Performs B = alpha*A*B
  *
@@ -59,6 +41,10 @@ template <typename T> EXPORTLINALG void hoNDArray_gemm( hoNDArray<T>* A, hoNDArr
  *
  */
 template <typename T> EXPORTLINALG void hoNDArray_trmm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha);
+
+
+ void elementWiseMultiply(int n,  std::complex<float> *a, std::complex<float> *x, std::complex<float> *y);
+
 
 } //namespace gadgetron
 

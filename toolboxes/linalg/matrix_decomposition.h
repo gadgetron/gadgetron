@@ -14,7 +14,6 @@
 
 #include "linalg_export.h"
 
-
 namespace Gadgetron 
 {
 
