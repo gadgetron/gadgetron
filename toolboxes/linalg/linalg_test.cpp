@@ -20,6 +20,7 @@
 #include "hoNDFFT.h"
 #include <fftw3.h>
 #include <valarray>
+#include <omp.h>
 
 #define DIFF_LIMIT 1e-5
 
@@ -158,13 +159,18 @@ bool fftw_fft2(hoNDArray< std::complex<T> >& a, hoNDArray< std::complex<T> >& r,
   T fftRatio = 1.0/std::sqrt( T(n0*n1) );
 
   size_t num = a.get_number_of_elements()/(n0*n1);
+  std::cout << "Number of FFTs: " << num << std::endl;
   long long n;
 
   if ( typeid(T) == typeid(float) )
     {
+      fftwf_init_threads();
+      fftwf_plan_with_nthreads(omp_get_max_threads());
+
       fftwf_plan p;
 
       {
+	GadgetronTimer tp("FFTW Planning", true);
 	// mutex_.lock();
 	if ( forward )
 	  {
@@ -185,7 +191,7 @@ bool fftw_fft2(hoNDArray< std::complex<T> >& a, hoNDArray< std::complex<T> >& r,
 
       {
 	GadgetronTimer t("FFT loop time", true); 
-#pragma omp parallel for private(n) shared(num, p, a, n0, n1, r)
+	//#pragma omp parallel for private(n) shared(num, p, a, n0, n1, r)
 	  for ( n=0; n<num; n++ )
 	    {
 	      fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1), 
@@ -198,9 +204,12 @@ bool fftw_fft2(hoNDArray< std::complex<T> >& a, hoNDArray< std::complex<T> >& r,
 	fftwf_destroy_plan(p);
 	// mutex_.unlock();
       }
+      fftwf_cleanup_threads();
     }
   else if ( typeid(T) == typeid(double) )
     {
+      fftw_init_threads();
+      fftw_plan_with_nthreads(omp_get_max_threads());
       fftw_plan p;
 
       {
@@ -222,7 +231,7 @@ bool fftw_fft2(hoNDArray< std::complex<T> >& a, hoNDArray< std::complex<T> >& r,
 	// mutex_.unlock();
       }
 
-#pragma omp parallel for private(n) shared(num, p, a, n0, n1, r)
+      //z#pragma omp parallel for private(n) shared(num, p, a, n0, n1, r)
         for ( n=0; n<num; n++ )
 	  {
             fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1), 
@@ -232,12 +241,16 @@ bool fftw_fft2(hoNDArray< std::complex<T> >& a, hoNDArray< std::complex<T> >& r,
         {
 	  // mutex_.lock();
 	  fftw_destroy_plan(p);
+	  fftw_cleanup_threads();
 	  // mutex_.unlock();
         }
     }
 
-
-  r *= fftRatio;
+  {
+    GadgetronTimer tt("FFT Scaling", true);
+    Gadgetron::hoNDArray_scal(std::complex<float>(fftRatio,0.0), &r);
+    //r *= fftRatio;
+  }
   return true;
 }
 

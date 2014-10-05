@@ -53,10 +53,46 @@ extern "C" {
   double dasum_(int* N, void* SX, int* INCX);
   double dzasum_(int* N, void* SX, int* INCX);
 
+  //SCAL - Scaling of vector
+  void sscal_(int* N, void* SA, void* SX, int* INCX); 
+  void dscal_(int* N, void* SA, void* SX, int* INCX); 
+  void cscal_(int* N, void* SA, void* SX, int* INCX); 
+  void zscal_(int* N, void* SA, void* SX, int* INCX); 
 }
 
 namespace Gadgetron
 {
+  void cblas_scal_wrapper(int N, float SA, float* SX, int INCX) 
+  {
+    sscal_(&N, &SA, SX, &INCX);
+  }
+
+  void cblas_scal_wrapper(int N, double SA, double* SX, int INCX) 
+  {
+    dscal_(&N, &SA, SX, &INCX);
+  }
+
+  void cblas_scal_wrapper(int N, std::complex<float> SA, std::complex<float>* SX, int INCX) 
+  {
+    cscal_(&N, &SA, SX, &INCX);
+  }
+
+  void cblas_scal_wrapper(int N, std::complex<double> SA, std::complex<double>* SX, int INCX) 
+  {
+    zscal_(&N, &SA, SX, &INCX);
+  }
+
+  template <typename T> void hoNDArray_scal(T SA, hoNDArray<T>* X)
+  {
+    return cblas_scal_wrapper(X->get_number_of_elements(),SA,X->get_data_ptr(),1); 
+  }
+
+  template EXPORTLINALG void hoNDArray_scal(float SA, hoNDArray<float>* X);
+  template EXPORTLINALG void hoNDArray_scal(double SA, hoNDArray<double>* X);
+  template EXPORTLINALG void hoNDArray_scal(std::complex<float> SA, hoNDArray< std::complex<float> >* X);
+  template EXPORTLINALG void hoNDArray_scal(std::complex<double> SA, hoNDArray< std::complex<double> >* X);
+
+
   double cblas_norm2_wrapper(int N, float* X, int INCX) {
     return static_cast<double>(snrm2_(&N,X,&INCX));
   }

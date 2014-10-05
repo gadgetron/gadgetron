@@ -18,6 +18,7 @@ namespace Gadgetron
 
   template <typename T> EXPORTLINALG double hoNDArray_norm2(hoNDArray<T>* X);
   template <typename T> EXPORTLINALG double hoNDArray_asum(hoNDArray<T>* X);
+  template <typename T> EXPORTLINALG void hoNDArray_scal(T SA, hoNDArray<T>* X);
 
 /**
  *
