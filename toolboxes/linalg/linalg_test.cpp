@@ -163,6 +163,21 @@ template <typename T> double hoNDArray_norm1_2(hoNDArray< std::complex<T> > * a)
 
 }
 
+template <typename T> double hoNDArray_norm2_2
+(hoNDArray< std::complex<T> > * a)
+{
+  size_t N = a->get_number_of_elements();
+  std::complex<T>* a_ptr = a->get_data_ptr();
+  size_t i;
+  T sum;
+#pragma omp parallel for reduction(+:sum)
+  for (i = 0; i < N; i++) {
+    sum += std::norm(a_ptr[i]);
+  }
+  
+  return std::sqrt(sum);
+
+}
 
 template<typename T> 
 bool fftw_fft2(hoNDArray< std::complex<T> >& a, hoNDArray< std::complex<T> >& r, bool forward)
@@ -442,6 +457,12 @@ int main(int argc, char** argv)
   }
   std::cout << "nrm2 = " << rn << std::endl;
 
+  {
+    GadgetronTimer t("Time (vectorized OMP reduction)", true);
+    rn = hoNDArray_norm2_2(&a);
+  }
+  std::cout << "nrm2 = " << rn << std::endl;
+
   GADGET_MSG("------------------------------------------------------------------");
   GADGET_MSG("norm1");
   GADGET_MSG("------------------------------------------------------------------");
@@ -462,6 +483,7 @@ int main(int argc, char** argv)
     GadgetronTimer t("Time (DIRECT BLAS)", true);
     rn = hoNDArray_norm1(&a);
   }
+  std::cout << "nrm1 = " << rn << std::endl;
 
   {
     GadgetronTimer t("Time (OMP reduction)", true);
