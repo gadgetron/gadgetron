@@ -9,14 +9,17 @@
 #define LINALG_EXPORT_H_
 
 #if defined (WIN32)
-#if defined (__BUILD_GADGETRON_LINALG__) || defined (linalg_EXPORTS)
-#define EXPORTLINALG __declspec(dllexport)
+    #ifdef BUILD_TOOLBOX_STATIC
+        #define EXPORTLINALG 
+    #else
+        #if defined (__BUILD_GADGETRON_LINALG__) || defined (linalg_EXPORTS)
+            #define EXPORTLINALG __declspec(dllexport)
+        #else
+            #define EXPORTLINALG __declspec(dllimport)
+        #endif
+    #endif
 #else
-#define EXPORTLINALG __declspec(dllimport)
+    #define EXPORTLINALG
 #endif
-#else
-#define EXPORTLINALG
-#endif
-
 
 #endif /* LINALG_EXPORT_H_ */

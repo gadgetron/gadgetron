@@ -44,7 +44,6 @@ void zgesvd_(char* JOBU, char* JOBVT, int* M, int* N, void* A,
 		int* LDVT, void* WORK, int* LWORK, void* RWORK, int* INFO);
 }
 
-
 namespace Gadgetron
 {
 

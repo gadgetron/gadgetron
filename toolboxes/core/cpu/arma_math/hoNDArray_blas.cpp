@@ -43,6 +43,16 @@ namespace Gadgetron{
         return arma::norm(arma::abs(real(as_arma_col(x)))+arma::abs(imag(as_arma_col(x))),1);
     }
 
+  template<class T> typename realType<T>::Type nrm1( hoNDArray<T> *x )
+  {
+    if( x == 0x0 )
+      throw std::runtime_error("Gadgetron::nrm2(): Invalid input array");
+    
+    typedef typename realType<T>::Type realT;
+    arma::Col<typename stdType<T>::Type> xM = as_arma_col(x);
+    return realT(arma::norm(xM,1));
+  }
+
     template<class T> typename realType<T>::Type nrm2( hoNDArray<T> *x )
     {
         if( x == 0x0 )
@@ -159,6 +169,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH std::complex<float> dot< std::complex<float> >( hoNDArray< std::complex<float> >*, hoNDArray< std::complex<float> >*, bool );
     template EXPORTCPUCOREMATH float asum<float>( hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH float nrm2< std::complex<float> >( hoNDArray< std::complex<float> >* );
+    template EXPORTCPUCOREMATH float nrm1< std::complex<float> >( hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH size_t amin<float>( hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH size_t amax<float>( hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH void axpy< std::complex<float> >( std::complex<float> , hoNDArray< std::complex<float> >*, hoNDArray< std::complex<float> >* );
@@ -166,6 +177,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH std::complex<double> dot< std::complex<double> >( hoNDArray< std::complex<double> >*, hoNDArray< std::complex<double> >*, bool );
     template EXPORTCPUCOREMATH double asum<double>( hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH double nrm2< std::complex<double> >( hoNDArray< std::complex<double> >* );
+    template EXPORTCPUCOREMATH double nrm1< std::complex<double> >( hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH size_t amin<double>( hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH size_t amax<double>( hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH void axpy< std::complex<double> >( std::complex<double> , hoNDArray< std::complex<double> >*, hoNDArray< std::complex<double> >* );
@@ -173,6 +185,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH complext<float> dot< complext<float> >( hoNDArray< complext<float> >*, hoNDArray< complext<float> >*, bool );
     template EXPORTCPUCOREMATH float asum<float>( hoNDArray< complext<float> >* );
     template EXPORTCPUCOREMATH float nrm2< complext<float> >( hoNDArray< complext<float> >* );
+    template EXPORTCPUCOREMATH float nrm1< complext<float> >( hoNDArray< complext<float> >* );
     template EXPORTCPUCOREMATH size_t amin<float>( hoNDArray< complext<float> >* );
     template EXPORTCPUCOREMATH size_t amax<float>( hoNDArray< complext<float> >* );
     template EXPORTCPUCOREMATH void axpy< complext<float> >( complext<float> , hoNDArray< complext<float> >*, hoNDArray< complext<float> >* );
