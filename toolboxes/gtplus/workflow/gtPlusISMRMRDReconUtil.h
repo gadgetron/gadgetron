@@ -675,19 +675,14 @@ public:
     // coil estimation using NIH method
     // data: in image domain, at least 3D [RO E1 CHA], the coil map will be estimated for every 2D kspace
     bool coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=11, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3, bool useGPU=true);
-    bool coilMap2DNIHGPU(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=11, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3);
 
     // data: in image domain, at least 4D [RO E1 E2 CHA], the coil map will be estimated for every 2D kspace [RO E1 CHA] across E2
     bool coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=7, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3, bool true3D=false);
-    // a gpu version of coil map 3D estimation, this function should only be used for the full-res coil map estimation
-    // if gpu is not available, it calls coilMap3DNIH
-    bool coilMap3DNIHGPU_FullResMap(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=7, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3, bool true3D=false);
 
     // the Souheil method
     // data: [RO E1 CHA], only 3D array
     // these functions are using 2D data correlation matrix
     bool coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
-    bool coilMap2DNIHInner_2(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
 
     // data: [RO E1 E2 CHA], this functions uses true 3D data correlation matrix
     bool coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
@@ -695,7 +690,6 @@ public:
     // the Souheil iteration method
     // data: [RO E1 CHA], only 3D array
     bool coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t iterNum, typename realType<T>::Type thres);
-    bool coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, const hoNDArray<T>& kerKSpace, size_t iterNum);
 
     // data: [RO E1 E2 CHA], true 3D coil map estimation
     bool coilMap3DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t iterNum, typename realType<T>::Type thres);
