@@ -21,9 +21,11 @@ message("Test cases for linux and mac only : ${TEST_CASE_LINUX_MAC_ONLY}")
 
 set(TEST_CASE ${TEST_CASE_ALWAYS})
 
-if (MKL_FOUND)
+# TODO once we remove mkl, then this scheme will need to change
+# for now we can try to run them all even without MKL
+#if (MKL_FOUND)
     set(TEST_CASE ${TEST_CASE} ${TEST_CASE_WITH_MKL})
-endif (MKL_FOUND)
+#endif (MKL_FOUND)
 
 if (CUDA_FOUND)
     set(TEST_CASE ${TEST_CASE} ${TEST_CASE_WITH_GPU})
