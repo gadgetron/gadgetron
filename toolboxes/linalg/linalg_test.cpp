@@ -122,46 +122,57 @@ bool multiplyOwn(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
   return true;
 }
 
-template <typename T> void vecMult(size_t N, T* a, T* b, T*c)
+void vecMult(size_t N, std::complex<float>* a, 
+	     std::complex<float>*b, std::complex<float>*c)
 {
   size_t i;
-#pragma omp parallel for private(i)// shared(num, p, a, n0, n1, r)
+#pragma omp parallel for private(i)
   for (i = 0; i < N; i++) {
-    c[i] = a[i]*b[i];
+    const std::complex<float>& a1 = a[i];
+    const std::complex<float>& b1 = b[i];
+    const float re1 = a1.real();
+    const float im1 = a1.imag();
+    const float re2 = b1.real();
+    const float im2 = b1.imag();
+
+    c[i].real() = (re1*re2-im1*im2);
+    c[i].imag() = (re1*im2+im1*re2);
   }
 }
 
-template <typename T> double hoNDArray_norm1(hoNDArray< std::complex<T> > * a)
+template <typename T> T hoNDArray_norm1(hoNDArray< std::complex<T> > * a)
 {
   size_t N = a->get_number_of_elements();
-  hoNDArray<T> ab;
-  ab.create(N); 
   std::complex<T>* a_ptr = a->get_data_ptr();
-  T* ab_ptr = ab.get_data_ptr();
 
   size_t i;
-#pragma omp parallel for private(i)// shared(num, p, a, n0, n1, r)
+  T sum = 0.0;
   for (i = 0; i < N; i++) {
-    ab_ptr[i] = abs(a_ptr[i]);
+    const std::complex<T>& c = a_ptr[i];
+    const T re = c.real();
+    const T im = c.imag();
+    sum += std::sqrt( (re*re) + (im * im) );
   }
   
-  return hoNDArray_asum(&ab);
-
+  return sum;
 }
 
 template <typename T> double hoNDArray_norm1_2(hoNDArray< std::complex<T> > * a)
 {
   size_t N = a->get_number_of_elements();
   std::complex<T>* a_ptr = a->get_data_ptr();
+
   size_t i;
-  T sum;
+  T sum = 0.0;
 #pragma omp parallel for reduction(+:sum)
   for (i = 0; i < N; i++) {
-    sum += abs(a_ptr[i]);
+    const std::complex<T>& c = a_ptr[i];
+    const T re = c.real();
+    const T im = c.imag();
+    sum += std::sqrt( (re*re) + (im * im) );
   }
   
   return sum;
-
 }
 
 template <typename T> double hoNDArray_norm2_2
@@ -173,11 +184,12 @@ template <typename T> double hoNDArray_norm2_2
   T sum;
 #pragma omp parallel for reduction(+:sum)
   for (i = 0; i < N; i++) {
-    sum += std::norm(a_ptr[i]);
-  }
-  
+    const std::complex<T>& c = a_ptr[i];
+    const T re = c.real();
+    const T im = c.imag();
+    sum += ( (re*re) + (im * im) );
+  }  
   return std::sqrt(sum);
-
 }
 
 template<typename T> 
@@ -314,12 +326,18 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<std::complex<float> > > S_chol = read_nd_array< std::complex<float> >(filenameS_chol.c_str());
   boost::shared_ptr< hoNDArray<std::complex<float> > > S_chol_inv = read_nd_array< std::complex<float> >(filenameS_chol_inv.c_str());
 
+
+  hoNDArray<std::complex<float> > a(*A);
+  hoNDArray<std::complex<float> > b(*A);
+  hoNDArray<std::complex<float> > res;
+  std::complex<float> alpha(1.0,0);
+  std::complex<float> beta(1.0,0);
+  float rn;
+
+
   GADGET_MSG("------------------------------------------------------------------");
   GADGET_MSG("matrix multiplication");
   GADGET_MSG("------------------------------------------------------------------");
-
-  std::complex<float> alpha(1.0,0);
-  std::complex<float> beta(1.0,0);
 
   {
     GadgetronTimer t("GEMM Time (system)", true);
@@ -408,12 +426,6 @@ int main(int argc, char** argv)
   GADGET_MSG("------------------------------------------------------------------");
   GADGET_MSG("vector add");
   GADGET_MSG("------------------------------------------------------------------");
-
-  hoNDArray<std::complex<float> > a(*A);
-  hoNDArray<std::complex<float> > b(*A);
-
-  hoNDArray<std::complex<float> > res;
-
   {
     GadgetronTimer t("allocate res", true);
     res = a;
@@ -467,8 +479,6 @@ int main(int argc, char** argv)
   GADGET_MSG("norm2");
   GADGET_MSG("------------------------------------------------------------------");
 
-  float rn;
-
   {
     GadgetronTimer t("nrm2", true);
     rn = Gadgetron::nrm2(&a);
@@ -510,7 +520,7 @@ int main(int argc, char** argv)
   std::cout << "nrm1 = " << rn << std::endl;
 
   {
-    GadgetronTimer t("Time (DIRECT BLAS)", true);
+    GadgetronTimer t("Time (local unthreaded)", true);
     rn = hoNDArray_norm1(&a);
   }
   std::cout << "nrm1 = " << rn << std::endl;
