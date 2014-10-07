@@ -7,6 +7,7 @@ import ConfigParser
 import os
 import shutil
 import platform
+import time
 
 def run_test(environment, testcase_cfg_file):
     print("Running test case: " + testcase_cfg_file)
@@ -149,10 +150,11 @@ def run_test(environment, testcase_cfg_file):
 
             print("Running Gadgetron recon on data measurement")
             r = 0
+            start_time = time.time()
             r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , ismrmrd, "-c",
                                     gadgetron_configuration, "-G", gadgetron_configuration, "-o", result_h5],
                                     env=environment, stdout=cf, stderr=cf)
-            
+            print "Elapsed time: " + str(time.time()-start_time)
             if r != 0:
                 print("Failed to run gadgetron_ismrmrd_client!")
                 success = False
