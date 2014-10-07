@@ -21,6 +21,7 @@
 #include <fftw3.h>
 #include <valarray>
 #include <omp.h>
+#include "hoArmadillo.h"
 
 #define DIFF_LIMIT 1e-5
 
@@ -332,11 +333,6 @@ int main(int argc, char** argv)
     std::cout << C1->get_size(0) << ", " << C1->get_size(1) << ", " << C1->get_number_of_elements() << std::endl;
   }
 
-  {
-    GadgetronTimer t("Write time", true);
-    write_nd_array< std::complex<float> >(C1.get(), "C2_calc.cplx");
-  }
-
   double diff;
   {
     GadgetronTimer compare("CompareTime", true);
@@ -349,6 +345,40 @@ int main(int argc, char** argv)
   } else {
     std::cout << "Complex GEMM SUCCESS with diff: " << diff << std::endl;
   }
+
+  std::vector<size_t> dims;
+  dims.push_back(A->get_size(1));
+  dims.push_back(B->get_size(0));
+  hoNDArray<std::complex<float> > Cres(dims);
+  //std::cout << Cres.get_size(0) << ", " << Cres.get_size(1) << ", " << Cres.get_number_of_elements() << std::endl;
+  {
+    GadgetronTimer t("GEMM Time (Armadillo)", true);
+    arma::Mat<arma::cx_float> armaA = as_arma_matrix(A.get());
+    arma::Mat<arma::cx_float> armaB = as_arma_matrix(B.get());
+    arma::Mat<arma::cx_float> armaCres = as_arma_matrix(&Cres);
+    //std::cout << "A: Nrows: " << armaA.n_rows << ", Ncols: " << armaA.n_cols << ", Nelem: " << armaA.n_elem << std::endl;
+    //std::cout << "B: Nrows: " << armaB.n_rows << ", Ncols: " << armaB.n_cols << ", Nelem: " << armaB.n_elem << std::endl;
+    //std::cout << "C: Nrows: " << armaCres.n_rows << ", Ncols: " << armaCres.n_cols << ", Nelem: " << armaCres.n_elem << std::endl;
+    armaCres = armaB * armaA;
+  }
+
+  {
+    GadgetronTimer compare("CompareTime Armadillo", true);
+    diff = mcompare(&Cres,C2.get());
+  }
+
+  if (diff > DIFF_LIMIT) {
+    std::cout << "Armadillo Complex GEMM FAILED with diff: " << diff << std::endl;
+    return -1;
+  } else {
+    std::cout << "Armadillo Complex GEMM SUCCESS with diff: " << diff << std::endl;
+  }
+
+  {
+    GadgetronTimer t("Write time", true);
+    write_nd_array< std::complex<float> >(C1.get(), "C2_calc.cplx");
+  }
+
 
   hoNDArray_choldc(S.get());
   zero_tril(S.get());
