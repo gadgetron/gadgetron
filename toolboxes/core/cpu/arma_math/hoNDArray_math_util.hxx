@@ -259,8 +259,6 @@ namespace Gadgetron
         return true;
     }
 
-#ifndef USE_MKL
-
     template <typename T> 
     bool add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
@@ -1214,10 +1212,6 @@ namespace Gadgetron
         return true;
     }
 
-#endif // USE_MKL
-
-#ifndef USE_MKL
-
     // ----------------------------------------------------
 
     template <typename T> 
@@ -1470,6 +1464,4 @@ namespace Gadgetron
 
         return true;
     }
-
-#endif // USE_MKL
 }

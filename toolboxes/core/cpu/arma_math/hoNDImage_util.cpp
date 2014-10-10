@@ -321,7 +321,7 @@ inline void DericheSmoothing(T* pData, size_t N, T* mem, T2 sigma, size_t offset
             }
         }
 
-        Gadgetron::add(N, forward, reverse, pData);
+        Gadgetron::math::add(N, forward, reverse, pData);
     }
     else
     {

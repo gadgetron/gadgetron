@@ -21,10 +21,6 @@
 #include "GadgetronCommon.h"
 #include <complex>
 
-#ifdef USE_MKL
-#include "mkl.h"
-#endif // USE_MKL
-
 #ifdef GT_Complex8
 #undef GT_Complex8
 #endif // GT_Complex8
