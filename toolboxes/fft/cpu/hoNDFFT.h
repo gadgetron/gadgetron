@@ -231,6 +231,14 @@ namespace Gadgetron{
 
         #ifdef USE_MKL
 
+        bool fft1_mkl(hoNDArray< ComplexType >& a, bool forward);
+        bool fft2_mkl(hoNDArray< ComplexType >& a, bool forward);
+        bool fft3_mkl(hoNDArray< ComplexType >& a, bool forward);
+
+        bool fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
+        bool fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
+        bool fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
+
         // configure the 1D/2D/3D MKL based fft handles
         // x, y, z: the length of dimensions
         // n: the number of transformation

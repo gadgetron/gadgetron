@@ -263,7 +263,7 @@ namespace Gadgetron
                 deriv_(n) = ValueType( interp_Dist(it, iw) );
             }
 
-            Gadgetron::scal(ValueType(1.0/N), deriv_.begin(), deriv_.get_number_of_elements());
+            Gadgetron::math::scal(deriv_.get_number_of_elements(), ValueType(1.0/N), deriv_.begin());
         }
         catch(...)
         {
