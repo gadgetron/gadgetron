@@ -31,36 +31,6 @@ namespace Gadgetron
         Gadgetron::fill(N, pX, val);
     }
 
-    template<typename T, unsigned int D> inline void fill( hoNDImage<T, D>* x, T val )
-    {
-        size_t N = x->get_number_of_elements();
-        T* pX = x->begin();
-        Gadgetron::fill(N, pX, val);
-    }
-
-    template<typename T, unsigned int D> inline void fill( hoNDImage<T, D>& x, T val )
-    {
-        size_t N = x.get_number_of_elements();
-        T* pX = x.begin();
-        Gadgetron::fill(N, pX, val);
-    }
-
-    template<typename T, unsigned int D> inline void clear( hoNDImage<T, D>* x )
-    {
-        if ( x->get_number_of_elements() > 0 )
-        {
-            memset( x->get_data_ptr(), 0, x->get_number_of_elements()*sizeof(T));
-        }
-    }
-
-    template<typename T, unsigned int D> inline void clear( hoNDImage<T, D>& x )
-    {
-        if ( x.get_number_of_elements() > 0 )
-        {
-            memset( x.get_data_ptr(), 0, x.get_number_of_elements()*sizeof(T));
-        }
-    }
-
     template<class T> 
     bool real_imag_to_complex(const hoNDArray<typename realType<T>::Type>& real, const hoNDArray<typename realType<T>::Type>& imag, hoNDArray<T>& cplx)
     {
@@ -302,7 +272,7 @@ namespace Gadgetron
                 r = x;
             }
 
-            long long N = (long long)x.get_number_of_elements();
+            /*long long N = (long long)x.get_number_of_elements();
             long long n;
 
             const T* pX = x.begin();
@@ -332,7 +302,8 @@ namespace Gadgetron
                 {
                     pR[n] = pX[n] + pY[n];
                 }
-            }
+            }*/
+            Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
         }
         catch(...)
         {
@@ -350,7 +321,9 @@ namespace Gadgetron
         {
             GADGET_DEBUG_CHECK_RETURN_FALSE(x!=NULL && y!=NULL && r!=NULL);
 
-            long long n;
+            Gadgetron::math::add(N, x, y, r);
+            
+            /*long long n;
 
             const T* pX = x;
             const T* pY = y;
@@ -379,7 +352,7 @@ namespace Gadgetron
                 {
                     pR[n] = pX[n] + pY[n];
                 }
-            }
+            }*/
         }
         catch(...)
         {
@@ -401,7 +374,7 @@ namespace Gadgetron
                 r = x;
             }
 
-            long long N = (long long)x.get_number_of_elements();
+            /*long long N = (long long)x.get_number_of_elements();
             long long n;
 
             const T* pX = x.begin();
@@ -423,7 +396,9 @@ namespace Gadgetron
                 {
                     pR[n] = pX[n] - pY[n];
                 }
-            }
+            }*/
+            
+            Gadgetron::math::subtract(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
         }
         catch(...)
         {
@@ -441,7 +416,7 @@ namespace Gadgetron
         {
             GADGET_DEBUG_CHECK_RETURN_FALSE(x!=NULL && y!=NULL && r!=NULL);
 
-            long long n;
+            /*long long n;
 
             const T* pX = x;
             const T* pY = y;
@@ -470,7 +445,9 @@ namespace Gadgetron
                 {
                     pR[n] = pX[n] - pY[n];
                 }
-            }
+            }*/
+
+            Gadgetron::math::subtract(N, x, y, r);
         }
         catch(...)
         {
@@ -492,7 +469,7 @@ namespace Gadgetron
                 r = x;
             }
 
-            long long N = (long long)x.get_number_of_elements();
+            /*long long N = (long long)x.get_number_of_elements();
             long long n;
 
             const T* pX = x.begin();
@@ -522,7 +499,9 @@ namespace Gadgetron
                 {
                     pR[n] = pX[n] * pY[n];
                 }
-            }
+            }*/
+
+            Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
         }
         catch(...)
         {
@@ -540,7 +519,7 @@ namespace Gadgetron
         {
             GADGET_DEBUG_CHECK_RETURN_FALSE(x!=NULL && y!=NULL && r!=NULL);
 
-            long long n;
+            /*long long n;
 
             const T* pX = x;
             const T* pY = y;
@@ -569,7 +548,9 @@ namespace Gadgetron
                 {
                     pR[n] = pX[n] * pY[n];
                 }
-            }
+            }*/
+
+            Gadgetron::math::multiply(N, x, y, r);
         }
         catch(...)
         {
@@ -591,7 +572,7 @@ namespace Gadgetron
                 r = x;
             }
 
-            long long N = (long long)x.get_number_of_elements();
+            /*long long N = (long long)x.get_number_of_elements();
             long long n;
 
             const T* pX = x.begin();
@@ -613,7 +594,9 @@ namespace Gadgetron
                 {
                     pR[n] = pX[n]/pY[n];
                 }
-            }
+            }*/
+
+            Gadgetron::math::divide(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
         }
         catch(...)
         {
@@ -634,7 +617,7 @@ namespace Gadgetron
                 r.create(x.get_dimensions());
             }
 
-            long long N = (long long)x.get_number_of_elements();
+            /*long long N = (long long)x.get_number_of_elements();
             long long n;
 
             const T* pX = x.begin();
@@ -644,7 +627,8 @@ namespace Gadgetron
             for ( n=0; n<N; n++ )
             {
                 pR[n] = std::sqrt(pX[n]);
-            }
+            }*/
+            Gadgetron::math::sqrt(x.get_number_of_elements(), x.begin(), r.begin());
         }
         catch(...)
         {
@@ -660,10 +644,10 @@ namespace Gadgetron
     {
         try
         {
-            long long N = (long long)x.get_number_of_elements();
+            size_t N = x.get_number_of_elements();
             if ( N == 0 ) return true;
 
-            long long n;
+            /*long long n;
 
             const T* pX = x.begin();
 
@@ -682,7 +666,9 @@ namespace Gadgetron
                 }
             }
 
-            r = pX[ind];
+            r = pX[ind];*/
+
+            Gadgetron::math::minAbsolute(N, x.begin(), r, ind);
         }
         catch(...)
         {
@@ -698,9 +684,9 @@ namespace Gadgetron
     {
         try
         {
-            long long N = (long long)x.get_number_of_elements();
+            size_t N = x.get_number_of_elements();
             if ( N == 0 ) return true;
-
+/*
             long long n;
 
             const T* pX = x.begin();
@@ -721,6 +707,8 @@ namespace Gadgetron
             }
 
             r = pX[ind];
+*/
+            Gadgetron::math::maxAbsolute(N, x.begin(), r, ind);
         }
         catch(...)
         {
@@ -742,18 +730,20 @@ namespace Gadgetron
                 r = x;
             }
 
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
+            //long long N = (long long)x.get_number_of_elements();
+            //long long n;
 
-            const T* pX = x.begin();
-            const T* pY = y.begin();
-            T* pR = r.begin();
+            //const T* pX = x.begin();
+            //const T* pY = y.begin();
+            //T* pR = r.begin();
 
-            #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-            for ( n=0; n<N; n++ )
-            {
-                pR[n] = pX[n] * std::conj(pY[n]);
-            }
+            //#pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
+            //for ( n=0; n<N; n++ )
+            //{
+            //    pR[n] = pX[n] * std::conj(pY[n]);
+            //}
+
+            Gadgetron::math::multiplyConj(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
         }
         catch(...)
         {
@@ -774,7 +764,7 @@ namespace Gadgetron
                 r.create(x.get_dimensions());
             }
 
-            long long N = (long long)x.get_number_of_elements();
+            /*long long N = (long long)x.get_number_of_elements();
             long long n;
 
             const T* pX = x.begin();
@@ -784,7 +774,9 @@ namespace Gadgetron
             for ( n=0; n<N; n++ )
             {
                 pR[n] = std::conj(pX[n]);
-            }
+            }*/
+
+            Gadgetron::math::conjugate(x.get_number_of_elements(), x.begin(), r.begin());
         }
         catch(...)
         {
@@ -800,21 +792,23 @@ namespace Gadgetron
     {
         try
         {
-            size_t n = x.get_number_of_elements();
-            T* pX = x.begin();
+            //size_t n = x.get_number_of_elements();
+            //T* pX = x.begin();
 
-            typename realType<T>::Type eps = std::numeric_limits<typename realType<T>::Type>::epsilon();
+            //typename realType<T>::Type eps = std::numeric_limits<typename realType<T>::Type>::epsilon();
 
-            long long i;
+            //long long i;
 
-            #pragma omp parallel for default(none) private(i) shared(n, pX, eps)
-            for (i=0; i<(long long)n; i++ )
-            {
-                if ( std::abs(pX[i]) < eps )
-                {
-                    pX[i] += eps;
-                }
-            }
+            //#pragma omp parallel for default(none) private(i) shared(n, pX, eps)
+            //for (i=0; i<(long long)n; i++ )
+            //{
+            //    if ( std::abs(pX[i]) < eps )
+            //    {
+            //        pX[i] += eps;
+            //    }
+            //}
+
+            Gadgetron::math::addEpsilon(x.get_number_of_elements(), x.begin());
         }
         catch(...)
         {
@@ -830,21 +824,23 @@ namespace Gadgetron
     {
         try
         {
-            size_t n = x.get_number_of_elements();
-            const T* pX = x.begin();
+            //size_t n = x.get_number_of_elements();
+            //const T* pX = x.begin();
 
-            typename realType<T>::Type sqrNormSum(0), v;
+            //typename realType<T>::Type sqrNormSum(0), v;
 
-            long long i;
+            //long long i;
 
-            #pragma omp parallel for default(none) private(i, v) shared(n, pX) reduction(+:sqrNormSum)
-            for (i=0; i<(long long)n; i++ )
-            {
-                v = std::abs(pX[i]);
-                sqrNormSum = sqrNormSum + v*v;
-            }
+            //#pragma omp parallel for default(none) private(i, v) shared(n, pX) reduction(+:sqrNormSum)
+            //for (i=0; i<(long long)n; i++ )
+            //{
+            //    v = std::abs(pX[i]);
+            //    sqrNormSum = sqrNormSum + v*v;
+            //}
 
-            r = std::sqrt(sqrNormSum);
+            //r = std::sqrt(sqrNormSum);
+
+            Gadgetron::math::norm2(x.get_number_of_elements(), x.begin(), r);
         }
         catch(...)
         {
@@ -860,7 +856,7 @@ namespace Gadgetron
     {
         try
         {
-            size_t n = x.get_number_of_elements();
+            /*size_t n = x.get_number_of_elements();
             const T* pX = x.begin();
 
             typename realType<T>::Type norm1Sum(0), v;
@@ -873,7 +869,9 @@ namespace Gadgetron
                 norm1Sum = norm1Sum + std::abs(pX[i]);
             }
 
-            r = norm1Sum;
+            r = norm1Sum;*/
+
+           Gadgetron::math::norm1(x.get_number_of_elements(), x.begin(), r);
         }
         catch(...)
         {
@@ -891,22 +889,24 @@ namespace Gadgetron
         {
             GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
 
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
+            //long long N = (long long)x.get_number_of_elements();
+            //long long n;
 
-            const T* pX = x.begin();
-            const T* pY = y.begin();
-            r = 0;
+            //const T* pX = x.begin();
+            //const T* pY = y.begin();
+            //r = 0;
 
-            T res(0);
+            //T res(0);
 
-            // #pragma omp parallel for default(none) private(n) shared(N, pX, pY) reduction(+:res)
-            for ( n=0; n<N; n++ )
-            {
-                res += std::conj(pX[n]) *pY[n];
-            }
+            //// #pragma omp parallel for default(none) private(n) shared(N, pX, pY) reduction(+:res)
+            //for ( n=0; n<N; n++ )
+            //{
+            //    res += std::conj(pX[n]) *pY[n];
+            //}
 
-            r = res;
+            //r = res;
+
+            Gadgetron::math::dotc(x.get_number_of_elements(), x.begin(), y.begin(), r);
         }
         catch(...)
         {
@@ -925,14 +925,16 @@ namespace Gadgetron
             r.create(x.get_dimensions());
         }
 
-        long long N = (long long)x.get_number_of_elements();
+        /*long long N = (long long)x.get_number_of_elements();
         long long n;
 
         #pragma omp parallel for default(none) private(n) shared(N, x, r)
         for ( n=0; n<N; n++ )
         {
             r(n) = std::abs( x(n) );
-        }
+        }*/
+
+        Gadgetron::math::absolute(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
@@ -945,14 +947,16 @@ namespace Gadgetron
             r.create(x.get_dimensions());
         }
 
-        long long N = (long long)x.get_number_of_elements();
-        long long n;
+        //long long N = (long long)x.get_number_of_elements();
+        //long long n;
 
-        #pragma omp parallel for default(none) private(n) shared(N, x, r)
-        for ( n=0; n<N; n++ )
-        {
-            r(n) = std::arg( x(n) );
-        }
+        //#pragma omp parallel for default(none) private(n) shared(N, x, r)
+        //for ( n=0; n<N; n++ )
+        //{
+        //    r(n) = std::arg( x(n) );
+        //}
+
+        Gadgetron::math::argument(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
@@ -967,7 +971,7 @@ namespace Gadgetron
                 r = x;
             }
 
-            const T* pX = x.begin();
+            /*const T* pX = x.begin();
             T* pR = r.begin();
 
             T v(1.0);
@@ -978,7 +982,9 @@ namespace Gadgetron
             for ( ii=0; ii<n; ii++ )
             {
                 pR[ii] = v/pX[ii];
-            }
+            }*/
+
+            Gadgetron::math::inv(x.get_number_of_elements(), x.begin(), r.begin());
         }
         catch(...)
         {
@@ -1006,74 +1012,76 @@ namespace Gadgetron
             long long kRO = (long long) y.get_size(0);
             long long kE1 = (long long) y.get_size(1);
 
-            long long halfKRO = kRO/2;
-            long long halfKE1 = kE1/2;
+            Gadgetron::math::conv2(RO, E1, num, x.begin(), kRO, kE1, y.begin(), z.begin());
 
-            hoNDArray<T> flipY(2*halfKRO+1, 2*halfKE1+1);
-            Gadgetron::clear(flipY);
+            //long long halfKRO = kRO/2;
+            //long long halfKE1 = kE1/2;
 
-            T* pKer = flipY.begin();
+            //hoNDArray<T> flipY(2*halfKRO+1, 2*halfKE1+1);
+            //Gadgetron::clear(flipY);
 
-            long long n;
-            long long ro, e1;
+            //T* pKer = flipY.begin();
 
-            // flip the kernel
-            for ( e1=0; e1<kE1; e1++ )
-            {
-                long long flip_e1 = 2*halfKE1 - e1;
+            //long long n;
+            //long long ro, e1;
 
-                for ( ro=0; ro<kRO; ro++ )
-                {
-                    long long flip_ro = 2*halfKRO - ro;
+            //// flip the kernel
+            //for ( e1=0; e1<kE1; e1++ )
+            //{
+            //    long long flip_e1 = 2*halfKE1 - e1;
 
-                    flipY(flip_ro, flip_e1) = y(ro, e1);
-                }
-            }
+            //    for ( ro=0; ro<kRO; ro++ )
+            //    {
+            //        long long flip_ro = 2*halfKRO - ro;
 
-            // perform the convolution
-            #pragma omp parallel for default(none) private(n, ro, e1) shared(num, x, RO, E1, z, halfKRO, halfKE1, pKer)
-            for ( n=0; n<num; n++ )
-            {
-                const T* pX = x.begin() + n*RO*E1;
-                T* pZ = z.begin() + n*RO*E1;
+            //        flipY(flip_ro, flip_e1) = y(ro, e1);
+            //    }
+            //}
 
-                long long kro, ke1, dro, de1;
+            //// perform the convolution
+            //#pragma omp parallel for default(none) private(n, ro, e1) shared(num, x, RO, E1, z, halfKRO, halfKE1, pKer)
+            //for ( n=0; n<num; n++ )
+            //{
+            //    const T* pX = x.begin() + n*RO*E1;
+            //    T* pZ = z.begin() + n*RO*E1;
 
-                for ( e1=0; e1<E1; e1++ )
-                {
-                    for ( ro=0; ro<RO; ro++ )
-                    {
-                        pZ[ro + e1*RO] = 0;
-                        for ( ke1=-halfKE1; ke1<=halfKE1; ke1++ )
-                        {
-                            de1 = ke1 + e1;
-                            if ( de1 < 0 )
-                            {
-                                de1 += E1;
-                            }
-                            else if ( de1 >= E1 )
-                            {
-                                de1 -= E1;
-                            }
+            //    long long kro, ke1, dro, de1;
 
-                            for ( kro=-halfKRO; kro<=halfKRO; kro++ )
-                            {
-                                dro = kro + ro;
-                                if ( dro < 0 )
-                                {
-                                    dro += RO;
-                                }
-                                else if ( dro >= RO )
-                                {
-                                    dro -= RO;
-                                }
+            //    for ( e1=0; e1<E1; e1++ )
+            //    {
+            //        for ( ro=0; ro<RO; ro++ )
+            //        {
+            //            pZ[ro + e1*RO] = 0;
+            //            for ( ke1=-halfKE1; ke1<=halfKE1; ke1++ )
+            //            {
+            //                de1 = ke1 + e1;
+            //                if ( de1 < 0 )
+            //                {
+            //                    de1 += E1;
+            //                }
+            //                else if ( de1 >= E1 )
+            //                {
+            //                    de1 -= E1;
+            //                }
 
-                                pZ[ro + e1*RO] += pKer[ kro+halfKRO + (ke1+halfKE1) * (2*halfKRO+1) ] * pX[dro + de1*RO];
-                            }
-                        }
-                    }
-                }
-            }
+            //                for ( kro=-halfKRO; kro<=halfKRO; kro++ )
+            //                {
+            //                    dro = kro + ro;
+            //                    if ( dro < 0 )
+            //                    {
+            //                        dro += RO;
+            //                    }
+            //                    else if ( dro >= RO )
+            //                    {
+            //                        dro -= RO;
+            //                    }
+
+            //                    pZ[ro + e1*RO] += pKer[ kro+halfKRO + (ke1+halfKE1) * (2*halfKRO+1) ] * pX[dro + de1*RO];
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
         }
         catch(...)
         {
@@ -1103,97 +1111,99 @@ namespace Gadgetron
             long long kE1 = (long long) y.get_size(1);
             long long kE2 = (long long) y.get_size(2);
 
-            long long halfKRO = kRO/2;
-            long long halfKE1 = kE1/2;
-            long long halfKE2 = kE2/2;
+            Gadgetron::math::conv3(RO, E1, E2, num, x.begin(), kRO, kE1, kE2, y.begin(), z.begin());
 
-            hoNDArray<T> flipY(2*halfKRO+1, 2*halfKE1+1, 2*halfKE2+1);
-            Gadgetron::clear(flipY);
+            //long long halfKRO = kRO/2;
+            //long long halfKE1 = kE1/2;
+            //long long halfKE2 = kE2/2;
 
-            T* pKer = flipY.begin();
+            //hoNDArray<T> flipY(2*halfKRO+1, 2*halfKE1+1, 2*halfKE2+1);
+            //Gadgetron::clear(flipY);
 
-            long long n, e2;
-            long long ro, e1;
+            //T* pKer = flipY.begin();
 
-            // flip the kernel
-            for ( e2=0; e2<kE2; e2++ )
-            {
-                long long flip_e2 = 2*halfKE2 - e2;
+            //long long n, e2;
+            //long long ro, e1;
 
-                for ( e1=0; e1<kE1; e1++ )
-                {
-                    long long flip_e1 = 2*halfKE1 - e1;
+            //// flip the kernel
+            //for ( e2=0; e2<kE2; e2++ )
+            //{
+            //    long long flip_e2 = 2*halfKE2 - e2;
 
-                    for ( ro=0; ro<kRO; ro++ )
-                    {
-                        long long flip_ro = 2*halfKRO - ro;
+            //    for ( e1=0; e1<kE1; e1++ )
+            //    {
+            //        long long flip_e1 = 2*halfKE1 - e1;
 
-                        flipY(flip_ro, flip_e1, flip_e2) = y(ro, e1, e2);
-                    }
-                }
-            }
+            //        for ( ro=0; ro<kRO; ro++ )
+            //        {
+            //            long long flip_ro = 2*halfKRO - ro;
 
-            // perform the convolution
-            #pragma omp parallel for default(none) private(n, ro, e1, e2) shared(num, x, RO, E1, E2, z, halfKRO, halfKE1, halfKE2, pKer) if ( num > 8 )
-            for ( n=0; n<num; n++ )
-            {
-                const T* pX = x.begin() + n*RO*E1*E2;
-                T* pZ = z.begin() + n*RO*E1*E2;
+            //            flipY(flip_ro, flip_e1, flip_e2) = y(ro, e1, e2);
+            //        }
+            //    }
+            //}
 
-                long long kro, ke1, ke2, dro, de1, de2;
+            //// perform the convolution
+            //#pragma omp parallel for default(none) private(n, ro, e1, e2) shared(num, x, RO, E1, E2, z, halfKRO, halfKE1, halfKE2, pKer) if ( num > 8 )
+            //for ( n=0; n<num; n++ )
+            //{
+            //    const T* pX = x.begin() + n*RO*E1*E2;
+            //    T* pZ = z.begin() + n*RO*E1*E2;
 
-                #pragma omp parallel for default(none) private(ro, e1, e2, kro, ke1, ke2, dro, de1, de2) shared(pX, RO, E1, E2, pZ, halfKRO, halfKE1, halfKE2, pKer)
-                for ( e2=0; e2<E2; e2++ )
-                {
-                    for ( e1=0; e1<E1; e1++ )
-                    {
-                        for ( ro=0; ro<RO; ro++ )
-                        {
-                            pZ[ro + e1*RO + e2*RO*E1] = 0;
-                            for ( ke2=-halfKE2; ke2<=halfKE2; ke2++ )
-                            {
-                                de2 = ke2 + e2;
-                                if ( de2 < 0 )
-                                {
-                                    de2 += E2;
-                                }
-                                else if ( de2 >= E2 )
-                                {
-                                    de2 -= E2;
-                                }
+            //    long long kro, ke1, ke2, dro, de1, de2;
 
-                                for ( ke1=-halfKE1; ke1<=halfKE1; ke1++ )
-                                {
-                                    de1 = ke1 + e1;
-                                    if ( de1 < 0 )
-                                    {
-                                        de1 += E1;
-                                    }
-                                    else if ( de1 >= E1 )
-                                    {
-                                        de1 -= E1;
-                                    }
+            //    #pragma omp parallel for default(none) private(ro, e1, e2, kro, ke1, ke2, dro, de1, de2) shared(pX, RO, E1, E2, pZ, halfKRO, halfKE1, halfKE2, pKer)
+            //    for ( e2=0; e2<E2; e2++ )
+            //    {
+            //        for ( e1=0; e1<E1; e1++ )
+            //        {
+            //            for ( ro=0; ro<RO; ro++ )
+            //            {
+            //                pZ[ro + e1*RO + e2*RO*E1] = 0;
+            //                for ( ke2=-halfKE2; ke2<=halfKE2; ke2++ )
+            //                {
+            //                    de2 = ke2 + e2;
+            //                    if ( de2 < 0 )
+            //                    {
+            //                        de2 += E2;
+            //                    }
+            //                    else if ( de2 >= E2 )
+            //                    {
+            //                        de2 -= E2;
+            //                    }
 
-                                    for ( kro=-halfKRO; kro<=halfKRO; kro++ )
-                                    {
-                                        dro = kro + ro;
-                                        if ( dro < 0 )
-                                        {
-                                            dro += RO;
-                                        }
-                                        else if ( dro >= RO )
-                                        {
-                                            dro -= RO;
-                                        }
+            //                    for ( ke1=-halfKE1; ke1<=halfKE1; ke1++ )
+            //                    {
+            //                        de1 = ke1 + e1;
+            //                        if ( de1 < 0 )
+            //                        {
+            //                            de1 += E1;
+            //                        }
+            //                        else if ( de1 >= E1 )
+            //                        {
+            //                            de1 -= E1;
+            //                        }
 
-                                        pZ[ro + e1*RO + e2*RO*E1] += pKer[ kro+halfKRO + (ke1+halfKE1)*(2*halfKRO+1) + (ke2+halfKE2)*(2*halfKRO+1)*(2*halfKE1+1) ] * pX[dro + de1*RO + de2*RO*E1];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            //                        for ( kro=-halfKRO; kro<=halfKRO; kro++ )
+            //                        {
+            //                            dro = kro + ro;
+            //                            if ( dro < 0 )
+            //                            {
+            //                                dro += RO;
+            //                            }
+            //                            else if ( dro >= RO )
+            //                            {
+            //                                dro -= RO;
+            //                            }
+
+            //                            pZ[ro + e1*RO + e2*RO*E1] += pKer[ kro+halfKRO + (ke1+halfKE1)*(2*halfKRO+1) + (ke2+halfKE2)*(2*halfKRO+1)*(2*halfKE1+1) ] * pX[dro + de1*RO + de2*RO*E1];
+            //                        }
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
         }
         catch(...)
         {
@@ -1219,7 +1229,7 @@ namespace Gadgetron
         {
             GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
 
-            long long N = (long long)x.get_number_of_elements();
+            /*long long N = (long long)x.get_number_of_elements();
             long long n;
 
             const T* pX = x.begin();
@@ -1229,7 +1239,8 @@ namespace Gadgetron
             for ( n=0; n<N; n++ )
             {
                 r = r + std::conj(pX[n]) *pY[n];
-            }
+            }*/
+            dotc(x, y, r);
         }
         catch(...)
         {
@@ -1249,7 +1260,7 @@ namespace Gadgetron
         {
             GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
 
-            long long N = (long long)x.get_number_of_elements();
+            /*long long N = (long long)x.get_number_of_elements();
             long long n;
 
             const T* pX = x.begin();
@@ -1259,7 +1270,9 @@ namespace Gadgetron
             for ( n=0; n<N; n++ )
             {
                 r = r + pX[n]*pY[n];
-            }
+            }*/
+
+            Gadgetron::math::dotu(x.get_number_of_elements(), x.begin(), y.begin(), r);
         }
         catch(...)
         {
@@ -1289,18 +1302,20 @@ namespace Gadgetron
                 }
             }
 
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
+            //long long N = (long long)x.get_number_of_elements();
+            //long long n;
 
-            const T* pX = x.begin();
-            const T* pY = y.begin();
-            T* pR = r.begin();
+            //const T* pX = x.begin();
+            //const T* pY = y.begin();
+            //T* pR = r.begin();
 
-            #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR, a)
-            for ( n=0; n<N; n++ )
-            {
-                pR[n] = a*pX[n] + pY[n];
-            }
+            //#pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR, a)
+            //for ( n=0; n<N; n++ )
+            //{
+            //    pR[n] = a*pX[n] + pY[n];
+            //}
+
+            Gadgetron::math::axpy(a, x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
         }
         catch(...)
         {
@@ -1316,7 +1331,7 @@ namespace Gadgetron
     {
         try
         {
-            long long N = (long long)x.get_number_of_elements();
+            /*long long N = (long long)x.get_number_of_elements();
             long long n;
 
             T* pX = x.begin();
@@ -1325,7 +1340,9 @@ namespace Gadgetron
             for ( n=0; n<N; n++ )
             {
                 pX[n] *= a;
-            }
+            }*/
+
+            Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
         }
         catch(...)
         {
@@ -1341,7 +1358,7 @@ namespace Gadgetron
     {
         try
         {
-            long long N = (long long)x.get_number_of_elements();
+            /*long long N = (long long)x.get_number_of_elements();
             long long n;
 
             std::complex<T>* pX = x.begin();
@@ -1350,7 +1367,9 @@ namespace Gadgetron
             for ( n=0; n<N; n++ )
             {
                 pX[n] *= a;
-            }
+            }*/
+
+            Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
         }
         catch(...)
         {
@@ -1366,13 +1385,15 @@ namespace Gadgetron
     {
         try
         {
-            long long n;
+            /*long long n;
 
             #pragma omp parallel for default(none) private(n) shared(N, x, a)
             for ( n=0; n<N; n++ )
             {
                 x[n] *= a;
-            }
+            }*/
+
+            Gadgetron::math::scal(N, a, x);
         }
         catch(...)
         {
@@ -1388,13 +1409,15 @@ namespace Gadgetron
     {
         try
         {
-            long long n;
+            /*long long n;
 
             #pragma omp parallel for default(none) private(n) shared(N, x, a)
             for ( n=0; n<N; n++ )
             {
                 x[n] *= a;
-            }
+            }*/
+
+            Gadgetron::math::scal(N, a, x);
         }
         catch(...)
         {
@@ -1405,67 +1428,17 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename T, unsigned int D> 
-    bool scal(T a, hoNDImage<T, D>& x)
-    {
-        try
-        {
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
+    //template <typename T> 
+    //struct hoNDArrayCompAscending
+    //{
+    //    bool operator() (T a, T b) { return (a>=b); }
+    //};
 
-            T* pX = x.begin();
-
-            #pragma omp parallel for default(none) private(n) shared(N, pX, a)
-            for ( n=0; n<N; n++ )
-            {
-                pX[n] *= a;
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in scal(T a, hoNDImage<T, D>& x) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
-    bool scal(T a, hoNDImage< std::complex<T>, D>& x)
-    {
-        try
-        {
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
-
-            std::complex<T>* pX = x.begin();
-
-            #pragma omp parallel for default(none) private(n) shared(N, pX, a)
-            for ( n=0; n<N; n++ )
-            {
-                pX[n] *= a;
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in scal(T a, hoNDImage< std::complex<T>, D>& x) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <typename T> 
-    struct hoNDArrayCompAscending
-    {
-        bool operator() (T a, T b) { return (a>=b); }
-    };
-
-    template <typename T> 
-    struct hoNDArrayCompDescending
-    {
-        bool operator() (T a, T b) { return (a<b); }
-    };
+    //template <typename T> 
+    //struct hoNDArrayCompDescending
+    //{
+    //    bool operator() (T a, T b) { return (a<b); }
+    //};
 
     template <typename T> 
     bool sort(const hoNDArray<T>& x, hoNDArray<T>& r, bool isascending)
@@ -1482,7 +1455,7 @@ namespace Gadgetron
             }
         }
 
-        if ( isascending )
+        /*if ( isascending )
         {
             hoNDArrayCompAscending<T> obj;
             std::sort(r.begin(), r.end(), obj);
@@ -1491,7 +1464,9 @@ namespace Gadgetron
         {
             hoNDArrayCompDescending<T> obj;
             std::sort(r.begin(), r.end(), obj);
-        }
+        }*/
+
+        Gadgetron::math::sort(x.get_number_of_elements(), x.begin(), r.begin(), isascending);
 
         return true;
     }

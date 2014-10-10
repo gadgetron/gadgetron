@@ -12,6 +12,7 @@
 #include "ho7DArray.h"
 #include "hoNDImage.h"
 #include "cpucore_math_export.h"
+#include "hoNDMath_util.h"
 
 #include "GadgetronCommon.h"
 #include <complex>
@@ -262,6 +263,18 @@ namespace Gadgetron
     */
     template <typename T, unsigned int D> 
     bool corrCoef(const hoNDImage<T, D>& a, const hoNDImage<T, D>& b, T& r);
+
+    template<typename T, unsigned int D> void fill( hoNDImage<T, D>* x, T val );
+    template<typename T, unsigned int D> void fill( hoNDImage<T, D>& x, T val );
+
+    template<typename T, unsigned int D> void clear( hoNDImage<T, D>* x );
+    template<typename T, unsigned int D> void clear( hoNDImage<T, D>& x );
+
+    /**
+    * @brief compute x *= a for an image
+    */
+    template <typename T, unsigned int D> bool scal(T a, hoNDImage<T, D>& x);
+    template <typename T, unsigned int D> bool scal(T a, hoNDImage< std::complex<T>, D>& x);
 
 #ifdef USE_MKL
 

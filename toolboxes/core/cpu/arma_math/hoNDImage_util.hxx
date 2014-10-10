@@ -4,6 +4,90 @@
 
 namespace Gadgetron
 {
+    template<typename T, unsigned int D> inline void fill( hoNDImage<T, D>* x, T val )
+    {
+        size_t N = x->get_number_of_elements();
+        T* pX = x->begin();
+        Gadgetron::math::fill(N, pX, val);
+    }
+
+    template<typename T, unsigned int D> inline void fill( hoNDImage<T, D>& x, T val )
+    {
+        size_t N = x.get_number_of_elements();
+        T* pX = x.begin();
+        Gadgetron::math::fill(N, pX, val);
+    }
+
+    template<typename T, unsigned int D> inline void clear( hoNDImage<T, D>* x )
+    {
+        if ( x->get_number_of_elements() > 0 )
+        {
+            memset( x->get_data_ptr(), 0, x->get_number_of_elements()*sizeof(T));
+        }
+    }
+
+    template<typename T, unsigned int D> inline void clear( hoNDImage<T, D>& x )
+    {
+        if ( x.get_number_of_elements() > 0 )
+        {
+            memset( x.get_data_ptr(), 0, x.get_number_of_elements()*sizeof(T));
+        }
+    }
+
+    template <typename T, unsigned int D> 
+    bool scal(T a, hoNDImage<T, D>& x)
+    {
+        try
+        {
+            /*long long N = (long long)x.get_number_of_elements();
+            long long n;
+
+            T* pX = x.begin();
+
+            #pragma omp parallel for default(none) private(n) shared(N, pX, a)
+            for ( n=0; n<N; n++ )
+            {
+                pX[n] *= a;
+            }*/
+
+            Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in scal(T a, hoNDImage<T, D>& x) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template <typename T, unsigned int D> 
+    bool scal(T a, hoNDImage< std::complex<T>, D>& x)
+    {
+        try
+        {
+            /*long long N = (long long)x.get_number_of_elements();
+            long long n;
+
+            std::complex<T>* pX = x.begin();
+
+            #pragma omp parallel for default(none) private(n) shared(N, pX, a)
+            for ( n=0; n<N; n++ )
+            {
+                pX[n] *= a;
+            }*/
+
+            Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in scal(T a, hoNDImage< std::complex<T>, D>& x) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
     template<class T, unsigned int D> 
     bool real_imag_to_complex(const hoNDImage<typename realType<T>::Type, D>& real, 
                         const hoNDImage<typename realType<T>::Type, D>& imag, 
