@@ -1001,7 +1001,7 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
 
     bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
     {
-        return GeneralMatrixProduct_gemm(C, A, transA, B, transB);
+        return GeneralMatrixProduct_gemm(C, A, false, B, false);
     }
 
     template<typename T> 
