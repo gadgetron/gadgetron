@@ -231,8 +231,8 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 pOut[ii] += v1;
             }
 
-            Gadgetron::scal( scaleFactor, pOut, RO*E1);
-            Gadgetron::scal( scaleFactor, LH, RO*E1);
+            Gadgetron::math::scal( RO*E1, scaleFactor, pOut );
+            Gadgetron::math::scal( RO*E1, scaleFactor, LH );
 
             T* HL = LH + RO*E1;
             T* HH = HL + RO*E1;
@@ -263,10 +263,10 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 pOut[ii] += v1;
             }
 
-            Gadgetron::scal( scaleFactor, pOut, RO*E1);
-            Gadgetron::scal( scaleFactor, LH, RO*E1);
-            Gadgetron::scal( scaleFactor, HL, RO*E1);
-            Gadgetron::scal( scaleFactor, HH, RO*E1);
+            Gadgetron::math::scal( RO*E1, scaleFactor, pOut);
+            Gadgetron::math::scal( RO*E1, scaleFactor, LH);
+            Gadgetron::math::scal( RO*E1, scaleFactor, HL);
+            Gadgetron::math::scal( RO*E1, scaleFactor, HH);
         }
     }
     catch (...)
@@ -330,8 +330,8 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 pTmp [ii] = LH[ii] + vLH + HH[ii] - vHH;
             }
 
-            Gadgetron::scal( scaleFactor, pOut, RO*E1);
-            Gadgetron::scal( scaleFactor, pTmp, RO*E1);
+            Gadgetron::math::scal( RO*E1, scaleFactor, pOut );
+            Gadgetron::math::scal( RO*E1, scaleFactor, pTmp );
 
             long long ro;
             #pragma omp parallel for default(none) private(ro) shared(RO, E1, pOut, pTmp)
@@ -351,7 +351,7 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 pOut[ro] += pTmp[ro] + vLL - vLH;
             }
 
-            Gadgetron::scal( scaleFactor, pOut, RO*E1);
+            Gadgetron::math::scal( RO*E1, scaleFactor, pOut );
         }
     }
     catch (...)
