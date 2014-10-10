@@ -80,6 +80,8 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A);
     // matrix computation calls armadillo
     #ifdef USE_ARMADILLO
 
+    EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B);
+
     template<typename T> EXPORTCPUCOREMATH 
     bool GeneralMatrixProduct_gemm(hoNDArray<T>& C, 
                                 const hoNDArray<T>& A, bool transA, 

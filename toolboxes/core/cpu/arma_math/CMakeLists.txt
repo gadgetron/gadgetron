@@ -24,12 +24,14 @@ set(cpucore_math_header_files
     hoNDImage_util.h
     hoNDImage_util.hxx
     hoNDImage_util_instantiate.hxx 
-    hoMatrix_util.h )
+    hoMatrix_util.h 
+    hoNDMath_util.h )
 
 set(cpucore_math_src_files 
     hoNDArray_math_util.cpp
     hoNDImage_util.cpp 
-    hoMatrix_util.cpp )
+    hoMatrix_util.cpp
+    hoNDMath_util.cpp )
 
 if (ARMADILLO_FOUND)
 
@@ -66,6 +68,8 @@ else (MKL_FOUND)
         gadgetron_toolbox_cpucore
         ${ARMADILLO_LIBRARIES}
         ${ISMRMRD_LIBRARIES}
+        ${BLAS_LIBRARIES}
+        ${LAPACK_LIBRARIES}
         ${FFTW3_LIBRARIES}
     )
 endif (MKL_FOUND)

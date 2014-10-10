@@ -9,7 +9,7 @@
     #ifdef BUILD_TOOLBOX_STATIC
         #define EXPORTCPUCOREMATH
     #else
-        #if defined (__BUILD_GADGETRON_CPUCORE_MATH__) || defined (cpucore_math_EXPORTS)
+        #if defined (__BUILD_GADGETRON_CPUCORE_MATH__) || defined (gadgetron_toolbox_cpucore_math_EXPORTS)
             #define EXPORTCPUCOREMATH __declspec(dllexport)
         #else
             #define EXPORTCPUCOREMATH __declspec(dllimport)

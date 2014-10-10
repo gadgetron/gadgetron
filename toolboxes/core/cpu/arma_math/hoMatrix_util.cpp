@@ -999,6 +999,11 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
 
     #pragma message("Compile armadillo implementation of hoMatrix functions ... ")
 
+    bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
+    {
+        return GeneralMatrixProduct_gemm(C, A, transA, B, transB);
+    }
+
     template<typename T> 
     bool GeneralMatrixProduct_gemm(hoNDArray<T>& C, 
                                 const hoNDArray<T>& A, bool transA, 
