@@ -1074,7 +1074,7 @@ performCalib(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& ref_s
             {
                 int usedS;
                 #ifdef USE_OMP
-                    omp_set_nested(1);
+                    if ( S < omp_get_num_procs()/2 ) omp_set_nested(1);
                 #endif // USE_OMP
 
                 #ifdef GCC_OLD_FLAG
@@ -1265,8 +1265,9 @@ bool gtPlusReconWorker2DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
 
         int n;
 
-        if ( num <= 16 )
+        if ( num <= 8 )
         {
+            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("applyImageDomainKernelImage - multipleMultiply - sumOverSecondLastDimension ... "));
             for ( n=0; n<(int)num; n++ )
             {
                 hoNDArray<T> buf3D(&dim3D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*srcCHA));
@@ -1275,6 +1276,7 @@ bool gtPlusReconWorker2DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
                 Gadgetron::multipleMultiply(buf3D, kerIm, kerImBuffer);
                 Gadgetron::sumOverSecondLastDimension(kerImBuffer, bufIm3D);
             }
+            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
         }
         else
         {

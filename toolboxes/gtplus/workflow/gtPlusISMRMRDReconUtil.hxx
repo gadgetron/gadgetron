@@ -4999,7 +4999,7 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
 
         long long n;
 
-        if ( N >= 8 )
+        if ( N >= 16 )
         {
             #ifdef GCC_OLD_FLAG
                 #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, power, iterNum, thres)
