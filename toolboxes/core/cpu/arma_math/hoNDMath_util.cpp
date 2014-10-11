@@ -893,7 +893,7 @@ namespace Gadgetron { namespace math {
 
                 float sum(0);
 
-#pragma omp parallel for reduction(+:sum)
+#pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
                 for (i = 0; i < (long long)N; i++)
                 {
                     const float& re = x[i];
@@ -930,7 +930,7 @@ namespace Gadgetron { namespace math {
 
                 double sum(0);
 
-#pragma omp parallel for reduction(+:sum)
+#pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
                 for (i = 0; i < (long long)N; i++)
                 {
                     const double& re = x[i];
@@ -967,7 +967,7 @@ namespace Gadgetron { namespace math {
 
                 float sum(0);
 
-#pragma omp parallel for reduction(+:sum)
+#pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
                 for (i = 0; i < (long long)N; i++)
                 {
                     const std::complex<float>& c = x[i];
@@ -1006,7 +1006,7 @@ namespace Gadgetron { namespace math {
 
                 double sum(0);
 
-#pragma omp parallel for reduction(+:sum)
+#pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
                 for (i = 0; i < (long long)N; i++)
                 {
                     const std::complex<double>& c = x[i];
@@ -1049,7 +1049,7 @@ namespace Gadgetron { namespace math {
 
             typename realType<T>::Type norm1Sum(0);
 
-            #pragma omp parallel for reduction(+:norm1Sum)
+            #pragma omp parallel for reduction(+:norm1Sum) if (N>NumElementsUseThreading)
             for (n=0; n<(long long)N; n++)
             {
                 const T& c = x[n];
@@ -1071,7 +1071,7 @@ namespace Gadgetron { namespace math {
     {
         long long i;
         float sum = 0.0f;
-        #pragma omp parallel for reduction(+:sum)
+        #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
             const std::complex<float>& c = x[i];
@@ -1087,7 +1087,7 @@ namespace Gadgetron { namespace math {
     {
         long long i;
         double sum = 0.0;
-        #pragma omp parallel for reduction(+:sum)
+        #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
             const std::complex<double>& c = x[i];
@@ -1122,7 +1122,7 @@ namespace Gadgetron { namespace math {
 
         typename realType<T>::Type sa(0), sb(0);
 
-#pragma omp parallel for reduction(+:sa)
+#pragma omp parallel for reduction(+:sa) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const typename realType<T>::Type a = x[n].real();
@@ -1209,7 +1209,7 @@ namespace Gadgetron { namespace math {
 
             float res(0);
 
-            #pragma omp parallel for reduction(+:res)
+            #pragma omp parallel for reduction(+:res) if (N>NumElementsUseThreading)
             for (n=0; n<(long long)N; n++)
             {
                 res += x[n]*y[n];
@@ -1231,7 +1231,7 @@ namespace Gadgetron { namespace math {
 
             double res(0);
 
-            #pragma omp parallel for reduction(+:res)
+            #pragma omp parallel for reduction(+:res) if (N>NumElementsUseThreading)
             for (n=0; n<(long long)N; n++)
             {
                 res += x[n]*y[n];
@@ -1252,7 +1252,7 @@ namespace Gadgetron { namespace math {
         T sum(0);
 
         typename realType<T>::Type sa(0), sb(0);
-#pragma omp parallel for reduction(+:sa)
+#pragma omp parallel for reduction(+:sa) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const typename realType<T>::Type a = x[n].real();
@@ -1389,7 +1389,7 @@ namespace Gadgetron { namespace math {
     {
         long long i;
         typename realType<T>::Type sum(0);
-        #pragma omp parallel for reduction(+:sum)
+        #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
             const T& c = x[i];
@@ -1625,7 +1625,7 @@ namespace Gadgetron { namespace math {
         {
             long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r)
+            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
             for ( n=0; n<(long long)N; n++ )
             {
                 r[n]= GT_ABS(x[n]);
@@ -1646,7 +1646,7 @@ namespace Gadgetron { namespace math {
         {
             long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r)
+            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
             for ( n=0; n<(long long)N; n++ )
             {
                 const GT_Complex8& c = x[n];
@@ -1667,7 +1667,7 @@ namespace Gadgetron { namespace math {
         {
             long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r)
+            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
             for ( n=0; n<(long long)N; n++ )
             {
                 const GT_Complex16& c = x[n];
@@ -1690,7 +1690,7 @@ namespace Gadgetron { namespace math {
         {
             long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r)
+            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
             for ( n=0; n<(long long)N; n++ )
             {
                 const std::complex<T>& c = x[n];
@@ -1734,7 +1734,7 @@ namespace Gadgetron { namespace math {
         {
             long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r)
+            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
             for ( n=0; n<(long long)N; n++ )
             {
                 r[n] = std::arg( x[n] );
@@ -1760,7 +1760,7 @@ namespace Gadgetron { namespace math {
             T v(1.0);
             long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r, v)
+            #pragma omp parallel for default(none) private(n) shared(N, x, r, v) if (N>NumElementsUseThreading)
             for ( n=0; n<(long long)N; n++ )
             {
                 r[n] = v/x[n];
@@ -2062,7 +2062,7 @@ namespace Gadgetron { namespace math {
     {
         long long n;
 
-#pragma omp parallel for private(n)
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const T& c = x[n];
@@ -2085,7 +2085,7 @@ namespace Gadgetron { namespace math {
     {
         long long n;
 
-#pragma omp parallel for private(n)
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const T& c = x[n];
