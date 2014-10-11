@@ -1074,7 +1074,11 @@ performCalib(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& ref_s
             {
                 int usedS;
                 #ifdef USE_OMP
-                    if ( S < omp_get_num_procs()/2 ) omp_set_nested(1);
+                    if ( S < omp_get_num_procs()/2 )
+                    {
+                        omp_set_nested(1);
+                        GADGET_MSG("performCalib, nested omp is on ... ");
+                    }
                 #endif // USE_OMP
 
                 #ifdef GCC_OLD_FLAG
