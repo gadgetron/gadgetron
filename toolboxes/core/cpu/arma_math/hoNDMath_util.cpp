@@ -164,7 +164,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    void axpy(float a, size_t N, const float* x, const float* y, float* r)
+    template <> EXPORTCPUCOREMATH void axpy(float a, size_t N, const float* x, const float* y, float* r)
     {
         try
         {
@@ -202,7 +202,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    void axpy(double a, size_t N, const double* x, const double* y, double* r)
+    template <> EXPORTCPUCOREMATH void axpy(double a, size_t N, const double* x, const double* y, double* r)
     {
         try
         {
@@ -240,7 +240,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    void axpy(GT_Complex8 a, size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
+    template <> EXPORTCPUCOREMATH void axpy(GT_Complex8 a, size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
         try
         {
@@ -272,7 +272,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    void axpy(GT_Complex16 a, size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    template <> EXPORTCPUCOREMATH void axpy(GT_Complex16 a, size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
         try
         {
