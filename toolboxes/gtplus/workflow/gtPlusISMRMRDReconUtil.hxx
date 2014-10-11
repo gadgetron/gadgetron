@@ -4488,7 +4488,8 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
 
         int e1;
 
-        #pragma omp parallel default(none) private(e1) shared(ks, RO, E1, CHA, pSen, pData, halfKs, power, kss)
+        // #pragma omp parallel default(none) private(e1) shared(ks, RO, E1, CHA, pSen, pData, halfKs, power, kss)
+        #pragma omp parallel private(e1) shared(ks, RO, E1, CHA, pSen, pData, halfKs, power, kss)
         {
             hoNDArray<T> D(ks*ks, CHA);
             T* pD = D.begin();
@@ -4637,9 +4638,22 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                     // conjugate(V1, V1);
                     // scal(phaseU1, V1);
 
+                    const value_type c = phaseU1.real();
+                    const value_type d = phaseU1.imag();
+
                     for ( cha=0; cha<CHA; cha++ )
                     {
-                        pV1[cha] = phaseU1 * std::conj(pV1[cha]);
+                        const T& v = pV1[cha];
+                        const value_type a = v.real();
+                        const value_type b = v.imag();
+
+                        // pV1[cha] = phaseU1 * std::conj(pV1[cha]);
+#ifdef WIN32
+                        pV1[cha] = T(a*c+b*d, a*d-b*c);
+#else
+                        pV1[cha].real() = (a*c+b*d);
+                        pV1[cha].imag() = (a*d-b*c);
+#endif // WIN32
                     }
 
                     for ( cha=0; cha<CHA; cha++ )
