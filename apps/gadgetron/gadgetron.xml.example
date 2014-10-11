@@ -4,6 +4,11 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         
   <port>9002</port>
+
+  <cloudBus>
+    <multiCastAddress>224.2.2.9</multiCastAddress>
+    <port>4148</port>
+  </cloudBus>
   
 </gadgetronConfiguration>
   
