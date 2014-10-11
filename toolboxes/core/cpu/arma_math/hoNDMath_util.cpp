@@ -137,7 +137,7 @@ namespace Gadgetron { namespace math {
 
     /// --------------------------------------------------------------------
 
-    template <typename T> EXPORTCPUCOREMATH void axpy_64bit_mode(T a, size_t N, const T* x, const T* y, T* r)
+    template <typename T> inline void axpy_64bit_mode(T a, size_t N, const T* x, const T* y, T* r)
     {
         long long n;
 
@@ -164,7 +164,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void axpy(float a, size_t N, const float* x, const float* y, float* r)
+    void axpy(float a, size_t N, const float* x, const float* y, float* r)
     {
         try
         {
@@ -202,7 +202,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void axpy(double a, size_t N, const double* x, const double* y, double* r)
+    void axpy(double a, size_t N, const double* x, const double* y, double* r)
     {
         try
         {
@@ -240,7 +240,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void axpy(GT_Complex8 a, size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
+    void axpy(GT_Complex8 a, size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
         try
         {
@@ -272,7 +272,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void axpy(GT_Complex16 a, size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    void axpy(GT_Complex16 a, size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
         try
         {
@@ -1245,7 +1245,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <typename T> void dotu_64bit_mode(size_t N, const T* x, const T* y, T& r)
+    template <typename T> inline void dotu_64bit_mode(size_t N, const T* x, const T* y, T& r)
     {
         long long n;
 
@@ -1385,7 +1385,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <typename T> EXPORTCPUCOREMATH void asum_64bit_mode(size_t N, const T* x, typename realType<T>::Type& r)
+    template <typename T> inline void asum_64bit_mode(size_t N, const T* x, typename realType<T>::Type& r)
     {
         long long i;
         typename realType<T>::Type sum(0);
@@ -2058,7 +2058,7 @@ namespace Gadgetron { namespace math {
 
     /// --------------------------------------------------------------------
 
-    template <typename T> void scal_64bit_mode(size_t N, T a, T* x)
+    template <typename T> inline void scal_64bit_mode(size_t N, T a, T* x)
     {
         long long n;
 
@@ -2081,7 +2081,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <typename T> void scal_64bit_mode(size_t N, typename realType<T>::Type a, T* x)
+    template <typename T> inline void scal_64bit_mode(size_t N, typename realType<T>::Type a, T* x)
     {
         long long n;
 

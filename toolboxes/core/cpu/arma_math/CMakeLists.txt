@@ -20,7 +20,6 @@ set(cpucore_math_header_files
     cpucore_math_export.h
     hoNDArray_math_util.h
     hoNDArray_math.h
-    hoNDArray_math_util.hxx
     hoNDImage_util.h
     hoNDImage_util.hxx
     hoNDImage_util_instantiate.hxx 
