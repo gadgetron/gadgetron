@@ -2,2684 +2,918 @@
 
 namespace Gadgetron
 {
-
-// #ifdef USE_MKL
-
-    // // ----------------------------------------------------------------------------------------
-    // // float
-    // // ----------------------------------------------------------------------------------------
-
-    // EXPORTCPUCOREMATH bool add(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vsAdd(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool add(size_t N, const float* x, const float* y, float* r)
-    // {
-        // vsAdd(N, x, y, r);
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool subtract(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vsSub(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool multiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vsMul(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool divide(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vsDiv(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool absolute(const hoNDArray<float>& x, hoNDArray<float>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vsAbs(x.get_number_of_elements(), x.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool argument(const hoNDArray<float>& x, hoNDArray<float>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // memset(r.begin(), 0, r.get_number_of_bytes());
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool sqrt(const hoNDArray<float>& x, hoNDArray<float>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vsSqrt(x.get_number_of_elements(), x.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<float>& x, float& r, size_t& ind)
-    // {
-        // try
-        // {
-            // /*MKL_INT n = x.get_number_of_elements();
-            // MKL_INT incx = 1;
-            // ind = (size_t)(cblas_isamin(n, x.begin(), incx));
-            // r = x.at(ind);*/
-
-           // size_t n = x.get_number_of_elements();
-           // GADGET_CHECK_RETURN_FALSE(n>0);
-           // if ( n == 1 )
-           // {
-               // r = x(0);
-               // ind = 0;
-               // return true;
-           // }
-
-           // const float* pX = x.begin();
-           // r = pX[0];
-           // ind = 0;
-
-           // for ( size_t ii=1; ii<n; ii++ )
-           // {
-               // if ( GT_ABS(pX[ii]) < r )
-               // {
-                   // r = pX[ii];
-                   // ind = ii;
-               // }
-           // }
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<float>& x, float& r, size_t& ind)
-    // {
-        // try
-        // {
-            // /*MKL_INT n = x.get_number_of_elements();
-            // MKL_INT incx = 1;
-            // ind = (size_t)(cblas_isamax(n, x.begin(), incx));
-            // r = x.at(ind);*/
-
-           // size_t n = x.get_number_of_elements();
-           // GADGET_CHECK_RETURN_FALSE(n>0);
-           // if ( n == 1 )
-           // {
-               // r = x(0);
-               // ind = 0;
-               // return true;
-           // }
-
-           // const float* pX = x.begin();
-           // r = pX[0];
-           // ind = 0;
-
-           // for ( size_t ii=1; ii<n; ii++ )
-           // {
-               // if ( GT_ABS(pX[ii]) > r )
-               // {
-                   // r = pX[ii];
-                   // ind = ii;
-               // }
-           // }
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<float>& x)
-    // {
-        // try
-        // {
-            // size_t n = x.get_number_of_elements();
-            // float* pX = x.begin();
-
-            // long long i;
-
-            // #pragma omp parallel for default(none) private(i) shared(n, pX)
-            // for (i=0; i<(long long)n; i++ )
-            // {
-                // if ( GT_ABS(pX[i]) < FLT_EPSILON )
-                // {
-                    // pX[i] += GT_SGN(pX[i])*FLT_EPSILON;
-                // }
-            // }
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool norm2(const hoNDArray<float>& x, float& r)
-    // {
-        // try
-        // {
-            // MKL_INT incx = 1;
-            // MKL_INT n = x.get_number_of_elements();
-            // r = snrm2(&n, x.begin(), &incx);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool norm1(const hoNDArray<float>& x, float& r)
-    // {
-        // try
-        // {
-            // MKL_INT incx = 1;
-            // MKL_INT n = x.get_number_of_elements();
-            // r = sasum(&n, x.begin(), &incx);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool inv(const hoNDArray<float>& x, hoNDArray<float>& r)
-    // {
-        // try
-        // {
-            // if ( !r.dimensions_equal(&x) )
-            // {
-                // r = x;
-            // }
-
-            // long long n = x.get_number_of_elements();
-            // vsInv(n, x.begin(), r.begin());
-            // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in inv(const hoNDArray<float>& x, hoNDArray<float>& r) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // // ----------------------------------------------------------------------------------------
-    // // double
-    // // ----------------------------------------------------------------------------------------
-
-    // EXPORTCPUCOREMATH bool add(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vdAdd(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool add(size_t N, const double* x, const double* y, double* r)
-    // {
-        // vdAdd(N, x, y, r);
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool subtract(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vdSub(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool multiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vdMul(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool divide(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vdDiv(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool absolute(const hoNDArray<double>& x, hoNDArray<double>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vdAbs(x.get_number_of_elements(), x.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool argument(const hoNDArray<double>& x, hoNDArray<double>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // memset(r.begin(), 0, r.get_number_of_bytes());
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool sqrt(const hoNDArray<double>& x, hoNDArray<double>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vdSqrt(x.get_number_of_elements(), x.begin(), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<double>& x, double& r, size_t& ind)
-    // {
-        // try
-        // {
-            // //MKL_INT n = x.get_number_of_elements();
-            // //MKL_INT incx = 1;
-            // //ind = (size_t)(idamin(&n, x.begin(), &incx));
-            // //r = x.at(ind);
-
-           // size_t n = x.get_number_of_elements();
-           // GADGET_CHECK_RETURN_FALSE(n>0);
-           // if ( n == 1 )
-           // {
-               // r = x(0);
-               // ind = 0;
-               // return true;
-           // }
-
-           // const double* pX = x.begin();
-           // r = pX[0];
-           // ind = 0;
-
-           // for ( size_t ii=1; ii<n; ii++ )
-           // {
-               // if ( GT_ABS(pX[ii]) < r )
-               // {
-                   // r = pX[ii];
-                   // ind = ii;
-               // }
-           // }
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<double>& x, double& r, size_t& ind)
-    // {
-        // try
-        // {
-            // //MKL_INT n = x.get_number_of_elements();
-            // //MKL_INT incx = 1;
-            // //ind = (size_t)(idamax(&n, x.begin(), &incx));
-            // //r = x.at(ind);
-
-           // size_t n = x.get_number_of_elements();
-           // GADGET_CHECK_RETURN_FALSE(n>0);
-           // if ( n == 1 )
-           // {
-               // r = x(0);
-               // ind = 0;
-               // return true;
-           // }
-
-           // const double* pX = x.begin();
-           // r = pX[0];
-           // ind = 0;
-
-           // for ( size_t ii=1; ii<n; ii++ )
-           // {
-               // if ( GT_ABS(pX[ii]) > r )
-               // {
-                   // r = pX[ii];
-                   // ind = ii;
-               // }
-           // }
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<double>& x)
-    // {
-        // try
-        // {
-            // size_t n = x.get_number_of_elements();
-            // double* pX = x.begin();
-
-            // long long i;
-
-            // #pragma omp parallel for default(none) private(i) shared(n, pX)
-            // for (i=0; i<(long long)n; i++ )
-            // {
-                // if ( GT_ABS(pX[i]) < DBL_EPSILON )
-                // {
-                    // pX[i] += GT_SGN(pX[i])*DBL_EPSILON;
-                // }
-            // }
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool norm2(const hoNDArray<double>& x, double& r)
-    // {
-        // try
-        // {
-            // MKL_INT incx = 1;
-            // MKL_INT n = x.get_number_of_elements();
-            // r = dnrm2(&n, x.begin(), &incx);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool norm1(const hoNDArray<double>& x, double& r)
-    // {
-        // try
-        // {
-            // MKL_INT incx = 1;
-            // MKL_INT n = x.get_number_of_elements();
-            // r = dasum(&n, x.begin(), &incx);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool inv(const hoNDArray<double>& x, hoNDArray<double>& r)
-    // {
-        // try
-        // {
-            // if ( !r.dimensions_equal(&x) )
-            // {
-                // r = x;
-            // }
-
-            // long long n = x.get_number_of_elements();
-            // vdInv(n, x.begin(), r.begin());
-            // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in inv(const hoNDArray<double>& x, hoNDArray<double>& r) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // // ----------------------------------------------------------------------------------------
-    // // GT_Complex8
-    // // ----------------------------------------------------------------------------------------
-
-    // EXPORTCPUCOREMATH bool add(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vcAdd(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), reinterpret_cast<const MKL_Complex8*>(y.begin()), reinterpret_cast<MKL_Complex8*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool add(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x!=NULL && y!=NULL && z!=NULL);
-        // vcAdd(N, reinterpret_cast<const MKL_Complex8*>(x), reinterpret_cast<const MKL_Complex8*>(y), reinterpret_cast<MKL_Complex8*>(r));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool subtract(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vcSub(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), reinterpret_cast<const MKL_Complex8*>(y.begin()), reinterpret_cast<MKL_Complex8*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool subtract(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x!=NULL && y!=NULL && z!=NULL);
-        // vcSub(N, reinterpret_cast<const MKL_Complex8*>(x), reinterpret_cast<const MKL_Complex8*>(y), reinterpret_cast<MKL_Complex8*>(r));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool multiply(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vcMul(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), reinterpret_cast<const MKL_Complex8*>(y.begin()), reinterpret_cast<MKL_Complex8*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool multiply(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x!=NULL && y!=NULL && z!=NULL);
-        // vcMul(N, reinterpret_cast<const MKL_Complex8*>(x), reinterpret_cast<const MKL_Complex8*>(y), reinterpret_cast<MKL_Complex8*>(r));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool divide(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vcDiv(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), reinterpret_cast<const MKL_Complex8*>(y.begin()), reinterpret_cast<MKL_Complex8*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool sqrt(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r.create(x.get_dimensions());
-        // }
-
-        // vcSqrt(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), reinterpret_cast<MKL_Complex8*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<GT_Complex8>& x, GT_Complex8& r, size_t& ind)
-    // {
-        // try
-        // {
-            // MKL_INT n = x.get_number_of_elements();
-            // MKL_INT incx = 1;
-            // ind = (size_t)(icamin(&n, reinterpret_cast<const MKL_Complex8*>(x.begin()), &incx));
-            // r = x.at(ind);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<GT_Complex8>& x, GT_Complex8& r, size_t& ind)
-    // {
-        // try
-        // {
-            // MKL_INT n = x.get_number_of_elements();
-            // MKL_INT incx = 1;
-            // ind = (size_t)(icamax(&n, reinterpret_cast<const MKL_Complex8*>(x.begin()), &incx));
-            // r = x.at(ind);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vcMulByConj(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), reinterpret_cast<const MKL_Complex8*>(y.begin()), reinterpret_cast<MKL_Complex8*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool conjugate(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r.create(x.get_dimensions());
-        // }
-
-        // vcConj(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), reinterpret_cast<MKL_Complex8*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<GT_Complex8>& x)
-    // {
-        // try
-        // {
-            // size_t n = x.get_number_of_elements();
-            // GT_Complex8* pX = x.begin();
-
-            // long long i;
-
-            // #pragma omp parallel for default(none) private(i) shared(n, pX)
-            // for (i=0; i<(long long)n; i++ )
-            // {
-                // if ( std::abs(pX[i]) < FLT_EPSILON )
-                // {
-                    // pX[i] += FLT_EPSILON;
-                // }
-            // }
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool norm2(const hoNDArray<GT_Complex8>& x, float& r)
-    // {
-        // try
-        // {
-            // MKL_INT incx = 1;
-            // MKL_INT n = x.get_number_of_elements();
-            // r = scnrm2(&n, reinterpret_cast<const MKL_Complex8*>(x.begin()), &incx);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool norm1(const hoNDArray<GT_Complex8>& x, float& r)
-    // {
-        // try
-        // {
-            // hoNDArray<float> a;
-            // GADGET_CHECK_RETURN_FALSE(absolute(x, a));
-            // GADGET_CHECK_RETURN_FALSE(norm1(a, r));
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, GT_Complex8& r)
-    // {
-        // try
-        // {
-            // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-
-            // MKL_INT N = x.get_number_of_elements();
-            // MKL_INT incx(1), incy(1);
-            // cdotc(reinterpret_cast<MKL_Complex8*>(&r), &N, reinterpret_cast<const MKL_Complex8*>(x.begin()), &incx, 
-                    // reinterpret_cast<const MKL_Complex8*>(y.begin()), &incy);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex8>& x, hoNDArray<float>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r.create(x.get_dimensions());
-        // }
-
-        // vcAbs(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool argument(const hoNDArray<GT_Complex8>& x, hoNDArray<float>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r.create(x.get_dimensions());
-        // }
-
-        // vcArg(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool inv(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r)
-    // {
-        // try
-        // {
-            // if ( !r.dimensions_equal(&x) )
-            // {
-                // r = x;
-            // }
-
-            // const GT_Complex8* pX = x.begin();
-            // GT_Complex8* pR = r.begin();
-
-            // GT_Complex8 v(1.0);
-            // long long n = x.get_number_of_elements();
-            // long long ii;
-
-            // #pragma omp parallel for default(none) private(ii) shared(n, pX, pR, v)
-            // for ( ii=0; ii<n; ii++ )
-            // {
-                // pR[ii] = v/pX[ii];
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in inv(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // // ----------------------------------------------------------------------------------------
-    // // GT_Complex16
-    // // ----------------------------------------------------------------------------------------
-
-    // EXPORTCPUCOREMATH bool add(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vzAdd(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), reinterpret_cast<const MKL_Complex16*>(y.begin()), reinterpret_cast<MKL_Complex16*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool add(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x!=NULL && y!=NULL && r!=NULL);
-        // vzAdd(N, reinterpret_cast<const MKL_Complex16*>(x), reinterpret_cast<const MKL_Complex16*>(y), reinterpret_cast<MKL_Complex16*>(r));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool subtract(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vzSub(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), reinterpret_cast<const MKL_Complex16*>(y.begin()), reinterpret_cast<MKL_Complex16*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool subtract(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x!=NULL && y!=NULL && r!=NULL);
-        // vzSub(N, reinterpret_cast<const MKL_Complex16*>(x), reinterpret_cast<const MKL_Complex16*>(y), reinterpret_cast<MKL_Complex16*>(r));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool multiply(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vzMul(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), reinterpret_cast<const MKL_Complex16*>(y.begin()), reinterpret_cast<MKL_Complex16*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool multiply(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x!=NULL && y!=NULL && r!=NULL);
-        // vzMul(N, reinterpret_cast<const MKL_Complex16*>(x), reinterpret_cast<const MKL_Complex16*>(y), reinterpret_cast<MKL_Complex16*>(r));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool divide(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vzDiv(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), reinterpret_cast<const MKL_Complex16*>(y.begin()), reinterpret_cast<MKL_Complex16*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex16>& x, hoNDArray<double>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r.create(x.get_dimensions());
-        // }
-
-        // vzAbs(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r.create(x.get_dimensions());
-        // }
-
-        // hoNDArray<double> rTmp;
-        // rTmp.create(x.get_dimensions());
-
-        // vzAbs(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), rTmp.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // //GADGET_CHECK_RETURN_FALSE(r.copyFrom(rTmp));
-        // r.copyFrom(rTmp);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool sqrt(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r.create(x.get_dimensions());
-        // }
-
-        // vzSqrt(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), reinterpret_cast<MKL_Complex16*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<GT_Complex16>& x, GT_Complex16& r, size_t& ind)
-    // {
-        // try
-        // {
-            // MKL_INT n = x.get_number_of_elements();
-            // MKL_INT incx = 1;
-            // ind = (size_t)(izamin(&n, reinterpret_cast<const MKL_Complex16*>(x.begin()), &incx));
-            // r = x.at(ind);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<GT_Complex16>& x, GT_Complex16& r, size_t& ind)
-    // {
-        // try
-        // {
-            // MKL_INT n = x.get_number_of_elements();
-            // MKL_INT incx = 1;
-            // ind = (size_t)(izamax(&n, reinterpret_cast<const MKL_Complex16*>(x.begin()), &incx));
-            // r = x.at(ind);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r)
-    // {
-        // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r = x;
-        // }
-
-        // vzMulByConj(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), reinterpret_cast<const MKL_Complex16*>(y.begin()), reinterpret_cast<MKL_Complex16*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // bool argument(const hoNDArray<GT_Complex16>& x, hoNDArray<double>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r.create(x.get_dimensions());
-        // }
-
-        // vzArg(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), r.begin());
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool conjugate(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r)
-    // {
-        // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        // {
-            // r.create(x.get_dimensions());
-        // }
-
-        // vzConj(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), reinterpret_cast<MKL_Complex16*>(r.begin()));
-        // GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<GT_Complex16>& x)
-    // {
-        // try
-        // {
-            // size_t n = x.get_number_of_elements();
-            // GT_Complex16* pX = x.begin();
-
-            // long long i;
-
-            // #pragma omp parallel for default(none) private(i) shared(n, pX)
-            // for (i=0; i<(long long)n; i++ )
-            // {
-                // if ( std::abs(pX[i]) < DBL_EPSILON )
-                // {
-                    // pX[i] += DBL_EPSILON;
-                // }
-            // }
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool norm2(const hoNDArray<GT_Complex16>& x, double& r)
-    // {
-        // try
-        // {
-            // MKL_INT incx = 1;
-            // MKL_INT n = x.get_number_of_elements();
-            // r = dznrm2(&n, reinterpret_cast<const MKL_Complex16*>(x.begin()), &incx);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool norm1(const hoNDArray<GT_Complex16>& x, double& r)
-    // {
-        // try
-        // {
-            // hoNDArray<double> a;
-            // GADGET_CHECK_RETURN_FALSE(absolute(x, a));
-            // GADGET_CHECK_RETURN_FALSE(norm1(a, r));
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, GT_Complex16& r)
-    // {
-        // try
-        // {
-            // GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-
-            // MKL_INT N = x.get_number_of_elements();
-            // MKL_INT incx(1), incy(1);
-            // zdotc(reinterpret_cast<MKL_Complex16*>(&r), &N, reinterpret_cast<const MKL_Complex16*>(x.begin()), &incx, 
-                    // reinterpret_cast<const MKL_Complex16*>(y.begin()), &incy);
-        // }
-        // catch(...)
-        // {
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool inv(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r)
-    // {
-        // try
-        // {
-            // if ( !r.dimensions_equal(&x) )
-            // {
-                // r = x;
-            // }
-
-            // const GT_Complex16* pX = x.begin();
-            // GT_Complex16* pR = r.begin();
-
-            // GT_Complex16 v(1.0);
-            // long long n = x.get_number_of_elements();
-            // long long ii;
-
-            // #pragma omp parallel for default(none) private(ii) shared(n, pX, pR, v)
-            // for ( ii=0; ii<n; ii++ )
-            // {
-                // pR[ii] = v/pX[ii];
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in inv(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // // ----------------------------------------------------------------------------------------
-    // // other functions
-    // // ----------------------------------------------------------------------------------------
-
-    // EXPORTCPUCOREMATH GT_Complex8 dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y)
-    // {
-        // if ( x.get_number_of_elements() != y.get_number_of_elements() )
-        // {
-            // GADGET_ERROR_MSG("dotc(x, y), inputs have differnet length ...");
-            // return 0.0;
-        // }
-
-        // MKL_INT N = x.get_number_of_elements();
-        // MKL_INT incx(1), incy(1);
-        // GT_Complex8 r;
-        // cdotc(reinterpret_cast<MKL_Complex8*>(&r), &N, reinterpret_cast<const MKL_Complex8*>(x.begin()), &incx, reinterpret_cast<const MKL_Complex8*>(y.begin()), &incy);
-        // return r;
-    // }
-
-    // EXPORTCPUCOREMATH GT_Complex16 dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y)
-    // {
-        // if ( x.get_number_of_elements() != y.get_number_of_elements() )
-        // {
-            // GADGET_ERROR_MSG("dotc(x, y), inputs have differnet length ...");
-            // return 0;
-        // }
-
-        // MKL_INT N = x.get_number_of_elements();
-        // MKL_INT incx(1), incy(1);
-        // GT_Complex16 r;
-        // zdotc(reinterpret_cast<MKL_Complex16*>(&r), &N, reinterpret_cast<const MKL_Complex16*>(x.begin()), &incx, reinterpret_cast<const MKL_Complex16*>(y.begin()), &incy);
-        // return r;
-    // }
-
-    // EXPORTCPUCOREMATH GT_Complex8 dotu(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y)
-    // {
-        // if ( x.get_number_of_elements() != y.get_number_of_elements() )
-        // {
-            // GADGET_ERROR_MSG("dotu(x, y), inputs have differnet length ...");
-            // return 0;
-        // }
-
-        // MKL_INT N = x.get_number_of_elements();
-        // MKL_INT incx(1), incy(1);
-        // GT_Complex8 r;
-        // cdotu(reinterpret_cast<MKL_Complex8*>(&r), &N, reinterpret_cast<const MKL_Complex8*>(x.begin()), &incx, reinterpret_cast<const MKL_Complex8*>(y.begin()), &incy);
-        // return r;
-    // }
-
-    // EXPORTCPUCOREMATH GT_Complex16 dotu(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y)
-    // {
-        // if ( x.get_number_of_elements() != y.get_number_of_elements() )
-        // {
-            // GADGET_ERROR_MSG("dotu(x, y), inputs have differnet length ...");
-            // return 0;
-        // }
-
-        // MKL_INT N = x.get_number_of_elements();
-        // MKL_INT incx(1), incy(1);
-        // GT_Complex16 r;
-        // zdotu(reinterpret_cast<MKL_Complex16*>(&r), &N, reinterpret_cast<const MKL_Complex16*>(x.begin()), &incx, reinterpret_cast<const MKL_Complex16*>(y.begin()), &incy);
-        // return r;
-    // }
-
-    // EXPORTCPUCOREMATH bool axpy(float a, const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r)
-    // {
-        // try
-        // {
-            // GADGET_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-
-            // if ( r.get_number_of_elements() != x.get_number_of_elements() )
-            // {
-                // r = y;
-            // }
-            // else
-            // {
-                // if ( &r != &y )
-                // {
-                    // memcpy(r.begin(), y.begin(), r.get_number_of_bytes());
-                // }
-            // }
-
-            // MKL_INT N = (MKL_INT)(x.get_number_of_elements());
-            // const MKL_INT incX(1), incY(1);
-
-            // cblas_saxpy (N, a, x.begin(), incX, r.begin(), incY);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in axpy(float a, const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool axpy(double a, const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r)
-    // {
-        // try
-        // {
-            // GADGET_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-
-            // if ( r.get_number_of_elements() != x.get_number_of_elements() )
-            // {
-                // r = y;
-            // }
-            // else
-            // {
-                // if ( &r != &y )
-                // {
-                    // memcpy(r.begin(), y.begin(), r.get_number_of_bytes());
-                // }
-            // }
-
-            // MKL_INT N = (MKL_INT)(x.get_number_of_elements());
-            // const MKL_INT incX(1), incY(1);
-
-            // cblas_daxpy (N, a, x.begin(), incX, r.begin(), incY);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in axpy(double a, const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool axpy(const GT_Complex8& a, const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r)
-    // {
-        // try
-        // {
-            // GADGET_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-
-            // if ( r.get_number_of_elements() != x.get_number_of_elements() )
-            // {
-                // r = y;
-            // }
-            // else
-            // {
-                // if ( &r != &y )
-                // {
-                    // memcpy(r.begin(), y.begin(), r.get_number_of_bytes());
-                // }
-            // }
-
-            // MKL_INT N = (MKL_INT)(x.get_number_of_elements());
-            // const MKL_INT incX(1), incY(1);
-
-            // cblas_caxpy (N, &a, x.begin(), incX, r.begin(), incY);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in axpy(const GT_Complex8& a, const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool axpy(const GT_Complex16& a, const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r)
-    // {
-        // try
-        // {
-            // GADGET_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-
-            // if ( r.get_number_of_elements() != x.get_number_of_elements() )
-            // {
-                // r = y;
-            // }
-            // else
-            // {
-                // if ( &r != &y )
-                // {
-                    // memcpy(r.begin(), y.begin(), r.get_number_of_bytes());
-                // }
-            // }
-
-            // MKL_INT N = (MKL_INT)(x.get_number_of_elements());
-            // const MKL_INT incX(1), incY(1);
-
-            // cblas_zaxpy (N, &a, x.begin(), incX, r.begin(), incY);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in axpy(const GT_Complex16& a, const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(float a, hoNDArray<float>& x)
-    // {
-        // try
-        // {
-            // cblas_sscal ((MKL_INT)(x.get_number_of_elements()), a, x.begin(), 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(float a, hoNDArray<float>& x) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(double a, hoNDArray<double>& x)
-    // {
-        // try
-        // {
-            // cblas_dscal ((MKL_INT)(x.get_number_of_elements()), a, x.begin(), 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(double a, hoNDArray<double>& x) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(float a, hoNDArray<GT_Complex8>& x)
-    // {
-        // try
-        // {
-            // GT_Complex8 alpha = GT_Complex8(a);
-            // cblas_cscal (x.get_number_of_elements(), &alpha, x.begin(), 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(float a, hoNDArray<GT_Complex8>& x) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(double a, hoNDArray<GT_Complex16>& x)
-    // {
-        // try
-        // {
-            // GT_Complex16 alpha = GT_Complex16(a);
-            // cblas_zscal (x.get_number_of_elements(), &alpha, x.begin(), 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(double a, hoNDArray<GT_Complex16>& x) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(GT_Complex8 a, hoNDArray<GT_Complex8>& x)
-    // {
-        // try
-        // {
-            // cblas_cscal (x.get_number_of_elements(), &a, x.begin(), 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(GT_Complex8 a, hoNDArray<GT_Complex8>& x) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(GT_Complex16 a, hoNDArray<GT_Complex16>& x)
-    // {
-        // try
-        // {
-            // cblas_zscal (x.get_number_of_elements(), &a, x.begin(), 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(GT_Complex16 a, hoNDArray<GT_Complex16>& x) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // // -----------------------
-
-    // EXPORTCPUCOREMATH bool scal(float a, float*x, long long N)
-    // {
-        // try
-        // {
-            // cblas_sscal ((MKL_INT)(N), a, x, 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(float a, float*x, long long N) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(double a, double*x, long long N)
-    // {
-        // try
-        // {
-            // cblas_dscal ((MKL_INT)(N), a, x, 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(double a, double*x, long long N) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(float a, GT_Complex8*x, long long N)
-    // {
-        // try
-        // {
-            // GT_Complex8 alpha = GT_Complex8(a);
-            // cblas_cscal (N, &alpha, x, 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(float a, GT_Complex8*x, long long N) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(double a, GT_Complex16*x, long long N)
-    // {
-        // try
-        // {
-            // GT_Complex16 alpha = GT_Complex16(a);
-            // cblas_zscal (N, &alpha, x, 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(double a, GT_Complex16*x, long long N) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(GT_Complex8 a, GT_Complex8*x, long long N)
-    // {
-        // try
-        // {
-            // cblas_cscal (N, &a, x, 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(GT_Complex8 a, GT_Complex8*x, long long N) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool scal(GT_Complex16 a, GT_Complex16*x, long long N)
-    // {
-        // try
-        // {
-            // cblas_zscal (N, &a, x, 1);
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors in scal(GT_Complex16 a, GT_Complex16*x, long long N) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending)
-    // {
-        // if ( &r != &x )
-        // {
-            // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            // {
-                // r = x;
-            // }
-            // else
-            // {
-                // memcpy(r.begin(), x.begin(), x.get_number_of_bytes());
-            // }
-        // }
-
-        // if ( isascending )
-        // {
-            // GADGET_CHECK_RETURN_FALSE(LAPACKE_slasrt('I', r.get_number_of_elements(), r.begin())==0);
-        // }
-        // else
-        // {
-            // GADGET_CHECK_RETURN_FALSE(LAPACKE_slasrt('D', r.get_number_of_elements(), r.begin())==0);
-        // }
-
-        // return true;
-    // }
-
-    // EXPORTCPUCOREMATH bool sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending)
-    // {
-        // if ( &r != &x )
-        // {
-            // if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            // {
-                // r = x;
-            // }
-            // else
-            // {
-                // memcpy(r.begin(), x.begin(), x.get_number_of_bytes());
-            // }
-        // }
-
-        // if ( isascending )
-        // {
-            // GADGET_CHECK_RETURN_FALSE(LAPACKE_dlasrt('I', r.get_number_of_elements(), r.begin())==0);
-        // }
-        // else
-        // {
-            // GADGET_CHECK_RETURN_FALSE(LAPACKE_dlasrt('D', r.get_number_of_elements(), r.begin())==0);
-        // }
-
-        // return true;
-    // }
-
-// #endif // USE_MKL
-
-// #ifdef USE_MKL
-
-    // // ----------------------------------------------------------------------------------------
-    // // float
-    // // ----------------------------------------------------------------------------------------
-
-    // bool conv2(const hoNDArray<float>& x, const hoNDArray<float>& ker, hoNDArray<float>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1);
-
-            // int status;
-            // VSLConvTaskPtr task;
-
-            // MKL_INT kerShape[2];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1;
-
-            // MKL_INT xshape[2];
-            // xshape[0] = RO; xshape[1] = E1;
-
-            // MKL_INT start[2];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-
-            // MKL_INT kerStride[2], xstride[2], zstride[2];
-            // kerStride[0] = 1; kerStride[1] = kerRO;
-            // xstride[0] = 1; xstride[1] = RO;
-            // zstride[0] = 1; zstride[1] = RO;
-
-            // const float* pX = x.begin();
-            // const float* pKer = ker.begin();
-            // float* pZ = z.begin();
-
-            // if ( num == 1 )
-            // {
-                // status = vslsConvNewTask(&task, VSL_CONV_MODE_AUTO, 2, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslsConvExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                 // vslConvDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vslsConvNewTaskX(&task, VSL_CONV_MODE_AUTO, 2, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vslsConvExecX(task, pX+n*RO*E1, xstride, pZ+n*RO*E1, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslConvDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in conv2(const hoNDArray<float>& x, const hoNDArray<float>& ker, hoNDArray<float>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // bool conv3(const hoNDArray<float>& x, const hoNDArray<float>& ker, hoNDArray<float>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-            // size_t E2 = x.get_size(2);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-            // size_t kerE2 = ker.get_size(2);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1*E2);
-
-            // int status;
-            // VSLConvTaskPtr task;
-
-            // MKL_INT kerShape[3];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1; kerShape[2] = kerE2;
-
-            // MKL_INT xshape[3];
-            // xshape[0] = RO; xshape[1] = E1; xshape[2] = E2;
-
-            // MKL_INT start[3];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-            // start[2] = kerE2/2;
-
-            // MKL_INT kerStride[3], xstride[3], zstride[3];
-            // kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerRO*kerE1;
-            // xstride[0] = 1; xstride[1] = RO; xstride[2] = RO*E1;
-            // zstride[0] = 1; zstride[1] = RO; zstride[2] = RO*E1;
-
-            // const float* pX = x.begin();
-            // const float* pKer = ker.begin();
-            // float* pZ = z.begin();
-
-            // if ( num == 1 )
-            // {
-                // status = vslsConvNewTask(&task, VSL_CONV_MODE_AUTO, 3, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslsConvExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                 // vslConvDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vslsConvNewTaskX(&task, VSL_CONV_MODE_AUTO, 3, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, E2, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vslsConvExecX(task, pX+n*RO*E1*E2, xstride, pZ+n*RO*E1*E2, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslConvDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in conv3(const hoNDArray<float>& x, const hoNDArray<float>& ker, hoNDArray<float>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // // ----------------------------------------------------------------------------------------
-    // // double
-    // // ----------------------------------------------------------------------------------------
-
-    // bool conv2(const hoNDArray<double>& x, const hoNDArray<double>& ker, hoNDArray<double>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1);
-
-            // int status;
-            // VSLConvTaskPtr task;
-
-            // MKL_INT kerShape[2];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1;
-
-            // MKL_INT xshape[2];
-            // xshape[0] = RO; xshape[1] = E1;
-
-            // MKL_INT start[2];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-
-            // MKL_INT kerStride[2], xstride[2], zstride[2];
-            // kerStride[0] = 1; kerStride[1] = kerRO;
-            // xstride[0] = 1; xstride[1] = RO;
-            // zstride[0] = 1; zstride[1] = RO;
-
-            // const double* pX = x.begin();
-            // const double* pKer = ker.begin();
-            // double* pZ = z.begin();
-
-            // if ( num == 1 )
-            // {
-                // status = vsldConvNewTask(&task, VSL_CONV_MODE_AUTO, 2, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vsldConvExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                 // vslConvDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vsldConvNewTaskX(&task, VSL_CONV_MODE_AUTO, 2, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vsldConvExecX(task, pX+n*RO*E1, xstride, pZ+n*RO*E1, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslConvDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in conv2(const hoNDArray<double>& x, const hoNDArray<double>& ker, hoNDArray<double>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // bool conv3(const hoNDArray<double>& x, const hoNDArray<double>& ker, hoNDArray<double>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-            // size_t E2 = x.get_size(2);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-            // size_t kerE2 = ker.get_size(2);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1*E2);
-
-            // int status;
-            // VSLConvTaskPtr task;
-
-            // MKL_INT kerShape[3];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1; kerShape[2] = kerE2;
-
-            // MKL_INT xshape[3];
-            // xshape[0] = RO; xshape[1] = E1; xshape[2] = E2;
-
-            // MKL_INT start[3];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-            // start[2] = kerE2/2;
-
-            // MKL_INT kerStride[3], xstride[3], zstride[3];
-            // kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerRO*kerE1;
-            // xstride[0] = 1; xstride[1] = RO; xstride[2] = RO*E1;
-            // zstride[0] = 1; zstride[1] = RO; zstride[2] = RO*E1;
-
-            // const double* pX = x.begin();
-            // const double* pKer = ker.begin();
-            // double* pZ = z.begin();
-
-            // if ( num == 1 )
-            // {
-                // status = vsldConvNewTask(&task, VSL_CONV_MODE_AUTO, 3, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vsldConvExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                 // vslConvDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vsldConvNewTaskX(&task, VSL_CONV_MODE_AUTO, 3, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, E2, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vsldConvExecX(task, pX+n*RO*E1*E2, xstride, pZ+n*RO*E1*E2, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslConvDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in conv3(const hoNDArray<double>& x, const hoNDArray<double>& ker, hoNDArray<double>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // // ----------------------------------------------------------------------------------------
-    // // GT_Complex8
-    // // ----------------------------------------------------------------------------------------
-
-    // bool conv2(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1);
-
-            // int status;
-            // VSLConvTaskPtr task;
-
-            // MKL_INT kerShape[2];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1;
-
-            // MKL_INT xshape[2];
-            // xshape[0] = RO; xshape[1] = E1;
-
-            // MKL_INT start[2];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-
-            // MKL_INT kerStride[2], xstride[2], zstride[2];
-            // kerStride[0] = 1; kerStride[1] = kerRO;
-            // xstride[0] = 1; xstride[1] = RO;
-            // zstride[0] = 1; zstride[1] = RO;
-
-            // const MKL_Complex8* pX = reinterpret_cast<const MKL_Complex8*>(x.begin());
-            // const MKL_Complex8* pKer = reinterpret_cast<const MKL_Complex8*>(ker.begin());
-            // MKL_Complex8* pZ = reinterpret_cast<MKL_Complex8*>(z.begin());
-
-            // if ( num == 1 )
-            // {
-                // status = vslcConvNewTask(&task, VSL_CONV_MODE_AUTO, 2, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetInternalPrecision(task, VSL_CONV_PRECISION_SINGLE);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslcConvExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                 // vslConvDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vslcConvNewTaskX(&task, VSL_CONV_MODE_AUTO, 2, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetInternalPrecision(task, VSL_CONV_PRECISION_SINGLE);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vslcConvExecX(task, pX+n*RO*E1, xstride, pZ+n*RO*E1, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslConvDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in conv2(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // bool conv3(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-            // size_t E2 = x.get_size(2);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-            // size_t kerE2 = ker.get_size(2);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1*E2);
-
-            // int status;
-            // VSLConvTaskPtr task;
-
-            // MKL_INT kerShape[3];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1; kerShape[2] = kerE2;
-
-            // MKL_INT xshape[3];
-            // xshape[0] = RO; xshape[1] = E1; xshape[2] = E2;
-
-            // MKL_INT start[3];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-            // start[2] = kerE2/2;
-
-            // MKL_INT kerStride[3], xstride[3], zstride[3];
-            // kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerRO*kerE1;
-            // xstride[0] = 1; xstride[1] = RO; xstride[2] = RO*E1;
-            // zstride[0] = 1; zstride[1] = RO; zstride[2] = RO*E1;
-
-            // const MKL_Complex8* pX = reinterpret_cast<const MKL_Complex8*>(x.begin());
-            // const MKL_Complex8* pKer = reinterpret_cast<const MKL_Complex8*>(ker.begin());
-            // MKL_Complex8* pZ = reinterpret_cast<MKL_Complex8*>(z.begin());
-
-            // if ( num == 1 )
-            // {
-                // status = vslcConvNewTask(&task, VSL_CONV_MODE_AUTO, 3, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetInternalPrecision(task, VSL_CONV_PRECISION_SINGLE);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslcConvExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                 // vslConvDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vslcConvNewTaskX(&task, VSL_CONV_MODE_AUTO, 3, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetInternalPrecision(task, VSL_CONV_PRECISION_SINGLE);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, E2, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vslcConvExecX(task, pX+n*RO*E1*E2, xstride, pZ+n*RO*E1*E2, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslConvDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in conv3(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // bool corr2(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1);
-
-            // int status;
-            // VSLCorrTaskPtr task;
-
-            // MKL_INT kerShape[2];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1;
-
-            // MKL_INT xshape[2];
-            // xshape[0] = RO; xshape[1] = E1;
-
-            // MKL_INT start[2];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-
-            // MKL_INT decimation[2];
-            // decimation[0] = 1;
-            // decimation[1] = 1;
-
-            // MKL_INT kerStride[2], xstride[2], zstride[2];
-            // kerStride[0] = 1; kerStride[1] = kerRO;
-            // xstride[0] = 1; xstride[1] = RO;
-            // zstride[0] = 1; zstride[1] = RO;
-
-            // const MKL_Complex8* pX = reinterpret_cast<const MKL_Complex8*>(x.begin());
-            // const MKL_Complex8* pKer = reinterpret_cast<const MKL_Complex8*>(ker.begin());
-            // MKL_Complex8* pZ = reinterpret_cast<MKL_Complex8*>(z.begin());
-
-            // if ( num == 1 )
-            // {
-                // status = vslcCorrNewTask(&task, VSL_CORR_MODE_AUTO, 2, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetDecimation(task, decimation);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetInternalPrecision(task, VSL_CORR_PRECISION_SINGLE);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslcCorrExec(task, pKer, NULL, pX, NULL, pZ, NULL);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslCorrDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vslcCorrNewTaskX(&task, VSL_CORR_MODE_AUTO, 2, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetDecimation(task, decimation);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetInternalPrecision(task, VSL_CORR_PRECISION_SINGLE);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vslcCorrExecX(task, pX+n*RO*E1, NULL, pZ+n*RO*E1, NULL);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslCorrDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in corr2(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // bool corr3(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-            // size_t E2 = x.get_size(2);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-            // size_t kerE2 = ker.get_size(2);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1*E2);
-
-            // int status;
-            // VSLConvTaskPtr task;
-
-            // MKL_INT kerShape[3];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1; kerShape[2] = kerE2;
-
-            // MKL_INT xshape[3];
-            // xshape[0] = RO; xshape[1] = E1; xshape[2] = E2;
-
-            // MKL_INT start[3];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-            // start[2] = kerE2/2;
-
-            // MKL_INT kerStride[3], xstride[3], zstride[3];
-            // kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerRO*kerE1;
-            // xstride[0] = 1; xstride[1] = RO; xstride[2] = RO*E1;
-            // zstride[0] = 1; zstride[1] = RO; zstride[2] = RO*E1;
-
-            // const MKL_Complex8* pX = reinterpret_cast<const MKL_Complex8*>(x.begin());
-            // const MKL_Complex8* pKer = reinterpret_cast<const MKL_Complex8*>(ker.begin());
-            // MKL_Complex8* pZ = reinterpret_cast<MKL_Complex8*>(z.begin());
-
-            // if ( num == 1 )
-            // {
-                // status = vslcCorrNewTask(&task, VSL_CORR_MODE_AUTO, 3, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetInternalPrecision(task, VSL_CORR_PRECISION_SINGLE);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslcCorrExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                 // vslCorrDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vslcCorrNewTaskX(&task, VSL_CORR_MODE_AUTO, 3, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetInternalPrecision(task, VSL_CORR_PRECISION_SINGLE);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, E2, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vslcCorrExecX(task, pX+n*RO*E1*E2, xstride, pZ+n*RO*E1*E2, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslCorrDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in corr3(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // // ----------------------------------------------------------------------------------------
-    // // GT_Complex16
-    // // ----------------------------------------------------------------------------------------
-
-    // bool conv2(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1);
-
-            // int status;
-            // VSLConvTaskPtr task;
-
-            // MKL_INT kerShape[2];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1;
-
-            // MKL_INT xshape[2];
-            // xshape[0] = RO; xshape[1] = E1;
-
-            // MKL_INT start[2];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-
-            // MKL_INT kerStride[2], xstride[2], zstride[2];
-            // kerStride[0] = 1; kerStride[1] = kerRO;
-            // xstride[0] = 1; xstride[1] = RO;
-            // zstride[0] = 1; zstride[1] = RO;
-
-            // const MKL_Complex16* pX = reinterpret_cast<const MKL_Complex16*>(x.begin());
-            // const MKL_Complex16* pKer = reinterpret_cast<const MKL_Complex16*>(ker.begin());
-            // MKL_Complex16* pZ = reinterpret_cast<MKL_Complex16*>(z.begin());
-
-            // if ( num == 1 )
-            // {
-                // status = vslzConvNewTask(&task, VSL_CONV_MODE_AUTO, 2, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslzConvExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                 // vslConvDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vslzConvNewTaskX(&task, VSL_CONV_MODE_AUTO, 2, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vslzConvExecX(task, pX+n*RO*E1, xstride, pZ+n*RO*E1, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslConvDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in conv2(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // bool conv3(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-            // size_t E2 = x.get_size(2);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-            // size_t kerE2 = ker.get_size(2);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1*E2);
-
-            // int status;
-            // VSLConvTaskPtr task;
-
-            // MKL_INT kerShape[3];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1; kerShape[2] = kerE2;
-
-            // MKL_INT xshape[3];
-            // xshape[0] = RO; xshape[1] = E1; xshape[2] = E2;
-
-            // MKL_INT start[3];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-            // start[2] = kerE2/2;
-
-            // MKL_INT kerStride[3], xstride[3], zstride[3];
-            // kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerRO*kerE1;
-            // xstride[0] = 1; xstride[1] = RO; xstride[2] = RO*E1;
-            // zstride[0] = 1; zstride[1] = RO; zstride[2] = RO*E1;
-
-            // const MKL_Complex16* pX = reinterpret_cast<const MKL_Complex16*>(x.begin());
-            // const MKL_Complex16* pKer = reinterpret_cast<const MKL_Complex16*>(ker.begin());
-            // MKL_Complex16* pZ = reinterpret_cast<MKL_Complex16*>(z.begin());
-
-            // if ( num == 1 )
-            // {
-                // status = vslzConvNewTask(&task, VSL_CONV_MODE_AUTO, 3, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslzConvExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                 // vslConvDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vslzConvNewTaskX(&task, VSL_CONV_MODE_AUTO, 3, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslConvSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, E2, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vslzConvExecX(task, pX+n*RO*E1*E2, xstride, pZ+n*RO*E1*E2, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslConvDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in conv3(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // bool corr2(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1);
-
-            // int status;
-            // VSLCorrTaskPtr task;
-
-            // MKL_INT kerShape[2];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1;
-
-            // MKL_INT xshape[2];
-            // xshape[0] = RO; xshape[1] = E1;
-
-            // MKL_INT start[2];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-
-            // MKL_INT kerStride[2], xstride[2], zstride[2];
-            // kerStride[0] = 1; kerStride[1] = kerRO;
-            // xstride[0] = 1; xstride[1] = RO;
-            // zstride[0] = 1; zstride[1] = RO;
-
-            // const MKL_Complex16* pX = reinterpret_cast<const MKL_Complex16*>(x.begin());
-            // const MKL_Complex16* pKer = reinterpret_cast<const MKL_Complex16*>(ker.begin());
-            // MKL_Complex16* pZ = reinterpret_cast<MKL_Complex16*>(z.begin());
-
-            // if ( num == 1 )
-            // {
-                // status = vslzCorrNewTask(&task, VSL_CORR_MODE_AUTO, 2, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslzCorrExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslCorrDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vslzCorrNewTaskX(&task, VSL_CORR_MODE_AUTO, 2, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vslzCorrExecX(task, pX+n*RO*E1, xstride, pZ+n*RO*E1, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslCorrDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in corr2(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // bool corr3(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& z)
-    // {
-        // try
-        // {
-            // if ( !z.dimensions_equal(&x) )
-            // {
-                // z = x;
-            // }
-
-            // size_t RO = x.get_size(0);
-            // size_t E1 = x.get_size(1);
-            // size_t E2 = x.get_size(2);
-
-            // size_t kerRO = ker.get_size(0);
-            // size_t kerE1 = ker.get_size(1);
-            // size_t kerE2 = ker.get_size(2);
-
-            // size_t num = x.get_number_of_elements()/(RO*E1*E2);
-
-            // int status;
-            // VSLConvTaskPtr task;
-
-            // MKL_INT kerShape[3];
-            // kerShape[0] = kerRO; kerShape[1] = kerE1; kerShape[2] = kerE2;
-
-            // MKL_INT xshape[3];
-            // xshape[0] = RO; xshape[1] = E1; xshape[2] = E2;
-
-            // MKL_INT start[3];
-            // start[0] = kerRO/2;
-            // start[1] = kerE1/2;
-            // start[2] = kerE2/2;
-
-            // MKL_INT kerStride[3], xstride[3], zstride[3];
-            // kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerE1;
-            // xstride[0] = 1; xstride[1] = RO; xstride[2] = E1;
-            // zstride[0] = 1; zstride[1] = RO; zstride[2] = E1;
-
-            // const MKL_Complex16* pX = reinterpret_cast<const MKL_Complex16*>(x.begin());
-            // const MKL_Complex16* pKer = reinterpret_cast<const MKL_Complex16*>(ker.begin());
-            // MKL_Complex16* pZ = reinterpret_cast<MKL_Complex16*>(z.begin());
-
-            // if ( num == 1 )
-            // {
-                // status = vslzCorrNewTask(&task, VSL_CORR_MODE_AUTO, 3, kerShape, xshape, xshape);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslzCorrExec(task, pKer, kerStride, pX, xstride, pZ, zstride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                 // vslCorrDeleteTask(&task);
-            // }
-            // else
-            // {
-                // status = vslzCorrNewTaskX(&task, VSL_CORR_MODE_AUTO, 3, kerShape, xshape, xshape, pKer, kerStride);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // status = vslCorrSetStart(task, start);
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // long long n;
-
-                // #pragma omp parallel for default(none) private(n) shared(num, task, pX, RO, E1, E2, status, xstride, pZ, zstride)
-                // for ( n=0; n<(long long)num; n++ )
-                // {
-                    // status = vslzCorrExecX(task, pX+n*RO*E1*E2, xstride, pZ+n*RO*E1*E2, zstride);
-                // }
-                // GADGET_CHECK_RETURN_FALSE(status==VSL_STATUS_OK);
-
-                // vslCorrDeleteTask(&task);
-            // }
-        // }
-        // catch(...)
-        // {
-            // GADGET_ERROR_MSG("Errors happened in corr3(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& z) ... ");
-            // return false;
-        // }
-
-        // return true;
-    // }
-
-    // #endif // USE_MKL
-
-    // //
-    // // Instantiation
-    // //
-
-    // // -----------------------------------------------------------
-
-    // #ifdef USE_MKL
-
-    // template <unsigned int D> 
-    // inline bool scal(float a, hoNDImage<float, D>& x)
-    // {
-        // long long N = (long long)(x.get_number_of_elements());
-        // return scal(a, x.begin(), N);
-    // }
-
-    // template <unsigned int D> 
-    // inline bool scal(double a, hoNDImage<double, D>& x)
-    // {
-        // long long N = (long long)(x.get_number_of_elements());
-        // return scal(a, x.begin(), N);
-    // }
-
-    // template <unsigned int D> 
-    // inline bool scal(float a, hoNDImage<GT_Complex8, D>& x)
-    // {
-        // long long N = (long long)(x.get_number_of_elements());
-        // return scal(a, x.begin(), N);
-    // }
-
-    // template <unsigned int D> 
-    // inline bool scal(double a, hoNDImage<GT_Complex16, D>& x)
-    // {
-        // long long N = (long long)(x.get_number_of_elements());
-        // return scal(a, x.begin(), N);
-    // }
-
-    // template <unsigned int D> 
-    // inline bool scal(GT_Complex8 a, hoNDImage<GT_Complex8, D>& x)
-    // {
-        // long long N = (long long)(x.get_number_of_elements());
-        // return scal(a, x.begin(), N);
-    // }
-
-    // template <unsigned int D> 
-    // inline bool scal(GT_Complex16 a, hoNDImage<GT_Complex16, D>& x)
-    // {
-        // long long N = (long long)(x.get_number_of_elements());
-        // return scal(a, x.begin(), N);
-    // }
-
-    // #endif // USE_MKL
-
-    //
-    // Instantiation
-    //
-
-    // template EXPORTCPUCOREMATH bool scal(float a, hoNDImage<float, 1>& x);
-    // template EXPORTCPUCOREMATH bool scal(double a, hoNDImage<double, 1>& x);
-    // template EXPORTCPUCOREMATH bool scal(float a, hoNDImage<GT_Complex8, 1>& x);
-    // template EXPORTCPUCOREMATH bool scal(double a, hoNDImage<GT_Complex16, 1>& x);
-    // template EXPORTCPUCOREMATH bool scal(GT_Complex8 a, hoNDImage<GT_Complex8, 1>& x);
-    // template EXPORTCPUCOREMATH bool scal(GT_Complex16 a, hoNDImage<GT_Complex16, 1>& x);
-
-    // template EXPORTCPUCOREMATH bool scal(float a, hoNDImage<float, 2>& x);
-    // template EXPORTCPUCOREMATH bool scal(double a, hoNDImage<double, 2>& x);
-    // template EXPORTCPUCOREMATH bool scal(float a, hoNDImage<GT_Complex8, 2>& x);
-    // template EXPORTCPUCOREMATH bool scal(double a, hoNDImage<GT_Complex16, 2>& x);
-    // template EXPORTCPUCOREMATH bool scal(GT_Complex8 a, hoNDImage<GT_Complex8, 2>& x);
-    // template EXPORTCPUCOREMATH bool scal(GT_Complex16 a, hoNDImage<GT_Complex16, 2>& x);
-
-    // template EXPORTCPUCOREMATH bool scal(float a, hoNDImage<float, 3>& x);
-    // template EXPORTCPUCOREMATH bool scal(double a, hoNDImage<double, 3>& x);
-    // template EXPORTCPUCOREMATH bool scal(float a, hoNDImage<GT_Complex8, 3>& x);
-    // template EXPORTCPUCOREMATH bool scal(double a, hoNDImage<GT_Complex16, 3>& x);
-    // template EXPORTCPUCOREMATH bool scal(GT_Complex8 a, hoNDImage<GT_Complex8, 3>& x);
-    // template EXPORTCPUCOREMATH bool scal(GT_Complex16 a, hoNDImage<GT_Complex16, 3>& x);
+    // --------------------------------------------------------------------------------
+
+    template<typename T> void fill( hoNDArray<T>* x, T val)
+    {
+        size_t N = x->get_number_of_elements();
+        T* pX = x->begin();
+        Gadgetron::math::fill(N, pX, val);
+    }
+
+    template EXPORTCPUCOREMATH void fill( hoNDArray<float>* x, float val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray<double>* x, double val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray<GT_Complex8>* x, GT_Complex8 val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray<GT_Complex16>* x, GT_Complex16 val);
+
+    // --------------------------------------------------------------------------------
+
+    template<typename T> void fill( hoNDArray<T>& x, T val )
+    {
+        size_t N = x.get_number_of_elements();
+        T* pX = x.begin();
+        Gadgetron::math::fill(N, pX, val);
+    }
+
+    template EXPORTCPUCOREMATH void fill( hoNDArray<float>& x, float val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray<double>& x, double val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray<GT_Complex8>& x, GT_Complex8 val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray<GT_Complex16>& x, GT_Complex16 val);
+
+    // --------------------------------------------------------------------------------
+
+    template<class T> 
+    bool real_imag_to_complex(const hoNDArray<typename realType<T>::Type>& real, const hoNDArray<typename realType<T>::Type>& imag, hoNDArray<T>& cplx)
+    {
+        try
+        {
+            GADGET_CHECK_RETURN_FALSE(real.dimensions_equal(&imag));
+
+            if ( !cplx.dimensions_equal(&real) )
+            {
+                cplx.create(real.get_dimensions());
+            }
+
+            T* pRes = cplx.begin();
+            const typename realType<T>::Type* pReal = real.begin();
+            const typename realType<T>::Type* pImag = imag.begin();
+
+            size_t N = real.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for private(n) shared(N, pRes, pReal, pImag)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pRes[n] = T(pReal[n], pImag[n]);
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in real_imag_to_complex(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool real_imag_to_complex(const hoNDArray<float>& real, const hoNDArray<float>& imag, hoNDArray<GT_Complex8>& cplx);
+    template EXPORTCPUCOREMATH bool real_imag_to_complex(const hoNDArray<double>& real, const hoNDArray<double>& imag, hoNDArray<GT_Complex16>& cplx);
+
+    // --------------------------------------------------------------------------------
+
+    template<class T> 
+    bool complex_to_real_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real, hoNDArray<typename realType<T>::Type>& imag)
+    {
+        try
+        {
+            if ( !real.dimensions_equal(&cplx) )
+            {
+                real.create(cplx.get_dimensions());
+            }
+
+            if ( !imag.dimensions_equal(&cplx) )
+            {
+                imag.create(cplx.get_dimensions());
+            }
+
+            const T* pRes = cplx.begin();
+            typename realType<T>::Type* pReal = real.begin();
+            typename realType<T>::Type* pImag = imag.begin();
+
+            size_t N = real.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for default(none) private(n) shared(N, pRes, pReal, pImag)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pReal[n] = pRes[n].real();
+                pImag[n] = pRes[n].imag();
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in complex_to_real_imag(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool complex_to_real_imag(const hoNDArray<GT_Complex8>& cplx, hoNDArray<float>& real, hoNDArray<float>& imag);
+    template EXPORTCPUCOREMATH bool complex_to_real_imag(const hoNDArray<GT_Complex16>& cplx, hoNDArray<double>& real, hoNDArray<double>& imag);
+
+    template <> EXPORTCPUCOREMATH
+    bool complex_to_real_imag(const hoNDArray<float>& cplx, hoNDArray<float>& real, hoNDArray<float>& imag)
+    {
+        try
+        {
+            if ( !real.dimensions_equal(&cplx) )
+            {
+                real.create(cplx.get_dimensions());
+            }
+
+            if ( !imag.dimensions_equal(&cplx) )
+            {
+                imag.create(cplx.get_dimensions());
+            }
+
+            const float* pRes = cplx.begin();
+            float* pReal = real.begin();
+            float* pImag = imag.begin();
+
+            size_t N = real.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for default(none) private(n) shared(N, pRes, pReal, pImag)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pReal[n] = pRes[n];
+                pImag[n] = 0;
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in complex_to_real_imag(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template<> EXPORTCPUCOREMATH 
+    bool complex_to_real_imag(const hoNDArray<double>& cplx, hoNDArray<double>& real, hoNDArray<double>& imag)
+    {
+        try
+        {
+            if ( !real.dimensions_equal(&cplx) )
+            {
+                real.create(cplx.get_dimensions());
+            }
+
+            if ( !imag.dimensions_equal(&cplx) )
+            {
+                imag.create(cplx.get_dimensions());
+            }
+
+            const double* pRes = cplx.begin();
+            double* pReal = real.begin();
+            double* pImag = imag.begin();
+
+            size_t N = real.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for default(none) private(n) shared(N, pRes, pReal, pImag)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pReal[n] = pRes[n];
+                pImag[n] = 0;
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in complex_to_real_imag(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    // --------------------------------------------------------------------------------
+
+    template<class T> 
+    bool complex_to_real(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real)
+    {
+        try
+        {
+            if ( !real.dimensions_equal(&cplx) )
+            {
+                real.create(cplx.get_dimensions());
+            }
+
+            const T* pRes = cplx.begin();
+            typename realType<T>::Type* pReal = real.begin();
+
+            size_t N = real.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for default(none) private(n) shared(N, pRes, pReal)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pReal[n] = pRes[n].real();
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in complex_to_real(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray<GT_Complex8>& cplx, hoNDArray<float>& real);
+    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray<GT_Complex16>& cplx, hoNDArray<double>& real);
+
+    // --------------------------------------------------------------------------------
+
+    template<class T> 
+    bool complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& imag)
+    {
+        try
+        {
+            if ( !imag.dimensions_equal(&cplx) )
+            {
+                imag.create(cplx.get_dimensions());
+            }
+
+            const T* pRes = cplx.begin();
+            typename realType<T>::Type* pImag = imag.begin();
+
+            size_t N = imag.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for default(none) private(n) shared(N, pRes, pImag)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pImag[n] = pRes[n].imag();
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in complex_to_imag(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray<GT_Complex8>& cplx, hoNDArray<float>& imag);
+    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray<GT_Complex16>& cplx, hoNDArray<double>& imag);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool absolute(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r)
+    {
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r.create(x.get_dimensions());
+        }
+
+        hoNDArray<T> rTmp;
+        rTmp.create(x.get_dimensions());
+
+        Gadgetron::absolute(x, rTmp);
+
+        r.copyFrom(rTmp);
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    {
+        try
+        {
+            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+            if ( r.get_number_of_elements()!=x.get_number_of_elements())
+            {
+                r = x;
+            }
+
+            Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool add(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool add(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool add(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool add(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    {
+        try
+        {
+            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+            if ( r.get_number_of_elements()!=x.get_number_of_elements())
+            {
+                r = x;
+            }
+
+            Gadgetron::math::subtract(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool subtract(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool subtract(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool subtract(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool subtract(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    {
+        try
+        {
+            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+            if ( r.get_number_of_elements()!=x.get_number_of_elements())
+            {
+                r = x;
+            }
+
+            Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool multiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool multiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool multiply(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool multiply(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool divide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    {
+        try
+        {
+            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+            if ( r.get_number_of_elements()!=x.get_number_of_elements())
+            {
+                r = x;
+            }
+
+            Gadgetron::math::divide(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in divide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool divide(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool divide(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool divide(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool divide(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool sqrt(const hoNDArray<T>& x, hoNDArray<T>& r)
+    {
+        try
+        {
+            if ( r.get_number_of_elements()!=x.get_number_of_elements())
+            {
+                r.create(x.get_dimensions());
+            }
+
+            Gadgetron::math::sqrt(x.get_number_of_elements(), x.begin(), r.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in sqrt(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool minAbsolute(const hoNDArray<T>& x, T& r, size_t& ind)
+    {
+        try
+        {
+            size_t N = x.get_number_of_elements();
+            if ( N == 0 ) return true;
+            Gadgetron::math::minAbsolute(N, x.begin(), r, ind);
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in minAbsolute(const hoNDArray<T>& x, T& r, size_t& ind) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
+    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
+    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<GT_Complex8>& x, GT_Complex8& r, size_t& ind);
+    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<GT_Complex16>& x, GT_Complex16& r, size_t& ind);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool maxAbsolute(const hoNDArray<T>& x, T& r, size_t& ind)
+    {
+        try
+        {
+            size_t N = x.get_number_of_elements();
+            if ( N == 0 ) return true;
+            Gadgetron::math::maxAbsolute(N, x.begin(), r, ind);
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in maxAbsolute(const hoNDArray<T>& x, T& r, size_t& ind) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
+    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
+    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<GT_Complex8>& x, GT_Complex8& r, size_t& ind);
+    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<GT_Complex16>& x, GT_Complex16& r, size_t& ind);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    {
+        try
+        {
+            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+            if ( r.get_number_of_elements()!=x.get_number_of_elements())
+            {
+                r = x;
+            }
+
+            Gadgetron::math::multiplyConj(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool conjugate(const hoNDArray<T>& x, hoNDArray<T>& r)
+    {
+        try
+        {
+            if ( r.get_number_of_elements()!=x.get_number_of_elements())
+            {
+                r.create(x.get_dimensions());
+            }
+
+            Gadgetron::math::conjugate(x.get_number_of_elements(), x.begin(), r.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in conjugate(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool conjugate(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool conjugate(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool addEpsilon(hoNDArray<T>& x)
+    {
+        try
+        {
+            Gadgetron::math::addEpsilon(x.get_number_of_elements(), x.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in addEpsilon(hoNDArray<T>& x) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<float>& x);
+    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<double>& x);
+    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<GT_Complex8>& x);
+    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<GT_Complex16>& x);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool norm2(const hoNDArray<T>& x, typename realType<T>::Type& r)
+    {
+        try
+        {
+            Gadgetron::math::norm2(x.get_number_of_elements(), x.begin(), r);
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in norm2(const hoNDArray<T>& x, typename realType<T>::Type& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool norm2(const hoNDArray<float>& x, float& r);
+    template EXPORTCPUCOREMATH bool norm2(const hoNDArray<double>& x, double& r);
+    template EXPORTCPUCOREMATH bool norm2(const hoNDArray<GT_Complex8>& x, float& r);
+    template EXPORTCPUCOREMATH bool norm2(const hoNDArray<GT_Complex16>& x, double& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool norm1(const hoNDArray<T>& x, typename realType<T>::Type& r)
+    {
+        try
+        {
+           Gadgetron::math::norm1(x.get_number_of_elements(), x.begin(), r);
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in norm1(const hoNDArray<T>& x, typename realType<T>::Type& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool norm1(const hoNDArray<float>& x, float& r);
+    template EXPORTCPUCOREMATH bool norm1(const hoNDArray<double>& x, double& r);
+    template EXPORTCPUCOREMATH bool norm1(const hoNDArray<GT_Complex8>& x, float& r);
+    template EXPORTCPUCOREMATH bool norm1(const hoNDArray<GT_Complex16>& x, double& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r)
+    {
+        try
+        {
+            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+            Gadgetron::math::dotc(x.get_number_of_elements(), x.begin(), y.begin(), r);
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, GT_Complex8& r);
+    template EXPORTCPUCOREMATH bool dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, GT_Complex16& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool absolute(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r)
+    {
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r.create(x.get_dimensions());
+        }
+
+        Gadgetron::math::absolute(x.get_number_of_elements(), x.begin(), r.begin());
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex8>& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex16>& x, hoNDArray<double>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool argument(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r)
+    {
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r.create(x.get_dimensions());
+        }
+
+        Gadgetron::math::argument(x.get_number_of_elements(), x.begin(), r.begin());
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool argument(const hoNDArray<GT_Complex8>& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool argument(const hoNDArray<GT_Complex16>& x, hoNDArray<double>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool inv(const hoNDArray<T>& x, hoNDArray<T>& r)
+    {
+        try
+        {
+            if ( !r.dimensions_equal(&x) )
+            {
+                r = x;
+            }
+
+            Gadgetron::math::inv(x.get_number_of_elements(), x.begin(), r.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors happened in inv(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool inv(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool inv(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool inv(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool inv(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template<typename T> 
+    bool conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z)
+    {
+        try
+        {
+            if ( !z.dimensions_equal(&x) )
+            {
+                z = x;
+            }
+
+            long long RO = (long long) x.get_size(0);
+            long long E1 = (long long) x.get_size(1);
+            long long num = ((long long) x.get_number_of_elements()) / (RO*E1);
+
+            long long kRO = (long long) y.get_size(0);
+            long long kE1 = (long long) y.get_size(1);
+
+            Gadgetron::math::conv2(RO, E1, num, x.begin(), kRO, kE1, y.begin(), z.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors happened in conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool conv2(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& z);
+    template EXPORTCPUCOREMATH bool conv2(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
+    template EXPORTCPUCOREMATH bool conv2(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& z);
+    template EXPORTCPUCOREMATH bool conv2(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& z);
+
+    // --------------------------------------------------------------------------------
+
+    template<typename T> 
+    bool conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z)
+    {
+        try
+        {
+            if ( !z.dimensions_equal(&x) )
+            {
+                z = x;
+            }
+
+            long long RO = (long long) x.get_size(0);
+            long long E1 = (long long) x.get_size(1);
+            long long E2 = (long long) x.get_size(2);
+            long long num = ((long long)x.get_number_of_elements()) / (RO*E1*E2);
+
+            long long kRO = (long long) y.get_size(0);
+            long long kE1 = (long long) y.get_size(1);
+            long long kE2 = (long long) y.get_size(2);
+
+            Gadgetron::math::conv3(RO, E1, E2, num, x.begin(), kRO, kE1, kE2, y.begin(), z.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors happened in conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool conv3(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& z);
+    template EXPORTCPUCOREMATH bool conv3(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
+    template EXPORTCPUCOREMATH bool conv3(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& z);
+    template EXPORTCPUCOREMATH bool conv3(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& z);
+
+    // ----------------------------------------------------
+
+    template <typename T> 
+    T dotc(const hoNDArray<T>& x, const hoNDArray<T>& y)
+    {
+        T r = 0;
+
+        try
+        {
+            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+            dotc(x, y, r);
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r) ... ");
+            return 0;
+        }
+
+        return r;
+    }
+
+    template EXPORTCPUCOREMATH GT_Complex8 dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y);
+    template EXPORTCPUCOREMATH GT_Complex16 dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    T dotu(const hoNDArray<T>& x, const hoNDArray<T>& y)
+    {
+        T r = 0;
+
+        try
+        {
+            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+            Gadgetron::math::dotu(x.get_number_of_elements(), x.begin(), y.begin(), r);
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in dotu(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r) ... ");
+            return 0;
+        }
+
+        return r;
+    }
+
+    template EXPORTCPUCOREMATH float dotu(const hoNDArray<float>& x, const hoNDArray<float>& y);
+    template EXPORTCPUCOREMATH double dotu(const hoNDArray<double>& x, const hoNDArray<double>& y);
+    template EXPORTCPUCOREMATH GT_Complex8 dotu(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y);
+    template EXPORTCPUCOREMATH GT_Complex16 dotu(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    {
+        try
+        {
+            GADGET_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+
+            if ( r.get_number_of_elements() != x.get_number_of_elements() )
+            {
+                r = y;
+            }
+            else
+            {
+                if ( &r != &y )
+                {
+                    memcpy(r.begin(), y.begin(), r.get_number_of_bytes());
+                }
+            }
+
+            Gadgetron::math::axpy(a, x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool axpy(float a, const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool axpy(double a, const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool axpy(GT_Complex8 a, const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool axpy(GT_Complex16 a, const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool scal(T a, hoNDArray<T>& x)
+    {
+        try
+        {
+            Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in scal(T a, hoNDArray<T>& x) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool scal(float a, hoNDArray<float>& x);
+    template EXPORTCPUCOREMATH bool scal(double a, hoNDArray<double>& x);
+    template EXPORTCPUCOREMATH bool scal(GT_Complex8 a, hoNDArray<GT_Complex8>& x);
+    template EXPORTCPUCOREMATH bool scal(GT_Complex16 a, hoNDArray<GT_Complex16>& x);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool scal(T a, hoNDArray< std::complex<T> >& x)
+    {
+        try
+        {
+            Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in scal(T a, hoNDArray< std::complex<T> >& x) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool scal(float a, hoNDArray<GT_Complex8>& x);
+    template EXPORTCPUCOREMATH bool scal(double a, hoNDArray<GT_Complex16>& x);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    bool sort(const hoNDArray<T>& x, hoNDArray<T>& r, bool isascending)
+    {
+        if ( &r != &x )
+        {
+            if ( r.get_number_of_elements()!=x.get_number_of_elements())
+            {
+                r = x;
+            }
+            else
+            {
+                memcpy(r.begin(), x.begin(), x.get_number_of_bytes());
+            }
+        }
+
+        Gadgetron::math::sort(x.get_number_of_elements(), x.begin(), r.begin(), isascending);
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending);
+    template EXPORTCPUCOREMATH bool sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending);
+
+    // --------------------------------------------------------------------------------
 }

@@ -1891,7 +1891,6 @@ namespace Gadgetron { namespace math {
             long long halfKE2 = (long long)(kE2/2);
 
             hoNDArray<T> flipY(2*halfKRO+1, 2*halfKE1+1, 2*halfKE2+1);
-
             T* pKer = flipY.begin();
 
             long long n, e2;
