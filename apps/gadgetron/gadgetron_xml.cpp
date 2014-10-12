@@ -31,6 +31,15 @@ namespace GadgetronXML
       h.globalGadgetParameter.push_back(pp);
       p = p.next_sibling("globalGadgetParameter");
     }
+
+    pugi::xml_node b = root.child("cloudBus");
+    if (b) {
+      CloudBus cb;
+      cb.multiCastAddress = b.child_value("multiCastAddress");
+      cb.port = static_cast<unsigned int>(std::atoi(b.child_value("port")));
+      h.cloudBus = cb;
+    }
+    
   }
 
   void deserialize(const char* xml_config, GadgetStreamConfiguration& cfg)

@@ -76,12 +76,8 @@ namespace Gadgetron
     static void set_mcast_address(const char* addr);
     static void set_mcast_port(int port);
     static void set_query_only(bool m = true);
+    static void set_gadgetron_port(uint32_t port);
 
-    void set_gadgetron_port(uint32_t port)
-    {
-      node_info_.port = port;
-    }
-    
     void set_compute_capability(uint32_t c)
     {
       node_info_.compute_capability = c;
@@ -103,6 +99,7 @@ namespace Gadgetron
     static const char* mcast_inet_addr_;
     static int mcast_port_;
     static bool query_mode_; //Listen only
+    static int gadgetron_port_;
 
     GadgetronNodeInfo node_info_;
     map_type_ nodes_;

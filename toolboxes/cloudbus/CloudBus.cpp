@@ -6,6 +6,7 @@ namespace Gadgetron
   const char* CloudBus::mcast_inet_addr_ = GADGETRON_DEFAULT_MULTICAST_ADDR;
   int CloudBus::mcast_port_ = GADGETRON_DEFAULT_MULTICAST_PORT;
   bool CloudBus::query_mode_ = false; //Listen only is disabled default
+  int CloudBus::gadgetron_port_ = 9002; //Default port
 
   CloudBusTask::CloudBusTask(int port, const char* addr)
     : inherited()
@@ -129,6 +130,11 @@ namespace Gadgetron
     query_mode_ = m;
   }
  
+  void CloudBus::set_gadgetron_port(uint32_t port)
+  {
+    gadgetron_port_ = port;
+  }
+
   void CloudBus::wait()
   {
     sender_.wait();
@@ -162,7 +168,7 @@ namespace Gadgetron
     , mtx_("CLOUDBUSMTX")
     , uuid_(boost::uuids::random_generator()())
   {
-    set_gadgetron_port(9002); //Default gadgetron port
+    node_info_.port = gadgetron_port_;
     set_compute_capability(1);
     node_info_.uuid = boost::uuids::to_string(uuid_);
     ACE_SOCK_Acceptor listener (ACE_Addr::sap_any);
