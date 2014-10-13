@@ -288,21 +288,13 @@ namespace Gadgetron
     template <typename T> 
     bool add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
@@ -317,21 +309,13 @@ namespace Gadgetron
     template <typename T> 
     bool subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::subtract(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::subtract(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
@@ -346,21 +330,13 @@ namespace Gadgetron
     template <typename T> 
     bool multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
@@ -375,21 +351,13 @@ namespace Gadgetron
     template <typename T> 
     bool divide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::divide(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in divide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::divide(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
@@ -404,20 +372,12 @@ namespace Gadgetron
     template <typename T> 
     bool sqrt(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
-        try
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r.create(x.get_dimensions());
-            }
+            r.create(x.get_dimensions());
+        }
 
-            Gadgetron::math::sqrt(x.get_number_of_elements(), x.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in sqrt(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::sqrt(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
@@ -432,17 +392,9 @@ namespace Gadgetron
     template <typename T> 
     bool minAbsolute(const hoNDArray<T>& x, T& r, size_t& ind)
     {
-        try
-        {
-            size_t N = x.get_number_of_elements();
-            if ( N == 0 ) return true;
-            Gadgetron::math::minAbsolute(N, x.begin(), r, ind);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in minAbsolute(const hoNDArray<T>& x, T& r, size_t& ind) ... ");
-            return false;
-        }
+        size_t N = x.get_number_of_elements();
+        if ( N == 0 ) return true;
+        Gadgetron::math::minAbsolute(N, x.begin(), r, ind);
 
         return true;
     }
@@ -457,17 +409,9 @@ namespace Gadgetron
     template <typename T> 
     bool maxAbsolute(const hoNDArray<T>& x, T& r, size_t& ind)
     {
-        try
-        {
-            size_t N = x.get_number_of_elements();
-            if ( N == 0 ) return true;
-            Gadgetron::math::maxAbsolute(N, x.begin(), r, ind);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in maxAbsolute(const hoNDArray<T>& x, T& r, size_t& ind) ... ");
-            return false;
-        }
+        size_t N = x.get_number_of_elements();
+        if ( N == 0 ) return true;
+        Gadgetron::math::maxAbsolute(N, x.begin(), r, ind);
 
         return true;
     }
@@ -482,21 +426,13 @@ namespace Gadgetron
     template <typename T> 
     bool multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::multiplyConj(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::multiplyConj(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
@@ -509,20 +445,12 @@ namespace Gadgetron
     template <typename T> 
     bool conjugate(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
-        try
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r.create(x.get_dimensions());
-            }
+            r.create(x.get_dimensions());
+        }
 
-            Gadgetron::math::conjugate(x.get_number_of_elements(), x.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in conjugate(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::conjugate(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
@@ -535,16 +463,7 @@ namespace Gadgetron
     template <typename T> 
     bool addEpsilon(hoNDArray<T>& x)
     {
-        try
-        {
-            Gadgetron::math::addEpsilon(x.get_number_of_elements(), x.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in addEpsilon(hoNDArray<T>& x) ... ");
-            return false;
-        }
-
+        Gadgetron::math::addEpsilon(x.get_number_of_elements(), x.begin());
         return true;
     }
 
@@ -558,16 +477,7 @@ namespace Gadgetron
     template <typename T> 
     bool norm2(const hoNDArray<T>& x, typename realType<T>::Type& r)
     {
-        try
-        {
-            Gadgetron::math::norm2(x.get_number_of_elements(), x.begin(), r);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in norm2(const hoNDArray<T>& x, typename realType<T>::Type& r) ... ");
-            return false;
-        }
-
+        Gadgetron::math::norm2(x.get_number_of_elements(), x.begin(), r);
         return true;
     }
 
@@ -581,16 +491,7 @@ namespace Gadgetron
     template <typename T> 
     bool norm1(const hoNDArray<T>& x, typename realType<T>::Type& r)
     {
-        try
-        {
-           Gadgetron::math::norm1(x.get_number_of_elements(), x.begin(), r);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in norm1(const hoNDArray<T>& x, typename realType<T>::Type& r) ... ");
-            return false;
-        }
-
+        Gadgetron::math::norm1(x.get_number_of_elements(), x.begin(), r);
         return true;
     }
 
@@ -604,17 +505,8 @@ namespace Gadgetron
     template <typename T> 
     bool dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r)
     {
-        try
-        {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            Gadgetron::math::dotc(x.get_number_of_elements(), x.begin(), y.begin(), r);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r) ... ");
-            return false;
-        }
-
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        Gadgetron::math::dotc(x.get_number_of_elements(), x.begin(), y.begin(), r);
         return true;
     }
 
@@ -664,20 +556,12 @@ namespace Gadgetron
     template <typename T> 
     bool inv(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
-        try
+        if ( !r.dimensions_equal(&x) )
         {
-            if ( !r.dimensions_equal(&x) )
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::inv(x.get_number_of_elements(), x.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors happened in inv(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::inv(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
@@ -766,16 +650,8 @@ namespace Gadgetron
     {
         T r = 0;
 
-        try
-        {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            dotc(x, y, r);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r) ... ");
-            return 0;
-        }
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        dotc(x, y, r);
 
         return r;
     }
@@ -790,16 +666,8 @@ namespace Gadgetron
     {
         T r = 0;
 
-        try
-        {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            Gadgetron::math::dotu(x.get_number_of_elements(), x.begin(), y.begin(), r);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in dotu(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r) ... ");
-            return 0;
-        }
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        Gadgetron::math::dotu(x.get_number_of_elements(), x.begin(), y.begin(), r);
 
         return r;
     }
@@ -814,29 +682,21 @@ namespace Gadgetron
     template <typename T> 
     bool axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        try
-        {
-            GADGET_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        GADGET_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
 
-            if ( r.get_number_of_elements() != x.get_number_of_elements() )
-            {
-                r = y;
-            }
-            else
-            {
-                if ( &r != &y )
-                {
-                    memcpy(r.begin(), y.begin(), r.get_number_of_bytes());
-                }
-            }
-
-            Gadgetron::math::axpy(a, x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
+        if ( r.get_number_of_elements() != x.get_number_of_elements() )
         {
-            GADGET_ERROR_MSG("Errors in axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
-            return false;
+            r = y;
         }
+        else
+        {
+            if ( &r != &y )
+            {
+                memcpy(r.begin(), y.begin(), r.get_number_of_bytes());
+            }
+        }
+
+        Gadgetron::math::axpy(a, x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
@@ -851,16 +711,7 @@ namespace Gadgetron
     template <typename T> 
     bool scal(T a, hoNDArray<T>& x)
     {
-        try
-        {
-            Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in scal(T a, hoNDArray<T>& x) ... ");
-            return false;
-        }
-
+        Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
         return true;
     }
 
@@ -874,16 +725,7 @@ namespace Gadgetron
     template <typename T> 
     bool scal(T a, hoNDArray< std::complex<T> >& x)
     {
-        try
-        {
-            Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in scal(T a, hoNDArray< std::complex<T> >& x) ... ");
-            return false;
-        }
-
+        Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
         return true;
     }
 

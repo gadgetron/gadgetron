@@ -389,262 +389,154 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool add(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in add(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool subtract(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::subtract(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in subtract(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::subtract(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool multiply(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in multiply(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool divide(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::divide(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in divide(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::divide(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool sqrt(const hoNDImage<T, D>& x, hoNDImage<T, D>& r)
     {
-        try
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r.create(x.get_dimensions());
-            }
+            r.create(x.get_dimensions());
+        }
 
-            Gadgetron::math::sqrt(x.get_number_of_elements(), x.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in sqrt(const hoNDImage<T, D>& x, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::sqrt(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool minAbsolute(const hoNDImage<T, D>& x, T& r, size_t& ind)
     {
-        try
-        {
-            long long N = (long long)x.get_number_of_elements();
-            if ( N == 0 ) return true;
+        long long N = (long long)x.get_number_of_elements();
+        if ( N == 0 ) return true;
 
-            Gadgetron::math::minAbsolute(x.get_number_of_elements(), x.begin(), r, ind);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in minAbsolute(const hoNDImage<T, D>& x, T& r, size_t& ind) ... ");
-            return false;
-        }
+        Gadgetron::math::minAbsolute(x.get_number_of_elements(), x.begin(), r, ind);
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool maxAbsolute(const hoNDImage<T, D>& x, T& r, size_t& ind)
     {
-        try
-        {
-            long long N = (long long)x.get_number_of_elements();
-            if ( N == 0 ) return true;
+        long long N = (long long)x.get_number_of_elements();
+        if ( N == 0 ) return true;
 
-            Gadgetron::math::maxAbsolute(x.get_number_of_elements(), x.begin(), r, ind);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in maxAbsolute(const hoNDImage<T, D>& x, T& r, size_t& ind) ... ");
-            return false;
-        }
+        Gadgetron::math::maxAbsolute(x.get_number_of_elements(), x.begin(), r, ind);
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool multiplyConj(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::multiplyConj(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in multiplyConj(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::multiplyConj(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool conjugate(const hoNDImage<T, D>& x, hoNDImage<T, D>& r)
     {
-        try
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r.create(x.get_dimensions());
-            }
+            r.create(x.get_dimensions());
+        }
 
-            Gadgetron::math::conjugate(x.get_number_of_elements(), x.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in conjugate(const hoNDImage<T, D>& x, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::conjugate(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool addEpsilon(hoNDImage<T, D>& x)
     {
-        try
-        {
-            Gadgetron::math::addEpsilon(x.get_number_of_elements(), x.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in addEpsilon(hoNDImage<T, D>& x) ... ");
-            return false;
-        }
-
+        Gadgetron::math::addEpsilon(x.get_number_of_elements(), x.begin());
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool norm2(const hoNDImage<T, D>& x, typename realType<T>::Type& r)
     {
-        try
-        {
-            Gadgetron::math::norm2(x.get_number_of_elements(), x.begin(), r);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in norm2(const hoNDImage<T, D>& x, typename realType<T>::Type& r) ... ");
-            return false;
-        }
-
+        Gadgetron::math::norm2(x.get_number_of_elements(), x.begin(), r);
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool norm1(const hoNDImage<T, D>& x, typename realType<T>::Type& r)
     {
-        try
-        {
-            Gadgetron::math::norm1(x.get_number_of_elements(), x.begin(), r);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in norm1(const hoNDImage<T, D>& x, typename realType<T>::Type& r) ... ");
-            return false;
-        }
-
+        Gadgetron::math::norm1(x.get_number_of_elements(), x.begin(), r);
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool dotc(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, T& r)
     {
-        try
-        {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            Gadgetron::math::dotc(x.get_number_of_elements(), x.begin(), y.begin(), r);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in dotc(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, T& r) ... ");
-            return false;
-        }
-
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        Gadgetron::math::dotc(x.get_number_of_elements(), x.begin(), y.begin(), r);
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool absolute(const hoNDImage<T, D>& x, hoNDImage<typename realType<T>::Type, D>& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
@@ -657,7 +549,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool absolute(const hoNDImage< std::complex<T>, D >& x, hoNDImage< std::complex<T>, D >& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
@@ -670,7 +562,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool argument(const hoNDImage<T, D>& x, hoNDImage<typename realType<T>::Type, D>& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
@@ -683,7 +575,7 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool argument(const hoNDImage< std::complex<T>, D >& x, hoNDImage< std::complex<T>, D >& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
@@ -701,23 +593,15 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename T, unsigned int D>
+    template <typename T, unsigned int D> inline 
     bool inv(const hoNDImage<T, D>& x, hoNDImage<T, D>& r)
     {
-        try
+        if ( !r.dimensions_equal(&x) )
         {
-            if ( !r.dimensions_equal(&x) )
-            {
-                r = x;
-            }
+            r = x;
+        }
 
-            Gadgetron::math::inv(x.get_number_of_elements(), x.begin(), r.begin());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors happened in inv(const hoNDImage<T, D>& x, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+        Gadgetron::math::inv(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }

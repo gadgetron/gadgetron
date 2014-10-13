@@ -166,143 +166,114 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void axpy(float a, size_t N, const float* x, const float* y, float* r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
-            lapack_int incy = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
+        lapack_int incy = 1;
 
-            if ( y != r )
-            {
-                memcpy(r, y, sizeof(float)*N);
-            }
+        if ( y != r )
+        {
+            memcpy(r, y, sizeof(float)*N);
+        }
 
 #ifdef ILP_MODE_ON
-            saxpy_(&num, &a, const_cast<float*>(x), &incx, r, &incy);
+        saxpy_(&num, &a, const_cast<float*>(x), &incx, r, &incy);
 #else
-            if ( N < FourGBLimit )
-            {
-                saxpy_(&num, &a, const_cast<float*>(x), &incx, r, &incy);
-            }
-            else
-            {
-                long long n;
-
-                #pragma omp parallel for default(none) private(n) shared(N, r, a , x, y) if(N>NumElementsUseThreading)
-                for ( n=0; n<(long long)N; ++n)
-                {
-                    r[n] = a*x[n] + y[n];
-                }
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in axpy(float a, size_t N, const float* x, const float* y, float* r) ... ");
+            saxpy_(&num, &a, const_cast<float*>(x), &incx, r, &incy);
         }
+        else
+        {
+            long long n;
+
+            #pragma omp parallel for default(none) private(n) shared(N, r, a , x, y) if(N>NumElementsUseThreading)
+            for ( n=0; n<(long long)N; ++n)
+            {
+                r[n] = a*x[n] + y[n];
+            }
+        }
+#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void axpy(double a, size_t N, const double* x, const double* y, double* r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
-            lapack_int incy = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
+        lapack_int incy = 1;
 
-            if ( y != r )
-            {
-                memcpy(r, y, sizeof(double)*N);
-            }
+        if ( y != r )
+        {
+            memcpy(r, y, sizeof(double)*N);
+        }
 
 #ifdef ILP_MODE_ON
-            daxpy_(&num, &a, const_cast<double*>(x), &incx, r, &incy);
+        daxpy_(&num, &a, const_cast<double*>(x), &incx, r, &incy);
 #else
-            if ( N < FourGBLimit )
-            {
-                daxpy_(&num, &a, const_cast<double*>(x), &incx, r, &incy);
-            }
-            else
-            {
-                long long n;
-
-                #pragma omp parallel for default(none) private(n) shared(N, r, a , x, y) if(N>NumElementsUseThreading)
-                for ( n=0; n<(long long)N; ++n)
-                {
-                    r[n] = a*x[n] + y[n];
-                }
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in axpy(double a, size_t N, const double* x, const double* y, double* r) ... ");
+            daxpy_(&num, &a, const_cast<double*>(x), &incx, r, &incy);
         }
+        else
+        {
+            long long n;
+
+            #pragma omp parallel for default(none) private(n) shared(N, r, a , x, y) if(N>NumElementsUseThreading)
+            for ( n=0; n<(long long)N; ++n)
+            {
+                r[n] = a*x[n] + y[n];
+            }
+        }
+#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void axpy(GT_Complex8 a, size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
-            lapack_int incy = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
+        lapack_int incy = 1;
 
-            if ( y != r )
-            {
-                memcpy(r, y, sizeof(GT_Complex8)*N);
-            }
+        if ( y != r )
+        {
+            memcpy(r, y, sizeof(GT_Complex8)*N);
+        }
 
 #ifdef ILP_MODE_ON
-            caxpy_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(r), &incy);
+        caxpy_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(r), &incy);
 #else
-            if ( N < FourGBLimit )
-            {
-                caxpy_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(r), &incy);
-            }
-            else
-            {
-                axpy_64bit_mode(a, N, x, y, r);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in axpy(GT_Complex8 a, size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r) ... ");
+            caxpy_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(r), &incy);
         }
+        else
+        {
+            axpy_64bit_mode(a, N, x, y, r);
+        }
+#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void axpy(GT_Complex16 a, size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
-            lapack_int incy = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
+        lapack_int incy = 1;
 
-            if ( y != r )
-            {
-                memcpy(r, y, sizeof(GT_Complex16)*N);
-            }
+        if ( y != r )
+        {
+            memcpy(r, y, sizeof(GT_Complex16)*N);
+        }
 
 #ifdef ILP_MODE_ON
-            zaxpy_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(r), &incy);
+        zaxpy_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(r), &incy);
 #else
-            if ( N < FourGBLimit )
-            {
-                zaxpy_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(r), &incy);
-            }
-            else
-            {
-                axpy_64bit_mode(a, N, x, y, r);
-            }
-#endif // ILP_MODE_ON
-
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in axpy(GT_Complex16 a, size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r) ... ");
+            zaxpy_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(r), &incy);
         }
+        else
+        {
+            axpy_64bit_mode(a, N, x, y, r);
+        }
+#endif // ILP_MODE_ON
     }
 
     /// --------------------------------------------------------------------
@@ -310,25 +281,25 @@ namespace Gadgetron { namespace math {
 #ifdef USE_MKL
     template <> EXPORTCPUCOREMATH void add(size_t N, const float* x, const float* y, float* r)
     {
-        vsAdd(N, x, y, r);
+        vsAdd((lapack_int)N, x, y, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void add(size_t N, const double* x, const double* y, double* r)
     {
-        vdAdd(N, x, y, r);
+        vdAdd((lapack_int)N, x, y, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void add(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
-        vcAdd(N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
+        vcAdd((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void add(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
-        vzAdd(N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
+        vzAdd((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
@@ -367,25 +338,25 @@ namespace Gadgetron { namespace math {
 #ifdef USE_MKL
     template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const float* y, float* r)
     {
-        vsSub(N, x, y, r);
+        vsSub((lapack_int)N, x, y, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void subtract(size_t N, const double* x, const double* y, double* r)
     {
-        vdSub(N, x, y, r);
+        vdSub((lapack_int)N, x, y, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void subtract(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
-        vcSub(N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
+        vcSub((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void subtract(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
-        vzSub(N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
+        vzSub((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
@@ -393,18 +364,11 @@ namespace Gadgetron { namespace math {
 
     template <typename T> void subtract(size_t N, const T* x, const T* y, T* r)
     {
-        try
+        long long n;
+#pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; n++ )
         {
-            long long n;
-    #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                r[n] = x[n] - y[n];
-            }
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in subtract(size_t N, const T* x, const T* y, T* r) ... ");
+            r[n] = x[n] - y[n];
         }
     }
 
@@ -419,25 +383,25 @@ namespace Gadgetron { namespace math {
 #ifdef USE_MKL
     template <> EXPORTCPUCOREMATH void multiply(size_t N, const float* x, const float* y, float* r)
     {
-        vsMul(N, x, y, r);
+        vsMul((lapack_int)N, x, y, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void multiply(size_t N, const double* x, const double* y, double* r)
     {
-        vdMul(N, x, y, r);
+        vdMul((lapack_int)N, x, y, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void multiply(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
-        vcMul(N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
+        vcMul((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void multiply(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
-        vzMul(N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
+        vzMul((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
@@ -446,20 +410,13 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void multiply(size_t N, const T* x, const T* y, T* r)
     {
-        try
-        {
-            long long n;
+        long long n;
 #pragma omp parallel for private(n) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                const T& a = x[n];
-                const T& b = y[n];
-                r[n] = a*b;
-            }
-        }
-        catch(...)
+        for ( n=0; n<(long long)N; n++ )
         {
-            GADGET_THROW("Error happened in multiply(size_t N, const T* x, const T* y, T* r) ... ");
+            const T& a = x[n];
+            const T& b = y[n];
+            r[n] = a*b;
         }
     }
 
@@ -517,25 +474,25 @@ namespace Gadgetron { namespace math {
 #ifdef USE_MKL
     template <> EXPORTCPUCOREMATH void divide(size_t N, const float* x, const float* y, float* r)
     {
-        vsDiv(N, x, y, r);
+        vsDiv((lapack_int)N, x, y, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void divide(size_t N, const double* x, const double* y, double* r)
     {
-        vdDiv(N, x, y, r);
+        vdDiv((lapack_int)N, x, y, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void divide(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
-        vcDiv(N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
+        vcDiv((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void divide(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
-        vzDiv(N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
+        vzDiv((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
@@ -544,20 +501,13 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void divide(size_t N, const T* x, const T* y, T* r)
     {
-        try
-        {
-            long long n;
+        long long n;
 #pragma omp parallel for private(n) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                const T& a = x[n];
-                const T& b = y[n];
-                r[n] = a/b;
-            }
-        }
-        catch(...)
+        for ( n=0; n<(long long)N; n++ )
         {
-            GADGET_THROW("Error happened in divide(size_t N, const T* x, const T* y, T* r) ... ");
+            const T& a = x[n];
+            const T& b = y[n];
+            r[n] = a/b;
         }
     }
 
@@ -618,25 +568,25 @@ namespace Gadgetron { namespace math {
 #ifdef USE_MKL
     template <> EXPORTCPUCOREMATH void sqrt(size_t N, const float* x, float* r)
     {
-        vsSqrt(N, x, r);
+        vsSqrt((lapack_int)N, x, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void sqrt(size_t N, const double* x, double* r)
     {
-        vdSqrt(N, x, r);
+        vdSqrt((lapack_int)N, x, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void sqrt(size_t N, const GT_Complex8* x, GT_Complex8* r)
     {
-        vcSqrt(N, (MKL_Complex8*)(x), (MKL_Complex8*)(r));
+        vcSqrt((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void sqrt(size_t N, const GT_Complex16* x, GT_Complex16* r)
     {
-        vzSqrt(N, (MKL_Complex16*)(x), (MKL_Complex16*)(r));
+        vzSqrt((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
@@ -645,18 +595,11 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void sqrt(size_t N, const T* x, T* r)
     {
-        try
-        {
-            long long n;
+        long long n;
 #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                r[n] = std::sqrt(x[n]);
-            }
-        }
-        catch(...)
+        for ( n=0; n<(long long)N; n++ )
         {
-            GADGET_THROW("Error happened in sqrt(size_t N, const T* x, T* r) ... ");
+            r[n] = std::sqrt(x[n]);
         }
     }
 
@@ -671,33 +614,26 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void minAbsolute(size_t N, const T* x, T& r, size_t& ind)
     {
-        try
+        ind = 0;
+        if ( N == 0 ) return;
+
+        long long n;
+
+        typename realType<T>::Type v = abs(x[0]);
+        typename realType<T>::Type v2;
+
+        ind = 0;
+        for ( n=1; n<(long long)N; n++ )
         {
-            ind = 0;
-            if ( N == 0 ) return;
-
-            long long n;
-
-            typename realType<T>::Type v = abs(x[0]);
-            typename realType<T>::Type v2;
-
-            ind = 0;
-            for ( n=1; n<(long long)N; n++ )
+            v2 = abs(x[n]);
+            if ( v2 < v )
             {
-                v2 = abs(x[n]);
-                if ( v2 < v )
-                {
-                    v = v2;
-                    ind = n;
-                }
+                v = v2;
+                ind = n;
             }
+        }
 
-            r = x[ind];
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in minAbsolute(size_t N, const T* x, T& r, size_t& ind) ... ");
-        }
+        r = x[ind];
     }
 
     template EXPORTCPUCOREMATH void minAbsolute(size_t N, const float* x, float& r, size_t& ind);
@@ -750,13 +686,13 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void multiplyConj(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
-        vcMulByConj(N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
+        vcMulByConj((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void multiplyConj(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
-        vzMulByConj(N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
+        vzMulByConj((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
@@ -765,29 +701,22 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void multiplyConj(size_t N, const T* x, const T* y, T* r)
     {
-        try
-        {
-            long long n;
+        long long n;
 
 #pragma omp parallel for private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                const typename realType<T>::Type a = x[n].real();
-                const typename realType<T>::Type b = x[n].imag();
-                const typename realType<T>::Type c = y[n].real();
-                const typename realType<T>::Type d = y[n].imag();
-
-                #ifdef WIN32
-                    r[n] = T(a*c + b*d, c*b - a*d);
-                #else
-                    r[n].real() = (a*c + b*d);
-                    r[n].imag() = (c*b - a*d);
-                #endif // WIN32
-            }
-        }
-        catch(...)
+        for ( n=0; n<(long long)N; n++ )
         {
-            GADGET_THROW("Error happened in multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
+            const typename realType<T>::Type a = x[n].real();
+            const typename realType<T>::Type b = x[n].imag();
+            const typename realType<T>::Type c = y[n].real();
+            const typename realType<T>::Type d = y[n].imag();
+
+            #ifdef WIN32
+                r[n] = T(a*c + b*d, c*b - a*d);
+            #else
+                r[n].real() = (a*c + b*d);
+                r[n].imag() = (c*b - a*d);
+            #endif // WIN32
         }
     }
 
@@ -800,13 +729,13 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void conjugate(size_t N, const GT_Complex8* x, GT_Complex8* r)
     {
-        vcConj(N, (MKL_Complex8*)(x), (MKL_Complex8*)(r));
+        vcConj((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void conjugate(size_t N, const GT_Complex16* x, GT_Complex16* r)
     {
-        vzConj(N, (MKL_Complex16*)(x), (MKL_Complex16*)(r));
+        vzConj((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(r));
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
@@ -815,24 +744,17 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void conjugate(size_t N, const T* x, T* r)
     {
-        try
-        {
-            long long n;
+        long long n;
 
 #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                #ifdef WIN32
-                    r[n] = std::conj(x[n]);
-                #else
-                    r[n].real() = x[n].real();
-                    r[n].imag() = -x[n].imag();
-                #endif // WIN32
-            }
-        }
-        catch(...)
+        for ( n=0; n<(long long)N; n++ )
         {
-            GADGET_THROW("Error happened in conjugate(size_t N, const T* x, T* r) ... ");
+            #ifdef WIN32
+                r[n] = std::conj(x[n]);
+            #else
+                r[n].real() = x[n].real();
+                r[n].imag() = -x[n].imag();
+            #endif // WIN32
         }
     }
 
@@ -845,24 +767,17 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void addEpsilon(size_t N, T* x)
     {
-        try
-        {
-            typename realType<T>::Type eps = std::numeric_limits<typename realType<T>::Type>::epsilon();
+        typename realType<T>::Type eps = std::numeric_limits<typename realType<T>::Type>::epsilon();
 
-            long long n;
+        long long n;
 
 #pragma omp parallel for default(none) private(n) shared(N, x, eps) if (N>NumElementsUseThreading)
-            for (n=0; n<(long long)N; n++ )
-            {
-                if ( abs(x[n]) < eps )
-                {
-                    x[n] += eps;
-                }
-            }
-        }
-        catch(...)
+        for (n=0; n<(long long)N; n++ )
         {
-            GADGET_THROW("Error happened in addEpsilon(size_t N, T* x) ... ");
+            if ( abs(x[n]) < eps )
+            {
+                x[n] += eps;
+            }
         }
     }
 
@@ -875,154 +790,126 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const float* x, float& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            r = snrm2_(&num, (float*)(x), &incx);
+        r = snrm2_(&num, (float*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                r = snrm2_(&num, (float*)(x), &incx);
-            }
-            else
-            {
-                long long i;
+        if ( N < FourGBLimit )
+        {
+            r = snrm2_(&num, (float*)(x), &incx);
+        }
+        else
+        {
+            long long i;
 
-                float sum(0);
+            float sum(0);
 
 #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-                for (i = 0; i < (long long)N; i++)
-                {
-                    const float& re = x[i];
-                    sum += ( re*re );
-                }
-
-                r = std::sqrt(sum);
+            for (i = 0; i < (long long)N; i++)
+            {
+                const float& re = x[i];
+                sum += ( re*re );
             }
+
+            r = std::sqrt(sum);
+        }
 #endif // ILP_MODE_ON
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in norm2(size_t N, const float* x, float& r) ... ");
-        }
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const double* x, double& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            r = dnrm2_(&num, (double*)(x), &incx);
+        r = dnrm2_(&num, (double*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                r = dnrm2_(&num, (double*)(x), &incx);
-            }
-            else
-            {
-                long long i;
+        if ( N < FourGBLimit )
+        {
+            r = dnrm2_(&num, (double*)(x), &incx);
+        }
+        else
+        {
+            long long i;
 
-                double sum(0);
+            double sum(0);
 
 #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-                for (i = 0; i < (long long)N; i++)
-                {
-                    const double& re = x[i];
-                    sum += ( re*re );
-                }
-
-                r = std::sqrt(sum);
+            for (i = 0; i < (long long)N; i++)
+            {
+                const double& re = x[i];
+                sum += ( re*re );
             }
+
+            r = std::sqrt(sum);
+        }
 #endif // ILP_MODE_ON
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in norm2(size_t N, const double* x, double& r) ... ");
-        }
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const GT_Complex8* x, float& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
+        r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
-            }
-            else
-            {
-                long long i;
+        if ( N < FourGBLimit )
+        {
+            r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
+        }
+        else
+        {
+            long long i;
 
-                float sum(0);
+            float sum(0);
 
 #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-                for (i = 0; i < (long long)N; i++)
-                {
-                    const std::complex<float>& c = x[i];
-                    const float re = c.real();
-                    const float im = c.imag();
-                    sum += ( (re*re) + (im * im) );
-                }
-
-                r = std::sqrt(sum);
+            for (i = 0; i < (long long)N; i++)
+            {
+                const std::complex<float>& c = x[i];
+                const float re = c.real();
+                const float im = c.imag();
+                sum += ( (re*re) + (im * im) );
             }
+
+            r = std::sqrt(sum);
+        }
 #endif // ILP_MODE_ON
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in norm2(size_t N, const GT_Complex8* x, float& r) ... ");
-        }
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const GT_Complex16* x, double& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            r = dznrm2_(&num, (lapack_complex_double*)(x), &incx);
+        r = dznrm2_(&num, (lapack_complex_double*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                r = dznrm2_(&num, (lapack_complex_double*)(x), &incx);
-            }
-            else
-            {
-                long long i;
+        if ( N < FourGBLimit )
+        {
+            r = dznrm2_(&num, (lapack_complex_double*)(x), &incx);
+        }
+        else
+        {
+            long long i;
 
-                double sum(0);
+            double sum(0);
 
 #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-                for (i = 0; i < (long long)N; i++)
-                {
-                    const std::complex<double>& c = x[i];
-                    const double re = c.real();
-                    const double im = c.imag();
-                    sum += ( (re*re) + (im * im) );
-                }
-
-                r = std::sqrt(sum);
+            for (i = 0; i < (long long)N; i++)
+            {
+                const std::complex<double>& c = x[i];
+                const double re = c.real();
+                const double im = c.imag();
+                sum += ( (re*re) + (im * im) );
             }
+
+            r = std::sqrt(sum);
+        }
 #endif // ILP_MODE_ON
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in norm2(size_t N, const GT_Complex16* x, double& r) ... ");
-        }
     }
 
     template <typename T> inline 
@@ -1043,25 +930,18 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void norm1(size_t N, const T* x, typename realType<T>::Type& r)
     {
-        try
+        long long n;
+
+        typename realType<T>::Type norm1Sum(0);
+
+        #pragma omp parallel for reduction(+:norm1Sum) if (N>NumElementsUseThreading)
+        for (n=0; n<(long long)N; n++)
         {
-            long long n;
-
-            typename realType<T>::Type norm1Sum(0);
-
-            #pragma omp parallel for reduction(+:norm1Sum) if (N>NumElementsUseThreading)
-            for (n=0; n<(long long)N; n++)
-            {
-                const T& c = x[n];
-                norm1Sum += GT_ABS(c);
-            }
-
-            r = norm1Sum;
+            const T& c = x[n];
+            norm1Sum += GT_ABS(c);
         }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in norm1(size_t N, const T* x, typename realType<T>::Type& r) ... ");
-        }
+
+        r = norm1Sum;
     }
 
     template EXPORTCPUCOREMATH void norm1(size_t N, const float* x, float& r);
@@ -1139,54 +1019,40 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx=1, incy=1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx=1, incy=1;
 
 #ifdef ILP_MODE_ON
-            cdotc_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
+        cdotc_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
 #else
-            if ( N < FourGBLimit )
-            {
-                cdotc_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
-            }
-            else
-            {
-                dotc_64bit_mode(N, x, y, r);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r) ... ");
+            cdotc_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
         }
+        else
+        {
+            dotc_64bit_mode(N, x, y, r);
+        }
+#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx=1, incy=1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx=1, incy=1;
 
 #ifdef ILP_MODE_ON
-            zdotc_((lapack_complex_double*)(&r), &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
+        zdotc_((lapack_complex_double*)(&r), &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
 #else
-            if ( N < FourGBLimit )
-            {
-                zdotc_((lapack_complex_double*)(&r), &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
-            }
-            else
-            {
-                dotc_64bit_mode(N, x, y, r);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in dotc(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r) ... ");
+            zdotc_((lapack_complex_double*)(&r), &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
         }
+        else
+        {
+            dotc_64bit_mode(N, x, y, r);
+        }
+#endif // ILP_MODE_ON
     }
 
     template <typename T> T dotc(size_t N, const T* x, const T* y)
@@ -1203,46 +1069,32 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void dotu(size_t N, const float* x, const float* y, float& r)
     {
-        try
+        long long n;
+
+        float res(0);
+
+        #pragma omp parallel for reduction(+:res) if (N>NumElementsUseThreading)
+        for (n=0; n<(long long)N; n++)
         {
-            long long n;
-
-            float res(0);
-
-            #pragma omp parallel for reduction(+:res) if (N>NumElementsUseThreading)
-            for (n=0; n<(long long)N; n++)
-            {
-                res += x[n]*y[n];
-            }
-
-            r = res;
+            res += x[n]*y[n];
         }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in dotu(size_t N, const float* x, const float* y, float& r) ... ");
-        }
+
+        r = res;
     }
 
     template <> EXPORTCPUCOREMATH void dotu(size_t N, const double* x, const double* y, double& r)
     {
-        try
+        long long n;
+
+        double res(0);
+
+        #pragma omp parallel for reduction(+:res) if (N>NumElementsUseThreading)
+        for (n=0; n<(long long)N; n++)
         {
-            long long n;
-
-            double res(0);
-
-            #pragma omp parallel for reduction(+:res) if (N>NumElementsUseThreading)
-            for (n=0; n<(long long)N; n++)
-            {
-                res += x[n]*y[n];
-            }
-
-            r = res;
+            res += x[n]*y[n];
         }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in dotu(size_t N, const double* x, const double* y, double& r) ... ");
-        }
+
+        r = res;
     }
 
     template <typename T> inline void dotu_64bit_mode(size_t N, const T* x, const T* y, T& r)
@@ -1269,54 +1121,40 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx=1, incy=1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx=1, incy=1;
 
 #ifdef ILP_MODE_ON
-            cdotu_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
+        cdotu_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
 #else
-            if ( N < FourGBLimit )
-            {
-                cdotu_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
-            }
-            else
-            {
-                dotu_64bit_mode(N, x, y, r);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in dotu(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r) ... ");
+            cdotu_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
         }
+        else
+        {
+            dotu_64bit_mode(N, x, y, r);
+        }
+#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx=1, incy=1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx=1, incy=1;
 
 #ifdef ILP_MODE_ON
-            zdotu_((lapack_complex_double*)&r, &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
+        zdotu_((lapack_complex_double*)&r, &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
 #else
-            if ( N < FourGBLimit )
-            {
-                zdotu_((lapack_complex_double*)&r, &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
-            }
-            else
-            {
-                dotu_64bit_mode(N, x, y, r);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in dotu(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r) ... ");
+            zdotu_((lapack_complex_double*)&r, &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
         }
+        else
+        {
+            dotu_64bit_mode(N, x, y, r);
+        }
+#endif // ILP_MODE_ON
     }
 
     template <typename T> inline T dotu(size_t N, const T* x, const T* y)
@@ -1335,54 +1173,40 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const float* x, float& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            r = sasum_(&num, (float*)(x), &incx);
+        r = sasum_(&num, (float*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                r = sasum_(&num, (float*)(x), &incx);
-            }
-            else
-            {
-                norm1(N, x, r);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in asum(size_t N, const float* x, float& r) ... ");
+            r = sasum_(&num, (float*)(x), &incx);
         }
+        else
+        {
+            norm1(N, x, r);
+        }
+#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const double* x, double& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            r = dasum_(&num, (double*)(x), &incx);
+        r = dasum_(&num, (double*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                r = dasum_(&num, (double*)(x), &incx);
-            }
-            else
-            {
-                norm1(N, x, r);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in asum(size_t N, const double* x, double& r) ... ");
+            r = dasum_(&num, (double*)(x), &incx);
         }
+        else
+        {
+            norm1(N, x, r);
+        }
+#endif // ILP_MODE_ON
     }
 
     template <typename T> inline void asum_64bit_mode(size_t N, const T* x, typename realType<T>::Type& r)
@@ -1403,54 +1227,40 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex8* x, float& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            r = scasum_(&num, (lapack_complex_float*)(x), &incx);
+        r = scasum_(&num, (lapack_complex_float*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                r = scasum_(&num, (lapack_complex_float*)(x), &incx);
-            }
-            else
-            {
-                asum_64bit_mode(N, x, r);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in asum(size_t N, const GT_Complex8* x, float& r) ... ");
+            r = scasum_(&num, (lapack_complex_float*)(x), &incx);
         }
+        else
+        {
+            asum_64bit_mode(N, x, r);
+        }
+#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex16* x, double& r)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            r = dzasum_(&num, (lapack_complex_double*)(x), &incx);
+        r = dzasum_(&num, (lapack_complex_double*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                r = dzasum_(&num, (lapack_complex_double*)(x), &incx);
-            }
-            else
-            {
-                asum_64bit_mode(N, x, r);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in asum(size_t N, const GT_Complex16* x, double& r) ... ");
+            r = dzasum_(&num, (lapack_complex_double*)(x), &incx);
         }
+        else
+        {
+            asum_64bit_mode(N, x, r);
+        }
+#endif // ILP_MODE_ON
     }
 
     template <typename T> inline typename realType<T>::Type asum(size_t N, const T* x)
@@ -1469,124 +1279,68 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH size_t amin(size_t N, const float* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
-            return isamin_(&num, (float*)(x), &incx);
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in size_t amin(size_t N, const float* x) ... ");
-        }
+        return isamin_(&num, (float*)(x), &incx);
     }
 
     template <> EXPORTCPUCOREMATH size_t amin(size_t N, const double* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
-            return idamin_(&num, (double*)(x), &incx);
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in size_t amin(size_t N, const double* x) ... ");
-        }
+        return idamin_(&num, (double*)(x), &incx);
     }
 
     template <> EXPORTCPUCOREMATH size_t amin(size_t N, const GT_Complex8* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
-            return icamin_(&num, (lapack_complex_float*)(x), &incx);
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in size_t amin(size_t N, const GT_Complex8* x) ... ");
-        }
+        return icamin_(&num, (lapack_complex_float*)(x), &incx);
     }
 
     template <> EXPORTCPUCOREMATH size_t amin(size_t N, const GT_Complex16* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
-            return izamin_(&num, (lapack_complex_double*)(x), &incx);
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in size_t amin(size_t N, const GT_Complex16* x) ... ");
-        }
+        return izamin_(&num, (lapack_complex_double*)(x), &incx);
     }
 
     /// --------------------------------------------------------------------
 
     template <> EXPORTCPUCOREMATH size_t amax(size_t N, const float* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
-            return isamax_(&num, (float*)(x), &incx);
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in size_t amax(size_t N, const float* x) ... ");
-        }
+        return isamax_(&num, (float*)(x), &incx);
     }
 
     template <> EXPORTCPUCOREMATH size_t amax(size_t N, const double* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
-            return idamax_(&num, (double*)(x), &incx);
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in size_t amax(size_t N, const double* x) ... ");
-        }
+        return idamax_(&num, (double*)(x), &incx);
     }
 
     template <> EXPORTCPUCOREMATH size_t amax(size_t N, const GT_Complex8* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
-            return icamax_(&num, (lapack_complex_float*)(x), &incx);
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in size_t amax(size_t N, const GT_Complex8* x) ... ");
-        }
+        return icamax_(&num, (lapack_complex_float*)(x), &incx);
     }
 
     template <> EXPORTCPUCOREMATH size_t amax(size_t N, const GT_Complex16* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)(N);
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)(N);
+        lapack_int incx = 1;
 
-            return izamax_(&num, (lapack_complex_double*)(x), &incx);
-        }
-        catch(...)
-        {
-            GADGET_THROW("Error happened in size_t amax(size_t N, const GT_Complex16* x) ... ");
-        }
+        return izamax_(&num, (lapack_complex_double*)(x), &incx);
     }
 
     /// --------------------------------------------------------------------
@@ -1594,25 +1348,25 @@ namespace Gadgetron { namespace math {
 #ifdef USE_MKL
     template <> EXPORTCPUCOREMATH void absolute(size_t N, const float* x, float* r)
     {
-        vsAbs(N, x, r);
+        vsAbs((lapack_int)N, x, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void absolute(size_t N, const double* x, double* r)
     {
-        vdAbs(N, x, r);
+        vdAbs((lapack_int)N, x, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void absolute(size_t N, const GT_Complex8* x, float* r)
     {
-        vcAbs(N, (MKL_Complex8*)(x), r);
+        vcAbs((lapack_int)N, (MKL_Complex8*)(x), r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void absolute(size_t N, const GT_Complex16* x, double* r)
     {
-        vzAbs(N, (MKL_Complex16*)(x), r);
+        vzAbs((lapack_int)N, (MKL_Complex16*)(x), r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
@@ -1621,19 +1375,12 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void absolute(size_t N, const T* x, typename realType<T>::Type* r)
     {
-        try
-        {
-            long long n;
+        long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                r[n]= GT_ABS(x[n]);
-            }
-        }
-        catch(...)
+        #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; n++ )
         {
-            GADGET_THROW("Error happened in absolute(size_t N, const T* x, typename realType<T>::Type* r) ... ");
+            r[n]= GT_ABS(x[n]);
         }
     }
 
@@ -1642,43 +1389,29 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void absolute(size_t N, const GT_Complex8* x, float* r)
     {
-        try
-        {
-            long long n;
+        long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                const GT_Complex8& c = x[n];
-                const float re = c.real();
-                const float im = c.imag();
-                r[n]= std::sqrt( (re*re) + (im * im) );
-            }
-        }
-        catch(...)
+        #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; n++ )
         {
-            GADGET_THROW("Error happened in absolute(size_t N, const GT_Complex8* x, float* r) ... ");
+            const GT_Complex8& c = x[n];
+            const float re = c.real();
+            const float im = c.imag();
+            r[n]= std::sqrt( (re*re) + (im * im) );
         }
     }
 
     template <> EXPORTCPUCOREMATH void absolute(size_t N, const GT_Complex16* x, double* r)
     {
-        try
-        {
-            long long n;
+        long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                const GT_Complex16& c = x[n];
-                const double re = c.real();
-                const double im = c.imag();
-                r[n]= std::sqrt( (re*re) + (im * im) );
-            }
-        }
-        catch(...)
+        #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; n++ )
         {
-            GADGET_THROW("Error happened in absolute(size_t N, const GT_Complex16* x, double* r) ... ");
+            const GT_Complex16& c = x[n];
+            const double re = c.real();
+            const double im = c.imag();
+            r[n]= std::sqrt( (re*re) + (im * im) );
         }
     }
 #endif // USE_MKL
@@ -1715,13 +1448,13 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void argument(size_t N, const GT_Complex8* x, float* r)
     {
-        vcArg(N, (MKL_Complex8*)(x), r);
+        vcArg((lapack_int)N, (MKL_Complex8*)(x), r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void argument(size_t N, const GT_Complex16* x, double* r)
     {
-        vzArg(N, (MKL_Complex16*)(x), r);
+        vzArg((lapack_int)N, (MKL_Complex16*)(x), r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
@@ -1730,19 +1463,12 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void argument(size_t N, const T* x, typename realType<T>::Type* r)
     {
-        try
-        {
-            long long n;
+        long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                r[n] = std::arg( x[n] );
-            }
-        }
-        catch(...)
+        #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; n++ )
         {
-            GADGET_THROW("Error happened in argument(size_t N, const T* x, typename realType<T>::Type>* r) ... ");
+            r[n] = std::arg( x[n] );
         }
     }
 
@@ -1755,20 +1481,13 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void inv(size_t N, const T* x, T* r)
     {
-        try
-        {
-            T v(1.0);
-            long long n;
+        T v(1.0);
+        long long n;
 
-            #pragma omp parallel for default(none) private(n) shared(N, x, r, v) if (N>NumElementsUseThreading)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                r[n] = v/x[n];
-            }
-        }
-        catch(...)
+        #pragma omp parallel for default(none) private(n) shared(N, x, r, v) if (N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; n++ )
         {
-             GADGET_THROW("Error happened in inv(size_t N, const T* x, T* r) ... ");
+            r[n] = v/x[n];
         }
     }
 
@@ -1776,13 +1495,13 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void inv(size_t N, const float* x, float* r)
     {
-        vsInv(N, x, r);
+        vsInv((lapack_int)N, x, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
     template <> EXPORTCPUCOREMATH void inv(size_t N, const double* x, double* r)
     {
-        vdInv(N, x, r);
+        vdInv((lapack_int)N, x, r);
         GADGET_CHECK_THROW(vmlGetErrStatus()==0);
     }
 
@@ -2004,27 +1723,20 @@ namespace Gadgetron { namespace math {
     template <typename T> 
     void sort(size_t N, const T* x, T* r, bool isascending)
     {
-        try
+        if ( r != x )
         {
-            if ( r != x )
-            {
-                memcpy(r, x, sizeof(T)*N);
-            }
-
-            if ( isascending )
-            {
-                hoCompAscending<T> obj;
-                std::sort(r, r+N, obj);
-            }
-            else
-            {
-                hoCompDescending<T> obj;
-                std::sort(r, r+N, obj);
-            }
+            memcpy(r, x, sizeof(T)*N);
         }
-        catch(...)
+
+        if ( isascending )
         {
-            GADGET_THROW("Errors happened in sort(size_t N, const T* x, T* r, bool isascending) ... ");
+            hoCompAscending<T> obj;
+            std::sort(r, r+N, obj);
+        }
+        else
+        {
+            hoCompDescending<T> obj;
+            std::sort(r, r+N, obj);
         }
     }
 
@@ -2036,18 +1748,11 @@ namespace Gadgetron { namespace math {
     template<typename T> 
     void fill( size_t N, T* x, T v)
     {
-        try
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, v)
+        for ( n=0; n<(long long)N; n++ )
         {
-            long long n;
-            #pragma omp parallel for default(none) private(n) shared(N, x, v)
-            for ( n=0; n<(long long)N; n++ )
-            {
-                x[n] = v;
-            }
-        }
-        catch(...)
-        {
-            GADGET_THROW("Errors happened in fill( size_t N, T* x, T v) ... ");
+            x[n] = v;
         }
     }
 
@@ -2105,177 +1810,135 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void scal(size_t N, float a, float* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            sscal_(&num, &a, x, &incx);
+        sscal_(&num, &a, x, &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                sscal_(&num, &a, x, &incx);
-            }
-            else
-            {
-                long long n;
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
-                for (n = 0; n < (long long)N; n++)
-                {
-                    x[n] *= a;
-                }
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in scal(size_t N, float a, float* x) ... ");
+            sscal_(&num, &a, x, &incx);
         }
+        else
+        {
+            long long n;
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+            for (n = 0; n < (long long)N; n++)
+            {
+                x[n] *= a;
+            }
+        }
+#endif // ILP_MODE_ON
     }
 
     // -----------------------------------
 
     template <> EXPORTCPUCOREMATH void scal(size_t N, double a, double* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            dscal_(&num, &a, x, &incx);
+        dscal_(&num, &a, x, &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                dscal_(&num, &a, x, &incx);
-            }
-            else
-            {
-                long long n;
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
-                for (n = 0; n < (long long)N; n++)
-                {
-                    x[n] *= a;
-                }
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in scal(size_t N, double a, double* x) ... ");
+            dscal_(&num, &a, x, &incx);
         }
+        else
+        {
+            long long n;
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+            for (n = 0; n < (long long)N; n++)
+            {
+                x[n] *= a;
+            }
+        }
+#endif // ILP_MODE_ON
     }
 
     // -----------------------------------
 
     template <> EXPORTCPUCOREMATH void scal(size_t N, GT_Complex8 a, GT_Complex8* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            cscal_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx);
+        cscal_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                cscal_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx);
-            }
-            else
-            {
-                scal_64bit_mode(N, a, x);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in scal(size_t N, GT_Complex8 a, GT_Complex8* x) ... ");
+            cscal_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx);
         }
+        else
+        {
+            scal_64bit_mode(N, a, x);
+        }
+#endif // ILP_MODE_ON
     }
 
     // -----------------------------------
 
     template <> EXPORTCPUCOREMATH void scal(size_t N, GT_Complex16 a, GT_Complex16* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            zscal_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx);
+        zscal_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                zscal_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx);
-            }
-            else
-            {
-                scal_64bit_mode(N, a, x);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in scal(size_t N, GT_Complex16 a, GT_Complex16* x) ... ");
+            zscal_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx);
         }
+        else
+        {
+            scal_64bit_mode(N, a, x);
+        }
+#endif // ILP_MODE_ON
     }
 
     // -----------------------------------
 
     template <> EXPORTCPUCOREMATH void scal(size_t N, float a, GT_Complex8* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            csscal_(&num, &a, (lapack_complex_float*)(x), &incx);
+        csscal_(&num, &a, (lapack_complex_float*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                csscal_(&num, &a, (lapack_complex_float*)(x), &incx);
-            }
-            else
-            {
-                scal_64bit_mode(N, a, x);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in scal(size_t N, float a, GT_Complex8* x) ... ");
+            csscal_(&num, &a, (lapack_complex_float*)(x), &incx);
         }
+        else
+        {
+            scal_64bit_mode(N, a, x);
+        }
+#endif // ILP_MODE_ON
     }
 
     // -----------------------------------
 
     template <> EXPORTCPUCOREMATH void scal(size_t N, double a, GT_Complex16* x)
     {
-        try
-        {
-            lapack_int num = (lapack_int)N;
-            lapack_int incx = 1;
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
 
 #ifdef ILP_MODE_ON
-            zdscal_(&num, &a, (lapack_complex_double*)(x), &incx);
+        zdscal_(&num, &a, (lapack_complex_double*)(x), &incx);
 #else
-            if ( N < FourGBLimit )
-            {
-                zdscal_(&num, &a, (lapack_complex_double*)(x), &incx);
-            }
-            else
-            {
-                scal_64bit_mode(N, a, x);
-            }
-#endif // ILP_MODE_ON
-        }
-        catch(...)
+        if ( N < FourGBLimit )
         {
-            GADGET_THROW("Error happened in scal(size_t N, double a, GT_Complex16* x) ... ");
+            zdscal_(&num, &a, (lapack_complex_double*)(x), &incx);
         }
+        else
+        {
+            scal_64bit_mode(N, a, x);
+        }
+#endif // ILP_MODE_ON
     }
 }}
