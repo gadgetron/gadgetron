@@ -563,6 +563,7 @@ template EXPORTGPUCORE void Gadgetron::sgn_inplace<float>( cuNDArray<float>* );
 template EXPORTGPUCORE void Gadgetron::clear<float>( cuNDArray<float>* );
 template EXPORTGPUCORE void Gadgetron::fill<float>( cuNDArray<float>*, float );
 template EXPORTGPUCORE void Gadgetron::clamp<float>( cuNDArray<float>*, float, float );
+template EXPORTGPUCORE void Gadgetron::clamp<float>( cuNDArray<float>*, float, float, float,float );
 template EXPORTGPUCORE void Gadgetron::clamp_min<float>( cuNDArray<float>*, float );
 template EXPORTGPUCORE void Gadgetron::clamp_max<float>( cuNDArray<float>*, float );
 template EXPORTGPUCORE void Gadgetron::normalize<float>( cuNDArray<float>*, float );
@@ -587,6 +588,7 @@ template EXPORTGPUCORE void Gadgetron::sgn_inplace<double>( cuNDArray<double>* )
 template EXPORTGPUCORE void Gadgetron::clear<double>( cuNDArray<double>* );
 template EXPORTGPUCORE void Gadgetron::fill<double>( cuNDArray<double>*, double );
 template EXPORTGPUCORE void Gadgetron::clamp<double>( cuNDArray<double>*, double, double );
+template EXPORTGPUCORE void Gadgetron::clamp<double>( cuNDArray<double>*, double, double, double, double );
 template EXPORTGPUCORE void Gadgetron::clamp_min<double>( cuNDArray<double>*, double );
 template EXPORTGPUCORE void Gadgetron::clamp_max<double>( cuNDArray<double>*, double );
 template EXPORTGPUCORE void Gadgetron::normalize<double>( cuNDArray<double>*, double );
