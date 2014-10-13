@@ -144,17 +144,20 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         ho5DArray<T> ker(kRO, kNE1, srcCHA, dstCHA, oNE1, workOrder2DT->kernel_->begin()+n*kRO*kNE1*srcCHA*dstCHA*oNE1+usedS*kRO*kNE1*srcCHA*dstCHA*oNE1*refN);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa_local.calib ... "));
+         Gadgetron::GadgetronTimer gt_timer_local;
+         gt_timer_local.set_timing_in_destruction(false);
+
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("grappa_local.calib ... "));
         GADGET_CHECK_RETURN_FALSE(grappa_local.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, kRO, kE1, oE1, ker));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
 
         filename = "ker";
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, filename+suffix);
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa_local.imageDomainKernel ... "));
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("grappa_local.imageDomainKernel ... "));
         GADGET_CHECK_RETURN_FALSE(grappa_local.imageDomainKernel(ker, kRO, kE1, oE1, RO, E1, kIm));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
 
         filename = "kIm";
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, filename+suffix);
@@ -163,13 +166,13 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         hoNDArray<T> unmixC(RO, E1, srcCHA, workOrder2DT->unmixingCoeffIm_->begin()+n*RO*E1*srcCHA+usedS*RO*E1*srcCHA*refN);
         hoNDArray<T> gFactor(RO, E1, workOrder2DT->gfactor_.begin()+n*RO*E1+usedS*RO*E1*refN);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("unmixCoeff ... "));
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("unmixCoeff ... "));
         GADGET_CHECK_RETURN_FALSE(this->unmixCoeff(kIm, coilMap, unmixC, gFactor));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("scale gfactor ... "));
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("scale gfactor ... "));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder2DT->acceFactorE1_), gFactor));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
 
         filename = "unmixC";
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, filename+suffix);
@@ -251,9 +254,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
         typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt(effectiveAcceFactor));
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("apply fftCompensationRatio ... "));
         Gadgetron::scal( fftCompensationRatio, buffer2DT_);
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         // if the image data is scaled and ref lines are going to be filled back to the data, 
         // the reference lines should be scaled too
