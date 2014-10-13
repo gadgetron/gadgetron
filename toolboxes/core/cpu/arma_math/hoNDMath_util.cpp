@@ -7,6 +7,7 @@
 #include <iostream>
 #include "GadgetronCommon.h"
 
+/// uncomment this to disable the explicit MKL calls
 // #undef USE_MKL
 
 #ifdef USE_MKL
@@ -57,11 +58,6 @@
     #define zdotc_ zdotc
     #define cdotu_ cdotu
     #define zdotu_ zdotu
-
-    #define isamin_ isamin
-    #define idamin_ idamin
-    #define icamin_ icamin
-    #define izamin_ izamin
 
     #define isamax_ isamax
     #define idamax_ idamax
@@ -116,12 +112,7 @@
         void cdotu_(void* r, lapack_int* N, lapack_complex_float* x, lapack_int* incx, lapack_complex_float* y, lapack_int* incy);
         void zdotu_(void* r, lapack_int* N, lapack_complex_double* x, lapack_int* incx, lapack_complex_double* y, lapack_int* incy);
 
-        /// Finds the index of the element with the smallest absolute value.
-        lapack_int isamin_(lapack_int* N, float* x, lapack_int* incx);
-        lapack_int idamin_(lapack_int* N, double* x, lapack_int* incx);
-        lapack_int icamin_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
-        lapack_int izamin_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
-
+        /// Finds the index of the element with the maximal absolute value.
         lapack_int isamax_(lapack_int* N, float* x, lapack_int* incx);
         lapack_int idamax_(lapack_int* N, double* x, lapack_int* incx);
         lapack_int icamax_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
@@ -1281,40 +1272,6 @@ namespace Gadgetron { namespace math {
     template EXPORTCPUCOREMATH double asum(size_t N, const double* x);
     template EXPORTCPUCOREMATH float asum(size_t N, const GT_Complex8* x);
     template EXPORTCPUCOREMATH double asum(size_t N, const GT_Complex16* x);
-
-    /// --------------------------------------------------------------------
-
-    template <> EXPORTCPUCOREMATH size_t amin(size_t N, const float* x)
-    {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
-
-        return isamin_(&num, (float*)(x), &incx);
-    }
-
-    template <> EXPORTCPUCOREMATH size_t amin(size_t N, const double* x)
-    {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
-
-        return idamin_(&num, (double*)(x), &incx);
-    }
-
-    template <> EXPORTCPUCOREMATH size_t amin(size_t N, const GT_Complex8* x)
-    {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
-
-        return icamin_(&num, (lapack_complex_float*)(x), &incx);
-    }
-
-    template <> EXPORTCPUCOREMATH size_t amin(size_t N, const GT_Complex16* x)
-    {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
-
-        return izamin_(&num, (lapack_complex_double*)(x), &incx);
-    }
 
     /// --------------------------------------------------------------------
 

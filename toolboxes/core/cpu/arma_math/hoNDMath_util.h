@@ -119,11 +119,6 @@ namespace Gadgetron { namespace math {
     template<class T> EXPORTCPUCOREMATH typename realType<T>::Type asum(size_t N, const T* x);
 
     /**
-    * @brief finds the index of the element with the smallest absolute value.
-    */
-    template<class T> EXPORTCPUCOREMATH size_t amin(size_t N, const T* x);
-
-    /**
     * @brief finds the index of the element with the maximal absolute value.
     */
     template<class T> EXPORTCPUCOREMATH size_t amax(size_t N, const T* x);
