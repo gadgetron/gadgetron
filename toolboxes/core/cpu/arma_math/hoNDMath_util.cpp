@@ -156,7 +156,8 @@ namespace Gadgetron { namespace math {
             const typename realType<T>::Type ai = a.imag();
 
             #ifdef WIN32
-                r[n] = T( re2 + ar*re1 - ai*im1, im2 + ar*im1 + ai*re1 );
+                r[n].real(re2 + ar*re1 - ai*im1);
+                r[n].imag(im2 + ar*im1 + ai*re1);
             #else
                 r[n].real() = (re2 + ar*re1 - ai*im1);
                 r[n].imag() = (im2 + ar*im1 + ai*re1);
@@ -437,7 +438,8 @@ namespace Gadgetron { namespace math {
             const float d = b1.imag();
 
             #ifdef WIN32
-                r[i] = std::complex<float>(a*c-b*d, a*d+b*c);
+                r[i].real(a*c-b*d);
+                r[i].imag(a*d+b*c);
             #else
                 r[i].real() = (a*c-b*d);
                 r[i].imag() = (a*d+b*c);
@@ -459,7 +461,8 @@ namespace Gadgetron { namespace math {
             const double d = b1.imag();
 
             #ifdef WIN32
-                r[i] = std::complex<double>(a*c-b*d, a*d+b*c);
+                r[i].real(a*c-b*d);
+                r[i].imag(a*d+b*c);
             #else
                 r[i].real() = (a*c-b*d);
                 r[i].imag() = (a*d+b*c);
@@ -530,7 +533,8 @@ namespace Gadgetron { namespace math {
             const float m = 1/(c*c+d*d);
 
             #ifdef WIN32
-                r[i] = std::complex<float>( (a*c+b*d)*m, (b*c-a*d)*m );
+                r[i].real((a*c+b*d)*m);
+                r[i].imag((b*c-a*d)*m);
             #else
                 r[i].real() = ((a*c+b*d)*m);
                 r[i].imag() = ((b*c-a*d)*m);
@@ -554,7 +558,8 @@ namespace Gadgetron { namespace math {
             const double m = 1/(c*c+d*d);
 
             #ifdef WIN32
-                r[i] = std::complex<double>( (a*c+b*d)*m, (b*c-a*d)*m );
+                r[i].real((a*c+b*d)*m);
+                r[i].imag((b*c-a*d)*m);
             #else
                 r[i].real() = ((a*c+b*d)*m);
                 r[i].imag() = ((b*c-a*d)*m);
@@ -712,7 +717,8 @@ namespace Gadgetron { namespace math {
             const typename realType<T>::Type d = y[n].imag();
 
             #ifdef WIN32
-                r[n] = T(a*c + b*d, c*b - a*d);
+                r[n].real(a*c + b*d);
+                r[n].imag(c*b - a*d);
             #else
                 r[n].real() = (a*c + b*d);
                 r[n].imag() = (c*b - a*d);
@@ -750,7 +756,8 @@ namespace Gadgetron { namespace math {
         for ( n=0; n<(long long)N; n++ )
         {
             #ifdef WIN32
-                r[n] = std::conj(x[n]);
+                r[n].real(x[n].real());
+                r[n].imag(-x[n].imag());
             #else
                 r[n].real() = x[n].real();
                 r[n].imag() = -x[n].imag();
@@ -1778,7 +1785,8 @@ namespace Gadgetron { namespace math {
             const typename realType<T>::Type ai = a.imag();
 
             #ifdef WIN32
-                x[n] = T(re*ar-im*ai, re*ai+im*ar);
+                x[n].real(re*ar-im*ai);
+                x[n].imag(re*ai+im*ar);
             #else
                 x[n].real() = (re*ar-im*ai);
                 x[n].imag() = (re*ai+im*ar);
@@ -1798,7 +1806,8 @@ namespace Gadgetron { namespace math {
             const typename realType<T>::Type im = c.imag();
 
             #ifdef WIN32
-                x[n] = T(re*a, im*a);
+                x[n].real(re*a);
+                x[n].imag(im*a);
             #else
                 x[n].real() = (re*a);
                 x[n].imag() = (im*a);
