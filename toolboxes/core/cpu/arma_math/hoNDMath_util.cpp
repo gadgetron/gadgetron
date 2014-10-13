@@ -146,13 +146,8 @@ namespace Gadgetron { namespace math {
             const typename realType<T>::Type ar = a.real();
             const typename realType<T>::Type ai = a.imag();
 
-            #ifdef WIN32
-                r[n].real(re2 + ar*re1 - ai*im1);
-                r[n].imag(im2 + ar*im1 + ai*re1);
-            #else
-                r[n].real() = (re2 + ar*re1 - ai*im1);
-                r[n].imag() = (im2 + ar*im1 + ai*re1);
-            #endif // WIN32
+            r[n].real(re2 + ar*re1 - ai*im1);
+            r[n].imag(im2 + ar*im1 + ai*re1);
         }
     }
 
@@ -428,13 +423,8 @@ namespace Gadgetron { namespace math {
             const float c = b1.real();
             const float d = b1.imag();
 
-            #ifdef WIN32
-                r[i].real(a*c-b*d);
-                r[i].imag(a*d+b*c);
-            #else
-                r[i].real() = (a*c-b*d);
-                r[i].imag() = (a*d+b*c);
-            #endif // WIN32
+            r[i].real(a*c-b*d);
+            r[i].imag(a*d+b*c);
         }
     }
 
@@ -451,13 +441,8 @@ namespace Gadgetron { namespace math {
             const double c = b1.real();
             const double d = b1.imag();
 
-            #ifdef WIN32
-                r[i].real(a*c-b*d);
-                r[i].imag(a*d+b*c);
-            #else
-                r[i].real() = (a*c-b*d);
-                r[i].imag() = (a*d+b*c);
-            #endif // WIN32
+            r[i].real(a*c-b*d);
+            r[i].imag(a*d+b*c);
         }
     }
 
@@ -523,13 +508,8 @@ namespace Gadgetron { namespace math {
 
             const float m = 1/(c*c+d*d);
 
-            #ifdef WIN32
-                r[i].real((a*c+b*d)*m);
-                r[i].imag((b*c-a*d)*m);
-            #else
-                r[i].real() = ((a*c+b*d)*m);
-                r[i].imag() = ((b*c-a*d)*m);
-            #endif // WIN32
+            r[i].real((a*c+b*d)*m);
+            r[i].imag((b*c-a*d)*m);
         }
     }
 
@@ -548,13 +528,8 @@ namespace Gadgetron { namespace math {
 
             const double m = 1/(c*c+d*d);
 
-            #ifdef WIN32
-                r[i].real((a*c+b*d)*m);
-                r[i].imag((b*c-a*d)*m);
-            #else
-                r[i].real() = ((a*c+b*d)*m);
-                r[i].imag() = ((b*c-a*d)*m);
-            #endif // WIN32
+            r[i].real((a*c+b*d)*m);
+            r[i].imag((b*c-a*d)*m);
         }
     }
 #endif // USE_MKL
@@ -707,13 +682,8 @@ namespace Gadgetron { namespace math {
             const typename realType<T>::Type c = y[n].real();
             const typename realType<T>::Type d = y[n].imag();
 
-            #ifdef WIN32
-                r[n].real(a*c + b*d);
-                r[n].imag(c*b - a*d);
-            #else
-                r[n].real() = (a*c + b*d);
-                r[n].imag() = (c*b - a*d);
-            #endif // WIN32
+            r[n].real(a*c + b*d);
+            r[n].imag(c*b - a*d);
         }
     }
 
@@ -746,13 +716,8 @@ namespace Gadgetron { namespace math {
 #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
-            #ifdef WIN32
-                r[n].real(x[n].real());
-                r[n].imag(-x[n].imag());
-            #else
-                r[n].real() = x[n].real();
-                r[n].imag() = -x[n].imag();
-            #endif // WIN32
+            r[n].real(x[n].real());
+            r[n].imag(-x[n].imag());
         }
     }
 
@@ -1741,13 +1706,8 @@ namespace Gadgetron { namespace math {
             const typename realType<T>::Type ar = a.real();
             const typename realType<T>::Type ai = a.imag();
 
-            #ifdef WIN32
-                x[n].real(re*ar-im*ai);
-                x[n].imag(re*ai+im*ar);
-            #else
-                x[n].real() = (re*ar-im*ai);
-                x[n].imag() = (re*ai+im*ar);
-            #endif // WIN32
+            x[n].real(re*ar-im*ai);
+            x[n].imag(re*ai+im*ar);
         }
     }
 
@@ -1762,13 +1722,8 @@ namespace Gadgetron { namespace math {
             const typename realType<T>::Type re = c.real();
             const typename realType<T>::Type im = c.imag();
 
-            #ifdef WIN32
-                x[n].real(re*a);
-                x[n].imag(im*a);
-            #else
-                x[n].real() = (re*a);
-                x[n].imag() = (im*a);
-            #endif // WIN32
+            x[n].real(re*a);
+            x[n].imag(im*a);
         }
     }
 
