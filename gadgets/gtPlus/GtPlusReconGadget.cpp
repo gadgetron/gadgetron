@@ -1,6 +1,7 @@
 
 #include "GtPlusReconGadget.h"
 #include "GtPlusGadgetOpenMP.h"
+#include "gadgetron_paths.h"
 #include <iomanip>
 
 using namespace Gadgetron::gtPlus;
@@ -555,7 +556,7 @@ namespace Gadgetron
 
     bool GtPlusReconGadget::parseGTCloudNodeFile(const std::string& filename, CloudType& gtCloud)
     {
-        std::string nodeFileName = ACE_OS::getenv("GADGETRON_HOME");
+      std::string nodeFileName = get_gadgetron_home();
         nodeFileName.append("/config/gtCloud/");
         nodeFileName.append(filename);
         GADGET_CONDITION_MSG(verboseMode_, "Cloud node file name is " << nodeFileName);
@@ -676,9 +677,9 @@ namespace Gadgetron
         // e.g. for FLASH PAT reference scans.
         if (h.encoding.size() == 2)
         {
-            if (! ((h.encoding[0].reconSpace.matrixSize.x != h.encoding[1].reconSpace.matrixSize.x) && 
-                (h.encoding[0].reconSpace.matrixSize.y != h.encoding[1].reconSpace.matrixSize.y) && 
-                (h.encoding[0].reconSpace.matrixSize.z != h.encoding[1].reconSpace.matrixSize.z) && 
+            if (! ((h.encoding[0].reconSpace.matrixSize.x == h.encoding[1].reconSpace.matrixSize.x) && 
+                (h.encoding[0].reconSpace.matrixSize.y == h.encoding[1].reconSpace.matrixSize.y) && 
+                (h.encoding[0].reconSpace.matrixSize.z == h.encoding[1].reconSpace.matrixSize.z) && 
                 (h.encoding[0].reconSpace.fieldOfView_mm.x == h.encoding[1].reconSpace.fieldOfView_mm.x) &&
                 (h.encoding[0].reconSpace.fieldOfView_mm.y == h.encoding[1].reconSpace.fieldOfView_mm.y) &&
                 (h.encoding[0].reconSpace.fieldOfView_mm.z == h.encoding[1].reconSpace.fieldOfView_mm.z)) )

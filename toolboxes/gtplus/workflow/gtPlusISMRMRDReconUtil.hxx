@@ -3174,6 +3174,10 @@ ISMRMRDALGO gtPlusISMRMRDReconUtil<T>::getISMRMRDReconAlgoFromName(const std::st
     if ( name == "ISMRMRD_L1SPIRIT" ) return ISMRMRD_L1SPIRIT;
     if ( name == "ISMRMRD_SOFTSENSE" ) return ISMRMRD_SOFTSENSE;
     if ( name == "ISMRMRD_L1SOFTSENSE" ) return ISMRMRD_L1SOFTSENSE;
+    if ( name == "ISMRMRD_2DTBINNING" ) return ISMRMRD_2DTBINNING;
+    if ( name == "ISMRMRD_2DTBINNING_FLOW" ) return ISMRMRD_2DTBINNING_FLOW;
+    if ( name == "ISMRMRD_L1SPIRIT_SLEP" ) return ISMRMRD_L1SPIRIT_SLEP;
+    if ( name == "ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP" ) return ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP;
 
     return ISMRMRD_NONE;
 }
@@ -3796,138 +3800,138 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const IS
     return true;
 }
 
-#ifdef USE_CUDA
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::
-cudaJobSplitter(const std::vector<unsigned int>& jobIDs, size_t jobSize, size_t minimalMemoryForValidDevice, 
-                std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule)
-{
-    try
-    {
-        unsigned int numOfJobs = jobIDs.size();
-        if ( numOfJobs == 0 )
-        {
-            GADGET_WARN_MSG("numOfJobs == 0");
-            return true;
-        }
-
-        // find valid device
-        int numOfDevices(0);
-        GADGET_CHECK_RETURN_FALSE(cudaGetDeviceCount( &numOfDevices )==cudaSuccess);
-
-        if ( numOfDevices == 0 )
-        {
-            GADGET_WARN_MSG("numOfDevices == 0");
-            return true;
-        }
-
-        std::vector<unsigned int> validDevices;
-        int d;
-        for ( d=0; d<numOfDevices; d++ )
-        {
-            size_t totalMem = cudaDeviceManager::Instance()->total_global_mem(d);
-            if ( totalMem >= minimalMemoryForValidDevice )
-            {
-                validDevices.push_back(d);
-            }
-        }
-
-        if ( validDevices.empty() )
-        {
-            GADGET_ERROR_MSG("No valid device can be found : " << minimalMemoryForValidDevice);
-            return false;
-        }
-
-        std::vector<unsigned int> maxJobN(validDevices.size());
-        for ( d=0; d<validDevices.size(); d++ )
-        {
-            size_t totalMem = cudaDeviceManager::Instance()->total_global_mem(validDevices[d]);
-            maxJobN[d] = totalMem/jobSize;
-        }
-
-        jobSchedule.clear();
-
-        size_t job = 0;
-        unsigned int validDevice = 0;
-        while ( job < numOfJobs )
-        {
-            size_t start = job;
-            size_t end = job + maxJobN[validDevice] - 1;
-
-            if ( end >= numOfJobs ) end = numOfJobs - 1;
-
-            unsigned int deviceID = validDevices[validDevice];
-
-            unsigned int loc;
-            for ( loc=0; loc<jobSchedule.size(); loc++ )
-            {
-                if ( jobSchedule[loc].first == deviceID ) break;
-            }
-
-            if ( loc < jobSchedule.size() )
-            {
-                // insert a new job package
-                std::vector<unsigned int> jobPackage;
-                for ( unsigned int jj=start; jj<=end; jj++ )
-                {
-                    jobPackage.push_back(jobIDs[jj]);
-                }
-
-                jobSchedule[loc].second.push_back(jobPackage);
-            }
-            else
-            {
-                // create a new entry
-                std::pair<unsigned int, std::vector<std::vector<unsigned int> > > jobItem;
-                jobItem.first = deviceID;
-
-                std::vector<unsigned int> jobPackage;
-                for ( unsigned int jj=start; jj<=end; jj++ )
-                {
-                    jobPackage.push_back(jobIDs[jj]);
-                }
-                jobItem.second.push_back(jobPackage);
-
-                jobSchedule.push_back(jobItem);
-            }
-
-            job = end+1;
-            validDevice++;
-
-            if ( validDevice >= validDevices.size() )
-            {
-                validDevice = 0;
-            }
-        }
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::cudaJobSplitter(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::
-cudaJobSplitter(unsigned int numOfJobs, size_t jobSize, size_t minimalMemoryForValidDevice, 
-            std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule)
-{
-    if ( numOfJobs == 0 )
-    {
-        GADGET_WARN_MSG("numOfJobs == 0");
-        return true;
-    }
-
-    std::vector<unsigned int> jobIDs(numOfJobs, 0);
-    unsigned int ii;
-    for ( ii=0; ii<numOfJobs; ii++ ) jobIDs[ii] = ii;
-    return cudaJobSplitter(jobIDs, jobSize, minimalMemoryForValidDevice, jobSchedule);
-}
-
-#endif // USE_CUDA
+//#ifdef USE_CUDA
+//
+//template <typename T> 
+//bool gtPlusISMRMRDReconUtil<T>::
+//cudaJobSplitter(const std::vector<unsigned int>& jobIDs, size_t jobSize, size_t minimalMemoryForValidDevice, 
+//                std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule)
+//{
+//    try
+//    {
+//        unsigned int numOfJobs = jobIDs.size();
+//        if ( numOfJobs == 0 )
+//        {
+//            GADGET_WARN_MSG("numOfJobs == 0");
+//            return true;
+//        }
+//
+//        // find valid device
+//        int numOfDevices(0);
+//        GADGET_CHECK_RETURN_FALSE(cudaGetDeviceCount( &numOfDevices )==cudaSuccess);
+//
+//        if ( numOfDevices == 0 )
+//        {
+//            GADGET_WARN_MSG("numOfDevices == 0");
+//            return true;
+//        }
+//
+//        std::vector<unsigned int> validDevices;
+//        int d;
+//        for ( d=0; d<numOfDevices; d++ )
+//        {
+//            size_t totalMem = cudaDeviceManager::Instance()->total_global_mem(d);
+//            if ( totalMem >= minimalMemoryForValidDevice )
+//            {
+//                validDevices.push_back(d);
+//            }
+//        }
+//
+//        if ( validDevices.empty() )
+//        {
+//            GADGET_ERROR_MSG("No valid device can be found : " << minimalMemoryForValidDevice);
+//            return false;
+//        }
+//
+//        std::vector<unsigned int> maxJobN(validDevices.size());
+//        for ( d=0; d<validDevices.size(); d++ )
+//        {
+//            size_t totalMem = cudaDeviceManager::Instance()->total_global_mem(validDevices[d]);
+//            maxJobN[d] = totalMem/jobSize;
+//        }
+//
+//        jobSchedule.clear();
+//
+//        size_t job = 0;
+//        unsigned int validDevice = 0;
+//        while ( job < numOfJobs )
+//        {
+//            size_t start = job;
+//            size_t end = job + maxJobN[validDevice] - 1;
+//
+//            if ( end >= numOfJobs ) end = numOfJobs - 1;
+//
+//            unsigned int deviceID = validDevices[validDevice];
+//
+//            unsigned int loc;
+//            for ( loc=0; loc<jobSchedule.size(); loc++ )
+//            {
+//                if ( jobSchedule[loc].first == deviceID ) break;
+//            }
+//
+//            if ( loc < jobSchedule.size() )
+//            {
+//                // insert a new job package
+//                std::vector<unsigned int> jobPackage;
+//                for ( unsigned int jj=start; jj<=end; jj++ )
+//                {
+//                    jobPackage.push_back(jobIDs[jj]);
+//                }
+//
+//                jobSchedule[loc].second.push_back(jobPackage);
+//            }
+//            else
+//            {
+//                // create a new entry
+//                std::pair<unsigned int, std::vector<std::vector<unsigned int> > > jobItem;
+//                jobItem.first = deviceID;
+//
+//                std::vector<unsigned int> jobPackage;
+//                for ( unsigned int jj=start; jj<=end; jj++ )
+//                {
+//                    jobPackage.push_back(jobIDs[jj]);
+//                }
+//                jobItem.second.push_back(jobPackage);
+//
+//                jobSchedule.push_back(jobItem);
+//            }
+//
+//            job = end+1;
+//            validDevice++;
+//
+//            if ( validDevice >= validDevices.size() )
+//            {
+//                validDevice = 0;
+//            }
+//        }
+//    }
+//    catch(...)
+//    {
+//        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::cudaJobSplitter(...) ... ");
+//        return false;
+//    }
+//
+//    return true;
+//}
+//
+//template <typename T> 
+//bool gtPlusISMRMRDReconUtil<T>::
+//cudaJobSplitter(unsigned int numOfJobs, size_t jobSize, size_t minimalMemoryForValidDevice, 
+//            std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule)
+//{
+//    if ( numOfJobs == 0 )
+//    {
+//        GADGET_WARN_MSG("numOfJobs == 0");
+//        return true;
+//    }
+//
+//    std::vector<unsigned int> jobIDs(numOfJobs, 0);
+//    unsigned int ii;
+//    for ( ii=0; ii<numOfJobs; ii++ ) jobIDs[ii] = ii;
+//    return cudaJobSplitter(jobIDs, jobSize, minimalMemoryForValidDevice, jobSchedule);
+//}
+//
+//#endif // USE_CUDA
 
 template <typename T> 
 void gtPlusISMRMRDReconUtil<T>::
@@ -4619,309 +4623,6 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
 
 template <typename T> 
 bool gtPlusISMRMRDReconUtilComplex<T>::
-coilMap2DNIHInner_2(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power)
-{
-    try
-    {
-        typedef typename realType<T>::Type value_type;
-
-        long long RO = data.get_size(0);
-        long long E1 = data.get_size(1);
-        long long CHA = data.get_size(2);
-
-        long long N = data.get_number_of_elements()/(RO*E1*CHA);
-        GADGET_CHECK_RETURN_FALSE(N==1);
-
-        const T* pData = data.begin();
-
-        if ( !data.dimensions_equal(&coilMap) )
-        {
-            coilMap = data;
-        }
-        T* pSen = coilMap.begin();
-
-        if ( ks%2 != 1 )
-        {
-            ks++;
-        }
-
-        size_t kss = ks*ks;
-        long long halfKs = (long long)ks/2;
-
-        long long e1, ro, cha;
-        long long kro, ke1, de1, dro;
-
-        // compute the D matrix
-        hoNDArray<T> D(kss, CHA, RO*E1);
-        T* pD = D.begin();
-
-        for ( e1=0; e1<(long long)E1; e1++ )
-        {
-            for ( ro=0; ro<(long long)RO; ro++ )
-            {
-                long long idx2D = ro + e1*RO;
-
-                // fill the data matrix D
-                if ( e1>=halfKs && e1<E1-halfKs && ro>=halfKs && ro<RO-halfKs )
-                {
-                    for ( cha=0; cha<CHA; cha++ )
-                    {
-                        const T* pDataCurr = pData + cha*RO*E1;
-                        long long ind=0;
-                        for ( ke1=-halfKs; ke1<=halfKs; ke1++ )
-                        {
-                            de1 = e1 + ke1;
-                            for ( kro=-halfKs; kro<=halfKs; kro++ )
-                            {
-                                long long idxD = idx2D*CHA*kss + cha*kss + ind;
-                                D(idxD) = pDataCurr[de1*RO+ro+kro];
-                                ind++;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    for ( cha=0; cha<CHA; cha++ )
-                    {
-                        const T* pDataCurr = pData + cha*RO*E1;
-                        long long ind=0;
-                        for ( ke1=-halfKs; ke1<=halfKs; ke1++ )
-                        {
-                            de1 = e1 + ke1;
-                            if ( de1 < 0 ) de1 += E1;
-                            if ( de1 >= E1 ) de1 -= E1;
-
-                            for ( kro=-halfKs; kro<=halfKs; kro++ )
-                            {
-                                dro = ro + kro;
-                                if ( dro < 0 ) dro += RO;
-                                if ( dro >= RO ) dro -= RO;
-
-                                long long idxD = idx2D*CHA*kss + cha*kss + ind;
-                                D(idxD) = pDataCurr[de1*RO+dro];
-                                ind++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // compute DH_D and V1
-        hoNDArray<T> DH_D(CHA, CHA, RO*E1);
-        T* pDH_D = DH_D.begin();
-
-        hoNDArray<T> V1(CHA, RO*E1);
-        T* pV1 = V1.begin();
-
-        hoNDArray<T> V(CHA, RO*E1);
-        T* pV = V.begin();
-
-        hoNDArray<T> U1(kss, RO*E1);
-        T* pU1 = U1.begin();
-
-        for ( e1=0; e1<(long long)E1; e1++ )
-        {
-            for ( ro=0; ro<(long long)RO; ro++ )
-            {
-                long long idx2D = ro + e1*RO;
-
-                hoNDArray<T> currD(kss, CHA, pD+idx2D*CHA*kss);
-                T* pCurrD = currD.begin();
-
-                hoNDArray<T> currDH_D(CHA, CHA, pDH_D+idx2D*CHA*CHA);
-
-                GeneralMatrixProduct(currDH_D, currD, true, currD, false);
-
-                hoNDArray<T> currV1(CHA, 1, pV1+idx2D*CHA);
-
-                for ( cha=0; cha<CHA; cha++ )
-                {
-                    currV1(cha) = 0;
-                    for ( size_t ii=0; ii<kss; ii++ )
-                    {
-                        currV1(cha) += pCurrD[ii+cha*kss];
-                    }
-                }
-
-                value_type v1Norm(1);
-
-                //norm2(currV1, v1Norm);
-                //scal(1.0/v1Norm, currV1);
-
-                for ( cha=0; cha<CHA; cha++ )
-                {
-                    T v = currV1(cha) * std::conj(currV1(cha));
-                    v1Norm += v.real();
-                }
-                v1Norm = std::sqrt(v1Norm);
-
-                for ( cha=0; cha<CHA; cha++ )
-                {
-                    currV1(cha) /= v1Norm;
-                }
-
-                size_t po;
-
-                hoNDArray<T> currV(CHA, 1, pV+idx2D*CHA);
-                for ( po=0; po<power; po++ )
-                {
-                    GeneralMatrixProduct(currV, currDH_D, false, currV1, false);
-                    currV1 = currV;
-                    /*norm2(currV1, v1Norm);
-                    scal(1.0/v1Norm, currV1);*/
-
-                    for ( cha=0; cha<CHA; cha++ )
-                    {
-                        T v = currV1(cha) * std::conj(currV1(cha));
-                        v1Norm += v.real();
-                    }
-                    v1Norm = std::sqrt(v1Norm);
-
-                    for ( cha=0; cha<CHA; cha++ )
-                    {
-                        currV1(cha) /= v1Norm;
-                    }
-                }
-
-                // compute U1
-                hoNDArray<T> currU1(kss, 1, pU1+idx2D*kss);
-                GeneralMatrixProduct(currU1, currD, false, currV1, false);
-
-                T phaseU1 = currU1(0);
-                for ( po=1; po<kss; po++ )
-                {
-                    phaseU1 += currU1(po);
-                }
-                phaseU1 /= std::abs(phaseU1);
-
-                // put the mean object phase to coil map
-                for ( cha=0; cha<CHA; cha++ )
-                {
-                    currV1(cha) = phaseU1 * std::conj(currV1(cha));
-                }
-
-                /*conjugate(currV1, currV1);
-                scal(phaseU1, currV1);*/
-
-                for ( cha=0; cha<CHA; cha++ )
-                {
-                    pSen[cha*RO*E1+idx2D] = currV1(cha);
-                }
-            }
-        }
-
-        //#pragma omp parallel default(none) private(e1) shared(ks, RO, E1, CHA, pSen, pData, halfKs, power, kss)
-        //{
-        //    hoMatrix<T> D(ks*ks, CHA);
-        //    hoMatrix<T> DH_D(CHA, CHA);
-
-        //    hoMatrix<T> U1(ks*ks, 1);
-        //    hoMatrix<T> V1(CHA, 1);
-        //    hoMatrix<T> V(CHA, 1);
-
-        //    T phaseU1;
-
-        //    value_type v1Norm(1), u1Norm(1);
-
-        //    long long cha, ro, kro, ke1, de1, dro;
-        //    size_t po;
-
-        //    #pragma omp for
-        //    for ( e1=0; e1<(long long)E1; e1++ )
-        //    {
-        //        for ( ro=0; ro<(long long)RO; ro++ )
-        //        {
-        //            // fill the data matrix D
-        //            if ( e1>=halfKs && e1<E1-halfKs && ro>=halfKs && ro<RO-halfKs )
-        //            {
-        //                for ( cha=0; cha<CHA; cha++ )
-        //                {
-        //                    const T* pDataCurr = pData + cha*RO*E1;
-        //                    long long ind=0;
-        //                    for ( ke1=-halfKs; ke1<=halfKs; ke1++ )
-        //                    {
-        //                        de1 = e1 + ke1;
-        //                        for ( kro=-halfKs; kro<=halfKs; kro++ )
-        //                        {
-        //                            D(ind++, cha) = pDataCurr[de1*RO+ro+kro];
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //            else
-        //            {
-        //                for ( cha=0; cha<CHA; cha++ )
-        //                {
-        //                    const T* pDataCurr = pData + cha*RO*E1;
-        //                    long long ind=0;
-        //                    for ( ke1=-halfKs; ke1<=halfKs; ke1++ )
-        //                    {
-        //                        de1 = e1 + ke1;
-        //                        if ( de1 < 0 ) de1 += E1;
-        //                        if ( de1 >= E1 ) de1 -= E1;
-
-        //                        for ( kro=-halfKs; kro<=halfKs; kro++ )
-        //                        {
-        //                            dro = ro + kro;
-        //                            if ( dro < 0 ) dro += RO;
-        //                            if ( dro >= RO ) dro -= RO;
-
-        //                            D(ind++, cha) = pDataCurr[de1*RO+dro];
-        //                        }
-        //                    }
-        //                }
-        //            }
-
-        //            // compute V1
-        //            D.sumOverCol(V1);
-        //            norm2(V1, v1Norm);
-        //            scal(1.0/v1Norm, V1);
-
-        //            GeneralMatrixProduct_gemm(DH_D, D, true, D, false);
-
-        //            for ( po=0; po<power; po++ )
-        //            {
-        //                GeneralMatrixProduct_gemm(V, DH_D, false, V1, false);
-        //                V1 = V;
-        //                norm2(V1, v1Norm);
-        //                scal(1.0/v1Norm, V1);
-        //            }
-
-        //            // compute U1
-        //            GeneralMatrixProduct_gemm(U1, D, false, V1, false);
-
-        //            phaseU1 = U1(0, 0);
-        //            for ( po=1; po<kss; po++ )
-        //            {
-        //                phaseU1 += U1(po, 0);
-        //            }
-        //            phaseU1 /= std::abs(phaseU1);
-
-        //            // put the mean object phase to coil map
-        //            conjugate(V1, V1);
-        //            scal(phaseU1, V1);
-
-        //            for ( cha=0; cha<CHA; cha++ )
-        //            {
-        //                pSen[cha*RO*E1+e1*RO+ro] = V1(cha, 0);
-        //            }
-        //        }
-        //    }
-        //}
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIHInner_2(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtilComplex<T>::
 coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power)
 {
     try
@@ -5220,121 +4921,6 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
 
 template <typename T> 
 bool gtPlusISMRMRDReconUtilComplex<T>::
-coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, const hoNDArray<T>& kerKSpace, size_t iterNum)
-{
-    try
-    {
-        typedef typename realType<T>::Type value_type;
-
-        long long RO = data.get_size(0);
-        long long E1 = data.get_size(1);
-        long long CHA = data.get_size(2);
-
-        long long N = data.get_number_of_elements()/(RO*E1*CHA);
-        GADGET_CHECK_RETURN_FALSE(N==1);
-
-        const T* pData = data.begin();
-
-        if ( !data.dimensions_equal(&coilMap) )
-        {
-            coilMap = data;
-        }
-
-        hoNDArray<T> prevR(RO, E1, 1), R(RO, E1, 1), imT(RO, E1, 1), magT(RO, E1, 1), diffR(RO, E1, 1);
-        hoNDArray<T> coilMapConv(RO, E1, CHA);
-        hoNDArray<T> D(RO, E1, CHA);
-        hoNDArray<T> D_sum(1, E1, CHA);
-        hoNDArray<T> D_sum_1st_2nd(1, 1, CHA);
-        typename realType<T>::Type v, vR, vDiffR;
-        T vCha;
-        size_t iter;
-        long long cha;
-
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver1stDimension(data, D_sum));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver2ndDimension(D_sum, D_sum_1st_2nd));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::norm2(D_sum_1st_2nd, v));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)1.0/v, D_sum_1st_2nd));
-
-        Gadgetron::clear(R);
-        for ( cha=0; cha<CHA; cha++ )
-        {
-            hoNDArray<T> dataCHA(RO, E1, const_cast<T*>(data.begin())+cha*RO*E1);
-            vCha = D_sum_1st_2nd(cha);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::axpy( std::conj(vCha), dataCHA, R, R));
-        }
-
-        for ( iter=0; iter<iterNum; iter++ )
-        {
-            prevR = R;
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(R, R));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, data, coilMap));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(coilMap, coilMapConv));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(kerKSpace, coilMapConv, D));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(D, coilMapConv));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(coilMapConv, coilMapConv, D));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sqrt(R, R));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(R));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::inv(R, R));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMapConv, coilMap));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(data, coilMap, D));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
-
-            //if ( iter < iterNum - 1 )
-            //{
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMap, D));
-            //}
-            //else
-            //{
-            //    D = coilMap;
-            //}
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver1stDimension(D, D_sum));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver2ndDimension(D_sum, D_sum_1st_2nd));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::norm2(D_sum_1st_2nd, v));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)1.0/v, D_sum_1st_2nd));
-
-            Gadgetron::clear(imT);
-            for ( cha=0; cha<CHA; cha++ )
-            {
-                hoNDArray<T> coilMapCHA(RO, E1, coilMap.begin()+cha*RO*E1);
-                vCha = D_sum_1st_2nd(cha);
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::axpy( std::conj(vCha), coilMapCHA, imT, imT));
-            }
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(imT, magT));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::divide(imT, magT, imT));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(R, imT, R));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(imT, imT));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(imT, coilMap, coilMap));
-
-            Gadgetron::subtract(prevR, R, diffR);
-            Gadgetron::norm2(diffR, vDiffR);
-            Gadgetron::norm2(R, vR);
-
-            // GADGET_MSG("coilMap2DNIH2Inner - iter : " << iter << " - norm(prevR-R)/norm(R) : " << vDiffR/vR);
-        }
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIH2Inner(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtilComplex<T>::
 coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks, size_t power, size_t iterNum, typename realType<T>::Type thres, bool useGPU)
 {
     try
@@ -5345,99 +4931,70 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
         long long E1 = data.get_size(1);
         long long CHA = data.get_size(2);
 
-        if ( useGPU )
+        size_t N = data.get_number_of_elements()/(RO*E1*CHA);
+        size_t num = RO*E1*CHA;
+
+        if ( !data.dimensions_equal(&coilMap) )
         {
-            #ifdef USE_CUDA
-                int cur_device = cudaDeviceManager::Instance()->getCurrentDevice();
-                int warp_size = cudaDeviceManager::Instance()->warp_size(cur_device);
-                int max_blockdim = cudaDeviceManager::Instance()->max_blockdim(cur_device);
+            coilMap = data;
+        }
 
-                int numOfDevices = cudaDeviceManager::Instance()->getTotalNumberOfDevice();
+        if ( ks%2 != 1 )
+        {
+            ks++;
+        }
 
-                if ( (numOfDevices==0) || (CHA>32) )
-                {
-                    useGPU = false;
-                }
+        long long n;
 
+        if ( N >= 8 )
+        {
+            #ifdef GCC_OLD_FLAG
+                #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, power, iterNum, thres)
             #else
-                useGPU = false;
-            #endif // USE_CUDA
-        }
-
-        if ( useGPU )
-        {
-            return coilMap2DNIHGPU(data, coilMap, algo, ks, power, iterNum, thres);
-        }
-        else
-        {
-            size_t N = data.get_number_of_elements()/(RO*E1*CHA);
-            size_t num = RO*E1*CHA;
-
-            if ( !data.dimensions_equal(&coilMap) )
+                #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, data, coilMap, power, iterNum, thres)
+            #endif 
             {
-                coilMap = data;
-            }
-
-            if ( ks%2 != 1 )
-            {
-                ks++;
-            }
-
-            long long n;
-
-            if ( N >= 8 )
-            {
-                #ifdef GCC_OLD_FLAG
-                    #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, power, iterNum, thres)
-                #else
-                    #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, data, coilMap, power, iterNum, thres)
-                #endif 
-                {
-                    #pragma omp for
-                    for ( n=0; n<(long long)N; n++ )
-                    {
-                        hoNDArray<T> dataCurr(RO, E1, CHA, const_cast<T*>(data.begin()+n*num));
-                        hoNDArray<T> coilMapCurr(RO, E1, CHA, coilMap.begin()+n*num);
-
-                        if ( algo == ISMRMRD_SOUHEIL_ITER )
-                        {
-                            coilMap2DNIH2Inner(dataCurr, coilMapCurr, ks, iterNum, thres);
-                        }
-                        else
-                        {
-                            coilMap2DNIHInner(dataCurr, coilMapCurr, ks, power);
-                            //coilMap2DNIHInner_2(dataCurr, coilMapCurr, ks, power);
-                        }
-                    }
-                }
-            }
-            else if ( N == 1 )
-            {
-                if ( algo == ISMRMRD_SOUHEIL_ITER )
-                {
-                    GADGET_CHECK_RETURN_FALSE(coilMap2DNIH2Inner(data, coilMap, ks, iterNum, thres));
-                }
-                else
-                {
-                    GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner(data, coilMap, ks, power));
-                    //GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner_2(data, coilMap, ks, power));
-                }
-            }
-            else
-            {
+                #pragma omp for
                 for ( n=0; n<(long long)N; n++ )
                 {
                     hoNDArray<T> dataCurr(RO, E1, CHA, const_cast<T*>(data.begin()+n*num));
                     hoNDArray<T> coilMapCurr(RO, E1, CHA, coilMap.begin()+n*num);
+
                     if ( algo == ISMRMRD_SOUHEIL_ITER )
                     {
-                        GADGET_CHECK_RETURN_FALSE(coilMap2DNIH2Inner(dataCurr, coilMapCurr, ks, iterNum, thres));
+                        coilMap2DNIH2Inner(dataCurr, coilMapCurr, ks, iterNum, thres);
                     }
                     else
                     {
-                        GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner(dataCurr, coilMapCurr, ks, power));
-                        //GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner_2(dataCurr, coilMapCurr, ks, power));
+                        coilMap2DNIHInner(dataCurr, coilMapCurr, ks, power);
                     }
+                }
+            }
+        }
+        else if ( N == 1 )
+        {
+            if ( algo == ISMRMRD_SOUHEIL_ITER )
+            {
+                GADGET_CHECK_RETURN_FALSE(coilMap2DNIH2Inner(data, coilMap, ks, iterNum, thres));
+            }
+            else
+            {
+                GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner(data, coilMap, ks, power));
+            }
+        }
+        else
+        {
+            for ( n=0; n<(long long)N; n++ )
+            {
+                hoNDArray<T> dataCurr(RO, E1, CHA, const_cast<T*>(data.begin()+n*num));
+                hoNDArray<T> coilMapCurr(RO, E1, CHA, coilMap.begin()+n*num);
+                if ( algo == ISMRMRD_SOUHEIL_ITER )
+                {
+                    GADGET_CHECK_RETURN_FALSE(coilMap2DNIH2Inner(dataCurr, coilMapCurr, ks, iterNum, thres));
+                }
+                else
+                {
+                    GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner(dataCurr, coilMapCurr, ks, power));
                 }
             }
         }
@@ -5445,216 +5002,6 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
     catch(...)
     {
         GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIH(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtilComplex<T>::
-coilMap2DNIHGPU(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks, size_t power, size_t iterNum, typename realType<T>::Type thres)
-{
-    try
-    {
-        #ifdef USE_CUDA
-            typedef typename realType<T>::Type value_type;
-
-            GADGET_MSG("call gpu version of coilMap2DNIH ... ");
-
-            long long RO = data.get_size(0);
-            long long E1 = data.get_size(1);
-            long long CHA = data.get_size(2);
-            long long N = data.get_number_of_elements()/(RO*E1*CHA);
-
-            if ( !data.dimensions_equal(&coilMap) )
-            {
-                coilMap = data;
-            }
-
-            if ( ks%2 != 1 )
-            {
-                ks++;
-            }
-
-            Gadgetron::GadgetronTimer gt_timer1_(false), gt_timer3_(false);
-
-            size_t kss = ks * ks;
-
-            bool gt3_timing = false;
-
-            if ( N == 1 )
-            {
-                Gadgetron::GadgetronTimer gt_timer1_(false), gt_timer3_(false);
-
-                cuNDArray<float_complext> device_data;
-                cuNDArray<float_complext> csm(data.get_dimensions());
-                Gadgetron::clear(&csm);
-                cuNDArray<float_complext > D(RO, E1, kss, CHA);
-                cuNDArray<float_complext > DH_D(RO, E1, CHA, CHA);
-                cuNDArray<float_complext > V1(RO, E1, CHA);
-                cuNDArray<float_complext > U1(RO, E1, kss);
-
-                // calling the b1_map estimation
-                const float_complext* pData = reinterpret_cast<const float_complext*>(data.begin());
-                hoNDArray<float_complext> data_tmp(RO, E1, CHA, const_cast<float_complext*>(pData));
-
-                GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("copy data to device ... "));
-                {
-                    device_data = data_tmp;
-                }
-                GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-
-                GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("estimate_b1_map_2D_NIH_Souheil ... "));
-                {
-                    Gadgetron::estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power,
-                                                                D, DH_D, V1, U1 );
-                }
-                GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-
-                GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("coil map to host ... "));
-                {
-                    // boost::shared_ptr< hoNDArray<float_complext> > csm_host = csm.to_host();
-                    csm.to_host(reinterpret_cast<hoNDArray<float_complext>* >(&coilMap));
-                    //memcpy(coilMap.begin(), csm_host->begin(), csm_host->get_number_of_bytes());
-                }
-                GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-            }
-            else
-            {
-                size_t jobSize = sizeof(T)*RO*E1*(kss+CHA)*CHA*4.0;
-                size_t minimalMemoryForValidDevice = (size_t)(2.0*1024.0*1024*1024); // 2GB
-
-                std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > > jobSchedule;
-                if ( !this->cudaJobSplitter(N, jobSize, minimalMemoryForValidDevice, jobSchedule) )
-                {
-                    GADGET_ERROR_MSG("cudaJobSplitter failed, call the gpu coil map estimatoin ... ");
-                    return this->coilMap2DNIH(data, coilMap, algo, ks, power, iterNum, thres);
-                }
-
-                int device;
-                int numOfValidDevices = (int)jobSchedule.size();
-
-                for ( device=0; device<(int)numOfValidDevices; device++ )
-                {
-                    GADGET_MSG("GPU device " << jobSchedule[device].first << " has " << jobSchedule[device].second.size() << " jobs ... ");
-                    GADGET_MSG("Every job has " << jobSchedule[device].second[0].size() << " slics ... ");
-                }
-
-                #pragma omp parallel default(none) private(device) shared(numOfValidDevices, jobSchedule, RO, E1, CHA, kss, ks, power, data, coilMap, gt3_timing) num_threads(numOfValidDevices) if ( numOfValidDevices > 1 )
-                {
-                    int tid = 0;
-                    #ifdef USE_OMP
-                        tid = omp_get_thread_num();
-                    #endif // USE_OMP
-                    cudaSetDevice(jobSchedule[tid].first);
-
-                    Gadgetron::GadgetronTimer gt_timer1_(false), gt_timer3_(false);
-
-                    #pragma omp for
-                    for ( device=0; device<numOfValidDevices; device++ )
-                    {
-                        unsigned int totalJobPackage = jobSchedule[device].second.size();
-                        unsigned int usedN = jobSchedule[device].second[0].size();
-
-                        cuNDArray<float_complext> device_data;
-
-                        cuNDArray<float_complext> csm(RO, E1, usedN, CHA);
-                        Gadgetron::clear(&csm);
-
-                        cuNDArray<float_complext > D(RO*E1*usedN, kss, CHA);
-                        cuNDArray<float_complext > DH_D(RO*E1*usedN, CHA, CHA);
-                        cuNDArray<float_complext > V1(RO*E1*usedN, CHA);
-                        cuNDArray<float_complext > U1(RO*E1*usedN, kss);
-
-                        hoNDArray<T> dataCurr;
-                        hoNDArray<T> coilMapCurr;
-
-                        hoNDArray<T> dataTmp, coilMapTmp;
-
-                        unsigned int package;
-                        for ( package=0; package<totalJobPackage; package++ )
-                        {
-                            unsigned int packageSize = jobSchedule[device].second[package].size();
-                            size_t start = jobSchedule[device].second[package][0];
-                            size_t end = jobSchedule[device].second[package][packageSize-1];
-
-                            size_t usedNPackage = end-start+1;
-
-                            if ( usedNPackage != usedN )
-                            {
-                                usedN = usedNPackage;
-
-                                device_data.create(RO*E1*usedN, CHA);
-                                csm.create(RO*E1*usedN, CHA);
-                                D.create(RO*E1*usedN, kss, CHA);
-                                DH_D.create(RO*E1*usedN, CHA, CHA);
-                                V1.create(RO*E1*usedN, CHA);
-                                U1.create(RO*E1*usedN, kss);
-                            }
-
-                            dataTmp.create(RO, E1, CHA, usedN);
-                            memcpy(dataTmp.begin(), data.begin()+start*RO*E1*CHA, sizeof(T)*RO*E1*CHA*usedN);
-
-                            dataCurr.create(RO, E1, usedN, CHA);
-                            coilMapCurr.create(RO, E1, usedN, CHA);
-
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("permute the data ... "));
-                            Gadgetron::permuteLastTwoDimensions(dataTmp, dataCurr);
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-
-                            // calling the b1_map estimation
-                            hoNDArray<float_complext> data_tmp(dataCurr.get_dimensions(), reinterpret_cast<float_complext*>(dataCurr.begin()));
-
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("copy data to device ... "));
-                            {
-                                device_data = data_tmp;
-
-                                //{
-                                //boost::shared_ptr< hoNDArray<float_complext> > tmp = device_data.to_host();
-                                //hoNDArray<T> tmp_host(tmp->get_dimensions());
-
-                                //memcpy(tmp_host.begin(), tmp->begin(), tmp->get_number_of_bytes());
-                                //gtPlusIOAnalyze gt_io;
-                                //std::string dstDir = "D:/software/Gadgetron/20130114/gadgetron/toolboxes/gtplus/ut/result/";
-                                //gt_io.exportArrayComplex(tmp_host, dstDir+"tmp");
-                                //}
-                            }
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("estimate_b1_map_2D_NIH_Souheil ... "));
-                            {
-                                Gadgetron::estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power,
-                                                                            D, DH_D, V1, U1 );
-                            }
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("coil map to host ... "));
-                            {
-                                // csm.to_host(reinterpret_cast<hoNDArray<float_complext>* >(&coilMapCurr));
-                                boost::shared_ptr< hoNDArray<float_complext> > csm_host = csm.to_host();
-                                memcpy(coilMapCurr.begin(), csm_host->begin(), csm_host->get_number_of_bytes());
-                            }
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-
-                            coilMapTmp.create(RO, E1, CHA, usedN);
-
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("permute the coil map ... "));
-                            Gadgetron::permuteLastTwoDimensions(coilMapCurr, coilMapTmp);
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-
-                            memcpy(coilMap.begin()+start*RO*E1*CHA, coilMapTmp.begin(), sizeof(T)*RO*E1*CHA*usedN);
-                        }
-                    }
-                }
-            }
-        #else
-            return this->coilMap2DNIH(data, coilMap, algo, ks, power, iterNum, thres);
-        #endif // USE_CUDA
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIHGPU(...) ... ");
         return false;
     }
 
@@ -5715,7 +5062,6 @@ coilMap3DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, data, coilMap));
 
-            // use corr2, instead of corr3
             GADGET_CHECK_RETURN_FALSE(Gadgetron::conv2(coilMap, ker, coilMapConv));
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(coilMapConv, coilMapConv, D));
@@ -5877,165 +5223,6 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
     catch(...)
     {
         GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap3DNIH(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtilComplex<T>::
-coilMap3DNIHGPU_FullResMap(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks, size_t power, size_t iterNum, typename realType<T>::Type thres, bool true3D)
-{
-    try
-    {
-        #ifdef USE_CUDA
-            typedef typename realType<T>::Type value_type;
-
-            GADGET_MSG("compute full resolution coil map using gpu ... ");
-
-            size_t RO = data.get_size(0);
-            size_t E1 = data.get_size(1);
-            size_t E2 = data.get_size(2);
-            size_t CHA = data.get_size(3);
-
-            if ( !data.dimensions_equal(&coilMap) )
-            {
-                coilMap = data;
-            }
-
-            if ( ks%2 != 1 )
-            {
-                ks++;
-            }
-
-            size_t kss = ks*ks;
-
-            int numOfDevices = cudaDeviceManager::Instance()->getTotalNumberOfDevice();
-            if ( (numOfDevices==0) || (CHA>32) )
-            {
-                return this->coilMap3DNIH(data, coilMap, algo, ks, power, iterNum, thres);
-            }
-
-            size_t jobSize = sizeof(T)*RO*E1*(kss+CHA)*CHA*2.0;
-            size_t minimalMemoryForValidDevice = (size_t)(2.0*1024.0*1024*1024); // 4GB
-
-            std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > > jobSchedule;
-            if ( !this->cudaJobSplitter(E2, jobSize, minimalMemoryForValidDevice, jobSchedule) )
-            {
-                GADGET_ERROR_MSG("cudaJobSplitter failed, call the gpu coil map estimatoin ... ");
-                return this->coilMap3DNIH(data, coilMap, algo, ks, power, iterNum, thres);
-            }
-
-            unsigned int numOfValidDevices = jobSchedule.size();
-
-            int device;
-            for ( device=0; device<(int)numOfValidDevices; device++ )
-            {
-                GADGET_MSG("GPU device " << jobSchedule[device].first << " has " << jobSchedule[device].second.size() << " jobs ... ");
-                GADGET_MSG("Every job has " << jobSchedule[device].second[0].size() << " slics ... ");
-            }
-
-            size_t N = data.get_number_of_elements()/(RO*E1*E2*CHA);
-
-            bool gt3_timing = false;
-
-            long long n;
-            for ( n=0; n<(long long)N; n++ )
-            {
-                hoNDArray<T> dataCurr(RO, E1, E2, CHA, const_cast<T*>(data.begin()+n*RO*E1*E2*CHA));
-                hoNDArray<T> coilMapCurr(RO, E1, E2, CHA, coilMap.begin()+n*RO*E1*E2*CHA);
-
-                #pragma omp parallel default(none) private(device) shared(jobSchedule, dataCurr, coilMapCurr, RO, E1, E2, CHA, algo, ks, kss, power, iterNum, thres, numOfValidDevices, gt3_timing) num_threads(numOfValidDevices) if ( numOfValidDevices > 1 )
-                {
-                    int tid = 0;
-                    #ifdef USE_OMP
-                        tid = omp_get_thread_num();
-                    #endif // USE_OMP
-                    cudaSetDevice(jobSchedule[tid].first);
-
-                    Gadgetron::GadgetronTimer gt_timer1_(false), gt_timer3_(false);
-
-                    #pragma omp for
-                    for ( device=0; device<(int)numOfValidDevices; device++ )
-                    {
-                        int totalJobPackage = jobSchedule[tid].second.size();
-
-                        unsigned int usedN = jobSchedule[tid].second[0].size();
-
-                        cuNDArray<float_complext> device_data(RO, E1, usedN, CHA);
-                        cuNDArray<float_complext> csm(RO, E1, usedN, CHA);
-                        cuNDArray<float_complext > D(RO, E1, usedN, kss, CHA);
-                        cuNDArray<float_complext > DH_D(RO, E1, usedN, CHA, CHA);
-                        cuNDArray<float_complext > V1(RO, E1, usedN, CHA);
-                        cuNDArray<float_complext > U1(RO, E1, usedN, kss);
-
-                        hoNDArray<T> dataCurrN;
-                        hoNDArray<T> coilMapCurrN;
-
-                        int ii;
-                        for ( ii=0; ii<totalJobPackage; ii++ )
-                        {
-                            hoNDArray<T> dataTmp, coilMapTmp;
-
-                            unsigned int packageSize = jobSchedule[tid].second[ii].size();
-
-                            size_t start = jobSchedule[tid].second[ii][0];
-                            size_t end = jobSchedule[tid].second[ii][packageSize-1];
-
-                            size_t usedNCurr = end-start+1;
-
-                            if ( usedNCurr != usedN )
-                            {
-                                usedN = usedNCurr;
-
-                                device_data.create(RO, E1, usedN, CHA);
-                                csm.create(RO, E1, usedN, CHA);
-                                D.create(RO, E1, usedN, kss, CHA);
-                                DH_D.create(RO, E1, usedN, CHA, CHA);
-                                V1.create(RO, E1, usedN, CHA);
-                                U1.create(RO, E1, usedN, kss);
-                            }
-
-                            dataCurrN.create(RO, E1, usedN, CHA);
-                            coilMapCurrN.create(RO, E1, usedN, CHA);
-
-                            Gadgetron::cropOver3rdDimension(dataCurr, dataCurrN, start, end);
-
-                            // calling the b1_map estimation
-                            hoNDArray<float_complext> data_tmp(dataCurrN.get_dimensions(), reinterpret_cast<float_complext*>(dataCurrN.begin()));
-
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("copy data to device ... "));
-                            {
-                                device_data = data_tmp;
-                            }
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("estimate_b1_map_2D_NIH_Souheil ... "));
-                            {
-                                Gadgetron::estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power,
-                                                                            D, DH_D, V1, U1 );
-                            }
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.start("coil map to host ... "));
-                            {
-                                csm.to_host(reinterpret_cast<hoNDArray<float_complext>* >(&coilMapCurrN));
-                            }
-                            GADGET_CHECK_PERFORM(gt3_timing, gt_timer3_.stop());
-
-                            Gadgetron::setSubArrayOver3rdDimension(coilMapCurrN, coilMapCurr, start, end);
-                        }
-                    }
-                }
-            }
-        #else
-            return this->coilMap3DNIH(data, coilMap, algo, ks, power, iterNum, thres);
-        #endif // USE_CUDA
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap3DNIHGPU_FullResMap(...) ... ");
         return false;
     }
 

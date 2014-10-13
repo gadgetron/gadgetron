@@ -18,11 +18,12 @@ namespace Gadgetron
     template <typename T> class HDF5ImageWriter : public ImageWriter<T>
     {
     public:
-        HDF5ImageWriter(std::string filename, std::string groupname)
+        HDF5ImageWriter(std::string filename, std::string groupname, ACE_Thread_Mutex& mtx)
             : ImageWriter<T>()
             , file_name_(filename)
             , group_name_(groupname)
             , dataset_(filename.c_str(), groupname.c_str())
+            , mtx_(&mtx)
         {
 
         }
@@ -35,15 +36,18 @@ namespace Gadgetron
                 st1 << "image_" << img_head->image_series_index;
                 std::string image_varname = st1.str();
 
-		// TODO this makes a copy of the data
-		// what's the best way to do it without copies?
-		ISMRMRD::Image img;
+                // TODO this makes a copy of the data
+                // what's the best way to do it without copies?
+                ISMRMRD::Image<T> img;
                 img.setHead(*img_head);
                 memcpy(img.getData(), data->get_data_ptr(), img.getDataSize());
 
-                if (dataset_.appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, img) < 0) {
-                    GADGET_DEBUG1("Failed to write image.\n");
-                    return GADGET_FAIL;
+                {
+                    ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, *mtx_, -1);
+                    if (dataset_.appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, img) < 0) {
+                        GADGET_DEBUG1("Failed to write image.\n");
+                        return GADGET_FAIL;
+                    }
                 }
 
             } catch (...) {
@@ -58,6 +62,8 @@ namespace Gadgetron
         std::string group_name_;
         std::string file_name_;
         ISMRMRD::Dataset dataset_;
+
+        ACE_Thread_Mutex* mtx_;
     };
 }
 

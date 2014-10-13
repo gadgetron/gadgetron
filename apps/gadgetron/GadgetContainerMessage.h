@@ -97,9 +97,13 @@ public:
   virtual ACE_Message_Block* release()
   {    
     //In case the object contained in this object has allocated memory on the heap, it must be destroyed
-    if (this->reference_count() == 1) {
+    if (this->reference_count() <= 1) {
       if (content_) content_->~T();
     } 
+    if (cont_) {
+      cont_->release();
+      cont_ = 0;
+    }
     return ACE_Message_Block::release();
   }
 

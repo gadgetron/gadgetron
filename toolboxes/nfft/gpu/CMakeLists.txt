@@ -17,7 +17,7 @@ include_directories(
   ${Boost_INCLUDE_DIR}
   )
 
-cuda_add_library(gpunfft SHARED 
+cuda_add_library(gadgetron_toolbox_gpunfft SHARED 
     cuNFFT.h
     cuNFFTOperator.h
     gpunfft_export.h
@@ -25,19 +25,21 @@ cuda_add_library(gpunfft SHARED
     cuNFFTOperator.cu
   )
 
-target_link_libraries(gpunfft 
-  gpufft
-  gpucore 
+set_target_properties(gadgetron_toolbox_gpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
+target_link_libraries(gadgetron_toolbox_gpunfft 
+  gadgetron_toolbox_gpufft
+  gadgetron_toolbox_gpucore 
   ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
   ${CUDA_CUBLAS_LIBRARIES}
   )
 
-install(TARGETS gpunfft DESTINATION lib)
+install(TARGETS gadgetron_toolbox_gpunfft DESTINATION lib COMPONENT main)
 
 install(FILES 
   cuNFFT.h 
   cuNFFTOperator.h 
   gpunfft_export.h 
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

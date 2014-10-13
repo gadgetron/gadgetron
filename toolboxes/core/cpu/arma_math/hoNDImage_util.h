@@ -77,13 +77,22 @@ namespace Gadgetron
     template<class T, unsigned int D> 
     bool real_to_complex(const hoNDImage<typename realType<T>::Type, D>& real, hoNDImage<T, D>& cplx);
 
+    template <class T, unsigned int D>
+    bool minValue(const hoNDImage<T, D>& im, T& v);
+
+    template <class T, unsigned int D>
+    bool maxValue(const hoNDImage<T, D>& im, T& v);
+
     /// compute the gradient for an ND image
     /// the central difference is computed, the border-value boundary condition is used
     template<class T, unsigned int D> EXPORTCPUCOREMATH bool gradient(const hoNDImage<T, D>& x, hoNDImage<T, D> gx[]);
 
+    /// compute a gaussian kernel
+    template<class T> EXPORTCPUCOREMATH bool gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoNDArray<T>& ker);
+
     /// perform the gaussian filter for every dimension
     /// sigma is in the unit of pixel
-    template<class ArrayType, class T2> EXPORTCPUCOREMATH bool filterGaussian(ArrayType& x, T2 sigma[]);
+    template<class ArrayType, class T2> EXPORTCPUCOREMATH bool filterGaussian(ArrayType& x, T2 sigma[], typename ArrayType::value_type* mem=NULL);
 
     /// perform midian filter
     /// w is the window size
@@ -114,6 +123,9 @@ namespace Gadgetron
     /// expand image size by 2 with linear interpolation
     template<typename T, typename BoundaryHandlerType, unsigned int D> 
     bool expandImageBy2(const hoNDImage<T, D>& in, BoundaryHandlerType& bh, hoNDImage<T, D>& out);
+
+    /// filter the image along the first dimension using a 1D kernel
+    template<class ArrayType> bool filter1D(const ArrayType& img, const hoNDArray<typename realType<typename ArrayType::value_type>::Type>& ker, GT_BOUNDARY_CONDITION bh, ArrayType& img_out);
 
     /**
     * @brief add two vectors of values, r = x + y
@@ -238,6 +250,18 @@ namespace Gadgetron
     */
     template <typename T, unsigned int D> 
     bool inv(const hoNDImage<T, D>& x, hoNDImage<T, D>& r);
+
+    /**
+    * @brief r = mean(x)
+    */
+    template <typename T, unsigned int D> 
+    bool mean(const hoNDImage<T, D>& x, T& m);
+
+    /**
+    * @brief r = correlation_coefficient(a, b)
+    */
+    template <typename T, unsigned int D> 
+    bool corrCoef(const hoNDImage<T, D>& a, const hoNDImage<T, D>& b, T& r);
 
 #ifdef USE_MKL
 

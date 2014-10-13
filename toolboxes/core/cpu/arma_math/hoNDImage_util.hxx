@@ -275,6 +275,58 @@ namespace Gadgetron
         return true;
     }
 
+    template <class T, unsigned int D>
+    bool minValue(const hoNDImage<T, D>& im, T& v)
+    {
+        typedef T ValueType;
+
+        try
+        {
+            const ValueType* pIm = im.begin();
+            size_t n = im.get_number_of_elements();
+            v = pIm[0];
+
+            size_t ii;
+            for (ii=1; ii<n; ii++)
+            {
+                if (pIm[ii]<v) v = pIm[ii];
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in minValue(const hoNDImage<T, D>& im, T& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template <class T, unsigned int D>
+    bool maxValue(const hoNDImage<T, D>& im, T& v)
+    {
+        typedef T ValueType;
+
+        try
+        {
+            const ValueType* pIm = im.begin();
+            size_t n = im.get_number_of_elements();
+            v = pIm[0];
+
+            size_t ii;
+            for (ii=1; ii<n; ii++)
+            {
+                if (pIm[ii]>v) v = pIm[ii];
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in maxValue(const hoNDImage<T, D>& im, T& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
     template <typename T, unsigned int D> 
     bool add(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
@@ -862,6 +914,73 @@ namespace Gadgetron
         catch(...)
         {
             GADGET_ERROR_MSG("Errors happened in inv(const hoNDImage<T, D>& x, hoNDImage<T, D>& r) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template <typename T, unsigned int D> 
+    bool mean(const hoNDImage<T, D>& x, T& m)
+    {
+        try
+        {
+            size_t N = x.get_number_of_elements();
+            m = 0;
+
+            const T* pX = x.begin();
+
+            size_t n;
+            for ( n=0; n<N; n++ ) m += pX[n];
+
+            if ( N > 0 ) m /= (T)(N);
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors happened in mean(const hoNDImage<T, D>& x, T& m) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template <typename T, unsigned int D> 
+    bool corrCoef(const hoNDImage<T, D>& a, const hoNDImage<T, D>& b, T& r)
+    {
+        try
+        {
+            GADGET_CHECK_RETURN_FALSE(a.dimensions_equal(&b));
+
+            r = -1;
+
+            T ma, mb;
+            Gadgetron::mean(a, ma);
+            Gadgetron::mean(b, mb);
+
+            size_t N = a.get_number_of_elements();
+
+            const T* pA = a.begin();
+            const T* pB = b.begin();
+
+            size_t n;
+
+            double x(0), y(0), z(0);
+            for ( n=0; n<N; n++ )
+            {
+                x += (pA[n]-ma)*(pA[n]-ma);
+                y += (pB[n]-mb)*(pB[n]-mb);
+                z += (pA[n]-ma)*(pB[n]-mb);
+            }
+
+            double p = std::sqrt(x*y);
+            if ( p > 0 )
+            {
+                r = (T)(z/p);
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors happened in corrCoef(const hoNDImage<T, D>& a, const hoNDImage<T, D>& b, T& r) ... ");
             return false;
         }
 
@@ -1754,6 +1873,85 @@ namespace Gadgetron
         catch(...)
         {
             GADGET_ERROR_MSG("Errors happened in filterMedian(const ArrayType& img, size_t w[], ArrayType& img_out) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template<class ArrayType> 
+    bool filter1D(const ArrayType& img, const hoNDArray<typename realType<typename ArrayType::value_type>::Type>& ker, GT_BOUNDARY_CONDITION bh, ArrayType& img_out)
+    {
+        try
+        {
+            typedef typename ArrayType::value_type T;
+            typedef typename realType<T>::Type real_value_type;
+
+            long long RO = (long long)img.get_size(0);
+            long long num = (long long)(img.get_number_of_elements()/RO);
+
+            img_out = img;
+
+            long long kerLen = (long long)ker.get_size(0);
+            long long kerHalfLen = kerLen/2;
+
+            const real_value_type* pKer = ker.begin();
+
+            long long ii;
+
+            #pragma omp parallel default(none) private(ii) shared(bh, num, RO, img, img_out, kerLen, kerHalfLen, pKer)
+            {
+                hoNDBoundaryHandler<ArrayType>* pBH = NULL;
+
+                hoNDBoundaryHandlerFixedValue<ArrayType> bhFixedValue;
+                hoNDBoundaryHandlerBorderValue<ArrayType> bhBorderValue;
+                hoNDBoundaryHandlerPeriodic<ArrayType> bhPeriodic;
+                hoNDBoundaryHandlerMirror<ArrayType> bhMirror;
+
+                pBH = &bhBorderValue;
+
+                if ( bh == GT_BOUNDARY_CONDITION_FIXEDVALUE )
+                {
+                    pBH = &bhFixedValue;
+                }
+                else if ( bh == GT_BOUNDARY_CONDITION_BORDERVALUE )
+                {
+                    pBH = &bhBorderValue;
+                }
+                else if ( bh == GT_BOUNDARY_CONDITION_PERIODIC )
+                {
+                    pBH = &bhPeriodic;
+                }
+                else if ( bh == GT_BOUNDARY_CONDITION_MIRROR )
+                {
+                    pBH = &bhMirror;
+                }
+
+                #pragma omp for 
+                for ( ii=0; ii<num; ii++ )
+                {
+                    ArrayType img1D(RO, const_cast<T*>(img.begin()+ii*RO));
+                    pBH->setArray(img1D);
+
+                    ArrayType img_out1D(RO, img_out.begin()+ii*RO);
+
+                    long long k, j;
+                    for ( k=0; k<RO; k++ )
+                    {
+                        T v = 0;
+                        for ( j=0; j<kerLen; j++ )
+                        {
+                            v += (*pBH)(k+j-kerHalfLen) * pKer[kerLen-j-1];
+                        }
+
+                        img_out1D(k) = v;
+                    }
+                }
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors happened in filter1D(const ArrayType& img, const hoNDArray<T>& ker, GT_BOUNDARY_CONDITION bh, ArrayType& img_out) ... ");
             return false;
         }
 

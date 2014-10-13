@@ -999,15 +999,15 @@ namespace Gadgetron
                 z = x;
             }
 
-            size_t RO = x.get_size(0);
-            size_t E1 = x.get_size(1);
-            size_t num = x.get_number_of_elements() / (RO*E1);
+            long long RO = (long long) x.get_size(0);
+            long long E1 = (long long) x.get_size(1);
+            long long num = ((long long) x.get_number_of_elements()) / (RO*E1);
 
-            size_t kRO = y.get_size(0);
-            size_t kE1 = y.get_size(1);
+            long long kRO = (long long) y.get_size(0);
+            long long kE1 = (long long) y.get_size(1);
 
-            size_t halfKRO = kRO/2;
-            size_t halfKE1 = kE1/2;
+            long long halfKRO = kRO/2;
+            long long halfKE1 = kE1/2;
 
             hoNDArray<T> flipY(2*halfKRO+1, 2*halfKE1+1);
             Gadgetron::clear(flipY);
@@ -1015,16 +1015,16 @@ namespace Gadgetron
             T* pKer = flipY.begin();
 
             long long n;
-            size_t ro, e1;
+            long long ro, e1;
 
             // flip the kernel
             for ( e1=0; e1<kE1; e1++ )
             {
-                size_t flip_e1 = 2*halfKE1 - e1;
+                long long flip_e1 = 2*halfKE1 - e1;
 
                 for ( ro=0; ro<kRO; ro++ )
                 {
-                    size_t flip_ro = 2*halfKRO - ro;
+                    long long flip_ro = 2*halfKRO - ro;
 
                     flipY(flip_ro, flip_e1) = y(ro, e1);
                 }
@@ -1037,7 +1037,7 @@ namespace Gadgetron
                 const T* pX = x.begin() + n*RO*E1;
                 T* pZ = z.begin() + n*RO*E1;
 
-                size_t kro, ke1, dro, de1;
+                long long kro, ke1, dro, de1;
 
                 for ( e1=0; e1<E1; e1++ )
                 {
@@ -1094,18 +1094,18 @@ namespace Gadgetron
                 z = x;
             }
 
-            size_t RO = x.get_size(0);
-            size_t E1 = x.get_size(1);
-            size_t E2 = x.get_size(2);
-            size_t num = x.get_number_of_elements() / (RO*E1*E2);
+            long long RO = (long long) x.get_size(0);
+            long long E1 = (long long) x.get_size(1);
+            long long E2 = (long long) x.get_size(2);
+            long long num = ((long long)x.get_number_of_elements()) / (RO*E1*E2);
 
-            size_t kRO = y.get_size(0);
-            size_t kE1 = y.get_size(1);
-            size_t kE2 = y.get_size(2);
+            long long kRO = (long long) y.get_size(0);
+            long long kE1 = (long long) y.get_size(1);
+            long long kE2 = (long long) y.get_size(2);
 
-            size_t halfKRO = kRO/2;
-            size_t halfKE1 = kE1/2;
-            size_t halfKE2 = kE2/2;
+            long long halfKRO = kRO/2;
+            long long halfKE1 = kE1/2;
+            long long halfKE2 = kE2/2;
 
             hoNDArray<T> flipY(2*halfKRO+1, 2*halfKE1+1, 2*halfKE2+1);
             Gadgetron::clear(flipY);
@@ -1113,20 +1113,20 @@ namespace Gadgetron
             T* pKer = flipY.begin();
 
             long long n, e2;
-            size_t ro, e1;
+            long long ro, e1;
 
             // flip the kernel
             for ( e2=0; e2<kE2; e2++ )
             {
-                size_t flip_e2 = 2*halfKE2 - e2;
+                long long flip_e2 = 2*halfKE2 - e2;
 
                 for ( e1=0; e1<kE1; e1++ )
                 {
-                    size_t flip_e1 = 2*halfKE1 - e1;
+                    long long flip_e1 = 2*halfKE1 - e1;
 
                     for ( ro=0; ro<kRO; ro++ )
                     {
-                        size_t flip_ro = 2*halfKRO - ro;
+                        long long flip_ro = 2*halfKRO - ro;
 
                         flipY(flip_ro, flip_e1, flip_e2) = y(ro, e1, e2);
                     }
@@ -1140,10 +1140,10 @@ namespace Gadgetron
                 const T* pX = x.begin() + n*RO*E1*E2;
                 T* pZ = z.begin() + n*RO*E1*E2;
 
-                size_t kro, ke1, ke2, dro, de1, de2;
+                long long kro, ke1, ke2, dro, de1, de2;
 
                 #pragma omp parallel for default(none) private(ro, e1, e2, kro, ke1, ke2, dro, de1, de2) shared(pX, RO, E1, E2, pZ, halfKRO, halfKE1, halfKE2, pKer)
-                for ( e2=0; e2<(long long)E2; e2++ )
+                for ( e2=0; e2<E2; e2++ )
                 {
                     for ( e1=0; e1<E1; e1++ )
                     {

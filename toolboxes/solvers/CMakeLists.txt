@@ -17,9 +17,10 @@ install(FILES
   cgPreconditioner.h
   lwSolver.h
   lbfgsSolver.h
+  lsqrSolver.h
   gpSolver.h
   gpBbSolver.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)
 
 IF(ARMADILLO_FOUND)
   add_subdirectory(cpu)

@@ -16,6 +16,7 @@
 #include "Gadget.h"
 #include "GadgetMessageInterface.h"
 #include "GadgetronConnector.h"
+#include "gadgetron_paths.h"
 
 typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
 
@@ -29,8 +30,9 @@ public:
   GadgetStreamController()
     : stream_configured_(false)
     , notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
-  	, writer_task_(&this->peer())
+    , writer_task_(&this->peer())
     {
+      gadgetron_home_ = get_gadgetron_home();
     }
 
   virtual ~GadgetStreamController()
@@ -78,6 +80,8 @@ private:
   virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name);
 
   template <class T>  T* load_dll_component(const char* DLL, const char* component_name);
+  
+  std::string gadgetron_home_;
 
 };
 }

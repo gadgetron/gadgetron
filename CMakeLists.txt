@@ -1,6 +1,25 @@
 cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
+#VERSIONING AND INSTALL PATHS
+set(GADGETRON_VERSION_MAJOR 3)
+set(GADGETRON_VERSION_MINOR 0)
+set(GADGETRON_VERSION_PATCH 0) 
+set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
+set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
+find_package(Git)
+if (GIT_FOUND)
+  execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE GADGETRON_GIT_SHA1_HASH)
+  string(STRIP ${GADGETRON_GIT_SHA1_HASH} GADGETRON_GIT_SHA1_HASH)
+else()
+  set(GADGETRON_GIT_SHA1_HASH "NA")
+endif()
+set(GADGETRON_INSTALL_CONFIG_PATH config)
+set(GADGETRON_INSTALL_MATLAB_PATH share/gadgetron/matlab)
+set(GADGETRON_INSTALL_PYTHON_MODULE_PATH share/gadgetron/python)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 #Set the build type to Release if not specified
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -16,6 +35,9 @@ else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
   message("32bit system is found")
   set( HAS_64_BIT Off CACHE BOOL "64bit build")
 endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+
+# whether to install dependencies
+OPTION(GADGETRON_INSTALL_DEPENDENCIES "Install gadgetron dependencies" Off)
 
 # build options for OpenMP support
 find_package(OpenMP)
@@ -61,13 +83,6 @@ else (WIN32)
         endif (APPLE)
     endif (UNIX)
 endif (WIN32)
-
-set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
-# uncomment these if all compiled targets are to be stored in the same directory
-# SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the executables")
-# SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the libraries")
 
 # whether to suppress compilation warnings
 OPTION(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
@@ -134,9 +149,15 @@ if (CUDA_FOUND)
   # Support compute model 3.0 from Cuda 4.2 and up
   # Support compute model 3.5 from Cuda 5 and up
 
+  OPTION(GADGETRON_CUDA_ALL_COMPUTE_MODEL "Build CUDA components for all computing models" Off)
+  if (GADGETRON_CUDA_ALL_COMPUTE_MODEL)
+    MESSAGE("Compiling CUDA components to support compute model 2.0, 3.0 and 3.5") 
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_20,code=sm_20")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_30,code=sm_30")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_35,code=sm_35")
+  endif (GADGETRON_CUDA_ALL_COMPUTE_MODEL)
 
   MESSAGE("Compiling with ${CUDA_NVCC_FLAGS}")
-  
 
 else (CUDA_FOUND)
   MESSAGE("CUDA not found. CUDA components will not be compiled.")
@@ -226,3 +247,61 @@ endif()
 add_subdirectory(test)
 add_subdirectory(cmake)
 add_subdirectory(doc)
+
+# install dependencies for WIN32
+if (WIN32)
+    if (GADGETRON_INSTALL_DEPENDENCIES)
+        include(${CMAKE_SOURCE_DIR}/cmake/InstallWinDependencies.cmake)
+    endif (GADGETRON_INSTALL_DEPENDENCIES)
+endif (WIN32)
+
+if (UNIX)
+    if (NOT APPLE)
+        if (GADGETRON_INSTALL_DEPENDENCIES)
+            include(${CMAKE_SOURCE_DIR}/cmake/InstallLinuxDependencies.cmake)
+        endif (GADGETRON_INSTALL_DEPENDENCIES)
+    endif (NOT APPLE)
+endif (UNIX)
+
+#  ---   Main Library  (end) ----
+
+# whether to install dependencies
+OPTION(GADGETRON_PERFORM_PACKAGING "Perform gadgetron packaging" Off)
+
+if (GADGETRON_PERFORM_PACKAGING)
+    if (NOT GADGETRON_COMPONENT)
+        set(GADGETRON_COMPONENT main CACHE STRING "gadgetron component")
+    endif (NOT GADGETRON_COMPONENT)
+
+        if (GADGETRON_COMPONENT STREQUAL main)
+            message("Packaging gadgetron  ${PROJECT_NAME} ")
+        else (GADGETRON_COMPONENT STREQUAL main)
+            set(PROJECT_NAME ${PROJECT_NAME}_${GADGETRON_COMPONENT})
+            message("Packaging gadgetron component ${GADGETRON_COMPONENT} ... ")
+        endif (GADGETRON_COMPONENT STREQUAL main)
+
+    # Create package
+    string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+
+        if (GADGETRON_COMPONENT STREQUAL main)
+        include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
+        if(CPACK_GENERATOR)
+          message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+          configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
+          set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
+        endif(CPACK_GENERATOR)
+        endif (GADGETRON_COMPONENT STREQUAL main)
+
+        if (GADGETRON_COMPONENT STREQUAL web)
+        include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_web_cpack.cmake)
+        if(CPACK_GENERATOR)
+          message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+          configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options_web.cmake.in" ${GADGETRON_WEB_CPACK_CFG_FILE} @ONLY)
+          set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_WEB_CPACK_CFG_FILE})
+        endif(CPACK_GENERATOR)
+        endif (GADGETRON_COMPONENT STREQUAL web)
+
+        set(CPACK_COMPONENTS_ALL ${GADGETRON_COMPONENT})
+        include (CPack)    
+endif (GADGETRON_PERFORM_PACKAGING)
+

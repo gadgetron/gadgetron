@@ -1,12 +1,16 @@
+configure_file(gadgetron_config.in gadgetron_config.h)
+
 include_directories(
+  ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
+  ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
   ${Boost_INCLUDE_DIR}
-  ${ACE_INCLUDE_DIR} 
+  ${ACE_INCLUDE_DIR}
   )
 
 add_executable(gadgetron 
@@ -27,27 +31,39 @@ add_executable(gadgetron
   )
 
 target_link_libraries(gadgetron 
-  gadgettools 
+  gadgetron_toolbox_gadgettools gadgetron_toolbox_cloudbus 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
-install(TARGETS gadgetron DESTINATION bin)
+add_executable(gadgetron_info
+  gadgetron_info.cpp)
+
+target_link_libraries(gadgetron_info 
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+ )
+
+install(TARGETS gadgetron gadgetron_info DESTINATION bin COMPONENT main)
 
 install(FILES 
-  GadgetContainerMessage.h
-  Gadget.h
-  Gadgetron.h
-  GadgetMessageInterface.h
   EndGadget.h
+  Gadget.h
+  GadgetContainerMessage.h
+  GadgetMessageInterface.h
+  Gadgetron.h
+  GadgetronExport.h
+  gadgetron_paths.h
+  gadgetron_xml.h
   GadgetServerAcceptor.h
   GadgetStreamController.h
-  GadgetronExport.h
-  DESTINATION include) 
+  ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_config.h
+  DESTINATION include COMPONENT main) 
 
 install(FILES 
   gadgetron.xml.example
-  DESTINATION config)
+  DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
 install(FILES 
   schema/gadgetron.xsd
-  DESTINATION schema)
+  DESTINATION schema COMPONENT main)
+
+add_subdirectory(webapp)

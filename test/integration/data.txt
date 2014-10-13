@@ -15,6 +15,7 @@ gtplus/3D/gtplus_3D_ref.h5: 4ba53157bf30e73041bda8f9b18bcb1b
 gtplus/3D/meas_MID00370_embedded_2by2.dat: bf92f5ac70492994a0816cafc3308854
 gtplus/3D_head/gtplus_3D_l1spirit_ref.h5: 996d4cf35cec9dcf0e0598cefed80d90
 gtplus/3D_head/gtplus_3D_ref.h5: 30e3e26657220f6d75640a6901d0bce9
+gtplus/3D_head/gtplus_3D_ref_20140924.h5: c2546f8fd01ae5bc7bf5713061507f78
 gtplus/3D_head/meas_MID00156_FID05944_GRE_128iso_p2x2.dat: 8077b0d4b957a0cffb7cdf0bdb0014fc
 gtplus/FatWater/gtplus_FatWater_ref.h5: 928d02fcffda37f7227a685b718af82e
 gtplus/FatWater/meas_MID00342_3e2i_R4.dat: 8d9e3aedae8b31f63551cd4e85cd6a53

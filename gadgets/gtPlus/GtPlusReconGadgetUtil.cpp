@@ -322,9 +322,9 @@ namespace Gadgetron
 
     void getDebugFolderPath(const std::string& debugFolder, std::string& debugFolderPath, bool verbose)
     {
-        debugFolderPath = getenv("GADGETRON_HOME");
-        if ( debugFolderPath.empty() )
-        {
+      debugFolderPath = getenv("GADGETRON_DEBUG_FOLDER");
+      if ( debugFolderPath.empty() )
+      {
 #ifdef _WIN32
             debugFolderPath = "c:/temp/gadgetron";
 #else

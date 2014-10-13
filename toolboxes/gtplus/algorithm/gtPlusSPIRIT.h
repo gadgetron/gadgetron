@@ -38,42 +38,43 @@ public:
     // SPIRIT calibration for 2D case
     // acsSrc : [RO E1 srcCHA]
     // acsDst : [RO E1 dstCHA]
-    // ker : [kRO kE1 srcCHA dstCHA 1 1]
+    // ker : [kRO kE1 srcCHA dstCHA oRO oE1]
     bool calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, 
-            int kRO, int kE1, int a, int b, ho6DArray<T>& ker);
+            size_t kRO, size_t kE1, size_t oRO, size_t oE1, ho6DArray<T>& ker);
 
     // image domain kernel for 2D kernel
     // kIm: image domain kernel [RO E1 srcCHA dstCHA]
     // if minusI==true, compute image domain G-I kernel
-    bool imageDomainKernel(const ho6DArray<T>& ker, int kRO, int kE1, int a, int b, int ro, int e1, hoNDArray<T>& kIm, bool minusI=false);
+    bool imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, 
+        size_t oRO, size_t oE1, size_t ro, size_t e1, hoNDArray<T>& kIm, bool minusI=false);
 
     // SPIRIT calibration for 3D case
     // acsSrc : [RO E1 E2 srcCHA]
     // acsDst : [RO E1 E2 dstCHA]
-    // ker : [kRO kE1 kE2 srcCHA dstCHA 1 1 1]
+    // ker : [kRO kE1 kE2 srcCHA dstCHA oRO oE1 oE2]
     // overDetermineRatio : over determine ratio of calib matrix, if < 1, all data are used
     bool calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, double overDetermineRatio, 
-            int kRO, int kE1, int kE2, int a, int b, int c, hoNDArray<T>& ker);
+            size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, hoNDArray<T>& ker);
 
     // convert the calibrated kernel to the convlution kernel in kspace
     // if ROis3rdDim == true, the kernel dimension is [E1 E2 RO], otherwise [RO E1 E2]
-    bool kspaceDomainConvKernel3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, int a, int b, int c, ho5DArray<T>& convKerFlip, bool minusI=true, bool ROis3rdDim=true);
+    bool kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, ho5DArray<T>& convKerFlip, bool minusI=true, bool ROis3rdDim=true);
 
     // image domain kernel for 3D kernel
     // kIm: image domain kernel [E1 E2 RO srcCHA dstCHA]
     // if minusI==true, compute image domain G-I kernel
-    bool imageDomainKernel3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, 
-        int a, int b, int c, int ro, int e1, int e2, hoNDArray<T>& kIm, bool minusI=false);
+    bool imageDomainKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2, 
+        size_t oRO, size_t oE1, size_t oE2, size_t ro, size_t e1, size_t e2, hoNDArray<T>& kIm, bool minusI=false);
 
     // image domain kernel for 3D kernel, only RO direction is converted to image domain
     // E1 and E2 stays in the kspace domain
     // kImRO: kspace-image hybrid kernel [convE1 convE2 RO srcCHA dstCHA]
-    bool imageDomainKernelRO3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, 
-        int a, int b, int c, int ro, hoNDArray<T>& kImRO, bool minusI=false);
+    bool imageDomainKernelRO3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2, 
+        size_t oRO, size_t oE1, size_t oE2, size_t ro, hoNDArray<T>& kImRO, bool minusI=false);
 
     // image domain kernel for 3D kernel, E1 and E2 directions are converted to image domain
     // kImRO : kspace-image hybrid kernel where first two dimensions are E1 and E2 and in kspace
-    bool imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, int e1, int e2, hoNDArray<T>& kImE1E2RO);
+    bool imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArray<T>& kImE1E2RO);
 
     // compute the image domain adjoint kernel
     bool imageDomainAdjointKernel(const hoNDArray<T>& kIm, hoNDArray<T>& adjkIm);
@@ -81,6 +82,7 @@ public:
     // compute the (G-I)'*(G-I)
     bool AdjointForwardKernel(const hoNDArray<T>& kImS2D, const hoNDArray<T>& kImD2S, hoNDArray<T>& kIm);
 
+    // use gpu in the kernel calibration
     bool calib_use_gpu_;
 
     using BaseClass::gt_timer1_;
@@ -103,13 +105,14 @@ void gtPlusSPIRIT<T>::printInfo(std::ostream& os)
     os << "Implementation of SPIRIT algorithms for ISMRMRD package" << endl;
     os << "Both 2D and 3D version are implemented" << endl;
     os << "Algorithms are published at:" << endl;
-    os << "Lustig, M. and Pauly, J. M. (2010), SPIRiT: Iterative self-consistent parallel imaging reconstruction from arbitrary k-space. Magn Reson Med, 64: 457-471. doi: 10.1002/mrm.22428" << endl;
+    os << "Lustig, M. and Pauly, J. M. (2010), SPIRiT: Iterative self-consistent parallel imaging reconstruction from arbitrary k-space. Magn Reson Med, 64: 457�471. doi: 10.1002/mrm.22428" << endl;
     os << "----------------------------------------------------------------------" << endl;
 }
 
 template <typename T> 
 bool gtPlusSPIRIT<T>::
-calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, int kRO, int kE1, int a, int b, ho6DArray<T>& ker)
+calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, 
+            size_t kRO, size_t kE1, size_t oRO, size_t oE1, ho6DArray<T>& ker)
 {
     try
     {
@@ -122,22 +125,39 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, int 
         size_t srcCHA = acsSrc.get_size(2);
         size_t dstCHA = acsDst.get_size(2);
 
-        int kROhalf = kRO/2;
+        long long kROhalf = kRO/2;
         if ( 2*kROhalf == kRO )
         {
             GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*kROhalf == kRO " << kRO);
         }
         kRO = 2*kROhalf + 1;
 
-        int kE1half = kE1/2;
+        long long kE1half = kE1/2;
         if ( 2*kE1half == kE1 )
         {
             GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*kE1half == kE1 " << kE1);
         }
         kE1 = 2*kE1half + 1;
 
+        if ( oRO > kRO ) oRO = kRO;
+        if ( oE1 > kE1 ) oE1 = kE1;
+
+        long long oROhalf = oRO/2;
+        if ( 2*oROhalf == oRO )
+        {
+            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*oROhalf == oRO " << oRO);
+        }
+        oRO = 2*oROhalf + 1;
+
+        long long oE1half = oE1/2;
+        if ( 2*oE1half == oE1 )
+        {
+            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*oE1half == oE1 " << oE1);
+        }
+        oE1 = 2*oE1half + 1;
+
         // allocate kernel
-        GADGET_CHECK_RETURN_FALSE(ker.createArray(kRO, kE1, srcCHA, dstCHA, 1, 1));
+        GADGET_CHECK_RETURN_FALSE(ker.createArray(kRO, kE1, srcCHA, dstCHA, oRO, oE1));
 
         // loop over the calibration region and assemble the equation
         // Ax = b
@@ -156,128 +176,155 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, int 
         size_t colB = dstCHA;
 
         bool useGPU = (typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_);
-        if ( useGPU )
+        //if ( useGPU )
+        //{
+        //    GADGET_MSG("spirit 2D - calling GPU kernel estimation ... "); 
+        //}
+
+        const T* pAcsSrc = acsSrc.begin();
+
+        #ifdef GCC_OLD_FLAG
+            #pragma omp parallel default(none) shared(RO, E1, sRO, eRO, sE1, eE1, oRO, oE1, lenRO, lenE1, rowA, colA, colB, kRO, kE1, kROhalf, kE1half, oROhalf, oE1half, pAcsSrc, srcCHA, dstCHA, thres, useGPU, std::cout) num_threads( (int)(oRO*oE1) ) if (oRO*oE1>=3)
+        #else
+            #pragma omp parallel default(none) shared(RO, E1, sRO, eRO, sE1, eE1, oRO, oE1, lenRO, lenE1, rowA, colA, colB, kRO, kE1, kROhalf, kE1half, oROhalf, oE1half, pAcsSrc, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, useGPU, std::cout) num_threads( (int)(oRO*oE1) ) if (oRO*oE1>=3)
+        #endif
         {
-            GADGET_MSG("spirit 2D - calling GPU kernel estimation ... "); 
-        }
+            hoMatrix<T> A(rowA, colA);
+            T* pA = A.begin();
 
-        hoMatrix<T> A(rowA, colA);
-        T* pA = A.begin();
+            hoMatrix<T> B(rowA, colB);
+            T* pB = B.begin();
 
-        hoMatrix<T> B(rowA, colB);
-        T* pB = B.begin();
+            hoMatrix<T> x( A.cols(), B.cols() );
 
-        hoMatrix<T> x( A.cols(), B.cols() );
-
-        long long dRO, dE1;
-
-        for ( long long e1=(long long)sE1; e1<=(long long)eE1; e1++ )
-        {
-            dE1 = e1;
-
-            for ( long long ro=sRO; ro<=(long long)eRO; ro++ )
+            long long kInd = 0;
+            #pragma omp for
+            for ( kInd=0; kInd<(long long)(oRO*oE1); kInd++ )
             {
-                dRO = ro;
+                long long oe1 = kInd/oRO;
+                long long oro = kInd - oe1*oRO;
 
-                long long rInd = (e1-sE1)*lenRO+ro-sRO;
+                oe1 -=oE1half;
+                oro -=oROhalf;
 
-                // fill matrix A
-                size_t col = 0;
-                for ( size_t src=0; src<srcCHA; src++ )
+                long long dRO, dE1;
+
+                for ( long long e1=(long long)sE1; e1<=(long long)eE1; e1++ )
                 {
-                    for ( long long ke1=-kE1half; ke1<=kE1half; ke1++ )
+                    dE1 = e1 + oe1;
+
+                    for ( long long ro=sRO; ro<=(long long)eRO; ro++ )
                     {
-                        for ( long long kro=-kROhalf; kro<=kROhalf; kro++ )
+                        dRO = ro + oro;
+
+                        long long rInd = (e1-sE1)*lenRO+ro-sRO;
+
+                        // fill matrix A
+                        size_t col = 0;
+                        for ( size_t src=0; src<srcCHA; src++ )
                         {
-                            if ( kro!=0 || ke1!=0 )
+                            for ( long long ke1=-kE1half; ke1<=kE1half; ke1++ )
                             {
-                                //A(rInd, col++) = acsSrc(ro+kro, e1+ke1, src);
-                                pA[rInd + col*rowA] = acsSrc(ro+kro, e1+ke1, src);
-                                col++;
+                                for ( long long kro=-kROhalf; kro<=kROhalf; kro++ )
+                                {
+                                    if ( kro!=oro || ke1!=oe1 )
+                                    {
+                                        //A(rInd, col++) = acsSrc(ro+kro, e1+ke1, src);
+                                        // pA[rInd + col*rowA] = acsSrc(ro+kro, e1+ke1, src);
+                                        pA[rInd + col*rowA] = pAcsSrc[ro+kro + (e1+ke1)*RO + src*RO*E1];
+                                        col++;
+                                    }
+                                }
                             }
                         }
-                    }
-                }
 
-                // fill matrix B
-                for ( size_t dst=0; dst<dstCHA; dst++ )
-                {
-                    //B(rInd, dst) = acsDst(dRO, dE1, dst);
-                    pB[rInd+dst*rowA] = acsDst(dRO, dE1, dst);
-                }
-            }
-        }
-
-        #ifdef USE_CUDA
-            // go to device
-            try
-            {
-                if ( useGPU )
-                {
-                    hoNDArray<float_complext> A_tmp(A.get_dimensions(), reinterpret_cast<float_complext*>(A.begin()));
-                    hoNDArray<float_complext> B_tmp(B.get_dimensions(), reinterpret_cast<float_complext*>(B.begin()));
-
-                    int ret(0);
-                    boost::shared_ptr< hoNDArray<complext<float> > > host_x;
-
-                    #pragma omp critical(inverse_spirit)
-                    {
-                        cuNDArray<float_complext> device_A(A_tmp);
-                        cuNDArray<float_complext> device_B(B_tmp);
-                        cuNDArray<float_complext> device_x;
-
-                        ret = Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres);
-                        if ( ret == 0 )
+                        // fill matrix B
+                        for ( size_t dst=0; dst<dstCHA; dst++ )
                         {
-                            host_x = device_x.to_host();
+                            //B(rInd, dst) = acsDst(dRO, dE1, dst);
+                            pB[rInd+dst*rowA] = acsDst(dRO, dE1, dst);
                         }
                     }
-
-                    if ( ret != 0 )
-                    {
-                        GADGET_ERROR_MSG("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
-                        SolveLinearSystem_Tikhonov(A, B, x, thres);
-                    }
-                    else
-                    {
-                        memcpy(x.begin(), host_x->begin(), host_x->get_number_of_bytes());
-                    }
                 }
-                else
-                {
-                    GADGET_WARN_MSG("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
+
+                // GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
+
+                //GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - solve linear system ... "));
+                //#ifdef USE_CUDA
+                //    // go to device
+                //    try
+                //    {
+                //        if ( useGPU )
+                //        {
+                //            hoNDArray<float_complext> A_tmp(A.get_dimensions(), reinterpret_cast<float_complext*>(A.begin()));
+                //            hoNDArray<float_complext> B_tmp(B.get_dimensions(), reinterpret_cast<float_complext*>(B.begin()));
+
+                //            int ret(0);
+                //            boost::shared_ptr< hoNDArray<complext<float> > > host_x;
+
+                //            #pragma omp critical(inverse_spirit)
+                //            {
+                //                cuNDArray<float_complext> device_A(A_tmp);
+                //                cuNDArray<float_complext> device_B(B_tmp);
+                //                cuNDArray<float_complext> device_x;
+
+                //                ret = Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres);
+                //                if ( ret == 0 )
+                //                {
+                //                    host_x = device_x.to_host();
+                //                }
+                //            }
+
+                //            if ( ret != 0 )
+                //            {
+                //                GADGET_ERROR_MSG("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
+                //                SolveLinearSystem_Tikhonov(A, B, x, thres);
+                //            }
+                //            else
+                //            {
+                //                memcpy(x.begin(), host_x->begin(), host_x->get_number_of_bytes());
+                //            }
+                //        }
+                //        else
+                //        {
+                //            GADGET_WARN_MSG("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
+                //            SolveLinearSystem_Tikhonov(A, B, x, thres);
+                //        }
+                //    }
+                //    catch(...)
+                //    {
+                //        GADGET_ERROR_MSG("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
+                //        SolveLinearSystem_Tikhonov(A, B, x, thres);
+                //    }
+                //#else
                     SolveLinearSystem_Tikhonov(A, B, x, thres);
-                }
-            }
-            catch(...)
-            {
-                GADGET_ERROR_MSG("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
-                SolveLinearSystem_Tikhonov(A, B, x, thres);
-            }
-        #else
-            SolveLinearSystem_Tikhonov(A, B, x, thres);
-        #endif // USE_CUDA
+                //#endif // USE_CUDA
+                //GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
-        int ind(0);
-        for ( size_t src=0; src<srcCHA; src++ )
-        {
-            for ( int ke1=-kE1half; ke1<=kE1half; ke1++ ) 
-            {
-                for ( int kro=-kROhalf; kro<=kROhalf; kro++ ) 
+                //SolveLinearSystem_Tikhonov(A, B, x, thres);
+
+                long long ind(0);
+                for ( size_t src=0; src<srcCHA; src++ )
                 {
-                    if ( kro!=0 || ke1!=0 )
+                    for ( long long ke1=-kE1half; ke1<=kE1half; ke1++ ) 
                     {
-                        for ( size_t dst=0; dst<dstCHA; dst++ )
+                        for ( long long kro=-kROhalf; kro<=kROhalf; kro++ ) 
                         {
-                            ker(kro+kROhalf, ke1+kE1half, src, dst, 0, 0) = x(ind, dst);
-                        }
-                        ind++;
-                    }
-                    else
-                    {
-                        for ( size_t dst=0; dst<dstCHA; dst++ )
-                        {
-                            ker(kro+kROhalf, ke1+kE1half, src, dst, 0, 0) = 0;
+                            if ( kro!=oro || ke1!=oe1 )
+                            {
+                                for ( size_t dst=0; dst<dstCHA; dst++ )
+                                {
+                                    ker(kro+kROhalf, ke1+kE1half, src, dst, oro+oROhalf, oe1+oE1half) = x(ind, dst);
+                                }
+                                ind++;
+                            }
+                            else
+                            {
+                                for ( size_t dst=0; dst<dstCHA; dst++ )
+                                {
+                                    ker(kro+kROhalf, ke1+kE1half, src, dst, oro+oROhalf, oe1+oE1half) = 0;
+                                }
+                            }
                         }
                     }
                 }
@@ -295,43 +342,53 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, int 
 
 template <typename T> 
 bool gtPlusSPIRIT<T>::
-imageDomainKernel(const ho6DArray<T>& ker, int kRO, int kE1, int a, int b, int ro, int e1, hoNDArray<T>& kIm, bool minusI)
+imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, size_t oE1, size_t ro, size_t e1, hoNDArray<T>& kIm, bool minusI)
 {
     try
     {
-        int srcCHA = (int)(ker.get_size(2));
-        int dstCHA = (int)(ker.get_size(3));
+        long long srcCHA = (long long)(ker.get_size(2));
+        long long dstCHA = (long long)(ker.get_size(3));
 
         GADGET_CHECK_RETURN_FALSE(kRO==ker.get_size(0));
         GADGET_CHECK_RETURN_FALSE(kE1==ker.get_size(1));
+        GADGET_CHECK_RETURN_FALSE(oRO==ker.get_size(4));
+        GADGET_CHECK_RETURN_FALSE(oE1==ker.get_size(5));
 
-        int kROhalf = kRO/2;
-        int kE1half = kE1/2;
+        long long kROhalf = kRO/2;
+        long long kE1half = kE1/2;
+        long long oROhalf = oRO/2;
+        long long oE1half = oE1/2;
 
         // allocate image domain kernel
         kIm.create(ro, e1, srcCHA, dstCHA);
 
         /// fill the convolution kernels
-        int convKRO = 2*kRO-1;
-        int convKE1 = 2*kE1-1;
+        long long convKRO = 2*kRO-1;
+        long long convKE1 = 2*kE1-1;
 
         /// fill in convolution kernel
-        ho6DArray<T> convKer(convKRO, convKE1, srcCHA, dstCHA, 1, 1);
+        ho6DArray<T> convKer(convKRO, convKE1, srcCHA, dstCHA, oRO, oE1);
         Gadgetron::clear(&convKer);
 
-        int kro, ke1, src, dst;
-        for ( ke1=-kE1half; ke1<=kE1half; ke1++ )
+        long long oro, oe1, kro, ke1, src, dst;
+        for ( oe1=-oE1half; oe1<=oE1half; oe1++ )
         {
-            for ( kro=-kROhalf; kro<=kROhalf; kro++ )
+            for ( oro=-oROhalf; oro<=oROhalf; oro++ )
             {
-                int iro = kro + kRO -1;
-                int ie1 = ke1 + kE1 -1;
-
-                for ( dst=0; dst<dstCHA; dst++ )
+                for ( ke1=-kE1half; ke1<=kE1half; ke1++ )
                 {
-                    for ( src=0; src<srcCHA; src++ )
+                    for ( kro=-kROhalf; kro<=kROhalf; kro++ )
                     {
-                        convKer(iro, ie1, src, dst, 0, 0) = ker(kro+kROhalf, ke1+kE1half, src, dst, 0, 0);
+                        long long iro = kro - oro + kRO -1;
+                        long long ie1 = ke1 - oe1 + kE1 -1;
+
+                        for ( dst=0; dst<dstCHA; dst++ )
+                        {
+                            for ( src=0; src<srcCHA; src++ )
+                            {
+                                convKer(iro, ie1, src, dst, oro+oROhalf, oe1+oE1half) = ker(kro+kROhalf, ke1+kE1half, src, dst, oro+oROhalf, oe1+oE1half);
+                            }
+                        }
                     }
                 }
             }
@@ -341,6 +398,7 @@ imageDomainKernel(const ho6DArray<T>& ker, int kRO, int kE1, int a, int b, int r
         ho4DArray<T> conKerMean(convKRO, convKE1, srcCHA, dstCHA);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, conKerMean));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1)), conKerMean) );
 
         // flip the kernel
         ho4DArray<T> convKerFlip(convKRO, convKE1, srcCHA, dstCHA);
@@ -385,7 +443,7 @@ imageDomainKernel(const ho6DArray<T>& ker, int kRO, int kE1, int a, int b, int r
 template <typename T> 
 bool gtPlusSPIRIT<T>::
 calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, double overDetermineRatio, 
-            int kRO, int kE1, int kE2, int a, int b, int c, hoNDArray<T>& ker)
+            size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, hoNDArray<T>& ker)
 {
     try
     {
@@ -400,29 +458,54 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
         size_t srcCHA = acsSrc.get_size(3);
         size_t dstCHA = acsDst.get_size(3);
 
-        int kROhalf = kRO/2;
+        long long kROhalf = kRO/2;
         if ( 2*kROhalf == kRO )
         {
             GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*kROhalf == kRO " << kRO);
         }
         kRO = 2*kROhalf + 1;
 
-        int kE1half = kE1/2;
+        long long kE1half = kE1/2;
         if ( 2*kE1half == kE1 )
         {
             GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*kE1half == kE1 " << kE1);
         }
         kE1 = 2*kE1half + 1;
 
-        int kE2half = kE2/2;
+        long long kE2half = kE2/2;
         if ( 2*kE2half == kE2 )
         {
             GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*kE2half == kE2 " << kE2);
         }
         kE2 = 2*kE2half + 1;
 
+        if ( oRO > kRO ) oRO = kRO;
+        if ( oE1 > kE1 ) oE1 = kE1;
+        if ( oE2 > kE2 ) oE2 = kE2;
+
+        long long oROhalf = oRO/2;
+        if ( 2*oROhalf == oRO )
+        {
+            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*oROhalf == oRO " << oRO);
+        }
+        oRO = 2*oROhalf + 1;
+
+        long long oE1half = oE1/2;
+        if ( 2*oE1half == oE1 )
+        {
+            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*oE1half == oE1 " << oE1);
+        }
+        oE1 = 2*oE1half + 1;
+
+        long long oE2half = oE2/2;
+        if ( 2*oE2half == oE2 )
+        {
+            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*oE2half == oE2 " << oE2);
+        }
+        oE2 = 2*oE2half + 1;
+
         // allocate kernel
-        ker.create(kRO, kE1, kE2, srcCHA, dstCHA, 1, 1, 1);
+        ker.create(kRO, kE1, kE2, srcCHA, dstCHA, oRO, oE1, oE2);
 
         // loop over the calibration region and assemble the equation
         // Ax = b
@@ -501,147 +584,181 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
             GADGET_MSG("spirit 3D - calling GPU kernel estimation ... ");
         }
 
-        hoMatrix<T> A(rowA, colA);
-        T* pA = A.begin();
-
-        hoMatrix<T> B(rowA, colB);
-        T* pB = B.begin();
-
-        hoMatrix<T> x( A.cols(), B.cols() );
-
-        long long dRO, dE1, dE2;
-
-        for ( long long e2=(long long)sE2; e2<=(long long)eE2; e2++ )
+        #ifdef GCC_OLD_FLAG
+            #pragma omp parallel default(none) shared(sRO, eRO, sE1, eE1, sE2, eE2, oRO, oE1, oE2, lenRO, lenE1, lenE2, rowA, colA, colB, kROhalf, kE1half, kE2half, oROhalf, oE1half, oE2half, srcCHA, dstCHA, thres, useGPU, std::cout) num_threads( (int)(oRO*oE1*oE2) ) if (oRO*oE1*oE2>=3 && oRO*oE1*oE2<9)
+        #else
+            #pragma omp parallel default(none) shared(sRO, eRO, sE1, eE1, sE2, eE2, oRO, oE1, oE2, lenRO, lenE1, lenE2, rowA, colA, colB, kROhalf, kE1half, kE2half, oROhalf, oE1half, oE2half, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, useGPU, std::cout) num_threads( (int)(oRO*oE1*oE2) ) if (oRO*oE1*oE2>=3 && oRO*oE1*oE2<9)
+        #endif
         {
-            dE2 = e2;
+            hoMatrix<T> A(rowA, colA);
+            hoMatrix<T> B(rowA, colB);
+            hoMatrix<T> x( A.cols(), B.cols() );
 
-            for ( long long e1=(long long)sE1; e1<=(long long)eE1; e1++ )
+            // hoNDArrayMemoryManaged<T> A_mem(colA, rowA, gtPlus_mem_manager_);
+            //hoNDArray<T> A_mem(colA, rowA);
+            //A.createMatrix( rowA, colA, A_mem.begin() );
+
+            // hoNDArrayMemoryManaged<T> B_mem(colB, rowA, gtPlus_mem_manager_);
+            // hoNDArray<T> B_mem(colB, rowA);
+            // B.createMatrix( A.rows(), colB, B_mem.begin() );
+
+            T* pA = A.begin();
+            T* pB = B.begin();
+
+            long long kInd = 0;
+            #pragma omp for
+            for ( kInd=0; kInd<(long long)(oRO*oE1*oE2); kInd++ )
             {
-                dE1 = e1;
+                long long oe2 = kInd/(oRO*oE1);
+                long long oe1 = kInd - oe2*oRO*oE1;
+                oe1 /= oRO;
+                long long oro = kInd - oe2*oRO*oE1 - oe1*oRO;
 
-                for ( long long ro=sRO; ro<=(long long)eRO; ro++ )
+                oe2 -=oE2half;
+                oe1 -=oE1half;
+                oro -=oROhalf;
+
+                long long dRO, dE1, dE2;
+
+                for ( long long e2=(long long)sE2; e2<=(long long)eE2; e2++ )
                 {
-                    dRO = ro;
+                    dE2 = e2 + oe2;
 
-                    long long rInd = (e2-sE2)*lenRO*lenE1 + (e1-sE1)*lenRO + ro-sRO;
-
-                    // fill matrix A
-                    size_t col = 0;
-                    for ( size_t src=0; src<srcCHA; src++ )
+                    for ( long long e1=(long long)sE1; e1<=(long long)eE1; e1++ )
                     {
-                        for ( long long ke2=-kE2half; ke2<=kE2half; ke2++ )
+                        dE1 = e1 + oe1;
+
+                        for ( long long ro=sRO; ro<=(long long)eRO; ro++ )
                         {
-                            for ( long long ke1=-kE1half; ke1<=kE1half; ke1++ )
+                            dRO = ro + oro;
+
+                            long long rInd = (e2-sE2)*lenRO*lenE1 + (e1-sE1)*lenRO + ro-sRO;
+
+                            // fill matrix A
+                            size_t col = 0;
+                            for ( size_t src=0; src<srcCHA; src++ )
                             {
-                                for ( long long kro=-kROhalf; kro<=kROhalf; kro++ )
+                                for ( long long ke2=-kE2half; ke2<=kE2half; ke2++ )
                                 {
-                                    if ( kro!=0 || ke1!=0 || ke2!=0 )
+                                    for ( long long ke1=-kE1half; ke1<=kE1half; ke1++ )
                                     {
-                                        //A(rInd, col++) = acsSrc(ro+kro, e1+ke1, e2+ke2, src);
-                                        pA[rInd+col*rowA] = acsSrc(ro+kro, e1+ke1, e2+ke2, src);
-                                        col++;
+                                        for ( long long kro=-kROhalf; kro<=kROhalf; kro++ )
+                                        {
+                                            if ( kro!=oro || ke1!=oe1 || ke2!=oe2 )
+                                            {
+                                                //A(rInd, col++) = acsSrc(ro+kro, e1+ke1, e2+ke2, src);
+                                                pA[rInd+col*rowA] = acsSrc(ro+kro, e1+ke1, e2+ke2, src);
+                                                col++;
+                                            }
+                                        }
                                     }
                                 }
                             }
-                        }
-                    }
 
-                    // fill matrix B
-                    for ( size_t dst=0; dst<dstCHA; dst++ )
-                    {
-                        //B(rInd, dst) = acsDst(dRO, dE1, dE2, dst);
-                        pB[rInd+dst*rowA] = acsDst(dRO, dE1, dE2, dst);
-                    }
-                }
-            }
-        }
-
-        #ifdef USE_CUDA
-            // go to device
-            try
-            {
-                if ( useGPU )
-                {
-                    hoNDArray<float_complext> A_tmp(A.get_dimensions(), reinterpret_cast<float_complext*>(A.begin()));
-                    hoNDArray<float_complext> B_tmp(B.get_dimensions(), reinterpret_cast<float_complext*>(B.begin()));
-
-                    int ret(0);
-                    boost::shared_ptr< hoNDArray<complext<float> > > host_x;
-                    #pragma omp critical(inverse_spirit3D)
-                    {
-                        cuNDArray<float_complext> device_A(A_tmp);
-                        cuNDArray<float_complext> device_B(B_tmp);
-                        cuNDArray<float_complext> device_x;
-
-                        ret = Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres);
-                        if ( ret == 0 )
-                        {
-                            host_x = device_x.to_host();
-                        }
-                    }
-
-                    if ( ret != 0 )
-                    {
-                        GADGET_ERROR_MSG("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
-                        SolveLinearSystem_Tikhonov(A, B, x, thres);
-                    }
-                    else
-                    {
-                        memcpy(x.begin(), host_x->begin(), x.get_number_of_bytes());
-                    }
-                }
-                else
-                {
-                    GADGET_WARN_MSG("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
-                    SolveLinearSystem_Tikhonov(A, B, x, thres);
-                }
-            }
-            catch(...)
-            {
-                GADGET_ERROR_MSG("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
-                SolveLinearSystem_Tikhonov(A, B, x, thres);
-            }
-        #else
-            SolveLinearSystem_Tikhonov(A, B, x, thres);
-        #endif // USE_CUDA
-
-        int ind(0);
-
-        std::vector<size_t> kerInd(8);
-        kerInd[7] = 0;
-        kerInd[6] = 0;
-        kerInd[5] = 0;
-
-        for ( size_t src=0; src<srcCHA; src++ )
-        {
-            kerInd[3] = src;
-            for ( int ke2=-kE2half; ke2<=kE2half; ke2++ ) 
-            {
-                kerInd[2] = ke2+kE2half;
-                for ( int ke1=-kE1half; ke1<=kE1half; ke1++ ) 
-                {
-                    kerInd[1] = ke1+kE1half;
-                    for ( int kro=-kROhalf; kro<=kROhalf; kro++ ) 
-                    {
-                        kerInd[0] = kro+kROhalf;
-
-                        if ( kro!=0 || ke1!=0 || ke2!=0 )
-                        {
+                            // fill matrix B
                             for ( size_t dst=0; dst<dstCHA; dst++ )
                             {
-                                kerInd[4] = dst;
-                                size_t offset = ker.calculate_offset(kerInd);
-                                ker(offset) = x(ind, dst);
+                                //B(rInd, dst) = acsDst(dRO, dE1, dE2, dst);
+                                pB[rInd+dst*rowA] = acsDst(dRO, dE1, dE2, dst);
                             }
-                            ind++;
                         }
-                        else
+                    }
+                }
+
+                //GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
+
+                //GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - solve linear system ... "));
+                //#ifdef USE_CUDA
+                //    // go to device
+                //    try
+                //    {
+                //        if ( useGPU )
+                //        {
+                //            hoNDArray<float_complext> A_tmp(A.get_dimensions(), reinterpret_cast<float_complext*>(A.begin()));
+                //            hoNDArray<float_complext> B_tmp(B.get_dimensions(), reinterpret_cast<float_complext*>(B.begin()));
+
+                //            int ret(0);
+                //            boost::shared_ptr< hoNDArray<complext<float> > > host_x;
+                //            #pragma omp critical(inverse_spirit3D)
+                //            {
+                //                cuNDArray<float_complext> device_A(A_tmp);
+                //                cuNDArray<float_complext> device_B(B_tmp);
+                //                cuNDArray<float_complext> device_x;
+
+                //                ret = Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres);
+                //                if ( ret == 0 )
+                //                {
+                //                    host_x = device_x.to_host();
+                //                }
+                //            }
+
+                //            if ( ret != 0 )
+                //            {
+                //                GADGET_ERROR_MSG("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
+                //                SolveLinearSystem_Tikhonov(A, B, x, thres);
+                //            }
+                //            else
+                //            {
+                //                memcpy(x.begin(), host_x->begin(), x.get_number_of_bytes());
+                //            }
+                //        }
+                //        else
+                //        {
+                //            GADGET_WARN_MSG("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
+                //            SolveLinearSystem_Tikhonov(A, B, x, thres);
+                //        }
+                //    }
+                //    catch(...)
+                //    {
+                //        GADGET_ERROR_MSG("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
+                //        SolveLinearSystem_Tikhonov(A, B, x, thres);
+                //    }
+                //#else
+                    SolveLinearSystem_Tikhonov(A, B, x, thres);
+                //#endif // USE_CUDA
+                //GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+                // SolveLinearSystem_Tikhonov(A, B, x, thres);
+
+                long long ind(0);
+
+                std::vector<size_t> kerInd(8);
+                kerInd[7] = oe2+oE2half;
+                kerInd[6] = oe1+oE1half;
+                kerInd[5] = oro+oROhalf;
+
+                for ( size_t src=0; src<srcCHA; src++ )
+                {
+                    kerInd[3] = src;
+                    for ( long long ke2=-kE2half; ke2<=kE2half; ke2++ ) 
+                    {
+                        kerInd[2] = ke2+kE2half;
+                        for ( long long ke1=-kE1half; ke1<=kE1half; ke1++ ) 
                         {
-                            for ( size_t dst=0; dst<dstCHA; dst++ )
+                            kerInd[1] = ke1+kE1half;
+                            for ( long long kro=-kROhalf; kro<=kROhalf; kro++ ) 
                             {
-                                kerInd[4] = dst;
-                                size_t offset = ker.calculate_offset(kerInd);
-                                ker(offset) = 0;
+                                kerInd[0] = kro+kROhalf;
+
+                                if ( kro!=0 || ke1!=0 || ke2!=0 )
+                                {
+                                    for ( size_t dst=0; dst<dstCHA; dst++ )
+                                    {
+                                        kerInd[4] = dst;
+                                        size_t offset = ker.calculate_offset(kerInd);
+                                        ker(offset) = x(ind, dst);
+                                    }
+                                    ind++;
+                                }
+                                else
+                                {
+                                    for ( size_t dst=0; dst<dstCHA; dst++ )
+                                    {
+                                        kerInd[4] = dst;
+                                        size_t offset = ker.calculate_offset(kerInd);
+                                        ker(offset) = 0;
+                                    }
+                                }
                             }
                         }
                     }
@@ -660,84 +777,97 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
 
 template <typename T> 
 bool gtPlusSPIRIT<T>::
-kspaceDomainConvKernel3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, int a, int b, int c, ho5DArray<T>& convKerFlip, bool minusI, bool ROis3rdDim)
+kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, ho5DArray<T>& convKerFlip, bool minusI, bool ROis3rdDim)
 {
     try
     {
-        int srcCHA = (int)(ker.get_size(3));
-        int dstCHA = (int)(ker.get_size(4));
+        long long srcCHA = (long long)(ker.get_size(3));
+        long long dstCHA = (long long)(ker.get_size(4));
 
         GADGET_CHECK_RETURN_FALSE(kRO==ker.get_size(0));
         GADGET_CHECK_RETURN_FALSE(kE1==ker.get_size(1));
         GADGET_CHECK_RETURN_FALSE(kE2==ker.get_size(2));
+        GADGET_CHECK_RETURN_FALSE(oRO==ker.get_size(5));
+        GADGET_CHECK_RETURN_FALSE(oE1==ker.get_size(6));
+        GADGET_CHECK_RETURN_FALSE(oE2==ker.get_size(7));
 
-        int kROhalf = kRO/2;
-        int kE1half = kE1/2;
-        int kE2half = kE2/2;
+        long long kROhalf = kRO/2;
+        long long kE1half = kE1/2;
+        long long kE2half = kE2/2;
+        long long oROhalf = oRO/2;
+        long long oE1half = oE1/2;
+        long long oE2half = oE2/2;
 
         /// fill the convolution kernels
-        int convKRO = 2*kRO-1;
-        int convKE1 = 2*kE1-1;
-        int convKE2 = 2*kE2-1;
+        long long convKRO = 2*kRO-1;
+        long long convKE1 = 2*kE1-1;
+        long long convKE2 = 2*kE2-1;
 
         /// fill in convolution kernel
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - convert to conv kernel ... "));
 
-        hoNDArray<T> convKer(convKRO, convKE1, convKE2, srcCHA, dstCHA, 1, 1, 1);
+        hoNDArray<T> convKer(convKRO, convKE1, convKE2, srcCHA, dstCHA, oRO, oE1, oE2);
         Gadgetron::clear(&convKer);
 
-        int kro, ke1, ke2, src, dst;
+        long long oro, oe1, oe2, kro, ke1, ke2, src, dst;
         std::vector<size_t> kerInd(8), convKerInd(8);
-
-        kerInd[7] = 0;
-        convKerInd[7] = 0;
-
-        kerInd[6] = 0;
-        convKerInd[6] = 0;
-
-        kerInd[5] = 0;
-        convKerInd[5] = 0;
-
-        for ( ke2=-kE2half; ke2<=kE2half; ke2++ )
+        for ( oe2=-oE2half; oe2<=oE2half; oe2++ )
         {
-            kerInd[2] = ke2+kE2half;
+            kerInd[7] = oe2+oE2half;
+            convKerInd[7] = oe2+oE2half;
 
-            for ( ke1=-kE1half; ke1<=kE1half; ke1++ )
+            for ( oe1=-oE1half; oe1<=oE1half; oe1++ )
             {
-                kerInd[1] = ke1+kE1half;
+                kerInd[6] = oe1+oE1half;
+                convKerInd[6] = oe1+oE1half;
 
-                for ( kro=-kROhalf; kro<=kROhalf; kro++ )
+                for ( oro=-oROhalf; oro<=oROhalf; oro++ )
                 {
-                    int iro = kro + kRO -1;
-                    int ie1 = ke1 + kE1 -1;
-                    int ie2 = ke2 + kE2 -1;
+                    kerInd[5] = oro+oROhalf;
+                    convKerInd[5] = oro+oROhalf;
 
-                    kerInd[0] = kro+kROhalf;
-
-                    convKerInd[0] = iro;
-                    convKerInd[1] = ie1;
-                    convKerInd[2] = ie2;
-
-                    for ( dst=0; dst<dstCHA; dst++ )
+                    for ( ke2=-kE2half; ke2<=kE2half; ke2++ )
                     {
-                        kerInd[4] = dst;
-                        convKerInd[4] = dst;
+                        kerInd[2] = ke2+kE2half;
 
-                        for ( src=0; src<srcCHA; src++ )
+                        for ( ke1=-kE1half; ke1<=kE1half; ke1++ )
                         {
-                            kerInd[3] = src;
-                            convKerInd[3] = src;
+                            kerInd[1] = ke1+kE1half;
 
-                            size_t offsetKer = ker.calculate_offset(kerInd);
-                            size_t offsetConvKer = convKer.calculate_offset(convKerInd);
+                            for ( kro=-kROhalf; kro<=kROhalf; kro++ )
+                            {
+                                long long iro = kro - oro + kRO -1;
+                                long long ie1 = ke1 - oe1 + kE1 -1;
+                                long long ie2 = ke2 - oe2 + kE2 -1;
 
-                            convKer(offsetConvKer) = ker(offsetKer);
+                                kerInd[0] = kro+kROhalf;
+
+                                convKerInd[0] = iro;
+                                convKerInd[1] = ie1;
+                                convKerInd[2] = ie2;
+
+                                for ( dst=0; dst<dstCHA; dst++ )
+                                {
+                                    kerInd[4] = dst;
+                                    convKerInd[4] = dst;
+
+                                    for ( src=0; src<srcCHA; src++ )
+                                    {
+                                        kerInd[3] = src;
+                                        convKerInd[3] = src;
+
+                                        size_t offsetKer = ker.calculate_offset(kerInd);
+                                        size_t offsetConvKer = convKer.calculate_offset(convKerInd);
+
+                                        convKer(offsetConvKer) = ker(offsetKer);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - sum over output dimensions ... "));
@@ -746,6 +876,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, int
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, convKer3));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer3, convKernMean));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1*oE2)), convKernMean) );
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - flip along dimensions ... "));
@@ -842,23 +973,26 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, int
 
 template <typename T> 
 bool gtPlusSPIRIT<T>::
-imageDomainKernel3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, int a, int b, int c, int ro, int e1, int e2, hoNDArray<T>& kIm, bool minusI)
+imageDomainKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, size_t ro, size_t e1, size_t e2, hoNDArray<T>& kIm, bool minusI)
 {
     try
     {
-        int srcCHA = (int)(ker.get_size(3));
-        int dstCHA = (int)(ker.get_size(4));
+        long long srcCHA = (long long)(ker.get_size(3));
+        long long dstCHA = (long long)(ker.get_size(4));
 
         GADGET_CHECK_RETURN_FALSE(kRO==ker.get_size(0));
         GADGET_CHECK_RETURN_FALSE(kE1==ker.get_size(1));
         GADGET_CHECK_RETURN_FALSE(kE2==ker.get_size(2));
+        GADGET_CHECK_RETURN_FALSE(oRO==ker.get_size(5));
+        GADGET_CHECK_RETURN_FALSE(oE1==ker.get_size(6));
+        GADGET_CHECK_RETURN_FALSE(oE2==ker.get_size(7));
 
         // allocate image domain kernel
         kIm.create(e1, e2, ro, srcCHA, dstCHA);
 
         bool ROat3rdDim = true;
         ho5DArray<T> convKerFlip;
-        GADGET_CHECK_RETURN_FALSE(this->kspaceDomainConvKernel3D(ker, kRO, kE1,  kE2, a, b, c, convKerFlip, minusI, ROat3rdDim));
+        GADGET_CHECK_RETURN_FALSE(this->kspaceDomainConvKernel3D(ker, kRO, kE1,  kE2, oRO, oE1, oE2, convKerFlip, minusI, ROat3rdDim));
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - SNR unit scaling ... "));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1*e2)) ), convKerFlip ));
@@ -867,6 +1001,7 @@ imageDomainKernel3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, int a, i
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_scal");
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - zero padding ... "));
+        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3D(convKerFlip, e1, e2, ro, kIm));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKerFlip, e1, e2, ro, kIm));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
@@ -887,20 +1022,23 @@ imageDomainKernel3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, int a, i
 
 template <typename T> 
 bool gtPlusSPIRIT<T>::
-imageDomainKernelRO3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, int a, int b, int c, int ro, hoNDArray<T>& kImRO, bool minusI)
+imageDomainKernelRO3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2, size_t oRO, size_t oE1, size_t oE2, size_t ro, hoNDArray<T>& kImRO, bool minusI)
 {
     try
     {
-        int srcCHA = (int)(ker.get_size(3));
-        int dstCHA = (int)(ker.get_size(4));
+        long long srcCHA = (long long)(ker.get_size(3));
+        long long dstCHA = (long long)(ker.get_size(4));
 
         GADGET_CHECK_RETURN_FALSE(kRO==ker.get_size(0));
         GADGET_CHECK_RETURN_FALSE(kE1==ker.get_size(1));
         GADGET_CHECK_RETURN_FALSE(kE2==ker.get_size(2));
+        GADGET_CHECK_RETURN_FALSE(oRO==ker.get_size(5));
+        GADGET_CHECK_RETURN_FALSE(oE1==ker.get_size(6));
+        GADGET_CHECK_RETURN_FALSE(oE2==ker.get_size(7));
 
         bool ROat3rdDim = false;
         ho5DArray<T> convKerFlip;
-        GADGET_CHECK_RETURN_FALSE(this->kspaceDomainConvKernel3D(ker, kRO, kE1,  kE2, a, b, c, convKerFlip, minusI, ROat3rdDim));
+        GADGET_CHECK_RETURN_FALSE(this->kspaceDomainConvKernel3D(ker, kRO, kE1,  kE2, oRO, oE1, oE2, convKerFlip, minusI, ROat3rdDim));
 
         // allocate image domain kernel
         size_t kConvE1 = convKerFlip.get_size(1);
@@ -933,7 +1071,7 @@ imageDomainKernelRO3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, int a,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainKernel3D(...) ... ");
+        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainKernelRO3D(...) ... ");
         return false;
     }
 
@@ -942,7 +1080,7 @@ imageDomainKernelRO3D(const hoNDArray<T>& ker, int kRO, int kE1, int kE2, int a,
 
 template <typename T> 
 bool gtPlusSPIRIT<T>::
-imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, int e1, int e2, hoNDArray<T>& kImE1E2RO)
+imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArray<T>& kImE1E2RO)
 {
     try
     {
@@ -990,6 +1128,17 @@ imageDomainAdjointKernel(const hoNDArray<T>& kIm, hoNDArray<T>& adjkIm)
     {
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteLastTwoDimensions(kIm, adjkIm));
 
+        //size_t N = adjkIm.get_number_of_elements();
+
+        //T* pAdjKim = adjkIm.begin();
+
+        //long long n;
+        //#pragma omp parallel for default(none) private(n) shared(N, pAdjKim)
+        //for ( n=0; n<(long long)N; n++ )
+        //{
+        //    pAdjKim[n] = std::conj(pAdjKim[n]);
+        //}
+
         GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(adjkIm, adjkIm));
     }
     catch(...)
@@ -1033,17 +1182,22 @@ bool gtPlusSPIRIT<T>::AdjointForwardKernel(const hoNDArray<T>& kImS2D, const hoN
         {
             hoNDArray<T> ker(N);
 
+            std::vector<size_t> dim(1);
+            dim[0] = N;
+
+            hoNDArray<T> dKer, kerS2D, kerD2S;
+
             #pragma omp for
             for ( d=0; d<dstCHA; d++ )
             {
                 for ( long long dprime=0; dprime<dstCHA; dprime++ )
                 {
-                    hoNDArray<T> dKer(N, kIm.begin()+d*N+dprime*N*dstCHA);
+                    dKer.create(&dim, kIm.begin()+d*N+dprime*N*dstCHA);
 
                     for ( long long s=0; s<srcCHA; s++ )
                     {
-                        hoNDArray<T> kerS2D(N, const_cast<T*>(kImS2D.begin())+s*N+dprime*N*srcCHA);
-                        hoNDArray<T> kerD2S(N, const_cast<T*>(kImD2S.begin())+d*N+s*N*dstCHA);
+                        kerS2D.create(&dim, const_cast<T*>(kImS2D.begin())+s*N+dprime*N*srcCHA);
+                        kerD2S.create(&dim, const_cast<T*>(kImD2S.begin())+d*N+s*N*dstCHA);
 
                         Gadgetron::multiply(kerS2D, kerD2S, ker);
                         Gadgetron::add(dKer, ker, dKer);

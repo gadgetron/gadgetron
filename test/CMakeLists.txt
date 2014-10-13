@@ -24,8 +24,8 @@ if (CUDA_FOUND)
 endif (CUDA_FOUND)
 
 link_libraries(
-    cpucore 
-    cpucore_math
+    gadgetron_toolbox_cpucore 
+    gadgetron_toolbox_cpucore_math
     ${BOOST_LIBRARIES}
     ${GTEST_LIBRARIES} 
     ${ARMADILLO_LIBRARIES}
@@ -62,7 +62,7 @@ endif ( CUDA_FOUND )
 
 if ( CUDA_FOUND )
   target_link_libraries(test_all 
-    gpucore
+    gadgetron_toolbox_gpucore
     )
 endif( CUDA_FOUND )
 
