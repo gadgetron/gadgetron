@@ -23,11 +23,13 @@ add_library(gadgetron_epi SHARED
   epi_gtplus_grappa.xml
 )
 
+set_target_properties(gadgetron_epi PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 target_link_libraries(
   gadgetron_epi
-  cpucore
-  cpufft
-  cpucore_math
+  gadgetron_toolbox_cpucore
+  gadgetron_toolbox_cpufft
+  gadgetron_toolbox_cpucore_math
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
 )
 
@@ -36,12 +38,11 @@ install(FILES
   EPICorrGadget.h
   FFTXGadget.h
   gadgetron_epi_export.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)
 
-install(TARGETS gadgetron_epi DESTINATION lib)
+install(TARGETS gadgetron_epi DESTINATION lib COMPONENT main)
 
 install(FILES
   epi.xml
   epi_gtplus_grappa.xml
-  DESTINATION config)
-
+  DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

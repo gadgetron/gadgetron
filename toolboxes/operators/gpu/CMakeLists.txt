@@ -15,7 +15,7 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
   )
 
-cuda_add_library(gpuoperators SHARED 
+cuda_add_library(gadgetron_toolbox_gpuoperators SHARED 
   ../generalOperator.h
   ../linearOperator.h
   cuPartialDerivativeOperator.h
@@ -30,15 +30,17 @@ cuda_add_library(gpuoperators SHARED
   cuConvolutionOperator.cu
   )
 
-target_link_libraries(gpuoperators 
-  gpucore 
-  gpunfft
+set_target_properties(gadgetron_toolbox_gpuoperators PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
+target_link_libraries(gadgetron_toolbox_gpuoperators 
+  gadgetron_toolbox_gpucore 
+  gadgetron_toolbox_gpunfft
   ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES}
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gpuoperators DESTINATION lib)
+install(TARGETS gadgetron_toolbox_gpuoperators DESTINATION lib COMPONENT main)
 
 install(FILES 
   cuImageOperator.h
@@ -60,4 +62,4 @@ install(FILES
   hoCuEncodingOperatorContainer.h
   gpuoperators_export.h
   hoCuOperator.h
-  DESTINATION include)
+  DESTINATION include COMPONENT main)

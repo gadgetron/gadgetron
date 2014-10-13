@@ -73,6 +73,17 @@ namespace Gadgetron{
 
     line_offset_ = (dimensions_[1]>>1)-e_limits.kspace_encoding_step_1->center;
 
+    if (h.userParameters) {
+      for (size_t i = 0; i < h.userParameters->userParameterString.size(); i++) {
+	std::string name = h.userParameters->userParameterString[i].name;
+	std::string value = h.userParameters->userParameterString[i].value;
+	if (name.substr(0,5) == std::string("COIL_")) {
+	  int coil_num = std::atoi(name.substr(5,name.size()-5).c_str());
+	  channel_map_[value] = coil_num;
+	}
+      }
+    }
+
     return GADGET_OK;
   }
 
@@ -114,6 +125,28 @@ namespace Gadgetron{
         weights_calculator_.add_uncombined_channel(channel_id);
       }
     }
+
+    uncomb_str = this->get_string_value("uncombined_channels_by_name");
+    if (uncomb_str->size()) {
+      GADGET_DEBUG2("uncomb_str: %s\n",  uncomb_str->c_str());
+      boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
+      for (unsigned int i = 0; i < uncomb.size(); i++) {
+	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
+	map_type_::iterator it = channel_map_.find(ch);
+	if (it != channel_map_.end()) {
+	  unsigned int channel_id = static_cast<unsigned int>(it->second);
+	  GADGET_DEBUG2("Device channel: %s (%d)\n",  uncomb[i].c_str(), channel_id);
+	  weights_calculator_.add_uncombined_channel(channel_id);
+	}
+	/*
+	  if (ch.size() > 0) {
+	  unsigned int channel_id = static_cast<unsigned int>(ACE_OS::atoi(ch.c_str()));
+	  weights_calculator_.add_uncombined_channel(channel_id);
+	  }
+	*/
+      }
+    }
+    
 
     for (unsigned int i = 0; i < buffers_.size(); i++) {
       weights_[i] = boost::shared_ptr<GrappaWeights<float> >(new GrappaWeights<float>());

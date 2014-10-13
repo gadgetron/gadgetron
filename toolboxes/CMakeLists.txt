@@ -24,8 +24,19 @@ add_subdirectory(registration)
 
 IF (ACE_FOUND)
   add_subdirectory(gadgettools)
+  add_subdirectory(cloudbus)
 ENDIF()
 
 IF (FFTW3_FOUND AND ISMRMRD_FOUND)
   add_subdirectory(gtplus)
 ENDIF()
+
+find_package(BLAS)
+find_package(LAPACK)
+
+if (NOT WIN32)
+  if (BLAS_FOUND AND LAPACK_FOUND AND MKL_FOUND)
+    add_subdirectory(linalg)
+  endif()
+endif()
+

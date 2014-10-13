@@ -176,10 +176,10 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         size_t colB = dstCHA;
 
         bool useGPU = (typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_);
-        if ( useGPU )
-        {
-            GADGET_MSG("spirit 2D - calling GPU kernel estimation ... "); 
-        }
+        //if ( useGPU )
+        //{
+        //    GADGET_MSG("spirit 2D - calling GPU kernel estimation ... "); 
+        //}
 
         const T* pAcsSrc = acsSrc.begin();
 

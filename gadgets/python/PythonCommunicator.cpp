@@ -1,5 +1,7 @@
 #include "PythonCommunicator.h"
 #include "../mri_core/GadgetMRIHeaders.h"
+#include "gadgetron_paths.h"
+#include "gadgetron_config.h"
 
 #include <numpy/numpyconfig.h>
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -24,10 +26,10 @@ PythonCommunicator::PythonCommunicator()
 
 
 	//Let's first get the path set for the library folder
-	const char* gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
-	std::string path_name = std::string(gadgetron_home) + std::string("/lib");
+	std::string  gadgetron_home = get_gadgetron_home();
+	std::string path_name = gadgetron_home + std::string("/") + std::string(GADGETRON_PYTHON_PATH);
 
-	if (gadgetron_home != 0) {
+	if (gadgetron_home.size() != 0) {
 		if (addPath(path_name) == GADGET_FAIL) {
 			GADGET_DEBUG2("PythonCommunicator (constructor) failed to add path %s\n", path_name.c_str());
 		}

@@ -12,7 +12,7 @@ install(FILES
   opticalFlowSolver.h 
   resampleOperator.h
   opticalFlowOperator.h 
-  DESTINATION include)
+  DESTINATION include COMPONENT main)
 
 if(ARMADILLO_FOUND)
   if(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.819" )

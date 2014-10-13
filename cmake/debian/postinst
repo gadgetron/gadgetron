@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# copy the gadgetron.xml
+sudo cp -i /usr/local/gadgetron/config/gadgetron.xml.example /usr/local/gadgetron/config/gadgetron.xml
+
+# create the symbolic link for gadgetron
+sudo rm -f /usr/local/bin/gadgetron
+sudo ln -s /usr/local/gadgetron/bin/gadgetron /usr/local/bin/gadgetron
+
+sudo rm -f /usr/local/bin/gadgetron_ismrmrd_client
+sudo ln -s /usr/local/gadgetron/bin/gadgetron_ismrmrd_client /usr/local/bin/gadgetron_ismrmrd_client
+
+sudo rm -f /usr/local/bin/gt_alive
+sudo ln -s /usr/local/gadgetron/bin/gt_alive /usr/local/bin/gt_alive
+
+# load library path
+sudo ldconfig
+

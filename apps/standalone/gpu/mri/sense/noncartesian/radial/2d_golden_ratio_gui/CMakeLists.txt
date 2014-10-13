@@ -20,12 +20,12 @@ qt4_wrap_cpp (UI_MOC_OUTFILES ${UI_MOC_HEADERS})
 add_executable(sense_2d_golden_radial_gui main.cpp ${UI_MOC_OUTFILES}
 radialSenseAppMainWidget.cpp reconWidget.cpp GLReconWidget.cpp ${UI_HEADERS} )
 
-target_link_libraries(sense_2d_golden_radial_gui gpucore gpuparallelmri
-gpunfft hostutils gpusolvers gpuoperators ${CUDA_LIBRARIES} ${QT_QTGUI_LIBRARY} ${GLEW_LIBRARY}
+target_link_libraries(sense_2d_golden_radial_gui gadgetron_toolbox_gpucore gadgetron_toolbox_gpuparallelmri
+gadgetron_toolbox_gpunfft gadgetron_toolbox_hostutils gadgetron_toolbox_gpusolvers gpuoperators ${CUDA_LIBRARIES} ${QT_QTGUI_LIBRARY} ${GLEW_LIBRARY}
 ${QT_QTCORE_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY} )
 
 if (WIN32)
 set_target_properties( sense_2d_golden_radial_gui PROPERTIES LINK_FLAGS "/FORCE:MULTIPLE") 
 endif (WIN32)
 
-install(TARGETS sense_2d_golden_radial_gui DESTINATION bin)
+install(TARGETS sense_2d_golden_radial_gui DESTINATION bin COMPONENT main)

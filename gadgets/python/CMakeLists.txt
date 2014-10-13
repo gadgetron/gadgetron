@@ -12,6 +12,8 @@ find_package(Ismrmrd REQUIRED)
 message(STATUS ${Boost_INCLUDE_DIR} ${Boost_LIBRARIES})
 
 include_directories(
+  ${CMAKE_SOURCE_DIR}/apps/gadgetron
+  ${CMAKE_BINARY_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${PYTHON_INCLUDE_PATH}
   ${NUMPY_INCLUDE_DIRS}
@@ -20,11 +22,16 @@ include_directories(
 
 add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp)
 
+#We should probably not set soversion on the python module. Causes problems with clang
+#set_target_properties(GadgetronPythonMRI PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
 add_library(gadgetron_python SHARED       		
 	PythonGadget.cpp
 	GadgetReference.cpp
 	GadgetronPythonMRI.cpp
 	PythonCommunicator.cpp)
+
+set_target_properties(gadgetron_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_python
 	${ISMRMRD_LIBRARIES} 
@@ -48,8 +55,9 @@ IF (WIN32)
 ENDIF(WIN32)
 
 set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
-	
-install(TARGETS gadgetron_python GadgetronPythonMRI DESTINATION lib)
+
+install(TARGETS gadgetron_python DESTINATION lib COMPONENT main)
+install(TARGETS GadgetronPythonMRI DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
 install(FILES 
 	rms_coil_combine.py
@@ -58,8 +66,8 @@ install(FILES
 	accumulate_and_recon.py
 	GadgetronXML.py
 	image_viewer.py 
-DESTINATION lib)
+    DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
 install(FILES
 	python.xml python_short.xml
-DESTINATION config)
+    DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

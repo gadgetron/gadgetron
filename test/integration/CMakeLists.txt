@@ -7,22 +7,33 @@ FILE(GLOB TEST_CASE_ALWAYS RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cas
 FILE(GLOB TEST_CASE_WITH_MKL RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/mkl/*.cfg  )
 FILE(GLOB TEST_CASE_WITH_GPU RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/gpu/*.cfg  )
 FILE(GLOB TEST_CASE_WITH_PYTHON RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/python/*.cfg  )
+# We are skipping one gpu test, since it can not run on the win buildbot (not enough memory)
+FILE(GLOB TEST_CASE_LINUX_MAC_ONLY RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/linux_mac_only/*.cfg  )
 
 message("Test cases found : ${TEST_CASE_ALWAYS}")
 message("Test cases with MKL found : ${TEST_CASE_WITH_MKL}")
 message("Test cases with_GPU : ${TEST_CASE_WITH_GPU}")
 message("Test cases with python : ${TEST_CASE_WITH_PYTHON}")
+message("Test cases for linux and mac only : ${TEST_CASE_LINUX_MAC_ONLY}")
+
 
 # according to the building environment, generate the list of available test cases
 
 set(TEST_CASE ${TEST_CASE_ALWAYS})
 
-if (MKL_FOUND)
+# TODO once we remove mkl, then this scheme will need to change
+# for now we can try to run them all even without MKL
+#if (MKL_FOUND)
     set(TEST_CASE ${TEST_CASE} ${TEST_CASE_WITH_MKL})
-endif (MKL_FOUND)
+#endif (MKL_FOUND)
 
 if (CUDA_FOUND)
     set(TEST_CASE ${TEST_CASE} ${TEST_CASE_WITH_GPU})
+    if (WIN32)
+
+    else (WIN32)
+        set(TEST_CASE ${TEST_CASE} ${TEST_CASE_LINUX_MAC_ONLY})
+    endif (WIN32)
 endif (CUDA_FOUND)
 
 if (PYTHONLIBS_FOUND)

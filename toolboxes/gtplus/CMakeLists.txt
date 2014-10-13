@@ -1,4 +1,4 @@
-# gtplus is a toolbox for general reconstruction to support all ISMRMRD dimensions
+# gadgetron_toolbox_gtplus is a toolbox for general reconstruction to support all ISMRMRD dimensions
 
 if ( HAS_64_BIT )
 
@@ -11,7 +11,7 @@ if ( HAS_64_BIT )
     endif(WIN32)
 
     if (MKL_FOUND)
-        MESSAGE("MKL Found for gtPlus ... ")
+        MESSAGE("MKL Found for gadgetron_toolbox_gtplus ... ")
         list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
         if ( USE_OPENMP )
             list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
@@ -128,7 +128,13 @@ if ( HAS_64_BIT )
             algorithm/gtPlusWavelet3DOperator.h 
             algorithm/gtPlusWaveletNoNullSpace2DOperator.h 
             algorithm/gtPlusWaveletNoNullSpace3DOperator.h 
-            algorithm/gtPlusDataFidelityOperator.h )
+            algorithm/gtPlusDataFidelityOperator.h 
+            algorithm/FreeFormDeformation/gtplusFFDBase.h
+            algorithm/FreeFormDeformation/gtplusBSplineFFD.h
+            algorithm/FreeFormDeformation/gtplusMLFFD.h
+            algorithm/FreeFormDeformation/gtplusBSplineFFD2D.h
+            algorithm/FreeFormDeformation/gtplusBSplineFFD3D.h 
+            algorithm/FreeFormDeformation/gtplusBSplineFFD4D.h )
 
         set( algorithm_src_files )
 
@@ -195,8 +201,6 @@ if ( HAS_64_BIT )
         config/GT_3DT_Cartesian_L1SPIRIT.xml
         config/GT_3DT_Cartesian_SingleLayer_L1SPIRIT.xml )
 
-    set( schema_files )
-
     # matlab
     if (MATLAB_FOUND)
         message("MATLAB FOUND: ${MATLAB_INCLUDE_DIR}, Matlab gt interface is being compiled.")
@@ -220,7 +224,6 @@ if ( HAS_64_BIT )
     source_group(util FILES ${util_header_files} ${util_src_files})
     set( config_gtCloud_files ${config_files} ${gtCloud_files} )
     source_group(config FILES ${config_gtCloud_files})
-    source_group(schema FILES ${schema_files})
 
     if (MKL_FOUND OR ARMADILLO_FOUND)
         set(gtplus_files ${gtplus_files} 
@@ -245,20 +248,23 @@ if ( HAS_64_BIT )
         endif(MATLAB_FOUND)
     endif (MKL_FOUND OR ARMADILLO_FOUND)
 
-    add_library(gtplus_io ${LIBTYPE} ${gtplus_io_header_files} ${gtplus_io_src_files} )
+    add_library(gadgetron_toolbox_gtplus_io ${LIBTYPE} ${gtplus_io_header_files} ${gtplus_io_src_files} )
+    set_target_properties(gadgetron_toolbox_gtplus_io PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-    add_library(gtplus ${LIBTYPE} 
+    add_library(gadgetron_toolbox_gtplus ${LIBTYPE} 
                 ${gtplus_files} )
 
-    target_link_libraries(gtplus 
-                          cpucore 
-                          cpucore_math 
-                          cpufft
-                          gtplus_io 
-                          cpucore_math )
+    set_target_properties(gadgetron_toolbox_gtplus PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-    install(TARGETS gtplus DESTINATION lib)
-    install(TARGETS gtplus_io DESTINATION lib)
+    target_link_libraries(gadgetron_toolbox_gtplus 
+                          gadgetron_toolbox_cpucore 
+                          gadgetron_toolbox_cpucore_math 
+                          gadgetron_toolbox_cpufft
+                          gadgetron_toolbox_gtplus_io 
+                          gadgetron_toolbox_cpucore_math )
+
+    install(TARGETS gadgetron_toolbox_gtplus DESTINATION lib COMPONENT main)
+    install(TARGETS gadgetron_toolbox_gtplus_io DESTINATION lib COMPONENT main)
 
     # install gtplus files
     install (FILES  
@@ -271,17 +277,14 @@ if ( HAS_64_BIT )
             ${application_header_files} 
             ${gtplus_io_header_files} 
             ${matlab_files}
-            DESTINATION include)
+            DESTINATION include COMPONENT main)
 
     # install gadgetron program files
     install (FILES  ${config_files} 
-                    DESTINATION config)
+                    DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
     install (FILES  ${gtCloud_files} 
-                    DESTINATION config/gtCloud)
-
-    install (FILES  ${schema_files} 
-                    DESTINATION schema)
+                    DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH}/gtCloud COMPONENT main)
 
     # This one depends on the gadgets being compiled
     if (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND)

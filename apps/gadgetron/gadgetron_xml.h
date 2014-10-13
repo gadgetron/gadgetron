@@ -3,21 +3,89 @@
 
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 namespace GadgetronXML
 {
+  template <typename T> class Optional
+  {
+  public:
+    Optional()
+      : present_(false)
+    {
+
+    }
+
+    Optional(const T&v) {
+      present_ = true;
+      value_ = v;      
+    }
+
+    const Optional& operator=(const T& v) {
+      present_ = true;
+      value_ = v;
+      return *this;
+    }
+
+    const T* operator->() const {
+      return &value_;
+    }
+
+    const T& operator*() const {
+      return value_;
+    }
+
+    operator bool() const {
+      return present_;
+    }
+
+    bool is_present() const {
+      return present_;
+    }
+
+    T& get() {
+      if (!present_) {
+	throw std::runtime_error("Access optional value, which has not been set");
+      }
+      return value_;
+    }
+    
+    T& operator()() {
+      return get();
+    }
+
+    void set(const T& v) {
+      present_ = true;
+      value_ = v;
+    }
+
+  protected:
+    bool present_;
+    T value_;
+
+  }; 
+
+
   struct GadgetronParameter
   {
     std::string name;
     std::string value;
   };
-  
+
+  struct CloudBus
+  {
+    std::string multiCastAddress;
+    unsigned int port;
+  };
+
+
   struct GadgetronConfiguration
   {
     std::string port;
     std::vector<GadgetronParameter> globalGadgetParameter;
+    Optional<CloudBus> cloudBus;    
   };
-  
+
   void deserialize(const char* xml_config, GadgetronConfiguration& h);
   
   struct Reader
