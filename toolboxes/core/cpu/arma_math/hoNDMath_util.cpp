@@ -128,6 +128,179 @@ namespace Gadgetron { namespace math {
 
     /// --------------------------------------------------------------------
 
+    template <typename T> inline void scal_64bit_mode(size_t N, T a, T* x)
+    {
+        long long n;
+
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const T& c = x[n];
+            const typename realType<T>::Type re = c.real();
+            const typename realType<T>::Type im = c.imag();
+
+            const typename realType<T>::Type ar = a.real();
+            const typename realType<T>::Type ai = a.imag();
+
+            x[n].real(re*ar-im*ai);
+            x[n].imag(re*ai+im*ar);
+        }
+    }
+
+    template <typename T> inline void scal_64bit_mode(size_t N, typename realType<T>::Type a, T* x)
+    {
+        long long n;
+
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const T& c = x[n];
+            const typename realType<T>::Type re = c.real();
+            const typename realType<T>::Type im = c.imag();
+
+            x[n].real(re*a);
+            x[n].imag(im*a);
+        }
+    }
+
+    // -----------------------------------
+
+    template <> EXPORTCPUCOREMATH void scal(size_t N, float a, float* x)
+    {
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
+
+#ifdef ILP_MODE_ON
+        sscal_(&num, &a, x, &incx);
+#else
+        if ( N < FourGBLimit )
+        {
+            sscal_(&num, &a, x, &incx);
+        }
+        else
+        {
+            long long n;
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+            for (n = 0; n < (long long)N; n++)
+            {
+                x[n] *= a;
+            }
+        }
+#endif // ILP_MODE_ON
+    }
+
+    // -----------------------------------
+
+    template <> EXPORTCPUCOREMATH void scal(size_t N, double a, double* x)
+    {
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
+
+#ifdef ILP_MODE_ON
+        dscal_(&num, &a, x, &incx);
+#else
+        if ( N < FourGBLimit )
+        {
+            dscal_(&num, &a, x, &incx);
+        }
+        else
+        {
+            long long n;
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+            for (n = 0; n < (long long)N; n++)
+            {
+                x[n] *= a;
+            }
+        }
+#endif // ILP_MODE_ON
+    }
+
+    // -----------------------------------
+
+    template <> EXPORTCPUCOREMATH void scal(size_t N, GT_Complex8 a, GT_Complex8* x)
+    {
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
+
+#ifdef ILP_MODE_ON
+        cscal_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx);
+#else
+        if ( N < FourGBLimit )
+        {
+            cscal_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx);
+        }
+        else
+        {
+            scal_64bit_mode(N, a, x);
+        }
+#endif // ILP_MODE_ON
+    }
+
+    // -----------------------------------
+
+    template <> EXPORTCPUCOREMATH void scal(size_t N, GT_Complex16 a, GT_Complex16* x)
+    {
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
+
+#ifdef ILP_MODE_ON
+        zscal_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx);
+#else
+        if ( N < FourGBLimit )
+        {
+            zscal_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx);
+        }
+        else
+        {
+            scal_64bit_mode(N, a, x);
+        }
+#endif // ILP_MODE_ON
+    }
+
+    // -----------------------------------
+
+    template <> EXPORTCPUCOREMATH void scal(size_t N, float a, GT_Complex8* x)
+    {
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
+
+#ifdef ILP_MODE_ON
+        csscal_(&num, &a, (lapack_complex_float*)(x), &incx);
+#else
+        if ( N < FourGBLimit )
+        {
+            csscal_(&num, &a, (lapack_complex_float*)(x), &incx);
+        }
+        else
+        {
+            scal_64bit_mode(N, a, x);
+        }
+#endif // ILP_MODE_ON
+    }
+
+    // -----------------------------------
+
+    template <> EXPORTCPUCOREMATH void scal(size_t N, double a, GT_Complex16* x)
+    {
+        lapack_int num = (lapack_int)N;
+        lapack_int incx = 1;
+
+#ifdef ILP_MODE_ON
+        zdscal_(&num, &a, (lapack_complex_double*)(x), &incx);
+#else
+        if ( N < FourGBLimit )
+        {
+            zdscal_(&num, &a, (lapack_complex_double*)(x), &incx);
+        }
+        else
+        {
+            scal_64bit_mode(N, a, x);
+        }
+#endif // ILP_MODE_ON
+    }
+
+    /// --------------------------------------------------------------------
+
     template <typename T> inline void axpy_64bit_mode(T a, size_t N, const T* x, const T* y, T* r)
     {
         long long n;
@@ -1689,177 +1862,4 @@ namespace Gadgetron { namespace math {
     template EXPORTCPUCOREMATH void fill(size_t N, double* x, double v);
     template EXPORTCPUCOREMATH void fill(size_t N, GT_Complex8* x, GT_Complex8 v);
     template EXPORTCPUCOREMATH void fill(size_t N, GT_Complex16* x, GT_Complex16 v);
-
-    /// --------------------------------------------------------------------
-
-    template <typename T> inline void scal_64bit_mode(size_t N, T a, T* x)
-    {
-        long long n;
-
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const T& c = x[n];
-            const typename realType<T>::Type re = c.real();
-            const typename realType<T>::Type im = c.imag();
-
-            const typename realType<T>::Type ar = a.real();
-            const typename realType<T>::Type ai = a.imag();
-
-            x[n].real(re*ar-im*ai);
-            x[n].imag(re*ai+im*ar);
-        }
-    }
-
-    template <typename T> inline void scal_64bit_mode(size_t N, typename realType<T>::Type a, T* x)
-    {
-        long long n;
-
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const T& c = x[n];
-            const typename realType<T>::Type re = c.real();
-            const typename realType<T>::Type im = c.imag();
-
-            x[n].real(re*a);
-            x[n].imag(im*a);
-        }
-    }
-
-    // -----------------------------------
-
-    template <> EXPORTCPUCOREMATH void scal(size_t N, float a, float* x)
-    {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
-
-#ifdef ILP_MODE_ON
-        sscal_(&num, &a, x, &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            sscal_(&num, &a, x, &incx);
-        }
-        else
-        {
-            long long n;
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
-            for (n = 0; n < (long long)N; n++)
-            {
-                x[n] *= a;
-            }
-        }
-#endif // ILP_MODE_ON
-    }
-
-    // -----------------------------------
-
-    template <> EXPORTCPUCOREMATH void scal(size_t N, double a, double* x)
-    {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
-
-#ifdef ILP_MODE_ON
-        dscal_(&num, &a, x, &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            dscal_(&num, &a, x, &incx);
-        }
-        else
-        {
-            long long n;
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
-            for (n = 0; n < (long long)N; n++)
-            {
-                x[n] *= a;
-            }
-        }
-#endif // ILP_MODE_ON
-    }
-
-    // -----------------------------------
-
-    template <> EXPORTCPUCOREMATH void scal(size_t N, GT_Complex8 a, GT_Complex8* x)
-    {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
-
-#ifdef ILP_MODE_ON
-        cscal_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            cscal_(&num, (lapack_complex_float*)(&a), (lapack_complex_float*)(x), &incx);
-        }
-        else
-        {
-            scal_64bit_mode(N, a, x);
-        }
-#endif // ILP_MODE_ON
-    }
-
-    // -----------------------------------
-
-    template <> EXPORTCPUCOREMATH void scal(size_t N, GT_Complex16 a, GT_Complex16* x)
-    {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
-
-#ifdef ILP_MODE_ON
-        zscal_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            zscal_(&num, (lapack_complex_double*)(&a), (lapack_complex_double*)(x), &incx);
-        }
-        else
-        {
-            scal_64bit_mode(N, a, x);
-        }
-#endif // ILP_MODE_ON
-    }
-
-    // -----------------------------------
-
-    template <> EXPORTCPUCOREMATH void scal(size_t N, float a, GT_Complex8* x)
-    {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
-
-#ifdef ILP_MODE_ON
-        csscal_(&num, &a, (lapack_complex_float*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            csscal_(&num, &a, (lapack_complex_float*)(x), &incx);
-        }
-        else
-        {
-            scal_64bit_mode(N, a, x);
-        }
-#endif // ILP_MODE_ON
-    }
-
-    // -----------------------------------
-
-    template <> EXPORTCPUCOREMATH void scal(size_t N, double a, GT_Complex16* x)
-    {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
-
-#ifdef ILP_MODE_ON
-        zdscal_(&num, &a, (lapack_complex_double*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            zdscal_(&num, &a, (lapack_complex_double*)(x), &incx);
-        }
-        else
-        {
-            scal_64bit_mode(N, a, x);
-        }
-#endif // ILP_MODE_ON
-    }
 }}
