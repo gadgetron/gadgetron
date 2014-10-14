@@ -954,7 +954,7 @@ namespace Gadgetron { namespace math {
 
         long long n;
 
-#pragma omp parallel for default(none) private(n) shared(N, x, eps) if (N>NumElementsUseThreading)
+#pragma omp parallel for private(n) shared(N, x, eps) if (N>NumElementsUseThreading)
         for (n=0; n<(long long)N; n++ )
         {
             if ( abs(x[n]) < eps )
@@ -971,7 +971,7 @@ namespace Gadgetron { namespace math {
 
         long long n;
 
-#pragma omp parallel for default(none) private(n) shared(N, x, eps) if (N>NumElementsUseThreading)
+#pragma omp parallel for private(n) shared(N, x, eps) if (N>NumElementsUseThreading)
         for (n=0; n<(long long)N; n++ )
         {
             if ( abs(x[n]) < eps )
