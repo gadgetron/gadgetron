@@ -128,38 +128,73 @@ namespace Gadgetron { namespace math {
 
     /// --------------------------------------------------------------------
 
-    template <typename T> inline void scal_64bit_mode(size_t N, T a, T* x)
+    inline void scal_64bit_mode(size_t N, GT_Complex8 a, GT_Complex8* x)
     {
         long long n;
 
 #pragma omp parallel for private(n) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const T& c = x[n];
-            const typename realType<T>::Type re = c.real();
-            const typename realType<T>::Type im = c.imag();
+            const GT_Complex8& c = x[n];
+            const float re = c.real();
+            const float im = c.imag();
 
-            const typename realType<T>::Type ar = a.real();
-            const typename realType<T>::Type ai = a.imag();
+            const float ar = a.real();
+            const float ai = a.imag();
 
-            x[n].real(re*ar-im*ai);
-            x[n].imag(re*ai+im*ar);
+            reinterpret_cast<float(&)[2]>(x[n])[0] = re*ar-im*ai;
+            reinterpret_cast<float(&)[2]>(x[n])[1] = re*ai+im*ar;
         }
     }
 
-    template <typename T> inline void scal_64bit_mode(size_t N, typename realType<T>::Type a, T* x)
+    inline void scal_64bit_mode(size_t N, GT_Complex16 a, GT_Complex16* x)
     {
         long long n;
 
 #pragma omp parallel for private(n) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const T& c = x[n];
-            const typename realType<T>::Type re = c.real();
-            const typename realType<T>::Type im = c.imag();
+            const GT_Complex16& c = x[n];
+            const double re = c.real();
+            const double im = c.imag();
 
-            x[n].real(re*a);
-            x[n].imag(im*a);
+            const double ar = a.real();
+            const double ai = a.imag();
+
+            reinterpret_cast<double(&)[2]>(x[n])[0] = re*ar-im*ai;
+            reinterpret_cast<double(&)[2]>(x[n])[1] = re*ai+im*ar;
+        }
+    }
+
+    inline void scal_64bit_mode(size_t N, float a, GT_Complex8* x)
+    {
+        long long n;
+
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const GT_Complex8& c = x[n];
+            const float re = c.real();
+            const float im = c.imag();
+
+            reinterpret_cast<float(&)[2]>(x[n])[0] = re*a;
+            reinterpret_cast<float(&)[2]>(x[n])[1] = im*a;
+        }
+    }
+
+    inline void scal_64bit_mode(size_t N, double a, GT_Complex16* x)
+    {
+        long long n;
+
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const GT_Complex16& c = x[n];
+            const double re = c.real();
+            const double im = c.imag();
+
+            reinterpret_cast<double(&)[2]>(x[n])[0] = re*a;
+            reinterpret_cast<double(&)[2]>(x[n])[1] = im*a;
         }
     }
 
@@ -967,7 +1002,7 @@ namespace Gadgetron { namespace math {
     template <> EXPORTCPUCOREMATH 
     void addEpsilon(size_t N, GT_Complex16* x)
     {
-        const float eps = std::numeric_limits<double>::epsilon();
+        const double eps = std::numeric_limits<double>::epsilon();
 
         long long n;
 
