@@ -128,38 +128,73 @@ namespace Gadgetron { namespace math {
 
     /// --------------------------------------------------------------------
 
-    template <typename T> inline void scal_64bit_mode(size_t N, T a, T* x)
+    inline void scal_64bit_mode(size_t N, GT_Complex8 a, GT_Complex8* x)
     {
         long long n;
 
 #pragma omp parallel for private(n) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const T& c = x[n];
-            const typename realType<T>::Type re = c.real();
-            const typename realType<T>::Type im = c.imag();
+            const GT_Complex8& c = x[n];
+            const float re = c.real();
+            const float im = c.imag();
 
-            const typename realType<T>::Type ar = a.real();
-            const typename realType<T>::Type ai = a.imag();
+            const float ar = a.real();
+            const float ai = a.imag();
 
-            x[n].real(re*ar-im*ai);
-            x[n].imag(re*ai+im*ar);
+            reinterpret_cast<float(&)[2]>(x[n])[0] = re*ar-im*ai;
+            reinterpret_cast<float(&)[2]>(x[n])[1] = re*ai+im*ar;
         }
     }
 
-    template <typename T> inline void scal_64bit_mode(size_t N, typename realType<T>::Type a, T* x)
+    inline void scal_64bit_mode(size_t N, GT_Complex16 a, GT_Complex16* x)
     {
         long long n;
 
 #pragma omp parallel for private(n) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const T& c = x[n];
-            const typename realType<T>::Type re = c.real();
-            const typename realType<T>::Type im = c.imag();
+            const GT_Complex16& c = x[n];
+            const double re = c.real();
+            const double im = c.imag();
 
-            x[n].real(re*a);
-            x[n].imag(im*a);
+            const double ar = a.real();
+            const double ai = a.imag();
+
+            reinterpret_cast<double(&)[2]>(x[n])[0] = re*ar-im*ai;
+            reinterpret_cast<double(&)[2]>(x[n])[1] = re*ai+im*ar;
+        }
+    }
+
+    inline void scal_64bit_mode(size_t N, float a, GT_Complex8* x)
+    {
+        long long n;
+
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const GT_Complex8& c = x[n];
+            const float re = c.real();
+            const float im = c.imag();
+
+            reinterpret_cast<float(&)[2]>(x[n])[0] = re*a;
+            reinterpret_cast<float(&)[2]>(x[n])[1] = im*a;
+        }
+    }
+
+    inline void scal_64bit_mode(size_t N, double a, GT_Complex16* x)
+    {
+        long long n;
+
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const GT_Complex16& c = x[n];
+            const double re = c.real();
+            const double im = c.imag();
+
+            reinterpret_cast<double(&)[2]>(x[n])[0] = re*a;
+            reinterpret_cast<double(&)[2]>(x[n])[1] = im*a;
         }
     }
 
@@ -596,8 +631,8 @@ namespace Gadgetron { namespace math {
             const float c = b1.real();
             const float d = b1.imag();
 
-            r[i].real(a*c-b*d);
-            r[i].imag(a*d+b*c);
+            reinterpret_cast<float(&)[2]>(r[i])[0] = a*c-b*d;
+            reinterpret_cast<float(&)[2]>(r[i])[1] = a*d+b*c;
         }
     }
 
@@ -614,8 +649,8 @@ namespace Gadgetron { namespace math {
             const double c = b1.real();
             const double d = b1.imag();
 
-            r[i].real(a*c-b*d);
-            r[i].imag(a*d+b*c);
+            reinterpret_cast<double(&)[2]>(r[i])[0] = a*c-b*d;
+            reinterpret_cast<double(&)[2]>(r[i])[1] = a*d+b*c;
         }
     }
 
@@ -681,8 +716,8 @@ namespace Gadgetron { namespace math {
 
             const float m = 1/(c*c+d*d);
 
-            r[i].real((a*c+b*d)*m);
-            r[i].imag((b*c-a*d)*m);
+            reinterpret_cast<float(&)[2]>(r[i])[0] = (a*c+b*d)*m;
+            reinterpret_cast<float(&)[2]>(r[i])[1] = (b*c-a*d)*m;
         }
     }
 
@@ -701,8 +736,8 @@ namespace Gadgetron { namespace math {
 
             const double m = 1/(c*c+d*d);
 
-            r[i].real((a*c+b*d)*m);
-            r[i].imag((b*c-a*d)*m);
+            reinterpret_cast<double(&)[2]>(r[i])[0] = (a*c+b*d)*m;
+            reinterpret_cast<double(&)[2]>(r[i])[1] = (b*c-a*d)*m;
         }
     }
 #endif // USE_MKL
@@ -842,26 +877,42 @@ namespace Gadgetron { namespace math {
 
 #else
 
-    template <typename T> 
-    void multiplyConj(size_t N, const T* x, const T* y, T* r)
+    template <> EXPORTCPUCOREMATH 
+    void multiplyConj(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
         long long n;
 
 #pragma omp parallel for private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
-            const typename realType<T>::Type a = x[n].real();
-            const typename realType<T>::Type b = x[n].imag();
-            const typename realType<T>::Type c = y[n].real();
-            const typename realType<T>::Type d = y[n].imag();
+            const float a = x[n].real();
+            const float b = x[n].imag();
+            const float c = y[n].real();
+            const float d = y[n].imag();
 
-            r[n].real(a*c + b*d);
-            r[n].imag(c*b - a*d);
+            reinterpret_cast<float(&)[2]>(r[n])[0] = (a*c + b*d);
+            reinterpret_cast<float(&)[2]>(r[n])[1] = (c*b - a*d);
         }
     }
 
-    template EXPORTCPUCOREMATH void multiplyConj(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r);
-    template EXPORTCPUCOREMATH void multiplyConj(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r);
+    template <> EXPORTCPUCOREMATH 
+    void multiplyConj(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    {
+        long long n;
+
+#pragma omp parallel for private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; n++ )
+        {
+            const double a = x[n].real();
+            const double b = x[n].imag();
+            const double c = y[n].real();
+            const double d = y[n].imag();
+
+            reinterpret_cast<double(&)[2]>(r[n])[0] = (a*c + b*d);
+            reinterpret_cast<double(&)[2]>(r[n])[1] = (c*b - a*d);
+        }
+    }
+
 #endif // USE_MKL
     /// --------------------------------------------------------------------
 
@@ -881,21 +932,32 @@ namespace Gadgetron { namespace math {
 
 #else
 
-    template <typename T> 
-    void conjugate(size_t N, const T* x, T* r)
+    template <> EXPORTCPUCOREMATH 
+    void conjugate(size_t N, const GT_Complex8* x, GT_Complex8* r)
     {
         long long n;
 
 #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
-            r[n].real(x[n].real());
-            r[n].imag(-x[n].imag());
+            reinterpret_cast<float(&)[2]>(r[n])[0] = reinterpret_cast< const float(&)[2]>(x[n])[0];
+            reinterpret_cast<float(&)[2]>(r[n])[1] = -(reinterpret_cast< const float(&)[2]>(x[n])[1]);
         }
     }
 
-    template EXPORTCPUCOREMATH void conjugate(size_t N, const GT_Complex8* x, GT_Complex8* r);
-    template EXPORTCPUCOREMATH void conjugate(size_t N, const GT_Complex16* x, GT_Complex16* r);
+    template <> EXPORTCPUCOREMATH 
+    void conjugate(size_t N, const GT_Complex16* x, GT_Complex16* r)
+    {
+        long long n;
+
+#pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; n++ )
+        {
+            reinterpret_cast<double(&)[2]>(r[n])[0] = reinterpret_cast< const double(&)[2]>(x[n])[0];
+            reinterpret_cast<double(&)[2]>(r[n])[1] = -(reinterpret_cast<const double(&)[2]>(x[n])[1]);
+        }
+    }
+
 #endif // USE_MKL
 
     /// --------------------------------------------------------------------
@@ -919,8 +981,40 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH void addEpsilon(size_t N, float* x);
     template EXPORTCPUCOREMATH void addEpsilon(size_t N, double* x);
-    template EXPORTCPUCOREMATH void addEpsilon(size_t N, GT_Complex8* x);
-    template EXPORTCPUCOREMATH void addEpsilon(size_t N, GT_Complex16* x);
+
+    template <> EXPORTCPUCOREMATH 
+    void addEpsilon(size_t N, GT_Complex8* x)
+    {
+        const float eps = std::numeric_limits<float>::epsilon();
+
+        long long n;
+
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+        for (n=0; n<(long long)N; n++ )
+        {
+            if ( abs(x[n]) < eps )
+            {
+                reinterpret_cast<float(&)[2]>(x[n])[0] += eps;
+            }
+        }
+    }
+
+    template <> EXPORTCPUCOREMATH 
+    void addEpsilon(size_t N, GT_Complex16* x)
+    {
+        const double eps = std::numeric_limits<double>::epsilon();
+
+        long long n;
+
+#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+        for (n=0; n<(long long)N; n++ )
+        {
+            if ( abs(x[n]) < eps )
+            {
+                reinterpret_cast<double(&)[2]>(x[n])[0] += eps;
+            }
+        }
+    }
 
     /// --------------------------------------------------------------------
 
@@ -1518,8 +1612,8 @@ namespace Gadgetron { namespace math {
     }
 #endif // USE_MKL
 
-    template <typename T> 
-    void absolute(size_t N, const std::complex<T>* x, std::complex<T>* r)
+    template <> EXPORTCPUCOREMATH 
+    void absolute(size_t N, const std::complex<float>* x, std::complex<float>* r)
     {
         try
         {
@@ -1528,21 +1622,43 @@ namespace Gadgetron { namespace math {
             #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
             for ( n=0; n<(long long)N; n++ )
             {
-                const std::complex<T>& c = x[n];
-                const T re = c.real();
-                const T im = c.imag();
+                const std::complex<float>& c = x[n];
+                const float re = c.real();
+                const float im = c.imag();
 
-                r[n] = std::complex<T>( std::sqrt( (re*re) + (im * im) ), 0);
+                reinterpret_cast<float(&)[2]>(r[n])[0] = std::sqrt( (re*re) + (im * im) );
+                reinterpret_cast<float(&)[2]>(r[n])[1] = 0;
             }
         }
         catch(...)
         {
-            GADGET_THROW("Error happened in absolute(size_t N, const std::complex<T>* x, std::complex<T>* r) ... ");
+            GADGET_THROW("Error happened in absolute(size_t N, const std::complex<float>* x, std::complex<float>* r) ... ");
         }
     }
 
-    template EXPORTCPUCOREMATH void absolute(size_t N, const GT_Complex8* x, GT_Complex8* r);
-    template EXPORTCPUCOREMATH void absolute(size_t N, const GT_Complex16* x, GT_Complex16* r);
+    template <> EXPORTCPUCOREMATH 
+    void absolute(size_t N, const std::complex<double>* x, std::complex<double>* r)
+    {
+        try
+        {
+            long long n;
+
+            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                const std::complex<double>& c = x[n];
+                const double re = c.real();
+                const double im = c.imag();
+
+                reinterpret_cast<double(&)[2]>(r[n])[0] = std::sqrt( (re*re) + (im * im) );
+                reinterpret_cast<double(&)[2]>(r[n])[1] = 0;
+            }
+        }
+        catch(...)
+        {
+            GADGET_THROW("Error happened in absolute(size_t N, const std::complex<double>* x, std::complex<double>* r) ... ");
+        }
+    }
 
     /// --------------------------------------------------------------------
 

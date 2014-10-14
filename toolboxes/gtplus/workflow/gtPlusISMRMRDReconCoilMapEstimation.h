@@ -69,6 +69,7 @@ bool gtPlusISMRMRDReconCoilMapEstimation<T>::coilMap2DSPIRIT(const hoNDArray<T>&
         bool minusI = false;
         hoNDArray<T> kIm(RO, E1, CHA, CHA);
         GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, kRO, kE1, oRO, oE1, RO, E1, kIm, minusI));
+        T* pkIm = kIm.begin();
 
         // GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
 
@@ -77,7 +78,7 @@ bool gtPlusISMRMRDReconCoilMapEstimation<T>::coilMap2DSPIRIT(const hoNDArray<T>&
 
         long long ro, e1, scha, dcha;
 
-        #pragma omp parallel default(none) private(ro, e1, scha, dcha) shared(RO, E1, CHA, kIm, coilMap, eigD)
+        #pragma omp parallel default(none) private(ro, e1, scha, dcha) shared(RO, E1, CHA, pkIm, coilMap, eigD)
         {
             hoMatrix<T> R(CHA, CHA), RRT(CHA, CHA);
             hoMatrix<value_type> eigenValue;
@@ -87,11 +88,14 @@ bool gtPlusISMRMRDReconCoilMapEstimation<T>::coilMap2DSPIRIT(const hoNDArray<T>&
             {
                 for ( ro=0; ro<RO; ro++ )
                 {
+                    const size_t offset = e1*RO + ro;
+
                     for ( dcha=0; dcha<CHA; dcha++ )
                     {
                         for ( scha=0; scha<CHA; scha++ )
                         {
-                            T v = kIm(ro, e1, scha, dcha);
+                            // T v = kIm(ro, e1, scha, dcha);
+                            T v = pkIm[dcha*RO*E1*CHA + scha*RO*E1 + offset];
                             if ( scha == dcha )
                             {
                                 v -= 1;
