@@ -59,7 +59,10 @@ namespace Gadgetron
 
         std::string xml_config(mb->rd_ptr());
 
-        if (ismrmrd_dataset_->writeHeader(xml_config) < 0 )
+        try {
+            ismrmrd_dataset_->writeHeader(xml_config);
+        }
+        catch (...)
         {
             GADGET_DEBUG1("Failed to write XML header to HDF file\n");
             return GADGET_FAIL;
@@ -108,7 +111,10 @@ namespace Gadgetron
         }
 
         {
-            if (ismrmrd_dataset_->appendAcquisition(ismrmrd_acq) < 0)
+            try {
+                ismrmrd_dataset_->appendAcquisition(ismrmrd_acq);
+            }
+            catch (...)
             {
                 GADGET_DEBUG1("Error appending ISMRMRD Dataset\n");
                 return GADGET_FAIL;
