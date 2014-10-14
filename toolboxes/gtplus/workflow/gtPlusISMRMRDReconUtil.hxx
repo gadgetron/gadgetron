@@ -4648,8 +4648,16 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                         const value_type b = v.imag();
 
                         // pV1[cha] = phaseU1 * std::conj(pV1[cha]);
-                        pV1[cha].real(a*c+b*d);
-                        pV1[cha].imag(a*d-b*c);
+#ifdef WIN32
+                        /*pV1[cha].real(a*c+b*d);
+                        pV1[cha].imag(a*d-b*c);*/
+
+                        reinterpret_cast< value_type(&)[2] >(pV1[cha])[0] = a*c+b*d;
+                        reinterpret_cast< value_type(&)[2] >(pV1[cha])[1] = a*d-b*c;
+#else
+                        pV1[cha].real() = a*c+b*d;
+                        pV1[cha].imag() = a*d-b*c;
+#endif // WIN32
                     }
 
                     for ( cha=0; cha<CHA; cha++ )
