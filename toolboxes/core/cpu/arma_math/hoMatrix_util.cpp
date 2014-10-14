@@ -148,86 +148,6 @@
 namespace Gadgetron
 {
 
-#if defined(USE_MKL) || defined(USE_LAPACK) || defined(USE_ARMADILLO)
-
-template<typename T> 
-bool EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue)
-{
-    try
-    {
-        long long M = (long long)A.rows();
-        GADGET_CHECK_RETURN_FALSE(A.cols() == M);
-
-        if ( (eigenValue.rows()!=M) || (eigenValue.cols()!=1) )
-        {
-            GADGET_CHECK_RETURN_FALSE(eigenValue.createMatrix(M, 1));
-        }
-
-        hoMatrix<typename realType<T>::Type> D(M, 1);
-        GADGET_CHECK_RETURN_FALSE(EigenAnalysis_syev_heev(A, D));
-        //GADGET_CHECK_RETURN_FALSE(eigenValue.copyFrom(D));
-        eigenValue.copyFrom(D);
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue) ... ");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool SolveLinearSystem_Tikhonov(hoMatrix<T>& A, hoMatrix<T>& b, hoMatrix<T>& x, double lamda)
-{
-    GADGET_CHECK_RETURN_FALSE(b.rows()==A.rows());
-
-    hoMatrix<T> AHA(A.cols(), A.cols());
-    GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(AHA, A, true, A, false));
-
-    GADGET_CHECK_RETURN_FALSE(x.createMatrix(A.cols(), b.cols()));
-    GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(x, A, true, b, false));
-
-    // apply the Tikhonov regularization
-    // Ideally, we shall apply the regularization is lamda*maxEigenValue
-    // However, computing the maximal eigenvalue is computational intensive
-    // A natural alternative is to use the trace of AHA matrix, which is the sum of all eigen values
-    // Since all eigen values are positive, the lamda*maxEigenValue is only ~10-20% different from lamda*sum(all eigenValues)
-    // for more information, refer to:
-    // Tikhonov A.N., Goncharsky A.V., Stepanov V.V., Yagola A.G., 1995, 
-    // Numerical Methods for the Solution of Ill-Posed Problems, Kluwer Academic Publishers.
-
-    size_t col = AHA.cols();
-    size_t c;
-
-    double trA = std::abs(AHA(0, 0));
-    for ( c=1; c<col; c++ )
-    {
-        trA += std::abs(AHA(c, c));
-    }
-
-    double value = trA*lamda/col;
-    for ( c=0; c<col; c++ )
-    {
-        AHA(c,c) = T( (typename realType<T>::Type)(std::abs(AHA(c, c)) + value) );
-    }
-
-    GADGET_CHECK_RETURN_FALSE(SymmetricHermitianPositiveDefiniteLinearSystem_posv(AHA, x));
-
-    return true;
-}
-
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix<float>& A, hoMatrix<float>& eigenValue);
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix<double>& A, hoMatrix<double>& eigenValue);
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& eigenValue);
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& eigenValue);
-
-template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<float>& A, hoMatrix<float>& b, hoMatrix<float>& x, double lamda);
-template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<double>& A, hoMatrix<double>& b, hoMatrix<double>& x, double lamda);
-template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& b, hoMatrix<GT_Complex8>& x, double lamda);
-template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& b, hoMatrix<GT_Complex16>& x, double lamda);
-
-#endif // defined(USE_MKL) || defined(USE_LAPACK) || defined(USE_ARMADILLO)
-
 // following matrix computation calls MKL functions
 #if defined(USE_MKL) || defined(USE_LAPACK)
 
@@ -1859,5 +1779,85 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
     #endif // USE_ARMADILLO
 
 #endif // defined(USE_MKL) || defined(USE_LAPACK)
+
+#if defined(USE_MKL) || defined(USE_LAPACK) || defined(USE_ARMADILLO)
+
+    template<typename T> 
+    bool EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue)
+    {
+        try
+        {
+            long long M = (long long)A.rows();
+            GADGET_CHECK_RETURN_FALSE(A.cols() == M);
+
+            if ( (eigenValue.rows()!=M) || (eigenValue.cols()!=1) )
+            {
+                GADGET_CHECK_RETURN_FALSE(eigenValue.createMatrix(M, 1));
+            }
+
+            hoMatrix<typename realType<T>::Type> D(M, 1);
+            GADGET_CHECK_RETURN_FALSE(EigenAnalysis_syev_heev(A, D));
+            //GADGET_CHECK_RETURN_FALSE(eigenValue.copyFrom(D));
+            eigenValue.copyFrom(D);
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue) ... ");
+            return false;
+        }
+        return true;
+    }
+
+    template<typename T> 
+    bool SolveLinearSystem_Tikhonov(hoMatrix<T>& A, hoMatrix<T>& b, hoMatrix<T>& x, double lamda)
+    {
+        GADGET_CHECK_RETURN_FALSE(b.rows()==A.rows());
+
+        hoMatrix<T> AHA(A.cols(), A.cols());
+        GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(AHA, A, true, A, false));
+
+        GADGET_CHECK_RETURN_FALSE(x.createMatrix(A.cols(), b.cols()));
+        GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(x, A, true, b, false));
+
+        // apply the Tikhonov regularization
+        // Ideally, we shall apply the regularization is lamda*maxEigenValue
+        // However, computing the maximal eigenvalue is computational intensive
+        // A natural alternative is to use the trace of AHA matrix, which is the sum of all eigen values
+        // Since all eigen values are positive, the lamda*maxEigenValue is only ~10-20% different from lamda*sum(all eigenValues)
+        // for more information, refer to:
+        // Tikhonov A.N., Goncharsky A.V., Stepanov V.V., Yagola A.G., 1995, 
+        // Numerical Methods for the Solution of Ill-Posed Problems, Kluwer Academic Publishers.
+
+        size_t col = AHA.cols();
+        size_t c;
+
+        double trA = std::abs(AHA(0, 0));
+        for ( c=1; c<col; c++ )
+        {
+            trA += std::abs(AHA(c, c));
+        }
+
+        double value = trA*lamda/col;
+        for ( c=0; c<col; c++ )
+        {
+            AHA(c,c) = T( (typename realType<T>::Type)(std::abs(AHA(c, c)) + value) );
+        }
+
+        GADGET_CHECK_RETURN_FALSE(SymmetricHermitianPositiveDefiniteLinearSystem_posv(AHA, x));
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix<float>& A, hoMatrix<float>& eigenValue);
+    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix<double>& A, hoMatrix<double>& eigenValue);
+    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& eigenValue);
+    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& eigenValue);
+
+    template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<float>& A, hoMatrix<float>& b, hoMatrix<float>& x, double lamda);
+    template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<double>& A, hoMatrix<double>& b, hoMatrix<double>& x, double lamda);
+    template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& b, hoMatrix<GT_Complex8>& x, double lamda);
+    template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& b, hoMatrix<GT_Complex16>& x, double lamda);
+
+#endif // defined(USE_MKL) || defined(USE_LAPACK) || defined(USE_ARMADILLO)
 
 }
