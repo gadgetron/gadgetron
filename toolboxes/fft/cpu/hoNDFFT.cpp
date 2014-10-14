@@ -3,6 +3,9 @@
 #include "hoNDArray_math_util.h"
 #include "hoNDArray_math.h"
 
+/// uncomment this to disable MKL FFT calls
+// #undef USE_MKL
+
 namespace Gadgetron{
 
     template<typename T> hoNDFFT<T>* hoNDFFT<T>::instance()
@@ -1131,8 +1134,6 @@ namespace Gadgetron{
         GADGET_CHECK_RETURN_FALSE(fftshift3D(buf, r));
         return true;
     }
-
-// #undef USE_MKL
 
     template<typename T> 
     bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, bool forward)
