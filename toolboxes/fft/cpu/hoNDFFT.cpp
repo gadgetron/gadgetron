@@ -4,7 +4,7 @@
 #include "hoNDArray_math.h"
 
 /// uncomment this to disable MKL FFT calls
-// #undef USE_MKL
+/// #undef USE_MKL
 
 namespace Gadgetron{
 
