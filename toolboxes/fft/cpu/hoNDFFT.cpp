@@ -4,7 +4,7 @@
 #include "hoNDArray_math.h"
 
 /// uncomment this to disable MKL FFT calls
-/// #undef USE_MKL
+#undef USE_MKL
 
 namespace Gadgetron{
 
@@ -1471,473 +1471,473 @@ namespace Gadgetron{
 
     // MKL related
 
-#ifdef USE_MKL
-
-    template<typename T> 
-    bool hoNDFFT<T>::configureFFTHandle(long long NDim, MKL_LONG* dim, DFTI_CONFIG_VALUE fftPresion, size_t n, DFTI_DESCRIPTOR_HANDLE& handle)
-    {
-        long long ii;
-
-        MKL_LONG res;
-
-        if ( NDim == 1 )
-        {
-            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim[0])) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-        else
-        {
-            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-
-        double fftScaling = 1.0;
-        for ( ii=0; ii<NDim; ii++ )
-        {
-            fftScaling *= dim[ii];
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_FORWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_BACKWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_PLACEMENT, DFTI_INPLACE)) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( n > 1 )
-        {
-            if ( (res=DftiSetValue( handle, DFTI_NUMBER_OF_TRANSFORMS, n)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-
-            if ( (res=DftiSetValue( handle, DFTI_INPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-
-            if ( (res=DftiSetValue( handle, DFTI_OUTPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-
-        if ( (res=DftiCommitDescriptor( handle)) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::configureFFTHandleOutOfPlace(long long NDim, MKL_LONG* dim, DFTI_CONFIG_VALUE fftPresion, size_t n, DFTI_DESCRIPTOR_HANDLE& handle)
-    {
-        long long ii;
-
-        MKL_LONG res;
-
-        if ( NDim == 1 )
-        {
-            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim[0])) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-        else
-        {
-            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-
-        double fftScaling = 1.0;
-        for ( ii=0; ii<NDim; ii++ )
-        {
-            fftScaling *= dim[ii];
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_FORWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_BACKWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_PLACEMENT, DFTI_NOT_INPLACE)) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( n > 1 )
-        {
-            if ( (res=DftiSetValue( handle, DFTI_NUMBER_OF_TRANSFORMS, n)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-
-            if ( (res=DftiSetValue( handle, DFTI_INPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-
-            if ( (res=DftiSetValue( handle, DFTI_OUTPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-
-        if ( (res=DftiCommitDescriptor( handle)) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/a.get_size(0);
-        MKL_LONG dim = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(1, &dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(1, &dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/a.get_size(0);
-        MKL_LONG dim = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(1, &dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(1, &dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward( handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin()) ) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward( handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin()) ) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1));
-        MKL_LONG dim[2];
-        dim[0] = a.get_size(1);
-        dim[1] = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(2, dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(2, dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1));
-        MKL_LONG dim[2];
-        dim[0] = a.get_size(1);
-        dim[1] = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(2, dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(2, dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1)*a.get_size(2));
-
-        MKL_LONG dim[3];
-        dim[0] = a.get_size(2);
-        dim[1] = a.get_size(1);
-        dim[2] = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(3, dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(3, dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1)*a.get_size(2));
-
-        MKL_LONG dim[3];
-        dim[0] = a.get_size(2);
-        dim[1] = a.get_size(1);
-        dim[2] = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(3, dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(3, dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-#endif // USE_MKL
+//#ifdef USE_MKL
+//
+//    template<typename T> 
+//    bool hoNDFFT<T>::configureFFTHandle(long long NDim, MKL_LONG* dim, DFTI_CONFIG_VALUE fftPresion, size_t n, DFTI_DESCRIPTOR_HANDLE& handle)
+//    {
+//        long long ii;
+//
+//        MKL_LONG res;
+//
+//        if ( NDim == 1 )
+//        {
+//            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim[0])) != 0 )
+//            {
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//                return false;
+//            }
+//        }
+//        else
+//        {
+//            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim)) != 0 )
+//            {
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//                return false;
+//            }
+//        }
+//
+//        double fftScaling = 1.0;
+//        for ( ii=0; ii<NDim; ii++ )
+//        {
+//            fftScaling *= dim[ii];
+//        }
+//
+//        if ( (res=DftiSetValue( handle, DFTI_FORWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
+//        {
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//            return false;
+//        }
+//
+//        if ( (res=DftiSetValue( handle, DFTI_BACKWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
+//        {
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//            return false;
+//        }
+//
+//        if ( (res=DftiSetValue( handle, DFTI_PLACEMENT, DFTI_INPLACE)) != 0 )
+//        {
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//            return false;
+//        }
+//
+//        if ( n > 1 )
+//        {
+//            if ( (res=DftiSetValue( handle, DFTI_NUMBER_OF_TRANSFORMS, n)) != 0 )
+//            {
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//                return false;
+//            }
+//
+//            if ( (res=DftiSetValue( handle, DFTI_INPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
+//            {
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//                return false;
+//            }
+//
+//            if ( (res=DftiSetValue( handle, DFTI_OUTPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
+//            {
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//                return false;
+//            }
+//        }
+//
+//        if ( (res=DftiCommitDescriptor( handle)) != 0 )
+//        {
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//            return false;
+//        }
+//
+//        return true;
+//    }
+//
+//    template<typename T> 
+//    bool hoNDFFT<T>::configureFFTHandleOutOfPlace(long long NDim, MKL_LONG* dim, DFTI_CONFIG_VALUE fftPresion, size_t n, DFTI_DESCRIPTOR_HANDLE& handle)
+//    {
+//        long long ii;
+//
+//        MKL_LONG res;
+//
+//        if ( NDim == 1 )
+//        {
+//            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim[0])) != 0 )
+//            {
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//                return false;
+//            }
+//        }
+//        else
+//        {
+//            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim)) != 0 )
+//            {
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//                return false;
+//            }
+//        }
+//
+//        double fftScaling = 1.0;
+//        for ( ii=0; ii<NDim; ii++ )
+//        {
+//            fftScaling *= dim[ii];
+//        }
+//
+//        if ( (res=DftiSetValue( handle, DFTI_FORWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
+//        {
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//            return false;
+//        }
+//
+//        if ( (res=DftiSetValue( handle, DFTI_BACKWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
+//        {
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//            return false;
+//        }
+//
+//        if ( (res=DftiSetValue( handle, DFTI_PLACEMENT, DFTI_NOT_INPLACE)) != 0 )
+//        {
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//            return false;
+//        }
+//
+//        if ( n > 1 )
+//        {
+//            if ( (res=DftiSetValue( handle, DFTI_NUMBER_OF_TRANSFORMS, n)) != 0 )
+//            {
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//                return false;
+//            }
+//
+//            if ( (res=DftiSetValue( handle, DFTI_INPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
+//            {
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//                return false;
+//            }
+//
+//            if ( (res=DftiSetValue( handle, DFTI_OUTPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
+//            {
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//                return false;
+//            }
+//        }
+//
+//        if ( (res=DftiCommitDescriptor( handle)) != 0 )
+//        {
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) );
+//            return false;
+//        }
+//
+//        return true;
+//    }
+//
+//    template<typename T> 
+//    bool hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, bool forward)
+//    {
+//        size_t n = a.get_number_of_elements()/a.get_size(0);
+//        MKL_LONG dim = a.get_size(0);
+//
+//        DFTI_DESCRIPTOR_HANDLE handle;
+//
+//        if ( typeid(T) == typeid(float) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(1, &dim, DFTI_SINGLE, n, handle));
+//        }
+//        else if ( typeid(T) == typeid(double) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(1, &dim, DFTI_DOUBLE, n, handle));
+//        }
+//        else
+//        {
+//            GADGET_ERROR_MSG("hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
+//            return false;
+//        }
+//
+//        MKL_LONG res;
+//
+//        if ( forward )
+//        {
+//            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//        else
+//        {
+//            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//
+//        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
+//        { 
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//            return false; 
+//        }
+//
+//        return true;
+//    }
+//
+//    template<typename T> 
+//    bool hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
+//    {
+//        size_t n = a.get_number_of_elements()/a.get_size(0);
+//        MKL_LONG dim = a.get_size(0);
+//
+//        DFTI_DESCRIPTOR_HANDLE handle;
+//
+//        if ( typeid(T) == typeid(float) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(1, &dim, DFTI_SINGLE, n, handle));
+//        }
+//        else if ( typeid(T) == typeid(double) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(1, &dim, DFTI_DOUBLE, n, handle));
+//        }
+//        else
+//        {
+//            GADGET_ERROR_MSG("hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
+//            return false;
+//        }
+//
+//        MKL_LONG res;
+//
+//        if ( forward )
+//        {
+//            if ( ( res=DftiComputeForward( handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin()) ) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//        else
+//        {
+//            if ( ( res=DftiComputeBackward( handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin()) ) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//
+//        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
+//        { 
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//            return false; 
+//        }
+//
+//        return true;
+//    }
+//
+//    template<typename T> 
+//    bool hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, bool forward)
+//    {
+//        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1));
+//        MKL_LONG dim[2];
+//        dim[0] = a.get_size(1);
+//        dim[1] = a.get_size(0);
+//
+//        DFTI_DESCRIPTOR_HANDLE handle;
+//
+//        if ( typeid(T) == typeid(float) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(2, dim, DFTI_SINGLE, n, handle));
+//        }
+//        else if ( typeid(T) == typeid(double) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(2, dim, DFTI_DOUBLE, n, handle));
+//        }
+//        else
+//        {
+//            GADGET_ERROR_MSG("hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
+//            return false;
+//        }
+//
+//        MKL_LONG res;
+//        if ( forward )
+//        {
+//            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//        else
+//        {
+//            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//
+//        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
+//        { 
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//            return false; 
+//        }
+//
+//        return true;
+//    }
+//
+//    template<typename T> 
+//    bool hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
+//    {
+//        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1));
+//        MKL_LONG dim[2];
+//        dim[0] = a.get_size(1);
+//        dim[1] = a.get_size(0);
+//
+//        DFTI_DESCRIPTOR_HANDLE handle;
+//
+//        if ( typeid(T) == typeid(float) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(2, dim, DFTI_SINGLE, n, handle));
+//        }
+//        else if ( typeid(T) == typeid(double) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(2, dim, DFTI_DOUBLE, n, handle));
+//        }
+//        else
+//        {
+//            GADGET_ERROR_MSG("hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
+//            return false;
+//        }
+//
+//        MKL_LONG res;
+//        if ( forward )
+//        {
+//            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//        else
+//        {
+//            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//
+//        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
+//        { 
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//            return false; 
+//        }
+//
+//        return true;
+//    }
+//
+//    template<typename T> 
+//    bool hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, bool forward)
+//    {
+//        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1)*a.get_size(2));
+//
+//        MKL_LONG dim[3];
+//        dim[0] = a.get_size(2);
+//        dim[1] = a.get_size(1);
+//        dim[2] = a.get_size(0);
+//
+//        DFTI_DESCRIPTOR_HANDLE handle;
+//
+//        if ( typeid(T) == typeid(float) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(3, dim, DFTI_SINGLE, n, handle));
+//        }
+//        else if ( typeid(T) == typeid(double) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(3, dim, DFTI_DOUBLE, n, handle));
+//        }
+//        else
+//        {
+//            GADGET_ERROR_MSG("hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
+//            return false;
+//        }
+//
+//        MKL_LONG res;
+//        if ( forward )
+//        {
+//            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//        else
+//        {
+//            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//
+//        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
+//        { 
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//            return false; 
+//        }
+//
+//        return true;
+//    }
+//
+//    template<typename T> 
+//    bool hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
+//    {
+//        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1)*a.get_size(2));
+//
+//        MKL_LONG dim[3];
+//        dim[0] = a.get_size(2);
+//        dim[1] = a.get_size(1);
+//        dim[2] = a.get_size(0);
+//
+//        DFTI_DESCRIPTOR_HANDLE handle;
+//
+//        if ( typeid(T) == typeid(float) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(3, dim, DFTI_SINGLE, n, handle));
+//        }
+//        else if ( typeid(T) == typeid(double) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(3, dim, DFTI_DOUBLE, n, handle));
+//        }
+//        else
+//        {
+//            GADGET_ERROR_MSG("hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
+//            return false;
+//        }
+//
+//        MKL_LONG res;
+//        if ( forward )
+//        {
+//            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//        else
+//        {
+//            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
+//            { 
+//                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//                return false; 
+//            }
+//        }
+//
+//        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
+//        { 
+//            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
+//            return false; 
+//        }
+//
+//        return true;
+//    }
+//
+//#endif // USE_MKL
 
     // 
     // Instantiation
