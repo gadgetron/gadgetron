@@ -7,122 +7,64 @@
 #include <iostream>
 #include "GadgetronCommon.h"
 
-/// uncomment this to disable the explicit MKL calls
-/// #undef USE_MKL
-
-#ifdef USE_MKL
-    #include "mkl.h"
-
-    #ifdef MKL_ILP64
-        #define ILP_MODE_ON 1
-    #endif
-#endif // USE_MKL
-
 #ifndef lapack_int
-    #ifdef USE_MKL
-        #ifdef MKL_ILP64
-            #define lapack_int __int64
-        #else
-            #define lapack_int int
-        #endif // MKL_ILP64
-    #else
-        #define lapack_int int
-    #endif // USE_MKL
+    #define lapack_int int
 #endif // lapack_int
 
-#ifdef USE_MKL
+#ifndef lapack_complex_float
+    #define lapack_complex_float GT_Complex8
+#endif // lapack_complex_float
 
-    #define saxpy_ saxpy
-    #define daxpy_ daxpy
-    #define caxpy_ caxpy
-    #define zaxpy_ zaxpy
+#ifndef lapack_complex_double
+    #define lapack_complex_double GT_Complex16
+#endif // #ifndef lapack_complex_double
 
-    #define snrm2_ snrm2
-    #define scnrm2_ scnrm2
-    #define dnrm2_ dnrm2
-    #define dznrm2_ dznrm2
+//Declaration of BLAS and LAPACK routines
+extern "C"
+{
+    /// Computes a vector-scalar product and adds the result to a vector.
+    /// y = a*x + y
+    void saxpy_(lapack_int* N, float* a, float* x, lapack_int* incx, float* y, lapack_int* incy);
+    void daxpy_(lapack_int* N, double* a, double* x, lapack_int* incx, double* y, lapack_int* incy);
+    void caxpy_(lapack_int* N, lapack_complex_float* a, lapack_complex_float* x, lapack_int* incx, lapack_complex_float* y, lapack_int* incy);
+    void zaxpy_(lapack_int* N, lapack_complex_double* a, lapack_complex_double* x, lapack_int* incx, lapack_complex_double* y, lapack_int* incy);
 
-    #define sasum_ sasum
-    #define scasum_ scasum
-    #define dasum_ dasum
-    #define dzasum_ dzasum
+    /// Computes the Euclidean norm of a vector.
+    float snrm2_(lapack_int* N, float* x, lapack_int* incx);
+    float scnrm2_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
+    double dnrm2_(lapack_int* N, double* x, lapack_int* incx);
+    double dznrm2_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
 
-    #define sscal_ sscal
-    #define dscal_ dscal
-    #define cscal_ cscal
-    #define zscal_ zscal
-    #define csscal_ csscal
-    #define zdscal_ zdscal
+    /// Computes the sum of magnitudes of the vector elements.
+    float sasum_(lapack_int* N, float* x, lapack_int* incx);
+    float scasum_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
+    double dasum_(lapack_int* N, double* x, lapack_int* incx);
+    double dzasum_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
 
-    #define cdotc_ cdotc
-    #define zdotc_ zdotc
-    #define cdotu_ cdotu
-    #define zdotu_ zdotu
+    /// Computes the product of a vector by a scalar.
+    void sscal_(lapack_int* N, float* a, float* x, lapack_int* incx);
+    void dscal_(lapack_int* N, double* a, double* x, lapack_int* incx);
+    void cscal_(lapack_int* N, lapack_complex_float* a, lapack_complex_float* x, lapack_int* incx);
+    void zscal_(lapack_int* N, lapack_complex_double* a, lapack_complex_double* x, lapack_int* incx);
+    void csscal_(lapack_int* N, float* a, lapack_complex_float* x, lapack_int* incx);
+    void zdscal_(lapack_int* N, double* a, lapack_complex_double* x, lapack_int* incx);
 
-    #define isamax_ isamax
-    #define idamax_ idamax
-    #define icamax_ icamax
-    #define izamax_ izamax
+    /// Computes a dot product of a conjugated vector with another vector.
+    void cdotc_(void* r, lapack_int* N, lapack_complex_float* x, lapack_int* incx, lapack_complex_float* y, lapack_int* incy);
+    void zdotc_(void* r, lapack_int* N, lapack_complex_double* x, lapack_int* incx, lapack_complex_double* y, lapack_int* incy);
 
-#else
+    /// Computes a vector-vector dot product.
+    void cdotu_(void* r, lapack_int* N, lapack_complex_float* x, lapack_int* incx, lapack_complex_float* y, lapack_int* incy);
+    void zdotu_(void* r, lapack_int* N, lapack_complex_double* x, lapack_int* incx, lapack_complex_double* y, lapack_int* incy);
 
-    #ifndef lapack_complex_float
-        #define lapack_complex_float GT_Complex8
-    #endif // lapack_complex_float
+    /// Finds the index of the element with the maximal absolute value.
+    lapack_int isamax_(lapack_int* N, float* x, lapack_int* incx);
+    lapack_int idamax_(lapack_int* N, double* x, lapack_int* incx);
+    lapack_int icamax_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
+    lapack_int izamax_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
+}
 
-    #ifndef lapack_complex_double
-        #define lapack_complex_double GT_Complex16
-    #endif // #ifndef lapack_complex_double
-
-    //Declaration of BLAS and LAPACK routines
-    extern "C"
-    {
-        /// Computes a vector-scalar product and adds the result to a vector.
-        /// y = a*x + y
-        void saxpy_(lapack_int* N, float* a, float* x, lapack_int* incx, float* y, lapack_int* incy);
-        void daxpy_(lapack_int* N, double* a, double* x, lapack_int* incx, double* y, lapack_int* incy);
-        void caxpy_(lapack_int* N, lapack_complex_float* a, lapack_complex_float* x, lapack_int* incx, lapack_complex_float* y, lapack_int* incy);
-        void zaxpy_(lapack_int* N, lapack_complex_double* a, lapack_complex_double* x, lapack_int* incx, lapack_complex_double* y, lapack_int* incy);
-
-        /// Computes the Euclidean norm of a vector.
-        float snrm2_(lapack_int* N, float* x, lapack_int* incx);
-        float scnrm2_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
-        double dnrm2_(lapack_int* N, double* x, lapack_int* incx);
-        double dznrm2_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
-
-        /// Computes the sum of magnitudes of the vector elements.
-        float sasum_(lapack_int* N, float* x, lapack_int* incx);
-        float scasum_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
-        double dasum_(lapack_int* N, double* x, lapack_int* incx);
-        double dzasum_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
-
-        /// Computes the product of a vector by a scalar.
-        void sscal_(lapack_int* N, float* a, float* x, lapack_int* incx);
-        void dscal_(lapack_int* N, double* a, double* x, lapack_int* incx);
-        void cscal_(lapack_int* N, lapack_complex_float* a, lapack_complex_float* x, lapack_int* incx);
-        void zscal_(lapack_int* N, lapack_complex_double* a, lapack_complex_double* x, lapack_int* incx);
-        void csscal_(lapack_int* N, float* a, lapack_complex_float* x, lapack_int* incx);
-        void zdscal_(lapack_int* N, double* a, lapack_complex_double* x, lapack_int* incx);
-
-        /// Computes a dot product of a conjugated vector with another vector.
-        void cdotc_(void* r, lapack_int* N, lapack_complex_float* x, lapack_int* incx, lapack_complex_float* y, lapack_int* incy);
-        void zdotc_(void* r, lapack_int* N, lapack_complex_double* x, lapack_int* incx, lapack_complex_double* y, lapack_int* incy);
-
-        /// Computes a vector-vector dot product.
-        void cdotu_(void* r, lapack_int* N, lapack_complex_float* x, lapack_int* incx, lapack_complex_float* y, lapack_int* incy);
-        void zdotu_(void* r, lapack_int* N, lapack_complex_double* x, lapack_int* incx, lapack_complex_double* y, lapack_int* incy);
-
-        /// Finds the index of the element with the maximal absolute value.
-        lapack_int isamax_(lapack_int* N, float* x, lapack_int* incx);
-        lapack_int idamax_(lapack_int* N, double* x, lapack_int* incx);
-        lapack_int icamax_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
-        lapack_int izamax_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
-        }
-#endif // USE_MKL
-
-#define NumElementsUseThreading 128*128*6
-
-const unsigned long long FourGBLimit = (unsigned long long)(1024.0*1024*1024*4);
+#define NumElementsUseThreading 32*1024*1024
 
 namespace Gadgetron { namespace math {
 
@@ -300,33 +242,6 @@ namespace Gadgetron { namespace math {
 
     /// --------------------------------------------------------------------
 
-#ifdef USE_MKL
-    template <> EXPORTCPUCOREMATH void add(size_t N, const float* x, const float* y, float* r)
-    {
-        vsAdd((lapack_int)N, x, y, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void add(size_t N, const double* x, const double* y, double* r)
-    {
-        vdAdd((lapack_int)N, x, y, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void add(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
-    {
-        vcAdd((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void add(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
-    {
-        vzAdd((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-#else
-
     template <> EXPORTCPUCOREMATH void add(size_t N, const float* x, const float* y, float* r)
     {
         long long n;
@@ -389,38 +304,9 @@ namespace Gadgetron { namespace math {
         }
     }
 
-#endif // USE_MKL
-
     /// --------------------------------------------------------------------
 
-#ifdef USE_MKL
     template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const float* y, float* r)
-    {
-        vsSub((lapack_int)N, x, y, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void subtract(size_t N, const double* x, const double* y, double* r)
-    {
-        vdSub((lapack_int)N, x, y, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void subtract(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
-    {
-        vcSub((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void subtract(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
-    {
-        vzSub((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-#else
-
-template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const float* y, float* r)
     {
         long long n;
 
@@ -482,36 +368,7 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
         }
     }
 
-#endif // USE_MKL
-
     /// --------------------------------------------------------------------
-
-#ifdef USE_MKL
-    template <> EXPORTCPUCOREMATH void multiply(size_t N, const float* x, const float* y, float* r)
-    {
-        vsMul((lapack_int)N, x, y, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void multiply(size_t N, const double* x, const double* y, double* r)
-    {
-        vdMul((lapack_int)N, x, y, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void multiply(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
-    {
-        vcMul((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void multiply(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
-    {
-        vzMul((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-#else
 
     template <typename T> 
     void multiply(size_t N, const T* x, const T* y, T* r)
@@ -565,36 +422,7 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
         }
     }
 
-#endif // USE_MKL
-
     /// --------------------------------------------------------------------
-
-#ifdef USE_MKL
-    template <> EXPORTCPUCOREMATH void divide(size_t N, const float* x, const float* y, float* r)
-    {
-        vsDiv((lapack_int)N, x, y, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void divide(size_t N, const double* x, const double* y, double* r)
-    {
-        vdDiv((lapack_int)N, x, y, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void divide(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
-    {
-        vcDiv((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void divide(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
-    {
-        vzDiv((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-#else
 
     template <typename T> 
     void divide(size_t N, const T* x, const T* y, T* r)
@@ -651,36 +479,8 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
             reinterpret_cast<double(&)[2]>(r[i])[1] = (b*c-a*d)*m;
         }
     }
-#endif // USE_MKL
 
     /// --------------------------------------------------------------------
-
-#ifdef USE_MKL
-    template <> EXPORTCPUCOREMATH void sqrt(size_t N, const float* x, float* r)
-    {
-        vsSqrt((lapack_int)N, x, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void sqrt(size_t N, const double* x, double* r)
-    {
-        vdSqrt((lapack_int)N, x, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void sqrt(size_t N, const GT_Complex8* x, GT_Complex8* r)
-    {
-        vcSqrt((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void sqrt(size_t N, const GT_Complex16* x, GT_Complex16* r)
-    {
-        vzSqrt((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-#else
 
     template <typename T> 
     void sqrt(size_t N, const T* x, T* r)
@@ -697,7 +497,6 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
     template EXPORTCPUCOREMATH void sqrt(size_t N, const double* x, double* r);
     template EXPORTCPUCOREMATH void sqrt(size_t N, const GT_Complex8* x, GT_Complex8* r);
     template EXPORTCPUCOREMATH void sqrt(size_t N, const GT_Complex16* x, GT_Complex16* r);
-#endif // USE_MKL
 
     /// --------------------------------------------------------------------
 
@@ -772,22 +571,6 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
 
     /// --------------------------------------------------------------------
 
-#ifdef USE_MKL
-
-    template <> EXPORTCPUCOREMATH void multiplyConj(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
-    {
-        vcMulByConj((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void multiplyConj(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
-    {
-        vzMulByConj((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(y), (MKL_Complex16*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-#else
-
     template <> EXPORTCPUCOREMATH 
     void multiplyConj(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
@@ -824,24 +607,7 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
         }
     }
 
-#endif // USE_MKL
     /// --------------------------------------------------------------------
-
-#ifdef USE_MKL
-
-    template <> EXPORTCPUCOREMATH void conjugate(size_t N, const GT_Complex8* x, GT_Complex8* r)
-    {
-        vcConj((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void conjugate(size_t N, const GT_Complex16* x, GT_Complex16* r)
-    {
-        vzConj((lapack_int)N, (MKL_Complex16*)(x), (MKL_Complex16*)(r));
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-#else
 
     template <> EXPORTCPUCOREMATH 
     void conjugate(size_t N, const GT_Complex8* x, GT_Complex8* r)
@@ -868,8 +634,6 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
             reinterpret_cast<double(&)[2]>(r[n])[1] = -(reinterpret_cast<const double(&)[2]>(x[n])[1]);
         }
     }
-
-#endif // USE_MKL
 
     /// --------------------------------------------------------------------
 
@@ -931,126 +695,70 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const float* x, float& r)
     {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
+        long long i;
 
-#ifdef ILP_MODE_ON
-        r = snrm2_(&num, (float*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            r = snrm2_(&num, (float*)(x), &incx);
-        }
-        else
-        {
-            long long i;
-
-            float sum(0);
+        float sum(0);
 
 #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-            for (i = 0; i < (long long)N; i++)
-            {
-                const float& re = x[i];
-                sum += ( re*re );
-            }
-
-            r = std::sqrt(sum);
+        for (i = 0; i < (long long)N; i++)
+        {
+            const float& re = x[i];
+            sum += ( re*re );
         }
-#endif // ILP_MODE_ON
+
+        r = std::sqrt(sum);
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const double* x, double& r)
     {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
+        long long i;
 
-#ifdef ILP_MODE_ON
-        r = dnrm2_(&num, (double*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            r = dnrm2_(&num, (double*)(x), &incx);
-        }
-        else
-        {
-            long long i;
-
-            double sum(0);
+        double sum(0);
 
 #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-            for (i = 0; i < (long long)N; i++)
-            {
-                const double& re = x[i];
-                sum += ( re*re );
-            }
-
-            r = std::sqrt(sum);
+        for (i = 0; i < (long long)N; i++)
+        {
+            const double& re = x[i];
+            sum += ( re*re );
         }
-#endif // ILP_MODE_ON
+
+        r = std::sqrt(sum);
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const GT_Complex8* x, float& r)
     {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
+        long long i;
 
-#ifdef ILP_MODE_ON
-        r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
-        }
-        else
-        {
-            long long i;
-
-            float sum(0);
+        float sum(0);
 
 #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-            for (i = 0; i < (long long)N; i++)
-            {
-                const std::complex<float>& c = x[i];
-                const float re = c.real();
-                const float im = c.imag();
-                sum += ( (re*re) + (im * im) );
-            }
-
-            r = std::sqrt(sum);
+        for (i = 0; i < (long long)N; i++)
+        {
+            const std::complex<float>& c = x[i];
+            const float re = c.real();
+            const float im = c.imag();
+            sum += ( (re*re) + (im * im) );
         }
-#endif // ILP_MODE_ON
+
+        r = std::sqrt(sum);
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const GT_Complex16* x, double& r)
     {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
+        long long i;
 
-#ifdef ILP_MODE_ON
-        r = dznrm2_(&num, (lapack_complex_double*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            r = dznrm2_(&num, (lapack_complex_double*)(x), &incx);
-        }
-        else
-        {
-            long long i;
-
-            double sum(0);
+        double sum(0);
 
 #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-            for (i = 0; i < (long long)N; i++)
-            {
-                const std::complex<double>& c = x[i];
-                const double re = c.real();
-                const double im = c.imag();
-                sum += ( (re*re) + (im * im) );
-            }
-
-            r = std::sqrt(sum);
+        for (i = 0; i < (long long)N; i++)
+        {
+            const std::complex<double>& c = x[i];
+            const double re = c.real();
+            const double im = c.imag();
+            sum += ( (re*re) + (im * im) );
         }
-#endif // ILP_MODE_ON
+
+        r = std::sqrt(sum);
     }
 
     template <typename T> inline 
@@ -1135,65 +843,52 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
 
     /// --------------------------------------------------------------------
 
-    template <typename T> void dotc_64bit_mode(size_t N, const T* x, const T* y, T& r)
+    template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
     {
         long long n;
 
-        T sum(0);
+        float sum(0);
 
-        typename realType<T>::Type sa(0), sb(0);
+        float sa(0), sb(0);
 
 #pragma omp parallel for reduction(+:sa) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const typename realType<T>::Type a = x[n].real();
-            const typename realType<T>::Type b = x[n].imag();
-            const typename realType<T>::Type c = y[n].real();
-            const typename realType<T>::Type d = y[n].imag();
+            const float a = x[n].real();
+            const float b = x[n].imag();
+            const float c = y[n].real();
+            const float d = y[n].imag();
 
             sa += (a*c + b*d);
             sb += (c*b - a*d);
         }
 
-        r = T(sa, sb);
-    }
-
-    template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
-    {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx=1, incy=1;
-
-#ifdef ILP_MODE_ON
-        cdotc_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
-#else
-        if ( N < FourGBLimit )
-        {
-            cdotc_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
-        }
-        else
-        {
-            dotc_64bit_mode(N, x, y, r);
-        }
-#endif // ILP_MODE_ON
+        reinterpret_cast<float(&)[2]>(r)[0] = sa;
+        reinterpret_cast<float(&)[2]>(r)[1] = sb;
     }
 
     template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r)
     {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx=1, incy=1;
+        long long n;
 
-#ifdef ILP_MODE_ON
-        zdotc_((lapack_complex_double*)(&r), &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
-#else
-        if ( N < FourGBLimit )
+        double sum(0);
+
+        double sa(0), sb(0);
+
+#pragma omp parallel for reduction(+:sa) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
         {
-            zdotc_((lapack_complex_double*)(&r), &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
+            const double a = x[n].real();
+            const double b = x[n].imag();
+            const double c = y[n].real();
+            const double d = y[n].imag();
+
+            sa += (a*c + b*d);
+            sb += (c*b - a*d);
         }
-        else
-        {
-            dotc_64bit_mode(N, x, y, r);
-        }
-#endif // ILP_MODE_ON
+
+        reinterpret_cast<double(&)[2]>(r)[0] = sa;
+        reinterpret_cast<double(&)[2]>(r)[1] = sb;
     }
 
     template <typename T> T dotc(size_t N, const T* x, const T* y)
@@ -1238,64 +933,50 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
         r = res;
     }
 
-    template <typename T> inline void dotu_64bit_mode(size_t N, const T* x, const T* y, T& r)
+    template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
     {
         long long n;
 
-        T sum(0);
+        GT_Complex8 sum(0);
 
-        typename realType<T>::Type sa(0), sb(0);
+        float sa(0), sb(0);
 #pragma omp parallel for reduction(+:sa) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const typename realType<T>::Type a = x[n].real();
-            const typename realType<T>::Type b = x[n].imag();
-            const typename realType<T>::Type c = y[n].real();
-            const typename realType<T>::Type d = y[n].imag();
+            const float a = x[n].real();
+            const float b = x[n].imag();
+            const float c = y[n].real();
+            const float d = y[n].imag();
 
             sa += (a*c - b*d);
             sb += (c*b + a*d);
         }
 
-        r = T(sa, sb);
-    }
-
-    template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
-    {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx=1, incy=1;
-
-#ifdef ILP_MODE_ON
-        cdotu_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
-#else
-        if ( N < FourGBLimit )
-        {
-            cdotu_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
-        }
-        else
-        {
-            dotu_64bit_mode(N, x, y, r);
-        }
-#endif // ILP_MODE_ON
+        reinterpret_cast<float(&)[2]>(r)[0] = sa;
+        reinterpret_cast<float(&)[2]>(r)[1] = sb;
     }
 
     template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r)
     {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx=1, incy=1;
+        long long n;
 
-#ifdef ILP_MODE_ON
-        zdotu_((lapack_complex_double*)&r, &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
-#else
-        if ( N < FourGBLimit )
+        GT_Complex16 sum(0);
+
+        double sa(0), sb(0);
+#pragma omp parallel for reduction(+:sa) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
         {
-            zdotu_((lapack_complex_double*)&r, &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
+            const double a = x[n].real();
+            const double b = x[n].imag();
+            const double c = y[n].real();
+            const double d = y[n].imag();
+
+            sa += (a*c - b*d);
+            sb += (c*b + a*d);
         }
-        else
-        {
-            dotu_64bit_mode(N, x, y, r);
-        }
-#endif // ILP_MODE_ON
+
+        reinterpret_cast<double(&)[2]>(r)[0] = sa;
+        reinterpret_cast<double(&)[2]>(r)[1] = sb;
     }
 
     template <typename T> inline T dotu(size_t N, const T* x, const T* y)
@@ -1316,38 +997,14 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
     {
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
-
-#ifdef ILP_MODE_ON
         r = sasum_(&num, (float*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            r = sasum_(&num, (float*)(x), &incx);
-        }
-        else
-        {
-            norm1(N, x, r);
-        }
-#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const double* x, double& r)
     {
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
-
-#ifdef ILP_MODE_ON
         r = dasum_(&num, (double*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            r = dasum_(&num, (double*)(x), &incx);
-        }
-        else
-        {
-            norm1(N, x, r);
-        }
-#endif // ILP_MODE_ON
     }
 
     template <typename T> inline void asum_64bit_mode(size_t N, const T* x, typename realType<T>::Type& r)
@@ -1370,38 +1027,14 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
     {
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
-
-#ifdef ILP_MODE_ON
         r = scasum_(&num, (lapack_complex_float*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            r = scasum_(&num, (lapack_complex_float*)(x), &incx);
-        }
-        else
-        {
-            asum_64bit_mode(N, x, r);
-        }
-#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex16* x, double& r)
     {
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
-
-#ifdef ILP_MODE_ON
         r = dzasum_(&num, (lapack_complex_double*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
-        {
-            r = dzasum_(&num, (lapack_complex_double*)(x), &incx);
-        }
-        else
-        {
-            asum_64bit_mode(N, x, r);
-        }
-#endif // ILP_MODE_ON
     }
 
     template <typename T> inline typename realType<T>::Type asum(size_t N, const T* x)
@@ -1452,33 +1085,6 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
 
     /// --------------------------------------------------------------------
 
-#ifdef USE_MKL
-    template <> EXPORTCPUCOREMATH void absolute(size_t N, const float* x, float* r)
-    {
-        vsAbs((lapack_int)N, x, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void absolute(size_t N, const double* x, double* r)
-    {
-        vdAbs((lapack_int)N, x, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void absolute(size_t N, const GT_Complex8* x, float* r)
-    {
-        vcAbs((lapack_int)N, (MKL_Complex8*)(x), r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void absolute(size_t N, const GT_Complex16* x, double* r)
-    {
-        vzAbs((lapack_int)N, (MKL_Complex16*)(x), r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-#else
-
     template <typename T> 
     void absolute(size_t N, const T* x, typename realType<T>::Type* r)
     {
@@ -1521,7 +1127,6 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
             r[n]= std::sqrt( (re*re) + (im * im) );
         }
     }
-#endif // USE_MKL
 
     template <> EXPORTCPUCOREMATH 
     void absolute(size_t N, const std::complex<float>* x, std::complex<float>* r)
@@ -1573,22 +1178,6 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
 
     /// --------------------------------------------------------------------
 
-#ifdef USE_MKL
-
-    template <> EXPORTCPUCOREMATH void argument(size_t N, const GT_Complex8* x, float* r)
-    {
-        vcArg((lapack_int)N, (MKL_Complex8*)(x), r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void argument(size_t N, const GT_Complex16* x, double* r)
-    {
-        vzArg((lapack_int)N, (MKL_Complex16*)(x), r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-#else
-
     template <typename T> 
     void argument(size_t N, const T* x, typename realType<T>::Type* r)
     {
@@ -1603,7 +1192,6 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
 
     template EXPORTCPUCOREMATH void argument(size_t N, const GT_Complex8* x, float* r);
     template EXPORTCPUCOREMATH void argument(size_t N, const GT_Complex16* x, double* r);
-#endif // USE_MKL
 
     /// --------------------------------------------------------------------
 
@@ -1620,25 +1208,8 @@ template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const floa
         }
     }
 
-#ifdef USE_MKL
-
-    template <> EXPORTCPUCOREMATH void inv(size_t N, const float* x, float* r)
-    {
-        vsInv((lapack_int)N, x, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-    template <> EXPORTCPUCOREMATH void inv(size_t N, const double* x, double* r)
-    {
-        vdInv((lapack_int)N, x, r);
-        GADGET_CHECK_THROW(vmlGetErrStatus()==0);
-    }
-
-#else
     template EXPORTCPUCOREMATH void inv(size_t N, const float* x, float* r);
     template EXPORTCPUCOREMATH void inv(size_t N, const double* x, double* r);
-#endif // USE_MKL
-
     template EXPORTCPUCOREMATH void inv(size_t N, const GT_Complex8* x, GT_Complex8* r);
     template EXPORTCPUCOREMATH void inv(size_t N, const GT_Complex16* x, GT_Complex16* r);
 

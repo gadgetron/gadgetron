@@ -866,11 +866,7 @@ namespace Gadgetron {
             #endif
             for ( n=0; n<N; n++ )
             {
-                //#ifdef USE_MKL
-                //    vsAdd(x.get_number_of_elements(), reinterpret_cast<const float*>(x.begin()), reinterpret_cast<const float*>(y.begin()+n*Nx), reinterpret_cast<float*>(r.begin()+n*Nx));
-                //#else
-                    Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-                //#endif // USE_MKL
+                Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
         else if ( typeid(T)==typeid(double) )
@@ -882,11 +878,7 @@ namespace Gadgetron {
             #endif
             for ( n=0; n<N; n++ )
             {
-                //#ifdef USE_MKL
-                //    vdAdd(x.get_number_of_elements(), reinterpret_cast<const double*>(x.begin()), reinterpret_cast<const double*>(y.begin()+n*Nx), reinterpret_cast<double*>(r.begin()+n*Nx));
-                //#else
-                    Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-                //#endif // USE_MKL
+                Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
@@ -898,11 +890,7 @@ namespace Gadgetron {
             #endif
             for ( n=0; n<N; n++ )
             {
-                //#ifdef USE_MKL
-                //    vcAdd(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), reinterpret_cast<const MKL_Complex8*>(y.begin()+n*Nx), reinterpret_cast<MKL_Complex8*>(r.begin()+n*Nx));
-                //#else
-                    Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-                //#endif // USE_MKL
+                Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
@@ -914,11 +902,7 @@ namespace Gadgetron {
             #endif
             for ( n=0; n<N; n++ )
             {
-                //#ifdef USE_MKL
-                //    vzAdd(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), reinterpret_cast<const MKL_Complex16*>(y.begin()+n*Nx), reinterpret_cast<MKL_Complex16*>(r.begin()+n*Nx));
-                //#else
-                    Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-                //#endif // USE_MKL
+                Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
         else
@@ -926,10 +910,6 @@ namespace Gadgetron {
             GADGET_ERROR_MSG("multipleAdd : unsupported type " << typeid(T).name());
             return false;
         }
-
-        //#ifdef USE_MKL
-        //    GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        //#endif // USE_MKL
 
         return true;
     }
@@ -957,11 +937,7 @@ namespace Gadgetron {
             #endif
             for ( n=0; n<N; n++ )
             {
-                //#ifdef USE_MKL
-                //    vsMul(x.get_number_of_elements(), reinterpret_cast<const float*>(x.begin()), reinterpret_cast<const float*>(y.begin()+n*Nx), reinterpret_cast<float*>(r.begin()+n*Nx));
-                //#else
-                    Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-                //#endif // USE_MKL
+                Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
         else if ( typeid(T)==typeid(double) )
@@ -973,11 +949,7 @@ namespace Gadgetron {
             #endif
             for ( n=0; n<N; n++ )
             {
-                //#ifdef USE_MKL
-                //    vdMul(x.get_number_of_elements(), reinterpret_cast<const double*>(x.begin()), reinterpret_cast<const double*>(y.begin()+n*Nx), reinterpret_cast<double*>(r.begin()+n*Nx));
-                //#else
-                    Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-                //#endif // USE_MKL
+                Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
@@ -989,11 +961,7 @@ namespace Gadgetron {
             #endif
             for ( n=0; n<N; n++ )
             {
-                //#ifdef USE_MKL
-                //    vcMul(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), reinterpret_cast<const MKL_Complex8*>(y.begin()+n*Nx), reinterpret_cast<MKL_Complex8*>(r.begin()+n*Nx));
-                //#else
-                    Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-                //#endif // USE_MKL
+                Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
@@ -1005,11 +973,7 @@ namespace Gadgetron {
             #endif
             for ( n=0; n<N; n++ )
             {
-                //#ifdef USE_MKL
-                //    vzMul(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), reinterpret_cast<const MKL_Complex16*>(y.begin()+n*Nx), reinterpret_cast<MKL_Complex16*>(r.begin()+n*Nx));
-                //#else
-                    Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-                //#endif // USE_MKL
+                Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
         else
@@ -1017,10 +981,6 @@ namespace Gadgetron {
             GADGET_ERROR_MSG("multipleMultiply : unsupported type " << typeid(T).name());
             return false;
         }
-
-        //#ifdef USE_MKL
-        //    GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
-        //#endif // USE_MKL
 
         return true;
     }
