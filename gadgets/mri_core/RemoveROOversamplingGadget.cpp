@@ -3,6 +3,10 @@
 #include "hoNDFFT.h"
 #include "ismrmrd/xml.h"
 
+#ifdef USE_MKL
+    #include "mkl.h"
+#endif // USE_MKL
+
 namespace Gadgetron{
 
     RemoveROOversamplingGadget::RemoveROOversamplingGadget() : constant_noise_variance_(false)
