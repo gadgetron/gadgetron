@@ -64,7 +64,7 @@ extern "C"
     lapack_int izamax_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
 }
 
-#define NumElementsUseThreading 32*1024*1024
+#define NumElementsUseThreading 32*1024
 
 namespace Gadgetron { namespace math {
 
