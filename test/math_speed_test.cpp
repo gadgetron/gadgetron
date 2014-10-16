@@ -90,9 +90,9 @@ protected:
     }
 
     std::vector< size_t > num_of_elements_;
-    std::vector< hoNDArray<std::complex<float>> > A_;
-    std::vector< hoNDArray<std::complex<float>> > B_;
-    std::vector< hoNDArray<std::complex<float>> > res_;
+    std::vector< hoNDArray<std::complex<float> > > A_;
+    std::vector< hoNDArray<std::complex<float> > > B_;
+    std::vector< hoNDArray<std::complex<float> > > res_;
 
     int max_num_thread_;
     GadgetronTimer timer_;
