@@ -6,6 +6,7 @@ include_directories(
     ${ISMRMRD_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
     ${ARMADILLO_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -95,6 +96,7 @@ target_link_libraries(gadgetronPlus
     gadgetron_toolbox_cpufft
     gadgetron_toolbox_gtplus 
     gadgetron_toolbox_gadgettools 
+    gadgetron_toolbox_cloudbus
     ${Boost_LIBRARIES}
     ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 

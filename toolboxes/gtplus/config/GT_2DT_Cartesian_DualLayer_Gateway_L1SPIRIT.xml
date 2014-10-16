@@ -774,6 +774,12 @@
         <!-- parameters for the cloud computation 
              The cloud should be defined as the following: CloudNodeX_IP/Port/XMLConfiguration etc.
         -->
+
+        <property>
+            <name>CloudNodeXMLConfiguration</name>
+            <value>GT_2DT_Cartesian_FirstLayer_CloudNode.xml</value>
+        </property>
+
         <property>
             <name>CloudComputing</name>
             <value>true</value>

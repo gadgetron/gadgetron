@@ -3,6 +3,7 @@
 #include "GtPlusGadgetOpenMP.h"
 #include "gadgetron_paths.h"
 #include <iomanip>
+#include "CloudBus.h"
 
 using namespace Gadgetron::gtPlus;
 
@@ -556,6 +557,32 @@ namespace Gadgetron
 
     bool GtPlusReconGadget::parseGTCloudNodeFile(const std::string& filename, CloudType& gtCloud)
     {
+
+      bool using_cloudbus = this->get_bool_value("using_cloudbus");
+      bool has_cloud_node_xml_configuration = this->get_string_value("CloudNodeXMLConfiguration")->size();
+
+      if (using_cloudbus && has_cloud_node_xml_configuration) {
+	std::vector<GadgetronNodeInfo> nodes;
+	CloudBus::instance()->get_node_info(nodes);
+        gtCloud.resize(nodes.size());
+
+        unsigned int n;
+        for ( n=0; n<nodes.size(); n++ )
+        {
+	  std::stringstream ss;
+	  gtCloud[n].get<0>() = nodes[n].address;
+	  ss << nodes[n].port;
+	  gtCloud[n].get<1>() = ss.str();
+	  gtCloud[n].get<2>() = *this->get_string_value("CloudNodeXMLConfiguration");
+	  gtCloud[n].get<3>() = nodes[n].compute_capability;
+
+	  GADGET_CONDITION_MSG(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
+        }
+
+	return true; //We will leave the function here
+
+      }
+
       std::string nodeFileName = get_gadgetron_home();
         nodeFileName.append("/config/gtCloud/");
         nodeFileName.append(filename);
