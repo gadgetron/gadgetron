@@ -101,6 +101,8 @@ namespace Gadgetron
       CloudBus::instance()->remove_stale_nodes();
       ACE_OS::sleep(5);//Sleep for 5 seconds
     }
+
+    return 0;
   }
 
   CloudBus* CloudBus::instance()

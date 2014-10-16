@@ -445,6 +445,8 @@ void norm2(size_t N, const std::complex<float>* x, float& r, int numOfThreads)
 
         float sum(0);
 
+        long long num = (long long)N;
+
         if( numOfThreads > 1 )
         {
             #pragma omp parallel for reduction(+:sum) num_threads(numOfThreads)
@@ -458,7 +460,7 @@ void norm2(size_t N, const std::complex<float>* x, float& r, int numOfThreads)
         }
         else
         {
-            for (i = 0; i < (long long)N; i++)
+            for (i = 0; i < num; i++)
             {
                 const std::complex<float>& c = x[i];
                 const float re = c.real();
