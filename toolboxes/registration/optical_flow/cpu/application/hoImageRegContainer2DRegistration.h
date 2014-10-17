@@ -825,6 +825,7 @@ namespace Gadgetron
                 if ( numOfImages < numOfProcs-1 )
                 {
                     omp_set_nested(1);
+                    GADGET_MSG("registerOverContainer2DPairWise - nested openMP on ... ");
                 }
                 else
                 {
