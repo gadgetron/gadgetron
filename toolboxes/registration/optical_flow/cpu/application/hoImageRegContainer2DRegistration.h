@@ -830,6 +830,7 @@ namespace Gadgetron
                 else
                 {
                     omp_set_nested(0);
+                    GADGET_MSG("registerOverContainer2DPairWise - nested openMP off ... ");
                 }
             #endif // USE_OMP
 
