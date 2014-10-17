@@ -288,7 +288,7 @@ namespace Gadgetron
             dissimilarity_ = 0;
             computing_value_type v=0;
 
-            #pragma omp parallel for private(n)
+            #pragma omp parallel for private(n) if(N>32768)
             for ( n=0; n<N; ++n )
             {
                 const computing_value_type u1 = p_mu1[n];
@@ -311,7 +311,7 @@ namespace Gadgetron
 
             computing_value_type lcc = 0;
 
-            #pragma omp parallel for reduction(+:lcc)
+            #pragma omp parallel for reduction(+:lcc) if(N>32768)
             for (n=0; n<N; n++)
             {
                 lcc += cc[n];
@@ -383,7 +383,7 @@ namespace Gadgetron
                 T* pT = target.begin();
                 T* pW = warped.begin();
 
-                #pragma omp parallel for default(none) shared(N, pT, pW)
+                #pragma omp parallel for default(none) shared(N, pT, pW) if(N>32768)
                 for ( n=0; n<(long long)N; n++ )
                 {
                     deriv(n) = static_cast<T>( p_v1[n]* (computing_value_type)pT[n] + ( p_v2[n]*(computing_value_type)pW[n] - p_v12[n] ) );
