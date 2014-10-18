@@ -585,13 +585,27 @@ void norm1(size_t N, const std::complex<float>* x, float& r, int numOfThreads)
 {
     long long i;
     float sum = 0.0f;
-    #pragma omp parallel for reduction(+:sum) num_threads(numOfThreads)
-    for (i = 0; i < (long long)N; i++)
+
+    if( numOfThreads > 1 )
     {
-        const std::complex<float>& c = x[i];
-        const float re = c.real();
-        const float im = c.imag();
-        sum += std::sqrt( (re*re) + (im * im) );
+        #pragma omp parallel for reduction(+:sum) num_threads(numOfThreads)
+        for (i = 0; i < (long long)N; i++)
+        {
+            const std::complex<float>& c = x[i];
+            const float re = c.real();
+            const float im = c.imag();
+            sum += std::sqrt( (re*re) + (im * im) );
+        }
+    }
+    else
+    {
+        for (i = 0; i < (long long)N; i++)
+        {
+            const std::complex<float>& c = x[i];
+            const float re = c.real();
+            const float im = c.imag();
+            sum += std::sqrt( (re*re) + (im * im) );
+        }
     }
 
     r = sum;
@@ -631,4 +645,202 @@ TYPED_TEST(math_speed_test, norm1)
 
     save_timing("norm1", this->num_of_elements_, time_used);
 }
+/// ============================================================================================================
+void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r, int numOfThreads)
+    {
+        long long n;
+
+        float sum(0);
+
+        float sa(0), sb(0);
+
+        if ( numOfThreads > 1 )
+        {
+            #pragma omp parallel for private(n) reduction(+:sa) num_threads(numOfThreads)
+            for (n = 0; n < (long long)N; n++)
+            {
+                const float a = x[n].real();
+                const float b = x[n].imag();
+                const float c = y[n].real();
+                const float d = y[n].imag();
+
+                sa += (a*c + b*d);
+                sb += (c*b - a*d);
+            }
+        }
+        else
+        {
+            for (n = 0; n < (long long)N; n++)
+            {
+                const float a = x[n].real();
+                const float b = x[n].imag();
+                const float c = y[n].real();
+                const float d = y[n].imag();
+
+                sa += (a*c + b*d);
+                sb += (c*b - a*d);
+            }
+        }
+
+        reinterpret_cast<float(&)[2]>(r)[0] = sa;
+        reinterpret_cast<float(&)[2]>(r)[1] = sb;
+    }
+
+void dotc_mkl(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
+{
+    lapack_int num = (lapack_int)N;
+    lapack_int incx=1, incy=1;
+    cdotc((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
+}
+
+TYPED_TEST(math_speed_test, dotc)
+{
+    size_t N = this->A_.size();
+
+    size_t n, p, r;
+
+    GadgetronTimer timer;
+    timer.set_timing_in_destruction(false);
+
+    ho2DArray<double> time_used(N, this->max_num_thread_);
+
+    GT_Complex8 res;
+
+    GADGET_MSG("-----------------> Loop dotc <--------------------------------------");
+    for ( n=0; n<N; n++ )
+    {
+        dotc(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->B_[n].begin(), res, 1);
+
+        for ( p=0; p<this->max_num_thread_; p++ )
+        {
+            GADGET_MSG("Array size : " << this->num_of_elements_[n]*sizeof(std::complex<float>)/1024.0/1024 << "mb - number of cores : " << p+1);
+            timer.start();
+
+            for ( r=0; r<REP; r++ )
+            {
+                dotc(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->B_[n].begin(), res, p+1);
+            }
+
+            time_used(n, p) = timer.stop();
+        }
+    }
+
+    save_timing("dotc", this->num_of_elements_, time_used);
+
+    GADGET_MSG("-----------------> mkl dotc <--------------------------------------");
+    for ( n=0; n<N; n++ )
+    {
+        dotc_mkl(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->B_[n].begin(), res);
+
+        for ( p=0; p<this->max_num_thread_; p++ )
+        {
+            GADGET_MSG("Array size : " << this->num_of_elements_[n]*sizeof(std::complex<float>)/1024.0/1024 << "mb - number of cores : " << p+1);
+            timer.start();
+
+            for ( r=0; r<REP; r++ )
+            {
+                dotc_mkl(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->B_[n].begin(), res);
+            }
+
+            time_used(n, p) = timer.stop();
+        }
+    }
+
+    save_timing("dotc_mkl", this->num_of_elements_, time_used);
+}
+
+/// ============================================================================================================
+void asum(size_t N, const GT_Complex8* x, float& r, int numOfThreads)
+{
+    long long i;
+    float sum(0);
+
+    if ( numOfThreads > 1 )
+    {
+        for (i = 0; i < (long long)N; i++)
+        {
+            const GT_Complex8& c = x[i];
+            const float re = c.real();
+            const float im = c.imag();
+            sum += ( GT_ABS(re) + GT_ABS(im) );
+        }
+    }
+    else
+    {
+        #pragma omp parallel for private(i) reduction(+:sum) num_threads(numOfThreads)
+        for (i = 0; i < (long long)N; i++)
+        {
+            const GT_Complex8& c = x[i];
+            const float re = c.real();
+            const float im = c.imag();
+            sum += ( GT_ABS(re) + GT_ABS(im) );
+        }
+    }
+
+    r = sum;
+}
+
+void asum_mkl(size_t N, const GT_Complex8* x, float& r)
+{
+    lapack_int num = (lapack_int)(N);
+    lapack_int incx = 1;
+    r = scasum(&num, (lapack_complex_float*)(x), &incx);
+}
+
+TYPED_TEST(math_speed_test, asum)
+{
+    size_t N = this->A_.size();
+
+    size_t n, p, r;
+
+    GadgetronTimer timer;
+    timer.set_timing_in_destruction(false);
+
+    ho2DArray<double> time_used(N, this->max_num_thread_);
+
+    float res;
+
+    GADGET_MSG("-----------------> Loop dotc <--------------------------------------");
+    for ( n=0; n<N; n++ )
+    {
+        asum(this->A_[n].get_number_of_elements(), this->A_[n].begin(), res, 1);
+
+        for ( p=0; p<this->max_num_thread_; p++ )
+        {
+            GADGET_MSG("Array size : " << this->num_of_elements_[n]*sizeof(std::complex<float>)/1024.0/1024 << "mb - number of cores : " << p+1);
+            timer.start();
+
+            for ( r=0; r<REP; r++ )
+            {
+                asum(this->A_[n].get_number_of_elements(), this->A_[n].begin(), res, p+1);
+            }
+
+            time_used(n, p) = timer.stop();
+        }
+    }
+
+    save_timing("asum", this->num_of_elements_, time_used);
+
+    GADGET_MSG("-----------------> mkl dotc <--------------------------------------");
+    for ( n=0; n<N; n++ )
+    {
+        asum_mkl(this->A_[n].get_number_of_elements(), this->A_[n].begin(), res);
+
+        for ( p=0; p<this->max_num_thread_; p++ )
+        {
+            GADGET_MSG("Array size : " << this->num_of_elements_[n]*sizeof(std::complex<float>)/1024.0/1024 << "mb - number of cores : " << p+1);
+            timer.start();
+
+            for ( r=0; r<REP; r++ )
+            {
+                asum_mkl(this->A_[n].get_number_of_elements(), this->A_[n].begin(), res);
+            }
+
+            time_used(n, p) = timer.stop();
+        }
+    }
+
+    save_timing("asum_mkl", this->num_of_elements_, time_used);
+}
+
 /// ============================================================================================================
