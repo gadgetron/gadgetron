@@ -182,6 +182,26 @@ void add(size_t N, const std::complex<float>* x, const std::complex<float>* y, s
     }
 }
 
+void add_thread(size_t N, const std::complex<float>* x, const std::complex<float>* y, std::complex<float>* r, int numOfThreads)
+{
+    long long n;
+
+    #pragma omp parallel for private(n) shared(N, r, x, y) if(numOfThreads>1) num_threads(numOfThreads) 
+    for ( n=0; n<(long long)N; ++n)
+    {
+        const std::complex<float>& vx = x[n];
+        const float re1 = vx.real();
+        const float im1 = vx.imag();
+
+        const std::complex<float>& vy = y[n];
+        const float re2 = vy.real();
+        const float im2 = vy.imag();
+
+        reinterpret_cast<float(&)[2]>(r[n])[0] = re1 + re2;
+        reinterpret_cast<float(&)[2]>(r[n])[1] = im1 + im2;
+    }
+}
+
 void add_mkl(size_t N, const std::complex<float>* x, const std::complex<float>* y, std::complex<float>* r)
 {
     vcAdd((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
@@ -220,6 +240,28 @@ TYPED_TEST(math_speed_test, add)
     }
 
     save_timing("add", this->num_of_elements_, time_used);
+
+    GADGET_MSG("-----------------> Loop add thread <--------------------------------------");
+    for ( n=0; n<N; n++ )
+    {
+        add(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->B_[n].begin(), this->res_[n].begin(), 2);
+
+        for ( p=0; p<this->max_num_thread_; p++ )
+        {
+            GADGET_MSG("Array size : " << this->num_of_elements_[n]*sizeof(std::complex<float>)/1024.0/1024 << "mb - number of cores : " << p+1);
+
+            timer.start();
+
+            for ( r=0; r<REP; r++ )
+            {
+                add_thread(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->B_[n].begin(), this->res_[n].begin(), p+1);
+            }
+
+            time_used(n, p) = timer.stop();
+        }
+    }
+
+    save_timing("add_thread", this->num_of_elements_, time_used);
 
     GADGET_MSG("-----------------> mkl add <--------------------------------------");
     for ( n=0; n<N; n++ )
