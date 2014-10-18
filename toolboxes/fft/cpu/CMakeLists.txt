@@ -22,12 +22,21 @@ add_library(gadgetron_toolbox_cpufft ${LIBTYPE}
 
 set_target_properties(gadgetron_toolbox_cpufft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_toolbox_cpufft
-  gadgetron_toolbox_cpucore
-  gadgetron_toolbox_cpucore_math
-  ${FFTW3_LIBRARIES} 
-  ${Boost_LIBRARIES} 
-  )
+if (MKL_FOUND)
+    target_link_libraries(gadgetron_toolbox_cpufft
+      gadgetron_toolbox_cpucore
+      gadgetron_toolbox_cpucore_math
+      ${MKL_LIBRARIES} 
+      ${Boost_LIBRARIES} 
+      )
+else (MKL_FOUND)
+    target_link_libraries(gadgetron_toolbox_cpufft
+      gadgetron_toolbox_cpucore
+      gadgetron_toolbox_cpucore_math
+      ${FFTW3_LIBRARIES} 
+      ${Boost_LIBRARIES} 
+      )
+endif (MKL_FOUND)
 
 install(TARGETS gadgetron_toolbox_cpufft DESTINATION lib COMPONENT main)
 
