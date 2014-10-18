@@ -22,12 +22,6 @@
 //Declaration of BLAS and LAPACK routines
 extern "C"
 {
-    /// Computes the sum of magnitudes of the vector elements.
-    float sasum_(lapack_int* N, float* x, lapack_int* incx);
-    float scasum_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
-    double dasum_(lapack_int* N, double* x, lapack_int* incx);
-    double dzasum_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
-
     /// Finds the index of the element with the maximal absolute value.
     lapack_int isamax_(lapack_int* N, float* x, lapack_int* incx);
     lapack_int idamax_(lapack_int* N, double* x, lapack_int* incx);
@@ -911,7 +905,7 @@ namespace Gadgetron { namespace math {
         GT_Complex8 sum(0);
 
         float sa(0), sb(0);
-#pragma omp parallel for private(n) reduction(+:sa) if (N>NumElementsUseThreading)
+#pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const float a = x[n].real();
@@ -934,7 +928,7 @@ namespace Gadgetron { namespace math {
         GT_Complex16 sum(0);
 
         double sa(0), sb(0);
-#pragma omp parallel for private(n) reduction(+:sa) if (N>NumElementsUseThreading)
+#pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const double a = x[n].real();
@@ -966,29 +960,25 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const float* x, float& r)
     {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
-        r = sasum_(&num, (float*)(x), &incx);
+        long long i;
+        float sum(0);
+        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
+        {
+            sum += GT_ABS(x[i]);
+        }
+
+        r = sum;
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const double* x, double& r)
     {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
-        r = dasum_(&num, (double*)(x), &incx);
-    }
-
-    template <typename T> inline void asum_64bit_mode(size_t N, const T* x, typename realType<T>::Type& r)
-    {
         long long i;
-        typename realType<T>::Type sum(0);
+        double sum(0);
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            const T& c = x[i];
-            const typename realType<T>::Type re = c.real();
-            const typename realType<T>::Type im = c.imag();
-            sum += ( GT_ABS(re) + GT_ABS(im) );
+            sum += GT_ABS(x[i]);
         }
 
         r = sum;
@@ -996,16 +986,34 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex8* x, float& r)
     {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
-        r = scasum_(&num, (lapack_complex_float*)(x), &incx);
+        long long i;
+        float sum(0);
+        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
+        {
+            const GT_Complex8& c = x[i];
+            const float re = c.real();
+            const float im = c.imag();
+            sum += ( GT_ABS(re) + GT_ABS(im) );
+        }
+
+        r = sum;
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex16* x, double& r)
     {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
-        r = dzasum_(&num, (lapack_complex_double*)(x), &incx);
+        long long i;
+        double sum(0);
+        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
+        {
+            const GT_Complex16& c = x[i];
+            const double re = c.real();
+            const double im = c.imag();
+            sum += ( GT_ABS(re) + GT_ABS(im) );
+        }
+
+        r = sum;
     }
 
     template <typename T> inline typename realType<T>::Type asum(size_t N, const T* x)
