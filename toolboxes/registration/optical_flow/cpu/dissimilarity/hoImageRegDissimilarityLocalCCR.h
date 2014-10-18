@@ -228,19 +228,19 @@ namespace Gadgetron
                 p_v12[n] = v1*v2;
             }
 
-                #ifdef WIN32
+                //#ifdef WIN32
                     Gadgetron::filterGaussian(mu1, sigmaArg_, mem_.begin());
                     Gadgetron::filterGaussian(mu2, sigmaArg_, mem_.begin());
                     Gadgetron::filterGaussian(v1, sigmaArg_, mem_.begin());
                     Gadgetron::filterGaussian(v2, sigmaArg_, mem_.begin());
                     Gadgetron::filterGaussian(v12, sigmaArg_, mem_.begin());
-                #else
-                    Gadgetron::filterGaussian(mu1, sigmaArg_);
-                    Gadgetron::filterGaussian(mu2, sigmaArg_);
-                    Gadgetron::filterGaussian(v1, sigmaArg_);
-                    Gadgetron::filterGaussian(v2, sigmaArg_);
-                    Gadgetron::filterGaussian(v12, sigmaArg_);
-                #endif // WIN32
+                //#else
+                //    Gadgetron::filterGaussian(mu1, sigmaArg_);
+                //    Gadgetron::filterGaussian(mu2, sigmaArg_);
+                //    Gadgetron::filterGaussian(v1, sigmaArg_);
+                //    Gadgetron::filterGaussian(v2, sigmaArg_);
+                //    Gadgetron::filterGaussian(v12, sigmaArg_);
+                //#endif // WIN32
 
             //if ( 0 )
             //{
@@ -288,7 +288,7 @@ namespace Gadgetron
             dissimilarity_ = 0;
             computing_value_type v=0;
 
-            #pragma omp parallel for private(n) if(N>32768)
+            //#pragma omp parallel for private(n)
             for ( n=0; n<N; ++n )
             {
                 const computing_value_type u1 = p_mu1[n];
@@ -311,7 +311,7 @@ namespace Gadgetron
 
             computing_value_type lcc = 0;
 
-            #pragma omp parallel for reduction(+:lcc) if(N>32768)
+            // #pragma omp parallel for reduction(+:lcc)
             for (n=0; n<N; n++)
             {
                 lcc += cc[n];
@@ -340,7 +340,7 @@ namespace Gadgetron
 
             //#pragma omp parallel sections if ( D==2 )
             {
-                #ifdef WIN32
+                //#ifdef WIN32
                     //#pragma omp section
                     {
                         Gadgetron::filterGaussian(v1, sigmaArg_, mem_.begin());
@@ -355,11 +355,11 @@ namespace Gadgetron
                     {
                         Gadgetron::filterGaussian(v12, sigmaArg_, mem_.begin());
                     }
-                #else
-                    Gadgetron::filterGaussian(v1, sigmaArg_);
-                    Gadgetron::filterGaussian(v2, sigmaArg_);
-                    Gadgetron::filterGaussian(v12, sigmaArg_);
-                #endif // WIN32
+                //#else
+                //    Gadgetron::filterGaussian(v1, sigmaArg_);
+                //    Gadgetron::filterGaussian(v2, sigmaArg_);
+                //    Gadgetron::filterGaussian(v12, sigmaArg_);
+                //#endif // WIN32
             }
 
             //if ( !debugFolder_.empty() )
@@ -383,7 +383,7 @@ namespace Gadgetron
                 T* pT = target.begin();
                 T* pW = warped.begin();
 
-                #pragma omp parallel for default(none) shared(N, pT, pW) if(N>32768)
+                // #pragma omp parallel for default(none) shared(N, pT, pW)
                 for ( n=0; n<(long long)N; n++ )
                 {
                     deriv(n) = static_cast<T>( p_v1[n]* (computing_value_type)pT[n] + ( p_v2[n]*(computing_value_type)pW[n] - p_v12[n] ) );

@@ -315,7 +315,7 @@ namespace Gadgetron
                         long long sy = (long long)dim_inverse[1];
 
                         long long y;
-                        #pragma omp parallel default(none) private(y) shared(sx, sy, transform, transform_inverse, deform_delta, deform, deform_inverse)
+                        #pragma omp parallel default(none) private(y) shared(sx, sy, transform, transform_inverse, deform_delta, deform, deform_inverse) if(sx*sy>64*1024) num_threads(2)
                         {
                             CoordType ix, iy, px, py, px_inverse, py_inverse, dx, dy, dx_inverse, dy_inverse;
                             size_t offset;
@@ -421,7 +421,7 @@ namespace Gadgetron
                         long long sy = (long long)dim_inverse[1];
 
                         long long y;
-                        #pragma omp parallel default(none) private(y) shared(sx, sy, transform, transform_inverse, deform_delta)
+                        #pragma omp parallel default(none) private(y) shared(sx, sy, transform, transform_inverse, deform_delta) if(sx*sy>64*1024) num_threads(2)
                         {
                             CoordType px, py, dx, dy, dx_inverse, dy_inverse;
                             size_t offset;
@@ -537,7 +537,7 @@ namespace Gadgetron
                             DeformationFieldType& dyInv = transform_inverse->getDeformationField(1);
 
                             long long x, y;
-                            #pragma omp parallel for default(none) private(y, x) shared(sx, sy, dxInv, dyInv)
+                            #pragma omp parallel for default(none) private(y, x) shared(sx, sy, dxInv, dyInv) if(sx*sy>64*1024) num_threads(2)
                             for ( y=0; y<sy; y++ )
                             {
                                 for ( x=0; x<sx; x++ )

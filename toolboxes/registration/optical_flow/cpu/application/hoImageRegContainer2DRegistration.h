@@ -819,6 +819,8 @@ namespace Gadgetron
                 warped_container_.get_all_images(warpedImages);
             }
 
+            GADGET_MSG("registerOverContainer2DPairWise - threading ... ");
+
             #ifdef USE_OMP
                 int numOfProcs = omp_get_num_procs();
                 int nested = omp_get_nested();
@@ -997,10 +999,12 @@ namespace Gadgetron
                 if ( numOfImages < numOfProcs-1 )
                 {
                     omp_set_nested(1);
+                    GADGET_MSG("registerOverContainer2DFixedReference - nested openMP on ... ");
                 }
                 else
                 {
                     omp_set_nested(0);
+                    GADGET_MSG("registerOverContainer2DFixedReference - nested openMP off ... ");
                 }
             #endif // USE_OMP
 
