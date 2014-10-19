@@ -420,7 +420,7 @@ public:
 
     virtual ~GadgetronClientConnector() 
     {
-        if (socket) {
+        if (socket_) {
             socket_->close();
             delete socket_;
         }
