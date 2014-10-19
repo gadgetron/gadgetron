@@ -122,7 +122,7 @@ TYPED_TEST_CASE(math_speed_test, cpfloatImplementations);
 
 #define NumElementsUseThreading 128*128*6
 
-void save_timing(const std::string& testName, const std::vector< size_t >& num_of_elements, const ho2DArray<double>& timing)
+void save_timing(const std::string& testName, const std::vector< size_t >& num_of_elements, const ho2DArray<double>& timing, bool num_of_cores_changed=true)
 {
     std::stringstream str;
 
@@ -143,9 +143,19 @@ void save_timing(const std::string& testName, const std::vector< size_t >& num_o
         str << "---------------------------------------------------------------" << std::endl;
         str << "number of array elements " << num_of_elements[n] << std::endl;
         str << "--------------------------" << std::endl;
-        for ( p=0; p<P; p++ )
+        if ( num_of_cores_changed )
         {
-            str << "number of cores " << p+1 << "  -  " << timing(n, p)/1000.0 << " ms " << std::endl;
+            for ( p=0; p<P; p++ )
+            {
+                str << "number of cores " << p+1 << "  -  " << timing(n, p)/1000.0 << " ms " << std::endl;
+            }
+        }
+        else
+        {
+            for ( p=0; p<P; p++ )
+            {
+                str << "number of runs " << p+1 << "  -  " << timing(n, p)/1000.0 << " ms " << std::endl;
+            }
         }
     }
     str << std::endl;
@@ -305,7 +315,7 @@ TYPED_TEST(math_speed_test, add)
         }
     }
 
-    save_timing("add_mkl", this->num_of_elements_, time_used);
+    save_timing("add_mkl", this->num_of_elements_, time_used, false);
 
 #endif // USE_MKL
 }
@@ -409,7 +419,7 @@ TYPED_TEST(math_speed_test, multiply)
         }
     }
 
-    save_timing("multiply_mkl", this->num_of_elements_, time_used);
+    save_timing("multiply_mkl", this->num_of_elements_, time_used, false);
 #endif // USE_MKL
 }
 
@@ -508,7 +518,7 @@ TYPED_TEST(math_speed_test, multiplyConj)
         }
     }
 
-    save_timing("multiplyConj_mkl", this->num_of_elements_, time_used);
+    save_timing("multiplyConj_mkl", this->num_of_elements_, time_used, false);
 #endif // USE_MKL
 }
 
@@ -620,7 +630,7 @@ TYPED_TEST(math_speed_test, norm2)
         }
     }
 
-    save_timing("norm2_blas", this->num_of_elements_, time_used);
+    save_timing("norm2_blas", this->num_of_elements_, time_used, false);
 
 #ifdef USE_MKL
     GADGET_MSG("-----------------> mkl norm2 <--------------------------------------");
@@ -642,7 +652,7 @@ TYPED_TEST(math_speed_test, norm2)
         }
     }
 
-    save_timing("norm2_mkl", this->num_of_elements_, time_used);
+    save_timing("norm2_mkl", this->num_of_elements_, time_used, false);
 #endif // USE_MKL
 }
 
@@ -821,7 +831,7 @@ TYPED_TEST(math_speed_test, dotc)
         }
     }
 
-    save_timing("dotc_blas", this->num_of_elements_, time_used);
+    save_timing("dotc_blas", this->num_of_elements_, time_used, false);
 
 #ifdef USE_MKL
     GADGET_MSG("-----------------> mkl dotc <--------------------------------------");
@@ -843,7 +853,7 @@ TYPED_TEST(math_speed_test, dotc)
         }
     }
 
-    save_timing("dotc_mkl", this->num_of_elements_, time_used);
+    save_timing("dotc_mkl", this->num_of_elements_, time_used, false);
 #endif // USE_MKL
 }
 
@@ -947,7 +957,7 @@ TYPED_TEST(math_speed_test, asum)
         }
     }
 
-    save_timing("asum_blas", this->num_of_elements_, time_used);
+    save_timing("asum_blas", this->num_of_elements_, time_used, false);
 
 #ifdef USE_MKL
     GADGET_MSG("-----------------> mkl asum <--------------------------------------");
@@ -969,7 +979,7 @@ TYPED_TEST(math_speed_test, asum)
         }
     }
 
-    save_timing("asum_mkl", this->num_of_elements_, time_used);
+    save_timing("asum_mkl", this->num_of_elements_, time_used, false);
 #endif // USE_MKL
 }
 
