@@ -101,6 +101,7 @@ protected:
         A_.resize(N);
         B_.resize(N);
         res_.resize(N);
+        res_float_.resize(N);
 
         for ( n=0; n<N; n++ )
         {
