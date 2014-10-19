@@ -571,7 +571,6 @@ void norm2_blas(size_t N, const std::complex<float>* x, float& r)
     lapack_int incx = 1;
 
     r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
-    GADGET_CHECK_THROW(vmlGetErrStatus()==0);
 }
 
 #ifdef USE_MKL
