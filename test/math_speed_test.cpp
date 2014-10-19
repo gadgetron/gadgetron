@@ -110,6 +110,7 @@ protected:
             A_[n].create(num_of_elements_[n]); Gadgetron::clear(A_[n]);
             B_[n].create(num_of_elements_[n]); Gadgetron::math::fill( B_[n].get_number_of_elements(), B_[n].begin(), std::complex<float>(2, 4) );
             res_[n].create(num_of_elements_[n]);
+            res_float_[n].create(num_of_elements_[n]);
             GADGET_STOP_TIMING(this->timer_);
         }
     }
@@ -118,6 +119,7 @@ protected:
     std::vector< hoNDArray<std::complex<float> > > A_;
     std::vector< hoNDArray<std::complex<float> > > B_;
     std::vector< hoNDArray<std::complex<float> > > res_;
+    std::vector< hoNDArray<float> > res_float_;
 
     int max_num_thread_;
     GadgetronTimer timer_;
@@ -987,6 +989,88 @@ TYPED_TEST(math_speed_test, asum)
     }
 
     save_timing("asum_mkl", this->num_of_elements_, time_used, false);
+#endif // USE_MKL
+}
+
+/// ============================================================================================================
+void absolute(size_t N, const GT_Complex8* x, float* r, int numOfThreads)
+{
+    long long n;
+
+    #pragma omp parallel for default(none) private(n) shared(N, x, r) num_threads(numOfThreads)
+    for ( n=0; n<(long long)N; n++ )
+    {
+        const GT_Complex8& c = x[n];
+        const float re = c.real();
+        const float im = c.imag();
+        r[n]= std::sqrt( (re*re) + (im * im) );
+    }
+}
+
+#ifdef USE_MKL
+void absolute_mkl(size_t N, const GT_Complex8* x, float* r)
+{
+    lapack_int num = (lapack_int)(N);
+    lapack_int incx = 1;
+
+    vcAbs(num, (MKL_Complex8*)(x), r);
+    GADGET_CHECK_THROW(vmlGetErrStatus()==0);
+}
+#endif // USE_MKL
+
+TYPED_TEST(math_speed_test, absolute)
+{
+    size_t N = this->A_.size();
+
+    size_t n, p, r;
+
+    GadgetronTimer timer;
+    timer.set_timing_in_destruction(false);
+
+    ho2DArray<double> time_used(N, this->max_num_thread_);
+
+    GADGET_MSG("-----------------> Loop absolute <--------------------------------------");
+    for ( n=0; n<N; n++ )
+    {
+        absolute(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->res_float_[n].begin(), 1);
+
+        for ( p=0; p<this->max_num_thread_; p++ )
+        {
+            GADGET_MSG("Array size : " << this->num_of_elements_[n]*sizeof(std::complex<float>)/1024.0/1024 << "mb - number of cores : " << p+1);
+            timer.start();
+
+            for ( r=0; r<REP; r++ )
+            {
+                absolute(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->res_float_[n].begin(), p+1);
+            }
+
+            time_used(n, p) = timer.stop();
+        }
+    }
+
+    save_timing("absolute", this->num_of_elements_, time_used);
+
+#ifdef USE_MKL
+    GADGET_MSG("-----------------> mkl absolute <--------------------------------------");
+    for ( n=0; n<N; n++ )
+    {
+        absolute_mkl(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->res_float_[n].begin());
+
+        for ( p=0; p<this->max_num_thread_; p++ )
+        {
+            GADGET_MSG("Array size : " << this->num_of_elements_[n]*sizeof(std::complex<float>)/1024.0/1024 << "mb - number of cores : " << p+1);
+            timer.start();
+
+            for ( r=0; r<REP; r++ )
+            {
+                absolute_mkl(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->res_float_[n].begin());
+            }
+
+            time_used(n, p) = timer.stop();
+        }
+    }
+
+    save_timing("absolute_mkl", this->num_of_elements_, time_used, false);
 #endif // USE_MKL
 }
 
