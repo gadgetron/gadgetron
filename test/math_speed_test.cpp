@@ -36,6 +36,14 @@
     #endif // USE_MKL
 #endif // lapack_int
 
+#ifndef lapack_complex_float
+    #define lapack_complex_float GT_Complex8
+#endif // lapack_complex_float
+
+#ifndef lapack_complex_double
+    #define lapack_complex_double GT_Complex16
+#endif // #ifndef lapack_complex_double
+
 using namespace Gadgetron;
 using testing::Types;
 
