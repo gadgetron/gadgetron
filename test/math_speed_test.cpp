@@ -41,6 +41,23 @@ using testing::Types;
 
 const size_t REP = 1000;
 
+/// Computes the sum of magnitudes of the vector elements.
+extern "C" {
+
+    float snrm2_(lapack_int* N, float* x, lapack_int* incx);
+    float scnrm2_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
+    double dnrm2_(lapack_int* N, double* x, lapack_int* incx);
+    double dznrm2_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
+
+    float sasum_(lapack_int* N, float* x, lapack_int* incx);
+    float scasum_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
+    double dasum_(lapack_int* N, double* x, lapack_int* incx);
+    double dzasum_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
+
+    void cdotc_(void* r, lapack_int* N, lapack_complex_float* x, lapack_int* incx, lapack_complex_float* y, lapack_int* incy);
+    void zdotc_(void* r, lapack_int* N, lapack_complex_double* x, lapack_int* incx, lapack_complex_double* y, lapack_int* incy);
+}
+
 template <typename T> class math_speed_test : public ::testing::Test 
 {
 protected:
@@ -202,11 +219,15 @@ void add_thread(size_t N, const std::complex<float>* x, const std::complex<float
     }
 }
 
+#ifdef USE_MKL
+
 void add_mkl(size_t N, const std::complex<float>* x, const std::complex<float>* y, std::complex<float>* r)
 {
     vcAdd((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
     GADGET_CHECK_THROW(vmlGetErrStatus()==0);
 }
+
+#endif // USE_MKL
 
 TYPED_TEST(math_speed_test, add)
 {
@@ -263,6 +284,8 @@ TYPED_TEST(math_speed_test, add)
 
     save_timing("add_thread", this->num_of_elements_, time_used);
 
+#ifdef USE_MKL
+
     GADGET_MSG("-----------------> mkl add <--------------------------------------");
     for ( n=0; n<N; n++ )
     {
@@ -283,6 +306,8 @@ TYPED_TEST(math_speed_test, add)
     }
 
     save_timing("add_mkl", this->num_of_elements_, time_used);
+
+#endif // USE_MKL
 }
 
 /// ============================================================================================================
@@ -324,11 +349,13 @@ void multiply(size_t N, const std::complex<float>* x, const std::complex<float>*
     }
 }
 
+#ifdef USE_MKL
 void multiply_mkl(size_t N, const std::complex<float>* x, const std::complex<float>* y, std::complex<float>* r)
 {
     vcMul((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
     GADGET_CHECK_THROW(vmlGetErrStatus()==0);
 }
+#endif USE_MKL
 
 TYPED_TEST(math_speed_test, multiply)
 {
@@ -362,6 +389,7 @@ TYPED_TEST(math_speed_test, multiply)
 
     save_timing("multiply", this->num_of_elements_, time_used);
 
+#ifdef USE_MKL
     GADGET_MSG("-----------------> mkl multiply <--------------------------------------");
     for ( n=0; n<N; n++ )
     {
@@ -382,6 +410,7 @@ TYPED_TEST(math_speed_test, multiply)
     }
 
     save_timing("multiply_mkl", this->num_of_elements_, time_used);
+#endif // USE_MKL
 }
 
 /// ============================================================================================================
@@ -419,11 +448,13 @@ void multiplyConj(size_t N, const std::complex<float>* x, const std::complex<flo
     }
 }
 
+#ifdef USE_MKL
 void multiplyConj_mkl(size_t N, const std::complex<float>* x, const std::complex<float>* y, std::complex<float>* r)
 {
     vcMulByConj((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
     GADGET_CHECK_THROW(vmlGetErrStatus()==0);
 }
+#endif // USE_MKL
 
 TYPED_TEST(math_speed_test, multiplyConj)
 {
@@ -457,6 +488,7 @@ TYPED_TEST(math_speed_test, multiplyConj)
 
     save_timing("multiplyConj", this->num_of_elements_, time_used);
 
+#ifdef USE_MKL
     GADGET_MSG("-----------------> mkl multiplyConj <--------------------------------------");
     for ( n=0; n<N; n++ )
     {
@@ -477,6 +509,7 @@ TYPED_TEST(math_speed_test, multiplyConj)
     }
 
     save_timing("multiplyConj_mkl", this->num_of_elements_, time_used);
+#endif // USE_MKL
 }
 
 /// ============================================================================================================
@@ -514,15 +547,25 @@ void norm2(size_t N, const std::complex<float>* x, float& r, int numOfThreads)
         r = std::sqrt(sum);
     }
 
+void norm2_blas(size_t N, const std::complex<float>* x, float& r)
+{
+    lapack_int num = (lapack_int)N;
+    lapack_int incx = 1;
+
+    r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
+    GADGET_CHECK_THROW(vmlGetErrStatus()==0);
+}
+
+#ifdef USE_MKL
 void norm2_mkl(size_t N, const std::complex<float>* x, float& r)
 {
     int num = (int)N;
     int incx = 1;
-    long long i;
 
     r = scnrm2(&num, (MKL_Complex8*)(x), &incx);
     GADGET_CHECK_THROW(vmlGetErrStatus()==0);
 }
+#endif // USE_MKL
 
 TYPED_TEST(math_speed_test, norm2)
 {
@@ -558,6 +601,28 @@ TYPED_TEST(math_speed_test, norm2)
 
     save_timing("norm2", this->num_of_elements_, time_used);
 
+    GADGET_MSG("-----------------> blas norm2 <--------------------------------------");
+    for ( n=0; n<N; n++ )
+    {
+        norm2_blas(this->A_[n].get_number_of_elements(), this->A_[n].begin(), res);
+
+        for ( p=0; p<this->max_num_thread_; p++ )
+        {
+            GADGET_MSG("Array size : " << this->num_of_elements_[n]*sizeof(std::complex<float>)/1024.0/1024 << "mb - number of cores : " << p+1);
+            timer.start();
+
+            for ( r=0; r<REP; r++ )
+            {
+                norm2_blas(this->A_[n].get_number_of_elements(), this->A_[n].begin(), res);
+            }
+
+            time_used(n, p) = timer.stop();
+        }
+    }
+
+    save_timing("norm2_blas", this->num_of_elements_, time_used);
+
+#ifdef USE_MKL
     GADGET_MSG("-----------------> mkl norm2 <--------------------------------------");
     for ( n=0; n<N; n++ )
     {
@@ -578,6 +643,7 @@ TYPED_TEST(math_speed_test, norm2)
     }
 
     save_timing("norm2_mkl", this->num_of_elements_, time_used);
+#endif // USE_MKL
 }
 
 /// ============================================================================================================
@@ -686,12 +752,21 @@ void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r, 
         reinterpret_cast<float(&)[2]>(r)[1] = sb;
     }
 
+void dotc_blas(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
+{
+    lapack_int num = (lapack_int)N;
+    lapack_int incx=1, incy=1;
+    cdotc_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
+}
+
+#ifdef USE_MKL
 void dotc_mkl(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
 {
     lapack_int num = (lapack_int)N;
     lapack_int incx=1, incy=1;
     cdotc((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
 }
+#endif // USE_MKL
 
 TYPED_TEST(math_speed_test, dotc)
 {
@@ -727,6 +802,28 @@ TYPED_TEST(math_speed_test, dotc)
 
     save_timing("dotc", this->num_of_elements_, time_used);
 
+    GADGET_MSG("-----------------> blas dotc <--------------------------------------");
+    for ( n=0; n<N; n++ )
+    {
+        dotc_blas(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->B_[n].begin(), res);
+
+        for ( p=0; p<this->max_num_thread_; p++ )
+        {
+            GADGET_MSG("Array size : " << this->num_of_elements_[n]*sizeof(std::complex<float>)/1024.0/1024 << "mb - number of cores : " << p+1);
+            timer.start();
+
+            for ( r=0; r<REP; r++ )
+            {
+                dotc_blas(this->A_[n].get_number_of_elements(), this->A_[n].begin(), this->B_[n].begin(), res);
+            }
+
+            time_used(n, p) = timer.stop();
+        }
+    }
+
+    save_timing("dotc_blas", this->num_of_elements_, time_used);
+
+#ifdef USE_MKL
     GADGET_MSG("-----------------> mkl dotc <--------------------------------------");
     for ( n=0; n<N; n++ )
     {
@@ -747,6 +844,7 @@ TYPED_TEST(math_speed_test, dotc)
     }
 
     save_timing("dotc_mkl", this->num_of_elements_, time_used);
+#endif // USE_MKL
 }
 
 /// ============================================================================================================
@@ -762,7 +860,7 @@ void asum(size_t N, const GT_Complex8* x, float& r, int numOfThreads)
             const GT_Complex8& c = x[i];
             const float re = c.real();
             const float im = c.imag();
-            sum += ( GT_ABS(re) + GT_ABS(im) );
+            sum += ( std::abs(re) + std::abs(im) );
         }
     }
     else
@@ -773,19 +871,28 @@ void asum(size_t N, const GT_Complex8* x, float& r, int numOfThreads)
             const GT_Complex8& c = x[i];
             const float re = c.real();
             const float im = c.imag();
-            sum += ( GT_ABS(re) + GT_ABS(im) );
+            sum += ( std::abs(re) + std::abs(im) );
         }
     }
 
     r = sum;
 }
 
+void asum_blas(size_t N, const GT_Complex8* x, float& r)
+{
+    lapack_int num = (lapack_int)(N);
+    lapack_int incx = 1;
+    r = scasum_(&num, (lapack_complex_float*)(x), &incx);
+}
+
+#ifdef USE_MKL
 void asum_mkl(size_t N, const GT_Complex8* x, float& r)
 {
     lapack_int num = (lapack_int)(N);
     lapack_int incx = 1;
     r = scasum(&num, (lapack_complex_float*)(x), &incx);
 }
+#endif // USE_MKL
 
 TYPED_TEST(math_speed_test, asum)
 {
@@ -800,7 +907,7 @@ TYPED_TEST(math_speed_test, asum)
 
     float res;
 
-    GADGET_MSG("-----------------> Loop dotc <--------------------------------------");
+    GADGET_MSG("-----------------> Loop asum <--------------------------------------");
     for ( n=0; n<N; n++ )
     {
         asum(this->A_[n].get_number_of_elements(), this->A_[n].begin(), res, 1);
@@ -821,7 +928,29 @@ TYPED_TEST(math_speed_test, asum)
 
     save_timing("asum", this->num_of_elements_, time_used);
 
-    GADGET_MSG("-----------------> mkl dotc <--------------------------------------");
+    GADGET_MSG("-----------------> blas asum <--------------------------------------");
+    for ( n=0; n<N; n++ )
+    {
+        asum_blas(this->A_[n].get_number_of_elements(), this->A_[n].begin(), res);
+
+        for ( p=0; p<this->max_num_thread_; p++ )
+        {
+            GADGET_MSG("Array size : " << this->num_of_elements_[n]*sizeof(std::complex<float>)/1024.0/1024 << "mb - number of cores : " << p+1);
+            timer.start();
+
+            for ( r=0; r<REP; r++ )
+            {
+                asum_blas(this->A_[n].get_number_of_elements(), this->A_[n].begin(), res);
+            }
+
+            time_used(n, p) = timer.stop();
+        }
+    }
+
+    save_timing("asum_blas", this->num_of_elements_, time_used);
+
+#ifdef USE_MKL
+    GADGET_MSG("-----------------> mkl asum <--------------------------------------");
     for ( n=0; n<N; n++ )
     {
         asum_mkl(this->A_[n].get_number_of_elements(), this->A_[n].begin(), res);
@@ -841,6 +970,7 @@ TYPED_TEST(math_speed_test, asum)
     }
 
     save_timing("asum_mkl", this->num_of_elements_, time_used);
+#endif // USE_MKL
 }
 
 /// ============================================================================================================
