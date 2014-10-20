@@ -376,7 +376,7 @@ void multiply_mkl(size_t N, const std::complex<float>* x, const std::complex<flo
     vcMul((lapack_int)N, (MKL_Complex8*)(x), (MKL_Complex8*)(y), (MKL_Complex8*)(r));
     GADGET_CHECK_THROW(vmlGetErrStatus()==0);
 }
-#endif USE_MKL
+#endif // USE_MKL
 
 TYPED_TEST(math_speed_test, multiply)
 {
