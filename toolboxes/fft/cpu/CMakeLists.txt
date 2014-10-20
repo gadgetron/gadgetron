@@ -8,9 +8,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${FFTW3_INCLUDE_DIR}
-  ${ACE_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
-  # ${ACE_INCLUDE_DIR}
   ${ISMRMRD_INCLUDE_DIR}
   ${ARMADILLO_INCLUDE_DIRS}
   )
@@ -29,7 +27,6 @@ if (MKL_FOUND)
       gadgetron_toolbox_cpucore_math
       ${MKL_LIBRARIES} 
       ${Boost_LIBRARIES} 
-      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
       )
 else (MKL_FOUND)
     target_link_libraries(gadgetron_toolbox_cpufft
@@ -37,7 +34,6 @@ else (MKL_FOUND)
       gadgetron_toolbox_cpucore_math
       ${FFTW3_LIBRARIES} 
       ${Boost_LIBRARIES} 
-      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
       )
 endif (MKL_FOUND)
 

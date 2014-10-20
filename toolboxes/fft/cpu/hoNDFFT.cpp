@@ -83,7 +83,7 @@ namespace Gadgetron{
 
         //Allocate storage and make plan
         {
-            ACE_GUARD(ACE_Thread_Mutex, guard, mtx_);
+            mutex_.lock();
             fft_storage = (T*)fftw_malloc_ptr_(sizeof(T)*length*2);
             if (fft_storage == 0)
             {
@@ -102,6 +102,7 @@ namespace Gadgetron{
                 std::cout << "Failed to create plan for FFT" << std::endl;
                 return;
             }
+            mutex_.unlock();
         }
 
         //Grab address of data
@@ -156,7 +157,7 @@ namespace Gadgetron{
 
         //clean up
         {
-            ACE_GUARD(ACE_Thread_Mutex, guard, mtx_);
+            mutex_.lock();
             if (fft_plan != 0)
             {
                 fftw_destroy_plan_ptr_(fft_plan);
@@ -166,6 +167,7 @@ namespace Gadgetron{
             {
                 fftw_free_ptr_(fft_storage);
             }
+            mutex_.unlock();
         }
     }
 
@@ -1203,8 +1205,7 @@ namespace Gadgetron{
             fftwf_plan p;
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
-
+                mutex_.lock();
                 if ( forward )
                 {
                     p = fftwf_plan_dft_1d(n0, 
@@ -1219,6 +1220,7 @@ namespace Gadgetron{
                             reinterpret_cast<fftwf_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
+                mutex_.unlock();
             }
 
             #pragma omp parallel for private(n) shared(num, p, a, n0, r)
@@ -1229,8 +1231,9 @@ namespace Gadgetron{
             }
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 fftwf_destroy_plan(p);
+                mutex_.unlock();
             }
         }
         else if ( typeid(T) == typeid(double) )
@@ -1238,7 +1241,7 @@ namespace Gadgetron{
             fftw_plan p;
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 if ( forward )
                 {
                     p = fftw_plan_dft_1d(n0, 
@@ -1253,6 +1256,7 @@ namespace Gadgetron{
                             reinterpret_cast<fftw_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
+                mutex_.unlock();
             }
 
             #pragma omp parallel for private(n) shared(num, p, a, n0, r)
@@ -1263,8 +1267,9 @@ namespace Gadgetron{
             }
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 fftw_destroy_plan(p);
+                mutex_.unlock();
             }
         }
 
@@ -1295,7 +1300,7 @@ namespace Gadgetron{
             fftwf_plan p;
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 if ( forward )
                 {
                     p = fftwf_plan_dft_2d(n0, n1,
@@ -1310,6 +1315,7 @@ namespace Gadgetron{
                             reinterpret_cast<fftwf_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
+                mutex_.unlock();
             }
 
             #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r)
@@ -1320,8 +1326,9 @@ namespace Gadgetron{
             }
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 fftwf_destroy_plan(p);
+                mutex_.unlock();
             }
         }
         else if ( typeid(T) == typeid(double) )
@@ -1329,7 +1336,7 @@ namespace Gadgetron{
             fftw_plan p;
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 if ( forward )
                 {
                     p = fftw_plan_dft_2d(n0, n1,
@@ -1344,6 +1351,7 @@ namespace Gadgetron{
                             reinterpret_cast<fftw_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
+                mutex_.unlock();
             }
 
             #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r)
@@ -1354,8 +1362,9 @@ namespace Gadgetron{
             }
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 fftw_destroy_plan(p);
+                mutex_.unlock();
             }
         }
 
@@ -1387,7 +1396,7 @@ namespace Gadgetron{
             fftwf_plan p;
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 if ( forward )
                 {
                     p = fftwf_plan_dft_3d(n0, n1, n2, 
@@ -1402,6 +1411,7 @@ namespace Gadgetron{
                             reinterpret_cast<fftwf_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
+                mutex_.unlock();
             }
 
             #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num > 8)
@@ -1412,8 +1422,9 @@ namespace Gadgetron{
             }
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 fftwf_destroy_plan(p);
+                mutex_.unlock();
             }
         }
         else if ( typeid(T) == typeid(double) )
@@ -1421,7 +1432,7 @@ namespace Gadgetron{
             fftw_plan p;
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 if ( forward )
                 {
                     p = fftw_plan_dft_3d(n0, n1, n2, 
@@ -1436,6 +1447,7 @@ namespace Gadgetron{
                             reinterpret_cast<fftw_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
+                mutex_.unlock();
             }
 
             #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num > 8)
@@ -1446,8 +1458,9 @@ namespace Gadgetron{
             }
 
             {
-                ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
+                mutex_.lock();
                 fftw_destroy_plan(p);
+                mutex_.unlock();
             }
         }
 

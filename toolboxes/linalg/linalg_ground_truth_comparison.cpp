@@ -5,7 +5,6 @@
 *      Author: Michael S. Hansen
 */
 
-#include "hoNDFFT.h"
 #include <iostream>
 #include <hoNDArray.h>
 #include <hoNDArray_fileio.h>
@@ -19,6 +18,7 @@
 #include "hoNDArray_elemwise.h"
 #include "hoMatrix_util.h"
 #include "hoNDMath_util.h"
+#include "hoNDFFT.h"
 #include <fftw3.h>
 #include <valarray>
 #include <omp.h>

@@ -14,10 +14,6 @@
 #include <fftw3.h>
 #include <complex>
 
-#include "ace/Svc_Handler.h"
-
-#undef USE_MKL
-
 #ifdef USE_MKL
     #include "mkl.h"
 #endif // USE_MKL
@@ -190,9 +186,7 @@ namespace Gadgetron{
         void  (*fftw_destroy_plan_ptr_)(void*);
 
         static hoNDFFT<T>* instance_;
-
-        /// use ACE mutex, since the boost mutex is found to not work well to synchronize ACE threads
-        ACE_Thread_Mutex mtx_;
+        boost::mutex mutex_;
 
         // the fft and ifft shift pivot for a certain length
         // [0 .. pivot-1] will be shifted to the right end
