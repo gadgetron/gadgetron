@@ -8,6 +8,10 @@
 #include "hoNDArray_math_util.h"
 #include "ismrmrd/xml.h"
 
+#ifdef USE_MKL
+    #include "mkl.h"
+#endif // USE_MKL
+
 #ifndef _WIN32
     #include <sys/types.h>
     #include <sys/stat.h>

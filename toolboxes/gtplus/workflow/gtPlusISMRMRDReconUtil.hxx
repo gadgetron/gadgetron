@@ -4488,7 +4488,8 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
 
         int e1;
 
-        #pragma omp parallel default(none) private(e1) shared(ks, RO, E1, CHA, pSen, pData, halfKs, power, kss)
+        // #pragma omp parallel default(none) private(e1) shared(ks, RO, E1, CHA, pSen, pData, halfKs, power, kss)
+        #pragma omp parallel private(e1) shared(ks, RO, E1, CHA, pSen, pData, halfKs, power, kss)
         {
             hoNDArray<T> D(ks*ks, CHA);
             T* pD = D.begin();
@@ -4573,8 +4574,24 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                         }
                     }
 
-                    norm2(V1, v1Norm);
-                    scal( (value_type)1.0/v1Norm, V1);
+                    // norm2(V1, v1Norm);
+                    // Gadgetron::math::norm2(CHA, V1.begin(), v1Norm);
+                    value_type sum(0);
+                    for ( cha=0; cha<CHA; cha++ )
+                    {
+                        const T& c = pV1[cha];
+                        const value_type re = c.real();
+                        const value_type im = c.imag();
+                        sum += ( (re*re) + (im * im) );
+                    }
+                    v1Norm = std::sqrt(sum);
+
+                    // scal( (value_type)1.0/v1Norm, V1);
+                    value_type v1NormInv = (value_type)1.0/v1Norm;
+                    for ( cha=0; cha<CHA; cha++ )
+                    {
+                        pV1[cha] *= v1NormInv;
+                    }
 
                     GeneralMatrixProduct_gemm(DH_D, D, true, D, false);
 
@@ -4583,8 +4600,26 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                         GeneralMatrixProduct_gemm(V, DH_D, false, V1, false);
                         // V1 = V;
                         memcpy(V1.begin(), V.begin(), V.get_number_of_bytes());
-                        norm2(V1, v1Norm);
-                        scal( (value_type)1.0/v1Norm, V1);
+
+                        // norm2(V1, v1Norm);
+
+                        sum = 0;
+                        for ( cha=0; cha<CHA; cha++ )
+                        {
+                            const T& c = pV1[cha];
+                            const value_type re = c.real();
+                            const value_type im = c.imag();
+                            sum += ( (re*re) + (im * im) );
+                        }
+                        v1Norm = std::sqrt(sum);
+
+                        // scal( (value_type)1.0/v1Norm, V1);
+
+                        value_type v1NormInv = (value_type)1.0/v1Norm;
+                        for ( cha=0; cha<CHA; cha++ )
+                        {
+                            pV1[cha] *= v1NormInv;
+                        }
                     }
 
                     // compute U1
@@ -4600,8 +4635,21 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                     phaseU1 /= std::abs(phaseU1);
 
                     // put the mean object phase to coil map
-                    conjugate(V1, V1);
-                    scal(phaseU1, V1);
+                    // conjugate(V1, V1);
+                    // scal(phaseU1, V1);
+
+                    const value_type c = phaseU1.real();
+                    const value_type d = phaseU1.imag();
+
+                    for ( cha=0; cha<CHA; cha++ )
+                    {
+                        const T& v = pV1[cha];
+                        const value_type a = v.real();
+                        const value_type b = v.imag();
+
+                        reinterpret_cast< value_type(&)[2] >(pV1[cha])[0] = a*c+b*d;
+                        reinterpret_cast< value_type(&)[2] >(pV1[cha])[1] = a*d-b*c;
+                    }
 
                     for ( cha=0; cha<CHA; cha++ )
                     {
@@ -4946,7 +4994,7 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
 
         long long n;
 
-        if ( N >= 8 )
+        if ( N >= 16 )
         {
             #ifdef GCC_OLD_FLAG
                 #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, power, iterNum, thres)

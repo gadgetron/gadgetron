@@ -56,7 +56,7 @@ namespace Gadgetron
     while (mcast_dgram_.recv(buffer, GADGETRON_NODE_INFO_MESSAGE_LENGTH, peer_address) != -1)
       {
 	info.uuid = boost::uuids::to_string(*((boost::uuids::uuid*)buffer));
-	info.address = std::string(peer_address.get_host_name());
+	info.address = std::string(peer_address.get_host_addr());
 	memcpy(&info.port              , buffer + 16,                    sizeof(uint32_t));
 	memcpy(&info.compute_capability, buffer + 16 + sizeof(uint32_t), sizeof(uint32_t));
 	CloudBus::instance()->update_node(info.uuid.c_str(), info);

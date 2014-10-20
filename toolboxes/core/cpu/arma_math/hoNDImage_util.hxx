@@ -4,6 +4,68 @@
 
 namespace Gadgetron
 {
+    template<typename T, unsigned int D> inline void fill( hoNDImage<T, D>* x, T val )
+    {
+        size_t N = x->get_number_of_elements();
+        T* pX = x->begin();
+        Gadgetron::math::fill(N, pX, val);
+    }
+
+    template<typename T, unsigned int D> inline void fill( hoNDImage<T, D>& x, T val )
+    {
+        size_t N = x.get_number_of_elements();
+        T* pX = x.begin();
+        Gadgetron::math::fill(N, pX, val);
+    }
+
+    template<typename T, unsigned int D> inline void clear( hoNDImage<T, D>* x )
+    {
+        if ( x->get_number_of_elements() > 0 )
+        {
+            memset( x->get_data_ptr(), 0, x->get_number_of_elements()*sizeof(T));
+        }
+    }
+
+    template<typename T, unsigned int D> inline void clear( hoNDImage<T, D>& x )
+    {
+        if ( x.get_number_of_elements() > 0 )
+        {
+            memset( x.get_data_ptr(), 0, x.get_number_of_elements()*sizeof(T));
+        }
+    }
+
+    template <typename T, unsigned int D> 
+    bool scal(T a, hoNDImage<T, D>& x)
+    {
+        try
+        {
+            Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in scal(T a, hoNDImage<T, D>& x) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template <typename T, unsigned int D> 
+    bool scal(T a, hoNDImage< std::complex<T>, D>& x)
+    {
+        try
+        {
+            Gadgetron::math::scal(x.get_number_of_elements(), a, x.begin());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in scal(T a, hoNDImage< std::complex<T>, D>& x) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
     template<class T, unsigned int D> 
     bool real_imag_to_complex(const hoNDImage<typename realType<T>::Type, D>& real, 
                         const hoNDImage<typename realType<T>::Type, D>& imag, 
@@ -327,492 +389,154 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool add(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
-
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
-
-            const T* pX = x.begin();
-            const T* pY = y.begin();
-            T* pR = r.begin();
-
-            if ( pR == pX )
-            {
-                #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-                for ( n=0; n<N; n++ )
-                {
-                    pR[n] += pY[n];
-                }
-            }
-            else if ( pR == pY )
-            {
-                #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-                for ( n=0; n<N; n++ )
-                {
-                    pR[n] += pX[n];
-                }
-            }
-            else
-            {
-                #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-                for ( n=0; n<N; n++ )
-                {
-                    pR[n] = pX[n] + pY[n];
-                }
-            }
+            r = x;
         }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in add(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+
+        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool subtract(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
-
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
-
-            const T* pX = x.begin();
-            const T* pY = y.begin();
-            T* pR = r.begin();
-
-            if ( pR == pX )
-            {
-                #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-                for ( n=0; n<N; n++ )
-                {
-                    pR[n] -= pY[n];
-                }
-            }
-            else
-            {
-                #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-                for ( n=0; n<N; n++ )
-                {
-                    pR[n] = pX[n] - pY[n];
-                }
-            }
+            r = x;
         }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in subtract(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+
+        Gadgetron::math::subtract(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool multiply(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
-
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
-
-            const T* pX = x.begin();
-            const T* pY = y.begin();
-            T* pR = r.begin();
-
-            if ( pR == pX )
-            {
-                #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-                for ( n=0; n<N; n++ )
-                {
-                    pR[n] *= pY[n];
-                }
-            }
-            else if ( pR == pY )
-            {
-                #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-                for ( n=0; n<N; n++ )
-                {
-                    pR[n] *= pX[n];
-                }
-            }
-            else
-            {
-                #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-                for ( n=0; n<N; n++ )
-                {
-                    pR[n] = pX[n] * pY[n];
-                }
-            }
+            r = x;
         }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in multiply(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+
+        Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool divide(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
-
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
-
-            const T* pX = x.begin();
-            const T* pY = y.begin();
-            T* pR = r.begin();
-
-            if ( pR == pX )
-            {
-                #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-                for ( n=0; n<N; n++ )
-                {
-                    pR[n] /= pY[n];
-                }
-            }
-            else
-            {
-                #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-                for ( n=0; n<N; n++ )
-                {
-                    pR[n] = pX[n]/pY[n];
-                }
-            }
+            r = x;
         }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in divide(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+
+        Gadgetron::math::divide(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool sqrt(const hoNDImage<T, D>& x, hoNDImage<T, D>& r)
     {
-        try
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r.create(x.get_dimensions());
-            }
-
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
-
-            const T* pX = x.begin();
-            T* pR = r.begin();
-
-            #pragma omp parallel for default(none) private(n) shared(N, pX, pR)
-            for ( n=0; n<N; n++ )
-            {
-                pR[n] = std::sqrt(pX[n]);
-            }
+            r.create(x.get_dimensions());
         }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in sqrt(const hoNDImage<T, D>& x, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+
+        Gadgetron::math::sqrt(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool minAbsolute(const hoNDImage<T, D>& x, T& r, size_t& ind)
     {
-        try
-        {
-            long long N = (long long)x.get_number_of_elements();
-            if ( N == 0 ) return true;
+        long long N = (long long)x.get_number_of_elements();
+        if ( N == 0 ) return true;
 
-            long long n;
-
-            const T* pX = x.begin();
-
-            typename realType<T>::Type v = std::abs(pX[0]);
-            typename realType<T>::Type v2;
-
-            ind = 0;
-
-            for ( n=1; n<N; n++ )
-            {
-                v2 = std::abs(pX[n]);
-                if ( v2 < v )
-                {
-                    v = v2;
-                    ind = n;
-                }
-            }
-
-            r = pX[ind];
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in minAbsolute(const hoNDImage<T, D>& x, T& r, size_t& ind) ... ");
-            return false;
-        }
+        Gadgetron::math::minAbsolute(x.get_number_of_elements(), x.begin(), r, ind);
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool maxAbsolute(const hoNDImage<T, D>& x, T& r, size_t& ind)
     {
-        try
-        {
-            long long N = (long long)x.get_number_of_elements();
-            if ( N == 0 ) return true;
+        long long N = (long long)x.get_number_of_elements();
+        if ( N == 0 ) return true;
 
-            long long n;
-
-            const T* pX = x.begin();
-
-            typename realType<T>::Type v = std::abs(pX[0]);
-            typename realType<T>::Type v2;
-
-            ind = 0;
-
-            for ( n=1; n<N; n++ )
-            {
-                v2 = std::abs(pX[n]);
-                if ( v2 > v )
-                {
-                    v = v2;
-                    ind = n;
-                }
-            }
-
-            r = pX[ind];
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in maxAbsolute(const hoNDImage<T, D>& x, T& r, size_t& ind) ... ");
-            return false;
-        }
+        Gadgetron::math::maxAbsolute(x.get_number_of_elements(), x.begin(), r, ind);
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool multiplyConj(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
-        try
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r = x;
-            }
-
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
-
-            const T* pX = x.begin();
-            const T* pY = y.begin();
-            T* pR = r.begin();
-
-            #pragma omp parallel for default(none) private(n) shared(N, pX, pY, pR)
-            for ( n=0; n<N; n++ )
-            {
-                pR[n] = pX[n] * std::conj(pY[n]);
-            }
+            r = x;
         }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in multiplyConj(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+
+        Gadgetron::math::multiplyConj(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool conjugate(const hoNDImage<T, D>& x, hoNDImage<T, D>& r)
     {
-        try
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
-            if ( r.get_number_of_elements()!=x.get_number_of_elements())
-            {
-                r.create(x.get_dimensions());
-            }
-
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
-
-            const T* pX = x.begin();
-            T* pR = r.begin();
-
-            #pragma omp parallel for default(none) private(n) shared(N, pX, pR)
-            for ( n=0; n<N; n++ )
-            {
-                pR[n] = std::conj(pX[n]);
-            }
+            r.create(x.get_dimensions());
         }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in conjugate(const hoNDImage<T, D>& x, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+
+        Gadgetron::math::conjugate(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool addEpsilon(hoNDImage<T, D>& x)
     {
-        try
-        {
-            size_t n = x.get_number_of_elements();
-            T* pX = x.begin();
-
-            typename realType<T>::Type eps = std::numeric_limits<typename realType<T>::Type>::epsilon();
-
-            long long i;
-
-            #pragma omp parallel for default(none) private(i) shared(n, pX, eps)
-            for (i=0; i<(long long)n; i++ )
-            {
-                if ( std::abs(pX[i]) < eps )
-                {
-                    pX[i] += eps;
-                }
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in addEpsilon(hoNDImage<T, D>& x) ... ");
-            return false;
-        }
-
+        Gadgetron::math::addEpsilon(x.get_number_of_elements(), x.begin());
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool norm2(const hoNDImage<T, D>& x, typename realType<T>::Type& r)
     {
-        try
-        {
-            size_t n = x.get_number_of_elements();
-            const T* pX = x.begin();
-
-            typename realType<T>::Type sqrNormSum(0), v;
-
-            long long i;
-
-            #pragma omp parallel for default(none) private(i, v) shared(n, pX) reduction(+:sqrNormSum)
-            for (i=0; i<(long long)n; i++ )
-            {
-                v = std::abs(pX[n]);
-                sqrNormSum = sqrNormSum + v*v;
-            }
-
-            r = std::sqrt(sqrNormSum);
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in norm2(const hoNDImage<T, D>& x, typename realType<T>::Type& r) ... ");
-            return false;
-        }
-
+        Gadgetron::math::norm2(x.get_number_of_elements(), x.begin(), r);
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool norm1(const hoNDImage<T, D>& x, typename realType<T>::Type& r)
     {
-        try
-        {
-            size_t n = x.get_number_of_elements();
-            T* pX = x.begin();
-
-            typename realType<T>::Type norm1Sum(0), v;
-
-            long long i;
-
-            #pragma omp parallel for default(none) private(i, v) shared(n, pX) reduction(+:norm1Sum)
-            for (i=0; i<(long long)n; i++ )
-            {
-                norm1Sum = norm1Sum + std::abs(pX[n]);
-            }
-
-            r = norm1Sum;
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in norm1(const hoNDImage<T, D>& x, typename realType<T>::Type& r) ... ");
-            return false;
-        }
-
+        Gadgetron::math::norm1(x.get_number_of_elements(), x.begin(), r);
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool dotc(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, T& r)
     {
-        try
-        {
-            GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-
-            long long N = (long long)x.get_number_of_elements();
-            long long n;
-
-            const T* pX = x.begin();
-            const T* pY = y.begin();
-            r = 0;
-
-            T v;
-
-            #pragma omp parallel for default(none) private(n) shared(N, pX, pY) reduction(+:v)
-            for ( n=0; n<N; n++ )
-            {
-                v = v + std::conj(pX[n]) *pY[n];
-            }
-
-            r = v;
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Error happened in dotc(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, T& r) ... ");
-            return false;
-        }
-
+        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        Gadgetron::math::dotc(x.get_number_of_elements(), x.begin(), y.begin(), r);
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool absolute(const hoNDImage<T, D>& x, hoNDImage<typename realType<T>::Type, D>& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
@@ -820,19 +544,12 @@ namespace Gadgetron
             r.create(x.get_dimensions());
         }
 
-        long long N = (long long)x.get_number_of_elements();
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, x, r)
-        for ( n=0; n<N; n++ )
-        {
-            r(n) = std::abs( x(n) );
-        }
+        Gadgetron::math::absolute(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool absolute(const hoNDImage< std::complex<T>, D >& x, hoNDImage< std::complex<T>, D >& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
@@ -840,17 +557,12 @@ namespace Gadgetron
             r.create(x.get_dimensions());
         }
 
-        hoNDImage<T, D> rTmp;
-        rTmp.create(x.get_dimensions());
-
-        Gadgetron::absolute(x, rTmp);
-
-        r.copyFrom(rTmp);
+        Gadgetron::math::absolute(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool argument(const hoNDImage<T, D>& x, hoNDImage<typename realType<T>::Type, D>& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
@@ -858,19 +570,12 @@ namespace Gadgetron
             r.create(x.get_dimensions());
         }
 
-        long long N = (long long)x.get_number_of_elements();
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(N, x, r)
-        for ( n=0; n<N; n++ )
-        {
-            r(n) = std::arg( x(n) );
-        }
+        Gadgetron::math::argument(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }
 
-    template <typename T, unsigned int D> 
+    template <typename T, unsigned int D> inline 
     bool argument(const hoNDImage< std::complex<T>, D >& x, hoNDImage< std::complex<T>, D >& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
@@ -888,34 +593,15 @@ namespace Gadgetron
         return true;
     }
 
-    template <typename T, unsigned int D>
+    template <typename T, unsigned int D> inline 
     bool inv(const hoNDImage<T, D>& x, hoNDImage<T, D>& r)
     {
-        try
+        if ( !r.dimensions_equal(&x) )
         {
-            if ( !r.dimensions_equal(&x) )
-            {
-                r = x;
-            }
-
-            const T* pX = x.begin();
-            T* pR = r.begin();
-
-            T v(1.0);
-            long long n = x.get_number_of_elements();
-            long long ii;
-
-            #pragma omp parallel for default(none) private(ii) shared(n, pX, pR, v)
-            for ( ii=0; ii<n; ii++ )
-            {
-                pR[ii] = v/pX[ii];
-            }
+            r = x;
         }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors happened in inv(const hoNDImage<T, D>& x, hoNDImage<T, D>& r) ... ");
-            return false;
-        }
+
+        Gadgetron::math::inv(x.get_number_of_elements(), x.begin(), r.begin());
 
         return true;
     }

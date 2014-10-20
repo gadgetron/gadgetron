@@ -59,24 +59,28 @@ if(GPU_REG)
     )
 endif(GPU_REG)
 
-add_library(gadgetron_moco SHARED
-    cpuRegistrationAveragingGadget.h
-    gadgetron_moco_export.h
-    gpuRegistrationAveragingGadget.h
-    gpuRegistrationScatteringGadget.h
-    RegistrationAveragingGadget.h
-    RegistrationScatteringGadget.h
-    ${CPU_GADGETS}
-    ${GPU_GADGETS}
-  )
+if(CUDA_FOUND)
+    add_library(gadgetron_moco SHARED
+        cpuRegistrationAveragingGadget.h
+        gadgetron_moco_export.h
+        gpuRegistrationAveragingGadget.h
+        gpuRegistrationScatteringGadget.h
+        RegistrationAveragingGadget.h
+        RegistrationScatteringGadget.h
+        ${CPU_GADGETS}
+        ${GPU_GADGETS}
+      )
 
-set_target_properties(gadgetron_moco PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                         
+    set_target_properties(gadgetron_moco PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                         
 
-target_link_libraries(gadgetron_moco
-  gadgetron_toolbox_cpucore gadgetron_mricore ${CPU_LIBS} ${GPU_LIBS}
-  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES}
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-  )
+    target_link_libraries(gadgetron_moco
+      gadgetron_toolbox_cpucore gadgetron_mricore ${CPU_LIBS} ${GPU_LIBS}
+      ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES}
+      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+      )
+
+    install (TARGETS gadgetron_moco DESTINATION lib COMPONENT main)
+endif(CUDA_FOUND)
 
 install(FILES   cpuRegistrationAveragingGadget.h
                 gadgetron_moco_export.h
@@ -85,7 +89,5 @@ install(FILES   cpuRegistrationAveragingGadget.h
                 RegistrationAveragingGadget.h
                 RegistrationScatteringGadget.h
                 DESTINATION include COMPONENT main)
-
-install (TARGETS gadgetron_moco DESTINATION lib COMPONENT main)
 
 add_subdirectory(config)

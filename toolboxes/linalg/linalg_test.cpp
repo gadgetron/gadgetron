@@ -125,9 +125,9 @@ bool multiplyOwn(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
 void vecMult(size_t N, std::complex<float>* a, 
 	     std::complex<float>*b, std::complex<float>*c)
 {
-  size_t i;
+  long long i;
 #pragma omp parallel for private(i)
-  for (i = 0; i < N; i++) {
+  for (i = 0; i < (long long)N; i++) {
     const std::complex<float>& a1 = a[i];
     const std::complex<float>& b1 = b[i];
     const float re1 = a1.real();
@@ -135,8 +135,13 @@ void vecMult(size_t N, std::complex<float>* a,
     const float re2 = b1.real();
     const float im2 = b1.imag();
 
+#ifdef WIN32
+    c[i].real(re1*re2-im1*im2);
+    c[i].imag(re1*im2+im1*re2);
+#else
     c[i].real() = (re1*re2-im1*im2);
     c[i].imag() = (re1*im2+im1*re2);
+#endif // WIN32
   }
 }
 
@@ -162,7 +167,7 @@ template <typename T> double hoNDArray_norm1_2(hoNDArray< std::complex<T> > * a)
   size_t N = a->get_number_of_elements();
   std::complex<T>* a_ptr = a->get_data_ptr();
 
-  size_t i;
+  long long i;
   T sum = 0.0;
 #pragma omp parallel for reduction(+:sum)
   for (i = 0; i < N; i++) {
@@ -180,7 +185,7 @@ template <typename T> double hoNDArray_norm2_2
 {
   size_t N = a->get_number_of_elements();
   std::complex<T>* a_ptr = a->get_data_ptr();
-  size_t i;
+  long long i;
   T sum;
 #pragma omp parallel for reduction(+:sum)
   for (i = 0; i < N; i++) {

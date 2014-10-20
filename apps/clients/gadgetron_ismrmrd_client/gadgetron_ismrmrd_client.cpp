@@ -183,9 +183,8 @@ public:
 
             {
                 mtx.lock();
-                if (dataset_->appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, im) < 0) {
-                    throw GadgetronClientException("Unable to append image to ISMRMRD dataset");
-                }
+                // TODO should this be wrapped in a try/catch?
+                dataset_->appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, im);
                 mtx.unlock();
             }
 
@@ -250,9 +249,8 @@ public:
 
             {
                 mtx.lock();
-                if (dataset_->appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, im) < 0) {
-                    throw GadgetronClientException("Unable to append header to ISMRMRD HDF5 dataset");
-                }
+                //TODO should this be wrapped in a try/catch?
+                dataset_->appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, im);
                 mtx.unlock();
             }
         }
@@ -422,7 +420,7 @@ public:
 
     virtual ~GadgetronClientConnector() 
     {
-        if (socket) {
+        if (socket_) {
             socket_->close();
             delete socket_;
         }

@@ -1386,6 +1386,11 @@ bool gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
                     }
                 }
             }
+
+        #ifdef USE_OMP
+            omp_set_nested(0);
+        #endif
+
         //}
         //else
         //{

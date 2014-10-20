@@ -84,11 +84,13 @@ namespace Gadgetron
         hoNDArray<computing_value_type> v2; computing_value_type* p_v2;
         hoNDArray<computing_value_type> v12; computing_value_type* p_v12;
 
-        hoNDArray<computing_value_type> vv1; computing_value_type* p_vv1;
-        hoNDArray<computing_value_type> vv2; computing_value_type* p_vv2;
-        hoNDArray<computing_value_type> vv12; computing_value_type* p_vv12;
+        //hoNDArray<computing_value_type> vv1; computing_value_type* p_vv1;
+        //hoNDArray<computing_value_type> vv2; computing_value_type* p_vv2;
+        //hoNDArray<computing_value_type> vv12; computing_value_type* p_vv12;
 
         hoNDArray<computing_value_type> mem_;
+
+        computing_value_type eps_;
     };
 
     template<typename ValueType, unsigned int D> 
@@ -131,15 +133,17 @@ namespace Gadgetron
         v2.create(image_dim_); p_v2 = v2.begin();
         v12.create(image_dim_); p_v12 = v12.begin();
 
-        vv1.create(image_dim_); p_vv1 = vv1.begin();
-        vv2.create(image_dim_); p_vv2 = vv2.begin();
-        vv12.create(image_dim_); p_vv12 = vv12.begin();
+        //vv1.create(image_dim_); p_vv1 = vv1.begin();
+        //vv2.create(image_dim_); p_vv2 = vv2.begin();
+        //vv12.create(image_dim_); p_vv12 = vv12.begin();
 
         #ifdef WIN32
             size_t v=0;
             for ( size_t ii=0; ii<image_dim_.size(); ii++ ) v+=image_dim_[ii];
             mem_.create(2*v);
         #endif // WIN32
+
+        eps_ = std::numeric_limits<computing_value_type>::epsilon();
     }
 
     template<typename ValueType, unsigned int D> 
@@ -198,63 +202,38 @@ namespace Gadgetron
             BaseClass::evaluate(w);
             //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
 
-            size_t N = target.get_number_of_elements();
+            long long N = (long long)target.get_number_of_elements();
 
             //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("2"));
-            mu1.copyFrom(target);
-            mu2.copyFrom(warped);
+            //mu1.copyFrom(target);
+            //mu2.copyFrom(warped);
+            //Gadgetron::multiply(mu1, mu1, v1);
+            //Gadgetron::multiply(mu2, mu2, v2);
+            //Gadgetron::multiply(mu1, mu2, v12);
 
             long long n;
 
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("3"));
-            //#pragma omp parallel sections if ( D==2 )
-            //{
-            //    #pragma omp section
-            //    {
-                    Gadgetron::multiply(mu1, mu1, v1);
-                //}
+            ValueType* pT = target.begin();
+            ValueType* pW = warped.begin();
 
-                //#pragma omp section
-                //{
-                    Gadgetron::multiply(mu2, mu2, v2);
-            //    }
-            //}
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
-
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("4"));
-            Gadgetron::multiply(mu1, mu2, v12);
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
-
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("5"));
-            //#pragma omp parallel sections if ( D==2 )
+            for ( n=0; n<N; ++n )
             {
-                // hoNDArray<ValueType> mem(2*(image_dim_[0]+target.get_size(1)+target.get_size(2)));
+                const computing_value_type v1 = (computing_value_type)pT[n];
+                const computing_value_type v2 = (computing_value_type)pW[n];
+
+                p_mu1[n] = v1;
+                p_mu2[n] = v2;
+                p_v1[n] = v1*v1;
+                p_v2[n] = v2*v2;
+                p_v12[n] = v1*v2;
+            }
 
                 #ifdef WIN32
-                    //#pragma omp section
-                    {
-                        Gadgetron::filterGaussian(mu1, sigmaArg_, mem_.begin());
-                    }
-
-                    //#pragma omp section
-                    {
-                        Gadgetron::filterGaussian(mu2, sigmaArg_, mem_.begin());
-                    }
-
-                    //#pragma omp section
-                    {
-                        Gadgetron::filterGaussian(v1, sigmaArg_, mem_.begin());
-                    }
-
-                    //#pragma omp section
-                    {
-                        Gadgetron::filterGaussian(v2, sigmaArg_, mem_.begin());
-                    }
-
-                    //#pragma omp section
-                    {
-                        Gadgetron::filterGaussian(v12, sigmaArg_, mem_.begin());
-                    }
+                    Gadgetron::filterGaussian(mu1, sigmaArg_, mem_.begin());
+                    Gadgetron::filterGaussian(mu2, sigmaArg_, mem_.begin());
+                    Gadgetron::filterGaussian(v1, sigmaArg_, mem_.begin());
+                    Gadgetron::filterGaussian(v2, sigmaArg_, mem_.begin());
+                    Gadgetron::filterGaussian(v12, sigmaArg_, mem_.begin());
                 #else
                     Gadgetron::filterGaussian(mu1, sigmaArg_);
                     Gadgetron::filterGaussian(mu2, sigmaArg_);
@@ -262,49 +241,83 @@ namespace Gadgetron
                     Gadgetron::filterGaussian(v2, sigmaArg_);
                     Gadgetron::filterGaussian(v12, sigmaArg_);
                 #endif // WIN32
-            }
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
 
-            //#pragma omp parallel sections if ( D==2 )
-            {
-                //#pragma omp section
-                {
-                    Gadgetron::multiply(mu1, mu1, vv1);
-                    Gadgetron::subtract(v1, vv1, vv1);
-                    Gadgetron::addEpsilon(vv1);
-                }
+            //if ( 0 )
+            //{
+            //    //#pragma omp parallel sections if ( D==2 )
+            //    {
+            //        //#pragma omp section
+            //        {
+            //            Gadgetron::multiply(mu1, mu1, vv1);
+            //            Gadgetron::subtract(v1, vv1, vv1);
+            //            Gadgetron::addEpsilon(vv1);
+            //        }
 
-                //#pragma omp section
-                {
-                    Gadgetron::multiply(mu2, mu2, vv2);
-                    Gadgetron::subtract(v2, vv2, vv2);
-                    Gadgetron::addEpsilon(vv2);
-                }
+            //        //#pragma omp section
+            //        {
+            //            Gadgetron::multiply(mu2, mu2, vv2);
+            //            Gadgetron::subtract(v2, vv2, vv2);
+            //            Gadgetron::addEpsilon(vv2);
+            //        }
 
-                //#pragma omp section
-                {
-                    Gadgetron::multiply(mu1, mu2, vv12);
-                    Gadgetron::subtract(v12, vv12, vv12);
-                }
-            }
+            //        //#pragma omp section
+            //        {
+            //            Gadgetron::multiply(mu1, mu2, vv12);
+            //            Gadgetron::subtract(v12, vv12, vv12);
+            //        }
+            //    }
 
-            Gadgetron::multiply(vv1, vv2, vv1);
-            Gadgetron::divide(vv12, vv1, v1); // ff1
+            //    Gadgetron::multiply(vv1, vv2, vv1);
+            //    Gadgetron::divide(vv12, vv1, v1); // ff1
 
-            Gadgetron::multiply(vv12, v1, cc); // cc
+            //    Gadgetron::multiply(vv12, v1, cc); // cc
 
-            Gadgetron::divide(cc, vv2, v2); // ff2
-            Gadgetron::scal( (ValueType)(-1), v2);
+            //    Gadgetron::divide(cc, vv2, v2); // ff2
+            //    Gadgetron::scal( (computing_value_type)(-1), v2);
 
-            Gadgetron::multiply(v2, mu2, v12);
-            Gadgetron::multiply(v1, mu1, vv12);
-            Gadgetron::add(v12, vv12, v12);
+            //    Gadgetron::multiply(v2, mu2, v12);
+            //    Gadgetron::multiply(v1, mu1, vv12);
+            //    Gadgetron::add(v12, vv12, v12);
 
+            //    computing_value_type v=0;
+            //    Gadgetron::norm1(cc, v);
+
+            //    dissimilarity_ = static_cast<T>(-v/N);
+            //}
+
+            dissimilarity_ = 0;
             computing_value_type v=0;
-            Gadgetron::norm1(cc, v);
 
-            dissimilarity_ = static_cast<T>(-v/N);
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            #pragma omp parallel for private(n)
+            for ( n=0; n<N; ++n )
+            {
+                const computing_value_type u1 = p_mu1[n];
+                const computing_value_type u2 = p_mu2[n];
+
+                const computing_value_type vv1 = p_v1[n] - u1 * u1;
+                const computing_value_type vv2 = p_v2[n] - u2 * u2;
+                const computing_value_type vv12 = p_v12[n] - u1 * u2;
+
+                const computing_value_type ff1 = vv12 / (vv1 * vv2);
+                const computing_value_type lcc = vv12 * ff1;
+
+                const computing_value_type ff2 = - lcc / vv2;
+                const computing_value_type ff3 = ff2 * u2 + ff1 * u1;
+
+                p_v1[n] = ff1; p_v2[n] = ff2; p_v12[n] = ff3;
+
+                p_cc[n] = lcc;
+            }
+
+            computing_value_type lcc = 0;
+
+            #pragma omp parallel for reduction(+:lcc)
+            for (n=0; n<N; n++)
+            {
+                lcc += cc[n];
+            }
+
+            dissimilarity_ = -lcc/N;
         }
         catch(...)
         {

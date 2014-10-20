@@ -23,9 +23,9 @@ set(TEST_CASE ${TEST_CASE_ALWAYS})
 
 # TODO once we remove mkl, then this scheme will need to change
 # for now we can try to run them all even without MKL
-#if (MKL_FOUND)
+if (NOT APPLE)
     set(TEST_CASE ${TEST_CASE} ${TEST_CASE_WITH_MKL})
-#endif (MKL_FOUND)
+endif (NOT APPLE)
 
 if (CUDA_FOUND)
     set(TEST_CASE ${TEST_CASE} ${TEST_CASE_WITH_GPU})

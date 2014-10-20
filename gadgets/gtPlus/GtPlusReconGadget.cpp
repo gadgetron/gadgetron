@@ -3,6 +3,7 @@
 #include "GtPlusGadgetOpenMP.h"
 #include "gadgetron_paths.h"
 #include <iomanip>
+#include "CloudBus.h"
 
 using namespace Gadgetron::gtPlus;
 
@@ -423,7 +424,7 @@ namespace Gadgetron
             if ( workOrderPara_.spirit_iter_max_ == 0 ) workOrderPara_.spirit_iter_max_ = 100;
 
             workOrderPara_.spirit_iter_thres_ = this->get_double_value("spirit_iter_thres");
-            if ( workOrderPara_.spirit_iter_thres_ < FLT_EPSILON ) workOrderPara_.spirit_iter_max_ = 0.0015;
+            if ( workOrderPara_.spirit_iter_thres_ < FLT_EPSILON ) workOrderPara_.spirit_iter_thres_ = 0.0015;
 
             workOrderPara_.spirit_print_iter_ = this->get_bool_value("spirit_print_iter");
 
@@ -556,6 +557,32 @@ namespace Gadgetron
 
     bool GtPlusReconGadget::parseGTCloudNodeFile(const std::string& filename, CloudType& gtCloud)
     {
+
+      bool using_cloudbus = this->get_bool_value("using_cloudbus");
+      bool has_cloud_node_xml_configuration = this->get_string_value("CloudNodeXMLConfiguration")->size();
+
+      if (using_cloudbus && has_cloud_node_xml_configuration) {
+	std::vector<GadgetronNodeInfo> nodes;
+	CloudBus::instance()->get_node_info(nodes);
+        gtCloud.resize(nodes.size());
+
+        unsigned int n;
+        for ( n=0; n<nodes.size(); n++ )
+        {
+	  std::stringstream ss;
+	  gtCloud[n].get<0>() = nodes[n].address;
+	  ss << nodes[n].port;
+	  gtCloud[n].get<1>() = ss.str();
+	  gtCloud[n].get<2>() = *this->get_string_value("CloudNodeXMLConfiguration");
+	  gtCloud[n].get<3>() = nodes[n].compute_capability;
+
+	  GADGET_CONDITION_MSG(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
+        }
+
+	return true; //We will leave the function here
+
+      }
+
       std::string nodeFileName = get_gadgetron_home();
         nodeFileName.append("/config/gtCloud/");
         nodeFileName.append(filename);
@@ -706,7 +733,7 @@ namespace Gadgetron
         aSpacing_[1] = field_of_view_recon_[1]/reconE1_;
         aSpacing_[2] = field_of_view_recon_[2]/reconE2_;
 
-        gt_exporter_.setPixelSize(aSpacing_[0], aSpacing_[1], aSpacing_[2], aSpacing_[3], aSpacing_[4], aSpacing_[5], aSpacing_[6]);
+        gt_exporter_.setPixelSize(aSpacing_[0], aSpacing_[1], aSpacing_[2], aSpacing_[3], aSpacing_[4], aSpacing_[5]);
 
         //XUE-TODO: This is actually wrong. This assumes that you always zeropad, which is probably bad practice
         meas_max_idx_.kspace_encode_step_1 = (uint16_t)matrix_size_encoding_[1]-1;

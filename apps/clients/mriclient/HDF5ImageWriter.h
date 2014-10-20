@@ -44,7 +44,12 @@ namespace Gadgetron
 
                 {
                     ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, *mtx_, -1);
-                    if (dataset_.appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, img) < 0) {
+                    try 
+                    {
+                        dataset_.appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, img);
+                    }
+                    catch (...)
+                    {
                         GADGET_DEBUG1("Failed to write image.\n");
                         return GADGET_FAIL;
                     }

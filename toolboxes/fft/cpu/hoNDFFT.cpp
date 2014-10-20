@@ -3,6 +3,9 @@
 #include "hoNDArray_math_util.h"
 #include "hoNDArray_math.h"
 
+/// uncomment this to disable MKL FFT calls
+// #undef USE_MKL
+
 namespace Gadgetron{
 
     template<typename T> hoNDFFT<T>* hoNDFFT<T>::instance()
@@ -1132,6 +1135,338 @@ namespace Gadgetron{
         return true;
     }
 
+    template<typename T> 
+    bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, bool forward)
+    {
+#ifdef USE_MKL
+        return fft1_mkl(a, forward);
+#else
+        hoNDArray< ComplexType > res(a);
+        if ( !fft1(res, a, forward) )
+        {
+            return false;
+        }
+
+        return true;
+#endif //USE_MKL
+    }
+
+    template<typename T> 
+    bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, bool forward)
+    {
+#ifdef USE_MKL
+        return fft2_mkl(a, forward);
+#else
+        hoNDArray< ComplexType > res(a);
+        if ( !fft2(res, a, forward) )
+        {
+            return false;
+        }
+
+        return true;
+#endif //USE_MKL
+    }
+
+    template<typename T> 
+    bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, bool forward)
+    {
+#ifdef USE_MKL
+        return fft3_mkl(a, forward);
+#else
+        hoNDArray< ComplexType > res(a);
+        if ( !fft3(res, a, forward) )
+        {
+            return false;
+        }
+
+        return true;
+#endif //USE_MKL
+    }
+
+    template<typename T> 
+    bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
+    {
+#ifdef USE_MKL
+        return fft1_mkl(a, r, forward);
+#else
+        r = a;
+
+        int n0 = a.get_size(0);
+        T fftRatio = 1.0/std::sqrt( T(n0) );
+
+        size_t num = a.get_number_of_elements()/n0;
+        long long n;
+
+        if ( typeid(T) == typeid(float) )
+        {
+            fftwf_plan p;
+
+            {
+                mutex_.lock();
+                if ( forward )
+                {
+                    p = fftwf_plan_dft_1d(n0, 
+                            reinterpret_cast<fftwf_complex*>(a.begin()), 
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
+                            FFTW_FORWARD, FFTW_ESTIMATE);
+                }
+                else
+                {
+                    p = fftwf_plan_dft_1d(n0, 
+                            reinterpret_cast<fftwf_complex*>(a.begin()), 
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
+                            FFTW_BACKWARD, FFTW_ESTIMATE);
+                }
+                mutex_.unlock();
+            }
+
+            #pragma omp parallel for private(n) shared(num, p, a, n0, r)
+            for ( n=0; n<num; n++ )
+            {
+                fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0), 
+                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0));
+            }
+
+            {
+                mutex_.lock();
+                fftwf_destroy_plan(p);
+                mutex_.unlock();
+            }
+        }
+        else if ( typeid(T) == typeid(double) )
+        {
+            fftw_plan p;
+
+            {
+                mutex_.lock();
+                if ( forward )
+                {
+                    p = fftw_plan_dft_1d(n0, 
+                            reinterpret_cast<fftw_complex*>(a.begin()), 
+                            reinterpret_cast<fftw_complex*>(r.begin()),
+                            FFTW_FORWARD, FFTW_ESTIMATE);
+                }
+                else
+                {
+                    p = fftw_plan_dft_1d(n0, 
+                            reinterpret_cast<fftw_complex*>(a.begin()), 
+                            reinterpret_cast<fftw_complex*>(r.begin()),
+                            FFTW_BACKWARD, FFTW_ESTIMATE);
+                }
+                mutex_.unlock();
+            }
+
+            #pragma omp parallel for private(n) shared(num, p, a, n0, r)
+            for ( n=0; n<num; n++ )
+            {
+                fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0), 
+                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0));
+            }
+
+            {
+                mutex_.lock();
+                fftw_destroy_plan(p);
+                mutex_.unlock();
+            }
+        }
+
+        Gadgetron::scal(fftRatio, r);
+
+        return true;
+#endif //USE_MKL
+    }
+
+    template<typename T> 
+    bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
+    {
+#ifdef USE_MKL
+        return fft2_mkl(a, r, forward);
+#else
+        r = a;
+
+        int n0 = a.get_size(1);
+        int n1 = a.get_size(0);
+
+        T fftRatio = 1.0/std::sqrt( T(n0*n1) );
+
+        size_t num = a.get_number_of_elements()/(n0*n1);
+        long long n;
+
+        if ( typeid(T) == typeid(float) )
+        {
+            fftwf_plan p;
+
+            {
+                mutex_.lock();
+                if ( forward )
+                {
+                    p = fftwf_plan_dft_2d(n0, n1,
+                            reinterpret_cast<fftwf_complex*>(a.begin()), 
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
+                            FFTW_FORWARD, FFTW_ESTIMATE);
+                }
+                else
+                {
+                    p = fftwf_plan_dft_2d(n0, n1,
+                            reinterpret_cast<fftwf_complex*>(a.begin()), 
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
+                            FFTW_BACKWARD, FFTW_ESTIMATE);
+                }
+                mutex_.unlock();
+            }
+
+            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r)
+            for ( n=0; n<num; n++ )
+            {
+                fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1), 
+                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0*n1));
+            }
+
+            {
+                mutex_.lock();
+                fftwf_destroy_plan(p);
+                mutex_.unlock();
+            }
+        }
+        else if ( typeid(T) == typeid(double) )
+        {
+            fftw_plan p;
+
+            {
+                mutex_.lock();
+                if ( forward )
+                {
+                    p = fftw_plan_dft_2d(n0, n1,
+                            reinterpret_cast<fftw_complex*>(a.begin()), 
+                            reinterpret_cast<fftw_complex*>(r.begin()),
+                            FFTW_FORWARD, FFTW_ESTIMATE);
+                }
+                else
+                {
+                    p = fftw_plan_dft_2d(n0, n1,
+                            reinterpret_cast<fftw_complex*>(a.begin()), 
+                            reinterpret_cast<fftw_complex*>(r.begin()),
+                            FFTW_BACKWARD, FFTW_ESTIMATE);
+                }
+                mutex_.unlock();
+            }
+
+            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r)
+            for ( n=0; n<num; n++ )
+            {
+                fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1), 
+                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0*n1));
+            }
+
+            {
+                mutex_.lock();
+                fftw_destroy_plan(p);
+                mutex_.unlock();
+            }
+        }
+
+        Gadgetron::scal(fftRatio, r);
+
+        return true;
+#endif //USE_MKL
+    }
+
+    template<typename T> 
+    bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
+    {
+#ifdef USE_MKL
+        return fft3_mkl(a, r, forward);
+#else
+        r = a;
+
+        int n2 = a.get_size(0);
+        int n1 = a.get_size(1);
+        int n0 = a.get_size(2);
+
+        T fftRatio = 1.0/std::sqrt( T(n0*n1*n2) );
+
+        size_t num = a.get_number_of_elements()/(n0*n1*n2);
+        long long n;
+
+        if ( typeid(T) == typeid(float) )
+        {
+            fftwf_plan p;
+
+            {
+                mutex_.lock();
+                if ( forward )
+                {
+                    p = fftwf_plan_dft_3d(n0, n1, n2, 
+                            reinterpret_cast<fftwf_complex*>(a.begin()), 
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
+                            FFTW_FORWARD, FFTW_ESTIMATE);
+                }
+                else
+                {
+                    p = fftwf_plan_dft_3d(n0, n1, n2, 
+                            reinterpret_cast<fftwf_complex*>(a.begin()), 
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
+                            FFTW_BACKWARD, FFTW_ESTIMATE);
+                }
+                mutex_.unlock();
+            }
+
+            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num > 8)
+            for ( n=0; n<num; n++ )
+            {
+                fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1*n2), 
+                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0*n1*n2));
+            }
+
+            {
+                mutex_.lock();
+                fftwf_destroy_plan(p);
+                mutex_.unlock();
+            }
+        }
+        else if ( typeid(T) == typeid(double) )
+        {
+            fftw_plan p;
+
+            {
+                mutex_.lock();
+                if ( forward )
+                {
+                    p = fftw_plan_dft_3d(n0, n1, n2, 
+                            reinterpret_cast<fftw_complex*>(a.begin()), 
+                            reinterpret_cast<fftw_complex*>(r.begin()),
+                            FFTW_FORWARD, FFTW_ESTIMATE);
+                }
+                else
+                {
+                    p = fftw_plan_dft_3d(n0, n1, n2, 
+                            reinterpret_cast<fftw_complex*>(a.begin()), 
+                            reinterpret_cast<fftw_complex*>(r.begin()),
+                            FFTW_BACKWARD, FFTW_ESTIMATE);
+                }
+                mutex_.unlock();
+            }
+
+            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num > 8)
+            for ( n=0; n<num; n++ )
+            {
+                fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1*n2), 
+                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0*n1*n2));
+            }
+
+            {
+                mutex_.lock();
+                fftw_destroy_plan(p);
+                mutex_.unlock();
+            }
+        }
+
+        Gadgetron::scal(fftRatio, r);
+
+        return true;
+#endif //USE_MKL
+    }
+
     // -----------------------------------------------------------------------------------------
 
     // MKL related
@@ -1295,7 +1630,7 @@ namespace Gadgetron{
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, bool forward)
+    bool hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, bool forward)
     {
         size_t n = a.get_number_of_elements()/a.get_size(0);
         MKL_LONG dim = a.get_size(0);
@@ -1312,7 +1647,7 @@ namespace Gadgetron{
         }
         else
         {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a), only float and double are supported ... ");
+            GADGET_ERROR_MSG("hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
             return false;
         }
 
@@ -1345,7 +1680,7 @@ namespace Gadgetron{
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
+    bool hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
     {
         size_t n = a.get_number_of_elements()/a.get_size(0);
         MKL_LONG dim = a.get_size(0);
@@ -1362,7 +1697,7 @@ namespace Gadgetron{
         }
         else
         {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
+            GADGET_ERROR_MSG("hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
             return false;
         }
 
@@ -1395,7 +1730,7 @@ namespace Gadgetron{
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, bool forward)
+    bool hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, bool forward)
     {
         size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1));
         MKL_LONG dim[2];
@@ -1414,7 +1749,7 @@ namespace Gadgetron{
         }
         else
         {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a), only float and double are supported ... ");
+            GADGET_ERROR_MSG("hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
             return false;
         }
 
@@ -1446,7 +1781,7 @@ namespace Gadgetron{
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
+    bool hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
     {
         size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1));
         MKL_LONG dim[2];
@@ -1465,7 +1800,7 @@ namespace Gadgetron{
         }
         else
         {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a), only float and double are supported ... ");
+            GADGET_ERROR_MSG("hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
             return false;
         }
 
@@ -1497,7 +1832,7 @@ namespace Gadgetron{
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, bool forward)
+    bool hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, bool forward)
     {
         size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1)*a.get_size(2));
 
@@ -1518,7 +1853,7 @@ namespace Gadgetron{
         }
         else
         {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a), only float and double are supported ... ");
+            GADGET_ERROR_MSG("hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
             return false;
         }
 
@@ -1550,7 +1885,7 @@ namespace Gadgetron{
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
+    bool hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
     {
         size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1)*a.get_size(2));
 
@@ -1571,7 +1906,7 @@ namespace Gadgetron{
         }
         else
         {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft3(a, r), only float and double are supported ... ");
+            GADGET_ERROR_MSG("hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
             return false;
         }
 
@@ -1598,311 +1933,6 @@ namespace Gadgetron{
             GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
             return false; 
         }
-
-        return true;
-    }
-
-#else
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, bool forward)
-    {
-        hoNDArray< ComplexType > res(a);
-        if ( !fft1(res, a, forward) )
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, bool forward)
-    {
-        hoNDArray< ComplexType > res(a);
-        if ( !fft2(res, a, forward) )
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, bool forward)
-    {
-        hoNDArray< ComplexType > res(a);
-        if ( !fft3(res, a, forward) )
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        r = a;
-
-        int n0 = a.get_size(0);
-        T fftRatio = 1.0/std::sqrt( T(n0) );
-
-        size_t num = a.get_number_of_elements()/n0;
-        long long n;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            fftwf_plan p;
-
-            {
-                mutex_.lock();
-                if ( forward )
-                {
-                    p = fftwf_plan_dft_1d(n0, 
-                            reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(r.begin()),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
-                }
-                else
-                {
-                    p = fftwf_plan_dft_1d(n0, 
-                            reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(r.begin()),
-                            FFTW_BACKWARD, FFTW_ESTIMATE);
-                }
-                mutex_.unlock();
-            }
-
-            for ( n=0; n<num; n++ )
-            {
-                fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0), 
-                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0));
-            }
-
-            {
-                mutex_.lock();
-                fftwf_destroy_plan(p);
-                mutex_.unlock();
-            }
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            fftw_plan p;
-
-            {
-                mutex_.lock();
-                if ( forward )
-                {
-                    p = fftw_plan_dft_1d(n0, 
-                            reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(r.begin()),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
-                }
-                else
-                {
-                    p = fftw_plan_dft_1d(n0, 
-                            reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(r.begin()),
-                            FFTW_BACKWARD, FFTW_ESTIMATE);
-                }
-                mutex_.unlock();
-            }
-
-            for ( n=0; n<num; n++ )
-            {
-                fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0), 
-                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0));
-            }
-
-            {
-                mutex_.lock();
-                fftw_destroy_plan(p);
-                mutex_.unlock();
-            }
-        }
-
-        r *= fftRatio;
-
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        r = a;
-
-        int n0 = a.get_size(1);
-        int n1 = a.get_size(0);
-
-        T fftRatio = 1.0/std::sqrt( T(n0*n1) );
-
-        size_t num = a.get_number_of_elements()/(n0*n1);
-        long long n;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            fftwf_plan p;
-
-            {
-                mutex_.lock();
-                if ( forward )
-                {
-                    p = fftwf_plan_dft_2d(n0, n1,
-                            reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(r.begin()),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
-                }
-                else
-                {
-                    p = fftwf_plan_dft_2d(n0, n1,
-                            reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(r.begin()),
-                            FFTW_BACKWARD, FFTW_ESTIMATE);
-                }
-                mutex_.unlock();
-            }
-
-            for ( n=0; n<num; n++ )
-            {
-                fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1), 
-                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0*n1));
-            }
-
-            {
-                mutex_.lock();
-                fftwf_destroy_plan(p);
-                mutex_.unlock();
-            }
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            fftw_plan p;
-
-            {
-                mutex_.lock();
-                if ( forward )
-                {
-                    p = fftw_plan_dft_2d(n0, n1,
-                            reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(r.begin()),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
-                }
-                else
-                {
-                    p = fftw_plan_dft_2d(n0, n1,
-                            reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(r.begin()),
-                            FFTW_BACKWARD, FFTW_ESTIMATE);
-                }
-                mutex_.unlock();
-            }
-
-            for ( n=0; n<num; n++ )
-            {
-                fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1), 
-                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0*n1));
-            }
-
-            {
-                mutex_.lock();
-                fftw_destroy_plan(p);
-                mutex_.unlock();
-            }
-        }
-
-        r *= fftRatio;
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        r = a;
-
-        int n2 = a.get_size(0);
-        int n1 = a.get_size(1);
-        int n0 = a.get_size(2);
-
-        T fftRatio = 1.0/std::sqrt( T(n0*n1*n2) );
-
-        size_t num = a.get_number_of_elements()/(n0*n1*n2);
-        long long n;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            fftwf_plan p;
-
-            {
-                mutex_.lock();
-                if ( forward )
-                {
-                    p = fftwf_plan_dft_3d(n0, n1, n2, 
-                            reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(r.begin()),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
-                }
-                else
-                {
-                    p = fftwf_plan_dft_3d(n0, n1, n2, 
-                            reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(r.begin()),
-                            FFTW_BACKWARD, FFTW_ESTIMATE);
-                }
-                mutex_.unlock();
-            }
-
-            for ( n=0; n<num; n++ )
-            {
-                fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1*n2), 
-                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0*n1*n2));
-            }
-
-            {
-                mutex_.lock();
-                fftwf_destroy_plan(p);
-                mutex_.unlock();
-            }
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            fftw_plan p;
-
-            {
-                mutex_.lock();
-                if ( forward )
-                {
-                    p = fftw_plan_dft_3d(n0, n1, n2, 
-                            reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(r.begin()),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
-                }
-                else
-                {
-                    p = fftw_plan_dft_3d(n0, n1, n2, 
-                            reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(r.begin()),
-                            FFTW_BACKWARD, FFTW_ESTIMATE);
-                }
-                mutex_.unlock();
-            }
-
-            for ( n=0; n<num; n++ )
-            {
-                fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1*n2), 
-                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0*n1*n2));
-            }
-
-            {
-                mutex_.lock();
-                fftw_destroy_plan(p);
-                mutex_.unlock();
-            }
-        }
-
-        r *= fftRatio;
 
         return true;
     }

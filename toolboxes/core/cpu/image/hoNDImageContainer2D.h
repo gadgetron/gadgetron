@@ -502,7 +502,7 @@ namespace Gadgetron
                 size_t col = this->cols(ii);
                 for ( jj=0; jj<col; jj++ )
                 {
-                    Gadgetron::clear( *image_container_[ii][jj] );
+                    memset(image_container_[ii][jj]->begin(), 0, image_container_[ii][jj]->get_number_of_bytes());
                 }
             }
         }
