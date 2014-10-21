@@ -19,7 +19,7 @@ typedef std::complex<float> GT_Complex8;
 typedef std::complex<double> GT_Complex16;
 
 #ifndef lapack_int
-    #define lapack_int int
+            #define lapack_int int
 #endif // lapack_int
 
 /// ----------------------------------------------------------------------

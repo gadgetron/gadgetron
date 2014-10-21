@@ -227,7 +227,6 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
         workOrder2DT->complexIm_.create(RO, E1, N, S);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("compute aliasing images ... "));
         if ( workOrder2DT->downstream_coil_compression_ )
         {
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_);
@@ -236,7 +235,6 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
         {
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(data_dst, buffer2DT_);
         }
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         double effectiveAcceFactor = workOrder2DT->acceFactorE1_;
         if ( workOrder2DT->start_E1_>0 && workOrder2DT->end_E1_>0 )
@@ -256,7 +254,6 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
         typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt(effectiveAcceFactor));
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("scale aliasing images ... "));
         Gadgetron::scal( fftCompensationRatio, buffer2DT_);
 
         // if the image data is scaled and ref lines are going to be filled back to the data, 
@@ -268,7 +265,6 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                 Gadgetron::scal( fftCompensationRatio, workOrder2DT->ref_);
             }
         }
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_, "buffer2DT_");
 
@@ -307,15 +303,11 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             {
                 if ( (refN<N) || (refN==1) )
                 {
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("unwrapping (refN<N) || (refN==1) ... "));
-
                     hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+usedS*RO*E1*srcCHA*dstCHA*refN);
                     hoNDArray<T> aliasedIm(RO, E1, srcCHA, N, buffer2DT_.begin()+usedS*RO*E1*srcCHA*N);
                     hoNDArray<T> unwarppedIm(RO, E1, dstCHA, N, workOrder2DT->fullkspace_.begin()+usedS*RO*E1*dstCHA*N);
 
                     this->applyImageDomainKernelImage(aliasedIm, kIm, buffer2DT_unwrapping_, unwarppedIm);
-
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                     if ( !debugFolder_.empty() )
                     {
@@ -338,8 +330,6 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                 }
                 else
                 {
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("unwrapping ... "));
-
                     #pragma omp parallel private(n)
                     {
                         hoNDArray<T> complexIm(RO, E1, dstCHA);
@@ -362,11 +352,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                             memcpy(workOrder2DT->fullkspace_.begin()+n*RO*E1*dstCHA+usedS*RO*E1*dstCHA*N, complexIm.begin(), sizeof(T)*RO*E1*dstCHA);
                         }
                     }
-
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
                 }
-
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("coil combination ... "));
 
                 hoNDArray<T> unwarppedIm(RO, E1, dstCHA, N, workOrder2DT->fullkspace_.begin()+usedS*RO*E1*dstCHA*N);
                 hoNDArray<T> combined(RO, E1, N, workOrder2DT->complexIm_.begin()+usedS*RO*E1*N);
@@ -381,8 +367,6 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     hoNDArray<T> coilMap(RO, E1, dstCHA, workOrder2DT->coilMap_->begin()+usedS*RO*E1*dstCHA*refN);
                     gtPlusISMRMRDReconUtilComplex<T>().coilCombine(unwarppedIm, coilMap, combined);
                 }
-
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                 if ( !debugFolder_.empty() )
                 {
