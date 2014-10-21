@@ -46,7 +46,7 @@ namespace Gadgetron
                     ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, *mtx_, -1);
                     try 
                     {
-                        dataset_.appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, img);
+                        dataset_.appendImage(image_varname, img);
                     }
                     catch (...)
                     {
