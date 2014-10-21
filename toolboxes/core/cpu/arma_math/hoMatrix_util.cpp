@@ -1,132 +1,132 @@
 
 #include "hoMatrix_util.h"
 
-        #ifndef lapack_complex_float
-            #define lapack_complex_float GT_Complex8
-        #endif // lapack_complex_float
+#ifndef lapack_complex_float
+    #define lapack_complex_float GT_Complex8
+#endif // lapack_complex_float
 
-        #ifndef lapack_complex_double
-            #define lapack_complex_double GT_Complex16
-        #endif // #ifndef lapack_complex_double
+#ifndef lapack_complex_double
+    #define lapack_complex_double GT_Complex16
+#endif // #ifndef lapack_complex_double
 
-        extern "C" void sgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
-                    const float *alpha, const float *a, const lapack_int *lda, const float *b, const lapack_int *ldb,
-                    const float *beta, float *c, const lapack_int *ldc);
+extern "C" void sgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
+            const float *alpha, const float *a, const lapack_int *lda, const float *b, const lapack_int *ldb,
+            const float *beta, float *c, const lapack_int *ldc);
 
-        extern "C" void dgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
-                    const double *alpha, const double *a, const lapack_int *lda, const double *b, const lapack_int *ldb,
-                    const double *beta, double *c, const lapack_int *ldc);
+extern "C" void dgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
+            const double *alpha, const double *a, const lapack_int *lda, const double *b, const lapack_int *ldb,
+            const double *beta, double *c, const lapack_int *ldc);
 
-        extern "C" void cgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
-                            const lapack_complex_float *alpha, const lapack_complex_float *a, const lapack_int *lda,
-                            const lapack_complex_float *b, const lapack_int *ldb, const lapack_complex_float *beta,
-                            lapack_complex_float *c, const lapack_int *ldc);
+extern "C" void cgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
+                    const lapack_complex_float *alpha, const lapack_complex_float *a, const lapack_int *lda,
+                    const lapack_complex_float *b, const lapack_int *ldb, const lapack_complex_float *beta,
+                    lapack_complex_float *c, const lapack_int *ldc);
 
-        extern "C" void zgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
-                    const lapack_complex_double *alpha, const lapack_complex_double *a, const lapack_int *lda,
-                    const lapack_complex_double *b, const lapack_int *ldb, const lapack_complex_double *beta,
-                    lapack_complex_double *c, const lapack_int *ldc);
+extern "C" void zgemm_(const char *transa, const char *transb, const lapack_int *m, const lapack_int *n, const lapack_int *k,
+            const lapack_complex_double *alpha, const lapack_complex_double *a, const lapack_int *lda,
+            const lapack_complex_double *b, const lapack_int *ldb, const lapack_complex_double *beta,
+            lapack_complex_double *c, const lapack_int *ldc);
 
-        extern "C" void spotrf_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda, lapack_int* info );
-        extern "C" void dpotrf_( const char* uplo, const lapack_int* n, double* a, const lapack_int* lda, lapack_int* info );
-        extern "C" void cpotrf_( const char* uplo, const lapack_int* n, lapack_complex_float* a, const lapack_int* lda, lapack_int* info );
-        extern "C" void zpotrf_( const char* uplo, const lapack_int* n, lapack_complex_double* a, const lapack_int* lda, lapack_int* info );
+extern "C" void spotrf_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda, lapack_int* info );
+extern "C" void dpotrf_( const char* uplo, const lapack_int* n, double* a, const lapack_int* lda, lapack_int* info );
+extern "C" void cpotrf_( const char* uplo, const lapack_int* n, lapack_complex_float* a, const lapack_int* lda, lapack_int* info );
+extern "C" void zpotrf_( const char* uplo, const lapack_int* n, lapack_complex_double* a, const lapack_int* lda, lapack_int* info );
 
-        extern "C" void ssyev_( const char* jobz, const char* uplo, const lapack_int* n, float* a,
-                const lapack_int* lda, float* w, float* work, const lapack_int* lwork,
-                lapack_int* info );
+extern "C" void ssyev_( const char* jobz, const char* uplo, const lapack_int* n, float* a,
+        const lapack_int* lda, float* w, float* work, const lapack_int* lwork,
+        lapack_int* info );
 
-        extern "C" void dsyev_( const char* jobz, const char* uplo, const lapack_int* n, double* a,
-                const lapack_int* lda, double* w, double* work, const lapack_int* lwork,
-                lapack_int* info );
+extern "C" void dsyev_( const char* jobz, const char* uplo, const lapack_int* n, double* a,
+        const lapack_int* lda, double* w, double* work, const lapack_int* lwork,
+        lapack_int* info );
 
-        extern "C" void cheev_( const char* jobz, const char* uplo, const lapack_int* n,
-                lapack_complex_float* a, const lapack_int* lda, float* w, lapack_complex_float* work,
-                const lapack_int* lwork, float* rwork, lapack_int* info );
+extern "C" void cheev_( const char* jobz, const char* uplo, const lapack_int* n,
+        lapack_complex_float* a, const lapack_int* lda, float* w, lapack_complex_float* work,
+        const lapack_int* lwork, float* rwork, lapack_int* info );
 
-        extern "C" void zheev_( const char* jobz, const char* uplo, const lapack_int* n,
-                lapack_complex_double* a, const lapack_int* lda, double* w,
-                lapack_complex_double* work, const lapack_int* lwork, double* rwork,
-                lapack_int* info );
+extern "C" void zheev_( const char* jobz, const char* uplo, const lapack_int* n,
+        lapack_complex_double* a, const lapack_int* lda, double* w,
+        lapack_complex_double* work, const lapack_int* lwork, double* rwork,
+        lapack_int* info );
 
-        extern "C" void spotrf_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda,
-                lapack_int* info );
+extern "C" void spotrf_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda,
+        lapack_int* info );
 
-        extern "C" void spotri_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda,
-                lapack_int* info );
+extern "C" void spotri_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda,
+        lapack_int* info );
 
-        extern "C" void dpotrf_( const char* uplo, const lapack_int* n, double* a,
-                const lapack_int* lda, lapack_int* info );
+extern "C" void dpotrf_( const char* uplo, const lapack_int* n, double* a,
+        const lapack_int* lda, lapack_int* info );
 
-        extern "C" void dpotri_( const char* uplo, const lapack_int* n, double* a,
-                const lapack_int* lda, lapack_int* info );
+extern "C" void dpotri_( const char* uplo, const lapack_int* n, double* a,
+        const lapack_int* lda, lapack_int* info );
 
-        extern "C" void cpotrf_( const char* uplo, const lapack_int* n, lapack_complex_float* a,
-                const lapack_int* lda, lapack_int* info );
+extern "C" void cpotrf_( const char* uplo, const lapack_int* n, lapack_complex_float* a,
+        const lapack_int* lda, lapack_int* info );
 
-        extern "C" void cpotri_( const char* uplo, const lapack_int* n, lapack_complex_float* a,
-                const lapack_int* lda, lapack_int* info );
+extern "C" void cpotri_( const char* uplo, const lapack_int* n, lapack_complex_float* a,
+        const lapack_int* lda, lapack_int* info );
 
-        extern "C" void zpotrf_( const char* uplo, const lapack_int* n, lapack_complex_double* a,
-                const lapack_int* lda, lapack_int* info );
+extern "C" void zpotrf_( const char* uplo, const lapack_int* n, lapack_complex_double* a,
+        const lapack_int* lda, lapack_int* info );
 
-        extern "C" void zpotri_( const char* uplo, const lapack_int* n, lapack_complex_double* a,
-                const lapack_int* lda, lapack_int* info );
+extern "C" void zpotri_( const char* uplo, const lapack_int* n, lapack_complex_double* a,
+        const lapack_int* lda, lapack_int* info );
 
-        extern "C" void strtri_( const char* uplo, const char* diag, const lapack_int* n, float* a,
-                const lapack_int* lda, lapack_int* info );
+extern "C" void strtri_( const char* uplo, const char* diag, const lapack_int* n, float* a,
+        const lapack_int* lda, lapack_int* info );
 
-        extern "C" void dtrtri_( const char* uplo, const char* diag, const lapack_int* n, double* a,
-                const lapack_int* lda, lapack_int* info );
+extern "C" void dtrtri_( const char* uplo, const char* diag, const lapack_int* n, double* a,
+        const lapack_int* lda, lapack_int* info );
 
-        extern "C" void ctrtri_( const char* uplo, const char* diag, const lapack_int* n,
-                lapack_complex_float* a, const lapack_int* lda, lapack_int* info );
+extern "C" void ctrtri_( const char* uplo, const char* diag, const lapack_int* n,
+        lapack_complex_float* a, const lapack_int* lda, lapack_int* info );
 
-        extern "C" void ztrtri_( const char* uplo, const char* diag, const lapack_int* n,
-                lapack_complex_double* a, const lapack_int* lda, lapack_int* info );
+extern "C" void ztrtri_( const char* uplo, const char* diag, const lapack_int* n,
+        lapack_complex_double* a, const lapack_int* lda, lapack_int* info );
 
-        extern "C" void sposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs, float* a,
-                const lapack_int* lda, float* b, const lapack_int* ldb, lapack_int* info );
+extern "C" void sposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs, float* a,
+        const lapack_int* lda, float* b, const lapack_int* ldb, lapack_int* info );
 
-        extern "C" void dposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs,
-                double* a, const lapack_int* lda, double* b, const lapack_int* ldb,
-                lapack_int* info );
+extern "C" void dposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs,
+        double* a, const lapack_int* lda, double* b, const lapack_int* ldb,
+        lapack_int* info );
 
-        extern "C" void cposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs,
-                lapack_complex_float* a, const lapack_int* lda, lapack_complex_float* b,
-                const lapack_int* ldb, lapack_int* info );
+extern "C" void cposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs,
+        lapack_complex_float* a, const lapack_int* lda, lapack_complex_float* b,
+        const lapack_int* ldb, lapack_int* info );
 
-        extern "C" void zposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs,
-                lapack_complex_double* a, const lapack_int* lda, lapack_complex_double* b,
-                const lapack_int* ldb, lapack_int* info );
+extern "C" void zposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs,
+        lapack_complex_double* a, const lapack_int* lda, lapack_complex_double* b,
+        const lapack_int* ldb, lapack_int* info );
 
-        extern "C" void sgetrf_( const lapack_int* m, const lapack_int* n, float* a, const lapack_int* lda,
-                lapack_int* ipiv, lapack_int* info );
+extern "C" void sgetrf_( const lapack_int* m, const lapack_int* n, float* a, const lapack_int* lda,
+        lapack_int* ipiv, lapack_int* info );
 
-        extern "C" void dgetrf_( const lapack_int* m, const lapack_int* n, double* a,
-                const lapack_int* lda, lapack_int* ipiv, lapack_int* info );
+extern "C" void dgetrf_( const lapack_int* m, const lapack_int* n, double* a,
+        const lapack_int* lda, lapack_int* ipiv, lapack_int* info );
 
-        extern "C" void cgetrf_( const lapack_int* m, const lapack_int* n, lapack_complex_float* a,
-                const lapack_int* lda, lapack_int* ipiv, lapack_int* info );
+extern "C" void cgetrf_( const lapack_int* m, const lapack_int* n, lapack_complex_float* a,
+        const lapack_int* lda, lapack_int* ipiv, lapack_int* info );
 
-        extern "C" void zgetrf_( const lapack_int* m, const lapack_int* n, lapack_complex_double* a,
-                const lapack_int* lda, lapack_int* ipiv, lapack_int* info );
+extern "C" void zgetrf_( const lapack_int* m, const lapack_int* n, lapack_complex_double* a,
+        const lapack_int* lda, lapack_int* ipiv, lapack_int* info );
 
-        extern "C" void sgetri_( const lapack_int* n, float* a, const lapack_int* lda,
-                const lapack_int* ipiv, float* work, const lapack_int* lwork,
-                lapack_int* info );
+extern "C" void sgetri_( const lapack_int* n, float* a, const lapack_int* lda,
+        const lapack_int* ipiv, float* work, const lapack_int* lwork,
+        lapack_int* info );
 
-        extern "C" void dgetri_( const lapack_int* n, double* a, const lapack_int* lda,
-                const lapack_int* ipiv, double* work, const lapack_int* lwork,
-                lapack_int* info );
+extern "C" void dgetri_( const lapack_int* n, double* a, const lapack_int* lda,
+        const lapack_int* ipiv, double* work, const lapack_int* lwork,
+        lapack_int* info );
 
-        extern "C" void cgetri_( const lapack_int* n, lapack_complex_float* a, const lapack_int* lda,
-                const lapack_int* ipiv, lapack_complex_float* work, const lapack_int* lwork,
-                lapack_int* info );
+extern "C" void cgetri_( const lapack_int* n, lapack_complex_float* a, const lapack_int* lda,
+        const lapack_int* ipiv, lapack_complex_float* work, const lapack_int* lwork,
+        lapack_int* info );
 
-        extern "C" void zgetri_( const lapack_int* n, lapack_complex_double* a, const lapack_int* lda,
-                const lapack_int* ipiv, lapack_complex_double* work, const lapack_int* lwork,
-                lapack_int* info );
+extern "C" void zgetri_( const lapack_int* n, lapack_complex_double* a, const lapack_int* lda,
+        const lapack_int* ipiv, lapack_complex_double* work, const lapack_int* lwork,
+        lapack_int* info );
 
 namespace Gadgetron
 {
