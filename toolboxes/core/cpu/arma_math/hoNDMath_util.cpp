@@ -51,7 +51,7 @@ extern "C"
 
 #define NumElementsUseThreading 128*128*6
 
-const unsigned long long FourGBLimit = (unsigned long long)(4.0*1024*1024*1024);
+const int TwoGBLimit = (2147483647);
 
 namespace Gadgetron { namespace math {
 
@@ -218,22 +218,11 @@ namespace Gadgetron { namespace math {
 
     template <typename T> void add(size_t N, const T* x, const T* y, T* r)
     {
-        T a = 1;
-        if ( x == r && y!=r )
+        long long n;
+#pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; n++ )
         {
-            axpy(a, N, y, x, r);
-        }
-        else if (x != r && y==r )
-        {
-            axpy(a, N, x, y, r);
-        }
-        else if ( x==r && y==r )
-        {
-            scal( N, (typename realType<T>::Type)(2), r);
-        }
-        else
-        {
-            axpy(a, N, x, y, r);
+            r[n] = x[n] + y[n];
         }
     }
 
@@ -589,29 +578,28 @@ namespace Gadgetron { namespace math {
         lapack_int num = (lapack_int)N;
         lapack_int incx = 1;
 
-#ifdef ILP_MODE_ON
-        r = snrm2_(&num, (float*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        float res = 0;
+        float* pX = (float*)(x);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            r = snrm2_(&num, (float*)(x), &incx);
+            r = snrm2_(&len, (float*)(pX), &incx);
+            pX += len;
+            res += r*r;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            long long i;
-
-            float sum(0);
-
-#pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-            for (i = 0; i < (long long)N; i++)
-            {
-                const float& re = x[i];
-                sum += ( re*re );
-            }
-
-            r = std::sqrt(sum);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            r = snrm2_(&len, (float*)(pX), &incx);
+            res += r*r;
         }
-#endif // ILP_MODE_ON
+
+        r = std::sqrt(r);
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const double* x, double& r)
@@ -619,29 +607,28 @@ namespace Gadgetron { namespace math {
         lapack_int num = (lapack_int)N;
         lapack_int incx = 1;
 
-#ifdef ILP_MODE_ON
-        r = dnrm2_(&num, (double*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        double res = 0;
+        double* pX = (double*)(x);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            r = dnrm2_(&num, (double*)(x), &incx);
+            r = dnrm2_(&len, pX, &incx);
+            pX += len;
+            res += r*r;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            long long i;
-
-            double sum(0);
-
-#pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-            for (i = 0; i < (long long)N; i++)
-            {
-                const double& re = x[i];
-                sum += ( re*re );
-            }
-
-            r = std::sqrt(sum);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            r = dnrm2_(&len, pX, &incx);
+            res += r*r;
         }
-#endif // ILP_MODE_ON
+
+        r = std::sqrt(res);
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const GT_Complex8* x, float& r)
@@ -649,31 +636,28 @@ namespace Gadgetron { namespace math {
         lapack_int num = (lapack_int)N;
         lapack_int incx = 1;
 
-#ifdef ILP_MODE_ON
-        r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        float res = 0;
+        lapack_complex_float* pX = (lapack_complex_float*)(x);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
+            r = scnrm2_(&len, pX, &incx);
+            pX += len;
+            res += r*r;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            long long i;
-
-            float sum(0);
-
-#pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-            for (i = 0; i < (long long)N; i++)
-            {
-                const std::complex<float>& c = x[i];
-                const float re = c.real();
-                const float im = c.imag();
-                sum += ( (re*re) + (im * im) );
-            }
-
-            r = std::sqrt(sum);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            r = scnrm2_(&len, pX, &incx);
+            res += r*r;
         }
-#endif // ILP_MODE_ON
+
+        r = std::sqrt(res);
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const GT_Complex16* x, double& r)
@@ -681,31 +665,28 @@ namespace Gadgetron { namespace math {
         lapack_int num = (lapack_int)N;
         lapack_int incx = 1;
 
-#ifdef ILP_MODE_ON
-        r = dznrm2_(&num, (lapack_complex_double*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        double res = 0;
+        lapack_complex_double* pX = (lapack_complex_double*)(x);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            r = dznrm2_(&num, (lapack_complex_double*)(x), &incx);
+            r = dzasum_(&len, pX, &incx);
+            pX += len;
+            res += r*r;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            long long i;
-
-            double sum(0);
-
-#pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-            for (i = 0; i < (long long)N; i++)
-            {
-                const std::complex<double>& c = x[i];
-                const double re = c.real();
-                const double im = c.imag();
-                sum += ( (re*re) + (im * im) );
-            }
-
-            r = std::sqrt(sum);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            r = dzasum_(&len, pX, &incx);
+            res += r*r;
         }
-#endif // ILP_MODE_ON
+
+        r = std::sqrt(res);
     }
 
     template <typename T> inline 
@@ -815,40 +796,60 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
     {
-        lapack_int num = (lapack_int)N;
         lapack_int incx=1, incy=1;
 
-#ifdef ILP_MODE_ON
-        cdotc_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
-#else
-        if ( N < FourGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        lapack_complex_float res(0, 0);
+        r = res;
+
+        lapack_complex_float* pX = (lapack_complex_float*)(x);
+        lapack_complex_float* pY = (lapack_complex_float*)(y);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            cdotc_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
+            cdotc_(&res, &len, (lapack_complex_float*)(pX), &incx, (lapack_complex_float*)(pY), &incy);
+            pX += len; pY += len;
+            r += res;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            dotc_64bit_mode(N, x, y, r);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            cdotc_(&res, &len, (lapack_complex_float*)(pX), &incx, (lapack_complex_float*)(pY), &incy);
+            r += res;
         }
-#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r)
     {
-        lapack_int num = (lapack_int)N;
         lapack_int incx=1, incy=1;
 
-#ifdef ILP_MODE_ON
-        zdotc_((lapack_complex_double*)(&r), &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
-#else
-        if ( N < FourGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        lapack_complex_double res(0, 0);
+        r = res;
+
+        lapack_complex_double* pX = (lapack_complex_double*)(x);
+        lapack_complex_double* pY = (lapack_complex_double*)(y);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            zdotc_((lapack_complex_double*)(&r), &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
+            zdotc_(&res, &len, (lapack_complex_double*)(pX), &incx, (lapack_complex_double*)(pY), &incy);
+            pX += len; pY += len;
+            r += res;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            dotc_64bit_mode(N, x, y, r);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            zdotc_(&res, &len, (lapack_complex_double*)(pX), &incx, (lapack_complex_double*)(pY), &incy);
+            r += res;
         }
-#endif // ILP_MODE_ON
     }
 
     template <typename T> T dotc(size_t N, const T* x, const T* y)
@@ -893,64 +894,62 @@ namespace Gadgetron { namespace math {
         r = res;
     }
 
-    template <typename T> inline void dotu_64bit_mode(size_t N, const T* x, const T* y, T& r)
-    {
-        long long n;
-
-        T sum(0);
-
-        typename realType<T>::Type sa(0), sb(0);
-#pragma omp parallel for reduction(+:sa) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const typename realType<T>::Type a = x[n].real();
-            const typename realType<T>::Type b = x[n].imag();
-            const typename realType<T>::Type c = y[n].real();
-            const typename realType<T>::Type d = y[n].imag();
-
-            sa += (a*c - b*d);
-            sb += (c*b + a*d);
-        }
-
-        r = T(sa, sb);
-    }
-
     template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
     {
-        lapack_int num = (lapack_int)N;
         lapack_int incx=1, incy=1;
 
-#ifdef ILP_MODE_ON
-        cdotu_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
-#else
-        if ( N < FourGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        lapack_complex_float res(0, 0);
+        r = res;
+
+        lapack_complex_float* pX = (lapack_complex_float*)(x);
+        lapack_complex_float* pY = (lapack_complex_float*)(y);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            cdotu_((lapack_complex_float*)(&r), &num, (lapack_complex_float*)(x), &incx, (lapack_complex_float*)(y), &incy);
+            cdotu_(&res, &len, (lapack_complex_float*)(pX), &incx, (lapack_complex_float*)(pY), &incy);
+            pX += len; pY += len;
+            r += res;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            dotu_64bit_mode(N, x, y, r);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            cdotu_(&res, &len, (lapack_complex_float*)(pX), &incx, (lapack_complex_float*)(pY), &incy);
+            r += res;
         }
-#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r)
     {
-        lapack_int num = (lapack_int)N;
         lapack_int incx=1, incy=1;
 
-#ifdef ILP_MODE_ON
-        zdotu_((lapack_complex_double*)&r, &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
-#else
-        if ( N < FourGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        lapack_complex_double res(0, 0);
+        r = res;
+
+        lapack_complex_double* pX = (lapack_complex_double*)(x);
+        lapack_complex_double* pY = (lapack_complex_double*)(y);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            zdotu_((lapack_complex_double*)&r, &num, (lapack_complex_double*)(x), &incx, (lapack_complex_double*)(y), &incy);
+            zdotu_(&res, &len, (lapack_complex_double*)(pX), &incx, (lapack_complex_double*)(pY), &incy);
+            pX += len; pY += len;
+            r += res;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            dotu_64bit_mode(N, x, y, r);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            zdotu_(&res, &len, (lapack_complex_double*)(pX), &incx, (lapack_complex_double*)(pY), &incy);
+            r += res;
         }
-#endif // ILP_MODE_ON
     }
 
     template <typename T> inline T dotu(size_t N, const T* x, const T* y)
@@ -975,7 +974,7 @@ namespace Gadgetron { namespace math {
 #ifdef ILP_MODE_ON
         r = sasum_(&num, (float*)(x), &incx);
 #else
-        if ( N < FourGBLimit )
+        if ( N < TwoGBLimit )
         {
             r = sasum_(&num, (float*)(x), &incx);
         }
@@ -994,7 +993,7 @@ namespace Gadgetron { namespace math {
 #ifdef ILP_MODE_ON
         r = dasum_(&num, (double*)(x), &incx);
 #else
-        if ( N < FourGBLimit )
+        if ( N < TwoGBLimit )
         {
             r = dasum_(&num, (double*)(x), &incx);
         }
@@ -1023,40 +1022,58 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex8* x, float& r)
     {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
+        lapack_int incx=1;
 
-#ifdef ILP_MODE_ON
-        r = scasum_(&num, (lapack_complex_float*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        float res(0);
+        r = res;
+
+        lapack_complex_float* pX = (lapack_complex_float*)(x);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            r = scasum_(&num, (lapack_complex_float*)(x), &incx);
+            res = scasum_(&len, (lapack_complex_float*)(pX), &incx);
+            pX += len;
+            r += res;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            asum_64bit_mode(N, x, r);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            res = scasum_(&len, (lapack_complex_float*)(pX), &incx);
+            r += res;
         }
-#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex16* x, double& r)
     {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
+        lapack_int incx=1;
 
-#ifdef ILP_MODE_ON
-        r = dzasum_(&num, (lapack_complex_double*)(x), &incx);
-#else
-        if ( N < FourGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        double res(0);
+        r = res;
+
+        lapack_complex_double* pX = (lapack_complex_double*)(x);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            r = dzasum_(&num, (lapack_complex_double*)(x), &incx);
+            res = dzasum_(&len, (lapack_complex_double*)(pX), &incx);
+            pX += len;
+            r += res;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            asum_64bit_mode(N, x, r);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            res = dzasum_(&len, (lapack_complex_double*)(pX), &incx);
+            r += res;
         }
-#endif // ILP_MODE_ON
     }
 
     template <typename T> inline typename realType<T>::Type asum(size_t N, const T* x)

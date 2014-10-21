@@ -48,6 +48,7 @@ using namespace Gadgetron;
 using testing::Types;
 
 const size_t REP = 1000;
+const int TwoGBLimit = (2147483647);
 
 /// Computes the sum of magnitudes of the vector elements.
 extern "C" {
@@ -573,7 +574,28 @@ void norm2_blas(size_t N, const std::complex<float>* x, float& r)
     lapack_int num = (lapack_int)N;
     lapack_int incx = 1;
 
-    r = scnrm2_(&num, (lapack_complex_float*)(x), &incx);
+    long long numOfChunk = N/TwoGBLimit;
+    lapack_int len = TwoGBLimit;
+
+    float res = 0;
+    lapack_complex_float* pX = (lapack_complex_float*)(x);
+
+    long long ii;
+    for ( ii=0; ii<numOfChunk; ii++ )
+    {
+        r = scnrm2_(&len, pX, &incx);
+        pX += len;
+        res += r*r;
+    }
+
+    if ( (size_t)(numOfChunk*TwoGBLimit) < N )
+    {
+        len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+        r = scnrm2_(&len, pX, &incx);
+        res += r*r;
+    }
+
+    r = std::sqrt(res);
 }
 
 #ifdef USE_MKL
@@ -900,9 +922,30 @@ void asum(size_t N, const GT_Complex8* x, float& r, int numOfThreads)
 
 void asum_blas(size_t N, const GT_Complex8* x, float& r)
 {
-    lapack_int num = (lapack_int)(N);
-    lapack_int incx = 1;
-    r = scasum_(&num, (lapack_complex_float*)(x), &incx);
+    lapack_int incx=1;
+
+    long long numOfChunk = N/TwoGBLimit;
+    lapack_int len = TwoGBLimit;
+
+    float res(0);
+    r = res;
+
+    lapack_complex_float* pX = (lapack_complex_float*)(x);
+
+    long long ii;
+    for ( ii=0; ii<numOfChunk; ii++ )
+    {
+        res = scasum_(&len, (lapack_complex_float*)(pX), &incx);
+        pX += len;
+        r += res;
+    }
+
+    if ( (size_t)(numOfChunk*TwoGBLimit) < N )
+    {
+        len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+        res = scasum_(&len, (lapack_complex_float*)(pX), &incx);
+        r += res;
+    }
 }
 
 #ifdef USE_MKL
