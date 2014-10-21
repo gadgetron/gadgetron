@@ -219,7 +219,7 @@ namespace Gadgetron{
     unsigned int slice = acq_head->idx.slice;
 
     if (samples != image_dimensions_[0]) {
-      GADGET_DEBUG1("GrappaGadget: wrong number of samples received\n");
+      GADGET_DEBUG2("GrappaGadget: wrong number of samples received %d, expected %d\n", samples, image_dimensions_[0]);
       return GADGET_FAIL;
     }
 

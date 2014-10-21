@@ -24,27 +24,28 @@
       <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
-  
+
     <!--
     <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetron_mricore</dll>
       <classname>NoiseAdjustGadget</classname>
     </gadget>
-
-	<gadget>
-	<name>PCA</name>
-	<dll>gadgetron_mricore</dll>
-	<classname>PCACoilGadget</classname>
-	</gadget>
-	
-	<gadget>
-	<name>CoilReduction</name>
-	<dll>gadgetron_mricore</dll>
-	<classname>CoilReductionGadget</classname>
-	<property><name>coils_out</name><value>16</value></property>
-	</gadget>
     -->
+  
+    <gadget>
+      <name>PCA</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>PCACoilGadget</classname>
+      <property><name>uncombined_channels_by_name</name><value>Loop_7:L7</value></property>
+    </gadget>
+
+    <gadget>
+      <name>CoilReduction</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>CoilReductionGadget</classname>
+      <property><name>coils_out</name><value>16</value></property>
+    </gadget>
 
     <gadget>
       <name>RemoveROOversampling</name>
@@ -56,8 +57,8 @@
       <name>Grappa</name>
       <dll>gadgetron_grappa</dll>
       <classname>GrappaGadget</classname>
-      <property><name>uncombined_channels_by_name</name><value>FlexLoopLarge:FLL</value></property>
       <!--
+      <property><name>uncombined_channels_by_name</name><value>FlexLoopLarge:FLL</value></property>
       <property><name>uncombined_channels_by_name</name><value>BodyMatrix:BO2</value></property>
       -->
     </gadget>
