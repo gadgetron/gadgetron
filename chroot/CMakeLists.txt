@@ -1,4 +1,6 @@
 
+configure_file("start-gadgetron.sh.in" ${CMAKE_CURRENT_SOURCE_DIR}/start-gadgetron.sh @ONLY)
+
 add_custom_target(chroot)
 
 add_custom_command(
