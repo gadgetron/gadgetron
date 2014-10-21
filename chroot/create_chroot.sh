@@ -18,7 +18,7 @@ if [ $# -eq 3 ]; then
 
  sudo make install DESTDIR="${2}/chroot-root/gadgetron" -j8
 
- #"${2}/generate_gadgetron_root" ${1} "${2}/chroot-root/gadgetron"
+ "${2}/generate_gadgetron_root" ${1} "${2}/chroot-root/gadgetron"
 
  cp ${2}/start.sh "${2}/chroot-root"
  cp ${2}/stop.sh "${2}/chroot-root"
@@ -26,9 +26,9 @@ if [ $# -eq 3 ]; then
 
  sudo cp -n ${2}/chroot-root/gadgetron${1}/config/gadgetron.xml.example ${2}/chroot-root/gadgetron${1}/config/gadgetron.xml
 
- #tar -zcf "${2}/chroot-backups/gadgetron-chroot-`date '+%d-%B-%Y'`.tar.gz" --directory "${2}/chroot-root" --exclude=./gadgetron/etc --exclude=./gadgetron/var --exclude=./gadgetron/dev --exclude=./gadgetron/root .
+ tar -zcf "${2}/chroot-backups/gadgetron-chroot-`date '+%d-%B-%Y'`.tar.gz" --directory "${2}/chroot-root" --exclude=./gadgetron/etc --exclude=./gadgetron/var --exclude=./gadgetron/dev --exclude=./gadgetron/root .
 
- #sudo rm -rf "${2}/chroot-root"
+ sudo rm -rf "${2}/chroot-root"
  
  exit 0
 
