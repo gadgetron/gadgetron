@@ -4,7 +4,7 @@ if [ $# -eq 3 ]; then
 
  sudo apt-get install debootstrap -y
 
- sudo mkdir -p "${2}/gadgetron"
+ mkdir -p "${2}/gadgetron"
 
  sudo debootstrap --variant=buildd --arch amd64 trusty "${2}/gadgetron" http://gb.archive.ubuntu.com/ubuntu/
 
@@ -21,7 +21,7 @@ if [ $# -eq 3 ]; then
  sudo cp "${3}/start.sh" "${2}"
  sudo cp "${3}/stop.sh" "${2}"
 
- sudo tar -zcvf "${3}/gadgetron_chroot.tar.gz" --directory "${2}" .
+ sudo tar -zcvf "${3}/gadgetron_chroot.tar.gz" --directory "${2}" --exclude=./gadgetron/etc --exclude=./gadgetron/var --exclude=./gadgetron/dev .
  exit 0
 
 else

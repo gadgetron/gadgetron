@@ -3,14 +3,20 @@
 use FindBin;
 use lib $FindBin::Bin;
 
-my $file = $ARGV[0];
+my $file = $ARGV[1] . $ARGV[0];
+
+my $file2 = $ARGV[0];
+
 my $new_root = $ARGV[1];
 
 my $deps = `$FindBin::Bin/get_dependencies_for_binary $file`;
 #print "\n$deps\n";
 my @lines = split('\n', $deps);
 
-system("sudo cp --parents $file $new_root");
+
+
+
+system("sudo cp --parents $file2 $new_root");
 foreach my $val (@lines) {
     chomp($val);
     if (not -e "$new_root/$val") {
