@@ -10,6 +10,7 @@
 #include "hoArmadillo.h"
 #include "hoNDArray_elemwise.h"
 #include "ismrmrd/xml.h"
+#include "hoNDArray_fileio.h"
 
 #include <ace/OS_NS_stdlib.h>
 #include <boost/algorithm/string.hpp>
@@ -212,11 +213,16 @@ namespace Gadgetron {
                 arma::cx_fmat Um;
                 arma::fvec Sv;
 
+
                 if( !arma::svd_econ(Um,Sv,Vm,Am.st(),'r') ){
                     GADGET_DEBUG1("Failed to compute SVD\n");
                     return GADGET_FAIL;
                 }
 		
+		char filename[1024];
+		sprintf(filename,"V_%d.cplx",location);
+		write_nd_array(VT,filename);
+
 		//We will create a new matrix that explicitly preserves the uncombined channels
 		if (uncombined_channels_.size()) {
 		  hoNDArray< std::complex<float> >* VT_new = new hoNDArray< std::complex<float> >;
@@ -227,7 +233,7 @@ namespace Gadgetron {
 		  }
 
 		  arma::cx_fmat Vm_new = as_arma_matrix(VT_new);
-		  
+
 		  size_t uncomb_count = 0;
 		  size_t comb_count = 0;
 		  for (size_t c = 0; c < Vm_new.n_cols; c++) {
@@ -235,9 +241,9 @@ namespace Gadgetron {
 		    if (uncombined_channel) {
 		      for (size_t r = 0; r < Vm_new.n_rows; r++) {
 			if (r == c) {
-			  Vm_new[r,uncomb_count] = 1;
+			  Vm_new(r,uncomb_count) = 1;
 			} else {
-			  Vm_new[r,uncomb_count] = 0;
+			  Vm_new(r,uncomb_count) = 0;
 			}
 		      }
 		      uncomb_count++;
@@ -245,9 +251,9 @@ namespace Gadgetron {
 		      for (size_t r = 0; r < Vm_new.n_rows; r++) { 
 			bool uncombined_channel_row = std::find(uncombined_channels_.begin(),uncombined_channels_.end(), r) != uncombined_channels_.end();
 			if (uncombined_channel_row) {
-			  Vm_new[r,comb_count+uncombined_channels_.size()] = 0;
+			  Vm_new(r,comb_count+uncombined_channels_.size()) = 0;
 			} else {
-			  Vm_new[r,comb_count+uncombined_channels_.size()] = Vm[r,c];
+			  Vm_new(r,comb_count+uncombined_channels_.size()) = Vm(r,c);
 			}
 		      }
 		      comb_count++;
@@ -258,7 +264,10 @@ namespace Gadgetron {
 		  //Delete the old one and set the new one
 		  delete pca_coefficients_[location];
 		  pca_coefficients_[location] = VT_new;
+		  sprintf(filename,"V_new_%d.cplx",location);
+		  write_nd_array(VT_new,filename);
 		}
+
 
                 //Switch off buffering for this slice
                 buffering_mode_[location] = false;

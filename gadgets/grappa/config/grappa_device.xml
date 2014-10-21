@@ -57,6 +57,7 @@
       <name>Grappa</name>
       <dll>gadgetron_grappa</dll>
       <classname>GrappaGadget</classname>
+      <property><name>uncombined_channels</name><value>0</value></property>
       <!--
       <property><name>uncombined_channels_by_name</name><value>FlexLoopLarge:FLL</value></property>
       <property><name>uncombined_channels_by_name</name><value>BodyMatrix:BO2</value></property>
