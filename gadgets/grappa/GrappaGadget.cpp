@@ -196,6 +196,14 @@ namespace Gadgetron{
   process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
           GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
+      bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
+
+      //We should not be receiving noise here
+      if (is_noise) {
+	m1->release();
+	return GADGET_OK;
+      }
+
 
     if (first_call_) {
       if (m1->getObjectPtr()->active_channels != dimensions_[3]) {

@@ -219,9 +219,11 @@ namespace Gadgetron {
                     return GADGET_FAIL;
                 }
 		
+		/*
 		char filename[1024];
 		sprintf(filename,"V_%d.cplx",location);
 		write_nd_array(VT,filename);
+		*/
 
 		//We will create a new matrix that explicitly preserves the uncombined channels
 		if (uncombined_channels_.size()) {
@@ -241,7 +243,7 @@ namespace Gadgetron {
 		    if (uncombined_channel) {
 		      for (size_t r = 0; r < Vm_new.n_rows; r++) {
 			if (r == c) {
-			  Vm_new(r,uncomb_count) = 1;
+			  Vm_new(r,uncomb_count) = 100;
 			} else {
 			  Vm_new(r,uncomb_count) = 0;
 			}
@@ -264,8 +266,10 @@ namespace Gadgetron {
 		  //Delete the old one and set the new one
 		  delete pca_coefficients_[location];
 		  pca_coefficients_[location] = VT_new;
+		  /*
 		  sprintf(filename,"V_new_%d.cplx",location);
 		  write_nd_array(VT_new,filename);
+		  */
 		}
 
 

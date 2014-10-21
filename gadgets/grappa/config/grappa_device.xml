@@ -32,19 +32,24 @@
       <classname>NoiseAdjustGadget</classname>
     </gadget>
     -->
-  
+    
+<!--
     <gadget>
       <name>PCA</name>
       <dll>gadgetron_mricore</dll>
       <classname>PCACoilGadget</classname>
       <property><name>uncombined_channels_by_name</name><value>Loop_7:L7</value></property>
     </gadget>
+-->
 
     <gadget>
       <name>CoilReduction</name>
       <dll>gadgetron_mricore</dll>
       <classname>CoilReductionGadget</classname>
-      <property><name>coils_out</name><value>16</value></property>
+      <!--
+      <property><name>coil_mask</name><value>0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1</value></property>
+      -->
+      <property><name>coils_out</name><value>32</value></property>
     </gadget>
 
     <gadget>
