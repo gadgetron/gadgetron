@@ -219,12 +219,6 @@ namespace Gadgetron {
                     return GADGET_FAIL;
                 }
 		
-		/*
-		char filename[1024];
-		sprintf(filename,"V_%d.cplx",location);
-		write_nd_array(VT,filename);
-		*/
-
 		//We will create a new matrix that explicitly preserves the uncombined channels
 		if (uncombined_channels_.size()) {
 		  hoNDArray< std::complex<float> >* VT_new = new hoNDArray< std::complex<float> >;
@@ -266,10 +260,6 @@ namespace Gadgetron {
 		  //Delete the old one and set the new one
 		  delete pca_coefficients_[location];
 		  pca_coefficients_[location] = VT_new;
-		  /*
-		  sprintf(filename,"V_new_%d.cplx",location);
-		  write_nd_array(VT_new,filename);
-		  */
 		}
 
 
