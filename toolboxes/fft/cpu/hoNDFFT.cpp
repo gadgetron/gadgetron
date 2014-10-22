@@ -1141,8 +1141,7 @@ namespace Gadgetron{
 #ifdef USE_MKL
         return fft1_mkl(a, forward);
 #else
-        hoNDArray< ComplexType > res;
-        res = a;
+        hoNDArray< ComplexType > res(a);
         if ( !fft1(res, a, forward) )
         {
             return false;
@@ -1158,8 +1157,7 @@ namespace Gadgetron{
 #ifdef USE_MKL
         return fft2_mkl(a, forward);
 #else
-        hoNDArray< ComplexType > res;
-        res = a;
+        hoNDArray< ComplexType > res(a);
         if ( !fft2(res, a, forward) )
         {
             return false;
@@ -1175,8 +1173,7 @@ namespace Gadgetron{
 #ifdef USE_MKL
         return fft3_mkl(a, forward);
 #else
-        hoNDArray< ComplexType > res;
-        res = a;
+        hoNDArray< ComplexType > res(a);
         if ( !fft3(res, a, forward) )
         {
             return false;

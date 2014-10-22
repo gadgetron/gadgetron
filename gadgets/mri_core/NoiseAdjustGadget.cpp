@@ -12,6 +12,10 @@
     #include "mkl.h"
 #endif // USE_MKL
 
+#ifdef USE_OMP
+    #include "omp.h"
+#endif // USE_OMP
+
 #ifndef _WIN32
     #include <sys/types.h>
     #include <sys/stat.h>
@@ -188,11 +192,16 @@ namespace Gadgetron{
             }
         }
 
-        // if MKL is used, limit the number of threads used to be 2
+        // limit the number of threads used to be 1
 #ifdef USE_MKL
         int save_nt = mkl_set_num_threads_local(1);
         GADGET_MSG("NoiseAdjustGadget:mkl_set_num_threads_local(1) : " << save_nt);
 #endif // USE_MKL
+
+#ifdef USE_OMP
+        omp_set_num_threads(1);
+        GADGET_MSG("NoiseAdjustGadget:omp_set_num_threads(1) ... ");
+#endif // USE_OMP
 
         return GADGET_OK;
     }
