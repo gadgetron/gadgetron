@@ -35,30 +35,26 @@ namespace Gadgetron{
     }
 
     m1->cont(0);
-    //m2->cont(cm2);
-    cm2->release();
+    m2->cont(cm2);
 
     hoNDFFT<float>::instance()->ifft(m3->getObjectPtr(),0);
     hoNDFFT<float>::instance()->ifft(m3->getObjectPtr(),1);
     hoNDFFT<float>::instance()->ifft(m3->getObjectPtr(),2);
-    m2->getObjectPtr()->channels = m3->getObjectPtr()->get_size(3);
 
     if (!m1->getObjectPtr()->weights_) {
       GADGET_DEBUG1("Weights are a NULL\n");
       return GADGET_FAIL;
     }
 
-    /*
     float scale_factor = 1.0;
     int appl_result = m1->getObjectPtr()->weights_->apply(m3->getObjectPtr(), cm2->getObjectPtr(), scale_factor);
     if (appl_result < 0) {
       GADGET_DEBUG2("Failed to apply GRAPPA weights: error code %d\n", appl_result);
       return GADGET_FAIL;
     }
-    */
 
     m1->release();
-    //m3->release();
+    m3->release();
 
     if (this->next()->putq(m2) < 0) {
       return GADGET_FAIL;

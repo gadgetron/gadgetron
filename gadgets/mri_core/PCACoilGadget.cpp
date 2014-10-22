@@ -243,7 +243,7 @@ namespace Gadgetron {
 		    if (uncombined_channel) {
 		      for (size_t r = 0; r < Vm_new.n_rows; r++) {
 			if (r == c) {
-			  Vm_new(r,uncomb_count) = 100;
+			  Vm_new(r,uncomb_count) = 1;
 			} else {
 			  Vm_new(r,uncomb_count) = 0;
 			}
