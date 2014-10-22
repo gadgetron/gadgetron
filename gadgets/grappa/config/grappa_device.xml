@@ -46,10 +46,10 @@
       <name>CoilReduction</name>
       <dll>gadgetron_mricore</dll>
       <classname>CoilReductionGadget</classname>
+      <property><name>coil_mask</name><value>1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0</value></property>
       <!--
-      <property><name>coil_mask</name><value>0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1</value></property>
-      -->
       <property><name>coils_out</name><value>32</value></property>
+      -->
     </gadget>
 
     <gadget>
