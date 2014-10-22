@@ -30,7 +30,7 @@ bool gradient(const hoNDImage<T, D>& x, hoNDImage<T, D> gx[])
 
             long long x;
 
-            #pragma omp parallel for default(none) private(x) shared(sx, pX, pGx)
+            // #pragma omp parallel for default(none) private(x) shared(sx, pX, pGx)
             for ( x=1; x<sx-1; x++ )
             {
                 pGx[x] = pX[x+1] - pX[x-1];
@@ -50,7 +50,7 @@ bool gradient(const hoNDImage<T, D>& x, hoNDImage<T, D> gx[])
 
             long long x, y;
 
-            #pragma omp parallel for default(none) private(x, y) shared(sx, sy, pX, pGx, pGy)
+            // #pragma omp parallel for default(none) private(x, y) shared(sx, sy, pX, pGx, pGy)
             for ( y=1; y<sy-1; y++ )
             {
                 for ( x=1; x<sx-1; x++ )
@@ -62,7 +62,7 @@ bool gradient(const hoNDImage<T, D>& x, hoNDImage<T, D> gx[])
                 }
             }
 
-            #pragma omp parallel for default(none) private(x) shared(sx, sy, pX, pGx, pGy)
+            // #pragma omp parallel for default(none) private(x) shared(sx, sy, pX, pGx, pGy)
             for ( x=1; x<sx-1; x++ )
             {
                 pGx[x] = pX[x+1] - pX[x-1];
@@ -74,7 +74,7 @@ bool gradient(const hoNDImage<T, D>& x, hoNDImage<T, D> gx[])
                 pGy[x + (sy-1)*sx] = pX[x + (sy-1)*sx] - pX[x + (sy-2)*sx];
             }
 
-            #pragma omp parallel for default(none) private(y) shared(sx, sy, pX, pGx, pGy)
+            // #pragma omp parallel for default(none) private(y) shared(sx, sy, pX, pGx, pGy)
             for ( y=1; y<sy-1; y++ )
             {
                 size_t offset = y*sx;
@@ -413,11 +413,11 @@ bool filterGaussian(ArrayType& img, T2 sigma[], typename ArrayType::value_type* 
                 if ( sigma[0] > 0 )
                 {
                     // filter along x
-                    #pragma omp parallel default(none) private(y) shared(sx, sy, pData, sigma)
+                    // #pragma omp parallel default(none) private(y) shared(sx, sy, pData, sigma)
                     {
                         T* mem = new T[2*sx];
 
-                        #pragma omp for 
+                        // #pragma omp for 
                         for ( y=0; y<sy; y++ )
                         {
                             Gadgetron::DericheSmoothing(pData+y*sx, sx, mem, sigma[0]);
@@ -430,11 +430,11 @@ bool filterGaussian(ArrayType& img, T2 sigma[], typename ArrayType::value_type* 
                 if ( sigma[1] > 0 )
                 {
                     // filter along y
-                    #pragma omp parallel default(none) private(x) shared(sx, sy, pData, sigma)
+                    //#pragma omp parallel default(none) private(x) shared(sx, sy, pData, sigma)
                     {
                         T* mem = new T[2*sy];
 
-                        #pragma omp for 
+                        // #pragma omp for 
                         for ( x=0; x<sx; x++ )
                         {
                             Gadgetron::DericheSmoothing(pData+x, sy, mem, sigma[1], sx);

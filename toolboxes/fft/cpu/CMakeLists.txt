@@ -9,7 +9,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${FFTW3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
-  # ${ACE_INCLUDE_DIR}
   ${ISMRMRD_INCLUDE_DIR}
   ${ARMADILLO_INCLUDE_DIRS}
   )
@@ -22,12 +21,21 @@ add_library(gadgetron_toolbox_cpufft ${LIBTYPE}
 
 set_target_properties(gadgetron_toolbox_cpufft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
+if (MKL_FOUND)
+    target_link_libraries(gadgetron_toolbox_cpufft
+      gadgetron_toolbox_cpucore
+      gadgetron_toolbox_cpucore_math
+      ${MKL_LIBRARIES} 
+      ${Boost_LIBRARIES} 
+      )
+else (MKL_FOUND)
 target_link_libraries(gadgetron_toolbox_cpufft
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpucore_math
   ${FFTW3_LIBRARIES} 
   ${Boost_LIBRARIES} 
   )
+endif (MKL_FOUND)
 
 install(TARGETS gadgetron_toolbox_cpufft DESTINATION lib COMPONENT main)
 

@@ -184,7 +184,7 @@ public:
             {
                 mtx.lock();
                 // TODO should this be wrapped in a try/catch?
-                dataset_->appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, im);
+                dataset_->appendImage(image_varname, im);
                 mtx.unlock();
             }
 
@@ -250,7 +250,7 @@ public:
             {
                 mtx.lock();
                 //TODO should this be wrapped in a try/catch?
-                dataset_->appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, im);
+                dataset_->appendImage(image_varname, im);
                 mtx.unlock();
             }
         }

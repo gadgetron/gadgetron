@@ -34,9 +34,9 @@ ENDIF()
 find_package(BLAS)
 find_package(LAPACK)
 
-if (NOT WIN32)
+#if (NOT WIN32)
   if (BLAS_FOUND AND LAPACK_FOUND AND MKL_FOUND)
     add_subdirectory(linalg)
   endif()
-endif()
+#endif()
 

@@ -3,6 +3,14 @@
 #include "hoNDFFT.h"
 #include "ismrmrd/xml.h"
 
+#ifdef USE_MKL
+    #include "mkl.h"
+#endif // USE_MKL
+
+#ifdef USE_OMP
+    #include "omp.h"
+#endif // USE_OMP
+
 namespace Gadgetron{
 
     RemoveROOversamplingGadget::RemoveROOversamplingGadget() : constant_noise_variance_(false)
@@ -40,6 +48,11 @@ namespace Gadgetron{
         int save_nt = mkl_set_num_threads_local(1);
         GADGET_MSG("RemoveROOversamplingGadget:mkl_set_num_threads_local(1) : " << save_nt);
 #endif // USE_MKL
+
+#ifdef USE_OMP
+        omp_set_num_threads(1);
+        GADGET_MSG("RemoveROOversamplingGadget:omp_set_num_threads(1) ... ");
+#endif // USE_OMP
 
     // If the encoding and recon matrix size and FOV are the same
     // then the data is not oversampled and we can safely pass

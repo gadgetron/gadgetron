@@ -37,7 +37,7 @@ namespace Gadgetron{
         }
     }
 
-    GadgetronTimer(const char* name, bool timing=false) : name_(name), timing_in_destruction_(timing) 
+    GadgetronTimer(const char* name, bool timing=true) : name_(name), timing_in_destruction_(timing) 
     {
         if ( timing_in_destruction_ )
         {
@@ -74,7 +74,7 @@ namespace Gadgetron{
         start();
     }
 
-    virtual void stop()
+    virtual double stop()
     {
         double time_in_us = 0.0;
 #ifdef WIN32
@@ -85,6 +85,7 @@ namespace Gadgetron{
         time_in_us = ((end_.tv_sec * 1e6) + end_.tv_usec) - ((start_.tv_sec * 1e6) + start_.tv_usec);
 #endif
         std::cout << name_ << ": " << time_in_us/1000.0 << " ms" << std::endl; std::cout.flush();
+        return time_in_us;
     }
 
     void set_timing_in_destruction(bool timing) { timing_in_destruction_ = timing; }

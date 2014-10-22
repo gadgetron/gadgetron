@@ -363,7 +363,7 @@
 
         <property>
             <name>wrap_around_map_needed</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- parameters for ISMRMRD_GRAPPA -->

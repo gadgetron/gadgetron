@@ -12,6 +12,10 @@
     #include "mkl.h"
 #endif // USE_MKL
 
+#ifdef USE_OMP
+    #include "omp.h"
+#endif // USE_OMP
+
 #ifndef _WIN32
     #include <sys/types.h>
     #include <sys/stat.h>
@@ -89,9 +93,9 @@ namespace Gadgetron{
         noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
         if ( noise_dwell_time_us_preset_ == 0 ) noise_dwell_time_us_preset_ = 5;
 
-	ISMRMRD::IsmrmrdHeader h;
-	ISMRMRD::deserialize(mb->rd_ptr(),h);
- 
+        ISMRMRD::IsmrmrdHeader h;
+        ISMRMRD::deserialize(mb->rd_ptr(),h);
+
         if ( h.acquisitionSystemInformation )
         {
             receiver_noise_bandwidth_ = (float)(h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth ?
@@ -148,24 +152,24 @@ namespace Gadgetron{
             {
                 measurement_id_of_noise_dependency_.clear();
 
-		std::vector<ISMRMRD::MeasurementDependency>::const_iterator iter = h.measurementInformation->measurementDependency.begin();
+        std::vector<ISMRMRD::MeasurementDependency>::const_iterator iter = h.measurementInformation->measurementDependency.begin();
                 for ( ; iter!= h.measurementInformation->measurementDependency.end(); iter++ )
                 {
                     std::string dependencyType = iter->dependencyType;
                     std::string dependencyID = iter->measurementID;
 
                     GADGET_MSG("Found dependency measurement : " << dependencyType << " with ID " << dependencyID);
-		    
+            
                     if ( dependencyType=="Noise" || dependencyType=="noise" )
-		      {
+              {
                         measurement_id_of_noise_dependency_ = dependencyID;
                     }
                 }
-		
+        
                 if ( !measurement_id_of_noise_dependency_.empty() )
-		  {
+          {
                     GADGET_MSG("Measurement ID of noise dependency is " << measurement_id_of_noise_dependency_);
-		    
+            
                     full_name_stored_noise_dependency_ = this->generateFullNameWhenLoadNoiseDependency(measurement_id_of_noise_dependency_);
                     GADGET_MSG("Stored noise dependency is " << full_name_stored_noise_dependency_);
 
@@ -188,11 +192,16 @@ namespace Gadgetron{
             }
         }
 
-        // if MKL is used, limit the number of threads used to be 2
+        // limit the number of threads used to be 1
 #ifdef USE_MKL
         int save_nt = mkl_set_num_threads_local(1);
         GADGET_MSG("NoiseAdjustGadget:mkl_set_num_threads_local(1) : " << save_nt);
 #endif // USE_MKL
+
+#ifdef USE_OMP
+        omp_set_num_threads(1);
+        GADGET_MSG("NoiseAdjustGadget:omp_set_num_threads(1) ... ");
+#endif // USE_OMP
 
         return GADGET_OK;
     }
@@ -431,13 +440,13 @@ namespace Gadgetron{
 
                     memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
 
-                    #ifdef USE_MKL
+                    #if defined(USE_MKL) || defined(USE_LAPACK)
                         GeneralMatrixProduct_gemm_CXFL(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
                     #else
                         arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
                         arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
                         am2 = am2*arma::trimatu(noise_covf);
-                    #endif // USE_MKL
+                    #endif // defined(USE_MKL) || defined(USE_LAPACK)
 
                     // GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
                 }
@@ -500,7 +509,7 @@ namespace Gadgetron{
                 std::complex<float>* cc_ptr = noise_covariance_matrixf_.get_data_ptr();
                 std::complex<float>* data_ptr = m2->getObjectPtr()->get_data_ptr();
 
-                #ifdef USE_MKL
+                #if defined(USE_MKL) || defined(USE_LAPACK)
                     GADGET_CHECK_RETURN(GeneralMatrixProduct_gemm(noise_covariance_matrixf_once_, *m2->getObjectPtr(), true, *m2->getObjectPtr(), false), GADGET_FAIL);
                     GADGET_CHECK_RETURN(Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_), GADGET_FAIL);
                 #else
@@ -514,7 +523,7 @@ namespace Gadgetron{
                             }
                         }
                     }
-                #endif // USE_MKL
+                #endif // defined(USE_MKL) || defined(USE_LAPACK)
 
                 number_of_noise_samples_ += samples;
                 m1->release();
@@ -571,13 +580,13 @@ namespace Gadgetron{
 
                                 memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
 
-                                #ifdef USE_MKL
+                                #if defined(USE_MKL) || defined(USE_LAPACK)
                                     GeneralMatrixProduct_gemm_CXFL(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
                                 #else
                                     arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
                                     arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
                                     am2 = am2*arma::trimatu(noise_covf);
-                                #endif // USE_MKL
+                                #endif // defined(USE_MKL) || defined(USE_LAPACK)
                             }
                         }
                     }

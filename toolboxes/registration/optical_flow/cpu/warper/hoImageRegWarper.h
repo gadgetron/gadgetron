@@ -169,11 +169,11 @@ namespace Gadgetron
 
                 if ( useWorldCoordinate )
                 {
-                    #pragma omp parallel private(y) shared(sx, sy, target, source, warped)
+                    // #pragma omp parallel private(y) shared(sx, sy, target, source, warped)
                     {
                         coord_type px, py, px_source, py_source, ix_source, iy_source;
 
-                        #pragma omp for 
+                        // #pragma omp for 
                         for ( y=0; y<(long long)sy; y++ )
                         {
                             for ( size_t x=0; x<sx; x++ )
@@ -200,11 +200,11 @@ namespace Gadgetron
                 }
                 else
                 {
-                    #pragma omp parallel private(y) shared(sx, sy, target, source, warped)
+                    // #pragma omp parallel private(y) shared(sx, sy, target, source, warped)
                     {
                         coord_type ix_source, iy_source;
 
-                        #pragma omp for 
+                        // #pragma omp for 
                         for ( y=0; y<(long long)sy; y++ )
                         {
                             for ( size_t x=0; x<sx; x++ )
@@ -391,11 +391,11 @@ namespace Gadgetron
 
                 long long y;
 
-                #pragma omp parallel private(y) shared(sx, sy, target, source, warped)
+                // #pragma omp parallel private(y) shared(sx, sy, target, source, warped)
                 {
                     coord_type px, py, dx, dy, ix_source, iy_source;
 
-                    #pragma omp for 
+                    // #pragma omp for 
                     for ( y=0; y<(long long)sy; y++ )
                     {
                         for ( size_t x=0; x<sx; x++ )

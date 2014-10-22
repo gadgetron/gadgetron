@@ -19,15 +19,7 @@ typedef std::complex<float> GT_Complex8;
 typedef std::complex<double> GT_Complex16;
 
 #ifndef lapack_int
-    #ifdef USE_MKL
-        #ifdef MKL_ILP64
-            #define lapack_int __int64
-        #else
-            #define lapack_int int
-        #endif // MKL_ILP64
-    #else
-        #define lapack_int int
-    #endif // USE_MKL
+    #define lapack_int int
 #endif // lapack_int
 
 /// ----------------------------------------------------------------------
