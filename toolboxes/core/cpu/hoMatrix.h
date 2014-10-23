@@ -48,6 +48,10 @@ public:
     bool upperTri(const T& v);
     bool lowerTri(const T& v);
 
+    // copy upper triangle to the lower
+    bool copyUpperTriToLower();
+    bool copyLowerTriToUpper();
+
     // sum along row or col
     bool sumOverRow(hoNDArray<T>& res) const;
     bool sumOverCol(hoNDArray<T>& res) const;

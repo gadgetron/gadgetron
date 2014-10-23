@@ -36,8 +36,13 @@ KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T
         GADGET_CHECK_RETURN_FALSE(eigenVectors.createMatrix(N, N));
         GADGET_CHECK_RETURN_FALSE(eigenValues.createMatrix(N, 1));
 
-        hoMatrix<T> dataCopy(data);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(eigenVectors, data, true, dataCopy, false));
+        //hoMatrix<T> dataCopy(data);
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(eigenVectors, data, true, dataCopy, false));
+
+        char uplo = 'L';
+        bool isAHA = true;
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::herk(eigenVectors, data, uplo, isAHA));
+        eigenVectors.copyLowerTriToUpper();
 
         //eigenVectors.print(std::cout);
 

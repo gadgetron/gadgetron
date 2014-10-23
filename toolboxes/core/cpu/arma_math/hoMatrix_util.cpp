@@ -27,6 +27,14 @@ extern "C" void zgemm_(const char *transa, const char *transb, const lapack_int 
             const lapack_complex_double *b, const lapack_int *ldb, const lapack_complex_double *beta,
             lapack_complex_double *c, const lapack_int *ldc);
 
+extern "C" void ssyrk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const float *alpha, const float *a, const lapack_int *lda, const float *beta, float *c, const lapack_int *ldc);
+extern "C" void dsyrk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const double *alpha, const double *a, const lapack_int *lda, const double *beta, double *c, const lapack_int *ldc);
+extern "C" void csyrk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const lapack_complex_float *alpha, const lapack_complex_float *a, const lapack_int *lda, const lapack_complex_float *beta, lapack_complex_float *c, const lapack_int *ldc);
+extern "C" void zsyrk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const lapack_complex_double *alpha, const lapack_complex_double *a, const lapack_int *lda, const lapack_complex_double *beta, lapack_complex_double *c, const lapack_int *ldc);
+
+extern "C" void cherk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const lapack_complex_float *alpha, const lapack_complex_float *a, const lapack_int *lda, const lapack_complex_float *beta, lapack_complex_float *c, const lapack_int *ldc);
+extern "C" void zherk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const lapack_complex_double *alpha, const lapack_complex_double *a, const lapack_int *lda, const lapack_complex_double *beta, lapack_complex_double *c, const lapack_int *ldc);
+
 extern "C" void spotrf_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda, lapack_int* info );
 extern "C" void dpotrf_( const char* uplo, const lapack_int* n, double* a, const lapack_int* lda, lapack_int* info );
 extern "C" void cpotrf_( const char* uplo, const lapack_int* n, lapack_complex_float* a, const lapack_int* lda, lapack_int* info );
@@ -817,6 +825,323 @@ bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex16>& C,
     }
     return true;
 }
+/// ------------------------------------------------------------------------------------
+
+template<> EXPORTCPUCOREMATH 
+bool syrk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isATA)
+{
+    try
+    {
+        typedef float T;
+
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
+        const T* pA = A.begin(); 
+
+        lapack_int M = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isATA )
+        { 
+            M = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
+        }
+
+        if ( (C.get_size(0)!=M) || (C.get_size(1)!=M) )
+        {
+            C.create(M, M);
+        }
+
+        T* pC = C.begin();
+        lapack_int ldc = (lapack_int)C.get_size(0);
+
+        float alpha(1), beta(0);
+
+        if ( isATA )
+        {
+            TA = 'T';
+        }
+        else
+        {
+            TA = 'N';
+        }
+
+        ssyrk_(&uplo, &TA, &M, &K, &alpha, pA, &lda, &beta, pC, &ldc);
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in ssyrk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isATA) ...");
+        return false;
+    }
+    return true;
+}
+
+template<> EXPORTCPUCOREMATH 
+bool syrk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isATA)
+{
+    try
+    {
+        typedef double T;
+
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
+        const T* pA = A.begin(); 
+
+        lapack_int M = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isATA )
+        { 
+            M = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
+        }
+
+        if ( (C.get_size(0)!=M) || (C.get_size(1)!=M) )
+        {
+            C.create(M, M);
+        }
+
+        T* pC = C.begin();
+        lapack_int ldc = (lapack_int)C.get_size(0);
+
+        double alpha(1), beta(0);
+
+        if ( isATA )
+        {
+            TA = 'T';
+        }
+        else
+        {
+            TA = 'N';
+        }
+
+        dsyrk_(&uplo, &TA, &M, &K, &alpha, pA, &lda, &beta, pC, &ldc);
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in syrk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isATA) ...");
+        return false;
+    }
+    return true;
+}
+
+template<> EXPORTCPUCOREMATH 
+bool syrk(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, char uplo, bool isATA)
+{
+    try
+    {
+        typedef GT_Complex8 T;
+
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
+        const T* pA = A.begin(); 
+
+        lapack_int N = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isATA )
+        { 
+            N = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
+        }
+
+        GADGET_CHECK_RETURN_FALSE ( (C.get_size(0)==N) && (C.get_size(1)==N) );
+
+        T* pC = C.begin();
+        lapack_int ldc = (lapack_int)C.get_size(0);
+
+        lapack_complex_float alpha(1), beta(0);
+
+        if ( isATA )
+        {
+            TA = 'T';
+        }
+        else
+        {
+            TA = 'N';
+        }
+
+        csyrk_(&uplo, &TA, &N, &K, &alpha, pA, &lda, &beta, pC, &ldc);
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in syrk(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, char uplo, bool isATA) ...");
+        return false;
+    }
+    return true;
+}
+
+template<> EXPORTCPUCOREMATH 
+bool syrk(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, char uplo, bool isATA)
+{
+    try
+    {
+        typedef GT_Complex16 T;
+
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
+        const T* pA = A.begin(); 
+
+        lapack_int M = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isATA )
+        { 
+            M = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
+        }
+
+        if ( (C.get_size(0)!=M) || (C.get_size(1)!=M) )
+        {
+            C.create(M, M);
+        }
+
+        T* pC = C.begin();
+        lapack_int ldc = (lapack_int)C.get_size(0);
+
+        lapack_complex_double alpha(1), beta(0);
+
+        if ( isATA )
+        {
+            TA = 'T';
+        }
+        else
+        {
+            TA = 'N';
+        }
+
+        zsyrk_(&uplo, &TA, &M, &K, &alpha, pA, &lda, &beta, pC, &ldc);
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in syrk(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, char uplo, bool isATA) ...");
+        return false;
+    }
+    return true;
+}
+
+template<> EXPORTCPUCOREMATH 
+bool herk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isAHA)
+{
+    return syrk(C, A, uplo, isAHA);
+}
+
+template<> EXPORTCPUCOREMATH 
+bool herk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isAHA)
+{
+    return syrk(C, A, uplo, isAHA);
+}
+
+template<> EXPORTCPUCOREMATH 
+bool herk(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, char uplo, bool isAHA)
+{
+    try
+    {
+        typedef GT_Complex8 T;
+
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
+        const T* pA = A.begin(); 
+
+        lapack_int N = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isAHA )
+        { 
+            N = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
+        }
+
+        if ( (C.get_size(0)!=N) || (C.get_size(1)!=N) )
+        {
+            C.create(N, N);
+        }
+
+        T* pC = C.begin();
+        lapack_int ldc = (lapack_int)C.get_size(0);
+
+        lapack_complex_float alpha(1), beta(0);
+
+        if ( isAHA )
+        {
+            TA = 'C';
+        }
+        else
+        {
+            TA = 'N';
+        }
+
+        cherk_(&uplo, &TA, &N, &K, &alpha, pA, &lda, &beta, pC, &ldc);
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in herk(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, char uplo, bool isAHA) ...");
+        return false;
+    }
+    return true;
+}
+
+template<> EXPORTCPUCOREMATH 
+bool herk(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, char uplo, bool isAHA)
+{
+    try
+    {
+        typedef GT_Complex16 T;
+
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
+        const T* pA = A.begin(); 
+
+        lapack_int N = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isAHA )
+        { 
+            N = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
+        }
+
+        if ( (C.get_size(0)!=N) || (C.get_size(1)!=N) )
+        {
+            C.create(N, N);
+        }
+
+        T* pC = C.begin();
+        lapack_int ldc = (lapack_int)C.get_size(0);
+
+        lapack_complex_double alpha(1), beta(0);
+
+        if ( isAHA )
+        {
+            TA = 'C';
+        }
+        else
+        {
+            TA = 'N';
+        }
+
+        zherk_(&uplo, &TA, &N, &K, &alpha, pA, &lda, &beta, pC, &ldc);
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in herk(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, char uplo, bool isAHA) ...");
+        return false;
+    }
+    return true;
+}
+
 /// ------------------------------------------------------------------------------------
 
 template<typename T> 
@@ -1798,8 +2123,12 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
 
         hoMatrix<T> AHA(A.cols(), A.cols());
 
-        hoMatrix<T> ACopy(A);
-        GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(AHA, ACopy, true, A, false));
+        // hoMatrix<T> ACopy(A);
+        // GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(AHA, ACopy, true, A, false));
+
+        char uplo = 'L';
+        bool isAHA = true;
+        GADGET_CHECK_RETURN_FALSE(herk(AHA, A, uplo, isAHA));
 
         GADGET_CHECK_RETURN_FALSE(x.createMatrix(A.cols(), b.cols()));
         GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(x, A, true, b, false));

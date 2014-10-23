@@ -60,6 +60,14 @@ namespace Gadgetron
                                 const hoMatrix<T>& A, bool transA, 
                                 const hoMatrix<T>& B, bool transB);
 
+    /// Performs a symmetric rank-k update (no conjugated).
+    template<typename T> EXPORTCPUCOREMATH 
+    bool syrk(hoNDArray<T>& C, const hoNDArray<T>& A, char uplo, bool isATA);
+
+    /// Performs a Hermitian rank-k update.
+    template<typename T> EXPORTCPUCOREMATH 
+    bool herk(hoNDArray<T>& C, const hoNDArray<T>& A, char uplo, bool isAHA);
+
     template<typename T> EXPORTCPUCOREMATH 
     bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo);
 
