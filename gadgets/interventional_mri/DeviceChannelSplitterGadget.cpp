@@ -58,6 +58,8 @@ int DeviceChannelSplitterGadget<T>
       im3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_IRT_IMAGE);
     } else {
       im3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_IRT_DEVICE);
+      im3->getObjectPtr()->set(GTPLUS_IMAGE_CUR_DEVICE_CHA, (long)i);
+
     }
     im3->getObjectPtr()->append(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_INTENSITY_UNCHANGED);
 

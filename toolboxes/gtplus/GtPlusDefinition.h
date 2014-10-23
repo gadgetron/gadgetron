@@ -161,6 +161,7 @@ namespace Gadgetron
         #define GTPLUS_IMAGE_IRT_IMAGE                      "IRT_IMAGE"
         #define GTPLUS_IMAGE_IRT_DEVICE                     "IRT_DEVICE"
         #define GTPLUS_IMAGE_NUM_DEVICE_CHA                 "IRT_NUM_DEVICE_CHA"
+        #define GTPLUS_IMAGE_CUR_DEVICE_CHA                 "IRT_CUR_DEVICE_CHA"
 
         /// data flow tag
         /// if this flag is set to be 1 for a image, the image is immediately passed to the next gadget
