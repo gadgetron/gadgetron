@@ -25,6 +25,22 @@
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
 
+    <writer>
+        <slot>1015</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterCPLX</classname>
+    </writer>
+    <writer>
+        <slot>1016</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterFLOAT</classname>
+    </writer>
+    <writer>
+        <slot>1017</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterUSHORT</classname>
+    </writer>
+
     <!--
     <!-- We need to modify the coil adjust to that we only scale channels according to noise variance -->
     <gadget>
@@ -112,9 +128,15 @@
     </gadget>
  -->
 
+    <gadget>
+      <name>DeviceChannelSplitter</name>
+      <dll>gadgetron_interventional_mri</dll>
+      <classname>DeviceChannelSplitterGadgetUSHORT</classname>
+    </gadget>>
+
      <gadget>
-      <name>ImageFinishUSHORT</name>
+      <name>ImageFinishAttribUSHORT</name>
       <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadgetUSHORT</classname>
+      <classname>ImageFinishAttribGadgetUSHORT</classname>
     </gadget>
 </gadgetronStreamConfiguration>

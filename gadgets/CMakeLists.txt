@@ -25,6 +25,7 @@ include_directories(
   )
 
 add_subdirectory(mri_core)
+add_subdirectory(interventional_mri)
 
 if (ARMADILLO_FOUND)
     add_subdirectory(epi)

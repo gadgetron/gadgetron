@@ -67,6 +67,14 @@ namespace Gadgetron{
                           *(h.acquisitionSystemInformation->receiverChannels) : 1);
     dimensions_.push_back(slices);
 
+
+    GADGET_DEBUG2("Dimensions %d, %d, %d, %d, %d\n", dimensions_[0], dimensions_[1], dimensions_[2], dimensions_[3], dimensions_[4]);
+
+    image_dimensions_.push_back(r_space.matrixSize.x); 
+    image_dimensions_.push_back(r_space.matrixSize.y);
+    image_dimensions_.push_back(r_space.matrixSize.z);
+    image_dimensions_.push_back(dimensions_[3]);
+
     fov_.push_back(r_space.fieldOfView_mm.x);
     fov_.push_back(r_space.fieldOfView_mm.y);
     fov_.push_back(r_space.fieldOfView_mm.z);
@@ -90,13 +98,6 @@ namespace Gadgetron{
 
   int GrappaGadget::initial_setup()
   {
-
-    GADGET_DEBUG2("Dimensions %d, %d, %d, %d, %d\n", dimensions_[0], dimensions_[1], dimensions_[2], dimensions_[3], dimensions_[4]);
-
-    image_dimensions_.push_back(dimensions_[0] / 2); //TODO: fix this in general
-    image_dimensions_.push_back(dimensions_[1]);
-    image_dimensions_.push_back(dimensions_[2]);
-    image_dimensions_.push_back(dimensions_[3]);
 
 
     weights_ = std::vector< boost::shared_ptr<GrappaWeights<float> > >(dimensions_[4]);

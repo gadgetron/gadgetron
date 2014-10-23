@@ -157,6 +157,11 @@ namespace Gadgetron
         #define GTPLUS_IMAGE_B1MAP                          "B1MAP"
         #define GTPLUS_IMAGE_FLIPANGLEMAP                   "FLIPANGLEMAP"
 
+	//MSH: Interventional MRI (Interactive Real Time, IRT)
+        #define GTPLUS_IMAGE_IRT_IMAGE                      "IRT_IMAGE"
+        #define GTPLUS_IMAGE_IRT_DEVICE                     "IRT_DEVICE"
+        #define GTPLUS_IMAGE_NUM_DEVICE_CHA                 "IRT_NUM_DEVICE_CHA"
+
         /// data flow tag
         /// if this flag is set to be 1 for a image, the image is immediately passed to the next gadget
         /// if this flag is 0, this image is a stored image by the accummulator
