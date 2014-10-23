@@ -56,7 +56,10 @@
       <dll>gadgetron_mricore</dll>
       <classname>PCACoilGadget</classname>
       <!-- This preserved the Loop_7:L7 as the first channel -->
+      <!--
       <property><name>uncombined_channels_by_name</name><value>Loop_7:L7</value></property>
+      -->
+      <property><name>uncombined_channels_by_name</name><value>Spine_32:S32</value></property>
     </gadget>
 
     <gadget>
