@@ -1797,7 +1797,9 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
         GADGET_CHECK_RETURN_FALSE(b.rows()==A.rows());
 
         hoMatrix<T> AHA(A.cols(), A.cols());
-        GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(AHA, A, true, A, false));
+
+        hoMatrix<T> ACopy(A);
+        GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(AHA, ACopy, true, A, false));
 
         GADGET_CHECK_RETURN_FALSE(x.createMatrix(A.cols(), b.cols()));
         GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(x, A, true, b, false));

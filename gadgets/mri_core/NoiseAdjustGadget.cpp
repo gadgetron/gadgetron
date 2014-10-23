@@ -510,7 +510,8 @@ namespace Gadgetron{
                 std::complex<float>* data_ptr = m2->getObjectPtr()->get_data_ptr();
 
                 #if defined(USE_MKL) || defined(USE_LAPACK)
-                    GADGET_CHECK_RETURN(GeneralMatrixProduct_gemm(noise_covariance_matrixf_once_, *m2->getObjectPtr(), true, *m2->getObjectPtr(), false), GADGET_FAIL);
+                    readout_ = *m2->getObjectPtr();
+                    GADGET_CHECK_RETURN(GeneralMatrixProduct_gemm(noise_covariance_matrixf_once_, readout_, true, *m2->getObjectPtr(), false), GADGET_FAIL);
                     GADGET_CHECK_RETURN(Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_), GADGET_FAIL);
                 #else
                     for (unsigned int s = 0; s < samples; s++)

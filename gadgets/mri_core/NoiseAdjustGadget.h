@@ -33,6 +33,8 @@ namespace Gadgetron {
 
         hoNDArray< ValueType > data_prewhitened_;
 
+        hoNDArray< ValueType > readout_;
+
         unsigned long long number_of_noise_samples_;
         unsigned long long number_of_noise_samples_per_acquisition_;
         float noise_dwell_time_us_;

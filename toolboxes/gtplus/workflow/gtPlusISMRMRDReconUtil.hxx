@@ -36,7 +36,8 @@ KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T
         GADGET_CHECK_RETURN_FALSE(eigenVectors.createMatrix(N, N));
         GADGET_CHECK_RETURN_FALSE(eigenValues.createMatrix(N, 1));
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(eigenVectors, data, true, data, false));
+        hoMatrix<T> dataCopy(data);
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(eigenVectors, data, true, dataCopy, false));
 
         //eigenVectors.print(std::cout);
 
@@ -47,7 +48,9 @@ KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T
         //mean.print(std::cout);
 
         hoMatrix<T> MMH(N, N);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(MMH, mean, false, mean, true));
+
+        hoMatrix<T> meanCopy(mean);
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(MMH, meanCopy, false, mean, true));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::scal((ValueType)M, MMH));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(eigenVectors, MMH, eigenVectors));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::scal((ValueType)1.0/(M-1), eigenVectors));
@@ -4494,6 +4497,9 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
             hoNDArray<T> D(ks*ks, CHA);
             T* pD = D.begin();
 
+            hoNDArray<T> DC(ks*ks, CHA);
+            T* pDC = DC.begin();
+
             hoNDArray<T> DH_D(CHA, CHA);
 
             hoNDArray<T> U1(ks*ks, 1);
@@ -4593,7 +4599,8 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                         pV1[cha] *= v1NormInv;
                     }
 
-                    GeneralMatrixProduct_gemm(DH_D, D, true, D, false);
+                    memcpy(pDC, pD, sizeof(T)*ks*ks*CHA);
+                    GeneralMatrixProduct_gemm(DH_D, DC, true, D, false);
 
                     for ( po=0; po<power; po++ )
                     {
@@ -4706,6 +4713,7 @@ coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
         #pragma omp parallel default(none) private(e2) shared(ks, RO, E1, E2, CHA, pSen, pData, halfKs, power, kss)
         {
             hoMatrix<T> D(kss, CHA);
+            hoMatrix<T> DC(kss, CHA);
             hoMatrix<T> DH_D(CHA, CHA);
 
             hoMatrix<T> U1(kss, 1);
@@ -4783,7 +4791,9 @@ coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                         norm2(V1, v1Norm);
                         scal( (value_type)1.0/v1Norm, V1);
 
-                        GeneralMatrixProduct_gemm(DH_D, D, true, D, false);
+                        memcpy(DC.begin(), D.begin(), sizeof(T)*kss*CHA);
+                        GeneralMatrixProduct_gemm(DH_D, DC, true, D, false);
+                        // GeneralMatrixProduct_gemm(DH_D, D, true, D, false);
 
                         for ( po=0; po<power; po++ )
                         {
