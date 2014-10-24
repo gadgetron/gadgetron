@@ -8,10 +8,6 @@
 #include "hoNDArray_math_util.h"
 #include "ismrmrd/xml.h"
 
-#ifdef USE_MKL
-    #include "mkl.h"
-#endif // USE_MKL
-
 #ifdef USE_OMP
     #include "omp.h"
 #endif // USE_OMP
@@ -193,11 +189,6 @@ namespace Gadgetron{
         }
 
         // limit the number of threads used to be 1
-#ifdef USE_MKL
-        int save_nt = mkl_set_num_threads_local(1);
-        GADGET_MSG("NoiseAdjustGadget:mkl_set_num_threads_local(1) : " << save_nt);
-#endif // USE_MKL
-
 #ifdef USE_OMP
         omp_set_num_threads(1);
         GADGET_MSG("NoiseAdjustGadget:omp_set_num_threads(1) ... ");
