@@ -28,7 +28,7 @@ int DeviceChannelSplitterGadget<T>
   }
   
 
-  for (int i = (array_channels-1); i >= 0; i--) {
+  for (int i = 0; i < array_channels; i++) {
     
 
     GadgetContainerMessage<ISMRMRD::ImageHeader>* im1 = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
@@ -54,7 +54,7 @@ int DeviceChannelSplitterGadget<T>
     im1->cont(im2);
     
     Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* im3 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
-    if (i == (array_channels-1)) {
+    if (i == 0) {
       im3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_IRT_IMAGE);
     } else {
       im3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_IRT_DEVICE);

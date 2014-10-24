@@ -37,9 +37,12 @@ namespace Gadgetron{
     m1->cont(0);
     m2->cont(cm2);
 
+    hoNDFFT<float>::instance()->ifft3c(*m3->getObjectPtr());
+    /*
     hoNDFFT<float>::instance()->ifft(m3->getObjectPtr(),0);
     hoNDFFT<float>::instance()->ifft(m3->getObjectPtr(),1);
     hoNDFFT<float>::instance()->ifft(m3->getObjectPtr(),2);
+    */
 
     if (!m1->getObjectPtr()->weights_) {
       GADGET_DEBUG1("Weights are a NULL\n");
