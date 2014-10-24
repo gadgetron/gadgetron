@@ -380,7 +380,7 @@ namespace Gadgetron{
 
             long long tt;
 
-            #pragma omp parallel for private(tt) shared(a, r, x, y, n, pivotx, pivoty) if (n>1)
+            #pragma omp parallel for private(tt) shared(a, r, x, y, n, pivotx, pivoty) if (n>16)
             for ( tt=0; tt<(long long)n; tt++ )
             {
                 const ComplexType* ac = a + tt*x*y;
@@ -421,7 +421,7 @@ namespace Gadgetron{
 
             long long tt;
 
-            #pragma omp parallel private(tt) shared(a, x, y, n, pivotx, pivoty) if (n>1)
+            #pragma omp parallel private(tt) shared(a, x, y, n, pivotx, pivoty) if (n>16)
             {
                 hoNDArray< ComplexType > aTmp(x*y);
                 ComplexType* rc = aTmp.begin();
@@ -594,7 +594,7 @@ namespace Gadgetron{
 
             long long tt;
 
-#pragma omp parallel for private(tt) shared(a, r, x, y, z, n, pivotx, pivoty, pivotz) if (n>1)
+#pragma omp parallel for private(tt) shared(a, r, x, y, z, n, pivotx, pivoty, pivotz) if (n>16)
             for ( tt=0; tt<(long long)n; tt++ )
             {
                 size_t ay, ry, az, rz;
@@ -662,7 +662,7 @@ namespace Gadgetron{
 
             long long tt;
 
-#pragma omp parallel private(tt) shared(a, x, y, z, n, pivotx, pivoty, pivotz) if (n>1)
+#pragma omp parallel private(tt) shared(a, x, y, z, n, pivotx, pivoty, pivotz) if (n>16)
             {
                 hoNDArray< ComplexType > aTmp(x*y*z);
 
@@ -1134,6 +1134,8 @@ namespace Gadgetron{
         GADGET_CHECK_RETURN_FALSE(fftshift3D(buf, r));
         return true;
     }
+
+#undef USE_MKL
 
     template<typename T> 
     bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, bool forward)

@@ -14,10 +14,6 @@
 #include <fftw3.h>
 #include <complex>
 
-#ifdef USE_MKL
-    #include "mkl.h"
-#endif // USE_MKL
-
 namespace Gadgetron{
 
     /** 
@@ -228,26 +224,6 @@ namespace Gadgetron{
         bool fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
         bool fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
         bool fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
-
-        #ifdef USE_MKL
-
-        bool fft1_mkl(hoNDArray< ComplexType >& a, bool forward);
-        bool fft2_mkl(hoNDArray< ComplexType >& a, bool forward);
-        bool fft3_mkl(hoNDArray< ComplexType >& a, bool forward);
-
-        bool fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
-        bool fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
-        bool fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
-
-        // configure the 1D/2D/3D MKL based fft handles
-        // x, y, z: the length of dimensions
-        // n: the number of transformation
-        // handle: the fft MKL handle
-        // fftPresion: DFTI_SINGLE or DFTI_DOUBLE
-        bool configureFFTHandle(long long NDim, MKL_LONG* dim, DFTI_CONFIG_VALUE fftPresion, size_t n, DFTI_DESCRIPTOR_HANDLE& handle);
-        bool configureFFTHandleOutOfPlace(long long NDim, MKL_LONG* dim, DFTI_CONFIG_VALUE fftPresion, size_t n, DFTI_DESCRIPTOR_HANDLE& handle);
-
-        #endif // USE_MKL
     };
 }
 
