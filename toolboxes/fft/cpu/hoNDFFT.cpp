@@ -1220,7 +1220,7 @@ namespace Gadgetron{
                 mutex_.unlock();
             }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, r)
+            #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( (num>128) && (n0*num>512*128) )
             for ( n=0; n<num; n++ )
             {
                 fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0), 
@@ -1256,7 +1256,7 @@ namespace Gadgetron{
                 mutex_.unlock();
             }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, r)
+            #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( (num>128) && (n0*num>512*128) )
             for ( n=0; n<num; n++ )
             {
                 fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0), 
@@ -1315,7 +1315,7 @@ namespace Gadgetron{
                 mutex_.unlock();
             }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r)
+            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r) if( num > 8 )
             for ( n=0; n<num; n++ )
             {
                 fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1), 
@@ -1351,7 +1351,7 @@ namespace Gadgetron{
                 mutex_.unlock();
             }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r)
+            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r) if( num > 8 )
             for ( n=0; n<num; n++ )
             {
                 fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1), 

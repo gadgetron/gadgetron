@@ -17,10 +17,6 @@
 #include "GadgetronCommon.h"
 #include <complex>
 
-#ifdef USE_MKL
-#include "mkl.h"
-#endif // USE_MKL
-
 #include "hoNDArray_math_util.h"
 #include "hoNDInterpolator.h"
 

@@ -312,25 +312,12 @@ bool gtPlusMemoryManager::increase(size_t added_bytes)
 
 void gtPlusMemoryManager::_allocate_memory( size_t size, void*& data )
 {
-    #ifdef USE_MKL
-        data = mkl_calloc(size, 1, (int)aligned_bytes_);
-    #else
-        data = calloc(size, 1);
-    #endif // USE_MKL
-
-    // data = reinterpret_cast<void*>(new char[size]);
-    //memset(data, 0, size);
+    data = calloc(size, 1);
 }
 
 void gtPlusMemoryManager::_deallocate_memory( void* data )
 {
-    #ifdef USE_MKL
-        mkl_free(data);
-    #else
-         free(data);
-    #endif // USE_MKL
-
-    // delete [] data;
+    free(data);
 }
 
 size_t gtPlusMemoryManager::totalFreeMemory() const

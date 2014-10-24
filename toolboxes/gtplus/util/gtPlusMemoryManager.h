@@ -21,10 +21,6 @@
 #include <string>
 #include <limits>
 
-#ifdef USE_MKL
-    #include <mkl.h>
-#endif // USE_MKL
-
 // the memory manager for large chunk allocation
 
 namespace Gadgetron { namespace gtPlus {
