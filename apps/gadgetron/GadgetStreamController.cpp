@@ -18,6 +18,15 @@
 #include <fstream>
 
 using namespace Gadgetron;
+
+namespace Gadgetron {
+//This function is needed to avoid some linking problems. 
+  Gadget* find_gadget_in_controller(GadgetStreamController* c, const char* g)
+  {
+    return c->find_gadget(g);
+  }
+}
+
 int GadgetStreamController::open (void)
 {
 	//We will set up the controllers message queue such that when a packet is enqueued write will be triggered.

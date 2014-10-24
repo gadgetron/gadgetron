@@ -23,6 +23,7 @@
 
 namespace Gadgetron{
 
+    //Forward declarations
     class GadgetStreamController;
 
     class Gadget : public ACE_Task<ACE_MT_SYNCH>
@@ -225,24 +226,7 @@ namespace Gadgetron{
             return ACE_OS::atof(get_string_value(name)->c_str());
         }
 
-        boost::shared_ptr<std::string> get_string_value(const char* name) {
-            std::map<std::string,std::string>::iterator it;
-	    parameter_mutex_.acquire();
-            it = parameters_.find(std::string(name));
-	    parameter_mutex_.release();
-            if (it != parameters_.end()) {
-	      //If string contains an @ sign, we should look for this parameter on another gadget
-	      size_t at_pos = it->second.find('@');
-	      if (at_pos != std::string::npos) {
-		//There was an add sign, which means look for that parameter on another gadget
-
-	      } else {
-                return boost::shared_ptr<std::string>(new std::string(it->second));
-	      }
-            }
-
-            return boost::shared_ptr<std::string>(new std::string(""));
-        }
+	boost::shared_ptr<std::string> get_string_value(const char* name);
 
         /**
         *  This trigger function is called whenever set_parameter is called with the trigger = true;
@@ -276,6 +260,35 @@ namespace Gadgetron{
         std::map<std::string, std::string> parameters_;
 	std::string gadgetron_version_;
     };
+
+    Gadget* find_gadget_in_controller(GadgetStreamController* c, const char* g);
+
+    inline boost::shared_ptr<std::string> Gadget::get_string_value(const char* name) {
+      std::map<std::string,std::string>::iterator it;
+      parameter_mutex_.acquire();
+      it = parameters_.find(std::string(name));
+      parameter_mutex_.release();
+      if (it != parameters_.end()) {
+	//If string contains an @ sign, we should look for this parameter on another gadget
+	size_t at_pos = it->second.find('@');
+	if (at_pos != std::string::npos) {
+	  //There was an add sign, which means look for that parameter on another gadget
+	  std::string parm = it->second.substr(0,at_pos);
+	  std::string gadget = it->second.substr(at_pos+1);
+	  
+	  Gadget* ref_gadget = find_gadget_in_controller(controller_,gadget.c_str());
+
+	  if (ref_gadget) {
+	    return ref_gadget->get_string_value(parm.c_str());
+	  }
+	} else {
+	  return boost::shared_ptr<std::string>(new std::string(it->second));
+	}
+      }
+      
+      return boost::shared_ptr<std::string>(new std::string(""));
+    }
+
 
     template <class P1> class Gadget1 : public Gadget
     {

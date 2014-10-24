@@ -55,11 +55,9 @@
       <name>PCA</name>
       <dll>gadgetron_mricore</dll>
       <classname>PCACoilGadget</classname>
-      <!-- This preserved the Loop_7:L7 as the first channel -->
-      <!--
       <property><name>uncombined_channels_by_name</name><value>Loop_7:L7</value></property>
-      -->
-      <property><name>uncombined_channels_by_name</name><value>Body_18:B12</value></property>
+      <!-- present_uncombined_channels will get updated by the gadget based on the attached coils -->
+      <property><name>present_uncombined_channels</name><value>0</value></property>
     </gadget>
 
     <gadget>
@@ -81,6 +79,7 @@
       <classname>GrappaGadget</classname>
       <!-- After PCA gadget, the device channel with be the first channel -->
       <property><name>uncombined_channels</name><value>0</value></property>
+      <property><name>device_channels</name><value>present_uncombined_channels@PCA</value><property>
     </gadget>
 
     <gadget>

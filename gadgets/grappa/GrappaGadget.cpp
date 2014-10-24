@@ -115,23 +115,31 @@ namespace Gadgetron{
 
     weights_calculator_.set_number_of_target_coils(target_coils_);
 
-    //Let's figure out if we have channels that are supposed to be uncombined
-    boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels");
-    std::vector<std::string> uncomb;
-    boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
-    for (unsigned int i = 0; i < uncomb.size(); i++) {
-      std::string ch = boost::algorithm::trim_copy(uncomb[i]);
-      if (ch.size() > 0) {
-        unsigned int channel_id = static_cast<unsigned int>(ACE_OS::atoi(ch.c_str()));
-        weights_calculator_.add_uncombined_channel(channel_id);
-      }
-    }
 
-    uncomb_str = this->get_string_value("uncombined_channels_by_name");
-    if (uncomb_str->size()) {
-      GADGET_DEBUG2("uncomb_str: %s\n",  uncomb_str->c_str());
+    int device_channels = this->get_int_value("device_channels");
+    if (device_channels) {
+      GADGET_DEBUG2("We got the number of device channels from other gadget: %d\n", device_channels);
+      for (int i = 0; i < device_channels; i++) {
+	weights_calculator_.add_uncombined_channel((unsigned int)i);
+      }
+    } else {
+      //Let's figure out if we have channels that are supposed to be uncombined
+      boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels");
+      std::vector<std::string> uncomb;
       boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
       for (unsigned int i = 0; i < uncomb.size(); i++) {
+	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
+	if (ch.size() > 0) {
+	  unsigned int channel_id = static_cast<unsigned int>(ACE_OS::atoi(ch.c_str()));
+	  weights_calculator_.add_uncombined_channel(channel_id);
+	}
+      }
+      
+      uncomb_str = this->get_string_value("uncombined_channels_by_name");
+      if (uncomb_str->size()) {
+	GADGET_DEBUG2("uncomb_str: %s\n",  uncomb_str->c_str());
+	boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
+	for (unsigned int i = 0; i < uncomb.size(); i++) {
 	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
 	map_type_::iterator it = channel_map_.find(ch);
 	if (it != channel_map_.end()) {
@@ -145,6 +153,7 @@ namespace Gadgetron{
 	  weights_calculator_.add_uncombined_channel(channel_id);
 	  }
 	*/
+	}
       }
     }
     

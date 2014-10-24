@@ -79,6 +79,10 @@ namespace Gadgetron {
 	}
       }
 
+      char val[32];
+      sprintf(val,"%d",(int)uncombined_channels_.size());
+      this->set_parameter("present_uncombined_channels",val);
+
       return GADGET_OK;
     }
 
