@@ -106,7 +106,6 @@ namespace Gadgetron
         gt_timer3_.set_timing_in_destruction(false);
 
         Gadgetron::prepOpenMP();
-        Gadgetron::prepMKL();
     }
 
     GtPlusReconGadget::~GtPlusReconGadget()
@@ -863,17 +862,6 @@ namespace Gadgetron
         // set the maximal number of threads used
         if ( thread_number_ratio_>0 && thread_number_ratio_<1 )
         {
-#ifdef USE_MKL
-            int maxThread = mkl_get_max_threads();
-            GADGET_MSG("GtPlusRecon, maximal of threads : " << maxThread);
-
-            int allowedNumThread = (int)(thread_number_ratio_ * maxThread);
-            if ( allowedNumThread > 0 )
-            {
-                mkl_set_num_threads_local(allowedNumThread);
-            }
-            GADGET_MSG("GtPlusRecon, mkl_set_num_threads_local : " << allowedNumThread);
-#endif // USE_MKL
         }
 
         return GADGET_OK;

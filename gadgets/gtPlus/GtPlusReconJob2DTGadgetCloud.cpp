@@ -62,7 +62,6 @@ GtPlusReconJob2DTGadgetCloud::GtPlusReconJob2DTGadgetCloud() : mem_manager_(new 
     process_config_called_ = false;
 
     Gadgetron::prepOpenMP();
-    Gadgetron::prepMKL();
 }
 
 GtPlusReconJob2DTGadgetCloud::~GtPlusReconJob2DTGadgetCloud()

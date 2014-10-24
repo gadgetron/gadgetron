@@ -22,7 +22,6 @@ GtPlusReconJob3DTGadget::GtPlusReconJob3DTGadget() : mem_manager_(new Gadgetron:
     process_config_called_ = false;
 
     Gadgetron::prepOpenMP();
-    Gadgetron::prepMKL();
 }
 
 GtPlusReconJob3DTGadget::~GtPlusReconJob3DTGadget()
