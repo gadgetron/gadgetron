@@ -41,6 +41,7 @@ namespace Gadgetron{
             , desired_threads_(1)
             , pass_on_undesired_data_(false)
             , controller_(0)
+	    , parameter_mutex_("GadgetParameterMutex")
         {
 	  gadgetron_version_ = std::string(GADGETRON_VERSION_STRING) + std::string(" (") + 
 	    std::string(GADGETRON_GIT_SHA1_HASH) + std::string(")");
@@ -201,7 +202,9 @@ namespace Gadgetron{
         int set_parameter(const char* name, const char* val, bool trigger = true) {
             boost::shared_ptr<std::string> old_value = get_string_value(name);
 
+	    parameter_mutex_.acquire();
             parameters_[std::string(name)] = std::string(val);
+	    parameter_mutex_.release();
 
             if (trigger) {
                 return parameter_changed(std::string(name), std::string(val), *old_value);
@@ -224,11 +227,18 @@ namespace Gadgetron{
 
         boost::shared_ptr<std::string> get_string_value(const char* name) {
             std::map<std::string,std::string>::iterator it;
-
+	    parameter_mutex_.acquire();
             it = parameters_.find(std::string(name));
-
+	    parameter_mutex_.release();
             if (it != parameters_.end()) {
+	      //If string contains an @ sign, we should look for this parameter on another gadget
+	      size_t at_pos = it->second.find('@');
+	      if (at_pos != std::string::npos) {
+		//There was an add sign, which means look for that parameter on another gadget
+
+	      } else {
                 return boost::shared_ptr<std::string>(new std::string(it->second));
+	      }
             }
 
             return boost::shared_ptr<std::string>(new std::string(""));
@@ -261,7 +271,7 @@ namespace Gadgetron{
         unsigned int desired_threads_;
         bool pass_on_undesired_data_;
         GadgetStreamController* controller_;
-
+	ACE_Thread_Mutex parameter_mutex_;
     private:
         std::map<std::string, std::string> parameters_;
 	std::string gadgetron_version_;
