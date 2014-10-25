@@ -4,7 +4,7 @@
 #include "hoNDArray_math.h"
 
 /// uncomment this to disable MKL FFT calls
-// #undef USE_MKL
+#undef USE_MKL
 
 namespace Gadgetron{
 
@@ -1135,8 +1135,6 @@ namespace Gadgetron{
         return true;
     }
 
-#undef USE_MKL
-
     template<typename T> 
     bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, bool forward)
     {
@@ -1203,72 +1201,146 @@ namespace Gadgetron{
         {
             fftwf_plan p;
 
+            if( (num>128) && (n0*num>512*128) )
             {
-                mutex_.lock();
-                if ( forward )
                 {
-                    p = fftwf_plan_dft_1d(n0, 
-                            reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(r.begin()),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
+                    mutex_.lock();
+                    if ( forward )
+                    {
+                        p = fftwf_plan_dft_1d(n0, 
+                                reinterpret_cast<fftwf_complex*>(a.begin()), 
+                                reinterpret_cast<fftwf_complex*>(r.begin()),
+                                FFTW_FORWARD, FFTW_ESTIMATE);
+                    }
+                    else
+                    {
+                        p = fftwf_plan_dft_1d(n0, 
+                                reinterpret_cast<fftwf_complex*>(a.begin()), 
+                                reinterpret_cast<fftwf_complex*>(r.begin()),
+                                FFTW_BACKWARD, FFTW_ESTIMATE);
+                    }
+                    mutex_.unlock();
                 }
-                else
+
+                #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( (num>128) && (n0*num>512*128) )
+                for ( n=0; n<num; n++ )
                 {
-                    p = fftwf_plan_dft_1d(n0, 
-                            reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(r.begin()),
-                            FFTW_BACKWARD, FFTW_ESTIMATE);
+                    fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0), 
+                        reinterpret_cast<fftwf_complex*>(r.begin()+n*n0));
                 }
-                mutex_.unlock();
-            }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( (num>128) && (n0*num>512*128) )
-            for ( n=0; n<num; n++ )
-            {
-                fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0), 
-                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0));
+                {
+                    mutex_.lock();
+                    fftwf_destroy_plan(p);
+                    mutex_.unlock();
+                }
             }
-
+            else
             {
-                mutex_.lock();
-                fftwf_destroy_plan(p);
-                mutex_.unlock();
+                // multiple fft interface
+                {
+                    mutex_.lock();
+                    if ( forward )
+                    {
+                        p = fftwf_plan_many_dft(1, &n0, num,
+                                      reinterpret_cast<fftwf_complex*>(a.begin()), NULL,
+                                      1, n0,
+                                      reinterpret_cast<fftwf_complex*>(r.begin()), NULL,
+                                      1, n0,
+                                      FFTW_FORWARD, FFTW_ESTIMATE);
+                    }
+                    else
+                    {
+                        p = fftwf_plan_many_dft(1, &n0, num,
+                                      reinterpret_cast<fftwf_complex*>(a.begin()), NULL,
+                                      1, n0,
+                                      reinterpret_cast<fftwf_complex*>(r.begin()), NULL,
+                                      1, n0,
+                                      FFTW_BACKWARD, FFTW_ESTIMATE);
+                    }
+                    mutex_.unlock();
+                }
+
+                fftwf_execute(p);
+
+                {
+                    mutex_.lock();
+                    fftwf_destroy_plan(p);
+                    mutex_.unlock();
+                }
             }
         }
         else if ( typeid(T) == typeid(double) )
         {
             fftw_plan p;
 
+            if( (num>128) && (n0*num>512*128) )
             {
-                mutex_.lock();
-                if ( forward )
                 {
-                    p = fftw_plan_dft_1d(n0, 
-                            reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(r.begin()),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
+                    mutex_.lock();
+                    if ( forward )
+                    {
+                        p = fftw_plan_dft_1d(n0, 
+                                reinterpret_cast<fftw_complex*>(a.begin()), 
+                                reinterpret_cast<fftw_complex*>(r.begin()),
+                                FFTW_FORWARD, FFTW_ESTIMATE);
+                    }
+                    else
+                    {
+                        p = fftw_plan_dft_1d(n0, 
+                                reinterpret_cast<fftw_complex*>(a.begin()), 
+                                reinterpret_cast<fftw_complex*>(r.begin()),
+                                FFTW_BACKWARD, FFTW_ESTIMATE);
+                    }
+                    mutex_.unlock();
                 }
-                else
+
+                #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( (num>128) && (n0*num>512*128) )
+                for ( n=0; n<num; n++ )
                 {
-                    p = fftw_plan_dft_1d(n0, 
-                            reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(r.begin()),
-                            FFTW_BACKWARD, FFTW_ESTIMATE);
+                    fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0), 
+                        reinterpret_cast<fftw_complex*>(r.begin()+n*n0));
                 }
-                mutex_.unlock();
-            }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( (num>128) && (n0*num>512*128) )
-            for ( n=0; n<num; n++ )
-            {
-                fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0), 
-                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0));
+                {
+                    mutex_.lock();
+                    fftw_destroy_plan(p);
+                    mutex_.unlock();
+                }
             }
-
+            else
             {
-                mutex_.lock();
-                fftw_destroy_plan(p);
-                mutex_.unlock();
+                // multiple fft interface
+                {
+                    mutex_.lock();
+                    if ( forward )
+                    {
+                        p = fftw_plan_many_dft(1, &n0, num,
+                                      reinterpret_cast<fftw_complex*>(a.begin()), NULL,
+                                      1, n0,
+                                      reinterpret_cast<fftw_complex*>(r.begin()), NULL,
+                                      1, n0,
+                                      FFTW_FORWARD, FFTW_ESTIMATE);
+                    }
+                    else
+                    {
+                        p = fftw_plan_many_dft(1, &n0, num,
+                                      reinterpret_cast<fftw_complex*>(a.begin()), NULL,
+                                      1, n0,
+                                      reinterpret_cast<fftw_complex*>(r.begin()), NULL,
+                                      1, n0,
+                                      FFTW_BACKWARD, FFTW_ESTIMATE);
+                    }
+                    mutex_.unlock();
+                }
+
+                fftw_execute(p);
+
+                {
+                    mutex_.lock();
+                    fftw_destroy_plan(p);
+                    mutex_.unlock();
+                }
             }
         }
 
@@ -1298,36 +1370,78 @@ namespace Gadgetron{
         {
             fftwf_plan p;
 
+            if ( num > 32 )
             {
-                mutex_.lock();
-                if ( forward )
                 {
-                    p = fftwf_plan_dft_2d(n0, n1,
-                            reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(r.begin()),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
+                    mutex_.lock();
+                    if ( forward )
+                    {
+                        p = fftwf_plan_dft_2d(n0, n1,
+                                reinterpret_cast<fftwf_complex*>(a.begin()), 
+                                reinterpret_cast<fftwf_complex*>(r.begin()),
+                                FFTW_FORWARD, FFTW_ESTIMATE);
+                    }
+                    else
+                    {
+                        p = fftwf_plan_dft_2d(n0, n1,
+                                reinterpret_cast<fftwf_complex*>(a.begin()), 
+                                reinterpret_cast<fftwf_complex*>(r.begin()),
+                                FFTW_BACKWARD, FFTW_ESTIMATE);
+                    }
+                    mutex_.unlock();
                 }
-                else
+
+                #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r) if( num > 32 )
+                for ( n=0; n<num; n++ )
                 {
-                    p = fftwf_plan_dft_2d(n0, n1,
-                            reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(r.begin()),
-                            FFTW_BACKWARD, FFTW_ESTIMATE);
+                    fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1), 
+                        reinterpret_cast<fftwf_complex*>(r.begin()+n*n0*n1));
                 }
-                mutex_.unlock();
-            }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r) if( num > 8 )
-            for ( n=0; n<num; n++ )
-            {
-                fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1), 
-                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0*n1));
+                {
+                    mutex_.lock();
+                    fftwf_destroy_plan(p);
+                    mutex_.unlock();
+                }
             }
-
+            else
             {
-                mutex_.lock();
-                fftwf_destroy_plan(p);
-                mutex_.unlock();
+                // multiple fft interface
+
+                int n[] = {n0, n1};
+                int idist = n0*n1;
+                int odist = n0*n1;
+
+                {
+                    mutex_.lock();
+                    if ( forward )
+                    {
+                        p = fftwf_plan_many_dft(2, n, num,
+                                      reinterpret_cast<fftwf_complex*>(a.begin()), NULL,
+                                      1, idist,
+                                      reinterpret_cast<fftwf_complex*>(r.begin()), NULL,
+                                      1, odist,
+                                      FFTW_FORWARD, FFTW_ESTIMATE);
+                    }
+                    else
+                    {
+                        p = fftwf_plan_many_dft(2, n, num,
+                                      reinterpret_cast<fftwf_complex*>(a.begin()), NULL,
+                                      1, idist,
+                                      reinterpret_cast<fftwf_complex*>(r.begin()), NULL,
+                                      1, odist,
+                                      FFTW_BACKWARD, FFTW_ESTIMATE);
+                    }
+                    mutex_.unlock();
+                }
+
+                fftwf_execute(p);
+
+                {
+                    mutex_.lock();
+                    fftwf_destroy_plan(p);
+                    mutex_.unlock();
+                }
             }
         }
         else if ( typeid(T) == typeid(double) )
