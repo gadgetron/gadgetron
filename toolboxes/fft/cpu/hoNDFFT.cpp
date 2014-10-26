@@ -3,9 +3,6 @@
 #include "hoNDArray_math_util.h"
 #include "hoNDArray_math.h"
 
-/// uncomment this to disable MKL FFT calls
-#undef USE_MKL
-
 namespace Gadgetron{
 
     template<typename T> hoNDFFT<T>* hoNDFFT<T>::instance()
@@ -1138,9 +1135,6 @@ namespace Gadgetron{
     template<typename T> 
     bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, bool forward)
     {
-#ifdef USE_MKL
-        return fft1_mkl(a, forward);
-#else
         hoNDArray< ComplexType > res(a);
         if ( !fft1(res, a, forward) )
         {
@@ -1148,15 +1142,11 @@ namespace Gadgetron{
         }
 
         return true;
-#endif //USE_MKL
     }
 
     template<typename T> 
     bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, bool forward)
     {
-#ifdef USE_MKL
-        return fft2_mkl(a, forward);
-#else
         hoNDArray< ComplexType > res(a);
         if ( !fft2(res, a, forward) )
         {
@@ -1164,15 +1154,11 @@ namespace Gadgetron{
         }
 
         return true;
-#endif //USE_MKL
     }
 
     template<typename T> 
     bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, bool forward)
     {
-#ifdef USE_MKL
-        return fft3_mkl(a, forward);
-#else
         hoNDArray< ComplexType > res(a);
         if ( !fft3(res, a, forward) )
         {
@@ -1180,28 +1166,26 @@ namespace Gadgetron{
         }
 
         return true;
-#endif //USE_MKL
     }
 
     template<typename T> 
     bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
     {
-#ifdef USE_MKL
-        return fft1_mkl(a, r, forward);
-#else
         r = a;
 
-        int n0 = a.get_size(0);
-        T fftRatio = 1.0/std::sqrt( T(n0) );
+        int n0 = (int)a.get_size(0);
+        T fftRatio = T(1.0/std::sqrt( T(n0) ));
 
-        size_t num = a.get_number_of_elements()/n0;
-        long long n;
+        int num = (int)(a.get_number_of_elements()/n0);
+        int num_thr = get_num_threads_fft1(n0, num);
+
+        int n;
 
         if ( typeid(T) == typeid(float) )
         {
             fftwf_plan p;
 
-            if( (num>128) && (n0*num>512*128) )
+            if( num_thr > 1 )
             {
                 {
                     mutex_.lock();
@@ -1222,7 +1206,7 @@ namespace Gadgetron{
                     mutex_.unlock();
                 }
 
-                #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( (num>128) && (n0*num>512*128) )
+                #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( num_thr > 1 ) num_threads(num_thr)
                 for ( n=0; n<num; n++ )
                 {
                     fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0), 
@@ -1274,7 +1258,7 @@ namespace Gadgetron{
         {
             fftw_plan p;
 
-            if( (num>128) && (n0*num>512*128) )
+            if( num_thr > 1 )
             {
                 {
                     mutex_.lock();
@@ -1295,7 +1279,7 @@ namespace Gadgetron{
                     mutex_.unlock();
                 }
 
-                #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( (num>128) && (n0*num>512*128) )
+                #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( num_thr > 1 ) num_threads(num_thr)
                 for ( n=0; n<num; n++ )
                 {
                     fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0), 
@@ -1347,30 +1331,28 @@ namespace Gadgetron{
         Gadgetron::scal(fftRatio, r);
 
         return true;
-#endif //USE_MKL
     }
 
     template<typename T> 
     bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
     {
-#ifdef USE_MKL
-        return fft2_mkl(a, r, forward);
-#else
         r = a;
 
-        int n0 = a.get_size(1);
-        int n1 = a.get_size(0);
+        int n0 = (int)a.get_size(1);
+        int n1 = (int)a.get_size(0);
 
-        T fftRatio = 1.0/std::sqrt( T(n0*n1) );
+        T fftRatio = T(1.0/std::sqrt( T(n0*n1) ));
 
-        size_t num = a.get_number_of_elements()/(n0*n1);
-        long long n;
+        int num = (int)(a.get_number_of_elements()/(n0*n1));
+        int num_thr = get_num_threads_fft2(n0, n1, num);
+
+        int n;
 
         if ( typeid(T) == typeid(float) )
         {
             fftwf_plan p;
 
-            if ( num > 32 )
+            if ( num_thr > 1 )
             {
                 {
                     mutex_.lock();
@@ -1391,7 +1373,7 @@ namespace Gadgetron{
                     mutex_.unlock();
                 }
 
-                #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r) if( num > 32 )
+                #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r) num_threads(num_thr)
                 for ( n=0; n<num; n++ )
                 {
                     fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1), 
@@ -1448,60 +1430,100 @@ namespace Gadgetron{
         {
             fftw_plan p;
 
+            if ( num_thr > 1 )
             {
-                mutex_.lock();
-                if ( forward )
                 {
-                    p = fftw_plan_dft_2d(n0, n1,
-                            reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(r.begin()),
-                            FFTW_FORWARD, FFTW_ESTIMATE);
+                    mutex_.lock();
+                    if ( forward )
+                    {
+                        p = fftw_plan_dft_2d(n0, n1,
+                                reinterpret_cast<fftw_complex*>(a.begin()), 
+                                reinterpret_cast<fftw_complex*>(r.begin()),
+                                FFTW_FORWARD, FFTW_ESTIMATE);
+                    }
+                    else
+                    {
+                        p = fftw_plan_dft_2d(n0, n1,
+                                reinterpret_cast<fftw_complex*>(a.begin()), 
+                                reinterpret_cast<fftw_complex*>(r.begin()),
+                                FFTW_BACKWARD, FFTW_ESTIMATE);
+                    }
+                    mutex_.unlock();
                 }
-                else
+
+                #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r) num_threads(num_thr)
+                for ( n=0; n<num; n++ )
                 {
-                    p = fftw_plan_dft_2d(n0, n1,
-                            reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(r.begin()),
-                            FFTW_BACKWARD, FFTW_ESTIMATE);
+                    fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1), 
+                        reinterpret_cast<fftw_complex*>(r.begin()+n*n0*n1));
                 }
-                mutex_.unlock();
-            }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r) if( num > 8 )
-            for ( n=0; n<num; n++ )
-            {
-                fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1), 
-                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0*n1));
+                {
+                    mutex_.lock();
+                    fftw_destroy_plan(p);
+                    mutex_.unlock();
+                }
             }
-
+            else
             {
-                mutex_.lock();
-                fftw_destroy_plan(p);
-                mutex_.unlock();
+                // multiple fft interface
+
+                int n[] = {n0, n1};
+                int idist = n0*n1;
+                int odist = n0*n1;
+
+                {
+                    mutex_.lock();
+                    if ( forward )
+                    {
+                        p = fftw_plan_many_dft(2, n, num,
+                                      reinterpret_cast<fftw_complex*>(a.begin()), NULL,
+                                      1, idist,
+                                      reinterpret_cast<fftw_complex*>(r.begin()), NULL,
+                                      1, odist,
+                                      FFTW_FORWARD, FFTW_ESTIMATE);
+                    }
+                    else
+                    {
+                        p = fftw_plan_many_dft(2, n, num,
+                                      reinterpret_cast<fftw_complex*>(a.begin()), NULL,
+                                      1, idist,
+                                      reinterpret_cast<fftw_complex*>(r.begin()), NULL,
+                                      1, odist,
+                                      FFTW_BACKWARD, FFTW_ESTIMATE);
+                    }
+                    mutex_.unlock();
+                }
+
+                fftw_execute(p);
+
+                {
+                    mutex_.lock();
+                    fftw_destroy_plan(p);
+                    mutex_.unlock();
+                }
             }
         }
 
         Gadgetron::scal(fftRatio, r);
 
         return true;
-#endif //USE_MKL
     }
 
     template<typename T> 
     bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
     {
-#ifdef USE_MKL
-        return fft3_mkl(a, r, forward);
-#else
         r = a;
 
-        int n2 = a.get_size(0);
-        int n1 = a.get_size(1);
-        int n0 = a.get_size(2);
+        int n2 = (int)a.get_size(0);
+        int n1 = (int)a.get_size(1);
+        int n0 = (int)a.get_size(2);
 
-        T fftRatio = 1.0/std::sqrt( T(n0*n1*n2) );
+        T fftRatio = T(1.0/std::sqrt( T(n0*n1*n2) ));
 
-        size_t num = a.get_number_of_elements()/(n0*n1*n2);
+        int num = (int)(a.get_number_of_elements()/(n0*n1*n2));
+        int num_thr = get_num_threads_fft3(n0, n1, n2, num);
+
         long long n;
 
         if ( typeid(T) == typeid(float) )
@@ -1527,7 +1549,7 @@ namespace Gadgetron{
                 mutex_.unlock();
             }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num > 8)
+            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num_thr > 1) num_threads(num_thr)
             for ( n=0; n<num; n++ )
             {
                 fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1*n2), 
@@ -1563,7 +1585,7 @@ namespace Gadgetron{
                 mutex_.unlock();
             }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num > 8)
+            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num_thr > 1) num_threads(num_thr)
             for ( n=0; n<num; n++ )
             {
                 fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1*n2), 
@@ -1580,480 +1602,49 @@ namespace Gadgetron{
         Gadgetron::scal(fftRatio, r);
 
         return true;
-#endif //USE_MKL
+    }
+
+    // TODO: implement more optimized threading strategy
+    template<typename T> 
+    inline int hoNDFFT<T>::get_num_threads_fft1(size_t n0, size_t num)
+    {
+        if ( num_of_max_threads_ == 1 ) return 1;
+
+        if ( (num>128) && (n0*num>512*128) )
+        {
+            return num_of_max_threads_;
+        }
+
+        return 1;
+    }
+
+    template<typename T> 
+    inline int hoNDFFT<T>::get_num_threads_fft2(size_t n0, size_t n1, size_t num)
+    {
+        if ( num_of_max_threads_ == 1 ) return 1;
+
+        if ( ( (num >= num_of_max_threads_) && (n0*n1>128*128) ) || (num >= 2*num_of_max_threads_) )
+        {
+            return num_of_max_threads_;
+        }
+
+        return 1;
+    }
+
+    template<typename T> 
+    inline int hoNDFFT<T>::get_num_threads_fft3(size_t n0, size_t n1, size_t n2, size_t num)
+    {
+        if ( num_of_max_threads_ == 1 ) return 1;
+
+        if ( num >= num_of_max_threads_ )
+        {
+            return num_of_max_threads_;
+        }
+
+        return 1;
     }
 
     // -----------------------------------------------------------------------------------------
-
-    // MKL related
-
-#ifdef USE_MKL
-
-    template<typename T> 
-    bool hoNDFFT<T>::configureFFTHandle(long long NDim, MKL_LONG* dim, DFTI_CONFIG_VALUE fftPresion, size_t n, DFTI_DESCRIPTOR_HANDLE& handle)
-    {
-        long long ii;
-
-        MKL_LONG res;
-
-        if ( NDim == 1 )
-        {
-            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim[0])) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-        else
-        {
-            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-
-        double fftScaling = 1.0;
-        for ( ii=0; ii<NDim; ii++ )
-        {
-            fftScaling *= dim[ii];
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_FORWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_BACKWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_PLACEMENT, DFTI_INPLACE)) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( n > 1 )
-        {
-            if ( (res=DftiSetValue( handle, DFTI_NUMBER_OF_TRANSFORMS, n)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-
-            if ( (res=DftiSetValue( handle, DFTI_INPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-
-            if ( (res=DftiSetValue( handle, DFTI_OUTPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-
-        if ( (res=DftiCommitDescriptor( handle)) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::configureFFTHandleOutOfPlace(long long NDim, MKL_LONG* dim, DFTI_CONFIG_VALUE fftPresion, size_t n, DFTI_DESCRIPTOR_HANDLE& handle)
-    {
-        long long ii;
-
-        MKL_LONG res;
-
-        if ( NDim == 1 )
-        {
-            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim[0])) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-        else
-        {
-            if ( (res=DftiCreateDescriptor( &handle, fftPresion, DFTI_COMPLEX, NDim, dim)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-
-        double fftScaling = 1.0;
-        for ( ii=0; ii<NDim; ii++ )
-        {
-            fftScaling *= dim[ii];
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_FORWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_BACKWARD_SCALE, 1.0/std::sqrt(fftScaling))) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( (res=DftiSetValue( handle, DFTI_PLACEMENT, DFTI_NOT_INPLACE)) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        if ( n > 1 )
-        {
-            if ( (res=DftiSetValue( handle, DFTI_NUMBER_OF_TRANSFORMS, n)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-
-            if ( (res=DftiSetValue( handle, DFTI_INPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-
-            if ( (res=DftiSetValue( handle, DFTI_OUTPUT_DISTANCE, (MKL_INT)fftScaling)) != 0 )
-            {
-                GADGET_ERROR_MSG( DftiErrorMessage(res) );
-                return false;
-            }
-        }
-
-        if ( (res=DftiCommitDescriptor( handle)) != 0 )
-        {
-            GADGET_ERROR_MSG( DftiErrorMessage(res) );
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/a.get_size(0);
-        MKL_LONG dim = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(1, &dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(1, &dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/a.get_size(0);
-        MKL_LONG dim = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(1, &dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(1, &dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward( handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin()) ) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward( handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin()) ) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1));
-        MKL_LONG dim[2];
-        dim[0] = a.get_size(1);
-        dim[1] = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(2, dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(2, dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1));
-        MKL_LONG dim[2];
-        dim[0] = a.get_size(1);
-        dim[1] = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(2, dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(2, dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1)*a.get_size(2));
-
-        MKL_LONG dim[3];
-        dim[0] = a.get_size(2);
-        dim[1] = a.get_size(1);
-        dim[2] = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(3, dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandle(3, dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        size_t n = a.get_number_of_elements()/(a.get_size(0)*a.get_size(1)*a.get_size(2));
-
-        MKL_LONG dim[3];
-        dim[0] = a.get_size(2);
-        dim[1] = a.get_size(1);
-        dim[2] = a.get_size(0);
-
-        DFTI_DESCRIPTOR_HANDLE handle;
-
-        if ( typeid(T) == typeid(float) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(3, dim, DFTI_SINGLE, n, handle));
-        }
-        else if ( typeid(T) == typeid(double) )
-        {
-            GADGET_CHECK_RETURN_FALSE(configureFFTHandleOutOfPlace(3, dim, DFTI_DOUBLE, n, handle));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("hoNDFFT<T>::fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r), only float and double are supported ... ");
-            return false;
-        }
-
-        MKL_LONG res;
-        if ( forward )
-        {
-            if ( ( res=DftiComputeForward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-        else
-        {
-            if ( ( res=DftiComputeBackward(handle, reinterpret_cast<T*>(a.begin()), reinterpret_cast<T*>(r.begin())) ) != 0 ) 
-            { 
-                GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-                return false; 
-            }
-        }
-
-        if ( ( res=DftiFreeDescriptor(&handle) ) != 0 ) 
-        { 
-            GADGET_ERROR_MSG( DftiErrorMessage(res) ); 
-            return false; 
-        }
-
-        return true;
-    }
-
-#endif // USE_MKL
 
     // 
     // Instantiation

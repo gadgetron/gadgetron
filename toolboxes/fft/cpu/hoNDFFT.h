@@ -14,10 +14,6 @@
 #include <fftw3.h>
 #include <complex>
 
-//#ifdef USE_MKL
-//    #include "mkl.h"
-//#endif // USE_MKL
-
 namespace Gadgetron{
 
     /** 
@@ -167,12 +163,17 @@ namespace Gadgetron{
 
         hoNDFFT() {
             set_function_pointers();
+
+#ifdef USE_OMP
+            num_of_max_threads_ = omp_get_num_procs();;
+#else
+            num_of_max_threads_ = 1;
+#endif // USE_OMP
         }
 
         virtual ~hoNDFFT() { fftw_cleanup_ptr_(); }
 
         void fft_int(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign);
-
 
         void set_function_pointers();
 
@@ -187,6 +188,8 @@ namespace Gadgetron{
 
         static hoNDFFT<T>* instance_;
         boost::mutex mutex_;
+
+        int num_of_max_threads_;
 
         // the fft and ifft shift pivot for a certain length
         // [0 .. pivot-1] will be shifted to the right end
@@ -229,25 +232,10 @@ namespace Gadgetron{
         bool fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
         bool fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
 
-        //#ifdef USE_MKL
-
-        //bool fft1_mkl(hoNDArray< ComplexType >& a, bool forward);
-        //bool fft2_mkl(hoNDArray< ComplexType >& a, bool forward);
-        //bool fft3_mkl(hoNDArray< ComplexType >& a, bool forward);
-
-        //bool fft1_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
-        //bool fft2_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
-        //bool fft3_mkl(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
-
-        //// configure the 1D/2D/3D MKL based fft handles
-        //// x, y, z: the length of dimensions
-        //// n: the number of transformation
-        //// handle: the fft MKL handle
-        //// fftPresion: DFTI_SINGLE or DFTI_DOUBLE
-        //bool configureFFTHandle(long long NDim, MKL_LONG* dim, DFTI_CONFIG_VALUE fftPresion, size_t n, DFTI_DESCRIPTOR_HANDLE& handle);
-        //bool configureFFTHandleOutOfPlace(long long NDim, MKL_LONG* dim, DFTI_CONFIG_VALUE fftPresion, size_t n, DFTI_DESCRIPTOR_HANDLE& handle);
-
-        //#endif // USE_MKL
+        // get the number of threads used for fft
+        int get_num_threads_fft1(size_t n0, size_t num);
+        int get_num_threads_fft2(size_t n0, size_t n1, size_t num);
+        int get_num_threads_fft3(size_t n0, size_t n1, size_t n2, size_t num);
     };
 }
 
