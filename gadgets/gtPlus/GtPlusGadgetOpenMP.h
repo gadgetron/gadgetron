@@ -18,10 +18,6 @@
     #include <omp.h>
 #endif // USE_OMP
 
-#ifdef USE_OMP
-    #include "mkl.h"
-#endif // USE_OMP
-
 namespace Gadgetron
 {
 
