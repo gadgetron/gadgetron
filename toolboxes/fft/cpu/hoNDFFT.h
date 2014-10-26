@@ -14,6 +14,10 @@
 #include <fftw3.h>
 #include <complex>
 
+#ifdef USE_OMP
+    #include "omp.h"
+#endif // USE_OMP
+
 namespace Gadgetron{
 
     /** 
@@ -165,7 +169,7 @@ namespace Gadgetron{
             set_function_pointers();
 
 #ifdef USE_OMP
-            num_of_max_threads_ = omp_get_num_procs();;
+            num_of_max_threads_ = omp_get_num_procs();
 #else
             num_of_max_threads_ = 1;
 #endif // USE_OMP
