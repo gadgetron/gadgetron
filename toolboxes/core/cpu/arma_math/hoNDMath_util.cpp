@@ -55,6 +55,11 @@ const int TwoGBLimit = (2147483647);
 
 namespace Gadgetron { namespace math {
 
+    static int get_num_threads(float computing_cost, size_t N)
+    {
+
+    }
+
     /// --------------------------------------------------------------------
 
     template <> EXPORTCPUCOREMATH void scal(size_t N, float a, float* x)
@@ -968,56 +973,58 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const float* x, float& r)
     {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
+        lapack_int incx=1;
 
-#ifdef ILP_MODE_ON
-        r = sasum_(&num, (float*)(x), &incx);
-#else
-        if ( N < TwoGBLimit )
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
+
+        float res(0);
+        r = res;
+
+        float* pX = (float*)(x);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            r = sasum_(&num, (float*)(x), &incx);
+            res = sasum_(&len, pX, &incx);
+            pX += len;
+            r += res;
         }
-        else
+
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
         {
-            norm1(N, x, r);
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            res = sasum_(&len, pX, &incx);
+            r += res;
         }
-#endif // ILP_MODE_ON
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const double* x, double& r)
     {
-        lapack_int num = (lapack_int)(N);
-        lapack_int incx = 1;
+        lapack_int incx=1;
 
-#ifdef ILP_MODE_ON
-        r = dasum_(&num, (double*)(x), &incx);
-#else
-        if ( N < TwoGBLimit )
-        {
-            r = dasum_(&num, (double*)(x), &incx);
-        }
-        else
-        {
-            norm1(N, x, r);
-        }
-#endif // ILP_MODE_ON
-    }
+        long long numOfChunk = N/TwoGBLimit;
+        lapack_int len = TwoGBLimit;
 
-    template <typename T> inline void asum_64bit_mode(size_t N, const T* x, typename realType<T>::Type& r)
-    {
-        long long i;
-        typename realType<T>::Type sum(0);
-        #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
-        for (i = 0; i < (long long)N; i++)
+        double res(0);
+        r = res;
+
+        double* pX = (double*)(x);
+
+        long long ii;
+        for ( ii=0; ii<numOfChunk; ii++ )
         {
-            const T& c = x[i];
-            const typename realType<T>::Type re = c.real();
-            const typename realType<T>::Type im = c.imag();
-            sum += ( GT_ABS(re) + GT_ABS(im) );
+            res = dasum_(&len, pX, &incx);
+            pX += len;
+            r += res;
         }
 
-        r = sum;
+        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
+        {
+            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
+            res = dasum_(&len, pX, &incx);
+            r += res;
+        }
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex8* x, float& r)
