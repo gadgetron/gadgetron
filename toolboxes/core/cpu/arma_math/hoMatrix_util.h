@@ -50,10 +50,10 @@ bool GeneralMatrixProduct_gemm(hoNDArray<T>& C,
                             const hoNDArray<T>& A, bool transA, 
                             const hoNDArray<T>& B, bool transB);
 
-template<typename T> EXPORTCPUCOREMATH 
-bool GeneralMatrixProduct_gemm(hoMatrix<T>& C, 
-                            const hoMatrix<T>& A, bool transA, 
-                            const hoMatrix<T>& B, bool transB);
+//template<typename T> EXPORTCPUCOREMATH 
+//bool GeneralMatrixProduct_gemm(hoMatrix<T>& C, 
+//                            const hoMatrix<T>& A, bool transA, 
+//                            const hoMatrix<T>& B, bool transB);
 
 /// Performs a symmetric rank-k update (no conjugated).
 template<typename T> EXPORTCPUCOREMATH 
