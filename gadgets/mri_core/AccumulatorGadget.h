@@ -29,6 +29,7 @@ namespace Gadgetron{
       
       boost::shared_ptr<hoNDArray< std::complex<float> > > buffer_;
       boost::shared_ptr< hoNDArray<float> > traj_buffer_;
+      std::vector<size_t> trajectory_dimensions_;
       std::vector<size_t> dimensions_;
       std::vector<float> field_of_view_;
       size_t slices_;

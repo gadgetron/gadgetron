@@ -94,8 +94,9 @@ process(ACE_Message_Block * mb)
 
 
 	if (!buffer_) {
-		std::vector<size_t> traj_dims = dimensions_;
-		traj_dims.push_back(slices_);
+		trajectory_dimensions_.push_back(m1->getObjectPtr()->trajectory_dimensions);
+		trajectory_dimensions_.insert(trajectory_dimensions_.begin()+1,dimensions_.begin(),dimensions_.end());
+		trajectory_dimensions_.push_back(slices_);
 
 		dimensions_.push_back(m1->getObjectPtr()->active_channels);
 		dimensions_.push_back(slices_);
@@ -109,7 +110,7 @@ process(ACE_Message_Block * mb)
 		}
 
 		if (has_trajectory){
-			traj_buffer_ = boost::shared_ptr<hoNDArray<float> >(new hoNDArray<float>(&traj_dims));
+			traj_buffer_ = boost::shared_ptr<hoNDArray<float> >(new hoNDArray<float>(trajectory_dimensions_));
 		}
 		image_series_ = this->get_int_value("image_series");
 
@@ -148,9 +149,10 @@ process(ACE_Message_Block * mb)
 
 	if (has_trajectory) {
 		offset =
-				slice*dimensions_[0]*dimensions_[1]*dimensions_[2]*dimensions_[3] +
+				slice*dimensions_[0]*dimensions_[1]*dimensions_[2]*dimensions_[3]+
 				partition*dimensions_[0]*dimensions_[1] +
 				line*dimensions_[0] + (dimensions_[0]>>1)-m1->getObjectPtr()->center_sample;
+		offset *= trajectory_dimensions_[0];
 		memcpy(traj_buffer_->get_data_ptr()+offset,
 				m3->getObjectPtr()->get_data_ptr(),
 				sizeof(float)*samples);
@@ -197,16 +199,17 @@ process(ACE_Message_Block * mb)
 			GadgetContainerMessage< hoNDArray< float > >* cm3 =
 				new GadgetContainerMessage<hoNDArray< float> >();
 			cm2->cont(cm3);
-			std::vector<size_t> traj_dims(img_dims.begin(),img_dims.end()-1);
 
-			try{ cm3->getObjectPtr()->create(traj_dims);}
+
+			try{ cm3->getObjectPtr()->create(trajectory_dimensions_);}
 			catch (std::runtime_error &err){
 				GADGET_DEBUG_EXCEPTION(err,"Unable to allocate trajectory\n");
 				cm2->release();
 				cm1->release();
 				return -1;
 			}
-			size_t traj_length = std::accumulate(traj_dims.begin(),traj_dims.end(),size_t(1),std::multiplies<size_t>());
+			size_t traj_length = std::accumulate(trajectory_dimensions_.begin(),
+					trajectory_dimensions_.end()-1,size_t(1),std::multiplies<size_t>());
 			offset =slice*traj_length;
 			memcpy(cm3->getObjectPtr()->get_data_ptr(),traj_buffer_->get_data_ptr()+offset,sizeof(float)*traj_length);
 
