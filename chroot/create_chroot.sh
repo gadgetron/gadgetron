@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#if [ "$EUID" -ne 0 ]]; then 
 if [ $(id -u) -ne 0 ]; then
  echo -e "\nPlease start the script as a root or sudo!\n"
  exit 1
@@ -31,6 +30,7 @@ else
   cp ${2}/start.sh ${3}/chroot-root
   cp ${2}/stop.sh ${3}/chroot-root
   cp ${2}/start-env.sh ${3}/chroot-root 
+  cp ${2}/start-webapp.sh ${3}/chroot-root 
 
   chmod +x ${3}/start-gadgetron.sh
   cp ${3}/start-gadgetron.sh ${3}/chroot-root/gadgetron 
@@ -38,9 +38,10 @@ else
   chmod +x ${3}/enter-chroot-env.sh
   cp ${3}/enter-chroot-env.sh ${3}/chroot-root/gadgetron
 
-  cp -n ${3}/chroot-root/gadgetron${1}/config/gadgetron.xml.example ${3}/chroot-root/gadgetron${1}/config/gadgetron.xml
+  chmod +x ${3}/run-webapp.sh
+  cp ${3}/run-webapp.sh ${3}/chroot-root/gadgetron
 
-  #cp ${5}/apps/gadgetron/webapp/* ${3}/chroot-root/gadgetron/webapp
+  cp -n ${3}/chroot-root/gadgetron${1}/config/gadgetron.xml.example ${3}/chroot-root/gadgetron${1}/config/gadgetron.xml
 
   cp ${3}/gadgetron_web_app.cfg ${3}/chroot-root/gadgetron/webapp
   cp ${3}/gadgetron_web.conf ${3}/chroot-root/gadgetron/webapp

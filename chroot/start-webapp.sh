@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash                                                                                                                                                    
 
 #if [[ "$EUID" -ne 0 ]]; then
 if [ $(id -u) -ne 0 ]; then 
@@ -14,7 +14,7 @@ else
   if find "${1}/proc" -maxdepth 0 -empty | read v; then
    mount --bind /proc "${1}/proc";
   fi
-  chroot "${1}" /start-gadgetron.sh
+  chroot "${1}" /run-webapp.sh
   exit 0
 
  elif [ $# -eq 0 ]; then
@@ -23,7 +23,7 @@ else
   if find $BASEDIR/gadgetron/proc -maxdepth 0 -empty | read v; then
    mount --bind /proc $BASEDIR/gadgetron/proc;
   fi
-  chroot $BASEDIR/gadgetron /start-gadgetron.sh
+  chroot $BASEDIR/gadgetron /run-webapp.sh
   exit 0
 
  else

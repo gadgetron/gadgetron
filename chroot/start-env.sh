@@ -1,6 +1,7 @@
 #!/bin/bash                                                                                                                                                  
 
-if [[ "$EUID" -ne 0 ]]; then
+#if [[ "$EUID" -ne 0 ]]; then
+if [ $(id -u) -ne 0 ]; then
  echo -e "\nPlease start the script as a root or sudo!\n"
  exit 1
 
