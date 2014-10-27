@@ -25,7 +25,6 @@ add_executable(gadgetron
   Gadgetron.h 
   GadgetronExport.h 
   gadgetron_xml.h
-  gadgetron_xml.cpp
   pugixml.cpp
   )
 
@@ -40,12 +39,14 @@ add_executable(gadgetron_info
 )
 
 target_link_libraries(gadgetron_info 
+  gadgetron_gadgetbase
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
 add_library(gadgetron_gadgetbase SHARED
   Gadget.cpp
   GadgetStreamController.cpp
+  gadgetron_xml.cpp
 )
 
 target_link_libraries(gadgetron_gadgetbase
