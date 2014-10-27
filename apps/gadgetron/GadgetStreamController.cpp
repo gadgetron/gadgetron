@@ -21,6 +21,7 @@
 
 using namespace Gadgetron;
 
+/*
 namespace Gadgetron {
 //This function is needed to avoid some linking problems.
   extern "C" {
@@ -30,6 +31,7 @@ namespace Gadgetron {
     }
   }
 }
+*/
 
 GadgetStreamController::GadgetStreamController()
   : stream_configured_(false)

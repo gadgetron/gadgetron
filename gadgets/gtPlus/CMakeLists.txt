@@ -91,6 +91,7 @@ add_library(gadgetronPlus SHARED
 
 set_target_properties(gadgetronPlus PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                                                                                                                  
 target_link_libraries(gadgetronPlus 
+    gadgetron_gadgetbase
     gadgetron_toolbox_cpucore 
     gadgetron_toolbox_cpucore_math 
     gadgetron_toolbox_cpufft

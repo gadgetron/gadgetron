@@ -14,6 +14,7 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 
+#include "gadgetbase_export.h"
 #include "GadgetContainerMessage.h"
 #include "GadgetronExport.h"
 #include "Gadgetron.h"
@@ -26,7 +27,7 @@ namespace Gadgetron{
     //Forward declarations
     class GadgetStreamController;
 
-    class Gadget : public ACE_Task<ACE_MT_SYNCH>
+    class EXPORTGADGETBASE Gadget : public ACE_Task<ACE_MT_SYNCH>
     {
 
     public:
@@ -261,43 +262,8 @@ namespace Gadgetron{
 	std::string gadgetron_version_;
     };
 
-    extern "C" Gadget* find_gadget_in_controller(GadgetStreamController* c, const char* g);
 
-    inline boost::shared_ptr<std::string> Gadget::get_string_value(const char* name, unsigned int recursive) {
-      const unsigned int recursive_limit = 10;
-      if (recursive > recursive_limit) {
-	GADGET_DEBUG2("Recursive level %d exceeds maimum limit (%d) in Gadget::get_string_value(...)\n", recursive, recursive_limit);
-	return boost::shared_ptr<std::string>(new std::string(""));
-      }
-
-      std::map<std::string,std::string>::iterator it;
-      parameter_mutex_.acquire();
-      it = parameters_.find(std::string(name));
-      parameter_mutex_.release();
-      if (it != parameters_.end()) {
-	//If string contains an @ sign, we should look for this parameter on another gadget
-	size_t at_pos = it->second.find('@');
-	if (at_pos != std::string::npos) {
-	  //There was an add sign, which means look for that parameter on another gadget
-	  std::string parm = it->second.substr(0,at_pos);
-	  std::string gadget = it->second.substr(at_pos+1);
-	  
-	  Gadget* ref_gadget = find_gadget_in_controller(controller_,gadget.c_str());
-
-	  if (ref_gadget) {
-	    recursive++;
-	    return ref_gadget->get_string_value(parm.c_str(), recursive);
-	  }
-	} else {
-	  return boost::shared_ptr<std::string>(new std::string(it->second));
-	}
-      }
-      
-      return boost::shared_ptr<std::string>(new std::string(""));
-    }
-
-
-    template <class P1> class Gadget1 : public Gadget
+    template <class P1> class EXPORTGADGETBASE Gadget1 : public Gadget
     {
 
     protected:
@@ -323,7 +289,7 @@ namespace Gadgetron{
 
     };
 
-    template <class P1, class P2> class Gadget2 : public Gadget
+    template <class P1, class P2> class EXPORTGADGETBASE Gadget2 : public Gadget
     {
 
     protected:
@@ -365,7 +331,7 @@ namespace Gadgetron{
     };
 
 
-    template <class P1, class P2, class P3> class Gadget3 : public Gadget
+    template <class P1, class P2, class P3> class EXPORTGADGETBASE Gadget3 : public Gadget
     {
 
     protected:

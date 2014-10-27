@@ -74,6 +74,7 @@ if(CUDA_FOUND)
     set_target_properties(gadgetron_moco PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                         
 
     target_link_libraries(gadgetron_moco
+      gadgetron_gadgetbase
       gadgetron_toolbox_cpucore gadgetron_mricore ${CPU_LIBS} ${GPU_LIBS}
       ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES}
       optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 

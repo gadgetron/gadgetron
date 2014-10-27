@@ -12,8 +12,8 @@
 #include <complex>
 #include <vector>
 
+#include "gadgetbase_export.h"
 #include "Gadgetron.h"
-//#include "Gadget.h"
 #include "gadgetron_paths.h"
 #include "GadgetronConnector.h"
 
@@ -21,7 +21,7 @@ typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
 
 namespace Gadgetron{
 
-class GadgetStreamController 
+class EXPORTGADGETBASE GadgetStreamController 
 : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH>
 {
 public:

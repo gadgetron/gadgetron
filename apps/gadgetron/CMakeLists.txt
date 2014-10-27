@@ -18,7 +18,6 @@ add_executable(gadgetron
   GadgetServerAcceptor.h
   GadgetServerAcceptor.cpp 
   GadgetStreamController.h
-  GadgetStreamController.cpp 
   EndGadget.h 
   Gadget.h 
   GadgetContainerMessage.h 
@@ -31,18 +30,33 @@ add_executable(gadgetron
   )
 
 target_link_libraries(gadgetron 
+  gadgetron_gadgetbase
   gadgetron_toolbox_gadgettools gadgetron_toolbox_cloudbus 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
 add_executable(gadgetron_info
-  gadgetron_info.cpp)
+  gadgetron_info.cpp
+)
 
 target_link_libraries(gadgetron_info 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
+add_library(gadgetron_gadgetbase SHARED
+  Gadget.cpp
+  GadgetStreamController.cpp
+)
+
+target_link_libraries(gadgetron_gadgetbase
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+  gadgetron_toolbox_gadgettools
+)
+
+set_target_properties (gadgetron_gadgetbase PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_GADGETBASE__")
+
 install(TARGETS gadgetron gadgetron_info DESTINATION bin COMPONENT main)
+install(TARGETS gadgetron_gadgetbase DESTINATION lib COMPONENT main)
 
 install(FILES 
   EndGadget.h

@@ -79,6 +79,7 @@ set_target_properties(gadgetron_dicom PROPERTIES VERSION ${GADGETRON_VERSION_STR
 
 target_link_libraries(
   gadgetron_dicom
+  gadgetron_gadgetbase
     gadgetron_toolbox_cpucore 
     ${ISMRMRD_LIBRARIES}
     optimized ${ACE_LIBRARIES}

@@ -15,6 +15,7 @@ add_library(gadgetron_util SHARED
 set_target_properties(gadgetron_util PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                      
 
 target_link_libraries(gadgetron_util
+    gadgetron_gadgetbase
     ${ACE_LIBRARIES}
 )
 

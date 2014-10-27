@@ -27,6 +27,7 @@ set_target_properties(gadgetron_epi PROPERTIES VERSION ${GADGETRON_VERSION_STRIN
 
 target_link_libraries(
   gadgetron_epi
+  gadgetron_gadgetbase
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpufft
   gadgetron_toolbox_cpucore_math

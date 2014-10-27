@@ -17,6 +17,7 @@ add_library(gadgetron_cartesian SHARED
 set_target_properties(gadgetron_cartesian PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_cartesian gadgetron_toolbox_cpucore 
+  gadgetron_gadgetbase
   ${ISMRMRD_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
