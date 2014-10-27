@@ -263,7 +263,7 @@ namespace Gadgetron{
     };
 
 
-    template <class P1> class EXPORTGADGETBASE Gadget1 : public Gadget
+    template <class P1> class Gadget1 : public Gadget
     {
 
     protected:
@@ -289,7 +289,7 @@ namespace Gadgetron{
 
     };
 
-    template <class P1, class P2> class EXPORTGADGETBASE Gadget2 : public Gadget
+    template <class P1, class P2> class Gadget2 : public Gadget
     {
 
     protected:
@@ -331,7 +331,7 @@ namespace Gadgetron{
     };
 
 
-    template <class P1, class P2, class P3> class EXPORTGADGETBASE Gadget3 : public Gadget
+    template <class P1, class P2, class P3> class Gadget3 : public Gadget
     {
 
     protected:
