@@ -22,10 +22,12 @@
 using namespace Gadgetron;
 
 namespace Gadgetron {
-//This function is needed to avoid some linking problems. 
-  Gadget* find_gadget_in_controller(GadgetStreamController* c, const char* g)
-  {
-    return c->find_gadget(g);
+//This function is needed to avoid some linking problems.
+  extern "C" {
+    Gadget* find_gadget_in_controller(GadgetStreamController* c, const char* g)
+    {
+      return c->find_gadget(g);
+    }
   }
 }
 

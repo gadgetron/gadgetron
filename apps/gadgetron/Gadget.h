@@ -261,7 +261,7 @@ namespace Gadgetron{
 	std::string gadgetron_version_;
     };
 
-    Gadget* find_gadget_in_controller(GadgetStreamController* c, const char* g);
+    extern "C" Gadget* find_gadget_in_controller(GadgetStreamController* c, const char* g);
 
     inline boost::shared_ptr<std::string> Gadget::get_string_value(const char* name, unsigned int recursive) {
       const unsigned int recursive_limit = 10;
