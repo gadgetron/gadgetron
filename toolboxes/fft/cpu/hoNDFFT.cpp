@@ -1206,7 +1206,7 @@ namespace Gadgetron{
                     mutex_.unlock();
                 }
 
-                #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( num_thr > 1 ) num_threads(num_thr)
+                #pragma omp parallel for private(n) shared(num, p, a, n0, r) num_threads(num_thr)
                 for ( n=0; n<num; n++ )
                 {
                     fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0), 
@@ -1279,7 +1279,7 @@ namespace Gadgetron{
                     mutex_.unlock();
                 }
 
-                #pragma omp parallel for private(n) shared(num, p, a, n0, r) if( num_thr > 1 ) num_threads(num_thr)
+                #pragma omp parallel for private(n) shared(num, p, a, n0, r) num_threads(num_thr)
                 for ( n=0; n<num; n++ )
                 {
                     fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0), 
@@ -1610,9 +1610,21 @@ namespace Gadgetron{
     {
         if ( num_of_max_threads_ == 1 ) return 1;
 
-        if ( (num>128) && (n0*num>512*128) )
+        if ( n0*num>1024*128 )
         {
             return num_of_max_threads_;
+        }
+        else if ( n0*num>512*128 )
+        {
+            return ( (num_of_max_threads_>8) ? 8 : num_of_max_threads_);
+        }
+        else if ( n0*num>256*128 )
+        {
+            return ( (num_of_max_threads_>4) ? 4 : num_of_max_threads_);
+        }
+        else if ( n0*num>128*128 )
+        {
+            return 2;
         }
 
         return 1;
@@ -1623,9 +1635,21 @@ namespace Gadgetron{
     {
         if ( num_of_max_threads_ == 1 ) return 1;
 
-        if ( ( (num >= num_of_max_threads_) && (n0*n1>128*128) ) || (num >= 2*num_of_max_threads_) )
+        if ( n0*n1*num>128*128*64 )
         {
             return num_of_max_threads_;
+        }
+        else if ( n0*n1*num>128*128*32 )
+        {
+            return ( (num_of_max_threads_>8) ? 8 : num_of_max_threads_);
+        }
+        else if ( n0*n1*num>128*128*16 )
+        {
+            return ( (num_of_max_threads_>4) ? 4 : num_of_max_threads_);
+        }
+        else if ( n0*n1*num>128*128*8 )
+        {
+            return 2;
         }
 
         return 1;
