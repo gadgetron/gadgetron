@@ -37,6 +37,7 @@ add_library(gadgetron_interventional_mri SHARED
 set_target_properties(gadgetron_interventional_mri PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                      
 
 target_link_libraries(gadgetron_interventional_mri
+    gadgetron_gadgetbase
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_gadgettools
     ${ISMRMRD_LIBRARIES} 
