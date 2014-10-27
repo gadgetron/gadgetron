@@ -7,6 +7,8 @@
 
 #include "GadgetStreamController.h"
 #include "GadgetContainerMessage.h"
+#include "GadgetMessageInterface.h"
+#include "GadgetronConnector.h"
 #include "Gadget.h"
 #include "EndGadget.h"
 #include "gadgetron_config.h"
@@ -25,6 +27,14 @@ namespace Gadgetron {
   {
     return c->find_gadget(g);
   }
+}
+
+GadgetStreamController::GadgetStreamController()
+  : stream_configured_(false)
+  , notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
+  , writer_task_(&this->peer())
+{
+  gadgetron_home_ = get_gadgetron_home();
 }
 
 int GadgetStreamController::open (void)

@@ -201,14 +201,14 @@ namespace Gadgetron{
         }
 
         int set_parameter(const char* name, const char* val, bool trigger = true) {
-            boost::shared_ptr<std::string> old_value = get_string_value(name);
+	  boost::shared_ptr<std::string> old_value = get_string_value(name);
 
 	    parameter_mutex_.acquire();
             parameters_[std::string(name)] = std::string(val);
 	    parameter_mutex_.release();
 
             if (trigger) {
-                return parameter_changed(std::string(name), std::string(val), *old_value);
+	      return parameter_changed(std::string(name), std::string(val), *old_value);
             }
 
             return 0;
@@ -226,7 +226,7 @@ namespace Gadgetron{
             return ACE_OS::atof(get_string_value(name)->c_str());
         }
 
-	boost::shared_ptr<std::string> get_string_value(const char* name);
+	boost::shared_ptr<std::string> get_string_value(const char* name, unsigned int recursive = 0);
 
         /**
         *  This trigger function is called whenever set_parameter is called with the trigger = true;
@@ -263,7 +263,13 @@ namespace Gadgetron{
 
     Gadget* find_gadget_in_controller(GadgetStreamController* c, const char* g);
 
-    inline boost::shared_ptr<std::string> Gadget::get_string_value(const char* name) {
+    inline boost::shared_ptr<std::string> Gadget::get_string_value(const char* name, unsigned int recursive) {
+      const unsigned int recursive_limit = 10;
+      if (recursive > recursive_limit) {
+	GADGET_DEBUG2("Recursive level %d exceeds maimum limit (%d) in Gadget::get_string_value(...)\n", recursive, recursive_limit);
+	return boost::shared_ptr<std::string>(new std::string(""));
+      }
+
       std::map<std::string,std::string>::iterator it;
       parameter_mutex_.acquire();
       it = parameters_.find(std::string(name));
@@ -279,7 +285,8 @@ namespace Gadgetron{
 	  Gadget* ref_gadget = find_gadget_in_controller(controller_,gadget.c_str());
 
 	  if (ref_gadget) {
-	    return ref_gadget->get_string_value(parm.c_str());
+	    recursive++;
+	    return ref_gadget->get_string_value(parm.c_str(), recursive);
 	  }
 	} else {
 	  return boost::shared_ptr<std::string>(new std::string(it->second));

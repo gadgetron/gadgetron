@@ -41,14 +41,13 @@
         <classname>MRIImageAttribWriterUSHORT</classname>
     </writer>
 
-    <!--
     <!-- We need to modify the coil adjust to that we only scale channels according to noise variance -->
+    <!--
     <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetron_mricore</dll>
       <classname>NoiseAdjustGadget</classname>
-    </gadget>
-    
+    </gadget>    
     -->
 
     <gadget>
@@ -56,6 +55,7 @@
       <dll>gadgetron_mricore</dll>
       <classname>PCACoilGadget</classname>
       <property><name>uncombined_channels_by_name</name><value>Loop_7:L7</value></property>
+
       <!-- present_uncombined_channels will get updated by the gadget based on the attached coils -->
       <property><name>present_uncombined_channels</name><value>0</value></property>
     </gadget>
@@ -78,8 +78,10 @@
       <dll>gadgetron_grappa</dll>
       <classname>GrappaGadget</classname>
       <!-- After PCA gadget, the device channel with be the first channel -->
+      <!--
       <property><name>uncombined_channels</name><value>0</value></property>
-      <property><name>device_channels</name><value>present_uncombined_channels@PCA</value><property>
+      -->
+      <property><name>device_channels</name><value>present_uncombined_channels@PCA</value></property>
     </gadget>
 
     <gadget>

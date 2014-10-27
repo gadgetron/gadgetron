@@ -13,27 +13,19 @@
 #include <vector>
 
 #include "Gadgetron.h"
-#include "Gadget.h"
-#include "GadgetMessageInterface.h"
-#include "GadgetronConnector.h"
+//#include "Gadget.h"
 #include "gadgetron_paths.h"
+#include "GadgetronConnector.h"
 
 typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
 
 namespace Gadgetron{
 
-
 class GadgetStreamController 
 : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH>
 {
 public:
-  GadgetStreamController()
-    : stream_configured_(false)
-    , notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
-    , writer_task_(&this->peer())
-    {
-      gadgetron_home_ = get_gadgetron_home();
-    }
+  GadgetStreamController();
 
   virtual ~GadgetStreamController()
     { 
