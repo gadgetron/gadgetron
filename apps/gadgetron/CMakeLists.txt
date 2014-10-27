@@ -59,7 +59,8 @@ set_target_properties (gadgetron_gadgetbase PROPERTIES COMPILE_DEFINITIONS "__BU
 install(TARGETS gadgetron gadgetron_info DESTINATION bin COMPONENT main)
 install(TARGETS gadgetron_gadgetbase DESTINATION lib COMPONENT main)
 
-install(FILES 
+install(FILES
+  gadgetbase_export.h
   EndGadget.h
   Gadget.h
   GadgetContainerMessage.h
