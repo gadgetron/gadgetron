@@ -35,6 +35,8 @@ KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T
 
         GADGET_CHECK_RETURN_FALSE(eigenVectors.createMatrix(N, N));
         GADGET_CHECK_RETURN_FALSE(eigenValues.createMatrix(N, 1));
+        Gadgetron::clear(eigenVectors);
+        Gadgetron::clear(eigenValues);
 
         //hoMatrix<T> dataCopy(data);
         //GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(eigenVectors, data, true, dataCopy, false));
@@ -53,6 +55,7 @@ KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T
         //mean.print(std::cout);
 
         hoMatrix<T> MMH(N, N);
+        Gadgetron::clear(MMH);
 
         hoMatrix<T> meanCopy(mean);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(MMH, meanCopy, false, mean, true));
@@ -95,6 +98,7 @@ KLT_applyEigen(const hoMatrix<T>& data, hoMatrix<T>& dataEigen, const hoMatrix<T
         size_t K = eigenVectors.cols();
 
         GADGET_CHECK_RETURN_FALSE(dataEigen.createMatrix(M, K));
+        Gadgetron::clear(dataEigen);
 
         // M*N multiplies N*K
         GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(dataEigen, data, false, eigenVectors, false));
@@ -126,6 +130,7 @@ KLT_applyEigen(const hoNDArray<T>& data, hoNDArray<T>& dataEigen, const hoMatrix
         hoNDArray<T> eigenVec(eigenVectors.get_dimensions(), const_cast<T*>(eigenVectors.begin()));
 
         // M*N multiplies N*K
+        Gadgetron::clear(dataEigen);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(dataEigen, data, false, eigenVec, false));
     }
     catch(...)
@@ -556,6 +561,7 @@ bool gtPlusISMRMRDReconUtil<T>::computeKLFilter(const hoNDArray<T>& data, size_t
         GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugatetrans(eigenVectors, ET));
 
         hoMatrix<T> EET(M, M);
+        Gadgetron::clear(EET);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::GeneralMatrixProduct_gemm(EET, E, false, ET, false));
 
         hoMatrix<T> R(N, M, dataKLF.begin());
@@ -4001,6 +4007,7 @@ computeNoisePrewhiteningMatrix(const hoNDArray<T>& noise, double noiseBandWidth,
         size_t CHA = noise.get_size(2);
 
         GADGET_CHECK_RETURN_FALSE(prewhiteningMatrix.createMatrix(CHA, CHA));
+        Gadgetron::clear(prewhiteningMatrix);
 
         typedef typename realType<T>::Type ValueType;
 
@@ -4060,6 +4067,7 @@ performNoisePrewhitening(hoNDArray<T>& data, const hoMatrix<T>& prewhiteningMatr
         #endif // GCC_OLD_FLAG
         {
             hoMatrix<T> tmp(RO*E1, CHA);
+            Gadgetron::clear(tmp);
 
             #pragma omp for
             for ( n=0; n<(long long)N; n++ )
@@ -4506,6 +4514,7 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
             T* pDC = DC.begin();
 
             hoNDArray<T> DH_D(CHA, CHA);
+            Gadgetron::clear(DH_D);
 
             hoNDArray<T> U1(ks*ks, 1);
             T* pU1 = U1.begin();
@@ -4514,6 +4523,13 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
             T* pV1 = V1.begin();
 
             hoNDArray<T> V(CHA, 1);
+
+            Gadgetron::clear(D);
+            Gadgetron::clear(DC);
+            Gadgetron::clear(DH_D);
+            Gadgetron::clear(U1);
+            Gadgetron::clear(V1);
+            Gadgetron::clear(V);
 
             T phaseU1;
 
@@ -4724,6 +4740,13 @@ coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
             hoMatrix<T> U1(kss, 1);
             hoMatrix<T> V1(CHA, 1);
             hoMatrix<T> V(CHA, 1);
+
+            Gadgetron::clear(D);
+            Gadgetron::clear(DC);
+            Gadgetron::clear(DH_D);
+            Gadgetron::clear(U1);
+            Gadgetron::clear(V1);
+            Gadgetron::clear(V);
 
             T phaseU1;
 

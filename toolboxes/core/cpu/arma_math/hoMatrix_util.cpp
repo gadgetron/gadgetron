@@ -1,5 +1,6 @@
 
 #include "hoMatrix_util.h"
+#include "hoNDArray_elemwise.h"
 
 #ifndef lapack_complex_float
     #define lapack_complex_float GT_Complex8
@@ -1747,6 +1748,7 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
         GADGET_CHECK_RETURN_FALSE(b.rows()==A.rows());
 
         hoMatrix<T> AHA(A.cols(), A.cols());
+        Gadgetron::clear(AHA);
 
         // hoMatrix<T> ACopy(A);
         // GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(AHA, ACopy, true, A, false));
