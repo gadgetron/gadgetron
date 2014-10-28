@@ -47,6 +47,8 @@
       <name>NoiseAdjust</name>
       <dll>gadgetron_mricore</dll>
       <classname>NoiseAdjustGadget</classname>
+      <!-- This parameter is not implemented yet -->
+      <property><name>scale_only</name><value>present_uncombined_channels@PCA</value></property>
     </gadget>    
     -->
 

@@ -63,7 +63,11 @@ int DeviceChannelSplitterGadget<T>
     }
     im3->getObjectPtr()->append(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_INTENSITY_UNCHANGED);
 
-    im3->getObjectPtr()->set(GTPLUS_IMAGE_NUM_DEVICE_CHA, (long)(array_channels-1));
+    if (array_channels > 1) {
+      im3->getObjectPtr()->set(GTPLUS_IMAGE_NUM_DEVICE_CHA, (long)(array_channels-1));
+    } else {
+      im3->getObjectPtr()->set(GTPLUS_IMAGE_NUM_DEVICE_CHA, (long)(-1));
+    }
 
     im2->cont(im3);
 
