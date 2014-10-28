@@ -16,21 +16,12 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-#ifdef HAVE_MKL
-#include "mkl_service.h"
-#endif
-
 namespace Gadgetron {
 
     PCACoilGadget::PCACoilGadget()
         : max_buffered_profiles_(100)
         , samples_to_use_(16)
     {
-        // There is a bug in the MKL SVD when running in multi-threaded mode.
-        // Set the number of threads to 1 in this gadget.
-        #ifdef HAVE_MKL
-                mkl_set_num_threads(1);
-        #endif
     }
 
     PCACoilGadget::~PCACoilGadget()
