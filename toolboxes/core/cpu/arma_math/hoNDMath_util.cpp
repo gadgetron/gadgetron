@@ -22,26 +22,6 @@
 //Declaration of BLAS and LAPACK routines
 extern "C"
 {
-    /// Computes the Euclidean norm of a vector.
-    float snrm2_(lapack_int* N, float* x, lapack_int* incx);
-    float scnrm2_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
-    double dnrm2_(lapack_int* N, double* x, lapack_int* incx);
-    double dznrm2_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
-
-    /// Computes the sum of magnitudes of the vector elements.
-    float sasum_(lapack_int* N, float* x, lapack_int* incx);
-    float scasum_(lapack_int* N, lapack_complex_float* x, lapack_int* incx);
-    double dasum_(lapack_int* N, double* x, lapack_int* incx);
-    double dzasum_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
-
-    /// Computes a dot product of a conjugated vector with another vector.
-    void cdotc_(void* r, lapack_int* N, lapack_complex_float* x, lapack_int* incx, lapack_complex_float* y, lapack_int* incy);
-    void zdotc_(void* r, lapack_int* N, lapack_complex_double* x, lapack_int* incx, lapack_complex_double* y, lapack_int* incy);
-
-    /// Computes a vector-vector dot product.
-    void cdotu_(void* r, lapack_int* N, lapack_complex_float* x, lapack_int* incx, lapack_complex_float* y, lapack_int* incy);
-    void zdotu_(void* r, lapack_int* N, lapack_complex_double* x, lapack_int* incx, lapack_complex_double* y, lapack_int* incy);
-
     /// Finds the index of the element with the maximal absolute value.
     lapack_int isamax_(lapack_int* N, float* x, lapack_int* incx);
     lapack_int idamax_(lapack_int* N, double* x, lapack_int* incx);
@@ -49,23 +29,16 @@ extern "C"
     lapack_int izamax_(lapack_int* N, lapack_complex_double* x, lapack_int* incx);
 }
 
-#define NumElementsUseThreading 128*128*6
-
-const int TwoGBLimit = (2147483647);
+#define NumElementsUseThreading 64*1024
 
 namespace Gadgetron { namespace math {
-
-    static int get_num_threads(float computing_cost, size_t N)
-    {
-
-    }
 
     /// --------------------------------------------------------------------
 
     template <> EXPORTCPUCOREMATH void scal(size_t N, float a, float* x)
     {
         long long n;
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             x[n] *= a;
@@ -77,7 +50,7 @@ namespace Gadgetron { namespace math {
     template <> EXPORTCPUCOREMATH void scal(size_t N, double a, double* x)
     {
         long long n;
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             x[n] *= a;
@@ -90,7 +63,7 @@ namespace Gadgetron { namespace math {
     {
         long long n;
 
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const GT_Complex8& c = x[n];
@@ -111,7 +84,7 @@ namespace Gadgetron { namespace math {
     {
         long long n;
 
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const GT_Complex16& c = x[n];
@@ -132,7 +105,7 @@ namespace Gadgetron { namespace math {
     {
         long long n;
 
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const GT_Complex8& c = x[n];
@@ -150,7 +123,7 @@ namespace Gadgetron { namespace math {
     {
         long long n;
 
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const GT_Complex16& c = x[n];
@@ -163,29 +136,6 @@ namespace Gadgetron { namespace math {
     }
 
     /// --------------------------------------------------------------------
-
-    template <typename T> inline void axpy_64bit_mode(T a, size_t N, const T* x, const T* y, T* r)
-    {
-        long long n;
-
-        #pragma omp parallel for private(n) shared(N, r, a, x, y) if(N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; ++n)
-        {
-            const T& vx = x[n];
-            const typename realType<T>::Type re1 = vx.real();
-            const typename realType<T>::Type im1 = vx.imag();
-
-            const T& vy = y[n];
-            const typename realType<T>::Type re2 = vy.real();
-            const typename realType<T>::Type im2 = vy.imag();
-
-            const typename realType<T>::Type ar = a.real();
-            const typename realType<T>::Type ai = a.imag();
-
-            r[n].real(re2 + ar*re1 - ai*im1);
-            r[n].imag(im2 + ar*im1 + ai*re1);
-        }
-    }
 
     template <> EXPORTCPUCOREMATH void axpy(float a, size_t N, const float* x, const float* y, float* r)
     {
@@ -211,47 +161,177 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void axpy(GT_Complex8 a, size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
-        axpy_64bit_mode(a, N, x, y, r);
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, a, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            const GT_Complex8& vx = x[n];
+            const float re1 = vx.real();
+            const float im1 = vx.imag();
+
+            const GT_Complex8& vy = y[n];
+            const float re2 = vy.real();
+            const float im2 = vy.imag();
+
+            const float ar = a.real();
+            const float ai = a.imag();
+
+            reinterpret_cast<float(&)[2]>(r[n])[0] = re2 + ar*re1 - ai*im1;
+            reinterpret_cast<float(&)[2]>(r[n])[1] = im2 + ar*im1 + ai*re1;
+        }
     }
 
     template <> EXPORTCPUCOREMATH void axpy(GT_Complex16 a, size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
-        axpy_64bit_mode(a, N, x, y, r);
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, a, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            const GT_Complex16& vx = x[n];
+            const double re1 = vx.real();
+            const double im1 = vx.imag();
+
+            const GT_Complex16& vy = y[n];
+            const double re2 = vy.real();
+            const double im2 = vy.imag();
+
+            const double ar = a.real();
+            const double ai = a.imag();
+
+            reinterpret_cast<double(&)[2]>(r[n])[0] = re2 + ar*re1 - ai*im1;
+            reinterpret_cast<double(&)[2]>(r[n])[1] = im2 + ar*im1 + ai*re1;
+        }
     }
 
     /// --------------------------------------------------------------------
 
-    template <typename T> void add(size_t N, const T* x, const T* y, T* r)
+    template <> EXPORTCPUCOREMATH void add(size_t N, const float* x, const float* y, float* r)
     {
         long long n;
-#pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; n++ )
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
         {
             r[n] = x[n] + y[n];
         }
     }
 
-    template EXPORTCPUCOREMATH void add(size_t N, const float* x, const float* y, float* r);
-    template EXPORTCPUCOREMATH void add(size_t N, const double* x, const double* y, double* r);
-    template EXPORTCPUCOREMATH void add(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r);
-    template EXPORTCPUCOREMATH void add(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r);
+    template <> EXPORTCPUCOREMATH void add(size_t N, const double* x, const double* y, double* r)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            r[n] = x[n] + y[n];
+        }
+    }
+
+    template <> EXPORTCPUCOREMATH void add(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            const GT_Complex8& vx = x[n];
+            const float re1 = vx.real();
+            const float im1 = vx.imag();
+
+            const GT_Complex8& vy = y[n];
+            const float re2 = vy.real();
+            const float im2 = vy.imag();
+
+            reinterpret_cast<float(&)[2]>(r[n])[0] = re1 + re2;
+            reinterpret_cast<float(&)[2]>(r[n])[1] = im1 + im2;
+        }
+    }
+
+    template <> EXPORTCPUCOREMATH void add(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            const GT_Complex16& vx = x[n];
+            const double re1 = vx.real();
+            const double im1 = vx.imag();
+
+            const GT_Complex16& vy = y[n];
+            const double re2 = vy.real();
+            const double im2 = vy.imag();
+
+            reinterpret_cast<double(&)[2]>(r[n])[0] = re1 + re2;
+            reinterpret_cast<double(&)[2]>(r[n])[1] = im1 + im2;
+        }
+    }
 
     /// --------------------------------------------------------------------
 
-    template <typename T> void subtract(size_t N, const T* x, const T* y, T* r)
+    template <> EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const float* y, float* r)
     {
         long long n;
-#pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; n++ )
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
         {
             r[n] = x[n] - y[n];
         }
     }
 
-    template EXPORTCPUCOREMATH void subtract(size_t N, const float* x, const float* y, float* r);
-    template EXPORTCPUCOREMATH void subtract(size_t N, const double* x, const double* y, double* r);
-    template EXPORTCPUCOREMATH void subtract(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r);
-    template EXPORTCPUCOREMATH void subtract(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r);
+    template <> EXPORTCPUCOREMATH void subtract(size_t N, const double* x, const double* y, double* r)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            r[n] = x[n] - y[n];
+        }
+    }
+
+    template <> EXPORTCPUCOREMATH void subtract(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            const GT_Complex8& vx = x[n];
+            const float re1 = vx.real();
+            const float im1 = vx.imag();
+
+            const GT_Complex8& vy = y[n];
+            const float re2 = vy.real();
+            const float im2 = vy.imag();
+
+            reinterpret_cast<float(&)[2]>(r[n])[0] = re1 - re2;
+            reinterpret_cast<float(&)[2]>(r[n])[1] = im1 - im2;
+        }
+    }
+
+    template <> EXPORTCPUCOREMATH void subtract(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            const GT_Complex16& vx = x[n];
+            const double re1 = vx.real();
+            const double im1 = vx.imag();
+
+            const GT_Complex16& vy = y[n];
+            const double re2 = vy.real();
+            const double im2 = vy.imag();
+
+            reinterpret_cast<double(&)[2]>(r[n])[0] = re1 - re2;
+            reinterpret_cast<double(&)[2]>(r[n])[1] = im1 - im2;
+        }
+    }
 
     /// --------------------------------------------------------------------
 
@@ -259,7 +339,7 @@ namespace Gadgetron { namespace math {
     void multiply(size_t N, const T* x, const T* y, T* r)
     {
         long long n;
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
             const T& a = x[n];
@@ -273,37 +353,37 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void multiply(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
-        long long i;
-        #pragma omp parallel for private(i) if (N>NumElementsUseThreading)
-        for (i = 0; i < (long long)N; i++)
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
         {
-            const std::complex<float>& a1 = x[i];
-            const std::complex<float>& b1 = y[i];
+            const std::complex<float>& a1 = x[n];
+            const std::complex<float>& b1 = y[n];
             const float a = a1.real();
             const float b = a1.imag();
             const float c = b1.real();
             const float d = b1.imag();
 
-            reinterpret_cast<float(&)[2]>(r[i])[0] = a*c-b*d;
-            reinterpret_cast<float(&)[2]>(r[i])[1] = a*d+b*c;
+            reinterpret_cast<float(&)[2]>(r[n])[0] = a*c-b*d;
+            reinterpret_cast<float(&)[2]>(r[n])[1] = a*d+b*c;
         }
     }
 
     template <> EXPORTCPUCOREMATH void multiply(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
-        long long i;
-        #pragma omp parallel for private(i) if (N>NumElementsUseThreading)
-        for (i = 0; i < (long long)N; i++)
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
         {
-            const std::complex<double>& a1 = x[i];
-            const std::complex<double>& b1 = y[i];
+            const std::complex<double>& a1 = x[n];
+            const std::complex<double>& b1 = y[n];
             const double a = a1.real();
             const double b = a1.imag();
             const double c = b1.real();
             const double d = b1.imag();
 
-            reinterpret_cast<double(&)[2]>(r[i])[0] = a*c-b*d;
-            reinterpret_cast<double(&)[2]>(r[i])[1] = a*d+b*c;
+            reinterpret_cast<double(&)[2]>(r[n])[0] = a*c-b*d;
+            reinterpret_cast<double(&)[2]>(r[n])[1] = a*d+b*c;
         }
     }
 
@@ -313,7 +393,7 @@ namespace Gadgetron { namespace math {
     void divide(size_t N, const T* x, const T* y, T* r)
     {
         long long n;
-#pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
             const T& a = x[n];
@@ -327,12 +407,12 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void divide(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
     {
-        long long i;
-        #pragma omp parallel for private(i) if (N>NumElementsUseThreading)
-        for (i = 0; i < (long long)N; i++)
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
         {
-            const std::complex<float>& a1 = x[i];
-            const std::complex<float>& b1 = y[i];
+            const std::complex<float>& a1 = x[n];
+            const std::complex<float>& b1 = y[n];
             const float a = a1.real();
             const float b = a1.imag();
             const float c = b1.real();
@@ -340,19 +420,19 @@ namespace Gadgetron { namespace math {
 
             const float m = 1/(c*c+d*d);
 
-            reinterpret_cast<float(&)[2]>(r[i])[0] = (a*c+b*d)*m;
-            reinterpret_cast<float(&)[2]>(r[i])[1] = (b*c-a*d)*m;
+            reinterpret_cast<float(&)[2]>(r[n])[0] = (a*c+b*d)*m;
+            reinterpret_cast<float(&)[2]>(r[n])[1] = (b*c-a*d)*m;
         }
     }
 
     template <> EXPORTCPUCOREMATH void divide(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
     {
-        long long i;
-        #pragma omp parallel for private(i) if (N>NumElementsUseThreading)
-        for (i = 0; i < (long long)N; i++)
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
         {
-            const std::complex<double>& a1 = x[i];
-            const std::complex<double>& b1 = y[i];
+            const std::complex<double>& a1 = x[n];
+            const std::complex<double>& b1 = y[n];
             const double a = a1.real();
             const double b = a1.imag();
             const double c = b1.real();
@@ -360,8 +440,8 @@ namespace Gadgetron { namespace math {
 
             const double m = 1/(c*c+d*d);
 
-            reinterpret_cast<double(&)[2]>(r[i])[0] = (a*c+b*d)*m;
-            reinterpret_cast<double(&)[2]>(r[i])[1] = (b*c-a*d)*m;
+            reinterpret_cast<double(&)[2]>(r[n])[0] = (a*c+b*d)*m;
+            reinterpret_cast<double(&)[2]>(r[n])[1] = (b*c-a*d)*m;
         }
     }
 
@@ -399,7 +479,7 @@ namespace Gadgetron { namespace math {
         ind = 0;
         for ( n=1; n<(long long)N; n++ )
         {
-            v2 = abs(x[n]);
+            v2 = std::abs(x[n]);
             if ( v2 < v )
             {
                 v = v2;
@@ -433,7 +513,7 @@ namespace Gadgetron { namespace math {
             ind = 0;
             for ( n=1; n<(long long)N; n++ )
             {
-                v2 = abs(x[n]);
+                v2 = std::abs(x[n]);
                 if ( v2 > v )
                 {
                     v = v2;
@@ -461,7 +541,7 @@ namespace Gadgetron { namespace math {
     {
         long long n;
 
-#pragma omp parallel for private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
             const float a = x[n].real();
@@ -479,7 +559,7 @@ namespace Gadgetron { namespace math {
     {
         long long n;
 
-#pragma omp parallel for private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
             const double a = x[n].real();
@@ -532,7 +612,7 @@ namespace Gadgetron { namespace math {
 #pragma omp parallel for default(none) private(n) shared(N, x, eps) if (N>NumElementsUseThreading)
         for (n=0; n<(long long)N; n++ )
         {
-            if ( abs(x[n]) < eps )
+            if ( std::abs(x[n]) < eps )
             {
                 x[n] += eps;
             }
@@ -552,7 +632,7 @@ namespace Gadgetron { namespace math {
 #pragma omp parallel for private(n) if (N>NumElementsUseThreading)
         for (n=0; n<(long long)N; n++ )
         {
-            if ( abs(x[n]) < eps )
+            if ( std::abs(x[n]) < eps )
             {
                 reinterpret_cast<float(&)[2]>(x[n])[0] += eps;
             }
@@ -569,7 +649,7 @@ namespace Gadgetron { namespace math {
 #pragma omp parallel for private(n) if (N>NumElementsUseThreading)
         for (n=0; n<(long long)N; n++ )
         {
-            if ( abs(x[n]) < eps )
+            if ( std::abs(x[n]) < eps )
             {
                 reinterpret_cast<double(&)[2]>(x[n])[0] += eps;
             }
@@ -580,118 +660,70 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const float* x, float& r)
     {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
+        long long i;
 
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
+        float sum(0);
 
-        float res = 0;
-        float* pX = (float*)(x);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+#pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
         {
-            r = snrm2_(&len, (float*)(pX), &incx);
-            pX += len;
-            res += r*r;
+            const float& re = x[i];
+            sum += ( re*re );
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            r = snrm2_(&len, (float*)(pX), &incx);
-            res += r*r;
-        }
-
-        r = std::sqrt(r);
+        r = std::sqrt(sum);
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const double* x, double& r)
     {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
+        long long i;
 
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
+        double sum(0);
 
-        double res = 0;
-        double* pX = (double*)(x);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+#pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
         {
-            r = dnrm2_(&len, pX, &incx);
-            pX += len;
-            res += r*r;
+            const double& re = x[i];
+            sum += ( re*re );
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            r = dnrm2_(&len, pX, &incx);
-            res += r*r;
-        }
-
-        r = std::sqrt(res);
+        r = std::sqrt(sum);
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const GT_Complex8* x, float& r)
     {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
+        long long i;
 
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
+        float sum(0);
 
-        float res = 0;
-        lapack_complex_float* pX = (lapack_complex_float*)(x);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+#pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
         {
-            r = scnrm2_(&len, pX, &incx);
-            pX += len;
-            res += r*r;
+            const std::complex<float>& c = x[i];
+            const float re = c.real();
+            const float im = c.imag();
+            sum += ( (re*re) + (im * im) );
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            r = scnrm2_(&len, pX, &incx);
-            res += r*r;
-        }
-
-        r = std::sqrt(res);
+        r = std::sqrt(sum);
     }
 
     template <> EXPORTCPUCOREMATH void norm2(size_t N, const GT_Complex16* x, double& r)
     {
-        lapack_int num = (lapack_int)N;
-        lapack_int incx = 1;
+        long long i;
 
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
+        double sum(0);
 
-        double res = 0;
-        lapack_complex_double* pX = (lapack_complex_double*)(x);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+#pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
         {
-            r = dzasum_(&len, pX, &incx);
-            pX += len;
-            res += r*r;
+            const std::complex<double>& c = x[i];
+            const double re = c.real();
+            const double im = c.imag();
+            sum += ( (re*re) + (im * im) );
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            r = dzasum_(&len, pX, &incx);
-            res += r*r;
-        }
-
-        r = std::sqrt(res);
+        r = std::sqrt(sum);
     }
 
     template <typename T> inline 
@@ -716,7 +748,7 @@ namespace Gadgetron { namespace math {
 
         typename realType<T>::Type norm1Sum(0);
 
-        #pragma omp parallel for reduction(+:norm1Sum) if (N>NumElementsUseThreading)
+        #pragma omp parallel for private(n) reduction(+:norm1Sum) if (N>NumElementsUseThreading)
         for (n=0; n<(long long)N; n++)
         {
             const T& c = x[n];
@@ -733,7 +765,7 @@ namespace Gadgetron { namespace math {
     {
         long long i;
         float sum = 0.0f;
-        #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
+        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
             const std::complex<float>& c = x[i];
@@ -749,7 +781,7 @@ namespace Gadgetron { namespace math {
     {
         long long i;
         double sum = 0.0;
-        #pragma omp parallel for reduction(+:sum) if (N>NumElementsUseThreading)
+        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
             const std::complex<double>& c = x[i];
@@ -776,85 +808,52 @@ namespace Gadgetron { namespace math {
 
     /// --------------------------------------------------------------------
 
-    template <typename T> void dotc_64bit_mode(size_t N, const T* x, const T* y, T& r)
+    template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
     {
         long long n;
 
-        T sum(0);
+        float sum(0);
 
-        typename realType<T>::Type sa(0), sb(0);
+        float sa(0), sb(0);
 
-#pragma omp parallel for reduction(+:sa) if (N>NumElementsUseThreading)
+#pragma omp parallel for private(n) reduction(+:sa) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const typename realType<T>::Type a = x[n].real();
-            const typename realType<T>::Type b = x[n].imag();
-            const typename realType<T>::Type c = y[n].real();
-            const typename realType<T>::Type d = y[n].imag();
+            const float a = x[n].real();
+            const float b = x[n].imag();
+            const float c = y[n].real();
+            const float d = y[n].imag();
 
             sa += (a*c + b*d);
             sb += (c*b - a*d);
         }
 
-        r = T(sa, sb);
-    }
-
-    template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
-    {
-        lapack_int incx=1, incy=1;
-
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
-
-        lapack_complex_float res(0, 0);
-        r = res;
-
-        lapack_complex_float* pX = (lapack_complex_float*)(x);
-        lapack_complex_float* pY = (lapack_complex_float*)(y);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
-        {
-            cdotc_(&res, &len, (lapack_complex_float*)(pX), &incx, (lapack_complex_float*)(pY), &incy);
-            pX += len; pY += len;
-            r += res;
-        }
-
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            cdotc_(&res, &len, (lapack_complex_float*)(pX), &incx, (lapack_complex_float*)(pY), &incy);
-            r += res;
-        }
+        reinterpret_cast<float(&)[2]>(r)[0] = sa;
+        reinterpret_cast<float(&)[2]>(r)[1] = sb;
     }
 
     template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r)
     {
-        lapack_int incx=1, incy=1;
+        long long n;
 
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
+        double sum(0);
 
-        lapack_complex_double res(0, 0);
-        r = res;
+        double sa(0), sb(0);
 
-        lapack_complex_double* pX = (lapack_complex_double*)(x);
-        lapack_complex_double* pY = (lapack_complex_double*)(y);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+#pragma omp parallel for private(n) reduction(+:sa) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
         {
-            zdotc_(&res, &len, (lapack_complex_double*)(pX), &incx, (lapack_complex_double*)(pY), &incy);
-            pX += len; pY += len;
-            r += res;
+            const double a = x[n].real();
+            const double b = x[n].imag();
+            const double c = y[n].real();
+            const double d = y[n].imag();
+
+            sa += (a*c + b*d);
+            sb += (c*b - a*d);
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            zdotc_(&res, &len, (lapack_complex_double*)(pX), &incx, (lapack_complex_double*)(pY), &incy);
-            r += res;
-        }
+        reinterpret_cast<double(&)[2]>(r)[0] = sa;
+        reinterpret_cast<double(&)[2]>(r)[1] = sb;
     }
 
     template <typename T> T dotc(size_t N, const T* x, const T* y)
@@ -875,7 +874,7 @@ namespace Gadgetron { namespace math {
 
         float res(0);
 
-        #pragma omp parallel for reduction(+:res) if (N>NumElementsUseThreading)
+        #pragma omp parallel for private(n) reduction(+:res) if (N>NumElementsUseThreading)
         for (n=0; n<(long long)N; n++)
         {
             res += x[n]*y[n];
@@ -890,7 +889,7 @@ namespace Gadgetron { namespace math {
 
         double res(0);
 
-        #pragma omp parallel for reduction(+:res) if (N>NumElementsUseThreading)
+        #pragma omp parallel for private(n) reduction(+:res) if (N>NumElementsUseThreading)
         for (n=0; n<(long long)N; n++)
         {
             res += x[n]*y[n];
@@ -901,60 +900,48 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
     {
-        lapack_int incx=1, incy=1;
+        long long n;
 
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
+        GT_Complex8 sum(0);
 
-        lapack_complex_float res(0, 0);
-        r = res;
-
-        lapack_complex_float* pX = (lapack_complex_float*)(x);
-        lapack_complex_float* pY = (lapack_complex_float*)(y);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+        float sa(0), sb(0);
+#pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
         {
-            cdotu_(&res, &len, (lapack_complex_float*)(pX), &incx, (lapack_complex_float*)(pY), &incy);
-            pX += len; pY += len;
-            r += res;
+            const float a = x[n].real();
+            const float b = x[n].imag();
+            const float c = y[n].real();
+            const float d = y[n].imag();
+
+            sa += (a*c - b*d);
+            sb += (c*b + a*d);
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            cdotu_(&res, &len, (lapack_complex_float*)(pX), &incx, (lapack_complex_float*)(pY), &incy);
-            r += res;
-        }
+        reinterpret_cast<float(&)[2]>(r)[0] = sa;
+        reinterpret_cast<float(&)[2]>(r)[1] = sb;
     }
 
     template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r)
     {
-        lapack_int incx=1, incy=1;
+        long long n;
 
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
+        GT_Complex16 sum(0);
 
-        lapack_complex_double res(0, 0);
-        r = res;
-
-        lapack_complex_double* pX = (lapack_complex_double*)(x);
-        lapack_complex_double* pY = (lapack_complex_double*)(y);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+        double sa(0), sb(0);
+#pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
         {
-            zdotu_(&res, &len, (lapack_complex_double*)(pX), &incx, (lapack_complex_double*)(pY), &incy);
-            pX += len; pY += len;
-            r += res;
+            const double a = x[n].real();
+            const double b = x[n].imag();
+            const double c = y[n].real();
+            const double d = y[n].imag();
+
+            sa += (a*c - b*d);
+            sb += (c*b + a*d);
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            zdotu_(&res, &len, (lapack_complex_double*)(pX), &incx, (lapack_complex_double*)(pY), &incy);
-            r += res;
-        }
+        reinterpret_cast<double(&)[2]>(r)[0] = sa;
+        reinterpret_cast<double(&)[2]>(r)[1] = sb;
     }
 
     template <typename T> inline T dotu(size_t N, const T* x, const T* y)
@@ -973,114 +960,60 @@ namespace Gadgetron { namespace math {
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const float* x, float& r)
     {
-        lapack_int incx=1;
-
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
-
-        float res(0);
-        r = res;
-
-        float* pX = (float*)(x);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+        long long i;
+        float sum(0);
+        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
         {
-            res = sasum_(&len, pX, &incx);
-            pX += len;
-            r += res;
+            sum += GT_ABS(x[i]);
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            res = sasum_(&len, pX, &incx);
-            r += res;
-        }
+        r = sum;
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const double* x, double& r)
     {
-        lapack_int incx=1;
-
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
-
-        double res(0);
-        r = res;
-
-        double* pX = (double*)(x);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+        long long i;
+        double sum(0);
+        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
         {
-            res = dasum_(&len, pX, &incx);
-            pX += len;
-            r += res;
+            sum += GT_ABS(x[i]);
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            res = dasum_(&len, pX, &incx);
-            r += res;
-        }
+        r = sum;
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex8* x, float& r)
     {
-        lapack_int incx=1;
-
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
-
-        float res(0);
-        r = res;
-
-        lapack_complex_float* pX = (lapack_complex_float*)(x);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+        long long i;
+        float sum(0);
+        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
         {
-            res = scasum_(&len, (lapack_complex_float*)(pX), &incx);
-            pX += len;
-            r += res;
+            const GT_Complex8& c = x[i];
+            const float re = c.real();
+            const float im = c.imag();
+            sum += ( GT_ABS(re) + GT_ABS(im) );
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            res = scasum_(&len, (lapack_complex_float*)(pX), &incx);
-            r += res;
-        }
+        r = sum;
     }
 
     template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex16* x, double& r)
     {
-        lapack_int incx=1;
-
-        long long numOfChunk = N/TwoGBLimit;
-        lapack_int len = TwoGBLimit;
-
-        double res(0);
-        r = res;
-
-        lapack_complex_double* pX = (lapack_complex_double*)(x);
-
-        long long ii;
-        for ( ii=0; ii<numOfChunk; ii++ )
+        long long i;
+        double sum(0);
+        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
+        for (i = 0; i < (long long)N; i++)
         {
-            res = dzasum_(&len, (lapack_complex_double*)(pX), &incx);
-            pX += len;
-            r += res;
+            const GT_Complex16& c = x[i];
+            const double re = c.real();
+            const double im = c.imag();
+            sum += ( GT_ABS(re) + GT_ABS(im) );
         }
 
-        if ( (size_t)(numOfChunk*TwoGBLimit) < N )
-        {
-            len = (lapack_int)((long long)N - numOfChunk*(long long)TwoGBLimit);
-            res = dzasum_(&len, (lapack_complex_double*)(pX), &incx);
-            r += res;
-        }
+        r = sum;
     }
 
     template <typename T> inline typename realType<T>::Type asum(size_t N, const T* x)
@@ -1495,7 +1428,7 @@ namespace Gadgetron { namespace math {
     void fill( size_t N, T* x, T v)
     {
         long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, v)
+        #pragma omp parallel for default(none) private(n) shared(N, x, v) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
             x[n] = v;

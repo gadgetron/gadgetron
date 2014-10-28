@@ -2718,6 +2718,10 @@ bool gtPlusReconWorker2DT<T>::performReconFangHuang(gtPlusReconWorkOrder2DT<T>& 
             hoMatrix<T> K(colD, 1);
             hoMatrix<T> R(rowD, 1);
 
+            Gadgetron::clear(D);
+            Gadgetron::clear(K);
+            Gadgetron::clear(R);
+
             #pragma omp for
             for ( ii=0; ii<num; ii ++ )
             {
