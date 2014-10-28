@@ -52,7 +52,7 @@ else
 
   chroot ${3}/chroot-root/gadgetron apt-get install python-dev python-twisted python-psutil -y 
 
-  tar -zcf "${3}/chroot-backups/gadgetron-chroot-`date '+%d-%B-%Y'`.tar.gz" --directory "${3}/chroot-root" --exclude=./gadgetron/etc --exclude=./gadgetron/var --exclude=./gadgetron/dev --exclude=./gadgetron/root .
+  tar -zcf "${3}/chroot-backups/gadgetron-chroot-`date '+%d-%B-%Y'`.tar.gz" --directory "${3}" --exclude=./chroot-root/gadgetron/etc --exclude=./chroot-root/gadgetron/var --exclude=./chroot-root/gadgetron/dev --exclude=./chrot-root/gadgetron/root ./chroot-root
 
   rm -rf "${3}/chroot-root"
  
