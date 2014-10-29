@@ -6,6 +6,7 @@
 #include "cuNDArray_utils.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "ismrmrd/xml.h"
+#include "radial_utilities.h"
 #include <cmath>
 
 namespace Gadgetron{
@@ -93,8 +94,9 @@ namespace Gadgetron{
 
     bool is_last_scan_in_repetition = 
     		m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_REPETITION);
-  
+
     if (is_last_scan_in_repetition) {
+
 
       // Define the image header
       //
@@ -151,13 +153,15 @@ namespace Gadgetron{
       // Get trajectories/dcw for frame
       //
       
-      cuNDArray<floatd2> traj; 
-      cuNDArray<float> dcw;      
+      boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2>);
+      boost::shared_ptr<cuNDArray<float> > dcw(new cuNDArray<float>);
 
-      extract_trajectory_and_dcw_from_queue( frame_traj_queue_.get(), &traj, &dcw );
-      
+      extract_trajectory_and_dcw_from_queue( frame_traj_queue_.get(), traj.get(), dcw.get() );
+      //traj = compute_radial_trajectory_golden_ratio_2d<float>(samples_per_readout_,dimensions_[1],1,0,GR_ORIGINAL);
+      dcw = compute_radial_dcw_golden_ratio_2d<float>(samples_per_readout_,dimensions_[1],1.0,1.0f/samples_per_readout_/dimensions_[1],0,GR_ORIGINAL);
       // Create output array
       //
+
 
       std::vector<size_t> img_dims(2);
       img_dims[0] = dimensions_[0];
@@ -170,29 +174,29 @@ namespace Gadgetron{
       
       const float kernel_width = 5.5f;
       cuNFFT_plan<float,2> plan( from_std_vector<size_t,2>(img_dims), from_std_vector<size_t,2>(img_dims)<<1, kernel_width );
-      plan.preprocess( &traj, cuNFFT_plan<float,2>::NFFT_PREP_NC2C );
-
-      if( dcw.get_number_of_elements() == 0 ){
+      plan.preprocess( traj.get(), cuNFFT_plan<float,2>::NFFT_PREP_NC2C );
+/*
+      if( dcw->get_number_of_elements() == 0 ){
         std::vector<size_t> dcw_dims; dcw_dims.push_back(samples_per_readout_);
         hoNDArray<float> host_dcw( dcw_dims );
         for( int i=0; i<(int)dcw_dims[0]; i++ )
           host_dcw.get_data_ptr()[i]=abs(i-(int)dcw_dims[0]/2);
         host_dcw.get_data_ptr()[dcw_dims[0]/2] = 0.25f; // ad hoc value (we do not want a DC component of 0)        
-        dcw = *expand(&host_dcw, traj.get_number_of_elements()/samples_per_readout_);
+        dcw = expand(&host_dcw, traj->get_number_of_elements()/samples_per_readout_);
       }
-
+*/
       // Gridder
       //
       
       plan.compute( &samples, &image,  
-                    (dcw.get_number_of_elements()>0) ? &dcw : 0x0, 
+                    (dcw->get_number_of_elements()>0) ? dcw.get() : 0x0,
                     cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );
+
 
       // Download to host
       //
 
       image.to_host( (hoNDArray<float_complext>*)cm2->getObjectPtr() );
-
       // Pass on data down the gadget chain
       //
 

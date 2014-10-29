@@ -23,14 +23,14 @@
       <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
-
-
     <gadget>
       <name>CMRT</name>
       <dll>gadgetron_hyper</dll>
       <classname>CMRTGadget</classname>
-      <property><name>projections_per_recon</name><value>64</value></property>
-    </gadget>
+      <property><name>projections_per_recon</name><value>128</value></property>
+      <property>
+      	<name>golden_ratio</name>
+      	<value>true</value></property></gadget>
 
     <gadget>
       <name>Extract</name>

@@ -36,6 +36,7 @@ namespace Gadgetron{
     set_parameter(std::string("mu").c_str(), "1.0");
     set_parameter(std::string("lambda").c_str(), "2.0");
     set_parameter(std::string("alpha").c_str(), "0.5");
+    set_parameter(std::string("is_cyclic").c_str(), "true");
     set_parameter(std::string("exclusive_access").c_str(), "false");
 
     matrix_size_ = uint64d2(0,0);
@@ -86,6 +87,7 @@ namespace Gadgetron{
     rotations_to_discard_ = get_int_value(std::string("rotations_to_discard").c_str());
     output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
     exclusive_access_ = get_bool_value(std::string("exclusive_access").c_str());
+    is_cyclic_= get_bool_value(std::string("is_cyclic").c_str());
 
     if( (rotations_to_discard_%2) == 1 ){
       GADGET_DEBUG1("#rotations to discard must be even.\n");
@@ -137,6 +139,11 @@ namespace Gadgetron{
         ( new cuPartialDerivativeOperator<float_complext,3>(2) );
       Rz1_->set_weight( (1.0-alpha_)*lambda_ );
 
+
+      Rt1_ = boost::shared_ptr< cuPartialDerivativeOperator2<float_complext,3> >
+              ( new cuPartialDerivativeOperator2<float_complext,3>() );
+      Rt1_->set_weight( (1.0-alpha_)*lambda_ );
+
       Rx2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
         ( new cuPartialDerivativeOperator<float_complext,3>(0) );
       Rx2_->set_weight( alpha_*lambda_ );
@@ -148,6 +155,10 @@ namespace Gadgetron{
       Rz2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
         ( new cuPartialDerivativeOperator<float_complext,3>(2) );
       Rz2_->set_weight( alpha_*lambda_ );
+
+      Rt2_ = boost::shared_ptr< cuPartialDerivativeOperator2<float_complext,3> >
+              ( new cuPartialDerivativeOperator2<float_complext,3>() );
+      Rt2_->set_weight( alpha_*lambda_ );
 
       // Setup split-Bregman solver
       sb_.set_encoding_operator( E_ );
@@ -254,14 +265,21 @@ namespace Gadgetron{
       Rz1_->set_domain_dimensions(&image_dims);
       Rz1_->set_codomain_dimensions(&image_dims);
       
+      Rt1_->set_domain_dimensions(&image_dims);
+      Rt1_->set_codomain_dimensions(&image_dims);
+
       Rx2_->set_domain_dimensions(&image_dims);
       Rx2_->set_codomain_dimensions(&image_dims);
       
       Ry2_->set_domain_dimensions(&image_dims);
       Ry2_->set_codomain_dimensions(&image_dims);
-      
+
+      Rt2_->set_domain_dimensions(&image_dims);
+      Rt2_->set_codomain_dimensions(&image_dims);
+
       Rz2_->set_domain_dimensions(&image_dims);
       Rz2_->set_codomain_dimensions(&image_dims);
+
       
       // Add "TV" regularization
       // 
@@ -270,7 +288,10 @@ namespace Gadgetron{
         sb_.add_regularization_group_operator( Rx1_ ); 
         sb_.add_regularization_group_operator( Ry1_ ); 
         if(frames>1)
-          sb_.add_regularization_group_operator( Rz1_ ); 
+        	if (is_cyclic_)
+        		sb_.add_regularization_group_operator( Rz1_ );
+        	else
+        		sb_.add_regularization_group_operator( Rt1_ );
         sb_.add_group();
       }
       
@@ -281,7 +302,10 @@ namespace Gadgetron{
         sb_.add_regularization_group_operator( Rx2_ ); 
         sb_.add_regularization_group_operator( Ry2_ ); 
         if(frames>1)
-          sb_.add_regularization_group_operator( Rz2_ ); 
+        	if (is_cyclic_)
+        		sb_.add_regularization_group_operator( Rz2_ );
+        	else
+        		sb_.add_regularization_group_operator( Rt2_ );
         sb_.add_group(reg_image_);
       }
       

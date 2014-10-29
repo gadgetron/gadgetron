@@ -13,6 +13,7 @@
 #include "cuNonCartesianSenseOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuPartialDerivativeOperator.h"
+#include "cuPartialDerivativeOperator2.h"
 #include "cuNFFT.h"
 #include "cuImageOperator.h"
 #include "ismrmrd/ismrmrd.h"
@@ -58,6 +59,7 @@ namespace Gadgetron{
     bool exclusive_access_;
     bool is_configured_;
     bool prepared_;
+    bool is_cyclic_; //True if 3rd dimension of the data is cyclic (i.e. cardiac)
 
     // Define constraint Split Bregman solver
     cuSbcCgSolver<float_complext> sb_;
@@ -78,6 +80,8 @@ namespace Gadgetron{
     boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Ry2_;
     boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz1_;
     boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz2_;
+    boost::shared_ptr< cuPartialDerivativeOperator2<float_complext,3> > Rt1_;
+    boost::shared_ptr< cuPartialDerivativeOperator2<float_complext,3> > Rt2_;
 	
     int frame_counter_;
   };

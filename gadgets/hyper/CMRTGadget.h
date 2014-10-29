@@ -50,7 +50,6 @@ namespace Gadgetron{
   protected:
 
     std::vector<size_t> image_space_dimensions_3D_;
-    unsigned int num_projections_expected_;
     unsigned int num_projections_to_use_;
 
 
@@ -69,5 +68,6 @@ namespace Gadgetron{
     boost::shared_ptr<hoNDArray<float> > dcw;
     boost::shared_ptr<hoNDArray<floatd2> > traj;
     unsigned int num_frames;
+    bool golden_ratio_;
   };
 }

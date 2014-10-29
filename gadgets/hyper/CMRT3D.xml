@@ -34,8 +34,11 @@
       <name>CMRT3S</name>
       <dll>gadgetron_hyper</dll>
       <classname>CMRT3DGadget</classname>
-      <property><name>projections_per_recon</name><value>64</value></property>
+      <property><name>projections_per_recon</name><value>128</value></property>
       <property><name>projections_percentage</name><value>100</value></property>
+      <property>
+      	<name>golden_ratio</name>
+      	<value>true</value></property>
     </gadget>
 
     <gadget>

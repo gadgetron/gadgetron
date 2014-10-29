@@ -36,5 +36,6 @@ namespace Gadgetron {
     unsigned int projections_percentage_;
     unsigned int images_received_;
     unsigned int images_used_;
+    bool golden_ratio_;
   };
 }

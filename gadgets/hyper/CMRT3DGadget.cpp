@@ -54,6 +54,7 @@ int CMRT3DGadget::process_config(ACE_Message_Block* mb)
 	projections_percentage_ = get_int_value(std::string("projections_percentage").c_str());
 	num_projections_to_use_ = num_projections_expected_/(100/projections_percentage_);
 
+	golden_ratio_ = get_bool_value("golden_ratio");
 	GADGET_DEBUG2("Number of projections (expected/utilization percentage): %d/%d\n", num_projections_expected_, projections_percentage_ );
 	GADGET_DEBUG2("I.e. using %d projections for the reconstruction\n", num_projections_to_use_ );
 
@@ -126,10 +127,8 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	// Perform batched 1D FFTs along the phase encoding direction of the input image
 	// I.e. permute and then perform FFT
 
-	std::vector<size_t> order;
-	order.push_back(1); order.push_back(0);
 
-	*host_image = *permute( host_image, &order );
+	//*host_image = *permute( host_image, &order );
 	hoNDFFT<float>::instance()->fft( host_image, 0 );
 
 	// Next copy each line into the buffer
@@ -221,9 +220,14 @@ boost::shared_ptr< cuNDArray<floatd2> >
 CMRT3DGadget::calculate_trajectory()
 {
 	// Define trajectories
-	boost::shared_ptr< cuNDArray<floatd2> > traj =
-			compute_radial_trajectory_fixed_angle_2d<float>
-	( image_space_dimensions_3D_[0], num_projections_to_use_, 1 /*number of frames*/ );
+
+	boost::shared_ptr< cuNDArray<floatd2> > traj;
+	if (golden_ratio_)
+		traj =	compute_radial_trajectory_golden_ratio_2d<float>
+			( image_space_dimensions_3D_[0], num_projections_to_use_, 1,0,GR_ORIGINAL );
+	else
+		traj =	compute_radial_trajectory_fixed_angle_2d<float>
+			( image_space_dimensions_3D_[0], num_projections_to_use_, 1 /*number of frames*/ );
 
 	if (!traj.get()) {
 		GADGET_DEBUG1("Failed to compute radial trajectory");
@@ -237,8 +241,13 @@ boost::shared_ptr< cuNDArray<float> >
 CMRT3DGadget::calculate_density_compensation()
 {
 	// Compute density compensation weights
-	boost::shared_ptr< cuNDArray<float> > dcw =
-			compute_radial_dcw_fixed_angle_2d
+	boost::shared_ptr< cuNDArray<float> > dcw;
+
+	if (golden_ratio_)
+		dcw =compute_radial_dcw_golden_ratio_2d
+			( image_space_dimensions_3D_[0], num_projections_to_use_, alpha_, 1.0f/readout_oversampling_factor_, GR_ORIGINAL );
+	else
+		dcw =compute_radial_dcw_fixed_angle_2d
 			( image_space_dimensions_3D_[0], num_projections_to_use_, alpha_, 1.0f/readout_oversampling_factor_ );
 
 	if (!dcw.get()) {
