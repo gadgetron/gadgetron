@@ -93,14 +93,14 @@ TYPED_TEST_CASE(gtPlus_grappa_Test, cpfloatImplementations);
 
 TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
 {
-    typedef GT_Complex8 T;
+    typedef std::complex<float> T;
 
     gtPlusIOAnalyze gt_io;
 
     float v;
 
     // image data
-    hoNDArray<GT_Complex8> data;
+    hoNDArray<std::complex<float> > data;
     gt_io.importArrayComplex(data, this->gtPluse_ut_data_folder_ + "StdandardDataR2_Kspace_real", 
         this->gtPluse_ut_data_folder_ + "StdandardDataR2_Kspace_imag");
     data.print(std::cout);
@@ -120,7 +120,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
     unsigned long long SET = 1;
     unsigned long long SEG = 1;
 
-    hoNDArray<GT_Complex8> kspace(RO, E1, CHA, SLC, E2, CON, PHS);
+    hoNDArray<std::complex<float> > kspace(RO, E1, CHA, SLC, E2, CON, PHS);
     memcpy(kspace.begin(), data.begin(), data.get_number_of_bytes());
 
     Gadgetron::norm2(kspace, v);
@@ -279,7 +279,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
 
 TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
 {
-    typedef GT_Complex8 T;
+    typedef std::complex<float> T;
 
     gtPlusIOAnalyze gt_io;
 
@@ -296,8 +296,8 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     gt_io.importArray(imag_data, filename);
     imag_data.print(std::cout);
 
-    hoNDArray<GT_Complex8> tmp;
-    Gadgetron::real_imag_to_complex<GT_Complex8>(real_data, imag_data, tmp);
+    hoNDArray<std::complex<float> > tmp;
+    Gadgetron::real_imag_to_complex<std::complex<float> >(real_data, imag_data, tmp);
 
     unsigned long long RO = tmp.get_size(0);
     unsigned long long E1 = tmp.get_size(1);
@@ -314,7 +314,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     unsigned long long SET = 1;
     unsigned long long SEG = 1;
 
-    hoNDArray<GT_Complex8> kspace(RO, E1, CHA, SLC, E2, CON, PHS, tmp.begin());
+    hoNDArray<std::complex<float> > kspace(RO, E1, CHA, SLC, E2, CON, PHS, tmp.begin());
 
     Gadgetron::norm2(kspace, v);
     GADGET_MSG("kspace = " << v);
@@ -331,7 +331,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     imag_ref.print(std::cout);
 
     hoNDArray<T> ref;
-    real_imag_to_complex<GT_Complex8>(real_ref, imag_ref, ref);
+    real_imag_to_complex<std::complex<float> >(real_ref, imag_ref, ref);
 
     Gadgetron::norm2(ref, v);
     GADGET_MSG("ref = " << v);
@@ -466,7 +466,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
 
 TYPED_TEST(gtPlus_grappa_Test, grappa2D)
 {
-    typedef GT_Complex8 T;
+    typedef std::complex<float> T;
 
     gtPlusIOAnalyze gt_io;
 
@@ -483,15 +483,15 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     gt_io.importArray(imag_data, filename);
     imag_data.print(std::cout);
 
-    hoNDArray<GT_Complex8> tmp;
-    Gadgetron::real_imag_to_complex<GT_Complex8>(real_data, imag_data, tmp);
+    hoNDArray<std::complex<float> > tmp;
+    Gadgetron::real_imag_to_complex<std::complex<float> >(real_data, imag_data, tmp);
 
     unsigned long long RO = tmp.get_size(0);
     unsigned long long E1 = tmp.get_size(1);
     unsigned long long CHA = tmp.get_size(2);
     unsigned long long PHS = tmp.get_size(3);
 
-    hoNDArray<GT_Complex8> kspace(RO, E1, CHA, PHS, tmp.begin());
+    hoNDArray<std::complex<float> > kspace(RO, E1, CHA, PHS, tmp.begin());
 
     // ref
     hoNDArray<float> real_ref;
@@ -505,17 +505,17 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     imag_ref.print(std::cout);
 
     hoNDArray<T> ref;
-    real_imag_to_complex<GT_Complex8>(real_ref, imag_ref, ref);
+    real_imag_to_complex<std::complex<float> >(real_ref, imag_ref, ref);
 
     Gadgetron::norm2(ref, v);
     GADGET_MSG("ref = " << v);
 
     // recon
-    gtPlusISMRMRDReconUtil<GT_Complex8> util;
-    gtPlusISMRMRDReconUtilComplex<GT_Complex8> utilCplx;
+    gtPlusISMRMRDReconUtil<std::complex<float> > util;
+    gtPlusISMRMRDReconUtilComplex<std::complex<float> > utilCplx;
 
     // sum of square
-    hoNDArray<GT_Complex8> complexIm, sosIm;
+    hoNDArray<std::complex<float> > complexIm, sosIm;
 
     GadgetronTimer timer(false);
     timer.start("ifft2c");
@@ -540,7 +540,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     filename = this->gtPluse_ut_res_folder_ + "complexIm";
     gt_io.export3DArrayComplex(complexIm, filename);
 
-    hoNDArray<GT_Complex8> coilMap;
+    hoNDArray<std::complex<float> > coilMap;
     timer.start("coilMap2DNIH");
     utilCplx.coilMap2DNIH(complexIm, coilMap, ISMRMRD_SOUHEIL, 7, 3, 3, true);
     timer.stop();
