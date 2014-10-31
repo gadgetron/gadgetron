@@ -1,6 +1,5 @@
 /** \file   gtPlusUtil.h
     \brief  Define the symbols and implement common functionalities for GtPlus toolbox
-            The functions here are not using MKL
 
     \author Hui Xue
 */

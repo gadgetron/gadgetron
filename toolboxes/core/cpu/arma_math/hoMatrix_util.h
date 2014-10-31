@@ -8,25 +8,12 @@
     #include "hoArmadillo.h"
 #endif // USE_ARMADILLO
 
-#ifdef GT_Complex8
-    #undef GT_Complex8
-#endif // GT_Complex8
-typedef std::complex<float> GT_Complex8;
-
-#ifdef GT_Complex16
-    #undef GT_Complex16
-#endif // GT_Complex16
-typedef std::complex<double> GT_Complex16;
-
 #ifndef lapack_int
     #define lapack_int int
 #endif // lapack_int
 
 /// ----------------------------------------------------------------------
 /// the fortran interface of lapack and blas functions are called
-/// if the MKL is used and MKL_ILP64 is defined,
-/// the 64bit functions are linked, meaning the size of single array can 
-/// be over 4GB
 /// ----------------------------------------------------------------------
 
 namespace Gadgetron

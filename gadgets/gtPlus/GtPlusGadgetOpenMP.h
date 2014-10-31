@@ -1,5 +1,5 @@
 /** \file   GtPlusGadgetOpenMP.h
-    \brief  Pack up the OpenMP and MKL support in the GtPlus
+    \brief  Pack up the OpenMP support in the GtPlus
     \author Hui Xue
 */
 

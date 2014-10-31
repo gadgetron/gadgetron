@@ -141,7 +141,7 @@ protected:
     int meas_max_channel_;
 
     // util for gtplus
-    Gadgetron::gtPlus::gtPlusISMRMRDReconUtil<GT_Complex8> gtPlus_util_;
+    Gadgetron::gtPlus::gtPlusISMRMRDReconUtil< std::complex<float> > gtPlus_util_;
 
     // in verbose mode, more info is printed out
     bool verboseMode_;

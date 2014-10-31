@@ -1,7 +1,5 @@
 /** \file  hoNDArray_math_util.h
     \brief math functions for hoNDArray and hoNDImage not using armadillo
-           Some functions are using MKL; some have the general implementation
-           The MKL implementation has priority because of its speed
 */
 
 #pragma once
@@ -20,16 +18,6 @@
 #include "cpucore_math_export.h"
 #include "GadgetronCommon.h"
 #include <complex>
-
-#ifdef GT_Complex8
-#undef GT_Complex8
-#endif // GT_Complex8
-typedef std::complex<float> GT_Complex8;
-
-#ifdef GT_Complex16
-#undef GT_Complex16
-#endif // GT_Complex16
-typedef std::complex<double> GT_Complex16;
 
 namespace Gadgetron
 {

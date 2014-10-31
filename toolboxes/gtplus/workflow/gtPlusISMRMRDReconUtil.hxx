@@ -945,7 +945,7 @@ compute2DFilterFromTwo1D(const hoNDArray<T>& fx, const hoNDArray<T>& fy, hoNDArr
 
 template <typename T> 
 bool gtPlusISMRMRDReconUtil<T>::
-compute2DFilterFromTwo1D(const hoNDArray<float>& fx, const hoNDArray<float>& fy, hoNDArray<GT_Complex8>& fxy)
+compute2DFilterFromTwo1D(const hoNDArray<float>& fx, const hoNDArray<float>& fy, hoNDArray< std::complex<float> >& fxy)
 {
     try
     {
@@ -953,7 +953,7 @@ compute2DFilterFromTwo1D(const hoNDArray<float>& fx, const hoNDArray<float>& fy,
         size_t E1 = fy.get_size(0);
 
         fxy.create(RO, E1);
-        GT_Complex8* pFxy = fxy.begin();
+         std::complex<float> * pFxy = fxy.begin();
 
         size_t x, y;
 
@@ -961,7 +961,7 @@ compute2DFilterFromTwo1D(const hoNDArray<float>& fx, const hoNDArray<float>& fy,
         {
             for ( x=0; x<RO; x++ )
             {
-                pFxy[y*RO+x] = GT_Complex8(fx(x) * fy(y));
+                pFxy[y*RO+x] =  std::complex<float> (fx(x) * fy(y));
             }
         }
     }
@@ -976,7 +976,7 @@ compute2DFilterFromTwo1D(const hoNDArray<float>& fx, const hoNDArray<float>& fy,
 
 template <typename T> 
 bool gtPlusISMRMRDReconUtil<T>::
-compute2DFilterFromTwo1D(const hoNDArray<double>& fx, const hoNDArray<double>& fy, hoNDArray<GT_Complex16>& fxy)
+compute2DFilterFromTwo1D(const hoNDArray<double>& fx, const hoNDArray<double>& fy, hoNDArray< std::complex<double> >& fxy)
 {
     try
     {
@@ -984,7 +984,7 @@ compute2DFilterFromTwo1D(const hoNDArray<double>& fx, const hoNDArray<double>& f
         size_t E1 = fy.get_size(0);
 
         fxy.create(RO, E1);
-        GT_Complex16* pFxy = fxy.begin();
+         std::complex<double> * pFxy = fxy.begin();
 
         size_t x, y;
 
@@ -992,7 +992,7 @@ compute2DFilterFromTwo1D(const hoNDArray<double>& fx, const hoNDArray<double>& f
         {
             for ( x=0; x<RO; x++ )
             {
-                pFxy[y*RO+x] = GT_Complex16(fx(x) * fy(y));
+                pFxy[y*RO+x] =  std::complex<double> (fx(x) * fy(y));
             }
         }
     }
@@ -1053,7 +1053,7 @@ compute3DFilterFromThree1D(const hoNDArray<T>& fx, const hoNDArray<T>& fy, const
 
 template <typename T> 
 bool gtPlusISMRMRDReconUtil<T>::
-compute3DFilterFromThree1D(const hoNDArray<float>& fx, const hoNDArray<float>& fy, const hoNDArray<float>& fz, hoNDArray<GT_Complex8>& fxyz)
+compute3DFilterFromThree1D(const hoNDArray<float>& fx, const hoNDArray<float>& fy, const hoNDArray<float>& fz, hoNDArray< std::complex<float> >& fxyz)
 {
     try
     {
@@ -1062,7 +1062,7 @@ compute3DFilterFromThree1D(const hoNDArray<float>& fx, const hoNDArray<float>& f
         size_t E2 = fz.get_size(0);
 
         fxyz.create(RO, E1, E2);
-        GT_Complex8* pFxyz = fxyz.begin();
+         std::complex<float> * pFxyz = fxyz.begin();
 
         size_t x, y, z;
 
@@ -1072,7 +1072,7 @@ compute3DFilterFromThree1D(const hoNDArray<float>& fx, const hoNDArray<float>& f
             {
                 for ( x=0; x<RO; x++ )
                 {
-                    pFxyz[z+RO*E1+y*RO+x] = GT_Complex8(fx(x)*fy(y)*fz(z));
+                    pFxyz[z+RO*E1+y*RO+x] =  std::complex<float> (fx(x)*fy(y)*fz(z));
                 }
             }
         }
@@ -1088,7 +1088,7 @@ compute3DFilterFromThree1D(const hoNDArray<float>& fx, const hoNDArray<float>& f
 
 template <typename T> 
 bool gtPlusISMRMRDReconUtil<T>::
-compute3DFilterFromThree1D(const hoNDArray<double>& fx, const hoNDArray<double>& fy, const hoNDArray<double>& fz, hoNDArray<GT_Complex16>& fxyz)
+compute3DFilterFromThree1D(const hoNDArray<double>& fx, const hoNDArray<double>& fy, const hoNDArray<double>& fz, hoNDArray< std::complex<double> >& fxyz)
 {
     try
     {
@@ -1097,7 +1097,7 @@ compute3DFilterFromThree1D(const hoNDArray<double>& fx, const hoNDArray<double>&
         size_t E2 = fz.get_size(0);
 
         fxyz.create(RO, E1, E2);
-        GT_Complex16* pFxyz = fxyz.begin();
+         std::complex<double> * pFxyz = fxyz.begin();
 
         size_t x, y, z;
 
@@ -1107,7 +1107,7 @@ compute3DFilterFromThree1D(const hoNDArray<double>& fx, const hoNDArray<double>&
             {
                 for ( x=0; x<RO; x++ )
                 {
-                    pFxyz[z+RO*E1+y*RO+x] = GT_Complex16(fx(x)*fy(y)*fz(z));
+                    pFxyz[z+RO*E1+y*RO+x] =  std::complex<double> (fx(x)*fy(y)*fz(z));
                 }
             }
         }

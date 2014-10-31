@@ -9,11 +9,11 @@ namespace Gadgetron { namespace gtPlus {
 
 template EXPORTGTPLUS class gtPlusISMRMRDReconUtil<float>;
 template EXPORTGTPLUS class gtPlusISMRMRDReconUtil<double>;
-template EXPORTGTPLUS class gtPlusISMRMRDReconUtil<GT_Complex8>;
-template EXPORTGTPLUS class gtPlusISMRMRDReconUtil<GT_Complex16>;
+template EXPORTGTPLUS class gtPlusISMRMRDReconUtil< std::complex<float> >;
+template EXPORTGTPLUS class gtPlusISMRMRDReconUtil< std::complex<double> >;
 
-template EXPORTGTPLUS class gtPlusISMRMRDReconUtilComplex<GT_Complex8>;
-template EXPORTGTPLUS class gtPlusISMRMRDReconUtilComplex<GT_Complex16>;
+template EXPORTGTPLUS class gtPlusISMRMRDReconUtilComplex< std::complex<float> >;
+template EXPORTGTPLUS class gtPlusISMRMRDReconUtilComplex< std::complex<double> >;
 
 }}
 
@@ -881,7 +881,7 @@ namespace Gadgetron {
                 Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
-        else if ( typeid(T)==typeid(GT_Complex8) )
+        else if ( typeid(T)==typeid( std::complex<float> ) )
         {
             #ifdef GCC_OLD_FLAG
                 #pragma omp parallel for default(none) private(n) shared(Nx, N)
@@ -893,7 +893,7 @@ namespace Gadgetron {
                 Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
-        else if ( typeid(T)==typeid(GT_Complex16) )
+        else if ( typeid(T)==typeid( std::complex<double> ) )
         {
             #ifdef GCC_OLD_FLAG
                 #pragma omp parallel for default(none) private(n) shared(Nx, N)
@@ -952,7 +952,7 @@ namespace Gadgetron {
                 Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
-        else if ( typeid(T)==typeid(GT_Complex8) )
+        else if ( typeid(T)==typeid( std::complex<float> ) )
         {
             #ifdef GCC_OLD_FLAG
                 #pragma omp parallel for default(none) private(n) shared(Nx, N)
@@ -964,7 +964,7 @@ namespace Gadgetron {
                 Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
             }
         }
-        else if ( typeid(T)==typeid(GT_Complex16) )
+        else if ( typeid(T)==typeid( std::complex<double> ) )
         {
             #ifdef GCC_OLD_FLAG
                 #pragma omp parallel for default(none) private(n) shared(Nx, N)
@@ -2108,7 +2108,7 @@ namespace Gadgetron {
 
                 //#pragma omp for
 
-                if ( typeid(T)==typeid(GT_Complex8) )
+                if ( typeid(T)==typeid( std::complex<float> ) )
                 {
                     for ( dCha=0; dCha<dstCHA; dCha++ )
                     {
@@ -2121,7 +2121,7 @@ namespace Gadgetron {
                         }
                     }
                 }
-                else if ( typeid(T)==typeid(GT_Complex16) )
+                else if ( typeid(T)==typeid( std::complex<double> ) )
                 {
                     for ( dCha=0; dCha<dstCHA; dCha++ )
                     {
@@ -2176,7 +2176,7 @@ namespace Gadgetron {
 
                 //#pragma omp for
 
-                if ( typeid(T)==typeid(GT_Complex8) )
+                if ( typeid(T)==typeid( std::complex<float> ) )
                 {
                     const T* pXN = x.begin();
                     T* pYN = y.begin();
@@ -2213,7 +2213,7 @@ namespace Gadgetron {
                         }
                     }
                 }
-                else if ( typeid(T)==typeid(GT_Complex16) )
+                else if ( typeid(T)==typeid( std::complex<double> ) )
                 {
                     for ( n=0; n<N; n++ )
                     {
@@ -2312,179 +2312,179 @@ namespace Gadgetron {
 
     template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool multiplyOverLastDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
     template EXPORTGTPLUS bool multiplyOverLastDimension(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multiplyOverLastDimension(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool multiplyOverLastDimension(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool multiplyOverLastDimension(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool multiplyOverLastDimension(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
     template EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray<float>& x3D, const hoNDArray<float>& y4D, hoNDArray<float>& r);
     template EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray<double>& x3D, const hoNDArray<double>& y4D, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray<GT_Complex8>& x3D, const hoNDArray<GT_Complex8>& y4D, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray<GT_Complex16>& x3D, const hoNDArray<GT_Complex16>& y4D, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray< std::complex<float> >& x3D, const hoNDArray< std::complex<float> >& y4D, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray< std::complex<double> >& x3D, const hoNDArray< std::complex<double> >& y4D, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray<float>& x4D, const hoNDArray<float>& y5D, hoNDArray<float>& r);
     template EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray<double>& x4D, const hoNDArray<double>& y5D, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray<GT_Complex8>& x4D, const hoNDArray<GT_Complex8>& y5D, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray<GT_Complex16>& x4D, const hoNDArray<GT_Complex16>& y5D, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray< std::complex<float> >& x4D, const hoNDArray< std::complex<float> >& y5D, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray< std::complex<double> >& x4D, const hoNDArray< std::complex<double> >& y5D, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray<float>& x4D, const hoNDArray<float>& y5D, size_t n, hoNDArray<float>& r, bool copyY2R);
     template EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray<double>& x4D, const hoNDArray<double>& y5D, size_t n, hoNDArray<double>& r, bool copyY2R);
-    template EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray<GT_Complex8>& x4D, const hoNDArray<GT_Complex8>& y5D, size_t n, hoNDArray<GT_Complex8>& r, bool copyY2R);
-    template EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray<GT_Complex16>& x4D, const hoNDArray<GT_Complex16>& y5D, size_t n, hoNDArray<GT_Complex16>& r, bool copyY2R);
+    template EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray< std::complex<float> >& x4D, const hoNDArray< std::complex<float> >& y5D, size_t n, hoNDArray< std::complex<float> >& r, bool copyY2R);
+    template EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray< std::complex<double> >& x4D, const hoNDArray< std::complex<double> >& y5D, size_t n, hoNDArray< std::complex<double> >& r, bool copyY2R);
 
     template EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
     template EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<float>& x, const hoNDArray<float>& y, size_t n, hoNDArray<float>& r, bool copyY2R);
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<double>& x, const hoNDArray<double>& y, size_t n, hoNDArray<double>& r, bool copyY2R);
-    template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, size_t n, hoNDArray<GT_Complex8>& r, bool copyY2R);
-    template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, size_t n, hoNDArray<GT_Complex16>& r, bool copyY2R);
+    template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, size_t n, hoNDArray< std::complex<float> >& r, bool copyY2R);
+    template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, size_t n, hoNDArray< std::complex<double> >& r, bool copyY2R);
 
     template EXPORTGTPLUS bool multipleAdd(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
     template EXPORTGTPLUS bool multipleAdd(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multipleAdd(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool multipleAdd(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool multipleAdd(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool multipleAdd(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
     template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
     template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
     template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<float>& x, hoNDArray<float>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
     template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<double>& x, hoNDArray<double>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r, const std::vector<size_t>& start, std::vector<size_t>& size);
 
     template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
     template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
     template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<float>& x, hoNDArray<float>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
     template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<double>& x, hoNDArray<double>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r, const std::vector<size_t>& start, std::vector<size_t>& size);
 
     template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
     template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
     template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<float>& x, hoNDArray<float>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
     template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<double>& x, hoNDArray<double>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
-    template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
-    template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
+    template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
+    template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
 
     template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const hoNDArray<float>& timeStamp);
     template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const hoNDArray<float>& timeStamp);
     template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<float>& x, hoNDArray<float>& r, const hoNDArray<float>& timeStamp);
     template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<double>& x, hoNDArray<double>& r, const hoNDArray<float>& timeStamp);
-    template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const hoNDArray<float>& timeStamp);
-    template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const hoNDArray<float>& timeStamp);
+    template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r, const hoNDArray<float>& timeStamp);
+    template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r, const hoNDArray<float>& timeStamp);
 
     template EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray<short>& x, hoNDArray<short>& r, size_t start, size_t end);
     template EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, size_t start, size_t end);
     template EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& r, size_t start, size_t end);
     template EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& r, size_t start, size_t end);
-    template EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, size_t start, size_t end);
-    template EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, size_t start, size_t end);
+    template EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r, size_t start, size_t end);
+    template EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r, size_t start, size_t end);
 
     template EXPORTGTPLUS bool setSubArrayOver3rdDimension(const hoNDArray<short>& x, hoNDArray<short>& r, size_t start, size_t end);
     template EXPORTGTPLUS bool setSubArrayOver3rdDimension(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, size_t start, size_t end);
     template EXPORTGTPLUS bool setSubArrayOver3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& r, size_t start, size_t end);
     template EXPORTGTPLUS bool setSubArrayOver3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& r, size_t start, size_t end);
-    template EXPORTGTPLUS bool setSubArrayOver3rdDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, size_t start, size_t end);
-    template EXPORTGTPLUS bool setSubArrayOver3rdDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, size_t start, size_t end);
+    template EXPORTGTPLUS bool setSubArrayOver3rdDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r, size_t start, size_t end);
+    template EXPORTGTPLUS bool setSubArrayOver3rdDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r, size_t start, size_t end);
 
     template EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& std, bool NMinusOne);
     template EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& std, bool NMinusOne);
-    template EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& std, bool NMinusOne);
-    template EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& std, bool NMinusOne);
+    template EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& std, bool NMinusOne);
+    template EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& std, bool NMinusOne);
 
     template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
-    template EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& buf, hoNDArray<GT_Complex8>& y);
-    template EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& buf, hoNDArray<GT_Complex16>& y);
+    template EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& ker, hoNDArray< std::complex<float> >& buf, hoNDArray< std::complex<float> >& y);
+    template EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& ker, hoNDArray< std::complex<double> >& buf, hoNDArray< std::complex<double> >& y);
 
-    template EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& buf, hoNDArray<GT_Complex8>& y);
-    template EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& buf, hoNDArray<GT_Complex16>& y);
+    template EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& ker, hoNDArray< std::complex<float> >& buf, hoNDArray< std::complex<float> >& y);
+    template EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& ker, hoNDArray< std::complex<double> >& buf, hoNDArray< std::complex<double> >& y);
 
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<float>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<float>& vy);
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<double>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<double>& vy);
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<GT_Complex8>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<GT_Complex8>& vy);
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<GT_Complex16>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<GT_Complex16>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray< std::complex<float> >& y, float start, float end, hoNDArray<float>& vx, hoNDArray< std::complex<float> >& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray< std::complex<double> >& y, float start, float end, hoNDArray<float>& vx, hoNDArray< std::complex<double> >& vy);
 
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<double>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<double>& vy);
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<float>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<float>& vy);
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<GT_Complex8>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<GT_Complex8>& vy);
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<GT_Complex16>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<GT_Complex16>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray< std::complex<float> >& y, double start, double end, hoNDArray<double>& vx, hoNDArray< std::complex<float> >& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray< std::complex<double> >& y, double start, double end, hoNDArray<double>& vx, hoNDArray< std::complex<double> >& vy);
 }

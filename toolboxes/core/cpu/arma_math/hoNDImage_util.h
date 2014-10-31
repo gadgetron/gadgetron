@@ -20,16 +20,6 @@
 #include "hoNDArray_math_util.h"
 #include "hoNDInterpolator.h"
 
-#ifdef GT_Complex8
-#undef GT_Complex8
-#endif // GT_Complex8
-typedef std::complex<float> GT_Complex8;
-
-#ifdef GT_Complex16
-#undef GT_Complex16
-#endif // GT_Complex16
-typedef std::complex<double> GT_Complex16;
-
 namespace Gadgetron
 {
 

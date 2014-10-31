@@ -37,11 +37,11 @@
 #endif // lapack_int
 
 #ifndef lapack_complex_float
-    #define lapack_complex_float GT_Complex8
+    #define lapack_complex_float  std::complex<float> 
 #endif // lapack_complex_float
 
 #ifndef lapack_complex_double
-    #define lapack_complex_double GT_Complex16
+    #define lapack_complex_double  std::complex<double> 
 #endif // #ifndef lapack_complex_double
 
 using namespace Gadgetron;
@@ -767,7 +767,7 @@ TYPED_TEST(math_speed_test, norm1)
     save_timing("norm1", this->num_of_elements_, time_used);
 }
 /// ============================================================================================================
-void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r, int numOfThreads)
+void dotc(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> & r, int numOfThreads)
     {
         long long n;
 
@@ -807,7 +807,7 @@ void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r, 
         reinterpret_cast<float(&)[2]>(r)[1] = sb;
     }
 
-void dotc_blas(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
+void dotc_blas(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> & r)
 {
     lapack_int num = (lapack_int)N;
     lapack_int incx=1, incy=1;
@@ -815,7 +815,7 @@ void dotc_blas(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8
 }
 
 #ifdef USE_MKL
-void dotc_mkl(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
+void dotc_mkl(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> & r)
 {
     lapack_int num = (lapack_int)N;
     lapack_int incx=1, incy=1;
@@ -834,7 +834,7 @@ TYPED_TEST(math_speed_test, dotc)
 
     ho2DArray<double> time_used(N, this->max_num_thread_);
 
-    GT_Complex8 res;
+     std::complex<float>  res;
 
     GADGET_MSG("-----------------> Loop dotc <--------------------------------------");
     for ( n=0; n<N; n++ )
@@ -903,7 +903,7 @@ TYPED_TEST(math_speed_test, dotc)
 }
 
 /// ============================================================================================================
-void asum(size_t N, const GT_Complex8* x, float& r, int numOfThreads)
+void asum(size_t N, const  std::complex<float> * x, float& r, int numOfThreads)
 {
     long long i;
     float sum(0);
@@ -912,7 +912,7 @@ void asum(size_t N, const GT_Complex8* x, float& r, int numOfThreads)
     {
         for (i = 0; i < (long long)N; i++)
         {
-            const GT_Complex8& c = x[i];
+            const  std::complex<float> & c = x[i];
             const float re = c.real();
             const float im = c.imag();
             sum += ( std::abs(re) + std::abs(im) );
@@ -923,7 +923,7 @@ void asum(size_t N, const GT_Complex8* x, float& r, int numOfThreads)
         #pragma omp parallel for private(i) reduction(+:sum) num_threads(numOfThreads)
         for (i = 0; i < (long long)N; i++)
         {
-            const GT_Complex8& c = x[i];
+            const  std::complex<float> & c = x[i];
             const float re = c.real();
             const float im = c.imag();
             sum += ( std::abs(re) + std::abs(im) );
@@ -933,7 +933,7 @@ void asum(size_t N, const GT_Complex8* x, float& r, int numOfThreads)
     r = sum;
 }
 
-void asum_blas(size_t N, const GT_Complex8* x, float& r)
+void asum_blas(size_t N, const  std::complex<float> * x, float& r)
 {
     lapack_int incx=1;
 
@@ -962,7 +962,7 @@ void asum_blas(size_t N, const GT_Complex8* x, float& r)
 }
 
 #ifdef USE_MKL
-void asum_mkl(size_t N, const GT_Complex8* x, float& r)
+void asum_mkl(size_t N, const  std::complex<float> * x, float& r)
 {
     lapack_int num = (lapack_int)(N);
     lapack_int incx = 1;
@@ -1050,14 +1050,14 @@ TYPED_TEST(math_speed_test, asum)
 }
 
 /// ============================================================================================================
-void absolute(size_t N, const GT_Complex8* x, float* r, int numOfThreads)
+void absolute(size_t N, const  std::complex<float> * x, float* r, int numOfThreads)
 {
     long long n;
 
     #pragma omp parallel for default(none) private(n) shared(N, x, r) num_threads(numOfThreads)
     for ( n=0; n<(long long)N; n++ )
     {
-        const GT_Complex8& c = x[n];
+        const  std::complex<float> & c = x[n];
         const float re = c.real();
         const float im = c.imag();
         r[n]= std::sqrt( (re*re) + (im * im) );
@@ -1065,7 +1065,7 @@ void absolute(size_t N, const GT_Complex8* x, float* r, int numOfThreads)
 }
 
 #ifdef USE_MKL
-void absolute_mkl(size_t N, const GT_Complex8* x, float* r)
+void absolute_mkl(size_t N, const  std::complex<float> * x, float* r)
 {
     lapack_int num = (lapack_int)(N);
     lapack_int incx = 1;

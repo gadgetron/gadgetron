@@ -209,11 +209,11 @@ bool GeneralMatrixProduct(hoNDArray<double>& C, const hoNDArray<double>& A, bool
     return true;
 }
 
-bool GeneralMatrixProduct(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, bool transA, const hoNDArray<GT_Complex8>& B, bool transB)
+bool GeneralMatrixProduct(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB)
 {
     try
     {
-        typedef GT_Complex8 T;
+        typedef  std::complex<float>  T;
 
         size_t M = A.get_size(0);
         size_t K = A.get_size(1);
@@ -305,17 +305,17 @@ bool GeneralMatrixProduct(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, bool transA, const hoNDArray<GT_Complex8>& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
         return false;
     }
     return true;
 }
 
-bool GeneralMatrixProduct(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, bool transA, const hoNDArray<GT_Complex16>& B, bool transB)
+bool GeneralMatrixProduct(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, bool transA, const hoNDArray< std::complex<double> >& B, bool transB)
 {
     try
     {
-        typedef GT_Complex16 T;
+        typedef  std::complex<double>  T;
 
         size_t M = A.get_size(0);
         size_t K = A.get_size(1);
@@ -407,7 +407,7 @@ bool GeneralMatrixProduct(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, bool transA, const hoNDArray<GT_Complex16>& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, bool transA, const hoNDArray< std::complex<double> >& B, bool transB) ...");
         return false;
     }
     return true;

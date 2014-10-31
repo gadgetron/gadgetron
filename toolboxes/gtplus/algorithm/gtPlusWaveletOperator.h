@@ -422,10 +422,6 @@ grad(const hoNDArray<T>& x, hoNDArray<T>& g)
     {
         // D'y+Dc'x
         //gt_timer1_.start("1");
-        //vcMul(unacquired_points_indicator_.get_number_of_elements(), 
-        //    reinterpret_cast<MKL_Complex8*>(unacquired_points_indicator_.begin()), 
-        //    reinterpret_cast<const MKL_Complex8*>(x.begin()), 
-        //    reinterpret_cast<MKL_Complex8*>(kspace_.begin()));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, x, kspace_));
         //gt_timer1_.stop();
 

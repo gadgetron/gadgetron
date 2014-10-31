@@ -12,11 +12,11 @@
 #endif // lapack_int
 
 #ifndef lapack_complex_float
-    #define lapack_complex_float GT_Complex8
+    #define lapack_complex_float  std::complex<float> 
 #endif // lapack_complex_float
 
 #ifndef lapack_complex_double
-    #define lapack_complex_double GT_Complex16
+    #define lapack_complex_double  std::complex<double> 
 #endif // #ifndef lapack_complex_double
 
 //Declaration of BLAS and LAPACK routines
@@ -59,14 +59,14 @@ namespace Gadgetron { namespace math {
 
     // -----------------------------------
 
-    template <> EXPORTCPUCOREMATH void scal(size_t N, GT_Complex8 a, GT_Complex8* x)
+    template <> EXPORTCPUCOREMATH void scal(size_t N,  std::complex<float>  a,  std::complex<float> * x)
     {
         long long n;
 
 #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const GT_Complex8& c = x[n];
+            const  std::complex<float> & c = x[n];
             const float re = c.real();
             const float im = c.imag();
 
@@ -80,14 +80,14 @@ namespace Gadgetron { namespace math {
 
     // -----------------------------------
 
-    template <> EXPORTCPUCOREMATH void scal(size_t N, GT_Complex16 a, GT_Complex16* x)
+    template <> EXPORTCPUCOREMATH void scal(size_t N,  std::complex<double>  a,  std::complex<double> * x)
     {
         long long n;
 
 #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const GT_Complex16& c = x[n];
+            const  std::complex<double> & c = x[n];
             const double re = c.real();
             const double im = c.imag();
 
@@ -101,14 +101,14 @@ namespace Gadgetron { namespace math {
 
     // -----------------------------------
 
-    template <> EXPORTCPUCOREMATH void scal(size_t N, float a, GT_Complex8* x)
+    template <> EXPORTCPUCOREMATH void scal(size_t N, float a,  std::complex<float> * x)
     {
         long long n;
 
 #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const GT_Complex8& c = x[n];
+            const  std::complex<float> & c = x[n];
             const float re = c.real();
             const float im = c.imag();
 
@@ -119,14 +119,14 @@ namespace Gadgetron { namespace math {
 
     // -----------------------------------
 
-    template <> EXPORTCPUCOREMATH void scal(size_t N, double a, GT_Complex16* x)
+    template <> EXPORTCPUCOREMATH void scal(size_t N, double a,  std::complex<double> * x)
     {
         long long n;
 
 #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const GT_Complex16& c = x[n];
+            const  std::complex<double> & c = x[n];
             const double re = c.real();
             const double im = c.imag();
 
@@ -159,18 +159,18 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void axpy(GT_Complex8 a, size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
+    template <> EXPORTCPUCOREMATH void axpy( std::complex<float>  a, size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
     {
         long long n;
 
         #pragma omp parallel for default(none) private(n) shared(N, r, a, x, y) if(N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; ++n)
         {
-            const GT_Complex8& vx = x[n];
+            const  std::complex<float> & vx = x[n];
             const float re1 = vx.real();
             const float im1 = vx.imag();
 
-            const GT_Complex8& vy = y[n];
+            const  std::complex<float> & vy = y[n];
             const float re2 = vy.real();
             const float im2 = vy.imag();
 
@@ -182,18 +182,18 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void axpy(GT_Complex16 a, size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    template <> EXPORTCPUCOREMATH void axpy( std::complex<double>  a, size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
     {
         long long n;
 
         #pragma omp parallel for default(none) private(n) shared(N, r, a, x, y) if(N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; ++n)
         {
-            const GT_Complex16& vx = x[n];
+            const  std::complex<double> & vx = x[n];
             const double re1 = vx.real();
             const double im1 = vx.imag();
 
-            const GT_Complex16& vy = y[n];
+            const  std::complex<double> & vy = y[n];
             const double re2 = vy.real();
             const double im2 = vy.imag();
 
@@ -229,18 +229,18 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void add(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
+    template <> EXPORTCPUCOREMATH void add(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
     {
         long long n;
 
         #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; ++n)
         {
-            const GT_Complex8& vx = x[n];
+            const  std::complex<float> & vx = x[n];
             const float re1 = vx.real();
             const float im1 = vx.imag();
 
-            const GT_Complex8& vy = y[n];
+            const  std::complex<float> & vy = y[n];
             const float re2 = vy.real();
             const float im2 = vy.imag();
 
@@ -249,18 +249,18 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void add(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    template <> EXPORTCPUCOREMATH void add(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
     {
         long long n;
 
         #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; ++n)
         {
-            const GT_Complex16& vx = x[n];
+            const  std::complex<double> & vx = x[n];
             const double re1 = vx.real();
             const double im1 = vx.imag();
 
-            const GT_Complex16& vy = y[n];
+            const  std::complex<double> & vy = y[n];
             const double re2 = vy.real();
             const double im2 = vy.imag();
 
@@ -293,18 +293,18 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void subtract(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
+    template <> EXPORTCPUCOREMATH void subtract(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
     {
         long long n;
 
         #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; ++n)
         {
-            const GT_Complex8& vx = x[n];
+            const  std::complex<float> & vx = x[n];
             const float re1 = vx.real();
             const float im1 = vx.imag();
 
-            const GT_Complex8& vy = y[n];
+            const  std::complex<float> & vy = y[n];
             const float re2 = vy.real();
             const float im2 = vy.imag();
 
@@ -313,18 +313,18 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void subtract(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    template <> EXPORTCPUCOREMATH void subtract(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
     {
         long long n;
 
         #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; ++n)
         {
-            const GT_Complex16& vx = x[n];
+            const  std::complex<double> & vx = x[n];
             const double re1 = vx.real();
             const double im1 = vx.imag();
 
-            const GT_Complex16& vy = y[n];
+            const  std::complex<double> & vy = y[n];
             const double re2 = vy.real();
             const double im2 = vy.imag();
 
@@ -351,7 +351,7 @@ namespace Gadgetron { namespace math {
     template EXPORTCPUCOREMATH void multiply(size_t N, const float* x, const float* y, float* r);
     template EXPORTCPUCOREMATH void multiply(size_t N, const double* x, const double* y, double* r);
 
-    template <> EXPORTCPUCOREMATH void multiply(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
+    template <> EXPORTCPUCOREMATH void multiply(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
     {
         long long n;
         #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
@@ -369,7 +369,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void multiply(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    template <> EXPORTCPUCOREMATH void multiply(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
     {
         long long n;
         #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
@@ -405,7 +405,7 @@ namespace Gadgetron { namespace math {
     template EXPORTCPUCOREMATH void divide(size_t N, const float* x, const float* y, float* r);
     template EXPORTCPUCOREMATH void divide(size_t N, const double* x, const double* y, double* r);
 
-    template <> EXPORTCPUCOREMATH void divide(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
+    template <> EXPORTCPUCOREMATH void divide(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
     {
         long long n;
         #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
@@ -425,7 +425,7 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template <> EXPORTCPUCOREMATH void divide(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    template <> EXPORTCPUCOREMATH void divide(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
     {
         long long n;
         #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
@@ -460,8 +460,8 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH void sqrt(size_t N, const float* x, float* r);
     template EXPORTCPUCOREMATH void sqrt(size_t N, const double* x, double* r);
-    template EXPORTCPUCOREMATH void sqrt(size_t N, const GT_Complex8* x, GT_Complex8* r);
-    template EXPORTCPUCOREMATH void sqrt(size_t N, const GT_Complex16* x, GT_Complex16* r);
+    template EXPORTCPUCOREMATH void sqrt(size_t N, const  std::complex<float> * x,  std::complex<float> * r);
+    template EXPORTCPUCOREMATH void sqrt(size_t N, const  std::complex<double> * x,  std::complex<double> * r);
 
     /// --------------------------------------------------------------------
 
@@ -492,8 +492,8 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH void minAbsolute(size_t N, const float* x, float& r, size_t& ind);
     template EXPORTCPUCOREMATH void minAbsolute(size_t N, const double* x, double& r, size_t& ind);
-    template EXPORTCPUCOREMATH void minAbsolute(size_t N, const GT_Complex8* x, GT_Complex8& r, size_t& ind);
-    template EXPORTCPUCOREMATH void minAbsolute(size_t N, const GT_Complex16* x, GT_Complex16& r, size_t& ind);
+    template EXPORTCPUCOREMATH void minAbsolute(size_t N, const  std::complex<float> * x,  std::complex<float> & r, size_t& ind);
+    template EXPORTCPUCOREMATH void minAbsolute(size_t N, const  std::complex<double> * x,  std::complex<double> & r, size_t& ind);
 
     /// --------------------------------------------------------------------
 
@@ -531,13 +531,13 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH void maxAbsolute(size_t N, const float* x, float& r, size_t& ind);
     template EXPORTCPUCOREMATH void maxAbsolute(size_t N, const double* x, double& r, size_t& ind);
-    template EXPORTCPUCOREMATH void maxAbsolute(size_t N, const GT_Complex8* x, GT_Complex8& r, size_t& ind);
-    template EXPORTCPUCOREMATH void maxAbsolute(size_t N, const GT_Complex16* x, GT_Complex16& r, size_t& ind);
+    template EXPORTCPUCOREMATH void maxAbsolute(size_t N, const  std::complex<float> * x,  std::complex<float> & r, size_t& ind);
+    template EXPORTCPUCOREMATH void maxAbsolute(size_t N, const  std::complex<double> * x,  std::complex<double> & r, size_t& ind);
 
     /// --------------------------------------------------------------------
 
     template <> EXPORTCPUCOREMATH 
-    void multiplyConj(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r)
+    void multiplyConj(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
     {
         long long n;
 
@@ -555,7 +555,7 @@ namespace Gadgetron { namespace math {
     }
 
     template <> EXPORTCPUCOREMATH 
-    void multiplyConj(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r)
+    void multiplyConj(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
     {
         long long n;
 
@@ -575,7 +575,7 @@ namespace Gadgetron { namespace math {
     /// --------------------------------------------------------------------
 
     template <> EXPORTCPUCOREMATH 
-    void conjugate(size_t N, const GT_Complex8* x, GT_Complex8* r)
+    void conjugate(size_t N, const  std::complex<float> * x,  std::complex<float> * r)
     {
         long long n;
 
@@ -588,7 +588,7 @@ namespace Gadgetron { namespace math {
     }
 
     template <> EXPORTCPUCOREMATH 
-    void conjugate(size_t N, const GT_Complex16* x, GT_Complex16* r)
+    void conjugate(size_t N, const  std::complex<double> * x,  std::complex<double> * r)
     {
         long long n;
 
@@ -623,7 +623,7 @@ namespace Gadgetron { namespace math {
     template EXPORTCPUCOREMATH void addEpsilon(size_t N, double* x);
 
     template <> EXPORTCPUCOREMATH 
-    void addEpsilon(size_t N, GT_Complex8* x)
+    void addEpsilon(size_t N,  std::complex<float> * x)
     {
         const float eps = std::numeric_limits<float>::epsilon();
 
@@ -640,7 +640,7 @@ namespace Gadgetron { namespace math {
     }
 
     template <> EXPORTCPUCOREMATH 
-    void addEpsilon(size_t N, GT_Complex16* x)
+    void addEpsilon(size_t N,  std::complex<double> * x)
     {
         const double eps = std::numeric_limits<double>::epsilon();
 
@@ -690,7 +690,7 @@ namespace Gadgetron { namespace math {
         r = std::sqrt(sum);
     }
 
-    template <> EXPORTCPUCOREMATH void norm2(size_t N, const GT_Complex8* x, float& r)
+    template <> EXPORTCPUCOREMATH void norm2(size_t N, const  std::complex<float> * x, float& r)
     {
         long long i;
 
@@ -708,7 +708,7 @@ namespace Gadgetron { namespace math {
         r = std::sqrt(sum);
     }
 
-    template <> EXPORTCPUCOREMATH void norm2(size_t N, const GT_Complex16* x, double& r)
+    template <> EXPORTCPUCOREMATH void norm2(size_t N, const  std::complex<double> * x, double& r)
     {
         long long i;
 
@@ -736,8 +736,8 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH float norm2(size_t N, const float* x);
     template EXPORTCPUCOREMATH double norm2(size_t N, const double* x);
-    template EXPORTCPUCOREMATH float norm2(size_t N, const GT_Complex8* x);
-    template EXPORTCPUCOREMATH double norm2(size_t N, const GT_Complex16* x);
+    template EXPORTCPUCOREMATH float norm2(size_t N, const  std::complex<float> * x);
+    template EXPORTCPUCOREMATH double norm2(size_t N, const  std::complex<double> * x);
 
     /// --------------------------------------------------------------------
 
@@ -761,7 +761,7 @@ namespace Gadgetron { namespace math {
     template EXPORTCPUCOREMATH void norm1(size_t N, const float* x, float& r);
     template EXPORTCPUCOREMATH void norm1(size_t N, const double* x, double& r);
 
-    template <> EXPORTCPUCOREMATH void norm1(size_t N, const GT_Complex8* x, float& r)
+    template <> EXPORTCPUCOREMATH void norm1(size_t N, const  std::complex<float> * x, float& r)
     {
         long long i;
         float sum = 0.0f;
@@ -777,7 +777,7 @@ namespace Gadgetron { namespace math {
         r = sum;
     }
 
-    template <> EXPORTCPUCOREMATH void norm1(size_t N, const GT_Complex16* x, double& r)
+    template <> EXPORTCPUCOREMATH void norm1(size_t N, const  std::complex<double> * x, double& r)
     {
         long long i;
         double sum = 0.0;
@@ -803,12 +803,12 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH float norm1(size_t N, const float* x);
     template EXPORTCPUCOREMATH double norm1(size_t N, const double* x);
-    template EXPORTCPUCOREMATH float norm1(size_t N, const GT_Complex8* x);
-    template EXPORTCPUCOREMATH double norm1(size_t N, const GT_Complex16* x);
+    template EXPORTCPUCOREMATH float norm1(size_t N, const  std::complex<float> * x);
+    template EXPORTCPUCOREMATH double norm1(size_t N, const  std::complex<double> * x);
 
     /// --------------------------------------------------------------------
 
-    template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
+    template <> EXPORTCPUCOREMATH void dotc(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> & r)
     {
         long long n;
 
@@ -832,7 +832,7 @@ namespace Gadgetron { namespace math {
         reinterpret_cast<float(&)[2]>(r)[1] = sb;
     }
 
-    template <> EXPORTCPUCOREMATH void dotc(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r)
+    template <> EXPORTCPUCOREMATH void dotc(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> & r)
     {
         long long n;
 
@@ -863,8 +863,8 @@ namespace Gadgetron { namespace math {
         return r;
     }
 
-    template EXPORTCPUCOREMATH GT_Complex8 dotc(size_t N, const GT_Complex8* x, const GT_Complex8* y);
-    template EXPORTCPUCOREMATH GT_Complex16 dotc(size_t N, const GT_Complex16* x, const GT_Complex16* y);
+    template EXPORTCPUCOREMATH  std::complex<float>  dotc(size_t N, const  std::complex<float> * x, const  std::complex<float> * y);
+    template EXPORTCPUCOREMATH  std::complex<double>  dotc(size_t N, const  std::complex<double> * x, const  std::complex<double> * y);
 
     /// --------------------------------------------------------------------
 
@@ -898,11 +898,11 @@ namespace Gadgetron { namespace math {
         r = res;
     }
 
-    template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8& r)
+    template <> EXPORTCPUCOREMATH void dotu(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> & r)
     {
         long long n;
 
-        GT_Complex8 sum(0);
+         std::complex<float>  sum(0);
 
         float sa(0), sb(0);
 #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
@@ -921,11 +921,11 @@ namespace Gadgetron { namespace math {
         reinterpret_cast<float(&)[2]>(r)[1] = sb;
     }
 
-    template <> EXPORTCPUCOREMATH void dotu(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16& r)
+    template <> EXPORTCPUCOREMATH void dotu(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> & r)
     {
         long long n;
 
-        GT_Complex16 sum(0);
+         std::complex<double>  sum(0);
 
         double sa(0), sb(0);
 #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
@@ -953,8 +953,8 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH float dotu(size_t N, const float* x, const float* y);
     template EXPORTCPUCOREMATH double dotu(size_t N, const double* x, const double* y);
-    template EXPORTCPUCOREMATH GT_Complex8 dotu(size_t N, const GT_Complex8* x, const GT_Complex8* y);
-    template EXPORTCPUCOREMATH GT_Complex16 dotu(size_t N, const GT_Complex16* x, const GT_Complex16* y);
+    template EXPORTCPUCOREMATH  std::complex<float>  dotu(size_t N, const  std::complex<float> * x, const  std::complex<float> * y);
+    template EXPORTCPUCOREMATH  std::complex<double>  dotu(size_t N, const  std::complex<double> * x, const  std::complex<double> * y);
 
     /// --------------------------------------------------------------------
 
@@ -984,14 +984,14 @@ namespace Gadgetron { namespace math {
         r = sum;
     }
 
-    template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex8* x, float& r)
+    template <> EXPORTCPUCOREMATH void asum(size_t N, const  std::complex<float> * x, float& r)
     {
         long long i;
         float sum(0);
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            const GT_Complex8& c = x[i];
+            const  std::complex<float> & c = x[i];
             const float re = c.real();
             const float im = c.imag();
             sum += ( GT_ABS(re) + GT_ABS(im) );
@@ -1000,14 +1000,14 @@ namespace Gadgetron { namespace math {
         r = sum;
     }
 
-    template <> EXPORTCPUCOREMATH void asum(size_t N, const GT_Complex16* x, double& r)
+    template <> EXPORTCPUCOREMATH void asum(size_t N, const  std::complex<double> * x, double& r)
     {
         long long i;
         double sum(0);
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            const GT_Complex16& c = x[i];
+            const  std::complex<double> & c = x[i];
             const double re = c.real();
             const double im = c.imag();
             sum += ( GT_ABS(re) + GT_ABS(im) );
@@ -1025,8 +1025,8 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH float asum(size_t N, const float* x);
     template EXPORTCPUCOREMATH double asum(size_t N, const double* x);
-    template EXPORTCPUCOREMATH float asum(size_t N, const GT_Complex8* x);
-    template EXPORTCPUCOREMATH double asum(size_t N, const GT_Complex16* x);
+    template EXPORTCPUCOREMATH float asum(size_t N, const  std::complex<float> * x);
+    template EXPORTCPUCOREMATH double asum(size_t N, const  std::complex<double> * x);
 
     /// --------------------------------------------------------------------
 
@@ -1046,7 +1046,7 @@ namespace Gadgetron { namespace math {
         return idamax_(&num, (double*)(x), &incx);
     }
 
-    template <> EXPORTCPUCOREMATH size_t amax(size_t N, const GT_Complex8* x)
+    template <> EXPORTCPUCOREMATH size_t amax(size_t N, const  std::complex<float> * x)
     {
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
@@ -1054,7 +1054,7 @@ namespace Gadgetron { namespace math {
         return icamax_(&num, (lapack_complex_float*)(x), &incx);
     }
 
-    template <> EXPORTCPUCOREMATH size_t amax(size_t N, const GT_Complex16* x)
+    template <> EXPORTCPUCOREMATH size_t amax(size_t N, const  std::complex<double> * x)
     {
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
@@ -1079,28 +1079,28 @@ namespace Gadgetron { namespace math {
     template EXPORTCPUCOREMATH void absolute(size_t N, const float* x, float* r);
     template EXPORTCPUCOREMATH void absolute(size_t N, const double* x, double* r);
 
-    template <> EXPORTCPUCOREMATH void absolute(size_t N, const GT_Complex8* x, float* r)
+    template <> EXPORTCPUCOREMATH void absolute(size_t N, const  std::complex<float> * x, float* r)
     {
         long long n;
 
         #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
-            const GT_Complex8& c = x[n];
+            const  std::complex<float> & c = x[n];
             const float re = c.real();
             const float im = c.imag();
             r[n]= std::sqrt( (re*re) + (im * im) );
         }
     }
 
-    template <> EXPORTCPUCOREMATH void absolute(size_t N, const GT_Complex16* x, double* r)
+    template <> EXPORTCPUCOREMATH void absolute(size_t N, const  std::complex<double> * x, double* r)
     {
         long long n;
 
         #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
-            const GT_Complex16& c = x[n];
+            const  std::complex<double> & c = x[n];
             const double re = c.real();
             const double im = c.imag();
             r[n]= std::sqrt( (re*re) + (im * im) );
@@ -1169,8 +1169,8 @@ namespace Gadgetron { namespace math {
         }
     }
 
-    template EXPORTCPUCOREMATH void argument(size_t N, const GT_Complex8* x, float* r);
-    template EXPORTCPUCOREMATH void argument(size_t N, const GT_Complex16* x, double* r);
+    template EXPORTCPUCOREMATH void argument(size_t N, const  std::complex<float> * x, float* r);
+    template EXPORTCPUCOREMATH void argument(size_t N, const  std::complex<double> * x, double* r);
 
     /// --------------------------------------------------------------------
 
@@ -1189,8 +1189,8 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH void inv(size_t N, const float* x, float* r);
     template EXPORTCPUCOREMATH void inv(size_t N, const double* x, double* r);
-    template EXPORTCPUCOREMATH void inv(size_t N, const GT_Complex8* x, GT_Complex8* r);
-    template EXPORTCPUCOREMATH void inv(size_t N, const GT_Complex16* x, GT_Complex16* r);
+    template EXPORTCPUCOREMATH void inv(size_t N, const  std::complex<float> * x,  std::complex<float> * r);
+    template EXPORTCPUCOREMATH void inv(size_t N, const  std::complex<double> * x,  std::complex<double> * r);
 
     /// --------------------------------------------------------------------
 
@@ -1274,8 +1274,8 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH void conv2(size_t RO, size_t E1, size_t num, const float* x, size_t kRO, size_t kE1, const float* y, float* z);
     template EXPORTCPUCOREMATH void conv2(size_t RO, size_t E1, size_t num, const double* x, size_t kRO, size_t kE1, const double* y, double* z);
-    template EXPORTCPUCOREMATH void conv2(size_t RO, size_t E1, size_t num, const GT_Complex8* x, size_t kRO, size_t kE1, const GT_Complex8* y, GT_Complex8* z);
-    template EXPORTCPUCOREMATH void conv2(size_t RO, size_t E1, size_t num, const GT_Complex16* x, size_t kRO, size_t kE1, const GT_Complex16* y, GT_Complex16* z);
+    template EXPORTCPUCOREMATH void conv2(size_t RO, size_t E1, size_t num, const  std::complex<float> * x, size_t kRO, size_t kE1, const  std::complex<float> * y,  std::complex<float> * z);
+    template EXPORTCPUCOREMATH void conv2(size_t RO, size_t E1, size_t num, const  std::complex<double> * x, size_t kRO, size_t kE1, const  std::complex<double> * y,  std::complex<double> * z);
 
     /// --------------------------------------------------------------------
 
@@ -1382,8 +1382,8 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH void conv3(size_t RO, size_t E1, size_t E2, size_t num, const float* x, size_t kRO, size_t kE1, size_t kE2, const float* y, float* z);
     template EXPORTCPUCOREMATH void conv3(size_t RO, size_t E1, size_t E2, size_t num, const double* x, size_t kRO, size_t kE1, size_t kE2, const double* y, double* z);
-    template EXPORTCPUCOREMATH void conv3(size_t RO, size_t E1, size_t E2, size_t num, const GT_Complex8* x, size_t kRO, size_t kE1, size_t kE2, const GT_Complex8* y, GT_Complex8* z);
-    template EXPORTCPUCOREMATH void conv3(size_t RO, size_t E1, size_t E2, size_t num, const GT_Complex16* x, size_t kRO, size_t kE1, size_t kE2, const GT_Complex16* y, GT_Complex16* z);
+    template EXPORTCPUCOREMATH void conv3(size_t RO, size_t E1, size_t E2, size_t num, const  std::complex<float> * x, size_t kRO, size_t kE1, size_t kE2, const  std::complex<float> * y,  std::complex<float> * z);
+    template EXPORTCPUCOREMATH void conv3(size_t RO, size_t E1, size_t E2, size_t num, const  std::complex<double> * x, size_t kRO, size_t kE1, size_t kE2, const  std::complex<double> * y,  std::complex<double> * z);
 
     /// --------------------------------------------------------------------
 
@@ -1437,6 +1437,6 @@ namespace Gadgetron { namespace math {
 
     template EXPORTCPUCOREMATH void fill(size_t N, float* x, float v);
     template EXPORTCPUCOREMATH void fill(size_t N, double* x, double v);
-    template EXPORTCPUCOREMATH void fill(size_t N, GT_Complex8* x, GT_Complex8 v);
-    template EXPORTCPUCOREMATH void fill(size_t N, GT_Complex16* x, GT_Complex16 v);
+    template EXPORTCPUCOREMATH void fill(size_t N,  std::complex<float> * x,  std::complex<float>  v);
+    template EXPORTCPUCOREMATH void fill(size_t N,  std::complex<double> * x,  std::complex<double>  v);
 }}
