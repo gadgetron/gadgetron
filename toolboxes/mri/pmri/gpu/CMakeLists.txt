@@ -16,7 +16,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
   ${CUDA_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
   ${ARMADILLO_INCLUDE_DIRS} 

@@ -1,9 +1,7 @@
 #pragma once
 
 #include "gpBbSolver.h"
-#include "hoNDArray_operators.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_blas.h"
+#include "hoNDArray_math.h"
 #include "real_utilities.h"
 #include "vector_td_utilities.h"
 #include "hoSolverUtils.h"

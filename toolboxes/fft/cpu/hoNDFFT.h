@@ -6,7 +6,6 @@
 #define hoNDFFT_H
 
 #include "hoNDArray.h"
-#include "hoNDArray_blas.h"
 #include "cpufft_export.h"
 
 #include <boost/thread/mutex.hpp>

@@ -7,7 +7,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${ARMADILLO_INCLUDE_DIRS} 
     ${ISMRMRD_INCLUDE_DIR} )
 
@@ -36,18 +36,16 @@ if (ARMADILLO_FOUND)
 
     set(cpucore_math_header_files 
         ${cpucore_math_header_files}
-        hoNDArray_operators.h
         hoNDArray_reductions.h
         hoArmadillo.h
         hoNDArray_elemwise.h
-        hoNDArray_blas.h )
+         )
 
     set(cpucore_math_src_files 
         ${cpucore_math_src_files} 
-        hoNDArray_operators.cpp
         hoNDArray_reductions.cpp
         hoNDArray_elemwise.cpp
-        hoNDArray_blas.cpp )
+        )
 
 endif (ARMADILLO_FOUND)
 

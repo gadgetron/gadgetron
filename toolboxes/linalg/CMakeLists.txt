@@ -9,7 +9,7 @@ endif (WIN32)
 
 
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/core/cpu)
-include_directories(${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math)
+include_directories(${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math)
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image)
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/core)
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/linalg)

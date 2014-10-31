@@ -9,9 +9,7 @@
 #pragma once
 
 #include "cgSolver.h"
-#include "hoNDArray_operators.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_blas.h"
+#include "hoNDArray_math.h"
 
 namespace Gadgetron{
 

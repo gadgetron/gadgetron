@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hoNDArray_operators.h"
+#include "hoNDArray_math.h"
 #include "cgPreconditioner.h"
 
 namespace Gadgetron{

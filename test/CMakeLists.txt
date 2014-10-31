@@ -10,7 +10,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${Boost_INCLUDE_DIR}
   ${ARMADILLO_INCLUDE_DIRS}
@@ -38,7 +38,6 @@ if ( CUDA_FOUND )
   cuda_add_executable(test_all 
       tests.cpp 
       hoNDArray_elemwise_test.cpp 
-      hoNDArray_operators_test.cpp 
       hoNDArray_blas_test.cpp 
       hoNDArray_utils_test.cpp
       vector_td_test.cpp
@@ -75,7 +74,7 @@ if (GTEST_FOUND)
         include_directories(
           ${CMAKE_SOURCE_DIR}/toolboxes/core
           ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-          ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+          ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
           ${GTEST_INCLUDE_DIRS}
           )
 

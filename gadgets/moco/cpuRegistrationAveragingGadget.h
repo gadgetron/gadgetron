@@ -1,7 +1,7 @@
 #ifndef cpuRegistrationAveragingGadget_H
 #define cpuRegistrationAveragingGadget_H
 
-#include "hoNDArray_operators.h"
+#include "hoNDArray_math.h"
 #include "hoNDArray_utils.h"
 #include "hoCKOpticalFlowSolver.h"
 #include "RegistrationAveragingGadget.h"

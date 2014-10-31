@@ -22,7 +22,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools

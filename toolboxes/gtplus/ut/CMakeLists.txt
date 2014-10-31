@@ -19,7 +19,7 @@ include_directories( ${GTEST_INCLUDE_DIRS}
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-                     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+                     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
                      ${CMAKE_SOURCE_DIR}/toolboxes/operators
                      ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
                      ${CMAKE_SOURCE_DIR}/toolboxes/solvers

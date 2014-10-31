@@ -6,7 +6,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
   ${FFTW3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
   ${ISMRMRD_INCLUDE_DIR}

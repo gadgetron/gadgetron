@@ -3,9 +3,8 @@
 #include "cgSolver.h"
 
 #include "cgSolver.h"
-#include "hoNDArray_operators.h"
-#include "hoNDArray_elemwise.h"
-#include "hoCuNDArray_blas.h"
+#include "hoNDArray_math.h"
+#include "hoCuNDArray_math.h"
 
 namespace Gadgetron{
 
