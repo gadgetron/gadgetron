@@ -42,7 +42,8 @@
 #include <sstream>
 #include <stdexcept>
 
-using namespace std;
+//using namespace std;
+using std::vector;
 using namespace thrust;
 using namespace Gadgetron;
 

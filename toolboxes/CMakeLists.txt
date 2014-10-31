@@ -17,6 +17,8 @@ add_subdirectory(solvers)
 add_subdirectory(fft)
 add_subdirectory(nfft)
 
+add_subdirectory(dwt)
+
 add_subdirectory(mri)
 add_subdirectory(ct)
 
