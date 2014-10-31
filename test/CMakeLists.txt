@@ -53,7 +53,6 @@ else ( CUDA_FOUND )
     add_executable(test_all 
       tests.cpp 
       hoNDArray_elemwise_test.cpp 
-      hoNDArray_operators_test.cpp 
       hoNDArray_blas_test.cpp 
       hoNDArray_utils_test.cpp
       )

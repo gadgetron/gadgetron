@@ -3,36 +3,42 @@
 #include "hoNDArray.h"
 #include "cpucore_math_export.h"
 
+#ifdef max
+    #undef max
+#endif // max
+
+#ifdef min
+    #undef min
+#endif // min
+
 namespace Gadgetron{
 
+    /***
+    * Finds the maximum element of the array
+    */
+    template<class REAL> EXPORTCPUCOREMATH REAL max(hoNDArray<REAL>* data);
 
-	/***
-	 * Finds the maximum element of the array
-	 */
-  template<class REAL> EXPORTCPUCOREMATH REAL max(hoNDArray<REAL>* data);
+    /***
+    * Finds the minimum element of the array
+    */
+    template<class REAL> EXPORTCPUCOREMATH REAL min(hoNDArray<REAL>* data);
 
-  /***
-   * Finds the minimum element of the array
-   */
-  template<class REAL> EXPORTCPUCOREMATH REAL min(hoNDArray<REAL>* data);
+    /***
+    * Finds the mean of the array
+    */
+    template<class T> EXPORTCPUCOREMATH T mean(hoNDArray<T>* data);
 
-  /***
-   * Finds the mean of the array
-   */
-  template<class T> EXPORTCPUCOREMATH T mean(hoNDArray<T>* data);
+    /***
+    * Calculates the sum of the array
+    */
+    template<class T> EXPORTCPUCOREMATH T sum(hoNDArray<T>* data);
 
-  /***
-   * Calculates the sum of the array
-   */
-  template<class T> EXPORTCPUCOREMATH T sum(hoNDArray<T>* data);
+    /***
+    * Calculates the std of the array
+    */
+    template<class T> EXPORTCPUCOREMATH T stddev(hoNDArray<T>* data);
 
-  /***
-   * Calculates the std of the array
-   */
-  template<class T> EXPORTCPUCOREMATH T stddev(hoNDArray<T>* data);
-
-
-   /**
+    /**
     * @brief Calculates the dot product of two arrays (as vectors).
     * @param[in] x Array 1. For complex arrays the complex conjugate of x is used.
     * @param[in] y Array 2.
@@ -117,5 +123,4 @@ namespace Gadgetron{
     * @return The array index corresponding to the largest element in the array (0-indexing)
     */
     template<class T> EXPORTCPUCOREMATH size_t amax( hoNDArray< complext<T> > *x );
-
 }

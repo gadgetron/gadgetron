@@ -13,8 +13,6 @@
 #include <matrix_decomposition.h>
 #include "GadgetronTimer.h"
 #include "hoNDArray_math_util.h"
-#include "hoNDArray_blas.h"
-#include "hoNDArray_operators.h"
 #include "hoNDArray_elemwise.h"
 #include "hoMatrix_util.h"
 #include "hoNDMath_util.h"
