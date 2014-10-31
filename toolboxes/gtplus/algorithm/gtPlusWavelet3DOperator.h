@@ -217,7 +217,7 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
                     long long cha;
 
                     #pragma omp parallel for default(none) private(cha) shared(num, RO, E1, CHA, E2, W, pY, t) if ( CHA > 4 )
-                    for ( cha=0; cha<CHA; cha++ )
+                    for ( cha=0; cha<(long long)CHA; cha++ )
                     {
                         hoNDArray<T> in_dwt(RO, E1, E2, forward_buf_.begin()+cha*RO*E1*E2);
                         hoNDArray<T> out(RO, E1, E2, W, pY+t*RO*E1*E2*W*CHA+cha*RO*E1*E2*W);
@@ -299,7 +299,7 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
 
                     long long cha;
                     #pragma omp parallel for default(none) private(cha) shared(RO, E1, CHA, E2, W, pX) if ( CHA > 4 )
-                    for ( cha=0; cha<CHA; cha++ )
+                    for ( cha=0; cha<(long long)CHA; cha++ )
                     {
                         hoNDArray<T> in(RO, E1, E2, W, pX+cha*RO*E1*E2*W);
                         hoNDArray<T> out_idwt(RO, E1, E2, adjoint_buf_.begin()+cha*RO*E1*E2);
@@ -619,7 +619,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
 
                             long long nn;
                             #pragma omp parallel for private(nn) shared(s, N4D, pMagCurr, pMaskCurr, thres)
-                            for ( nn=startW; nn<endW; nn++ )
+                            for ( nn=(long long)startW; nn<(long long)endW; nn++ )
                             {
                                 // if ( std::abs(pMagCurr[nn]) < std::abs(thres*pMaskCurr[nn]) )
                                 if ( pMagCurr[nn].real() < pMaskCurr[nn].real() )
@@ -703,7 +703,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
 
                             long long nn;
                             #pragma omp parallel for private(nn) shared(s, N4D, pMagCurr, thres)
-                            for ( nn=startW; nn<endW; nn++ )
+                            for ( nn=(long long)startW; nn<(long long)endW; nn++ )
                             {
                                 // if ( std::abs(pMagCurr[nn]) < std::abs(thres) )
                                 if ( pMagCurr[nn].real() < thres )

@@ -34,6 +34,7 @@ add_library(gadgetron_python SHARED
 set_target_properties(gadgetron_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_python
+        gadgetron_gadgetbase
 	${ISMRMRD_LIBRARIES} 
 	optimized ${ACE_LIBRARIES}  
 	debug ${ACE_DEBUG_LIBRARY} 

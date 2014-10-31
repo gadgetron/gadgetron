@@ -27,6 +27,11 @@ namespace Gadgetron {
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
   private:
+    typedef std::map< std::string, int > coil_map_type_;
+    coil_map_type_ channel_map_;
+    std::vector<unsigned int> uncombined_channels_;
+
+    
     //Map containing buffers, one for each location
     std::map< int, std::vector< ACE_Message_Block* > > buffer_;
 

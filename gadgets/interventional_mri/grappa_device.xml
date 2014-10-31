@@ -24,27 +24,49 @@
       <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
-  
+
+    <writer>
+        <slot>1015</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterCPLX</classname>
+    </writer>
+    <writer>
+        <slot>1016</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterFLOAT</classname>
+    </writer>
+    <writer>
+        <slot>1017</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterUSHORT</classname>
+    </writer>
+
+    <!-- We need to modify the coil adjust to that we only scale channels according to noise variance -->
     <!--
     <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetron_mricore</dll>
       <classname>NoiseAdjustGadget</classname>
+      <property><name>scale_only</name><value>present_uncombined_channels@PCA</value></property>
+    </gadget>    
+    -->
+
+    <gadget>
+      <name>PCA</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>PCACoilGadget</classname>
+      <property><name>uncombined_channels_by_name</name><value>Loop_7:L7</value></property>
+
+      <!-- present_uncombined_channels will get updated by the gadget based on the attached coils -->
+      <property><name>present_uncombined_channels</name><value>0</value></property>
     </gadget>
 
-	<gadget>
-	<name>PCA</name>
-	<dll>gadgetron_mricore</dll>
-	<classname>PCACoilGadget</classname>
-	</gadget>
-	
-	<gadget>
-	<name>CoilReduction</name>
-	<dll>gadgetron_mricore</dll>
-	<classname>CoilReductionGadget</classname>
-	<property><name>coils_out</name><value>16</value></property>
-	</gadget>
-    -->
+    <gadget>
+      <name>CoilReduction</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>CoilReductionGadget</classname>
+      <property><name>coils_out</name><value>16</value></property>
+    </gadget>
 
     <gadget>
       <name>RemoveROOversampling</name>
@@ -56,10 +78,11 @@
       <name>Grappa</name>
       <dll>gadgetron_grappa</dll>
       <classname>GrappaGadget</classname>
-      <property><name>uncombined_channels_by_name</name><value>FlexLoopLarge:FLL</value></property>
+      <!-- After PCA gadget, the device channel with be the first channel -->
       <!--
-      <property><name>uncombined_channels_by_name</name><value>BodyMatrix:BO2</value></property>
+      <property><name>uncombined_channels</name><value>0</value></property>
       -->
+      <property><name>device_channels</name><value>present_uncombined_channels@PCA</value></property>
     </gadget>
 
     <gadget>
@@ -110,9 +133,15 @@
     </gadget>
  -->
 
+    <gadget>
+      <name>DeviceChannelSplitter</name>
+      <dll>gadgetron_interventional_mri</dll>
+      <classname>DeviceChannelSplitterGadgetUSHORT</classname>
+    </gadget>>
+
      <gadget>
-      <name>ImageFinishUSHORT</name>
+      <name>ImageFinishAttribUSHORT</name>
       <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadgetUSHORT</classname>
+      <classname>ImageFinishAttribGadgetUSHORT</classname>
     </gadget>
 </gadgetronStreamConfiguration>

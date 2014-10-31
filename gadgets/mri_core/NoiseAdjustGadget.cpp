@@ -8,10 +8,6 @@
 #include "hoNDArray_math_util.h"
 #include "ismrmrd/xml.h"
 
-#ifdef USE_MKL
-    #include "mkl.h"
-#endif // USE_MKL
-
 #ifdef USE_OMP
     #include "omp.h"
 #endif // USE_OMP
@@ -193,11 +189,6 @@ namespace Gadgetron{
         }
 
         // limit the number of threads used to be 1
-#ifdef USE_MKL
-        int save_nt = mkl_set_num_threads_local(1);
-        GADGET_MSG("NoiseAdjustGadget:mkl_set_num_threads_local(1) : " << save_nt);
-#endif // USE_MKL
-
 #ifdef USE_OMP
         omp_set_num_threads(1);
         GADGET_MSG("NoiseAdjustGadget:omp_set_num_threads(1) ... ");
@@ -440,13 +431,7 @@ namespace Gadgetron{
 
                     memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
 
-                    #if defined(USE_MKL) || defined(USE_LAPACK)
-                        GeneralMatrixProduct_gemm_CXFL(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
-                    #else
-                        arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
-                        arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
-                        am2 = am2*arma::trimatu(noise_covf);
-                    #endif // defined(USE_MKL) || defined(USE_LAPACK)
+                    GeneralMatrixProduct_gemm_CXFL(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
 
                     // GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
                 }
@@ -509,21 +494,9 @@ namespace Gadgetron{
                 std::complex<float>* cc_ptr = noise_covariance_matrixf_.get_data_ptr();
                 std::complex<float>* data_ptr = m2->getObjectPtr()->get_data_ptr();
 
-                #if defined(USE_MKL) || defined(USE_LAPACK)
-                    GADGET_CHECK_RETURN(GeneralMatrixProduct_gemm(noise_covariance_matrixf_once_, *m2->getObjectPtr(), true, *m2->getObjectPtr(), false), GADGET_FAIL);
-                    GADGET_CHECK_RETURN(Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_), GADGET_FAIL);
-                #else
-                    for (unsigned int s = 0; s < samples; s++)
-                    {
-                        for (unsigned int i = 0; i < channels; i++)
-                        {
-                            for (unsigned int j = 0; j < channels; j++)
-                            {
-                                cc_ptr[i*channels + j] += (data_ptr[i * samples + s] * conj(data_ptr[j * samples + s]));
-                            }
-                        }
-                    }
-                #endif // defined(USE_MKL) || defined(USE_LAPACK)
+                readout_ = *m2->getObjectPtr();
+                GADGET_CHECK_RETURN(GeneralMatrixProduct_gemm(noise_covariance_matrixf_once_, readout_, true, *m2->getObjectPtr(), false), GADGET_FAIL);
+                GADGET_CHECK_RETURN(Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_), GADGET_FAIL);
 
                 number_of_noise_samples_ += samples;
                 m1->release();
@@ -580,13 +553,7 @@ namespace Gadgetron{
 
                                 memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
 
-                                #if defined(USE_MKL) || defined(USE_LAPACK)
-                                    GeneralMatrixProduct_gemm_CXFL(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
-                                #else
-                                    arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
-                                    arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
-                                    am2 = am2*arma::trimatu(noise_covf);
-                                #endif // defined(USE_MKL) || defined(USE_LAPACK)
+                                GeneralMatrixProduct_gemm_CXFL(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
                             }
                         }
                     }

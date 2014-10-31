@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include "gadgetbase_export.h"
 
 namespace GadgetronXML
 {
@@ -86,7 +87,7 @@ namespace GadgetronXML
     Optional<CloudBus> cloudBus;    
   };
 
-  void deserialize(const char* xml_config, GadgetronConfiguration& h);
+  void EXPORTGADGETBASE deserialize(const char* xml_config, GadgetronConfiguration& h);
   
   struct Reader
   {
@@ -112,7 +113,7 @@ namespace GadgetronXML
     std::vector<Gadget> gadget;
   };
 
-  void deserialize(const char* xml, GadgetStreamConfiguration& cfg);
+  void EXPORTGADGETBASE deserialize(const char* xml, GadgetStreamConfiguration& cfg);
 
 };
 

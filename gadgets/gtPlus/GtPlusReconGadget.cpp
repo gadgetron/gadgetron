@@ -106,7 +106,6 @@ namespace Gadgetron
         gt_timer3_.set_timing_in_destruction(false);
 
         Gadgetron::prepOpenMP();
-        Gadgetron::prepMKL();
     }
 
     GtPlusReconGadget::~GtPlusReconGadget()
@@ -737,16 +736,17 @@ namespace Gadgetron
 
         //XUE-TODO: This is actually wrong. This assumes that you always zeropad, which is probably bad practice
         meas_max_idx_.kspace_encode_step_1 = (uint16_t)matrix_size_encoding_[1]-1;
-        meas_max_idx_.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum -1 : 0;
-        meas_max_idx_.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum -1 : 0;
+        meas_max_idx_.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum : 0;
+        meas_max_idx_.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum : 0;
 
         meas_max_idx_.kspace_encode_step_2 = (uint16_t)matrix_size_encoding_[2]-1; 
 
-        meas_max_idx_.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum -1 : 0;
+        meas_max_idx_.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum : 0;
         meas_max_idx_.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
         meas_max_idx_.repetition = e_limits.repetition ? e_limits.repetition->maximum : 0;
-        meas_max_idx_.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum -1 : 0;
-        meas_max_idx_.average = e_limits.average ? e_limits.average->maximum-1 : 0;
+        meas_max_idx_.average = e_limits.average ? e_limits.average->maximum : 0;
+
+        // combine all incoming segments
         meas_max_idx_.segment = 0;
 
         // find out the PAT mode
@@ -863,17 +863,6 @@ namespace Gadgetron
         // set the maximal number of threads used
         if ( thread_number_ratio_>0 && thread_number_ratio_<1 )
         {
-#ifdef USE_MKL
-            int maxThread = mkl_get_max_threads();
-            GADGET_MSG("GtPlusRecon, maximal of threads : " << maxThread);
-
-            int allowedNumThread = (int)(thread_number_ratio_ * maxThread);
-            if ( allowedNumThread > 0 )
-            {
-                mkl_set_num_threads_local(allowedNumThread);
-            }
-            GADGET_MSG("GtPlusRecon, mkl_set_num_threads_local : " << allowedNumThread);
-#endif // USE_MKL
         }
 
         return GADGET_OK;

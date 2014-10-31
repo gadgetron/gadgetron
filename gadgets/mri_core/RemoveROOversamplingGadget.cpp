@@ -3,10 +3,6 @@
 #include "hoNDFFT.h"
 #include "ismrmrd/xml.h"
 
-#ifdef USE_MKL
-    #include "mkl.h"
-#endif // USE_MKL
-
 #ifdef USE_OMP
     #include "omp.h"
 #endif // USE_OMP
@@ -43,12 +39,7 @@ namespace Gadgetron{
         reconNx_   = r_space.matrixSize.x;
         reconFOV_  = r_space.fieldOfView_mm.x;
 
-        // if MKL is used, limit the number of threads used
-#ifdef USE_MKL
-        int save_nt = mkl_set_num_threads_local(1);
-        GADGET_MSG("RemoveROOversamplingGadget:mkl_set_num_threads_local(1) : " << save_nt);
-#endif // USE_MKL
-
+        // limit the number of threads used to be 1
 #ifdef USE_OMP
         omp_set_num_threads(1);
         GADGET_MSG("RemoveROOversamplingGadget:omp_set_num_threads(1) ... ");

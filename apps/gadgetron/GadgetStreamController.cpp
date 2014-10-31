@@ -7,6 +7,8 @@
 
 #include "GadgetStreamController.h"
 #include "GadgetContainerMessage.h"
+#include "GadgetMessageInterface.h"
+#include "GadgetronConnector.h"
 #include "Gadget.h"
 #include "EndGadget.h"
 #include "gadgetron_config.h"
@@ -18,6 +20,27 @@
 #include <fstream>
 
 using namespace Gadgetron;
+
+/*
+namespace Gadgetron {
+//This function is needed to avoid some linking problems.
+  extern "C" {
+    Gadget* find_gadget_in_controller(GadgetStreamController* c, const char* g)
+    {
+      return c->find_gadget(g);
+    }
+  }
+}
+*/
+
+GadgetStreamController::GadgetStreamController()
+  : stream_configured_(false)
+  , notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
+  , writer_task_(&this->peer())
+{
+  gadgetron_home_ = get_gadgetron_home();
+}
+
 int GadgetStreamController::open (void)
 {
 	//We will set up the controllers message queue such that when a packet is enqueued write will be triggered.

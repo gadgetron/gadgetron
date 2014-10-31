@@ -22,6 +22,5 @@ namespace Gadgetron
 {
 
 bool EXPORTGTPLUSGADGET prepOpenMP();
-bool EXPORTGTPLUSGADGET prepMKL();
 
 }

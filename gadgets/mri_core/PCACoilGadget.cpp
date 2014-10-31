@@ -9,10 +9,12 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_elemwise.h"
+#include "ismrmrd/xml.h"
+#include "hoNDArray_fileio.h"
 
-#ifdef HAVE_MKL
-#include "mkl_service.h"
-#endif
+#include <ace/OS_NS_stdlib.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 namespace Gadgetron {
 
@@ -20,11 +22,6 @@ namespace Gadgetron {
         : max_buffered_profiles_(100)
         , samples_to_use_(16)
     {
-        // There is a bug in the MKL SVD when running in multi-threaded mode.
-        // Set the number of threads to 1 in this gadget.
-        #ifdef HAVE_MKL
-                mkl_set_num_threads(1);
-        #endif
     }
 
     PCACoilGadget::~PCACoilGadget()
@@ -42,11 +39,55 @@ namespace Gadgetron {
 
     int PCACoilGadget::process_config(ACE_Message_Block *mb)
     {
-        return GADGET_OK;
+      ISMRMRD::IsmrmrdHeader h;
+      ISMRMRD::deserialize(mb->rd_ptr(),h);
+
+      if (h.userParameters) {
+	for (size_t i = 0; i < h.userParameters->userParameterString.size(); i++) {
+	  std::string name = h.userParameters->userParameterString[i].name;
+	  std::string value = h.userParameters->userParameterString[i].value;
+	  if (name.substr(0,5) == std::string("COIL_")) {
+	    int coil_num = std::atoi(name.substr(5,name.size()-5).c_str());
+	    channel_map_[value] = coil_num;
+	  }
+	}
+      }
+      
+      
+      boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels_by_name");
+      std::vector<std::string> uncomb;
+      if (uncomb_str->size()) {
+	GADGET_DEBUG2("uncomb_str: %s\n",  uncomb_str->c_str());
+	boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
+	for (unsigned int i = 0; i < uncomb.size(); i++) {
+	  std::string ch = boost::algorithm::trim_copy(uncomb[i]);
+	  coil_map_type_::iterator it = channel_map_.find(ch);
+	  if (it != channel_map_.end()) {
+	    unsigned int channel_id = static_cast<unsigned int>(it->second);
+	    GADGET_DEBUG2("Device channel: %s (%d)\n",  uncomb[i].c_str(), channel_id);
+	    uncombined_channels_.push_back(channel_id);
+	  }
+	}
+      }
+
+      char val[32];
+      sprintf(val,"%d",(int)uncombined_channels_.size());
+      this->set_parameter("present_uncombined_channels",val);
+
+      return GADGET_OK;
     }
 
     int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
     {
+      bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
+
+      //We should not be receiving noise here
+      if (is_noise) {
+	m1->release();
+	return GADGET_OK;
+      }
+
+
         std::map<int, bool>::iterator it;
         int location = m1->getObjectPtr()->idx.slice;
         bool is_last_scan_in_slice = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
@@ -124,16 +165,21 @@ namespace Gadgetron {
 
                     std::complex<float>* d = m_tmp->getObjectPtr()->get_data_ptr();
 
-                    for (unsigned s = 0; s < samples_to_use; s++) {
-                        for (size_t c = 0; c < channels; c++) {
-                            //We use the conjugate of the data so that the output VT of the SVD is the actual PCA coefficient matrix
-                            A_ptr[c + sample_counter*channels] = d[c*samples_per_profile + data_offset + s];
-                            means_ptr[c] += d[c*samples_per_profile + data_offset + s];
-                        }
-
-                        sample_counter++;
-                        //GADGET_DEBUG2("Sample counter = %d/%d\n", sample_counter, total_samples);
-                    }
+		      for (unsigned s = 0; s < samples_to_use; s++) {
+			for (size_t c = 0; c < channels; c++) {
+			  bool uncombined_channel = std::find(uncombined_channels_.begin(),uncombined_channels_.end(), c) != uncombined_channels_.end();
+			  //We use the conjugate of the data so that the output VT of the SVD is the actual PCA coefficient matrix
+			  if (uncombined_channel) {
+			    A_ptr[c + sample_counter*channels] = std::complex<float>(0.0,0.0);
+			  } else {
+			    A_ptr[c + sample_counter*channels] = d[c*samples_per_profile + data_offset + s];
+			    means_ptr[c] += d[c*samples_per_profile + data_offset + s];
+			  }
+			}
+			
+			sample_counter++;
+			//GADGET_DEBUG2("Sample counter = %d/%d\n", sample_counter, total_samples);
+		      }
                 }
 
                 //Subtract off mean
@@ -150,7 +196,7 @@ namespace Gadgetron {
                 VT_dims.push_back(channels);
                 pca_coefficients_[location] = new hoNDArray< std::complex<float> >;
                 hoNDArray< std::complex<float> >* VT = pca_coefficients_[location];
-
+		
                 try {VT->create(&VT_dims);}
                 catch (std::runtime_error& err){
                     GADGET_DEBUG_EXCEPTION(err,"Failed to create array for VT\n");
@@ -162,10 +208,55 @@ namespace Gadgetron {
                 arma::cx_fmat Um;
                 arma::fvec Sv;
 
+
                 if( !arma::svd_econ(Um,Sv,Vm,Am.st(),'r') ){
                     GADGET_DEBUG1("Failed to compute SVD\n");
                     return GADGET_FAIL;
                 }
+		
+		//We will create a new matrix that explicitly preserves the uncombined channels
+		if (uncombined_channels_.size()) {
+		  hoNDArray< std::complex<float> >* VT_new = new hoNDArray< std::complex<float> >;
+		  try {VT_new->create(&VT_dims);}
+		  catch (std::runtime_error& err){
+                    GADGET_DEBUG_EXCEPTION(err,"Failed to create array for VT (new)\n");
+                    return GADGET_FAIL;
+		  }
+
+		  arma::cx_fmat Vm_new = as_arma_matrix(VT_new);
+
+		  size_t uncomb_count = 0;
+		  size_t comb_count = 0;
+		  for (size_t c = 0; c < Vm_new.n_cols; c++) {
+		    bool uncombined_channel = std::find(uncombined_channels_.begin(),uncombined_channels_.end(), c) != uncombined_channels_.end();
+		    if (uncombined_channel) {
+		      for (size_t r = 0; r < Vm_new.n_rows; r++) {
+			if (r == c) {
+			  Vm_new(r,uncomb_count) = 1;
+			} else {
+			  Vm_new(r,uncomb_count) = 0;
+			}
+		      }
+		      uncomb_count++;
+		    } else {
+		      for (size_t r = 0; r < Vm_new.n_rows; r++) { 
+			bool uncombined_channel_row = std::find(uncombined_channels_.begin(),uncombined_channels_.end(), r) != uncombined_channels_.end();
+			if (uncombined_channel_row) {
+			  Vm_new(r,comb_count+uncombined_channels_.size()) = 0;
+			} else {
+			  Vm_new(r,comb_count+uncombined_channels_.size()) = Vm(r,c);
+			}
+		      }
+		      comb_count++;
+		    }
+		  } 
+		  GADGET_DEBUG2("uncomb_count = %d, comb_count = %d\n", uncomb_count, comb_count);
+
+		  //Delete the old one and set the new one
+		  delete pca_coefficients_[location];
+		  pca_coefficients_[location] = VT_new;
+		}
+
 
                 //Switch off buffering for this slice
                 buffering_mode_[location] = false;

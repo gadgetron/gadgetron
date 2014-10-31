@@ -34,6 +34,7 @@ add_library(gadgetron_grappa SHARED
 set_target_properties(gadgetron_grappa PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_grappa 
+  gadgetron_gadgetbase
   gadgetron_toolbox_gpuparallelmri
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpufft

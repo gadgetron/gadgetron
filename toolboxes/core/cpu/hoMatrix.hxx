@@ -88,14 +88,11 @@ bool hoMatrix<T>::upperTri(const T& v)
     try
     {
         size_t r, c;
-        for (c=0; c<(*dimensions_)[1]; c++)
+        for (r=0; r<(*dimensions_)[0]; r++)
         {
-            for (r=0; r<(*dimensions_)[0]; r++)
+            for (c=r+1; c<(*dimensions_)[1]; c++)
             {
-                if ( c > r )
-                {
-                    (*this)(r, c) = v;
-                }
+                (*this)(r, c) = v;
             }
         }
     }
@@ -115,18 +112,63 @@ bool hoMatrix<T>::lowerTri(const T& v)
         size_t r, c;
         for (c=0; c<(*dimensions_)[1]; c++)
         {
-            for (r=0; r<(*dimensions_)[0]; r++)
+            for (r=c+1; r<(*dimensions_)[0]; r++)
             {
-                if ( r > c )
-                {
-                    (*this)(r, c) = v;
-                }
+                (*this)(r, c) = v;
             }
         }
     }
     catch (...)
     {
         GADGET_ERROR_MSG("Errors in hoMatrix<T>::lowerTri(const T& v) ... ");
+        return false;
+    }
+    return true;
+}
+
+template <typename T> 
+bool hoMatrix<T>::copyUpperTriToLower()
+{
+    try
+    {
+        GADGET_CHECK_RETURN_FALSE((*dimensions_)[0]==(*dimensions_)[1]);
+
+        size_t r, c;
+        for (r=0; r<(*dimensions_)[0]; r++)
+        {
+            for (c=r+1; c<(*dimensions_)[1]; c++)
+            {
+                (*this)(c, r)= (*this)(r, c);
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in hoMatrix<T>::copyUpperTriToLower() ... ");
+        return false;
+    }
+    return true;
+}
+
+template <typename T> 
+bool hoMatrix<T>::copyLowerTriToUpper()
+{
+    try
+    {
+        GADGET_CHECK_RETURN_FALSE((*dimensions_)[0]==(*dimensions_)[1]);
+
+        size_t r, c;
+        for (c=0; c<(*dimensions_)[1]; c++)
+        {
+            for (r=c+1; r<(*dimensions_)[0]; r++)
+            {
+                (*this)(c, r)= (*this)(r, c);
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in hoMatrix<T>::copyUpperTriToLower() ... ");
         return false;
     }
     return true;

@@ -1,5 +1,6 @@
 
 #include "hoMatrix_util.h"
+#include "hoNDArray_elemwise.h"
 
 #ifndef lapack_complex_float
     #define lapack_complex_float GT_Complex8
@@ -26,6 +27,14 @@ extern "C" void zgemm_(const char *transa, const char *transb, const lapack_int 
             const lapack_complex_double *alpha, const lapack_complex_double *a, const lapack_int *lda,
             const lapack_complex_double *b, const lapack_int *ldb, const lapack_complex_double *beta,
             lapack_complex_double *c, const lapack_int *ldc);
+
+extern "C" void ssyrk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const float *alpha, const float *a, const lapack_int *lda, const float *beta, float *c, const lapack_int *ldc);
+extern "C" void dsyrk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const double *alpha, const double *a, const lapack_int *lda, const double *beta, double *c, const lapack_int *ldc);
+extern "C" void csyrk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const lapack_complex_float *alpha, const lapack_complex_float *a, const lapack_int *lda, const lapack_complex_float *beta, lapack_complex_float *c, const lapack_int *ldc);
+extern "C" void zsyrk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const lapack_complex_double *alpha, const lapack_complex_double *a, const lapack_int *lda, const lapack_complex_double *beta, lapack_complex_double *c, const lapack_int *ldc);
+
+extern "C" void cherk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const lapack_complex_float *alpha, const lapack_complex_float *a, const lapack_int *lda, const lapack_complex_float *beta, lapack_complex_float *c, const lapack_int *ldc);
+extern "C" void zherk_( const char* uplo, const char *trans, const lapack_int *n, const lapack_int *k, const lapack_complex_double *alpha, const lapack_complex_double *a, const lapack_int *lda, const lapack_complex_double *beta, lapack_complex_double *c, const lapack_int *ldc);
 
 extern "C" void spotrf_( const char* uplo, const lapack_int* n, float* a, const lapack_int* lda, lapack_int* info );
 extern "C" void dpotrf_( const char* uplo, const lapack_int* n, double* a, const lapack_int* lda, lapack_int* info );
@@ -141,6 +150,8 @@ bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const h
     {
         char TA, TB;
 
+        GADGET_CHECK_RETURN_FALSE( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+
         lapack_int lda = A.get_size(0);
         lapack_int ldb = B.get_size(0);
         const T* pA = A.begin(); 
@@ -185,6 +196,8 @@ bool GeneralMatrixProduct_gemm(hoNDArray<float>& C,
     {
         typedef float T;
 
+        GADGET_CHECK_RETURN_FALSE( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+
         char TA, TB;
 
         lapack_int lda = A.get_size(0);
@@ -237,16 +250,7 @@ bool GeneralMatrixProduct_gemm(hoNDArray<float>& C,
             TB = 'N';
         }
 
-        if ( &A != &C )
-        {
-            sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
-        }
-        else
-        {
-            hoNDArray<T> aTmp(A);
-            T* pATmp = aTmp.begin();
-            sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pATmp), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
-        }
+        sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
     }
     catch(...)
     {
@@ -265,6 +269,8 @@ bool GeneralMatrixProduct_gemm(hoNDArray<double>& C,
     {
         typedef double T;
 
+        GADGET_CHECK_RETURN_FALSE( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+
         char TA, TB;
 
         lapack_int lda = A.get_size(0);
@@ -317,16 +323,7 @@ bool GeneralMatrixProduct_gemm(hoNDArray<double>& C,
             TB = 'N';
         }
 
-        if ( &A != &C )
-        {
-            dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
-        }
-        else
-        {
-            hoNDArray<T> aTmp(A);
-            T* pATmp = aTmp.begin();
-            dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pATmp), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
-        }
+        dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
     }
     catch(...)
     {
@@ -345,6 +342,8 @@ bool GeneralMatrixProduct_gemm(hoNDArray<GT_Complex8>& C,
     {
         typedef GT_Complex8 T;
 
+        GADGET_CHECK_RETURN_FALSE( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+
         char TA, TB;
 
         lapack_int lda = A.get_size(0);
@@ -397,16 +396,7 @@ bool GeneralMatrixProduct_gemm(hoNDArray<GT_Complex8>& C,
             TB = 'N';
         }
 
-        if ( &A != &C )
-        {
-            cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<const lapack_complex_float*>(pA), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
-        }
-        else
-        {
-            hoNDArray<T> aTmp(A);
-            T* pATmp = aTmp.begin();
-            cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<lapack_complex_float*>(pATmp), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
-        }
+        cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<const lapack_complex_float*>(pA), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
     }
     catch(...)
     {
@@ -425,6 +415,8 @@ bool GeneralMatrixProduct_gemm(hoNDArray<GT_Complex16>& C,
     {
         typedef GT_Complex16 T;
 
+        GADGET_CHECK_RETURN_FALSE( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+
         char TA, TB;
 
         lapack_int lda = A.get_size(0);
@@ -477,16 +469,7 @@ bool GeneralMatrixProduct_gemm(hoNDArray<GT_Complex16>& C,
             TB = 'N';
         }
 
-        if ( &A != &C )
-        {
-            zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<const lapack_complex_double*>(pA), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
-        }
-        else
-        {
-            hoNDArray<T> aTmp(A);
-            T* pATmp = aTmp.begin();
-            zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<lapack_complex_double*>(pATmp), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
-        }
+        zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<const lapack_complex_double*>(pA), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
     }
     catch(...)
     {
@@ -498,50 +481,360 @@ bool GeneralMatrixProduct_gemm(hoNDArray<GT_Complex16>& C,
 
 /// ---------------------------------------------------------------------
 
+//template<> EXPORTCPUCOREMATH 
+//bool GeneralMatrixProduct_gemm(hoMatrix<float>& C, 
+//                            const hoMatrix<float>& A, bool transA, 
+//                            const hoMatrix<float>& B, bool transB)
+//{
+//    try
+//    {
+//        typedef float T;
+//
+//        char TA, TB;
+//
+//        lapack_int lda = A.rows();
+//        lapack_int ldb = B.rows();
+//        const T* pA = A.begin(); 
+//        const T* pB = B.begin(); 
+//
+//        lapack_int M = A.rows();
+//        lapack_int K = A.cols();
+//        if ( transA )
+//        {
+//            M = A.cols();
+//            K = A.rows();
+//        }
+//
+//        lapack_int K2 = B.rows();
+//        lapack_int N = B.cols();
+//        if ( transB )
+//        {
+//            K2 = B.cols();
+//            N = B.rows();
+//        }
+//
+//        GADGET_CHECK_RETURN_FALSE(K==K2);
+//        if ( (C.rows()!=M) || (C.cols()!=N) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
+//        }
+//
+//        T* pC = C.begin();
+//        lapack_int ldc = C.rows();
+//
+//        float alpha(1), beta(0);
+//
+//        if ( transA )
+//        {
+//            TA = 'T';
+//        }
+//        else
+//        {
+//            TA = 'N';
+//        }
+//
+//        if ( transB )
+//        {
+//            TB = 'T';
+//        }
+//        else
+//        {
+//            TB = 'N';
+//        }
+//
+//        if ( &A != &C )
+//        {
+//            sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
+//        }
+//        else
+//        {
+//            hoNDArray<T> aTmp(A);
+//            T* pATmp = aTmp.begin();
+//            sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pATmp), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
+//        }
+//    }
+//    catch(...)
+//    {
+//        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<float>& C, const hoMatrix<float>& A, bool transA, const hoMatrix<float>& B, bool transB) ...");
+//        return false;
+//    }
+//    return true;
+//}
+//
+//template<> EXPORTCPUCOREMATH 
+//bool GeneralMatrixProduct_gemm(hoMatrix<double>& C, 
+//                            const hoMatrix<double>& A, bool transA, 
+//                            const hoMatrix<double>& B, bool transB)
+//{
+//    try
+//    {
+//        typedef double T;
+//
+//        char TA, TB;
+//
+//        lapack_int lda = A.rows();
+//        lapack_int ldb = B.rows();
+//        const T* pA = A.begin(); 
+//        const T* pB = B.begin(); 
+//
+//        lapack_int M = A.rows();
+//        lapack_int K = A.cols();
+//        if ( transA )
+//        {
+//            M = A.cols();
+//            K = A.rows();
+//        }
+//
+//        lapack_int K2 = B.rows();
+//        lapack_int N = B.cols();
+//        if ( transB )
+//        {
+//            K2 = B.cols();
+//            N = B.rows();
+//        }
+//
+//        GADGET_CHECK_RETURN_FALSE(K==K2);
+//        if ( (C.rows()!=M) || (C.cols()!=N) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
+//        }
+//
+//        T* pC = C.begin();
+//        lapack_int ldc = C.rows();
+//
+//        double alpha(1), beta(0);
+//
+//        if ( transA )
+//        {
+//            TA = 'T';
+//        }
+//        else
+//        {
+//            TA = 'N';
+//        }
+//
+//        if ( transB )
+//        {
+//            TB = 'T';
+//        }
+//        else
+//        {
+//            TB = 'N';
+//        }
+//
+//        if ( &A != &C )
+//        {
+//            dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
+//        }
+//        else
+//        {
+//            hoNDArray<T> aTmp(A);
+//            T* pATmp = aTmp.begin();
+//            dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pATmp), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
+//        }
+//    }
+//    catch(...)
+//    {
+//        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<double>& C, const hoMatrix<double>& A, bool transA, const hoMatrix<double>& B, bool transB) ...");
+//        return false;
+//    }
+//    return true;
+//}
+//
+//template<> EXPORTCPUCOREMATH 
+//bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex8>& C, 
+//                            const hoMatrix<GT_Complex8>& A, bool transA, 
+//                            const hoMatrix<GT_Complex8>& B, bool transB)
+//{
+//    try
+//    {
+//        typedef GT_Complex8 T;
+//
+//        char TA, TB;
+//
+//        lapack_int lda = A.rows();
+//        lapack_int ldb = B.rows();
+//        const T* pA = A.begin(); 
+//        const T* pB = B.begin(); 
+//
+//        lapack_int M = A.rows();
+//        lapack_int K = A.cols();
+//        if ( transA )
+//        {
+//            M = A.cols();
+//            K = A.rows();
+//        }
+//
+//        lapack_int K2 = B.rows();
+//        lapack_int N = B.cols();
+//        if ( transB )
+//        {
+//            K2 = B.cols();
+//            N = B.rows();
+//        }
+//
+//        GADGET_CHECK_RETURN_FALSE(K==K2);
+//        if ( (C.rows()!=M) || (C.cols()!=N) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
+//        }
+//
+//        T* pC = C.begin();
+//        lapack_int ldc = C.rows();
+//
+//        GT_Complex8 alpha(1), beta(0);
+//
+//        if ( transA )
+//        {
+//            TA = 'C';
+//        }
+//        else
+//        {
+//            TA = 'N';
+//        }
+//
+//        if ( transB )
+//        {
+//            TB = 'C';
+//        }
+//        else
+//        {
+//            TB = 'N';
+//        }
+//
+//        if ( &A != &C )
+//        {
+//            cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<const lapack_complex_float*>(pA), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
+//        }
+//        else
+//        {
+//            hoNDArray<T> aTmp(A);
+//            T* pATmp = aTmp.begin();
+//            cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<lapack_complex_float*>(pATmp), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
+//        }
+//    }
+//    catch(...)
+//    {
+//        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<GT_Complex8>& C, const hoMatrix<GT_Complex8>& A, bool transA, const hoMatrix<GT_Complex8>& B, bool transB) ...");
+//        return false;
+//    }
+//    return true;
+//}
+//
+//template<> EXPORTCPUCOREMATH 
+//bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex16>& C, 
+//                            const hoMatrix<GT_Complex16>& A, bool transA, 
+//                            const hoMatrix<GT_Complex16>& B, bool transB)
+//{
+//    try
+//    {
+//        typedef GT_Complex16 T;
+//
+//        char TA, TB;
+//
+//        lapack_int lda = A.rows();
+//        lapack_int ldb = B.rows();
+//        const T* pA = A.begin(); 
+//        const T* pB = B.begin(); 
+//
+//        lapack_int M = A.rows();
+//        lapack_int K = A.cols();
+//        if ( transA )
+//        {
+//            M = A.cols();
+//            K = A.rows();
+//        }
+//
+//        lapack_int K2 = B.rows();
+//        lapack_int N = B.cols();
+//        if ( transB )
+//        {
+//            K2 = B.cols();
+//            N = B.rows();
+//        }
+//
+//        GADGET_CHECK_RETURN_FALSE(K==K2);
+//        if ( (C.rows()!=M) || (C.cols()!=N) )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
+//        }
+//
+//        T* pC = C.begin();
+//        lapack_int ldc = C.rows();
+//
+//        GT_Complex16 alpha(1), beta(0);
+//
+//        if ( transA )
+//        {
+//            TA = 'C';
+//        }
+//        else
+//        {
+//            TA = 'N';
+//        }
+//
+//        if ( transB )
+//        {
+//            TB = 'C';
+//        }
+//        else
+//        {
+//            TB = 'N';
+//        }
+//
+//        if ( &A != &C )
+//        {
+//            zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<const lapack_complex_double*>(pA), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
+//        }
+//        else
+//        {
+//            hoNDArray<T> aTmp(A);
+//            T* pATmp = aTmp.begin();
+//            zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<lapack_complex_double*>(pATmp), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
+//        }
+//    }
+//    catch(...)
+//    {
+//        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<GT_Complex16>& C, const hoMatrix<GT_Complex16>& A, bool transA, const hoMatrix<GT_Complex16>& B, bool transB) ...");
+//        return false;
+//    }
+//    return true;
+//}
+/// ------------------------------------------------------------------------------------
+
 template<> EXPORTCPUCOREMATH 
-bool GeneralMatrixProduct_gemm(hoMatrix<float>& C, 
-                            const hoMatrix<float>& A, bool transA, 
-                            const hoMatrix<float>& B, bool transB)
+bool syrk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isATA)
 {
     try
     {
         typedef float T;
 
-        char TA, TB;
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
 
-        lapack_int lda = A.rows();
-        lapack_int ldb = B.rows();
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
         const T* pA = A.begin(); 
-        const T* pB = B.begin(); 
 
-        lapack_int M = A.rows();
-        lapack_int K = A.cols();
-        if ( transA )
-        {
-            M = A.cols();
-            K = A.rows();
+        lapack_int M = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isATA )
+        { 
+            M = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
         }
 
-        lapack_int K2 = B.rows();
-        lapack_int N = B.cols();
-        if ( transB )
+        if ( (C.get_size(0)!=M) || (C.get_size(1)!=M) )
         {
-            K2 = B.cols();
-            N = B.rows();
-        }
-
-        GADGET_CHECK_RETURN_FALSE(K==K2);
-        if ( (C.rows()!=M) || (C.cols()!=N) )
-        {
-            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
+            C.create(M, M);
         }
 
         T* pC = C.begin();
-        lapack_int ldc = C.rows();
+        lapack_int ldc = (lapack_int)C.get_size(0);
 
         float alpha(1), beta(0);
 
-        if ( transA )
+        if ( isATA )
         {
             TA = 'T';
         }
@@ -550,78 +843,49 @@ bool GeneralMatrixProduct_gemm(hoMatrix<float>& C,
             TA = 'N';
         }
 
-        if ( transB )
-        {
-            TB = 'T';
-        }
-        else
-        {
-            TB = 'N';
-        }
-
-        if ( &A != &C )
-        {
-            sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
-        }
-        else
-        {
-            hoNDArray<T> aTmp(A);
-            T* pATmp = aTmp.begin();
-            sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pATmp), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
-        }
+        ssyrk_(&uplo, &TA, &M, &K, &alpha, pA, &lda, &beta, pC, &ldc);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<float>& C, const hoMatrix<float>& A, bool transA, const hoMatrix<float>& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in ssyrk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isATA) ...");
         return false;
     }
     return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool GeneralMatrixProduct_gemm(hoMatrix<double>& C, 
-                            const hoMatrix<double>& A, bool transA, 
-                            const hoMatrix<double>& B, bool transB)
+bool syrk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isATA)
 {
     try
     {
         typedef double T;
 
-        char TA, TB;
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
 
-        lapack_int lda = A.rows();
-        lapack_int ldb = B.rows();
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
         const T* pA = A.begin(); 
-        const T* pB = B.begin(); 
 
-        lapack_int M = A.rows();
-        lapack_int K = A.cols();
-        if ( transA )
-        {
-            M = A.cols();
-            K = A.rows();
+        lapack_int M = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isATA )
+        { 
+            M = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
         }
 
-        lapack_int K2 = B.rows();
-        lapack_int N = B.cols();
-        if ( transB )
+        if ( (C.get_size(0)!=M) || (C.get_size(1)!=M) )
         {
-            K2 = B.cols();
-            N = B.rows();
-        }
-
-        GADGET_CHECK_RETURN_FALSE(K==K2);
-        if ( (C.rows()!=M) || (C.cols()!=N) )
-        {
-            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
+            C.create(M, M);
         }
 
         T* pC = C.begin();
-        lapack_int ldc = C.rows();
+        lapack_int ldc = (lapack_int)C.get_size(0);
 
         double alpha(1), beta(0);
 
-        if ( transA )
+        if ( isATA )
         {
             TA = 'T';
         }
@@ -630,158 +894,160 @@ bool GeneralMatrixProduct_gemm(hoMatrix<double>& C,
             TA = 'N';
         }
 
-        if ( transB )
-        {
-            TB = 'T';
-        }
-        else
-        {
-            TB = 'N';
-        }
-
-        if ( &A != &C )
-        {
-            dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
-        }
-        else
-        {
-            hoNDArray<T> aTmp(A);
-            T* pATmp = aTmp.begin();
-            dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pATmp), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
-        }
+        dsyrk_(&uplo, &TA, &M, &K, &alpha, pA, &lda, &beta, pC, &ldc);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<double>& C, const hoMatrix<double>& A, bool transA, const hoMatrix<double>& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in syrk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isATA) ...");
         return false;
     }
     return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex8>& C, 
-                            const hoMatrix<GT_Complex8>& A, bool transA, 
-                            const hoMatrix<GT_Complex8>& B, bool transB)
+bool syrk(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, char uplo, bool isATA)
 {
     try
     {
         typedef GT_Complex8 T;
 
-        char TA, TB;
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
 
-        lapack_int lda = A.rows();
-        lapack_int ldb = B.rows();
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
         const T* pA = A.begin(); 
-        const T* pB = B.begin(); 
 
-        lapack_int M = A.rows();
-        lapack_int K = A.cols();
-        if ( transA )
-        {
-            M = A.cols();
-            K = A.rows();
+        lapack_int N = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isATA )
+        { 
+            N = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
         }
 
-        lapack_int K2 = B.rows();
-        lapack_int N = B.cols();
-        if ( transB )
-        {
-            K2 = B.cols();
-            N = B.rows();
-        }
-
-        GADGET_CHECK_RETURN_FALSE(K==K2);
-        if ( (C.rows()!=M) || (C.cols()!=N) )
-        {
-            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
-        }
+        GADGET_CHECK_RETURN_FALSE ( (C.get_size(0)==N) && (C.get_size(1)==N) );
 
         T* pC = C.begin();
-        lapack_int ldc = C.rows();
+        lapack_int ldc = (lapack_int)C.get_size(0);
 
-        GT_Complex8 alpha(1), beta(0);
+        lapack_complex_float alpha(1), beta(0);
 
-        if ( transA )
+        if ( isATA )
         {
-            TA = 'C';
+            TA = 'T';
         }
         else
         {
             TA = 'N';
         }
 
-        if ( transB )
-        {
-            TB = 'C';
-        }
-        else
-        {
-            TB = 'N';
-        }
-
-        if ( &A != &C )
-        {
-            cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<const lapack_complex_float*>(pA), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
-        }
-        else
-        {
-            hoNDArray<T> aTmp(A);
-            T* pATmp = aTmp.begin();
-            cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<lapack_complex_float*>(pATmp), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
-        }
+        csyrk_(&uplo, &TA, &N, &K, &alpha, pA, &lda, &beta, pC, &ldc);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<GT_Complex8>& C, const hoMatrix<GT_Complex8>& A, bool transA, const hoMatrix<GT_Complex8>& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in syrk(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, char uplo, bool isATA) ...");
         return false;
     }
     return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex16>& C, 
-                            const hoMatrix<GT_Complex16>& A, bool transA, 
-                            const hoMatrix<GT_Complex16>& B, bool transB)
+bool syrk(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, char uplo, bool isATA)
 {
     try
     {
         typedef GT_Complex16 T;
 
-        char TA, TB;
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
 
-        lapack_int lda = A.rows();
-        lapack_int ldb = B.rows();
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
         const T* pA = A.begin(); 
-        const T* pB = B.begin(); 
 
-        lapack_int M = A.rows();
-        lapack_int K = A.cols();
-        if ( transA )
-        {
-            M = A.cols();
-            K = A.rows();
+        lapack_int M = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isATA )
+        { 
+            M = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
         }
 
-        lapack_int K2 = B.rows();
-        lapack_int N = B.cols();
-        if ( transB )
+        if ( (C.get_size(0)!=M) || (C.get_size(1)!=M) )
         {
-            K2 = B.cols();
-            N = B.rows();
-        }
-
-        GADGET_CHECK_RETURN_FALSE(K==K2);
-        if ( (C.rows()!=M) || (C.cols()!=N) )
-        {
-            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
+            C.create(M, M);
         }
 
         T* pC = C.begin();
-        lapack_int ldc = C.rows();
+        lapack_int ldc = (lapack_int)C.get_size(0);
 
-        GT_Complex16 alpha(1), beta(0);
+        lapack_complex_double alpha(1), beta(0);
 
-        if ( transA )
+        if ( isATA )
+        {
+            TA = 'T';
+        }
+        else
+        {
+            TA = 'N';
+        }
+
+        zsyrk_(&uplo, &TA, &M, &K, &alpha, pA, &lda, &beta, pC, &ldc);
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in syrk(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, char uplo, bool isATA) ...");
+        return false;
+    }
+    return true;
+}
+
+template<> EXPORTCPUCOREMATH 
+bool herk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isAHA)
+{
+    return syrk(C, A, uplo, isAHA);
+}
+
+template<> EXPORTCPUCOREMATH 
+bool herk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isAHA)
+{
+    return syrk(C, A, uplo, isAHA);
+}
+
+template<> EXPORTCPUCOREMATH 
+bool herk(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, char uplo, bool isAHA)
+{
+    try
+    {
+        typedef GT_Complex8 T;
+
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
+        const T* pA = A.begin(); 
+
+        lapack_int N = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isAHA )
+        { 
+            N = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
+        }
+
+        if ( (C.get_size(0)!=N) || (C.get_size(1)!=N) )
+        {
+            C.create(N, N);
+        }
+
+        T* pC = C.begin();
+        lapack_int ldc = (lapack_int)C.get_size(0);
+
+        lapack_complex_float alpha(1), beta(0);
+
+        if ( isAHA )
         {
             TA = 'C';
         }
@@ -790,33 +1056,67 @@ bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex16>& C,
             TA = 'N';
         }
 
-        if ( transB )
-        {
-            TB = 'C';
-        }
-        else
-        {
-            TB = 'N';
-        }
-
-        if ( &A != &C )
-        {
-            zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<const lapack_complex_double*>(pA), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
-        }
-        else
-        {
-            hoNDArray<T> aTmp(A);
-            T* pATmp = aTmp.begin();
-            zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<lapack_complex_double*>(pATmp), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
-        }
+        cherk_(&uplo, &TA, &N, &K, &alpha, pA, &lda, &beta, pC, &ldc);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<GT_Complex16>& C, const hoMatrix<GT_Complex16>& A, bool transA, const hoMatrix<GT_Complex16>& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in herk(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, char uplo, bool isAHA) ...");
         return false;
     }
     return true;
 }
+
+template<> EXPORTCPUCOREMATH 
+bool herk(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, char uplo, bool isAHA)
+{
+    try
+    {
+        typedef GT_Complex16 T;
+
+        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+
+        char TA;
+
+        lapack_int lda = (lapack_int)A.get_size(0);
+        const T* pA = A.begin(); 
+
+        lapack_int N = (lapack_int)A.get_size(0);
+        lapack_int K = (lapack_int)A.get_size(1);
+        if ( isAHA )
+        { 
+            N = (lapack_int)A.get_size(1);
+            K = (lapack_int)A.get_size(0);
+        }
+
+        if ( (C.get_size(0)!=N) || (C.get_size(1)!=N) )
+        {
+            C.create(N, N);
+        }
+
+        T* pC = C.begin();
+        lapack_int ldc = (lapack_int)C.get_size(0);
+
+        lapack_complex_double alpha(1), beta(0);
+
+        if ( isAHA )
+        {
+            TA = 'C';
+        }
+        else
+        {
+            TA = 'N';
+        }
+
+        zherk_(&uplo, &TA, &N, &K, &alpha, pA, &lda, &beta, pC, &ldc);
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in herk(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, char uplo, bool isAHA) ...");
+        return false;
+    }
+    return true;
+}
+
 /// ------------------------------------------------------------------------------------
 
 template<typename T> 
@@ -1412,358 +1712,9 @@ template EXPORTCPUCOREMATH bool LUFactorizationGeneralMatrix_getrf(hoMatrix<GT_C
 
 template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16>& A);
 
-#else
-
-    // matrix computation calls armadillo
-    #ifdef USE_ARMADILLO
-
-    #pragma message("Compile armadillo implementation of hoMatrix functions ... ")
-
-    bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
-    {
-        return GeneralMatrixProduct_gemm(C, A, false, B, false);
-    }
-
-    template<typename T> 
-    bool GeneralMatrixProduct_gemm(hoNDArray<T>& C, 
-                                const hoNDArray<T>& A, bool transA, 
-                                const hoNDArray<T>& B, bool transB)
-    {
-        try
-        {
-            size_t M = A.get_size(0);
-            size_t K = A.get_size(1);
-            if ( transA )
-            { 
-                M = A.get_size(1);
-                K = A.get_size(0);
-            }
-
-            size_t K2 = B.get_size(0);
-            size_t N = B.get_size(1);
-            if ( transB )
-            {
-                K2 = B.get_size(1);
-                N = B.get_size(0);
-            }
-
-            GADGET_CHECK_RETURN_FALSE(K==K2);
-            if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
-            {
-                C.create(M, N);
-            }
-
-            const arma::Mat<typename stdType<T>::Type> armaA = as_arma_matrix(&A);
-            const arma::Mat<typename stdType<T>::Type> armaB = as_arma_matrix(&B);
-            arma::Mat<typename stdType<T>::Type> armaC = as_arma_matrix(&C);
-
-            if ( !transA && !transB )
-            {
-                armaC = armaA * armaB;
-            }
-            else if ( transA && !transB )
-            {
-                armaC = arma::trans(armaA) * armaB;
-            }
-            else if ( !transA && transB )
-            {
-                armaC = armaA * arma::trans(armaB);
-            }
-            else
-            {
-                armaC = arma::trans(armaA) * arma::trans(armaB);
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoNDArray<T>& C, const hoNDArray<T>& A, bool transA, const hoNDArray<T>& B, bool transB) ...");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool GeneralMatrixProduct_gemm(hoMatrix<T>& C, 
-                                const hoMatrix<T>& A, bool transA, 
-                                const hoMatrix<T>& B, bool transB)
-    {
-        try
-        {
-            size_t M = A.get_size(0);
-            size_t K = A.get_size(1);
-            if ( transA )
-            { 
-                M = A.get_size(1);
-                K = A.get_size(0);
-            }
-
-            size_t K2 = B.get_size(0);
-            size_t N = B.get_size(1);
-            if ( transB )
-            {
-                K2 = B.get_size(1);
-                N = B.get_size(0);
-            }
-
-            GADGET_CHECK_RETURN_FALSE(K==K2);
-            if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
-            {
-                C.createMatrix(M, N);
-            }
-
-            const arma::Mat<typename stdType<T>::Type> armaA( (typename stdType<T>::Type*)(A.begin()), 
-                                                               A.get_size(0), 
-                                                               A.get_size(1), 
-                                                               false, true);
-
-            const arma::Mat<typename stdType<T>::Type> armaB( (typename stdType<T>::Type*)(B.begin()), 
-                                                               B.get_size(0), 
-                                                               B.get_size(1), 
-                                                               false, true);
-
-            arma::Mat<typename stdType<T>::Type> armaC( (typename stdType<T>::Type*)(C.begin()), 
-                                                            C.get_size(0), C.get_size(1), false, true );
-
-            if ( !transA && !transB )
-            {
-                armaC = armaA * armaB;
-            }
-            else if ( transA && !transB )
-            {
-                arma::Mat<typename stdType<T>::Type> AT = arma::trans(armaA);
-                armaC = AT * armaB;
-            }
-            else if ( !transA && transB )
-            {
-                arma::Mat<typename stdType<T>::Type> BT = arma::trans(armaB);
-                armaC = armaA * BT;
-            }
-            else
-            {
-                arma::Mat<typename stdType<T>::Type> AT = arma::trans(armaA);
-                arma::Mat<typename stdType<T>::Type> BT = arma::trans(armaB);
-                armaC = AT * BT;
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<T>& C, const hoMatrix<T>& A, bool transA, const hoMatrix<T>& B, bool transB) ...");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A)
-    {
-        try
-        {
-            if( A.get_number_of_elements()==0 ) return true;
-            GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
-
-            arma::Mat<typename stdType<T>::Type> armaA = as_arma_matrix(&A);
-            arma::Mat<typename stdType<T>::Type> invA = arma::inv(armaA);
-
-            memcpy(A.begin(), invA.memptr(), A.get_number_of_bytes());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A) ...");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo)
-    {
-        try
-        {
-            if( A.get_number_of_elements()==0 ) return true;
-            GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
-
-            arma::Mat<typename stdType<T>::Type> armaA = as_arma_matrix(&A);
-
-            if ( uplo == 'U' )
-            {
-                arma::Mat<typename stdType<T>::Type> R = arma::chol(armaA);
-                memcpy(A.begin(), R.begin(), A.get_number_of_bytes());
-                GADGET_CHECK_RETURN_FALSE(A.lowerTri(0));
-            }
-            else
-            {
-                // need to get the lower triangle part of A
-                arma::Mat<typename stdType<T>::Type> AL = arma::trimatl(armaA);
-                arma::Mat<typename stdType<T>::Type> R = AL.st();
-
-                AL = arma::chol(R);
-                R = AL.st();
-
-                memcpy(A.begin(), R.begin(), A.get_number_of_bytes());
-                GADGET_CHECK_RETURN_FALSE(A.upperTri(0));
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo) ...");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue)
-    {
-        try
-        {
-            long long M = (long long)A.rows();
-            GADGET_CHECK_RETURN_FALSE(A.cols() == M);
-
-            if ( (eigenValue.rows()!=M) || (eigenValue.cols()!=1) )
-            {
-                GADGET_CHECK_RETURN_FALSE(eigenValue.createMatrix(M, 1));
-            }
-
-            arma::Mat<typename stdType<T>::Type> armaA = as_arma_matrix(&A);
-            arma::Col<typename realType<T>::Type > eigval = as_arma_col(&eigenValue);
-            arma::Mat<typename stdType<T>::Type> eigvec;
-
-            arma::eig_sym(eigval, eigvec, armaA);
-
-            memcpy(A.begin(), eigvec.begin(), A.get_number_of_bytes());
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool TriangularInverse_trtri(hoMatrix<T>& A, char uplo)
-    {
-        try
-        {
-            if( A.get_number_of_elements()==0 ) return true;
-            GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
-
-            arma::Mat<typename stdType<T>::Type> armaA = as_arma_matrix(&A);
-
-            arma::Mat<typename stdType<T>::Type> R;
-
-            if ( uplo == 'U' )
-            {
-                R = arma::inv(arma::trimatu(armaA));
-            }
-            else
-            {
-                R = arma::inv(arma::trimatl(armaA));
-            }
-
-            memcpy(A.begin(), R.begin(), A.get_number_of_bytes());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in TriangularInverse_trtri(hoMatrix<float>& A, char uplo) ...");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatrix<T>& b)
-    {
-        try
-        {
-            if( A.get_number_of_elements()==0 ) return true;
-            if( b.get_number_of_elements()==0 ) return true;
-            GADGET_CHECK_RETURN_FALSE(A.rows()==b.rows());
-
-            arma::Mat<typename stdType<T>::Type> armaA = as_arma_matrix(&A);
-            arma::Mat<typename stdType<T>::Type> armaB = as_arma_matrix(&b);
-
-            arma::Mat<typename stdType<T>::Type> X = arma::solve(armaA, armaB);
-
-            memcpy(b.begin(), X.begin(), b.get_number_of_bytes());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatrix<T>& b) ...");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
-    {
-        try
-        {
-            if( A.get_number_of_elements()==0 ) return true;
-
-            arma::Mat<typename stdType<T>::Type> armaA = as_arma_matrix(&A);
-            arma::Mat<typename stdType<T>::Type> armaB = arma::inv(armaA);
-
-            memcpy(A.begin(), armaB.begin(), A.get_number_of_bytes());
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in InverseGeneralMatrix_getri(hoMatrix<T>& A) ...");
-            return false;
-        }
-        return true;
-    }
-
-    // -----------------------------------------------------------------
-
-    template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB);
-    template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoMatrix<float>& C, const hoMatrix<float>& A, bool transA, const hoMatrix<float>& B, bool transB);
-    template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<float>& A);
-    template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<float>& A, char uplo);
-    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<float>& A, hoMatrix<typename realType<float>::Type>& eigenValue);
-    template EXPORTCPUCOREMATH bool TriangularInverse_trtri(hoMatrix<float>& A, char uplo);
-    template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<float>& A, hoMatrix<float>& b);
-    template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<float>& A);
-
-    // -----------------------------------------------------------------
-
-    template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB);
-    template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoMatrix<double>& C, const hoMatrix<double>& A, bool transA, const hoMatrix<double>& B, bool transB);
-    template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<double>& A);
-    template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<double>& A, char uplo);
-    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<double>& A, hoMatrix<typename realType<double>::Type>& eigenValue);
-    template EXPORTCPUCOREMATH bool TriangularInverse_trtri(hoMatrix<double>& A, char uplo);
-    template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<double>& A, hoMatrix<double>& b);
-    template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<double>& A);
-
-    // -----------------------------------------------------------------
-
-    template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, bool transA, const hoNDArray<GT_Complex8>& B, bool transB);
-    template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex8>& C, const hoMatrix<GT_Complex8>& A, bool transA, const hoMatrix<GT_Complex8>& B, bool transB);
-    template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<GT_Complex8>& A);
-    template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<GT_Complex8>& A, char uplo);
-    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<GT_Complex8>& A, hoMatrix<typename realType<GT_Complex8>::Type>& eigenValue);
-    template EXPORTCPUCOREMATH bool TriangularInverse_trtri(hoMatrix<GT_Complex8>& A, char uplo);
-    template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& b);
-    template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex8>& A);
-
-    // -----------------------------------------------------------------
-
-    template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, bool transA, const hoNDArray<GT_Complex16>& B, bool transB);
-    template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex16>& C, const hoMatrix<GT_Complex16>& A, bool transA, const hoMatrix<GT_Complex16>& B, bool transB);
-    template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<GT_Complex16>& A);
-    template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<GT_Complex16>& A, char uplo);
-    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<GT_Complex16>& A, hoMatrix<typename realType<GT_Complex16>::Type>& eigenValue);
-    template EXPORTCPUCOREMATH bool TriangularInverse_trtri(hoMatrix<GT_Complex16>& A, char uplo);
-    template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& b);
-    template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16>& A);
-
-    #endif // USE_ARMADILLO
-
 #endif // defined(USE_MKL) || defined(USE_LAPACK)
 
-#if defined(USE_MKL) || defined(USE_LAPACK) || defined(USE_ARMADILLO)
+#if defined(USE_MKL) || defined(USE_LAPACK)
 
     template<typename T> 
     bool EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue)
@@ -1797,7 +1748,14 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
         GADGET_CHECK_RETURN_FALSE(b.rows()==A.rows());
 
         hoMatrix<T> AHA(A.cols(), A.cols());
-        GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(AHA, A, true, A, false));
+        Gadgetron::clear(AHA);
+
+        // hoMatrix<T> ACopy(A);
+        // GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(AHA, ACopy, true, A, false));
+
+        char uplo = 'L';
+        bool isAHA = true;
+        GADGET_CHECK_RETURN_FALSE(herk(AHA, A, uplo, isAHA));
 
         GADGET_CHECK_RETURN_FALSE(x.createMatrix(A.cols(), b.cols()));
         GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(x, A, true, b, false));
@@ -1841,6 +1799,6 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
     template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& b, hoMatrix<GT_Complex8>& x, double lamda);
     template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& b, hoMatrix<GT_Complex16>& x, double lamda);
 
-#endif // defined(USE_MKL) || defined(USE_LAPACK) || defined(USE_ARMADILLO)
+#endif // defined(USE_MKL) || defined(USE_LAPACK)
 
 }

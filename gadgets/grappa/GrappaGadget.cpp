@@ -67,6 +67,14 @@ namespace Gadgetron{
                           *(h.acquisitionSystemInformation->receiverChannels) : 1);
     dimensions_.push_back(slices);
 
+
+    GADGET_DEBUG2("Dimensions %d, %d, %d, %d, %d\n", dimensions_[0], dimensions_[1], dimensions_[2], dimensions_[3], dimensions_[4]);
+
+    image_dimensions_.push_back(r_space.matrixSize.x); 
+    image_dimensions_.push_back(r_space.matrixSize.y);
+    image_dimensions_.push_back(r_space.matrixSize.z);
+    image_dimensions_.push_back(dimensions_[3]);
+
     fov_.push_back(r_space.fieldOfView_mm.x);
     fov_.push_back(r_space.fieldOfView_mm.y);
     fov_.push_back(r_space.fieldOfView_mm.z);
@@ -91,13 +99,6 @@ namespace Gadgetron{
   int GrappaGadget::initial_setup()
   {
 
-    GADGET_DEBUG2("Dimensions %d, %d, %d, %d, %d\n", dimensions_[0], dimensions_[1], dimensions_[2], dimensions_[3], dimensions_[4]);
-
-    image_dimensions_.push_back(dimensions_[0] / 2); //TODO: fix this in general
-    image_dimensions_.push_back(dimensions_[1]);
-    image_dimensions_.push_back(dimensions_[2]);
-    image_dimensions_.push_back(dimensions_[3]);
-
 
     weights_ = std::vector< boost::shared_ptr<GrappaWeights<float> > >(dimensions_[4]);
 
@@ -114,23 +115,31 @@ namespace Gadgetron{
 
     weights_calculator_.set_number_of_target_coils(target_coils_);
 
-    //Let's figure out if we have channels that are supposed to be uncombined
-    boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels");
-    std::vector<std::string> uncomb;
-    boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
-    for (unsigned int i = 0; i < uncomb.size(); i++) {
-      std::string ch = boost::algorithm::trim_copy(uncomb[i]);
-      if (ch.size() > 0) {
-        unsigned int channel_id = static_cast<unsigned int>(ACE_OS::atoi(ch.c_str()));
-        weights_calculator_.add_uncombined_channel(channel_id);
-      }
-    }
 
-    uncomb_str = this->get_string_value("uncombined_channels_by_name");
-    if (uncomb_str->size()) {
-      GADGET_DEBUG2("uncomb_str: %s\n",  uncomb_str->c_str());
+    int device_channels = this->get_int_value("device_channels");
+    if (device_channels) {
+      GADGET_DEBUG2("We got the number of device channels from other gadget: %d\n", device_channels);
+      for (int i = 0; i < device_channels; i++) {
+	weights_calculator_.add_uncombined_channel((unsigned int)i);
+      }
+    } else {
+      //Let's figure out if we have channels that are supposed to be uncombined
+      boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels");
+      std::vector<std::string> uncomb;
       boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
       for (unsigned int i = 0; i < uncomb.size(); i++) {
+	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
+	if (ch.size() > 0) {
+	  unsigned int channel_id = static_cast<unsigned int>(ACE_OS::atoi(ch.c_str()));
+	  weights_calculator_.add_uncombined_channel(channel_id);
+	}
+      }
+      
+      uncomb_str = this->get_string_value("uncombined_channels_by_name");
+      if (uncomb_str->size()) {
+	GADGET_DEBUG2("uncomb_str: %s\n",  uncomb_str->c_str());
+	boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
+	for (unsigned int i = 0; i < uncomb.size(); i++) {
 	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
 	map_type_::iterator it = channel_map_.find(ch);
 	if (it != channel_map_.end()) {
@@ -144,6 +153,7 @@ namespace Gadgetron{
 	  weights_calculator_.add_uncombined_channel(channel_id);
 	  }
 	*/
+	}
       }
     }
     
@@ -196,6 +206,14 @@ namespace Gadgetron{
   process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
           GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
+      bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
+
+      //We should not be receiving noise here
+      if (is_noise) {
+	m1->release();
+	return GADGET_OK;
+      }
+
 
     if (first_call_) {
       if (m1->getObjectPtr()->active_channels != dimensions_[3]) {
@@ -219,7 +237,7 @@ namespace Gadgetron{
     unsigned int slice = acq_head->idx.slice;
 
     if (samples != image_dimensions_[0]) {
-      GADGET_DEBUG1("GrappaGadget: wrong number of samples received\n");
+      GADGET_DEBUG2("GrappaGadget: wrong number of samples received %d, expected %d\n", samples, image_dimensions_[0]);
       return GADGET_FAIL;
     }
 

@@ -70,34 +70,4 @@ bool prepOpenMP()
 
 #endif // USE_OMP
 
-#ifdef USE_MKL
-
-bool prepMKL()
-{
-    try
-    {
-        GADGET_MSG("--> MKL info <--");
-        GADGET_MSG("--------------------------------------------------------");
-        MKL_INT oldmode = vmlSetMode( VML_EP );
-        GADGET_MSG("GtPlus, set MKL vml precision to EP ... ");
-        GADGET_MSG("--------------------------------------------------------");
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in GtPlus prepMKL() ... ");
-        return false;
-    }
-
-    return true;
-}
-
-#else
-
-bool prepMKL()
-{
-    return true;
-}
-
-#endif // USE_MKL
-
 }

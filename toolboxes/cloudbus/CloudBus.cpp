@@ -199,14 +199,22 @@ namespace Gadgetron
   void CloudBus::remove_stale_nodes()
   {
     mtx_.acquire();
+    map_type_ new_nodes_;
     time_t now = time(NULL);
     for (map_type_::iterator it = nodes_.begin(); it != nodes_.end(); ++it) {
       if (fabs(difftime(it->second.second,now)) > 30) {
-	GadgetronNodeInfo n = it->second.first;
-	std::cout << "---->>>> DELETING STALE CLOUD NODE <<<<< ----- " << n.uuid << " (" << n.address << ":" << n.port  << ", " << n.compute_capability << ")" << std::endl;
-	nodes_.erase(it);
+        GadgetronNodeInfo n = it->second.first;
+        std::cout << "---->>>> DELETING STALE CLOUD NODE <<<<< ----- " << n.uuid << " (" << n.address << ":" << n.port  << ", " << n.compute_capability << ")" << std::endl;
+      }
+      else
+      {
+        new_nodes_[it->first] = it->second;
       }
     }
+
+    nodes_.clear();
+    nodes_ = new_nodes_;
+
     mtx_.release();
   }
 }

@@ -23,7 +23,6 @@ namespace Gadgetron
         gt_timer3_.set_timing_in_destruction(false);
 
         Gadgetron::prepOpenMP();
-        Gadgetron::prepMKL();
     }
 
     GtPlusImageReconGadget::~GtPlusImageReconGadget()

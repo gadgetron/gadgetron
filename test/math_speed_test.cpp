@@ -182,6 +182,19 @@ void save_timing(const std::string& testName, const std::vector< size_t >& num_o
 
 /// ============================================================================================================
 
+TYPED_TEST(math_speed_test, size_of_types)
+{
+    GADGET_MSG("int             = " << sizeof(int));
+    GADGET_MSG("long            = " << sizeof(long));
+    GADGET_MSG("long long       = " << sizeof(long long));
+    GADGET_MSG("float           = " << sizeof(float));
+    GADGET_MSG("double             = " << sizeof(double));
+
+    GADGET_MSG("lapack_int      = " << sizeof(lapack_int));
+}
+
+/// ============================================================================================================
+
 void add(size_t N, const std::complex<float>* x, const std::complex<float>* y, std::complex<float>* r, int numOfThreads)
 {
     long long n;
