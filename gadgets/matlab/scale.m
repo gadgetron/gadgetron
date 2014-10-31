@@ -13,7 +13,6 @@ classdef scale < BaseGadget
         function process(g, head, data)
     	    fprintf('Processing line = %d\n', head.idx.kspace_encode_step_1);
             reshdr = head;
-            reshdr.version = 99;
             resdata = g.factor * data;
             g.putQ(reshdr, resdata);
         end

@@ -12,36 +12,39 @@ classdef accumulate_and_recon < handle & BaseGadget
     methods
 
         function g = config(g)
-            fprintf('The resonance frequency is %d\n', g.xml.getExperimentalConditions().getH1ResonanceFrequencyHz());
-            nx = g.xml.getEncoding().get(0).getEncodedSpace().getMatrixSize().getX();
-            ny = g.xml.getEncoding().get(0).getEncodedSpace().getMatrixSize().getY();
+            
+            fprintf('The resonance frequency is %d\n', g.xml.experimentalConditions.H1resonanceFrequency_Hz);
+            nx = g.xml.encoding.encodedSpace.matrixSize.x;
+            ny = g.xml.encoding.encodedSpace.matrixSize.y;
             % for 2D sequences the number of getZ breaks
             try
-              nz = g.xml.getEncoding().get(0).getEncodedSpace().getMatrixSize().getZ();
+              nz = g.xml.encoding.encodedSpace.maxtrixSize.z;
             catch
+            
 	      nz =1;
             end
             % the number of receiver channels is optional
             try
                 % this is the only cast from java.lang.Integer that works in Matlab
-                nc = double(g.xml.getAcquisitionSystemInformation().getReceiverChannels());
+                nc = g.xml.acquisitionSystemInformation.receiverChannels;
             catch
 	        nc = 1;
             end
             % the number of slices is optional
             try
-                ns = g.xml.getEncoding().get(0).getEncodingLimits().getSlice().getMaximum() + 1;
+                ns = g.xml.encoding.encodingLimits.slice.maximum + 1;
             catch
 	        ns = 1;
             end
 
-            g.center_line = g.xml.getEncoding().get(0).getEncodingLimits().getKspaceEncodingStep1().getCenter();
+            g.center_line = g.xml.encoding.encodingLimits.kspace_encoding_step_1.center;
             g.accumulation = zeros(nx, ny, nz, ns, nc);
             g.image_num = 0;   % todo this needs to be static or global...
             g.series_num = 0;  % todo this needs to be static or global...
         end
 
         function g = process(g, head, data)
+            disp('Processing')
             % stuff the line
             line_offset = floor(size(g.accumulation,2)/2) - g.center_line;
             kyind = head.idx.kspace_encode_step_1 + line_offset + 1;
@@ -53,6 +56,7 @@ classdef accumulate_and_recon < handle & BaseGadget
 
             % At the end of the acquisition, reconstruct the slice
             if (head.flagIsSet(head.FLAGS.ACQ_LAST_IN_SLICE))
+                disp('Found last in slice')
                 img_head = ismrmrd.ImageHeader;
                 img_head.channels = head.active_channels;
                 img_head.slice = head.idx.slice;
