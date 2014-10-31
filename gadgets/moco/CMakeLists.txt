@@ -45,7 +45,7 @@ include_directories(
 
 if(CPU_REG)
   include_directories(   
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
     ${ARMADILLO_INCLUDE_DIRS}
     )

@@ -4,7 +4,7 @@ endif (WIN32)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/cpucore/
-  ${CMAKE_SOURCE_DIR}/toolboxes/cpucore/arma_math
+  ${CMAKE_SOURCE_DIR}/toolboxes/cpucore/math
   )
 
 install(FILES 	

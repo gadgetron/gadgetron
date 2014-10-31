@@ -47,7 +47,7 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
         ${CMAKE_SOURCE_DIR}/toolboxes/operators
@@ -55,7 +55,7 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
         ${CMAKE_SOURCE_DIR}/gadgets/core
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util

@@ -36,7 +36,7 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
         ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
         ${CMAKE_SOURCE_DIR}/toolboxes/operators
@@ -46,7 +46,7 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/gadgets/core
         ${HDF5_INCLUDE_DIR}
         ${HDF5_INCLUDE_DIR}/cpp
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus

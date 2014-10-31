@@ -4,7 +4,7 @@
 
 #include "conebeam_projection.h"
 #include "float3x3.h"
-#include "hoCuNDArray_operators.h"
+#include "hoCuNDArray_math.h"
 #include "vector_td.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_operators.h"

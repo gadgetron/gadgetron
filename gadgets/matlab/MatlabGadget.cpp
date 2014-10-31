@@ -55,10 +55,9 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     // The queue is a structure array and we read it back
     // TODO put this in a readme file somewhere useful
     engPutVariable(engine_, "hdr_bytes", acq_hdr_bytes);
-    mxArray *b = engGetVariable(engine_,"hdr_bytes");
-        GADGET_DEBUG1("Test3\n");
+
     engPutVariable(engine_, "data", acq_data);
-    cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ();";
+    cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ(); whos()";
     send_matlab_command(cmd);
 
     GADGET_DEBUG1("Test1\n");

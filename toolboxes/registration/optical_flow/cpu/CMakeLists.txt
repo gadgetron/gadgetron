@@ -20,7 +20,7 @@
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
         ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
         ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
         ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu

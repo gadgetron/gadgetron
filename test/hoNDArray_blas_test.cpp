@@ -1,4 +1,4 @@
-#include "hoNDArray_blas.h"
+#include "hoNDArray_math.h"
 #include "hoNDArray_elemwise.h"
 #include <gtest/gtest.h>
 #include <vector>

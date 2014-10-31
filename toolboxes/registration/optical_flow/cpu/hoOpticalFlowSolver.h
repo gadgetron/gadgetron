@@ -9,10 +9,9 @@
 #pragma once
 
 #include "hoNDArray.h"
-#include "hoNDArray_operators.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_utils.h"
-#include "hoNDArray_blas.h"
+#include "hoNDArray_math.h"
 #include "opticalFlowSolver.h"
 #include "cpureg_export.h"
 
