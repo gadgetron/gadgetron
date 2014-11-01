@@ -67,7 +67,6 @@ install(FILES
   cuNDArray_reductions.h
   hoCuNDArray.h
   hoCuNDArray_blas.h
-  hoCuNDArray_operators.h
   hoCuNDArray_elemwise.h
   hoCuNDArray_utils.h
   hoCuNDArray_math.h
