@@ -185,8 +185,7 @@ if ( HAS_64_BIT )
                 ${solver_src_files} 
                 ${application_header_files} 
                 ${application_src_files} 
-                ${config_files} 
-                ${matlab_files})
+                ${matlab_files} )
 
         source_group(workflow FILES     ${workflow_header_files}    ${workflow_src_files})
         source_group(algorithm FILES    ${algorithm_header_files}   ${algorithm_src_files})
