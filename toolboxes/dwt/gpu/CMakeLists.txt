@@ -25,6 +25,5 @@ target_link_libraries(gadgetron_toolbox_gpudwt
 install(TARGETS gadgetron_toolbox_gpudwt DESTINATION lib COMPONENT main)
 
 install(FILES
-  gpufft_export.h
-  cuNDFFT.h
+  cuNDDWT.h
   DESTINATION include COMPONENT main)
