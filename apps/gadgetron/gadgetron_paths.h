@@ -55,6 +55,7 @@ namespace Gadgetron
     else
       {
         std::cout << "The path to the executable is NULL" << std::endl;
+        return std::string("");
       }
 #else //Probably some NIX where readlink should work
     char buff[MAX_GADGETRON_HOME_LENGTH];

@@ -387,19 +387,19 @@ int main(int argc, char** argv)
     GADGET_MSG("vector dotc");
     GADGET_MSG("------------------------------------------------------------------");
 
-    std::complex<float> rdotc;
+    std::complex<float> rdotc(0);
 
     {
         GadgetronTimer t("dotc Time (MKL)", true);
         rdotc = Gadgetron::dotc( a, b);
     }
-    std::cout << "dotc = " << r << std::endl;
+    std::cout << "dotc = " << rdotc << std::endl;
 
     {
         GadgetronTimer t("dotc Time (math)", true);
         Gadgetron::math::dotc( a.get_number_of_elements(), a.begin(), b.begin(), rdotc);
     }
-    std::cout << "dotc = " << r << std::endl;
+    std::cout << "dotc = " << rdotc << std::endl;
 
     GADGET_MSG("------------------------------------------------------------------");
     GADGET_MSG("vector dotu");

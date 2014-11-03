@@ -247,7 +247,7 @@ bool gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoND
 
         T kerSum = 0;
 
-        T D = (deltaKer*deltaKer)/(2*sigma*sigma);
+        T D = (T)( (deltaKer*deltaKer)/(2*sigma*sigma) );
 
         long long ii;
         for ( ii=-N/2; ii<=N/2; ii++ )
@@ -256,7 +256,7 @@ bool gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoND
             kerSum += ker(ii+N/2);
         }
 
-        T GNorm = 1/std::sqrt(2*3.141592653579*sigma*sigma);
+        T GNorm = (T)(1/std::sqrt(2*3.141592653579*sigma*sigma));
         GNorm /= kerSum;
 
         Gadgetron::scal(GNorm, ker);

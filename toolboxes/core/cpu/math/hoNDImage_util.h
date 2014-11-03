@@ -115,16 +115,6 @@ namespace Gadgetron
     template<class ArrayType> bool filter1D(const ArrayType& img, const hoNDArray<typename realType<typename ArrayType::value_type>::Type>& ker, GT_BOUNDARY_CONDITION bh, ArrayType& img_out);
 
     /**
-    * @brief add two vectors of values, r = x + y
-    support in-place computation, e.g. x==r or y==r
-    */
-    template <typename T, unsigned int D> 
-    bool add(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r);
-
-    template <typename T, unsigned int D> 
-    bool add(size_t N, const T* x, const T* y, T* r);
-
-    /**
     * @brief subtract two vectors of values, r = x - y
     support in-place computation, e.g. x==r
     */

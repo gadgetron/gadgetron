@@ -13,7 +13,6 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_math_util.h"
 #include "hoNDImage_util.h"
-#include "hoNDArray_operators.h"
 
 #include "hoImageRegTransformation.h"
 #include "hoImageRegDeformationField.h"

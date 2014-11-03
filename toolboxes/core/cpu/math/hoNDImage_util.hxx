@@ -390,20 +390,6 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> inline 
-    bool add(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
-    {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
-        if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        {
-            r = x;
-        }
-
-        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-
-        return true;
-    }
-
-    template <typename T, unsigned int D> inline 
     bool subtract(const hoNDImage<T, D>& x, const hoNDImage<T, D>& y, hoNDImage<T, D>& r)
     {
         GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());

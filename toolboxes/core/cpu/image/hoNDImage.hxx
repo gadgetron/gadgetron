@@ -8,13 +8,14 @@
 namespace Gadgetron
 {
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage () : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage () : BaseClass()
     {
+        dimensions_->resize(D, 0);
+        offsetFactors_->resize(D, 0);
+
         unsigned int ii;
         for (ii=0;ii<D; ii++)
         {
-            dimensions_[ii] = 0;
-            offsetFactors_[ii] = 0;
             pixelSize_[ii] = 1;
             pixelSize_reciprocal_[ii] = 1;
             origin_[ii] = 0;
@@ -32,14 +33,20 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions) : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions) : BaseClass( const_cast<std::vector<size_t>& >(dimensions) )
     {
         this->create(dimensions);
     }
 
     template <typename T, unsigned int D> 
+    hoNDImage<T, D>::hoNDImage (boost::shared_ptr< std::vector<size_t> > dimensions) : BaseClass( dimensions )
+    {
+        this->create( *dimensions );
+    }
+
+    template <typename T, unsigned int D> 
     hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, 
-        const std::vector<coord_type>& pixelSize) : data_(0), elements_(0), delete_data_on_destruct_(true)
+        const std::vector<coord_type>& pixelSize) : BaseClass( const_cast<std::vector<size_t>& >(dimensions) )
     {
         this->create(dimensions, pixelSize);
     }
@@ -47,7 +54,7 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, 
         const std::vector<coord_type>& pixelSize, 
-        const std::vector<coord_type>& origin) : data_(0), elements_(0), delete_data_on_destruct_(true)
+        const std::vector<coord_type>& origin) : BaseClass( const_cast<std::vector<size_t>& >(dimensions) )
     {
         this->create(dimensions, pixelSize, origin);
     }
@@ -56,20 +63,20 @@ namespace Gadgetron
     hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, 
                                 const std::vector<coord_type>& pixelSize, 
                                 const std::vector<coord_type>& origin, 
-                                const axis_type& axis) : data_(0), elements_(0), delete_data_on_destruct_(true)
+                                const axis_type& axis) : BaseClass( const_cast<std::vector<size_t>& >(dimensions) )
     {
         this->create(dimensions, pixelSize, origin, axis);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t len) : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage(size_t len) : BaseClass(len)
     {
         std::vector<size_t> dimension(1, len);
         this->create(dimension);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy): data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy) : BaseClass(sx, sy)
     {
         std::vector<size_t> dimension(2);
         dimension[0] = sx;
@@ -78,7 +85,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz) : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz) : BaseClass(sx, sy, sz)
     {
         std::vector<size_t> dimension(3);
         dimension[0] = sx;
@@ -88,7 +95,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st) : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st) : BaseClass(sx, sy, sz, st)
     {
         std::vector<size_t> dimension(4);
         dimension[0] = sx;
@@ -99,7 +106,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp) : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp) : BaseClass(sx, sy, sz, st, sp)
     {
         std::vector<size_t> dimension(5);
         dimension[0] = sx;
@@ -111,7 +118,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq) : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq) : BaseClass(sx, sy, sz, st, sp, sq)
     {
         std::vector<size_t> dimension(6);
         dimension[0] = sx;
@@ -124,7 +131,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr) : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr) : BaseClass(sx, sy, sz, st, sp, sq, sr)
     {
         std::vector<size_t> dimension(7);
         dimension[0] = sx;
@@ -138,7 +145,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss) : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss) : BaseClass(sx, sy, sz, st, sp, sq, sr, ss)
     {
         std::vector<size_t> dimension(8);
         dimension[0] = sx;
@@ -153,38 +160,38 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, T* data, bool delete_data_on_destruct)  : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, origin, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, origin, axis, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t len, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage(size_t len, T* data, bool delete_data_on_destruct) : BaseClass(len, data, delete_data_on_destruct)
     {
         std::vector<size_t> dimension(1, len);
         this->create(dimension, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, T* data, bool delete_data_on_destruct) : BaseClass(sx, sy, data, delete_data_on_destruct)
     {
         std::vector<size_t> dimension(2);
         dimension[0] = sx;
@@ -193,7 +200,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, T* data, bool delete_data_on_destruct) : BaseClass(sx, sy, sz, data, delete_data_on_destruct)
     {
         std::vector<size_t> dimension(3);
         dimension[0] = sx;
@@ -203,7 +210,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, T* data, bool delete_data_on_destruct) : BaseClass(sx, sy, sz, st, data, delete_data_on_destruct)
     {
         std::vector<size_t> dimension(4);
         dimension[0] = sx;
@@ -214,7 +221,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, T* data, bool delete_data_on_destruct) : BaseClass(sx, sy, sz, st, sp, data, delete_data_on_destruct)
     {
         std::vector<size_t> dimension(5);
         dimension[0] = sx;
@@ -226,7 +233,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, T* data, bool delete_data_on_destruct) : BaseClass(sx, sy, sz, st, sp, sq, data, delete_data_on_destruct)
     {
         std::vector<size_t> dimension(6);
         dimension[0] = sx;
@@ -239,7 +246,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, T* data, bool delete_data_on_destruct) : BaseClass(sx, sy, sz, st, sp, sq, sr, data, delete_data_on_destruct)
     {
         std::vector<size_t> dimension(7);
         dimension[0] = sx;
@@ -253,7 +260,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, T* data, bool delete_data_on_destruct) : data_(0), elements_(0), delete_data_on_destruct_(delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, T* data, bool delete_data_on_destruct) : BaseClass(sx, sy, sz, st, sp, sq, sr, ss, data, delete_data_on_destruct)
     {
         std::vector<size_t> dimension(8);
         dimension[0] = sx;
@@ -268,7 +275,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(const hoNDArray<T>& a) : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage(const hoNDArray<T>& a) : BaseClass(a)
     {
          boost::shared_ptr< std::vector<size_t> > dim = a.get_dimensions();
          this->create(*dim);
@@ -276,28 +283,8 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage(const Self& a) : data_(0), elements_(0), delete_data_on_destruct_(true)
+    hoNDImage<T, D>::hoNDImage(const Self& a) : BaseClass()
     {
-        unsigned int ii;
-        for (ii=0;ii<D; ii++)
-        {
-            dimensions_[ii] = 0;
-            offsetFactors_[ii] = 0;
-            pixelSize_[ii] = 1;
-            pixelSize_reciprocal_[ii] = 1;
-            origin_[ii] = 0;
-            axis_[ii].fill(0);
-            axis_[ii][ii] = coord_type(1.0);
-        }
-
-        image_position_patient_[0] = 0;
-        image_position_patient_[1] = 0;
-        image_position_patient_[2] = 0;
-
-        image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
-        image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
-        image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
-
         *this = a;
     }
 
@@ -312,17 +299,21 @@ namespace Gadgetron
             return *this;
         }
 
+        if ( !this->dimensions_ ) this->dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+        if ( !this->offsetFactors_ ) this->offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+
         if ( this->dimensions_equal(rhs) && this->data_!=NULL )
         {
             memcpy(this->data_, rhs.data_, rhs.elements_*sizeof(T));
         }
         else
         {
-            deallocate_memory();
+            this->deallocate_memory();
             this->data_ = 0;
-            memcpy(this->dimensions_, rhs.dimensions_, sizeof(size_t)*D);
-            memcpy(this->offsetFactors_, rhs.offsetFactors_, sizeof(size_t)*D);
-            allocate_memory();
+
+            *(this->dimensions_) = *(rhs.dimensions_);
+            this->allocate_memory();
+            this->calculate_offset_factors( *(this->dimensions_) );
             memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
         }
 
@@ -366,10 +357,12 @@ namespace Gadgetron
         this->delete_data_on_destruct_ = true;
 
         unsigned int ii;
+
+        dimensions_->clear();
+        offsetFactors_->clear();
+
         for (ii=0;ii<D; ii++)
         {
-            dimensions_[ii] = 0;
-            offsetFactors_[ii] = 0;
             pixelSize_[ii] = 1;
             pixelSize_reciprocal_[ii] = 1;
             origin_[ii] = 0;
@@ -393,7 +386,17 @@ namespace Gadgetron
     {
         if ( !this->dimensions_equal(dimensions) )
         {
-            memcpy(this->dimensions_, &dimensions[0], sizeof(size_t)*D);
+            if ( !dimensions_ )
+            {
+                dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+            }
+
+            if ( !offsetFactors_ )
+            {
+                offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+            }
+
+            *dimensions_ = dimensions;
             this->allocate_memory();
             this->calculate_offset_factors(dimensions);
         }
@@ -418,11 +421,27 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
+    void hoNDImage<T, D>::create(boost::shared_ptr< std::vector<size_t> > dimensions)
+    {
+        this->create(*dimensions);
+    }
+
+    template <typename T, unsigned int D> 
     void hoNDImage<T, D>::create(const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize)
     {
         if ( !this->dimensions_equal(dimensions) )
         {
-            memcpy(this->dimensions_, &dimensions[0], sizeof(size_t)*D);
+            if ( !dimensions_ )
+            {
+                dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+            }
+
+            if ( !offsetFactors_ )
+            {
+                offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+            }
+
+            *dimensions_ = dimensions;
             this->allocate_memory();
             this->calculate_offset_factors(dimensions);
         }
@@ -451,7 +470,17 @@ namespace Gadgetron
     {
         if ( !this->dimensions_equal(dimensions) )
         {
-            memcpy(this->dimensions_, &dimensions[0], sizeof(size_t)*D);
+            if ( !dimensions_ )
+            {
+                dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+            }
+
+            if ( !offsetFactors_ )
+            {
+                offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+            }
+
+            *dimensions_ = dimensions;
             this->allocate_memory();
             this->calculate_offset_factors(dimensions);
         }
@@ -496,7 +525,17 @@ namespace Gadgetron
     {
         if ( !this->dimensions_equal(dimensions) )
         {
-            memcpy(this->dimensions_, &dimensions[0], sizeof(size_t)*D);
+            if ( !dimensions_ )
+            {
+                dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+            }
+
+            if ( !offsetFactors_ )
+            {
+                offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+            }
+
+            *dimensions_ = dimensions;
             this->allocate_memory();
             this->calculate_offset_factors(dimensions);
         }
@@ -550,14 +589,25 @@ namespace Gadgetron
 
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
-        memcpy(this->dimensions_, &dimensions[0], sizeof(size_t)*D);
+
+        if ( !dimensions_ )
+        {
+            dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+        }
+
+        if ( !offsetFactors_ )
+        {
+            offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+        }
+
+        *dimensions_ = dimensions;
 
         unsigned int ii;
 
         this->elements_ = 1;
         for (ii=0; ii<D; ii++)
         {
-            this->elements_ *= this->dimensions_[ii];
+            this->elements_ *= (*dimensions_)[ii];
         }
         this->calculate_offset_factors(dimensions);
 
@@ -590,14 +640,25 @@ namespace Gadgetron
 
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
-        memcpy(this->dimensions_, &dimensions[0], sizeof(size_t)*D);
+
+        if ( !dimensions_ )
+        {
+            dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+        }
+
+        if ( !offsetFactors_ )
+        {
+            offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+        }
+
+        *dimensions_ = dimensions;
 
         unsigned int ii;
 
         this->elements_ = 1;
         for (ii=0; ii<D; ii++)
         {
-            this->elements_ *= this->dimensions_[ii];
+            this->elements_ *= (*dimensions_)[ii];
         }
         this->calculate_offset_factors(dimensions);
 
@@ -630,14 +691,25 @@ namespace Gadgetron
 
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
-        memcpy(this->dimensions_, &dimensions[0], sizeof(size_t)*D);
+
+        if ( !dimensions_ )
+        {
+            dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+        }
+
+        if ( !offsetFactors_ )
+        {
+            offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+        }
+
+        *dimensions_ = dimensions;
 
         unsigned int ii;
 
         this->elements_ = 1;
         for (ii=0; ii<D; ii++)
         {
-            this->elements_ *= this->dimensions_[ii];
+            this->elements_ *= (*dimensions_)[ii];
         }
         this->calculate_offset_factors(dimensions);
 
@@ -686,14 +758,25 @@ namespace Gadgetron
 
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
-        memcpy(this->dimensions_, &dimensions[0], sizeof(size_t)*D);
+
+        if ( !dimensions_ )
+        {
+            dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+        }
+
+        if ( !offsetFactors_ )
+        {
+            offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+        }
+
+        *dimensions_ = dimensions;
 
         unsigned int ii;
 
         this->elements_ = 1;
         for (ii=0; ii<D; ii++)
         {
-            this->elements_ *= this->dimensions_[ii];
+            this->elements_ *= (*dimensions_)[ii];
         }
         this->calculate_offset_factors(dimensions);
 
@@ -739,10 +822,15 @@ namespace Gadgetron
     {
         boost::shared_ptr< std::vector<size_t> > dim = a.get_dimensions();
 
+        size_t ii;
+
         if ( dim->size() < D )
         {
             std::vector<size_t> dimUsed(D, 1);
-            memcpy(&dimUsed[0], &(*dim)[0], sizeof(size_t)*dim->size());
+            for ( ii=0; ii<dim->size(); ii++ )
+            {
+                dimUsed[ii] = (*dim)[ii];
+            }
 
             if ( !this->dimensions_equal(dimUsed) )
             {
@@ -752,7 +840,10 @@ namespace Gadgetron
         else if ( dim->size() > D )
         {
             std::vector<size_t> dimUsed(D, 1);
-            memcpy(&dimUsed[0], &(*dim)[0], sizeof(size_t)*D);
+            for ( ii=0; ii<D; ii++ )
+            {
+                dimUsed[ii] = (*dim)[ii];
+            }
 
             if ( !this->dimensions_equal(dimUsed) )
             {
@@ -787,42 +878,15 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline bool hoNDImage<T, D>::dimensions_equal(const std::vector<size_t>& dimensions) const
     {
-        if ( dimensions.size() != D ) return false;
+        if ( (!dimensions_) || (dimensions.size() != D) || ( dimensions_->size() != dimensions.size() ) ) return false;
 
         unsigned int ii;
         for ( ii=0; ii<D; ii++ )
         {
-            if ( this->dimensions_[ii] != dimensions[ii] ) return false;
+            if ( (*dimensions_)[ii] != dimensions[ii] ) return false;
         }
 
         return true;
-    }
-
-    template <typename T, unsigned int D> 
-    inline size_t hoNDImage<T, D>::get_size(size_t dimension) const
-    {
-        return ( (dimension>=D) ? 1 : this->dimensions_[dimension] );
-    }
-
-    template <typename T, unsigned int D> 
-    inline size_t hoNDImage<T, D>::get_dimensions(size_t dimension) const
-    {
-        return ( (dimension>=D) ? 1 : this->dimensions_[dimension] );
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::get_dimensions(std::vector<size_t>& dim) const
-    {
-        dim.resize(D);
-        memcpy(&dim[0], this->dimensions_, sizeof(size_t)*D);
-    }
-
-    template <typename T, unsigned int D> 
-    inline std::vector<size_t> hoNDImage<T, D>::get_dimensions() const
-    {
-        std::vector<size_t> dim(D);
-        memcpy(&dim[0], this->dimensions_, sizeof(size_t)*D);
-        return dim;
     }
 
     template <typename T, unsigned int D> 
@@ -1132,82 +1196,13 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    inline size_t hoNDImage<T, D>::get_number_of_elements() const
-    {
-        return this->elements_;
-    }
-
-    template <typename T, unsigned int D> 
-    inline size_t hoNDImage<T, D>::get_number_of_bytes() const
-    {
-        return sizeof(T)*this->elements_;
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::delete_data_on_destruct() const
-    {
-        return this->delete_data_on_destruct_;
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::delete_data_on_destruct(bool d)
-    {
-        this->delete_data_on_destruct_ = d;
-    }
-
-    template <typename T, unsigned int D> 
-    inline T* hoNDImage<T, D>::get_data_ptr()
-    {
-        return this->data_;
-    }
-
-    template <typename T, unsigned int D> 
-    inline const T* hoNDImage<T, D>::get_data_ptr() const
-    {
-        return this->data_;
-    }
-
-    template <typename T, unsigned int D> 
-    inline size_t hoNDImage<T, D>::get_offset_factor(size_t dimension) const
-    {
-        GADGET_DEBUG_CHECK_THROW(dimension < D);
-        return this->offsetFactors_[dimension];
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::get_offset_factor(std::vector<size_t>& offset) const
-    {
-        offset.resize(D);
-        memcpy(&offset[0], this->offsetFactors_, sizeof(size_t)*D);
-    }
-
-    template <typename T, unsigned int D> 
-    inline size_t hoNDImage<T, D>::get_offset_factor_lastdim() const
-    {
-        return this->offsetFactors_[D-1];
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::calculate_offset_factors(const std::vector<size_t>& dimensions)
-    {
-        unsigned int i, j;
-
-        for( i=0; i<D; i++ )
-        {
-            size_t k = 1;
-
-            for( j=0; j<i; j++ ) k *= this->dimensions_[j];
-
-            this->offsetFactors_[i] = k;
-        }
-    }
-
-    template <typename T, unsigned int D> 
     inline size_t hoNDImage<T, D>::calculate_offset(const size_t* ind) const
     {
+        GADGET_DEBUG_CHECK_THROW(ind!=NULL);
+
         size_t offset = ind[0];
         for( size_t i = 1; i < D; i++ )
-            offset += ind[i] * this->offsetFactors_[i];
+            offset += ind[i] * (*offsetFactors_)[i];
         return offset;
     }
 
@@ -1222,7 +1217,7 @@ namespace Gadgetron
     {
         size_t offset = (size_t)(ind[0]);
         for( size_t i = 1; i < D; i++ )
-            offset += (size_t)(ind[i]) * this->offsetFactors_[i];
+            offset += (size_t)(ind[i]) * (*offsetFactors_)[i];
         return offset;
     }
 
@@ -1230,62 +1225,62 @@ namespace Gadgetron
     inline size_t hoNDImage<T, D>::calculate_offset(size_t x, size_t y) const
     {
         GADGET_DEBUG_CHECK_THROW(D==2);
-        return x + y * this->offsetFactors_[1];
+        return x + y * (*offsetFactors_)[1];
     }
 
     template <typename T, unsigned int D> 
     inline size_t hoNDImage<T, D>::calculate_offset(size_t x, size_t y, size_t z) const
     {
         GADGET_DEBUG_CHECK_THROW(D==3);
-        return x + (y * this->offsetFactors_[1]) + (z * this->offsetFactors_[2]);
+        return x + (y * (*offsetFactors_)[1]) + (z * (*offsetFactors_)[2]);
     }
 
     template <typename T, unsigned int D> 
     inline size_t hoNDImage<T, D>::calculate_offset(size_t x, size_t y, size_t z, size_t s) const
     {
         GADGET_DEBUG_CHECK_THROW(D==4);
-        return x + (y * this->offsetFactors_[1]) + (z * this->offsetFactors_[2]) + (s * this->offsetFactors_[3]);
+        return x + (y * (*offsetFactors_)[1]) + (z * (*offsetFactors_)[2]) + (s * (*offsetFactors_)[3]);
     }
 
     template <typename T, unsigned int D> 
     inline size_t hoNDImage<T, D>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p) const
     {
         GADGET_DEBUG_CHECK_THROW(D==5);
-        return x + (y * this->offsetFactors_[1]) + (z * this->offsetFactors_[2]) + (s * this->offsetFactors_[3]) + (p * this->offsetFactors_[4]);
+        return x + (y * (*offsetFactors_)[1]) + (z * (*offsetFactors_)[2]) + (s * (*offsetFactors_)[3]) + (p * (*offsetFactors_)[4]);
     }
 
     template <typename T, unsigned int D> 
     inline size_t hoNDImage<T, D>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r) const
     {
         GADGET_DEBUG_CHECK_THROW(D==6);
-        return x + (y * this->offsetFactors_[1]) + (z * this->offsetFactors_[2]) + (s * this->offsetFactors_[3]) + (p * this->offsetFactors_[4]) + (r * this->offsetFactors_[5]);
+        return x + (y * (*offsetFactors_)[1]) + (z * (*offsetFactors_)[2]) + (s * (*offsetFactors_)[3]) + (p * (*offsetFactors_)[4]) + (r * (*offsetFactors_)[5]);
     }
 
     template <typename T, unsigned int D> 
     inline size_t hoNDImage<T, D>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a) const
     {
         GADGET_DEBUG_CHECK_THROW(D==7);
-        return x + (y * this->offsetFactors_[1]) + (z * this->offsetFactors_[2]) + (s * this->offsetFactors_[3]) + (p * this->offsetFactors_[4]) + (r * this->offsetFactors_[5]) + (a * this->offsetFactors_[6]);
+        return x + (y * (*offsetFactors_)[1]) + (z * (*offsetFactors_)[2]) + (s * (*offsetFactors_)[3]) + (p * (*offsetFactors_)[4]) + (r * (*offsetFactors_)[5]) + (a * (*offsetFactors_)[6]);
     }
 
     template <typename T, unsigned int D> 
     inline size_t hoNDImage<T, D>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q) const
     {
         GADGET_DEBUG_CHECK_THROW(D==8);
-        return x + (y * this->offsetFactors_[1]) + (z * this->offsetFactors_[2]) + (s * this->offsetFactors_[3]) + (p * this->offsetFactors_[4]) + (r * this->offsetFactors_[5]) + (a * this->offsetFactors_[6]) + (q * this->offsetFactors_[7]);
+        return x + (y * (*offsetFactors_)[1]) + (z * (*offsetFactors_)[2]) + (s * (*offsetFactors_)[3]) + (p * (*offsetFactors_)[4]) + (r * (*offsetFactors_)[5]) + (a * (*offsetFactors_)[6]) + (q * (*offsetFactors_)[7]);
     }
 
     template <typename T, unsigned int D> 
     inline size_t hoNDImage<T, D>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u) const
     {
         GADGET_DEBUG_CHECK_THROW(D==9);
-        return x + (y * this->offsetFactors_[1]) + (z * this->offsetFactors_[2]) + (s * this->offsetFactors_[3]) + (p * this->offsetFactors_[4]) + (r * this->offsetFactors_[5]) + (a * this->offsetFactors_[6]) + (q * this->offsetFactors_[7]) + (u * this->offsetFactors_[8]);
+        return x + (y * (*offsetFactors_)[1]) + (z * (*offsetFactors_)[2]) + (s * (*offsetFactors_)[3]) + (p * (*offsetFactors_)[4]) + (r * (*offsetFactors_)[5]) + (a * (*offsetFactors_)[6]) + (q * (*offsetFactors_)[7]) + (u * (*offsetFactors_)[8]);
     }
 
     template <typename T, unsigned int D> 
     inline std::vector<size_t> hoNDImage<T, D>::calculate_index( size_t offset ) const
     {
-        std::vector<size_t> index;
+        std::vector<size_t> index(D, 0);
         this->calculate_index(offset, index);
         return index;
     }
@@ -1293,23 +1288,13 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::calculate_index( size_t offset, size_t* index ) const
     {
-        unsigned int i;
-        for( i=D-1; i>0; i-- )
-        {
-            index[i] = offset / this->offsetFactors_[i];
-            offset %= this->offsetFactors_[i];
-        }
-        index[0] = offset;
-    }
+        GADGET_DEBUG_CHECK_THROW(index!=NULL);
 
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::calculate_index( size_t offset, coord_type* index ) const
-    {
         unsigned int i;
         for( i=D-1; i>0; i-- )
         {
-            index[i] = offset / this->offsetFactors_[i];
-            offset %= this->offsetFactors_[i];
+            index[i] = offset / (*offsetFactors_)[i];
+            offset %= (*offsetFactors_)[i];
         }
         index[0] = offset;
     }
@@ -1318,15 +1303,27 @@ namespace Gadgetron
     inline void hoNDImage<T, D>::calculate_index( size_t offset, std::vector<size_t>& index ) const
     {
         index.resize(D, 0);
-        this->calculate_index( offset, &index[0] );
+        this->calculate_index(offset, &index[0]);
+    }
+
+    template <typename T, unsigned int D> 
+    inline void hoNDImage<T, D>::calculate_index( size_t offset, coord_type* index ) const
+    {
+        unsigned int i;
+        for( i=D-1; i>0; i-- )
+        {
+            index[i] = offset / (*offsetFactors_)[i];
+            offset %= (*offsetFactors_)[i];
+        }
+        index[0] = offset;
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::calculate_index( size_t offset, size_t& x, size_t& y ) const
     {
         GADGET_DEBUG_CHECK_THROW(D==2);
-        y = offset / this->offsetFactors_[1];
-        x = offset % this->offsetFactors_[1];
+        y = offset / (*offsetFactors_)[1];
+        x = offset % (*offsetFactors_)[1];
     }
 
     template <typename T, unsigned int D> 
@@ -1334,11 +1331,11 @@ namespace Gadgetron
     {
         GADGET_DEBUG_CHECK_THROW(D==3);
 
-        z = offset / this->offsetFactors_[2];
-        offset %= this->offsetFactors_[2];
+        z = offset / (*offsetFactors_)[2];
+        offset %= (*offsetFactors_)[2];
 
-        y = offset / this->offsetFactors_[1];
-        x = offset % this->offsetFactors_[1];
+        y = offset / (*offsetFactors_)[1];
+        x = offset % (*offsetFactors_)[1];
     }
 
     template <typename T, unsigned int D> 
@@ -1346,14 +1343,14 @@ namespace Gadgetron
     {
         GADGET_DEBUG_CHECK_THROW(D==4);
 
-        s = offset / this->offsetFactors_[3];
-        offset %= this->offsetFactors_[3];
+        s = offset / (*offsetFactors_)[3];
+        offset %= (*offsetFactors_)[3];
 
-        z = offset / this->offsetFactors_[2];
-        offset %= this->offsetFactors_[2];
+        z = offset / (*offsetFactors_)[2];
+        offset %= (*offsetFactors_)[2];
 
-        y = offset / this->offsetFactors_[1];
-        x = offset % this->offsetFactors_[1];
+        y = offset / (*offsetFactors_)[1];
+        x = offset % (*offsetFactors_)[1];
     }
 
     template <typename T, unsigned int D> 
@@ -1361,17 +1358,17 @@ namespace Gadgetron
     {
         GADGET_DEBUG_CHECK_THROW(D==5);
 
-        p = offset / this->offsetFactors_[4];
-        offset %= this->offsetFactors_[4];
+        p = offset / (*offsetFactors_)[4];
+        offset %= (*offsetFactors_)[4];
 
-        s = offset / this->offsetFactors_[3];
-        offset %= this->offsetFactors_[3];
+        s = offset / (*offsetFactors_)[3];
+        offset %= (*offsetFactors_)[3];
 
-        z = offset / this->offsetFactors_[2];
-        offset %= this->offsetFactors_[2];
+        z = offset / (*offsetFactors_)[2];
+        offset %= (*offsetFactors_)[2];
 
-        y = offset / this->offsetFactors_[1];
-        x = offset % this->offsetFactors_[1];
+        y = offset / (*offsetFactors_)[1];
+        x = offset % (*offsetFactors_)[1];
     }
 
     template <typename T, unsigned int D> 
@@ -1379,20 +1376,20 @@ namespace Gadgetron
     {
         GADGET_DEBUG_CHECK_THROW(D==6);
 
-        r = offset / this->offsetFactors_[5];
-        offset %= this->offsetFactors_[5];
+        r = offset / (*offsetFactors_)[5];
+        offset %= (*offsetFactors_)[5];
 
-        p = offset / this->offsetFactors_[4];
-        offset %= this->offsetFactors_[4];
+        p = offset / (*offsetFactors_)[4];
+        offset %= (*offsetFactors_)[4];
 
-        s = offset / this->offsetFactors_[3];
-        offset %= this->offsetFactors_[3];
+        s = offset / (*offsetFactors_)[3];
+        offset %= (*offsetFactors_)[3];
 
-        z = offset / this->offsetFactors_[2];
-        offset %= this->offsetFactors_[2];
+        z = offset / (*offsetFactors_)[2];
+        offset %= (*offsetFactors_)[2];
 
-        y = offset / this->offsetFactors_[1];
-        x = offset % this->offsetFactors_[1];
+        y = offset / (*offsetFactors_)[1];
+        x = offset % (*offsetFactors_)[1];
     }
 
     template <typename T, unsigned int D> 
@@ -1400,23 +1397,23 @@ namespace Gadgetron
     {
         GADGET_DEBUG_CHECK_THROW(D==7);
 
-        a = offset / this->offsetFactors_[6];
-        offset %= this->offsetFactors_[6];
+        a = offset / (*offsetFactors_)[6];
+        offset %= (*offsetFactors_)[6];
 
-        r = offset / this->offsetFactors_[5];
-        offset %= this->offsetFactors_[5];
+        r = offset / (*offsetFactors_)[5];
+        offset %= (*offsetFactors_)[5];
 
-        p = offset / this->offsetFactors_[4];
-        offset %= this->offsetFactors_[4];
+        p = offset / (*offsetFactors_)[4];
+        offset %= (*offsetFactors_)[4];
 
-        s = offset / this->offsetFactors_[3];
-        offset %= this->offsetFactors_[3];
+        s = offset / (*offsetFactors_)[3];
+        offset %= (*offsetFactors_)[3];
 
-        z = offset / this->offsetFactors_[2];
-        offset %= this->offsetFactors_[2];
+        z = offset / (*offsetFactors_)[2];
+        offset %= (*offsetFactors_)[2];
 
-        y = offset / this->offsetFactors_[1];
-        x = offset % this->offsetFactors_[1];
+        y = offset / (*offsetFactors_)[1];
+        x = offset % (*offsetFactors_)[1];
     }
 
     template <typename T, unsigned int D> 
@@ -1424,26 +1421,26 @@ namespace Gadgetron
     {
         GADGET_DEBUG_CHECK_THROW(D==8);
 
-        q = offset / this->offsetFactors_[7];
-        offset %= this->offsetFactors_[7];
+        q = offset / (*offsetFactors_)[7];
+        offset %= (*offsetFactors_)[7];
 
-        a = offset / this->offsetFactors_[6];
-        offset %= this->offsetFactors_[6];
+        a = offset / (*offsetFactors_)[6];
+        offset %= (*offsetFactors_)[6];
 
-        r = offset / this->offsetFactors_[5];
-        offset %= this->offsetFactors_[5];
+        r = offset / (*offsetFactors_)[5];
+        offset %= (*offsetFactors_)[5];
 
-        p = offset / this->offsetFactors_[4];
-        offset %= this->offsetFactors_[4];
+        p = offset / (*offsetFactors_)[4];
+        offset %= (*offsetFactors_)[4];
 
-        s = offset / this->offsetFactors_[3];
-        offset %= this->offsetFactors_[3];
+        s = offset / (*offsetFactors_)[3];
+        offset %= (*offsetFactors_)[3];
 
-        z = offset / this->offsetFactors_[2];
-        offset %= this->offsetFactors_[2];
+        z = offset / (*offsetFactors_)[2];
+        offset %= (*offsetFactors_)[2];
 
-        y = offset / this->offsetFactors_[1];
-        x = offset % this->offsetFactors_[1];
+        y = offset / (*offsetFactors_)[1];
+        x = offset % (*offsetFactors_)[1];
     }
 
     template <typename T, unsigned int D> 
@@ -1451,29 +1448,29 @@ namespace Gadgetron
     {
         GADGET_DEBUG_CHECK_THROW(D==9);
 
-        u = offset / this->offsetFactors_[8];
-        offset %= this->offsetFactors_[8];
+        u = offset / (*offsetFactors_)[8];
+        offset %= (*offsetFactors_)[8];
 
-        q = offset / this->offsetFactors_[7];
-        offset %= this->offsetFactors_[7];
+        q = offset / (*offsetFactors_)[7];
+        offset %= (*offsetFactors_)[7];
 
-        a = offset / this->offsetFactors_[6];
-        offset %= this->offsetFactors_[6];
+        a = offset / (*offsetFactors_)[6];
+        offset %= (*offsetFactors_)[6];
 
-        r = offset / this->offsetFactors_[5];
-        offset %= this->offsetFactors_[5];
+        r = offset / (*offsetFactors_)[5];
+        offset %= (*offsetFactors_)[5];
 
-        p = offset / this->offsetFactors_[4];
-        offset %= this->offsetFactors_[4];
+        p = offset / (*offsetFactors_)[4];
+        offset %= (*offsetFactors_)[4];
 
-        s = offset / this->offsetFactors_[3];
-        offset %= this->offsetFactors_[3];
+        s = offset / (*offsetFactors_)[3];
+        offset %= (*offsetFactors_)[3];
 
-        z = offset / this->offsetFactors_[2];
-        offset %= this->offsetFactors_[2];
+        z = offset / (*offsetFactors_)[2];
+        offset %= (*offsetFactors_)[2];
 
-        y = offset / this->offsetFactors_[1];
-        x = offset % this->offsetFactors_[1];
+        y = offset / (*offsetFactors_)[1];
+        x = offset % (*offsetFactors_)[1];
     }
 
     template <typename T, unsigned int D> 
@@ -1684,132 +1681,6 @@ namespace Gadgetron
     void hoNDImage<T, D>::fill(T value)
     {
         std::fill(this->get_data_ptr(), this->get_data_ptr()+this->get_number_of_elements(), value);
-    }
-
-    template <typename T, unsigned int D> 
-    inline T* hoNDImage<T, D>::begin()
-    {
-        return this->data_;
-    }
-
-    template <typename T, unsigned int D> 
-    inline const T* hoNDImage<T, D>::begin() const
-    {
-        return this->data_;
-    }
-
-    template <typename T, unsigned int D> 
-    inline T* hoNDImage<T, D>::end()
-    {
-        return (this->data_+this->elements_);
-    }
-
-    template <typename T, unsigned int D> 
-    inline const T* hoNDImage<T, D>::end() const
-    {
-        return (this->data_+this->elements_);
-    }
-
-    template <typename T, unsigned int D> 
-    inline T& hoNDImage<T, D>::at( size_t idx )
-    {
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T, unsigned int D> 
-    inline const T& hoNDImage<T, D>::at( size_t idx ) const
-    {
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(const std::vector<gt_index_type>& ind) const
-    {
-        if ( ind.size() != D ) return false;
-
-        unsigned int ii;
-        for ( ii=0; ii<D; ii++ )
-        {
-            if ( (ind[ii]>=this->dimensions_[ii]) || (ind[ii]<0) )
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(const std::vector<size_t>& ind) const
-    {
-        if ( ind.size() != D ) return false;
-
-        unsigned int ii;
-        for ( ii=0; ii<D; ii++ )
-        {
-            if ( ind[ii]>=this->dimensions_[ii] )
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(gt_index_type x) const
-    {
-        return ( x<this->dimensions_[0] && x>=0 );
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(gt_index_type x, gt_index_type y) const
-    {
-        return ( (x<this->dimensions_[0]) && (y<this->dimensions_[1]) && x>=0 && y>=0 );
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z) const
-    {
-        return ( (x<this->dimensions_[0]) && (y<this->dimensions_[1]) && (z<this->dimensions_[2]) && x>=0 && y>=0 && z>=0 );
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s) const
-    {
-        return ( (x<this->dimensions_[0]) && (y<this->dimensions_[1]) && (z<this->dimensions_[2]) && (s<this->dimensions_[3]) && x>=0 && y>=0 && z>=0 && s>=0 );
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p) const
-    {
-        return ( (x<this->dimensions_[0]) && (y<this->dimensions_[1]) && (z<this->dimensions_[2]) && (s<this->dimensions_[3]) && (p<this->dimensions_[4]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 );
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r) const
-    {
-        return ( (x<this->dimensions_[0]) && (y<this->dimensions_[1]) && (z<this->dimensions_[2]) && (s<this->dimensions_[3]) && (p<this->dimensions_[4]) && (r<this->dimensions_[5]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0 );
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a) const
-    {
-        return ( (x<this->dimensions_[0]) && (y<this->dimensions_[1]) && (z<this->dimensions_[2]) && (s<this->dimensions_[3]) && (p<this->dimensions_[4]) && (r<this->dimensions_[5]) && (a<this->dimensions_[6]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0 && a>=0 );
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q) const
-    {
-        return ( (x<this->dimensions_[0]) && (y<this->dimensions_[1]) && (z<this->dimensions_[2]) && (s<this->dimensions_[3]) && (p<this->dimensions_[4]) && (r<this->dimensions_[5]) && (a<this->dimensions_[6]) && (q<this->dimensions_[7]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0 && a>=0 && q>=0 );
-    }
-
-    template <typename T, unsigned int D> 
-    inline bool hoNDImage<T, D>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q, gt_index_type u) const
-    {
-        return ( (x<this->dimensions_[0]) && (y<this->dimensions_[1]) && (z<this->dimensions_[2]) && (s<this->dimensions_[3]) && (p<this->dimensions_[4]) && (r<this->dimensions_[5]) && (a<this->dimensions_[6]) && (q<this->dimensions_[7]) && (u<this->dimensions_[8]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0 && a>=0 && q>=0 && u>=0 );
     }
 
     template <typename T, unsigned int D> 
@@ -2866,7 +2737,7 @@ namespace Gadgetron
 
             if ( NDim > 0 )
             {
-                memcpy(buf+offset, this->dimensions_, sizeof(size_t)*D);
+                memcpy(buf+offset, &((*dimensions_)[0]), sizeof(size_t)*D);
                 offset += sizeof(size_t)*D;
 
                 memcpy(buf+offset, this->pixelSize_, sizeof(coord_type)*D);
@@ -3072,7 +2943,7 @@ namespace Gadgetron
 
         os << "Image size is : ";
         for (i=0; i<D; i++ ) 
-            os << this->dimensions_[i] << " "; 
+            os << (*dimensions_)[i] << " "; 
         os << endl;
 
         int elemTypeSize = sizeof(T);
@@ -3105,111 +2976,5 @@ namespace Gadgetron
         os << endl << ends;
 
         ISMRMRD::serialize( const_cast<ISMRMRD::MetaContainer&>(this->attrib_), os);
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::allocate_memory()
-    {
-        this->deallocate_memory();
-
-        this->elements_ = this->dimensions_[0];
-        for (size_t i = 1; i < D; i++)
-        {
-            this->elements_ *= this->dimensions_[i];
-        }
-
-        if ( this->elements_ > 0 )
-        {
-            this->_allocate_memory(this->elements_, &this->data_);
-
-            if( this->data_ == 0x0 )
-            {
-                BOOST_THROW_EXCEPTION( bad_alloc("hoNDArray<>::allocate memory failed"));
-            }
-
-            this->delete_data_on_destruct_ = true;
-        }
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::deallocate_memory()
-    {
-        if( this->data_ )
-        {
-            this->_deallocate_memory( this->data_ );
-            this->data_ = NULL;
-        }
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_allocate_memory( size_t size, float** data )
-    {
-        *data = (float*) malloc( size*sizeof(float) );
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_deallocate_memory( float* data )
-    {
-        free(data);
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_allocate_memory( size_t size, double** data )
-    {
-        *data = (double*) malloc( size*sizeof(double) );
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_deallocate_memory( double* data )
-    {
-        free(data);
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_allocate_memory( size_t size, std::complex<float>** data )
-    {
-        *data = (std::complex<float>*) malloc( size*sizeof(std::complex<float>) );
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_deallocate_memory( std::complex<float>* data )
-    {
-        free(data);
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_allocate_memory( size_t size, std::complex<double>** data )
-    {
-        *data = (std::complex<double>*) malloc( size*sizeof(std::complex<double>) );
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_deallocate_memory( std::complex<double>* data )
-    {
-        free(data);
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_allocate_memory( size_t size, float_complext** data )
-    {
-        *data = (float_complext*) malloc( size*sizeof(float_complext) );
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_deallocate_memory( float_complext* data )
-    {
-        free( data );
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_allocate_memory( size_t size, double_complext** data )
-    {
-        *data = (double_complext*) malloc( size*sizeof(double_complext) );
-    }
-
-    template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::_deallocate_memory( double_complext* data )
-    {
-        free( data );
     }
 }
