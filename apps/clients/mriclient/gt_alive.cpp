@@ -3,6 +3,9 @@
 #include "GadgetContainerMessage.h"
 #include "FileInfo.h"
 
+#include <ace/SOCK_Acceptor.h>
+#include <ace/Addr.h>
+#include <ace/INET_Addr.h>
 #include <ace/Log_Msg.h>
 #include <ace/Get_Opt.h>
 #include <ace/OS_NS_string.h>
@@ -10,6 +13,7 @@
 #include <fstream>
 #include <time.h>
 #include <iomanip>
+#include <iostream>
 
 using namespace Gadgetron;
 
@@ -20,6 +24,15 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 	std::string host("localhost");
 	std::string port("9002");
 
+	ACE_TCHAR hostname[1024];
+	//We will do a little trick to figure out what the hostname would be accoring to ACE
+	ACE_SOCK_Acceptor listener (ACE_Addr::sap_any);
+	ACE_INET_Addr addr;
+	listener.get_local_addr (addr);
+	ACE_OS_String::strncpy(hostname, addr.get_host_name(), 1024);
+
+	host = std::string(hostname);
+        
 	if (argc > 1) {
 		host = std::string(argv[1]);
 	}
