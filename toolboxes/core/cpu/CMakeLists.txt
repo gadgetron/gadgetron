@@ -10,7 +10,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/apps/gadgetron
 )
 
@@ -87,5 +87,5 @@ install(FILES
         algorithm/hoNDBSpline.hxx 
         DESTINATION include COMPONENT main)
 
-add_subdirectory(arma_math)
+add_subdirectory(math)
 add_subdirectory(hostutils)

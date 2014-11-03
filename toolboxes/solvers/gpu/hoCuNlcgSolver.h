@@ -1,7 +1,7 @@
 #pragma once
 
 #include "hoNDArray_math.h"
-#include "hoCuNDArray_blas.h"
+#include "hoCuNDArray_math.h"
 #include "hoNDArray_fileio.h"
 #include "complext.h"
 #include "nlcgSolver.h"

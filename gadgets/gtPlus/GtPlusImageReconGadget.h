@@ -118,7 +118,7 @@ protected:
     bool exportImageContainer3D(ImageContainer3DMagType& input, const std::string& prefix);
 
     // util for gtplus
-    Gadgetron::gtPlus::gtPlusISMRMRDReconUtil<GT_Complex8> gtPlus_util_;
+    Gadgetron::gtPlus::gtPlusISMRMRDReconUtil< std::complex<float> > gtPlus_util_;
 
     // clock for timing
     Gadgetron::GadgetronTimer gt_timer1_;

@@ -431,7 +431,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         std::ostringstream ostr;
         ostr << "Recon2DT_" << processed_called_times_;
 
-        hoNDArray<GT_Complex8> res = workflow_.res_;
+        hoNDArray< std::complex<float> > res = workflow_.res_;
         res.squeeze();
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
 
@@ -440,7 +440,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
             std::ostringstream ostr;
             ostr << "Recon2DT_GFactor_" << processed_called_times_;
 
-            hoNDArray<GT_Complex8> gfactor = workflow_.gfactor_;
+            hoNDArray< std::complex<float> > gfactor = workflow_.gfactor_;
             gfactor.squeeze();
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, gfactor, ostr.str());
         }
@@ -450,14 +450,14 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
             std::ostringstream ostr;
             ostr << "Recon2DT_WrapAroundMap_" << processed_called_times_;
 
-            hoNDArray<GT_Complex8> wrap_around_map = workflow_.wrap_around_map_;
+            hoNDArray< std::complex<float> > wrap_around_map = workflow_.wrap_around_map_;
             wrap_around_map.squeeze();
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, wrap_around_map, ostr.str());
         }
 
         if ( workflow_.res_second_.get_number_of_elements() > 0 )
         {
-            hoNDArray<GT_Complex8> res = workflow_.res_second_;
+            hoNDArray< std::complex<float> > res = workflow_.res_second_;
             res.squeeze();
 
             std::ostringstream ostr;

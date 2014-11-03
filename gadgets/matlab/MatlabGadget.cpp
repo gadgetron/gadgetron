@@ -55,18 +55,22 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     // The queue is a structure array and we read it back
     // TODO put this in a readme file somewhere useful
     engPutVariable(engine_, "hdr_bytes", acq_hdr_bytes);
+
     engPutVariable(engine_, "data", acq_data);
-    cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ();";
+    cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ(); whos()";
     send_matlab_command(cmd);
 
+    GADGET_DEBUG1("Test1\n");
     // Get the size of the gadget's queue
+
     mxArray *Q = engGetVariable(engine_, "Q");
     if (Q == NULL) {
         GADGET_DEBUG1("Failed to get the Queue from matgadget\n");
         return GADGET_FAIL;
     }
+    GADGET_DEBUG1("Test2\n");
     size_t qlen = mxGetNumberOfElements(Q);
-    //GADGET_DEBUG2("Queue size: %ld", qlen);
+    GADGET_DEBUG2("Queue size: %ld", qlen);
 
     // Loop over the elements of the Q, reading one entry at a time
     // to get a structure with type, headerbytes, and data

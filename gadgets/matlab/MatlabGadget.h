@@ -54,8 +54,6 @@ public:
             // ISMRMRD matlab library
             engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), 'matlab'));");
 
-            // Call the ISMRMRD utility function for setting the Java path for the XML header
-            engEvalString(engine_, "ismrmrd.util.includejar;");
 
 	    GADGET_DEBUG2("%s", matlab_buffer_);
         }
@@ -90,8 +88,9 @@ protected:
 
         GADGET_DEBUG2("MATLAB Class Name : %s\n", classname_.get()->c_str());
 
-        char matlab_buffer_[2049] = "\0";
-        engOutputBuffer(engine_, matlab_buffer_, 2048);
+        //char matlab_buffer_[2049] = "\0";
+        char matlab_buffer_[20481] = "\0";
+        engOutputBuffer(engine_, matlab_buffer_, 20480);
 
    	// Instantiate the Java Command server
         // TODO: we HAVE to pause in Matlab to allow the java command server thread to start

@@ -5,7 +5,7 @@ if [ $(id -u) -ne 0 ]; then
  exit 1
 
 else
- if [ $# -eq 5 ]; then
+ if [ $# -eq 6 ]; then
 
   rm -rf ${3}/chroot-root
 
@@ -52,7 +52,19 @@ else
 
   chroot ${3}/chroot-root/gadgetron apt-get install python-dev python-twisted python-psutil -y 
 
-  tar -zcf "${3}/chroot-backups/gadgetron-chroot-`date '+%d-%B-%Y'`.tar.gz" --directory "${3}" --exclude=./chroot-root/gadgetron/etc --exclude=./chroot-root/gadgetron/var --exclude=./chroot-root/gadgetron/dev --exclude=./chrot-root/gadgetron/root ./chroot-root
+  TAR_FILE_NAME=gadgetron-chroot-${6}-`date '+%d-%B-%Y'`
+  IMAGE_FILE_NAME=${3}/chroot-backups/${TAR_FILE_NAME}.img
+
+  tar -zcf "${3}/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${3}" --exclude=./chroot-root/gadgetron/etc --exclude=./chroot-root/gadgetron/var --exclude=./chroot-root/gadgetron/dev --exclude=./chrot-root/gadgetron/root ./chroot-root
+
+  dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=1024k seek=1024 count=0
+  mke2fs -F -t ext3 ${IMAGE_FILE_NAME}
+  mkdir ${3}/gadgetron_root
+  mount -o loop ${IMAGE_FILE_NAME} ${3}/gadgetron_root
+  tar -xzf ${3}/chroot-backups/${TAR_FILE_NAME}.tar.gz -C ${3}/gadgetron_root/
+  sleep 3
+  umount ${3}/gadgetron_root
+  rmdir ${3}/gadgetron_root
 
   rm -rf "${3}/chroot-root"
  

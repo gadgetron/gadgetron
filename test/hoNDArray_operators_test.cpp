@@ -1,4 +1,3 @@
-#include "hoNDArray_operators.h"
 #include "hoNDArray_elemwise.h"
 #include "complext.h"
 

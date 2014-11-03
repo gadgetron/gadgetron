@@ -5,7 +5,6 @@
 #include "CBCT_acquisition.h"
 #include "CBCT_binning.h"
 #include "hoCuNDArray_math.h"
-#include "hoCuNDArray_operators.h"
 #include "gpuxray_export.h"
 
 #include <numeric>

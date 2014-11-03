@@ -20,16 +20,6 @@
 
 #include "hoNDArray_fileio.h"
 
-#ifdef GT_Complex8
-    #undef GT_Complex8
-#endif // GT_Complex8
-typedef std::complex<float> GT_Complex8;
-
-#ifdef GT_Complex16
-    #undef GT_Complex16
-#endif // GT_Complex16
-typedef std::complex<double> GT_Complex16;
-
 namespace Gadgetron { namespace gtPlus {
 
 class EXPORTGTPLUSIO gtPlusIOWorker
@@ -683,11 +673,11 @@ protected:
             break;
 
         case DT_COMPLEX :
-            rttiID = typeid(GT_Complex8).name();
+            rttiID = typeid( std::complex<float> ).name();
             break;
 
         case DT_COMPLEX128 :
-            rttiID = typeid(GT_Complex16).name();
+            rttiID = typeid( std::complex<double> ).name();
             break;
 
         case DT_COMPLEX256 :
@@ -753,12 +743,12 @@ protected:
             analyzeDT = DT_FLOAT128;
         }
 
-        if ( name == typeid(GT_Complex8).name() )
+        if ( name == typeid( std::complex<float> ).name() )
         {
             analyzeDT = DT_COMPLEX;
         }
 
-        if ( name == typeid(GT_Complex16).name() )
+        if ( name == typeid( std::complex<double> ).name() )
         {
             analyzeDT = DT_COMPLEX128;
         }

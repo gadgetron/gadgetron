@@ -148,7 +148,7 @@ int GtPlusReconJob3DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
         std::ostringstream ostr;
         ostr << "ReconJob2DT_ID" << *jobID;
 
-        hoNDArray<GT_Complex8> res = job->res;
+        hoNDArray< std::complex<float> > res = job->res;
         res.squeeze();
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
 

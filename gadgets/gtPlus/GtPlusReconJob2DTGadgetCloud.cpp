@@ -542,13 +542,13 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
         std::ostringstream ostr;
         ostr << "Node_Recon2DT_" << *jobID;
 
-        hoNDArray<GT_Complex8> res = workflow_.res_;
+        hoNDArray< std::complex<float> > res = workflow_.res_;
         res.squeeze();
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
 
         if ( workflow_.res_second_.get_number_of_elements() > 0 )
         {
-            hoNDArray<GT_Complex8> res = workflow_.res_second_;
+            hoNDArray< std::complex<float> > res = workflow_.res_second_;
             res.squeeze();
 
             std::ostringstream ostr;

@@ -715,8 +715,8 @@ inline bool conjugatetrans(const hoMatrix<double>& A, hoMatrix<double>& AH)
 // C = A*B
 EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB);
 EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB);
-EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, bool transA, const hoNDArray<GT_Complex8>& B, bool transB);
-EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, bool transA, const hoNDArray<GT_Complex16>& B, bool transB);
+EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB);
+EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, bool transA, const hoNDArray< std::complex<double> >& B, bool transB);
 
 template<typename T> 
 bool GeneralMatrixProduct(hoMatrix<T>& C, const hoMatrix<T>& A, bool transA, const hoMatrix<T>& B, bool transB)

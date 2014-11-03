@@ -421,7 +421,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         std::ostringstream ostr;
         ostr << "Recon3DT";
 
-        hoNDArray<GT_Complex8> res = workflow_.res_;
+        hoNDArray< std::complex<float> > res = workflow_.res_;
         res.squeeze();
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
 
@@ -430,7 +430,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
             std::ostringstream ostr;
             ostr << "Recon3DT_GFactor";
 
-            hoNDArray<GT_Complex8> gfactor = workflow_.gfactor_;
+            hoNDArray< std::complex<float> > gfactor = workflow_.gfactor_;
             gfactor.squeeze();
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, gfactor, ostr.str());
         }

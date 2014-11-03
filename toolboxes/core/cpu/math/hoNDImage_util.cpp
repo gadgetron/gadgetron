@@ -814,10 +814,10 @@ template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray<float>& img, double sig
 template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray<double>& img, double sigma[], double* mem);
 template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray<double>& img, float sigma[], double* mem);
 
-template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray<GT_Complex8>& img, float sigma[], GT_Complex8* mem);
-template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray<GT_Complex16>& img, double sigma[], GT_Complex16* mem);
-template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray<GT_Complex8>& img, double sigma[], GT_Complex8* mem);
-template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray<GT_Complex16>& img, float sigma[], GT_Complex16* mem);
+template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray< std::complex<float> >& img, float sigma[],  std::complex<float> * mem);
+template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray< std::complex<double> >& img, double sigma[],  std::complex<double> * mem);
+template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray< std::complex<float> >& img, double sigma[],  std::complex<float> * mem);
+template EXPORTCPUCOREMATH bool filterGaussian(hoNDArray< std::complex<double> >& img, float sigma[],  std::complex<double> * mem);
 
 template EXPORTCPUCOREMATH bool filterGaussian(ho2DArray<float>& img, float sigma[], float* mem);
 template EXPORTCPUCOREMATH bool filterGaussian(ho2DArray<float>& img, double sigma[], float* mem);

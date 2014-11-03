@@ -367,13 +367,13 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
             std::ostringstream ostr;
             ostr << "Recon2DT";
 
-            hoNDArray<GT_Complex8> res = workflow_.res_;
+            hoNDArray< std::complex<float> > res = workflow_.res_;
             res.squeeze();
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
 
             if ( workflow_.res_second_.get_number_of_elements() > 0 )
             {
-                hoNDArray<GT_Complex8> res = workflow_.res_second_;
+                hoNDArray< std::complex<float> > res = workflow_.res_second_;
                 res.squeeze();
 
                 std::ostringstream ostr;
@@ -544,13 +544,13 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                     std::ostringstream ostr;
                     ostr << "GadgetCloud_Recon2DT_" << ii;
 
-                    hoNDArray<GT_Complex8> res = packages_received_[ii].complexIm;
+                    hoNDArray< std::complex<float> > res = packages_received_[ii].complexIm;
                     res.squeeze();
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
 
                     if (packages_received_[ii].complexImSecond.get_number_of_elements() > 0 )
                     {
-                        hoNDArray<GT_Complex8> res = packages_received_[ii].complexImSecond;
+                        hoNDArray< std::complex<float> > res = packages_received_[ii].complexImSecond;
                         res.squeeze();
 
                         std::ostringstream ostr;
@@ -677,7 +677,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                     std::ostringstream ostr;
                     ostr << "Recon2DT_" << jobID;
 
-                    hoNDArray<GT_Complex8> res = gadget_->packages_received_[jobID].complexIm;
+                    hoNDArray< std::complex<float> > res = gadget_->packages_received_[jobID].complexIm;
                     res.squeeze();
                     GADGET_EXPORT_ARRAY_COMPLEX(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
 
@@ -686,7 +686,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                         std::ostringstream ostr;
                         ostr << "Recon2DT_Second_" << jobID;
 
-                        hoNDArray<GT_Complex8> res = gadget_->packages_received_[jobID].complexImSecond;
+                        hoNDArray< std::complex<float> > res = gadget_->packages_received_[jobID].complexImSecond;
                         res.squeeze();
                         GADGET_EXPORT_ARRAY_COMPLEX(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
 

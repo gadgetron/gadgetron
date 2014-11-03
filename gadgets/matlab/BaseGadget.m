@@ -16,7 +16,7 @@ classdef BaseGadget < handle
         % Init function
         function init(g, xmlstr)
             % Convert the xml config string to an IsmrmrdHeader object
-            g.xml = org.ismrm.ismrmrd.XMLString.StringToIsmrmrdHeader(xmlstr);
+            g.xml = ismrmrd.xml.deserialize(xmlstr);
             g.emptyQ();
         end
 
@@ -35,7 +35,7 @@ classdef BaseGadget < handle
 
         % Config function
         function config(g)
-            fprintf('%s\n',char(org.ismrm.ismrmrd.xmlhdr.XMLString.IsmrmrdHeaderToString(g.xml)));
+            fprintf('%s\n',char(serialize(g.xml)));
         end
         
         % Process function

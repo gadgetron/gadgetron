@@ -1,27 +1,42 @@
-/** \file hoNDArray_blas.h
-\brief BLAS level-1 functions on the hoNDArray class.
-
-hoNDArray_blas.h provides BLAS level-1 functions on the hoNDArray class.
-The hoNDArray is temporarily reshaped to a column vector for the respective operations.
-The implementation is based on Armadillo.
-This code is purposely split into a header and underlying implementation (.cpp) 
-as this allows specific instantiation of the supported template types.     
-The supported types are float, double, std::complex<float>, std::complex<double>, 
-Gadgetron::complext<float>, and Gadgetron::complext<double>.
-There are currently no amin and amax functions instantiated for complex types 
-since Armadillo lacks an obvious method to compute the element-wise l1-norm.
-*/
-
 #pragma once
 
 #include "hoNDArray.h"
-#include "hoArmadillo.h"
-#include "complext.h"
 #include "cpucore_math_export.h"
-#include "GadgetronCommon.h"
-#include <complex>
+
+#ifdef max
+    #undef max
+#endif // max
+
+#ifdef min
+    #undef min
+#endif // min
 
 namespace Gadgetron{
+
+    /***
+    * Finds the maximum element of the array
+    */
+    template<class REAL> EXPORTCPUCOREMATH REAL max(hoNDArray<REAL>* data);
+
+    /***
+    * Finds the minimum element of the array
+    */
+    template<class REAL> EXPORTCPUCOREMATH REAL min(hoNDArray<REAL>* data);
+
+    /***
+    * Finds the mean of the array
+    */
+    template<class T> EXPORTCPUCOREMATH T mean(hoNDArray<T>* data);
+
+    /***
+    * Calculates the sum of the array
+    */
+    template<class T> EXPORTCPUCOREMATH T sum(hoNDArray<T>* data);
+
+    /***
+    * Calculates the std of the array
+    */
+    template<class T> EXPORTCPUCOREMATH T stddev(hoNDArray<T>* data);
 
     /**
     * @brief Calculates the dot product of two arrays (as vectors).
@@ -108,12 +123,4 @@ namespace Gadgetron{
     * @return The array index corresponding to the largest element in the array (0-indexing)
     */
     template<class T> EXPORTCPUCOREMATH size_t amax( hoNDArray< complext<T> > *x );
-
-    /**
-    * @brief Calculates y = a*x+y in which x and y are considered as vectors
-    * @param[in] a Scalar value
-    * @param[in] x Array
-    * @param[in,out] y Array
-    */
-    template<class T> EXPORTCPUCOREMATH void axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y );
 }

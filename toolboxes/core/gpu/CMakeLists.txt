@@ -28,7 +28,6 @@ cuda_add_library(gadgetron_toolbox_gpucore SHARED
     hoCuNDArray.h
     hoCuNDArray_blas.h
     hoCuNDArray_elemwise.h
-    hoCuNDArray_operators.h
     hoCuNDArray_utils.h
     radial_utilities.h
     real_utilities_device.h
@@ -68,7 +67,6 @@ install(FILES
   cuNDArray_reductions.h
   hoCuNDArray.h
   hoCuNDArray_blas.h
-  hoCuNDArray_operators.h
   hoCuNDArray_elemwise.h
   hoCuNDArray_utils.h
   hoCuNDArray_math.h

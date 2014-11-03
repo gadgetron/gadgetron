@@ -13,8 +13,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH void fill( hoNDArray<float>* x, float val);
     template EXPORTCPUCOREMATH void fill( hoNDArray<double>* x, double val);
-    template EXPORTCPUCOREMATH void fill( hoNDArray<GT_Complex8>* x, GT_Complex8 val);
-    template EXPORTCPUCOREMATH void fill( hoNDArray<GT_Complex16>* x, GT_Complex16 val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<float> >* x,  std::complex<float>  val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<double> >* x,  std::complex<double>  val);
 
     // --------------------------------------------------------------------------------
 
@@ -27,8 +27,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH void fill( hoNDArray<float>& x, float val);
     template EXPORTCPUCOREMATH void fill( hoNDArray<double>& x, double val);
-    template EXPORTCPUCOREMATH void fill( hoNDArray<GT_Complex8>& x, GT_Complex8 val);
-    template EXPORTCPUCOREMATH void fill( hoNDArray<GT_Complex16>& x, GT_Complex16 val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<float> >& x,  std::complex<float>  val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<double> >& x,  std::complex<double>  val);
 
     // --------------------------------------------------------------------------------
 
@@ -66,8 +66,8 @@ namespace Gadgetron
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool real_imag_to_complex(const hoNDArray<float>& real, const hoNDArray<float>& imag, hoNDArray<GT_Complex8>& cplx);
-    template EXPORTCPUCOREMATH bool real_imag_to_complex(const hoNDArray<double>& real, const hoNDArray<double>& imag, hoNDArray<GT_Complex16>& cplx);
+    template EXPORTCPUCOREMATH bool real_imag_to_complex(const hoNDArray<float>& real, const hoNDArray<float>& imag, hoNDArray< std::complex<float> >& cplx);
+    template EXPORTCPUCOREMATH bool real_imag_to_complex(const hoNDArray<double>& real, const hoNDArray<double>& imag, hoNDArray< std::complex<double> >& cplx);
 
     // --------------------------------------------------------------------------------
 
@@ -109,8 +109,8 @@ namespace Gadgetron
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool complex_to_real_imag(const hoNDArray<GT_Complex8>& cplx, hoNDArray<float>& real, hoNDArray<float>& imag);
-    template EXPORTCPUCOREMATH bool complex_to_real_imag(const hoNDArray<GT_Complex16>& cplx, hoNDArray<double>& real, hoNDArray<double>& imag);
+    template EXPORTCPUCOREMATH bool complex_to_real_imag(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& real, hoNDArray<float>& imag);
+    template EXPORTCPUCOREMATH bool complex_to_real_imag(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& real, hoNDArray<double>& imag);
 
     template <> EXPORTCPUCOREMATH
     bool complex_to_real_imag(const hoNDArray<float>& cplx, hoNDArray<float>& real, hoNDArray<float>& imag)
@@ -221,8 +221,8 @@ namespace Gadgetron
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray<GT_Complex8>& cplx, hoNDArray<float>& real);
-    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray<GT_Complex16>& cplx, hoNDArray<double>& real);
+    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& real);
+    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& real);
 
     // --------------------------------------------------------------------------------
 
@@ -257,8 +257,8 @@ namespace Gadgetron
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray<GT_Complex8>& cplx, hoNDArray<float>& imag);
-    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray<GT_Complex16>& cplx, hoNDArray<double>& imag);
+    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& imag);
+    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& imag);
 
     // --------------------------------------------------------------------------------
 
@@ -280,8 +280,8 @@ namespace Gadgetron
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTCPUCOREMATH bool absolute(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH bool absolute(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -301,8 +301,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool add(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH bool add(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool add(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTCPUCOREMATH bool add(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTCPUCOREMATH bool add(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH bool add(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -322,8 +322,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool subtract(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH bool subtract(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool subtract(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTCPUCOREMATH bool subtract(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTCPUCOREMATH bool subtract(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH bool subtract(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -343,8 +343,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool multiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH bool multiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool multiply(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTCPUCOREMATH bool multiply(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTCPUCOREMATH bool multiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH bool multiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -364,8 +364,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool divide(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH bool divide(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool divide(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTCPUCOREMATH bool divide(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTCPUCOREMATH bool divide(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH bool divide(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -384,8 +384,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool sqrt(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH bool sqrt(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -401,8 +401,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
     template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
-    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<GT_Complex8>& x, GT_Complex8& r, size_t& ind);
-    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<GT_Complex16>& x, GT_Complex16& r, size_t& ind);
+    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray< std::complex<float> >& x,  std::complex<float> & r, size_t& ind);
+    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray< std::complex<double> >& x,  std::complex<double> & r, size_t& ind);
 
     // --------------------------------------------------------------------------------
 
@@ -418,8 +418,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
     template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
-    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<GT_Complex8>& x, GT_Complex8& r, size_t& ind);
-    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<GT_Complex16>& x, GT_Complex16& r, size_t& ind);
+    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray< std::complex<float> >& x,  std::complex<float> & r, size_t& ind);
+    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray< std::complex<double> >& x,  std::complex<double> & r, size_t& ind);
 
     // --------------------------------------------------------------------------------
 
@@ -437,8 +437,8 @@ namespace Gadgetron
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -455,8 +455,8 @@ namespace Gadgetron
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool conjugate(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTCPUCOREMATH bool conjugate(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTCPUCOREMATH bool conjugate(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH bool conjugate(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -469,8 +469,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<float>& x);
     template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<double>& x);
-    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<GT_Complex8>& x);
-    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<GT_Complex16>& x);
+    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray< std::complex<float> >& x);
+    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray< std::complex<double> >& x);
 
     // --------------------------------------------------------------------------------
 
@@ -483,8 +483,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool norm2(const hoNDArray<float>& x, float& r);
     template EXPORTCPUCOREMATH bool norm2(const hoNDArray<double>& x, double& r);
-    template EXPORTCPUCOREMATH bool norm2(const hoNDArray<GT_Complex8>& x, float& r);
-    template EXPORTCPUCOREMATH bool norm2(const hoNDArray<GT_Complex16>& x, double& r);
+    template EXPORTCPUCOREMATH bool norm2(const hoNDArray< std::complex<float> >& x, float& r);
+    template EXPORTCPUCOREMATH bool norm2(const hoNDArray< std::complex<double> >& x, double& r);
 
     // --------------------------------------------------------------------------------
 
@@ -497,8 +497,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool norm1(const hoNDArray<float>& x, float& r);
     template EXPORTCPUCOREMATH bool norm1(const hoNDArray<double>& x, double& r);
-    template EXPORTCPUCOREMATH bool norm1(const hoNDArray<GT_Complex8>& x, float& r);
-    template EXPORTCPUCOREMATH bool norm1(const hoNDArray<GT_Complex16>& x, double& r);
+    template EXPORTCPUCOREMATH bool norm1(const hoNDArray< std::complex<float> >& x, float& r);
+    template EXPORTCPUCOREMATH bool norm1(const hoNDArray< std::complex<double> >& x, double& r);
 
     // --------------------------------------------------------------------------------
 
@@ -510,8 +510,8 @@ namespace Gadgetron
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, GT_Complex8& r);
-    template EXPORTCPUCOREMATH bool dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, GT_Complex16& r);
+    template EXPORTCPUCOREMATH bool dotc(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y,  std::complex<float> & r);
+    template EXPORTCPUCOREMATH bool dotc(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y,  std::complex<double> & r);
 
     // --------------------------------------------------------------------------------
 
@@ -530,8 +530,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool absolute(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH bool absolute(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex8>& x, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex16>& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool absolute(const hoNDArray< std::complex<float> >& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool absolute(const hoNDArray< std::complex<double> >& x, hoNDArray<double>& r);
 
     // --------------------------------------------------------------------------------
 
@@ -548,8 +548,8 @@ namespace Gadgetron
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool argument(const hoNDArray<GT_Complex8>& x, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool argument(const hoNDArray<GT_Complex16>& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool argument(const hoNDArray< std::complex<float> >& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool argument(const hoNDArray< std::complex<double> >& x, hoNDArray<double>& r);
 
     // --------------------------------------------------------------------------------
 
@@ -568,8 +568,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool inv(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH bool inv(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool inv(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    template EXPORTCPUCOREMATH bool inv(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    template EXPORTCPUCOREMATH bool inv(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH bool inv(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -603,8 +603,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool conv2(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& z);
     template EXPORTCPUCOREMATH bool conv2(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
-    template EXPORTCPUCOREMATH bool conv2(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& z);
-    template EXPORTCPUCOREMATH bool conv2(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& z);
+    template EXPORTCPUCOREMATH bool conv2(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& z);
+    template EXPORTCPUCOREMATH bool conv2(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& z);
 
     // --------------------------------------------------------------------------------
 
@@ -640,8 +640,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool conv3(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& z);
     template EXPORTCPUCOREMATH bool conv3(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
-    template EXPORTCPUCOREMATH bool conv3(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& z);
-    template EXPORTCPUCOREMATH bool conv3(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& z);
+    template EXPORTCPUCOREMATH bool conv3(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& z);
+    template EXPORTCPUCOREMATH bool conv3(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& z);
 
     // ----------------------------------------------------
 
@@ -656,8 +656,8 @@ namespace Gadgetron
         return r;
     }
 
-    template EXPORTCPUCOREMATH GT_Complex8 dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y);
-    template EXPORTCPUCOREMATH GT_Complex16 dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y);
+    template EXPORTCPUCOREMATH  std::complex<float>  dotc(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y);
+    template EXPORTCPUCOREMATH  std::complex<double>  dotc(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y);
 
     // --------------------------------------------------------------------------------
 
@@ -674,8 +674,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH float dotu(const hoNDArray<float>& x, const hoNDArray<float>& y);
     template EXPORTCPUCOREMATH double dotu(const hoNDArray<double>& x, const hoNDArray<double>& y);
-    template EXPORTCPUCOREMATH GT_Complex8 dotu(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y);
-    template EXPORTCPUCOREMATH GT_Complex16 dotu(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y);
+    template EXPORTCPUCOREMATH  std::complex<float>  dotu(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y);
+    template EXPORTCPUCOREMATH  std::complex<double>  dotu(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y);
 
     // --------------------------------------------------------------------------------
 
@@ -703,8 +703,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool axpy(float a, const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH bool axpy(double a, const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool axpy(GT_Complex8 a, const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    template EXPORTCPUCOREMATH bool axpy(GT_Complex16 a, const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    template EXPORTCPUCOREMATH bool axpy( std::complex<float>  a, const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH bool axpy( std::complex<double>  a, const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -717,8 +717,8 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool scal(float a, hoNDArray<float>& x);
     template EXPORTCPUCOREMATH bool scal(double a, hoNDArray<double>& x);
-    template EXPORTCPUCOREMATH bool scal(GT_Complex8 a, hoNDArray<GT_Complex8>& x);
-    template EXPORTCPUCOREMATH bool scal(GT_Complex16 a, hoNDArray<GT_Complex16>& x);
+    template EXPORTCPUCOREMATH bool scal( std::complex<float>  a, hoNDArray< std::complex<float> >& x);
+    template EXPORTCPUCOREMATH bool scal( std::complex<double>  a, hoNDArray< std::complex<double> >& x);
 
     // --------------------------------------------------------------------------------
 
@@ -729,8 +729,8 @@ namespace Gadgetron
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool scal(float a, hoNDArray<GT_Complex8>& x);
-    template EXPORTCPUCOREMATH bool scal(double a, hoNDArray<GT_Complex16>& x);
+    template EXPORTCPUCOREMATH bool scal(float a, hoNDArray< std::complex<float> >& x);
+    template EXPORTCPUCOREMATH bool scal(double a, hoNDArray< std::complex<double> >& x);
 
     // --------------------------------------------------------------------------------
 
