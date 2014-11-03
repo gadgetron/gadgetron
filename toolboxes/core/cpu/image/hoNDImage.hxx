@@ -308,11 +308,11 @@ namespace Gadgetron
         }
         else
         {
-            deallocate_memory();
+            this->deallocate_memory();
             this->data_ = 0;
 
             *(this->dimensions_) = *(rhs.dimensions_);
-            allocate_memory();
+            this->allocate_memory();
             this->calculate_offset_factors( *(this->dimensions_) );
             memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
         }
