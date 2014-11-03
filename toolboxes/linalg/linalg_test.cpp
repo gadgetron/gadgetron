@@ -186,7 +186,7 @@ template <typename T> double hoNDArray_norm2_2
   size_t N = a->get_number_of_elements();
   std::complex<T>* a_ptr = a->get_data_ptr();
   long long i;
-  T sum;
+  T sum(0);
 #pragma omp parallel for reduction(+:sum)
   for (i = 0; i < N; i++) {
     const std::complex<T>& c = a_ptr[i];

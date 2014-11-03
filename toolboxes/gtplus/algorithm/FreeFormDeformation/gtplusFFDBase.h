@@ -172,7 +172,7 @@ public:
 
     /// get the size of control point arrays
     virtual size_t get_size(size_t dimension) const { return ctrl_pt_[0].get_size(dimension); }
-    virtual std::vector<size_t> get_dimensions() const { return ctrl_pt_[0].get_dimensions(); }
+    virtual std::vector<size_t> get_dimensions() const { std::vector<size_t> dim; ctrl_pt_[0].get_dimensions(dim); return dim; }
 
     /// get the spacing of of control point arrays
     virtual coord_type get_spacing(size_t dimension) const { return ctrl_pt_[0].get_pixel_size(dimension); }

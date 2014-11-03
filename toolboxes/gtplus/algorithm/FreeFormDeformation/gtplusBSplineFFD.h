@@ -59,7 +59,7 @@ public:
     virtual std::vector<size_t> get_dimensions() const
     {
         std::vector<size_t> dim;
-        dim = ctrl_pt_[0].get_dimensions();
+        ctrl_pt_[0].get_dimensions(dim);
 
         unsigned int d;
         for ( d=0; d<DIn; d++ )

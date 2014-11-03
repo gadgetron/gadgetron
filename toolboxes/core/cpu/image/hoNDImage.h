@@ -20,10 +20,11 @@ namespace Gadgetron
 {
 
     template <typename T, unsigned int D>
-    class hoNDImage
+    class hoNDImage : public hoNDArray<T>
     {
     public:
 
+        typedef hoNDArray<T> BaseClass;
         typedef hoNDImage<T, D> Self;
 
         typedef T element_type;
@@ -55,6 +56,7 @@ namespace Gadgetron
         /// constructors
         hoNDImage ();
         hoNDImage (const std::vector<size_t>& dimensions);
+        hoNDImage (boost::shared_ptr< std::vector<size_t> > dimensions);
         hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize);
         hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin);
         hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis);
@@ -95,6 +97,7 @@ namespace Gadgetron
 
         /// create the image, called by constructors
         virtual void create(const std::vector<size_t>& dimensions);
+        virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
         virtual void create(const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize);
         virtual void create(const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin);
         virtual void create(const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis);
@@ -201,25 +204,19 @@ namespace Gadgetron
         template<class S> 
         bool dimensions_equal(const hoNDArray<S>& im) const
         {
-            unsigned int ii;
-            for ( ii=0; ii<D; ii++ )
-            {
-                if ( this->dimensions_[ii] != im.dimensions_[ii] ) return false;
-            }
+            std::vector<size_t> dim;
+            im.get_dimensions(dim);
 
-            return true;
+            return this->dimensions_equal(dim);
         }
 
         template<class S> 
         bool dimensions_equal(const hoNDImage<S, D>& im) const
         {
-            unsigned int ii;
-            for ( ii=0; ii<D; ii++ )
-            {
-                if ( this->dimensions_[ii] != im.dimensions_[ii] ) return false;
-            }
+            std::vector<size_t> dim;
+            im.get_dimensions(dim);
 
-            return true;
+            return this->dimensions_equal(dim);
         }
 
         template<class S> 
@@ -251,12 +248,6 @@ namespace Gadgetron
 
             return true;
         }
-
-        /// get the image size
-        size_t get_size(size_t dimension) const;
-        size_t get_dimensions(size_t dimension) const;
-        void get_dimensions(std::vector<size_t>& dim) const;
-        std::vector<size_t> get_dimensions() const;
 
         /// get the pixel size
         coord_type get_pixel_size(size_t dimension) const;
@@ -306,28 +297,10 @@ namespace Gadgetron
 
         size_t get_number_of_dimensions() const { return D; }
 
-        /// number of pixels in the images and bytes
-        size_t get_number_of_elements() const;
-        size_t get_number_of_bytes() const;
-
-        /// whether to delete the memory on destruction
-        bool delete_data_on_destruct() const;
-        void delete_data_on_destruct(bool d);
-
-        /// get the data_
-        T* get_data_ptr();
-        const T* get_data_ptr() const;
-
-        /// access the offset factors
-        size_t get_offset_factor(size_t dim) const;
-        void get_offset_factor(std::vector<size_t>& offset) const;
-        size_t get_offset_factor_lastdim() const;
-        void calculate_offset_factors(const std::vector<size_t>& dimensions);
-
-        /// given the pixel indexes, compute the 1D offset
         size_t calculate_offset(const size_t* ind) const;
         size_t calculate_offset(const std::vector<size_t>& ind) const;
         size_t calculate_offset(const std::vector<gt_index_type>& ind) const;
+
         size_t calculate_offset(size_t x, size_t y) const;
         size_t calculate_offset(size_t x, size_t y, size_t z) const;
         size_t calculate_offset(size_t x, size_t y, size_t z, size_t s) const;
@@ -340,8 +313,8 @@ namespace Gadgetron
         /// given the 1D offset, compute the corresponding indexes
         std::vector<size_t> calculate_index( size_t offset ) const;
         void calculate_index( size_t offset, size_t* index ) const;
-        void calculate_index( size_t offset, coord_type* index ) const;
         void calculate_index( size_t offset, std::vector<size_t>& index ) const;
+        void calculate_index( size_t offset, coord_type* index ) const;
         void calculate_index( size_t offset, size_t& x, size_t& y ) const;
         void calculate_index( size_t offset, size_t& x, size_t& y, size_t& z ) const;
         void calculate_index( size_t offset, size_t& x, size_t& y, size_t& z, size_t& s ) const;
@@ -361,8 +334,8 @@ namespace Gadgetron
         T& operator()( const std::vector<gt_index_type>& ind );
         const T& operator()( const std::vector<gt_index_type>& ind ) const;
 
-        T& operator[]( size_t idx );
-        const T& operator[]( size_t idx ) const;
+        T& operator[]( size_t x );
+        const T& operator[]( size_t x ) const;
 
         T& operator()( size_t x );
         const T& operator()( size_t x ) const;
@@ -394,34 +367,11 @@ namespace Gadgetron
         /// fill the image with a value
         void fill(T value);
 
-        /// return data_
-        T* begin();
-        const T* begin() const;
-
-        T* end();
-        const T* end() const;
-
-        T& at( size_t idx );
-        const T& at( size_t idx ) const;
-
         template<typename T2> 
         void copyFrom(const hoNDImage<T2, D>& aIm)
         {
             this->create(aIm);
         }
-
-        /// whether a pixel is within the image range
-        bool point_in_range(const std::vector<gt_index_type>& ind) const;
-        bool point_in_range(const std::vector<size_t>& ind) const;
-        bool point_in_range(gt_index_type x) const;
-        bool point_in_range(gt_index_type x, gt_index_type y) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q, gt_index_type u) const;
 
         /// image pixel index to world coordinate
         void image_to_world(const coord_type* ind, coord_type* coord) const;
@@ -546,11 +496,12 @@ namespace Gadgetron
 
     protected:
 
-        virtual void allocate_memory();
-        virtual void deallocate_memory();
+        using BaseClass::dimensions_;
+        using BaseClass::offsetFactors_;
+        using BaseClass::data_;
+        using BaseClass::elements_;
+        using BaseClass::delete_data_on_destruct_;
 
-        size_t dimensions_[D];
-        size_t offsetFactors_[D];
         coord_type pixelSize_[D];
         coord_type pixelSize_reciprocal_[D];
         coord_type origin_[D];
@@ -560,52 +511,6 @@ namespace Gadgetron
         a_axis_image_patient_type image_position_patient_;
         /// image orientation for row/column/slice directions
         a_axis_image_patient_type image_orientation_patient_[3];
-
-        T* data_;
-
-        size_t elements_;
-        bool delete_data_on_destruct_;
-
-        template<class X> void _allocate_memory( size_t size, X** data )
-        {
-            *data = new (std::nothrow) X[size];
-        }
-
-        template<class X> void _deallocate_memory( X* data )
-        {
-            delete [] data;
-        }
-
-        // Overload these instances to avoid invoking the element class constructor/destructor
-        //
-
-        virtual void _allocate_memory( size_t size, float** data );
-        virtual void _deallocate_memory( float* data );
-
-        virtual void _allocate_memory( size_t size, double** data );
-        virtual void _deallocate_memory( double* data );
-
-        virtual void _allocate_memory( size_t size, std::complex<float>** data );
-        virtual void _deallocate_memory( std::complex<float>* data );
-
-        virtual void _allocate_memory( size_t size, std::complex<double>** data );
-        virtual void _deallocate_memory( std::complex<double>* data );
-
-        virtual void _allocate_memory( size_t size, float_complext** data );
-        virtual void _deallocate_memory( float_complext* data );
-
-        virtual void _allocate_memory( size_t size, double_complext** data );
-        virtual void _deallocate_memory( double_complext* data );
-
-        template<class TYPE> void _allocate_memory( size_t size, vector_td<TYPE,D>** data )
-        {
-            *data = (vector_td<TYPE,D>*) malloc( size*sizeof(vector_td<TYPE,D>) );
-        }
-
-        template<class TYPE>  void _deallocate_memory( vector_td<TYPE,D>* data )
-        {
-            free( data );
-        }
     };
 }
 
