@@ -224,6 +224,68 @@ namespace Gadgetron
     template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& real);
     template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& real);
 
+    template<class T> 
+    bool complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real)
+    {
+        try
+        {
+            if ( !real.dimensions_equal(&cplx) )
+            {
+                real.create(cplx.get_dimensions());
+            }
+
+            const T* pRes = cplx.begin();
+            T* pReal = real.begin();
+
+            size_t N = real.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for private(n) shared(N, pRes, pReal)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pReal[n] = T(pRes[n].real(), 0);
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in complex_to_real(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray< std::complex<float> >& cplx, hoNDArray< std::complex<float> >& real);
+    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray< std::complex<double> >& cplx, hoNDArray< std::complex<double> >& real);
+
+    template<class T> 
+    bool complex_to_real(hoNDArray<T>& cplx)
+    {
+        try
+        {
+            T* pRes = cplx.begin();
+
+            size_t N = cplx.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for private(n) shared(N, pRes)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pRes[n] = T(pRes[n].real(), 0);
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in complex_to_real(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool complex_to_real(hoNDArray< std::complex<float> >& cplx);
+    template EXPORTCPUCOREMATH bool complex_to_real(hoNDArray< std::complex<double> >& cplx);
+
     // --------------------------------------------------------------------------------
 
     template<class T> 
@@ -259,6 +321,104 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& imag);
     template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& imag);
+
+    template<class T> 
+    bool complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<T>& imag)
+    {
+        try
+        {
+            if ( !imag.dimensions_equal(&cplx) )
+            {
+                imag.create(cplx.get_dimensions());
+            }
+
+            const T* pRes = cplx.begin();
+            T* pImag = imag.begin();
+
+            size_t N = imag.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for private(n) shared(N, pRes, pImag)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pImag[n] = T(0, pRes[n].imag());
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in complex_to_imag(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray< std::complex<float> >& cplx, hoNDArray< std::complex<float> >& imag);
+    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray< std::complex<double> >& cplx, hoNDArray< std::complex<double> >& imag);
+
+    template<class T> 
+    bool complex_to_imag(hoNDArray<T>& cplx)
+    {
+        try
+        {
+            T* pRes = cplx.begin();
+
+            size_t N = cplx.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for private(n) shared(N, pRes)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pRes[n] = T( pRes[n].real(), 0);
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in complex_to_imag(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool complex_to_imag(hoNDArray< std::complex<float> >& cplx);
+    template EXPORTCPUCOREMATH bool complex_to_imag(hoNDArray< std::complex<double> >& cplx);
+
+    // --------------------------------------------------------------------------------
+
+    template<class T> 
+    bool real_to_complex(const hoNDArray<typename realType<T>::Type>& real, hoNDArray<T>& cplx)
+    {
+        try
+        {
+            if ( !cplx.dimensions_equal(&real) )
+            {
+                cplx.create(real.get_dimensions());
+            }
+
+            const typename realType<T>::Type* pReal = real.begin();
+            T* pRes = cplx.begin();
+
+            size_t N = real.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for private(n) shared(N, pRes, pReal)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pRes[n] = T(pReal[n], 0);
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in real_to_complex(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool real_to_complex(const hoNDArray< float >& real, hoNDArray< std::complex<float> >& cplx);
+    template EXPORTCPUCOREMATH bool real_to_complex(const hoNDArray< double >& real, hoNDArray< std::complex<double> >& cplx);
 
     // --------------------------------------------------------------------------------
 
@@ -756,6 +916,66 @@ namespace Gadgetron
 
     template EXPORTCPUCOREMATH bool sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending);
     template EXPORTCPUCOREMATH bool sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending);
+
+    // --------------------------------------------------------------------------------
+
+    template <class T>
+    bool minValue(const hoNDArray<T>& a, T& v)
+    {
+        typedef T ValueType;
+
+        try
+        {
+            const ValueType* pA = a.begin();
+            size_t n = a.get_number_of_elements();
+            v = pA[0];
+
+            size_t ii;
+            for (ii=1; ii<n; ii++)
+            {
+                if (pA[ii]<v) v = pA[ii];
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in minValue(const hoNDArray<T>& a, T& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool minValue(const hoNDArray<float>& a, float& v);
+    template EXPORTCPUCOREMATH bool minValue(const hoNDArray<double>& a, double& v);
+
+    template <class T>
+    bool maxValue(const hoNDArray<T>& a, T& v)
+    {
+        typedef T ValueType;
+
+        try
+        {
+            const ValueType* pA = a.begin();
+            size_t n = a.get_number_of_elements();
+            v = pA[0];
+
+            size_t ii;
+            for (ii=1; ii<n; ii++)
+            {
+                if (pA[ii]>v) v = pA[ii];
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in maxValue(const hoNDArray<T>& a, T& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTCPUCOREMATH bool maxValue(const hoNDArray<float>& a, float& v);
+    template EXPORTCPUCOREMATH bool maxValue(const hoNDArray<double>& a, double& v);
 
     // --------------------------------------------------------------------------------
 }

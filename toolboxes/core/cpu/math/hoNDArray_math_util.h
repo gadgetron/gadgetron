@@ -207,9 +207,36 @@ namespace Gadgetron
     template<class T> EXPORTCPUCOREMATH 
     bool complex_to_real(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real);
 
+    template<class T> EXPORTCPUCOREMATH 
+    bool complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real);
+
+    template<class T> 
+    bool complex_to_real(hoNDArray<T>& cplx);
+
     /**
     * @brief get the imag part of complex
     */
     template<class T> EXPORTCPUCOREMATH 
     bool complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& imag);
+
+    template<class T> EXPORTCPUCOREMATH 
+    bool complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<T>& imag);
+
+    template<class T> EXPORTCPUCOREMATH 
+    bool complex_to_imag(hoNDArray<T>& cplx);
+
+    /**
+    * @brief get complex array whose real part is the input and imag part is zero
+    */
+    template<class T> EXPORTCPUCOREMATH 
+    bool real_to_complex(const hoNDArray<typename realType<T>::Type>& real, hoNDArray<T>& cplx);
+
+    /**
+    * @brief get the min and max value from an array (only for float and double type)
+    */
+    template <class T> EXPORTCPUCOREMATH 
+    bool minValue(const hoNDArray<T>& a, T& v);
+
+    template <class T> EXPORTCPUCOREMATH 
+    bool maxValue(const hoNDArray<T>& a, T& v);
 }
