@@ -68,24 +68,4 @@ add_test(test_all test_all)
 
 endif (GTEST_FOUND AND ARMADILLO_FOUND)
 
-if (GTEST_FOUND)
-    if (LAPACK_FOUND OR MKL_FOUND)
-        include_directories(
-          ${CMAKE_SOURCE_DIR}/toolboxes/core
-          ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-          ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-          ${GTEST_INCLUDE_DIRS}
-          )
-
-        add_executable(math_speed_test 
-                tests.cpp  
-                math_speed_test.cpp )
-
-        target_link_libraries(math_speed_test 
-            ${GTEST_LIBRARIES} 
-            ${MKL_LIBRARIES}
-        )
-    endif (LAPACK_FOUND OR MKL_FOUND)
-endif (GTEST_FOUND)
-
 add_subdirectory(integration)
