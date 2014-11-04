@@ -308,12 +308,13 @@ inline void DericheSmoothing(T* pData, size_t N, T* mem, T2 sigma, size_t offset
         forward[0] = a1 * pData[0];
         reverse[N-1] = 0;
 
+        size_t ii;
+
         if ( N > 1 )
         {
             forward[1] = a1 * pData[1] + a2*pData[0] + b1 * forward[0];
             reverse[N-2] = a3 * pData[N-1] + b1 * reverse[N-1];
 
-            size_t ii;
             for ( ii=2; ii<N; ii++ )
             {
                 forward[ii] = (a1*pData[ii] + a2*pData[ii-1]) + (b1*forward[ii-1] + b2*forward[ii-2]);
@@ -321,7 +322,12 @@ inline void DericheSmoothing(T* pData, size_t N, T* mem, T2 sigma, size_t offset
             }
         }
 
-        Gadgetron::math::add(N, forward, reverse, pData);
+        // Gadgetron::math::add(N, forward, reverse, pData);
+
+        for ( ii=0; ii<N; ii++ )
+        {
+            pData[ii] = forward[ii] + reverse[ii];
+        }
     }
     else
     {

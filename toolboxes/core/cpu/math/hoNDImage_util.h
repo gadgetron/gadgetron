@@ -12,11 +12,11 @@
 #include "ho7DArray.h"
 #include "hoNDImage.h"
 #include "cpucore_math_export.h"
-#include "hoNDMath_util.h"
 
 #include "GadgetronCommon.h"
 #include <complex>
 
+#include "hoNDArray_reductions.h"
 #include "hoNDArray_math_util.h"
 #include "hoNDInterpolator.h"
 

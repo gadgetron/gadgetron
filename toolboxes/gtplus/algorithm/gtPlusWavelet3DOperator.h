@@ -841,8 +841,8 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 }
             }
 
-            Gadgetron::math::scal( N3D, T(0.5), lll);
-            Gadgetron::math::scal( N3D, T(0.5), llh );
+            this->scal( N3D, T(0.5), lll);
+            this->scal( N3D, T(0.5), llh );
 
             #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, lll, llh, lhh, lhl)
             for (e2=0; e2<E2; e2++)
@@ -876,16 +876,16 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
             #pragma omp parallel sections
             {
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), lll );
+                this->scal( N3D, T(0.5), lll );
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), lhl );
+                this->scal( N3D, T(0.5), lhl );
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), llh );
+                this->scal( N3D, T(0.5), llh );
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), lhh );
+                this->scal( N3D, T(0.5), lhh );
             }
 
             long long e1;
@@ -939,28 +939,28 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
             #pragma omp parallel sections
             {
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), lll);
+                this->scal( N3D, T(0.5), lll);
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), hll);
+                this->scal( N3D, T(0.5), hll);
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), lhl);
+                this->scal( N3D, T(0.5), lhl);
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), hhl);
+                this->scal( N3D, T(0.5), hhl);
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), llh);
+                this->scal( N3D, T(0.5), llh);
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), hlh);
+                this->scal( N3D, T(0.5), hlh);
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), lhh);
+                this->scal( N3D, T(0.5), lhh);
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), hhh);
+                this->scal( N3D, T(0.5), hhh);
             }
         }
     }
@@ -1045,16 +1045,16 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
             #pragma omp parallel sections
             {
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), pLL );
+                this->scal( N3D, T(0.5), pLL );
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), pHL );
+                this->scal( N3D, T(0.5), pHL );
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), pLH );
+                this->scal( N3D, T(0.5), pLH );
 
                 #pragma omp section
-                Gadgetron::math::scal( N3D, T(0.5), pHH );
+                this->scal( N3D, T(0.5), pHH );
             }
 
             long long e2;
@@ -1081,8 +1081,8 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 }
             }
 
-            Gadgetron::math::scal( N3D, T(0.5), pLL );
-            Gadgetron::math::scal( N3D, T(0.5), pLH );
+            this->scal( N3D, T(0.5), pLL );
+            this->scal( N3D, T(0.5), pLH );
 
             #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, pLL,pLH, pOut) 
             for (e2=0; e2<(long long)E2; e2++)
@@ -1101,7 +1101,7 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 }
             }
 
-            Gadgetron::math::scal( N3D, T(0.5), pOut );
+            this->scal( N3D, T(0.5), pOut );
         }
     }
     catch (...)

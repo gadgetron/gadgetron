@@ -255,15 +255,17 @@ namespace Gadgetron
             ValueType range_w = ValueType(1.0)/(max_warpped_ - min_warpped_ + std::numeric_limits<ValueType>::epsilon());
 
             long long n;
+
+            ValueType v = (ValueType)(1.0/N);
             for ( n=0; n<(long long)N; n++ )
             {
                 coord_type it = (coord_type)(range_t*(target(n)-min_target_)*(num_bin_target_-1));
                 coord_type iw = (coord_type)(range_w*(warped(n)-min_warpped_)*(num_bin_warpped_-1));
 
-                deriv_(n) = ValueType( interp_Dist(it, iw) );
+                deriv_(n) = ValueType( interp_Dist(it, iw) ) * v;
             }
 
-            Gadgetron::math::scal(deriv_.get_number_of_elements(), ValueType(1.0/N), deriv_.begin());
+            // Gadgetron::math::scal(deriv_.get_number_of_elements(), ValueType(1.0/N), deriv_.begin());
         }
         catch(...)
         {
