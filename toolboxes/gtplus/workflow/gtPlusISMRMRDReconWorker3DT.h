@@ -2732,7 +2732,7 @@ bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT,
 
                 // R = D*K
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("matrix multiplication ... "));
-                Gadgetron::GeneralMatrixProduct_gemm(R, D, false, K, false);
+                Gadgetron::gemm(R, D, false, K, false);
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
 
                 size_t colCenter = colD/2;

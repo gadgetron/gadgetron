@@ -2752,7 +2752,7 @@ bool gtPlusReconWorker2DT<T>::performReconFangHuang(gtPlusReconWorkOrder2DT<T>& 
                 }
 
                 // R = D*K
-                Gadgetron::GeneralMatrixProduct_gemm(R, D, false, K, false);
+                Gadgetron::gemm(R, D, false, K, false);
 
                 for ( row=0; row<rowD; row++ )
                 {

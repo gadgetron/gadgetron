@@ -352,7 +352,7 @@ int main(int argc, char** argv)
 
   {
     GadgetronTimer t("GEMM Time (MKL)", true);
-    GeneralMatrixProduct_gemm_CXFL( *C1.get(), *B.get(), *A.get());
+    gemm( *C1.get(), *B.get(), *A.get());
     std::cout << C1->get_size(0) << ", " << C1->get_size(1) << ", " << C1->get_number_of_elements() << std::endl;
   }
 

@@ -107,9 +107,9 @@ bool gtPlusISMRMRDReconCoilMapEstimation<T>::coilMap2DSPIRIT(const hoNDArray<T>&
                         }
                     }
 
-                    Gadgetron::GeneralMatrixProduct_gemm(RRT, R, false, R, true);
+                    Gadgetron::gemm(RRT, R, false, R, true);
 
-                    Gadgetron::EigenAnalysis_syev_heev(RRT, eigenValue);
+                    Gadgetron::heev(RRT, eigenValue);
 
                     for ( scha=0; scha<CHA; scha++ )
                     {
