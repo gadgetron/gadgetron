@@ -30,7 +30,11 @@ def termsignal(signal, frame):
     reactor.stop()
 
 def isGadgetronAlive(port,environment):
-    hostname = socket.gethostname()
+    try:
+        hostname = socket.gethostbyname(socket.gethostname())
+    except:
+        hostname = "127.0.0.1"
+
     process = subprocess.Popen(["gt_alive",hostname,str(port)], env=environment)
     
     time.sleep(1)
