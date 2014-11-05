@@ -166,7 +166,7 @@ public:
         // TODO check the datatype!
         ISMRMRD::Image<T> im; 
         im.setHead(h);
-        boost::asio::read(*stream, boost::asio::buffer(im.getData(), im.getDataSize()));
+        boost::asio::read(*stream, boost::asio::buffer(im.getDataPtr(), im.getDataSize()));
         {
             if (!dataset_) {
 
@@ -232,7 +232,7 @@ public:
         im.setAttributeString(meta_attrib);
 
         //Read image data
-        boost::asio::read(*stream, boost::asio::buffer(im.getData(), im.getDataSize()));
+        boost::asio::read(*stream, boost::asio::buffer(im.getDataPtr(), im.getDataSize()));
         {
             if (!dataset_) {
 
@@ -565,12 +565,12 @@ public:
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
 
         if (trajectory_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTraj()[0], sizeof(float)*trajectory_elements));
+            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
 
         if (data_elements) {
-            boost::asio::write(*socket_, boost::asio::buffer(&acq.getData()[0], 2*sizeof(float)*data_elements));
+            boost::asio::write(*socket_, boost::asio::buffer(&acq.getDataPtr()[0], 2*sizeof(float)*data_elements));
         }
     }
 

@@ -55,7 +55,7 @@ namespace Gadgetron{
             unsigned long data_elements = acqmb->getObjectPtr()->getHead().active_channels*acqmb->getObjectPtr()->getHead().number_of_samples;
 
             if (trajectory_elements) {
-                if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->getTraj()[0], sizeof(float)*trajectory_elements)) <= 0) {
+                if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->getTrajPtr()[0], sizeof(float)*trajectory_elements)) <= 0) {
                     ACE_DEBUG ((LM_ERROR,
                         ACE_TEXT ("(%P|%t) Unable to send acquisition trajectory elements\n")));
 
@@ -64,7 +64,7 @@ namespace Gadgetron{
             }
 
             if (data_elements) {
-                if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->getData()[0], 2*sizeof(float)*data_elements)) <= 0) {
+                if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->getDataPtr()[0], 2*sizeof(float)*data_elements)) <= 0) {
                     ACE_DEBUG ((LM_ERROR,
                         ACE_TEXT ("(%P|%t) Unable to send acquisition data elements\n")));
 
