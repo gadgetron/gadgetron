@@ -28,7 +28,7 @@ gtplus/LGE/meas_MID00083_9_slice.dat: 0912ac1bf7d2adb6a74515c563b91d2e
 gtplus/localizer/gtplus_localizer_ref.h5: 1b2dcf4a942f9616c957fbe444b625b5
 gtplus/localizer/meas_MID00026.dat: ef5954ad53996d5d1455a95985a743a6
 gtplus/MOLLI/20100330_10h33m11s_5562.dat: db50a52977aafd3c8d100fa9aa7d8dcf
-gtplus/MOLLI/gtplus_molli_ref.h5: e1c1e53a5cdbc78575a33d011cb9c65b
+gtplus/MOLLI/gtplus_molli_ref_20141105.h5: 719957e63625feccc50e5ac3615de38c
 gtplus/Perfusion/gtplus_Perfusion_ref.h5: 1845fd154dc204df36e11dfb4d1bba88
 gtplus/Perfusion/gtplus_Perfusion_ref_20140826.h5: da1a5e0ee6db499344f3fde4a44bf85b
 gtplus/Perfusion/meas_MID00045_R3_AIF_ON.dat: 7f82e4e95f83cf3e876abba8030f3b34
