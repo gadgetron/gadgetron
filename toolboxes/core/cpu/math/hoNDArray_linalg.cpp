@@ -1,5 +1,5 @@
 
-#include "hoMatrix_util.h"
+#include "hoNDArray_linalg.h"
 #include "hoNDArray_elemwise.h"
 
 #ifndef lapack_complex_float

@@ -16,7 +16,7 @@
 #include "hoNDArray_math_util.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
-#include "hoMatrix_util.h"
+#include "hoNDArray_linalg.h"
 #include "hoNDFFT.h"
 #include <fftw3.h>
 #include <valarray>

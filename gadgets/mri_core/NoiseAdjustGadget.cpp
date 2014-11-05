@@ -4,7 +4,7 @@
 #include "hoNDArray_elemwise.h"
 #include "GadgetronCommon.h"
 #include "hoMatrix.h"
-#include "hoMatrix_util.h"
+#include "hoNDArray_linalg.h"
 #include "hoNDArray_math_util.h"
 #include "ismrmrd/xml.h"
 
