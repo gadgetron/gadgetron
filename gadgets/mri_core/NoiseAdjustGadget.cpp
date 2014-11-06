@@ -4,7 +4,7 @@
 #include "hoNDArray_elemwise.h"
 #include "GadgetronCommon.h"
 #include "hoMatrix.h"
-#include "hoMatrix_util.h"
+#include "hoNDArray_linalg.h"
 #include "hoNDArray_math_util.h"
 #include "ismrmrd/xml.h"
 
@@ -431,7 +431,7 @@ namespace Gadgetron{
 
                     memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
 
-                    GeneralMatrixProduct_gemm_CXFL(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
+                    gemm(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
 
                     // GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
                 }
@@ -495,7 +495,7 @@ namespace Gadgetron{
                 std::complex<float>* data_ptr = m2->getObjectPtr()->get_data_ptr();
 
                 readout_ = *m2->getObjectPtr();
-                GADGET_CHECK_RETURN(GeneralMatrixProduct_gemm(noise_covariance_matrixf_once_, readout_, true, *m2->getObjectPtr(), false), GADGET_FAIL);
+                GADGET_CHECK_RETURN(gemm(noise_covariance_matrixf_once_, readout_, true, *m2->getObjectPtr(), false), GADGET_FAIL);
                 GADGET_CHECK_RETURN(Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_), GADGET_FAIL);
 
                 number_of_noise_samples_ += samples;
@@ -553,7 +553,7 @@ namespace Gadgetron{
 
                                 memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
 
-                                GeneralMatrixProduct_gemm_CXFL(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
+                                gemm(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
                             }
                         }
                     }

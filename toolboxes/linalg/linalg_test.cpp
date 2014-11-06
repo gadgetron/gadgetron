@@ -16,7 +16,7 @@
 #include "hoNDArray_math_util.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
-#include "hoMatrix_util.h"
+#include "hoNDArray_linalg.h"
 #include "hoNDFFT.h"
 #include <fftw3.h>
 #include <valarray>
@@ -186,7 +186,7 @@ template <typename T> double hoNDArray_norm2_2
   size_t N = a->get_number_of_elements();
   std::complex<T>* a_ptr = a->get_data_ptr();
   long long i;
-  T sum;
+  T sum(0);
 #pragma omp parallel for reduction(+:sum)
   for (i = 0; i < N; i++) {
     const std::complex<T>& c = a_ptr[i];
@@ -352,7 +352,7 @@ int main(int argc, char** argv)
 
   {
     GadgetronTimer t("GEMM Time (MKL)", true);
-    GeneralMatrixProduct_gemm_CXFL( *C1.get(), *B.get(), *A.get());
+    gemm( *C1.get(), *B.get(), *A.get());
     std::cout << C1->get_size(0) << ", " << C1->get_size(1) << ", " << C1->get_number_of_elements() << std::endl;
   }
 

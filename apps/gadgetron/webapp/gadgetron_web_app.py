@@ -11,6 +11,7 @@ import threading
 import signal
 import psutil
 import inspect
+import socket;
 
 run_gadgetron_check = True
 
@@ -29,7 +30,12 @@ def termsignal(signal, frame):
     reactor.stop()
 
 def isGadgetronAlive(port,environment):
-    process = subprocess.Popen(["gt_alive","localhost",str(port)], env=environment)
+    try:
+        hostname = socket.gethostbyname(socket.gethostname())
+    except:
+        hostname = "127.0.0.1"
+
+    process = subprocess.Popen(["gt_alive",hostname,str(port)], env=environment)
     
     time.sleep(1)
     ret = process.poll()

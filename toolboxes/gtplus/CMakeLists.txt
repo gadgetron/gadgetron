@@ -153,54 +153,6 @@ if ( HAS_64_BIT )
 
     endif (MKL_FOUND OR ARMADILLO_FOUND)
 
-    set( gtCloud_files 
-        config/gtCloud/myCloud_2DT.txt 
-        config/gtCloud/myCloud_3DT.txt 
-        config/gtCloud/myCloud_2DT_DualLayer.txt 
-        config/gtCloud/myCloud_2DT_DualLayer_FirstLayer.txt )
-
-    set( config_files 
-
-        config/GT_2DT_Cartesian.xml
-        config/GT_2DT_Cartesian_CloudNode.xml
-        config/GT_2DT_Cartesian_Dicom.xml
-        config/GT_2DT_Cartesian_DualLayer_Gateway_L1SPIRIT.xml
-        config/GT_2DT_Cartesian_DualLayer_Gateway_SPIRIT.xml
-        config/GT_2DT_Cartesian_FirstLayer_CloudNode.xml
-        config/GT_2DT_Cartesian_GFactor.xml
-        config/GT_2DT_Cartesian_ImageTrigger_Dicom.xml
-        config/GT_2DT_Cartesian_L1SPIRIT.xml
-        config/GT_2DT_Cartesian_PseudoReplica_SNRUnitRecon.xml
-        config/GT_2DT_Cartesian_SingleLayer_CloudNode.xml
-        config/GT_2DT_Cartesian_SPIRIT.xml
-        config/GT_2DT_FatWater.xml
-
-        config/GT_2DT_HASTE.xml
-        config/GT_2DT_HASTE_MOCO_AVE.xml
-
-        config/GT_2DT_T2W.xml
-
-        config/GT_2DT_LGE.xml
-
-        config/GT_2DT_MOLLI.xml
-        config/GT_2DT_MOLLI_Offline.xml
-
-        config/GT_2DT_Perfusion.xml
-
-        config/GT_2DT_PseudoReplica_SNRUnitRecon_DataExport.xml
-
-        config/GT_2DT_RealTimeCine.xml
-        config/GT_2DT_RealTimeFlow.xml
-
-        config/GT_2DT_RTCine_L1SPIRIT_PhysioInterp.xml
-        config/GT_2DT_RTCine_L1SPIRIT_PhysioInterp_DualLayer_Gateway.xml
-
-        config/GT_3DT_Cartesian.xml
-        config/GT_3DT_Cartesian_CloudNode.xml
-        config/GT_3DT_Cartesian_GFactor.xml
-        config/GT_3DT_Cartesian_L1SPIRIT.xml
-        config/GT_3DT_Cartesian_SingleLayer_L1SPIRIT.xml )
-
     # matlab
     if (MATLAB_FOUND)
         message("MATLAB FOUND: ${MATLAB_INCLUDE_DIR}, Matlab gt interface is being compiled.")
@@ -222,8 +174,6 @@ if ( HAS_64_BIT )
                 ${util_src_files} )
 
     source_group(util FILES ${util_header_files} ${util_src_files})
-    set( config_gtCloud_files ${config_files} ${gtCloud_files} )
-    source_group(config FILES ${config_gtCloud_files})
 
     if (MKL_FOUND OR ARMADILLO_FOUND)
         set(gtplus_files ${gtplus_files} 
@@ -235,8 +185,7 @@ if ( HAS_64_BIT )
                 ${solver_src_files} 
                 ${application_header_files} 
                 ${application_src_files} 
-                ${config_files} 
-                ${matlab_files})
+                ${matlab_files} )
 
         source_group(workflow FILES     ${workflow_header_files}    ${workflow_src_files})
         source_group(algorithm FILES    ${algorithm_header_files}   ${algorithm_src_files})
@@ -278,13 +227,6 @@ if ( HAS_64_BIT )
             ${gtplus_io_header_files} 
             ${matlab_files}
             DESTINATION include COMPONENT main)
-
-    # install gadgetron program files
-    install (FILES  ${config_files} 
-                    DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
-
-    install (FILES  ${gtCloud_files} 
-                    DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH}/gtCloud COMPONENT main)
 
     # This one depends on the gadgets being compiled
     if (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND)

@@ -151,7 +151,7 @@ int main(int argc, char** argv)
 
     {
     GadgetronTimer t("GEMM Time (MKL)", true);
-    GeneralMatrixProduct_gemm_CXFL( *C1.get(), *B.get(), *A.get());
+    gemm( *C1.get(), *B.get(), *A.get());
     std::cout << C1->get_size(0) << ", " << C1->get_size(1) << ", " << C1->get_number_of_elements() << std::endl;
     }
 
@@ -226,13 +226,6 @@ int main(int argc, char** argv)
         Gadgetron::axpy( alpha, a, b, res);
     }
 
-    {
-        GadgetronTimer t("axpy Time (math)", true);
-        Gadgetron::math::axpy( alpha, a.get_number_of_elements(), a.begin(), b.begin(), res_math.begin());
-    }
-
-    compare_result(res, res_math, "axpy");
-
     GADGET_MSG("------------------------------------------------------------------");
     GADGET_MSG("vector add");
     GADGET_MSG("------------------------------------------------------------------");
@@ -241,13 +234,6 @@ int main(int argc, char** argv)
         GadgetronTimer t("vzAdd Time (MKL)", true);
         Gadgetron::add( *A.get(), *A.get(), res);
     }
-
-    {
-        GadgetronTimer t("add Time (math)", true);
-        Gadgetron::math::add(A->get_number_of_elements(), A->begin(), A->begin(), res_math.begin());
-    }
-
-    compare_result(res, res_math, "add");
 
     GADGET_MSG("------------------------------------------------------------------");
     GADGET_MSG("vector subtract");
@@ -258,12 +244,6 @@ int main(int argc, char** argv)
         Gadgetron::subtract( a, b, res);
     }
 
-    {
-        GadgetronTimer t("subtract (math)", true);
-        Gadgetron::math::subtract(a.get_number_of_elements(), a.begin(), b.begin(), res_math.begin());
-    }
-
-    compare_result(res, res_math, "subtract");
 
     GADGET_MSG("------------------------------------------------------------------");
     GADGET_MSG("vector multiplication");
@@ -272,11 +252,6 @@ int main(int argc, char** argv)
     {
         GadgetronTimer t("vzMul Time (MKL)", true);
         Gadgetron::multiply( a, b, res);
-    }
-
-    {
-        GadgetronTimer t("multiply Time (math)", true);
-        Gadgetron::math::multiply( a.get_number_of_elements(), a.begin(), b.begin(), res_math.begin());
     }
 
     compare_result(res, res_math, "multiply");
@@ -293,11 +268,6 @@ int main(int argc, char** argv)
         Gadgetron::addEpsilon( res );
     }
 
-    {
-        GadgetronTimer t("multiply Time (math)", true);
-        Gadgetron::math::addEpsilon( res.get_number_of_elements(), res.begin());
-    }
-
     compare_result(res, res_math, "addEpsilon");
 
     GADGET_MSG("------------------------------------------------------------------");
@@ -307,11 +277,6 @@ int main(int argc, char** argv)
     {
         GadgetronTimer t("divide Time (MKL)", true);
         Gadgetron::divide( a, res, res);
-    }
-
-    {
-        GadgetronTimer t("divide Time (math)", true);
-        Gadgetron::math::divide( a.get_number_of_elements(), a.begin(), res_math.begin(), res_math.begin());
     }
 
     compare_result(res, res_math, "divide");
@@ -325,11 +290,6 @@ int main(int argc, char** argv)
         Gadgetron::sqrt( a, res);
     }
 
-    {
-        GadgetronTimer t("sqrt Time (math)", true);
-        Gadgetron::math::sqrt( a.get_number_of_elements(), a.begin(), res_math.begin());
-    }
-
     compare_result(res, res_math, "sqrt");
 
     GADGET_MSG("------------------------------------------------------------------");
@@ -341,11 +301,6 @@ int main(int argc, char** argv)
         Gadgetron::conjugate( a, res);
     }
 
-    {
-        GadgetronTimer t("conjugate Time (math)", true);
-        Gadgetron::math::conjugate( a.get_number_of_elements(), a.begin(), res_math.begin());
-    }
-
     compare_result(res, res_math, "conjugate");
 
     GADGET_MSG("------------------------------------------------------------------");
@@ -355,11 +310,6 @@ int main(int argc, char** argv)
     {
         GadgetronTimer t("vcMulByConj Time (MKL)", true);
         Gadgetron::multiplyConj( a, b, res);
-    }
-
-    {
-        GadgetronTimer t("multiplyConj Time (math)", true);
-        Gadgetron::math::multiplyConj( a.get_number_of_elements(), a.begin(), b.begin(), res_math.begin());
     }
 
     compare_result(res, res_math, "multiplyConj");
@@ -376,30 +326,19 @@ int main(int argc, char** argv)
         Gadgetron::scal( alpha, a);
     }
 
-    {
-        GadgetronTimer t("scal Time (math)", true);
-        Gadgetron::math::scal( a.get_number_of_elements(), alpha, a.begin());
-    }
-
     compare_result(res, res_math, "scal");
 
     GADGET_MSG("------------------------------------------------------------------");
     GADGET_MSG("vector dotc");
     GADGET_MSG("------------------------------------------------------------------");
 
-    std::complex<float> rdotc;
+    std::complex<float> rdotc(0);
 
     {
         GadgetronTimer t("dotc Time (MKL)", true);
         rdotc = Gadgetron::dotc( a, b);
     }
-    std::cout << "dotc = " << r << std::endl;
-
-    {
-        GadgetronTimer t("dotc Time (math)", true);
-        Gadgetron::math::dotc( a.get_number_of_elements(), a.begin(), b.begin(), rdotc);
-    }
-    std::cout << "dotc = " << r << std::endl;
+    std::cout << "dotc = " << rdotc << std::endl;
 
     GADGET_MSG("------------------------------------------------------------------");
     GADGET_MSG("vector dotu");
@@ -413,12 +352,6 @@ int main(int argc, char** argv)
     }
     std::cout << "dotu = " << rdotu << std::endl;
 
-    {
-        GadgetronTimer t("dotu Time (math)", true);
-        Gadgetron::math::dotu( a.get_number_of_elements(), a.begin(), b.begin(), rdotu);
-    }
-    std::cout << "dotu = " << rdotu << std::endl;
-
     GADGET_MSG("------------------------------------------------------------------");
     GADGET_MSG("vector absolute");
     GADGET_MSG("------------------------------------------------------------------");
@@ -426,11 +359,6 @@ int main(int argc, char** argv)
     {
         GadgetronTimer t("absolute Time (MKL)", true);
         Gadgetron::absolute( a, res);
-    }
-
-    {
-        GadgetronTimer t("absolute Time (math)", true);
-        Gadgetron::math::absolute( a.get_number_of_elements(), a.begin(), res_math.begin());
     }
 
     compare_result(res, res_math, "absolute");
@@ -444,13 +372,6 @@ int main(int argc, char** argv)
         Gadgetron::argument( a, res_f);
     }
 
-    {
-        GadgetronTimer t("argument Time (math)", true);
-        Gadgetron::math::argument( a.get_number_of_elements(), a.begin(), res_f_math.begin());
-    }
-
-    compare_result(res_f, res_f_math, "argument");
-
     GADGET_MSG("------------------------------------------------------------------");
     GADGET_MSG("vector inv");
     GADGET_MSG("------------------------------------------------------------------");
@@ -459,13 +380,6 @@ int main(int argc, char** argv)
         GadgetronTimer t("inv Time (MKL)", true);
         Gadgetron::inv( a, res);
     }
-
-    {
-        GadgetronTimer t("inv Time (math)", true);
-        Gadgetron::math::inv( a.get_number_of_elements(), a.begin(), res_math.begin());
-    }
-
-    compare_result(res, res_math, "argument");
 
     GADGET_MSG("------------------------------------------------------------------");
     GADGET_MSG("norm2");
@@ -479,12 +393,6 @@ int main(int argc, char** argv)
     }
     std::cout << "nrm2 = " << rn << std::endl;
 
-    {
-        GadgetronTimer t("norm2 (math)", true);
-        Gadgetron::math::norm2( a.get_number_of_elements(), a.begin(), rn);
-    }
-    std::cout << "nrm2 = " << rn << std::endl;
-
     GADGET_MSG("------------------------------------------------------------------");
     GADGET_MSG("norm1");
     GADGET_MSG("------------------------------------------------------------------");
@@ -492,12 +400,6 @@ int main(int argc, char** argv)
     {
         GadgetronTimer t("Time (MKL)", true);
         Gadgetron::norm1( a, rn);
-    }
-    std::cout << "nrm1 = " << rn << std::endl;
-
-    {
-        GadgetronTimer t("norm1 (math)", true);
-        Gadgetron::math::norm1( a.get_number_of_elements(), a.begin(), rn);
     }
     std::cout << "nrm1 = " << rn << std::endl;
 
@@ -512,18 +414,5 @@ int main(int argc, char** argv)
     {
         GadgetronTimer t("conv2 Time (MKL)", true);
         Gadgetron::conv2( a, ker, res);
-    }
-
-    {
-        GadgetronTimer t("conv2 Time (math)", true);
-        Gadgetron::math::conv2(a.get_size(0), a.get_size(1), 1, a.begin(), ker.get_size(0), ker.get_size(1), ker.begin(), res_math.begin());
-    }
-
-    diff = mcompare(&res, &res_math);
-    if (diff > 0.001) {
-        std::cout << "Complex conv2 FAILED with diff: " << diff << std::endl;
-        // return -1;
-    } else {
-        std::cout << "Complex conv2 SUCCESS with diff: " << diff << std::endl;
     }
 }

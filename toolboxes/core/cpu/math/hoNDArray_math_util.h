@@ -12,7 +12,6 @@
 #include "ho6DArray.h"
 #include "ho7DArray.h"
 #include "hoNDImage.h"
-#include "hoNDMath_util.h"
 
 #include "complext.h"
 #include "cpucore_math_export.h"
@@ -99,12 +98,18 @@ namespace Gadgetron
     template <typename T> EXPORTCPUCOREMATH 
     bool norm2(const hoNDArray<T>& x, typename realType<T>::Type& r);
 
+    template <typename T> EXPORTCPUCOREMATH 
+    typename realType<T>::Type norm2(const hoNDArray<T>& x);
+
     /**
     * @brief r = norm(x(:), 1)
     compute L1 norm of x = sum( abs(x(:) )
     */
     template <typename T> EXPORTCPUCOREMATH 
     bool norm1(const hoNDArray<T>& x, typename realType<T>::Type& r);
+
+    template <typename T> EXPORTCPUCOREMATH 
+    typename realType<T>::Type norm1(const hoNDArray<T>& x);
 
     /**
     * @brief dot product of conj(x) and y
@@ -113,11 +118,30 @@ namespace Gadgetron
     template <typename T> EXPORTCPUCOREMATH 
     bool dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r);
 
+    template <typename T> EXPORTCPUCOREMATH 
+    T dotc(const hoNDArray<T>& x, const hoNDArray<T>& y);
+
+    /**
+    * @brief dot product of x and y
+    r = x dot y
+    */
+    template <typename T> EXPORTCPUCOREMATH 
+    bool dotu(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r);
+
+    template <typename T> EXPORTCPUCOREMATH 
+    T dotu(const hoNDArray<T>& x, const hoNDArray<T>& y);
+
     /**
     * @brief r = abs(x)
     */
     template <typename T> EXPORTCPUCOREMATH 
     bool absolute(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
+
+    /**
+    * @brief absolute of a complex array
+    */
+    template <typename T> EXPORTCPUCOREMATH 
+    bool absolute(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r);
 
     /**
     * @brief r = angle(x)
@@ -144,16 +168,6 @@ namespace Gadgetron
     */
     template <typename T> EXPORTCPUCOREMATH 
     bool conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
-
-    /**
-    * @brief compute conj(x) dot y
-    */
-    template <typename T> EXPORTCPUCOREMATH T dotc(const hoNDArray<T>& x, const hoNDArray<T>& y);
-
-    /**
-    * @brief compute x dot y
-    */
-    template <typename T> EXPORTCPUCOREMATH T dotu(const hoNDArray<T>& x, const hoNDArray<T>& y);
 
     /**
     * @brief compute r = a*x + y
@@ -184,10 +198,15 @@ namespace Gadgetron
     template <typename T> EXPORTCPUCOREMATH void fill( hoNDArray<T>& x, T val );
 
     /**
-    * @brief absolute of a complex array
+    * @brief computes the sum of magnitudes of the vector elements.
     */
-    template <typename T> EXPORTCPUCOREMATH 
-    bool absolute(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r);
+    template<class T> EXPORTCPUCOREMATH void asum(const hoNDArray<T>& x, typename realType<T>::Type& r);
+    template<class T> EXPORTCPUCOREMATH typename realType<T>::Type asum(const hoNDArray<T>& x);
+
+    /**
+    * @brief finds the index of the element with the maximal absolute value.
+    */
+    template<class T> EXPORTCPUCOREMATH size_t amax(const hoNDArray<T>& x);
 
     /**
     * @brief real and imag to complex
@@ -207,9 +226,36 @@ namespace Gadgetron
     template<class T> EXPORTCPUCOREMATH 
     bool complex_to_real(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real);
 
+    template<class T> EXPORTCPUCOREMATH 
+    bool complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real);
+
+    template<class T> 
+    bool complex_to_real(hoNDArray<T>& cplx);
+
     /**
     * @brief get the imag part of complex
     */
     template<class T> EXPORTCPUCOREMATH 
     bool complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& imag);
+
+    template<class T> EXPORTCPUCOREMATH 
+    bool complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<T>& imag);
+
+    template<class T> EXPORTCPUCOREMATH 
+    bool complex_to_imag(hoNDArray<T>& cplx);
+
+    /**
+    * @brief get complex array whose real part is the input and imag part is zero
+    */
+    template<class T> EXPORTCPUCOREMATH 
+    bool real_to_complex(const hoNDArray<typename realType<T>::Type>& real, hoNDArray<T>& cplx);
+
+    /**
+    * @brief get the min and max value from an array (only for float and double type)
+    */
+    template <class T> EXPORTCPUCOREMATH 
+    bool minValue(const hoNDArray<T>& a, T& v);
+
+    template <class T> EXPORTCPUCOREMATH 
+    bool maxValue(const hoNDArray<T>& a, T& v);
 }

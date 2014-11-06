@@ -40,7 +40,7 @@ namespace Gadgetron
                 // what's the best way to do it without copies?
                 ISMRMRD::Image<T> img;
                 img.setHead(*img_head);
-                memcpy(img.getData(), data->get_data_ptr(), img.getDataSize());
+                memcpy((void*)img.getDataPtr(), data->get_data_ptr(), img.getDataSize());
 
                 {
                     ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, *mtx_, -1);

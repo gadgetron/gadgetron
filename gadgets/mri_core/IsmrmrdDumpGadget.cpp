@@ -77,7 +77,7 @@ namespace Gadgetron
 
         ismrmrd_acq.setHead(*m1->getObjectPtr());
 
-        memcpy(ismrmrd_acq.getData(), m2->getObjectPtr()->get_data_ptr(), 
+        memcpy((void *)ismrmrd_acq.getDataPtr(), m2->getObjectPtr()->get_data_ptr(), 
                sizeof(float)*m2->getObjectPtr()->get_number_of_elements()*2);
 
         if (m2->cont())
@@ -97,7 +97,7 @@ namespace Gadgetron
                 return GADGET_FAIL;
             } 
 
-            memcpy(ismrmrd_acq.getTraj(), m3->getObjectPtr()->get_data_ptr(),
+            memcpy((void *)ismrmrd_acq.getTrajPtr(), m3->getObjectPtr()->get_data_ptr(),
 		   sizeof(float)*m3->getObjectPtr()->get_number_of_elements());
 
         }

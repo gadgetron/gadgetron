@@ -1,5 +1,5 @@
 
-#include "hoMatrix_util.h"
+#include "hoNDArray_linalg.h"
 #include "hoNDArray_elemwise.h"
 
 #ifndef lapack_complex_float
@@ -143,7 +143,7 @@ namespace Gadgetron
 // following matrix computation calls MKL functions
 #if defined(USE_MKL) || defined(USE_LAPACK)
 
-bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
+bool gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
 {
     typedef std::complex<float> T;
     try
@@ -181,16 +181,14 @@ bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const h
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B) ...");
+        GADGET_ERROR_MSG("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B) ...");
         return false;
     }
     return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool GeneralMatrixProduct_gemm(hoNDArray<float>& C, 
-                            const hoNDArray<float>& A, bool transA, 
-                            const hoNDArray<float>& B, bool transB)
+bool gemm(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB)
 {
     try
     {
@@ -254,16 +252,14 @@ bool GeneralMatrixProduct_gemm(hoNDArray<float>& C,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in gemm(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB) ...");
         return false;
     }
     return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool GeneralMatrixProduct_gemm(hoNDArray<double>& C, 
-                            const hoNDArray<double>& A, bool transA, 
-                            const hoNDArray<double>& B, bool transB)
+bool gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB)
 {
     try
     {
@@ -327,16 +323,14 @@ bool GeneralMatrixProduct_gemm(hoNDArray<double>& C,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB) ...");
         return false;
     }
     return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool GeneralMatrixProduct_gemm(hoNDArray< std::complex<float> >& C, 
-                            const hoNDArray< std::complex<float> >& A, bool transA, 
-                            const hoNDArray< std::complex<float> >& B, bool transB)
+bool gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB)
 {
     try
     {
@@ -400,16 +394,14 @@ bool GeneralMatrixProduct_gemm(hoNDArray< std::complex<float> >& C,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
         return false;
     }
     return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool GeneralMatrixProduct_gemm(hoNDArray< std::complex<double> >& C, 
-                            const hoNDArray< std::complex<double> >& A, bool transA, 
-                            const hoNDArray< std::complex<double> >& B, bool transB)
+bool gemm(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, bool transA, const hoNDArray< std::complex<double> >& B, bool transB)
 {
     try
     {
@@ -473,333 +465,12 @@ bool GeneralMatrixProduct_gemm(hoNDArray< std::complex<double> >& C,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
         return false;
     }
     return true;
 }
 
-/// ---------------------------------------------------------------------
-
-//template<> EXPORTCPUCOREMATH 
-//bool GeneralMatrixProduct_gemm(hoMatrix<float>& C, 
-//                            const hoMatrix<float>& A, bool transA, 
-//                            const hoMatrix<float>& B, bool transB)
-//{
-//    try
-//    {
-//        typedef float T;
-//
-//        char TA, TB;
-//
-//        lapack_int lda = A.rows();
-//        lapack_int ldb = B.rows();
-//        const T* pA = A.begin(); 
-//        const T* pB = B.begin(); 
-//
-//        lapack_int M = A.rows();
-//        lapack_int K = A.cols();
-//        if ( transA )
-//        {
-//            M = A.cols();
-//            K = A.rows();
-//        }
-//
-//        lapack_int K2 = B.rows();
-//        lapack_int N = B.cols();
-//        if ( transB )
-//        {
-//            K2 = B.cols();
-//            N = B.rows();
-//        }
-//
-//        GADGET_CHECK_RETURN_FALSE(K==K2);
-//        if ( (C.rows()!=M) || (C.cols()!=N) )
-//        {
-//            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
-//        }
-//
-//        T* pC = C.begin();
-//        lapack_int ldc = C.rows();
-//
-//        float alpha(1), beta(0);
-//
-//        if ( transA )
-//        {
-//            TA = 'T';
-//        }
-//        else
-//        {
-//            TA = 'N';
-//        }
-//
-//        if ( transB )
-//        {
-//            TB = 'T';
-//        }
-//        else
-//        {
-//            TB = 'N';
-//        }
-//
-//        if ( &A != &C )
-//        {
-//            sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
-//        }
-//        else
-//        {
-//            hoNDArray<T> aTmp(A);
-//            T* pATmp = aTmp.begin();
-//            sgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pATmp), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
-//        }
-//    }
-//    catch(...)
-//    {
-//        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<float>& C, const hoMatrix<float>& A, bool transA, const hoMatrix<float>& B, bool transB) ...");
-//        return false;
-//    }
-//    return true;
-//}
-//
-//template<> EXPORTCPUCOREMATH 
-//bool GeneralMatrixProduct_gemm(hoMatrix<double>& C, 
-//                            const hoMatrix<double>& A, bool transA, 
-//                            const hoMatrix<double>& B, bool transB)
-//{
-//    try
-//    {
-//        typedef double T;
-//
-//        char TA, TB;
-//
-//        lapack_int lda = A.rows();
-//        lapack_int ldb = B.rows();
-//        const T* pA = A.begin(); 
-//        const T* pB = B.begin(); 
-//
-//        lapack_int M = A.rows();
-//        lapack_int K = A.cols();
-//        if ( transA )
-//        {
-//            M = A.cols();
-//            K = A.rows();
-//        }
-//
-//        lapack_int K2 = B.rows();
-//        lapack_int N = B.cols();
-//        if ( transB )
-//        {
-//            K2 = B.cols();
-//            N = B.rows();
-//        }
-//
-//        GADGET_CHECK_RETURN_FALSE(K==K2);
-//        if ( (C.rows()!=M) || (C.cols()!=N) )
-//        {
-//            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
-//        }
-//
-//        T* pC = C.begin();
-//        lapack_int ldc = C.rows();
-//
-//        double alpha(1), beta(0);
-//
-//        if ( transA )
-//        {
-//            TA = 'T';
-//        }
-//        else
-//        {
-//            TA = 'N';
-//        }
-//
-//        if ( transB )
-//        {
-//            TB = 'T';
-//        }
-//        else
-//        {
-//            TB = 'N';
-//        }
-//
-//        if ( &A != &C )
-//        {
-//            dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
-//        }
-//        else
-//        {
-//            hoNDArray<T> aTmp(A);
-//            T* pATmp = aTmp.begin();
-//            dgemm_(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pATmp), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
-//        }
-//    }
-//    catch(...)
-//    {
-//        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<double>& C, const hoMatrix<double>& A, bool transA, const hoMatrix<double>& B, bool transB) ...");
-//        return false;
-//    }
-//    return true;
-//}
-//
-//template<> EXPORTCPUCOREMATH 
-//bool GeneralMatrixProduct_gemm(hoMatrix< std::complex<float> >& C, 
-//                            const hoMatrix< std::complex<float> >& A, bool transA, 
-//                            const hoMatrix< std::complex<float> >& B, bool transB)
-//{
-//    try
-//    {
-//        typedef  std::complex<float>  T;
-//
-//        char TA, TB;
-//
-//        lapack_int lda = A.rows();
-//        lapack_int ldb = B.rows();
-//        const T* pA = A.begin(); 
-//        const T* pB = B.begin(); 
-//
-//        lapack_int M = A.rows();
-//        lapack_int K = A.cols();
-//        if ( transA )
-//        {
-//            M = A.cols();
-//            K = A.rows();
-//        }
-//
-//        lapack_int K2 = B.rows();
-//        lapack_int N = B.cols();
-//        if ( transB )
-//        {
-//            K2 = B.cols();
-//            N = B.rows();
-//        }
-//
-//        GADGET_CHECK_RETURN_FALSE(K==K2);
-//        if ( (C.rows()!=M) || (C.cols()!=N) )
-//        {
-//            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
-//        }
-//
-//        T* pC = C.begin();
-//        lapack_int ldc = C.rows();
-//
-//         std::complex<float>  alpha(1), beta(0);
-//
-//        if ( transA )
-//        {
-//            TA = 'C';
-//        }
-//        else
-//        {
-//            TA = 'N';
-//        }
-//
-//        if ( transB )
-//        {
-//            TB = 'C';
-//        }
-//        else
-//        {
-//            TB = 'N';
-//        }
-//
-//        if ( &A != &C )
-//        {
-//            cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<const lapack_complex_float*>(pA), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
-//        }
-//        else
-//        {
-//            hoNDArray<T> aTmp(A);
-//            T* pATmp = aTmp.begin();
-//            cgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_float*>(&alpha), reinterpret_cast<lapack_complex_float*>(pATmp), &lda, reinterpret_cast<const lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(&beta), reinterpret_cast<lapack_complex_float*>(pC), &ldc);
-//        }
-//    }
-//    catch(...)
-//    {
-//        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix< std::complex<float> >& C, const hoMatrix< std::complex<float> >& A, bool transA, const hoMatrix< std::complex<float> >& B, bool transB) ...");
-//        return false;
-//    }
-//    return true;
-//}
-//
-//template<> EXPORTCPUCOREMATH 
-//bool GeneralMatrixProduct_gemm(hoMatrix< std::complex<double> >& C, 
-//                            const hoMatrix< std::complex<double> >& A, bool transA, 
-//                            const hoMatrix< std::complex<double> >& B, bool transB)
-//{
-//    try
-//    {
-//        typedef  std::complex<double>  T;
-//
-//        char TA, TB;
-//
-//        lapack_int lda = A.rows();
-//        lapack_int ldb = B.rows();
-//        const T* pA = A.begin(); 
-//        const T* pB = B.begin(); 
-//
-//        lapack_int M = A.rows();
-//        lapack_int K = A.cols();
-//        if ( transA )
-//        {
-//            M = A.cols();
-//            K = A.rows();
-//        }
-//
-//        lapack_int K2 = B.rows();
-//        lapack_int N = B.cols();
-//        if ( transB )
-//        {
-//            K2 = B.cols();
-//            N = B.rows();
-//        }
-//
-//        GADGET_CHECK_RETURN_FALSE(K==K2);
-//        if ( (C.rows()!=M) || (C.cols()!=N) )
-//        {
-//            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
-//        }
-//
-//        T* pC = C.begin();
-//        lapack_int ldc = C.rows();
-//
-//         std::complex<double>  alpha(1), beta(0);
-//
-//        if ( transA )
-//        {
-//            TA = 'C';
-//        }
-//        else
-//        {
-//            TA = 'N';
-//        }
-//
-//        if ( transB )
-//        {
-//            TB = 'C';
-//        }
-//        else
-//        {
-//            TB = 'N';
-//        }
-//
-//        if ( &A != &C )
-//        {
-//            zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<const lapack_complex_double*>(pA), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
-//        }
-//        else
-//        {
-//            hoNDArray<T> aTmp(A);
-//            T* pATmp = aTmp.begin();
-//            zgemm_(&TA, &TB, &M, &N, &K, reinterpret_cast<lapack_complex_double*>(&alpha), reinterpret_cast<lapack_complex_double*>(pATmp), &lda, reinterpret_cast<const lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(&beta), reinterpret_cast<lapack_complex_double*>(pC), &ldc);
-//        }
-//    }
-//    catch(...)
-//    {
-//        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix< std::complex<double> >& C, const hoMatrix< std::complex<double> >& A, bool transA, const hoMatrix< std::complex<double> >& B, bool transB) ...");
-//        return false;
-//    }
-//    return true;
-//}
 /// ------------------------------------------------------------------------------------
 
 template<> EXPORTCPUCOREMATH 
@@ -1120,7 +791,7 @@ bool herk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<do
 /// ------------------------------------------------------------------------------------
 
 template<typename T> 
-bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo)
+bool potrf(hoMatrix<T>& A, char uplo)
 {
     try
     {
@@ -1150,7 +821,7 @@ bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo)
         }
         else
         {
-            GADGET_ERROR_MSG("CholeskyHermitianPositiveDefinite_potrf : unsupported type " << typeid(T).name());
+            GADGET_ERROR_MSG("potrf : unsupported type " << typeid(T).name());
             return false;
         }
 
@@ -1167,14 +838,14 @@ bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo) ...");
+        GADGET_ERROR_MSG("Errors in potrf(hoMatrix<T>& A, char uplo) ...");
         return false;
     }
     return true;
 }
 
 template<typename T> 
-bool EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue)
+bool heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue)
 {
     try
     {
@@ -1210,7 +881,7 @@ bool EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type
         //}
         //else
         //{
-        //    GADGET_ERROR_MSG("EigenAnalysis_syev_heev : unsupported type " << typeid(T).name());
+        //    GADGET_ERROR_MSG("heev : unsupported type " << typeid(T).name());
         //    return false;
         //}
 
@@ -1241,7 +912,7 @@ bool EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type
         }
         else
         {
-            GADGET_ERROR_MSG("EigenAnalysis_syev_heev : unsupported type " << typeid(T).name());
+            GADGET_ERROR_MSG("heev : unsupported type " << typeid(T).name());
             return false;
         }
 
@@ -1249,14 +920,14 @@ bool EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue) ... ");
+        GADGET_ERROR_MSG("Errors in heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue) ... ");
         return false;
     }
     return true;
 }
 
 template<typename T> 
-bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A)
+bool potri(hoMatrix<T>& A)
 {
     try
     {
@@ -1303,7 +974,7 @@ bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A)
         //}
         //else
         //{
-        //    GADGET_ERROR_MSG("SymmetricHermitianPositiveDefiniteInverse_potri : unsupported type " << typeid(T).name());
+        //    GADGET_ERROR_MSG("potri : unsupported type " << typeid(T).name());
         //    return false;
         //}
 
@@ -1341,20 +1012,20 @@ bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A)
         }
         else
         {
-            GADGET_ERROR_MSG("SymmetricHermitianPositiveDefiniteInverse_potri : unsupported type " << typeid(T).name());
+            GADGET_ERROR_MSG("potri : unsupported type " << typeid(T).name());
             return false;
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A) ...");
+        GADGET_ERROR_MSG("Errors in potri(hoMatrix<T>& A) ...");
         return false;
     }
     return true;
 }
 
 template<typename T> 
-bool TriangularInverse_trtri(hoMatrix<T>& A, char uplo)
+bool trtri(hoMatrix<T>& A, char uplo)
 {
     try
     {
@@ -1385,7 +1056,7 @@ bool TriangularInverse_trtri(hoMatrix<T>& A, char uplo)
         }
         else
         {
-            GADGET_ERROR_MSG("TriangularInverse_trtri : unsupported type " << typeid(T).name());
+            GADGET_ERROR_MSG("trtri : unsupported type " << typeid(T).name());
             return false;
         }*/
 
@@ -1407,7 +1078,7 @@ bool TriangularInverse_trtri(hoMatrix<T>& A, char uplo)
         }
         else
         {
-            GADGET_ERROR_MSG("TriangularInverse_trtri : unsupported type " << typeid(T).name());
+            GADGET_ERROR_MSG("trtri : unsupported type " << typeid(T).name());
             return false;
         }
 
@@ -1415,14 +1086,14 @@ bool TriangularInverse_trtri(hoMatrix<T>& A, char uplo)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in TriangularInverse_trtri(hoMatrix<float>& A, char uplo) ...");
+        GADGET_ERROR_MSG("Errors in trtri(hoMatrix<float>& A, char uplo) ...");
         return false;
     }
     return true;
 }
 
 template<typename T> 
-bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatrix<T>& b)
+bool posv(hoMatrix<T>& A, hoMatrix<T>& b)
 {
     try
     {
@@ -1457,7 +1128,7 @@ bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatri
         }
         else
         {
-            GADGET_ERROR_MSG("SymmetricHermitianPositiveDefiniteLinearSystem_posv : unsupported type " << typeid(T).name());
+            GADGET_ERROR_MSG("posv : unsupported type " << typeid(T).name());
             return false;
         }*/
 
@@ -1479,7 +1150,7 @@ bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatri
         }
         else
         {
-            GADGET_ERROR_MSG("SymmetricHermitianPositiveDefiniteLinearSystem_posv : unsupported type " << typeid(T).name());
+            GADGET_ERROR_MSG("posv : unsupported type " << typeid(T).name());
             return false;
         }
 
@@ -1487,7 +1158,7 @@ bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatri
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatrix<T>& b) ...");
+        GADGET_ERROR_MSG("Errors in posv(hoMatrix<T>& A, hoMatrix<T>& b) ...");
         return false;
     }
     return true;
@@ -1496,7 +1167,7 @@ bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatri
 /// Computes the LU factorization of a general m-by-n matrix
 /// this function is called by general matrix inversion
 template<typename T> 
-bool LUFactorizationGeneralMatrix_getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& ipiv)
+bool getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& ipiv)
 {
     try
     {
@@ -1530,7 +1201,7 @@ bool LUFactorizationGeneralMatrix_getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& i
         //}
         //else
         //{
-        //    GADGET_ERROR_MSG("LUFactorizationGeneralMatrix_getrf : unsupported type " << typeid(T).name());
+        //    GADGET_ERROR_MSG("getrf : unsupported type " << typeid(T).name());
         //    return false;
         //}
 
@@ -1552,7 +1223,7 @@ bool LUFactorizationGeneralMatrix_getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& i
         }
         else
         {
-            GADGET_ERROR_MSG("LUFactorizationGeneralMatrix_getrf : unsupported type " << typeid(T).name());
+            GADGET_ERROR_MSG("getrf : unsupported type " << typeid(T).name());
             return false;
         }
 
@@ -1560,7 +1231,7 @@ bool LUFactorizationGeneralMatrix_getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& i
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in LUFactorizationGeneralMatrix_getrf(hoMatrix<T>& A, hoMatrix<T>& ipiv) ...");
+        GADGET_ERROR_MSG("Errors in getrf(hoMatrix<T>& A, hoMatrix<T>& ipiv) ...");
         return false;
     }
     return true;
@@ -1568,7 +1239,7 @@ bool LUFactorizationGeneralMatrix_getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& i
 
 /// Computes the inverse of an LU-factored general matrix
 template<typename T> 
-bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
+bool getri(hoMatrix<T>& A)
 {
     try
     {
@@ -1583,7 +1254,7 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
         lapack_int lda = (lapack_int)A.rows();
 
         hoNDArray<lapack_int> ipiv;
-        GADGET_CHECK_RETURN_FALSE(LUFactorizationGeneralMatrix_getrf(A, ipiv));
+        GADGET_CHECK_RETURN_FALSE(getrf(A, ipiv));
 
         lapack_int* pIPIV = ipiv.begin();
 
@@ -1607,7 +1278,7 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
         }
         else
         {
-            GADGET_ERROR_MSG("InverseGeneralMatrix_getri : unsupported type " << typeid(T).name());
+            GADGET_ERROR_MSG("getri : unsupported type " << typeid(T).name());
             return false;
         }*/
 
@@ -1633,7 +1304,7 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
         }
         else
         {
-            GADGET_ERROR_MSG("InverseGeneralMatrix_getri : unsupported type " << typeid(T).name());
+            GADGET_ERROR_MSG("getri : unsupported type " << typeid(T).name());
             return false;
         }
 
@@ -1641,7 +1312,7 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in InverseGeneralMatrix_getri(hoMatrix<T>& A) ...");
+        GADGET_ERROR_MSG("Errors in getri(hoMatrix<T>& A) ...");
         return false;
     }
     return true;
@@ -1649,75 +1320,75 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
 
 // ---------------------------------------------
 
-template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<float>& A, char uplo);
+template EXPORTCPUCOREMATH bool potrf(hoMatrix<float>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<float>& A, hoMatrix<realType<float>::Type>& eigenValue);
+template EXPORTCPUCOREMATH bool heev(hoMatrix<float>& A, hoMatrix<float>& eigenValue);
 
-template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<float>& A);
+template EXPORTCPUCOREMATH bool potri(hoMatrix<float>& A);
 
-template EXPORTCPUCOREMATH bool TriangularInverse_trtri(hoMatrix<float>& A, char uplo);
+template EXPORTCPUCOREMATH bool trtri(hoMatrix<float>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<float>& A, hoMatrix<float>& b);
+template EXPORTCPUCOREMATH bool posv(hoMatrix<float>& A, hoMatrix<float>& b);
 
-template EXPORTCPUCOREMATH bool LUFactorizationGeneralMatrix_getrf(hoMatrix<float>& A, hoNDArray<lapack_int>& ipiv);
+template EXPORTCPUCOREMATH bool getrf(hoMatrix<float>& A, hoNDArray<lapack_int>& ipiv);
 
-template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<float>& A);
-
-// ---------------------------------------------
-
-template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<double>& A, char uplo);
-
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<double>& A, hoMatrix<realType<double>::Type>& eigenValue);
-
-template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<double>& A);
-
-template EXPORTCPUCOREMATH bool TriangularInverse_trtri(hoMatrix<double>& A, char uplo);
-
-template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<double>& A, hoMatrix<double>& b);
-
-template EXPORTCPUCOREMATH bool LUFactorizationGeneralMatrix_getrf(hoMatrix<double>& A, hoNDArray<lapack_int>& ipiv);
-
-template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<double>& A);
-
+template EXPORTCPUCOREMATH bool getri(hoMatrix<float>& A);
 
 // ---------------------------------------------
 
-template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix< std::complex<float> >& A, char uplo);
+template EXPORTCPUCOREMATH bool potrf(hoMatrix<double>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix< std::complex<float> >& A, hoMatrix<realType< std::complex<float> >::Type>& eigenValue);
+template EXPORTCPUCOREMATH bool heev(hoMatrix<double>& A, hoMatrix<double>& eigenValue);
 
-template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix< std::complex<float> >& A);
+template EXPORTCPUCOREMATH bool potri(hoMatrix<double>& A);
 
-template EXPORTCPUCOREMATH bool TriangularInverse_trtri(hoMatrix< std::complex<float> >& A, char uplo);
+template EXPORTCPUCOREMATH bool trtri(hoMatrix<double>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& b);
+template EXPORTCPUCOREMATH bool posv(hoMatrix<double>& A, hoMatrix<double>& b);
 
-template EXPORTCPUCOREMATH bool LUFactorizationGeneralMatrix_getrf(hoMatrix< std::complex<float> >& A, hoNDArray<lapack_int>& ipiv);
+template EXPORTCPUCOREMATH bool getrf(hoMatrix<double>& A, hoNDArray<lapack_int>& ipiv);
 
-template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix< std::complex<float> >& A);
+template EXPORTCPUCOREMATH bool getri(hoMatrix<double>& A);
+
 
 // ---------------------------------------------
 
-template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix< std::complex<double> >& A, char uplo);
+template EXPORTCPUCOREMATH bool potrf(hoMatrix< std::complex<float> >& A, char uplo);
 
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix< std::complex<double> >& A, hoMatrix<realType< std::complex<double> >::Type>& eigenValue);
+template EXPORTCPUCOREMATH bool heev(hoMatrix< std::complex<float> >& A, hoMatrix<float>& eigenValue);
 
-template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix< std::complex<double> >& A);
+template EXPORTCPUCOREMATH bool potri(hoMatrix< std::complex<float> >& A);
 
-template EXPORTCPUCOREMATH bool TriangularInverse_trtri(hoMatrix< std::complex<double> >& A, char uplo);
+template EXPORTCPUCOREMATH bool trtri(hoMatrix< std::complex<float> >& A, char uplo);
 
-template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& b);
+template EXPORTCPUCOREMATH bool posv(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& b);
 
-template EXPORTCPUCOREMATH bool LUFactorizationGeneralMatrix_getrf(hoMatrix< std::complex<double> >& A, hoNDArray<lapack_int>& ipiv);
+template EXPORTCPUCOREMATH bool getrf(hoMatrix< std::complex<float> >& A, hoNDArray<lapack_int>& ipiv);
 
-template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix< std::complex<double> >& A);
+template EXPORTCPUCOREMATH bool getri(hoMatrix< std::complex<float> >& A);
+
+// ---------------------------------------------
+
+template EXPORTCPUCOREMATH bool potrf(hoMatrix< std::complex<double> >& A, char uplo);
+
+template EXPORTCPUCOREMATH bool heev(hoMatrix< std::complex<double> >& A, hoMatrix<double>& eigenValue);
+
+template EXPORTCPUCOREMATH bool potri(hoMatrix< std::complex<double> >& A);
+
+template EXPORTCPUCOREMATH bool trtri(hoMatrix< std::complex<double> >& A, char uplo);
+
+template EXPORTCPUCOREMATH bool posv(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& b);
+
+template EXPORTCPUCOREMATH bool getrf(hoMatrix< std::complex<double> >& A, hoNDArray<lapack_int>& ipiv);
+
+template EXPORTCPUCOREMATH bool getri(hoMatrix< std::complex<double> >& A);
 
 #endif // defined(USE_MKL) || defined(USE_LAPACK)
 
 #if defined(USE_MKL) || defined(USE_LAPACK)
 
     template<typename T> 
-    bool EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue)
+    bool heev(hoMatrix< std::complex<T> >& A, hoMatrix< std::complex<T> >& eigenValue)
     {
         try
         {
@@ -1730,13 +1401,12 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix< std::comple
             }
 
             hoMatrix<typename realType<T>::Type> D(M, 1);
-            GADGET_CHECK_RETURN_FALSE(EigenAnalysis_syev_heev(A, D));
-            //GADGET_CHECK_RETURN_FALSE(eigenValue.copyFrom(D));
+            GADGET_CHECK_RETURN_FALSE(heev(A, D));
             eigenValue.copyFrom(D);
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue) ... ");
+            GADGET_ERROR_MSG("Errors in heev(hoMatrix< std::complex<T> >& A, hoMatrix< std::complex<T> >& eigenValue) ... ");
             return false;
         }
         return true;
@@ -1751,14 +1421,14 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix< std::comple
         Gadgetron::clear(AHA);
 
         // hoMatrix<T> ACopy(A);
-        // GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(AHA, ACopy, true, A, false));
+        // GADGET_CHECK_RETURN_FALSE(gemm(AHA, ACopy, true, A, false));
 
         char uplo = 'L';
         bool isAHA = true;
         GADGET_CHECK_RETURN_FALSE(herk(AHA, A, uplo, isAHA));
 
         GADGET_CHECK_RETURN_FALSE(x.createMatrix(A.cols(), b.cols()));
-        GADGET_CHECK_RETURN_FALSE(GeneralMatrixProduct_gemm(x, A, true, b, false));
+        GADGET_CHECK_RETURN_FALSE(gemm(x, A, true, b, false));
 
         // apply the Tikhonov regularization
         // Ideally, we shall apply the regularization is lamda*maxEigenValue
@@ -1784,15 +1454,13 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix< std::comple
             AHA(c,c) = T( (typename realType<T>::Type)(std::abs(AHA(c, c)) + value) );
         }
 
-        GADGET_CHECK_RETURN_FALSE(SymmetricHermitianPositiveDefiniteLinearSystem_posv(AHA, x));
+        GADGET_CHECK_RETURN_FALSE(posv(AHA, x));
 
         return true;
     }
 
-    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix<float>& A, hoMatrix<float>& eigenValue);
-    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix<double>& A, hoMatrix<double>& eigenValue);
-    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& eigenValue);
-    template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev2(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& eigenValue);
+    template EXPORTCPUCOREMATH bool heev(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& eigenValue);
+    template EXPORTCPUCOREMATH bool heev(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& eigenValue);
 
     template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<float>& A, hoMatrix<float>& b, hoMatrix<float>& x, double lamda);
     template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<double>& A, hoMatrix<double>& b, hoMatrix<double>& x, double lamda);

@@ -855,63 +855,120 @@ namespace Gadgetron {
         long long Nx = x.get_number_of_elements();
         long long N = y.get_number_of_elements() / Nx;
 
-        long long n;
+        const T* pX = x.begin();
 
-        if ( typeid(T)==typeid(float) )
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(pX, y, r, Nx, N)
+        for ( n=0; n<N; n++ )
         {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
-            for ( n=0; n<N; n++ )
+            const T* pY = y.begin()+n*Nx;
+            T* pR = r.begin() + n*Nx;
+
+            long long ii;
+            for ( ii=0; ii<Nx; ii++ )
             {
-                Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
+                pR[ii] = pX[ii] + pY[ii];
             }
         }
-        else if ( typeid(T)==typeid(double) )
-        {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
-            for ( n=0; n<N; n++ )
-            {
-                Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-            }
-        }
-        else if ( typeid(T)==typeid( std::complex<float> ) )
-        {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
-            for ( n=0; n<N; n++ )
-            {
-                Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-            }
-        }
-        else if ( typeid(T)==typeid( std::complex<double> ) )
-        {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
-            for ( n=0; n<N; n++ )
-            {
-                Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-            }
-        }
-        else
-        {
-            GADGET_ERROR_MSG("multipleAdd : unsupported type " << typeid(T).name());
-            return false;
-        }
+
+        //if ( typeid(T)==typeid(float) )
+        //{
+        //    #ifdef GCC_OLD_FLAG
+        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
+        //    #else
+        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
+        //    #endif
+        //    for ( n=0; n<N; n++ )
+        //    {
+        //        const T* pY = y.begin()+n*Nx;
+        //        T* pR = pR + n*Nx;
+
+        //        size_t ii;
+        //        for ( ii=0; ii<Nx; ii++ )
+        //        {
+        //            pR[ii] = pX[ii] + pY[ii];
+        //        }
+        //    }
+        //}
+        //else if ( typeid(T)==typeid(double) )
+        //{
+        //    #ifdef GCC_OLD_FLAG
+        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
+        //    #else
+        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
+        //    #endif
+        //    for ( n=0; n<N; n++ )
+        //    {
+        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
+        //    }
+        //}
+        //else if ( typeid(T)==typeid( std::complex<float> ) )
+        //{
+        //    #ifdef GCC_OLD_FLAG
+        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
+        //    #else
+        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
+        //    #endif
+        //    for ( n=0; n<N; n++ )
+        //    {
+        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
+        //    }
+        //}
+        //else if ( typeid(T)==typeid( std::complex<double> ) )
+        //{
+        //    #ifdef GCC_OLD_FLAG
+        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
+        //    #else
+        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
+        //    #endif
+        //    for ( n=0; n<N; n++ )
+        //    {
+        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
+        //    }
+        //}
+        //else
+        //{
+        //    GADGET_ERROR_MSG("multipleAdd : unsupported type " << typeid(T).name());
+        //    return false;
+        //}
 
         return true;
+    }
+
+    inline void multiplyCplx(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
+    {
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const std::complex<float>& a1 = x[n];
+            const std::complex<float>& b1 = y[n];
+            const float a = a1.real();
+            const float b = a1.imag();
+            const float c = b1.real();
+            const float d = b1.imag();
+
+            reinterpret_cast<float(&)[2]>(r[n])[0] = a*c-b*d;
+            reinterpret_cast<float(&)[2]>(r[n])[1] = a*d+b*c;
+        }
+    }
+
+    inline void multiplyCplx(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
+    {
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const std::complex<double>& a1 = x[n];
+            const std::complex<double>& b1 = y[n];
+            const double a = a1.real();
+            const double b = a1.imag();
+            const double c = b1.real();
+            const double d = b1.imag();
+
+            reinterpret_cast<double(&)[2]>(r[n])[0] = a*c-b*d;
+            reinterpret_cast<double(&)[2]>(r[n])[1] = a*d+b*c;
+        }
     }
 
     template <typename T> 
@@ -926,30 +983,38 @@ namespace Gadgetron {
         long long Nx = x.get_number_of_elements();
         long long N = y.get_number_of_elements() / Nx;
 
+        const T* pX = x.begin();
+
         long long n;
 
         if ( typeid(T)==typeid(float) )
         {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(pX, y, r, Nx, N)
             for ( n=0; n<N; n++ )
             {
-                Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
+                const T* pY = y.begin()+n*Nx;
+                T* pR = r.begin() + n*Nx;
+
+                long long ii;
+                for ( ii=0; ii<Nx; ii++ )
+                {
+                    pR[ii] = pX[ii] * pY[ii];
+                }
             }
         }
         else if ( typeid(T)==typeid(double) )
         {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(pX, y, r, Nx, N)
             for ( n=0; n<N; n++ )
             {
-                Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
+                const T* pY = y.begin()+n*Nx;
+                T* pR = r.begin() + n*Nx;
+
+                long long ii;
+                for ( ii=0; ii<Nx; ii++ )
+                {
+                    pR[ii] = pX[ii] * pY[ii];
+                }
             }
         }
         else if ( typeid(T)==typeid( std::complex<float> ) )
@@ -961,7 +1026,7 @@ namespace Gadgetron {
             #endif
             for ( n=0; n<N; n++ )
             {
-                Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
+                multiplyCplx(x.get_number_of_elements(), (const std::complex<float>*)(x.begin()), (const std::complex<float>*)(y.begin()+n*Nx), (std::complex<float>*)(r.begin()+n*Nx));
             }
         }
         else if ( typeid(T)==typeid( std::complex<double> ) )
@@ -973,7 +1038,7 @@ namespace Gadgetron {
             #endif
             for ( n=0; n<N; n++ )
             {
-                Gadgetron::math::multiply(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
+                multiplyCplx(x.get_number_of_elements(), (const std::complex<double>*)(x.begin()), (const std::complex<double>*)(y.begin()+n*Nx), (std::complex<double>*)(r.begin()+n*Nx));
             }
         }
         else
@@ -2108,29 +2173,24 @@ namespace Gadgetron {
 
                 //#pragma omp for
 
-                if ( typeid(T)==typeid( std::complex<float> ) )
+                for ( dCha=0; dCha<dstCHA; dCha++ )
                 {
-                    for ( dCha=0; dCha<dstCHA; dCha++ )
-                    {
-                        Gadgetron::math::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
+                    multiplyCplx(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
 
-                        memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
-                        for ( size_t sCha=1; sCha<srcCHA; sCha++ )
-                        {
-                            Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
-                        }
-                    }
-                }
-                else if ( typeid(T)==typeid( std::complex<double> ) )
-                {
-                    for ( dCha=0; dCha<dstCHA; dCha++ )
+                    memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
+                    for ( size_t sCha=1; sCha<srcCHA; sCha++ )
                     {
-                        Gadgetron::math::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
+                        // Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
 
-                        memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
-                        for ( size_t sCha=1; sCha<srcCHA; sCha++ )
+                        size_t ii;
+                        size_t N2D=ro*e1;
+
+                        T* pY2D = pY+dCha*ro*e1;
+                        T* pBuf2D = pBuf+sCha*ro*e1;
+
+                        for ( ii=0; ii<N2D; ii++ )
                         {
-                            Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
+                            pY2D[ii] += pBuf2D[ii];
                         }
                     }
                 }
@@ -2176,8 +2236,8 @@ namespace Gadgetron {
 
                 //#pragma omp for
 
-                if ( typeid(T)==typeid( std::complex<float> ) )
-                {
+                //if ( typeid(T)==typeid( std::complex<float> ) )
+                //{
                     const T* pXN = x.begin();
                     T* pYN = y.begin();
                     T* pBufN = buf.begin();
@@ -2197,7 +2257,7 @@ namespace Gadgetron {
                             const T* pX = pXN + n*ro*e1*srcCHA;
                             T* pBuf =pBufN + n*ro*e1*srcCHA;
 
-                            Gadgetron::math::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
+                            multiplyCplx(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
                         //}
 
                         //for ( n=0; n<N; n++  )
@@ -2208,36 +2268,46 @@ namespace Gadgetron {
                             memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
                             for ( long long sCha=1; sCha<srcCHA; sCha++ )
                             {
-                                Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
+                                // Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
+                                size_t ii;
+                                size_t N2D=ro*e1;
+
+                                T* pY2D = pY+dCha*ro*e1;
+                                T* pBuf2D = pBuf+sCha*ro*e1;
+
+                                for ( ii=0; ii<N2D; ii++ )
+                                {
+                                    pY2D[ii] += pBuf2D[ii];
+                                }
                             }
                         }
                     }
-                }
-                else if ( typeid(T)==typeid( std::complex<double> ) )
-                {
-                    for ( n=0; n<N; n++ )
-                    {
-                        const T* ker = kernel.begin() + n*ro*e1*srcCHA*dstCHA;
-                        if ( kerN <= n )
-                        {
-                            ker = kernel.begin() + (kerN-1)*ro*e1*srcCHA*dstCHA;
-                        }
+                //}
+                //else if ( typeid(T)==typeid( std::complex<double> ) )
+                //{
+                //    for ( n=0; n<N; n++ )
+                //    {
+                //        const T* ker = kernel.begin() + n*ro*e1*srcCHA*dstCHA;
+                //        if ( kerN <= n )
+                //        {
+                //            ker = kernel.begin() + (kerN-1)*ro*e1*srcCHA*dstCHA;
+                //        }
 
-                        const T* pX = x.begin() + n*ro*e1*srcCHA;
-                        T* pY = y.begin() + n*ro*e1*dstCHA;
+                //        const T* pX = x.begin() + n*ro*e1*srcCHA;
+                //        T* pY = y.begin() + n*ro*e1*dstCHA;
 
-                        for ( long long dCha=0; dCha<dstCHA; dCha++ )
-                        {
-                            Gadgetron::math::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
+                //        for ( long long dCha=0; dCha<dstCHA; dCha++ )
+                //        {
+                //            Gadgetron::math::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
 
-                            memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
-                            for ( long long sCha=1; sCha<srcCHA; sCha++ )
-                            {
-                                Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
-                            }
-                        }
-                    }
-                }
+                //            memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
+                //            for ( long long sCha=1; sCha<srcCHA; sCha++ )
+                //            {
+                //                Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
+                //            }
+                //        }
+                //    }
+                //}
             }
         }
         catch (...)
