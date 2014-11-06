@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#if [[ "$EUID" -ne 0 ]]; then
 if [ $(id -u) -ne 0 ]; then 
  echo -e "\nPlease start the script as a root or sudo!\n"
  exit 1
@@ -8,19 +7,14 @@ if [ $(id -u) -ne 0 ]; then
 else
  BASEDIR=$(dirname $0)
 
- if [ $# -eq 1 ]; then
-
-  umount "${1}/proc"
-  exit 0
-
- elif [ $# -eq 0 ]; then
-
+ if [ $# -eq 0 ]; then
   umount $BASEDIR/gadgetron/proc
+  umount $BASEDIR/gadgetron/sys
+  umount $BASEDIR/gadgetron/dev
   exit 0
 
  else
-  echo -e "\nUsage: $0    or    $0 (chrootdir)\n"
+  echo -e "\nUsage: $0\n"
   exit 1
  fi
-
 fi

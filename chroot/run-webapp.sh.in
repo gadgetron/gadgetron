@@ -2,4 +2,4 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:@CMAKE_INSTALL_PREFIX@/bin 
 LD_LIBRARY_PATH=@CMAKE_INSTALL_PREFIX@/lib:/usr/local/lib:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64 
-nohup python @CMAKE_INSTALL_PREFIX@/bin/gadgetron_web_app.py @CMAKE_INSTALL_PREFIX@/config/gadgetron_web_app.cfg &
+python @CMAKE_INSTALL_PREFIX@/bin/gadgetron_web_app.py @CMAKE_INSTALL_PREFIX@/config/gadgetron_web_app.cfg

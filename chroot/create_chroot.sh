@@ -11,6 +11,10 @@ else
 
   mkdir -p ${3}/chroot-root
 
+  touch ${3}/chroot-root/source-manifest.txt
+
+  echo "gadgetron    ${6}" > ${3}/chroot-root/source-manifest.txt
+
   mkdir -p ${3}/chroot-root/gadgetron
 
   mkdir -p ${3}/chroot-root/gadgetron/webapp
@@ -31,6 +35,7 @@ else
   cp ${2}/stop.sh ${3}/chroot-root
   cp ${2}/start-env.sh ${3}/chroot-root 
   cp ${2}/start-webapp.sh ${3}/chroot-root 
+  cp ${2}/mount.sh ${3}/chroot-root
 
   chmod +x ${3}/start-gadgetron.sh
   cp ${3}/start-gadgetron.sh ${3}/chroot-root/gadgetron 
@@ -51,8 +56,8 @@ else
   cp ${3}/gadgetron_web_app.cfg ${3}/chroot-root/gadgetron${1}/config/
 
   chroot ${3}/chroot-root/gadgetron apt-get install python-dev python-twisted python-psutil -y 
-
-  TAR_FILE_NAME=gadgetron-chroot-${6}-`date '+%d-%B-%Y'`
+  
+  TAR_FILE_NAME=gadgetron-`date '+%Y%m%d'`-${6:0:8}
   IMAGE_FILE_NAME=${3}/chroot-backups/${TAR_FILE_NAME}.img
 
   tar -zcf "${3}/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${3}" --exclude=./chroot-root/gadgetron/etc --exclude=./chroot-root/gadgetron/var --exclude=./chroot-root/gadgetron/dev --exclude=./chrot-root/gadgetron/root ./chroot-root
