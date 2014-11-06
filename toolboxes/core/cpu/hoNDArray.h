@@ -59,9 +59,12 @@ namespace Gadgetron{
     // Copy constructors
     hoNDArray(const hoNDArray<T> &a);
     explicit hoNDArray(const hoNDArray<T> *a);
+    //Move constructors
+    hoNDArray(hoNDArray<T>&& a);
 
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);
+    hoNDArray& operator=(hoNDArray&& rhs);
 
     virtual void create(std::vector<size_t>& dimensions);
     virtual void create(std::vector<size_t> *dimensions);

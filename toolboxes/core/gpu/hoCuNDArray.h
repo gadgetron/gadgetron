@@ -19,6 +19,13 @@ namespace Gadgetron{
 
     hoCuNDArray() : hoNDArray<T>::hoNDArray() {}
 
+
+    hoCuNDArray(hoCuNDArray<T>&& other) : hoNDArray<T>::hoNDArray(){
+    	this->data_ = other.data_;
+    	other.dimensions_.swap(this->dimensions_);
+    	other.data_ = nullptr;
+    }
+
     hoCuNDArray(std::vector<size_t> *dimensions) : hoNDArray<T>::hoNDArray() {
       this->create(dimensions);
     }
@@ -92,6 +99,42 @@ namespace Gadgetron{
         throw std::runtime_error("hoCuNDArray::operator[]: index out of range.");
       }
       return this->data_[idx];
+    }
+
+    hoCuNDArray<T>& operator=(const hoCuNDArray<T>& rhs)
+    {
+        if ( &rhs == this ) return *this;
+
+        if ( rhs.get_number_of_elements() == 0 ){
+            this->clear();
+            return *this;
+        }
+
+        // Are the dimensions the same? Then we can just memcpy
+        if (this->dimensions_equal(&rhs)){
+            memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
+        }
+        else{
+            deallocate_memory();
+            this->data_ = 0;
+            *(this->dimensions_) = *(rhs.dimensions_);
+            *(this->offsetFactors_) = *(rhs.offsetFactors_);
+            this->allocate_memory();
+            memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
+        }
+        return *this;
+    }
+
+    hoCuNDArray<T>& operator=(hoCuNDArray<T>&& rhs)
+    {
+        if ( &rhs == this ) return *this;
+
+        this->clear();
+        rhs.dimensions_.swap(this->dimensions_);
+        rhs.offsetFactors_.swap(this->offsetFactors_);
+        this->data_ = rhs.data_;
+        rhs.data_ = nullptr;
+        return *this;
     }
 
   protected:

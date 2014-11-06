@@ -28,8 +28,10 @@ namespace Gadgetron{
 
     T vec[D];
     __inline__ __host__ __device__ vector_td(){};
-    __inline__ __host__ __device__ explicit vector_td(T (&other)[D]) : vec(other){};
 
+
+    template <typename... X>
+    constexpr __inline__ __host__ __device__ vector_td(X... xs) : vec{xs...} { }
 
     __inline__ __host__ __device__ vector_td(const vector_td & other){
        	for (unsigned int i = 0; i < D; i++)
@@ -111,6 +113,8 @@ namespace Gadgetron{
     template<class T2> __inline__ __host__ __device__ explicit vector_td(const vector_td<T2,1> & other){
     	vec[0] = (T) other[0];
     }
+    template <typename... X>
+    constexpr __inline__ __host__ __device__ vector_td(X... xs) : vec{xs...} { }
 
     __inline__ __host__ __device__ vector_td(){}
 
@@ -152,12 +156,10 @@ namespace Gadgetron{
     	for (unsigned int i = 0; i < 2; i++)
         	vec[i] = (T) other[i];
      }
-    __inline__ __host__ __device__ vector_td(){}
+    template <typename... X>
+    constexpr __inline__ __host__ __device__ vector_td(X... xs) : vec{xs...} { }
 
-    __inline__ __host__ __device__ vector_td(T x, T y){
-      vec[0]=x;
-      vec[1]=y;
-    }
+    __inline__ __host__ __device__ vector_td(){}
 
     __inline__ __host__ __device__ explicit vector_td(T x){
       vec[0]=x;
@@ -198,11 +200,8 @@ namespace Gadgetron{
      }
     __inline__ __host__ __device__ vector_td(){}
 
-    __inline__ __host__ __device__ vector_td(T x, T y,T z){
-      vec[0]=x;
-      vec[1]=y;
-      vec[2]=z;
-    }
+    template <typename... X>
+    constexpr __inline__ __host__ __device__ vector_td(X... xs) : vec{xs...} { }
 
     __inline__ __host__ __device__ explicit vector_td(T x){
       vec[0]=x;
@@ -243,14 +242,11 @@ namespace Gadgetron{
         	vec[i] = (T) other[i];
      }
 
-    __inline__ __host__ __device__ vector_td(){}
+    template <typename... X>
+    constexpr __inline__ __host__ __device__ vector_td(X... xs) : vec{xs...} { }
 
-    __inline__ __host__ __device__ vector_td(T x, T y,T z,T w){
-      vec[0]=x;
-      vec[1]=y;
-      vec[2]=z;
-      vec[3]=w;
-    }
+
+    __inline__ __host__ __device__ vector_td(){}
 
     __inline__ __host__ __device__ explicit vector_td(T x){
       vec[0]=x;

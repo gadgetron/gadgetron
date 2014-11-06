@@ -30,22 +30,24 @@ namespace Gadgetron{
         cuNDArray();
         cuNDArray(const cuNDArray<T> &a);
         cuNDArray(const cuNDArray<T> *a);
-        cuNDArray(const hoNDArray<T> &a);
-        cuNDArray(hoNDArray<T> *a);
+        explicit cuNDArray(const hoNDArray<T> &a);
+        explicit cuNDArray(hoNDArray<T> *a);
+        // Move constructor
+        cuNDArray(cuNDArray<T>&& a);
 
-        cuNDArray(std::vector<size_t> *dimensions);
+        explicit cuNDArray(std::vector<size_t> *dimensions);
         cuNDArray(std::vector<size_t> *dimensions, int device_no);
         cuNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
 
-        cuNDArray(std::vector<size_t> &dimensions);
+        explicit cuNDArray(std::vector<size_t> &dimensions);
         cuNDArray(std::vector<size_t> &dimensions, int device_no);
         cuNDArray(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
 
-        cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions);
+        explicit cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions);
         cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions, int device_no);
         cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
-        cuNDArray(size_t len);
+        explicit cuNDArray(size_t len);
         cuNDArray(size_t sx, size_t sy);
         cuNDArray(size_t sx, size_t sy, size_t sz);
         cuNDArray(size_t sx, size_t sy, size_t sz, size_t st);
@@ -59,6 +61,7 @@ namespace Gadgetron{
 
         // Assignment operator
         cuNDArray<T>& operator=(const cuNDArray<T>& rhs);
+        cuNDArray<T>& operator=(cuNDArray<T>&& rhs);
         cuNDArray<T>& operator=(const hoNDArray<T>& rhs);
 
         virtual void create(std::vector<size_t> *dimensions);
@@ -156,6 +159,16 @@ namespace Gadgetron{
                 throw cuda_error(err);
             }
         }
+    }
+
+
+    template <typename T>
+    cuNDArray<T>::cuNDArray(cuNDArray<T>&& a) : NDArray<T>::NDArray()
+    {
+    	device_ = a.device_;
+    	this->data_ = a.data_;
+    	a.dimensions_.swap(this->dimensions_);
+    	a.data_=nullptr;
     }
 
     template <typename T> 
@@ -352,6 +365,18 @@ namespace Gadgetron{
     { 
         if (this->delete_data_on_destruct_) 
             deallocate_memory();  
+    }
+
+    template <typename T>
+    cuNDArray<T>& cuNDArray<T>::operator=(cuNDArray<T>&& rhs){
+
+    	if (&rhs == this) return *this;
+    	this->clear();
+    	rhs.dimensions_.swap(this->dimensions_);
+    	device_ = rhs.device_;
+    	this->data_ = rhs.data_;
+    	rhs.data_ = nullptr;
+    	return *this;
     }
 
     template <typename T> 

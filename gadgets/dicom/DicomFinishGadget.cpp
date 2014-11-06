@@ -4,7 +4,7 @@
 
 #include "DicomFinishGadget.h"
 #include "ismrmrd/xml.h"
-
+#include <iostream>
 // Used for windowing using short ints
 #define PIX_RANGE_MAX    (+32767)
 #define PIX_RANGE_MIN    (-32768)
@@ -394,8 +394,9 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // This will need updated if the "reconSpace.fieldOfView_mm.z" field
     // is changed in the ISMRMRD populating code (client)
     key.set(0x0018, 0x0050);
-    ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z);
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z/std::max(r_space.matrixSize.z,(unsigned short)1));
     WRITE_DCM_STRING(key, buf);
+
 
     // Repetition Time
     key.set(0x0018, 0x0080);
@@ -431,10 +432,6 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
         WRITE_DCM_STRING(key, "3.0");
     }
 
-    // Spacing Between Slices
-    key.set(0x0018, 0x0088);
-    ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z);
-    WRITE_DCM_STRING(key, buf);
 
     // Echo Train Length
     if (h.encoding[0].echoTrainLength) {
@@ -686,6 +683,12 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     ACE_OS::snprintf(buf, BUFSIZE, "%f", img->position[2]);
     WRITE_DCM_STRING(key, buf);
 
+    //Number of frames
+    if (img->matrix_size[2] > 1){ //Only write if we have more than 1 frame
+		key.set(0x0028,0x0008);
+		ACE_OS::snprintf(buf,BUFSIZE,"%d",img->matrix_size[2]);
+		WRITE_DCM_STRING(key,buf);
+    }
     // Columns
     key.set(0x0028, 0x0010);
     ACE_OS::snprintf(buf, BUFSIZE, "%d", img->matrix_size[0]);
@@ -723,7 +726,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     }
 
     // Pixel Data
-    if ((unsigned long)img->matrix_size[0] * (unsigned long)img->matrix_size[1] !=
+    if ((unsigned long)img->matrix_size[0] * (unsigned long)img->matrix_size[1] * (unsigned long) img->matrix_size[2] !=
                 data->get_number_of_elements()) {
         GADGET_DEBUG1("Mismatch in image dimensions and available data\n");
         return GADGET_FAIL;

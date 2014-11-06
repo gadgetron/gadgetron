@@ -57,10 +57,9 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     engPutVariable(engine_, "hdr_bytes", acq_hdr_bytes);
 
     engPutVariable(engine_, "data", acq_data);
-    cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ(); whos()";
+    cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ();";
     send_matlab_command(cmd);
 
-    GADGET_DEBUG1("Test1\n");
     // Get the size of the gadget's queue
 
     mxArray *Q = engGetVariable(engine_, "Q");
@@ -68,9 +67,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
         GADGET_DEBUG1("Failed to get the Queue from matgadget\n");
         return GADGET_FAIL;
     }
-    GADGET_DEBUG1("Test2\n");
     size_t qlen = mxGetNumberOfElements(Q);
-    GADGET_DEBUG2("Queue size: %ld", qlen);
 
     // Loop over the elements of the Q, reading one entry at a time
     // to get a structure with type, headerbytes, and data
@@ -144,6 +141,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
                 GADGET_DEBUG1("Failed to create new hoNDArray\n");
                 return GADGET_FAIL;
             }
+            GADGET_DEBUG2("Matlab output size: %i %i %i %i\n",dims[0],dims[1],dims[2],dims[3]);
 
             float *real_data = (float *)mxGetData(res_data);
             float *imag_data = (float *)mxGetImagData(res_data);
@@ -156,6 +154,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
                 return GADGET_FAIL;
             }
 
+            GADGET_DEBUG2("MatlabGadget has placed Image header and data on queue %i \n",m4->getObjectPtr()->get_data_ptr());
             break;
         }
         default:

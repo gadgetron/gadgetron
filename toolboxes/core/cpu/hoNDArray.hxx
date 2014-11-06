@@ -285,6 +285,13 @@ namespace Gadgetron
             this->elements_ = 0;
         }
     }
+    template <typename T>
+    hoNDArray<T>::hoNDArray(hoNDArray<T>&& a) : NDArray<T>::NDArray(){
+    	data_ = a.data_;
+    	a.dimensions_.swap(this->dimensions_);
+    	a.data_ = nullptr;
+    	a.offsetFactors_.swap(this->offsetFactors_);
+    }
 
     template <typename T> 
     hoNDArray<T>& hoNDArray<T>::operator=(const hoNDArray<T>& rhs)
@@ -308,6 +315,19 @@ namespace Gadgetron
             allocate_memory();
             memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
         }
+        return *this;
+    }
+
+    template <typename T>
+    hoNDArray<T>& hoNDArray<T>::operator=(hoNDArray<T>&& rhs)
+    {
+        if ( &rhs == this ) return *this;
+
+        this->clear();
+        rhs.dimensions_.swap(this->dimensions_);
+        rhs.offsetFactors_.swap(this->offsetFactors_);
+        data_ = rhs.data_;
+        rhs.data_ = nullptr;
         return *this;
     }
 

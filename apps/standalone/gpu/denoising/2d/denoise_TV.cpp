@@ -12,7 +12,8 @@
 #include "identityOperator.h"
 #include "cuPartialDerivativeOperator.h"
 #include "parameterparser.h"
-
+#include "cuNDDWT.h"
+#include "cuDWTOperator.h"
 // Std includes
 #include <iostream>
 
@@ -34,7 +35,9 @@ int main(int argc, char** argv)
   parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "20" );
   parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
   parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "10" );
+  parms.add_parameter( 'l', COMMAND_LINE_FLOAT,  1, "Total variation weight (lambda)", true, "50.0" );
   parms.add_parameter( 'm', COMMAND_LINE_FLOAT,  1, "Regularization weight (mu)", true, "25.0" );
+  parms.add_parameter('w', COMMAND_LINE_FLOAT, 1, "Wavelet weight" ,true, "0");
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -66,7 +69,7 @@ int main(int argc, char** argv)
   cuNDArray<_real> data(host_data.get());
   
   _real mu = (_real) parms.get_parameter('m')->get_float_value();
-  _real lambda = (_real)2.0*mu; // This is a good alround setting according to Goldstein et al.
+  _real lambda = (_real)parms.get_parameter('l')->get_float_value();
 
   if( mu <= (_real) 0.0 ) {
     cout << endl << "Regularization parameter mu should be strictly positive. Quitting!\n" << endl;
@@ -77,7 +80,21 @@ int main(int argc, char** argv)
   unsigned int num_inner_iterations = parms.get_parameter('I')->get_int_value();
   unsigned int num_outer_iterations = parms.get_parameter('O')->get_int_value();
   
-  // Setup regularization operators
+ // Define encoding operator (identity)
+  boost::shared_ptr< identityOperator<cuNDArray<_real> > > E( new identityOperator<cuNDArray<_real> >() );
+  E->set_weight( mu );
+  E->set_domain_dimensions(data.get_dimensions().get());
+  E->set_codomain_dimensions(data.get_dimensions().get());
+
+  // Setup split-Bregman solver
+  cuSbCgSolver<_real> sb;
+  sb.set_encoding_operator( E );
+  sb.set_max_outer_iterations(num_outer_iterations);
+  sb.set_max_inner_iterations(num_inner_iterations);
+  sb.set_output_mode( cuCgSolver<_real>::OUTPUT_VERBOSE );
+   // Setup regularization operators
+
+  if (lambda > 0){
   boost::shared_ptr< cuPartialDerivativeOperator<_real,2> > Rx( new cuPartialDerivativeOperator<_real,2>(0) );
   Rx->set_weight( lambda );
   Rx->set_domain_dimensions(data.get_dimensions().get());
@@ -87,25 +104,24 @@ int main(int argc, char** argv)
   Ry->set_weight( lambda );
   Ry->set_domain_dimensions(data.get_dimensions().get());
   Ry->set_codomain_dimensions(data.get_dimensions().get());
-
-  // Define encoding operator (identity)
-  boost::shared_ptr< identityOperator<cuNDArray<_real> > > E( new identityOperator<cuNDArray<_real> >() );
-  E->set_weight( mu );
-  E->set_domain_dimensions(data.get_dimensions().get());
-  E->set_codomain_dimensions(data.get_dimensions().get());
-    
-  // Setup split-Bregman solver
-  cuSbCgSolver<_real> sb;
-  sb.set_encoding_operator( E );
   //sb.add_regularization_operator( Rx ); // Anisotropic denoising
   //sb.add_regularization_operator( Ry ); // Anisotropic denoising
   sb.add_regularization_group_operator( Rx ); // Isotropic denoising
   sb.add_regularization_group_operator( Ry); // Isotropic denoising
   sb.add_group();
-  sb.set_max_outer_iterations(num_outer_iterations);
-  sb.set_max_inner_iterations(num_inner_iterations);
-  sb.set_output_mode( cuCgSolver<_real>::OUTPUT_VERBOSE );
+  }
   
+  _real wavelet = parms.get_parameter('w')->get_float_value();
+  if (wavelet > 0){
+	  auto dwt = boost::make_shared<cuDWTOperator<_real,2>>();
+	  dwt->set_levels(3);
+	  dwt->set_weight(wavelet);
+	  sb.add_regularization_operator(dwt);
+	  dwt->set_domain_dimensions(data.get_dimensions().get());
+	  dwt->set_codomain_dimensions(data.get_dimensions().get());
+	  dwt->use_random(true);
+  }
+
   // Setup inner conjugate gradient solver
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
   sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
@@ -114,7 +130,22 @@ int main(int argc, char** argv)
   // Run split-Bregman solver
   boost::shared_ptr< cuNDArray<_real> > sbresult = sb.solve(&data);
 
-  // All done, write out the result
+  /*
+  boost::shared_ptr< cuNDArray<_real> > sbresult(new cuNDArray<_real>(data.get_dimensions()));
+  clear(sbresult.get());
+
+  vector_td<float,4> daubechies4({0.6830127f,1.1830127f,0.3169873f,-0.1830127f});
+  vector_td<float,2> haahr(1.0f,1.0f);
+  vector_td<float,6> daubechies6{0.47046721f,1.14111692f,0.650365f,-0.19093442f, -0.12083221f,0.0498175f};
+
+  cuDWTOperator<float,2> dwt;
+  dwt.set_levels(3);
+  dwt.mult_M(&data,sbresult.get());
+  //data = *sbresult;
+  shrink1(sbresult.get(),30.0f,&data);
+  dwt.mult_MH(&data,sbresult.get());*/
+  //clear(sbresult.get());
+ // All done, write out the result
   boost::shared_ptr< hoNDArray<_real> > host_result = sbresult->to_host();
   write_nd_array<_real>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
   
