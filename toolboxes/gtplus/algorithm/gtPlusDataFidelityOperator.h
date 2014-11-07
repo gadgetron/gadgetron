@@ -84,7 +84,7 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
 {
     try
     {
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(acquired_points_indicator_, x, y));
+        Gadgetron::multiply(acquired_points_indicator_, x, y);
     }
     catch (...)
     {
@@ -100,7 +100,7 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
 {
     try
     {
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(acquired_points_indicator_, x, y));
+        Gadgetron::multiply(acquired_points_indicator_, x, y);
     }
     catch (...)
     {
@@ -117,9 +117,9 @@ grad(const hoNDArray<T>& x, hoNDArray<T>& g)
     try
     {
         // 2D'*(Dx-y)
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(acquired_points_indicator_, x, g));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(g, *acquired_points_, g));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(T(2.0), g));
+        Gadgetron::multiply(acquired_points_indicator_, x, g);
+        Gadgetron::subtract(g, *acquired_points_, g);
+        Gadgetron::scal(T(2.0), g);
     }
     catch (...)
     {
@@ -136,9 +136,9 @@ obj(const hoNDArray<T>& x, T& obj)
 {
     try
     {
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(acquired_points_indicator_, x, kspace_));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(kspace_, *acquired_points_, kspace_));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::dotc(kspace_, kspace_, obj));
+        Gadgetron::multiply(acquired_points_indicator_, x, kspace_);
+        Gadgetron::subtract(kspace_, *acquired_points_, kspace_);
+        Gadgetron::dotc(kspace_, kspace_, obj);
     }
     catch (...)
     {

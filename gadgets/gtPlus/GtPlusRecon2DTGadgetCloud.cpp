@@ -514,7 +514,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                         {
                             if ( packages_received_[ii].complexImSecond.get_number_of_elements() > 0 )
                             {
-                                GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_, packages_received_[ii].complexImSecond), GADGET_FAIL);
+                                Gadgetron::scal((float)scalingFactor_, packages_received_[ii].complexImSecond);
 
                                 if ( this->para_.workOrderPara_.retro_gated_images_>0 )
                                 {
@@ -649,7 +649,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
 
                         if ( reconResSecondValid )
                         {
-                            GADGET_CHECK_RETURN(Gadgetron::scal((float)gadget_->scalingFactor_, gadget_->packages_received_[jobID].complexImSecond), false);
+                            Gadgetron::scal((float)gadget_->scalingFactor_, gadget_->packages_received_[jobID].complexImSecond);
                             if ( gadget_->para_.workOrderPara_.retro_gated_images_ > 0 )
                             {
                                 GADGET_CHECK_RETURN(gadget_->sendOutRecon(&gadget_->image_headers_[jobID], 

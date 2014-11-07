@@ -43,7 +43,7 @@ public:
     {
         // check whether we have all-zeros input
         value_type v(1);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::norm2(workOrder->data_, v));
+        Gadgetron::norm2(workOrder->data_, v);
         if ( v <= 0 )
         {
             GADGET_WARN_MSG("gtPlusReconWorker2DT, performRecon(workOrder) : incoming data contains all-zeros ... ");
@@ -1210,7 +1210,7 @@ bool gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
         }
 
         hoNDArray<T> conjUnmixCoeff(unmixCoeff);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
         Gadgetron::sqrt(gFactor, gFactor);
     }
@@ -1798,7 +1798,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
         {
             if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->data_));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->data_));
             }
 
             if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
@@ -1820,7 +1820,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
         {
             if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->fullkspace_));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->fullkspace_));
             }
 
             if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
@@ -1846,7 +1846,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
 
             if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
             }
 
             if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
@@ -2063,10 +2063,10 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT_partial_fourier, "POCS_afterFiltered_complexIm");
 
         // get the complex image phase for the filtered kspace
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(buffer3DT_partial_fourier, mag));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(mag));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::absolute(buffer3DT_partial_fourier, mag));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::addEpsilon(mag));
         GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::divide(buffer3DT_partial_fourier, magComplex, buffer3DT));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::divide(buffer3DT_partial_fourier, magComplex, buffer3DT));
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT, "POCS_afterFiltered_complexIm_phase");
 
         // complex images, initialized as not filtered complex image
@@ -2080,9 +2080,9 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
         size_t ii;
         for ( ii=0; ii<workOrder3DT.partialFourier_POCS_iters_; ii++ )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(complexImPOCS, mag));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::absolute(complexImPOCS, mag));
             GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(magComplex, buffer3DT, complexImPOCS));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(magComplex, buffer3DT, complexImPOCS));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImPOCS, "POCS_complexImPOCS");
 
             // go back to kspace
@@ -2101,7 +2101,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImPOCS, "POCS_kspaceIter_copyOri_complexImPOCS");
 
             // compute threshold to stop the iteration
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(complexImPOCS, complexIm, buffer3DT_partial_fourier));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(complexImPOCS, complexIm, buffer3DT_partial_fourier));
             typename realType<T>::Type diff, prev;
             Gadgetron::norm2(complexIm, prev);
             Gadgetron::norm2(buffer3DT_partial_fourier, diff);

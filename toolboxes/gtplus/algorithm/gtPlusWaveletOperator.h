@@ -210,7 +210,7 @@ L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm)
         size_t CHA = (*dims)[3];
 
         // square the coefficients
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(wavCoeff, wavCoeff, complexIm_norm_));
+        Gadgetron::multiplyConj(wavCoeff, wavCoeff, complexIm_norm_);
         // sum over CHA
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(complexIm_norm_, wavCoeffNorm));
     }
@@ -230,7 +230,7 @@ L1NormTotal(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm, T& L1Coeff
     {
         GADGET_CHECK_RETURN_FALSE(this->L1Norm(wavCoeff, wavCoeffNorm));
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sqrt(wavCoeffNorm, wav_coeff_norm_approx_));
+        Gadgetron::sqrt(wavCoeffNorm, wav_coeff_norm_approx_);
 
         L1CoeffNorm = Gadgetron::asum(&wav_coeff_norm_approx_);
     }
@@ -490,11 +490,11 @@ grad(const hoNDArray<T>& x, hoNDArray<T>& g)
     {
         // D'y+Dc'x
         //gt_timer1_.start("1");
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, x, kspace_));
+        Gadgetron::multiply(unacquired_points_indicator_, x, kspace_);
         //gt_timer1_.stop();
 
         //gt_timer1_.start("2");
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::add(*acquired_points_, kspace_, kspace_));
+        Gadgetron::add(*acquired_points_, kspace_, kspace_);
         //gt_timer1_.stop();
 
         // compute the gradient on assembled kspace
@@ -502,7 +502,7 @@ grad(const hoNDArray<T>& x, hoNDArray<T>& g)
 
         // only unacquired points are kept
         //gt_timer1_.start("12");
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, g, g));
+        Gadgetron::multiply(unacquired_points_indicator_, g, g);
         //gt_timer1_.stop();
     }
     catch (...)
@@ -522,11 +522,11 @@ obj(const hoNDArray<T>& x, T& obj)
     {
         // D'y+Dc'x
         //gt_timer1_.start("1");
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, x, kspace_));
+        Gadgetron::multiply(unacquired_points_indicator_, x, kspace_);
         //gt_timer1_.stop();
 
         //gt_timer1_.start("2");
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::add(*acquired_points_, kspace_, kspace_));
+        Gadgetron::add(*acquired_points_, kspace_, kspace_);
         //gt_timer1_.stop();
 
         // compute the objective function on assembled kspace

@@ -143,14 +143,14 @@ namespace Gadgetron
 // following matrix computation calls MKL functions
 #if defined(USE_MKL) || defined(USE_LAPACK)
 
-bool gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
+void gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
 {
     typedef std::complex<float> T;
     try
     {
         char TA, TB;
 
-        GADGET_CHECK_RETURN_FALSE( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+        GADGET_CHECK_THROW( (&C!=&A) && (&C!=&B) && (&A!=&B) );
 
         lapack_int lda = A.get_size(0);
         lapack_int ldb = B.get_size(0);
@@ -163,7 +163,7 @@ bool gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<flo
         lapack_int K2 = B.get_size(0);
         lapack_int N = B.get_size(1);
 
-        GADGET_CHECK_RETURN_FALSE(K==K2);
+        GADGET_CHECK_THROW(K==K2);
         if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
         {
             C.create(M, N);
@@ -181,20 +181,18 @@ bool gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<flo
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B) ...");
-        return false;
+        GADGET_THROW("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B) ...");
     }
-    return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool gemm(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB)
+void gemm(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB)
 {
     try
     {
         typedef float T;
 
-        GADGET_CHECK_RETURN_FALSE( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+        GADGET_CHECK_THROW( (&C!=&A) && (&C!=&B) && (&A!=&B) );
 
         char TA, TB;
 
@@ -219,7 +217,7 @@ bool gemm(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoN
             N = B.get_size(0);
         }
 
-        GADGET_CHECK_RETURN_FALSE(K==K2);
+        GADGET_CHECK_THROW(K==K2);
         if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
         {
             C.create(M, N);
@@ -252,20 +250,18 @@ bool gemm(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoN
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gemm(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB) ...");
-        return false;
+        GADGET_THROW("Errors in gemm(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB) ...");
     }
-    return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB)
+void gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB)
 {
     try
     {
         typedef double T;
 
-        GADGET_CHECK_RETURN_FALSE( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+        GADGET_CHECK_THROW( (&C!=&A) && (&C!=&B) && (&A!=&B) );
 
         char TA, TB;
 
@@ -290,7 +286,7 @@ bool gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const h
             N = B.get_size(0);
         }
 
-        GADGET_CHECK_RETURN_FALSE(K==K2);
+        GADGET_CHECK_THROW(K==K2);
         if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
         {
             C.create(M, N);
@@ -323,20 +319,18 @@ bool gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const h
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB) ...");
-        return false;
+        GADGET_THROW("Errors in gemm(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB) ...");
     }
-    return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB)
+void gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB)
 {
     try
     {
         typedef  std::complex<float>  T;
 
-        GADGET_CHECK_RETURN_FALSE( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+        GADGET_CHECK_THROW( (&C!=&A) && (&C!=&B) && (&A!=&B) );
 
         char TA, TB;
 
@@ -361,7 +355,7 @@ bool gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<flo
             N = B.get_size(0);
         }
 
-        GADGET_CHECK_RETURN_FALSE(K==K2);
+        GADGET_CHECK_THROW(K==K2);
         if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
         {
             C.create(M, N);
@@ -394,20 +388,18 @@ bool gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<flo
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
-        return false;
+        GADGET_THROW("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
     }
-    return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool gemm(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, bool transA, const hoNDArray< std::complex<double> >& B, bool transB)
+void gemm(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, bool transA, const hoNDArray< std::complex<double> >& B, bool transB)
 {
     try
     {
         typedef  std::complex<double>  T;
 
-        GADGET_CHECK_RETURN_FALSE( (&C!=&A) && (&C!=&B) && (&A!=&B) );
+        GADGET_CHECK_THROW( (&C!=&A) && (&C!=&B) && (&A!=&B) );
 
         char TA, TB;
 
@@ -432,7 +424,7 @@ bool gemm(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<do
             N = B.get_size(0);
         }
 
-        GADGET_CHECK_RETURN_FALSE(K==K2);
+        GADGET_CHECK_THROW(K==K2);
         if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
         {
             C.create(M, N);
@@ -465,22 +457,20 @@ bool gemm(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<do
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
-        return false;
+        GADGET_THROW("Errors in gemm(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
     }
-    return true;
 }
 
 /// ------------------------------------------------------------------------------------
 
 template<> EXPORTCPUCOREMATH 
-bool syrk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isATA)
+void syrk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isATA)
 {
     try
     {
         typedef float T;
 
-        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+        GADGET_CHECK_THROW( (&A!=&C) );
 
         char TA;
 
@@ -518,20 +508,18 @@ bool syrk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isATA)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in ssyrk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isATA) ...");
-        return false;
+        GADGET_THROW("Errors in ssyrk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isATA) ...");
     }
-    return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool syrk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isATA)
+void syrk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isATA)
 {
     try
     {
         typedef double T;
 
-        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+        GADGET_CHECK_THROW( (&A!=&C) );
 
         char TA;
 
@@ -569,20 +557,18 @@ bool syrk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isAT
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in syrk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isATA) ...");
-        return false;
+        GADGET_THROW("Errors in syrk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isATA) ...");
     }
-    return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool syrk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, char uplo, bool isATA)
+void syrk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, char uplo, bool isATA)
 {
     try
     {
         typedef  std::complex<float>  T;
 
-        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+        GADGET_CHECK_THROW( (&A!=&C) );
 
         char TA;
 
@@ -597,7 +583,7 @@ bool syrk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<flo
             K = (lapack_int)A.get_size(0);
         }
 
-        GADGET_CHECK_RETURN_FALSE ( (C.get_size(0)==N) && (C.get_size(1)==N) );
+        GADGET_CHECK_THROW ( (C.get_size(0)==N) && (C.get_size(1)==N) );
 
         T* pC = C.begin();
         lapack_int ldc = (lapack_int)C.get_size(0);
@@ -617,20 +603,18 @@ bool syrk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<flo
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in syrk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, char uplo, bool isATA) ...");
-        return false;
+        GADGET_THROW("Errors in syrk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, char uplo, bool isATA) ...");
     }
-    return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool syrk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, char uplo, bool isATA)
+void syrk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, char uplo, bool isATA)
 {
     try
     {
         typedef  std::complex<double>  T;
 
-        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+        GADGET_CHECK_THROW( (&A!=&C) );
 
         char TA;
 
@@ -668,32 +652,30 @@ bool syrk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<do
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in syrk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, char uplo, bool isATA) ...");
-        return false;
+        GADGET_THROW("Errors in syrk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, char uplo, bool isATA) ...");
     }
-    return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool herk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isAHA)
+void herk(hoNDArray<float>& C, const hoNDArray<float>& A, char uplo, bool isAHA)
 {
-    return syrk(C, A, uplo, isAHA);
+    syrk(C, A, uplo, isAHA);
 }
 
 template<> EXPORTCPUCOREMATH 
-bool herk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isAHA)
+void herk(hoNDArray<double>& C, const hoNDArray<double>& A, char uplo, bool isAHA)
 {
-    return syrk(C, A, uplo, isAHA);
+    syrk(C, A, uplo, isAHA);
 }
 
 template<> EXPORTCPUCOREMATH 
-bool herk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, char uplo, bool isAHA)
+void herk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, char uplo, bool isAHA)
 {
     try
     {
         typedef  std::complex<float>  T;
 
-        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+        GADGET_CHECK_THROW( (&A!=&C) );
 
         char TA;
 
@@ -731,20 +713,18 @@ bool herk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<flo
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in herk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, char uplo, bool isAHA) ...");
-        return false;
+        GADGET_THROW("Errors in herk(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, char uplo, bool isAHA) ...");
     }
-    return true;
 }
 
 template<> EXPORTCPUCOREMATH 
-bool herk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, char uplo, bool isAHA)
+void herk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, char uplo, bool isAHA)
 {
     try
     {
         typedef  std::complex<double>  T;
 
-        GADGET_CHECK_RETURN_FALSE( (&A!=&C) );
+        GADGET_CHECK_THROW( (&A!=&C) );
 
         char TA;
 
@@ -782,21 +762,19 @@ bool herk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<do
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in herk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, char uplo, bool isAHA) ...");
-        return false;
+        GADGET_THROW("Errors in herk(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, char uplo, bool isAHA) ...");
     }
-    return true;
 }
 
 /// ------------------------------------------------------------------------------------
 
 template<typename T> 
-bool potrf(hoMatrix<T>& A, char uplo)
+void potrf(hoMatrix<T>& A, char uplo)
 {
     try
     {
-        if( A.get_number_of_elements()==0 ) return true;
-        GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
+        if( A.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.rows()==A.cols());
 
         lapack_int info;
         lapack_int n = (lapack_int)(A.rows());
@@ -821,40 +799,37 @@ bool potrf(hoMatrix<T>& A, char uplo)
         }
         else
         {
-            GADGET_ERROR_MSG("potrf : unsupported type " << typeid(T).name());
-            return false;
+            GADGET_THROW("potrf : unsupported type ... ");
         }
 
-        GADGET_CHECK_RETURN_FALSE(info==0);
+        GADGET_CHECK_THROW(info==0);
 
         if ( uplo == 'U' )
         {
-            GADGET_CHECK_RETURN_FALSE(A.lowerTri(0));
+            GADGET_CHECK_THROW(A.lowerTri(0));
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(A.upperTri(0));
+            GADGET_CHECK_THROW(A.upperTri(0));
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in potrf(hoMatrix<T>& A, char uplo) ...");
-        return false;
+        GADGET_THROW("Errors in potrf(hoMatrix<T>& A, char uplo) ...");
     }
-    return true;
 }
 
 template<typename T> 
-bool heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue)
+void heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue)
 {
     try
     {
         lapack_int M = (lapack_int)A.rows();
-        GADGET_CHECK_RETURN_FALSE(A.cols() == M);
+        GADGET_CHECK_THROW(A.cols() == M);
 
         if ( (eigenValue.rows()!=M) || (eigenValue.cols()!=1) )
         {
-            GADGET_CHECK_RETURN_FALSE(eigenValue.createMatrix(M, 1));
+            GADGET_CHECK_THROW(eigenValue.createMatrix(M, 1));
         }
 
         lapack_int info;
@@ -881,8 +856,7 @@ bool heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue)
         //}
         //else
         //{
-        //    GADGET_ERROR_MSG("heev : unsupported type " << typeid(T).name());
-        //    return false;
+        //    GADGET_THROW("heev : unsupported type " << typeid(T).name());
         //}
 
         lapack_int lwork;
@@ -912,27 +886,24 @@ bool heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue)
         }
         else
         {
-            GADGET_ERROR_MSG("heev : unsupported type " << typeid(T).name());
-            return false;
+            GADGET_THROW("heev : unsupported type ... ");
         }
 
-        GADGET_CHECK_RETURN_FALSE(info==0);
+        GADGET_CHECK_THROW(info==0);
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue) ... ");
-        return false;
+        GADGET_THROW("Errors in heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue) ... ");
     }
-    return true;
 }
 
 template<typename T> 
-bool potri(hoMatrix<T>& A)
+void potri(hoMatrix<T>& A)
 {
     try
     {
-        if( A.get_number_of_elements()==0 ) return true;
-        GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
+        if( A.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.rows()==A.cols());
 
         lapack_int info;
         char uplo = 'L';
@@ -943,94 +914,90 @@ bool potri(hoMatrix<T>& A)
         //if ( typeid(T)==typeid(float) )
         //{
         //    info = LAPACKE_spotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
+        //    GADGET_CHECK_THROW(info==0);
 
         //    info = LAPACKE_spotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
+        //    GADGET_CHECK_THROW(info==0);
         //}
         //else if ( typeid(T)==typeid(double) )
         //{
         //    info = LAPACKE_dpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
+        //    GADGET_CHECK_THROW(info==0);
 
         //    info = LAPACKE_dpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
+        //    GADGET_CHECK_THROW(info==0);
         //}
         //else if ( typeid(T)==typeid( std::complex<float> ) )
         //{
         //    info = LAPACKE_cpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<lapack_complex_float*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
+        //    GADGET_CHECK_THROW(info==0);
 
         //    info = LAPACKE_cpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<lapack_complex_float*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
+        //    GADGET_CHECK_THROW(info==0);
         //}
         //else if ( typeid(T)==typeid( std::complex<double> ) )
         //{
         //    info = LAPACKE_zpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<lapack_complex_double*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
+        //    GADGET_CHECK_THROW(info==0);
 
         //    info = LAPACKE_zpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<lapack_complex_double*>(pA), lda);
-        //    GADGET_CHECK_RETURN_FALSE(info==0);
+        //    GADGET_CHECK_THROW(info==0);
         //}
         //else
         //{
-        //    GADGET_ERROR_MSG("potri : unsupported type " << typeid(T).name());
-        //    return false;
+        //    GADGET_THROW("potri : unsupported type " << typeid(T).name());
         //}
 
         if ( typeid(T)==typeid(float) )
         {
             spotrf_(&uplo, &n, reinterpret_cast<float*>(pA), &lda, &info);
-            GADGET_CHECK_RETURN_FALSE(info==0);
+            GADGET_CHECK_THROW(info==0);
 
             spotri_(&uplo, &n, reinterpret_cast<float*>(pA), &lda, &info);
-            GADGET_CHECK_RETURN_FALSE(info==0);
+            GADGET_CHECK_THROW(info==0);
         }
         else if ( typeid(T)==typeid(double) )
         {
             dpotrf_(&uplo, &n, reinterpret_cast<double*>(pA), &lda, &info);
-            GADGET_CHECK_RETURN_FALSE(info==0);
+            GADGET_CHECK_THROW(info==0);
 
             dpotri_(&uplo, &n, reinterpret_cast<double*>(pA), &lda, &info);
-            GADGET_CHECK_RETURN_FALSE(info==0);
+            GADGET_CHECK_THROW(info==0);
         }
         else if ( typeid(T)==typeid( std::complex<float> ) )
         {
             cpotrf_(&uplo, &n, reinterpret_cast<lapack_complex_float*>(pA), &lda, &info);
-            GADGET_CHECK_RETURN_FALSE(info==0);
+            GADGET_CHECK_THROW(info==0);
 
             cpotri_(&uplo, &n, reinterpret_cast<lapack_complex_float*>(pA), &lda, &info);
-            GADGET_CHECK_RETURN_FALSE(info==0);
+            GADGET_CHECK_THROW(info==0);
         }
         else if ( typeid(T)==typeid( std::complex<double> ) )
         {
             zpotrf_(&uplo, &n, reinterpret_cast<lapack_complex_double*>(pA), &lda, &info);
-            GADGET_CHECK_RETURN_FALSE(info==0);
+            GADGET_CHECK_THROW(info==0);
 
             zpotri_(&uplo, &n, reinterpret_cast<lapack_complex_double*>(pA), &lda, &info);
-            GADGET_CHECK_RETURN_FALSE(info==0);
+            GADGET_CHECK_THROW(info==0);
         }
         else
         {
-            GADGET_ERROR_MSG("potri : unsupported type " << typeid(T).name());
-            return false;
+            GADGET_THROW("potri : unsupported type ... ");
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in potri(hoMatrix<T>& A) ...");
-        return false;
+        GADGET_THROW("Errors in potri(hoMatrix<T>& A) ...");
     }
-    return true;
 }
 
 template<typename T> 
-bool trtri(hoMatrix<T>& A, char uplo)
+void trtri(hoMatrix<T>& A, char uplo)
 {
     try
     {
-        if( A.get_number_of_elements()==0 ) return true;
-        GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
+        if( A.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.rows()==A.cols());
 
         lapack_int info;
         char diag = 'N';
@@ -1056,8 +1023,7 @@ bool trtri(hoMatrix<T>& A, char uplo)
         }
         else
         {
-            GADGET_ERROR_MSG("trtri : unsupported type " << typeid(T).name());
-            return false;
+            GADGET_THROW("trtri : unsupported type " << typeid(T).name());
         }*/
 
         if ( typeid(T)==typeid(float) )
@@ -1078,28 +1044,25 @@ bool trtri(hoMatrix<T>& A, char uplo)
         }
         else
         {
-            GADGET_ERROR_MSG("trtri : unsupported type " << typeid(T).name());
-            return false;
+            GADGET_THROW("trtri : unsupported type ... ");
         }
 
-        GADGET_CHECK_RETURN_FALSE(info==0);
+        GADGET_CHECK_THROW(info==0);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in trtri(hoMatrix<float>& A, char uplo) ...");
-        return false;
+        GADGET_THROW("Errors in trtri(hoMatrix<float>& A, char uplo) ...");
     }
-    return true;
 }
 
 template<typename T> 
-bool posv(hoMatrix<T>& A, hoMatrix<T>& b)
+void posv(hoMatrix<T>& A, hoMatrix<T>& b)
 {
     try
     {
-        if( A.get_number_of_elements()==0 ) return true;
-        if( b.get_number_of_elements()==0 ) return true;
-        GADGET_CHECK_RETURN_FALSE(A.rows()==b.rows());
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.rows()==b.rows());
 
         lapack_int info;
         char uplo = 'L';
@@ -1128,8 +1091,7 @@ bool posv(hoMatrix<T>& A, hoMatrix<T>& b)
         }
         else
         {
-            GADGET_ERROR_MSG("posv : unsupported type " << typeid(T).name());
-            return false;
+            GADGET_THROW("posv : unsupported type " << typeid(T).name());
         }*/
 
         if ( typeid(T)==typeid(float) )
@@ -1150,28 +1112,25 @@ bool posv(hoMatrix<T>& A, hoMatrix<T>& b)
         }
         else
         {
-            GADGET_ERROR_MSG("posv : unsupported type " << typeid(T).name());
-            return false;
+            GADGET_THROW("posv : unsupported type ... ");
         }
 
-        GADGET_CHECK_RETURN_FALSE(info==0);
+        GADGET_CHECK_THROW(info==0);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in posv(hoMatrix<T>& A, hoMatrix<T>& b) ...");
-        return false;
+        GADGET_THROW("Errors in posv(hoMatrix<T>& A, hoMatrix<T>& b) ...");
     }
-    return true;
 }
 
 /// Computes the LU factorization of a general m-by-n matrix
 /// this function is called by general matrix inversion
 template<typename T> 
-bool getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& ipiv)
+void getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& ipiv)
 {
     try
     {
-        if( A.get_number_of_elements()==0 ) return true;
+        if( A.get_number_of_elements()==0 ) return;
 
         lapack_int info;
         lapack_int m = (lapack_int)A.rows();
@@ -1201,8 +1160,7 @@ bool getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& ipiv)
         //}
         //else
         //{
-        //    GADGET_ERROR_MSG("getrf : unsupported type " << typeid(T).name());
-        //    return false;
+        //    GADGET_THROW("getrf : unsupported type " << typeid(T).name());
         //}
 
         if ( typeid(T)==typeid(float) )
@@ -1223,38 +1181,35 @@ bool getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& ipiv)
         }
         else
         {
-            GADGET_ERROR_MSG("getrf : unsupported type " << typeid(T).name());
-            return false;
+            GADGET_THROW("getrf : unsupported type ... ");
         }
 
-        GADGET_CHECK_RETURN_FALSE(info==0);
+        GADGET_CHECK_THROW(info==0);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in getrf(hoMatrix<T>& A, hoMatrix<T>& ipiv) ...");
-        return false;
+        GADGET_THROW("Errors in getrf(hoMatrix<T>& A, hoMatrix<T>& ipiv) ...");
     }
-    return true;
 }
 
 /// Computes the inverse of an LU-factored general matrix
 template<typename T> 
-bool getri(hoMatrix<T>& A)
+void getri(hoMatrix<T>& A)
 {
     try
     {
-        if( A.get_number_of_elements()==0 ) return true;
+        if( A.get_number_of_elements()==0 ) return;
 
         lapack_int info;
         lapack_int m = (lapack_int)A.rows();
         lapack_int n = (lapack_int)A.cols();
-        GADGET_CHECK_RETURN_FALSE(m==n);
+        GADGET_CHECK_THROW(m==n);
 
         T* pA = A.begin();
         lapack_int lda = (lapack_int)A.rows();
 
         hoNDArray<lapack_int> ipiv;
-        GADGET_CHECK_RETURN_FALSE(getrf(A, ipiv));
+        getrf(A, ipiv);
 
         lapack_int* pIPIV = ipiv.begin();
 
@@ -1278,8 +1233,7 @@ bool getri(hoMatrix<T>& A)
         }
         else
         {
-            GADGET_ERROR_MSG("getri : unsupported type " << typeid(T).name());
-            return false;
+            GADGET_THROW("getri : unsupported type " << typeid(T).name());
         }*/
 
         if ( typeid(T)==typeid(float) )
@@ -1304,131 +1258,126 @@ bool getri(hoMatrix<T>& A)
         }
         else
         {
-            GADGET_ERROR_MSG("getri : unsupported type " << typeid(T).name());
-            return false;
+            GADGET_THROW("getri : unsupported type ... ");
         }
 
-        GADGET_CHECK_RETURN_FALSE(info==0);
+        GADGET_CHECK_THROW(info==0);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in getri(hoMatrix<T>& A) ...");
-        return false;
+        GADGET_THROW("Errors in getri(hoMatrix<T>& A) ...");
     }
-    return true;
 }
 
 // ---------------------------------------------
 
-template EXPORTCPUCOREMATH bool potrf(hoMatrix<float>& A, char uplo);
+template EXPORTCPUCOREMATH void potrf(hoMatrix<float>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool heev(hoMatrix<float>& A, hoMatrix<float>& eigenValue);
+template EXPORTCPUCOREMATH void heev(hoMatrix<float>& A, hoMatrix<float>& eigenValue);
 
-template EXPORTCPUCOREMATH bool potri(hoMatrix<float>& A);
+template EXPORTCPUCOREMATH void potri(hoMatrix<float>& A);
 
-template EXPORTCPUCOREMATH bool trtri(hoMatrix<float>& A, char uplo);
+template EXPORTCPUCOREMATH void trtri(hoMatrix<float>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool posv(hoMatrix<float>& A, hoMatrix<float>& b);
+template EXPORTCPUCOREMATH void posv(hoMatrix<float>& A, hoMatrix<float>& b);
 
-template EXPORTCPUCOREMATH bool getrf(hoMatrix<float>& A, hoNDArray<lapack_int>& ipiv);
+template EXPORTCPUCOREMATH void getrf(hoMatrix<float>& A, hoNDArray<lapack_int>& ipiv);
 
-template EXPORTCPUCOREMATH bool getri(hoMatrix<float>& A);
-
-// ---------------------------------------------
-
-template EXPORTCPUCOREMATH bool potrf(hoMatrix<double>& A, char uplo);
-
-template EXPORTCPUCOREMATH bool heev(hoMatrix<double>& A, hoMatrix<double>& eigenValue);
-
-template EXPORTCPUCOREMATH bool potri(hoMatrix<double>& A);
-
-template EXPORTCPUCOREMATH bool trtri(hoMatrix<double>& A, char uplo);
-
-template EXPORTCPUCOREMATH bool posv(hoMatrix<double>& A, hoMatrix<double>& b);
-
-template EXPORTCPUCOREMATH bool getrf(hoMatrix<double>& A, hoNDArray<lapack_int>& ipiv);
-
-template EXPORTCPUCOREMATH bool getri(hoMatrix<double>& A);
-
+template EXPORTCPUCOREMATH void getri(hoMatrix<float>& A);
 
 // ---------------------------------------------
 
-template EXPORTCPUCOREMATH bool potrf(hoMatrix< std::complex<float> >& A, char uplo);
+template EXPORTCPUCOREMATH void potrf(hoMatrix<double>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool heev(hoMatrix< std::complex<float> >& A, hoMatrix<float>& eigenValue);
+template EXPORTCPUCOREMATH void heev(hoMatrix<double>& A, hoMatrix<double>& eigenValue);
 
-template EXPORTCPUCOREMATH bool potri(hoMatrix< std::complex<float> >& A);
+template EXPORTCPUCOREMATH void potri(hoMatrix<double>& A);
 
-template EXPORTCPUCOREMATH bool trtri(hoMatrix< std::complex<float> >& A, char uplo);
+template EXPORTCPUCOREMATH void trtri(hoMatrix<double>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool posv(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& b);
+template EXPORTCPUCOREMATH void posv(hoMatrix<double>& A, hoMatrix<double>& b);
 
-template EXPORTCPUCOREMATH bool getrf(hoMatrix< std::complex<float> >& A, hoNDArray<lapack_int>& ipiv);
+template EXPORTCPUCOREMATH void getrf(hoMatrix<double>& A, hoNDArray<lapack_int>& ipiv);
 
-template EXPORTCPUCOREMATH bool getri(hoMatrix< std::complex<float> >& A);
+template EXPORTCPUCOREMATH void getri(hoMatrix<double>& A);
+
 
 // ---------------------------------------------
 
-template EXPORTCPUCOREMATH bool potrf(hoMatrix< std::complex<double> >& A, char uplo);
+template EXPORTCPUCOREMATH void potrf(hoMatrix< std::complex<float> >& A, char uplo);
 
-template EXPORTCPUCOREMATH bool heev(hoMatrix< std::complex<double> >& A, hoMatrix<double>& eigenValue);
+template EXPORTCPUCOREMATH void heev(hoMatrix< std::complex<float> >& A, hoMatrix<float>& eigenValue);
 
-template EXPORTCPUCOREMATH bool potri(hoMatrix< std::complex<double> >& A);
+template EXPORTCPUCOREMATH void potri(hoMatrix< std::complex<float> >& A);
 
-template EXPORTCPUCOREMATH bool trtri(hoMatrix< std::complex<double> >& A, char uplo);
+template EXPORTCPUCOREMATH void trtri(hoMatrix< std::complex<float> >& A, char uplo);
 
-template EXPORTCPUCOREMATH bool posv(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& b);
+template EXPORTCPUCOREMATH void posv(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& b);
 
-template EXPORTCPUCOREMATH bool getrf(hoMatrix< std::complex<double> >& A, hoNDArray<lapack_int>& ipiv);
+template EXPORTCPUCOREMATH void getrf(hoMatrix< std::complex<float> >& A, hoNDArray<lapack_int>& ipiv);
 
-template EXPORTCPUCOREMATH bool getri(hoMatrix< std::complex<double> >& A);
+template EXPORTCPUCOREMATH void getri(hoMatrix< std::complex<float> >& A);
+
+// ---------------------------------------------
+
+template EXPORTCPUCOREMATH void potrf(hoMatrix< std::complex<double> >& A, char uplo);
+
+template EXPORTCPUCOREMATH void heev(hoMatrix< std::complex<double> >& A, hoMatrix<double>& eigenValue);
+
+template EXPORTCPUCOREMATH void potri(hoMatrix< std::complex<double> >& A);
+
+template EXPORTCPUCOREMATH void trtri(hoMatrix< std::complex<double> >& A, char uplo);
+
+template EXPORTCPUCOREMATH void posv(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& b);
+
+template EXPORTCPUCOREMATH void getrf(hoMatrix< std::complex<double> >& A, hoNDArray<lapack_int>& ipiv);
+
+template EXPORTCPUCOREMATH void getri(hoMatrix< std::complex<double> >& A);
 
 #endif // defined(USE_MKL) || defined(USE_LAPACK)
 
 #if defined(USE_MKL) || defined(USE_LAPACK)
 
     template<typename T> 
-    bool heev(hoMatrix< std::complex<T> >& A, hoMatrix< std::complex<T> >& eigenValue)
+    void heev(hoMatrix< std::complex<T> >& A, hoMatrix< std::complex<T> >& eigenValue)
     {
         try
         {
             long long M = (long long)A.rows();
-            GADGET_CHECK_RETURN_FALSE(A.cols() == M);
+            GADGET_CHECK_THROW(A.cols() == M);
 
             if ( (eigenValue.rows()!=M) || (eigenValue.cols()!=1) )
             {
-                GADGET_CHECK_RETURN_FALSE(eigenValue.createMatrix(M, 1));
+                GADGET_CHECK_THROW(eigenValue.createMatrix(M, 1));
             }
 
             hoMatrix<typename realType<T>::Type> D(M, 1);
-            GADGET_CHECK_RETURN_FALSE(heev(A, D));
+            heev(A, D);
             eigenValue.copyFrom(D);
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in heev(hoMatrix< std::complex<T> >& A, hoMatrix< std::complex<T> >& eigenValue) ... ");
-            return false;
+            GADGET_THROW("Errors in heev(hoMatrix< std::complex<T> >& A, hoMatrix< std::complex<T> >& eigenValue) ... ");
         }
-        return true;
     }
 
     template<typename T> 
-    bool SolveLinearSystem_Tikhonov(hoMatrix<T>& A, hoMatrix<T>& b, hoMatrix<T>& x, double lamda)
+    void SolveLinearSystem_Tikhonov(hoMatrix<T>& A, hoMatrix<T>& b, hoMatrix<T>& x, double lamda)
     {
-        GADGET_CHECK_RETURN_FALSE(b.rows()==A.rows());
+        GADGET_CHECK_THROW(b.rows()==A.rows());
 
         hoMatrix<T> AHA(A.cols(), A.cols());
         Gadgetron::clear(AHA);
 
         // hoMatrix<T> ACopy(A);
-        // GADGET_CHECK_RETURN_FALSE(gemm(AHA, ACopy, true, A, false));
+        // GADGET_CHECK_THROW(gemm(AHA, ACopy, true, A, false));
 
         char uplo = 'L';
         bool isAHA = true;
-        GADGET_CHECK_RETURN_FALSE(herk(AHA, A, uplo, isAHA));
+        herk(AHA, A, uplo, isAHA);
 
-        GADGET_CHECK_RETURN_FALSE(x.createMatrix(A.cols(), b.cols()));
-        GADGET_CHECK_RETURN_FALSE(gemm(x, A, true, b, false));
+        GADGET_CHECK_THROW(x.createMatrix(A.cols(), b.cols()));
+        gemm(x, A, true, b, false);
 
         // apply the Tikhonov regularization
         // Ideally, we shall apply the regularization is lamda*maxEigenValue
@@ -1454,18 +1403,16 @@ template EXPORTCPUCOREMATH bool getri(hoMatrix< std::complex<double> >& A);
             AHA(c,c) = T( (typename realType<T>::Type)(std::abs(AHA(c, c)) + value) );
         }
 
-        GADGET_CHECK_RETURN_FALSE(posv(AHA, x));
-
-        return true;
+        posv(AHA, x);
     }
 
-    template EXPORTCPUCOREMATH bool heev(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& eigenValue);
-    template EXPORTCPUCOREMATH bool heev(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& eigenValue);
+    template EXPORTCPUCOREMATH void heev(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& eigenValue);
+    template EXPORTCPUCOREMATH void heev(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& eigenValue);
 
-    template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<float>& A, hoMatrix<float>& b, hoMatrix<float>& x, double lamda);
-    template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<double>& A, hoMatrix<double>& b, hoMatrix<double>& x, double lamda);
-    template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& b, hoMatrix< std::complex<float> >& x, double lamda);
-    template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& b, hoMatrix< std::complex<double> >& x, double lamda);
+    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoMatrix<float>& A, hoMatrix<float>& b, hoMatrix<float>& x, double lamda);
+    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoMatrix<double>& A, hoMatrix<double>& b, hoMatrix<double>& x, double lamda);
+    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& b, hoMatrix< std::complex<float> >& x, double lamda);
+    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& b, hoMatrix< std::complex<double> >& x, double lamda);
 
 #endif // defined(USE_MKL) || defined(USE_LAPACK)
 

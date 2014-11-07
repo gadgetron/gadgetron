@@ -93,7 +93,7 @@ solve(const Array_Type_I& b, Array_Type_O& x)
         // u = u - A(x, varargin{:}, 'notransp');
         // u = b - A*x0
         GADGET_CHECK_RETURN_FALSE(oper_->forwardOperator(x, u));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(b, u, u));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(b, u, u));
 
         value_type beta;
         Gadgetron::norm2(u, beta);
@@ -101,7 +101,7 @@ solve(const Array_Type_I& b, Array_Type_O& x)
         value_type normr(beta);
         if (std::abs(beta)>0)
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/beta, u));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/beta, u));
         }
 
         value_type c = 1;
@@ -116,7 +116,7 @@ solve(const Array_Type_I& b, Array_Type_O& x)
         Gadgetron::norm2(v, alpha);
         if (std::abs(alpha)>0)
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/alpha, v));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/alpha, v));
         }
 
         Array_Type_I d(x);
@@ -153,11 +153,11 @@ solve(const Array_Type_I& b, Array_Type_O& x)
 
             // u = A(z, varargin{:},'notransp') - alpha*u;
             GADGET_CHECK_RETURN_FALSE(oper_->forwardOperator(z, utmp));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( alpha, u));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract( utmp, u, u));
+            Gadgetron::scal( alpha, u);
+            Gadgetron::subtract( utmp, u, u);
 
             Gadgetron::norm2(u, beta);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/beta, u));
+            Gadgetron::scal( value_type(1.0)/beta, u);
 
             normaVec(0) = norma;
             normaVec(1) = alpha;
@@ -180,9 +180,9 @@ solve(const Array_Type_I& b, Array_Type_O& x)
             // d = (z - thet * d) / rho;
             //dtmp = d;
             memcpy(dtmp.begin(), d.begin(), d.get_number_of_bytes());
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( thet, dtmp));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract( z, dtmp, ztmp));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/rho, ztmp));
+            Gadgetron::scal( thet, dtmp);
+            Gadgetron::subtract( z, dtmp, ztmp);
+            Gadgetron::scal( value_type(1.0)/rho, ztmp);
             //d = ztmp;
             memcpy(d.begin(), ztmp.begin(), d.get_number_of_bytes());
 
@@ -230,8 +230,8 @@ solve(const Array_Type_I& b, Array_Type_O& x)
             // x = x + phi * d;
             //dtmp = d;
             memcpy(dtmp.begin(), d.begin(), d.get_number_of_bytes());
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( phi, dtmp));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::add( x, dtmp, x));
+            Gadgetron::scal( phi, dtmp);
+            Gadgetron::add( x, dtmp, x);
 
             normr = (value_type)(std::abs( (double)s) * normr);
 
@@ -239,12 +239,12 @@ solve(const Array_Type_I& b, Array_Type_O& x)
             GADGET_CHECK_RETURN_FALSE(oper_->adjointOperator(u, vt));
 
             // v = vt - beta * v;
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( beta, v));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract( vt, v, v));
+            Gadgetron::scal( beta, v);
+            Gadgetron::subtract( vt, v, v);
 
             Gadgetron::norm2(v, alpha);
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/alpha, v));
+            Gadgetron::scal( value_type(1.0)/alpha, v);
 
             normar = alpha * std::abs( (value_type)s * phi);
         }

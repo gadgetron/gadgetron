@@ -91,23 +91,21 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    void add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
             r = x;
         }
 
         add(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool add(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool add(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool add(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH bool add(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void add(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void add(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -174,23 +172,21 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    void subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
             r = x;
         }
 
         subtract(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool subtract(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool subtract(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool subtract(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH bool subtract(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void subtract(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void subtract(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -244,23 +240,21 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    void multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
             r = x;
         }
 
         multiply(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool multiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool multiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool multiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH bool multiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -318,28 +312,26 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool divide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    void divide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
             r = x;
         }
 
         divide(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool divide(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool divide(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool divide(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH bool divide(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void divide(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void divide(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
     template <typename T> 
-    bool sqrt(const hoNDArray<T>& x, hoNDArray<T>& r)
+    void sqrt(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
@@ -356,25 +348,23 @@ namespace Gadgetron
         {
             pR[n] = std::sqrt(pX[n]);
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH bool sqrt(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void sqrt(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void sqrt(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void sqrt(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void sqrt(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
     template <typename T> 
-    bool minAbsolute(const hoNDArray<T>& x, T& r, size_t& ind)
+    void minAbsolute(const hoNDArray<T>& x, T& r, size_t& ind)
     {
         size_t N = x.get_number_of_elements();
         const T* pX = x.begin();
 
         ind = 0;
-        if ( N == 0 ) return true;
+        if ( N == 0 ) return;
 
         long long n;
 
@@ -393,25 +383,23 @@ namespace Gadgetron
         }
 
         r = pX[ind];
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
-    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
-    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray< std::complex<float> >& x,  std::complex<float> & r, size_t& ind);
-    template EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray< std::complex<double> >& x,  std::complex<double> & r, size_t& ind);
+    template EXPORTCPUCOREMATH void minAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
+    template EXPORTCPUCOREMATH void minAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
+    template EXPORTCPUCOREMATH void minAbsolute(const hoNDArray< std::complex<float> >& x,  std::complex<float> & r, size_t& ind);
+    template EXPORTCPUCOREMATH void minAbsolute(const hoNDArray< std::complex<double> >& x,  std::complex<double> & r, size_t& ind);
 
     // --------------------------------------------------------------------------------
 
     template <typename T> 
-    bool maxAbsolute(const hoNDArray<T>& x, T& r, size_t& ind)
+    void maxAbsolute(const hoNDArray<T>& x, T& r, size_t& ind)
     {
         size_t N = x.get_number_of_elements();
         const T* pX = x.begin();
 
         ind = 0;
-        if ( N == 0 ) return true;
+        if ( N == 0 ) return;
 
         long long n;
 
@@ -430,14 +418,12 @@ namespace Gadgetron
         }
 
         r = pX[ind];
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
-    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
-    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray< std::complex<float> >& x,  std::complex<float> & r, size_t& ind);
-    template EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray< std::complex<double> >& x,  std::complex<double> & r, size_t& ind);
+    template EXPORTCPUCOREMATH void maxAbsolute(const hoNDArray<float>& x, float& r, size_t& ind);
+    template EXPORTCPUCOREMATH void maxAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
+    template EXPORTCPUCOREMATH void maxAbsolute(const hoNDArray< std::complex<float> >& x,  std::complex<float> & r, size_t& ind);
+    template EXPORTCPUCOREMATH void maxAbsolute(const hoNDArray< std::complex<double> >& x,  std::complex<double> & r, size_t& ind);
 
     // --------------------------------------------------------------------------------
 
@@ -476,21 +462,19 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    void multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
             r = x;
         }
 
         multiplyConj(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void multiplyConj(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void multiplyConj(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -519,7 +503,7 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool conjugate(const hoNDArray<T>& x, hoNDArray<T>& r)
+    void conjugate(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
@@ -527,12 +511,10 @@ namespace Gadgetron
         }
 
         conjugate(x.get_number_of_elements(), x.begin(), r.begin());
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool conjugate(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH bool conjugate(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void conjugate(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void conjugate(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -586,16 +568,15 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool addEpsilon(hoNDArray<T>& x)
+    void addEpsilon(hoNDArray<T>& x)
     {
         addEpsilon(x.get_number_of_elements(), x.begin());
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<float>& x);
-    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<double>& x);
-    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray< std::complex<float> >& x);
-    template EXPORTCPUCOREMATH bool addEpsilon(hoNDArray< std::complex<double> >& x);
+    template EXPORTCPUCOREMATH void addEpsilon(hoNDArray<float>& x);
+    template EXPORTCPUCOREMATH void addEpsilon(hoNDArray<double>& x);
+    template EXPORTCPUCOREMATH void addEpsilon(hoNDArray< std::complex<float> >& x);
+    template EXPORTCPUCOREMATH void addEpsilon(hoNDArray< std::complex<double> >& x);
 
     // --------------------------------------------------------------------------------
 
@@ -668,16 +649,15 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool norm2(const hoNDArray<T>& x, typename realType<T>::Type& r)
+    void norm2(const hoNDArray<T>& x, typename realType<T>::Type& r)
     {
         norm2(x.get_number_of_elements(), x.begin(), r);
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool norm2(const hoNDArray<float>& x, float& r);
-    template EXPORTCPUCOREMATH bool norm2(const hoNDArray<double>& x, double& r);
-    template EXPORTCPUCOREMATH bool norm2(const hoNDArray< std::complex<float> >& x, float& r);
-    template EXPORTCPUCOREMATH bool norm2(const hoNDArray< std::complex<double> >& x, double& r);
+    template EXPORTCPUCOREMATH void norm2(const hoNDArray<float>& x, float& r);
+    template EXPORTCPUCOREMATH void norm2(const hoNDArray<double>& x, double& r);
+    template EXPORTCPUCOREMATH void norm2(const hoNDArray< std::complex<float> >& x, float& r);
+    template EXPORTCPUCOREMATH void norm2(const hoNDArray< std::complex<double> >& x, double& r);
 
     template <typename T> inline 
     typename realType<T>::Type norm2(const hoNDArray<T>& x)
@@ -744,16 +724,15 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool norm1(const hoNDArray<T>& x, typename realType<T>::Type& r)
+    void norm1(const hoNDArray<T>& x, typename realType<T>::Type& r)
     {
         norm1(x.get_number_of_elements(), x.begin(), r);
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool norm1(const hoNDArray<float>& x, float& r);
-    template EXPORTCPUCOREMATH bool norm1(const hoNDArray<double>& x, double& r);
-    template EXPORTCPUCOREMATH bool norm1(const hoNDArray< std::complex<float> >& x, float& r);
-    template EXPORTCPUCOREMATH bool norm1(const hoNDArray< std::complex<double> >& x, double& r);
+    template EXPORTCPUCOREMATH void norm1(const hoNDArray<float>& x, float& r);
+    template EXPORTCPUCOREMATH void norm1(const hoNDArray<double>& x, double& r);
+    template EXPORTCPUCOREMATH void norm1(const hoNDArray< std::complex<float> >& x, float& r);
+    template EXPORTCPUCOREMATH void norm1(const hoNDArray< std::complex<double> >& x, double& r);
 
     template <typename T> inline 
     typename realType<T>::Type norm1(const hoNDArray<T>& x)
@@ -819,15 +798,14 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r)
+    void dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r)
     {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
         dotc(x.get_number_of_elements(), x.begin(), y.begin(), r);
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool dotc(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y,  std::complex<float> & r);
-    template EXPORTCPUCOREMATH bool dotc(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y,  std::complex<double> & r);
+    template EXPORTCPUCOREMATH void dotc(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y,  std::complex<float> & r);
+    template EXPORTCPUCOREMATH void dotc(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y,  std::complex<double> & r);
 
     template <typename T> 
     T dotc(const hoNDArray<T>& x, const hoNDArray<T>& y)
@@ -919,18 +897,16 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool dotu(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r)
+    void dotu(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r)
     {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
         dotu(x.get_number_of_elements(), x.begin(), y.begin(), r);
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool dotu(const hoNDArray<float>& x, const hoNDArray<float>& y, float& r);
-    template EXPORTCPUCOREMATH bool dotu(const hoNDArray<double>& x, const hoNDArray<double>& y, double& r);
-    template EXPORTCPUCOREMATH bool dotu(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, std::complex<float>& r);
-    template EXPORTCPUCOREMATH bool dotu(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, std::complex<double>& r);
+    template EXPORTCPUCOREMATH void dotu(const hoNDArray<float>& x, const hoNDArray<float>& y, float& r);
+    template EXPORTCPUCOREMATH void dotu(const hoNDArray<double>& x, const hoNDArray<double>& y, double& r);
+    template EXPORTCPUCOREMATH void dotu(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, std::complex<float>& r);
+    template EXPORTCPUCOREMATH void dotu(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, std::complex<double>& r);
 
     template <typename T> 
     T dotu(const hoNDArray<T>& x, const hoNDArray<T>& y)
@@ -988,7 +964,7 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool absolute(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r)
+    void absolute(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
@@ -996,14 +972,12 @@ namespace Gadgetron
         }
 
         absolute(x.get_number_of_elements(), x.begin(), r.begin());
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool absolute(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool absolute(const hoNDArray< std::complex<float> >& x, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool absolute(const hoNDArray< std::complex<double> >& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void absolute(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void absolute(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void absolute(const hoNDArray< std::complex<float> >& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void absolute(const hoNDArray< std::complex<double> >& x, hoNDArray<double>& r);
 
     // --------------------------------------------------------------------------------
 
@@ -1054,7 +1028,7 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool absolute(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r)
+    void absolute(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
@@ -1062,17 +1036,15 @@ namespace Gadgetron
         }
 
         absolute(x.get_number_of_elements(), x.begin(), r.begin());
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool absolute(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH bool absolute(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void absolute(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void absolute(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
     template <typename T> 
-    bool argument(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r)
+    void argument(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
@@ -1090,17 +1062,15 @@ namespace Gadgetron
         {
             pR[n] = std::arg( pX[n] );
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool argument(const hoNDArray< std::complex<float> >& x, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool argument(const hoNDArray< std::complex<double> >& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void argument(const hoNDArray< std::complex<float> >& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void argument(const hoNDArray< std::complex<double> >& x, hoNDArray<double>& r);
 
     // --------------------------------------------------------------------------------
 
     template <typename T> 
-    bool inv(const hoNDArray<T>& x, hoNDArray<T>& r)
+    void inv(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         if ( !r.dimensions_equal(&x) )
         {
@@ -1119,14 +1089,12 @@ namespace Gadgetron
         {
             pR[n] = v/pX[n];
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool inv(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool inv(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool inv(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH bool inv(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void inv(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void inv(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void inv(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void inv(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -1209,7 +1177,7 @@ namespace Gadgetron
     }
 
     template<typename T> 
-    bool conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z)
+    void conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z)
     {
         try
         {
@@ -1229,17 +1197,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z) ... ");
-            return false;
+            GADGET_THROW("Errors happened in conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool conv2(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& z);
-    template EXPORTCPUCOREMATH bool conv2(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
-    template EXPORTCPUCOREMATH bool conv2(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& z);
-    template EXPORTCPUCOREMATH bool conv2(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& z);
+    template EXPORTCPUCOREMATH void conv2(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& z);
+    template EXPORTCPUCOREMATH void conv2(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
+    template EXPORTCPUCOREMATH void conv2(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& z);
+    template EXPORTCPUCOREMATH void conv2(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& z);
 
     // --------------------------------------------------------------------------------
 
@@ -1345,7 +1310,7 @@ namespace Gadgetron
     }
 
     template<typename T> 
-    bool conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z)
+    void conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z)
     {
         try
         {
@@ -1367,17 +1332,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z) ... ");
-            return false;
+            GADGET_THROW("Errors happened in conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool conv3(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& z);
-    template EXPORTCPUCOREMATH bool conv3(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
-    template EXPORTCPUCOREMATH bool conv3(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& z);
-    template EXPORTCPUCOREMATH bool conv3(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& z);
+    template EXPORTCPUCOREMATH void conv3(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& z);
+    template EXPORTCPUCOREMATH void conv3(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
+    template EXPORTCPUCOREMATH void conv3(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& z);
+    template EXPORTCPUCOREMATH void conv3(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& z);
 
     // --------------------------------------------------------------------------------
 
@@ -1450,9 +1412,9 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
+    void axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
-        GADGET_CHECK_RETURN_FALSE(x.get_number_of_elements()==y.get_number_of_elements());
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
 
         if ( r.get_number_of_elements() != x.get_number_of_elements() )
         {
@@ -1467,14 +1429,12 @@ namespace Gadgetron
         }
 
         axpy(a, x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool axpy(float a, const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH bool axpy(double a, const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH bool axpy( std::complex<float>  a, const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH bool axpy( std::complex<double>  a, const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void axpy(float a, const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void axpy(double a, const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void axpy( std::complex<float>  a, const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void axpy( std::complex<double>  a, const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -1537,16 +1497,15 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool scal(T a, hoNDArray<T>& x)
+    void scal(T a, hoNDArray<T>& x)
     {
         scal(x.get_number_of_elements(), a, x.begin());
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool scal(float a, hoNDArray<float>& x);
-    template EXPORTCPUCOREMATH bool scal(double a, hoNDArray<double>& x);
-    template EXPORTCPUCOREMATH bool scal( std::complex<float>  a, hoNDArray< std::complex<float> >& x);
-    template EXPORTCPUCOREMATH bool scal( std::complex<double>  a, hoNDArray< std::complex<double> >& x);
+    template EXPORTCPUCOREMATH void scal(float a, hoNDArray<float>& x);
+    template EXPORTCPUCOREMATH void scal(double a, hoNDArray<double>& x);
+    template EXPORTCPUCOREMATH void scal( std::complex<float>  a, hoNDArray< std::complex<float> >& x);
+    template EXPORTCPUCOREMATH void scal( std::complex<double>  a, hoNDArray< std::complex<double> >& x);
 
     // --------------------------------------------------------------------------------
 
@@ -1583,14 +1542,13 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool scal(T a, hoNDArray< std::complex<T> >& x)
+    void scal(T a, hoNDArray< std::complex<T> >& x)
     {
         scal(x.get_number_of_elements(), a, x.begin());
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool scal(float a, hoNDArray< std::complex<float> >& x);
-    template EXPORTCPUCOREMATH bool scal(double a, hoNDArray< std::complex<double> >& x);
+    template EXPORTCPUCOREMATH void scal(float a, hoNDArray< std::complex<float> >& x);
+    template EXPORTCPUCOREMATH void scal(double a, hoNDArray< std::complex<double> >& x);
 
     // --------------------------------------------------------------------------------
 
@@ -1627,7 +1585,7 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool sort(const hoNDArray<T>& x, hoNDArray<T>& r, bool isascending)
+    void sort(const hoNDArray<T>& x, hoNDArray<T>& r, bool isascending)
     {
         if ( &r != &x )
         {
@@ -1642,12 +1600,10 @@ namespace Gadgetron
         }
 
         sort(x.get_number_of_elements(), x.begin(), r.begin(), isascending);
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending);
-    template EXPORTCPUCOREMATH bool sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending);
+    template EXPORTCPUCOREMATH void sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending);
+    template EXPORTCPUCOREMATH void sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending);
 
 // --------------------------------------------------------------------------------
 
@@ -1810,11 +1766,11 @@ namespace Gadgetron
     // --------------------------------------------------------------------------------
 
     template<class T> 
-    bool real_imag_to_complex(const hoNDArray<typename realType<T>::Type>& real, const hoNDArray<typename realType<T>::Type>& imag, hoNDArray<T>& cplx)
+    void real_imag_to_complex(const hoNDArray<typename realType<T>::Type>& real, const hoNDArray<typename realType<T>::Type>& imag, hoNDArray<T>& cplx)
     {
         try
         {
-            GADGET_CHECK_RETURN_FALSE(real.dimensions_equal(&imag));
+            GADGET_CHECK_THROW(real.dimensions_equal(&imag));
 
             if ( !cplx.dimensions_equal(&real) )
             {
@@ -1836,20 +1792,17 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in real_imag_to_complex(...) ... ");
-            return false;
+            GADGET_THROW("Errors in real_imag_to_complex(...) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool real_imag_to_complex(const hoNDArray<float>& real, const hoNDArray<float>& imag, hoNDArray< std::complex<float> >& cplx);
-    template EXPORTCPUCOREMATH bool real_imag_to_complex(const hoNDArray<double>& real, const hoNDArray<double>& imag, hoNDArray< std::complex<double> >& cplx);
+    template EXPORTCPUCOREMATH void real_imag_to_complex(const hoNDArray<float>& real, const hoNDArray<float>& imag, hoNDArray< std::complex<float> >& cplx);
+    template EXPORTCPUCOREMATH void real_imag_to_complex(const hoNDArray<double>& real, const hoNDArray<double>& imag, hoNDArray< std::complex<double> >& cplx);
 
     // --------------------------------------------------------------------------------
 
     template<class T> 
-    bool complex_to_real_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real, hoNDArray<typename realType<T>::Type>& imag)
+    void complex_to_real_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real, hoNDArray<typename realType<T>::Type>& imag)
     {
         try
         {
@@ -1879,18 +1832,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in complex_to_real_imag(...) ... ");
-            return false;
+            GADGET_THROW("Errors in complex_to_real_imag(...) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool complex_to_real_imag(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& real, hoNDArray<float>& imag);
-    template EXPORTCPUCOREMATH bool complex_to_real_imag(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& real, hoNDArray<double>& imag);
+    template EXPORTCPUCOREMATH void complex_to_real_imag(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& real, hoNDArray<float>& imag);
+    template EXPORTCPUCOREMATH void complex_to_real_imag(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& real, hoNDArray<double>& imag);
 
     template <> EXPORTCPUCOREMATH
-    bool complex_to_real_imag(const hoNDArray<float>& cplx, hoNDArray<float>& real, hoNDArray<float>& imag)
+    void complex_to_real_imag(const hoNDArray<float>& cplx, hoNDArray<float>& real, hoNDArray<float>& imag)
     {
         try
         {
@@ -1920,15 +1870,12 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in complex_to_real_imag(...) ... ");
-            return false;
+            GADGET_THROW("Errors in complex_to_real_imag(...) ... ");
         }
-
-        return true;
     }
 
     template<> EXPORTCPUCOREMATH 
-    bool complex_to_real_imag(const hoNDArray<double>& cplx, hoNDArray<double>& real, hoNDArray<double>& imag)
+    void complex_to_real_imag(const hoNDArray<double>& cplx, hoNDArray<double>& real, hoNDArray<double>& imag)
     {
         try
         {
@@ -1958,17 +1905,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in complex_to_real_imag(...) ... ");
-            return false;
+            GADGET_THROW("Errors in complex_to_real_imag(...) ... ");
         }
-
-        return true;
     }
 
     // --------------------------------------------------------------------------------
 
     template<class T> 
-    bool complex_to_real(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real)
+    void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real)
     {
         try
         {
@@ -1991,18 +1935,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in complex_to_real(...) ... ");
-            return false;
+            GADGET_THROW("Errors in complex_to_real(...) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& real);
-    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& real);
+    template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& real);
+    template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& real);
 
     template<class T> 
-    bool complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real)
+    void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real)
     {
         try
         {
@@ -2025,18 +1966,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in complex_to_real(...) ... ");
-            return false;
+            GADGET_THROW("Errors in complex_to_real(...) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray< std::complex<float> >& cplx, hoNDArray< std::complex<float> >& real);
-    template EXPORTCPUCOREMATH bool complex_to_real(const hoNDArray< std::complex<double> >& cplx, hoNDArray< std::complex<double> >& real);
+    template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< std::complex<float> >& cplx, hoNDArray< std::complex<float> >& real);
+    template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< std::complex<double> >& cplx, hoNDArray< std::complex<double> >& real);
 
     template<class T> 
-    bool complex_to_real(hoNDArray<T>& cplx)
+    void complex_to_real(hoNDArray<T>& cplx)
     {
         try
         {
@@ -2053,20 +1991,17 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in complex_to_real(...) ... ");
-            return false;
+            GADGET_THROW("Errors in complex_to_real(...) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool complex_to_real(hoNDArray< std::complex<float> >& cplx);
-    template EXPORTCPUCOREMATH bool complex_to_real(hoNDArray< std::complex<double> >& cplx);
+    template EXPORTCPUCOREMATH void complex_to_real(hoNDArray< std::complex<float> >& cplx);
+    template EXPORTCPUCOREMATH void complex_to_real(hoNDArray< std::complex<double> >& cplx);
 
     // --------------------------------------------------------------------------------
 
     template<class T> 
-    bool complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& imag)
+    void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& imag)
     {
         try
         {
@@ -2089,18 +2024,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in complex_to_imag(...) ... ");
-            return false;
+            GADGET_THROW("Errors in complex_to_imag(...) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& imag);
-    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& imag);
+    template EXPORTCPUCOREMATH void complex_to_imag(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& imag);
+    template EXPORTCPUCOREMATH void complex_to_imag(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& imag);
 
     template<class T> 
-    bool complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<T>& imag)
+    void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<T>& imag)
     {
         try
         {
@@ -2123,18 +2055,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in complex_to_imag(...) ... ");
-            return false;
+            GADGET_THROW("Errors in complex_to_imag(...) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray< std::complex<float> >& cplx, hoNDArray< std::complex<float> >& imag);
-    template EXPORTCPUCOREMATH bool complex_to_imag(const hoNDArray< std::complex<double> >& cplx, hoNDArray< std::complex<double> >& imag);
+    template EXPORTCPUCOREMATH void complex_to_imag(const hoNDArray< std::complex<float> >& cplx, hoNDArray< std::complex<float> >& imag);
+    template EXPORTCPUCOREMATH void complex_to_imag(const hoNDArray< std::complex<double> >& cplx, hoNDArray< std::complex<double> >& imag);
 
     template<class T> 
-    bool complex_to_imag(hoNDArray<T>& cplx)
+    void complex_to_imag(hoNDArray<T>& cplx)
     {
         try
         {
@@ -2151,20 +2080,17 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in complex_to_imag(...) ... ");
-            return false;
+            GADGET_THROW("Errors in complex_to_imag(...) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool complex_to_imag(hoNDArray< std::complex<float> >& cplx);
-    template EXPORTCPUCOREMATH bool complex_to_imag(hoNDArray< std::complex<double> >& cplx);
+    template EXPORTCPUCOREMATH void complex_to_imag(hoNDArray< std::complex<float> >& cplx);
+    template EXPORTCPUCOREMATH void complex_to_imag(hoNDArray< std::complex<double> >& cplx);
 
     // --------------------------------------------------------------------------------
 
     template<class T> 
-    bool real_to_complex(const hoNDArray<typename realType<T>::Type>& real, hoNDArray<T>& cplx)
+    void real_to_complex(const hoNDArray<typename realType<T>::Type>& real, hoNDArray<T>& cplx)
     {
         try
         {
@@ -2187,20 +2113,17 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in real_to_complex(...) ... ");
-            return false;
+            GADGET_THROW("Errors in real_to_complex(...) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool real_to_complex(const hoNDArray< float >& real, hoNDArray< std::complex<float> >& cplx);
-    template EXPORTCPUCOREMATH bool real_to_complex(const hoNDArray< double >& real, hoNDArray< std::complex<double> >& cplx);
+    template EXPORTCPUCOREMATH void real_to_complex(const hoNDArray< float >& real, hoNDArray< std::complex<float> >& cplx);
+    template EXPORTCPUCOREMATH void real_to_complex(const hoNDArray< double >& real, hoNDArray< std::complex<double> >& cplx);
 
     // --------------------------------------------------------------------------------
 
     template <class T>
-    bool minValue(const hoNDArray<T>& a, T& v)
+    void minValue(const hoNDArray<T>& a, T& v)
     {
         typedef T ValueType;
 
@@ -2218,18 +2141,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in minValue(const hoNDArray<T>& a, T& v) ... ");
-            return false;
+            GADGET_THROW("Errors in minValue(const hoNDArray<T>& a, T& v) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool minValue(const hoNDArray<float>& a, float& v);
-    template EXPORTCPUCOREMATH bool minValue(const hoNDArray<double>& a, double& v);
+    template EXPORTCPUCOREMATH void minValue(const hoNDArray<float>& a, float& v);
+    template EXPORTCPUCOREMATH void minValue(const hoNDArray<double>& a, double& v);
 
     template <class T>
-    bool maxValue(const hoNDArray<T>& a, T& v)
+    void maxValue(const hoNDArray<T>& a, T& v)
     {
         typedef T ValueType;
 
@@ -2247,15 +2167,12 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in maxValue(const hoNDArray<T>& a, T& v) ... ");
-            return false;
+            GADGET_THROW("Errors in maxValue(const hoNDArray<T>& a, T& v) ... ");
         }
-
-        return true;
     }
 
-    template EXPORTCPUCOREMATH bool maxValue(const hoNDArray<float>& a, float& v);
-    template EXPORTCPUCOREMATH bool maxValue(const hoNDArray<double>& a, double& v);
+    template EXPORTCPUCOREMATH void maxValue(const hoNDArray<float>& a, float& v);
+    template EXPORTCPUCOREMATH void maxValue(const hoNDArray<double>& a, double& v);
 
     // --------------------------------------------------------------------------------
 }

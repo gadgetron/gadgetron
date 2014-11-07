@@ -343,7 +343,7 @@ L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm)
         size_t CHA = (*dims)[4];
 
         // square the coefficients
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(wavCoeff, wavCoeff, complexIm_norm_));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiplyConj(wavCoeff, wavCoeff, complexIm_norm_));
         // sum over CHA
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver5thDimension(complexIm_norm_, wavCoeffNorm));
     }
@@ -442,7 +442,7 @@ proximity(hoNDArray<T>& wavCoeff, value_type thres)
         // GADGET_CHECK_RETURN_FALSE(this->L1Norm(wavCoeff, wav_coeff_norm_));
 
         // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(wavCoeff, wavCoeff, wav_coeff_norm_));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(wavCoeff, wav_coeff_norm_mag_));
+        Gadgetron::absolute(wavCoeff, wav_coeff_norm_mag_);
 
         if ( !mask_.dimensions_equal(&wavCoeff) )
         {
@@ -514,7 +514,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
                 pMag[ii] = pCoeffNorm[ii];
             }
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::divide(wavCoeff, wav_coeff_norm_approx_, complexIm_));
+            Gadgetron::divide(wavCoeff, wav_coeff_norm_approx_, complexIm_);
         }
         else
         {
@@ -537,7 +537,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
             // phase does not change
             if ( res_after_apply_kernel_.dimensions_equal(&wavCoeff) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(res_after_apply_kernel_, wavCoeff, complexIm_));
+                Gadgetron::multiply(res_after_apply_kernel_, wavCoeff, complexIm_);
             }
             else
             {
@@ -725,7 +725,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
         {
             if ( wav_coeff_norm_approx_.dimensions_equal(&complexIm_) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(wav_coeff_norm_approx_, complexIm_, wavCoeff));
+                Gadgetron::multiply(wav_coeff_norm_approx_, complexIm_, wavCoeff);
             }
             else
             {

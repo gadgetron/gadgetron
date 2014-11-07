@@ -211,11 +211,11 @@ bool gtPlusSPIRIT2DTOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
 
         // D'y+Dc'x
         //gt_timer1_.start("1");
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(this->unacquired_points_indicator_, x, this->kspace_));
+        Gadgetron::multiply(this->unacquired_points_indicator_, x, this->kspace_);
         //gt_timer1_.stop();
 
         //gt_timer1_.start("2");
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::add(*this->acquired_points_, this->kspace_, this->kspace_));
+        Gadgetron::add(*this->acquired_points_, this->kspace_, this->kspace_);
         //gt_timer1_.stop();
 
         // x to image domain
@@ -272,12 +272,12 @@ bool gtPlusSPIRIT2DTOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
 
         // apply Dc
         //gt_timer1_.start("6");
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(this->unacquired_points_indicator_, g, g));
+        Gadgetron::multiply(this->unacquired_points_indicator_, g, g);
         //gt_timer1_.stop();
 
         // multiply by 2
         //gt_timer1_.start("7");
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(T(2.0), g));
+        Gadgetron::scal(T(2.0), g);
         //gt_timer1_.stop();
     }
     catch(...)
@@ -298,8 +298,8 @@ bool gtPlusSPIRIT2DTOperator<T>::obj(const hoNDArray<T>& x, T& obj)
         // ||(G-I)(D'y+Dc'x)||2
 
         // D'y+Dc'x
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(this->unacquired_points_indicator_, x, this->kspace_));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::add(*this->acquired_points_, this->kspace_, this->kspace_));
+        Gadgetron::multiply(this->unacquired_points_indicator_, x, this->kspace_);
+        Gadgetron::add(*this->acquired_points_, this->kspace_, this->kspace_);
 
         // x to image domain
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(this->kspace_, this->complexIm_));
@@ -343,7 +343,7 @@ bool gtPlusSPIRIT2DTOperator<T>::obj(const hoNDArray<T>& x, T& obj)
         }
 
         // L2 norm
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::dotc(this->res_after_apply_kernel_sum_over_, this->res_after_apply_kernel_sum_over_, obj));
+        Gadgetron::dotc(this->res_after_apply_kernel_sum_over_, this->res_after_apply_kernel_sum_over_, obj);
     }
     catch(...)
     {

@@ -340,11 +340,11 @@ bool gtPlusSPIRITOperator<T>::computeRighHandSide(const hoNDArray<T>& x, hoNDArr
         // apply Dc
         if ( use_symmetric_spirit_ )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, b, b));
+            Gadgetron::multiply(unacquired_points_indicator_, b, b);
         }
 
         // multiply by -1
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(-1.0), b));
+        Gadgetron::scal( (typename realType<T>::Type)(-1.0), b);
     }
     catch(...)
     {
@@ -364,8 +364,8 @@ bool gtPlusSPIRITOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
         // 2*Dc*(G-I)'(G-I)(D'y+Dc'x)
 
         // D'y+Dc'x
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, x, kspace_));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::add(*acquired_points_, kspace_, kspace_));
+        Gadgetron::multiply(unacquired_points_indicator_, x, kspace_);
+        Gadgetron::add(*acquired_points_, kspace_, kspace_);
 
         // x to image domain
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(kspace_, complexIm_));
@@ -378,10 +378,10 @@ bool gtPlusSPIRITOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
         GADGET_CHECK_RETURN_FALSE(this->convertToKSpace(res_after_apply_kernel_sum_over_, g));
 
         // apply Dc
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, g, g));
+        Gadgetron::multiply(unacquired_points_indicator_, g, g);
 
         // multiply by 2
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(2.0), g));
+        Gadgetron::scal( (typename realType<T>::Type)(2.0), g);
     }
     catch(...)
     {
@@ -401,8 +401,8 @@ bool gtPlusSPIRITOperator<T>::obj(const hoNDArray<T>& x, T& obj)
         // ||(G-I)(D'y+Dc'x)||2
 
         // D'y+Dc'x
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, x, kspace_));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::add(*acquired_points_, kspace_, kspace_));
+        Gadgetron::multiply(unacquired_points_indicator_, x, kspace_);
+        Gadgetron::add(*acquired_points_, kspace_, kspace_);
 
         // x to image domain
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(kspace_, complexIm_));
@@ -412,7 +412,7 @@ bool gtPlusSPIRITOperator<T>::obj(const hoNDArray<T>& x, T& obj)
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
 
         // L2 norm
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::dotc(res_after_apply_kernel_sum_over_, res_after_apply_kernel_sum_over_, obj));
+        Gadgetron::dotc(res_after_apply_kernel_sum_over_, res_after_apply_kernel_sum_over_, obj);
     }
     catch(...)
     {

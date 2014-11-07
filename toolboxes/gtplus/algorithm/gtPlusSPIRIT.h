@@ -398,7 +398,7 @@ imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, s
         ho4DArray<T> conKerMean(convKRO, convKE1, srcCHA, dstCHA);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, conKerMean));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1)), conKerMean) );
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1)), conKerMean) );
 
         // flip the kernel
         ho4DArray<T> convKerFlip(convKRO, convKE1, srcCHA, dstCHA);
@@ -427,7 +427,7 @@ imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, s
             }
         }
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1)) ), convKerFlip ));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1)) ), convKerFlip ));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad2D(convKerFlip, ro, e1, kIm));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm));
     }
@@ -539,8 +539,10 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                     {
                         T maxSignal;
                         size_t roInd(0);
-                        if ( Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd) )
+                        try
                         {
+                            Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd);
+
                             if ( roInd > maxROUsed/2+kROhalf )
                             {
                                 sRO = roInd - maxROUsed/2;
@@ -562,7 +564,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                             lenRO = eRO-sRO+1;
                             GADGET_MSG("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
                         }
-                        else
+                        catch(...)
                         {
                             GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
                         }
@@ -876,7 +878,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, convKer3));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer3, convKernMean));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1*oE2)), convKernMean) );
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1*oE2)), convKernMean) );
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - flip along dimensions ... "));
@@ -995,7 +997,7 @@ imageDomainKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2,
         GADGET_CHECK_RETURN_FALSE(this->kspaceDomainConvKernel3D(ker, kRO, kE1,  kE2, oRO, oE1, oE2, convKerFlip, minusI, ROat3rdDim));
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - SNR unit scaling ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1*e2)) ), convKerFlip ));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1*e2)) ), convKerFlip ));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_scal");
@@ -1050,7 +1052,7 @@ imageDomainKernelRO3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE
         Gadgetron::clear(kImROTemp);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - SNR unit scaling ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro)) ), convKerFlip ));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro)) ), convKerFlip ));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_scal_RO");
@@ -1096,7 +1098,7 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
         hoNDArray<T> kImROScaled(kImRO);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - SNR unit scaling for E1 and E2 ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(e1*e2)) ), kImROScaled ));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(e1*e2)) ), kImROScaled ));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROScaled, "kImROScaledE1E2");
@@ -1139,7 +1141,7 @@ imageDomainAdjointKernel(const hoNDArray<T>& kIm, hoNDArray<T>& adjkIm)
         //    pAdjKim[n] = std::conj(pAdjKim[n]);
         //}
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(adjkIm, adjkIm));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::conjugate(adjkIm, adjkIm));
     }
     catch(...)
     {
