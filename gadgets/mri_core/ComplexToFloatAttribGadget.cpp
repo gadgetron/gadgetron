@@ -5,7 +5,7 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "ComplexToFloatAttribGadget.h"
-#include "hoNDArray_math_util.h"
+#include "hoNDArray_elemwise.h"
 
 namespace Gadgetron
 {

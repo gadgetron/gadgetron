@@ -12,7 +12,7 @@
 #include "hoNDBoundaryHandler.h"
 #include "hoMatrix.h"
 #include "hoNDArray_utils.h"
-#include "hoNDArray_math_util.h"
+#include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "GtPrepUtil.h"

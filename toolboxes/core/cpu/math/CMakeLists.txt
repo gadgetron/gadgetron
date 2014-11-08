@@ -18,7 +18,7 @@ endif (MKL_FOUND)
 
 set(cpucore_math_header_files
     cpucore_math_export.h
-    hoNDArray_math_util.h
+    # hoNDArray_math_util.h
     hoNDArray_math.h
     hoNDImage_util.h
     hoNDImage_util.hxx
@@ -26,7 +26,7 @@ set(cpucore_math_header_files
     hoNDArray_linalg.h )
 
 set(cpucore_math_src_files 
-    hoNDArray_math_util.cpp
+    # hoNDArray_math_util.cpp
     hoNDImage_util.cpp 
     hoNDArray_linalg.cpp )
 
