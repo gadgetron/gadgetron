@@ -1337,6 +1337,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void fill( hoNDArray<double>* x, double val);
     template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<float> >* x,  std::complex<float>  val);
     template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<double> >* x,  std::complex<double>  val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray< complext<float> >* x,  complext<float>  val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray< complext<double> >* x,  complext<double>  val);
 
     // --------------------------------------------------------------------------------
 
@@ -1349,6 +1351,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void fill( hoNDArray<double>& x, double val);
     template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<float> >& x,  std::complex<float>  val);
     template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<double> >& x,  std::complex<double>  val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray< complext<float> >& x,  complext<float>  val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray< complext<double> >& x,  complext<double>  val);
 
     // --------------------------------------------------------------------------------
 
@@ -2413,7 +2417,6 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void reciprocal_sqrt_inplace<float>( hoNDArray<float>* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > sgn<float>( hoNDArray<float>* );
     template EXPORTCPUCOREMATH void sgn_inplace<float>( hoNDArray<float>* );
-    template EXPORTCPUCOREMATH void fill< float >( hoNDArray<float>*, float );
     template EXPORTCPUCOREMATH void clamp<float>( hoNDArray<float>*, float, float );
     template EXPORTCPUCOREMATH void clamp_min<float>( hoNDArray<float>*, float );
     template EXPORTCPUCOREMATH void clamp_max<float>( hoNDArray<float>*, float );
@@ -2436,7 +2439,6 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void reciprocal_sqrt_inplace<double>( hoNDArray<double>* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > sgn<double>( hoNDArray<double>* );
     template EXPORTCPUCOREMATH void sgn_inplace<double>( hoNDArray<double>* );
-    template EXPORTCPUCOREMATH void fill< double >( hoNDArray<double>*, double );
     template EXPORTCPUCOREMATH void clamp<double>( hoNDArray<double>*, double, double );
     template EXPORTCPUCOREMATH void clamp_min<double>( hoNDArray<double>*, double );
     template EXPORTCPUCOREMATH void clamp_max<double>( hoNDArray<double>*, double );
@@ -2456,7 +2458,6 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void reciprocal_inplace< std::complex<float> >( hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<float> > > reciprocal_sqrt< std::complex<float> >( hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH void reciprocal_sqrt_inplace< std::complex<float> >( hoNDArray< std::complex<float> >* );
-    template EXPORTCPUCOREMATH void fill< std::complex<float> >( hoNDArray< std::complex<float> >*, std::complex<float> );
 
     template EXPORTCPUCOREMATH void clamp< std::complex<float> >( hoNDArray< std::complex<float> >*, float, float );
     template EXPORTCPUCOREMATH void clamp_min< std::complex<float> >( hoNDArray< std::complex<float> >*, float );
@@ -2477,7 +2478,6 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void reciprocal_inplace< std::complex<double> >( hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<double> > > reciprocal_sqrt< std::complex<double> >( hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH void reciprocal_sqrt_inplace< std::complex<double> >( hoNDArray< std::complex<double> >* );
-    template EXPORTCPUCOREMATH void fill< std::complex<double> >( hoNDArray< std::complex<double> >*, std::complex<double> );
     template EXPORTCPUCOREMATH void clamp< std::complex<double> >( hoNDArray< std::complex<double> >*, double, double );
     template EXPORTCPUCOREMATH void clamp_min< std::complex<double> >( hoNDArray< std::complex<double> >*, double );
     template EXPORTCPUCOREMATH void clamp_max<std::complex<double> >( hoNDArray< std::complex<double> >*, double );
@@ -2497,7 +2497,6 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void reciprocal_inplace< complext<float> >( hoNDArray< complext<float> >* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< complext<float> > > reciprocal_sqrt< complext<float> >( hoNDArray< complext<float> >* );
     template EXPORTCPUCOREMATH void reciprocal_sqrt_inplace< complext<float> >( hoNDArray< complext<float> >* );
-    template EXPORTCPUCOREMATH void fill< complext<float> >( hoNDArray< complext<float> >*, complext<float> );
     template EXPORTCPUCOREMATH void clamp< complext<float> >( hoNDArray< complext<float> >*, float, float );
     template EXPORTCPUCOREMATH void clamp_min< complext<float> >( hoNDArray< complext<float> >*, float );
     template EXPORTCPUCOREMATH void clamp_max<complext<float> >( hoNDArray< complext<float> >*, float );
@@ -2517,7 +2516,6 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void reciprocal_inplace< complext<double> >( hoNDArray< complext<double> >* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< complext<double> > > reciprocal_sqrt< complext<double> >( hoNDArray< complext<double> >* );
     template EXPORTCPUCOREMATH void reciprocal_sqrt_inplace< complext<double> >( hoNDArray< complext<double> >* );
-    template EXPORTCPUCOREMATH void fill<  complext<double> >( hoNDArray< complext<double> >*, complext<double> );
     template EXPORTCPUCOREMATH void clamp< complext<double> >( hoNDArray< complext<double> >*, double, double );
     template EXPORTCPUCOREMATH void clamp_min< complext<double> >( hoNDArray< complext<double> >*, double );
     template EXPORTCPUCOREMATH void clamp_max<complext<double> >( hoNDArray< complext<double> >*, double );
