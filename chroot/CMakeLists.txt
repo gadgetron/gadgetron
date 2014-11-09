@@ -17,12 +17,14 @@ add_custom_command(
     VERBATIM
     COMMENT "Creating chroot tar file"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND sudo bash create_chroot.sh ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR} ${GADGETRON_GIT_SHA1_HASH}
+    COMMAND sudo bash create_chroot.sh ${CMAKE_INSTALL_PREFIX}
+                                       ${CMAKE_BINARY_DIR}
+                                       ${CMAKE_SOURCE_DIR}
+                                       ${GADGETRON_GIT_SHA1_HASH}
+                                       ${ISMRMRD_LIB_DIR}
 )
 
-message("cmake install prefix: " ${CMAKE_INSTALL_PREFIX})
-message("cmake current binary dir: " ${CMAKE_CURRENT_BINARY_DIR})
-message("cmake current source dir: " ${CMAKE_CURRENT_SOURCE_DIR})
-message("cmake binary dir: " ${CMAKE_BINARY_DIR})
-message("cmake source dir: " ${CMAKE_SOURCE_DIR})
-message("concatenation: " ${CMAKE_CURRENT_SOURCE_DIR}/chroot-root${CMAKE_INSTALL_PREFIX})
+message("1. cmake install prefix: " ${CMAKE_INSTALL_PREFIX})
+message("2. cmake binary dir: " ${CMAKE_BINARY_DIR})
+message("3. cmake source dir: " ${CMAKE_SOURCE_DIR})
+message("ISMRMRD_HOME: " $ENV{ISMRMRD_HOME})

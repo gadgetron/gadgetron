@@ -33,7 +33,8 @@ while (my $file = readdir(DIR)) {
     my $deps = `$FindBin::Bin/get_dependencies_for_binary $new_root/$directory/$file`;
     my @lines = split('\n', $deps);
 
-    foreach my $val (@lines) {
+    foreach my $val (@lines) 
+    {
 	chomp($val);
         if (not -e "$new_root/$val")
         {
