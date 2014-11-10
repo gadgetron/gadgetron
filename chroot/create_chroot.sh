@@ -7,7 +7,7 @@ if [ $(id -u) -ne 0 ]; then
 else
  if [ $# -eq 5 ]; then
 
-  # Add ISMRMRD_LIB_DIR to LD_LIBRARY_PATH
+  # Add LIBRARY_PATHS to LD_LIBRARY_PATH
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${5}
 
   rm -rf ${2}/chroot/chroot-root
@@ -78,7 +78,7 @@ else
   exit 0
 
  else
-  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (ISMRMRD_LIB_DIR)\n"
+  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS)\n"
   exit 1
  fi
 
@@ -89,4 +89,4 @@ fi
 # 2. cmake binary dir:         /home/ubuntu/gadgetron/build
 # 3. cmake source dir:         /home/ubuntu/gadgetron
 # 4. HASH
-# 5. ISMRMRD_LIB_DIR           /usr/local
+# 5. LIBRARY_PATHS             /home/ubuntu/ismrmrd_install
