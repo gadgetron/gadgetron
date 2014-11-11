@@ -219,7 +219,7 @@ bool gtPlusSPIRITNoNullSpace2DTOperator<T>::grad(const hoNDArray<T>& x, hoNDArra
         GADGET_CHECK_RETURN_FALSE(this->convertToKSpace(this->res_after_apply_kernel_sum_over_, g));
 
         // multiply by 2
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(T(2.0), g));
+        Gadgetron::scal(T(2.0), g);
     }
     catch(...)
     {
@@ -275,7 +275,7 @@ bool gtPlusSPIRITNoNullSpace2DTOperator<T>::obj(const hoNDArray<T>& x, T& obj)
         }
 
         // L2 norm
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::dotc(this->res_after_apply_kernel_sum_over_, this->res_after_apply_kernel_sum_over_, obj));
+        Gadgetron::dotc(this->res_after_apply_kernel_sum_over_, this->res_after_apply_kernel_sum_over_, obj);
     }
     catch(...)
     {

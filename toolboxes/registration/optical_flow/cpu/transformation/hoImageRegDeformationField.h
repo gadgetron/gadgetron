@@ -715,13 +715,13 @@ namespace Gadgetron
             }
 
             size_t ind;
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::maxAbsolute(deformNorm, maxDeform, ind));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::maxAbsolute(logJac, maxLogJac, ind));
+            Gadgetron::maxAbsolute(deformNorm, maxDeform, ind);
+            Gadgetron::maxAbsolute(logJac, maxLogJac, ind);
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::norm1(deformNorm, meanDeform));
+            Gadgetron::norm1(deformNorm, meanDeform);
             meanDeform /= N;
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::norm1(logJac, meanLogJac));
+            Gadgetron::norm1(logJac, meanLogJac);
             meanLogJac /= N;
         }
         catch(...)

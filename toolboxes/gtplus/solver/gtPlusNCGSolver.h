@@ -118,13 +118,13 @@ grad(const Array_Type_I& x, Array_Type_I& g)
         if ( N == 0 ) return true;
 
         GADGET_CHECK_RETURN_FALSE(operList_[0].first->grad(x, g));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(operList_[0].second, g));
+        Gadgetron::scal(operList_[0].second, g);
 
         for ( size_t op=1; op<N; op++ )
         {
             GADGET_CHECK_RETURN_FALSE(operList_[op].first->grad(x, gradBuf_));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(operList_[op].second, gradBuf_));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::add(gradBuf_, g, g));
+            Gadgetron::scal(operList_[op].second, gradBuf_);
+            Gadgetron::add(gradBuf_, g, g);
         }
     }
     catch(...)
@@ -185,7 +185,7 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
 
         // dx = -g0;
         Array_Type_I dx(g0);
-        GADGET_CHECK_RETURN_FALSE( Gadgetron::scal( (value_type)(-1), dx ) );
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE( Gadgetron::scal( (value_type)(-1), dx ) );
 
         //Gadgetron::norm2(dx, v); GADGET_MSG(v);
 

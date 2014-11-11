@@ -469,19 +469,19 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
     if ( workflow_.workOrder_->gfactor_needed_ )
     {
-        GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_gfactor_, workflow_.gfactor_), GADGET_FAIL);
+        Gadgetron::scal((float)scalingFactor_gfactor_, workflow_.gfactor_);
         GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.gfactor_, image_series_+1, workOrder->dataDimStartingIndexes_, "gfactor", GTPLUS_IMAGE_GFACTOR), GADGET_FAIL);
     }
 
     if ( scalingFactor_snr_image_>0 && snrImage.get_number_of_elements()>0 && snrImageComputed )
     {
-        GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_snr_image_, snrImage), GADGET_FAIL);
+        Gadgetron::scal((float)scalingFactor_snr_image_, snrImage);
         GADGET_CHECK_RETURN(this->sendOutRecon(images, snrImage, image_series_+2, workOrder->dataDimStartingIndexes_, "snr_map", GTPLUS_IMAGE_SNR_MAP), GADGET_FAIL);
     }
 
     if ( scalingFactor_std_map_>0 && stdMap.get_number_of_elements()>0 && stdMapComputed )
     {
-        GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_std_map_, stdMap), GADGET_FAIL);
+        Gadgetron::scal((float)scalingFactor_std_map_, stdMap);
         GADGET_CHECK_RETURN(this->sendOutRecon(images, stdMap, image_series_+3, workOrder->dataDimStartingIndexes_, "std_map", GTPLUS_IMAGE_STD_MAP), GADGET_FAIL);
     }
 

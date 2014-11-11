@@ -82,8 +82,8 @@ namespace Gadgetron
         {
             BaseClass::evaluate(w);
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(target, warped, deriv));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::norm2(deriv, dissimilarity_));
+            Gadgetron::subtract(target, warped, deriv);
+            Gadgetron::norm2(deriv, dissimilarity_);
 
             dissimilarity_ = (dissimilarity_*dissimilarity_) / (ValueType)(target.get_number_of_elements());
         }

@@ -495,8 +495,8 @@ namespace Gadgetron{
                 std::complex<float>* data_ptr = m2->getObjectPtr()->get_data_ptr();
 
                 readout_ = *m2->getObjectPtr();
-                GADGET_CHECK_RETURN(gemm(noise_covariance_matrixf_once_, readout_, true, *m2->getObjectPtr(), false), GADGET_FAIL);
-                GADGET_CHECK_RETURN(Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_), GADGET_FAIL);
+                gemm(noise_covariance_matrixf_once_, readout_, true, *m2->getObjectPtr(), false);
+                Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_);
 
                 number_of_noise_samples_ += samples;
                 m1->release();

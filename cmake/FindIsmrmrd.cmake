@@ -13,6 +13,9 @@ HINTS $ENV{ISMRMRD_HOME} PATHS /usr/local /usr PATH_SUFFIXES share/ismrmrd/schem
 FIND_LIBRARY( ISMRMRD_LIBRARY NAMES ismrmrd
 HINTS $ENV{ISMRMRD_HOME} /usr/local /usr PATH_SUFFIXES lib)
 
+FIND_PATH( ISMRMRD_LIB_DIR libismrmrd.so
+HINTS $ENV{ISMRMRD_HOME} /usr/local /usr PATH_SUFFIXES lib)
+
 SET(ISMRMRD_LIBRARIES ${ISMRMRD_LIBRARY})
 
 INCLUDE( "FindPackageHandleStandardArgs" )

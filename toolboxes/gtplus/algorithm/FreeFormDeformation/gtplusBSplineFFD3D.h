@@ -467,7 +467,7 @@ bool gtplusBSplineFFD3D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos
 
         /// compute current residual
         GADGET_CHECK_RETURN_FALSE(this->evaluateFFDArray(pos, approxValue));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(value, approxValue, residual));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(value, approxValue, residual));
 
         /// compute the update of control points
         unsigned int d;
@@ -543,8 +543,8 @@ bool gtplusBSplineFFD3D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos
         }
 
         /// update the control point values
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(ds));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::divide(dx, ds, dx));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::addEpsilon(ds));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::divide(dx, ds, dx));
 
         std::vector<size_t> startND(3, BSPLINEPADDINGSIZE), size(3);
         size[0] = sx;
@@ -568,8 +568,8 @@ bool gtplusBSplineFFD3D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos
         /// calculate residual error
         totalResidual = 0;
         GADGET_CHECK_RETURN_FALSE(this->evaluateFFDArray(pos, approxValue));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(value, approxValue, residual));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::norm2(residual, totalResidual));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(value, approxValue, residual));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::norm2(residual, totalResidual));
         totalResidual = totalResidual / (real_value_type)N;
     }
     catch(...)
