@@ -528,7 +528,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
 
     hoNDArray<float> magSoS;
     timer.start("absolute");
-    Gadgetron::absolute(sosIm, magSoS);
+    Gadgetron::abs(sosIm, magSoS);
     timer.stop();
 
     filename = this->gtPluse_ut_res_folder_ + "SoS";

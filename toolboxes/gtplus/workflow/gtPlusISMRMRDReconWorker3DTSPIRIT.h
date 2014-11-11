@@ -356,7 +356,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
         size_t indMax;
         hoNDArray<value_type> mag;
-        Gadgetron::absolute(kspaceForScaleFactor, mag);
+        Gadgetron::abs(kspaceForScaleFactor, mag);
         value_type maxMag;
         Gadgetron::maxAbsolute(mag, maxMag, indMax);
         workOrder3DT->spirit_slep_scale_factor_ = maxMag;

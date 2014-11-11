@@ -383,7 +383,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
             }
 
             hoNDArray<typename realType<T>::Type> refMag(refRecon.get_dimensions()), refMagSum;
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::absolute(refRecon, refMag));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(refRecon, refMag));
             GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMag, refMagSum));
             GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMagSum, refMag));
             GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMag, refMagSum));
@@ -2041,7 +2041,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_partial_fourier_, "homodyne_complexIm");
 
             // get the phase
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::absolute(buffer2DT_partial_fourier_, mag));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(buffer2DT_partial_fourier_, mag));
             GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::addEpsilon(mag));
             GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
             GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::divide(buffer2DT_partial_fourier_, magComplex, buffer2DT_));
@@ -2287,7 +2287,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_partial_fourier_, "POCS_afterFiltered_complexIm");
 
         // get the complex image phase for the filtered kspace
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::absolute(buffer2DT_partial_fourier_, mag));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(buffer2DT_partial_fourier_, mag));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::addEpsilon(mag));
         GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::divide(buffer2DT_partial_fourier_, magComplex, buffer2DT_));
@@ -2304,7 +2304,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
         size_t ii;
         for ( ii=0; ii<workOrder2DT.partialFourier_POCS_iters_; ii++ )
         {
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::absolute(complexImPOCS, mag));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(complexImPOCS, mag));
             GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
             GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(magComplex, buffer2DT_, complexImPOCS));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImPOCS, "POCS_complexImPOCS");

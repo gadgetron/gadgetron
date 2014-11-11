@@ -2063,7 +2063,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT_partial_fourier, "POCS_afterFiltered_complexIm");
 
         // get the complex image phase for the filtered kspace
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::absolute(buffer3DT_partial_fourier, mag));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(buffer3DT_partial_fourier, mag));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::addEpsilon(mag));
         GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::divide(buffer3DT_partial_fourier, magComplex, buffer3DT));
@@ -2080,7 +2080,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
         size_t ii;
         for ( ii=0; ii<workOrder3DT.partialFourier_POCS_iters_; ii++ )
         {
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::absolute(complexImPOCS, mag));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(complexImPOCS, mag));
             GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
             GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(magComplex, buffer3DT, complexImPOCS));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImPOCS, "POCS_complexImPOCS");

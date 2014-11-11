@@ -442,7 +442,7 @@ proximity(hoNDArray<T>& wavCoeff, value_type thres)
         // GADGET_CHECK_RETURN_FALSE(this->L1Norm(wavCoeff, wav_coeff_norm_));
 
         // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(wavCoeff, wavCoeff, wav_coeff_norm_));
-        Gadgetron::absolute(wavCoeff, wav_coeff_norm_mag_);
+        Gadgetron::abs(wavCoeff, wav_coeff_norm_mag_);
 
         if ( !mask_.dimensions_equal(&wavCoeff) )
         {

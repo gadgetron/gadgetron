@@ -40,12 +40,24 @@ namespace Gadgetron{
 template <typename T> EXPORTCPUCOREMATH 
 void add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
 
+template <typename T> EXPORTCPUCOREMATH 
+void add(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void add(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
+
 /**
 * @brief subtract two vectors of values, r = x - y
   support in-place computation, e.g. x==r
 */
 template <typename T> EXPORTCPUCOREMATH 
 void subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void subtract(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void subtract(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
 
 /**
 * @brief multiply two vectors of values, r = x * y
@@ -54,6 +66,12 @@ void subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
 template <typename T> EXPORTCPUCOREMATH 
 void multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
 
+template <typename T> EXPORTCPUCOREMATH 
+void multiply(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void multiply(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
+
 /**
 * @brief divide two vectors of values, r = x / y
   support in-place computation, e.g. x==r
@@ -61,6 +79,12 @@ void multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
 */
 template <typename T> EXPORTCPUCOREMATH 
 void divide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void divide(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void divide(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
 
 /**
 * @brief r = x * conj(y)
@@ -99,8 +123,8 @@ void inv(const hoNDArray<T>& x, hoNDArray<T>& r);
  * @return A new array containing the element-wise absolute values of the input.
  */
 template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs( hoNDArray<T> *x );
-template <typename T> EXPORTCPUCOREMATH void absolute(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
-template <typename T> EXPORTCPUCOREMATH void absolute(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r);
+template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
+template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r);
 
 /**
  * @brief Calculates the element-wise absolute values (l2 norm) of the array entries (in place).
@@ -598,12 +622,6 @@ template <typename T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray<T>& x, co
 */
 template <typename T> EXPORTCPUCOREMATH void scal(T a, hoNDArray<T>& x);
 template <typename T> EXPORTCPUCOREMATH void scal(T a, hoNDArray< std::complex<T> >& x);
-
-/**
-* @brief compute x *= a for an array
-*/
-template <typename T> EXPORTCPUCOREMATH void scal(T a, T*x, long long N);
-template <typename T> EXPORTCPUCOREMATH void scal(T a, std::complex<T>*x, long long N);
 
 /**
 * @brief 2D convolution

@@ -949,7 +949,7 @@ namespace Gadgetron
         if ( scalingFactor_ < 0 && !use_constant_scalingFactor_ )
         {
             hoNDArray<float> mag(res.get_dimensions());
-            Gadgetron::absolute(res, mag);
+            Gadgetron::abs(res, mag);
             GADGET_CHECK_RETURN_FALSE(this->scalingMagnitude(mag));
         }
 
@@ -1595,7 +1595,7 @@ namespace Gadgetron
         {
             // extract the magnitude
             hoNDArray<float> mag(res.get_dimensions());
-            Gadgetron::absolute(res, mag);
+            Gadgetron::abs(res, mag);
             GADGET_CHECK_RETURN_FALSE(scalingMagnitude(mag));
             GADGET_CHECK_RETURN_FALSE(sendOutRecon2D(images, mag, seriesNum, imageNum));
         }
@@ -1773,7 +1773,7 @@ namespace Gadgetron
 
                                             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, repBuf, "repBuf");
 
-                                            Gadgetron::absolute(repBuf, repBufMag);
+                                            Gadgetron::abs(repBuf, repBufMag);
                                             GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, repBufMag, "repBufMag");
 
                                             // compute std
@@ -1848,7 +1848,7 @@ namespace Gadgetron
 
                                             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, phsBuf, "phsBuf");
 
-                                            Gadgetron::absolute(phsBuf, phsBufMag);
+                                            Gadgetron::abs(phsBuf, phsBufMag);
                                             GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, phsBufMag, "phsBufMag");
 
                                             // compute std

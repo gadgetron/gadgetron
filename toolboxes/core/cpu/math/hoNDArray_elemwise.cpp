@@ -88,6 +88,12 @@ namespace Gadgetron{
     }
 
     template <typename T> 
+    void add(size_t N, const  complext<T>* x, const complext<T>* y, complext<T>* r)
+    {
+        add(N, reinterpret_cast< const std::complex<T>* >(x), reinterpret_cast< const std::complex<T>* >(y), reinterpret_cast< std::complex<T>* >(r));
+    }
+
+    template <typename T> 
     void add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
         GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
@@ -103,6 +109,73 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void add(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void add(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void add(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
+
+    template <typename T> 
+    void add(size_t N, const std::complex<T>* x, const T* y, std::complex<T>* r)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            const  std::complex<T> & vx = x[n];
+            const T re1 = vx.real();
+            const T im1 = vx.imag();
+
+            reinterpret_cast<T(&)[2]>(r[n])[0] = re1 + y[n];
+            reinterpret_cast<T(&)[2]>(r[n])[1] = im1;
+        }
+    }
+
+    template <typename T> 
+    void add(size_t N, const complext<T>* x, const T* y, complext<T>* r)
+    {
+        add(N, reinterpret_cast< const std::complex<T>* >(x), y, reinterpret_cast< std::complex<T>* >(r));
+    }
+
+    template <typename T> 
+    void add(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r)
+    {
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r = x;
+        }
+
+        size_t N = x.get_number_of_elements();
+
+        const std::complex<T>* pX = x.begin();
+        const T* pY = y.begin();
+        std::complex<T>* pR = r.begin();
+
+        add(N, pX, pY, pR );
+    }
+
+    template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<float> >& x, const hoNDArray< float >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<double> >& x, const hoNDArray< double >& y, hoNDArray< std::complex<double> >& r);
+
+    template <typename T> 
+    void add(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r)
+    {
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r = x;
+        }
+
+        size_t N = x.get_number_of_elements();
+
+        const complext<T>* pX = x.begin();
+        const T* pY = y.begin();
+        complext<T>* pR = r.begin();
+
+        add(N, pX, pY, pR );
+    }
+
+    template EXPORTCPUCOREMATH void add(const hoNDArray< complext<float> >& x, const hoNDArray< float >& y, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void add(const hoNDArray< complext<double> >& x, const hoNDArray< double >& y, hoNDArray< complext<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -169,6 +242,12 @@ namespace Gadgetron{
     }
 
     template <typename T> 
+    void subtract(size_t N, const  complext<T>* x, const complext<T>* y, complext<T>* r)
+    {
+        subtract(N, reinterpret_cast< const std::complex<T>* >(x), reinterpret_cast< const std::complex<T>* >(y), reinterpret_cast< std::complex<T>* >(r));
+    }
+
+    template <typename T> 
     void subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
         GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
@@ -184,6 +263,73 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void subtract(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void subtract(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void subtract(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
+
+    template <typename T> 
+    void subtract(size_t N, const std::complex<T>* x, const T* y, std::complex<T>* r)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            const  std::complex<T> & vx = x[n];
+            const T re1 = vx.real();
+            const T im1 = vx.imag();
+
+            reinterpret_cast<T(&)[2]>(r[n])[0] = re1 - y[n];
+            reinterpret_cast<T(&)[2]>(r[n])[1] = im1;
+        }
+    }
+
+    template <typename T> 
+    void subtract(size_t N, const complext<T>* x, const T* y, complext<T>* r)
+    {
+        subtract(N, reinterpret_cast< const std::complex<T>* >(x), y, reinterpret_cast< std::complex<T>* >(r));
+    }
+
+    template <typename T> 
+    void subtract(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r)
+    {
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r = x;
+        }
+
+        size_t N = x.get_number_of_elements();
+
+        const std::complex<T>* pX = x.begin();
+        const T* pY = y.begin();
+        std::complex<T>* pR = r.begin();
+
+        subtract(N, pX, pY, pR );
+    }
+
+    template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<float> >& x, const hoNDArray< float >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<double> >& x, const hoNDArray< double >& y, hoNDArray< std::complex<double> >& r);
+
+    template <typename T> 
+    void subtract(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r)
+    {
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r = x;
+        }
+
+        size_t N = x.get_number_of_elements();
+
+        const complext<T>* pX = x.begin();
+        const T* pY = y.begin();
+        complext<T>* pR = r.begin();
+
+        subtract(N, pX, pY, pR );
+    }
+
+    template EXPORTCPUCOREMATH void subtract(const hoNDArray< complext<float> >& x, const hoNDArray< float >& y, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void subtract(const hoNDArray< complext<double> >& x, const hoNDArray< double >& y, hoNDArray< complext<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -252,6 +398,71 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void multiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+
+    template <typename T> 
+    void multiply(size_t N, const std::complex<T>* x, const T* y, std::complex<T>* r)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            const  std::complex<T> & vx = x[n];
+            const T re1 = vx.real();
+            const T im1 = vx.imag();
+
+            reinterpret_cast<T(&)[2]>(r[n])[0] = re1*y[n];
+            reinterpret_cast<T(&)[2]>(r[n])[1] = im1*y[n];
+        }
+    }
+
+    template <typename T> 
+    void multiply(size_t N, const complext<T>* x, const T* y, complext<T>* r)
+    {
+        multiply(N, reinterpret_cast< const std::complex<T>* >(x), y, reinterpret_cast< std::complex<T>* >(r));
+    }
+
+    template <typename T> 
+    void multiply(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r)
+    {
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r = x;
+        }
+
+        size_t N = x.get_number_of_elements();
+
+        const std::complex<T>* pX = x.begin();
+        const T* pY = y.begin();
+        std::complex<T>* pR = r.begin();
+
+        multiply(N, pX, pY, pR );
+    }
+
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< float >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< double >& y, hoNDArray< std::complex<double> >& r);
+
+    template <typename T> 
+    void multiply(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r)
+    {
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r = x;
+        }
+
+        size_t N = x.get_number_of_elements();
+
+        const complext<T>* pX = x.begin();
+        const T* pY = y.begin();
+        complext<T>* pR = r.begin();
+
+        multiply(N, pX, pY, pR );
+    }
+
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< complext<float> >& x, const hoNDArray< float >& y, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< complext<double> >& x, const hoNDArray< double >& y, hoNDArray< complext<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -324,6 +535,73 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void divide(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+
+    template <typename T> 
+    void divide(size_t N, const std::complex<T>* x, const T* y, std::complex<T>* r)
+    {
+        long long n;
+
+        #pragma omp parallel for private(n) shared(N, r, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            const  std::complex<T> & vx = x[n];
+            const T re1 = vx.real();
+            const T im1 = vx.imag();
+
+            T v = T(1)/y[n];
+
+            reinterpret_cast<T(&)[2]>(r[n])[0] = re1*v;
+            reinterpret_cast<T(&)[2]>(r[n])[1] = im1*v;
+        }
+    }
+
+    template <typename T> 
+    void divide(size_t N, const complext<T>* x, const T* y, complext<T>* r)
+    {
+        divide(N, reinterpret_cast< const std::complex<T>* >(x), y, reinterpret_cast< std::complex<T>* >(r));
+    }
+
+    template <typename T> 
+    void divide(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r)
+    {
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r = x;
+        }
+
+        size_t N = x.get_number_of_elements();
+
+        const std::complex<T>* pX = x.begin();
+        const T* pY = y.begin();
+        std::complex<T>* pR = r.begin();
+
+        divide(N, pX, pY, pR );
+    }
+
+    template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<float> >& x, const hoNDArray< float >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<double> >& x, const hoNDArray< double >& y, hoNDArray< std::complex<double> >& r);
+
+    template <typename T> 
+    void divide(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r)
+    {
+        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r = x;
+        }
+
+        size_t N = x.get_number_of_elements();
+
+        const complext<T>* pX = x.begin();
+        const T* pY = y.begin();
+        complext<T>* pR = r.begin();
+
+        divide(N, pX, pY, pR );
+    }
+
+    template EXPORTCPUCOREMATH void divide(const hoNDArray< complext<float> >& x, const hoNDArray< float >& y, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void divide(const hoNDArray< complext<double> >& x, const hoNDArray< double >& y, hoNDArray< complext<double> >& r);
 
     // --------------------------------------------------------------------------------
 
@@ -536,7 +814,7 @@ namespace Gadgetron{
     // --------------------------------------------------------------------------------
 
     template <typename T> 
-    void absolute(size_t N, const T* x, typename realType<T>::Type* r)
+    void abs(size_t N, const T* x, typename realType<T>::Type* r)
     {
         long long n;
 
@@ -547,7 +825,7 @@ namespace Gadgetron{
         }
     }
 
-    inline void absolute(size_t N, const  std::complex<float> * x, float* r)
+    inline void abs(size_t N, const  std::complex<float> * x, float* r)
     {
         long long n;
 
@@ -561,7 +839,7 @@ namespace Gadgetron{
         }
     }
 
-    inline void absolute(size_t N, const  std::complex<double> * x, double* r)
+    inline void abs(size_t N, const  std::complex<double> * x, double* r)
     {
         long long n;
 
@@ -575,7 +853,7 @@ namespace Gadgetron{
         }
     }
 
-    void absolute(size_t N, const complext<float> * x, float* r)
+    void abs(size_t N, const complext<float> * x, float* r)
     {
         long long n;
 
@@ -589,7 +867,7 @@ namespace Gadgetron{
         }
     }
 
-    void absolute(size_t N, const complext<double> * x, double* r)
+    void abs(size_t N, const complext<double> * x, double* r)
     {
         long long n;
 
@@ -604,24 +882,24 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    void absolute(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r)
+    void abs(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
             r.create(x.get_dimensions());
         }
 
-        absolute(x.get_number_of_elements(), x.begin(), r.begin());
+        abs(x.get_number_of_elements(), x.begin(), r.begin());
     }
 
-    template EXPORTCPUCOREMATH void absolute(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH void absolute(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH void absolute(const hoNDArray< std::complex<float> >& x, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH void absolute(const hoNDArray< std::complex<double> >& x, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH void absolute(const hoNDArray< complext<float> >& x, hoNDArray<float>& r);
-    template EXPORTCPUCOREMATH void absolute(const hoNDArray< complext<double> >& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void abs(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void abs(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<float> >& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<double> >& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void abs(const hoNDArray< complext<float> >& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void abs(const hoNDArray< complext<double> >& x, hoNDArray<double>& r);
 
-    inline void absolute(size_t N, const std::complex<float>* x, std::complex<float>* r)
+    inline void abs(size_t N, const std::complex<float>* x, std::complex<float>* r)
     {
         try
         {
@@ -640,11 +918,11 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_THROW("Error happened in absolute(size_t N, const std::complex<float>* x, std::complex<float>* r) ... ");
+            GADGET_THROW("Error happened in abs(size_t N, const std::complex<float>* x, std::complex<float>* r) ... ");
         }
     }
 
-    inline void absolute(size_t N, const std::complex<double>* x, std::complex<double>* r)
+    inline void abs(size_t N, const std::complex<double>* x, std::complex<double>* r)
     {
         try
         {
@@ -663,23 +941,23 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_THROW("Error happened in absolute(size_t N, const std::complex<double>* x, std::complex<double>* r) ... ");
+            GADGET_THROW("Error happened in abs(size_t N, const std::complex<double>* x, std::complex<double>* r) ... ");
         }
     }
 
     template <typename T> 
-    void absolute(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r)
+    void abs(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r)
     {
         if ( r.get_number_of_elements()!=x.get_number_of_elements())
         {
             r.create(x.get_dimensions());
         }
 
-        absolute(x.get_number_of_elements(), x.begin(), r.begin());
+        abs(x.get_number_of_elements(), x.begin(), r.begin());
     }
 
-    template EXPORTCPUCOREMATH void absolute(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH void absolute(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs( hoNDArray<T> *x )
     {
@@ -688,7 +966,7 @@ namespace Gadgetron{
 
         boost::shared_ptr< hoNDArray<typename realType<T>::Type> > result(new hoNDArray<typename realType<T>::Type>());
         result->create(x->get_dimensions());
-        absolute(*x, *result);
+        abs(*x, *result);
         return result;
     }
 
@@ -697,7 +975,7 @@ namespace Gadgetron{
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::abs_inplace(): Invalid input array");
 
-        absolute(*x, *x);
+        abs(*x, *x);
     }
 
     template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs_square( hoNDArray<T> *x )
@@ -707,7 +985,7 @@ namespace Gadgetron{
 
         boost::shared_ptr< hoNDArray<typename realType<T>::Type> > result(new hoNDArray<typename realType<T>::Type>());
         result->create(x->get_dimensions());
-        absolute(*x, *result);
+        abs(*x, *result);
         multiply(*result, *result, *result);
         return result;
     }
@@ -789,8 +1067,9 @@ namespace Gadgetron{
 
         boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
         result->create(x->get_dimensions());
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
-        aRes = arma::square(as_arma_col(x));
+        /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
+        aRes = arma::square(as_arma_col(x));*/
+        multiply(*x, *x, *result);
         return result;
     }
 
@@ -799,8 +1078,10 @@ namespace Gadgetron{
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::square_inplace(): Invalid input array");
 
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(x);
-        aRes = arma::square(aRes);
+        /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(x);
+        aRes = arma::square(aRes);*/
+
+        multiply(*x, *x, *x);
     }
 
     // --------------------------------------------------------------------------------
@@ -810,12 +1091,13 @@ namespace Gadgetron{
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::reciprocal(): Invalid input array");
 
-        arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
-        ones.ones();
+        /*arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
+        ones.ones();*/
         boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
         result->create(x->get_dimensions());
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
-        aRes = ones/as_arma_col(x);
+        /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
+        aRes = ones/as_arma_col(x);*/
+        inv(*x, *result);
         return result;
     }
 
@@ -824,10 +1106,12 @@ namespace Gadgetron{
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::reciprocal_inplace(): Invalid input array");
 
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(x);
+        /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(x);
         arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
         ones.ones();
-        aRes = ones/aRes;
+        aRes = ones/aRes;*/
+
+        inv(*x, *x);
     }
 
     template<class T> boost::shared_ptr< hoNDArray<T> > reciprocal_sqrt( hoNDArray<T> *x )
@@ -835,12 +1119,15 @@ namespace Gadgetron{
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::reciprocal_sqrt(): Invalid input array");
 
-        arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
-        ones.ones();
+        /*arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
+        ones.ones();*/
         boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
         result->create(x->get_dimensions());
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
-        aRes = ones/arma::sqrt(as_arma_col(x));
+        /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
+        aRes = ones/arma::sqrt(as_arma_col(x));*/
+
+        sqrt(*x, *result);
+        inv(*result, *result);
         return result;
     }
 
@@ -849,10 +1136,13 @@ namespace Gadgetron{
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::reciprocal_sqrt_inplace(): Invalid input array");
 
-        arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
+        /*arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
         ones.ones();
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(x);
-        aRes = ones/arma::sqrt(aRes);
+        aRes = ones/arma::sqrt(aRes);*/
+
+        sqrt(*x, *x);
+        inv(*x, *x);
     }
 
     // --------------------------------------------------------------------------------
@@ -1595,318 +1885,6 @@ namespace Gadgetron{
         return ((x.get_number_of_elements()%y.get_number_of_elements())==0);
     }
 
-    template<class T> hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<T,T>(x,y) ){
-            arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray<T> tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
-                aRes += aY;
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator+=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<std::complex<T>,T>(x,y) ){
-            arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray< std::complex<T> > tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-                aRes += aY;
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator+=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray< complext<T> >& operator+= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<complext<T>,T>(x,y) ){
-            arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray< complext<T> > tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-                aRes += aY;
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator+=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray<T>& operator+= (hoNDArray<T> &x, const T &y)
-    {
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
-        typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
-        aRes += aY;
-        return x;
-    }
-
-    template<class T> hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> > &x, const T &y)
-    {
-        arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes += aY;
-        return x;
-    }
-
-    template<class T> hoNDArray< complext<T> >& operator+= (hoNDArray< complext<T> > &x, const T &y)
-    {
-        arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes += aY;
-        return x;
-    }
-
-    template<class T> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<T,T>(x,y) ){
-            arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray<T> tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
-                aRes -= aY;
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator-=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<std::complex<T>,T>(x,y) ){
-            arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray< std::complex<T> > tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-                aRes -= aY;
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator-=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray< complext<T> >& operator-= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<complext<T>,T>(x,y) ){
-            arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray< complext<T> > tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-                aRes -= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator-=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray<T>& operator-= (hoNDArray<T> &x, const T &y)
-    {
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
-        typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
-        aRes -= aY;
-        return x;
-    }
-
-    template<class T> hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T> > &x, const T &y)
-    {
-        arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes -= aY;
-        return x;
-    }
-
-    template<class T> hoNDArray< complext<T> >& operator-= (hoNDArray< complext<T> > &x, const T &y)
-    {
-        arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes -= aY;
-        return x;
-    }
-
-    template<class T> hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<T,T>(x,y) ){
-            arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray<T> tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
-                aRes %= aY;
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<std::complex<T>,T>(x,y) ){
-            arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray< std::complex<T> > tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-                aRes %= aY;
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<complext<T>,T>(x,y) ){
-            arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray< complext<T> > tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-                aRes %= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y)
-    {
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
-        typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
-        aRes *= aY;
-        return x;
-    }
-
-    template<class T> hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const T &y)
-    {
-        arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes *= aY;
-        return x;
-    }
-
-    template<class T> hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const T &y)
-    {
-        arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes *= aY;
-        return x;
-    }
-
-    template<class T> hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<T,T>(x,y) ){
-            arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray<T> tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
-                aRes /= aY;
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator/=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<std::complex<T>,T>(x,y) ){
-            arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray< std::complex<T> > tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-                aRes /= aY;
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator/=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<complext<T>,T>(x,y) ){
-            arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                hoNDArray< complext<T> > tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-                aRes /= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator/=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray<T>& operator/= (hoNDArray<T> &x, const T &y)
-    {
-        arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
-        typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
-        aRes /= aY;
-        return x;
-    }
-
-    template<class T> hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const T &y)
-    {
-        arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes /= aY;
-        return x;
-    }
-
-    template<class T> hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const T &y)
-    {
-        arma::Col< std::complex<T> > aRes = as_arma_col(&x);
-        std::complex<T> aY( y, T(0) );
-        aRes /= aY;
-        return x;
-    }
-
     // --------------------------------------------------------------------------------
 
     inline void axpy(float a, size_t N, const float* x, const float* y, float* r)
@@ -2099,6 +2077,44 @@ namespace Gadgetron{
         }
     }
 
+    inline void scal(size_t N,  complext<float>  a,  complext<float> * x)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const  complext<float> & c = x[n];
+            const float re = c.real();
+            const float im = c.imag();
+
+            const float ar = a.real();
+            const float ai = a.imag();
+
+            reinterpret_cast<float(&)[2]>(x[n])[0] = re*ar-im*ai;
+            reinterpret_cast<float(&)[2]>(x[n])[1] = re*ai+im*ar;
+        }
+    }
+
+    inline void scal(size_t N,  complext<double>  a,  complext<double> * x)
+    {
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const  complext<double> & c = x[n];
+            const double re = c.real();
+            const double im = c.imag();
+
+            const double ar = a.real();
+            const double ai = a.imag();
+
+            reinterpret_cast<double(&)[2]>(x[n])[0] = re*ar-im*ai;
+            reinterpret_cast<double(&)[2]>(x[n])[1] = re*ai+im*ar;
+        }
+    }
+
     template <typename T> 
     void scal(T a, hoNDArray<T>& x)
     {
@@ -2109,6 +2125,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void scal(double a, hoNDArray<double>& x);
     template EXPORTCPUCOREMATH void scal( std::complex<float>  a, hoNDArray< std::complex<float> >& x);
     template EXPORTCPUCOREMATH void scal( std::complex<double>  a, hoNDArray< std::complex<double> >& x);
+    template EXPORTCPUCOREMATH void scal( complext<float>  a, hoNDArray< complext<float> >& x);
+    template EXPORTCPUCOREMATH void scal( complext<double>  a, hoNDArray< complext<double> >& x);
 
     // --------------------------------------------------------------------------------
 
@@ -2397,6 +2415,445 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void conv3(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
     template EXPORTCPUCOREMATH void conv3(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& z);
     template EXPORTCPUCOREMATH void conv3(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& z);
+
+    // --------------------------------------------------------------------------------
+
+    template<class T> hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<T,T>(x,y) ){
+            //arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray<T> tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
+                aRes += aY;*/
+
+                add(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator+=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<std::complex<T>,T>(x,y) ){
+            //arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray< std::complex<T> > tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
+                aRes += aY;*/
+
+                add(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator+=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray< complext<T> >& operator+= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<complext<T>,T>(x,y) ){
+            //arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray< complext<T> > tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
+                aRes += aY;*/
+
+                add(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator+=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray<T>& operator+= (hoNDArray<T> &x, const T &y)
+    {
+        /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
+        typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
+        aRes += aY;*/
+
+        long long n;
+
+        size_t N = x.get_number_of_elements();
+        T* px = x.begin();
+
+        #pragma omp parallel for default(none) private(n) shared(N, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            x[n] += y;
+        }
+
+        return x;
+    }
+
+    template<class T> hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> > &x, const T &y)
+    {
+        /*arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+        std::complex<T> aY( y, T(0) );
+        aRes += aY;*/
+
+        long long n;
+
+        size_t N = x.get_number_of_elements();
+        std::complex<T>* px = x.begin();
+
+        #pragma omp parallel for default(none) private(n) shared(N, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            x[n] += y;
+        }
+
+        return x;
+    }
+
+    template<class T> hoNDArray< complext<T> >& operator+= (hoNDArray< complext<T> > &x, const T &y)
+    {
+        /*arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+        std::complex<T> aY( y, T(0) );
+        aRes += aY;*/
+
+        long long n;
+
+        size_t N = x.get_number_of_elements();
+        complext<T>* px = x.begin();
+
+        #pragma omp parallel for default(none) private(n) shared(N, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            x[n] += y;
+        }
+
+        return x;
+    }
+
+    // --------------------------------------------------------------------------------
+
+    template<class T> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<T,T>(x,y) ){
+            // arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray<T> tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
+                aRes -= aY;*/
+
+                subtract(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator-=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<std::complex<T>,T>(x,y) ){
+            // arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray< std::complex<T> > tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
+                aRes -= aY;*/
+
+                subtract(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator-=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray< complext<T> >& operator-= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<complext<T>,T>(x,y) ){
+            // arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray< complext<T> > tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
+                aRes -= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );*/
+
+                subtract(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator-=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray<T>& operator-= (hoNDArray<T> &x, const T &y)
+    {
+        /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
+        typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
+        aRes -= aY;*/
+
+        long long n;
+
+        size_t N = x.get_number_of_elements();
+        T* px = x.begin();
+
+        #pragma omp parallel for default(none) private(n) shared(N, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            x[n] -= y;
+        }
+
+        return x;
+    }
+
+    template<class T> hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T> > &x, const T &y)
+    {
+        /*arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+        std::complex<T> aY( y, T(0) );
+        aRes -= aY;*/
+
+        long long n;
+
+        size_t N = x.get_number_of_elements();
+        std::complex<T>* px = x.begin();
+
+        #pragma omp parallel for default(none) private(n) shared(N, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            x[n] -= y;
+        }
+
+        return x;
+    }
+
+    template<class T> hoNDArray< complext<T> >& operator-= (hoNDArray< complext<T> > &x, const T &y)
+    {
+        /*arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+        std::complex<T> aY( y, T(0) );
+        aRes -= aY;*/
+
+        long long n;
+
+        size_t N = x.get_number_of_elements();
+        complext<T>* px = x.begin();
+
+        #pragma omp parallel for default(none) private(n) shared(N, x, y) if(N>NumElementsUseThreading)
+        for ( n=0; n<(long long)N; ++n)
+        {
+            x[n] -= y;
+        }
+
+        return x;
+    }
+
+    // --------------------------------------------------------------------------------
+
+    template<class T> hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<T,T>(x,y) ){
+            //arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                //hoNDArray<T> tmp;
+                //tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                //arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
+                //aRes %= aY;
+
+                multiply(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<std::complex<T>,T>(x,y) ){
+            //arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray< std::complex<T> > tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
+                aRes %= aY;*/
+
+                multiply(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<complext<T>,T>(x,y) ){
+            //arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray< complext<T> > tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
+                aRes %= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );*/
+
+                multiply(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y)
+    {
+        //arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
+        //typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
+        //aRes *= aY;
+
+        scal(x.get_number_of_elements(), y, x.begin());
+
+        return x;
+    }
+
+    template<class T> hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const T &y)
+    {
+        /*arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+        std::complex<T> aY( y, T(0) );
+        aRes *= aY;*/
+
+        scal(x.get_number_of_elements(), y, x.begin());
+
+        return x;
+    }
+
+    template<class T> hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const T &y)
+    {
+        //arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+        //std::complex<T> aY( y, T(0) );
+        //aRes *= aY;
+
+        scal(x.get_number_of_elements(), y, reinterpret_cast< std::complex<T>* >(x.begin()) );
+        return x;
+    }
+
+    // --------------------------------------------------------------------------------
+
+    template<class T> hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<T,T>(x,y) ){
+            // arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray<T> tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
+                aRes /= aY;*/
+
+                size_t N = y.get_number_of_elements();
+                divide(N, x.get_data_ptr()+batch*N, y.get_data_ptr(), x.get_data_ptr()+batch*N);
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator/=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<std::complex<T>,T>(x,y) ){
+            // arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray< std::complex<T> > tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
+                aRes /= aY;*/
+
+                size_t N = y.get_number_of_elements();
+                divide(N, x.get_data_ptr()+batch*N, y.get_data_ptr(), x.get_data_ptr()+batch*N);
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator/=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
+    {
+        if( compatible_dimensions<complext<T>,T>(x,y) ){
+            // arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
+            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( size_t batch=0; batch<num_batches; batch++ ){
+                /*hoNDArray< complext<T> > tmp;
+                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
+                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
+                aRes /= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );*/
+
+                size_t N = y.get_number_of_elements();
+                divide(N, x.get_data_ptr()+batch*N, y.get_data_ptr(), x.get_data_ptr()+batch*N);
+            }
+            return x;
+        }
+        else {
+            throw std::runtime_error("hoNDArray::operator/=: Incompatible array dimensions");
+        }
+    }
+
+    template<class T> hoNDArray<T>& operator/= (hoNDArray<T> &x, const T &y)
+    {
+        /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
+        typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
+        aRes /= aY;*/
+
+        T ry = T(1)/y;
+        scal(x.get_number_of_elements(), ry, x.begin());
+
+        return x;
+    }
+
+    template<class T> hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const T &y)
+    {
+        /*arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+        std::complex<T> aY( y, T(0) );
+        aRes /= aY;*/
+
+        T ry = T(1)/y;
+        scal(x.get_number_of_elements(), ry, x.begin());
+
+        return x;
+    }
+
+    template<class T> hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const T &y)
+    {
+        /*arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+        std::complex<T> aY( y, T(0) );
+        aRes /= aY;*/
+
+        T ry = T(1)/y;
+        scal(x.get_number_of_elements(), ry, reinterpret_cast< std::complex<T>* >(x.begin()) );
+
+        return x;
+    }
 
     // --------------------------------------------------------------------------------
 
