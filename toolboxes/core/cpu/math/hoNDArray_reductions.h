@@ -53,6 +53,8 @@ namespace Gadgetron{
     * @return The l1-norm of the array
     */
     template<class T> EXPORTCPUCOREMATH typename realType<T>::Type asum( hoNDArray<T> *x );
+    template<class T> EXPORTCPUCOREMATH void asum(const hoNDArray<T>& x, typename realType<T>::Type& r);
+    template<class T> EXPORTCPUCOREMATH typename realType<T>::Type asum(const hoNDArray<T>& x);
 
     /**
     * @brief Calculates the sum of the l1-norms of the array entries
@@ -123,4 +125,79 @@ namespace Gadgetron{
     * @return The array index corresponding to the largest element in the array (0-indexing)
     */
     template<class T> EXPORTCPUCOREMATH size_t amax( hoNDArray< complext<T> > *x );
+
+    /**
+    * @brief ind = min(abs(x(:))
+    find the minimal absolute value of x and its position index ind
+    r = x[ind], not abs(x[ind])
+    */
+    template <typename T> EXPORTCPUCOREMATH 
+    void minAbsolute(const hoNDArray<T>& x, T& r, size_t& ind);
+
+    /**
+    * @brief ind = max(abs(x(:))
+    find the miximal absolute value of x and its position index ind
+    r = x[ind], not abs(x[ind])
+    */
+    template <typename T> EXPORTCPUCOREMATH 
+    void maxAbsolute(const hoNDArray<T>& x, T& r, size_t& ind);
+
+    /**
+    * @brief r = norm(x(:), 2)
+    compute L2 norm of x
+    */
+    template <typename T> EXPORTCPUCOREMATH 
+    void norm2(const hoNDArray<T>& x, typename realType<T>::Type& r);
+
+    template <typename T> EXPORTCPUCOREMATH 
+    typename realType<T>::Type norm2(const hoNDArray<T>& x);
+
+    /**
+    * @brief r = norm(x(:), 1)
+    compute L1 norm of x = sum( abs(x(:) )
+    */
+    template <typename T> EXPORTCPUCOREMATH 
+    void norm1(const hoNDArray<T>& x, typename realType<T>::Type& r);
+
+    template <typename T> EXPORTCPUCOREMATH 
+    typename realType<T>::Type norm1(const hoNDArray<T>& x);
+
+    /**
+    * @brief dot product of conj(x) and y
+    r = conj(x) dot y
+    */
+    template <typename T> EXPORTCPUCOREMATH 
+    void dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r);
+
+    template <typename T> EXPORTCPUCOREMATH 
+    T dotc(const hoNDArray<T>& x, const hoNDArray<T>& y);
+
+    /**
+    * @brief dot product of x and y
+    r = x dot y
+    */
+    template <typename T> EXPORTCPUCOREMATH 
+    void dotu(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r);
+
+    template <typename T> EXPORTCPUCOREMATH 
+    T dotu(const hoNDArray<T>& x, const hoNDArray<T>& y);
+
+    /**
+    * @brief sort the ND array
+    */
+    template <typename T> EXPORTCPUCOREMATH void sort(const hoNDArray<T>& x, hoNDArray<T>& r, bool isascending);
+
+    /**
+    * @brief finds the index of the element with the maximal absolute value.
+    */
+    template<class T> EXPORTCPUCOREMATH size_t amax(const hoNDArray<T>& x);
+
+    /**
+    * @brief get the min and max value from an array (only for float and double type)
+    */
+    template <class T> EXPORTCPUCOREMATH 
+    void minValue(const hoNDArray<T>& a, T& v);
+
+    template <class T> EXPORTCPUCOREMATH 
+    void maxValue(const hoNDArray<T>& a, T& v);
 }

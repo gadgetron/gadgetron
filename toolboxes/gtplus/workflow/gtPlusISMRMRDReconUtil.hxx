@@ -1999,7 +1999,7 @@ detectSampledRegion2D(const hoNDArray<T>& data, size_t& startRO, size_t& endRO, 
         size_t NDim = data.get_number_of_dimensions();
 
         hoNDArray<typename realType<T>::Type> mag(data.get_dimensions()), magSum, magSumE1, magSumRO;
-        Gadgetron::absolute(data, mag);
+        Gadgetron::abs(data, mag);
 
         if ( NDim > 2 )
         {
@@ -2073,7 +2073,7 @@ detectSampledRegion3D(const hoNDArray<T>& data, size_t& startRO, size_t& endRO, 
         size_t NDim = data.get_number_of_dimensions();
 
         hoNDArray<typename realType<T>::Type> mag(data.get_dimensions()), magSum, magSum2, magSumRO, magSumE1, magSumE2;
-        Gadgetron::absolute(data, mag);
+        Gadgetron::abs(data, mag);
 
         if ( NDim > 5 )
         {
@@ -2332,7 +2332,7 @@ detectSampledTimesE1(const hoNDArray<T>& data4D, std::vector<size_t>& sampledTim
         size_t N = data4D.get_size(3);
 
         hoNDArray<typename realType<T>::Type> mag(data4D.get_dimensions());
-        Gadgetron::absolute(data4D, mag);
+        Gadgetron::abs(data4D, mag);
 
         hoNDArray<typename realType<T>::Type> mag3D(RO, E1, 1, N);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(mag, mag3D));
@@ -2420,7 +2420,7 @@ detectSampledTimesE1E2(const hoNDArray<T>& data5D, hoNDArray<size_t>& sampledTim
         hoNDArray<typename realType<T>::Type> mag(RO, E1, E2);
 
         hoNDArray<T> dataFirstChannel(RO, E1, E2, const_cast<T*>(data5D.begin()));
-        Gadgetron::absolute(dataFirstChannel, mag);
+        Gadgetron::abs(dataFirstChannel, mag);
 
         //hoNDArray<typename realType<T>::Type> mag4D(RO, E1, E2, 1, N);
         //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(mag, mag4D));
@@ -4978,7 +4978,7 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
 
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, imT, "imT");
 
-            Gadgetron::absolute(imT, magT);
+            Gadgetron::abs(imT, magT);
             Gadgetron::divide(imT, magT, imT);
 
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, imT, "imT2");
@@ -5187,7 +5187,7 @@ coilMap3DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
                 Gadgetron::axpy( std::conj(vCha), coilMapCHA, imT, imT);
             }
 
-            Gadgetron::absolute(imT, magT);
+            Gadgetron::abs(imT, magT);
             Gadgetron::divide(imT, magT, imT);
 
             Gadgetron::multiply(R, imT, R);

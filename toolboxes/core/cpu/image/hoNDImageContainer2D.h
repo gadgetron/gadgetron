@@ -13,7 +13,7 @@
 #pragma once
 
 #include "hoNDImage.h"
-#include "hoNDArray_math_util.h"
+#include "hoNDArray_elemwise.h"
 
 namespace Gadgetron
 {

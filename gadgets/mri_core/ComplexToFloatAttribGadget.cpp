@@ -5,7 +5,7 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "ComplexToFloatAttribGadget.h"
-#include "hoNDArray_math_util.h"
+#include "hoNDArray_elemwise.h"
 
 namespace Gadgetron
 {
@@ -37,7 +37,7 @@ namespace Gadgetron
         {
             case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE:
             {
-                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::absolute(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::abs(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
             }
             break;
 

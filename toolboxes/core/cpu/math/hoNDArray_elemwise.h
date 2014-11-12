@@ -34,11 +34,97 @@
 namespace Gadgetron{
 
 /**
+* @brief add two vectors of values, r = x + y
+  support in-place computation, e.g. x==r or y==r
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void add(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void add(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
+
+/**
+* @brief subtract two vectors of values, r = x - y
+  support in-place computation, e.g. x==r
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void subtract(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void subtract(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
+
+/**
+* @brief multiply two vectors of values, r = x * y
+  support in-place computation, e.g. x==r or y==r
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void multiply(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void multiply(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
+
+/**
+* @brief divide two vectors of values, r = x / y
+  support in-place computation, e.g. x==r
+  no check for y==0
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void divide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void divide(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+
+template <typename T> EXPORTCPUCOREMATH 
+void divide(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
+
+/**
+* @brief r = x * conj(y)
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+/**
+* @brief r = conj(x)
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void conjugate(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+/**
+* @brief if abs(x) is smaller than epsilon for its numeric type
+add epsilon to this x
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void addEpsilon(hoNDArray<T>& x);
+
+/**
+* @brief r = angle(x)
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void argument(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
+
+/**
+* @brief r = 1/x
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void inv(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+/**
  * @brief Calculates the element-wise absolute values (l2 norm) of the array entries
  * @param[in] x Input array.
  * @return A new array containing the element-wise absolute values of the input.
  */
 template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs( hoNDArray<T> *x );
+template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
+template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r);
 
 /**
  * @brief Calculates the element-wise absolute values (l2 norm) of the array entries (in place).
@@ -59,6 +145,8 @@ template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realTy
  * @return A new array containing the element-wise sqrt of the input.
  */
 template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> > sqrt( hoNDArray<T> *x );
+
+template <typename T> EXPORTCPUCOREMATH void sqrt(const hoNDArray<T>& x, hoNDArray<T>& r);
 
 /**
  * @brief Calculates the element-wise sqrt of the array entries (in place).
@@ -153,9 +241,50 @@ real_to_complex( hoNDArray<typename realType<T>::Type> *x );
 template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> >
 real_imag_to_complex( hoNDArray<typename realType<T>::Type> *real, hoNDArray<typename realType<T>::Type>* imag);
 
-//
-// From hereon the functions are all in-place although without the _inplace suffix...
-//
+/**
+* @brief real and imag to complex
+*/
+template<class T> EXPORTCPUCOREMATH 
+void real_imag_to_complex(const hoNDArray<typename realType<T>::Type>& real, const hoNDArray<typename realType<T>::Type>& imag, hoNDArray<T>& cplx);
+
+/**
+* @brief complex to real and imag
+*/
+template<class T> EXPORTCPUCOREMATH 
+void complex_to_real_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real, hoNDArray<typename realType<T>::Type>& imag);
+
+template<class T> EXPORTCPUCOREMATH 
+void complex_to_real_imag(const hoNDArray<T>& cplx, hoNDArray<T>& real, hoNDArray<T>& imag);
+
+/**
+* @brief get the real part of complex
+*/
+template<class T> EXPORTCPUCOREMATH 
+void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& real);
+
+template<class T> EXPORTCPUCOREMATH 
+void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real);
+
+template<class T> 
+void complex_to_real(hoNDArray<T>& cplx);
+
+/**
+* @brief get the imag part of complex
+*/
+template<class T> EXPORTCPUCOREMATH 
+void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<typename realType<T>::Type>& imag);
+
+template<class T> EXPORTCPUCOREMATH 
+void complex_to_imag(const hoNDArray<T>& cplx, hoNDArray<T>& imag);
+
+template<class T> EXPORTCPUCOREMATH 
+void complex_to_imag(hoNDArray<T>& cplx);
+
+/**
+* @brief get complex array whose real part is the input and imag part is zero
+*/
+template<class T> EXPORTCPUCOREMATH 
+void real_to_complex(const hoNDArray<typename realType<T>::Type>& real, hoNDArray<T>& cplx);
 
 /**
  * @brief Clears the array to all zeros ( in place). Faster than fill.
@@ -163,18 +292,18 @@ real_imag_to_complex( hoNDArray<typename realType<T>::Type> *real, hoNDArray<typ
  */
 template<class T> void clear( hoNDArray<T>* x )
 {
-	if ( x->get_number_of_elements() > 0 )
-	{
-		memset( x->get_data_ptr(), 0, x->get_number_of_elements()*sizeof(T));
-	}
+    if ( x->get_number_of_elements() > 0 )
+    {
+        memset( x->get_data_ptr(), 0, x->get_number_of_elements()*sizeof(T));
+    }
 }
 
 template<class T> void clear( hoNDArray<T>& x )
 {
-	if ( x.get_number_of_elements() > 0 )
-	{
-		memset( x.get_data_ptr(), 0, x.get_number_of_elements()*sizeof(T));
-	}
+    if ( x.get_number_of_elements() > 0 )
+    {
+        memset( x.get_data_ptr(), 0, x.get_number_of_elements()*sizeof(T));
+    }
 }
 
 /**
@@ -182,7 +311,8 @@ template<class T> void clear( hoNDArray<T>& x )
  * @param[in,out] x Input and output array.
  * @param[in] val Fill value.
  */
-template<class T> EXPORTCPUCOREMATH void fill( hoNDArray<T> *x, T val );
+template <typename T> EXPORTCPUCOREMATH void fill( hoNDArray<T>* x, T val);
+template <typename T> EXPORTCPUCOREMATH void fill( hoNDArray<T>& x, T val );
 
 /**
  * @brief Clamps all values in the array to the minimum and maximum values specified (in place).
@@ -471,7 +601,7 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDAr
  * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
-   */
+ */
 template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const T &y);
 
 /**
@@ -481,4 +611,30 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDAr
  * @param[in,out] y Array
  */
 template<class T> EXPORTCPUCOREMATH void axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y );
+
+/**
+* @brief compute r = a*x + y
+*/
+template <typename T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+/**
+* @brief compute x *= a
+*/
+template <typename T> EXPORTCPUCOREMATH void scal(T a, hoNDArray<T>& x);
+template <typename T> EXPORTCPUCOREMATH void scal(T a, hoNDArray< std::complex<T> >& x);
+
+/**
+* @brief 2D convolution
+            x: input data, y: convolution kernel, z: output; each 2D slice is convolved
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
+
+/**
+* @brief 3D convolution
+            x: input data, y: convolution kernel, z: output; each 3D volume is convolved
+*/
+template <typename T> EXPORTCPUCOREMATH 
+void conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
+
 }

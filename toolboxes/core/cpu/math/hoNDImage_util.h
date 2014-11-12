@@ -17,7 +17,7 @@
 #include <complex>
 
 #include "hoNDArray_reductions.h"
-#include "hoNDArray_math_util.h"
+#include "hoNDArray_elemwise.h"
 #include "hoNDInterpolator.h"
 
 namespace Gadgetron
