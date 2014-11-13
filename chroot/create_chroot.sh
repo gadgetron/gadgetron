@@ -5,7 +5,7 @@ if [ $(id -u) -ne 0 ]; then
  exit 1
 
 else
- if [ $# -eq 6 ]; then
+ if [ $# -eq 5 ]; then
 
   # Add LIBRARY_PATHS to LD_LIBRARY_PATH
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${5}
@@ -35,7 +35,8 @@ else
 
   ${3}/chroot/generate_gadgetron_root ${1} ${2}/chroot/chroot-root/gadgetron
 
-  cp ${6}/libcuda.so ${2}/chroot/chroot-root/gadgetron/${1}/lib  
+  # Commented out for now. libcuda.so should be copied using copy-cuda-lib script.
+  #cp ${6}/libcuda.so ${2}/chroot/chroot-root/gadgetron/${1}/lib  
 
   cp ${3}/chroot/start.sh ${2}/chroot/chroot-root
   cp ${3}/chroot/stop.sh ${2}/chroot/chroot-root
@@ -88,7 +89,7 @@ else
   exit 0
 
  else
-  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA_LIB_DIR)\n"
+  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) \n"
   exit 1
  fi
 
