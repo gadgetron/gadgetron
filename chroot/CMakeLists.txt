@@ -11,6 +11,11 @@ configure_file("run-webapp.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/run-webapp.sh @ONL
 set (LIBRARY_PATHS ${ISMRMRD_LIB_DIR})
 set (LIBRARY_PATHS ${LIBRARY_PATHS}:${MKL_LIB_DIR})
 
+get_filename_component(CUDA_LIB_DIR ${CUDA_LIBRARIES} DIRECTORY)
+set (LIBRARY_PATHS ${LIBRARY_PATHS}:${CUDA_LIB_DIR})
+
+configure_file("copy-cuda-lib.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh @ONLY)
+
 add_custom_target(chroot)
 
 add_custom_command(
@@ -24,8 +29,11 @@ add_custom_command(
                                        ${CMAKE_SOURCE_DIR}
                                        ${GADGETRON_GIT_SHA1_HASH}
                                        ${LIBRARY_PATHS}
+                                       ${CUDA_LIB_DIR}
 )
 
+message("CUDA_LIBRARIES: " ${CUDA_LIBRARIES})
+message("CUDA_LIB_DIR: " ${CUDA_LIB_DIR})
 
 message("ISMRMRD_LIB_DIR: " ${ISMRMRD_LIB_DIR})
 message("MKL_LIB_DIR: " ${MKL_LIB_DIR})
