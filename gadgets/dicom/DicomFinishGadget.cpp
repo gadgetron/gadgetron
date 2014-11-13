@@ -409,14 +409,20 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     WRITE_DCM_STRING(key, buf);
 
     // Inversion Time
-    key.set(0x0018, 0x0082);
-    ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.front());
-    WRITE_DCM_STRING(key, buf);
+    if (seq_info.TI.size()>0)
+    {
+        key.set(0x0018, 0x0082);
+        ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.front());
+        WRITE_DCM_STRING(key, buf);
+    }
 
     // Flip Angle
-    key.set(0x0018, 0x1314);
-    ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)seq_info.flipAngle_deg.front());
-    WRITE_DCM_STRING(key, buf);
+    if (seq_info.flipAngle_deg.size()>0)
+    {
+        key.set(0x0018, 0x1314);
+        ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)seq_info.flipAngle_deg.front());
+        WRITE_DCM_STRING(key, buf);
+    }
 
     // Imaging Frequency in tenths of MHz ???
     key.set(0x0018, 0x0084);
