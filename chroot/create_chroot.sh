@@ -88,7 +88,7 @@ else
   exit 0
 
  else
-  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA lib)\n"
+  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA_LIBRARY)\n"
   exit 1
  fi
 
