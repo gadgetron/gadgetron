@@ -7,6 +7,8 @@ configure_file("${CMAKE_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_ld.conf.
 
 configure_file("run-webapp.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/run-webapp.sh @ONLY)
 
+configure_file("copy-cuda-lib.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh @ONLY)
+
 set (LIBRARY_PATHS ${ISMRMRD_LIB_DIR})
 set (LIBRARY_PATHS ${LIBRARY_PATHS}:${MKL_LIB_DIR})
 
