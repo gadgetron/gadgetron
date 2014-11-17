@@ -9,7 +9,35 @@
 namespace Gadgetron 
 {
 
-  /** 
+    /** 
+      This is a list of lables of the coordinates described in the ISMRMRD acquisition header.
+
+      It is useful for accumulators and triggers and for labeling the storage used in
+      the @IsmrmrdAcquisitionBucket and @IsmrmrdDataBuffered structures. 
+
+   */
+    enum IsmrmrdCONDITION {
+	KSPACE_ENCODE_STEP_1,
+	KSPACE_ENCODE_STEP_2,
+	AVERAGE,
+	SLICE,
+	CONTRAST,
+	PHASE,
+	REPETITION,
+	SET,
+	SEGMENT,
+	USER_0,
+	USER_1,
+	USER_2,
+	USER_3,
+	USER_4,
+	USER_5,
+	USER_6,
+	USER_7,
+	NONE
+      };
+
+    /** 
       This class functions as a storage unit for GadgetContainerMessage pointers
       that point to acquisiton headers, data and trajectories.
 
@@ -171,7 +199,7 @@ namespace Gadgetron
   class IsmrmrdDataBuffered
   {
   public:
-    //11D, fixed order [RO, E1, E2, CHA, SLC, N, S]
+    //7D, fixed order [RO, E1, E2, CHA, SLC, N, S]
     hoNDArray< std::complex<float> > data_;
     
     //11D, fixed order [RO, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]

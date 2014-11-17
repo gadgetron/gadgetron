@@ -82,7 +82,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     DependencyQueryGadget.h 
                                     DependencyQueryWriter.h 
                                     ComplexToFloatAttribGadget.h
-				    AcquisitionAccumulateTriggerGadget.h )
+                                    AcquisitionAccumulateTriggerGadget.h
+                                    BucketToBufferGadget.h )
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -112,7 +113,8 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 DependencyQueryGadget.cpp 
                                 DependencyQueryWriter.cpp 
                                 ComplexToFloatAttribGadget.cpp 
-				AcquisitionAccumulateTriggerGadget.cpp )
+                                AcquisitionAccumulateTriggerGadget.cpp
+                                BucketToBufferGadget.cpp )
 
 if (WIN32)
     set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )

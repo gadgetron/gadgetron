@@ -26,7 +26,7 @@
     </writer>
   
     <gadget>
-        <name>Accc</name>
+        <name>AccTrig</name>
         <dll>gadgetron_mricore</dll>
 	<classname>AcquisitionAccumulateTriggerGadget</classname>
         <property>
@@ -38,5 +38,24 @@
           <value>slice</value>
         </property>
     </gadget>
+
+    <gadget>
+        <name>Buff</name>
+        <dll>gadgetron_mricore</dll>
+	<classname>BucketToBufferGadget</classname>
+        <property>
+            <name>N_dimension</name>
+            <value>contrast</value>
+        </property>
+        <property>
+          <name>S_dimension</name>
+          <value>phase</value>
+        </property>
+        <property>
+          <name>split_slice</name>
+          <value>false</value>
+        </property>
+    </gadget>
+
 
 </gadgetronStreamConfiguration>
