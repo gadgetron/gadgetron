@@ -43,6 +43,9 @@ else
   cp ${3}/chroot/start-webapp.sh ${2}/chroot/chroot-root 
   cp ${3}/chroot/mount.sh ${2}/chroot/chroot-root
 
+  cp ${3}/chroot/umount_image.sh ${2}/chroot/chroot-backups
+  cp ${3}/chroot/start-gadgetron-from-image.sh ${2}/chroot/chroot-backups
+
   chmod +x ${2}/chroot/copy-cuda-lib.sh
   cp ${2}/chroot/copy-cuda-lib.sh ${2}/chroot/chroot-root
 
