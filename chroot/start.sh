@@ -3,7 +3,7 @@
 start_gadgetron_job=0
 BASEDIR=$(dirname $0)
 
-trap '(($start_gadgetron_job == 0)) || ((`kill -0 $start_gadgetron_job`)) || kill $start_gadgetron_job & sleep 1 & $BASEDIR/stop.sh' HUP TERM INT
+trap '(($start_gadgetron_job == 0)) || ((`kill -0 $start_gadgetron_job`)) || kill $start_gadgetron_job & while kill -0 $start_gadgetron_job 2>/dev/null; do sleep 1; done & $BASEDIR/stop.sh' HUP TERM INT
 
 if [ $(id -u) -ne 0 ]; then
  echo -e "\nPlease start the script as a root or sudo!\n"
