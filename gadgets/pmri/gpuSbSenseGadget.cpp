@@ -22,77 +22,34 @@ namespace Gadgetron{
   gpuSbSenseGadget::gpuSbSenseGadget()
     : is_configured_(false)
     , prepared_(false)
-    , channels_(0)
-    , frame_counter_(0)
+    , gpuSenseGadget()
   {
-    set_parameter(std::string("deviceno").c_str(), "0");
-    set_parameter(std::string("setno").c_str(), "0");
-    set_parameter(std::string("sliceno").c_str(), "0");
     set_parameter(std::string("number_of_sb_iterations").c_str(), "20");
     set_parameter(std::string("number_of_cg_iterations").c_str(), "10");
     set_parameter(std::string("cg_limit").c_str(), "1e-6");
-    set_parameter(std::string("oversampling_factor").c_str(), "1.5");
-    set_parameter(std::string("kernel_width").c_str(), "5.5");
     set_parameter(std::string("mu").c_str(), "1.0");
     set_parameter(std::string("lambda").c_str(), "2.0");
+    set_parameter("gamma","0.0");
     set_parameter(std::string("alpha").c_str(), "0.5");
     set_parameter(std::string("is_cyclic").c_str(), "true");
     set_parameter(std::string("exclusive_access").c_str(), "false");
-
-    matrix_size_ = uint64d2(0,0);
-    matrix_size_os_ = uint64d2(0,0);
-    matrix_size_seq_ = uint64d2(0,0);
   }
 
   gpuSbSenseGadget::~gpuSbSenseGadget() {}
 
   int gpuSbSenseGadget::process_config( ACE_Message_Block* mb )
   {
-    GADGET_DEBUG1("gpuSbSenseGadget::process_config\n");
+	  gpuSenseGadget::process_config(mb);
 
-    device_number_ = get_int_value(std::string("deviceno").c_str());
-
-    int number_of_devices = 0;
-    if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to query number of CUDA devices.\n" );
-      return GADGET_FAIL;
-    }
-
-    if (number_of_devices == 0) {
-      GADGET_DEBUG1( "Error: No available CUDA devices.\n" );
-      return GADGET_FAIL;
-    }
-
-    if (device_number_ >= number_of_devices) {
-      GADGET_DEBUG2("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
-      device_number_ = (device_number_%number_of_devices);
-    }
-
-    if (cudaSetDevice(device_number_)!= cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to set CUDA device.\n" );
-      return GADGET_FAIL;
-    }
-
-    pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
-    set_number_ = get_int_value(std::string("setno").c_str());
-    slice_number_ = get_int_value(std::string("sliceno").c_str());
     number_of_sb_iterations_ = get_int_value(std::string("number_of_sb_iterations").c_str());
     number_of_cg_iterations_ = get_int_value(std::string("number_of_cg_iterations").c_str());
     cg_limit_ = get_double_value(std::string("cg_limit").c_str());
-    oversampling_factor_ = get_double_value(std::string("oversampling_factor").c_str());
-    kernel_width_ = get_double_value(std::string("kernel_width").c_str());
     mu_ = get_double_value(std::string("mu").c_str());
     lambda_ = get_double_value(std::string("lambda").c_str());
     alpha_ = get_double_value(std::string("alpha").c_str());
-    rotations_to_discard_ = get_int_value(std::string("rotations_to_discard").c_str());
-    output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
+    gamma_ = get_double_value("gamma");
     exclusive_access_ = get_bool_value(std::string("exclusive_access").c_str());
     is_cyclic_= get_bool_value(std::string("is_cyclic").c_str());
-
-    if( (rotations_to_discard_%2) == 1 ){
-      GADGET_DEBUG1("#rotations to discard must be even.\n");
-      return GADGET_FAIL;
-    }
 
     // Get the Ismrmrd header
     //
@@ -159,6 +116,11 @@ namespace Gadgetron{
       Rt2_ = boost::shared_ptr< cuPartialDerivativeOperator2<float_complext,3> >
               ( new cuPartialDerivativeOperator2<float_complext,3>() );
       Rt2_->set_weight( alpha_*lambda_ );
+
+      W_ = boost::make_shared<cuDWTOperator<float_complext,3>>();
+      W_->set_weight(gamma_);
+      W2_ = boost::make_shared<cuDWTOperator<float_complext,3>>();
+      W2_->set_weight(gamma_);
 
       // Setup split-Bregman solver
       sb_.set_encoding_operator( E_ );
@@ -280,6 +242,11 @@ namespace Gadgetron{
       Rz2_->set_domain_dimensions(&image_dims);
       Rz2_->set_codomain_dimensions(&image_dims);
 
+      W_->set_domain_dimensions(&image_dims);
+      W_->set_codomain_dimensions(&image_dims);
+      W2_->set_domain_dimensions(&image_dims);
+      W2_->set_codomain_dimensions(&image_dims);
+      W2_->set_shift(2);
       
       // Add "TV" regularization
       // 
@@ -309,6 +276,10 @@ namespace Gadgetron{
         sb_.add_group(reg_image_);
       }
       
+      if (gamma_ > 0.0){
+    	  sb_.add_regularization_operator(W_);
+    	  sb_.add_regularization_operator(W2_);
+      }
       prepared_ = true;
     }
     
@@ -390,64 +361,7 @@ namespace Gadgetron{
     // Now pass on the reconstructed images
     //
 
-    unsigned int frames_per_rotation = frames/rotations;
-
-    if( rotations == 1 ){ // this is the case for golden ratio
-      rotations = frames;
-      frames_per_rotation = 1;
-    }
-
-    for( unsigned int frame=0; frame<frames; frame++ ){
-      
-      unsigned int rotation_idx = frame/frames_per_rotation;
-
-      // Check if we should discard this frame
-      if( rotation_idx < (rotations_to_discard_>>1) || rotation_idx >= rotations-(rotations_to_discard_>>1) )
-        continue;
-
-      GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = 
-        new GadgetContainerMessage< hoNDArray< std::complex<float> > >();     
-
-      GadgetContainerMessage<ISMRMRD::ImageHeader> *m = 
-        new GadgetContainerMessage<ISMRMRD::ImageHeader>();
-
-      *m->getObjectPtr() = j->image_headers_[frame];
-      m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
-      m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];      
-      m->cont(cm);
-      
-      std::vector<size_t> img_dims(2);
-      img_dims[0] = matrix_size_seq_[0];
-      img_dims[1] = matrix_size_seq_[1];
-
-      cm->getObjectPtr()->create(&img_dims);
-
-      size_t data_length = prod(matrix_size_seq_);
-
-      cudaMemcpy(cm->getObjectPtr()->get_data_ptr(),
-                 sbresult->get_data_ptr()+frame*data_length,
-                 data_length*sizeof(std::complex<float>),
-                 cudaMemcpyDeviceToHost);
-
-      cudaError_t err = cudaGetLastError();
-      if( err != cudaSuccess ){
-        GADGET_DEBUG2("\nUnable to copy result from device to host: %s", cudaGetErrorString(err));
-        m->release();
-        return GADGET_FAIL;
-      }
-
-      m->getObjectPtr()->matrix_size[0] = img_dims[0];
-      m->getObjectPtr()->matrix_size[1] = img_dims[1];
-      m->getObjectPtr()->matrix_size[2] = 1;
-      m->getObjectPtr()->channels       = 1;
-      m->getObjectPtr()->image_index    = frame_counter_ + frame;
-
-      if (this->next()->putq(m) < 0) {
-        GADGET_DEBUG1("\nFailed to result image on to Q\n");
-        m->release();
-        return GADGET_FAIL;
-      }
-    }
+	put_frames_on_que(frames,rotations,j,sbresult.get());
 
     frame_counter_ += frames;
     m1->release();

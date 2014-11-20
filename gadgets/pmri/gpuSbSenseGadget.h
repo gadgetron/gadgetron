@@ -17,12 +17,13 @@
 #include "cuNFFT.h"
 #include "cuImageOperator.h"
 #include "ismrmrd/ismrmrd.h"
-
+#include "gpuSenseGadget.h"
 #include <complex>
+#include "cuDWTOperator.h"
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUPMRI gpuSbSenseGadget : public Gadget2< ISMRMRD::ImageHeader, GenericReconJob >
+  class EXPORTGADGETS_GPUPMRI gpuSbSenseGadget : public gpuSenseGadget
   {
 
   public:
@@ -36,26 +37,16 @@ namespace Gadgetron{
     virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< GenericReconJob > * m2 );
     virtual int process_config( ACE_Message_Block* mb );
 
-    int channels_;
-    int device_number_;
-    int set_number_;
-    int slice_number_;
-
-    uint64d2 matrix_size_;
-    uint64d2 matrix_size_os_;
-    uint64d2 matrix_size_seq_;
 
     unsigned int number_of_cg_iterations_;
     unsigned int number_of_sb_iterations_;
     double cg_limit_;
-    double oversampling_factor_;
-    double kernel_width_;
     double mu_;
     double lambda_;
     double alpha_;
+    double gamma_;
     unsigned int rotations_to_discard_;
 
-    bool output_convergence_;
     bool exclusive_access_;
     bool is_configured_;
     bool prepared_;
@@ -82,8 +73,9 @@ namespace Gadgetron{
     boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz2_;
     boost::shared_ptr< cuPartialDerivativeOperator2<float_complext,3> > Rt1_;
     boost::shared_ptr< cuPartialDerivativeOperator2<float_complext,3> > Rt2_;
+    boost::shared_ptr< cuDWTOperator<float_complext,3> > W_;
+    boost::shared_ptr< cuDWTOperator<float_complext,3> > W2_;
 	
-    int frame_counter_;
   };
 }
 #endif //gpuSbSenseGadget
