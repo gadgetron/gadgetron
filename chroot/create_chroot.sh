@@ -1,11 +1,13 @@
 #!/bin/bash
 
+#TODO: Assign all input arguments to proper variable to make the script more readable
+
 if [ $(id -u) -ne 0 ]; then
  echo -e "\nPlease start the script as a root or sudo!\n"
  exit 1
 
 else
- if [ $# -eq 6 ]; then
+ if [ $# -ge 6 ]; then
 
   # Add LIBRARY_PATHS to LD_LIBRARY_PATH
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${5}
@@ -32,6 +34,13 @@ else
 
   cd ${2}
   make install DESTDIR="${2}/chroot/chroot-root/gadgetron" -j8
+
+  #This copies the ISMRMRD executable if it is installed
+  if [ $# -ge 7 ]; then
+      cp ${7} "${2}/chroot/chroot-root/gadgetron/${1}/bin/"
+  else
+      echo "SIEMENS_TO_ISMRMRD_EXE not set"
+  fi
 
   ${3}/chroot/generate_gadgetron_root ${1} ${2}/chroot/chroot-root/gadgetron
 
@@ -91,7 +100,7 @@ else
   exit 0
 
  else
-  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA_LIBRARY)\n"
+  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA_LIBRARY) (SIEMENS_TO_ISMRMRD)\n"
   exit 1
  fi
 

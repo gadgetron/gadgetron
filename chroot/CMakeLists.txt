@@ -16,28 +16,48 @@ FIND_LIBRARY( CUDA_LIBRARY NAMES libcuda.so )
 get_filename_component(CUDA_LIB_DIR ${CUDA_LIBRARY} PATH)
 set (LIBRARY_PATHS ${LIBRARY_PATHS}:${CUDA_LIB_DIR})
 
+#TODO: Removed this debug output. It is distracting
 message("CUDA_LIBRARY: " ${CUDA_LIBRARY})
 message("CUDA_LIB_DIR: " ${CUDA_LIB_DIR})
 message("LIBRARY_PATHS: " ${LIBRARY_PATHS})
 
 configure_file("copy-cuda-lib.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh @ONLY)
 
-add_custom_target(chroot)
+find_program(SIEMENS_TO_ISMRMRD_EXE siemens_to_ismrmrd)
 
-add_custom_command(
+add_custom_target(chroot)
+if (SIEMENS_TO_ISMRMRD_EXE)
+  add_custom_command(
     TARGET chroot
     POST_BUILD
     VERBATIM
     COMMENT "Creating chroot tar file"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND sudo bash create_chroot.sh ${CMAKE_INSTALL_PREFIX}
-                                       ${CMAKE_BINARY_DIR}
-                                       ${CMAKE_SOURCE_DIR}
-                                       ${GADGETRON_GIT_SHA1_HASH}
-                                       ${LIBRARY_PATHS}
-                                       ${CUDA_LIBRARY}
-)
+    ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}
+    ${GADGETRON_GIT_SHA1_HASH}
+    ${LIBRARY_PATHS}
+    ${CUDA_LIBRARY}
+    ${SIEMENS_TO_ISMRMRD_EXE}
+    )
+else(SIEMENS_TO_ISMRMRD_EXE)
+  add_custom_command(
+    TARGET chroot
+    POST_BUILD
+    VERBATIM
+    COMMENT "Creating chroot tar file"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND sudo bash create_chroot.sh ${CMAKE_INSTALL_PREFIX}
+    ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}
+    ${GADGETRON_GIT_SHA1_HASH}
+    ${LIBRARY_PATHS}
+    ${CUDA_LIBRARY}
+    )  
+endif(SIEMENS_TO_ISMRMRD_EXE)
 
+#TODO: Removed this debug output. It is distracting
 message("1. cmake install prefix: " ${CMAKE_INSTALL_PREFIX})
 message("2. cmake binary dir: " ${CMAKE_BINARY_DIR})
 message("3. cmake source dir: " ${CMAKE_SOURCE_DIR})
