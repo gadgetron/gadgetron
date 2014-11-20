@@ -2,7 +2,6 @@
 #pragma once
 
 #include "cpucore_math_export.h"
-#include "hoMatrix.h"
 
 #ifdef USE_ARMADILLO
     #include "hoArmadillo.h"
@@ -41,22 +40,22 @@ void herk(hoNDArray<T>& C, const hoNDArray<T>& A, char uplo, bool isAHA);
 
 /// compute the Cholesky factorization of a real symmetric positive definite matrix A
 template<typename T> EXPORTCPUCOREMATH 
-void potrf(hoMatrix<T>& A, char uplo);
+void potrf(hoNDArray<T>& A, char uplo);
 
 /// compute all eigenvalues and eigenvectors of a Hermitian matrix A
 template<typename T> EXPORTCPUCOREMATH 
-void heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue);
+void heev(hoNDArray<T>& A, hoNDArray<typename realType<T>::Type>& eigenValue);
 
 template<typename T> EXPORTCPUCOREMATH
-void heev(hoMatrix< std::complex<T> >& A, hoMatrix<  std::complex<T> >& eigenValue);
+void heev(hoNDArray< std::complex<T> >& A, hoNDArray<  std::complex<T> >& eigenValue);
 
 /// compute inverse of a symmetric (Hermitian) positive-definite matrix A
 template<typename T> EXPORTCPUCOREMATH 
-void potri(hoMatrix<T>& A);
+void potri(hoNDArray<T>& A);
 
 /// compute the inverse of a triangular matrix A
 template<typename T> EXPORTCPUCOREMATH 
-void trtri(hoMatrix<T>& A, char uplo);
+void trtri(hoNDArray<T>& A, char uplo);
 
 /// solve Ax=b, a symmetric or Hermitian positive-definite matrix A and multiple right-hand sides b
 /// b is replaced with x
@@ -82,10 +81,10 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
 /// Computes the LU factorization of a general m-by-n matrix
 /// this function is called by general matrix inversion
 template<typename T> EXPORTCPUCOREMATH 
-void getrf(hoMatrix<T>& A, hoNDArray<lapack_int>& ipiv);
+void getrf(hoNDArray<T>& A, hoNDArray<lapack_int>& ipiv);
 
 /// Computes the inverse of an LU-factored general matrix
 template<typename T> EXPORTCPUCOREMATH 
-void getri(hoMatrix<T>& A);
+void getri(hoNDArray<T>& A);
 
 }
