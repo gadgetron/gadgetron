@@ -60,12 +60,24 @@ void trtri(hoMatrix<T>& A, char uplo);
 
 /// solve Ax=b, a symmetric or Hermitian positive-definite matrix A and multiple right-hand sides b
 /// b is replaced with x
-template<typename T> EXPORTCPUCOREMATH 
-void posv(hoMatrix<T>& A, hoMatrix<T>& b);
+template<typename T> EXPORTCPUCOREMATH
+void posv(hoNDArray<T>& A, hoNDArray<T>& b);
+
+/// solve Ax=b, a square symmetric / hermitian matrix A and multiple right-hand sides b
+/// for float and double, A is a symmetric matrix
+/// for complex type, A is a hermitian matrix
+/// b is replaced with x
+template<typename T> EXPORTCPUCOREMATH
+void hesv(hoNDArray<T>& A, hoNDArray<T>& b);
+
+/// solve Ax=b, a square matrix A and multiple right-hand sides b
+/// b is replaced with x
+template<typename T> EXPORTCPUCOREMATH
+void gesv(hoNDArray<T>& A, hoNDArray<T>& b);
 
 /// solve Ax=b with Tikhonov regularization
 template<typename T> EXPORTCPUCOREMATH
-void SolveLinearSystem_Tikhonov(hoMatrix<T>& A, hoMatrix<T>& b, hoMatrix<T>& x, double lamda);
+void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& x, double lamda);
 
 /// Computes the LU factorization of a general m-by-n matrix
 /// this function is called by general matrix inversion

@@ -1,6 +1,7 @@
 
 #include "hoNDArray_linalg.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_reductions.h"
 
 #ifndef lapack_complex_float
     #define lapack_complex_float  std::complex<float> 
@@ -108,6 +109,30 @@ extern "C" void cposv_( const char* uplo, const lapack_int* n, const lapack_int*
 extern "C" void zposv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs,
         lapack_complex_double* a, const lapack_int* lda, lapack_complex_double* b,
         const lapack_int* ldb, lapack_int* info );
+
+extern "C" void sgesv_( const lapack_int* n, const lapack_int* nrhs, float* a,
+        const lapack_int* lda, lapack_int* ipiv, float* b, const lapack_int* ldb, lapack_int* info );
+
+extern "C" void dgesv_( const lapack_int* n, const lapack_int* nrhs, double* a,
+        const lapack_int* lda, lapack_int* ipiv, double* b, const lapack_int* ldb, lapack_int* info );
+
+extern "C" void cgesv_( const lapack_int* n, const lapack_int* nrhs, lapack_complex_float* a,
+        const lapack_int* lda, lapack_int* ipiv, lapack_complex_float* b, const lapack_int* ldb, lapack_int* info );
+
+extern "C" void zgesv_( const lapack_int* n, const lapack_int* nrhs, lapack_complex_double* a,
+        const lapack_int* lda, lapack_int* ipiv, lapack_complex_double* b, const lapack_int* ldb, lapack_int* info );
+
+extern "C" void ssysv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs, float* a,
+        const lapack_int* lda, lapack_int* ipiv, float* b, const lapack_int* ldb, float* work, lapack_int* lwork, lapack_int* info );
+
+extern "C" void dsysv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs, double* a,
+        const lapack_int* lda, lapack_int* ipiv, double* b, const lapack_int* ldb, double* work, lapack_int* lwork, lapack_int* info );
+
+extern "C" void chesv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs, lapack_complex_float* a,
+        const lapack_int* lda, lapack_int* ipiv, lapack_complex_float* b, const lapack_int* ldb, lapack_complex_float* work, lapack_int* lwork, lapack_int* info );
+
+extern "C" void zhesv_( const char* uplo, const lapack_int* n, const lapack_int* nrhs, lapack_complex_double* a,
+        const lapack_int* lda, lapack_int* ipiv, lapack_complex_double* b, const lapack_int* ldb, lapack_complex_double* work, lapack_int* lwork,  lapack_int* info );
 
 extern "C" void sgetrf_( const lapack_int* m, const lapack_int* n, float* a, const lapack_int* lda,
         lapack_int* ipiv, lapack_int* info );
@@ -1055,23 +1080,23 @@ void trtri(hoMatrix<T>& A, char uplo)
     }
 }
 
-template<typename T> 
-void posv(hoMatrix<T>& A, hoMatrix<T>& b)
+template<typename T>
+void posv(hoNDArray<T>& A, hoNDArray<T>& b)
 {
     try
     {
         if( A.get_number_of_elements()==0 ) return;
         if( b.get_number_of_elements()==0 ) return;
-        GADGET_CHECK_THROW(A.rows()==b.rows());
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
 
         lapack_int info;
         char uplo = 'L';
-        lapack_int n = (lapack_int)A.rows();
-        lapack_int nrhs = (lapack_int)b.cols();
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
         T* pA = A.begin();
-        lapack_int lda = (lapack_int)A.rows();
+        lapack_int lda = (lapack_int)A.get_size(0);
         T* pB = b.begin();
-        lapack_int ldb = (lapack_int)b.rows();
+        lapack_int ldb = (lapack_int)b.get_size(0);
 
         /*if ( typeid(T)==typeid(float) )
         {
@@ -1091,7 +1116,7 @@ void posv(hoMatrix<T>& A, hoMatrix<T>& b)
         }
         else
         {
-            GADGET_THROW("posv : unsupported type " << typeid(T).name());
+            GADGET_THROW("posv : unsupported type ... ");
         }*/
 
         if ( typeid(T)==typeid(float) )
@@ -1120,6 +1145,358 @@ void posv(hoMatrix<T>& A, hoMatrix<T>& b)
     catch(...)
     {
         GADGET_THROW("Errors in posv(hoMatrix<T>& A, hoMatrix<T>& b) ...");
+    }
+}
+
+template<> EXPORTCPUCOREMATH
+void hesv(hoNDArray< float >& A, hoNDArray< float >& b)
+{
+    typedef float T;
+    try
+    {
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+
+        lapack_int info(0);
+        char uplo = 'L';
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
+        T* pA = A.begin();
+        lapack_int lda = (lapack_int)A.get_size(0);
+        T* pB = b.begin();
+        lapack_int ldb = (lapack_int)b.get_size(0);
+
+        hoNDArray<lapack_int> ipiv_array(n);
+        Gadgetron::clear(ipiv_array);
+        lapack_int* ipiv = ipiv_array.begin();
+
+        lapack_int lwork(n*n);
+        hoNDArray<T> work_array(lwork);
+        Gadgetron::clear(work_array);
+        T* work = work_array.begin();
+
+        ssysv_(&uplo, &n, &nrhs, reinterpret_cast<float*>(pA), &lda, ipiv, reinterpret_cast<float*>(pB), &ldb, reinterpret_cast<float*>(work), &lwork, &info);
+
+        GADGET_CHECK_THROW(info==0);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Errors in hesv(hoNDArray< float >& A, hoNDArray< float >& b) ...");
+    }
+}
+
+template<> EXPORTCPUCOREMATH
+void hesv(hoNDArray< double >& A, hoNDArray< double >& b)
+{
+    typedef double T;
+    try
+    {
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+
+        lapack_int info(0);
+        char uplo = 'L';
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
+        T* pA = A.begin();
+        lapack_int lda = (lapack_int)A.get_size(0);
+        T* pB = b.begin();
+        lapack_int ldb = (lapack_int)b.get_size(0);
+
+        hoNDArray<lapack_int> ipiv_array(n);
+        Gadgetron::clear(ipiv_array);
+        lapack_int* ipiv = ipiv_array.begin();
+
+        lapack_int lwork(n*n);
+        hoNDArray<T> work_array(lwork);
+        Gadgetron::clear(work_array);
+        T* work = work_array.begin();
+
+        dsysv_(&uplo, &n, &nrhs, reinterpret_cast<double*>(pA), &lda, ipiv, reinterpret_cast<double*>(pB), &ldb, reinterpret_cast<double*>(work), &lwork, &info);
+
+        GADGET_CHECK_THROW(info==0);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Errors in hesv(hoNDArray< double >& A, hoNDArray< double >& b) ...");
+    }
+}
+
+template<> EXPORTCPUCOREMATH
+void hesv(hoNDArray< std::complex<float> >& A, hoNDArray< std::complex<float> >& b)
+{
+    typedef std::complex<float> T;
+    try
+    {
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+
+        lapack_int info(0);
+        char uplo = 'L';
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
+        T* pA = A.begin();
+        lapack_int lda = (lapack_int)A.get_size(0);
+        T* pB = b.begin();
+        lapack_int ldb = (lapack_int)b.get_size(0);
+
+        hoNDArray<lapack_int> ipiv_array(n);
+        Gadgetron::clear(ipiv_array);
+        lapack_int* ipiv = ipiv_array.begin();
+
+        lapack_int lwork(n*n);
+        hoNDArray<T> work_array(lwork);
+        Gadgetron::clear(work_array);
+        T* work = work_array.begin();
+
+        chesv_(&uplo, &n, &nrhs, reinterpret_cast<lapack_complex_float*>(pA), &lda, ipiv, reinterpret_cast<lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(work), &lwork, &info);
+
+        GADGET_CHECK_THROW(info==0);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Errors in hesv(hoNDArray< std::complex<float> >& A, hoNDArray< std::complex<float> >& b) ...");
+    }
+}
+
+template<> EXPORTCPUCOREMATH
+void hesv(hoNDArray< complext<float> >& A, hoNDArray< complext<float> >& b)
+{
+    typedef complext<float> T;
+    try
+    {
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+
+        lapack_int info(0);
+        char uplo = 'L';
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
+        T* pA = A.begin();
+        lapack_int lda = (lapack_int)A.get_size(0);
+        T* pB = b.begin();
+        lapack_int ldb = (lapack_int)b.get_size(0);
+
+        hoNDArray<lapack_int> ipiv_array(n);
+        Gadgetron::clear(ipiv_array);
+        lapack_int* ipiv = ipiv_array.begin();
+
+        lapack_int lwork(n*n);
+        hoNDArray<T> work_array(lwork);
+        Gadgetron::clear(work_array);
+        T* work = work_array.begin();
+
+        chesv_(&uplo, &n, &nrhs, reinterpret_cast<lapack_complex_float*>(pA), &lda, ipiv, reinterpret_cast<lapack_complex_float*>(pB), &ldb, reinterpret_cast<lapack_complex_float*>(work), &lwork, &info);
+
+        GADGET_CHECK_THROW(info==0);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Errors in hesv(hoNDArray< complext<float> >& A, hoNDArray< complext<float> >& b) ...");
+    }
+}
+
+template<> EXPORTCPUCOREMATH
+void hesv(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex<double> >& b)
+{
+    typedef std::complex<double> T;
+    try
+    {
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+
+        lapack_int info(0);
+        char uplo = 'L';
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
+        T* pA = A.begin();
+        lapack_int lda = (lapack_int)A.get_size(0);
+        T* pB = b.begin();
+        lapack_int ldb = (lapack_int)b.get_size(0);
+
+        hoNDArray<lapack_int> ipiv_array(n);
+        Gadgetron::clear(ipiv_array);
+        lapack_int* ipiv = ipiv_array.begin();
+
+        lapack_int lwork(n*n);
+        hoNDArray<T> work_array(lwork);
+        Gadgetron::clear(work_array);
+        T* work = work_array.begin();
+
+        zhesv_(&uplo, &n, &nrhs, reinterpret_cast<lapack_complex_double*>(pA), &lda, ipiv, reinterpret_cast<lapack_complex_double*>(pB), &ldb, reinterpret_cast<lapack_complex_double*>(work), &lwork, &info);
+
+        GADGET_CHECK_THROW(info==0);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Errors in hesv(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex<double> >& b) ...");
+    }
+}
+
+template<> EXPORTCPUCOREMATH
+void gesv(hoNDArray<float>& A, hoNDArray<float>& b)
+{
+    typedef float T;
+
+    try
+    {
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+
+        lapack_int info(0);
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
+        T* pA = A.begin();
+        lapack_int lda = (lapack_int)A.get_size(0);
+        T* pB = b.begin();
+        lapack_int ldb = (lapack_int)b.get_size(1);
+
+        hoNDArray<lapack_int> work(n);
+        Gadgetron::clear(work);
+        lapack_int* ipiv = work.begin();
+
+        sgesv_(&n, &nrhs, reinterpret_cast<float*>(pA), &lda, ipiv, reinterpret_cast<float*>(pB), &ldb, &info);
+
+        GADGET_CHECK_THROW(info==0);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Errors in gesv(hoNDArray<float>& A, hoNDArray<float>& b) ...");
+    }
+}
+
+template<> EXPORTCPUCOREMATH
+void gesv(hoNDArray<double>& A, hoNDArray<double>& b)
+{
+    typedef double T;
+
+    try
+    {
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+
+        lapack_int info(0);
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
+        T* pA = A.begin();
+        lapack_int lda = (lapack_int)A.get_size(0);
+        T* pB = b.begin();
+        lapack_int ldb = (lapack_int)b.get_size(0);
+
+        hoNDArray<lapack_int> work(n);
+        Gadgetron::clear(work);
+        lapack_int* ipiv = work.begin();
+
+        dgesv_(&n, &nrhs, reinterpret_cast<double*>(pA), &lda, ipiv, reinterpret_cast<double*>(pB), &ldb, &info);
+
+        GADGET_CHECK_THROW(info==0);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Errors in gesv(hoNDArray<double>& A, hoNDArray<double>& b) ...");
+    }
+}
+
+template<> EXPORTCPUCOREMATH
+void gesv(hoNDArray< std::complex<float> >& A, hoNDArray< std::complex<float> >& b)
+{
+    typedef std::complex<float> T;
+    try
+    {
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+
+        lapack_int info(0);
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
+        T* pA = A.begin();
+        lapack_int lda = (lapack_int)A.get_size(0);
+        T* pB = b.begin();
+        lapack_int ldb = (lapack_int)b.get_size(0);
+
+        hoNDArray<lapack_int> work(n);
+        Gadgetron::clear(work);
+        lapack_int* ipiv = work.begin();
+
+        cgesv_(&n, &nrhs, reinterpret_cast<lapack_complex_float*>(pA), &lda, ipiv, reinterpret_cast<lapack_complex_float*>(pB), &ldb, &info);
+
+        GADGET_CHECK_THROW(info==0);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Errors in gesv(hoNDArray< std::complex<float> >& A, hoNDArray< std::complex<float> >& b) ...");
+    }
+}
+
+template<> EXPORTCPUCOREMATH
+void gesv(hoNDArray< complext<float> >& A, hoNDArray< complext<float> >& b)
+{
+    typedef complext<float> T;
+    try
+    {
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+
+        lapack_int info(0);
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
+        T* pA = A.begin();
+        lapack_int lda = (lapack_int)A.get_size(0);
+        T* pB = b.begin();
+        lapack_int ldb = (lapack_int)b.get_size(0);
+
+        hoNDArray<lapack_int> work(n);
+        Gadgetron::clear(work);
+        lapack_int* ipiv = work.begin();
+
+        cgesv_(&n, &nrhs, reinterpret_cast<lapack_complex_float*>(pA), &lda, ipiv, reinterpret_cast<lapack_complex_float*>(pB), &ldb, &info);
+
+        GADGET_CHECK_THROW(info==0);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Errors in gesv(hoNDArray< complext<float> >& A, hoNDArray< complext<float> >& b) ...");
+    }
+}
+
+template<> EXPORTCPUCOREMATH
+void gesv(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex<double> >& b)
+{
+    typedef std::complex<double> T;
+    try
+    {
+        if( A.get_number_of_elements()==0 ) return;
+        if( b.get_number_of_elements()==0 ) return;
+        GADGET_CHECK_THROW(A.get_size(0)==b.get_size(0));
+
+        lapack_int info(0);
+        lapack_int n = (lapack_int)A.get_size(0);
+        lapack_int nrhs = (lapack_int)b.get_size(1);
+        T* pA = A.begin();
+        lapack_int lda = (lapack_int)A.get_size(0);
+        T* pB = b.begin();
+        lapack_int ldb = (lapack_int)b.get_size(0);
+
+        hoNDArray<lapack_int> work(n);
+        Gadgetron::clear(work);
+        lapack_int* ipiv = work.begin();
+
+        zgesv_(&n, &nrhs, reinterpret_cast<lapack_complex_double*>(pA), &lda, ipiv, reinterpret_cast<lapack_complex_double*>(pB), &ldb, &info);
+
+        GADGET_CHECK_THROW(info==0);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Errors in gesv(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex<double> >& b) ...");
     }
 }
 
@@ -1279,7 +1656,7 @@ template EXPORTCPUCOREMATH void potri(hoMatrix<float>& A);
 
 template EXPORTCPUCOREMATH void trtri(hoMatrix<float>& A, char uplo);
 
-template EXPORTCPUCOREMATH void posv(hoMatrix<float>& A, hoMatrix<float>& b);
+template EXPORTCPUCOREMATH void posv(hoNDArray<float>& A, hoNDArray<float>& b);
 
 template EXPORTCPUCOREMATH void getrf(hoMatrix<float>& A, hoNDArray<lapack_int>& ipiv);
 
@@ -1295,7 +1672,7 @@ template EXPORTCPUCOREMATH void potri(hoMatrix<double>& A);
 
 template EXPORTCPUCOREMATH void trtri(hoMatrix<double>& A, char uplo);
 
-template EXPORTCPUCOREMATH void posv(hoMatrix<double>& A, hoMatrix<double>& b);
+template EXPORTCPUCOREMATH void posv(hoNDArray<double>& A, hoNDArray<double>& b);
 
 template EXPORTCPUCOREMATH void getrf(hoMatrix<double>& A, hoNDArray<lapack_int>& ipiv);
 
@@ -1312,7 +1689,7 @@ template EXPORTCPUCOREMATH void potri(hoMatrix< std::complex<float> >& A);
 
 template EXPORTCPUCOREMATH void trtri(hoMatrix< std::complex<float> >& A, char uplo);
 
-template EXPORTCPUCOREMATH void posv(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& b);
+template EXPORTCPUCOREMATH void posv(hoNDArray< std::complex<float> >& A, hoNDArray< std::complex<float> >& b);
 
 template EXPORTCPUCOREMATH void getrf(hoMatrix< std::complex<float> >& A, hoNDArray<lapack_int>& ipiv);
 
@@ -1328,7 +1705,7 @@ template EXPORTCPUCOREMATH void potri(hoMatrix< std::complex<double> >& A);
 
 template EXPORTCPUCOREMATH void trtri(hoMatrix< std::complex<double> >& A, char uplo);
 
-template EXPORTCPUCOREMATH void posv(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& b);
+template EXPORTCPUCOREMATH void posv(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex<double> >& b);
 
 template EXPORTCPUCOREMATH void getrf(hoMatrix< std::complex<double> >& A, hoNDArray<lapack_int>& ipiv);
 
@@ -1361,23 +1738,28 @@ template EXPORTCPUCOREMATH void getri(hoMatrix< std::complex<double> >& A);
         }
     }
 
-    template<typename T> 
-    void SolveLinearSystem_Tikhonov(hoMatrix<T>& A, hoMatrix<T>& b, hoMatrix<T>& x, double lamda)
+    template<typename T>
+    void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& x, double lamda)
     {
-        GADGET_CHECK_THROW(b.rows()==A.rows());
+        GADGET_CHECK_THROW(b.get_size(0)==A.get_size(0));
 
-        hoMatrix<T> AHA(A.cols(), A.cols());
+        hoNDArray<T> AHA(A.get_size(1), A.get_size(1));
         Gadgetron::clear(AHA);
 
         // hoMatrix<T> ACopy(A);
         // GADGET_CHECK_THROW(gemm(AHA, ACopy, true, A, false));
 
+        //GADGET_MSG("SolveLinearSystem_Tikhonov - A = " << Gadgetron::norm2(A));
+        //GADGET_MSG("SolveLinearSystem_Tikhonov - b = " << Gadgetron::norm2(b));
+
         char uplo = 'L';
         bool isAHA = true;
         herk(AHA, A, uplo, isAHA);
+        //GADGET_MSG("SolveLinearSystem_Tikhonov - AHA = " << Gadgetron::norm2(AHA));
 
-        GADGET_CHECK_THROW(x.createMatrix(A.cols(), b.cols()));
+        x.create(A.get_size(1), b.get_size(1));
         gemm(x, A, true, b, false);
+        //GADGET_MSG("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
 
         // apply the Tikhonov regularization
         // Ideally, we shall apply the regularization is lamda*maxEigenValue
@@ -1385,10 +1767,10 @@ template EXPORTCPUCOREMATH void getri(hoMatrix< std::complex<double> >& A);
         // A natural alternative is to use the trace of AHA matrix, which is the sum of all eigen values
         // Since all eigen values are positive, the lamda*maxEigenValue is only ~10-20% different from lamda*sum(all eigenValues)
         // for more information, refer to:
-        // Tikhonov A.N., Goncharsky A.V., Stepanov V.V., Yagola A.G., 1995, 
+        // Tikhonov A.N., Goncharsky A.V., Stepanov V.V., Yagola A.G., 1995,
         // Numerical Methods for the Solution of Ill-Posed Problems, Kluwer Academic Publishers.
 
-        size_t col = AHA.cols();
+        size_t col = AHA.get_size(0);
         size_t c;
 
         double trA = std::abs(AHA(0, 0));
@@ -1396,6 +1778,7 @@ template EXPORTCPUCOREMATH void getri(hoMatrix< std::complex<double> >& A);
         {
             trA += std::abs(AHA(c, c));
         }
+        //GADGET_MSG("SolveLinearSystem_Tikhonov - trA = " << trA);
 
         double value = trA*lamda/col;
         for ( c=0; c<col; c++ )
@@ -1403,16 +1786,64 @@ template EXPORTCPUCOREMATH void getri(hoMatrix< std::complex<double> >& A);
             AHA(c,c) = T( (typename realType<T>::Type)(std::abs(AHA(c, c)) + value) );
         }
 
-        posv(AHA, x);
+        // if the data is properly SNR unit scaled, the minimal eigen value of AHA will be around 4.0 (real and imag have noise sigma being ~1.0)
+        if ( trA/col < 4.0 )
+        {
+            typename realType<T>::Type scalingFactor = (typename realType<T>::Type)(col*4.0/trA);
+            GADGET_MSG("SolveLinearSystem_Tikhonov - trA is too small : " << trA << " for matrix order : " << col);
+            GADGET_MSG("SolveLinearSystem_Tikhonov - scale the AHA and x by " << scalingFactor);
+            Gadgetron::scal( scalingFactor, AHA);
+            Gadgetron::scal( scalingFactor, x);
+        }
+
+        try
+        {
+            posv(AHA, x);
+            //GADGET_MSG("SolveLinearSystem_Tikhonov - solution = " << Gadgetron::norm2(x));
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("posv failed in SolveLinearSystem_Tikhonov(... ) ... ");
+            GADGET_MSG("A = " << Gadgetron::norm2(A));
+            GADGET_MSG("b = " << Gadgetron::norm2(b));
+            GADGET_MSG("AHA = " << Gadgetron::norm2(AHA));
+            GADGET_MSG("trA = " << trA);
+            GADGET_MSG("x = " << Gadgetron::norm2(x));
+
+            gemm(x, A, true, b, false);
+            GADGET_MSG("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
+
+            try
+            {
+                hesv(AHA, x);
+            }
+            catch(...)
+            {
+                GADGET_ERROR_MSG("hesv failed in SolveLinearSystem_Tikhonov(... ) ... ");
+
+                gemm(x, A, true, b, false);
+                GADGET_MSG("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
+
+                try
+                {
+                    gesv(AHA, x);
+                }
+                catch(...)
+                {
+                    GADGET_ERROR_MSG("gesv failed in SolveLinearSystem_Tikhonov(... ) ... ");
+                    throw;
+                }
+            }
+        }
     }
 
     template EXPORTCPUCOREMATH void heev(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& eigenValue);
     template EXPORTCPUCOREMATH void heev(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& eigenValue);
 
-    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoMatrix<float>& A, hoMatrix<float>& b, hoMatrix<float>& x, double lamda);
-    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoMatrix<double>& A, hoMatrix<double>& b, hoMatrix<double>& x, double lamda);
-    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoMatrix< std::complex<float> >& A, hoMatrix< std::complex<float> >& b, hoMatrix< std::complex<float> >& x, double lamda);
-    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoMatrix< std::complex<double> >& A, hoMatrix< std::complex<double> >& b, hoMatrix< std::complex<double> >& x, double lamda);
+    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoNDArray<float>& A, hoNDArray<float>& b, hoNDArray<float>& x, double lamda);
+    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoNDArray<double>& A, hoNDArray<double>& b, hoNDArray<double>& x, double lamda);
+    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoNDArray< std::complex<float> >& A, hoNDArray< std::complex<float> >& b, hoNDArray< std::complex<float> >& x, double lamda);
+    template EXPORTCPUCOREMATH void SolveLinearSystem_Tikhonov(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex<double> >& b, hoNDArray< std::complex<double> >& x, double lamda);
 
 #endif // defined(USE_MKL) || defined(USE_LAPACK)
 
