@@ -1145,11 +1145,11 @@ void posv(hoNDArray<T>& A, hoNDArray<T>& b)
         {
             dposv_(&uplo, &n, &nrhs, reinterpret_cast<double*>(pA), &lda, reinterpret_cast<double*>(pB), &ldb, &info);
         }
-        else if ( typeid(T)==typeid( std::complex<float> ) )
+        else if ( (typeid(T)==typeid( std::complex<float> )) || (typeid(T)==typeid( complext<float> )) )
         {
             cposv_(&uplo, &n, &nrhs, reinterpret_cast<lapack_complex_float*>(pA), &lda, reinterpret_cast<lapack_complex_float*>(pB), &ldb, &info);
         }
-        else if ( typeid(T)==typeid( std::complex<double> ) )
+        else if ( (typeid(T)==typeid( std::complex<double> )) || (typeid(T)==typeid( complext<double> )) )
         {
             zposv_(&uplo, &n, &nrhs, reinterpret_cast<lapack_complex_double*>(pA), &lda, reinterpret_cast<lapack_complex_double*>(pB), &ldb, &info);
         }
@@ -1708,6 +1708,7 @@ template EXPORTCPUCOREMATH void potri(hoNDArray< std::complex<float> >& A);
 template EXPORTCPUCOREMATH void trtri(hoNDArray< std::complex<float> >& A, char uplo);
 
 template EXPORTCPUCOREMATH void posv(hoNDArray< std::complex<float> >& A, hoNDArray< std::complex<float> >& b);
+template EXPORTCPUCOREMATH void posv(hoNDArray< complext<float> >& A, hoNDArray< complext<float> >& b);
 
 template EXPORTCPUCOREMATH void getrf(hoNDArray< std::complex<float> >& A, hoNDArray<lapack_int>& ipiv);
 
@@ -1724,6 +1725,7 @@ template EXPORTCPUCOREMATH void potri(hoNDArray< std::complex<double> >& A);
 template EXPORTCPUCOREMATH void trtri(hoNDArray< std::complex<double> >& A, char uplo);
 
 template EXPORTCPUCOREMATH void posv(hoNDArray< std::complex<double> >& A, hoNDArray< std::complex<double> >& b);
+template EXPORTCPUCOREMATH void posv(hoNDArray< complext<double> >& A, hoNDArray< complext<double> >& b);
 
 template EXPORTCPUCOREMATH void getrf(hoNDArray< std::complex<double> >& A, hoNDArray<lapack_int>& ipiv);
 
