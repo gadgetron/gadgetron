@@ -20,11 +20,13 @@ namespace Gadgetron{
     hoCuNDArray() : hoNDArray<T>::hoNDArray() {}
 
 
+#if __cplusplus > 199711L
     hoCuNDArray(hoCuNDArray<T>&& other) : hoNDArray<T>::hoNDArray(){
     	this->data_ = other.data_;
     	other.dimensions_.swap(this->dimensions_);
     	other.data_ = nullptr;
     }
+#endif
 
     hoCuNDArray(std::vector<size_t> *dimensions) : hoNDArray<T>::hoNDArray() {
       this->create(dimensions);
@@ -125,6 +127,7 @@ namespace Gadgetron{
         return *this;
     }
 
+#if __cplusplus > 199711L
     hoCuNDArray<T>& operator=(hoCuNDArray<T>&& rhs)
     {
         if ( &rhs == this ) return *this;
@@ -136,7 +139,7 @@ namespace Gadgetron{
         rhs.data_ = nullptr;
         return *this;
     }
-
+#endif
   protected:
 
     virtual void allocate_memory()

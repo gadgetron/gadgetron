@@ -32,9 +32,11 @@ namespace Gadgetron{
         cuNDArray(const cuNDArray<T> *a);
         explicit cuNDArray(const hoNDArray<T> &a);
         explicit cuNDArray(hoNDArray<T> *a);
+
+#if __cplusplus > 199711L
         // Move constructor
         cuNDArray(cuNDArray<T>&& a);
-
+#endif
         explicit cuNDArray(std::vector<size_t> *dimensions);
         cuNDArray(std::vector<size_t> *dimensions, int device_no);
         cuNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
@@ -61,7 +63,10 @@ namespace Gadgetron{
 
         // Assignment operator
         cuNDArray<T>& operator=(const cuNDArray<T>& rhs);
+
+#if __cplusplus > 199711L
         cuNDArray<T>& operator=(cuNDArray<T>&& rhs);
+#endif
         cuNDArray<T>& operator=(const hoNDArray<T>& rhs);
 
         virtual void create(std::vector<size_t> *dimensions);
@@ -162,6 +167,7 @@ namespace Gadgetron{
     }
 
 
+#if __cplusplus > 199711L
     template <typename T>
     cuNDArray<T>::cuNDArray(cuNDArray<T>&& a) : NDArray<T>::NDArray()
     {
@@ -170,7 +176,7 @@ namespace Gadgetron{
     	a.dimensions_.swap(this->dimensions_);
     	a.data_=nullptr;
     }
-
+#endif
     template <typename T> 
     cuNDArray<T>::cuNDArray(const hoNDArray<T> &a) : NDArray<T>::NDArray() 
     {
@@ -367,6 +373,7 @@ namespace Gadgetron{
             deallocate_memory();  
     }
 
+#if __cplusplus > 199711L
     template <typename T>
     cuNDArray<T>& cuNDArray<T>::operator=(cuNDArray<T>&& rhs){
 
@@ -378,6 +385,7 @@ namespace Gadgetron{
     	rhs.data_ = nullptr;
     	return *this;
     }
+#endif
 
     template <typename T> 
     cuNDArray<T>& cuNDArray<T>::operator=(const cuNDArray<T>& rhs)

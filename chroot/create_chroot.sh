@@ -5,10 +5,12 @@ if [ $(id -u) -ne 0 ]; then
  exit 1
 
 else
- if [ $# -eq 5 ]; then
+ if [ $# -eq 6 ]; then
 
   # Add LIBRARY_PATHS to LD_LIBRARY_PATH
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${5}
+
+  export LC_ALL=C
 
   rm -rf ${2}/chroot/chroot-root
 
@@ -33,11 +35,19 @@ else
 
   ${3}/chroot/generate_gadgetron_root ${1} ${2}/chroot/chroot-root/gadgetron
 
+  cp ${6} ${2}/chroot/chroot-root/gadgetron/${1}/lib  
+
   cp ${3}/chroot/start.sh ${2}/chroot/chroot-root
   cp ${3}/chroot/stop.sh ${2}/chroot/chroot-root
   cp ${3}/chroot/start-env.sh ${2}/chroot/chroot-root 
   cp ${3}/chroot/start-webapp.sh ${2}/chroot/chroot-root 
   cp ${3}/chroot/mount.sh ${2}/chroot/chroot-root
+
+  cp ${3}/chroot/umount_image.sh ${2}/chroot/chroot-backups
+  cp ${3}/chroot/start-gadgetron-from-image.sh ${2}/chroot/chroot-backups
+
+  chmod +x ${2}/chroot/copy-cuda-lib.sh
+  cp ${2}/chroot/copy-cuda-lib.sh ${2}/chroot/chroot-root
 
   chmod +x ${2}/chroot/start-gadgetron.sh
   cp ${2}/chroot/start-gadgetron.sh ${2}/chroot/chroot-root/gadgetron 
@@ -59,10 +69,10 @@ else
 
   chroot ${2}/chroot/chroot-root/gadgetron apt-get install python-dev python-twisted python-psutil -y 
   
-  TAR_FILE_NAME=gadgetron-`date '+%Y%m%d'`-${4:0:8}
+  TAR_FILE_NAME=gadgetron-`date '+%Y%m%d-%H%M'`-${4:0:8}
   IMAGE_FILE_NAME=${2}/chroot/chroot-backups/${TAR_FILE_NAME}.img
 
-  tar -zcf "${2}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${2}/chroot" --exclude=./chroot-root/gadgetron/etc --exclude=./chroot-root/gadgetron/var --exclude=./chroot-root/gadgetron/dev --exclude=./chrot-root/gadgetron/root ./chroot-root
+  tar -zcf "${2}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${2}/chroot" --exclude=./chroot-root/gadgetron/etc --exclude=./chroot-root/gadgetron/var --exclude=./chroot-root/gadgetron/dev --exclude=./chroot-root/gadgetron/sys --exclude=./chroot-root/gadgetron/proc --exclude=./chroot-root/gadgetron/root ./chroot-root
 
   dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=1024k seek=1024 count=0
   mke2fs -F -t ext3 ${IMAGE_FILE_NAME}
@@ -74,11 +84,14 @@ else
   rmdir ${2}/chroot/gadgetron_root
 
   rm -rf "${2}/chroot/chroot-root"
+
+  chmod 666 "${2}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz"
+  chmod 666 "${IMAGE_FILE_NAME}"
  
   exit 0
 
  else
-  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS)\n"
+  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA_LIBRARY)\n"
   exit 1
  fi
 
