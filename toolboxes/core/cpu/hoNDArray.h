@@ -60,6 +60,13 @@ namespace Gadgetron{
     hoNDArray(const hoNDArray<T> &a);
     explicit hoNDArray(const hoNDArray<T> *a);
 
+#if __cplusplus > 199711L
+    //Move constructors
+    hoNDArray(hoNDArray<T>&& a);
+
+    hoNDArray& operator=(hoNDArray&& rhs);
+#endif
+
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);
 

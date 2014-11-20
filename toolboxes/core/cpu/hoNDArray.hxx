@@ -286,6 +286,15 @@ namespace Gadgetron
         }
     }
 
+#if __cplusplus > 199711L
+    template <typename T>
+    hoNDArray<T>::hoNDArray(hoNDArray<T>&& a) : NDArray<T>::NDArray(){
+    	data_ = a.data_;
+    	a.dimensions_.swap(this->dimensions_);
+    	a.data_ = nullptr;
+    	a.offsetFactors_.swap(this->offsetFactors_);
+    }
+#endif
     template <typename T> 
     hoNDArray<T>& hoNDArray<T>::operator=(const hoNDArray<T>& rhs)
     {
@@ -310,6 +319,21 @@ namespace Gadgetron
         }
         return *this;
     }
+
+#if __cplusplus > 199711L
+    template <typename T>
+    hoNDArray<T>& hoNDArray<T>::operator=(hoNDArray<T>&& rhs)
+    {
+        if ( &rhs == this ) return *this;
+
+        this->clear();
+        rhs.dimensions_.swap(this->dimensions_);
+        rhs.offsetFactors_.swap(this->offsetFactors_);
+        data_ = rhs.data_;
+        rhs.data_ = nullptr;
+        return *this;
+    }
+#endif
 
     template <typename T> 
     void hoNDArray<T>::create(std::vector<size_t>& dimensions)
