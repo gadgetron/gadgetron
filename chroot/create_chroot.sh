@@ -9,13 +9,14 @@ if [ $(id -u) -ne 0 ]; then
 else
  if [ $# -ge 6 ]; then
 
-# --ARGUMENTS--
-# 1. CHROOT_GADGETRON_INSTALL_PREFIX:     /usr/local/gadgetron
-# 2. CHROOT_GADGETRON_BINARY_DIR:         /home/ubuntu/gadgetron/build
-# 3. CHROOT_GADGETRON_SOURCE_DIR:         /home/ubuntu/gadgetron
-# 4. CHROOT_GIT_SHA1_HASH
-# 5. CHROOT_LIBRARY_PATHS
-# 6. CHROOT_CUDA_LIBRARY
+# --ARGUMENTS-- (example)
+
+# CHROOT_GADGETRON_INSTALL_PREFIX:    /usr/local/gadgetron
+# CHROOT_GADGETRON_BINARY_DIR:        /home/ubuntu/gadgetron/build
+# CHROOT_GADGETRON_SOURCE_DIR:        /home/ubuntu/gadgetron
+# CHROOT_GIT_SHA1_HASH:               f4d7a9189fd21b07e482d28ecb8b07e589f81f9e
+# CHROOT_LIBRARY_PATHS:               /usr/local/lib:/usr/lib/x86_64-linux-gnu
+# CHROOT_CUDA_LIBRARY:                /usr/lib/x86_64-linux-gnu/libcuda.so
 
   CHROOT_GADGETRON_INSTALL_PREFIX=${1}
   echo CHROOT_GADGETRON_INSTALL_PREFIX: ${CHROOT_GADGETRON_INSTALL_PREFIX}

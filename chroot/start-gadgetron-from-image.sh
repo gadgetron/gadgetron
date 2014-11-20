@@ -10,13 +10,17 @@ if [ $(id -u) -ne 0 ]; then
   exit 1
 else
   if [ $# -eq 2 ]; then
-    mkdir -p ${2}
-    mount -o loop ${1} ${2}
-    ${2}/chroot-root/start.sh &
+
+    FULL_PATH_TO_IMG_FILE=${1}
+    MOUNT_POINT=${2}
+
+    mkdir -p ${MOUNT_POINT}
+    mount -o loop ${FULL_PATH_TO_IMG_FILE} ${MOUNT_POINT}
+    ${MOUNT_POINT}/chroot-root/start.sh &
     start_gadgetron_image_job=($!)
     wait $!
     sleep 1
-    $BASEDIR/umount_image.sh ${2}
+    $BASEDIR/umount_image.sh ${MOUNT_POINT}
     exit 0
   else
     echo -e "\nUsage: $0 <full path to img file> <mount point>\n"

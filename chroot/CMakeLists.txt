@@ -16,11 +16,6 @@ FIND_LIBRARY( CUDA_LIBRARY NAMES libcuda.so )
 get_filename_component(CUDA_LIB_DIR ${CUDA_LIBRARY} PATH)
 set (LIBRARY_PATHS ${LIBRARY_PATHS}:${CUDA_LIB_DIR})
 
-#TODO: Removed this debug output. It is distracting
-message("CUDA_LIBRARY: " ${CUDA_LIBRARY})
-message("CUDA_LIB_DIR: " ${CUDA_LIB_DIR})
-message("LIBRARY_PATHS: " ${LIBRARY_PATHS})
-
 configure_file("copy-cuda-lib.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh @ONLY)
 
 find_program(SIEMENS_TO_ISMRMRD_EXE siemens_to_ismrmrd)
@@ -56,9 +51,3 @@ else(SIEMENS_TO_ISMRMRD_EXE)
     ${CUDA_LIBRARY}
     )  
 endif(SIEMENS_TO_ISMRMRD_EXE)
-
-#TODO: Removed this debug output. It is distracting
-message("1. cmake install prefix: " ${CMAKE_INSTALL_PREFIX})
-message("2. cmake binary dir: " ${CMAKE_BINARY_DIR})
-message("3. cmake source dir: " ${CMAKE_SOURCE_DIR})
-message("5. LIBRARY_PATHS: " ${LIBRARY_PATHS})

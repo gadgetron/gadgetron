@@ -8,19 +8,21 @@ else
 
  if [ $# -eq 1 ]; then
 
-  mkdir -p "${1}/gadgetron/proc"
-  if find "${1}/gadgetron/proc" -maxdepth 0 -empty | read v; then
-   mount --bind /proc "${1}/gadgetron/proc";
+  CHROOT_DIR=${1}
+
+  mkdir -p "${CHROOT_DIR}/gadgetron/proc"
+  if find "${CHROOT_DIR}/gadgetron/proc" -maxdepth 0 -empty | read v; then
+   mount --bind /proc "${CHROOT_DIR}/gadgetron/proc";
   fi
 
-  mkdir -p "${1}/gadgetron/dev"
-  if find "${1}/gadgetron/dev" -maxdepth 0 -empty | read v; then
-   mount --bind /dev "${1}/gadgetron/dev";
+  mkdir -p "${CHROOT_DIR}/gadgetron/dev"
+  if find "${CHROOT_DIR}/gadgetron/dev" -maxdepth 0 -empty | read v; then
+   mount --bind /dev "${CHROOT_DIR}/gadgetron/dev";
   fi
 
-  mkdir -p "${1}/gadgetron/sys"
-  if find "${1}/gadgetron/sys" -maxdepth 0 -empty | read v; then
-   mount --bind /sys "${1}/gadgetron/sys";
+  mkdir -p "${CHROOT_DIR}/gadgetron/sys"
+  if find "${CHROOT_DIR}/gadgetron/sys" -maxdepth 0 -empty | read v; then
+   mount --bind /sys "${CHROOT_DIR}/gadgetron/sys";
   fi
 
   exit 0
