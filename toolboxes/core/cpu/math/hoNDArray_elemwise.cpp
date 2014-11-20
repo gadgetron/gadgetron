@@ -2171,6 +2171,15 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void scal(float a, hoNDArray< std::complex<float> >& x);
     template EXPORTCPUCOREMATH void scal(double a, hoNDArray< std::complex<double> >& x);
 
+    template <typename T> 
+    void scal(T a, hoNDArray< complext<T> >& x)
+    {
+        scal(x.get_number_of_elements(), a, x.begin());
+    }
+
+    template EXPORTCPUCOREMATH void scal(float a, hoNDArray< complext<float> >& x);
+    template EXPORTCPUCOREMATH void scal(double a, hoNDArray< complext<double> >& x);
+
     // --------------------------------------------------------------------------------
 
     template<typename T> 
