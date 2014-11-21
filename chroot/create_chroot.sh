@@ -1,105 +1,134 @@
 #!/bin/bash
 
+#TODO: Assign all input arguments to proper variable to make the script more readable
+
 if [ $(id -u) -ne 0 ]; then
  echo -e "\nPlease start the script as a root or sudo!\n"
  exit 1
 
 else
- if [ $# -eq 6 ]; then
+ if [ $# -ge 6 ]; then
+
+# --ARGUMENTS-- (example)
+
+# CHROOT_GADGETRON_INSTALL_PREFIX:    /usr/local/gadgetron
+# CHROOT_GADGETRON_BINARY_DIR:        /home/ubuntu/gadgetron/build
+# CHROOT_GADGETRON_SOURCE_DIR:        /home/ubuntu/gadgetron
+# CHROOT_GIT_SHA1_HASH:               f4d7a9189fd21b07e482d28ecb8b07e589f81f9e
+# CHROOT_LIBRARY_PATHS:               /usr/local/lib:/usr/lib/x86_64-linux-gnu
+# CHROOT_CUDA_LIBRARY:                /usr/lib/x86_64-linux-gnu/libcuda.so
+
+  CHROOT_GADGETRON_INSTALL_PREFIX=${1}
+  echo CHROOT_GADGETRON_INSTALL_PREFIX: ${CHROOT_GADGETRON_INSTALL_PREFIX}
+  
+  CHROOT_GADGETRON_BINARY_DIR=${2}
+  echo CHROOT_GADGETRON_BINARY_DIR: ${CHROOT_GADGETRON_BINARY_DIR}
+  
+  CHROOT_GADGETRON_SOURCE_DIR=${3}
+  echo CHROOT_GADGETRON_SOURCE_DIR: ${CHROOT_GADGETRON_SOURCE_DIR}
+  
+  CHROOT_GIT_SHA1_HASH=${4}
+  echo CHROOT_GIT_SHA1_HASH: ${CHROOT_GIT_SHA1_HASH}
+  
+  CHROOT_LIBRARY_PATHS=${5}
+  echo CHROOT_LIBRARY_PATHS: ${CHROOT_LIBRARY_PATHS}
+  
+  CHROOT_CUDA_LIBRARY=${6}
+  echo CHROOT_CUDA_LIBRARY: ${CHROOT_CUDA_LIBRARY}
 
   # Add LIBRARY_PATHS to LD_LIBRARY_PATH
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${5}
-
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CHROOT_LIBRARY_PATHS}
   export LC_ALL=C
 
-  rm -rf ${2}/chroot/chroot-root
+  rm -rf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
 
-  mkdir -p ${2}/chroot/chroot-root
+  mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
 
-  touch ${2}/chroot/chroot-root/source-manifest.txt
+  touch ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/source-manifest.txt
 
-  echo "gadgetron    ${4}" > ${2}/chroot/chroot-root/source-manifest.txt
+  echo "gadgetron    ${CHROOT_GIT_SHA1_HASH}" > ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/source-manifest.txt
 
-  mkdir -p ${2}/chroot/chroot-root/gadgetron
+  mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
 
-  mkdir -p ${2}/chroot/chroot-root/gadgetron/webapp
+  mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
 
-  mkdir -p ${2}/chroot/chroot-backups
+  mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
 
   apt-get install debootstrap -y
 
-  debootstrap --variant=buildd --arch amd64 trusty ${2}/chroot/chroot-root/gadgetron http://gb.archive.ubuntu.com/ubuntu/
+  debootstrap --variant=buildd --arch amd64 trusty ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron http://gb.archive.ubuntu.com/ubuntu/
 
-  cd ${2}
-  make install DESTDIR="${2}/chroot/chroot-root/gadgetron" -j8
+  cd ${CHROOT_GADGETRON_BINARY_DIR}
+  make install DESTDIR="${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron" -j8
 
-  ${3}/chroot/generate_gadgetron_root ${1} ${2}/chroot/chroot-root/gadgetron
+  #This copies the ISMRMRD executable if it is installed
+  if [ $# -ge 7 ]; then
+      CHROOT_SIEMENS_TO_ISMRMRD_EXE=${7} 
+      cp $CHROOT_SIEMENS_TO_ISMRMRD_EXE "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/bin/"
+  else
+      echo "SIEMENS_TO_ISMRMRD_EXE not set"
+  fi
 
-  cp ${6} ${2}/chroot/chroot-root/gadgetron/${1}/lib  
+  ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/generate_gadgetron_root ${CHROOT_GADGETRON_INSTALL_PREFIX} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
 
-  cp ${3}/chroot/start.sh ${2}/chroot/chroot-root
-  cp ${3}/chroot/stop.sh ${2}/chroot/chroot-root
-  cp ${3}/chroot/start-env.sh ${2}/chroot/chroot-root 
-  cp ${3}/chroot/start-webapp.sh ${2}/chroot/chroot-root 
-  cp ${3}/chroot/mount.sh ${2}/chroot/chroot-root
+  cp ${6} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/lib  
 
-  cp ${3}/chroot/umount_image.sh ${2}/chroot/chroot-backups
-  cp ${3}/chroot/start-gadgetron-from-image.sh ${2}/chroot/chroot-backups
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/stop.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-env.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root 
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-webapp.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root 
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/mount.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
 
-  chmod +x ${2}/chroot/copy-cuda-lib.sh
-  cp ${2}/chroot/copy-cuda-lib.sh ${2}/chroot/chroot-root
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/umount_image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-gadgetron-from-image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
 
-  chmod +x ${2}/chroot/start-gadgetron.sh
-  cp ${2}/chroot/start-gadgetron.sh ${2}/chroot/chroot-root/gadgetron 
+  chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/copy-cuda-lib.sh
+  cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/copy-cuda-lib.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
+
+  chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/start-gadgetron.sh
+  cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/start-gadgetron.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron 
  
-  chmod +x ${2}/chroot/enter-chroot-env.sh
-  cp ${2}/chroot/enter-chroot-env.sh ${2}/chroot/chroot-root/gadgetron
+  chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/enter-chroot-env.sh
+  cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/enter-chroot-env.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
 
-  chmod +x ${2}/chroot/run-webapp.sh
-  cp ${2}/chroot/run-webapp.sh ${2}/chroot/chroot-root/gadgetron
+  chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/run-webapp.sh
+  cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/run-webapp.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
 
-  cp -n ${2}/chroot/chroot-root/gadgetron${1}/config/gadgetron.xml.example ${2}/chroot/chroot-root/gadgetron${1}/config/gadgetron.xml
+  cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml
 
-  cp ${2}/chroot/gadgetron_web_app.cfg ${2}/chroot/chroot-root/gadgetron/webapp
-  cp ${2}/chroot/gadgetron_web.conf ${2}/chroot/chroot-root/gadgetron/webapp
-  cp ${2}/chroot/gadgetron_web_ld.conf ${2}/chroot/chroot-root/gadgetron/webapp
-  cp ${3}/apps/gadgetron/webapp/gadgetron_web_app.py ${2}/chroot/chroot-root/gadgetron/webapp
-  cp ${3}/apps/gadgetron/webapp/gadgetron_web_app.py ${2}/chroot/chroot-root/gadgetron${1}/bin/gadgetron_web_app.py
-  cp ${2}/chroot/gadgetron_web_app.cfg ${2}/chroot/chroot-root/gadgetron${1}/config/
+  cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_app.cfg ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
+  cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web.conf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
+  cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_ld.conf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.py ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.py ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/bin/gadgetron_web_app.py
+  cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_app.cfg ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/
 
-  chroot ${2}/chroot/chroot-root/gadgetron apt-get install python-dev python-twisted python-psutil -y 
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install python-dev python-twisted python-psutil -y 
   
-  TAR_FILE_NAME=gadgetron-`date '+%Y%m%d-%H%M'`-${4:0:8}
-  IMAGE_FILE_NAME=${2}/chroot/chroot-backups/${TAR_FILE_NAME}.img
+  TAR_FILE_NAME=gadgetron-`date '+%Y%m%d-%H%M'`-${CHROOT_GIT_SHA1_HASH:0:8}
+  IMAGE_FILE_NAME=${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.img
 
-  tar -zcf "${2}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${2}/chroot" --exclude=./chroot-root/gadgetron/etc --exclude=./chroot-root/gadgetron/var --exclude=./chroot-root/gadgetron/dev --exclude=./chroot-root/gadgetron/sys --exclude=./chroot-root/gadgetron/proc --exclude=./chroot-root/gadgetron/root ./chroot-root
+  tar -zcf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${CHROOT_GADGETRON_BINARY_DIR}/chroot" --exclude=./chroot-root/gadgetron/etc --exclude=./chroot-root/gadgetron/var --exclude=./chroot-root/gadgetron/dev --exclude=./chroot-root/gadgetron/sys --exclude=./chroot-root/gadgetron/proc --exclude=./chroot-root/gadgetron/root ./chroot-root
 
   dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=1024k seek=1024 count=0
   mke2fs -F -t ext3 ${IMAGE_FILE_NAME}
-  mkdir ${2}/chroot/gadgetron_root
-  mount -o loop ${IMAGE_FILE_NAME} ${2}/chroot/gadgetron_root
-  tar -xzf ${2}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz -C ${2}/chroot/gadgetron_root/
+  mkdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
+  mount -o loop ${IMAGE_FILE_NAME} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
+  tar -xzf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz -C ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root/
   sleep 3
-  umount ${2}/chroot/gadgetron_root
-  rmdir ${2}/chroot/gadgetron_root
+  umount ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
+  rmdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
 
-  rm -rf "${2}/chroot/chroot-root"
+  rm -rf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root"
 
-  chmod 666 "${2}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz"
+  chmod 666 "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz"
   chmod 666 "${IMAGE_FILE_NAME}"
  
   exit 0
 
  else
-  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA_LIBRARY)\n"
+  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA_LIBRARY) (SIEMENS_TO_ISMRMRD)\n"
   exit 1
  fi
 
 fi
-
-# --ARGUMENTS--
-# 1. cmake install prefix:     /usr/local/gadgetron
-# 2. cmake binary dir:         /home/ubuntu/gadgetron/build
-# 3. cmake source dir:         /home/ubuntu/gadgetron
-# 4. HASH
-# 5. LIBRARY_PATHS             /home/ubuntu/ismrmrd_install

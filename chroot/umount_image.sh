@@ -5,17 +5,20 @@ if [ $(id -u) -ne 0 ]; then
   exit 1
 else
   if [ $# -eq 1 ]; then
-    if mountpoint -q ${1}; then
-      if mountpoint -q ${1}/chroot-root/gadgetron/proc; then
-        umount ${1}/chroot-root/gadgetron/proc
+
+    MOUNT_POINT=${1}
+
+    if mountpoint -q ${MOUNT_POINT}; then
+      if mountpoint -q ${MOUNT_POINT}/chroot-root/gadgetron/proc; then
+        umount ${MOUNT_POINT}/chroot-root/gadgetron/proc
       fi
-      if mountpoint -q ${1}/chroot-root/gadgetron/dev; then
-        umount ${1}/chroot-root/gadgetron/dev
+      if mountpoint -q ${MOUNT_POINT}/chroot-root/gadgetron/dev; then
+        umount ${MOUNT_POINT}/chroot-root/gadgetron/dev
       fi
-      if mountpoint -q ${1}/chroot-root/gadgetron/sys; then
-        umount ${1}/chroot-root/gadgetron/sys
+      if mountpoint -q ${MOUNT_POINT}/chroot-root/gadgetron/sys; then
+        umount ${MOUNT_POINT}/chroot-root/gadgetron/sys
       fi
-      umount ${1}
+      umount ${MOUNT_POINT}
       exit 0
     fi
   else
