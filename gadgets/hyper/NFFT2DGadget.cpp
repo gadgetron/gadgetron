@@ -157,6 +157,7 @@ namespace Gadgetron{
       boost::shared_ptr<cuNDArray<float> > dcw(new cuNDArray<float>);
 
       extract_trajectory_and_dcw_from_queue( frame_traj_queue_.get(), traj.get(), dcw.get() );
+      std::cout << "PENGUIN SAYZ: " << traj->get_number_of_elements() << std::endl << std::endl;
       //traj = compute_radial_trajectory_golden_ratio_2d<float>(samples_per_readout_,dimensions_[1],1,0,GR_ORIGINAL);
       dcw = compute_radial_dcw_golden_ratio_2d<float>(samples_per_readout_,dimensions_[1],1.0,1.0f/samples_per_readout_/dimensions_[1],0,GR_ORIGINAL);
       // Create output array
@@ -322,8 +323,9 @@ namespace Gadgetron{
     if( num_trajectory_dims_ == 2 ){
       boost::shared_ptr< hoNDArray<float> > host_traj = extract_trajectory_from_queue( queue );
       std::vector<size_t> dims_1d; dims_1d.push_back(host_traj->get_size(1)*host_traj->get_size(2));
-      cuNDArray<float> _traj(*host_traj);
-      *traj = cuNDArray<floatd2>(&dims_1d, (floatd2*)_traj.get_data_ptr());
+      hoNDArray<floatd2> host_traj2(&dims_1d,(floatd2*)host_traj->get_data_ptr());
+      *traj = cuNDArray<floatd2>(host_traj2);
+
     }
     else{
 
@@ -344,10 +346,10 @@ namespace Gadgetron{
       order.clear(); order.push_back(1); order.push_back(0);
       
       tmp.create(&dims_2d, host_traj_dcw_shifted->get_data_ptr());
-      cuNDArray<float> __traj(&tmp);
-      boost::shared_ptr< cuNDArray<float> > _traj = permute( &__traj, &order );
+      auto _traj = permute( &tmp, &order );
+      hoNDArray<floatd2> tmp2(&dims_1d,(floatd2*)_traj->get_data_ptr());
       
-      *traj = cuNDArray<floatd2>(&dims_1d, (floatd2*)_traj->get_data_ptr());
+      *traj = cuNDArray<floatd2>(tmp2);
     }
 
     std::vector<size_t >dims_2d;

@@ -17,8 +17,9 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
   )
 
-add_library(gadgetron_toolbox_hyper SHARED 
+cuda_add_library(gadgetron_toolbox_hyper SHARED 
     CSIOperator.cpp
+    CSI_utils.cu
   )
 
 set_target_properties(gadgetron_toolbox_hyper PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -35,4 +36,5 @@ install(TARGETS gadgetron_toolbox_hyper DESTINATION lib COMPONENT main)
 
 install(FILES 
     CSIOperator.h
+    CSI_utils.h
   DESTINATION include COMPONENT main)

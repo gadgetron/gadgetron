@@ -49,7 +49,7 @@ int gpuCoilEstimationGadget::process(
 	auto senseData = cm1->getObjectPtr();
 
 	coils = bucket->data_.front().head_->getObjectPtr()->active_channels;
-	GADGET_DEBUG2("Active channles %i \n",coils);
+	GADGET_DEBUG2("Active channels %i \n",coils);
 
 
 	{

@@ -14,14 +14,15 @@
 #include "CSIOperator.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuSbcCgSolver.h"
+#include "gpuCoilEstimationGadget.h"
 namespace Gadgetron {
 
-class CSIGadget: public Gadgetron::Gadget2<ISMRMRD::ImageHeader, GenericReconJob> {
+class CSIGadget: public Gadgetron::Gadget1<cuSenseData>{
 public:
 	CSIGadget();
 	virtual ~CSIGadget();
 
-    virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader > *m1, GadgetContainerMessage< GenericReconJob > *m2 );
+	virtual int process(GadgetContainerMessage<cuSenseData>* m1);
     virtual int process_config( ACE_Message_Block* mb );
 
     int device_number_;

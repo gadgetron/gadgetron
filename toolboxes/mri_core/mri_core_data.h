@@ -5,6 +5,7 @@
 #include "ismrmrd/ismrmrd.h"
 #include "Gadgetron.h"
 #include <vector>
+#include "hoNDArray.h"
 
 namespace Gadgetron 
 {

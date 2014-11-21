@@ -13,6 +13,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/hyper
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu

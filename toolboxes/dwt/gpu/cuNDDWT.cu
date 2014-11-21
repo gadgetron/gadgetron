@@ -27,7 +27,7 @@ dwt_kernel( vector_td<int,D> dims,  const T  * __restrict__ in, T * __restrict__
 		vector_td<T,WD> data;
 		typename intd<D>::Type co = idx_to_co<D>(idx, dims2);
 		//co[dir] *= 2; //We're doing the decimated wavelet
-		co[dir] += (co[dir]+shift+dims[dir])%dims[dir]; //Wrap around
+		co[dir] = (co[dir]+shift+dims[dir])%dims[dir]; //Wrap around
 		for (int i = 0; i < WD; i++){
 			data[i] = in[co_to_idx<D>(co, dims)];
 			co[dir] = (co[dir]+1+dims[dir])%dims[dir]; //Wrap around
@@ -74,7 +74,7 @@ idwt_kernel( vector_td<int,D> dims,  const T  * __restrict__ in, T * __restrict_
 		vector_td<T,WD> diff;
 		{
 			float sign = 1;
-			for (int i = 0; i < WD; i++){++
+			for (int i = 0; i < WD; i++){
 				diff[i] = wavelet[WD-i-1]*sign;
 				sign *= -1;
 			}
@@ -127,6 +127,7 @@ template<class T, unsigned int D, class wave> __device__ static void lift(T& dat
 template<class T, unsigned int D, unsigned int WD> void Gadgetron::DWT1( cuNDArray<T>* in, cuNDArray<T>* out, vector_td<typename realType<T>::Type,WD> wavelet, int dim, int shift){
 
 	if (!(isPowerOfTwo(in->get_size(dim)) && in->get_size(dim) >= WD)){
+		std::cout << "Dimension is: " << in->get_size(dim) << std::endl;
 		throw std::runtime_error("DWT: Illegal input dimensions for DWT. Power of two reconstructions only");
 	}
 
@@ -138,6 +139,8 @@ template<class T, unsigned int D, unsigned int WD> void Gadgetron::DWT1( cuNDArr
 
 	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(*(in->get_dimensions())));
 	dwt_kernel<T,D,WD><<<dimGrid,dimBlock>>>(dims, in->get_data_ptr(),out->get_data_ptr(),dim,wavelet,shift);
+	cudaThreadSynchronize();
+	CHECK_FOR_CUDA_ERROR()
 	*out *= T(1.0/std::sqrt(sum(wavelet)));
 
 
@@ -152,7 +155,9 @@ template<class T, unsigned int D, unsigned int WD> void Gadgetron::DWT1( cuNDArr
 template<class T, unsigned int D, unsigned int WD> void Gadgetron::IDWT1( cuNDArray<T>* in, cuNDArray<T>* out, vector_td<typename realType<T>::Type,WD> wavelet, int dim, int shift){
 
 	if (!(isPowerOfTwo(in->get_size(dim)) && in->get_size(dim) >= WD)){
-		throw std::runtime_error("DWT: Illegal input dimensions for DWT. Power of two reconstructions only");
+
+		std::cout << "Dimension " << dim <<" is: " << in->get_size(dim) << " " << in->get_number_of_dimensions() << std::endl;
+		throw std::runtime_error("IDWT: Illegal input dimensions for DWT. Power of two reconstructions only");
 	}
 
 	size_t tot_threads = in->get_number_of_elements()/2; //1 thread per 2 elements
@@ -169,10 +174,32 @@ template<class T, unsigned int D, unsigned int WD> void Gadgetron::IDWT1( cuNDAr
 
 
 }
+
 template void Gadgetron::DWT1<float,2,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
 template void Gadgetron::IDWT1<float,2,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
-
 template void Gadgetron::DWT1<float,2,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
 template void Gadgetron::IDWT1<float,2,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
 template void Gadgetron::DWT1<float,2,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
 template void Gadgetron::IDWT1<float,2,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
+
+template void Gadgetron::DWT1<float_complext,2,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
+template void Gadgetron::IDWT1<float_complext,2,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
+template void Gadgetron::DWT1<float_complext,2,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
+template void Gadgetron::IDWT1<float_complext,2,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
+template void Gadgetron::DWT1<float_complext,2,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
+template void Gadgetron::IDWT1<float_complext,2,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
+
+
+template void Gadgetron::DWT1<float,3,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
+template void Gadgetron::IDWT1<float,3,6>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,6> ,int,int);
+template void Gadgetron::DWT1<float,3,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
+template void Gadgetron::IDWT1<float,3,4>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,4> ,int,int);
+template void Gadgetron::DWT1<float,3,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
+template void Gadgetron::IDWT1<float,3,2>(cuNDArray<float>*, cuNDArray<float>*, vector_td<float,2> ,int,int);
+
+template void Gadgetron::DWT1<float_complext,3,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
+template void Gadgetron::IDWT1<float_complext,3,6>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,6> ,int,int);
+template void Gadgetron::DWT1<float_complext,3,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
+template void Gadgetron::IDWT1<float_complext,3,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,4> ,int,int);
+template void Gadgetron::DWT1<float_complext,3,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
+template void Gadgetron::IDWT1<float_complext,3,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, vector_td<float,2> ,int,int);
