@@ -24,6 +24,7 @@ namespace Gadgetron{
     hoCuNDArray(hoCuNDArray<T>&& other) : hoNDArray<T>::hoNDArray(){
     	this->data_ = other.data_;
     	this->dimensions_ = other.dimensions_;
+    	this->elements_ = other.elements_;
     	other.dimensions_.reset();
     	other.data_ = nullptr;
     }

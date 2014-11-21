@@ -157,7 +157,6 @@ namespace Gadgetron{
       boost::shared_ptr<cuNDArray<float> > dcw(new cuNDArray<float>);
 
       extract_trajectory_and_dcw_from_queue( frame_traj_queue_.get(), traj.get(), dcw.get() );
-      std::cout << "PENGUIN SAYZ: " << traj->get_number_of_elements() << std::endl << std::endl;
       //traj = compute_radial_trajectory_golden_ratio_2d<float>(samples_per_readout_,dimensions_[1],1,0,GR_ORIGINAL);
       dcw = compute_radial_dcw_golden_ratio_2d<float>(samples_per_readout_,dimensions_[1],1.0,1.0f/samples_per_readout_/dimensions_[1],0,GR_ORIGINAL);
       // Create output array
