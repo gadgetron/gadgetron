@@ -173,7 +173,8 @@ namespace Gadgetron{
     {
     	device_ = a.device_;
     	this->data_ = a.data_;
-    	a.dimensions_.swap(this->dimensions_);
+    	this->dimensions_ = a.dimensions_;
+    	a.dimensions_.reset();
     	a.data_=nullptr;
     }
 #endif
@@ -379,7 +380,8 @@ namespace Gadgetron{
 
     	if (&rhs == this) return *this;
     	this->clear();
-    	rhs.dimensions_.swap(this->dimensions_);
+    	*this->dimensions_ = *rhs.dimensions_;
+    	rhs.dimensions_.reset();
     	device_ = rhs.device_;
     	this->data_ = rhs.data_;
     	rhs.data_ = nullptr;

@@ -23,7 +23,8 @@ namespace Gadgetron{
 #if __cplusplus > 199711L
     hoCuNDArray(hoCuNDArray<T>&& other) : hoNDArray<T>::hoNDArray(){
     	this->data_ = other.data_;
-    	other.dimensions_.swap(this->dimensions_);
+    	this->dimensions_ = other.dimensions_;
+    	other.dimensions_.reset();
     	other.data_ = nullptr;
     }
 #endif
@@ -133,8 +134,10 @@ namespace Gadgetron{
         if ( &rhs == this ) return *this;
 
         this->clear();
-        rhs.dimensions_.swap(this->dimensions_);
-        rhs.offsetFactors_.swap(this->offsetFactors_);
+        this->dimensions_ = rhs.dimensions_;
+        this->offsetFactors_ = rhs.offsetFactors_;
+        rhs.dimensions_.reset();
+        rhs.offsetFactors_.reset();
         this->data_ = rhs.data_;
         rhs.data_ = nullptr;
         return *this;
