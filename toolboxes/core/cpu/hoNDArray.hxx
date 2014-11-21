@@ -290,9 +290,11 @@ namespace Gadgetron
     template <typename T>
     hoNDArray<T>::hoNDArray(hoNDArray<T>&& a) : NDArray<T>::NDArray(){
     	data_ = a.data_;
-    	a.dimensions_.swap(this->dimensions_);
+    	this->dimensions_ = a.dimensions_;
+    	a.dimensions_.reset();
     	a.data_ = nullptr;
-    	a.offsetFactors_.swap(this->offsetFactors_);
+    	this->offsetFactors_ = a.offsetFactors_;
+    	a.offsetFactors_.reset();
     }
 #endif
     template <typename T> 
@@ -327,8 +329,10 @@ namespace Gadgetron
         if ( &rhs == this ) return *this;
 
         this->clear();
-        rhs.dimensions_.swap(this->dimensions_);
-        rhs.offsetFactors_.swap(this->offsetFactors_);
+        this->dimensions_ = rhs.dimensions_;
+        this->offsetFactors_ = rhs.offsetFactors_;
+        rhs.dimensions_.reset();
+        rhs.offsetFactors_.reset();
         data_ = rhs.data_;
         rhs.data_ = nullptr;
         return *this;
