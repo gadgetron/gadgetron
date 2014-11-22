@@ -9,6 +9,8 @@ else
 
  if [ $# -eq 2 ]; then
 
+  service gadgetron_chroot stop
+
   CHROOT_IMAGE_FILENAME=${1}
   echo CHROOT_IMAGE_FILENAME=${CHROOT_IMAGE_FILENAME}
 
@@ -33,6 +35,10 @@ else
   rm -f ${CHROOT_INSTALL_PATH}/current
 
   ln -s ${CHROOT_INSTALL_PATH}/${FILENAME} ${CHROOT_INSTALL_PATH}/current
+
+  cp -f ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/webapp/gadgetron_chroot.conf /etc/init/
+
+  service gadgetron_chroot start
 
   exit 0
  

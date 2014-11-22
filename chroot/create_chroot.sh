@@ -99,6 +99,7 @@ else
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_app.cfg ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web.conf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_ld.conf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/gadgetron_chroot.conf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp/gadgetron_chroot.conf
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.py ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.py ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/bin/gadgetron_web_app.py
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_app.cfg ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/
