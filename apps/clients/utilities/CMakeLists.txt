@@ -42,5 +42,6 @@ target_link_libraries(gtdependencyquery gadgetron_toolbox_cpucore
                                         ${Boost_LIBRARIES} 
                                         ${ISMRMRD_LIBRARIES} )
 
+install(TARGETS gt_alive gtdependencyquery DESTINATION bin COMPONENT main)
 install(FILES DependencyQueryReader.h DESTINATION include COMPONENT main)
 install(FILES isalive.xml gtquery.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
