@@ -128,6 +128,7 @@ set( gadgetron_mricore_config_files
     default_measurement_dependencies.xml
     unified.xml
     unified_epi.xml
+    unified_spiral.xml
 )
 
 add_library(gadgetron_mricore SHARED 

@@ -98,7 +98,7 @@ int BucketToBufferGadget
     //    }
     //}
 
-    // TODO handle remove oversampling and partial fourier properly
+    // TODO check handling of the remove oversampling and partial fourier
     // TODO check the handling for non-cartesian trajectories
     // TODO the encoding limits are optional.  We only use them if they are there.
     
@@ -108,7 +108,7 @@ int BucketToBufferGadget
     {
         ISMRMRD::AcquisitionHeader & acqhdr = *it->head_->getObjectPtr();
         hoNDArray< std::complex<float> > & acqdata = *it->data_->getObjectPtr();
-
+        
         uint16_t espace = acqhdr.encoding_space_ref;
 
         //Generate the key to the corresponding ReconData buffer
@@ -135,49 +135,54 @@ int BucketToBufferGadget
         if ( recon_data_buffers[key]->getObjectPtr()->rbit_.size() < (espace+1) )
         {
             recon_data_buffers[key]->getObjectPtr()->rbit_.resize(espace+1);
+        }
         
-            // TODO handle remove oversampling and partial fourier properly
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_FOV_[0] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.x;
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_FOV_[1] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.y;
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_FOV_[2] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.z;
-            
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_matrix_[0] = hdr_.encoding[espace].encodedSpace.matrixSize.x;
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_matrix_[1] = hdr_.encoding[espace].encodedSpace.matrixSize.y;
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_matrix_[2] = hdr_.encoding[espace].encodedSpace.matrixSize.z;
+        // TODO handle oversampling for the cartesian case
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_FOV_[0] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.x;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_FOV_[1] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.y;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_FOV_[2] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.z;
+        
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_matrix_[0] = hdr_.encoding[espace].encodedSpace.matrixSize.x;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_matrix_[1] = hdr_.encoding[espace].encodedSpace.matrixSize.y;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_matrix_[2] = hdr_.encoding[espace].encodedSpace.matrixSize.z;
+        
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_FOV_[0] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.x;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_FOV_[1] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.y;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_FOV_[2] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.z;
+        
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_matrix_[0] = hdr_.encoding[espace].reconSpace.matrixSize.x;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_matrix_[1] = hdr_.encoding[espace].reconSpace.matrixSize.y;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_matrix_[2] = hdr_.encoding[espace].reconSpace.matrixSize.z;
+        
+        // TODO handle oversampling for the cartesian case
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].min_ = 0;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].max_ = hdr_.encoding[espace].encodedSpace.matrixSize.x - 1;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].center_ = hdr_.encoding[espace].encodedSpace.matrixSize.x / 2;
+        
+        //What is kspace_encoding_step_0 for?
+        //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].min_ =
+        //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_0.minimum;
+        //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].max_ =
+        //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_0.maximum;
+        //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].center_ =
+        //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_0.center;
+        
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[1].min_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[1].max_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->maximum;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[1].center_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->center;
+        
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[2].min_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->minimum;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[2].max_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->maximum;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[2].center_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->center;
 
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_FOV_[0] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.x;
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_FOV_[1] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.y;
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_FOV_[2] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.z;
-            
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_matrix_[0] = hdr_.encoding[espace].reconSpace.matrixSize.x;
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_matrix_[1] = hdr_.encoding[espace].reconSpace.matrixSize.y;
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_matrix_[2] = hdr_.encoding[espace].reconSpace.matrixSize.z;
-
-            // TODO partial fourier, oversampling, non-cartesian
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].min_ =
-            //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_0.minimum;
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].max_ =
-            //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_0.maximum;
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].center_ =
-            //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_0.center;
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].min_ = 0;
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].max_ = hdr_.encoding[espace].reconSpace.matrixSize.x - 1;            
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].center_ = hdr_.encoding[espace].reconSpace.matrixSize.x / 2;
-            
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[1].min_ =
-            //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum;
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[1].max_ =
-            //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->maximum;
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[1].center_ =
-            //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->center;
-
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[2].min_ =
-            //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->minimum;
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[2].max_ =
-            //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->maximum;
-            //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[2].center_ =
-            //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->center;
-
+        if (recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_number_of_elements() == 0)
+        {
             //Allocate the reference data array
             //7D,  fixed order [RO, E1, E2, CHA, SLC, N, S]
             //11D, fixed order [RO, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
@@ -188,7 +193,6 @@ int BucketToBufferGadget
                 NRO = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
             }
             
-            // TODO How do we handle acceleration?
             uint16_t NE1;
             if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1.is_present()) {
                 NE1 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum + 1;
@@ -273,6 +277,7 @@ int BucketToBufferGadget
             //std::cout << "   NN:   " << NN   << std::endl;
             //std::cout << "   NS:   " << NS   << std::endl;
 
+            //Allocate the array for the data
             try
             {
                 recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
@@ -285,6 +290,37 @@ int BucketToBufferGadget
                 return GADGET_FAIL;
             }
 
+            //Allocate the array for the headers
+            try
+            {
+                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.headers_.create(NE1, NE2, NSLC, NN, NS);
+                //TODO how do we insure that the non-visited locations have empty headers?
+            }
+            catch (std::runtime_error &err)
+            {
+                GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference headers array\n");
+                // TODO how do we clean up before returning?
+                return GADGET_FAIL;
+            }
+            
+            //Allocate the array for the trajectories
+            uint16_t TRAJDIM = acqhdr.trajectory_dimensions;
+            //TODO what about the discards?
+            if (TRAJDIM > 0)
+            {
+                try
+                {
+                    recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_.create(NRO, TRAJDIM, NE1, NE2, NSLC, NN, NS);
+                    recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_.fill(0.0f);
+                }
+                catch (std::runtime_error &err)
+                {
+                    GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference trajectory array\n");
+                    // TODO how do we clean up before returning?
+                    return GADGET_FAIL;
+                }
+            }
+            
             //boost::shared_ptr< std::vector<size_t> > dims =  recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_dimensions();
             //std::cout << "Ref NDArray dims: ";
             //for( std::vector<size_t>::const_iterator i = dims->begin(); i != dims->end(); ++i) {
@@ -293,60 +329,348 @@ int BucketToBufferGadget
             //std::cout << std::endl;
         }
         
-        // TODO do we need to check the number of samples and the center sample?
-
+        size_t slice_loc;
+        if (split_slices_)
+        {
+            slice_loc = 0;
+        }
+        else
+        {
+            slice_loc = acqhdr.idx.slice;
+        }
+        
         //Stuff the data
-        //TODO what about acqhdr.discard_pre and acqhdr.discard_post
-        long long offset = (long long) recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_size(0)/2 - (long long) acqhdr.center_sample;
-        long long roffset = (long long) recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_size(0) - (long long) acqhdr.number_of_samples - offset;
+        uint16_t npts_to_copy = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
+        long long offset;
+        if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+            offset  = (long long) recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].center_ - (long long) acqhdr.center_sample;
+        } else {
+            //TODO what about EPI with asymmetric readouts?
+            //TODO any other sort of trajectory?
+            offset = 0;
+        }
+        long long roffset = (long long) recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_size(0) - npts_to_copy - offset;
+
+        //std::cout << "REFERENCE" << std::endl;
+        //std::cout << "Num_samp: "<< acqhdr.number_of_samples << ", pre: " << acqhdr.discard_pre << ", post" << acqhdr.discard_post << std::endl;        
+        //std::cout << "Sampling limits: " 
+        //          << "  min: " << recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].min_
+        //          << "  max: " << recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].max_
+        //          << "  center: " << recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].center_
+        //          << std::endl;
+        //std::cout << "npts_to_copy = " << npts_to_copy  << std::endl;
+        //std::cout << "offset = " << offset  << std::endl;
+        //std::cout << "loffset = " << roffset << std::endl;
+        
         if ((offset < 0) | (roffset < 0) )
         {
             throw std::runtime_error("Acquired reference data does not fit into the reference data buffer.\n");
             return GADGET_FAIL;
         }
-        std::complex<float> *refdataptr, *acqdataptr;
+        std::complex<float> *refdataptr;
         uint16_t NCHA = recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_size(4);
         for (uint16_t cha = 0; cha < NCHA; cha++)
         {
-            if (split_slices_)
-            {
-                refdataptr = & recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_(
-                    offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, cha, 0, getN(acqhdr.idx),  getS(acqhdr.idx));
-            }
-            else
-            {
-                refdataptr = & recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_(
-                    offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, cha, acqhdr.idx.slice, getN(acqhdr.idx),  getS(acqhdr.idx));
-            }
-            acqdataptr = & acqdata(0, cha);
-            memcpy(refdataptr, acqdataptr, sizeof(std::complex<float>)*acqhdr.number_of_samples);
+            refdataptr = & recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_(
+                offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
+            memcpy(refdataptr, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
         }
 
         //Stuff the header
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.headers_(acqhdr.idx.kspace_encode_step_1,
+                                 acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx)) = acqhdr;
 
         //Stuff the trajectory
+        if (acqhdr.trajectory_dimensions > 0) {
+            float * reftrajptr;
+            hoNDArray< float > & acqtraj = *it->traj_->getObjectPtr();  // TODO do we need to check this?            
+            for (uint16_t tdim = 0; tdim < acqhdr.trajectory_dimensions; tdim++) {
+                reftrajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_(
+                    offset, tdim, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
+                memcpy(refdataptr, & acqtraj(acqhdr.discard_pre, tdim), sizeof(float)*npts_to_copy);
+            }
+        }
         
     }
-    
-    ////Iterate over the imaging data of the bucket
-    //for(std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->data_.begin();
-    //    it != m1->getObjectPtr()->data_.end(); ++it)
-    //{
-    //    // std::cout << it->head_->getObjectPtr()->idx.kspace_encode_step_1 << std::endl;
-    //
-    //    //Generate the key to the corresponding ReconData buffer
-    //    key = getKey(it->head_->getObjectPtr()->idx);
-    //    //Look up the corresponding ReconData buffer
-    //    if (recon_data_buffers.find(key) == recon_data_buffers.end()) {
-    //        //ReconData buffer does not exist, create it
-    //        recon_data_buffers[key] = new GadgetContainerMessage<IsmrmrdReconData>;
-    //        //Initialize the data array
-    //        recon_data_buffers[key].data_.            
-    //    }
-    //    //Check and update the limits
-    //    recon_data_buffers[key].data_[
-    //}
 
+
+    
+    //Iterate over the imaging data of the bucket
+    for(std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->data_.begin();
+        it != m1->getObjectPtr()->data_.end(); ++it)
+    {
+        ISMRMRD::AcquisitionHeader & acqhdr = *it->head_->getObjectPtr();
+        hoNDArray< std::complex<float> > & acqdata = *it->data_->getObjectPtr();
+        
+        uint16_t espace = acqhdr.encoding_space_ref;
+
+        //Generate the key to the corresponding ReconData buffer
+        key = getKey(acqhdr.idx);
+        
+        //std::cout << "espace: " << acqhdr.encoding_space_ref << std::endl;
+        //std::cout << "slice: " << acqhdr.idx.slice << std::endl;
+        //std::cout << "rep: " << acqhdr.idx.repetition << std::endl;
+        //std::cout << "k1: " << acqhdr.idx.kspace_encode_step_1 << std::endl;
+        //std::cout << "k2: " << acqhdr.idx.kspace_encode_step_2 << std::endl;
+        //std::cout << "seg: " << acqhdr.idx.segment << std::endl;
+        //std::cout << "key: " << key << std::endl;
+        
+        //Look up the corresponding ReconData buffer
+        if (recon_data_buffers.find(key) == recon_data_buffers.end())
+        {
+            //ReconData buffer does not exist, create it
+            recon_data_buffers[key] = new GadgetContainerMessage<IsmrmrdReconData>;
+        }
+
+        //Look up the DataBuffered entry corresponding to this encoding space
+        // create if needed and set the fields of view and matrix size
+        //std::cout << "RBIT " << recon_data_buffers[key]->getObjectPtr()->rbit_.size() << std::endl;
+        if ( recon_data_buffers[key]->getObjectPtr()->rbit_.size() < (espace+1) )
+        {
+            recon_data_buffers[key]->getObjectPtr()->rbit_.resize(espace+1);
+        }
+        
+        // TODO handle oversampling for the cartesian case
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[0] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.x;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[1] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.y;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[2] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.z;
+        
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[0] = hdr_.encoding[espace].encodedSpace.matrixSize.x;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[1] = hdr_.encoding[espace].encodedSpace.matrixSize.y;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[2] = hdr_.encoding[espace].encodedSpace.matrixSize.z;
+        
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.recon_FOV_[0] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.x;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.recon_FOV_[1] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.y;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.recon_FOV_[2] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.z;
+        
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.recon_matrix_[0] = hdr_.encoding[espace].reconSpace.matrixSize.x;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.recon_matrix_[1] = hdr_.encoding[espace].reconSpace.matrixSize.y;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.recon_matrix_[2] = hdr_.encoding[espace].reconSpace.matrixSize.z;
+        
+        // TODO handle oversampling for the cartesian case
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].min_ = 0;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].max_ = hdr_.encoding[espace].encodedSpace.matrixSize.x - 1;            
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].center_ = hdr_.encoding[espace].encodedSpace.matrixSize.x / 2;
+        
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[1].min_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[1].max_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->maximum;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[1].center_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->center;
+        
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[2].min_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->minimum;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[2].max_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->maximum;
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[2].center_ =
+                hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->center;
+
+        if (recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.get_number_of_elements() == 0)
+        {
+            //Allocate the reference data array
+            //7D,  fixed order [RO, E1, E2, CHA, SLC, N, S]
+            //11D, fixed order [RO, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
+            uint16_t NRO;
+            if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+                NRO = hdr_.encoding[espace].encodedSpace.matrixSize.x;
+            } else {
+                NRO = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
+            }
+            
+            uint16_t NE1;
+            if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1.is_present()) {
+                NE1 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum + 1;
+            } else {
+                NE1 = *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_1.rbegin() - *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_1.begin() + 1;
+            }
+            
+            uint16_t NE2;
+            if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2.is_present()) {
+                NE2 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->minimum + 1;
+            } else {
+                NE2 = *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_2.rbegin() - *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_2.begin() + 1;
+            }
+            
+            uint16_t NCHA = acqhdr.active_channels;
+            
+            uint16_t NSLC;
+            if (split_slices_) {
+                NSLC = 1;
+            } else {
+                if (hdr_.encoding[espace].encodingLimits.slice.is_present()) {
+                    NSLC = hdr_.encoding[espace].encodingLimits.slice->maximum - hdr_.encoding[espace].encodingLimits.slice->minimum + 1;
+                } else {
+                    NSLC = *m1->getObjectPtr()->datastats_[espace].slice.rbegin() - *m1->getObjectPtr()->datastats_[espace].slice.begin() + 1;
+                }
+            }
+            
+            uint16_t NN;
+            switch (N_) {
+                case PHASE:
+                    NN = *m1->getObjectPtr()->datastats_[espace].phase.rbegin() - *m1->getObjectPtr()->datastats_[espace].phase.begin() + 1;
+                    break;
+                case CONTRAST:
+                    NN = *m1->getObjectPtr()->datastats_[espace].contrast.rbegin() - *m1->getObjectPtr()->datastats_[espace].contrast.begin() + 1;
+                    break;
+                case REPETITION:
+                    NN = *m1->getObjectPtr()->datastats_[espace].repetition.rbegin() - *m1->getObjectPtr()->datastats_[espace].repetition.begin() + 1;
+                    break;
+                case SET:
+                    NN = *m1->getObjectPtr()->datastats_[espace].set.rbegin() - *m1->getObjectPtr()->datastats_[espace].set.begin() + 1;
+                    break;
+                case SEGMENT:
+                    NN = *m1->getObjectPtr()->datastats_[espace].segment.rbegin() - *m1->getObjectPtr()->datastats_[espace].segment.begin() + 1;
+                    break;
+                case AVERAGE:
+                    NN = *m1->getObjectPtr()->datastats_[espace].average.rbegin() - *m1->getObjectPtr()->datastats_[espace].average.begin() + 1;
+                    break;
+                default:
+                    NN = 1;
+            }
+            
+            uint16_t NS;
+            switch (S_) {
+                case PHASE:
+                    NS = *m1->getObjectPtr()->datastats_[espace].phase.rbegin() - *m1->getObjectPtr()->datastats_[espace].phase.begin() + 1;
+                    break;
+                case CONTRAST:
+                    NS = *m1->getObjectPtr()->datastats_[espace].contrast.rbegin() - *m1->getObjectPtr()->datastats_[espace].contrast.begin() + 1;
+                    break;
+                case REPETITION:
+                    NS = *m1->getObjectPtr()->datastats_[espace].repetition.rbegin() - *m1->getObjectPtr()->datastats_[espace].repetition.begin() + 1;
+                    break;
+                case SET:
+                    NS = *m1->getObjectPtr()->datastats_[espace].set.rbegin() - *m1->getObjectPtr()->datastats_[espace].set.begin() + 1;
+                    break;
+                case SEGMENT:
+                    NS = *m1->getObjectPtr()->datastats_[espace].segment.rbegin() - *m1->getObjectPtr()->datastats_[espace].segment.begin() + 1;
+                    break;
+                case AVERAGE:
+                    NS = *m1->getObjectPtr()->datastats_[espace].average.rbegin() - *m1->getObjectPtr()->datastats_[espace].average.begin() + 1;
+                    break;
+                default:
+                    NS = 1;
+            }
+
+            //std::cout << "Data dimensions:" << std::endl;
+            //std::cout << "   NRO:  " << NRO  << std::endl;
+            //std::cout << "   NE1:  " << NE1  << std::endl;
+            //std::cout << "   NE2:  " << NE2  << std::endl;
+            //std::cout << "   NSLC: " << NSLC << std::endl;
+            //std::cout << "   NCHA: " << NCHA << std::endl;
+            //std::cout << "   NN:   " << NN   << std::endl;
+            //std::cout << "   NS:   " << NS   << std::endl;
+
+            //Allocate the array for the data
+            try
+            {
+                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
+                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.fill(std::complex<float>(0.0f,0.0f));
+            }
+            catch (std::runtime_error &err)
+            {
+                GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference data array\n");
+                // TODO how do we clean up before returning?
+                return GADGET_FAIL;
+            }
+
+            //Allocate the array for the headers
+            try
+            {
+                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.headers_.create(NE1, NE2, NSLC, NN, NS);
+                //TODO how do we insure that the non-visited locations have empty headers?
+            }
+            catch (std::runtime_error &err)
+            {
+                GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference headers array\n");
+                // TODO how do we clean up before returning?
+                return GADGET_FAIL;
+            }
+            
+            //Allocate the array for the trajectories
+            uint16_t TRAJDIM = acqhdr.trajectory_dimensions;
+            if (TRAJDIM > 0)
+            {
+                try
+                {
+                    recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_.create(NRO, TRAJDIM, NE1, NE2, NSLC, NN, NS);
+                    recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_.fill(0.0f);
+                }
+                catch (std::runtime_error &err)
+                {
+                    GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference trajectory array\n");
+                    // TODO how do we clean up before returning?
+                    return GADGET_FAIL;
+                }
+            }
+        }
+        
+        size_t slice_loc;
+        if (split_slices_)
+        {
+            slice_loc = 0;
+        }
+        else
+        {
+            slice_loc = acqhdr.idx.slice;
+        }
+        
+        //Stuff the data
+        uint16_t npts_to_copy = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
+        long long offset;
+        if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+            offset  = (long long) recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].center_ - (long long) acqhdr.center_sample;
+        } else {
+            //TODO what about EPI with asymmetric readouts?
+            //TODO any other sort of trajectory?
+            offset = 0;
+        }
+        long long roffset = (long long) recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.get_size(0) - npts_to_copy - offset;
+
+        //std::cout << "DATA" << std::endl;
+        //std::cout << "Num_samp: "<< acqhdr.number_of_samples << ", pre: " << acqhdr.discard_pre << ", post" << acqhdr.discard_post << std::endl;        
+        //std::cout << "Sampling limits: " 
+        //          << "  min: " << recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].min_
+        //          << "  max: " << recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].max_
+        //          << "  center: " << recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].center_
+        //          << std::endl;
+        //std::cout << "npts_to_copy = " << npts_to_copy  << std::endl;
+        //std::cout << "offset = " << offset  << std::endl;
+        //std::cout << "loffset = " << roffset << std::endl;
+                
+        if ((offset < 0) | (roffset < 0) )
+        {
+            throw std::runtime_error("Acquired reference data does not fit into the reference data buffer.\n");
+            //TODO how do we keep the gagetron from crashing?
+            return GADGET_FAIL;
+        }
+        std::complex<float> *refdataptr;
+        uint16_t NCHA = recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.get_size(4);
+        for (uint16_t cha = 0; cha < NCHA; cha++)
+        {
+            refdataptr = & recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_(
+                offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
+            memcpy(refdataptr, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
+        }
+
+        //Stuff the header
+        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.headers_(acqhdr.idx.kspace_encode_step_1,
+                                 acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx)) = acqhdr;
+
+        //Stuff the trajectory
+        if (acqhdr.trajectory_dimensions > 0) {
+            float * reftrajptr;
+            hoNDArray< float > & acqtraj = *it->traj_->getObjectPtr();            
+            for (uint16_t tdim = 0; tdim < acqhdr.trajectory_dimensions; tdim++) {
+                reftrajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_(
+                    offset, tdim, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
+                memcpy(refdataptr, & acqtraj(acqhdr.discard_pre, tdim), sizeof(float)*npts_to_copy);
+            }
+        }
+    }
+
+    
     //Send all the ReconData messages
     //GADGET_DEBUG2("End of bucket reached, sending out %d ReconData buffers\n", recon_data_buffers.size());
     for(std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* >::iterator it = recon_data_buffers.begin(); it != recon_data_buffers.end(); it++)
