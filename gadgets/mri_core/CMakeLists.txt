@@ -121,7 +121,14 @@ if (WIN32)
     set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} WhiteNoiseInjectorGadget.cpp )
 endif (WIN32)
 
-set( gadgetron_mricore_config_files default.xml default_short.xml default_optimized.xml default_measurement_dependencies.xml unified.xml)
+set( gadgetron_mricore_config_files
+    default.xml
+    default_short.xml
+    default_optimized.xml
+    default_measurement_dependencies.xml
+    unified.xml
+    unified_epi.xml
+)
 
 add_library(gadgetron_mricore SHARED 
     gadgetron_mricore_export.h 

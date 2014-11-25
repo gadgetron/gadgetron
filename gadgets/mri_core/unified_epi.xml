@@ -25,22 +25,37 @@
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
   
+    <!--Prewhiten -->
     <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetron_mricore</dll>
       <classname>NoiseAdjustGadget</classname>
     </gadget>
   
+    <!-- Grid and FT to x -->
     <gadget>
-      <name>RemoveROOversampling</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>RemoveROOversamplingGadget</classname>
-      <property>
-	<name>constant_noise_variance</name>
-	<value>false</value>
-      </property>
+      <name>ReconX</name>
+      <dll>gadgetron_epi</dll>
+      <classname>EPIReconXGadget</classname>
     </gadget>
 
+    <!-- Apply EPI corrections -->
+    <gadget>
+      <name>EPICorr</name>
+      <dll>gadgetron_epi</dll>
+      <classname>EPICorrGadget</classname>
+    </gadget>
+
+    <!-- FFT in X back to k -->
+    <gadget>
+        <name>FFTX</name>
+        <dll>gadgetron_epi</dll>
+        <classname>FFTXGadget</classname>
+    </gadget>
+
+    <!-- Accumulate and trigger
+            1 bucket for each slice 
+            trigger on every repetition -->
     <gadget>
         <name>AccTrig</name>
         <dll>gadgetron_mricore</dll>
@@ -55,6 +70,8 @@
         </property>
     </gadget>
 
+    <!-- Convert from bucket to buffer
+            1 buffer per slice -->
     <gadget>
         <name>Buff</name>
         <dll>gadgetron_mricore</dll>
@@ -68,8 +85,8 @@
           <value>phase</value>
         </property>
         <property>
-          <name>split_slice</name>
-          <value>false</value>
+          <name>split_slices</name>
+          <value>true</value>
         </property>
         <property>
           <name>ignore_segment</name>
