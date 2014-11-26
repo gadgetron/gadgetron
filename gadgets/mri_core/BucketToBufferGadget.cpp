@@ -278,47 +278,18 @@ int BucketToBufferGadget
             //std::cout << "   NS:   " << NS   << std::endl;
 
             //Allocate the array for the data
-            try
-            {
-                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
-                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.fill(std::complex<float>(0.0f,0.0f));
-            }
-            catch (std::runtime_error &err)
-            {
-                GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference data array\n");
-                // TODO how do we clean up before returning?
-                return GADGET_FAIL;
-            }
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.fill(std::complex<float>(0.0f,0.0f));
 
             //Allocate the array for the headers
-            try
-            {
-                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.headers_.create(NE1, NE2, NSLC, NN, NS);
-                //TODO how do we insure that the non-visited locations have empty headers?
-            }
-            catch (std::runtime_error &err)
-            {
-                GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference headers array\n");
-                // TODO how do we clean up before returning?
-                return GADGET_FAIL;
-            }
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.headers_.create(NE1, NE2, NSLC, NN, NS);
             
             //Allocate the array for the trajectories
             uint16_t TRAJDIM = acqhdr.trajectory_dimensions;
-            //TODO what about the discards?
             if (TRAJDIM > 0)
             {
-                try
-                {
-                    recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_.create(NRO, TRAJDIM, NE1, NE2, NSLC, NN, NS);
-                    recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_.fill(0.0f);
-                }
-                catch (std::runtime_error &err)
-                {
-                    GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference trajectory array\n");
-                    // TODO how do we clean up before returning?
-                    return GADGET_FAIL;
-                }
+                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_.create(NRO, TRAJDIM, NE1, NE2, NSLC, NN, NS);
+                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_.fill(0.0f);
             }
             
             //boost::shared_ptr< std::vector<size_t> > dims =  recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_dimensions();
@@ -365,8 +336,8 @@ int BucketToBufferGadget
         if ((offset < 0) | (roffset < 0) )
         {
             throw std::runtime_error("Acquired reference data does not fit into the reference data buffer.\n");
-            return GADGET_FAIL;
         }
+        
         std::complex<float> *refdataptr;
         uint16_t NCHA = recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_size(4);
         for (uint16_t cha = 0; cha < NCHA; cha++)
@@ -563,46 +534,18 @@ int BucketToBufferGadget
             //std::cout << "   NS:   " << NS   << std::endl;
 
             //Allocate the array for the data
-            try
-            {
-                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
-                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.fill(std::complex<float>(0.0f,0.0f));
-            }
-            catch (std::runtime_error &err)
-            {
-                GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference data array\n");
-                // TODO how do we clean up before returning?
-                return GADGET_FAIL;
-            }
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.fill(std::complex<float>(0.0f,0.0f));
 
             //Allocate the array for the headers
-            try
-            {
-                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.headers_.create(NE1, NE2, NSLC, NN, NS);
-                //TODO how do we insure that the non-visited locations have empty headers?
-            }
-            catch (std::runtime_error &err)
-            {
-                GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference headers array\n");
-                // TODO how do we clean up before returning?
-                return GADGET_FAIL;
-            }
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.headers_.create(NE1, NE2, NSLC, NN, NS);
             
             //Allocate the array for the trajectories
             uint16_t TRAJDIM = acqhdr.trajectory_dimensions;
             if (TRAJDIM > 0)
             {
-                try
-                {
-                    recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_.create(NRO, TRAJDIM, NE1, NE2, NSLC, NN, NS);
-                    recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_.fill(0.0f);
-                }
-                catch (std::runtime_error &err)
-                {
-                    GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new reference trajectory array\n");
-                    // TODO how do we clean up before returning?
-                    return GADGET_FAIL;
-                }
+                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_.create(NRO, TRAJDIM, NE1, NE2, NSLC, NN, NS);
+                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_.fill(0.0f);
             }
         }
         
@@ -642,9 +585,8 @@ int BucketToBufferGadget
         if ((offset < 0) | (roffset < 0) )
         {
             throw std::runtime_error("Acquired reference data does not fit into the reference data buffer.\n");
-            //TODO how do we keep the gagetron from crashing?
-            return GADGET_FAIL;
         }
+        
         std::complex<float> *refdataptr;
         uint16_t NCHA = recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.get_size(4);
         for (uint16_t cha = 0; cha < NCHA; cha++)
@@ -679,8 +621,7 @@ int BucketToBufferGadget
         if (it->second) {
             if (this->next()->putq(it->second) == -1) {
                 it->second->release();
-                GADGET_DEBUG1("Failed to pass bucket down the chain\n");
-                return GADGET_FAIL;
+                throw std::runtime_error("Failed to pass bucket down the chain\n");
             }
         }
     }
