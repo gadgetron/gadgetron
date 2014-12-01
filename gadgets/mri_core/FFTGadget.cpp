@@ -36,14 +36,6 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
         img_dims[2] = E2;
         img_dims[3] = CHA;
 
-        std::cout << "RO = " << RO << std::endl;
-        std::cout << "E1 = " << E1 << std::endl;
-        std::cout << "E2 = " << E2 << std::endl;
-        std::cout << "CHA = " << CHA << std::endl;
-        std::cout << "LOC = " << LOC << std::endl;
-        std::cout << "N = " << N << std::endl;
-        std::cout << "S = " << S << std::endl;
-        
         //Loop over S and N and LOC
         for (uint16_t s=0; s < S; s++) {                
             for (uint16_t n=0; n < N; n++) {
