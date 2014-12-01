@@ -77,5 +77,29 @@
         </property>
     </gadget>
 
+    <gadget>
+        <name>FFT</name>
+        <dll>gadgetron_mricore</dll>
+	<classname>UnifiedFFTGadget</classname>
+    </gadget>
+
+    <gadget>
+        <name>Combine</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>CombineGadget</classname>
+    </gadget>
+
+    <gadget>
+        <name>Extract</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ExtractGadget</classname>
+    </gadget>
+
+    <gadget>
+        <name>ImageFinishFLOAT</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageFinishGadgetFLOAT</classname>
+    </gadget>
+
 
 </gadgetronStreamConfiguration>

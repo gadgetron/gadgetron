@@ -98,10 +98,6 @@ int BucketToBufferGadget
     //    }
     //}
 
-    // TODO check handling of the remove oversampling and partial fourier
-    // TODO check the handling for non-cartesian trajectories
-    // TODO the encoding limits are optional.  We only use them if they are there.
-    
     //Iterate over the reference data of the bucket
     for(std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->ref_.begin();
         it != m1->getObjectPtr()->ref_.end(); ++it)
@@ -137,12 +133,18 @@ int BucketToBufferGadget
             recon_data_buffers[key]->getObjectPtr()->rbit_.resize(espace+1);
         }
         
-        // TODO handle oversampling for the cartesian case
-        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_FOV_[0] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.x;
+        // For cartesian trajectories, assume that any oversampling has been removed.
+        if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[0] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.x;
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[0] = hdr_.encoding[espace].reconSpace.matrixSize.x;
+        } else {
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[0] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.x;
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[0] = hdr_.encoding[espace].encodedSpace.matrixSize.x;
+        }
+        
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_FOV_[1] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.y;
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_FOV_[2] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.z;
         
-        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_matrix_[0] = hdr_.encoding[espace].encodedSpace.matrixSize.x;
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_matrix_[1] = hdr_.encoding[espace].encodedSpace.matrixSize.y;
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.encoded_matrix_[2] = hdr_.encoding[espace].encodedSpace.matrixSize.z;
         
@@ -154,18 +156,16 @@ int BucketToBufferGadget
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_matrix_[1] = hdr_.encoding[espace].reconSpace.matrixSize.y;
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.recon_matrix_[2] = hdr_.encoding[espace].reconSpace.matrixSize.z;
         
-        // TODO handle oversampling for the cartesian case
-        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].min_ = 0;
-        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].max_ = hdr_.encoding[espace].encodedSpace.matrixSize.x - 1;
-        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].center_ = hdr_.encoding[espace].encodedSpace.matrixSize.x / 2;
-        
-        //What is kspace_encoding_step_0 for?
-        //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].min_ =
-        //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_0.minimum;
-        //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].max_ =
-        //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_0.maximum;
-        //recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[0].center_ =
-        //        hdr_.encoding[espace].encodingLimits.kspace_encoding_step_0.center;
+        // For cartesian trajectories, assume that any oversampling has been removed.
+        if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].min_ = 0;
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].max_ = hdr_.encoding[espace].reconSpace.matrixSize.x - 1;
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].center_ = hdr_.encoding[espace].reconSpace.matrixSize.x / 2;
+        } else {
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].min_ = 0;
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].max_ = hdr_.encoding[espace].encodedSpace.matrixSize.x - 1;            
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].center_ = hdr_.encoding[espace].encodedSpace.matrixSize.x / 2;
+        }
         
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.sampling_.sampling_limits_[1].min_ =
                 hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum;
@@ -401,12 +401,18 @@ int BucketToBufferGadget
             recon_data_buffers[key]->getObjectPtr()->rbit_.resize(espace+1);
         }
         
-        // TODO handle oversampling for the cartesian case
-        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[0] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.x;
+        // For cartesian trajectories, assume that any oversampling has been removed.
+        if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[0] = hdr_.encoding[espace].reconSpace.fieldOfView_mm.x;
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[0] = hdr_.encoding[espace].reconSpace.matrixSize.x;
+        } else {
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[0] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.x;
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[0] = hdr_.encoding[espace].encodedSpace.matrixSize.x;
+        }
+        
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[1] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.y;
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[2] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.z;
         
-        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[0] = hdr_.encoding[espace].encodedSpace.matrixSize.x;
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[1] = hdr_.encoding[espace].encodedSpace.matrixSize.y;
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[2] = hdr_.encoding[espace].encodedSpace.matrixSize.z;
         
@@ -418,10 +424,16 @@ int BucketToBufferGadget
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.recon_matrix_[1] = hdr_.encoding[espace].reconSpace.matrixSize.y;
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.recon_matrix_[2] = hdr_.encoding[espace].reconSpace.matrixSize.z;
         
-        // TODO handle oversampling for the cartesian case
-        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].min_ = 0;
-        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].max_ = hdr_.encoding[espace].encodedSpace.matrixSize.x - 1;            
-        recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].center_ = hdr_.encoding[espace].encodedSpace.matrixSize.x / 2;
+        // For cartesian trajectories, assume that any oversampling has been removed.
+        if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].min_ = 0;
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].max_ = hdr_.encoding[espace].reconSpace.matrixSize.x - 1;
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].center_ = hdr_.encoding[espace].reconSpace.matrixSize.x / 2;
+        } else {
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].min_ = 0;
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].max_ = hdr_.encoding[espace].encodedSpace.matrixSize.x - 1;            
+            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[0].center_ = hdr_.encoding[espace].encodedSpace.matrixSize.x / 2;
+        }
         
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.sampling_limits_[1].min_ =
                 hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum;
