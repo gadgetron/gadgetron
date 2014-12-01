@@ -28,13 +28,21 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
         uint16_t LOC = dbuff.data_.get_size(4);
         uint16_t N = dbuff.data_.get_size(5);
         uint16_t S = dbuff.data_.get_size(6);
-        
+
         //Each image will be [RO,E1,E2,CHA] big
         std::vector<size_t> img_dims(4);
         img_dims[0] = RO;
         img_dims[1] = E1;
         img_dims[2] = E2;
         img_dims[3] = CHA;
+
+        std::cout << "RO = " << RO << std::endl;
+        std::cout << "E1 = " << E1 << std::endl;
+        std::cout << "E2 = " << E2 << std::endl;
+        std::cout << "CHA = " << CHA << std::endl;
+        std::cout << "LOC = " << LOC << std::endl;
+        std::cout << "N = " << N << std::endl;
+        std::cout << "S = " << S << std::endl;
         
         //Loop over S and N and LOC
         for (uint16_t s=0; s < S; s++) {                

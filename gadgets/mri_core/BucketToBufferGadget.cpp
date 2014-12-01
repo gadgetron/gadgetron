@@ -194,17 +194,25 @@ int BucketToBufferGadget
             }
             
             uint16_t NE1;
-            if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1.is_present()) {
-                NE1 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum + 1;
+            if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+                NE1 = hdr_.encoding[espace].encodedSpace.matrixSize.y;
             } else {
-                NE1 = *m1->getObjectPtr()->refstats_[espace].kspace_encode_step_1.rbegin() - *m1->getObjectPtr()->refstats_[espace].kspace_encode_step_1.begin() + 1;
+                if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1.is_present()) {
+                NE1 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum + 1;
+                } else {
+                    NE1 = *m1->getObjectPtr()->refstats_[espace].kspace_encode_step_1.rbegin() - *m1->getObjectPtr()->refstats_[espace].kspace_encode_step_1.begin() + 1;
+                }
             }
             
             uint16_t NE2;
-            if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2.is_present()) {
-                NE2 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->minimum + 1;
+            if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+                NE2 = hdr_.encoding[espace].encodedSpace.matrixSize.z;
             } else {
-                NE2 = *m1->getObjectPtr()->refstats_[espace].kspace_encode_step_2.rbegin() - *m1->getObjectPtr()->refstats_[espace].kspace_encode_step_2.begin() + 1;
+                if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2.is_present()) {
+                    NE2 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->minimum + 1;
+                } else {
+                    NE2 = *m1->getObjectPtr()->refstats_[espace].kspace_encode_step_2.rbegin() - *m1->getObjectPtr()->refstats_[espace].kspace_encode_step_2.begin() + 1;
+                }
             }
             
             uint16_t NCHA = acqhdr.active_channels;
@@ -338,13 +346,13 @@ int BucketToBufferGadget
             throw std::runtime_error("Acquired reference data does not fit into the reference data buffer.\n");
         }
         
-        std::complex<float> *refdataptr;
-        uint16_t NCHA = recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_size(4);
+        std::complex<float> *dataptr;
+        uint16_t NCHA = recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_size(3);
         for (uint16_t cha = 0; cha < NCHA; cha++)
         {
-            refdataptr = & recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_(
-                offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
-            memcpy(refdataptr, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
+            dataptr = & recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_(
+                offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, cha, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
+            memcpy(dataptr, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
         }
 
         //Stuff the header
@@ -353,12 +361,12 @@ int BucketToBufferGadget
 
         //Stuff the trajectory
         if (acqhdr.trajectory_dimensions > 0) {
-            float * reftrajptr;
+            float * trajptr;
             hoNDArray< float > & acqtraj = *it->traj_->getObjectPtr();  // TODO do we need to check this?            
             for (uint16_t tdim = 0; tdim < acqhdr.trajectory_dimensions; tdim++) {
-                reftrajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_(
+                trajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_(
                     offset, tdim, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
-                memcpy(refdataptr, & acqtraj(acqhdr.discard_pre, tdim), sizeof(float)*npts_to_copy);
+                memcpy(trajptr, & acqtraj(acqhdr.discard_pre, tdim), sizeof(float)*npts_to_copy);
             }
         }
         
@@ -462,17 +470,25 @@ int BucketToBufferGadget
             }
             
             uint16_t NE1;
-            if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1.is_present()) {
-                NE1 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum + 1;
+            if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+                NE1 = hdr_.encoding[espace].encodedSpace.matrixSize.y;
             } else {
-                NE1 = *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_1.rbegin() - *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_1.begin() + 1;
+                if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1.is_present()) {
+                    NE1 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_1->minimum + 1;
+                } else {
+                    NE1 = *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_1.rbegin() - *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_1.begin() + 1;
+                }
             }
             
             uint16_t NE2;
-            if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2.is_present()) {
-                NE2 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->minimum + 1;
+            if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
+                NE2 = hdr_.encoding[espace].encodedSpace.matrixSize.z;
             } else {
-                NE2 = *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_2.rbegin() - *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_2.begin() + 1;
+                if (hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2.is_present()) {
+                    NE2 = hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->maximum - hdr_.encoding[espace].encodingLimits.kspace_encoding_step_2->minimum + 1;
+                } else {
+                    NE2 = *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_2.rbegin() - *m1->getObjectPtr()->datastats_[espace].kspace_encode_step_2.begin() + 1;
+                }
             }
             
             uint16_t NCHA = acqhdr.active_channels;
@@ -599,13 +615,13 @@ int BucketToBufferGadget
             throw std::runtime_error("Acquired reference data does not fit into the reference data buffer.\n");
         }
         
-        std::complex<float> *refdataptr;
-        uint16_t NCHA = recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.get_size(4);
+        std::complex<float> *dataptr;
+        uint16_t NCHA = recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.get_size(3);
         for (uint16_t cha = 0; cha < NCHA; cha++)
         {
-            refdataptr = & recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_(
-                offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
-            memcpy(refdataptr, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
+            dataptr = & recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_(
+                offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, cha, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
+            memcpy(dataptr, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
         }
 
         //Stuff the header
@@ -614,12 +630,12 @@ int BucketToBufferGadget
 
         //Stuff the trajectory
         if (acqhdr.trajectory_dimensions > 0) {
-            float * reftrajptr;
+            float * trajptr;
             hoNDArray< float > & acqtraj = *it->traj_->getObjectPtr();            
             for (uint16_t tdim = 0; tdim < acqhdr.trajectory_dimensions; tdim++) {
-                reftrajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_(
+                trajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_(
                     offset, tdim, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
-                memcpy(refdataptr, & acqtraj(acqhdr.discard_pre, tdim), sizeof(float)*npts_to_copy);
+                memcpy(trajptr, & acqtraj(acqhdr.discard_pre, tdim), sizeof(float)*npts_to_copy);
             }
         }
     }
