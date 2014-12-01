@@ -188,7 +188,7 @@ int BucketToBufferGadget
             //11D, fixed order [RO, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
             uint16_t NRO;
             if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
-                NRO = hdr_.encoding[espace].encodedSpace.matrixSize.x;
+                NRO = hdr_.encoding[espace].reconSpace.matrixSize.x;
             } else {
                 NRO = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
             }
@@ -409,7 +409,7 @@ int BucketToBufferGadget
             recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[0] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.x;
             recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_matrix_[0] = hdr_.encoding[espace].encodedSpace.matrixSize.x;
         }
-        
+
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[1] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.y;
         recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.sampling_.encoded_FOV_[2] = hdr_.encoding[espace].encodedSpace.fieldOfView_mm.z;
         
@@ -456,7 +456,7 @@ int BucketToBufferGadget
             //11D, fixed order [RO, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
             uint16_t NRO;
             if (hdr_.encoding[espace].trajectory.compare("cartesian") == 0) {
-                NRO = hdr_.encoding[espace].encodedSpace.matrixSize.x;
+                NRO = hdr_.encoding[espace].reconSpace.matrixSize.x;
             } else {
                 NRO = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
             }

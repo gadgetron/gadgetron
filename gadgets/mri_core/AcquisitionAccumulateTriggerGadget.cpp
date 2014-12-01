@@ -117,6 +117,13 @@ namespace Gadgetron{
   ::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	    GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
+
+    //Ignore noise scans
+    if (m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT)) {
+        m1->release();
+        return GADGET_OK;
+    }
+                
     //It is enough to put the first one, since they are linked
     unsigned short sorting_index = 0;
     switch (sort_) {

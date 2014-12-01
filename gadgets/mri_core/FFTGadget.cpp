@@ -78,11 +78,16 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
                     memcpy(cm1->getObjectPtr()->patient_table_position, acqhdr.patient_table_position, sizeof(float)*3);
                     cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
                     cm1->getObjectPtr()->image_index = ++image_counter_;
-                    
-                    //Do the FFTs
-//                    hoNDFFT<float>::instance()->ifft(cm2->getObjectPtr(),0);
-//                   hoNDFFT<float>::instance()->ifft(cm2->getObjectPtr(),1);
-//                    hoNDFFT<float>::instance()->ifft(cm2->getObjectPtr(),2);
+
+                    //Copy the 4D data block [RO,E1,E2,CHA] for this loc, n, and s into the output image
+                    memcpy(cm2->getObjectPtr()->get_data_ptr(), &dbuff.data_(0,0,0,0,loc,n,s), RO*E1*E2*CHA*sizeof(std::complex<float>));
+
+                    //Do the FFTs in place
+                    hoNDFFT<float>::instance()->ifft(cm2->getObjectPtr(),0);
+                    hoNDFFT<float>::instance()->ifft(cm2->getObjectPtr(),1);
+                    if (E2>1) {
+                        hoNDFFT<float>::instance()->ifft(cm2->getObjectPtr(),2);
+                    }
 
                     //Pass the image down the chain
                     if (this->next()->putq(cm1) < 0) {

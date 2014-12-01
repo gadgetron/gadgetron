@@ -55,17 +55,23 @@
 	<classname>BucketToBufferGadget</classname>
         <property>
             <name>N_dimension</name>
-            <value>contrast</value>
+            <value></value>
         </property>
         <property>
           <name>S_dimension</name>
-          <value>phase</value>
+          <value></value>
         </property>
         <property>
           <name>split_slice</name>
           <value>true</value>
         </property>
     </gadget>
+
+     <gadget>
+      <name>FFT</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>FFTGadget</classname>
+     </gadget>
 
     <gadget>
       <name>Combine</name>
