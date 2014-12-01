@@ -34,26 +34,51 @@
             <value>false</value>
         </property>
     </gadget>
+
     <gadget>
-      <name>Acc</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>AccumulatorGadget</classname>
+        <name>AccTrig</name>
+        <dll>gadgetron_mricore</dll>
+	<classname>AcquisitionAccumulateTriggerGadget</classname>
+        <property>
+            <name>trigger_dimension</name>
+            <value>repetition</value>
+        </property>
+        <property>
+          <name>sorting_dimension</name>
+          <value>slice</value>
+        </property>
     </gadget>
+
     <gadget>
-      <name>FFT</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>FFTGadget</classname>
+        <name>Buff</name>
+        <dll>gadgetron_mricore</dll>
+	<classname>BucketToBufferGadget</classname>
+        <property>
+            <name>N_dimension</name>
+            <value>contrast</value>
+        </property>
+        <property>
+          <name>S_dimension</name>
+          <value>phase</value>
+        </property>
+        <property>
+          <name>split_slice</name>
+          <value>true</value>
+        </property>
     </gadget>
+
     <gadget>
       <name>Combine</name>
       <dll>gadgetron_mricore</dll>
       <classname>CombineGadget</classname>
     </gadget>
+
     <gadget>
       <name>Extract</name>
       <dll>gadgetron_mricore</dll>
       <classname>ExtractGadget</classname>
     </gadget>  
+
     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetron_mricore</dll>
