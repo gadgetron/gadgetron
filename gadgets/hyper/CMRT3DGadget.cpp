@@ -88,7 +88,6 @@ int CMRT3DGadget::process_config(ACE_Message_Block* mb)
 			uint64d2(image_space_dimensions_3D_[0], image_space_dimensions_3D_[1])<<1, // !! <-- alpha_
 			W_ );
 
-	E_->preprocess( traj.get() );
 
 	return GADGET_OK;
 }
@@ -165,6 +164,8 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 
 	if( images_used_ == num_projections_to_use_ ){
 
+		auto traj = calculate_trajectory(tot_images_);
+		E_->preprocess( traj.get() );
 		GADGET_DEBUG1("\n\nPerforming reconstruction\n");
 
 		std::vector<size_t> dims;
@@ -210,6 +211,8 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 			m->release();
 			return GADGET_FAIL;
 		}
+		tot_images_ += images_used_;
+		images_used_ = 0;
 	}
 
 	m1->release();
@@ -217,14 +220,14 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 }
 
 boost::shared_ptr< cuNDArray<floatd2> >
-CMRT3DGadget::calculate_trajectory()
+CMRT3DGadget::calculate_trajectory(unsigned int offset)
 {
 	// Define trajectories
 
 	boost::shared_ptr< cuNDArray<floatd2> > traj;
 	if (golden_ratio_)
 		traj =	compute_radial_trajectory_golden_ratio_2d<float>
-			( image_space_dimensions_3D_[0], num_projections_to_use_, 1,0,GR_ORIGINAL );
+			( image_space_dimensions_3D_[0], num_projections_to_use_, 1,offset,GR_ORIGINAL );
 	else
 		traj =	compute_radial_trajectory_fixed_angle_2d<float>
 			( image_space_dimensions_3D_[0], num_projections_to_use_, 1 /*number of frames*/ );

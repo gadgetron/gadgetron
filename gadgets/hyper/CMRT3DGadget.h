@@ -16,7 +16,7 @@ namespace Gadgetron {
     public Gadget2< ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
   {  
   public:
-    CMRT3DGadget() : images_received_(0), images_used_(0) {};
+    CMRT3DGadget() : images_received_(0), images_used_(0), tot_images_(0) {};
     ~CMRT3DGadget() {};
 
   protected:
@@ -25,7 +25,7 @@ namespace Gadgetron {
     virtual int process(GadgetContainerMessage< ISMRMRD::ImageHeader > *m1,
                         GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2);
 
-    virtual boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory();
+    virtual boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory(unsigned int offset=0);
     virtual boost::shared_ptr< cuNDArray<float> > calculate_density_compensation();
 
     boost::shared_ptr< cuNDArray< complext<float> > > buffer_;
@@ -36,6 +36,7 @@ namespace Gadgetron {
     unsigned int projections_percentage_;
     unsigned int images_received_;
     unsigned int images_used_;
+    unsigned int tot_images_;
     bool golden_ratio_;
   };
 }

@@ -13,7 +13,13 @@
 #include "cuNFFTOperator.h"
 #include "multiplicationOperatorContainer.h"
 #include "cuCgSolver.h"
-
+#include "cuTvOperator.h"
+#include "lbfgsSolver.h"
+#include "cuSbcCgSolver.h"
+#include "cuPartialDerivativeOperator.h"
+#include "cuPartialDerivativeOperator2.h"
+#include <numeric>
+#include <functional>
 #include "cuNlcgSolver.h"
 
 #include <ismrmrd/xml.h>
@@ -67,6 +73,9 @@ int CMRTGadget::process_config(ACE_Message_Block* mb)
 	//
 
 	golden_ratio_ = get_bool_value("golden_ratio");
+	use_TV_ = get_bool_value("use_TV");
+	projections_per_recon_ = get_int_value("projections_per_recon");
+	iterations_ = get_int_value("iterations");
 	frame_readout_queue_ = boost::shared_ptr< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>());
 	frame_traj_queue_ = boost::shared_ptr< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>());
 
@@ -121,7 +130,7 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 	//
 
 	bool is_last_scan_in_repetition =
-	    		m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_REPETITION);
+			m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_REPETITION);
 
 	if (is_last_scan_in_repetition) {
 		num_frames++;
@@ -140,93 +149,158 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 		bool is_last_scan_in_slice= m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
 		GADGET_DEBUG2("Last scan in slice %i \n",is_last_scan_in_slice);
 		//If we have enough projections, get the show on the road
-		if (is_last_scan_in_slice){
-			num_frames = 0;
-			GADGET_DEBUG1("Framing \n");
+		if (is_last_scan_in_slice ){
+			GADGET_DEBUG2("Framing %i frames \n",num_frames);
 
+			if (num_frames%projections_per_recon_ != 0) {
+				GADGET_DEBUG1("Number of frames must be divisible by number of projecitons");
+				return GADGET_FAIL;
+			}
 			boost::shared_ptr<cuNDArray<float_complext> > data = get_combined_frames();
+			auto data_dims = data->get_dimensions();
+			size_t ntimeframes = data_dims->back()/projections_per_recon_;
+			data_dims->back() = projections_per_recon_;
+			data_dims->push_back(ntimeframes);
+			data->reshape(data_dims);
 			// Initialize plan
 			//
 			GADGET_DEBUG2("Data size: %i %i %i",data->get_size(0),data->get_size(1),data->get_size(2));
-			boost::shared_ptr<cuNDArray<float> >cu_dcw(new cuNDArray<float>(
-					compute_radial_dcw_golden_ratio_2d<float>(
-							samples_per_readout_,data->get_size(1),1.0,1.0f/samples_per_readout_/dimensions_[1],0,GR_ORIGINAL).get()));
-
-			sqrt_inplace(cu_dcw.get());
 			boost::shared_ptr<cuNDArray<floatd2> >cu_traj(new cuNDArray<floatd2>(*traj));
 
 			std::vector<size_t> projection_dims;
-			projection_dims.push_back(dimensions_[0]);
+			projection_dims.push_back(dimensions_[0]*2);
 			projection_dims.push_back(dimensions_[1]);
-			projection_dims.push_back(dimensions_[3]);
+
+			projection_dims.push_back(projections_per_recon_);
+			projection_dims.push_back(ntimeframes);
 
 
 			//cuNDArray<float_complext> result(&image_space_dimensions_3D_);
 			boost::shared_ptr<CMRTOperator<float> > E(new CMRTOperator<float>);
-			E->setup(data,cu_dcw,cu_traj,image_space_dimensions_3D_,projection_dims,golden_ratio_);
+			E->setup(cu_traj,image_space_dimensions_3D_,projection_dims,0,golden_ratio_);
 
-			E->set_domain_dimensions(&image_space_dimensions_3D_);
+			auto image_space_dimensions_4D = image_space_dimensions_3D_;
+			image_space_dimensions_4D.push_back(ntimeframes);
+			E->set_domain_dimensions(&image_space_dimensions_4D);
 			E->set_codomain_dimensions(data->get_dimensions().get());
 
+
+			boost::shared_ptr<cuNDArray<float_complext> > result;
 			//cuCgSolver<float_complext> solver;
-			cuNlcgSolver<float_complext> solver;
-			solver.set_encoding_operator(E);
-			solver.set_max_iterations(20);
-			solver.set_tc_tolerance(1e-8f);
+			//cuNlcgSolver<float_complext> solver;
 
-			solver.set_output_mode(cuCgSolver<float_complext>::OUTPUT_VERBOSE);
+			if (use_TV_){
+				cuSbcCgSolver<float_complext> solver;
+				solver.set_encoding_operator(E);
+				//solver.set_max_iterations(20);
+				solver.set_max_outer_iterations(iterations_);
+				solver.get_inner_solver()->set_max_iterations(10);
+				solver.set_tc_tolerance(1e-8f);
+				auto Rx1_ = boost::make_shared< cuPartialDerivativeOperator<float_complext,4> >(0);
 
-			//*data *= *cu_dcw;
+				auto Ry1_ = boost::make_shared< cuPartialDerivativeOperator<float_complext,4> >(1);
+				auto Rz1_ = boost::make_shared< cuPartialDerivativeOperator<float_complext,4> >(2);
 
-			boost::shared_ptr<cuNDArray<float_complext> > result = solver.solve(data.get());
+				auto Rt1_ = boost::make_shared< cuPartialDerivativeOperator2<float_complext,4> >();
+
+				Rx1_->set_domain_dimensions(&image_space_dimensions_4D);
+				Rx1_->set_codomain_dimensions(&image_space_dimensions_4D);
+
+				Ry1_->set_domain_dimensions(&image_space_dimensions_4D);
+				Ry1_->set_codomain_dimensions(&image_space_dimensions_4D);
+
+				Rz1_->set_domain_dimensions(&image_space_dimensions_4D);
+				Rz1_->set_codomain_dimensions(&image_space_dimensions_4D);
+
+				Rt1_->set_domain_dimensions(&image_space_dimensions_4D);
+				Rt1_->set_codomain_dimensions(&image_space_dimensions_4D);
+				float lambda = 2000;
+				float mu = 1000;
+				Rx1_ ->set_weight(lambda);
+				Ry1_ ->set_weight(lambda);
+				Rz1_ ->set_weight(lambda);
+				Rt1_->set_weight(lambda);
+				E->set_weight(mu);
+				solver.add_regularization_group_operator(Rx1_);
+				solver.add_regularization_group_operator(Ry1_);
+				solver.add_regularization_group_operator(Rz1_);
+				solver.add_regularization_group_operator(Rt1_);
+				solver.add_group();
+
+
+
+
+				solver.set_output_mode(cuCgSolver<float_complext>::OUTPUT_VERBOSE);
+
+				//*data *= *cu_dcw;
+
+				result = solver.solve(data.get());
+			} else
+			{
+				cuCgSolver<float_complext> solver;
+				//cuNlcgSolver<float_complext> solver;
+				solver.set_encoding_operator(E);
+				solver.set_max_iterations(iterations_);
+				solver.set_tc_tolerance(1e-8f);
+				solver.set_output_mode(cuCgSolver<float_complext>::OUTPUT_VERBOSE);
+
+				result = solver.solve(data.get());
+			}
 			//boost::shared_ptr<cuNDArray<float_complext> > result(new cuNDArray<float_complext>(&image_space_dimensions_3D_));
 			//E->mult_MH(data.get(),result.get());
 			GADGET_DEBUG1(" Penguins report mission accomplished \n");
 
 
+			size_t nelements3d = std::accumulate(image_space_dimensions_3D_.begin(),image_space_dimensions_3D_.end(),1,std::multiplies<size_t>());
 
-			// Define the image header
-			//
+			for (size_t i = 0; i < ntimeframes; i++){
 
-			GadgetContainerMessage<ISMRMRD::ImageHeader> *cm1 =
-					new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+				// Define the image header
+				//
 
-			GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm2 =
-					new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
+				GadgetContainerMessage<ISMRMRD::ImageHeader> *cm1 =
+						new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
-			cm1->getObjectPtr()->flags = 0;
-			cm1->cont(cm2);
+				GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm2 =
+						new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
 
-
-			cm1->getObjectPtr()->field_of_view[0]   = field_of_view_[0];
-			cm1->getObjectPtr()->field_of_view[1]   = field_of_view_[1];
-			cm1->getObjectPtr()->channels           = num_coils_;
-			cm1->getObjectPtr()->repetition         = m1->getObjectPtr()->idx.repetition;
+				cm1->getObjectPtr()->flags = 0;
+				cm1->cont(cm2);
 
 
+				cm1->getObjectPtr()->field_of_view[0]   = field_of_view_[0];
+				cm1->getObjectPtr()->field_of_view[1]   = field_of_view_[1];
+				cm1->getObjectPtr()->channels           = num_coils_;
+				cm1->getObjectPtr()->repetition         = m1->getObjectPtr()->idx.repetition;
 
-			memcpy(cm1->getObjectPtr()->patient_table_position,
-					m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
-			cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-			cm1->getObjectPtr()->image_index = 0;
-			cm1->getObjectPtr()->image_series_index = 0;
 
-			// std::complex<float> and Gadgetron::complext<float> are binary compatible
-			boost::shared_ptr< hoNDArray< complext<float> > > host_result = result->to_host();
-			*cm2->getObjectPtr() = *((hoNDArray< std::complex<float> >*) host_result.get());
+				memcpy(cm1->getObjectPtr()->patient_table_position,
+						m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
-			cm1->getObjectPtr()->matrix_size[0] = image_space_dimensions_3D_[0];
-			cm1->getObjectPtr()->matrix_size[1] = image_space_dimensions_3D_[1];
-			cm1->getObjectPtr()->matrix_size[2] = image_space_dimensions_3D_[2];
-			cm1->getObjectPtr()->channels       = 1;
-			cm1->getObjectPtr()->image_index    = 1;
+				cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
+				cm1->getObjectPtr()->image_index = 0;
+				cm1->getObjectPtr()->image_series_index = 0;
 
-			if (this->next()->putq(cm1) < 0) {
-				GADGET_DEBUG1("Failed to put result image on to queue\n");
-				cm1->release();
-				return GADGET_FAIL;
+				// std::complex<float> and Gadgetron::complext<float> are binary compatible
+				cuNDArray<complext<float> > cuView(image_space_dimensions_3D_,result->get_data_ptr()+i*nelements3d);
+				boost::shared_ptr< hoNDArray< complext<float> > > host_result = cuView.to_host();
+				*cm2->getObjectPtr() = *((hoNDArray< std::complex<float> >*) host_result.get());
+
+				cm1->getObjectPtr()->matrix_size[0] = image_space_dimensions_3D_[0];
+				cm1->getObjectPtr()->matrix_size[1] = image_space_dimensions_3D_[1];
+				cm1->getObjectPtr()->matrix_size[2] = image_space_dimensions_3D_[2];
+				cm1->getObjectPtr()->channels       = 1;
+				cm1->getObjectPtr()->image_index    = i+1;
+
+				if (this->next()->putq(cm1) < 0) {
+					GADGET_DEBUG1("Failed to put result image on to queue\n");
+					cm1->release();
+					return GADGET_FAIL;
+				}
 			}
+
+			num_frames = 0;
 		}
 
 	}

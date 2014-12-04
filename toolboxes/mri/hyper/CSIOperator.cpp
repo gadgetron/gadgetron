@@ -28,25 +28,28 @@ template<class T> CSIOperator<T>::~CSIOperator() {
 
 
 template<class T> void CSIOperator<T>::mult_MH(cuNDArray<complext<T>> *in , cuNDArray<complext<T>> * out, bool accumulate){
-	std::vector<size_t> kdim = *in->get_dimensions();
-	kdim[2] = frequencies.get_number_of_elements();
-	cuNDArray<complext<T>> tmp(kdim);
-	//cuNDFFT<float>::instance()->fft(&tmp,0u); //FFT along the TE dimension
-	CSI_dft(&tmp,in,&frequencies,dte_,dtt_);
-	senseOp->mult_MH(&tmp,out,accumulate);
 
+	std::vector<size_t> kdim = *in->get_dimensions();
+	kdim[1] =frequencies.size(); //Set to number of time samples rather than number of frequencies
+	cuNDArray<complext<T>> tmp(kdim);
+	//senseOp->mult_MH(in,out,accumulate);
+
+	CSI_dft(&tmp,in,&frequencies,dtt_,dte_);
+	senseOp->mult_MH(&tmp,out,accumulate);
+	//cuNDFFT<float>::instance()->fft(&tmp,0u); //FFT along the TE dimension
 }
 
 template<class T> void CSIOperator<T>::mult_M(cuNDArray<complext<T>> *in , cuNDArray<complext<T>> * out, bool accumulate){
-	auto out_tmp = out;
-	if (accumulate) out_tmp = new cuNDArray<complext<T>>(out);
+	cuNDArray<complext<T>>* out_tmp = out;
+	if (accumulate) out_tmp = new cuNDArray<complext<T>>(out->get_dimensions());
 	std::vector<size_t> kdim = *out->get_dimensions();
-	kdim[2] = frequencies.get_number_of_elements();
+	kdim[1] =frequencies.size();
 	cuNDArray<complext<T>> tmp(kdim);
-	senseOp->mult_M(in, &tmp,false);
-	CSI_dftH(&tmp,out_tmp,&frequencies,dte_,dtt_);
+	senseOp->mult_M(in,&tmp,accumulate);
+
+	CSI_dftH(&tmp,out_tmp,&frequencies,dtt_,dte_);
 	if (accumulate){
-		*out = *out_tmp;
+		*out += *out_tmp;
 		delete out_tmp;
 	}
 }
