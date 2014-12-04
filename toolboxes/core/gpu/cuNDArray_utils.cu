@@ -45,7 +45,7 @@ namespace Gadgetron {
                                              int shift_mode)
   {    
     if( out == 0x0 ){
-      throw cuda_error("cuNDArray_permute(internal): 0x0 output");;
+      throw cuda_error("cuNDArray_permute(internal): 0x0 output");
     }
 
     cudaError_t err;
@@ -57,7 +57,7 @@ namespace Gadgetron {
       out_ptr = out->get_data_ptr();
     } else {
       if (cudaMalloc((void**) &out_ptr, in->get_number_of_elements()*sizeof(T)) != cudaSuccess) {
-        throw cuda_error("cuNDArray_permute : Error allocating CUDA memory");;
+        throw cuda_error("cuNDArray_permute : Error allocating CUDA memory");
       }
     }
 
@@ -65,7 +65,7 @@ namespace Gadgetron {
     unsigned int* strides_out = new unsigned int[in->get_number_of_dimensions()];
 
     if (!dims || !strides_out) {
-      throw cuda_error("cuNDArray_permute: failed to allocate temporary storage for arrays");;
+      throw cuda_error("cuNDArray_permute: failed to allocate temporary storage for arrays");
     }
 
     for (unsigned int i = 0; i < in->get_number_of_dimensions(); i++) {
@@ -80,22 +80,22 @@ namespace Gadgetron {
     unsigned int* strides_out_dev = 0;
 
     if (cudaMalloc((void**) &dims_dev, in->get_number_of_dimensions()*sizeof(unsigned int)) != cudaSuccess) {
-      throw cuda_error("cuNDArray_permute : Error allocating CUDA dims memory");;
+      throw cuda_error("cuNDArray_permute : Error allocating CUDA dims memory");
     }
 
     if (cudaMalloc((void**) &strides_out_dev, in->get_number_of_dimensions()*sizeof(unsigned int)) != cudaSuccess) {
-      throw cuda_error("cuNDArray_permute : Error allocating CUDA strides_out memory");;
+      throw cuda_error("cuNDArray_permute : Error allocating CUDA strides_out memory");
     }
 
     if (cudaMemcpy(dims_dev, dims, in->get_number_of_dimensions()*sizeof(unsigned int), cudaMemcpyHostToDevice) != cudaSuccess) {
       err = cudaGetLastError();
       std::stringstream ss;
       ss << "cuNDArray_permute : Error uploading dimensions to device, " << cudaGetErrorString(err);
-      throw cuda_error(ss.str());;
+      throw cuda_error(ss.str());
     }
 
     if (cudaMemcpy(strides_out_dev, strides_out, in->get_number_of_dimensions()*sizeof(unsigned int), cudaMemcpyHostToDevice) != cudaSuccess) {
-      throw cuda_error("cuNDArray_permute : Error uploading strides to device");;
+      throw cuda_error("cuNDArray_permute : Error uploading strides to device");
     }
 
     dim3 blockDim(512,1,1);
@@ -115,21 +115,21 @@ namespace Gadgetron {
     if( err != cudaSuccess ){
       std::stringstream ss;
       ss <<"cuNDArray_permute : Error during kernel call: " << cudaGetErrorString(err);
-      throw cuda_error(ss.str());;
+      throw cuda_error(ss.str());
     }
 
     if (cudaFree(dims_dev) != cudaSuccess) {
       err = cudaGetLastError();
       std::stringstream ss;
       ss << "cuNDArray_permute: failed to delete device memory (dims_dev) " << cudaGetErrorString(err);
-      throw cuda_error(ss.str());;
+      throw cuda_error(ss.str());
     }
 
     if (cudaFree(strides_out_dev) != cudaSuccess) {
       err = cudaGetLastError();
       std::stringstream ss;
       ss << "cuNDArray_permute: failed to delete device memory (strides_out_dev) "<< cudaGetErrorString(err);
-      throw cuda_error(ss.str());;
+      throw cuda_error(ss.str());
     }    
     delete [] dims;
     delete [] strides_out;    
@@ -139,14 +139,14 @@ namespace Gadgetron {
   permute( cuNDArray<T> *in, std::vector<size_t> *dim_order, int shift_mode )
   {
     if( in == 0x0 || dim_order == 0x0 ) {
-      throw std::runtime_error("permute(): invalid pointer provided");;
+      throw std::runtime_error("permute(): invalid pointer provided");
     }    
 
     std::vector<size_t> dims;
-    for (unsigned int i = 0; i < dim_order->size(); i++)
-      dims.push_back(in->get_dimensions()->at(dim_order->at(i)));
-    boost::shared_ptr< cuNDArray<T> > out( new cuNDArray<T>() );    
-    out->create(&dims);
+    for (size_t i = 0; i < dim_order->size(); i++)
+      dims.push_back(in->get_size(dim_order->at(i)));
+
+    boost::shared_ptr< cuNDArray<T> > out( new cuNDArray<T>(dims) );
     permute( in, out.get(), dim_order, shift_mode );
     return out;
   }
@@ -155,22 +155,25 @@ namespace Gadgetron {
   permute( cuNDArray<T> *in, cuNDArray<T> *out, std::vector<size_t> *dim_order, int shift_mode )
   {
     if( in == 0x0 || out == 0x0 || dim_order == 0x0 ) {
-      throw std::runtime_error("permute(): invalid pointer provided");;
+      throw std::runtime_error("permute(): invalid pointer provided");
     }    
+    if (out->get_number_of_dimensions() != in->get_number_of_dimensions() || out->get_number_of_elements() != in->get_number_of_elements()){
+    	throw std::runtime_error("permute(): Input and output have differing dimensions and/or differing number of elements");
+    }
 
     if( in == out ){
-      throw std::runtime_error("permute(): in-place permutation not supported");;
+      throw std::runtime_error("permute(): in-place permutation not supported");
     }   
 
     //Check ordering array
     if (dim_order->size() > in->get_number_of_dimensions()) {
-      throw std::runtime_error("permute(): invalid length of dimension ordering array");;
+      throw std::runtime_error("permute(): invalid length of dimension ordering array");
     }
 
     std::vector<size_t> dim_count(in->get_number_of_dimensions(),0);
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if ((*dim_order)[i] >= in->get_number_of_dimensions()) {
-        throw std::runtime_error("permute(): invalid dimension order array");;
+        throw std::runtime_error("permute(): invalid dimension order array");
       }
       dim_count[(*dim_order)[i]]++;
     }
@@ -181,14 +184,14 @@ namespace Gadgetron {
     //Check that there are no duplicate dimensions
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if (dim_count[(*dim_order)[i]] != 1) {
-        throw std::runtime_error("permute(): invalid dimension order array (duplicates)");;
+        throw std::runtime_error("permute(): invalid dimension order array (duplicates)");
       }
       dim_order_int.push_back((*dim_order)[i]);
     }
 
     for (unsigned int i = 0; i < dim_order_int.size(); i++) {
       if ((*in->get_dimensions())[dim_order_int[i]] != out->get_size(i)) {
-        throw std::runtime_error("permute(): dimensions of output array do not match the input array");;
+        throw std::runtime_error("permute(): dimensions of output array do not match the input array");
       }
     }
 
@@ -207,7 +210,7 @@ namespace Gadgetron {
   shift_dim( cuNDArray<T> *in, int shift )
   {
     if( in == 0x0 ) {
-      throw std::runtime_error("shift_dim(): invalid input pointer provided");;
+      throw std::runtime_error("shift_dim(): invalid input pointer provided");
     }    
 
     std::vector<size_t> order;
@@ -221,7 +224,7 @@ namespace Gadgetron {
   void shift_dim( cuNDArray<T> *in, cuNDArray<T> *out, int shift )
   {
     if( in == 0x0 || out == 0x0 ) {
-      throw std::runtime_error("shift_dim(): invalid pointer provided");;
+      throw std::runtime_error("shift_dim(): invalid pointer provided");
     }    
 
     std::vector<size_t> order;
@@ -291,17 +294,17 @@ namespace Gadgetron {
   void crop( typename uint64d<D>::Type offset, cuNDArray<T> *in, cuNDArray<T> *out )
   {
     if( in == 0x0 || out == 0x0 ){
-      throw std::runtime_error("crop: 0x0 ndarray provided");;
+      throw std::runtime_error("crop: 0x0 ndarray provided");
     }
 
     if( in->get_number_of_dimensions() != out->get_number_of_dimensions() ){
-      throw std::runtime_error("crop: image dimensions mismatch");;
+      throw std::runtime_error("crop: image dimensions mismatch");
     }
 
     if( in->get_number_of_dimensions() < D ){
       std::stringstream ss;
       ss << "crop: number of image dimensions should be at least " << D;
-      throw std::runtime_error(ss.str());;
+      throw std::runtime_error(ss.str());
     }
 
     typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in->get_dimensions() );
@@ -332,7 +335,7 @@ namespace Gadgetron {
   crop( typename uint64d<D>::Type offset, typename uint64d<D>::Type size, cuNDArray<T> *in )
   {
     if( in == 0x0 ){
-      throw std::runtime_error("crop: 0x0 array provided");;
+      throw std::runtime_error("crop: 0x0 array provided");
     }
     std::vector<size_t> dims = to_std_vector(size);
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
@@ -372,17 +375,17 @@ namespace Gadgetron {
   void pad( cuNDArray<T> *in, cuNDArray<T> *out, T val )
   { 
     if( in == 0x0 || out == 0x0 ){
-      throw std::runtime_error("pad: 0x0 ndarray provided");;
+      throw std::runtime_error("pad: 0x0 ndarray provided");
     }
 
     if( in->get_number_of_dimensions() != out->get_number_of_dimensions() ){
-      throw std::runtime_error("pad: image dimensions mismatch");;
+      throw std::runtime_error("pad: image dimensions mismatch");
     }
 
     if( in->get_number_of_dimensions() < D ){
       std::stringstream ss;
       ss << "pad: number of image dimensions should be at least " << D;
-      throw std::runtime_error(ss.str());;
+      throw std::runtime_error(ss.str());
     }
 
     typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in->get_dimensions() );
@@ -413,7 +416,7 @@ namespace Gadgetron {
   pad( typename uint64d<D>::Type size, cuNDArray<T> *in, T val )
   {
     if( in == 0x0 ){
-      throw std::runtime_error("pad: 0x0 array provided");;
+      throw std::runtime_error("pad: 0x0 array provided");
     }
     std::vector<size_t> dims = to_std_vector(size);
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
@@ -450,7 +453,7 @@ namespace Gadgetron {
     typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *in_out->get_dimensions() );
 
     if( weak_greater(matrix_size_in, matrix_size_out) ){
-      throw std::runtime_error("fill_border: size mismatch, cannot zero fill");;
+      throw std::runtime_error("fill_border: size mismatch, cannot zero fill");
     }
 
     unsigned int number_of_batches = 1;
