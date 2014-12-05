@@ -622,6 +622,7 @@ template <typename T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray<T>& x, co
 */
 template <typename T> EXPORTCPUCOREMATH void scal(T a, hoNDArray<T>& x);
 template <typename T> EXPORTCPUCOREMATH void scal(T a, hoNDArray< std::complex<T> >& x);
+template <typename T> EXPORTCPUCOREMATH void scal(T a, hoNDArray< complext<T> >& x);
 
 /**
 * @brief 2D convolution

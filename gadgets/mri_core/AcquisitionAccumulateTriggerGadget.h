@@ -21,35 +21,14 @@ namespace Gadgetron{
 
       typedef std::map< unsigned short int, GadgetContainerMessage<IsmrmrdAcquisitionBucket>* > map_type_;
 
-      enum CONDITION {
-	KSPACE_ENCODE_STEP_1,
-	KSPACE_ENCODE_STEP_2,
-	AVERAGE,
-	SLICE,
-	CONTRAST,
-	PHASE,
-	REPETITION,
-	SET,
-	SEGMENT,
-	USER_0,
-	USER_1,
-	USER_2,
-	USER_3,
-	USER_4,
-	USER_5,
-	USER_6,
-	USER_7,
-	NONE
-      };
-      
       virtual ~AcquisitionAccumulateTriggerGadget();
 
       int close(unsigned long flags);
 
 
     protected:
-      CONDITION trigger_;
-      CONDITION sort_;
+      IsmrmrdCONDITION trigger_;
+      IsmrmrdCONDITION sort_;
       map_type_  buckets_;
       IsmrmrdAcquisitionData prev_;
       unsigned long trigger_events_;

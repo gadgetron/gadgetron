@@ -216,6 +216,11 @@ namespace Gadgetron{
         r = sum;
     }
 
+    inline void norm1(size_t N, const  complext<float> * x, float& r)
+    {
+        norm1(N, (std::complex<float> *)x, r);
+    }
+
     inline void norm1(size_t N, const  std::complex<double> * x, double& r)
     {
         long long i;
@@ -232,6 +237,11 @@ namespace Gadgetron{
         r = sum;
     }
 
+    inline void norm1(size_t N, const  complext<double> * x, double& r)
+    {
+        norm1(N, (std::complex<double> *)x, r);
+    }
+
     template <typename T> 
     void norm1(const hoNDArray<T>& x, typename realType<T>::Type& r)
     {
@@ -241,7 +251,9 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void norm1(const hoNDArray<float>& x, float& r);
     template EXPORTCPUCOREMATH void norm1(const hoNDArray<double>& x, double& r);
     template EXPORTCPUCOREMATH void norm1(const hoNDArray< std::complex<float> >& x, float& r);
+    template EXPORTCPUCOREMATH void norm1(const hoNDArray< complext<float> >& x, float& r);
     template EXPORTCPUCOREMATH void norm1(const hoNDArray< std::complex<double> >& x, double& r);
+    template EXPORTCPUCOREMATH void norm1(const hoNDArray< complext<double> >& x, double& r);
 
     template <typename T> inline 
     typename realType<T>::Type norm1(const hoNDArray<T>& x)
@@ -254,16 +266,20 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH float norm1(const hoNDArray<float>& x);
     template EXPORTCPUCOREMATH double norm1(const hoNDArray<double>& x);
     template EXPORTCPUCOREMATH float norm1(const hoNDArray< std::complex<float> >& x);
+    template EXPORTCPUCOREMATH float norm1(const hoNDArray< complext<float> >& x);
     template EXPORTCPUCOREMATH double norm1(const hoNDArray< std::complex<double> >& x);
+    template EXPORTCPUCOREMATH double norm1(const hoNDArray< complext<double> >& x);
 
     template<class T> typename realType<T>::Type nrm1( hoNDArray<T> *x )
     {
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::nrm2(): Invalid input array");
 
-        typedef typename realType<T>::Type realT;
+        /*typedef typename realType<T>::Type realT;
         arma::Col<typename stdType<T>::Type> xM = as_arma_col(x);
-        return realT(arma::norm(xM,1));
+        return realT(arma::norm(xM,1));*/
+
+        return norm1(*x);
     }
 
     // --------------------------------------------------------------------------------
@@ -318,6 +334,11 @@ namespace Gadgetron{
         r = std::sqrt(sum);
     }
 
+    inline void norm2(size_t N, const  complext<float> * x, float& r)
+    {
+        norm2(N, (std::complex<float> *)x, r);
+    }
+
     inline void norm2(size_t N, const  std::complex<double> * x, double& r)
     {
         long long i;
@@ -336,6 +357,11 @@ namespace Gadgetron{
         r = std::sqrt(sum);
     }
 
+    inline void norm2(size_t N, const  complext<double> * x, double& r)
+    {
+        norm2(N, (std::complex<double> *)x, r);
+    }
+
     template <typename T> 
     void norm2(const hoNDArray<T>& x, typename realType<T>::Type& r)
     {
@@ -345,7 +371,9 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void norm2(const hoNDArray<float>& x, float& r);
     template EXPORTCPUCOREMATH void norm2(const hoNDArray<double>& x, double& r);
     template EXPORTCPUCOREMATH void norm2(const hoNDArray< std::complex<float> >& x, float& r);
+    template EXPORTCPUCOREMATH void norm2(const hoNDArray< complext<float> >& x, float& r);
     template EXPORTCPUCOREMATH void norm2(const hoNDArray< std::complex<double> >& x, double& r);
+    template EXPORTCPUCOREMATH void norm2(const hoNDArray< complext<double> >& x, double& r);
 
     template <typename T> inline 
     typename realType<T>::Type norm2(const hoNDArray<T>& x)
@@ -358,16 +386,20 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH float norm2(const hoNDArray<float>& x);
     template EXPORTCPUCOREMATH double norm2(const hoNDArray<double>& x);
     template EXPORTCPUCOREMATH float norm2(const hoNDArray< std::complex<float> >& x);
+    template EXPORTCPUCOREMATH float norm2(const hoNDArray< complext<float> >& x);
     template EXPORTCPUCOREMATH double norm2(const hoNDArray< std::complex<double> >& x);
+    template EXPORTCPUCOREMATH double norm2(const hoNDArray< complext<double> >& x);
 
     template<class T> typename realType<T>::Type nrm2( hoNDArray<T> *x )
     {
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::nrm2(): Invalid input array");
 
-        typedef typename realType<T>::Type realT;
+        /*typedef typename realType<T>::Type realT;
         arma::Col<typename stdType<T>::Type> xM = as_arma_col(x);
-        return realT(arma::norm(xM,2));
+        return realT(arma::norm(xM,2));*/
+
+        return norm2(*x);
     }
 
     // --------------------------------------------------------------------------------
