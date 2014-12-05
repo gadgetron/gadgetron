@@ -34,6 +34,8 @@ protected:
  * @return tuple containing trajectory and dcw
  */
     static std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<float >>> separate_traj_and_dcw(hoNDArray<float>*);
+
+
     std::vector<size_t> img_size;
     size_t coils;
     float kernel_width;

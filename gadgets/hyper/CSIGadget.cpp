@@ -236,8 +236,8 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 
 	GADGET_DEBUG2("Smallest eigenvalue: %f %f /n",real(eigVal),imag(eigVal));
 */
-	//cuNlcgSolver<float_complext> solv;
-	cuCgSolver<float_complext> solv;
+	cuNlcgSolver<float_complext> solv;
+	//cuCgSolver<float_complext> solv;
 	solv.set_output_mode(cuCgSolver<float_complext>::OUTPUT_VERBOSE);
 	solv.set_max_iterations(10);
 	solv.set_encoding_operator(E_);
