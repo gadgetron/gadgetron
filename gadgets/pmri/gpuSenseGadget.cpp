@@ -15,7 +15,7 @@ gpuSenseGadget::gpuSenseGadget() {
 	set_parameter(std::string("setno").c_str(), "0");
 	set_parameter(std::string("sliceno").c_str(), "0");
 	set_parameter(std::string("cg_limit").c_str(), "1e-6");
-	set_parameter(std::string("oversampling_factor").c_str(), "1.25");
+	set_parameter(std::string("oversampling_factor").c_str(), "1.5");
 	set_parameter(std::string("kernel_width").c_str(), "5.5");
 	set_parameter(std::string("save_individual_frames").c_str(),"true");
 

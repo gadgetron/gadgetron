@@ -32,6 +32,7 @@ int gpuCgSenseGadget::process_config( ACE_Message_Block* mb )
 	number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
 	cg_limit_ = get_double_value(std::string("cg_limit").c_str());
 	output_timing_ = get_bool_value(std::string("output_timing").c_str());
+	kappa_ = get_double_value("kappa");
 
 	output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
 
@@ -59,7 +60,7 @@ int gpuCgSenseGadget::process_config( ACE_Message_Block* mb )
 	} else {
 		channels_ = 1;
 	}
-
+	if (!is_configured_){
 	// Allocate encoding operator for non-Cartesian Sense
 	E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
 
@@ -78,7 +79,7 @@ int gpuCgSenseGadget::process_config( ACE_Message_Block* mb )
 	cg_.set_tc_tolerance( cg_limit_ );
 	cg_.set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT);
 	is_configured_ = true;
-
+	}
 	return GADGET_OK;
 }
 

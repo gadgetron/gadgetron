@@ -550,12 +550,11 @@ namespace Gadgetron{
         //
 
         if( propagate_csm_from_set_ < 0 || propagate_csm_from_set_ == set ){	  	  
-        	if (num_coils_[idx] == 1){
+        	if (num_coils_[idx] == 1){ //If we only have 1 coil
         		csm_ = boost::make_shared<cuNDArray<float_complext>>(csm_data->get_dimensions());
         		fill(csm_.get(),float_complext(1.0,0));
-        	}
-
-          csm_ = estimate_b1_map<float,2>( csm_data.get() );
+        	} else
+        		csm_ = estimate_b1_map<float,2>( csm_data.get() );
         }
         else{
           GADGET_DEBUG2("Set %d is reusing the csm from set %d\n", set, propagate_csm_from_set_);
