@@ -49,7 +49,7 @@ int gpuCoilEstimationGadget::process(
 	auto senseData = cm1->getObjectPtr();
 
 	coils = bucket->data_.front().head_->getObjectPtr()->active_channels;
-	//GADGET_DEBUG2("Active channels %i \n",coils);
+	GADGET_DEBUG2("Active channels %i \n",coils);
 
 
 	{
@@ -108,6 +108,7 @@ int gpuCoilEstimationGadget::process(
 
 	}
 
+
 	senseData->csm = calculate_CSM(ref_data,ref_traj,ref_dcw);
 
 	this->next()->putq(cm1);
@@ -127,10 +128,7 @@ std::tuple<hoNDArray<std::complex<float>>*, hoNDArray<float>*> gpuCoilEstimation
 	std::vector<size_t> traj_dims = *acquisitions.front().traj_->getObjectPtr()->get_dimensions();
 	std::vector<size_t> base_dim = data_dims;
 	data_dims.push_back(acquisitions.size());
-	if (acquisitions.size() == 1 ||  acquisitions[2].traj_) //Trajectory present on all acquisitions
-		traj_dims.push_back(acquisitions.size());
-
-
+	traj_dims.push_back(acquisitions.size());
 	auto result = new hoNDArray<std::complex<float> >(data_dims);
 	auto traj = new hoNDArray<float>(traj_dims);
 
@@ -138,16 +136,14 @@ std::tuple<hoNDArray<std::complex<float>>*, hoNDArray<float>*> gpuCoilEstimation
 	float* traj_ptr = traj->get_data_ptr();
 	for (const IsmrmrdAcquisitionData & data : acquisitions){
 		hoNDArray<std::complex<float>>* array = data.data_->getObjectPtr();
-		if (data.traj_) { //Only copy if trajectory is present
-			hoNDArray<float>* array_traj = data.traj_->getObjectPtr();
-			memcpy(traj_ptr,array_traj->get_data_ptr(),array_traj->get_number_of_bytes());
-			traj_ptr += array_traj->get_number_of_elements();
-		}
+		hoNDArray<float>* array_traj = data.traj_->getObjectPtr();
 		if (!array->dimensions_equal(&base_dim)){
 			return std::tuple<hoNDArray<std::complex<float>>*, hoNDArray<float>*>(nullptr,nullptr);
 		}
 		memcpy(ptr,array->get_data_ptr(),array->get_number_of_bytes());
 		ptr += array->get_number_of_elements();
+		memcpy(traj_ptr,array_traj->get_data_ptr(),array_traj->get_number_of_bytes());
+		traj_ptr += array_traj->get_number_of_elements();
 
 	}
 
@@ -165,19 +161,11 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCoilEstimationGadget::calculate
 		std::vector<size_t> csm_dims = img_size;
 		csm_dims.push_back(coils);
 		cuNDArray<float_complext> tmp(csm_dims);
-		GADGET_DEBUG2("Coils %i \n\n",tmp.get_size(2));
+		GADGET_DEBUG2("Coils %i \n",tmp.get_size(2));
 		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
 		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
-
-		std::vector<size_t> spiral_dims{data->get_size(0),data->get_size(1)}; //Trajectories, coils
-		cuNDArray<complext<float>> second_spiral(spiral_dims,data->get_data_ptr()+spiral_dims[0]*spiral_dims[1]*0);
-		std::vector<size_t> spiral_traj_dims{spiral_dims[0]};
-		cuNDArray<floatd2> spiral_traj(spiral_traj_dims,traj->get_data_ptr()+spiral_dims[0]*0);
-		cuNDArray<float> spiral_dcw(spiral_traj_dims,dcw->get_data_ptr()+spiral_dims[0]*0);
-		GADGET_DEBUG1("Preprocessing\n\n");
-		plan.preprocess(&spiral_traj,cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
-		GADGET_DEBUG1("Computing\n\n");
-		plan.compute(&second_spiral,&tmp,&spiral_dcw,cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C);
+		plan.preprocess(&flat_traj,cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
+		plan.compute(data,&tmp,dcw,cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C);
 		auto tmp_abs = abs(&tmp);
 		write_nd_array(tmp_abs.get(),"images.real");
 
@@ -188,32 +176,15 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCoilEstimationGadget::calculate
 		csm_dims.push_back(coils);
 
 		auto E = boost::make_shared<cuNFFTOperator<float,2>>();
-
 		E->setup(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width);
-		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
-		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
-
+		E->preprocess(traj);
 		E->set_domain_dimensions(&csm_dims);
 		cuCgSolver<float_complext> solver;
-		solver.set_max_iterations(200);
+		solver.set_max_iterations(20);
 		solver.set_encoding_operator(E);
-		std::vector<size_t> spiral_dims{data->get_size(0),data->get_size(1)}; //Trajectories, coils
-		cuNDArray<complext<float>> second_spiral(spiral_dims,data->get_data_ptr()+spiral_dims[0]*spiral_dims[1]*0);
-		E->set_codomain_dimensions(&spiral_dims);
-		std::vector<size_t> spiral_traj_dims{spiral_dims[0]};
-		cuNDArray<floatd2> spiral_traj(spiral_traj_dims,traj->get_data_ptr()+spiral_dims[0]*0);
-		E->preprocess(&spiral_traj);
-		auto tmp = solver.solve(&second_spiral);
-		auto tmp_abs = abs(tmp.get());
+		auto tmp = solver.solve(data);
+		return estimate_b1_map<float,2>(tmp.get());
 
-		write_nd_array(tmp_abs.get(),"images2.real");
-
-		auto res = estimate_b1_map<float,2>(tmp.get());
-		//fill(res.get(),float_complext(1,0));
-
-		//auto res= boost::make_shared<cuNDArray<float_complext>>(csm_dims);
-		//fill(res.get(),float_complext(1,0));
-		return res;
 
 	}
 

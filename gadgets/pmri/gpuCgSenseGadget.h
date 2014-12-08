@@ -37,6 +37,7 @@ namespace Gadgetron{
     double cg_limit_;
     double kappa_;
 
+    bool output_convergence_;
     bool output_timing_;
     bool matrix_size_reported_;
     bool is_configured_;

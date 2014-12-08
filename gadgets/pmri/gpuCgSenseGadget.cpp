@@ -33,8 +33,6 @@ int gpuCgSenseGadget::process_config( ACE_Message_Block* mb )
 	cg_limit_ = get_double_value(std::string("cg_limit").c_str());
 	output_timing_ = get_bool_value(std::string("output_timing").c_str());
 
-	output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
-
 	// Get the Ismrmrd header
 	//
 	ISMRMRD::IsmrmrdHeader h;
@@ -52,32 +50,35 @@ int gpuCgSenseGadget::process_config( ACE_Message_Block* mb )
 	ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
 	matrix_size_seq_ = uint64d2( r_space.matrixSize.x, r_space.matrixSize.y );
-	cg_ = cuCgSolver<float_complext>();
 
-	if (h.acquisitionSystemInformation) {
-		channels_ = h.acquisitionSystemInformation->receiverChannels ? *h.acquisitionSystemInformation->receiverChannels : 1;
-	} else {
-		channels_ = 1;
+	if (!is_configured_) {
+
+		if (h.acquisitionSystemInformation) {
+			channels_ = h.acquisitionSystemInformation->receiverChannels ? *h.acquisitionSystemInformation->receiverChannels : 1;
+		} else {
+			channels_ = 1;
+		}
+
+		// Allocate encoding operator for non-Cartesian Sense
+		E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
+
+		// Allocate preconditioner
+		D_ = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );
+
+		// Allocate regularization image operator
+		R_ = boost::shared_ptr< cuImageOperator<float_complext> >( new cuImageOperator<float_complext>() );
+		R_->set_weight( kappa_ );
+
+		// Setup solver
+		cg_.set_encoding_operator( E_ );        // encoding matrix
+		cg_.add_regularization_operator( R_ );  // regularization matrix
+		cg_.set_preconditioner( D_ );           // preconditioning matrix
+		cg_.set_max_iterations( number_of_iterations_ );
+		cg_.set_tc_tolerance( cg_limit_ );
+		cg_.set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT);
+
+		is_configured_ = true;
 	}
-
-	// Allocate encoding operator for non-Cartesian Sense
-	E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
-
-	// Allocate preconditioner
-	D_ = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );
-
-	// Allocate regularization image operator
-	R_ = boost::shared_ptr< cuImageOperator<float_complext> >( new cuImageOperator<float_complext>() );
-	R_->set_weight( kappa_ );
-
-	// Setup solver
-	cg_.set_encoding_operator( E_ );        // encoding matrix
-	cg_.add_regularization_operator( R_ );  // regularization matrix
-	cg_.set_preconditioner( D_ );           // preconditioning matrix
-	cg_.set_max_iterations( number_of_iterations_ );
-	cg_.set_tc_tolerance( cg_limit_ );
-	cg_.set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT);
-	is_configured_ = true;
 
 	return GADGET_OK;
 }
@@ -195,7 +196,7 @@ int gpuCgSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, 
 
 	// Invoke solver
 	//
-	std::cout << "Reconstructing image: " << cg_.get_output_mode() << " " << output_convergence_<< std::endl;
+
 	boost::shared_ptr< cuNDArray<float_complext> > cgresult;
 
 	{

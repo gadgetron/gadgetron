@@ -17,7 +17,7 @@ gpuSenseGadget::gpuSenseGadget() {
 	set_parameter(std::string("cg_limit").c_str(), "1e-6");
 	set_parameter(std::string("oversampling_factor").c_str(), "1.25");
 	set_parameter(std::string("kernel_width").c_str(), "5.5");
-	set_parameter(std::string("save_individual_frames").c_str(),"true");
+	set_parameter("save_individiual_frames","true");
 
 	matrix_size_ = uint64d2(0u,0u);
 	matrix_size_os_ = uint64d2(0u,0u);
@@ -128,6 +128,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 			}
 		}
 	} else{
+		GADGET_DEBUG1("Saving single frame\n");
 		std::vector<size_t> img_dims(3);
 		img_dims[0] = matrix_size_seq_[0];
 		img_dims[1] = matrix_size_seq_[1];
@@ -154,6 +155,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 			return GADGET_FAIL;
 		}
 
+		GADGET_DEBUG1("Saving single frame2\n");
 	}
 
 }
