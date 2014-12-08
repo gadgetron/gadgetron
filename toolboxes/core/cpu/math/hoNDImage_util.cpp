@@ -252,7 +252,7 @@ bool gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoND
         long long ii;
         for ( ii=-N/2; ii<=N/2; ii++ )
         {
-            ker(ii+N/2) = std::exp( -(ii*ii*D) );
+            ker(ii+N/2) = exp( -(ii*ii*D) );
             kerSum += ker(ii+N/2);
         }
 
@@ -271,7 +271,7 @@ bool gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoND
 
 // As well-know in the computer vision, the gaussian filter is implemented as the DERICHE filter
 // therefore, the computation cost is independent from the sigma
-// [1] Deriche, R., 1992, Recursively implementing the Gaussian and its derivatives: Proceedings of the 2nd International Conference on Image Processing, Singapore, p. 263ï¿½267.
+// [1] Deriche, R., 1992, Recursively implementing the Gaussian and its derivatives: Proceedings of the 2nd International Conference on Image Processing, Singapore, p. 263–267.
 // [2] http://en.wikipedia.org/wiki/Deriche_edge_detector gives details about this filter
 // this implementation is based on this webpage
 
@@ -285,7 +285,7 @@ inline void DericheSmoothing(T* pData, size_t N, T* mem, T2 sigma, size_t offset
     // following the note of http://en.wikipedia.org/wiki/Deriche_edge_detector
 
     real_type alpha = (real_type)(1.4105/sigma); // this value 1.4105 is from equation 37 of ref [1]
-    real_type e_alpha = (real_type)( std::exp( (double)(-alpha) ) );
+    real_type e_alpha = (real_type)( exp( (double)(-alpha) ) );
     real_type e_alpha_sqr = e_alpha*e_alpha;
     real_type k = ( (1-e_alpha)*(1-e_alpha) ) / ( 1 + 2*alpha*e_alpha - e_alpha_sqr );
 

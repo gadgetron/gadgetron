@@ -158,10 +158,6 @@ namespace Gadgetron {
       throw std::runtime_error("permute(): invalid pointer provided");;
     }    
 
-    if( in == out ){
-      throw std::runtime_error("permute(): in-place permutation not supported");;
-    }   
-
     //Check ordering array
     if (dim_order->size() > in->get_number_of_dimensions()) {
       throw std::runtime_error("permute(): invalid length of dimension ordering array");;

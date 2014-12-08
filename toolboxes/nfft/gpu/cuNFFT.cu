@@ -42,8 +42,7 @@
 #include <sstream>
 #include <stdexcept>
 
-//using namespace std;
-using std::vector;
+using namespace std;
 using namespace thrust;
 using namespace Gadgetron;
 
@@ -236,7 +235,7 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uint64d<D>::Type ma
   
   alpha = vector_td<REAL,D>(matrix_size_os) / vector_td<REAL,D>(matrix_size);
   
-  typename reald<REAL,D>::Type ones(REAL(1));
+  typename reald<REAL,D>::Type ones(1);
   if( weak_less( alpha, ones ) ){
     throw std::runtime_error("Error: cuNFFT : Illegal oversampling ratio suggested");
   }
@@ -293,9 +292,7 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename real
                             device_pointer_cast<REAL>(((REAL*)trajectory_int->get_data_ptr())+trajectory_int->get_number_of_elements()*D ));
   
   if( *mm_pair.first < REAL(-0.5) || *mm_pair.second > REAL(0.5) ){
-	  std::stringstream ss;
-	  ss << "Error: cuNFFT::preprocess : trajectory [" << *mm_pair.first << "; " << *mm_pair.second << "] out of range [-1/2;1/2]";
-    throw std::runtime_error(ss.str());
+    throw std::runtime_error("Error: cuNFFT::preprocess : trajectory out of range [-1/2;1/2]");
   }
   
   // Make Thrust device vector of trajectory and samples

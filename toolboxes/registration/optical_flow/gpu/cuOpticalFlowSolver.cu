@@ -180,7 +180,7 @@ namespace Gadgetron{
       const unsigned int batch_idx_moving = idx_in_pdev_moving/num_elements_per_batch;
 
       // Local index to the batch (should be identical for the fixed/moving image)
-      const size_t idx_in_batch = idx_in_pdev_moving-batch_idx_moving*num_elements_per_batch;
+      const unsigned int idx_in_batch = idx_in_pdev_moving-batch_idx_moving*num_elements_per_batch;
 
       // Local co to the image
       const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );

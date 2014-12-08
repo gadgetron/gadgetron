@@ -21,7 +21,6 @@ namespace Gadgetron{
   protected:
     virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 			GadgetContainerMessage< hoNDArray< float > >* m2);
-    virtual int process_config(ACE_Message_Block *mb);
 
     unsigned int histogram_bins_;
     std::vector<size_t> histogram_;

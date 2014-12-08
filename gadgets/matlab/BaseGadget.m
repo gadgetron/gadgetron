@@ -63,7 +63,6 @@ classdef BaseGadget < handle
             else
                 % TODO: do we throw an error here?
                 g.Q(idx).type = int32(0);
-		disp('Illegal header type found')
             end
             % put the data on the queue
             % make sure the data is single precision

@@ -1,6 +1,8 @@
 #ifndef GADGETRONCOMMON_H
 #define GADGETRONCOMMON_H
 
+#include <iostream>
+
 #ifndef _WIN32
 
 #define GCC_VERSION (__GNUC__ * 10000           \

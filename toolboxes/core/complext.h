@@ -17,9 +17,7 @@
 namespace Gadgetron{
 
   using std::abs; // workaround for nvcc
-  using std::sin;
-  using std::cos;
-  using std::exp;
+
   /** 
    * \class complext
    * \brief An implementation of complex numbers that works for both the cpu and gpu.
@@ -210,10 +208,6 @@ namespace Gadgetron{
 
   template<class T> __inline__ __host__ __device__ complext<T> cos(complext<T> comp){
     return complext<T>(cos(comp.vec[0])*cosh(comp.vec[1]),-sin(comp.vec[0])*sinh(comp.vec[1]));
-  }
-
-  template<class T> __inline__ __host__ __device__ complext<T> exp(complext<T> com){
-	  return exp(com.vec[0])*complext<T>(cos(com.vec[1]),sin(com.vec[1]));
   }
 
   template<class T> __inline__ __host__ __device__ T imag(complext<T> comp){

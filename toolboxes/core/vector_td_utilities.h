@@ -14,7 +14,6 @@
 #include "vector_td_operators.h"
 #include "real_utilities.h"
 #include "core_defines.h"
-#include "complext.h"
 
 #include <float.h>
 #include <vector>
@@ -53,29 +52,29 @@ namespace Gadgetron{
   // Get/set operations on vector_td<T,D>
   //
 
-  template<class T, unsigned int D> __inline__ __host__ __device__ T
+  template<class T, unsigned int D> __inline__ __host__ __device__ T 
   get( const vector_td<T,D>& vec, unsigned int dim ) { return vec[dim]; }
 
-  template<class T, unsigned int D> __inline__ __host__ __device__ void
+  template<class T, unsigned int D> __inline__ __host__ __device__ void 
   set( vector_td<T,D> &vec, unsigned int dim, T val ) { vec[dim] = val; }
 
   //
   // In-place operations
   //
 
-  template<class T, unsigned int D> __inline__ __host__ __device__
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
   void clear( vector_td<T,D> &vec, const T &val = T(0) )
   {
     for (unsigned int i=0; i<D; i++) {
       vec[i] = val;
     }
   }
-
+  
   //
   // Component-wise math operations
   //
 
-  template<class T, unsigned int D> __inline__ __host__ __device__
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
   vector_td<T,D> abs( const vector_td<T,D>& vec )
   {
     vector_td<T,D> res;
@@ -95,7 +94,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template<class REAL, unsigned int D> __inline__ __host__ __device__
+  template<class REAL, unsigned int D> __inline__ __host__ __device__ 
   vector_td<REAL,D> ceil( const vector_td<REAL,D> vec )
   {
     vector_td<REAL,D> res;
@@ -105,7 +104,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template<class REAL, unsigned int D> __inline__ __host__ __device__
+  template<class REAL, unsigned int D> __inline__ __host__ __device__ 
   vector_td<REAL,D> floor( const vector_td<REAL,D> vec )
   {
     vector_td<REAL,D> res;
@@ -120,7 +119,7 @@ namespace Gadgetron{
   // Grid <-> index transformations
   //
 
-  template<unsigned int D> __inline__ __host__ __device__
+  template<unsigned int D> __inline__ __host__ __device__ 
   typename uintd<D>::Type idx_to_co( unsigned int idx, const vector_td<unsigned,D> dims )
   {
     typename uintd<D>::Type co;
@@ -131,9 +130,9 @@ namespace Gadgetron{
       idx_tmp /= dims[i];
     }
     return co;
-  }
+  } 
 
-  template<unsigned int D> __inline__ __host__ __device__
+  template<unsigned int D> __inline__ __host__ __device__ 
   typename uint64d<D>::Type idx_to_co( size_t idx, const vector_td<size_t,D> dims )
   {
     typename uint64d<D>::Type co;
@@ -144,9 +143,9 @@ namespace Gadgetron{
       idx_tmp /= dims[i];
     }
     return co;
-  }
+  } 
 
-  template<unsigned int D> __inline__ __host__ __device__
+  template<unsigned int D> __inline__ __host__ __device__ 
   typename intd<D>::Type idx_to_co( int idx, const vector_td<int,D> dims )
   {
     typename intd<D>::Type co;
@@ -157,9 +156,9 @@ namespace Gadgetron{
       idx_tmp /= dims[i];
     }
     return co;
-  }
+  } 
 
-  template<unsigned int D> __inline__ __host__ __device__
+  template<unsigned int D> __inline__ __host__ __device__ 
   typename int64d<D>::Type idx_to_co( long long idx, const vector_td<long long,D> dims )
   {
     typename int64d<D>::Type co;
@@ -170,7 +169,7 @@ namespace Gadgetron{
       idx_tmp /= dims[i];
     }
     return co;
-  }
+  } 
 
   template<unsigned int D> __inline__ __host__ __device__
   unsigned int co_to_idx( const vector_td<unsigned int,D> co, const vector_td<unsigned int,D> dims )
@@ -219,10 +218,10 @@ namespace Gadgetron{
     }
     return idx;
   }
-
-  template<unsigned int D> __inline__ __host__ __device__
-  unsigned int co_to_idx( const vector_td<unsigned int,D> co,
-                          const vector_td<unsigned int,D> dims,
+  
+  template<unsigned int D> __inline__ __host__ __device__ 
+  unsigned int co_to_idx( const vector_td<unsigned int,D> co, 
+                          const vector_td<unsigned int,D> dims, 
                           const vector_td<unsigned int,D> order )
   {
     unsigned int idx = 0;
@@ -232,11 +231,11 @@ namespace Gadgetron{
       block_size *= dims.d[order[i]];
     }
     return idx;
-  }
+  } 
 
-  template<unsigned int D> __inline__ __host__ __device__
-  size_t co_to_idx( const vector_td<size_t,D> co,
-                    const vector_td<size_t,D> dims,
+  template<unsigned int D> __inline__ __host__ __device__ 
+  size_t co_to_idx( const vector_td<size_t,D> co, 
+                    const vector_td<size_t,D> dims, 
                     const vector_td<unsigned int,D> order )
   {
     size_t idx = 0;
@@ -246,11 +245,11 @@ namespace Gadgetron{
       block_size *= dims.d[order[i]];
     }
     return idx;
-  }
+  } 
 
-  template<int D> __inline__ __host__ __device__
-  int co_to_idx( const vector_td<int,D> co,
-                 const vector_td<int,D> dims,
+  template<int D> __inline__ __host__ __device__ 
+  int co_to_idx( const vector_td<int,D> co, 
+                 const vector_td<int,D> dims, 
                  const vector_td<unsigned int,D> order )
   {
     int idx = 0;
@@ -260,11 +259,11 @@ namespace Gadgetron{
       block_size *= dims.d[order[i]];
     }
     return idx;
-  }
+  } 
 
-  template<unsigned int D> __inline__ __host__ __device__
-  long long co_to_idx( const vector_td<long long,D> co,
-                       const vector_td<long long,D> dims,
+  template<unsigned int D> __inline__ __host__ __device__ 
+  long long co_to_idx( const vector_td<long long,D> co, 
+                       const vector_td<long long,D> dims, 
                        const vector_td<unsigned int,D> order )
   {
     long long idx = 0;
@@ -274,9 +273,9 @@ namespace Gadgetron{
       block_size *= dims.d[order[i]];
     }
     return idx;
-  }
+  } 
 
-  template<class T, unsigned int D> __inline__ __host__ __device__
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
   vector_td<T,D> counting_vec()
   {
     vector_td<T,D> res;
@@ -316,7 +315,7 @@ namespace Gadgetron{
   // Reductions on vector_td<T,D>
   //
 
-  template<class T, unsigned int D> __inline__ __host__ __device__
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
   T prod( const vector_td<T,D>& vec )
   {
     T res = vec[0];
@@ -326,7 +325,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template<class T, unsigned int D> __inline__ __host__ __device__
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
   T sum( const vector_td<T,D>& vec )
   {
     T res = vec[0];
@@ -336,25 +335,10 @@ namespace Gadgetron{
     return res;
   }
 
-  template<class T, unsigned int D> __inline__ __host__ __device__
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
   T dot( const vector_td<T,D>& vec1, const vector_td<T,D>& vec2 )
   {
     T res = (vec1[0]*vec2[0]);
-    for (unsigned int i=1; i<D; i++){
-      res += (vec1[i]*vec2[i]);
-    }
-    return res;
-  }
-
-  template<class T, unsigned int D> __inline__ __host__ __device__
-  complext<T> dot( const vector_td<T,D>& vec1, const vector_td<complext<T>,D>& vec2 )
-  {
-    return dot(vec2,vec1);
-  }
-  template<class T, unsigned int D> __inline__ __host__ __device__
-  complext<T> dot( const vector_td<complext<T>,D>& vec1, const vector_td<T,D>& vec2 )
-  {
-    complext<T> res = (vec1[0]*vec2[0]);
     for (unsigned int i=1; i<D; i++){
       res += (vec1[i]*vec2[i]);
     }
@@ -370,7 +354,7 @@ namespace Gadgetron{
     }
     return res;
   }
-
+  
   template<class T, unsigned int D> __inline__ __host__ __device__
   T min( const vector_td<T,D>& vec )
   {
@@ -446,7 +430,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template<class T, unsigned int D> __inline__ __host__ __device__
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
   unsigned int argmin( const vector_td<T,D>& vec )
   {
     unsigned int res= 0;
@@ -456,7 +440,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template<class T, unsigned int D> __inline__ __host__ __device__
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
   unsigned int argmin_not_nan( const vector_td<T,D>& vec )
   {
     unsigned int res= 0;
@@ -466,7 +450,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template<class T, unsigned int D> __inline__ __host__ __device__
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
   unsigned int argmax( const vector_td<T,D>& vec )
   {
     unsigned int res= 0;
@@ -480,7 +464,7 @@ namespace Gadgetron{
   // Reductions on reald<REAL,D>
   //
 
-  template<class REAL, unsigned int D> __inline__ __host__ __device__
+  template<class REAL, unsigned int D> __inline__ __host__ __device__ 
   REAL norm_squared( const vector_td<REAL,D> vec )
   {
     REAL res = REAL(0);
@@ -490,7 +474,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template<class REAL, unsigned int D> __inline__ __host__ __device__
+  template<class REAL, unsigned int D> __inline__ __host__ __device__ 
   REAL norm( const vector_td<REAL,D> vec )
   {
     return ::sqrt(norm_squared<REAL,D>(vec));
