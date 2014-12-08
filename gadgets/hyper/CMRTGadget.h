@@ -17,12 +17,7 @@ namespace Gadgetron{
     
   public:
     
-    CMRTGadget(): num_frames(0) {
-    	set_parameter("golden_ratio","false");
-    	set_parameter("use_TV","false");
-    	set_parameter("projections_per_recon","0");
-    	set_parameter("iterations","30");
-    }
+    CMRTGadget(): num_frames(0) {}
     ~CMRTGadget() {}
     
   protected:
@@ -55,7 +50,8 @@ namespace Gadgetron{
   protected:
 
     std::vector<size_t> image_space_dimensions_3D_;
-    unsigned int projections_per_recon_;
+    unsigned int num_projections_to_use_;
+
 
 
     
@@ -72,8 +68,6 @@ namespace Gadgetron{
     boost::shared_ptr<hoNDArray<float> > dcw;
     boost::shared_ptr<hoNDArray<floatd2> > traj;
     unsigned int num_frames;
-    unsigned int iterations_;
     bool golden_ratio_;
-    bool use_TV_;
   };
 }

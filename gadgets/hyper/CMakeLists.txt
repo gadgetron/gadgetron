@@ -42,7 +42,6 @@ target_link_libraries(gadgetron_hyper
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpucore_math
   gadgetron_toolbox_gpusolvers
-  gadgetron_toolbox_gpuoperators
   gadgetron_toolbox_gpuparallelmri
   gadgetron_toolbox_hyper
   ${ISMRMRD_LIBRARIES}  

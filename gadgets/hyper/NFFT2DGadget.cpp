@@ -158,9 +158,7 @@ namespace Gadgetron{
 
       extract_trajectory_and_dcw_from_queue( frame_traj_queue_.get(), traj.get(), dcw.get() );
       //traj = compute_radial_trajectory_golden_ratio_2d<float>(samples_per_readout_,dimensions_[1],1,0,GR_ORIGINAL);
-
-      unsigned int num_profiles = samples.get_number_of_elements()/samples_per_readout_;
-      dcw = compute_radial_dcw_golden_ratio_2d<float>(samples_per_readout_,num_profiles,1.0,1.0f/samples_per_readout_/num_profiles,0,GR_ORIGINAL);
+      dcw = compute_radial_dcw_golden_ratio_2d<float>(samples_per_readout_,dimensions_[1],1.0,1.0f/samples_per_readout_/dimensions_[1],0,GR_ORIGINAL);
       // Create output array
       //
 
