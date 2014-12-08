@@ -1,5 +1,5 @@
-IF(ACE_FOUND)
-  add_subdirectory(utilities)
+IF(ISMRMRD_FOUND AND ACE_FOUND AND HDF5_FOUND AND FFTW3_FOUND)
+  add_subdirectory(mriclient)
 ENDIF()
 
 IF(ISMRMRD_FOUND AND ACE_FOUND AND HDF5_FOUND)

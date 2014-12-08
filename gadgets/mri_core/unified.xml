@@ -26,38 +26,17 @@
     </writer>
   
     <gadget>
-        <name>RemoveROOversampling</name>
+        <name>Accc</name>
         <dll>gadgetron_mricore</dll>
-	<classname>RemoveROOversamplingGadget</classname>
+	<classname>AcquisitionAccumulateTriggerGadget</classname>
         <property>
-            <name>constant_noise_variance</name>
-            <value>false</value>
+            <name>trigger_dimension</name>
+            <value>repetition</value>
         </property>
-    </gadget>
-    <gadget>
-      <name>Acc</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>AccumulatorGadget</classname>
-    </gadget>
-    <gadget>
-      <name>FFT</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>FFTGadget</classname>
-    </gadget>
-    <gadget>
-      <name>Combine</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>CombineGadget</classname>
-    </gadget>
-    <gadget>
-      <name>Extract</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ExtractGadget</classname>
-    </gadget>  
-    <gadget>
-      <name>ImageFinishFLOAT</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadgetFLOAT</classname>
+        <property>
+          <name>sorting_dimension</name>
+          <value>slice</value>
+        </property>
     </gadget>
 
 </gadgetronStreamConfiguration>

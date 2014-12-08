@@ -314,7 +314,7 @@ bool GtPlusReconJob2DTGadgetCloud::setWorkOrder2DTParameters(GtPlusRecon2DTPara&
 
 bool GtPlusReconJob2DTGadgetCloud::parseGTCloudNodeFile(const std::string& filename, CloudType& gtCloud)
 {
-    std::string nodeFileName = get_gadgetron_home();
+  std::string nodeFileName = get_gadgetron_home();
     nodeFileName.append("/config/gtCloud/");
     nodeFileName.append(filename);
     GADGET_CONDITION_MSG(verboseMode_, "Cloud node file name is " << nodeFileName);

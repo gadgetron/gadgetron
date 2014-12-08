@@ -15,7 +15,6 @@
 #include "cuNFFTOperator.h"
 #include "cuCgSolver.h"
 #include "cuNDArray_fileio.h"
-#include "trajectory_utils.h"
 
 namespace Gadgetron {
 
@@ -175,7 +174,6 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCoilEstimationGadget::calculate
 		std::vector<size_t> spiral_traj_dims{spiral_dims[0]};
 		cuNDArray<floatd2> spiral_traj(spiral_traj_dims,traj->get_data_ptr()+spiral_dims[0]*0);
 		cuNDArray<float> spiral_dcw(spiral_traj_dims,dcw->get_data_ptr()+spiral_dims[0]*0);
-
 		GADGET_DEBUG1("Preprocessing\n\n");
 		plan.preprocess(&spiral_traj,cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
 		GADGET_DEBUG1("Computing\n\n");

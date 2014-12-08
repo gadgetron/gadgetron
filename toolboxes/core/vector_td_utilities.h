@@ -80,7 +80,7 @@ namespace Gadgetron{
   {
     vector_td<T,D> res;
     for (unsigned int i=0; i<D; i++) {
-      res[i] = ::abs(vec[i]);
+      res[i] = std::abs(vec[i]);
     }
     return res;
   }

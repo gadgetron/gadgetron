@@ -42,8 +42,6 @@ add_library(gadgetron_gpuparallelmri SHARED
     gpuSenseGadget.cpp
   )
 
-
-
 set_target_properties(gadgetron_gpuparallelmri PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_gpuparallelmri 

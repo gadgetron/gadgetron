@@ -82,8 +82,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     DependencyQueryGadget.h 
                                     DependencyQueryWriter.h 
                                     ComplexToFloatAttribGadget.h
-                                    AcquisitionAccumulateTriggerGadget.h
-                                    BucketToBufferGadget.h )
+				    AcquisitionAccumulateTriggerGadget.h )
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -113,20 +112,14 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 DependencyQueryGadget.cpp 
                                 DependencyQueryWriter.cpp 
                                 ComplexToFloatAttribGadget.cpp 
-                                AcquisitionAccumulateTriggerGadget.cpp
-                                BucketToBufferGadget.cpp )
+				AcquisitionAccumulateTriggerGadget.cpp )
 
 if (WIN32)
     set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )
     set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} WhiteNoiseInjectorGadget.cpp )
 endif (WIN32)
 
-set( gadgetron_mricore_config_files
-    default.xml
-    default_short.xml
-    default_optimized.xml
-    default_measurement_dependencies.xml
-)
+set( gadgetron_mricore_config_files default.xml default_short.xml default_optimized.xml default_measurement_dependencies.xml unified.xml)
 
 add_library(gadgetron_mricore SHARED 
     gadgetron_mricore_export.h 

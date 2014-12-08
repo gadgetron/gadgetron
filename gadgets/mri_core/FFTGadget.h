@@ -6,21 +6,19 @@
 #include "gadgetron_mricore_export.h"
 
 #include <ismrmrd/ismrmrd.h>
-#include <ismrmrd/xml.h>
-#include "mri_core_data.h"
+#include <complex>
 
 namespace Gadgetron{
 
   class EXPORTGADGETSMRICORE FFTGadget : 
-  public Gadget1<IsmrmrdReconData>
+  public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
     {
     public:
       GADGET_DECLARE(FFTGadget)
-      FFTGadget();
 	
-    protected:
-      virtual int process(GadgetContainerMessage<IsmrmrdReconData>* m1);
-      long long image_counter_;      
+	protected:
+      virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
+			   GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);      
     };
 }
 #endif //FFTGADGET_H

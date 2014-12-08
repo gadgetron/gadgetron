@@ -54,43 +54,17 @@
     </property>
   </gadget>
 
-    <gadget>
-        <name>AccTrig</name>
-        <dll>gadgetron_mricore</dll>
-	<classname>AcquisitionAccumulateTriggerGadget</classname>
-        <property>
-            <name>trigger_dimension</name>
-            <value>repetition</value>
-        </property>
-        <property>
-          <name>sorting_dimension</name>
-          <value>slice</value>
-        </property>
-    </gadget>
-
-    <gadget>
-        <name>Buff</name>
-        <dll>gadgetron_mricore</dll>
-	<classname>BucketToBufferGadget</classname>
-        <property>
-            <name>N_dimension</name>
-            <value></value>
-        </property>
-        <property>
-          <name>S_dimension</name>
-          <value></value>
-        </property>
-        <property>
-          <name>split_slice</name>
-          <value>true</value>
-        </property>
-    </gadget>
-
-     <gadget>
-      <name>FFT</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>FFTGadget</classname>
-     </gadget>
+  <gadget>
+    <name>Acc</name>
+    <dll>gadgetron_mricore</dll>
+    <classname>AccumulatorGadget</classname>
+  </gadget>
+  
+  <gadget>
+    <name>FFT</name>
+    <dll>gadgetron_mricore</dll>
+    <classname>FFTGadget</classname>
+  </gadget>
 
   <!--
       <gadget>
