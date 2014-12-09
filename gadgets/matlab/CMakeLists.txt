@@ -1,6 +1,6 @@
 find_package(Ismrmrd REQUIRED)
 
-include_directories(${MATLAB_INCLUDE_DIR})
+include_directories(${MATLAB_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/toolboxes/mri_core)
 
 if (UNIX)
     if (APPLE)
@@ -12,7 +12,7 @@ else(UNIX)
     SET(MATLAB_SUFFIX ".dll")
 endif(UNIX)
 
-add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp)
+add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp MatlabBufferGadget.h MatlabBufferGadget.cpp MatlabUtils.h MatlabUtils.cpp)
 set_target_properties(gadgetron_matlab PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(
@@ -47,5 +47,5 @@ endif(UNIX)
 
 install(TARGETS gadgetron_matlab DESTINATION lib COMPONENT main)
 install(FILES MatlabGadget.h gadgetron_matlab_export.h DESTINATION include COMPONENT main)
-install(FILES BaseGadget.m scale.m accumulate_and_recon.m mask_image.m recon.m DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
-install(FILES matlab.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES BaseGadget.m BaseBufferGadget.m bufferRecon.m scale.m accumulate_and_recon.m mask_image.m recon.m trajectoryScale.m DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
+install(FILES matlab.xml matlabbuffer.xml matlabnoncartesian.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

@@ -200,8 +200,8 @@ namespace Gadgetron
   {
   public:
     uint16_t min_;
-    uint16_t max_;
     uint16_t center_;
+    uint16_t max_;
   };
   
   class SamplingDescription
