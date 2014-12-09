@@ -1,5 +1,7 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "CombineGadget.h"
+#include "mri_core.h"
+#include "hoNDArray_math.h"
 
 namespace Gadgetron{
 
@@ -32,28 +34,16 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
     return -1;
   }
 
-  std::complex<float>* d1 = m2->getObjectPtr()->get_data_ptr();
-  std::complex<float>* d2 = m3->getObjectPtr()->get_data_ptr();
+  // Create a temporary real array to store the magnitude (ssos)
+  hoNDArray< float > temp(nx,ny,nz);
 
-  size_t img_block = nx*ny*nz;
+  // sqrt of sum of squares
+  coilmap_norm(*m2->getObjectPtr(), temp);
 
-  for (size_t z = 0; z < nz; z++) {
-    for (size_t y = 0; y < ny; y++) {
-      for (size_t x = 0; x < nx; x++) {
-	float mag = 0;
-	float phase = 0;
-	size_t offset = z*ny*nx+y*nx+x;
-	for (size_t c = 0; c < nc; c++) {
-	  float mag_tmp = norm(d1[offset + c*img_block]);
-	  phase += mag_tmp*arg(d1[offset + c*img_block]);
-	  mag += mag_tmp;
-	}
-	d2[offset] = std::polar(std::sqrt(mag),phase);
-      }
-    }
-  }
-
-  // Modify header to match the size and change the type to real
+  // assign to the real part of the complex result
+  real_to_complex(temp, *m3->getObjectPtr());
+  
+  // Modify header to match the size
   m1->getObjectPtr()->channels = 1;
 
   // Now add the new array to the outgoing message

@@ -62,8 +62,9 @@ void coilmap_combine(const hoNDArray<std::complex<T> > & coilmap, const hoNDArra
         hoNDArray<std::complex<T> > cj(vdims, const_cast<std::complex<T>*>(coilmap.begin()+j*vsize));
         hoNDArray<std::complex<T> > dj(vdims, const_cast<std::complex<T>*>(data.begin()+j*vsize));
         //x*conj(y)
-        multiplyConj(dj, cj, temp);            
-        result += temp;
+        multiplyConj(dj, cj, temp);
+        // r = x+y
+        add(result, temp, result);
     }
     
 }
@@ -136,7 +137,8 @@ void coilmap_norm(const hoNDArray<std::complex<T> > & coilmap, hoNDArray<T> & re
     //check the dimensions (result has 1 less dimension)
     std::vector<size_t> adims;
     coilmap.get_dimensions(adims);
-    std::vector<size_t> vdims(adims.begin(),adims.rbegin()-1);
+    std::vector<size_t> vdims(adims.begin(),adims.end()-1);
+
     if (!(result.dimensions_equal(&vdims))) {
         throw std::runtime_error("Coil map and result have incompatible dimensions.\n");
     }
@@ -144,10 +146,17 @@ void coilmap_norm(const hoNDArray<std::complex<T> > & coilmap, hoNDArray<T> & re
     //initialize the result
     result.fill(0.0);
 
-    //size_t CHA = *adims.rbegin();
-    //std::cout << "Number of channels is " << CHA << std::endl;
-    //std::cout << "Number is " << adims[0] << " " << adims[3] << std::endl;    
-
+    // sum of squares
+    size_t CHA = *adims.rbegin();
+    size_t vsize = result.get_number_of_elements();
+    for (size_t j = 0; j<CHA; j++) {
+        //make an hoNDArray that is a thin-wrappers around a channel's worth of data
+        hoNDArray<std::complex<T> > cj(vdims, const_cast<std::complex<T>*>(coilmap.begin()+j*vsize));
+        boost::shared_ptr<hoNDArray<T> > temp = abs_square( &cj );
+        add(result, *temp, result);
+    }
+    // square root
+    sqrt_inplace(&result);
 }
 
 //instantiations
