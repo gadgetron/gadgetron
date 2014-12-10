@@ -845,6 +845,10 @@ namespace Gadgetron
     template <typename T> 
     void hoNDArray<T>::deallocate_memory()
     {
+        if (!(this->delete_data_on_destruct_)) {
+             throw std::runtime_error("You don't own this data.  You cannot deallocate its memory.");
+        }
+        
         if( this->data_ ){
             this->_deallocate_memory( this->data_ );
             this->data_ = 0x0;
