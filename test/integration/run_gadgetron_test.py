@@ -9,7 +9,7 @@ import shutil
 import platform
 import time
 
-def run_test(environment, testcase_cfg_file):
+def run_test(environment, testcase_cfg_file, chroot_path, port):
     print("Running test case: " + testcase_cfg_file)
 
     pwd = os.getcwd()
@@ -62,8 +62,13 @@ def run_test(environment, testcase_cfg_file):
     #inputfilename, gadgetronconfig, referencefile, h5dataset, gadgetron_log_filename, client_log_filename):
 
     success = True
+    gadgetron_start = "sudo " + chroot_path + "../start.sh"
+
     with open(gadgetron_log_filename, "w") as gf:
-        p = subprocess.Popen(["gadgetron", "-p", "9003"], env=environment, stdout=gf, stderr=gf)
+        if chroot_path == "Empty":
+            p = subprocess.Popen(["gadgetron", "-p", port], env=environment, stdout=gf, stderr=gf)
+        else:
+            p = subprocess.Popen(gadgetron_start, shell=True, stdout=gf, stderr=gf)
 
         time.sleep(2)
 
@@ -85,7 +90,7 @@ def run_test(environment, testcase_cfg_file):
 
                     print("Running Gadgetron recon on the first dependency measurement")
                     r = 0
-                    r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", dependency_1, "-c",
+                    r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f", dependency_1, "-c",
                                             "default_measurement_dependencies.xml"],
                                             env=environment, stdout=cf, stderr=cf)
                     if r != 0:
@@ -106,7 +111,7 @@ def run_test(environment, testcase_cfg_file):
 
                     print("Running Gadgetron recon on the second dependency measurement")
                     r = 0
-                    r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , dependency_2, "-c",
+                    r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f" , dependency_2, "-c",
                                             "default_measurement_dependencies.xml"],
                                             env=environment, stdout=cf, stderr=cf)
                     
@@ -128,7 +133,7 @@ def run_test(environment, testcase_cfg_file):
 
                     print("Running Gadgetron recon on the third dependency measurement")
                     r = 0
-                    r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f", dependency_3, "-c",
+                    r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f", dependency_3, "-c",
                                             "default_measurement_dependencies.xml"],
                                             env=environment, stdout=cf, stderr=cf)
                     
@@ -151,7 +156,7 @@ def run_test(environment, testcase_cfg_file):
             print("Running Gadgetron recon on data measurement")
             r = 0
             start_time = time.time()
-            r = subprocess.call(["gadgetron_ismrmrd_client", "-p", "9003", "-f" , ismrmrd, "-c",
+            r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f" , ismrmrd, "-c",
                                     gadgetron_configuration, "-G", gadgetron_configuration, "-o", result_h5],
                                     env=environment, stdout=cf, stderr=cf)
             print "Elapsed time: " + str(time.time()-start_time)
@@ -160,6 +165,12 @@ def run_test(environment, testcase_cfg_file):
                 success = False
 
         p.terminate()
+
+        # make sure the gadgetron is stopped
+        if chroot_path != "Empty":
+            gadgetron_stop="sudo kill `pgrep -U root start.sh`"
+            subprocess.call(gadgetron_stop, shell=True)
+            time.sleep(1)
 
     if not success:
         return False
@@ -222,13 +233,39 @@ def main():
     if len(sys.argv) < 4:
         sys.stderr.write("Missing arguments\n")
         prog = os.path.basename(sys.argv[0])
-        help = "Usage: %s <ismrmrd home> <gadgetron home> <test case config>\n" % prog
+        help = "Usage: %s <ismrmrd home> <gadgetron home> <test case config> <optional: chroot path>\n" % prog
         sys.stderr.write(help)
         sys.exit(1)
 
+    if len(sys.argv) >= 5:
+        if platform.system() != "Linux":
+            prog = os.path.basename(sys.argv[0])
+            help = "%s with chroot can only run in linux \n" % prog
+            sys.stderr.write(help)
+            sys.exit(1)
+
+    if len(sys.argv) >= 5:
+        if os.getuid() != 0:
+            prog = os.path.basename(sys.argv[0])
+            help = "%s with chroot requires root previlige to run \n" % prog
+            sys.stderr.write(help)
+            sys.exit(1)
+
+    chroot_path = "Empty"
+    port = "9003"
+    if len(sys.argv) >= 5:
+        chroot_path = sys.argv[4]
+        port = "9002"
+
     myenv = dict()
-    myenv["ISMRMRD_HOME"] = os.path.realpath(sys.argv[1])
-    myenv["GADGETRON_HOME"] = os.path.realpath(sys.argv[2])
+
+    if len(sys.argv) >= 5:
+        myenv["ISMRMRD_HOME"] = os.path.join(chroot_path, os.path.realpath(sys.argv[1]))
+        myenv["GADGETRON_HOME"] = os.path.join(chroot_path, os.path.realpath(sys.argv[2]))
+    else:
+        myenv["ISMRMRD_HOME"] = os.path.realpath(sys.argv[1])
+        myenv["GADGETRON_HOME"] = os.path.realpath(sys.argv[2])
+
     myenv["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
     test_case = sys.argv[3]
 
@@ -252,10 +289,14 @@ def main():
         myenv[libpath] = myenv["ISMRMRD_HOME"] + "/lib:"
         myenv[libpath] += myenv["GADGETRON_HOME"] + "/lib:"
         myenv[libpath] += myenv["GADGETRON_HOME"] + "/../arma/lib:"
-        myenv[libpath] += "/usr/local/cuda/lib64:"
-        myenv[libpath] += "/usr/local/cula/lib64:"
-        myenv[libpath] += "/opt/intel/mkl/lib/intel64:"
-        myenv[libpath] += "/opt/intel/lib/intel64:"
+        if len(sys.argv) >= 5:
+            myenv[libpath] += chroot_path + "/usr/local/cuda/lib64:"
+            myenv[libpath] += chroot_path + "/opt/intel/mkl/lib/intel64:"
+            myenv[libpath] += chroot_path + "/opt/intel/lib/intel64:"
+        else:
+            myenv[libpath] += "/usr/local/cuda/lib64:"
+            myenv[libpath] += "/opt/intel/mkl/lib/intel64:"
+            myenv[libpath] += "/opt/intel/lib/intel64:"
         if os.environ.get(libpath, None) is not None:
             myenv[libpath] += os.environ[libpath]
         myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin" + ":" + myenv["GADGETRON_HOME"] + "/bin"
@@ -270,8 +311,11 @@ def main():
     print("  -- GADGETRON_HOME  : " +  myenv["GADGETRON_HOME"])
     print("  -- PATH            : " +  myenv["PATH"])
     print("  -- " + libpath + " : " +  myenv[libpath])
+    if len(sys.argv) >= 5:
+        print("  -- chroot          : " +  chroot_path)
     print("  -- TEST CASE       : " + test_case)
-    test_result = run_test(myenv, test_case)
+
+    test_result = run_test(myenv, test_case, chroot_path, port)
 
     if test_result:
         print("TEST: " + test_case + " SUCCESS")
