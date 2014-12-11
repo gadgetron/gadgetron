@@ -21,6 +21,7 @@ namespace Gadgetron {
 gpuBufferSensePrepGadget::gpuBufferSensePrepGadget() {
 	// TODO Auto-generated constructor stub
 	set_parameter("profiles_per_frame","0");
+	set_parameter("kernel_width","5.5");
 }
 
 gpuBufferSensePrepGadget::~gpuBufferSensePrepGadget() {
@@ -39,6 +40,7 @@ int gpuBufferSensePrepGadget::process_config(ACE_Message_Block* mb) {
 	image_dims[2] = matrixsize.z;
 
 	profiles_per_frame_ = get_int_value("profiles_per_frame");
+	kernel_width = get_double_value("kernel_width");
 
 }
 
@@ -83,6 +85,8 @@ int gpuBufferSensePrepGadget::process(
 	}
 	{
 		auto reg_images = reconstruct_regularization(&data,traj.get(),dcw.get(),ncoils);
+		reg_images->squeeze();
+
 		auto csm = estimate_b1_map<float,2>(reg_images.get());
 
 		*reg_images *= *csm;
@@ -194,10 +198,6 @@ std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<
 	auto dcw_ptr = dcw->get_data_ptr();
 	auto traj_ptr = traj->get_data_ptr();
 	auto ptr = traj_dcw->get_data_ptr();
-	std::cout << "Dimensions ";
-	for (size_t dim : dims)
-		std::cout << dim << " ";
-	std::cout << std::endl;
 	for (size_t i = 0; i < traj_dcw->get_number_of_elements()/3; i++){
 		traj_ptr[i][0] = ptr[i*3];
 		traj_ptr[i][1] = ptr[i*3+1];
