@@ -1,0 +1,252 @@
+/*
+ * gpuBufferSensePrepGadget.cpp
+ *
+ *  Created on: Dec 10, 2014
+ *      Author: dch
+ */
+
+#include "gpuBufferSensePrepGadget.h"
+#include <ismrmrd/xml.h>
+#include "GenericReconJob.h"
+#include "cuNFFTOperator.h"
+#include "cuNFFT.h"
+#include "vector_td_utilities.h"
+#include <boost/shared_ptr.hpp>
+#include "b1_map.h"
+#include "cuCgSolver.h"
+#include "cuNDArray_math.h"
+
+namespace Gadgetron {
+
+gpuBufferSensePrepGadget::gpuBufferSensePrepGadget() {
+	// TODO Auto-generated constructor stub
+	set_parameter("profiles_per_frame","0");
+}
+
+gpuBufferSensePrepGadget::~gpuBufferSensePrepGadget() {
+	// TODO Auto-generated destructor stub
+}
+
+int gpuBufferSensePrepGadget::process_config(ACE_Message_Block* mb) {
+	ISMRMRD::IsmrmrdHeader h;
+	ISMRMRD::deserialize(mb->rd_ptr(),h);
+
+	auto matrixsize = h.encoding.front().encodedSpace.matrixSize;
+
+	image_dims = std::vector<size_t>(3);
+	image_dims[0] = matrixsize.x;
+	image_dims[1] = matrixsize.y;
+	image_dims[2] = matrixsize.z;
+
+	profiles_per_frame_ = get_int_value("profiles_per_frame");
+
+}
+
+int gpuBufferSensePrepGadget::process(
+		GadgetContainerMessage<IsmrmrdReconData>* m1) {
+
+	IsmrmrdReconData* recondata= m1->getObjectPtr();
+
+	if (recondata->rbit_.size() != 1){
+		throw std::runtime_error("gpuBufferSensePrepGadget only support a single encoding space");
+	}
+
+	IsmrmrdReconBit& reconbit = recondata->rbit_[0];
+
+	GenericReconJob job;
+
+	IsmrmrdDataBuffered* buffer = &reconbit.data_;
+
+	//Use reference data if available.
+	if (reconbit.ref_.data_.get_number_of_elements())
+		buffer = &reconbit.ref_;
+
+	size_t ncoils = buffer->headers_[0].active_channels;
+
+
+	cuNDArray<float_complext> data((hoNDArray<float_complext>*)&buffer->data_);
+
+	boost::shared_ptr<cuNDArray<float>> dcw;
+	boost::shared_ptr<cuNDArray<floatd2>> traj;
+
+	if (buffer->headers_[0].trajectory_dimensions == 3){
+		auto traj_dcw = separate_traj_and_dcw(&buffer->trajectory_);
+		dcw = boost::make_shared<cuNDArray<float>>(std::get<1>(traj_dcw).get());
+		traj = boost::make_shared<cuNDArray<floatd2>>(std::get<0>(traj_dcw).get());
+	} else if (buffer->headers_[0].trajectory_dimensions == 2){
+		auto old_traj_dims = *buffer->trajectory_.get_dimensions();
+		std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
+		hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)buffer->trajectory_.get_data_ptr());
+		traj = boost::make_shared<cuNDArray<floatd2>>(tmp_traj);
+	} else {
+		throw std::runtime_error("Unsupported number of trajectory dimensions");
+	}
+	{
+		auto reg_images = reconstruct_regularization(&data,traj.get(),dcw.get(),ncoils);
+		auto csm = estimate_b1_map<float,2>(reg_images.get());
+
+		*reg_images *= *csm;
+		auto combined = sum(reg_images.get(),reg_images->get_number_of_dimensions()-1);
+		job.csm_host_ = csm->to_host();
+		job.reg_host_ = combined->to_host();
+	}
+
+
+	IsmrmrdDataBuffered* mainbuffer = &reconbit.data_;
+
+	if (mainbuffer->headers_[0].trajectory_dimensions >2 ){
+		auto traj_dcw = separate_traj_and_dcw(&buffer->trajectory_);
+		dcw = boost::make_shared<cuNDArray<float>>(std::get<1>(traj_dcw).get());
+		traj = boost::make_shared<cuNDArray<floatd2>>(std::get<0>(traj_dcw).get());
+		job.tra_host_ = traj->to_host();
+		job.dcw_host_ = dcw->to_host();
+	} else if (mainbuffer->headers_[0].trajectory_dimensions == 2){
+		auto old_traj_dims = *buffer->trajectory_.get_dimensions();
+		std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
+		hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)buffer->trajectory_.get_data_ptr());
+		traj = boost::make_shared<cuNDArray<floatd2>>(tmp_traj);
+		job.tra_host_ = traj->to_host();
+		auto host_dcw = boost::make_shared<hoNDArray<float>>(traj->get_dimensions().get());
+		fill(dcw.get(),1.0f);
+		job.dcw_host_ = host_dcw;
+
+	} else {
+		throw std::runtime_error("Unsupported number of trajectory dimensions");
+	}
+
+	job.dat_host_ = boost::make_shared<hoNDArray<float_complext>>((hoNDArray<float_complext>*)&mainbuffer->data_);
+
+	//Let's invent some image headers!
+	size_t total_frames = profiles_per_frame_ > 0 ? mainbuffer->headers_.get_number_of_elements()/profiles_per_frame_ : 1 ;
+	job.image_headers_ = boost::shared_array<ISMRMRD::ImageHeader>(new ISMRMRD::ImageHeader[total_frames]);
+	for (size_t i = 0; i < total_frames; i++){
+		job.image_headers_[i] = create_image_header(mainbuffer->headers_[i*profiles_per_frame_],mainbuffer->sampling_,i,total_frames);
+	}
+
+	m1->release(); //We be done with everything now.
+
+	auto header_message = new GadgetContainerMessage<ISMRMRD::ImageHeader>(job.image_headers_[0]);
+
+	auto job_message = new GadgetContainerMessage<GenericReconJob>(job);
+
+	header_message->cont(job_message);
+
+	if (!this->next()->putq(header_message)){
+		GADGET_DEBUG1("Failed to put message on que");
+		return GADGET_FAIL;
+	} else
+		return GADGET_OK;
+
+
+
+	//cuNDArray<float_complext> reg_images = reconstruct_regularization(reconbit.data_);
+}
+
+boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstruct_regularization(
+		cuNDArray<float_complext>* data, cuNDArray<floatd2>* traj, cuNDArray<float>* dcw, size_t ncoils ) {
+
+	if (dcw) { //We have density compensation, so we can get away with gridding
+
+		cuNFFT_plan<float,2> plan(from_std_vector<size_t,2>(image_dims),from_std_vector<size_t,2>(image_dims)*size_t(2),kernel_width);
+		std::vector<size_t> csm_dims = image_dims;
+		csm_dims.push_back(ncoils);
+		auto result = new cuNDArray<float_complext>(csm_dims);
+		GADGET_DEBUG2("Coils %i \n\n",ncoils);
+
+		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
+		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
+
+		GADGET_DEBUG1("Preprocessing\n\n");
+		plan.preprocess(&flat_traj,cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
+		GADGET_DEBUG1("Computing\n\n");
+		plan.compute(data,result,dcw,cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C);
+		return boost::shared_ptr<cuNDArray<float_complext>>(result);
+
+	} else { //No density compensation, we have to do iterative reconstruction.
+		std::vector<size_t> csm_dims = image_dims;
+		csm_dims.push_back(ncoils);
+
+		auto E = boost::make_shared<cuNFFTOperator<float,2>>();
+
+		E->setup(from_std_vector<size_t,2>(image_dims),from_std_vector<size_t,2>(image_dims)*size_t(2),kernel_width);
+		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
+		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
+
+		E->set_domain_dimensions(&csm_dims);
+		cuCgSolver<float_complext> solver;
+		solver.set_max_iterations(200);
+		solver.set_encoding_operator(E);
+		E->set_codomain_dimensions(data->get_dimensions().get());
+		E->preprocess(&flat_traj);
+		auto res = solver.solve(data);
+		return res;
+	}
+}
+
+std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<float >>> gpuBufferSensePrepGadget::separate_traj_and_dcw(
+		hoNDArray<float >* traj_dcw) {
+	std::vector<size_t> dims = *traj_dcw->get_dimensions();
+	std::vector<size_t> reduced_dims(dims.begin()+1,dims.end()); //Copy vector, but leave out first dim
+	auto  dcw = boost::make_shared<hoNDArray<float>>(reduced_dims);
+
+	auto traj = boost::make_shared<hoNDArray<floatd2>>(reduced_dims);
+
+	auto dcw_ptr = dcw->get_data_ptr();
+	auto traj_ptr = traj->get_data_ptr();
+	auto ptr = traj_dcw->get_data_ptr();
+	std::cout << "Dimensions ";
+	for (size_t dim : dims)
+		std::cout << dim << " ";
+	std::cout << std::endl;
+	for (size_t i = 0; i < traj_dcw->get_number_of_elements()/3; i++){
+		traj_ptr[i][0] = ptr[i*3];
+		traj_ptr[i][1] = ptr[i*3+1];
+		dcw_ptr[i] = ptr[i*3+2];
+	}
+
+	return std::make_tuple(traj,dcw);
+
+
+}
+
+ISMRMRD::ImageHeader gpuBufferSensePrepGadget::create_image_header(
+		ISMRMRD::AcquisitionHeader& base_head, const SamplingDescription& samp, size_t idx, size_t num_frames) {
+
+	ISMRMRD::ImageHeader header;
+	header.version = base_head.version;
+
+	header.matrix_size[0] = image_dims[0];
+	header.matrix_size[1] = image_dims[1];
+	header.matrix_size[2] = num_frames;
+
+
+	header.field_of_view[0] = samp.recon_FOV_[0];
+	header.field_of_view[1] = samp.recon_FOV_[1];
+	header.field_of_view[2] = samp.recon_FOV_[2];
+
+	header.channels = 1;
+	header.slice = base_head.idx.slice;
+	header.set = base_head.idx.set;
+
+	header.acquisition_time_stamp = base_head.acquisition_time_stamp;
+	memcpy(header.physiology_time_stamp, base_head.physiology_time_stamp, sizeof(uint32_t)*ISMRMRD::ISMRMRD_PHYS_STAMPS);
+
+	memcpy(header.position, base_head.position, sizeof(float)*3);
+	memcpy(header.read_dir, base_head.read_dir, sizeof(float)*3);
+	memcpy(header.phase_dir, base_head.phase_dir, sizeof(float)*3);
+	memcpy(header.slice_dir, base_head.slice_dir, sizeof(float)*3);
+	memcpy(header.patient_table_position, base_head.patient_table_position, sizeof(float)*3);
+
+	header.data_type = ISMRMRD::ISMRMRD_CXFLOAT;
+	header.image_index = idx;
+	header.image_series_index = 0;
+
+	return header;
+
+
+
+}
+
+GADGET_FACTORY_DECLARE(gpuBufferSensePrepGadget)
+
+} /* namespace Gadgetron */

@@ -131,7 +131,7 @@ namespace Gadgetron{
       
       sb_.get_inner_solver()->set_max_iterations( number_of_cg_iterations_ );
       sb_.get_inner_solver()->set_tc_tolerance( cg_limit_ );
-      sb_.get_inner_solver()->set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT );
+      //sb_.get_inner_solver()->set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT );
       sb_.get_inner_solver()->set_preconditioner( D_ );
 
       is_configured_ = true;

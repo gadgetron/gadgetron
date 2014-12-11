@@ -40,6 +40,7 @@ add_library(gadgetron_gpuparallelmri SHARED
     gpuCoilEstimationGadget.cpp
     gpuCgSpiritGadget.cpp 
     gpuSenseGadget.cpp
+    gpuBufferSensePrepGadget.cpp
   )
 
 
@@ -66,6 +67,7 @@ install (FILES  gadgetron_gpupmri_export.h
                 gpuGenericSensePrepGadget.h
                 gpuSbSenseGadget.h
                 gpuSenseGadget.h
+                gpuBufferSensePrepGadget.h
                 DESTINATION include COMPONENT main)
 
 add_subdirectory(config)
