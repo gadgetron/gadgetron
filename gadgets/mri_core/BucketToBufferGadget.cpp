@@ -2,7 +2,7 @@
 #include "BucketToBufferGadget.h"
 #include "Gadgetron.h"
 #include "mri_core_data.h"
-
+#include "hoNDArray_elemwise.h"
 namespace Gadgetron{
 
 BucketToBufferGadget::~BucketToBufferGadget()
@@ -287,7 +287,7 @@ int BucketToBufferGadget
 
             //Allocate the array for the data
             recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.fill(std::complex<float>(0.0f,0.0f));
+            clear(&recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_);
 
             //Allocate the array for the headers
             recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.headers_.create(NE1, NE2, NSLC, NN, NS);
@@ -296,8 +296,8 @@ int BucketToBufferGadget
             uint16_t TRAJDIM = acqhdr.trajectory_dimensions;
             if (TRAJDIM > 0)
             {
-                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_.create(NRO, TRAJDIM, NE1, NE2, NSLC, NN, NS);
-                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_.fill(0.0f);
+                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_.create(TRAJDIM, NRO, NE1, NE2, NSLC, NN, NS);
+                clear(&recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_);
             }
             
             //boost::shared_ptr< std::vector<size_t> > dims =  recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.data_.get_dimensions();
@@ -563,7 +563,7 @@ int BucketToBufferGadget
 
             //Allocate the array for the data
             recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
-            recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.fill(std::complex<float>(0.0f,0.0f));
+            clear(&recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_);
 
             //Allocate the array for the headers
             recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.headers_.create(NE1, NE2, NSLC, NN, NS);
@@ -572,8 +572,8 @@ int BucketToBufferGadget
             uint16_t TRAJDIM = acqhdr.trajectory_dimensions;
             if (TRAJDIM > 0)
             {
-                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_.create(NRO, TRAJDIM, NE1, NE2, NSLC, NN, NS);
-                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_.fill(0.0f);
+                recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_.create(TRAJDIM,NRO, NE1, NE2, NSLC, NN, NS);
+                clear(&recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_);
             }
         }
         
@@ -632,11 +632,9 @@ int BucketToBufferGadget
         if (acqhdr.trajectory_dimensions > 0) {
             float * trajptr;
             hoNDArray< float > & acqtraj = *it->traj_->getObjectPtr();            
-            for (uint16_t tdim = 0; tdim < acqhdr.trajectory_dimensions; tdim++) {
-                trajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_(
-                    offset, tdim, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
-                memcpy(trajptr, & acqtraj(acqhdr.discard_pre, tdim), sizeof(float)*npts_to_copy);
-            }
+			trajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_(
+			offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
+			memcpy(trajptr, & acqtraj(0,acqhdr.discard_pre), sizeof(float)*npts_to_copy*acqhdr.trajectory_dimensions);
         }
     }
 
