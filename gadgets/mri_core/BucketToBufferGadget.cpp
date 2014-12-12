@@ -3,6 +3,7 @@
 #include "Gadgetron.h"
 #include "mri_core_data.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_reductions.h"
 namespace Gadgetron{
 
 BucketToBufferGadget::~BucketToBufferGadget()
@@ -375,7 +376,7 @@ int BucketToBufferGadget
 		if (acqhdr.trajectory_dimensions > 0) {
 			float * trajptr;
 			hoNDArray< float > & acqtraj = *it->traj_->getObjectPtr();  // TODO do we need to check this?
-			trajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_(
+			trajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].ref_.trajectory_(0,
 					offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
 			memcpy(trajptr, & acqtraj(0,acqhdr.discard_pre ), sizeof(float)*npts_to_copy*acqhdr.trajectory_dimensions);
 
@@ -515,8 +516,6 @@ int BucketToBufferGadget
 				}
 			}
 
-			auto test = *m1->getObjectPtr()->datastats_[espace].repetition.rbegin();
-			auto test2 = *m1->getObjectPtr()->datastats_[espace].repetition.begin();
 			uint16_t NN;
 			switch (N_) {
 			case PHASE:
@@ -526,7 +525,7 @@ int BucketToBufferGadget
 				NN = *m1->getObjectPtr()->datastats_[espace].contrast.rbegin() - *m1->getObjectPtr()->datastats_[espace].contrast.begin() + 1;
 				break;
 			case REPETITION:
-				NN = (*m1->getObjectPtr()->datastats_[espace].repetition.begin()) - (*m1->getObjectPtr()->datastats_[espace].repetition.begin()) + 1;
+				NN = (*m1->getObjectPtr()->datastats_[espace].repetition.rbegin()) - (*m1->getObjectPtr()->datastats_[espace].repetition.begin()) + 1;
 				break;
 			case SET:
 				NN = *m1->getObjectPtr()->datastats_[espace].set.rbegin() - *m1->getObjectPtr()->datastats_[espace].set.begin() + 1;
@@ -565,14 +564,14 @@ int BucketToBufferGadget
 				NS = 1;
 			}
 
-			//std::cout << "Data dimensions:" << std::endl;
-			//std::cout << "   NRO:  " << NRO  << std::endl;
-			//std::cout << "   NE1:  " << NE1  << std::endl;
-			//std::cout << "   NE2:  " << NE2  << std::endl;
-			//std::cout << "   NSLC: " << NSLC << std::endl;
-			//std::cout << "   NCHA: " << NCHA << std::endl;
-			//std::cout << "   NN:   " << NN   << std::endl;
-			//std::cout << "   NS:   " << NS   << std::endl;
+//			std::cout << "Data dimensions:" << std::endl;
+//			std::cout << "   NRO:  " << NRO  << std::endl;
+//			std::cout << "   NE1:  " << NE1  << std::endl;
+//			std::cout << "   NE2:  " << NE2  << std::endl;
+//			std::cout << "   NSLC: " << NSLC << std::endl;
+//			std::cout << "   NCHA: " << NCHA << std::endl;
+//			std::cout << "   NN:   " << NN   << std::endl;
+//			std::cout << "   NS:   " << NS   << std::endl;
 
 			//Allocate the array for the data
 			recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
@@ -645,10 +644,11 @@ int BucketToBufferGadget
 		if (acqhdr.trajectory_dimensions > 0) {
 			float * trajptr;
 			hoNDArray< float > & acqtraj = *it->traj_->getObjectPtr();
-			trajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_(
+			trajptr = &recon_data_buffers[key]->getObjectPtr()->rbit_[espace].data_.trajectory_(0,
 					offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
 			memcpy(trajptr, & acqtraj(0,acqhdr.discard_pre), sizeof(float)*npts_to_copy*acqhdr.trajectory_dimensions);
 		}
+
 	}
 
 
@@ -656,7 +656,7 @@ int BucketToBufferGadget
 	//GADGET_DEBUG2("End of bucket reached, sending out %d ReconData buffers\n", recon_data_buffers.size());
 	for(std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* >::iterator it = recon_data_buffers.begin(); it != recon_data_buffers.end(); it++)
 	{
-		std::cout << "Sending: " << it->first << std::endl;
+		//std::cout << "Sending: " << it->first << std::endl;
 		if (it->second) {
 			if (this->next()->putq(it->second) == -1) {
 				it->second->release();
