@@ -15,13 +15,19 @@
 #include "b1_map.h"
 #include "cuCgSolver.h"
 #include "cuNDArray_math.h"
-
+#include "hoNDArray_math.h"
+#include "hoNDArray_utils.h"
+#include "cuNDArray_fileio.h"
+#include "cudaDeviceManager.h"
 namespace Gadgetron {
 
 gpuBufferSensePrepGadget::gpuBufferSensePrepGadget() {
 	// TODO Auto-generated constructor stub
 	set_parameter("profiles_per_frame","0");
 	set_parameter("kernel_width","5.5");
+	set_parameter("buffer_convolution_oversampling_factor","1.5");
+	set_parameter("reconstruction_os_factor","1.5");
+
 }
 
 gpuBufferSensePrepGadget::~gpuBufferSensePrepGadget() {
@@ -34,13 +40,26 @@ int gpuBufferSensePrepGadget::process_config(ACE_Message_Block* mb) {
 
 	auto matrixsize = h.encoding.front().encodedSpace.matrixSize;
 
-	image_dims = std::vector<size_t>(3);
-	image_dims[0] = matrixsize.x;
-	image_dims[1] = matrixsize.y;
-	image_dims[2] = matrixsize.z;
 
 	profiles_per_frame_ = get_int_value("profiles_per_frame");
 	kernel_width = get_double_value("kernel_width");
+
+	oversampling_factor_ = get_double_value("buffer_convolution_oversampling_factor");
+
+	unsigned int warp_size = cudaDeviceManager::Instance()->warp_size();
+	image_dims_.push_back(((matrixsize.x+warp_size-1)/warp_size)*warp_size);
+	image_dims_.push_back(((matrixsize.y+warp_size-1)/warp_size)*warp_size);
+
+	image_dims_recon_.push_back(((static_cast<size_t>(std::ceil(matrixsize.x*get_double_value("reconstruction_os_factor")))+warp_size-1)/warp_size)*warp_size);
+	image_dims_recon_.push_back(((static_cast<size_t>(std::ceil(matrixsize.y*get_double_value("reconstruction_os_factor")))+warp_size-1)/warp_size)*warp_size);
+
+	image_dims_recon_os_ = uint64d2
+			(((static_cast<size_t>(std::ceil(image_dims_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
+					((static_cast<size_t>(std::ceil(image_dims_recon_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
+
+	// In case the warp_size constraint kicked in
+	oversampling_factor_ = float(image_dims_recon_os_[0])/float(image_dims_recon_[0]);
+
 
 }
 
@@ -66,7 +85,7 @@ int gpuBufferSensePrepGadget::process(
 	size_t ncoils = buffer->headers_[0].active_channels;
 
 
-	cuNDArray<float_complext> data((hoNDArray<float_complext>*)&buffer->data_);
+	std::vector<size_t> new_order = {0,1,2,4,5,6,3};
 
 	boost::shared_ptr<cuNDArray<float>> dcw;
 	boost::shared_ptr<cuNDArray<floatd2>> traj;
@@ -84,6 +103,13 @@ int gpuBufferSensePrepGadget::process(
 		throw std::runtime_error("Unsupported number of trajectory dimensions");
 	}
 	{
+		auto permuted = permute((hoNDArray<float_complext>*)&buffer->data_,&new_order);
+		cuNDArray<float_complext> data(*permuted);
+		if (dcw){
+			float scale_factor = float(prod(image_dims_recon_os_))/asum(dcw.get());
+			*dcw *= scale_factor;
+		}
+
 		auto reg_images = reconstruct_regularization(&data,traj.get(),dcw.get(),ncoils);
 		reg_images->squeeze();
 
@@ -91,6 +117,9 @@ int gpuBufferSensePrepGadget::process(
 
 		*reg_images *= *csm;
 		auto combined = sum(reg_images.get(),reg_images->get_number_of_dimensions()-1);
+
+		auto tmp_combined = abs(reg_images.get());
+		auto tmpcsm = abs(csm.get());
 		job.csm_host_ = csm->to_host();
 		job.reg_host_ = combined->to_host();
 	}
@@ -98,27 +127,46 @@ int gpuBufferSensePrepGadget::process(
 
 	IsmrmrdDataBuffered* mainbuffer = &reconbit.data_;
 
+	//Permute as Sensegadgets expect last dimension to be coils. *Sigh*
+	job.dat_host_ =permute((hoNDArray<float_complext>*)&mainbuffer->data_,&new_order);
+
 	if (mainbuffer->headers_[0].trajectory_dimensions >2 ){
 		auto traj_dcw = separate_traj_and_dcw(&buffer->trajectory_);
-		dcw = boost::make_shared<cuNDArray<float>>(std::get<1>(traj_dcw).get());
-		traj = boost::make_shared<cuNDArray<floatd2>>(std::get<0>(traj_dcw).get());
-		job.tra_host_ = traj->to_host();
-		job.dcw_host_ = dcw->to_host();
+		job.tra_host_ = std::get<0>(traj_dcw);
+		job.dcw_host_ = std::get<1>(traj_dcw);
 	} else if (mainbuffer->headers_[0].trajectory_dimensions == 2){
 		auto old_traj_dims = *buffer->trajectory_.get_dimensions();
 		std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
 		hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)buffer->trajectory_.get_data_ptr());
-		traj = boost::make_shared<cuNDArray<floatd2>>(tmp_traj);
-		job.tra_host_ = traj->to_host();
-		auto host_dcw = boost::make_shared<hoNDArray<float>>(traj->get_dimensions().get());
-		fill(dcw.get(),1.0f);
+		job.tra_host_ = boost::make_shared<hoNDArray<floatd2>>(tmp_traj);
+		auto host_dcw = boost::make_shared<hoNDArray<float>>(traj_dims);
+		fill(host_dcw.get(),1.0f);
 		job.dcw_host_ = host_dcw;
 
 	} else {
 		throw std::runtime_error("Unsupported number of trajectory dimensions");
 	}
+	{
+		float scale_factor = float(prod(image_dims_recon_os_))/asum(job.dcw_host_.get());
+		*job.dcw_host_  *= scale_factor;
+	}
 
-	job.dat_host_ = boost::make_shared<hoNDArray<float_complext>>((hoNDArray<float_complext>*)&mainbuffer->data_);
+	auto data_dims = *job.dat_host_->get_dimensions();
+		//Sense gadgets expect only 1 dimension for encoding, so collapse the first
+	size_t elements = std::accumulate(data_dims.begin(),data_dims.end()-1,1,std::multiplies<size_t>());
+	std::vector<size_t> new_data_dims = {elements,data_dims.back()};
+	job.dat_host_->reshape(&new_data_dims);
+
+	size_t traj_elements = job.tra_host_->get_number_of_elements();\
+	auto traj_dims = *job.tra_host_->get_dimensions();
+	if (traj_elements%profiles_per_frame_)
+		throw std::runtime_error("Profiles per frame must be divisor of the total number of profiles");
+	size_t kpoints_per_frame = traj_dims[0]*profiles_per_frame_;
+	std::vector<size_t> new_traj_dims ={kpoints_per_frame,traj_elements/kpoints_per_frame};
+
+	job.tra_host_->reshape(&new_traj_dims);
+	job.dcw_host_->reshape(&new_traj_dims);
+
 
 	//Let's invent some image headers!
 	size_t total_frames = profiles_per_frame_ > 0 ? mainbuffer->headers_.get_number_of_elements()/profiles_per_frame_ : 1 ;
@@ -126,6 +174,7 @@ int gpuBufferSensePrepGadget::process(
 	for (size_t i = 0; i < total_frames; i++){
 		job.image_headers_[i] = create_image_header(mainbuffer->headers_[i*profiles_per_frame_],mainbuffer->sampling_,i,total_frames);
 	}
+
 
 	m1->release(); //We be done with everything now.
 
@@ -151,8 +200,8 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 
 	if (dcw) { //We have density compensation, so we can get away with gridding
 
-		cuNFFT_plan<float,2> plan(from_std_vector<size_t,2>(image_dims),from_std_vector<size_t,2>(image_dims)*size_t(2),kernel_width);
-		std::vector<size_t> csm_dims = image_dims;
+		cuNFFT_plan<float,2> plan(from_std_vector<size_t,2>(image_dims_recon_),image_dims_recon_os_,kernel_width);
+		std::vector<size_t> csm_dims = image_dims_recon_;
 		csm_dims.push_back(ncoils);
 		auto result = new cuNDArray<float_complext>(csm_dims);
 		GADGET_DEBUG2("Coils %i \n\n",ncoils);
@@ -167,12 +216,12 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 		return boost::shared_ptr<cuNDArray<float_complext>>(result);
 
 	} else { //No density compensation, we have to do iterative reconstruction.
-		std::vector<size_t> csm_dims = image_dims;
+		std::vector<size_t> csm_dims = image_dims_recon_;
 		csm_dims.push_back(ncoils);
 
 		auto E = boost::make_shared<cuNFFTOperator<float,2>>();
 
-		E->setup(from_std_vector<size_t,2>(image_dims),from_std_vector<size_t,2>(image_dims)*size_t(2),kernel_width);
+		E->setup(from_std_vector<size_t,2>(image_dims_recon_),image_dims_recon_os_,kernel_width);
 		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
 		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
 
@@ -215,8 +264,8 @@ ISMRMRD::ImageHeader gpuBufferSensePrepGadget::create_image_header(
 	ISMRMRD::ImageHeader header;
 	header.version = base_head.version;
 
-	header.matrix_size[0] = image_dims[0];
-	header.matrix_size[1] = image_dims[1];
+	header.matrix_size[0] = image_dims_recon_[0];
+	header.matrix_size[1] = image_dims_recon_[1];
 	header.matrix_size[2] = num_frames;
 
 

@@ -33,7 +33,7 @@ template<class T> struct MatlabConverter {
 		mwSize ndim = input->get_number_of_dimensions();
 		mwSize* dims = new mwSize[ndim];
 		for (size_t i = 0; i < ndim; i++)
-			dims[i] = input->get_size(ndim-i-1); //Matlab is column-major, so revert dimensions;
+			dims[i] = input->get_size(i);
 
 		T* raw_data = (T*) mxCalloc(input->get_number_of_elements(),sizeof(T));
 		memcpy(raw_data,input->get_data_ptr(),input->get_number_of_bytes());
@@ -47,7 +47,7 @@ template<class T> struct MatlabConverter {
 		auto ndims = mxGetNumberOfDimensions(input);
 		auto dims = mxGetDimensions(input);
 		std::vector<size_t> dimensions(ndims);
-		for (size_t i = 0; i <ndims; i++) dimensions[i] = dims[ndims-i-1];
+		for (size_t i = 0; i <ndims; i++) dimensions[i] = dims[i];
 
 		auto result =  new hoNDArray<T>(dimensions);
 
@@ -121,7 +121,7 @@ template<class REAL> struct MatlabConverter<complext<REAL>> {
 		mwSize ndim = input->get_number_of_dimensions();
 		mwSize* dims = new mwSize[ndim];
 		for (size_t i = 0; i < ndim; i++)
-			dims[i] = input->get_size(ndim-i-1); //Matlab is column-major, so revert dimensions;
+			dims[i] = input->get_size(i);
 
 		REAL* real_data = (REAL*) mxCalloc(input->get_number_of_elements(),sizeof(REAL));
 		REAL* imag_data = (REAL*) mxCalloc(input->get_number_of_elements(),sizeof(REAL));
@@ -141,7 +141,7 @@ template<class REAL> struct MatlabConverter<complext<REAL>> {
 		auto ndims = mxGetNumberOfDimensions(input);
 		auto dims = mxGetDimensions(input);
 		std::vector<size_t> dimensions(ndims);
-		for (size_t i = 0; i <ndims; i++) dimensions[i] = dims[ndims-i-1];
+		for (size_t i = 0; i <ndims; i++) dimensions[i] = dims[i];
 		auto result = new hoNDArray<complext<REAL>>(dimensions);
 		switch (mxGetClassID(input)){ // Have to do runtime type conversion, which means cases en-masse.
 		case MatlabClassID<double>::value :

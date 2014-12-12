@@ -103,7 +103,7 @@ protected:
 
         // add user specified path for this gadget
         if (!path_->empty()) {
-            cmd = "addpath(" + *path_ + ");";
+            cmd = "addpath('" + *path_ + "');";
             send_matlab_command(cmd);
         }
 

@@ -25,10 +25,13 @@ public:
 
 	virtual int process(GadgetContainerMessage<IsmrmrdReconData>* data);
 protected:
-	int profiles_per_frame_;
+	size_t profiles_per_frame_;
 	float kernel_width;
+	float oversampling_factor_;
 	int ncoils_;
-	std::vector<size_t> image_dims;
+	std::vector<size_t> image_dims_;
+	std::vector<size_t> image_dims_recon_;
+	uint64d2 image_dims_recon_os_;
 	boost::shared_ptr<cuNDArray<float_complext>> reconstruct_regularization(cuNDArray<float_complext>* data, cuNDArray<floatd2>* traj, cuNDArray<float>* dcw, size_t coils );
 	static std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<float >>> separate_traj_and_dcw(hoNDArray<float>*);
 	ISMRMRD::ImageHeader create_image_header(ISMRMRD::AcquisitionHeader& header,const SamplingDescription& samp,size_t idx, size_t num_frames);
