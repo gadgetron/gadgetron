@@ -11,12 +11,17 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	auto recon_data = m1->getObjectPtr();
 	mwSize nencoding_spaces = recon_data->rbit_.size();
 
-
-	auto reconArray = mxCreateCellArray(1,&nencoding_spaces);
+	const char* fieldnames[2] = {"data","reference"};
+	auto reconArray = mxCreateStructArray(1,&nencoding_spaces,2,fieldnames);
+//auto reconArray = mxCreateCellArray(1,&nencoding_spaces);
 
 	for (int i = 0; i <  recon_data->rbit_.size(); i++){
 		auto mxrecon = BufferToMatlabStruct(&recon_data->rbit_[i].data_);
-		mxSetCell(reconArray,i,mxrecon);
+		mxSetField(reconArray,i,"data",mxrecon);
+		if (recon_data->rbit_[i].ref_.data_.get_number_of_elements()){
+			auto mxref = BufferToMatlabStruct(&recon_data->rbit_[i].data_);
+			mxSetField(reconArray,i,"reference",mxref);
+		}
 
 	}
 	engPutVariable(engine_, "recon_data", reconArray);
@@ -74,9 +79,19 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	for (mwIndex idx = 0; idx <qlen; idx++){
 
 		IsmrmrdReconBit bit;
-		bit.data_ = MatlabStructToBuffer(mxGetCell(bufferQ,idx));
+		bit.data_ = MatlabStructToBuffer(mxGetField(bufferQ,idx,"data"));
+
+		auto ref = mxGetField(bufferQ,idx,"reference");
+		if (ref){
+			GADGET_DEBUG1("Adding reference");
+			bit.ref_ = MatlabStructToBuffer(ref);
+			GADGET_DEBUG2("Number of elements %i \n",bit.ref_.data_.get_number_of_elements());
+		}
 		output_data.rbit_.push_back(bit);
 	}
+
+
+
 
 	if (!output_data.rbit_.empty()){
 		auto m3 = new GadgetContainerMessage<IsmrmrdReconData>(output_data.rbit_);

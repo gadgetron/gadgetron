@@ -3,7 +3,7 @@ classdef BaseBufferGadget < handle
   properties
 
         imageQ = [];
-        bufferQ = {};
+        bufferQ = struct([]);
         xml = [];
 
     end
@@ -12,6 +12,7 @@ classdef BaseBufferGadget < handle
 
         % Constructor
         function g = BaseBufferGadget()
+            
         end
 
         % Init function
@@ -23,24 +24,26 @@ classdef BaseBufferGadget < handle
         
            % Process function
         function [imageQ,bufferQ] = run_process(g, recon_data)
-            
-            
+            %% Convert headers
             for n = 1:numel(recon_data)
-                nheaders = numel(recon_data{n}.headers);
-                for k = 1:nheaders
-                    recon_data{n}.headers{k} = ismrmrd.AcquisitionHeader(recon_data{n}.headers{k});
+                recon_data(n).data.headers = ismrmrd.AcquisitionHeader(recon_data(n).data.headers);
+                if isfield(recon_data(n),'reference')
+                    if isstruct(recon_data(n).reference)
+                        recon_data(n).reference.headers = ismrmrd.AcquisitionHeader(recon_data(n).reference.headers);
+                    end
                 end
             end
             
-            recon_data{1}.samplingdescription
+            %% Process data
             g.process(recon_data);
+            
             imageQ = g.imageQ;
             bufferQ = g.bufferQ;
         end
         
           % Q related functions
         function emptyQ(g)
-           g.bufferQ = {};
+           g.bufferQ = struct([]);
            g.imageQ = [];
         end
 
@@ -53,14 +56,14 @@ classdef BaseBufferGadget < handle
              g.imageQ(idx).image = single(image);             
          end
         
-         function putBufferQ(g,bufferstruct)
+         function putBufferQ(g,data,reference)
              idx = length(g.bufferQ)+1;
-             g.bufferQ{idx} = bufferstruct;
-
-             nheaders = length(g.bufferQ{idx}.headers);
-             for k = 1:nheaders
-                 g.bufferQ{idx}.headers{k} = g.bufferQ{idx}.headers{k}.toBytes();
+             g.bufferQ(idx).data = data;
+             g.bufferQ(idx).data.headers = g.bufferQ(idx).data.headers.toBytes();
+             if (exist('reference','var'))
+                 g.bufferQ(idx).reference = reference;
+                 g.bufferQ(idx).reference.headers = reference.headers.toBytes();
              end
-         end
+        end
     end
 end

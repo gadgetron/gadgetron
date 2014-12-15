@@ -79,8 +79,10 @@ int gpuBufferSensePrepGadget::process(
 	IsmrmrdDataBuffered* buffer = &reconbit.data_;
 
 	//Use reference data if available.
-	if (reconbit.ref_.data_.get_number_of_elements())
+	if (reconbit.ref_.data_.get_number_of_elements()){
+		GADGET_DEBUG1("Using Reference data for CSM estimation\n");
 		buffer = &reconbit.ref_;
+	}
 
 	size_t ncoils = buffer->headers_[0].active_channels;
 
@@ -103,6 +105,11 @@ int gpuBufferSensePrepGadget::process(
 		throw std::runtime_error("Unsupported number of trajectory dimensions");
 	}
 	{
+		std::cout << "Buffer dims: ";
+		auto tmpdim = *buffer->data_.get_dimensions();
+		for (auto dim : tmpdim)
+			std::cout << dim << " ";
+		std::cout << std::endl;
 		auto permuted = permute((hoNDArray<float_complext>*)&buffer->data_,&new_order);
 		cuNDArray<float_complext> data(*permuted);
 		if (dcw){
@@ -131,13 +138,13 @@ int gpuBufferSensePrepGadget::process(
 	job.dat_host_ =permute((hoNDArray<float_complext>*)&mainbuffer->data_,&new_order);
 
 	if (mainbuffer->headers_[0].trajectory_dimensions >2 ){
-		auto traj_dcw = separate_traj_and_dcw(&buffer->trajectory_);
+		auto traj_dcw = separate_traj_and_dcw(&mainbuffer->trajectory_);
 		job.tra_host_ = std::get<0>(traj_dcw);
 		job.dcw_host_ = std::get<1>(traj_dcw);
 	} else if (mainbuffer->headers_[0].trajectory_dimensions == 2){
 		auto old_traj_dims = *buffer->trajectory_.get_dimensions();
 		std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
-		hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)buffer->trajectory_.get_data_ptr());
+		hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)mainbuffer->trajectory_.get_data_ptr());
 		job.tra_host_ = boost::make_shared<hoNDArray<floatd2>>(tmp_traj);
 		auto host_dcw = boost::make_shared<hoNDArray<float>>(traj_dims);
 		fill(host_dcw.get(),1.0f);
@@ -157,7 +164,7 @@ int gpuBufferSensePrepGadget::process(
 	std::vector<size_t> new_data_dims = {elements,data_dims.back()};
 	job.dat_host_->reshape(&new_data_dims);
 
-	size_t traj_elements = job.tra_host_->get_number_of_elements();\
+	size_t traj_elements = job.tra_host_->get_number_of_elements();
 	auto traj_dims = *job.tra_host_->get_dimensions();
 	if (traj_elements%profiles_per_frame_)
 		throw std::runtime_error("Profiles per frame must be divisor of the total number of profiles");
@@ -208,11 +215,13 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 
 		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
 		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
-
+		GADGET_DEBUG2("traj: %i data %i\n",traj->get_number_of_elements(),data->get_number_of_elements());
 		GADGET_DEBUG1("Preprocessing\n\n");
 		plan.preprocess(&flat_traj,cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
 		GADGET_DEBUG1("Computing\n\n");
 		plan.compute(data,result,dcw,cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C);
+
+		write_nd_array(abs(result).get(),"reg.real");
 		return boost::shared_ptr<cuNDArray<float_complext>>(result);
 
 	} else { //No density compensation, we have to do iterative reconstruction.

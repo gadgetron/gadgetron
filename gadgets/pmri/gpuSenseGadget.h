@@ -24,7 +24,7 @@ public:
 
 protected:
 
-	virtual int put_frames_on_que(int frames,int rotations, GenericReconJob* j, cuNDArray<float_complext>* cgresult);
+	virtual int put_frames_on_que(int frames,int rotations, GenericReconJob* j, cuNDArray<float_complext>* cgresult, int channels = 1);
 	 int channels_;
     int device_number_;
     int set_number_;

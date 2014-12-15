@@ -13,6 +13,7 @@
 #include "eigenTester.h"
 #include "CSfreqOperator.h"
 #include "cuPartialDerivativeOperator.h"
+#include "cuDWTOperator.h"
 namespace Gadgetron {
 
 CSIGadget::CSIGadget() {
@@ -121,10 +122,10 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 // Allocate encoding operator for non-Cartesian Sense
 		E_ = boost::make_shared< CSIOperator<float> >(1/bw->value, -dte->value);
 		E_->set_weight(mu_);
-		//std::vector<float> freqs;
-		//for (float f = -600.0f; f <= 160.0f; f+=10.0f)
-		//	freqs.push_back(f);
-		std::vector<float> freqs{  -575.1223,-450.1223,-360.1223,  -183.1223,140.8777};
+		std::vector<float> freqs;
+		for (float f = -600.0f; f <= 160.0f; f+=10.0f)
+			freqs.push_back(f);
+		//std::vector<float> freqs{  -575.1223,-450.1223,-360.1223,  -183.1223,140.8777};
 		E_->set_frequencies(freqs);
 
 		img_dims_[2]=freqs.size();
@@ -148,11 +149,31 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 		dY->set_domain_dimensions(&img_dims_);
 		dY->set_codomain_dimensions(&img_dims_);
 		dY->set_weight(2*mu_);
+		auto dZ = boost::make_shared<cuPartialDerivativeOperator<float_complext,3>>(2);
+		dZ->set_domain_dimensions(&img_dims_);
+		dZ->set_codomain_dimensions(&img_dims_);
+		dZ->set_weight(2*mu_);
 
 
 		solver_.add_regularization_group_operator(dX);
 		solver_.add_regularization_group_operator(dY);
+
+		//solver_.add_regularization_group_operator(dZ);
 		solver_.add_group();
+
+		auto W = boost::make_shared<cuDWTOperator<float_complext,3>>();
+		W->set_domain_dimensions(&img_dims_);
+		W->set_codomain_dimensions(&img_dims_);
+		W->set_weight(2*mu_);
+
+
+		auto W2 = boost::make_shared<cuDWTOperator<float_complext,3>>();
+		W2->set_shift(2);
+		W2->set_domain_dimensions(&img_dims_);
+		W2->set_codomain_dimensions(&img_dims_);
+		W2->set_weight(2*mu_);
+		solver_.add_regularization_operator(W);
+		solver_.add_regularization_operator(W2);
 		// Setup solver
 		solver_.set_encoding_operator( E_ );        // encoding matrix
 		solver_.set_max_outer_iterations( number_of_sb_iterations_ );
@@ -242,8 +263,8 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 	solv.set_max_iterations(10);
 	solv.set_encoding_operator(E_);
 	solv.set_tc_tolerance(1e-8f);
-	//auto result = solver_.solve(data.get());
-	auto result = solv.solve(data.get());
+	auto result = solver_.solve(data.get());
+	//auto result = solv.solve(data.get());
 
 	//E_->mult_MH(data.get(),result.get(),false);
 

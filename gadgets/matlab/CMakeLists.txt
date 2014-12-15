@@ -1,6 +1,6 @@
 find_package(Ismrmrd REQUIRED)
 
-include_directories(${MATLAB_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/toolboxes/mri_core)
+include_directories(${MATLAB_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/toolboxes/mri_core ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math)
 
 if (UNIX)
     if (APPLE)

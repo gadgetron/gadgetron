@@ -15,6 +15,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
+  ${CMAKE_SOURCE_DIR}/toolboxes/dwt/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers

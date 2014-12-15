@@ -69,7 +69,7 @@ int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
 
 }
 
-int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob* j, cuNDArray<float_complext>* cgresult) {
+int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob* j, cuNDArray<float_complext>* cgresult,int channels) {
 
 	unsigned int frames_per_rotation = frames/rotations;
 
@@ -145,7 +145,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 		m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
 		m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];
 		m->getObjectPtr()->matrix_size[2] = frames;
-		m->getObjectPtr()->channels       = 1;
+		m->getObjectPtr()->channels       = channels;
 		m->getObjectPtr()->image_index    = frame_counter_;
 
 		if (this->next()->putq(m) < 0) {

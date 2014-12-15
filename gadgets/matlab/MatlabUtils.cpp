@@ -1,6 +1,6 @@
 #include "MatlabUtils.h"
 
-
+#include "hoNDArray_math.h"
 
 using namespace Gadgetron;
 
@@ -55,8 +55,7 @@ template<class T> struct MatlabConverter {
 			throw std::runtime_error("Trying to convert complex matlab data to non-complex c++ type");
 		if (mxGetClassID(input) == MatlabClassID<T>::value ){ //Same type, so we can just memcpy
 			T* raw_data = (T*) mxGetData(input);
-			memcpy(result->get_data_ptr(),raw_data,result->get_number_of_elements());
-
+			memcpy(result->get_data_ptr(),raw_data,result->get_number_of_elements()*sizeof(T));
 		} else {
 			switch (mxGetClassID(input)){ // Have to do runtime type conversion, which means cases en-masse.
 			case MatlabClassID<double>::value :
@@ -118,7 +117,11 @@ template<class T> struct MatlabConverter {
 template<class REAL> struct MatlabConverter<complext<REAL>> {
 	static mxArray* convert(hoNDArray<complext<REAL>>* input){
 
-		mwSize ndim = input->get_number_of_dimensions();
+		size_t ndim = input->get_number_of_dimensions();
+
+		//Matlab does not support to creation of 7D arrays, but 8,6 and 9 works just fine.
+		//If you're on a train that's running Matlab as its control system, you should be very very scared.
+
 		mwSize* dims = new mwSize[ndim];
 		for (size_t i = 0; i < ndim; i++)
 			dims[i] = input->get_size(i);
@@ -132,9 +135,12 @@ template<class REAL> struct MatlabConverter<complext<REAL>> {
 			imag_data[i] = imag(raw_data[i]);
 		}
 
-		auto result =  mxCreateNumericArray(ndim,dims,MatlabClassID<REAL>::value,isComplex<complext<REAL>>::value);
+		auto result  =  mxCreateNumericArray(ndim,dims,MatlabClassID<REAL>::value,isComplex<complext<REAL>>::value);
 		mxSetData(result,real_data);
 		mxSetImagData(result,imag_data);
+
+		auto ndims_test = mxGetNumberOfDimensions(result);
+
 		return result;
 	}
 	static hoNDArray<complext<REAL> >* convert(mxArray* input) {
@@ -229,18 +235,15 @@ template<class T> hoNDArray<T>* Gadgetron::MatlabToHoNDArray(mxArray* data){
 
 mxArray* Gadgetron::BufferToMatlabStruct(IsmrmrdDataBuffered* buffer){
 
-	std::cout << "Converting Buffer to Matlab Struct" << std::endl;
 	const char * field_names[] = {"data","trajectory","headers","samplingdescription"};
 	mwSize one = 1;
 	auto mxstruct = mxCreateStructArray(1,&one,4,field_names);
 
-	std::cout << "Struct created " << std::endl;
+
 	if (!mxstruct) throw std::runtime_error("Failed to allocate Matlab struct");
 
 	auto mxdata = hoNDArrayToMatlab(&buffer->data_);
-	std::cout << "Setting data " << mxdata << std::endl;
 	mxSetField(mxstruct,0,"data",mxdata);
-	std::cout << "Adding trajectory" << std::endl;
 	//Add trajectory if available
 	if (buffer->trajectory_.get_number_of_elements() > 0){
 		int traj_fieldnumber = mxAddField(mxstruct,"trajectory");
@@ -251,13 +254,8 @@ mxArray* Gadgetron::BufferToMatlabStruct(IsmrmrdDataBuffered* buffer){
 	//Add headers
 	std::cout << "Adding headers " << std::endl;
 	mwSize num_headers = buffer->headers_.get_number_of_elements();
-	auto mxheaders = mxCreateCellArray(1,&num_headers);
-	for (size_t i = 0; i < buffer->headers_.get_number_of_elements(); i++){
-		mwSize acq_hdr_dims[2] = {sizeof(ISMRMRD::AcquisitionHeader), 1};
-		mxArray *acq_hdr_bytes = mxCreateNumericArray(2, acq_hdr_dims, mxUINT8_CLASS, mxREAL);
-		memcpy(mxGetData(acq_hdr_bytes),&buffer->headers_[i],sizeof(ISMRMRD::AcquisitionHeader));
-		mxSetCell(mxheaders,i,acq_hdr_bytes);
-	}
+	auto mxheaders = mxCreateNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
+	memcpy(mxGetData(mxheaders),buffer->headers_.get_data_ptr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
 	mxSetField(mxstruct,0,"headers",mxheaders);
 
 	auto samplingdescription = samplingdescriptionToMatlabStruct(&buffer->sampling_);
@@ -292,19 +290,28 @@ IsmrmrdDataBuffered Gadgetron::MatlabStructToBuffer(mxArray* mxstruct){
 
 	auto data = mxGetField(mxstruct,0,"data");
 	buffer.data_ = *MatlabToHoNDArray<std::complex<float>>(data);
-	auto traj = mxGetField(mxstruct,0,"traj");
+	if (buffer.data_.get_number_of_dimensions() != 7){ //Someone (Matlab) got rid of our dimensions. Ghee thanks;
+		std::vector<size_t> newdims = *buffer.data_.get_dimensions();
+		for (int i = buffer.data_.get_number_of_dimensions(); i<7; i++)
+			newdims.push_back(1);
+		buffer.data_.reshape(&newdims);
+	}
+	auto traj = mxGetField(mxstruct,0,"trajectory");
 	if (traj){
 		buffer.trajectory_ = *MatlabToHoNDArray<float>(traj);
+		if (buffer.trajectory_.get_number_of_dimensions() != 7){
+			std::vector<size_t> newdims = *buffer.trajectory_.get_dimensions();
+			for (int i = buffer.trajectory_.get_number_of_dimensions(); i<7; i++)
+				newdims.push_back(1);
+			buffer.trajectory_.reshape(&newdims);
+		}
 	}
 	auto headers = mxGetField(mxstruct,0,"headers");
-	if (mxGetN(headers) != 1) throw std::runtime_error("Error converting Matlab struct to Buffer: Header array must be a row-vector");
+
 	std::vector<size_t> header_dim = {mxGetM(headers)};
 	buffer.headers_ = hoNDArray<ISMRMRD::AcquisitionHeader>(header_dim);
 
-	for (int i = 0; i < mxGetN(headers); i++){
-		auto header =mxGetCell(headers,i);
-		memcpy(&buffer.headers_[i],mxGetData(header),sizeof(ISMRMRD::AcquisitionHeader));
-	}
+	memcpy(buffer.headers_.get_data_ptr(),mxGetData(headers),sizeof(ISMRMRD::AcquisitionHeader)*buffer.headers_.get_number_of_elements());
 
 	auto samplingdescription = mxGetField(mxstruct,0,"samplingdescription");
 	buffer.sampling_ = MatlabStructToSamplingdescription(samplingdescription);

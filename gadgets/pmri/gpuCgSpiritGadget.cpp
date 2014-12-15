@@ -35,6 +35,7 @@ namespace Gadgetron{
 
    number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
     cg_limit_ = get_double_value(std::string("cg_limit").c_str());
+    kappa_ = get_double_value("kappa");
    // Get the Ismrmrd header
     //
     ISMRMRD::IsmrmrdHeader h;
@@ -154,8 +155,10 @@ namespace Gadgetron{
     }
 
     std::vector<size_t> image_dims = to_std_vector(matrix_size_);
+
+    image_dims.push_back(frames);
     image_dims.push_back(channels);
-    //image_dims.push_back(frames);
+    GADGET_DEBUG2("Number of coils: %d %d \n",channels,image_dims.size());
     
     E_->set_domain_dimensions(&image_dims);
     E_->set_codomain_dimensions(device_samples->get_dimensions().get());
@@ -236,7 +239,7 @@ namespace Gadgetron{
     // Combine coil images
     //
 
-    cgresult = real_to_complex<float_complext>(sqrt(sum(abs_square(cgresult.get()).get(), 2).get()).get()); // RSS
+    cgresult = real_to_complex<float_complext>(sqrt(sum(abs_square(cgresult.get()).get(), 3).get()).get()); // RSS
     //cgresult = sum(cgresult.get(), 2);
 
     // Pass on the reconstructed images

@@ -49,9 +49,10 @@ classdef trajectoryScale < handle & BaseBufferGadget
             
             
            for n = 1:numel(recon_data) 
-               buffer =recon_data{n};
-               buffer.trajectory = buffer.trajectory*2;
-               fieldnames(buffer)
+                buffer =recon_data{n};
+                size(buffer.data)
+                buffer.trajectory = buffer.trajectory*0.5;
+                size(buffer.data)
                g.putBufferQ(buffer) 
            end
            
