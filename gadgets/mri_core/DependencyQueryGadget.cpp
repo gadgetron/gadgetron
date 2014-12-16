@@ -2,7 +2,6 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "DependencyQueryGadget.h"
 #include "gtPlusUtil.h"
-#include <ctime>
 
 #include <boost/version.hpp>
 #include <boost/filesystem.hpp>
