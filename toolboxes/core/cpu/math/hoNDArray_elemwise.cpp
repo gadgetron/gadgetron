@@ -23,6 +23,46 @@
 
 namespace Gadgetron{
 
+	//
+	// Math return types
+	//
+	template <class T, class I> struct mathReturnType {};
+	template <class T> struct mathReturnType<T,T> {typedef T type;};
+	template <class T> struct mathReturnType<complext<T>,T> {typedef complext<T> type;};
+	template <class T> struct mathReturnType<T,complext<T> > {typedef complext<T> type;};
+	template <class T, class S> struct mathReturnType<T, complext<S> > {typedef complext<typename mathReturnType<T,S>::type> type;};
+	template <class T, class S> struct mathReturnType<complext<T>, S> {typedef complext<typename mathReturnType<T,S>::type> type;};
+	template<> struct mathReturnType<unsigned int, int> {typedef int type;};
+	template<> struct mathReturnType<int, unsigned int> {typedef int type;};
+	template<> struct mathReturnType<int, bool> {typedef int type;};
+	template<> struct mathReturnType<bool,int> {typedef int type;};
+	template<> struct mathReturnType<unsigned int, bool> {typedef int type;};
+	template<> struct mathReturnType<bool,unsigned int> {typedef int type;};
+	template<> struct mathReturnType<float, unsigned int> {typedef float type;};
+	template<> struct mathReturnType<unsigned int, float> {typedef float type;};
+	template<> struct mathReturnType<float, int> {typedef float type;};
+	template<> struct mathReturnType<int, float> {typedef float type;};
+	template<> struct mathReturnType<float, bool> {typedef float type;};
+	template<> struct mathReturnType<bool, float> {typedef float type;};
+	template<> struct mathReturnType<double, unsigned int> {typedef double type;};
+	template<> struct mathReturnType<unsigned int, double> {typedef double type;};
+	template<> struct mathReturnType<double, int> {typedef double type;};
+	template<> struct mathReturnType<int, double> {typedef double type;};
+	template<> struct mathReturnType<double, bool> {typedef double type;};
+	template<> struct mathReturnType<bool, double> {typedef double type;};
+	template<> struct mathReturnType<double, float> {typedef double type;};
+	template<> struct mathReturnType<float,double> {typedef double type;};
+
+	//
+	// Math internal complex types
+	// this replaces std::complex<T> with complext<T>
+	//
+	template <class T> struct mathInternalType {};
+	template <class T> struct mathInternaType<T> {typedef T type;};
+	template <class T> struct mathInternalType<std::complex<T> > {typedef complext<T> type;};
+	template<> struct mathInternalType<std::complex<float> > {typedef complext<float> type;};
+
+
     // --------------------------------------------------------------------------------
 
     inline void add(size_t N, const float* x, const float* y, float* r)
@@ -333,71 +373,71 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    template <typename T> 
-    inline void multiply(size_t N, const T* x, const T* y, T* r)
+    // internal low level function for element-wise multiplication of two arrays
+    template <class T, class S>
+    void multiply_impl(size_t sizeX, size_t sizeY, const T* x, const S* y, typename mathReturnType<T,S>::type * r)
     {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; n++ )
-        {
-            const T& a = x[n];
-            const T& b = y[n];
-            r[n] = a*b;
+
+    	const mathInternalType<T>::type *a = reinterpret_cast<mathInternalType<T>::type *>(x);
+    	const mathInternalType<T>::type *b = reinterpret_cast<mathInternalType<T>::type *>(y);
+    	mathInternalType<T>::type *c = reinterpret_cast<mathInternalType<T>::type *>(r);
+
+        if (sizeY>sizeX) {
+            throw std::runtime_error("Multiply cannot broadcast when the size of x is less than the size of y.");
         }
+
+    	if (sizeX==sizeY) {
+    		long long loopsize = sizeX;
+    		#ifdef USE_OMP
+    		#pragma ompparallel for default(none) private(n) shared(loopsize, x, y, r) if (loopsize)>NumElementsUseThreading)
+    		#endif
+			for ( n=0; n< loopsize; n++ )
+			{
+				r[n] = x[n]*y[n];
+			}
+        } else {
+        	long long innerloopsize = sizeX/sizeY;
+        	long long outerloopsize = sizeX/innerloopsize;
+
+
+    	}
+    	//innerloopsize
+    	//outerloopsize
+    	//don't openmp at all
+
+        long long nbatches = (long long) (sizeX/sizeY);
+        //if nbatches = 1;
+
+        long long batch_size = (long long) (sizeX/nbatches);
+        long long n;
+//        for (long long b=0; b<nbatches; b++) {
+//        	size_t offset = b*batch_size;
+
     }
 
-    inline void multiply(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
+    template <class T, class S>
+    void multiply(const hoNDArray<T>& x, const hoNDArray<S>& y, typename mathReturnType<T,S>::type & r)
     {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const std::complex<float>& a1 = x[n];
-            const std::complex<float>& b1 = y[n];
-            const float a = a1.real();
-            const float b = a1.imag();
-            const float c = b1.real();
-            const float d = b1.imag();
+        size_t sx = x.get_number_of_elements();
+        size_t sy = y.get_number_of_elements();
+        size_t sr = r.get_number_of_elements();
+        //if ()
 
-            reinterpret_cast<float(&)[2]>(r[n])[0] = a*c-b*d;
-            reinterpret_cast<float(&)[2]>(r[n])[1] = a*d+b*c;
-        }
-    }
-
-    inline void multiply(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const std::complex<double>& a1 = x[n];
-            const std::complex<double>& b1 = y[n];
-            const double a = a1.real();
-            const double b = a1.imag();
-            const double c = b1.real();
-            const double d = b1.imag();
-
-            reinterpret_cast<double(&)[2]>(r[n])[0] = a*c-b*d;
-            reinterpret_cast<double(&)[2]>(r[n])[1] = a*d+b*c;
-        }
-    }
-
-    template <typename T> 
-    void multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
-    {
-        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
-        if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        {
-            r = x;
-        }
-
-        multiply(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
+        multiply_impl(x.get_number_of_elements(), y.get_number_of_elements(), x.begin(), y.begin(), r.begin());
     }
 
     template EXPORTCPUCOREMATH void multiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray<float>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray<double>& x, const hoNDArray<float>& y, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH void multiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< complext<float> >& x, const hoNDArray< float >& y, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< complext<double> >& x, const hoNDArray< double >& y, hoNDArray< complext<double> >& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
     template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+
+    intrinsinctype std::complex< float> complext<float>
+
 
     template <typename T> 
     void multiply(size_t N, const std::complex<T>* x, const T* y, std::complex<T>* r)
@@ -419,7 +459,7 @@ namespace Gadgetron{
     template <typename T> 
     void multiply(size_t N, const complext<T>* x, const T* y, complext<T>* r)
     {
-        multiply(N, reinterpret_cast< const std::complex<T>* >(x), y, reinterpret_cast< std::complex<T>* >(r));
+        //multiply(N, reinterpret_cast< const std::complex<T>* >(x), y, reinterpret_cast< std::complex<T>* >(r));
     }
 
     template <typename T> 
@@ -437,7 +477,7 @@ namespace Gadgetron{
         const T* pY = y.begin();
         std::complex<T>* pR = r.begin();
 
-        multiply(N, pX, pY, pR );
+        //multiply(N, pX, pY, pR );
     }
 
     template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< float >& y, hoNDArray< std::complex<float> >& r);
@@ -1885,6 +1925,30 @@ namespace Gadgetron{
         return ((x.get_number_of_elements()%y.get_number_of_elements())==0);
     }
 
+    // Private utility to verify if array dimensions are compatible for a binary operation
+    // that supports simple broadcasting, i.e. for f(x,y,r), there are three cases:
+    // 1) nr = nx = ny
+    // 2) nr = nx > ny, and nx is divisible by ny
+    // 3) nr = ny > nx, and ny is divisible by nx
+    //
+    template<class T,class S> static bool compatible_dimensions( const hoNDArray<T> &x, const hoNDArray<S> &y,
+    		const hoNDArray<typename mathReturnType<T,S>::type> &r )
+    {
+    	size_t nx = x.get_number_of_elements();
+    	size_t ny = y.get_number_of_elements();
+    	size_t nr = r.get_number_of_elements();
+    	if (nx == ny) {
+    		return (nx==nr);
+    	}
+    	if ((nx%ny)==0) {
+    		return (nx==nr);
+    	}
+    	if ((ny%ny)==0) {
+    		return (ny==nr);
+    	}
+        return false;
+    }
+
     // --------------------------------------------------------------------------------
 
     inline void axpy(float a, size_t N, const float* x, const float* y, float* r)
@@ -2671,59 +2735,11 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    template<class T> hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<T> &y)
+    template<class T, class S> hoNDArray<typename mathReturnType<T,S>::type>& operator*= (hoNDArray<T> &x, const hoNDArray<S> &y)
     {
-        if( compatible_dimensions<T,T>(x,y) ){
-            //arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                //hoNDArray<T> tmp;
-                //tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                //arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
-                //aRes %= aY;
-
-                multiply(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<std::complex<T>,T>(x,y) ){
-            //arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                /*hoNDArray< std::complex<T> > tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-                aRes %= aY;*/
-
-                multiply(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
-            }
-            return x;
-        }
-        else {
-            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
-        }
-    }
-
-    template<class T> hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
-    {
-        if( compatible_dimensions<complext<T>,T>(x,y) ){
-            //arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            size_t num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( size_t batch=0; batch<num_batches; batch++ ){
-                /*hoNDArray< complext<T> > tmp;
-                tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
-                arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-                aRes %= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );*/
-
-                multiply(y.get_number_of_elements(), x.get_data_ptr()+batch*y.get_number_of_elements(), y.get_data_ptr(), x.get_data_ptr()+batch*y.get_number_of_elements());
-            }
+        if( compatible_dimensions<T,S>(x,y,x) ){
+        	multiply_impl(x.get_number_of_elements(), y.get_number_of_elements(),
+        			x.get_data_ptr(), y.get_data_ptr(), x.get_data_ptr());
             return x;
         }
         else {
