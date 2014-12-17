@@ -8,7 +8,7 @@ function umount_check {
     while [ ${UMOUNT_READY} -eq 0 ]; do
         if mountpoint -q ${MOUNT_DIR}; then
             let UMOUNT_TRY++
-            if [ $UMOUNT_TRY -eq $MAX_MOUNT_TRY ]; then
+            if [ $UMOUNT_TRY -eq $MAX_TRY ]; then
                 UMOUNT_READY=1
             else
                 sleep 0.2

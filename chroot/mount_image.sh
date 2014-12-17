@@ -3,6 +3,8 @@
 function mount_safe {
   MOUNT_POINT=$1
   MOUNT_DIR=$2
+
+  echo  $MOUNT_POINT
   mkdir -p $MOUNT_POINT
   if find $MOUNT_POINT -maxdepth 0 -empty | read v; then
     mount --bind $MOUNT_DIR $MOUNT_POINT
@@ -46,32 +48,32 @@ else
   if [ $# -eq 2 ]; then
 
     FULL_PATH_TO_IMG_FILE=${1}
-    MOUNT_POINT=${2}
+    GLOBAL_MOUNT_POINT=${2}
 
-    mkdir -p ${MOUNT_POINT}
-    mount -o loop ${FULL_PATH_TO_IMG_FILE} ${MOUNT_POINT}
-    sleep 1
+    mkdir -p ${GLOBAL_MOUNT_POINT}
+    mount -o loop ${FULL_PATH_TO_IMG_FILE} ${GLOBAL_MOUNT_POINT}
+    sleep 0.2
 
     MOUNT_READY=0
     MOUNT_TRY=0
     MAX_MOUNT_TRY=100
     while [ ${MOUNT_READY} -eq 0 ]; do
-      if mountpoint -q ${MOUNT_POINT} && [ -e ${MOUNT_POINT}/chroot-root/start.sh ]; then
+      if mountpoint -q ${GLOBAL_MOUNT_POINT} && [ -e ${GLOBAL_MOUNT_POINT}/chroot-root/start.sh ]; then
           MOUNT_READY=1
       else
           sleep 0.2
           let MOUNT_TRY++
           if [ $MOUNT_TRY -eq $MAX_MOUNT_TRY ]; then
-		      MOUNT_READY=1
-			  exit 1
+		          MOUNT_READY=1
+			    exit 1
 	      fi
       fi
     done
 
-    if mountpoint -q ${MOUNT_POINT}; then
-        mount_safe "${MOUNT_POINT}/chroot-root/gadgetron/proc" /proc self/exe
-		mount_safe "${MOUNT_POINT}/chroot-root/gadgetron/dev" /dev
-		mount_safe "${MOUNT_POINT}/chroot-root/gadgetron/sys" /sys
+    if mountpoint -q ${GLOBAL_MOUNT_POINT}; then
+        mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/proc" /proc self/exe
+	      mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/dev" /dev
+        mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/sys" /sys
     else
       exit 1
     fi

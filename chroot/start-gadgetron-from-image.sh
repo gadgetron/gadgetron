@@ -37,7 +37,6 @@ else
 	  ${MOUNT_POINT}/chroot-root/start.sh &
 	  start_gadgetron_image_job=($!)
 	  wait $!
-	  sleep 1
 	  $BASEDIR/umount_image.sh ${MOUNT_POINT}
     else
       exit 1
