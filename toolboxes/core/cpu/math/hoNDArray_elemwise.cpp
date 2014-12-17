@@ -2719,6 +2719,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH hoNDArray<std::complex<float> >&  operator*=(hoNDArray<std::complex<float> >&x,  const hoNDArray<std::complex<float> >&y);
     template EXPORTCPUCOREMATH hoNDArray<std::complex<double> >&  operator*=(hoNDArray<std::complex<double> >&x,  const hoNDArray<double>&y);
     template EXPORTCPUCOREMATH hoNDArray<std::complex<double> >&  operator*=(hoNDArray<std::complex<double> >&x,  const hoNDArray<std::complex<double> >&y);
+=======
+>>>>>>> 0a82451c5f41952262da2f2bafd9c09f37d0a4c3
 
     template<class T> hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y)
     {
