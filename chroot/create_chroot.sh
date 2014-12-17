@@ -140,7 +140,7 @@ else
   umount ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
   rmdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
 
-  # rm -rf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root"
+  rm -rf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root"
 
   chmod 666 "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz"
   chmod 666 "${IMAGE_FILE_NAME}"
