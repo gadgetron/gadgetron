@@ -9,589 +9,606 @@
 #include "ismrmrd/xml.h"
 
 #ifdef USE_OMP
-    #include "omp.h"
+#include "omp.h"
 #endif // USE_OMP
 
 #ifndef _WIN32
-    #include <sys/types.h>
-    #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #endif // _WIN32
 
 namespace Gadgetron{
 
-    NoiseAdjustGadget::NoiseAdjustGadget()
-        : noise_decorrelation_calculated_(false)
-        , number_of_noise_samples_(0)
-        , number_of_noise_samples_per_acquisition_(0)
-        , noise_bw_scale_factor_(1.0f)
-        , noise_dwell_time_us_(-1.0f)
-        , is_configured_(false)
-        , computed_in_close_(false)
-        , use_stored_noise_prewhitener_(false)
-    {
-        noise_dependency_prefix_ = "GadgetronNoisePreWhitener";
+  NoiseAdjustGadget::NoiseAdjustGadget()
+    : noise_decorrelation_calculated_(false)
+    , number_of_noise_samples_(0)
+    , number_of_noise_samples_per_acquisition_(0)
+    , noise_bw_scale_factor_(1.0f)
+    , noise_dwell_time_us_(-1.0f)
+    , is_configured_(false)
+    , computed_in_close_(false)
+    , use_stored_noise_prewhitener_(false)
+  {
+    noise_dependency_prefix_ = "GadgetronNoiseCovarianceMatrix";
 
-        patient_id_.clear();
-        study_id_.clear();
-        measurement_id_.clear();
-        measurement_id_of_noise_dependency_.clear();
+    patient_id_.clear();
+    study_id_.clear();
+    measurement_id_.clear();
+    measurement_id_of_noise_dependency_.clear();
 
-        noise_dwell_time_us_preset_ = 5;
+    noise_dwell_time_us_preset_ = 5;
 
-        perform_noise_adjust_ = true;
+    perform_noise_adjust_ = true;
 
-        gt_timer_.set_timing_in_destruction(false);
-        performTiming_ = false;
-    }
+    gt_timer_.set_timing_in_destruction(false);
+    performTiming_ = false;
+  }
 
-    NoiseAdjustGadget::~NoiseAdjustGadget()
-    {
+  NoiseAdjustGadget::~NoiseAdjustGadget()
+  {
 
-    }
+  }
 
-    int NoiseAdjustGadget::process_config(ACE_Message_Block* mb)
-    {
-        boost::shared_ptr<std::string> str = this->get_string_value("workingDirectory");
-        if ( !str->empty() )
-        {
-            noise_dependency_folder_ = *str;
-        }
-        else
-        {
-            #ifdef _WIN32
-                noise_dependency_folder_ = std::string("c:\\temp\\gadgetron\\");
-            #else
-                noise_dependency_folder_ =  std::string("/tmp/gadgetron/");
-            #endif // _WIN32
-        }
-        GADGET_MSG("Folder to store noise dependencies is " << noise_dependency_folder_);
+  int NoiseAdjustGadget::process_config(ACE_Message_Block* mb)
+  {
+    boost::shared_ptr<std::string> str = this->get_string_value("workingDirectory");
+    if ( !str->empty() )
+      {
+	noise_dependency_folder_ = *str;
+      }
+    else
+      {
+#ifdef _WIN32
+	noise_dependency_folder_ = std::string("c:\\temp\\gadgetron\\");
+#else
+	noise_dependency_folder_ =  std::string("/tmp/gadgetron/");
+#endif // _WIN32
+      }
+    GADGET_MSG("Folder to store noise dependencies is " << noise_dependency_folder_);
 
-        str = this->get_string_value("noise_dependency_prefix");
+    str = this->get_string_value("noise_dependency_prefix");
 
-        if ( !str->empty() )
-        {
-            noise_dependency_prefix_ = *str;
-        }
+    if ( !str->empty() )
+      {
+	noise_dependency_prefix_ = *str;
+      }
 
-        performTiming_ = this->get_bool_value("performTiming");
+    performTiming_ = this->get_bool_value("performTiming");
 
-        str = get_string_value("perform_noise_adjust");
-        if ( !str->empty() )
-        {
-            perform_noise_adjust_ = this->get_bool_value("perform_noise_adjust");
-        }
-        else
-        {
-            perform_noise_adjust_ = true;
-        }
-        GADGET_MSG("NoiseAdjustGadget::perform_noise_adjust_ is " << perform_noise_adjust_);
+    str = get_string_value("perform_noise_adjust");
+    if ( !str->empty() )
+      {
+	perform_noise_adjust_ = this->get_bool_value("perform_noise_adjust");
+      }
+    else
+      {
+	perform_noise_adjust_ = true;
+      }
+    GADGET_MSG("NoiseAdjustGadget::perform_noise_adjust_ is " << perform_noise_adjust_);
 
-        noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
-        if ( noise_dwell_time_us_preset_ == 0 ) noise_dwell_time_us_preset_ = 5;
+    noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
+    if ( noise_dwell_time_us_preset_ == 0 ) noise_dwell_time_us_preset_ = 5;
 
-        ISMRMRD::IsmrmrdHeader h;
-        ISMRMRD::deserialize(mb->rd_ptr(),h);
+    ISMRMRD::IsmrmrdHeader h;
+    ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-        if ( h.acquisitionSystemInformation )
-        {
-            receiver_noise_bandwidth_ = (float)(h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth ?
-                *h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth : 0.793f);
+    if ( h.acquisitionSystemInformation )
+      {
+	receiver_noise_bandwidth_ = (float)(h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth ?
+					    *h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth : 0.793f);
 
-            GADGET_MSG("receiver_noise_bandwidth_ is " << receiver_noise_bandwidth_);
-        }
+	GADGET_MSG("receiver_noise_bandwidth_ is " << receiver_noise_bandwidth_);
+      }
 
-        // find the patient ID
-        if ( h.subjectInformation )
-        {
-            if ( h.subjectInformation->patientID )
-            {
-                patient_id_ = *h.subjectInformation->patientID;
-                GADGET_MSG("Patient ID is " << patient_id_);
+    // find the patient ID
+    if ( h.subjectInformation )
+      {
+	if ( h.subjectInformation->patientID )
+	  {
+	    patient_id_ = *h.subjectInformation->patientID;
+	    GADGET_MSG("Patient ID is " << patient_id_);
 
-                size_t len = patient_id_.length();
-                for ( size_t n=0; n<len; n++ )
-                {
-                    if ( patient_id_[n] == '-' ) patient_id_[n] = '_';
-                    if ( patient_id_[n] == ':' ) patient_id_[n] = '_';
-                }
-            }
-        }
+	    size_t len = patient_id_.length();
+	    for ( size_t n=0; n<len; n++ )
+	      {
+		if ( patient_id_[n] == '-' ) patient_id_[n] = '_';
+		if ( patient_id_[n] == ':' ) patient_id_[n] = '_';
+	      }
+	  }
+      }
 
-        // find the study ID
-        if ( h.studyInformation )
-        {
-            if ( h.studyInformation->studyID )
-            {
-                study_id_ = *h.studyInformation->studyID;
-                GADGET_MSG("Study ID is " << study_id_);
+    // find the study ID
+    if ( h.studyInformation )
+      {
+	if ( h.studyInformation->studyID )
+	  {
+	    study_id_ = *h.studyInformation->studyID;
+	    GADGET_MSG("Study ID is " << study_id_);
 
-                size_t len = study_id_.length();
-                for ( size_t n=0; n<len; n++ )
-                {
-                    if ( study_id_[n] == '-' ) study_id_[n] = '_';
-                    if ( study_id_[n] == ':' ) study_id_[n] = '_';
-                }
-            }
-        }
+	    size_t len = study_id_.length();
+	    for ( size_t n=0; n<len; n++ )
+	      {
+		if ( study_id_[n] == '-' ) study_id_[n] = '_';
+		if ( study_id_[n] == ':' ) study_id_[n] = '_';
+	      }
+	  }
+      }
 
-        // find the measurementID of this scan
-        if ( h.measurementInformation )
-        {
-            if ( h.measurementInformation->measurementID )
-            {
-                measurement_id_ = *h.measurementInformation->measurementID;
-                GADGET_MSG("Measurement ID is " << measurement_id_);
-            }
+    // find the measurementID of this scan
+    if ( h.measurementInformation )
+      {
+	if ( h.measurementInformation->measurementID )
+	  {
+	    measurement_id_ = *h.measurementInformation->measurementID;
+	    GADGET_MSG("Measurement ID is " << measurement_id_);
+	  }
 
-            // find the noise depencies if any
-            if ( h.measurementInformation->measurementDependency.size() > 0 )
-            {
-                measurement_id_of_noise_dependency_.clear();
+	// find the noise depencies if any
+	if ( h.measurementInformation->measurementDependency.size() > 0 )
+	  {
+	    measurement_id_of_noise_dependency_.clear();
 
-        std::vector<ISMRMRD::MeasurementDependency>::const_iterator iter = h.measurementInformation->measurementDependency.begin();
-                for ( ; iter!= h.measurementInformation->measurementDependency.end(); iter++ )
-                {
-                    std::string dependencyType = iter->dependencyType;
-                    std::string dependencyID = iter->measurementID;
+	    std::vector<ISMRMRD::MeasurementDependency>::const_iterator iter = h.measurementInformation->measurementDependency.begin();
+	    for ( ; iter!= h.measurementInformation->measurementDependency.end(); iter++ )
+	      {
+		std::string dependencyType = iter->dependencyType;
+		std::string dependencyID = iter->measurementID;
 
-                    GADGET_MSG("Found dependency measurement : " << dependencyType << " with ID " << dependencyID);
+		GADGET_MSG("Found dependency measurement : " << dependencyType << " with ID " << dependencyID);
             
-                    if ( dependencyType=="Noise" || dependencyType=="noise" )
-              {
-                        measurement_id_of_noise_dependency_ = dependencyID;
-                    }
-                }
+		if ( dependencyType=="Noise" || dependencyType=="noise" ) {
+		  measurement_id_of_noise_dependency_ = dependencyID;
+		}
+	      }
         
-                if ( !measurement_id_of_noise_dependency_.empty() )
-          {
-                    GADGET_MSG("Measurement ID of noise dependency is " << measurement_id_of_noise_dependency_);
-            
-                    full_name_stored_noise_dependency_ = this->generateFullNameWhenLoadNoiseDependency(measurement_id_of_noise_dependency_);
-                    GADGET_MSG("Stored noise dependency is " << full_name_stored_noise_dependency_);
+	    if ( !measurement_id_of_noise_dependency_.empty() ) {
+	      GADGET_MSG("Measurement ID of noise dependency is " << measurement_id_of_noise_dependency_);
+		  
+	      full_name_stored_noise_dependency_ = this->generateNoiseDependencyFilename(generateMeasurementIdOfNoiseDependency(measurement_id_of_noise_dependency_));
+	      GADGET_MSG("Stored noise dependency is " << full_name_stored_noise_dependency_);
+		  
+	      // try to load the precomputed noise prewhitener
+	      if ( !this->loadNoisePrewhitener(noise_dwell_time_us_, noise_covariance_matrixf_) )
+		{
+		  GADGET_MSG("Stored noise dependency is NOT found : " << full_name_stored_noise_dependency_);
+		  use_stored_noise_prewhitener_ = false;
+		  noise_dwell_time_us_ = -1;
+		  noise_covariance_matrixf_.clear();
+		}
+	      else
+		{
+		  GADGET_MSG("Stored noise dependency is found : " << full_name_stored_noise_dependency_);
+		  GADGET_MSG("Stored noise dwell time in us is " << noise_dwell_time_us_);
+		  GADGET_MSG("Stored noise channel number is " << noise_covariance_matrixf_.get_size(0));
+		  use_stored_noise_prewhitener_ = true;
+		}
+	    }
+	  }
+      }
 
-                    // try to load the precomputed noise prewhitener
-                    if ( !this->loadNoisePrewhitener(noise_dwell_time_us_, noise_covariance_matrixf_) )
-                    {
-                        GADGET_MSG("Stored noise dependency is NOT found : " << full_name_stored_noise_dependency_);
-                        use_stored_noise_prewhitener_ = false;
-                        noise_dwell_time_us_ = -1;
-                        noise_covariance_matrixf_.clear();
-                    }
-                    else
-                    {
-                        GADGET_MSG("Stored noise dependency is found : " << full_name_stored_noise_dependency_);
-                        GADGET_MSG("Stored noise dwell time in us is " << noise_dwell_time_us_);
-                        GADGET_MSG("Stored noise channel number is " << noise_covariance_matrixf_.get_size(0));
-                        use_stored_noise_prewhitener_ = true;
-                    }
-                }
-            }
-        }
-
-        // limit the number of threads used to be 1
+    // limit the number of threads used to be 1
 #ifdef USE_OMP
-        omp_set_num_threads(1);
-        GADGET_MSG("NoiseAdjustGadget:omp_set_num_threads(1) ... ");
+    omp_set_num_threads(1);
+    GADGET_MSG("NoiseAdjustGadget:omp_set_num_threads(1) ... ");
 #endif // USE_OMP
 
-        return GADGET_OK;
+    return GADGET_OK;
+  }
+
+  std::string NoiseAdjustGadget::generateMeasurementIdOfNoiseDependency(const std::string& noise_id)
+  {
+    // find the scan prefix
+    std::string measurementStr = measurement_id_;
+    size_t ind  = measurement_id_.find_last_of ("_");
+    if ( ind != std::string::npos ) {
+      measurementStr = measurement_id_.substr(0, ind);
+      measurementStr.append("_");
+      measurementStr.append(noise_id);
     }
+   
+    return measurementStr;
+  }
 
-    std::string NoiseAdjustGadget::generateFullNameWhenLoadNoiseDependency(const std::string& measurement_id_of_noise)
-    {
-        // find the scan prefix
-        std::string measurementStr = measurement_id_;
-        size_t ind  = measurement_id_.find_last_of ("_");
-        if ( ind != std::string::npos )
-        {
-            measurementStr = measurement_id_.substr(0, ind);
-            measurementStr.append("_");
-            measurementStr.append(measurement_id_of_noise);
-        }
+  std::string NoiseAdjustGadget::generateNoiseDependencyFilename(const std::string& measurement_id)
+  {
+    std::string full_name_stored_noise_dependency;
 
-        std::string full_name_loaded_noise_dependency;
+    full_name_stored_noise_dependency = noise_dependency_folder_;
+    full_name_stored_noise_dependency.append("/");
+    full_name_stored_noise_dependency.append(noise_dependency_prefix_);
+    full_name_stored_noise_dependency.append("_");
+    full_name_stored_noise_dependency.append(measurement_id);
 
-        full_name_loaded_noise_dependency = noise_dependency_folder_;
-        full_name_loaded_noise_dependency.append("/");
-        full_name_loaded_noise_dependency.append(noise_dependency_prefix_);
-        full_name_loaded_noise_dependency.append("_");
-        full_name_loaded_noise_dependency.append(measurementStr);
+    return full_name_stored_noise_dependency;
+  }
 
-        return full_name_loaded_noise_dependency;
-    }
+  bool NoiseAdjustGadget::loadNoisePrewhitener(float& noise_dwell_time_us, hoNDArray< ValueType >& noise_covariance_matrixf)
+  {
+    std::ifstream infile;
+    infile.open (full_name_stored_noise_dependency_.c_str(), std::ios::in|std::ios::binary);
 
-    std::string NoiseAdjustGadget::generateFullNameWhenStoreNoiseDependency(const std::string& measurement_id)
-    {
-        std::string full_name_stored_noise_dependency;
+    if (infile.good() )
+      {
+	infile.read( reinterpret_cast<char*>(&noise_dwell_time_us), sizeof(float));
 
-        full_name_stored_noise_dependency = noise_dependency_folder_;
-        full_name_stored_noise_dependency.append("/");
-        full_name_stored_noise_dependency.append(noise_dependency_prefix_);
-        full_name_stored_noise_dependency.append("_");
-        full_name_stored_noise_dependency.append(measurement_id);
+	size_t len;
+	infile.read( reinterpret_cast<char*>(&len), sizeof(size_t));
 
-        return full_name_stored_noise_dependency;
-    }
+	char* buf = new char[len];
+	if ( buf == NULL ) return false;
 
-    bool NoiseAdjustGadget::loadNoisePrewhitener(float& noise_dwell_time_us, hoNDArray< ValueType >& noise_covariance_matrixf)
-    {
-        std::ifstream infile;
-        infile.open (full_name_stored_noise_dependency_.c_str(), std::ios::in|std::ios::binary);
+	infile.read(buf, len);
 
-        if (infile.good() )
-        {
-            infile.read( reinterpret_cast<char*>(&noise_dwell_time_us), sizeof(float));
+	if ( !noise_covariance_matrixf.deserialize(buf, len) )
+	  {
+	    delete [] buf;
+	    return false;
+	  }
 
-            size_t len;
-            infile.read( reinterpret_cast<char*>(&len), sizeof(size_t));
+	delete [] buf;
+	infile.close();
+      }
+    else
+      {
+	GADGET_ERROR_MSG("Noise prewhitener file is not good for writing");
+	return false;
+      }
 
-            char* buf = new char[len];
-            if ( buf == NULL ) return false;
+    return true;
+  }
 
-            infile.read(buf, len);
+  bool NoiseAdjustGadget::saveNoisePrewhitener(const std::string& full_name_stored_noise_dependency, float& noise_dwell_time_us, hoNDArray< ValueType >& noise_covariance_matrixf)
+  {
+    char* buf = NULL;
+    size_t len(0);
+    if ( !noise_covariance_matrixf.serialize(buf, len) )
+      {
+	GADGET_ERROR_MSG("Noise prewhitener serialization failed ...");
+	return false;
+      }
 
-            if ( !noise_covariance_matrixf.deserialize(buf, len) )
-            {
-                delete [] buf;
-                return false;
-            }
+    std::ofstream outfile;
+    outfile.open (full_name_stored_noise_dependency.c_str(), std::ios::out|std::ios::binary);
 
-            delete [] buf;
-            infile.close();
-        }
-        else
-        {
-            GADGET_ERROR_MSG("Noise prewhitener file is not good for writing");
-            return false;
-        }
+    if (outfile.good())
+      {
+	GADGET_MSG("write out the noise dependency file : " << full_name_stored_noise_dependency);
+	outfile.write( reinterpret_cast<char*>(&noise_dwell_time_us), sizeof(float));
+	outfile.write( reinterpret_cast<char*>(&len), sizeof(size_t));
+	outfile.write(buf, len);
+	outfile.close();
 
-        return true;
-    }
+	// set the permission for the noise file to be rewritable
+#ifndef _WIN32
+	int res = chmod(full_name_stored_noise_dependency.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
+	if ( res != 0 )
+	  {
+	    GADGET_ERROR_MSG("Changing noise prewhitener file permission failed ...");
+	  }
+#endif // _WIN32
+      }
+    else
+      {
+	delete [] buf;
+	GADGET_ERROR_MSG("Noise prewhitener file is not good for writing");
+	return false;
+      }
 
-    bool NoiseAdjustGadget::saveNoisePrewhitener(const std::string& full_name_stored_noise_dependency, float& noise_dwell_time_us, hoNDArray< ValueType >& noise_covariance_matrixf)
-    {
-        char* buf = NULL;
-        size_t len(0);
-        if ( !noise_covariance_matrixf.serialize(buf, len) )
-        {
-            GADGET_ERROR_MSG("Noise prewhitener serialization failed ...");
-            return false;
-        }
+    delete [] buf;
+    return true;
+  }
 
-        std::ofstream outfile;
-        outfile.open (full_name_stored_noise_dependency.c_str(), std::ios::out|std::ios::binary);
+  void NoiseAdjustGadget::computeNoisePrewhitener(bool savePrewhitener)
+  {
+    GADGET_START_TIMING_CONDITION(gt_timer_, "compute noise prewhitener ... ", performTiming_);
 
-        if (outfile.good())
-        {
-            GADGET_MSG("write out the noise dependency file : " << full_name_stored_noise_dependency);
-            outfile.write( reinterpret_cast<char*>(&noise_dwell_time_us), sizeof(float));
-            outfile.write( reinterpret_cast<char*>(&len), sizeof(size_t));
-            outfile.write(buf, len);
-            outfile.close();
+    if ( noise_dwell_time_us_ > 0 )
+      {
+	if (number_of_noise_samples_ > 1)
+	  {
+	    GADGET_MSG("Noise dwell time: " << noise_dwell_time_us_);
+	    GADGET_MSG("receiver_noise_bandwidth: " << receiver_noise_bandwidth_);
 
-            // set the permission for the noise file to be rewritable
-            #ifndef _WIN32
-                int res = chmod(full_name_stored_noise_dependency.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
-                if ( res != 0 )
-                {
-                    GADGET_ERROR_MSG("Changing noise prewhitener file permission failed ...");
-                }
-            #endif // _WIN32
-        }
-        else
-        {
-            delete [] buf;
-            GADGET_ERROR_MSG("Noise prewhitener file is not good for writing");
-            return false;
-        }
+	    if (!noise_decorrelation_calculated_)
+	      {
+		GADGET_MSG("Calculating noise decorrelation");
 
-        delete [] buf;
-        return true;
-    }
+		// Armadillo can best do its template magic when we concatenate all the operations...
+		// 1. scale for number of samples
+		// 2. Cholesky decomposition
+		// 3. Invert lower triangular
 
-    void NoiseAdjustGadget::computeNoisePrewhitener(bool savePrewhitener)
-    {
-        GADGET_START_TIMING_CONDITION(gt_timer_, "compute noise prewhitener ... ", performTiming_);
+		arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
 
-        if ( noise_dwell_time_us_ > 0 )
-        {
-            if (number_of_noise_samples_ > 1)
-            {
-                GADGET_MSG("Noise dwell time: " << noise_dwell_time_us_);
-                GADGET_MSG("receiver_noise_bandwidth: " << receiver_noise_bandwidth_);
+		{
+		  noise_covf = arma::inv(arma::trimatu(arma::chol(noise_covf/( (float)number_of_noise_samples_-1))));
+		}
 
-                if (!noise_decorrelation_calculated_)
-                {
-                    GADGET_MSG("Calculating noise decorrelation");
+		// save the noise prewhitener
+		if ( savePrewhitener )
+		  {
+		    std::string fullNameOfStoredNoiseDependency;
+		    fullNameOfStoredNoiseDependency = this->generateNoiseDependencyFilename(measurement_id_);
+		    this->saveNoisePrewhitener(fullNameOfStoredNoiseDependency, noise_dwell_time_us_, noise_covariance_matrixf_);
+		  }
 
-                    // Armadillo can best do its template magic when we concatenate all the operations...
-                    // 1. scale for number of samples
-                    // 2. Cholesky decomposition
-                    // 3. Invert lower triangular
+		noise_decorrelation_calculated_ = true;
+	      }
+	  }
+      }
 
-                    arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
+    GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
+  }
 
-                    {
-                        noise_covf = arma::inv(arma::trimatu(arma::chol(noise_covf/( (float)number_of_noise_samples_-1))));
-                    }
+  int NoiseAdjustGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+  {
+    // GADGET_START_TIMING_CONDITION(gt_timer_, "in noise process ... ", performTiming_);
 
-                    // save the noise prewhitener
-                    if ( savePrewhitener )
-                    {
-                        std::string fullNameOfStoredNoiseDependency;
-                        fullNameOfStoredNoiseDependency = this->generateFullNameWhenStoreNoiseDependency(measurement_id_);
-                        this->saveNoisePrewhitener(fullNameOfStoredNoiseDependency, noise_dwell_time_us_, noise_covariance_matrixf_);
-                    }
+    bool is_scc_correction = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_SURFACECOILCORRECTIONSCAN_DATA);
+    bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
 
-                    noise_decorrelation_calculated_ = true;
-                }
-            }
-        }
+    unsigned int channels = m1->getObjectPtr()->active_channels;
+    unsigned int samples = m1->getObjectPtr()->number_of_samples;
 
-        GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
-    }
+    if ( measurement_id_.empty() )
+      {
+	unsigned int muid = m1->getObjectPtr()->measurement_uid;
+	std::ostringstream ostr;
+	ostr << muid;
+	measurement_id_ = ostr.str();
+      }
 
-    int NoiseAdjustGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
-    {
-        // GADGET_START_TIMING_CONDITION(gt_timer_, "in noise process ... ", performTiming_);
 
-        bool is_scc_correction = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_SURFACECOILCORRECTIONSCAN_DATA);
-        bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
+    /*
+      SHOULD BE
+	  
+      //In process_config
+      load_prewhitener(); //If available
 
-        unsigned int channels = m1->getObjectPtr()->active_channels;
-        unsigned int samples = m1->getObjectPtr()->number_of_samples;
+      //In process
+      if (noise) {
+      accumulate_noise(m2);  //allocates covariance and prewhitener array and zeros them out if not done
+      m1->release();
+      return GADGET_OK;
+      }
 
-        if ( measurement_id_.empty() )
-        {
-            unsigned int muid = m1->getObjectPtr()->measurement_uid;
-            std::ostringstream ostr;
-            ostr << muid;
-            measurement_id_ = ostr.str();
-        }
+      if (!prewhitener_calculated_) {
+      calculate_preshitener(...); //including scaling
+      }
 
-        if ( !perform_noise_adjust_ )
-        {
-            if ( !is_noise )
-            {
-                if (this->next()->putq(m1) == -1)
-                {
-                    ACE_ERROR_RETURN( (LM_ERROR,
-                        ACE_TEXT("%p\n"),
-                        ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
-                        -1);
-                }
-            }
-            else
-            {
-                m1->release();
-            }
+      //use gemm to apply whitener here
+	  
+      //pass on data
 
-            return GADGET_OK;
-        }
+	
+      //In close
+      If covariance matrix was not loaded from disk and it is present, save it to disk
 
-        if ( use_stored_noise_prewhitener_ )
-        {
-            if ( !is_noise )
-            {
-                acquisition_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
-                if (!is_configured_)
-                {
-                    if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f))
-                    {
-                        noise_bw_scale_factor_ = 1.0f;
-                    }
-                    else
-                    {
-                        noise_bw_scale_factor_ = (float)std::sqrt(2.0*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
-                    }
+    */
 
-                    GADGET_MSG("Noise dwell time: " << noise_dwell_time_us_);
-                    GADGET_MSG("Acquisition dwell time:" << acquisition_dwell_time_us_);
-                    GADGET_MSG("receiver_noise_bandwidth: " << receiver_noise_bandwidth_);
-                    GADGET_MSG("noise_bw_scale_factor: " << noise_bw_scale_factor_);
-                    is_configured_ = true;
-                }
+    if ( !perform_noise_adjust_ )
+      {
+	if ( !is_noise )
+	  {
+	    if (this->next()->putq(m1) == -1)
+	      {
+		ACE_ERROR_RETURN( (LM_ERROR,
+				   ACE_TEXT("%p\n"),
+				   ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
+				  -1);
+	      }
+	  }
+	else
+	  {
+	    m1->release();
+	  }
 
-                if ( !noise_decorrelation_calculated_ )
-                {
-                    arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
-                    noise_covf *= noise_bw_scale_factor_;
-                    noise_decorrelation_calculated_ = true;
-                }
+	return GADGET_OK;
+      }
 
-                if (noise_decorrelation_calculated_)
-                {
-                    // GADGET_START_TIMING_CONDITION(gt_timer_, "apply noise prewhitener ... ", performTiming_);
+    if ( use_stored_noise_prewhitener_ )
+      {
+	if ( !is_noise )
+	  {
+	    acquisition_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
+	    if (!is_configured_)
+	      {
+		if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f))
+		  {
+		    noise_bw_scale_factor_ = 1.0f;
+		  }
+		else
+		  {
+		    noise_bw_scale_factor_ = (float)std::sqrt(2.0*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
+		  }
 
-                    if ( data_prewhitened_.get_size(0)!=m2->getObjectPtr()->get_size(0) 
-                        || data_prewhitened_.get_size(1)!=m2->getObjectPtr()->get_size(1) )
-                    {
-                        data_prewhitened_.create(m2->getObjectPtr()->get_dimensions());
-                    }
+		GADGET_MSG("Noise dwell time: " << noise_dwell_time_us_);
+		GADGET_MSG("Acquisition dwell time:" << acquisition_dwell_time_us_);
+		GADGET_MSG("receiver_noise_bandwidth: " << receiver_noise_bandwidth_);
+		GADGET_MSG("noise_bw_scale_factor: " << noise_bw_scale_factor_);
+		is_configured_ = true;
+	      }
 
-                    memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
+	    if ( !noise_decorrelation_calculated_ )
+	      {
+		arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
+		noise_covf *= noise_bw_scale_factor_;
+		noise_decorrelation_calculated_ = true;
+	      }
 
-                    gemm(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
+	    if (noise_decorrelation_calculated_)
+	      {
+		// GADGET_START_TIMING_CONDITION(gt_timer_, "apply noise prewhitener ... ", performTiming_);
 
-                    // GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
-                }
+		if ( data_prewhitened_.get_size(0)!=m2->getObjectPtr()->get_size(0) 
+		     || data_prewhitened_.get_size(1)!=m2->getObjectPtr()->get_size(1) )
+		  {
+		    data_prewhitened_.create(m2->getObjectPtr()->get_dimensions());
+		  }
 
-                if (this->next()->putq(m1) == -1)
-                {
-                    ACE_ERROR_RETURN( (LM_ERROR,
-                        ACE_TEXT("%p\n"),
-                        ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
-                        -1);
-                }
-            }
-            else
-            {
-                m1->release();
-            }
-        }
-        else
-        {
-            if ( is_noise )
-            {
-                // this noise can be from a noise scan or it can be from the built-in noise
-                if ( number_of_noise_samples_per_acquisition_ == 0 )
-                {
-                    number_of_noise_samples_per_acquisition_ = samples;
-                }
+		memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
 
-                if ( noise_dwell_time_us_ < 0 )
-                {
-                    if ( !is_scc_correction && number_of_noise_samples_per_acquisition_>0 )
-                    {
-                        noise_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
-                    }
-                    else
-                    {
-                        noise_dwell_time_us_ = noise_dwell_time_us_preset_;
-                    }
-                }
+		gemm(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
 
-                //If noise covariance matrix is not allocated
-                if (noise_covariance_matrixf_.get_number_of_elements() != channels*channels)
-                {
-                    std::vector<size_t> dims(2, channels);
+		// GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
+	      }
 
-                    try
-                    {
-                        noise_covariance_matrixf_.create(&dims);
-                        noise_covariance_matrixf_once_.create(&dims);
-                    }
-                    catch (std::runtime_error& err)
-                    {
-                        GADGET_DEBUG_EXCEPTION(err, "Unable to allocate storage for noise covariance matrix\n" );
-                        return GADGET_FAIL;
-                    }
-                    Gadgetron::clear(noise_covariance_matrixf_);
-                    Gadgetron::clear(noise_covariance_matrixf_once_);
-                    number_of_noise_samples_ = 0;
-                }
+	    if (this->next()->putq(m1) == -1)
+	      {
+		ACE_ERROR_RETURN( (LM_ERROR,
+				   ACE_TEXT("%p\n"),
+				   ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
+				  -1);
+	      }
+	  }
+	else
+	  {
+	    m1->release();
+	  }
+      }
+    else
+      {
+	if ( is_noise )
+	  {
+	    // this noise can be from a noise scan or it can be from the built-in noise
+	    if ( number_of_noise_samples_per_acquisition_ == 0 )
+	      {
+		number_of_noise_samples_per_acquisition_ = samples;
+	      }
 
-                std::complex<float>* cc_ptr = noise_covariance_matrixf_.get_data_ptr();
-                std::complex<float>* data_ptr = m2->getObjectPtr()->get_data_ptr();
+	    if ( noise_dwell_time_us_ < 0 )
+	      {
+		if ( !is_scc_correction && number_of_noise_samples_per_acquisition_>0 )
+		  {
+		    noise_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
+		  }
+		else
+		  {
+		    noise_dwell_time_us_ = noise_dwell_time_us_preset_;
+		  }
+	      }
 
-                readout_ = *m2->getObjectPtr();
-                gemm(noise_covariance_matrixf_once_, readout_, true, *m2->getObjectPtr(), false);
-                Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_);
+	    //If noise covariance matrix is not allocated
+	    if (noise_covariance_matrixf_.get_number_of_elements() != channels*channels)
+	      {
+		std::vector<size_t> dims(2, channels);
 
-                number_of_noise_samples_ += samples;
-                m1->release();
-            }
-            else
-            {
-                if ( noise_dwell_time_us_ > 0 )
-                {
-                    acquisition_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
-                    if (!is_configured_)
-                    {
-                        if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f))
-                        {
-                            noise_bw_scale_factor_ = 1.0f;
-                        }
-                        else
-                        {
-                            noise_bw_scale_factor_ = (float)std::sqrt(2.0*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
-                        }
+		try
+		  {
+		    noise_covariance_matrixf_.create(&dims);
+		    noise_covariance_matrixf_once_.create(&dims);
+		  }
+		catch (std::runtime_error& err)
+		  {
+		    GADGET_DEBUG_EXCEPTION(err, "Unable to allocate storage for noise covariance matrix\n" );
+		    return GADGET_FAIL;
+		  }
+		Gadgetron::clear(noise_covariance_matrixf_);
+		Gadgetron::clear(noise_covariance_matrixf_once_);
+		number_of_noise_samples_ = 0;
+	      }
 
-                        GADGET_MSG("Noise dwell time: " << noise_dwell_time_us_);
-                        GADGET_MSG("Acquisition dwell time:" << acquisition_dwell_time_us_);
-                        GADGET_MSG("receiver_noise_bandwidth: " << receiver_noise_bandwidth_);
-                        GADGET_MSG("noise_bw_scale_factor: " << noise_bw_scale_factor_);
-                        is_configured_ = true;
-                    }
+	    std::complex<float>* cc_ptr = noise_covariance_matrixf_.get_data_ptr();
+	    std::complex<float>* data_ptr = m2->getObjectPtr()->get_data_ptr();
 
-                    if (number_of_noise_samples_ > 0)
-                    {
-                        if (!noise_decorrelation_calculated_)
-                        {
-                            if ( is_scc_correction )
-                            {
-                                this->computeNoisePrewhitener(true);
-                            }
-                            else
-                            {
-                                this->computeNoisePrewhitener(false);
-                            }
+	    readout_ = *m2->getObjectPtr();
+	    gemm(noise_covariance_matrixf_once_, readout_, true, *m2->getObjectPtr(), false);
+	    Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_);
 
-                            // apply the scaling
-                            arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
-                            noise_covf *= noise_bw_scale_factor_;
-                        }
-                        else
-                        {
-                            if ( m2->getObjectPtr()->get_size(1) == noise_covariance_matrixf_.get_size(0) )
-                            {
-                                if ( data_prewhitened_.get_size(0)!=m2->getObjectPtr()->get_size(0) 
-                                    || data_prewhitened_.get_size(1)!=m2->getObjectPtr()->get_size(1) )
-                                {
-                                    data_prewhitened_.create(m2->getObjectPtr()->get_dimensions());
-                                }
+	    number_of_noise_samples_ += samples;
+	    m1->release();
+	  }
+	else
+	  {
+	    if ( noise_dwell_time_us_ > 0 )
+	      {
+		acquisition_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
+		if (!is_configured_)
+		  {
+		    if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f))
+		      {
+			noise_bw_scale_factor_ = 1.0f;
+		      }
+		    else
+		      {
+			noise_bw_scale_factor_ = (float)std::sqrt(2.0*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
+		      }
 
-                                memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
+		    GADGET_MSG("Noise dwell time: " << noise_dwell_time_us_);
+		    GADGET_MSG("Acquisition dwell time:" << acquisition_dwell_time_us_);
+		    GADGET_MSG("receiver_noise_bandwidth: " << receiver_noise_bandwidth_);
+		    GADGET_MSG("noise_bw_scale_factor: " << noise_bw_scale_factor_);
+		    is_configured_ = true;
+		  }
 
-                                gemm(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
-                            }
-                        }
-                    }
-                }
+		if (number_of_noise_samples_ > 0)
+		  {
+		    if (!noise_decorrelation_calculated_)
+		      {
+			if ( is_scc_correction )
+			  {
+			    this->computeNoisePrewhitener(true);
+			  }
+			else
+			  {
+			    this->computeNoisePrewhitener(false);
+			  }
 
-                //It is enough to put the first one, since they are linked
-                if (this->next()->putq(m1) == -1)
-                {
-                    ACE_ERROR_RETURN( (LM_ERROR,
-                        ACE_TEXT("%p\n"),
-                        ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
-                        -1);
-                }
-            }
-        }
+			// apply the scaling
+			arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
+			noise_covf *= noise_bw_scale_factor_;
+		      }
+		    else
+		      {
+			if ( m2->getObjectPtr()->get_size(1) == noise_covariance_matrixf_.get_size(0) )
+			  {
+			    if ( data_prewhitened_.get_size(0)!=m2->getObjectPtr()->get_size(0) 
+				 || data_prewhitened_.get_size(1)!=m2->getObjectPtr()->get_size(1) )
+			      {
+				data_prewhitened_.create(m2->getObjectPtr()->get_dimensions());
+			      }
 
-        // GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
+			    memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
 
-        return GADGET_OK;
-    }
+			    gemm(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
+			  }
+		      }
+		  }
+	      }
 
-    int NoiseAdjustGadget::close(unsigned long flags)
-    {
-        if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
+	    //It is enough to put the first one, since they are linked
+	    if (this->next()->putq(m1) == -1)
+	      {
+		ACE_ERROR_RETURN( (LM_ERROR,
+				   ACE_TEXT("%p\n"),
+				   ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
+				  -1);
+	      }
+	  }
+      }
 
-        if ( !computed_in_close_ )
-        {
-            computed_in_close_ = true;
-            if ( !this->use_stored_noise_prewhitener_ )
-            {
-                if ( noise_dwell_time_us_ < 0 ) noise_dwell_time_us_ = noise_dwell_time_us_preset_; // this scan is a noise measurement
-                this->computeNoisePrewhitener(true);
-            }
-        }
+    // GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
 
-        return GADGET_OK;
-    }
+    return GADGET_OK;
+  }
 
-    GADGET_FACTORY_DECLARE(NoiseAdjustGadget)
+  int NoiseAdjustGadget::close(unsigned long flags)
+  {
+    if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
+
+    if ( !computed_in_close_ )
+      {
+	computed_in_close_ = true;
+	if ( !this->use_stored_noise_prewhitener_ )
+	  {
+	    if ( noise_dwell_time_us_ < 0 ) noise_dwell_time_us_ = noise_dwell_time_us_preset_; // this scan is a noise measurement
+	    this->computeNoisePrewhitener(true);
+	  }
+      }
+
+    return GADGET_OK;
+  }
+
+  GADGET_FACTORY_DECLARE(NoiseAdjustGadget)
 
 } // namespace Gadgetron
