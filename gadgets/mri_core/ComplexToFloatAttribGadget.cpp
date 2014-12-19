@@ -5,7 +5,7 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "ComplexToFloatAttribGadget.h"
-#include "hoNDArray_math_util.h"
+#include "hoNDArray_elemwise.h"
 
 namespace Gadgetron
 {
@@ -37,25 +37,25 @@ namespace Gadgetron
         {
             case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE:
             {
-                GADGET_CHECK_RETURN(Gadgetron::absolute(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::abs(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
             }
             break;
 
             case ISMRMRD::ISMRMRD_IMTYPE_REAL:
             {
-                GADGET_CHECK_RETURN(Gadgetron::complex_to_real(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::complex_to_real(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
             }
             break;
 
             case ISMRMRD::ISMRMRD_IMTYPE_IMAG:
             {
-                GADGET_CHECK_RETURN(Gadgetron::complex_to_imag(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::complex_to_imag(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
             }
             break;
 
             case ISMRMRD::ISMRMRD_IMTYPE_PHASE:
             {
-                GADGET_CHECK_RETURN(Gadgetron::argument(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
+                GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::argument(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
             }
             break;
 

@@ -581,4 +581,130 @@ namespace Gadgetron
 
         return true;
     }
+
+    bool PatientCoordinateSystemToDeviceCoordinateSystem(double& x, double& y, double& z, const std::string& position)
+    {
+        // this is following dicom tag (0020, 0037)
+
+        if ( position == "HFS" ) // Head-first supine (HFS)
+        {
+            y = -y;
+            z = -z;
+        }
+        else if ( position == "HFP" ) // Head-first prone (HFP)
+        {
+            x = -x;
+            z = -z;
+        }
+        else if ( position == "HFDR" ) // Head-first decubitus-right 
+        {
+            double v = x;
+            x = y;
+            y = v;
+            z = -z;
+        }
+        else if ( position == "HFDL" ) // Head-first decubitus-left (HFDL)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            x = -x;
+            y = -y;
+            z = -z;
+        }
+        else if ( position == "FFDR" ) // Feet-first decubitus-right (FFDR)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            x = -x;
+        }
+        else if ( position == "FFDL" ) // Feet-first decubitus-left (FFDL)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            y = -y;
+        }
+        else if ( position == "FFP" ) // Feet-first prone (FFP)
+        {
+        }
+        else if ( position == "FFS" ) // Feet-first supine (FFS)
+        {
+            x = -x;
+            y = -y;
+        }
+        else 
+        {
+            GADGET_ERROR_MSG("Unknown position string :" << position);
+            return false;
+        }
+
+        return true;
+    }
+
+    bool DeviceCoordinateSystemToPatientCoordinateSystem(double& x, double& y, double& z, const std::string& position)
+    {
+        if ( position == "HFS" ) // Head-first supine (HFS)
+        {
+            y = -y;
+            z = -z;
+        }
+        else if ( position == "HFP" ) // Head-first prone (HFP)
+        {
+            x = -x;
+            z = -z;
+        }
+        else if ( position == "HFDR" ) // Head-first decubitus-right 
+        {
+            double v = x;
+            x = y;
+            y = v;
+            z = -z;
+        }
+        else if ( position == "HFDL" ) // Head-first decubitus-left (HFDL)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            x = -x;
+            y = -y;
+            z = -z;
+        }
+        else if ( position == "FFDR" ) // Feet-first decubitus-right (FFDR)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            y = -y;
+        }
+        else if ( position == "FFDL" ) // Feet-first decubitus-left (FFDL)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            x = -x;
+        }
+        else if ( position == "FFP" ) // Feet-first prone (FFP)
+        {
+        }
+        else if ( position == "FFS" ) // Feet-first supine (FFS)
+        {
+            x = -x;
+            y = -y;
+        }
+        else 
+        {
+            GADGET_ERROR_MSG("Unknown position string :" << position);
+            return false;
+        }
+
+        return true;
+    }
 }

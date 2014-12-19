@@ -80,7 +80,7 @@ bool gtPlusISMRMRDReconCoilMapEstimation<T>::coilMap2DSPIRIT(const hoNDArray<T>&
 
         #pragma omp parallel default(none) private(ro, e1, scha, dcha) shared(RO, E1, CHA, pkIm, coilMap, eigD)
         {
-            hoMatrix<T> R(CHA, CHA), RRT(CHA, CHA);
+            hoMatrix<T> R(CHA, CHA), RC(CHA, CHA), RRT(CHA, CHA);
             Gadgetron::clear(RRT);
 
             hoMatrix<value_type> eigenValue;
@@ -107,7 +107,8 @@ bool gtPlusISMRMRDReconCoilMapEstimation<T>::coilMap2DSPIRIT(const hoNDArray<T>&
                         }
                     }
 
-                    Gadgetron::gemm(RRT, R, false, R, true);
+                    memcpy(RC.begin(), R.begin(), sizeof(T)*CHA*CHA);
+                    Gadgetron::gemm(RRT, RC, false, R, true);
 
                     Gadgetron::heev(RRT, eigenValue);
 

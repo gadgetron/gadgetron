@@ -13,7 +13,7 @@
 #include <matrix_vector_op.h>
 #include <matrix_decomposition.h>
 #include "GadgetronTimer.h"
-#include "hoNDArray_math_util.h"
+#include "hoNDArray_elemwise.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
 #include "hoNDArray_linalg.h"

@@ -160,7 +160,7 @@ namespace Gadgetron {
 
             if ( y.get_size(NDim-1) <= 1 )
             {
-                GADGET_CHECK_RETURN_FALSE(multiply(x, y, r));
+                multiply(x, y, r);
                 return true;
             }
 
@@ -217,7 +217,7 @@ namespace Gadgetron {
 
             if ( y.get_size(NDim-1) <= 1 )
             {
-                GADGET_CHECK_RETURN_FALSE(divide(y, x, r));
+                divide(y, x, r);
                 return true;
             }
 
@@ -533,7 +533,7 @@ namespace Gadgetron {
 
             if ( sz == 1 )
             {
-                GADGET_CHECK_RETURN_FALSE(multiply(x3D, y4D, r));
+                multiply(x3D, y4D, r);
                 return true;
             }
 

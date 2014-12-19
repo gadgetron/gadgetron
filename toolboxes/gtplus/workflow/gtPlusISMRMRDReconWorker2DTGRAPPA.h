@@ -171,7 +171,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("scale gfactor ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder2DT->acceFactorE1_), gFactor));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder2DT->acceFactorE1_), gFactor));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
 
         filename = "unmixC";

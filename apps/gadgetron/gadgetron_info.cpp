@@ -70,21 +70,19 @@ int main(int argc, char** argv)
   ComponentCreator cc = reinterpret_cast<ComponentCreator> (tmp);
   
   if (cc == 0) {
-    std::cout << "Failed to load factory (" << dllname << ") from DLL (" << factoryname << ")" << std::endl;
+    std::cout << "Failed to load factory (" << factoryname << ") from DLL (" << dllname << ")" << std::endl;
     return -1;
   }
   
   Gadget* g = cc();
-  
   if (!g) {
     std::cout << "Failed to create component using factory" << std::endl;
     return 0;
   }
 
-  if (g) {
-    delete g;
-  }
-
   std::cout << "  -- Gadget compiled against Gadgetron version " << g->get_gadgetron_version() << std::endl;
+
+  delete g;
+
   return 0;
 }

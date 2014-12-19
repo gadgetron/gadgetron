@@ -1,6 +1,6 @@
 #include "hoNDFFT.h"
 #include "hoMatrix.h"
-#include "hoNDArray_math_util.h"
+#include "hoNDArray_elemwise.h"
 #include "hoNDArray_math.h"
 
 namespace Gadgetron{
@@ -1185,7 +1185,21 @@ namespace Gadgetron{
         {
             fftwf_plan p;
 
-            if( num_thr > 1 )
+            /* it is found that code piece like this:
+
+                #pragma omp parallel for private(n) shared(num, p, a, n0, r) num_threads(num_thr)
+                for ( n=0; n<num; n++ )
+                {
+                    fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0), 
+                        reinterpret_cast<fftwf_complex*>(r.begin()+n*n0));
+                }
+
+                can cause occasion failture of fft operation.
+
+                This could be due to that fftwf_execute_dft may not be thread-safe.
+            */
+
+            /*if( num_thr > 1 )
             {
                 {
                     mutex_.lock();
@@ -1220,7 +1234,7 @@ namespace Gadgetron{
                 }
             }
             else
-            {
+            {*/
                 // multiple fft interface
                 {
                     mutex_.lock();
@@ -1252,13 +1266,13 @@ namespace Gadgetron{
                     fftwf_destroy_plan(p);
                     mutex_.unlock();
                 }
-            }
+            //}
         }
         else if ( typeid(T) == typeid(double) )
         {
             fftw_plan p;
 
-            if( num_thr > 1 )
+            /*if( num_thr > 1 )
             {
                 {
                     mutex_.lock();
@@ -1293,7 +1307,7 @@ namespace Gadgetron{
                 }
             }
             else
-            {
+            {*/
                 // multiple fft interface
                 {
                     mutex_.lock();
@@ -1325,7 +1339,7 @@ namespace Gadgetron{
                     fftw_destroy_plan(p);
                     mutex_.unlock();
                 }
-            }
+            //}
         }
 
         Gadgetron::scal(fftRatio, r);
@@ -1352,7 +1366,7 @@ namespace Gadgetron{
         {
             fftwf_plan p;
 
-            if ( num_thr > 1 )
+            /*if ( num_thr > 1 )
             {
                 {
                     mutex_.lock();
@@ -1387,7 +1401,7 @@ namespace Gadgetron{
                 }
             }
             else
-            {
+            {*/
                 // multiple fft interface
 
                 int n[] = {n0, n1};
@@ -1424,13 +1438,13 @@ namespace Gadgetron{
                     fftwf_destroy_plan(p);
                     mutex_.unlock();
                 }
-            }
+            //}
         }
         else if ( typeid(T) == typeid(double) )
         {
             fftw_plan p;
 
-            if ( num_thr > 1 )
+            /*if ( num_thr > 1 )
             {
                 {
                     mutex_.lock();
@@ -1465,7 +1479,7 @@ namespace Gadgetron{
                 }
             }
             else
-            {
+            {*/
                 // multiple fft interface
 
                 int n[] = {n0, n1};
@@ -1502,7 +1516,7 @@ namespace Gadgetron{
                     fftw_destroy_plan(p);
                     mutex_.unlock();
                 }
-            }
+            //}
         }
 
         Gadgetron::scal(fftRatio, r);
@@ -1549,7 +1563,7 @@ namespace Gadgetron{
                 mutex_.unlock();
             }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num_thr > 1) num_threads(num_thr)
+            // #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num_thr > 1) num_threads(num_thr)
             for ( n=0; n<num; n++ )
             {
                 fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1*n2), 
@@ -1585,7 +1599,7 @@ namespace Gadgetron{
                 mutex_.unlock();
             }
 
-            #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num_thr > 1) num_threads(num_thr)
+            // #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num_thr > 1) num_threads(num_thr)
             for ( n=0; n<num; n++ )
             {
                 fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1*n2), 

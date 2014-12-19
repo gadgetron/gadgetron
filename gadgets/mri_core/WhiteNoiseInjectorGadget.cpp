@@ -170,7 +170,11 @@ int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::Acquisitio
                 return GADGET_FAIL;
             }
 
-            if ( !Gadgetron::add(*m2->getObjectPtr(), noise_fl_, *m2->getObjectPtr()) )
+            try
+            {
+                Gadgetron::add(*m2->getObjectPtr(), noise_fl_, *m2->getObjectPtr());
+            }
+            catch(...)
             {
                 GADGET_ERROR_MSG("WhiteNoiseInjectorGadget, Gadgetron::add(*m2->getObjectPtr(), noise_, *m2->getObjectPtr()) failed ... ");
                 return GADGET_FAIL;

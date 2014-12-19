@@ -316,7 +316,7 @@ public:
             filenameImag.append("_IMAG");
             GADGET_CHECK_RETURN_FALSE(exportArray(buf, filenameImag));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(a, buf));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::abs(a, buf));
             std::string filenameMag = filename;
             filenameMag.append("_MAG");
             GADGET_CHECK_RETURN_FALSE(exportArray(buf, filenameMag));

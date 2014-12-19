@@ -1,6 +1,8 @@
 #ifndef GADGETRONCOMMON_H
 #define GADGETRONCOMMON_H
 
+#include <iostream>
+
 #ifndef _WIN32
 
 #define GCC_VERSION (__GNUC__ * 10000           \
@@ -40,6 +42,9 @@
 
 #define GADGET_CHECK_RETURN(con, value) { if ( ! (con) ) { GADGET_ERROR_MSG("Returning '" << value << "' due to failed check: '" << #con << "'"); return (value); } }
 #define GADGET_CHECK_RETURN_FALSE(con) { if ( ! (con) ) { GADGET_ERROR_MSG("Returning false due to failed check: '" << #con << "'"); return false; } }
+
+#define GADGET_CHECK_EXCEPTION_RETURN(con, value) { try { con; } catch(...) { GADGET_ERROR_MSG("Returning '" << value << "' due to failed check: '" << #con << "'"); return (value); } }
+#define GADGET_CHECK_EXCEPTION_RETURN_FALSE(con) { try { con; } catch(...) { GADGET_ERROR_MSG("Returning false due to failed check: '" << #con << "'"); return false; } }
 
 #ifdef GADGET_DEBUG_MODE
 #define GADGET_DEBUG_CHECK_THROW(con) GADGET_CHECK_THROW(con)

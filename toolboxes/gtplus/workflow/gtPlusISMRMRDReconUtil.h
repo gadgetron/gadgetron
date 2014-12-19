@@ -50,7 +50,7 @@
 #include "hoNDArray_linalg.h"
 #include "hoNDFFT.h"
 #include "hoNDArray_utils.h"
-#include "hoNDArray_math_util.h"
+#include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
 #include "hoNDArray_reductions.h"
 #include "hoNDArray_linalg.h"

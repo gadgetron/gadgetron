@@ -48,7 +48,7 @@ public:
     {
         // check whether we have all-zeros input
         value_type v(1);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::norm2(workOrder->data_, v));
+        Gadgetron::norm2(workOrder->data_, v);
         if ( v <= 0 )
         {
             GADGET_WARN_MSG("gtPlusReconWorker2DT, performRecon(workOrder) : incoming data contains all-zeros ... ");
@@ -383,7 +383,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
             }
 
             hoNDArray<typename realType<T>::Type> refMag(refRecon.get_dimensions()), refMagSum;
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(refRecon, refMag));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(refRecon, refMag));
             GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMag, refMagSum));
             GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMagSum, refMag));
             GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMag, refMagSum));
@@ -1181,7 +1181,7 @@ bool gtPlusReconWorker2DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
         }
 
         hoNDArray<T> conjUnmixCoeff(unmixCoeff);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
         Gadgetron::sqrt(gFactor, gFactor);
     }
@@ -1791,7 +1791,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
         {
             if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder2DT->data_));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder2DT->data_));
             }
 
             if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
@@ -1818,7 +1818,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
         {
             if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder2DT->fullkspace_));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder2DT->fullkspace_));
             }
 
             if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
@@ -1849,7 +1849,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
 
             if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
             }
 
             if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
@@ -2041,15 +2041,15 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_partial_fourier_, "homodyne_complexIm");
 
             // get the phase
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(buffer2DT_partial_fourier_, mag));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(mag));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(buffer2DT_partial_fourier_, mag));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::addEpsilon(mag));
             GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::divide(buffer2DT_partial_fourier_, magComplex, buffer2DT_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::divide(buffer2DT_partial_fourier_, magComplex, buffer2DT_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_, "homodyne_phase");
 
             // remove the phase from complex images
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(buffer2DT_, buffer2DT_));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(complexIm, buffer2DT_, complexIm));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::conjugate(buffer2DT_, buffer2DT_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(complexIm, buffer2DT_, complexIm));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexIm, "homodyne_complexIm_removePhase");
 
             // go back to kspace
@@ -2057,7 +2057,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIter, "homodyne_complexIm_removePhase_kspace");
 
             // compute threshold to stop the iteration
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(complexImPrev, complexIm, buffer2DT_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(complexImPrev, complexIm, buffer2DT_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_, "homodyne_diff_complexIm");
 
             typename realType<T>::Type diff, prev;
@@ -2159,7 +2159,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterE1(kspaceIter, filterPF_homodyne_E1, kspaceIter));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIter, "kspaceIter_after_homodyne_PF_Filter");
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::add(filterPF_E1, filterPF_homodyne_E1, filterPF));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::add(filterPF_E1, filterPF_homodyne_E1, filterPF));
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeFilterSNRUnitScaleFactor(filterPF, scaleFactor));
             }
             else if ( workOrder2DT.start_E1_<0 || workOrder2DT.end_E1_<0 || (workOrder2DT.start_E1_==0 && workOrder2DT.end_E1_==E1-1) )
@@ -2170,7 +2170,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterRO(kspaceIter, filterPF_homodyne_RO, kspaceIter));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIter, "kspaceIter_after_homodyne_PF_Filter");
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::add(filterPF_RO, filterPF_homodyne_RO, filterPF));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::add(filterPF_RO, filterPF_homodyne_RO, filterPF));
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeFilterSNRUnitScaleFactor(filterPF, scaleFactor));
             }
             else
@@ -2181,18 +2181,18 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspaceIter, filterPF_homodyne_RO, filterPF_homodyne_E1, kspaceIter));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIter, "kspaceIter_after_homodyne_PF_Filter");
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::add(filterPF_RO, filterPF_homodyne_RO, filterPF));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::add(filterPF_RO, filterPF_homodyne_RO, filterPF));
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeFilterSNRUnitScaleFactor(filterPF, scaleFactor));
 
                 T scaleFactorE1(1.0);
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::add(filterPF_E1, filterPF_homodyne_E1, filterPF));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::add(filterPF_E1, filterPF_homodyne_E1, filterPF));
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeFilterSNRUnitScaleFactor(filterPF, scaleFactorE1));
 
                 scaleFactor *= scaleFactorE1;
             }
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::add(kspace, kspaceIter, kspace));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scaleFactor, kspace));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::add(kspace, kspaceIter, kspace));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(scaleFactor, kspace));
         }
         else
         {
@@ -2287,10 +2287,10 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_partial_fourier_, "POCS_afterFiltered_complexIm");
 
         // get the complex image phase for the filtered kspace
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(buffer2DT_partial_fourier_, mag));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(mag));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(buffer2DT_partial_fourier_, mag));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::addEpsilon(mag));
         GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::divide(buffer2DT_partial_fourier_, magComplex, buffer2DT_));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::divide(buffer2DT_partial_fourier_, magComplex, buffer2DT_));
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_, "POCS_afterFiltered_complexIm_phase");
 
         // complex images, initialized as not filtered complex image
@@ -2304,9 +2304,9 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
         size_t ii;
         for ( ii=0; ii<workOrder2DT.partialFourier_POCS_iters_; ii++ )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(complexImPOCS, mag));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(complexImPOCS, mag));
             GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(magComplex, buffer2DT_, complexImPOCS));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(magComplex, buffer2DT_, complexImPOCS));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImPOCS, "POCS_complexImPOCS");
 
             // go back to kspace
@@ -2325,7 +2325,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImPOCS, "POCS_kspaceIter_copyOri_complexImPOCS");
 
             // compute threshold to stop the iteration
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(complexImPOCS, complexIm, buffer2DT_partial_fourier_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(complexImPOCS, complexIm, buffer2DT_partial_fourier_));
             typename realType<T>::Type diff, prev;
             Gadgetron::norm2(complexIm, prev);
             Gadgetron::norm2(buffer2DT_partial_fourier_, diff);

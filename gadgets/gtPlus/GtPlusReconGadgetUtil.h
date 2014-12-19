@@ -69,4 +69,8 @@ namespace Gadgetron
 
     template <typename T> EXPORTGTPLUSGADGET bool appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v);
     bool EXPORTGTPLUSGADGET appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v);
+
+    // perform the patient to device coordinate transformation
+    bool EXPORTGTPLUSGADGET PatientCoordinateSystemToDeviceCoordinateSystem(double& x, double& y, double& z, const std::string& position);
+    bool EXPORTGTPLUSGADGET DeviceCoordinateSystemToPatientCoordinateSystem(double& x, double& y, double& z, const std::string& position);
 }

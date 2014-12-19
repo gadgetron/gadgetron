@@ -43,14 +43,14 @@ KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T
 
         char uplo = 'L';
         bool isAHA = true;
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::herk(eigenVectors, data, uplo, isAHA));
+        Gadgetron::herk(eigenVectors, data, uplo, isAHA);
         eigenVectors.copyLowerTriToUpper();
 
         //eigenVectors.print(std::cout);
 
         hoMatrix<T> mean(N, 1);
         GADGET_CHECK_RETURN_FALSE(data.sumOverCol(mean));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal((ValueType)1.0/M, mean));
+        Gadgetron::scal((ValueType)1.0/M, mean);
 
         //mean.print(std::cout);
 
@@ -58,22 +58,22 @@ KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T
         Gadgetron::clear(MMH);
 
         hoMatrix<T> meanCopy(mean);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::gemm(MMH, meanCopy, false, mean, true));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal((ValueType)M, MMH));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract(eigenVectors, MMH, eigenVectors));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal((ValueType)1.0/(M-1), eigenVectors));
+        Gadgetron::gemm(MMH, meanCopy, false, mean, true);
+        Gadgetron::scal((ValueType)M, MMH);
+        Gadgetron::subtract(eigenVectors, MMH, eigenVectors);
+        Gadgetron::scal((ValueType)1.0/(M-1), eigenVectors);
 
         //MMH.print(std::cout);
         //eigenVectors.print(std::cout);
 
         hoMatrix<T> EH(eigenVectors);
-        GADGET_CHECK_RETURN_FALSE(conjugatetrans(eigenVectors, EH));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::add(eigenVectors, EH, eigenVectors));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (ValueType)(0.5), eigenVectors));
+        conjugatetrans(eigenVectors, EH);
+        Gadgetron::add(eigenVectors, EH, eigenVectors);
+        Gadgetron::scal( (ValueType)(0.5), eigenVectors);
 
         //eigenVectors.print(std::cout);
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::heev(eigenVectors, eigenValues));
+        Gadgetron::heev(eigenVectors, eigenValues);
     }
     catch(...)
     {
@@ -101,7 +101,7 @@ KLT_applyEigen(const hoMatrix<T>& data, hoMatrix<T>& dataEigen, const hoMatrix<T
         Gadgetron::clear(dataEigen);
 
         // M*N multiplies N*K
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::gemm(dataEigen, data, false, eigenVectors, false));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::gemm(dataEigen, data, false, eigenVectors, false));
     }
     catch(...)
     {
@@ -131,7 +131,7 @@ KLT_applyEigen(const hoNDArray<T>& data, hoNDArray<T>& dataEigen, const hoMatrix
 
         // M*N multiplies N*K
         Gadgetron::clear(dataEigen);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::gemm(dataEigen, data, false, eigenVec, false));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::gemm(dataEigen, data, false, eigenVec, false));
     }
     catch(...)
     {
@@ -562,10 +562,10 @@ bool gtPlusISMRMRDReconUtil<T>::computeKLFilter(const hoNDArray<T>& data, size_t
 
         hoMatrix<T> EET(M, M);
         Gadgetron::clear(EET);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::gemm(EET, E, false, ET, false));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::gemm(EET, E, false, ET, false));
 
         hoMatrix<T> R(N, M, dataKLF.begin());
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::gemm(R, A, false, EET, false));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::gemm(R, A, false, EET, false));
     }
     catch(...)
     {
@@ -1999,7 +1999,7 @@ detectSampledRegion2D(const hoNDArray<T>& data, size_t& startRO, size_t& endRO, 
         size_t NDim = data.get_number_of_dimensions();
 
         hoNDArray<typename realType<T>::Type> mag(data.get_dimensions()), magSum, magSumE1, magSumRO;
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(data, mag));
+        Gadgetron::abs(data, mag);
 
         if ( NDim > 2 )
         {
@@ -2073,7 +2073,7 @@ detectSampledRegion3D(const hoNDArray<T>& data, size_t& startRO, size_t& endRO, 
         size_t NDim = data.get_number_of_dimensions();
 
         hoNDArray<typename realType<T>::Type> mag(data.get_dimensions()), magSum, magSum2, magSumRO, magSumE1, magSumE2;
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(data, mag));
+        Gadgetron::abs(data, mag);
 
         if ( NDim > 5 )
         {
@@ -2176,7 +2176,7 @@ averageKSpace4D(const hoNDArray<T>& data, hoNDArray<T>& ave)
     try
     {
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(data, ave));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/data.get_size(3)), ave));
+        Gadgetron::scal( (typename realType<T>::Type)(1.0/data.get_size(3)), ave);
     }
     catch(...)
     {
@@ -2252,7 +2252,7 @@ averageKSpace5D(const hoNDArray<T>& data, hoNDArray<T>& ave)
     try
     {
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver5thDimension(data, ave));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/data.get_size(4)), ave));
+        Gadgetron::scal( (typename realType<T>::Type)(1.0/data.get_size(4)), ave);
     }
     catch(...)
     {
@@ -2332,7 +2332,7 @@ detectSampledTimesE1(const hoNDArray<T>& data4D, std::vector<size_t>& sampledTim
         size_t N = data4D.get_size(3);
 
         hoNDArray<typename realType<T>::Type> mag(data4D.get_dimensions());
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(data4D, mag));
+        Gadgetron::abs(data4D, mag);
 
         hoNDArray<typename realType<T>::Type> mag3D(RO, E1, 1, N);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(mag, mag3D));
@@ -2420,7 +2420,7 @@ detectSampledTimesE1E2(const hoNDArray<T>& data5D, hoNDArray<size_t>& sampledTim
         hoNDArray<typename realType<T>::Type> mag(RO, E1, E2);
 
         hoNDArray<T> dataFirstChannel(RO, E1, E2, const_cast<T*>(data5D.begin()));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(dataFirstChannel, mag));
+        Gadgetron::abs(dataFirstChannel, mag);
 
         //hoNDArray<typename realType<T>::Type> mag4D(RO, E1, E2, 1, N);
         //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(mag, mag4D));
@@ -2768,11 +2768,11 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
         // in this way, the SNR unit scale property is perserved
         T midValue = filter_src_RO(RO/2);
         T scalFactor = T(1.0)/midValue;
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scalFactor, filter_src_RO));
+        Gadgetron::scal(scalFactor, filter_src_RO);
 
         midValue = filter_src_E1(E1/2);
         scalFactor = T(1.0)/midValue;
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scalFactor, filter_src_E1));
+        Gadgetron::scal(scalFactor, filter_src_E1);
 
         hoNDArray<T> filter_dst_RO(RO), filter_dst_E1(E1);
 
@@ -2822,7 +2822,7 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
             GADGET_CHECK_RETURN_FALSE(kspacefilterROE1(dst, fxy, dstFiltered));
         }
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::add(srcFiltered, dstFiltered, dst));
+        Gadgetron::add(srcFiltered, dstFiltered, dst);
     }
     catch(...)
     {
@@ -2943,15 +2943,15 @@ copyAlongROE1E2TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t
         // in this way, the SNR unit scale property is perserved
         T midValue = filter_src_RO(RO/2);
         T scalFactor = T(1.0)/midValue;
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scalFactor, filter_src_RO));
+        Gadgetron::scal(scalFactor, filter_src_RO);
 
         midValue = filter_src_E1(E1/2);
         scalFactor = T(1.0)/midValue;
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scalFactor, filter_src_E1));
+        Gadgetron::scal(scalFactor, filter_src_E1);
 
         midValue = filter_src_E2(E2/2);
         scalFactor = T(1.0)/midValue;
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scalFactor, filter_src_E2));
+        Gadgetron::scal(scalFactor, filter_src_E2);
 
         hoNDArray<T> filter_dst_RO(RO), filter_dst_E1(E1), filter_dst_E2(E2);
 
@@ -3003,7 +3003,7 @@ copyAlongROE1E2TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t
             GADGET_CHECK_RETURN_FALSE(kspace3DfilterROE1E2(dst, fxyz, dstFiltered));
         }
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::add(srcFiltered, dstFiltered, dst));
+        Gadgetron::add(srcFiltered, dstFiltered, dst);
     }
     catch(...)
     {
@@ -4022,18 +4022,18 @@ computeNoisePrewhiteningMatrix(const hoNDArray<T>& noise, double noiseBandWidth,
         hoMatrix<T> R(RO*E1, CHA, const_cast<T*>(noise.begin()));
 
         // R'*R --> CHA by CHA covariance matrix
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::gemm(prewhiteningMatrix, R, true, R, false));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scaling, prewhiteningMatrix));
+        Gadgetron::gemm(prewhiteningMatrix, R, true, R, false);
+        Gadgetron::scal(scaling, prewhiteningMatrix);
 
         // 0.5*(R+R')
         hoMatrix<T> RH(prewhiteningMatrix);
-        GADGET_CHECK_RETURN_FALSE(conjugatetrans(prewhiteningMatrix, RH));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::add(prewhiteningMatrix, RH, prewhiteningMatrix));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (ValueType)0.5, prewhiteningMatrix));
+        conjugatetrans(prewhiteningMatrix, RH);
+        Gadgetron::add(prewhiteningMatrix, RH, prewhiteningMatrix);
+        Gadgetron::scal( (ValueType)0.5, prewhiteningMatrix);
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::potrf(prewhiteningMatrix, 'U'));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::trtri(prewhiteningMatrix, 'U'));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)(std::sqrt((double)2.0)), prewhiteningMatrix));
+        Gadgetron::potrf(prewhiteningMatrix, 'U');
+        Gadgetron::trtri(prewhiteningMatrix, 'U');
+        Gadgetron::scal( (value_type)(std::sqrt((double)2.0)), prewhiteningMatrix);
     }
     catch(...)
     {
@@ -4155,7 +4155,7 @@ zpadResize2DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, hoN
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized));
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY)/std::sqrt((double)RO*E1));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scaling, dataResized));
+        Gadgetron::scal(scaling, dataResized);
     }
     catch(...)
     {
@@ -4238,7 +4238,7 @@ zpadResize3DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, siz
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized));
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY*sizeZ)/std::sqrt((double)RO*E1*E2));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scaling, dataResized));
+        Gadgetron::scal(scaling, dataResized);
     }
     catch(...)
     {
@@ -4284,7 +4284,7 @@ zpadResize2DFilter(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, const h
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized));
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY)/std::sqrt((double)RO*E1));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scaling, dataResized));
+        Gadgetron::scal(scaling, dataResized);
     }
     catch(...)
     {
@@ -4333,7 +4333,7 @@ zpadResize3DFilter(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t 
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized));
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY*sizeZ)/std::sqrt((double)RO*E1*E2));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(scaling, dataResized));
+        Gadgetron::scal(scaling, dataResized);
     }
     catch(...)
     {
@@ -4921,7 +4921,7 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
         {
             prevR = R;
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(R, R));
+            Gadgetron::conjugate(R, R);
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "R");
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, data, coilMap));
@@ -4931,25 +4931,25 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
             //GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(kerKSpace, coilMapConv, D));
             //Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(D, coilMapConv);
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::conv2(coilMap, ker, coilMapConv));
+            Gadgetron::conv2(coilMap, ker, coilMapConv);
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMapConv, "coilMapConv");
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(coilMapConv, coilMapConv, D));
+            Gadgetron::multiplyConj(coilMapConv, coilMapConv, D);
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, D, "D");
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R");
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sqrt(R, R));
+            Gadgetron::sqrt(R, R);
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R2");
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(R));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::inv(R, R));
+            Gadgetron::addEpsilon(R);
+            Gadgetron::inv(R, R);
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R_inv");
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMapConv, coilMap));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(data, coilMap, D));
+            Gadgetron::multiplyConj(data, coilMap, D);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "R2");
 
@@ -4978,13 +4978,13 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
 
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, imT, "imT");
 
-            Gadgetron::absolute(imT, magT);
+            Gadgetron::abs(imT, magT);
             Gadgetron::divide(imT, magT, imT);
 
             //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, imT, "imT2");
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(R, imT, R));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(imT, imT));
+            Gadgetron::multiply(R, imT, R);
+            Gadgetron::conjugate(imT, imT);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(imT, coilMap, coilMap));
 
             Gadgetron::subtract(prevR, R, diffR);
@@ -5144,24 +5144,24 @@ coilMap3DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
 
         for ( iter=0; iter<iterNum; iter++ )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(R, R));
+            Gadgetron::conjugate(R, R);
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, data, coilMap));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::conv2(coilMap, ker, coilMapConv));
+            Gadgetron::conv2(coilMap, ker, coilMapConv);
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(coilMapConv, coilMapConv, D));
+            Gadgetron::multiplyConj(coilMapConv, coilMapConv, D);
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(D, R));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sqrt(R, R));
+            Gadgetron::sqrt(R, R);
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(R));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::inv(R, R));
+            Gadgetron::addEpsilon(R);
+            Gadgetron::inv(R, R);
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMapConv, coilMap));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(data, coilMap, D));
+            Gadgetron::multiplyConj(data, coilMap, D);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(D, R));
 
             //if ( iter < iterNum - 1 )
@@ -5187,11 +5187,11 @@ coilMap3DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
                 Gadgetron::axpy( std::conj(vCha), coilMapCHA, imT, imT);
             }
 
-            Gadgetron::absolute(imT, magT);
+            Gadgetron::abs(imT, magT);
             Gadgetron::divide(imT, magT, imT);
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(R, imT, R));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(imT, imT));
+            Gadgetron::multiply(R, imT, R);
+            Gadgetron::conjugate(imT, imT);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(imT, coilMap, coilMap));
         }
     }
@@ -5325,7 +5325,7 @@ sumOfSquare(const hoNDArray<T>& data, hoNDArray<T>& sos)
         GADGET_CHECK_RETURN_FALSE(NDim>=3);
 
         hoNDArray<T> tmp(data);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(data, data, tmp));
+        Gadgetron::multiplyConj(data, data, tmp);
 
         if ( NDim == 3 )
         {
@@ -5340,7 +5340,7 @@ sumOfSquare(const hoNDArray<T>& data, hoNDArray<T>& sos)
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(tmp, sos));
         }
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sqrt(sos, sos));
+        Gadgetron::sqrt(sos, sos);
     }
     catch(...)
     {

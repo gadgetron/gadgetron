@@ -315,7 +315,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         //    }
 
         //#else
-            GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
         //#endif // USE_CUDA
 
         // GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
@@ -406,7 +406,7 @@ imageDomainKernel(const ho5DArray<T>& ker, size_t kRO, const std::vector<int>& k
             }
         }
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1)) ), convKer ));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1)) ), convKer ));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad2D(convKer, ro, e1, kIm));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm));
     }
@@ -495,8 +495,10 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
                     {
                         T maxSignal;
                         size_t roInd(0);
-                        if ( Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd) )
+                        try
                         {
+                            Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd);
+
                             if ( roInd > maxROUsed/2+kROhalf )
                             {
                                 sRO = roInd - maxROUsed/2;
@@ -518,7 +520,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
                             lenRO = eRO-sRO+1;
                             GADGET_MSG("gtPlusGRAPPA<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
                         }
-                        else
+                        catch(...)
                         {
                             GADGET_WARN_MSG("gtPlusGRAPPA<T>::calib3D(...) - overDetermineRatio is ignored ... ");
                         }
@@ -677,7 +679,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         //        GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
         //    }
         //#else
-            GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
         //#endif // USE_CUDA
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
@@ -870,7 +872,7 @@ imageDomainKernel3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int>&
         GADGET_CHECK_RETURN_FALSE(this->kspaceDomainConvKernel3D(ker, kRO, kE1, kE2, oE1, oE2, convKer, ROis3rdDim));
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - SNR unit scaling ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1*e2)) ), convKer ));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1*e2)) ), convKer ));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - zero padding ... "));
@@ -919,7 +921,7 @@ imageDomainKernelRO3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int
         Gadgetron::clear(kImROTemp);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - SNR unit scaling ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro)) ), convKer ));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro)) ), convKer ));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKer, "convKer_scal_RO");
@@ -965,7 +967,7 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
         hoNDArray<T> kImROScaled(kImRO);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - SNR unit scaling for E1 and E2 ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(e1*e2)) ), kImROScaled ));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(e1*e2)) ), kImROScaled ));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROScaled, "kImROScaledE1E2");

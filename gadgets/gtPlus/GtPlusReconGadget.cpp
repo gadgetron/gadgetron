@@ -557,32 +557,32 @@ namespace Gadgetron
     bool GtPlusReconGadget::parseGTCloudNodeFile(const std::string& filename, CloudType& gtCloud)
     {
 
-      bool using_cloudbus = this->get_bool_value("using_cloudbus");
-      bool has_cloud_node_xml_configuration = this->get_string_value("CloudNodeXMLConfiguration")->size();
+        bool using_cloudbus = this->get_bool_value("using_cloudbus");
+        bool has_cloud_node_xml_configuration = this->get_string_value("CloudNodeXMLConfiguration")->size();
 
-      if (using_cloudbus && has_cloud_node_xml_configuration) {
-	std::vector<GadgetronNodeInfo> nodes;
-	CloudBus::instance()->get_node_info(nodes);
-        gtCloud.resize(nodes.size());
+        if (using_cloudbus && has_cloud_node_xml_configuration) {
+            std::vector<GadgetronNodeInfo> nodes;
+            CloudBus::instance()->get_node_info(nodes);
+            gtCloud.resize(nodes.size());
 
-        unsigned int n;
-        for ( n=0; n<nodes.size(); n++ )
-        {
-	  std::stringstream ss;
-	  gtCloud[n].get<0>() = nodes[n].address;
-	  ss << nodes[n].port;
-	  gtCloud[n].get<1>() = ss.str();
-	  gtCloud[n].get<2>() = *this->get_string_value("CloudNodeXMLConfiguration");
-	  gtCloud[n].get<3>() = nodes[n].compute_capability;
+            unsigned int n;
+            for ( n=0; n<nodes.size(); n++ )
+            {
+                std::stringstream ss;
+                gtCloud[n].get<0>() = nodes[n].address;
+                ss << nodes[n].port;
+                gtCloud[n].get<1>() = ss.str();
+                gtCloud[n].get<2>() = *this->get_string_value("CloudNodeXMLConfiguration");
+                gtCloud[n].get<3>() = nodes[n].compute_capability;
 
-	  GADGET_CONDITION_MSG(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
+                GADGET_CONDITION_MSG(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
+            }
+
+            return true; //We will leave the function here
+
         }
 
-	return true; //We will leave the function here
-
-      }
-
-      std::string nodeFileName = get_gadgetron_home();
+        std::string nodeFileName = get_gadgetron_home();
         nodeFileName.append("/config/gtCloud/");
         nodeFileName.append(filename);
         GADGET_CONDITION_MSG(verboseMode_, "Cloud node file name is " << nodeFileName);
@@ -949,11 +949,11 @@ namespace Gadgetron
         if ( scalingFactor_ < 0 && !use_constant_scalingFactor_ )
         {
             hoNDArray<float> mag(res.get_dimensions());
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(res, mag));
+            Gadgetron::abs(res, mag);
             GADGET_CHECK_RETURN_FALSE(this->scalingMagnitude(mag));
         }
 
-        GADGET_CHECK_RETURN_FALSE(scal((float)scalingFactor_, res));
+        scal((float)scalingFactor_, res);
 
         return true;
     }
@@ -973,12 +973,12 @@ namespace Gadgetron
 
             if ( num <= 24 )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::maxAbsolute(mag, maxInten, ind));
+                Gadgetron::maxAbsolute(mag, maxInten, ind);
             }
             else
             {
                 hoNDArray<float> magPartial(RO, E1, 24, mag.get_data_ptr()+(num/2 - 12)*RO*E1);
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::maxAbsolute(magPartial, maxInten, ind));
+                Gadgetron::maxAbsolute(magPartial, maxInten, ind);
             }
             if ( maxInten < FLT_EPSILON ) maxInten = 1.0f;
 
@@ -1007,12 +1007,12 @@ namespace Gadgetron
             }
 
             GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_ : " << scalingFactor_);
-            GADGET_CHECK_RETURN_FALSE(scal((float)scalingFactor_, mag));
+            scal((float)scalingFactor_, mag);
         }
         else
         {
             GADGET_CONDITION_MSG(verboseMode_, "Using the fixed intensity scaling factor - scaling factor has been preset to be : " << scalingFactor_ << " ... ");
-            GADGET_CHECK_RETURN_FALSE(scal((float)scalingFactor_, mag));
+            scal((float)scalingFactor_, mag);
         }
 
         return true;
@@ -1595,7 +1595,7 @@ namespace Gadgetron
         {
             // extract the magnitude
             hoNDArray<float> mag(res.get_dimensions());
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(res, mag));
+            Gadgetron::abs(res, mag);
             GADGET_CHECK_RETURN_FALSE(scalingMagnitude(mag));
             GADGET_CHECK_RETURN_FALSE(sendOutRecon2D(images, mag, seriesNum, imageNum));
         }
@@ -1711,8 +1711,8 @@ namespace Gadgetron
 
             if ( withAcceleration )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(snrImage));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::divide(res, snrImage, snrImage));
+                Gadgetron::addEpsilon(snrImage);
+                Gadgetron::divide(res, snrImage, snrImage);
             }
             else
             {
@@ -1773,7 +1773,7 @@ namespace Gadgetron
 
                                             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, repBuf, "repBuf");
 
-                                            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(repBuf, repBufMag));
+                                            Gadgetron::abs(repBuf, repBufMag);
                                             GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, repBufMag, "repBufMag");
 
                                             // compute std
@@ -1848,7 +1848,7 @@ namespace Gadgetron
 
                                             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, phsBuf, "phsBuf");
 
-                                            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(phsBuf, phsBufMag));
+                                            Gadgetron::abs(phsBuf, phsBufMag);
                                             GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, phsBufMag, "phsBufMag");
 
                                             // compute std

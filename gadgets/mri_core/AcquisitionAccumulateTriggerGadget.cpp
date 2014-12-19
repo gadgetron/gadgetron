@@ -117,6 +117,13 @@ namespace Gadgetron{
   ::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	    GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
+
+    //Ignore noise scans
+    if (m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT)) {
+        m1->release();
+        return GADGET_OK;
+    }
+                
     //It is enough to put the first one, since they are linked
     unsigned short sorting_index = 0;
     switch (sort_) {
@@ -308,15 +315,41 @@ namespace Gadgetron{
     }
     IsmrmrdAcquisitionBucket* bucket = buckets_[sorting_index]->getObjectPtr();
 
+    uint16_t espace = m1->getObjectPtr()->encoding_space_ref;
+
     if (!ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(m1->getObjectPtr()->flags))
       {
 	bucket->data_.push_back(d);
+        if (bucket->datastats_.size() < (espace+1)) {
+            bucket->datastats_.resize(espace+1);
+        }
+        bucket->datastats_[espace].kspace_encode_step_1.insert(m1->getObjectPtr()->idx.kspace_encode_step_1);
+        bucket->datastats_[espace].kspace_encode_step_2.insert(m1->getObjectPtr()->idx.kspace_encode_step_2);
+        bucket->datastats_[espace].slice.insert(m1->getObjectPtr()->idx.slice);
+        bucket->datastats_[espace].phase.insert(m1->getObjectPtr()->idx.phase);
+        bucket->datastats_[espace].contrast.insert(m1->getObjectPtr()->idx.contrast);
+        bucket->datastats_[espace].set.insert(m1->getObjectPtr()->idx.set);
+        bucket->datastats_[espace].segment.insert(m1->getObjectPtr()->idx.segment);
+        bucket->datastats_[espace].average.insert(m1->getObjectPtr()->idx.average);
+        bucket->datastats_[espace].repetition.insert(m1->getObjectPtr()->idx.repetition);
       }
 
     if ( ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(m1->getObjectPtr()->flags) ||
 	 ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(m1->getObjectPtr()->flags) )
       {
 	bucket->ref_.push_back(d);
+        if (bucket->refstats_.size() < (espace+1)) {
+            bucket->refstats_.resize(espace+1);
+        }
+        bucket->refstats_[espace].kspace_encode_step_1.insert(m1->getObjectPtr()->idx.kspace_encode_step_1);
+        bucket->refstats_[espace].kspace_encode_step_2.insert(m1->getObjectPtr()->idx.kspace_encode_step_2);
+        bucket->refstats_[espace].slice.insert(m1->getObjectPtr()->idx.slice);
+        bucket->refstats_[espace].phase.insert(m1->getObjectPtr()->idx.phase);
+        bucket->refstats_[espace].contrast.insert(m1->getObjectPtr()->idx.contrast);
+        bucket->refstats_[espace].set.insert(m1->getObjectPtr()->idx.set);
+        bucket->refstats_[espace].segment.insert(m1->getObjectPtr()->idx.segment);
+        bucket->refstats_[espace].average.insert(m1->getObjectPtr()->idx.average);
+        bucket->refstats_[espace].repetition.insert(m1->getObjectPtr()->idx.repetition);
       }
 
     //We can release the data now. It is reference counted and counter have been incremented through operations above. 
@@ -333,7 +366,7 @@ namespace Gadgetron{
     //We will keep track of the triggers we encounter
     trigger_events_++;
 
-    GADGET_DEBUG2("Trigger (%d) occurred, sedning out %d buckets\n", trigger_events_, buckets_.size());
+    GADGET_DEBUG2("Trigger (%d) occurred, sending out %d buckets\n", trigger_events_, buckets_.size());
     //Pass all buckets down the chain
     for (map_type_::iterator it = buckets_.begin(); it != buckets_.end(); it++) {
       if (it->second) {

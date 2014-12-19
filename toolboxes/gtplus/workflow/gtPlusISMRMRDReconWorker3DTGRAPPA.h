@@ -302,7 +302,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
             hoNDArray<T> gFactor(RO, E1, E2, workOrder3DT->gfactor_.begin()+usedN*RO*E1*E2);
 
             this->unmixCoeff(kIm, coilMap, unmixC, gFactor);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder3DT->acceFactorE1_/workOrder3DT->acceFactorE2_), gFactor));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder3DT->acceFactorE1_/workOrder3DT->acceFactorE2_), gFactor));
 
             memcpy(workOrder3DT->unmixingCoeffIm_->begin()+usedN*RO*E1*E2*srcCHA, unmixC.begin(), unmixC.get_number_of_bytes());
 
