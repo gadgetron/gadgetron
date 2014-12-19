@@ -33,7 +33,7 @@ namespace Gadgetron{
     measurement_id_.clear();
     measurement_id_of_noise_dependency_.clear();
 
-    noise_dwell_time_us_preset_ = 5;
+    noise_dwell_time_us_preset_ = 0.0;
 
     perform_noise_adjust_ = true;
 
@@ -74,7 +74,6 @@ namespace Gadgetron{
     GADGET_DEBUG2("NoiseAdjustGadget::perform_noise_adjust_ is %d\n", perform_noise_adjust_);
 
     noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
-    if ( noise_dwell_time_us_preset_ == 0 ) noise_dwell_time_us_preset_ = 5;
 
     ISMRMRD::deserialize(mb->rd_ptr(),current_ismrmrd_header_);
     
@@ -221,6 +220,11 @@ namespace Gadgetron{
   {
     char* buf = NULL;
     size_t len(0);
+    
+    //Do we have any noise?
+    if (noise_covariance_matrixf_.get_number_of_elements() == 0) {
+      return true;
+    }
 
     //Scale the covariance matrix before saving
     hoNDArray< std::complex<float> > covf(noise_covariance_matrixf_);
@@ -293,7 +297,18 @@ namespace Gadgetron{
 	noise_prewhitener_matrixf_ = noise_covariance_matrixf_;
 	arma::cx_fmat noise_covf = as_arma_matrix(&noise_prewhitener_matrixf_);
 	
+	for (size_t i = 0; i < noise_prewhitener_matrixf_.get_size(0); i++) {
+	  std::complex<float> tmp = noise_covf(i,i);
+	  GADGET_DEBUG2("NOISE DIAG (%d) = (%e,%e)\n", i, real(tmp), imag(tmp));
+	}
+
 	noise_covf = arma::inv(arma::trimatu(arma::chol(noise_covf)));
+
+	for (size_t i = 0; i < noise_prewhitener_matrixf_.get_size(0); i++) {
+	  std::complex<float> tmp = noise_covf(i,i);
+	  GADGET_DEBUG2("NOISE PREW (%d) = (%e,%e)\n", i, real(tmp), imag(tmp));
+	}
+
 	noise_decorrelation_calculated_ = true;
       }
     }
@@ -316,20 +331,21 @@ namespace Gadgetron{
     }
 
     if ( is_noise ) {
+      if (noiseCovarianceLoaded_) {
+	m1->release(); //Do not accumulate noise when we have a loaded noise covariance
+	return GADGET_OK;
+      }
+      
       // this noise can be from a noise scan or it can be from the built-in noise
       if ( number_of_noise_samples_per_acquisition_ == 0 ) {
 	number_of_noise_samples_per_acquisition_ = samples;
       }
 
-      //TODO: This should probably just be:
-      //if (noise_dwell_time_us_ < 0) noise_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
       if ( noise_dwell_time_us_ < 0 ) {
-	//TODO: Investigate this surface coil correction business. 
-	//if ( !is_scc_correction && number_of_noise_samples_per_acquisition_>0 ) { IS THIS NECESSARY??
-	if ( number_of_noise_samples_per_acquisition_>0 ) {
-	  noise_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
-	} else {
+	if (noise_dwell_time_us_preset_ > 0.0) {
 	  noise_dwell_time_us_ = noise_dwell_time_us_preset_;
+	} else {
+	  noise_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
 	}
       }
 
@@ -613,7 +629,6 @@ namespace Gadgetron{
     static bool saved = false;
 
     if ( !noiseCovarianceLoaded_  && !saved ){
-      if ( noise_dwell_time_us_ < 0 ) noise_dwell_time_us_ = noise_dwell_time_us_preset_; // this scan is a noise measurement
       saveNoiseCovariance();
       saved = true;
     }  
