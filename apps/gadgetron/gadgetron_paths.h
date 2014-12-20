@@ -24,10 +24,11 @@ namespace Gadgetron
   inline std::string get_gadgetron_home()
   {
 #if defined  __APPLE__
-    char path[MAX_GADGETRON_HOME_LENGTH];
+    char path[PATH_MAX];
     uint32_t size = sizeof(path);
-    if (_NSGetExecutablePath(path, &size) == 0) {
-      std::string s1(path);
+    char resolved[PATH_MAX];
+    if ((_NSGetExecutablePath(path, &size) == 0) && (realpath(path, resolved) != NULL)) {
+      std::string s1(resolved);
       return s1.substr(0, s1.find_last_of("\\/")) + std::string("/../");
     } else {
       std::cout << "Unable to determine GADGETRON_HOME" << std::endl;
