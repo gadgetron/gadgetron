@@ -29,26 +29,22 @@ namespace Gadgetron {
       hoNDArray< std::complex<float> > noise_covariance_matrixf_;
       hoNDArray< std::complex<float> > noise_prewhitener_matrixf_;
       hoNDArray< std::complex<float> > noise_covariance_matrixf_once_;
-      hoNDArray< std::complex<float> > readout_;
 
       unsigned long long number_of_noise_samples_;
       unsigned long long number_of_noise_samples_per_acquisition_;
       float noise_dwell_time_us_;
+      float noise_dwell_time_us_preset_;
       float acquisition_dwell_time_us_;
       float noise_bw_scale_factor_;
       float receiver_noise_bandwidth_;
-      bool is_configured_;
-      bool computed_in_close_;
+      bool noiseCovarianceLoaded_;
+      bool perform_noise_adjust_;
 
       std::string noise_dependency_folder_;
       std::string noise_dependency_prefix_;
       std::string measurement_id_;
       std::string measurement_id_of_noise_dependency_;
       std::string full_name_stored_noise_dependency_;
-
-      float noise_dwell_time_us_preset_;
-
-      bool perform_noise_adjust_;
 
       virtual int process_config(ACE_Message_Block* mb);
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
@@ -57,14 +53,9 @@ namespace Gadgetron {
       std::string generateNoiseDependencyFilename(const std::string& measurement_id);
       std::string generateMeasurementIdOfNoiseDependency(const std::string& noise_id);
 
-      bool noiseCovarianceLoaded_;
       bool loadNoiseCovariance();
       bool saveNoiseCovariance();
-
       void computeNoisePrewhitener();
-
-      Gadgetron::GadgetronTimer gt_timer_;
-      bool performTiming_;
 
       //We will store/load a copy of the noise scans XML header to enable us to check which coil layout, etc.
       ISMRMRD::IsmrmrdHeader current_ismrmrd_header_;
