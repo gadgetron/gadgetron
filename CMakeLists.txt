@@ -168,6 +168,7 @@ if (CUDA_FOUND)
 else (CUDA_FOUND)
   MESSAGE("CUDA not found. CUDA components will not be compiled.")
   SET( GADGETRON_CUDA_FOUND_BOOL 0 )
+  SET( CUDA_NVCC_FLAGS "NA")
 endif (CUDA_FOUND)
 
 find_package(GTest)
