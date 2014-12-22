@@ -41,15 +41,13 @@
         <classname>MRIImageAttribWriterUSHORT</classname>
     </writer>
 
-    <!-- We need to modify the coil adjust to that we only scale channels according to noise variance -->
-    <!--
     <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetron_mricore</dll>
       <classname>NoiseAdjustGadget</classname>
-      <property><name>scale_only</name><value>present_uncombined_channels@PCA</value></property>
+      <property><name>scale_only_channels_by_name</name><value>uncombined_channels_by_name@PCA</value></property>
     </gadget>    
-    -->
+
 
     <gadget>
       <name>PCA</name>

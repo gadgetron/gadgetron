@@ -42,14 +42,6 @@ namespace Gadgetron {
       ISMRMRD::IsmrmrdHeader h;
       ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-      if (h.acquisitionSystemInformation) {
-	for (size_t i = 0; i < h.acquisitionSystemInformation->coilLabel.size(); i++) {
-	  int coil_num = h.acquisitionSystemInformation->coilLabel[i].coilNumber;
-	  channel_map_[h.acquisitionSystemInformation->coilLabel[i].coilName] = coil_num;
-	}
-      }
-      
-      
       boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels_by_name");
       std::vector<std::string> uncomb;
       if (uncomb_str->size()) {
@@ -57,11 +49,13 @@ namespace Gadgetron {
 	boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
 	for (unsigned int i = 0; i < uncomb.size(); i++) {
 	  std::string ch = boost::algorithm::trim_copy(uncomb[i]);
-	  coil_map_type_::iterator it = channel_map_.find(ch);
-	  if (it != channel_map_.end()) {
-	    unsigned int channel_id = static_cast<unsigned int>(it->second);
-	    GADGET_DEBUG2("Device channel: %s (%d)\n",  uncomb[i].c_str(), channel_id);
-	    uncombined_channels_.push_back(channel_id);
+	  if (h.acquisitionSystemInformation) {
+	    for (size_t i = 0; i < h.acquisitionSystemInformation->coilLabel.size(); i++) {
+	      if (ch == h.acquisitionSystemInformation->coilLabel[i].coilName) {
+		uncombined_channels_.push_back(i);//This assumes that the channels are sorted in the header
+		break;
+	      }
+	    }
 	  }
 	}
       }
