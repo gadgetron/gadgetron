@@ -16,6 +16,9 @@
 #include <sys/stat.h>
 #endif // _WIN32
 
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+
 namespace Gadgetron{
 
   NoiseAdjustGadget::NoiseAdjustGadget()
@@ -150,6 +153,26 @@ namespace Gadgetron{
 	    }
 	  }
       }
+
+
+    //Let's figure out if some channels are "scale_only"
+    boost::shared_ptr<std::string> uncomb_str = this->get_string_value("scale_only_channels_by_name");
+    std::vector<std::string> uncomb;
+    if (uncomb_str->size()) {
+      GADGET_DEBUG2("SCALE ONLY: %s\n",  uncomb_str->c_str());
+      boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
+      for (unsigned int i = 0; i < uncomb.size(); i++) {
+	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
+	if (current_ismrmrd_header_.acquisitionSystemInformation) {
+	  for (size_t i = 0; i < current_ismrmrd_header_.acquisitionSystemInformation->coilLabel.size(); i++) {
+	    if (ch == current_ismrmrd_header_.acquisitionSystemInformation->coilLabel[i].coilName) {
+	      scale_only_channels_.push_back(i);//This assumes that the channels are sorted in the header
+	      break;
+	    }
+	  }
+	}
+      }
+    }
 
 #ifdef USE_OMP
     omp_set_num_threads(1);
@@ -290,10 +313,24 @@ namespace Gadgetron{
     if (!noise_decorrelation_calculated_) {
       
       if (number_of_noise_samples_ > 0 ) {
-	GADGET_MSG("Calculating noise decorrelation");
+	GADGET_DEBUG1("Calculating noise decorrelation\n");
 	
-	//Cholesky and invert lower triangular
 	noise_prewhitener_matrixf_ = noise_covariance_matrixf_;
+	
+	//Mask out scale  only channels
+	size_t c = noise_prewhitener_matrixf_.get_size(0);
+	std::complex<float>* dptr = noise_prewhitener_matrixf_.get_data_ptr(); 
+	for (unsigned int ch = 0; ch < scale_only_channels_.size(); ch++) {
+	  for (size_t i = 0; i <  c; i++) {
+	    for (size_t j = 0; j < c; j++) {
+	      if ((i == scale_only_channels_[ch] || (j == scale_only_channels_[ch])) && (i != j)) { //zero if scale only and not on diagonal
+		dptr[i*c+j] = std::complex<float>(0.0,0.0);
+	      }
+	    }
+	  }
+	}
+
+	//Cholesky and invert lower triangular
 	arma::cx_fmat noise_covf = as_arma_matrix(&noise_prewhitener_matrixf_);      
 	noise_covf = arma::inv(arma::trimatu(arma::chol(noise_covf)));
       

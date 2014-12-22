@@ -29,6 +29,7 @@ namespace Gadgetron {
       hoNDArray< std::complex<float> > noise_covariance_matrixf_;
       hoNDArray< std::complex<float> > noise_prewhitener_matrixf_;
       hoNDArray< std::complex<float> > noise_covariance_matrixf_once_;
+      std::vector<unsigned int> scale_only_channels_;
 
       unsigned long long number_of_noise_samples_;
       unsigned long long number_of_noise_samples_per_acquisition_;
