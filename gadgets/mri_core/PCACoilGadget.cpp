@@ -42,14 +42,10 @@ namespace Gadgetron {
       ISMRMRD::IsmrmrdHeader h;
       ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-      if (h.userParameters) {
-	for (size_t i = 0; i < h.userParameters->userParameterString.size(); i++) {
-	  std::string name = h.userParameters->userParameterString[i].name;
-	  std::string value = h.userParameters->userParameterString[i].value;
-	  if (name.substr(0,5) == std::string("COIL_")) {
-	    int coil_num = std::atoi(name.substr(5,name.size()-5).c_str());
-	    channel_map_[value] = coil_num;
-	  }
+      if (h.acquisitionSystemInformation) {
+	for (size_t i = 0; i < h.acquisitionSystemInformation->coilLabel.size(); i++) {
+	  int coil_num = h.acquisitionSystemInformation->coilLabel[i].coilNumber;
+	  channel_map_[h.acquisitionSystemInformation->coilLabel[i].coilName] = coil_num;
 	}
       }
       
@@ -73,6 +69,7 @@ namespace Gadgetron {
       char val[32];
       sprintf(val,"%d",(int)uncombined_channels_.size());
       this->set_parameter("present_uncombined_channels",val);
+      GADGET_DEBUG2("Number of uncombined channels (present_uncombined_channels) set to %d\n", uncombined_channels_.size());
 
       return GADGET_OK;
     }
