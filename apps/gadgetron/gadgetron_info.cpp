@@ -19,8 +19,9 @@ using namespace Gadgetron;
   #include <unistd.h>
   #include <sys/types.h>
   #include <sys/param.h>
-#else
-  #error "Unable to define getMemorySize( ) for an unknown OS."
+#endif
+#if defined(BSD)
+#include <sys/sysctl.h>
 #endif
 
 #if USE_CUDA
@@ -57,7 +58,7 @@ size_t get_system_memory_size()
 #elif defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE) //Linux
   return (size_t)sysconf( _SC_PHYS_PAGES ) *
     (size_t)sysconf( _SC_PAGESIZE );
-
+  
 #endif //Mac
 
 #endif //WIN32
