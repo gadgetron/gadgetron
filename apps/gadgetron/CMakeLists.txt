@@ -13,6 +13,10 @@ include_directories(
   ${ACE_INCLUDE_DIR}
   )
 
+if (CUDA_FOUND)
+  include_directories(${CUDA_INCLUDE_DIRS})
+endif(CUDA_FOUND)
+
 add_executable(gadgetron 
   main.cpp 
   GadgetServerAcceptor.h
@@ -33,6 +37,14 @@ target_link_libraries(gadgetron
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
+find_package(PythonLibs)
+find_package(NumPy)
+find_package(Boost COMPONENTS python)
+
+if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+  add_definitions("-DCOMPILING_WITH_PYTHON_SUPPORT")
+endif()
+
 add_executable(gadgetron_info
   gadgetron_info.cpp
 )
@@ -41,6 +53,10 @@ target_link_libraries(gadgetron_info
   gadgetron_gadgetbase
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
+
+if (CUDA_FOUND)
+  target_link_libraries(gadgetron_info ${CUDA_LIBRARIES})
+endif(CUDA_FOUND)
 
 add_library(gadgetron_gadgetbase SHARED
   Gadget.cpp
