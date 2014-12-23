@@ -1,5 +1,5 @@
-#ifndef MRI_CORE_DATA_H
-#define MRI_CORE_DATA_H
+#ifndef MRI_CORE_DATA_H_
+#define MRI_CORE_DATA_H_
 
 #include "GadgetContainerMessage.h"
 #include "ismrmrd/ismrmrd.h"
@@ -259,4 +259,4 @@ namespace Gadgetron
   };
   
 }
-#endif //MRI_CORE_DATA_H
+#endif //MRI_CORE_DATA_H_
