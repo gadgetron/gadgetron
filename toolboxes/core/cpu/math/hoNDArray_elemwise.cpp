@@ -136,13 +136,6 @@ namespace Gadgetron{
     add_impl(x.get_number_of_elements(), y.get_number_of_elements(), x.begin(), y.begin(), r.begin());
   }
 
-  // Pointer version calls the reference version
-  template <class T, class S>
-  void add(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
-  {
-    add(*x, *y, *r);
-  }
-
   // Instantiations
   template EXPORTCPUCOREMATH void add(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
   template EXPORTCPUCOREMATH void add(const hoNDArray<float>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
@@ -411,13 +404,6 @@ namespace Gadgetron{
       }
 
       multiply_impl(x.get_number_of_elements(), y.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-    }
-
-    // Pointer version calls the reference version
-    template <class T, class S>
-    void multiply(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
-    {
-      multiply(*x, *y, *r);
     }
 
     // Instantiations

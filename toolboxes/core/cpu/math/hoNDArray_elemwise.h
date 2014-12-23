@@ -116,11 +116,16 @@ namespace Gadgetron{
   support in-place computation, e.g. x==r or y==r
   support simple broadcasting
 */
-template <class T, class S>
+template <class T, class S> EXPORTCPUCOREMATH
 void add(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
-template <typename T, class S>
-void add(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r);
+// Pointer version calls the reference version
+template <typename T, class S> EXPORTCPUCOREMATH
+void add(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
+{
+  add(*x, *y, *r);
+}
+
 
 /**
 * @brief subtract two vectors of values, r = x - y
@@ -132,19 +137,22 @@ void subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
 template <typename T> EXPORTCPUCOREMATH 
 void subtract(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
 
-template <typename T> EXPORTCPUCOREMATH 
-void subtract(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
-
 /**
 * @brief multiply two vectors of values, r = x * y
   support in-place computation, e.g. x==r or y==r
   support simple broadcasting
 */
-template <class T, class S>
+template <class T, class S> EXPORTCPUCOREMATH
 void multiply(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
-template <class T, class S>
-void multiply(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r);
+// Pointer version calls the reference version
+template <class T, class S> EXPORTCPUCOREMATH
+void multiply(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
+{
+  multiply(*x, *y, *r);
+}
+
+
 
 /**
 * @brief divide two vectors of values, r = x / y
