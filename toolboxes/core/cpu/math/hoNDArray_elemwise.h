@@ -33,6 +33,50 @@
 
 namespace Gadgetron{
 
+  //
+  // Math return types
+  //
+  template <class T, class I> struct mathReturnType {};
+
+  template <class T> struct mathReturnType<T,T> {typedef T type;};
+
+  template <class T> struct mathReturnType<complext<T>,T> {typedef complext<T> type;};
+  template <class T> struct mathReturnType<T,complext<T> > {typedef complext<T> type;};
+  template <class T> struct mathReturnType<complext<T>,complext<T> > {typedef complext<T> type;};
+
+  template <class T> struct mathReturnType<std::complex<T>,T> {typedef std::complex<T> type;};
+  template <class T> struct mathReturnType<T,std::complex<T> > {typedef std::complex<T> type;};
+  template <class T> struct mathReturnType<std::complex<T>,std::complex<T> > {typedef std::complex<T> type;};
+
+  template <class T, class S> struct mathReturnType<T, complext<S> > {typedef complext<typename mathReturnType<T,S>::type> type;};
+  template <class T, class S> struct mathReturnType<complext<T>, S> {typedef complext<typename mathReturnType<T,S>::type> type;};
+  template <class T, class S> struct mathReturnType<complext<T>, complext<S> > {typedef complext<typename mathReturnType<T,S>::type> type;};
+
+  template <class T, class S> struct mathReturnType<T, std::complex<S> > {typedef std::complex<typename mathReturnType<T,S>::type> type;};
+  template <class T, class S> struct mathReturnType<std::complex<T>, S> {typedef std::complex<typename mathReturnType<T,S>::type> type;};
+  template <class T, class S> struct mathReturnType<std::complex<T>, std::complex<S> > {typedef std::complex<typename mathReturnType<T,S>::type> type;};
+
+  template<> struct mathReturnType<unsigned int, int> {typedef int type;};
+  template<> struct mathReturnType<int, unsigned int> {typedef int type;};
+  template<> struct mathReturnType<int, bool> {typedef int type;};
+  template<> struct mathReturnType<bool,int> {typedef int type;};
+  template<> struct mathReturnType<unsigned int, bool> {typedef int type;};
+  template<> struct mathReturnType<bool,unsigned int> {typedef int type;};
+  template<> struct mathReturnType<float, unsigned int> {typedef float type;};
+  template<> struct mathReturnType<unsigned int, float> {typedef float type;};
+  template<> struct mathReturnType<float, int> {typedef float type;};
+  template<> struct mathReturnType<int, float> {typedef float type;};
+  template<> struct mathReturnType<float, bool> {typedef float type;};
+  template<> struct mathReturnType<bool, float> {typedef float type;};
+  template<> struct mathReturnType<double, unsigned int> {typedef double type;};
+  template<> struct mathReturnType<unsigned int, double> {typedef double type;};
+  template<> struct mathReturnType<double, int> {typedef double type;};
+  template<> struct mathReturnType<int, double> {typedef double type;};
+  template<> struct mathReturnType<double, bool> {typedef double type;};
+  template<> struct mathReturnType<bool, double> {typedef double type;};
+  template<> struct mathReturnType<double, float> {typedef double type;};
+  template<> struct mathReturnType<float,double> {typedef double type;};
+
 /**
 * @brief add two vectors of values, r = x + y
   support in-place computation, e.g. x==r or y==r
@@ -63,14 +107,11 @@ void subtract(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArra
 * @brief multiply two vectors of values, r = x * y
   support in-place computation, e.g. x==r or y==r
 */
-template <typename T> EXPORTCPUCOREMATH 
-void multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+template <class T, class S>
+void multiply(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
-template <typename T> EXPORTCPUCOREMATH 
-void multiply(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
-
-template <typename T> EXPORTCPUCOREMATH 
-void multiply(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
+template <class T, class S>
+void multiply(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r);
 
 /**
 * @brief divide two vectors of values, r = x / y
@@ -505,7 +546,7 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator-= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<T> &y);
+template<class T, class S> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<S> &y);
 
 /**
  * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
@@ -515,33 +556,11 @@ template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, c
 template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y);
 
 /**
- * @brief Implementation of element-wise operator*= on two hoNDArrays.
- * @param[in,out] x Input and output array.
- * @param[in] y Input array.
-
- * Let y be an n-dimensional array.
- * Then the sizes of the first n array dimensions must match between x and y.
- * If x contains further dimensions the operator is batched across those dimensions.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y);
-
-/**
  * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
 template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator*= on two hoNDArrays.
- * @param[in,out] x Input and output array.
- * @param[in] y Input array.
-
- * Let y be an n-dimensional array.
- * Then the sizes of the first n array dimensions must match between x and y.
- * If x contains further dimensions the operator is batched across those dimensions.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y);
 
 /**
  * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
