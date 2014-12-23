@@ -124,27 +124,37 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
         has_cuda_support = False
         number_of_gpus = 0
 
-
+    skipping_test = False
+        
     if (need_system_memory > system_memory):
         print "Test skipped because needed system memory (" + str(need_system_memory) + " MB) is larger than available system memory (" + str(system_memory) + " MB)"
-        return True #It is not a failed test
+        skipping_test = True
     
     if (need_gpu_support and ((not has_cuda_support) or (number_of_gpus == 0) or (need_gpu_memory > gpu_memory))):
         print "Test skipped because system does not meet gpu requirements"
-        return True #It is not a failed test, just skipping
+        skipping_test = True #It is not a failed test, just skipping
         
     if (need_python_support and (not has_python_support)):
         print "Test skipped because Python is not available"
+        skipping_test = True
+
+    if skipping_test:
+        print "System Requirements: Actual/Required"
+        print "System Memory: " + str(system_memory) + "/" + str(need_system_memory)
+        print "Python Support: " + str(has_python_support) + "/" + str(need_python_support)
+        print "CUDA Support: " + str(has_cuda_support and (number_of_gpus > 0)) + "/" + str(need_gpu_support)
+        print "GPU Memory: " + str(gpu_memory) + "/" + str(need_gpu_memory)
+
+        f = open(gadgetron_log_filename, "w");
+        f.write("Test skipped because requirements not met\n");
+        f.close();
+        
+        f = open(client_log_filename, "w");
+        f.write("Test skipped because requirements not met\n");
+        f.close();
+
         return True
-
-    print "SYSTEM MEMORY: " + str(system_memory)
-    if has_python_support:
-        print "HAS PYTHON SUPPPORT"
-    if has_cuda_support:
-        print "HAS CUDA SUPPPORT"
-        print "NUMBER OF GPUs: " + str(number_of_gpus)
-        print "GPUMEMORY: " + str(gpu_memory)
-
+    
     #inputfilename, gadgetronconfig, referencefile, h5dataset, gadgetron_log_filename, client_log_filename):
 
     success = True
