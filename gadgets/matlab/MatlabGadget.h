@@ -5,6 +5,11 @@
 #include "Gadgetron.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
+
+#if !defined char16_t
+typedef uint16_t char16_t;
+#endif
+
 #include "engine.h"     // Matlab Engine header
 
 #include "ace/Synch.h"  // For the MatlabCommandServer
