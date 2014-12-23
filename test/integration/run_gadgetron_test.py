@@ -8,6 +8,7 @@ import os
 import shutil
 import platform
 import time
+import re
 
 def run_test(environment, testcase_cfg_file, chroot_path, port):
     print("Running test case: " + testcase_cfg_file)
@@ -45,6 +46,27 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
     dependency_2 = os.path.join(pwd, out_folder, "dependency_2.h5")
     dependency_3 = os.path.join(pwd, out_folder, "dependency_3.h5")
 
+    if config.has_option('REQUIREMENTS','python_support'):
+        need_python_support = config.getboolean('REQUIREMENTS','python_support')
+    else:
+        need_python_support = False
+
+    if config.has_option('REQUIREMENTS','gpu_support'):
+        need_gpu_support = config.getboolean('REQUIREMENTS','gpu_support')
+    else:
+        need_gpu_support = False
+
+    if config.has_option('REQUIREMENTS','gpu_memory'):
+        need_gpu_memory = config.getfloat('REQUIREMENTS','gpu_memory')
+    else:
+        need_gpu_memoryt = 256
+
+    if config.has_option('REQUIREMENTS','system_memory'):
+        need_system_memory= config.getfloat('REQUIREMENTS','system_memory')
+    else:
+        need_system_memory = 1024
+
+
     if not os.path.isfile(siemens_dat):
         print("Can't find Siemens file %s" % siemens_dat)
         return False
@@ -59,6 +81,80 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
 
     os.makedirs(out_folder)
 
+    #Let's figure out if we should run this test or not
+    info = subprocess.check_output(["gadgetron_info"], env=environment);
+
+    
+    has_python_support = False
+    has_cuda_support = False
+    system_memory = 1024 #MB
+    number_of_gpus = 0
+    gpu_memory = 256 #MB
+    
+    p = re.compile('^[ \w]+-- Python Support     : ([A-Z]+)', re.MULTILINE)
+    m = p.search(info);
+    if m:
+        if m.group(1) == 'YES':
+            has_python_support = True
+
+    p = re.compile('^[ \w]+-- CUDA Support[ ]+: ([A-Z]+)', re.MULTILINE)
+    m = p.search(info);
+    if m:
+        if m.group(1) == 'YES':
+            has_cuda_support = True
+    
+    
+    p = re.compile('^[ \w]+\* Number of CUDA capable devices: ([0-9]+)', re.MULTILINE)
+    m = p.search(info);
+    if m:
+        number_of_gpus = m.group(1)
+    
+    p = re.compile('^[ \w]+-- System Memory size : ([0-9\.]+) MB', re.MULTILINE)
+    m = p.search(info);
+    if m:
+        system_memory = float(m.group(1))
+
+
+    p = re.compile('^[ \w]+\+ Total amount of global GPU memory: ([0-9\.]+) MB', re.MULTILINE)
+    m = p.search(info);
+    if m:
+        gpu_memory = float(m.group(1))
+    else:
+        gpu_memory = 0
+        has_cuda_support = False
+        number_of_gpus = 0
+
+    skipping_test = False
+        
+    if (need_system_memory > system_memory):
+        print "Test skipped because needed system memory (" + str(need_system_memory) + " MB) is larger than available system memory (" + str(system_memory) + " MB)"
+        skipping_test = True
+    
+    if (need_gpu_support and ((not has_cuda_support) or (number_of_gpus == 0) or (need_gpu_memory > gpu_memory))):
+        print "Test skipped because system does not meet gpu requirements"
+        skipping_test = True #It is not a failed test, just skipping
+        
+    if (need_python_support and (not has_python_support)):
+        print "Test skipped because Python is not available"
+        skipping_test = True
+
+    if skipping_test:
+        print "System Requirements: Actual/Required"
+        print "System Memory: " + str(system_memory) + "/" + str(need_system_memory)
+        print "Python Support: " + str(has_python_support) + "/" + str(need_python_support)
+        print "CUDA Support: " + str(has_cuda_support and (number_of_gpus > 0)) + "/" + str(need_gpu_support)
+        print "GPU Memory: " + str(gpu_memory) + "/" + str(need_gpu_memory)
+
+        f = open(gadgetron_log_filename, "w");
+        f.write("Test skipped because requirements not met\n");
+        f.close();
+        
+        f = open(client_log_filename, "w");
+        f.write("Test skipped because requirements not met\n");
+        f.close();
+
+        return True
+    
     #inputfilename, gadgetronconfig, referencefile, h5dataset, gadgetron_log_filename, client_log_filename):
 
     success = True
