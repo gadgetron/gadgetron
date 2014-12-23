@@ -13,7 +13,7 @@ namespace Gadgetron
     {
         processed_in_close_ = false;
 
-        noise_dependency_prefix_ = "GadgetronNoisePreWhitener";
+        noise_dependency_prefix_ = "GadgetronNoiseCovarianceMatrix";
 
         noise_dependency_attrib_name_ = "NoiseDependencies";
 
