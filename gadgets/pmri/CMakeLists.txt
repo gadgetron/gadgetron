@@ -18,8 +18,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
-  ${HDF5_INCLUDE_DIR}
-  ${HDF5_INCLUDE_DIR}/cpp
 )
 
 add_library(gadgetron_gpuparallelmri SHARED 

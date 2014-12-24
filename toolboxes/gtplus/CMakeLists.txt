@@ -43,7 +43,6 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-        ${CMAKE_SOURCE_DIR}/gadgets/core
         ${HDF5_INCLUDE_DIR}
         ${HDF5_INCLUDE_DIR}/cpp
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
@@ -54,7 +53,6 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm 
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
         ${CMAKE_SOURCE_DIR}/apps/gadgetron
         ${CMAKE_SOURCE_DIR}/apps/matlab

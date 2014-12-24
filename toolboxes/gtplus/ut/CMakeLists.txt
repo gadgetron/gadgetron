@@ -6,7 +6,6 @@ endif(WIN32)
 
 include_directories( ${GTEST_INCLUDE_DIRS}
                      ${CMAKE_BINARY_DIR}/apps/gadgetron
-                     ${CMAKE_SOURCE_DIR}/gadgets/core 
                      ${ACE_INCLUDE_DIR} 
                      ${Boost_INCLUDE_DIR}
                      ${FFTW3_INCLUDE_DIR}
@@ -24,7 +23,6 @@ include_directories( ${GTEST_INCLUDE_DIRS}
                      ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
                      ${CMAKE_SOURCE_DIR}/toolboxes/solvers
                      ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-                     ${CMAKE_SOURCE_DIR}/gadgets/core
                      ${CMAKE_SOURCE_DIR}/apps/gadgetron 
                      ${CMAKE_SOURCE_DIR}/toolboxes/core
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
