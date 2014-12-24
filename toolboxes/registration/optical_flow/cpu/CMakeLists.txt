@@ -30,7 +30,6 @@
         ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-        ${CMAKE_SOURCE_DIR}/gadgets/core
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
         ${Boost_INCLUDE_DIR}
         ${ARMADILLO_INCLUDE_DIR} 

@@ -1,6 +1,5 @@
 
 include_directories( 
-    ${CMAKE_SOURCE_DIR}/gadgets/core
     ${ACE_INCLUDE_DIR} 
     ${Boost_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
@@ -19,7 +18,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/solvers
     ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-    ${CMAKE_SOURCE_DIR}/gadgets/core
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core
     ${HDF5_INCLUDE_DIR}
     ${HDF5_INCLUDE_DIR}/cpp
@@ -30,7 +28,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd
     ${CMAKE_SOURCE_DIR}/apps/gadgetron

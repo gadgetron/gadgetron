@@ -3,8 +3,8 @@ if (WIN32)
 endif (WIN32)
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/toolboxes/cpucore/
-  ${CMAKE_SOURCE_DIR}/toolboxes/cpucore/math
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
   )
 
 install(FILES 	

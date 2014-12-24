@@ -16,7 +16,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/solvers
     ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-    ${CMAKE_SOURCE_DIR}/gadgets/core
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
