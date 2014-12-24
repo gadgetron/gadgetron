@@ -4,6 +4,7 @@ include_directories(${MATLAB_INCLUDE_DIR})
 
 if (UNIX)
     if (APPLE)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
         SET(MATLAB_SUFFIX ".mexmaci64")
     else(APPLE)
         SET(MATLAB_SUFFIX ".mexglnxa64")

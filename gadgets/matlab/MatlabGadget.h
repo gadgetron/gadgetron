@@ -3,12 +3,9 @@
 #include "gadgetron_matlab_export.h"
 #include "Gadget.h"
 #include "Gadgetron.h"
+#include "gadgetron_paths.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
-
-#if !defined char16_t
-typedef uint16_t char16_t;
-#endif
 
 #include "engine.h"     // Matlab Engine header
 
@@ -53,12 +50,16 @@ public:
 
 	    // Add the necessary paths to the matlab environment
 	    // Java matlab command server
-            engEvalString(engine_, "javaaddpath(fullfile(getenv('GADGETRON_HOME'), 'matlab'));");
+	    std::string gadgetron_matlab_path = get_gadgetron_home() + "/share/gadgetron/matlab";
+	    std::string java_add_path_cmd = std::string("javaaddpath('") + gadgetron_matlab_path + std::string("');");
+	    std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
+	    
             // Gadgetron matlab scripts
-            engEvalString(engine_, "addpath(fullfile(getenv('GADGETRON_HOME'), 'matlab'));");
+	    engEvalString(engine_, java_add_path_cmd.c_str());
+	    engEvalString(engine_, add_path_cmd.c_str());
+	    
             // ISMRMRD matlab library
-            engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), 'matlab'));");
-
+            engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), '/share/ismrmrd/matlab'));");
 
 	    GADGET_DEBUG2("%s", matlab_buffer_);
         }
