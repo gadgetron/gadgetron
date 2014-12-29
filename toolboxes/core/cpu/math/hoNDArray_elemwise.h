@@ -179,9 +179,19 @@ void divide(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mat
 
 /**
 * @brief r = x * conj(y)
+  support in-place computation, e.g. x==r
+  support simple broadcasting
 */
-template <typename T> EXPORTCPUCOREMATH 
-void multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+template <class T, class S> EXPORTCPUCOREMATH
+void multiplyConj(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
+
+// Pointer version calls the reference version
+template <class T, class S> EXPORTCPUCOREMATH
+void multiplyConj(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
+{
+  multiplyConj(*x, *y, *r);
+}
+
 
 /**
 * @brief r = conj(x)

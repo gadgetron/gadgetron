@@ -386,7 +386,6 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-
     // internal low level function for element-wise division of two arrays
     template <class T, class S>
     void divide_impl(size_t sizeX, size_t sizeY, const T* x, const S* y, typename mathReturnType<T,S>::type * r)
@@ -503,54 +502,118 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    inline void multiplyConj(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
+
+    // internal low level function for element-wise multiplication of two arrays
+    template <class T, class S>
+    void multiplyConj_impl(size_t sizeX, size_t sizeY, const T* x, const S* y, typename mathReturnType<T,S>::type * r)
     {
-        long long n;
 
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; n++ )
-        {
-            const float a = x[n].real();
-            const float b = x[n].imag();
-            const float c = y[n].real();
-            const float d = y[n].imag();
+      // cast to internal types
+      const typename mathInternalType<T>::type * a = reinterpret_cast<const typename mathInternalType<T>::type *>(x);
+      const typename mathInternalType<S>::type * b = reinterpret_cast<const typename mathInternalType<S>::type *>(y);
+      typename mathInternalType<typename mathReturnType<T,S>::type >::type * c = reinterpret_cast<typename mathInternalType<typename mathReturnType<T,S>::type >::type *>(r);
 
-            reinterpret_cast<float(&)[2]>(r[n])[0] = (a*c + b*d);
-            reinterpret_cast<float(&)[2]>(r[n])[1] = (c*b - a*d);
-        }
+      if (sizeY>sizeX) {
+          throw std::runtime_error("MultiplyConj cannot broadcast when the size of x is less than the size of y.");
+      }
+
+      if (sizeX==sizeY) {
+          // No Broadcasting
+          long long loopsize = sizeX;
+#ifdef USE_OMP
+#pragma ompparallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize)>NumElementsUseThreading)
+#endif
+          for (long long n=0; n< loopsize; n++ )
+            {
+              c[n] = a[n]*conj(b[n]);
+            }
+      } else {
+          // Broadcasting
+          long long outerloopsize = sizeX/sizeY;
+          long long innerloopsize = sizeX/outerloopsize;
+          if (sizeX<NumElementsUseThreading) {
+              // No OMP at All
+              for (long long outer=0; outer<outerloopsize; outer++) {
+                  size_t offset = outer * innerloopsize;
+                  const typename mathInternalType<T>::type * ai= &a[offset];
+                  typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
+                  for (long long n=0; n< innerloopsize; n++ )
+                    {
+                      ci[n] = ai[n]*conj(b[n]);
+                    }
+              }
+          } else if (innerloopsize>NumElementsUseThreading) {
+              // OMP in the inner loop
+              for (long long outer=0; outer<outerloopsize; outer++) {
+                  size_t offset = outer * innerloopsize;
+                  const typename mathInternalType<T>::type * ai= &a[offset];
+                  typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
+#ifdef USE_OMP
+#pragma ompparallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
+#endif
+                  for (long long n=0; n< innerloopsize; n++ )
+                    {
+                      ci[n] = ai[n]*conj(b[n]);
+                    }
+              }
+          } else {
+              // OMP in the outer loop
+#ifdef USE_OMP
+#pragma ompparallel for default(none) private(outer) shared(outerloopsize, c, a, b)
+#endif
+              for (long long outer=0; outer<outerloopsize; outer++) {
+                  size_t offset = outer * innerloopsize;
+                  const typename mathInternalType<T>::type * ai = &a[offset];
+                  typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
+                  for (long long n=0; n< innerloopsize; n++ )
+                    {
+                      ci[n] = ai[n]*conj(b[n]);
+                    }
+              }
+          }
+      }
+
     }
 
-    inline void multiplyConj(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
+    template <class T, class S>
+    void multiplyConj(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r)
     {
-        long long n;
+      //Check the dimensions os x and y for broadcasting.
+      if (!compatible_dimensions<T,S>(x,y)) {
+          throw std::runtime_error("multiplyConj: x and y have incompatible dimensions.");
+      }
 
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>NumElementsUseThreading)
-        for ( n=0; n<(long long)N; n++ )
-        {
-            const double a = x[n].real();
-            const double b = x[n].imag();
-            const double c = y[n].real();
-            const double d = y[n].imag();
+      //Resize r if necessary
+      size_t sx = x.get_number_of_elements();
+      size_t sy = y.get_number_of_elements();
+      size_t sr = r.get_number_of_elements();
+      if (sx>=sy) {
+          // x is bigger than y or they have the same size
+          if (sx!=sr) {
+            r.create(x.get_dimensions());
+          }
+      }
+      else {
+          // y is bigger than x
+          if (sy!=sr) {
+            r.create(y.get_dimensions());
+          }
+      }
 
-            reinterpret_cast<double(&)[2]>(r[n])[0] = (a*c + b*d);
-            reinterpret_cast<double(&)[2]>(r[n])[1] = (c*b - a*d);
-        }
+      multiplyConj_impl(x.get_number_of_elements(), y.get_number_of_elements(), x.begin(), y.begin(), r.begin());
     }
 
-    template <typename T> 
-    void multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
-    {
-        GADGET_DEBUG_CHECK_THROW(x.get_number_of_elements()==y.get_number_of_elements());
-        if ( r.get_number_of_elements()!=x.get_number_of_elements())
-        {
-            r = x;
-        }
+    // Instantiations
+    template EXPORTCPUCOREMATH void multiplyConj(const hoNDArray< float >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void multiplyConj(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void multiplyConj(const hoNDArray< double >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
+    template EXPORTCPUCOREMATH void multiplyConj(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
 
-        multiplyConj(x.get_number_of_elements(), x.begin(), y.begin(), r.begin());
-    }
-
+    template EXPORTCPUCOREMATH void multiplyConj(const hoNDArray< float >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void multiplyConj(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
+    template EXPORTCPUCOREMATH void multiplyConj(const hoNDArray< double >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
     template EXPORTCPUCOREMATH void multiplyConj(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
+
 
     // --------------------------------------------------------------------------------
 
