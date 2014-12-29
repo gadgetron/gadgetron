@@ -146,8 +146,11 @@ namespace Gadgetron{
   template EXPORTCPUCOREMATH void add(const hoNDArray< float >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
   template EXPORTCPUCOREMATH void add(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
 
-  template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
   template EXPORTCPUCOREMATH void add(const hoNDArray< complext<double> >& x, const hoNDArray< double >& y, hoNDArray< complext<double> >& r);
+  template EXPORTCPUCOREMATH void add(const hoNDArray< double >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
+  template EXPORTCPUCOREMATH void add(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
+
+  template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
   template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
@@ -263,8 +266,11 @@ namespace Gadgetron{
   template EXPORTCPUCOREMATH void subtract(const hoNDArray< float >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
   template EXPORTCPUCOREMATH void subtract(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
 
-  template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
   template EXPORTCPUCOREMATH void subtract(const hoNDArray< complext<double> >& x, const hoNDArray< double >& y, hoNDArray< complext<double> >& r);
+  template EXPORTCPUCOREMATH void subtract(const hoNDArray< double >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
+  template EXPORTCPUCOREMATH void subtract(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
+
+  template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
   template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
 
@@ -496,8 +502,11 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void divide(const hoNDArray< float >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
     template EXPORTCPUCOREMATH void divide(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
 
-    template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void divide(const hoNDArray< complext<double> >& x, const hoNDArray< double >& y, hoNDArray< complext<double> >& r);
+    template EXPORTCPUCOREMATH void divide(const hoNDArray< double >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
+    template EXPORTCPUCOREMATH void divide(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
+
+    template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
