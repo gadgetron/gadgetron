@@ -121,7 +121,7 @@ template <class T, class S> EXPORTCPUCOREMATH
 void add(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
-template <typename T, class S> EXPORTCPUCOREMATH
+template <typename T, class S>
 void add(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
 {
   add(*x, *y, *r);
@@ -137,7 +137,7 @@ template <class T, class S> EXPORTCPUCOREMATH
 void subtract(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
-template <typename T, class S> EXPORTCPUCOREMATH
+template <typename T, class S>
 void subtract(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
 {
   subtract(*x, *y, *r);
@@ -153,7 +153,7 @@ template <class T, class S> EXPORTCPUCOREMATH
 void multiply(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
-template <class T, class S> EXPORTCPUCOREMATH
+template <class T, class S>
 void multiply(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
 {
   multiply(*x, *y, *r);
@@ -170,7 +170,7 @@ template <class T, class S> EXPORTCPUCOREMATH
 void divide(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
-template <class T, class S> EXPORTCPUCOREMATH
+template <class T, class S>
 void divide(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
 {
   divide(*x, *y, *r);
@@ -186,7 +186,7 @@ template <class T, class S> EXPORTCPUCOREMATH
 void multiplyConj(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
 // Pointer version calls the reference version
-template <class T, class S> EXPORTCPUCOREMATH
+template <class T, class S>
 void multiplyConj(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
 {
   multiplyConj(*x, *y, *r);
@@ -498,7 +498,7 @@ template<class T> EXPORTCPUCOREMATH void pshrinkd ( hoNDArray<T> *x, hoNDArray<t
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> EXPORTCPUCOREMATH hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<S> &y)
+template<class T, class S> hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<S> &y)
 {
   if (compatible_dimensions<T,S>(x,y)) {
       add(x, y, x);
@@ -538,7 +538,7 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator+= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> EXPORTCPUCOREMATH hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<S> &y)
+template<class T, class S> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<S> &y)
 {
   if (compatible_dimensions<T,S>(x,y)) {
       subtract(x, y, x);
@@ -579,7 +579,7 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator-= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<S> &y)
+template<class T, class S> hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<S> &y)
 {
   if (compatible_dimensions<T,S>(x,y)) {
       multiply(x, y, x);
@@ -619,7 +619,7 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator*= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T, class S> EXPORTCPUCOREMATH hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<S> &y)
+template<class T, class S> hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<S> &y)
 {
   if (compatible_dimensions<T,S>(x,y)) {
       divide(x, y, x);
