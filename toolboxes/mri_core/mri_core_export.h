@@ -12,7 +12,7 @@
         #endif
     #endif
 #else
-#define EXPORTCPUREG
+    #define EXPORTMRICORE
 #endif
 
 #endif /* _MRI_CORE_EXPORT_H_ */
