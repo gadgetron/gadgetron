@@ -386,7 +386,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void multiply(const hoNDArray< float >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
     template EXPORTCPUCOREMATH void multiply(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, hoNDArray< complext<float> >& r);
 
-    template EXPORTCPUCOREMATH void multiply(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
+    template EXPORTCPUCOREMATH void multiply(const hoNDArray< complext<double> >& x, const hoNDArray< double >& y, hoNDArray< complext<double> >& r);
     template EXPORTCPUCOREMATH void multiply(const hoNDArray< double >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
     template EXPORTCPUCOREMATH void multiply(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, hoNDArray< complext<double> >& r);
 
