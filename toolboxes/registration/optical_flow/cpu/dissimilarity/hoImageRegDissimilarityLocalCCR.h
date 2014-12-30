@@ -112,6 +112,7 @@ namespace Gadgetron
         for ( ii=0; ii<D; ii++ )
         {
             sigmaArg_[ii] = (computing_value_type)(sigmaArg[ii]);
+            GADGET_CHECK_THROW(sigmaArg_[ii] > 0);
         }
     }
 
