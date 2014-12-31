@@ -29,7 +29,7 @@ namespace Gadgetron
         }
         catch (std::runtime_error &err)
         {
-            GADGET_DEBUG_EXCEPTION(err,"Unable to create float storage in ComplexToFloatAttribGadget");
+            GEXCEPTION(err,"Unable to create float storage in ComplexToFloatAttribGadget");
             return GADGET_FAIL;
         }
 

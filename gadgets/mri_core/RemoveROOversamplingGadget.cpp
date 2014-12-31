@@ -1,5 +1,4 @@
 #include "RemoveROOversamplingGadget.h"
-#include "Gadgetron.h"
 #include "hoNDFFT.h"
 #include "ismrmrd/xml.h"
 
@@ -94,7 +93,7 @@ namespace Gadgetron{
         try{ m3->getObjectPtr()->create(&data_out_dims);}
         catch (std::runtime_error &err)
         {
-            GADGET_DEBUG_EXCEPTION(err,"Unable to create new data array for downsampled data\n");
+            GEXCEPTION(err,"Unable to create new data array for downsampled data\n");
             return GADGET_FAIL;
         }
 

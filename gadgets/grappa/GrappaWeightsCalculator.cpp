@@ -2,7 +2,6 @@
 #include "GrappaWeightsCalculator.h"
 #include "GadgetContainerMessage.h"
 #include "GadgetIsmrmrdReadWrite.h"
-#include "Gadgetron.h"
 #include "b1_map.h"
 #include "hoNDArray_fileio.h"
 #include "htgrappa.h"
@@ -107,7 +106,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 
 		try{unmixing_dev.create(data_dimensions.get());}
 		catch (std::runtime_error &err){
-			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate device memory for unmixing coeffcients\n");
+			GEXCEPTION(err,"Unable to allocate device memory for unmixing coeffcients\n");
 			return GADGET_FAIL;
 		}
 
@@ -141,7 +140,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 			try {
 				unmixing_host->reshape(tmp_dims.get());
 			} catch (std::runtime_error &err){
-				GADGET_DEBUG_EXCEPTION( err, "Reshaping of GRAPPA weights failed \n" );
+				GEXCEPTION( err, "Reshaping of GRAPPA weights failed \n" );
 
 			}
 

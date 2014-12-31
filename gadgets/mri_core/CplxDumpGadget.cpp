@@ -1,7 +1,6 @@
 #include "CplxDumpGadget.h"
 #include "hoNDArray_fileio.h"
 #include "hoNDArray_utils.h"
-#include "Gadgetron.h"
 
 namespace Gadgetron{
 

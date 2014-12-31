@@ -1,6 +1,5 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "AcquisitionAccumulateTriggerGadget.h"
-#include "Gadgetron.h"
 #include "mri_core_data.h"
 #include "log.h"
 

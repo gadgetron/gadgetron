@@ -81,7 +81,7 @@ namespace Gadgetron{
 
         try{ m3->getObjectPtr()->create(&dims_out);}
         catch (std::runtime_error &err){
-            GADGET_DEBUG_EXCEPTION(err,"Unable to create storage for reduced dataset size\n");
+            GEXCEPTION(err,"Unable to create storage for reduced dataset size\n");
             return GADGET_FAIL;
         }
 

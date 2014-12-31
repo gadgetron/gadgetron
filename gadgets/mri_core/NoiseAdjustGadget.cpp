@@ -1,5 +1,4 @@
 #include "NoiseAdjustGadget.h"
-#include "Gadgetron.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_elemwise.h"
 #include "GadgetronCommon.h"
@@ -381,7 +380,7 @@ namespace Gadgetron{
 	  noise_covariance_matrixf_.create(&dims);
 	  noise_covariance_matrixf_once_.create(&dims);
 	} catch (std::runtime_error& err) {
-	  GADGET_DEBUG_EXCEPTION(err, "Unable to allocate storage for noise covariance matrix\n" );
+	  GEXCEPTION(err, "Unable to allocate storage for noise covariance matrix\n" );
 	  return GADGET_FAIL;
 	}
 

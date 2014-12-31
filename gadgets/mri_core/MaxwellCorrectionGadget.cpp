@@ -1,5 +1,4 @@
 #include "MaxwellCorrectionGadget.h"
-#include "Gadgetron.h"
 #include "GadgetronTimer.h"
 #include "Spline.h"
 #include "ismrmrd/xml.h"

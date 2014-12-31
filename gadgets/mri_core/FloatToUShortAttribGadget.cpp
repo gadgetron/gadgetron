@@ -39,7 +39,7 @@ namespace Gadgetron
 
         try {cm2->getObjectPtr()->create(dims);}
         catch (std::runtime_error &err){
-            GADGET_DEBUG_EXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
+            GEXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
             return GADGET_FAIL;
         }
 

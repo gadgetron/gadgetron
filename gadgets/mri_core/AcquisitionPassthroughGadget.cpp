@@ -1,6 +1,6 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "AcquisitionPassthroughGadget.h"
-#include "Gadgetron.h"
+
 namespace Gadgetron{
 int AcquisitionPassthroughGadget
 ::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,

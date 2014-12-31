@@ -190,7 +190,7 @@ namespace Gadgetron {
 		
                 try {VT->create(&VT_dims);}
                 catch (std::runtime_error& err){
-                    GADGET_DEBUG_EXCEPTION(err,"Failed to create array for VT\n");
+                    GEXCEPTION(err,"Failed to create array for VT\n");
                     return GADGET_FAIL;
                 }
 
@@ -210,7 +210,7 @@ namespace Gadgetron {
 		  hoNDArray< std::complex<float> >* VT_new = new hoNDArray< std::complex<float> >;
 		  try {VT_new->create(&VT_dims);}
 		  catch (std::runtime_error& err){
-                    GADGET_DEBUG_EXCEPTION(err,"Failed to create array for VT (new)\n");
+                    GEXCEPTION(err,"Failed to create array for VT (new)\n");
                     return GADGET_FAIL;
 		  }
 
@@ -270,7 +270,7 @@ namespace Gadgetron {
 
             try{m3->getObjectPtr()->create(m2->getObjectPtr()->get_dimensions().get()); }
             catch (std::runtime_error& err){
-                GADGET_DEBUG_EXCEPTION(err,"Unable to create storage for PCA coils\n");
+                GEXCEPTION(err,"Unable to create storage for PCA coils\n");
                 m3->release();
                 return GADGET_FAIL;
             }

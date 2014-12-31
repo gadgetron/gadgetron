@@ -1,5 +1,5 @@
 #include "ParameterRelayGadget.h"
-#include "Gadgetron.h"
+
 namespace Gadgetron{
 int ParameterRelayGadget
 ::process(ACE_Message_Block* m)

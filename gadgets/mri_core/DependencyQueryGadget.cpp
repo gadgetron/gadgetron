@@ -1,4 +1,3 @@
-#include "Gadgetron.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "DependencyQueryGadget.h"
 #include "gtPlusUtil.h"

@@ -1,7 +1,6 @@
 #ifndef GADGETISMRMRDREADWRITE_H
 #define GADGETISMRMRDREADWRITE_H
 
-#include "Gadgetron.h"
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
 #include "GadgetMessageInterface.h"
@@ -116,7 +115,7 @@ namespace Gadgetron{
 
                 try { m3->getObjectPtr()->create(&tdims);}
                 catch (std::runtime_error &err){
-                    GADGET_DEBUG_EXCEPTION(err,"(%P|%t) Allocate trajectory data\n");
+                    GEXCEPTION(err,"(%P|%t) Allocate trajectory data\n");
                     m1->release();
 
                     return 0;
@@ -143,7 +142,7 @@ namespace Gadgetron{
 
             try{ m2->getObjectPtr()->create(&adims); }
             catch (std::runtime_error &err ){
-                GADGET_DEBUG_EXCEPTION(err,"(%P|%t) Allocate sample data\n")
+                GEXCEPTION(err,"(%P|%t) Allocate sample data\n")
                     m1->release();
 
                 return 0;

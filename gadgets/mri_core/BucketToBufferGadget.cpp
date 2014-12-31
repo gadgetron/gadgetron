@@ -1,6 +1,5 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "BucketToBufferGadget.h"
-#include "Gadgetron.h"
 #include "mri_core_data.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"

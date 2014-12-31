@@ -19,7 +19,6 @@
 #include "boost/tuple/tuple_io.hpp"
 
 #include "gadgettools_export.h"
-#include "Gadgetron.h"
 #include "Gadget.h"
 #include "GadgetMessageInterface.h"
 #include "GadgetronCloudConnector.h"
@@ -159,7 +158,7 @@ GadgetCloudController<JobType>::GadgetCloudController() : cloud_msg_id_reader_(G
 template <typename JobType> 
 GadgetCloudController<JobType>::~GadgetCloudController()
 {
-    GADGET_DEBUG1("Into ~GadgetCloudController() ... \n");
+    GDEBUG("Into ~GadgetCloudController() ... \n");
     this->msg_queue()->deactivate();
 
     for ( unsigned int ii=0; ii<cloud_connectors_.size(); ii++ )
@@ -169,7 +168,7 @@ GadgetCloudController<JobType>::~GadgetCloudController()
             cloud_connectors_[ii]->close();
             delete cloud_connectors_[ii];
             cloud_connectors_[ii] = NULL;
-            GADGET_DEBUG1("~GadgetCloudController() : clean connectors done \n");
+            GDEBUG("~GadgetCloudController() : clean connectors done \n");
         }
     }
 }
@@ -177,7 +176,7 @@ GadgetCloudController<JobType>::~GadgetCloudController()
 template <typename JobType> 
 int GadgetCloudController<JobType>::open(void* p)
 {
-    GADGET_DEBUG1("GadgetCloudController::open\n");
+    GDEBUG("GadgetCloudController::open\n");
 
     // set the high water mark of message queue to be 24GB
     this->msg_queue()->high_water_mark( (size_t)(24.0*1024*1024*1024) );
@@ -188,7 +187,7 @@ int GadgetCloudController<JobType>::open(void* p)
 template <typename JobType> 
 int GadgetCloudController<JobType>::close(unsigned long flags)
 {
-    GADGET_DEBUG1("GadgetCloudController::close\n");
+    GDEBUG("GadgetCloudController::close\n");
     int rval = 0;
     if (flags == 1)
     {
@@ -265,7 +264,7 @@ connectToCloud(const CloudType& cloud)
             ACE_Time_Value tv( (time_t)GADGETRON_TIMEOUT_PERIOD );
             ACE_OS::sleep(tv);
 
-            GADGET_DEBUG2("Open connection to (%s):%s failed ... \n", host.c_str(), port.c_str());
+            GDEBUG("Open connection to (%s):%s failed ... \n", host.c_str(), port.c_str());
         }
         else
         {
@@ -278,7 +277,7 @@ connectToCloud(const CloudType& cloud)
                 ACE_Time_Value tv( (time_t)GADGETRON_TIMEOUT_PERIOD );
                 ACE_OS::sleep(tv);
 
-                GADGET_DEBUG2("Unable to send XML configuration to the Gadgetron cloud host (%s):%s ... \n", host.c_str(), port.c_str());
+                GDEBUG("Unable to send XML configuration to the Gadgetron cloud host (%s):%s ... \n", host.c_str(), port.c_str());
             }
             else
             {
@@ -290,11 +289,11 @@ connectToCloud(const CloudType& cloud)
 
         if ( node_status_[ii] == 0 )
         {
-            GADGET_DEBUG2("--> Node (%s):%s is ready ... \n", host.c_str(), port.c_str());
+            GDEBUG("--> Node (%s):%s is ready ... \n", host.c_str(), port.c_str());
         }
         else
         {
-            GADGET_DEBUG2("--> Node (%s):%s is NOT ready ... \n", host.c_str(), port.c_str());
+            GDEBUG("--> Node (%s):%s is NOT ready ... \n", host.c_str(), port.c_str());
         }
     }
 
@@ -402,7 +401,7 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
             }
         }
 
-        GADGET_DEBUG2("--> node for job %d is %d ... \n", ii, node_ids_used[ii]);
+        GDEBUG("--> node for job %d is %d ... \n", ii, node_ids_used[ii]);
     }
 
     // append incoming jobs into the list
@@ -419,7 +418,7 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
         int nodeID = node_ids_used[ii];
         if ( nodeID == -1 )
         {
-            GADGET_DEBUG2("--> node for job %d is NOT ready ... \n", ii+startJobID);
+            GDEBUG("--> node for job %d is NOT ready ... \n", ii+startJobID);
             continue;
         }
 
@@ -451,7 +450,7 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
             }
             else
             {
-                GADGET_DEBUG2("Send job %d to node %d ... \n", ii+startJobID, nodeID);
+                GDEBUG("Send job %d to node %d ... \n", ii+startJobID, nodeID);
                 number_of_jobs_sent_out_++;
             }
         }
@@ -461,7 +460,7 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
         }
     }
 
-    GADGET_DEBUG1("GadgetCloudController - all jobs sent ... \n");
+    GDEBUG("GadgetCloudController - all jobs sent ... \n");
 
     return 0;
 }
@@ -501,7 +500,7 @@ template <typename JobType>
 int GadgetCloudController<JobType>::
 closeCloudNode()
 {
-    GADGET_DEBUG1("GadgetCloudController : into closeCloudNode(...) ... \n");
+    GDEBUG("GadgetCloudController : into closeCloudNode(...) ... \n");
 
     unsigned int ii;
 
@@ -527,7 +526,7 @@ closeCloudNode()
         }
     }
 
-    GADGET_DEBUG1("GadgetCloudController - close message sent to all nodes ... \n");
+    GDEBUG("GadgetCloudController - close message sent to all nodes ... \n");
 
     return 0;
 }
@@ -536,7 +535,7 @@ template <typename JobType>
 int GadgetCloudController<JobType>::waitForJobToComplete()
 {
     // block the caller thread
-    GADGET_DEBUG1("GadgetCloudController waitForJobToComplete ... \n");
+    GDEBUG("GadgetCloudController waitForJobToComplete ... \n");
 
     ACE_Message_Block *mb = 0;
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
@@ -623,7 +622,7 @@ int GadgetCloudController<JobType>::waitForJobToComplete()
 template <typename JobType> 
 int GadgetCloudController<JobType>::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
-    GADGET_DEBUG1("GadgetCloudController handling close...\n");
+    GDEBUG("GadgetCloudController handling close...\n");
     return this->wait();
 }
 

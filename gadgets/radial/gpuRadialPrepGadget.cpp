@@ -1,5 +1,4 @@
 #include "gpuRadialPrepGadget.h"
-#include "Gadgetron.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "GenericReconJob.h"
 #include "cuNDArray_elemwise.h"

@@ -2,7 +2,6 @@
 #define GADGETMESSAGEINTERFACE_H
 
 #include "GadgetContainerMessage.h"
-#include "Gadgetron.h"
 #include "GadgetronExport.h"
 #include "Gadget.h"
 

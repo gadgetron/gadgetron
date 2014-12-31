@@ -1,5 +1,4 @@
 #include "EPIReconXGadget.h"
-#include "Gadgetron.h"
 #include "ismrmrd/xml.h"
 
 namespace Gadgetron{

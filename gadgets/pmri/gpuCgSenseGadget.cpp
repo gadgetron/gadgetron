@@ -4,7 +4,6 @@
 #include "cuNDArray_blas.h"
 #include "cuNDArray_utils.h"
 #include "cuNDArray_reductions.h"
-#include "Gadgetron.h"
 #include "GadgetMRIHeaders.h"
 #include "b1_map.h"
 #include "GPUTimer.h"

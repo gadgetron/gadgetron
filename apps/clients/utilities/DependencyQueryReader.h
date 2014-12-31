@@ -55,7 +55,7 @@ class DependencyQueryReader : public GadgetMessageReader
             }
             catch (std::runtime_error &err)
             {
-                GADGET_DEBUG_EXCEPTION(err,"DependencyQueryReader, failed to allocate buffer\n");
+                GEXCEPTION(err,"DependencyQueryReader, failed to allocate buffer\n");
                 return 0;
             }
 

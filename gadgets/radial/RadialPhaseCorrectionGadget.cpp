@@ -1,5 +1,4 @@
 #include "RadialPhaseCorrectionGadget.h"
-#include "Gadgetron.h"
 #include "hoNDArray_elemwise.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_fileio.h"

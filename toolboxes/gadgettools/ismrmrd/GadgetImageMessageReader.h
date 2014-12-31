@@ -50,7 +50,7 @@ public:
 
         try{ data->getObjectPtr()->create(&dims);}
         catch (std::runtime_error &err){
-            GADGET_DEBUG_EXCEPTION(err,"GadgetImageMessageReader, failed to allocate memory\n");
+            GEXCEPTION(err,"GadgetImageMessageReader, failed to allocate memory\n");
             imgh->release();
             return 0;
         }
@@ -119,7 +119,7 @@ public:
         }
         catch (std::runtime_error &err)
         {
-            GADGET_DEBUG_EXCEPTION(err,"GadgetImageAttribMessageReader, failed to allocate IMAGE Meta Attributes buffer\n");
+            GEXCEPTION(err,"GadgetImageAttribMessageReader, failed to allocate IMAGE Meta Attributes buffer\n");
             imgh->release();
             imgAttrib->release();
             return 0;
@@ -168,7 +168,7 @@ public:
         }
         catch (std::runtime_error &err)
         {
-            GADGET_DEBUG_EXCEPTION(err,"GadgetImageAttribMessageReader, failed to allocate memory\n");
+            GEXCEPTION(err,"GadgetImageAttribMessageReader, failed to allocate memory\n");
             imgh->release();
             imgAttrib->release();
             data->release();

@@ -1,6 +1,5 @@
 #include "GrappaCalibrationBuffer.h"
 #include "GadgetIsmrmrdReadWrite.h"
-#include "Gadgetron.h"
 
 namespace Gadgetron{
 
@@ -20,7 +19,7 @@ namespace Gadgetron{
       buffer_.create(&dimensions_);
       buffer_.fill(std::complex<float>(0.0,0.0));
     } catch (std::runtime_error & err){
-      GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for GRAPPA buffer");
+      GEXCEPTION(err,"Unable to allocate memory for GRAPPA buffer");
     }
   
   }

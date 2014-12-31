@@ -28,7 +28,7 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 
   try{m3->getObjectPtr()->create(&dimensions);}
   catch (std::runtime_error &err){
-  	GADGET_DEBUG_EXCEPTION(err,"CombineGadget, failed to allocate new array\n");
+  	GEXCEPTION(err,"CombineGadget, failed to allocate new array\n");
     return -1;
   }
 

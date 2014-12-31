@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "gadgetbase_export.h"
-#include "Gadgetron.h"
 #include "gadgetron_paths.h"
 #include "GadgetronConnector.h"
 

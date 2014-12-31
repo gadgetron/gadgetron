@@ -1,6 +1,5 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "IsmrmrdDumpGadget.h"
-#include "Gadgetron.h"
 
 namespace Gadgetron
 {

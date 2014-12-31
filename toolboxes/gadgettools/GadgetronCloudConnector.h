@@ -51,13 +51,13 @@ public:
 
             if ( retval == 2 )
             {
-                GADGET_DEBUG1("CloudWriterTask quit\n");
+                GDEBUG("CloudWriterTask quit\n");
                 return 0;
             }
 
             if ( retval == -1 )
             {
-                GADGET_DEBUG1("CloudWriterTask svcImpl failed ... \n");
+                GDEBUG("CloudWriterTask svcImpl failed ... \n");
                 ACE_OS::sleep(ACE_Time_Value( (time_t)GADGETRON_TIMEOUT_PERIOD ));
                 return -1;
             }
@@ -85,7 +85,7 @@ public:
         if (mid->getObjectPtr()->id == GADGET_MESSAGE_CLOSE)
         {
             socket_->send_n(mid->getObjectPtr(),sizeof(GadgetMessageIdentifier));
-            GADGET_DEBUG1("CloudWriterTask done\n");
+            GDEBUG("CloudWriterTask done\n");
             return 2;
         }
 
@@ -122,7 +122,7 @@ public:
 
         mb->release();
 
-        GADGET_DEBUG1("--> CloudWriterTask, write msg through socket done ... \n");
+        GDEBUG("--> CloudWriterTask, write msg through socket done ... \n");
 
         return 0;
     }
@@ -155,7 +155,7 @@ public:
 
     virtual int open(void* = 0)
     {
-        GADGET_DEBUG1("CloudReaderTask::open\n");
+        GDEBUG("CloudReaderTask::open\n");
         return this->activate( THR_NEW_LWP | THR_JOINABLE, 1 );
     }
 
@@ -171,7 +171,7 @@ public:
 
     virtual int close(unsigned long flags)
     {
-        GADGET_DEBUG1("CloudReaderTask::close\n");
+        GDEBUG("CloudReaderTask::close\n");
         int rval = 0;
         if (flags == 1) {
             /*
@@ -246,7 +246,7 @@ public:
             }
         }
 
-        GADGET_DEBUG1("CloudReaderTask, stop with return value 0 ... \n");
+        GDEBUG("CloudReaderTask, stop with return value 0 ... \n");
         return 0;
     }
 
@@ -282,10 +282,10 @@ public:
 
     int close()
     {
-        GADGET_DEBUG1("Into GadgetronCloudConnector:close() ... \n");
-        GADGET_DEBUG1("Closing socket \n");
+        GDEBUG("Into GadgetronCloudConnector:close() ... \n");
+        GDEBUG("Closing socket \n");
         peer().close();
-        GADGET_DEBUG1("Socket closed \n");
+        GDEBUG("Socket closed \n");
         cloud_writer_task_.flush();
         cloud_reader_task_.close(0);
         cloud_writer_task_.close(0);
@@ -294,12 +294,12 @@ public:
 
     virtual int wait()
     {
-        GADGET_DEBUG1("Into GadgetronCloudConnector:wait() ... \n");
+        GDEBUG("Into GadgetronCloudConnector:wait() ... \n");
 
         int retval;
-        GADGET_DEBUG1("Waiting for cloud reader task:\n");
+        GDEBUG("Waiting for cloud reader task:\n");
         retval = cloud_reader_task_.wait();
-        GADGET_DEBUG1("Reader task done\n");
+        GDEBUG("Reader task done\n");
 
         ACE_TRACE(( ACE_TEXT("Waiting for cloud writer task:") ));
         retval = cloud_writer_task_.wait();
@@ -368,13 +368,13 @@ GadgetronCloudConnector<JobType>::GadgetronCloudConnector() : cloud_controller_(
                                                             status_(false), 
                                                             mtx_("CLOUDCONNECTOR_MTX")
 {
-    GADGET_DEBUG1("Into GadgetronCloudConnector:GadgetronCloudConnector() ... \n");
+    GDEBUG("Into GadgetronCloudConnector:GadgetronCloudConnector() ... \n");
 }
 
 template<typename JobType> 
 GadgetronCloudConnector<JobType>::~GadgetronCloudConnector()
 {
-    GADGET_DEBUG1("Into GadgetronCloudConnector:~GadgetronCloudConnector() ... \n");
+    GDEBUG("Into GadgetronCloudConnector:~GadgetronCloudConnector() ... \n");
     cloud_writer_task_.msg_queue()->deactivate();
     cloud_reader_task_.msg_queue()->deactivate();
     this->wait();

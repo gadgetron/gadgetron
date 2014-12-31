@@ -1,7 +1,6 @@
 #pragma once 
 
 #include "Gadget.h"
-#include "Gadgetron.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
 #include "PythonCommunicator.h"

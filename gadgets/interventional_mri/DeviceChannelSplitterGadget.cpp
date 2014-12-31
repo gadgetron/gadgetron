@@ -1,5 +1,4 @@
 #include "DeviceChannelSplitterGadget.h"
-#include "Gadgetron.h"
 #include "ismrmrd/meta.h"
 
  //This is needed for things such as data role, which should NOT be defined in gtPlus

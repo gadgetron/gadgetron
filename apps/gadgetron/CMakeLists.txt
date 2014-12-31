@@ -26,7 +26,6 @@ add_executable(gadgetron
   Gadget.h 
   GadgetContainerMessage.h 
   GadgetMessageInterface.h 
-  Gadgetron.h 
   GadgetronExport.h 
   gadgetron_xml.h
   )
@@ -84,7 +83,6 @@ install(FILES
   Gadget.h
   GadgetContainerMessage.h
   GadgetMessageInterface.h
-  Gadgetron.h
   GadgetronExport.h
   gadgetron_paths.h
   gadgetron_xml.h

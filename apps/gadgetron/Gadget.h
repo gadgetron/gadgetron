@@ -17,11 +17,13 @@
 #include "gadgetbase_export.h"
 #include "GadgetContainerMessage.h"
 #include "GadgetronExport.h"
-#include "Gadgetron.h"
 #include "gadgetron_config.h"
 #include "log.h"
 
 #include <stdexcept>
+
+#define GADGET_FAIL -1
+#define GADGET_OK    0
 
 namespace Gadgetron{
 
@@ -162,7 +164,7 @@ namespace Gadgetron{
                     int success;
                     try{ success = this->process_config(m); }
                     catch (std::runtime_error& err){
-                        GADGET_DEBUG_EXCEPTION(err,"Gadget::process_config() failed\n");
+                        GEXCEPTION(err,"Gadget::process_config() failed\n");
                         success = -1;
                     }
 
@@ -188,7 +190,7 @@ namespace Gadgetron{
                 int success;
                 try{ success = this->process(m); }
                 catch (std::runtime_error& err){
-                    GADGET_DEBUG_EXCEPTION(err,"Gadget::process() failed\n");
+                    GEXCEPTION(err,"Gadget::process() failed\n");
                     success = -1;
                 }
 

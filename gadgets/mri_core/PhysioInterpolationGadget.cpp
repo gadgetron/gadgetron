@@ -1,5 +1,4 @@
 #include "PhysioInterpolationGadget.h"
-#include "Gadgetron.h"
 #include "GadgetronTimer.h"
 #include "Spline.h"
 #include "GtPlusDefinition.h"

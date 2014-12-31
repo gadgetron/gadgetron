@@ -1,5 +1,4 @@
 #include "NoiseAdjustGadget_unoptimized.h"
-#include "Gadgetron.h"
 #include "hoNDArray_fileio.h"
 #include "ismrmrd/xml.h"
 
@@ -132,7 +131,7 @@ int NoiseAdjustGadget_unoptimized
 			std::vector<size_t> dims(2, channels);
 			try{ noise_covariance_matrix_.create(&dims);}
 			catch (std::runtime_error &err){
-				GADGET_DEBUG_EXCEPTION(err,"Unable to allocate storage for noise covariance matrix\n");
+				GEXCEPTION(err,"Unable to allocate storage for noise covariance matrix\n");
 				return GADGET_FAIL;
 			}
 			noise_covariance_matrix_.fill(std::complex<double>(0.0,0.0));

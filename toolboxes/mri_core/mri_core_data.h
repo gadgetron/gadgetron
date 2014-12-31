@@ -3,7 +3,6 @@
 
 #include "GadgetContainerMessage.h"
 #include "ismrmrd/ismrmrd.h"
-#include "Gadgetron.h"
 #include <vector>
 #include <set>
 

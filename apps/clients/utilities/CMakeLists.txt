@@ -32,12 +32,14 @@ add_executable(gtdependencyquery gt_query.cpp DependencyQueryReader.h gtquery.xm
 
 target_link_libraries(gt_alive gadgetron_toolbox_cpucore 
                                gadgetron_toolbox_gadgettools 
+			       gadgetron_toolbox_log
                                optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
                                ${Boost_LIBRARIES} 
                                ${ISMRMRD_LIBRARIES} )
 
 target_link_libraries(gtdependencyquery gadgetron_toolbox_cpucore 
                                         gadgetron_toolbox_gadgettools 
+					gadgetron_toolbox_log
                                         optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
                                         ${Boost_LIBRARIES} 
                                         ${ISMRMRD_LIBRARIES} )

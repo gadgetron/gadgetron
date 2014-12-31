@@ -1,4 +1,3 @@
-#include "Gadgetron.h"
 #include "GrappaGadget.h"
 #include "GrappaUnmixingGadget.h"
 #include "ismrmrd/xml.h"
@@ -397,7 +396,7 @@ namespace Gadgetron{
     image_data_[slice] = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
     try{ image_data_[slice]->getObjectPtr()->create(&image_dimensions_);}
     catch (std::runtime_error &err){
-      GADGET_DEBUG_EXCEPTION(err,"Unable to create image buffers");
+      GEXCEPTION(err,"Unable to create image buffers");
       return GADGET_FAIL;
     }
 

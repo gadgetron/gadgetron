@@ -1,5 +1,4 @@
 #include "FlowPhaseSubtractionGadget.h"
-#include "Gadgetron.h"
 #include "ismrmrd/xml.h"
 
 #ifdef USE_OMP

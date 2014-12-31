@@ -1,6 +1,5 @@
 #include "gpuSpiralSensePrepGadget.h"
 #include "GenericReconJob.h"
-#include "Gadgetron.h"
 #include "cuNDArray_utils.h"
 #include "cuNDArray_reductions.h"
 #include "vector_td_utilities.h"
