@@ -25,13 +25,11 @@ namespace Gadgetron
     EXPORTMRICORE void zpadRange(size_t srcSize, size_t dstSize, size_t& start, size_t& end);
 
     // pad the first two dimensions around its center, other dimensions are kept unchanged
-    template<typename T> EXPORTMRICORE void zeropad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataPadded);
+    // if presetZeros=true, the dataPadded will be preset to zero before padding
+    template<typename T> EXPORTMRICORE void zeropad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataPadded, bool presetZeros=true);
 
     // pad first three dimensions array around its center, other dimensions are kept unchanged
-    template<typename T> EXPORTMRICORE void zeropad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataPadded);
-
-    // the dataPadded is not pre cleared to fill with zeros
-    template<typename T> EXPORTMRICORE void zeropad3DNoPresetZeros(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataPadded);
+    template<typename T> EXPORTMRICORE void zeropad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataPadded, bool presetZeros=true);
 
     // cut the center part
     template<typename T> EXPORTMRICORE void cutpad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataCut);

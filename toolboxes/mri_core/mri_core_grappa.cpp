@@ -634,7 +634,7 @@ imageDomainKernel3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int>&
 
         Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1*e2)) ), convKer );
 
-        Gadgetron::zeropad3DNoPresetZeros(convKer, ro, e1, e2, kIm);
+        Gadgetron::zeropad3D(convKer, ro, e1, e2, kIm, false);
 
         GADGET_CHECK_THROW(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm));
     }
@@ -676,7 +676,7 @@ imageDomainKernelRO3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int
 
         Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro)) ), convKer );
 
-        Gadgetron::zeropad3DNoPresetZeros(convKer, ro, kConvE1, kConvE2, kImROTemp);
+        Gadgetron::zeropad3D(convKer, ro, kConvE1, kConvE2, kImROTemp, false);
 
         GADGET_CHECK_THROW(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImROTemp));
 
@@ -749,7 +749,7 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
 
         Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(e1*e2)) ), kImROScaled );
 
-        Gadgetron::zeropad3DNoPresetZeros(kImROScaled, e1, e2, dimR[2], kImE1E2RO);
+        Gadgetron::zeropad3D(kImROScaled, e1, e2, dimR[2], kImE1E2RO, false);
 
         GADGET_CHECK_THROW(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kImE1E2RO));
     }

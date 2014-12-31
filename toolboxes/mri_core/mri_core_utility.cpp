@@ -47,7 +47,7 @@ void zpadRange(size_t srcSize, size_t dstSize, size_t& start, size_t& end)
 // ------------------------------------------------------------------------
 
 template <typename T> 
-void zeropad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataPadded)
+void zeropad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataPadded, bool presetZeros)
 {
     try
     {
@@ -67,11 +67,20 @@ void zeropad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T
         zpadRange(RO, sizeX, sRO, eRO);
         zpadRange(E1, sizeY, sE1, eE1);
 
-        boost::shared_ptr< std::vector<size_t> > dimPadded = data.get_dimensions();
-        (*dimPadded)[0] = sizeX;
-        (*dimPadded)[1] = sizeY;
-        dataPadded.create(dimPadded);
-        Gadgetron::clear(&dataPadded);
+        std::vector<size_t> dimPadded;
+        data.get_dimensions(dimPadded);
+        dimPadded[0] = sizeX;
+        dimPadded[1] = sizeY;
+
+        if ( !dataPadded.dimensions_equal(&dimPadded) )
+        {
+            dataPadded.create(dimPadded);
+        }
+
+        if ( presetZeros )
+        {
+            Gadgetron::clear(&dataPadded);
+        }
 
         size_t num = data.get_number_of_elements()/(RO*E1);
 
@@ -95,15 +104,15 @@ void zeropad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T
     }
 }
 
-template EXPORTMRICORE void zeropad2D(const hoNDArray<float>& data, size_t sizeX, size_t sizeY, hoNDArray<float>& dataPadded);
-template EXPORTMRICORE void zeropad2D(const hoNDArray<double>& data, size_t sizeX, size_t sizeY, hoNDArray<double>& dataPadded);
-template EXPORTMRICORE void zeropad2D(const hoNDArray< std::complex<float> >& data, size_t sizeX, size_t sizeY, hoNDArray< std::complex<float> >& dataPadded);
-template EXPORTMRICORE void zeropad2D(const hoNDArray< std::complex<double> >& data, size_t sizeX, size_t sizeY, hoNDArray< std::complex<double> >& dataPadded);
+template EXPORTMRICORE void zeropad2D(const hoNDArray<float>& data, size_t sizeX, size_t sizeY, hoNDArray<float>& dataPadded, bool presetZeros);
+template EXPORTMRICORE void zeropad2D(const hoNDArray<double>& data, size_t sizeX, size_t sizeY, hoNDArray<double>& dataPadded, bool presetZeros);
+template EXPORTMRICORE void zeropad2D(const hoNDArray< std::complex<float> >& data, size_t sizeX, size_t sizeY, hoNDArray< std::complex<float> >& dataPadded, bool presetZeros);
+template EXPORTMRICORE void zeropad2D(const hoNDArray< std::complex<double> >& data, size_t sizeX, size_t sizeY, hoNDArray< std::complex<double> >& dataPadded, bool presetZeros);
 
 // ------------------------------------------------------------------------
 
 template <typename T> 
-void zeropad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataPadded)
+void zeropad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataPadded, bool presetZeros)
 {
     try
     {
@@ -126,12 +135,21 @@ void zeropad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t size
         zpadRange(E1, sizeY, sE1, eE1);
         zpadRange(E2, sizeZ, sE2, eE2);
 
-        boost::shared_ptr< std::vector<size_t> > dimPadded = data.get_dimensions();
-        (*dimPadded)[0] = sizeX;
-        (*dimPadded)[1] = sizeY;
-        (*dimPadded)[2] = sizeZ;
-        dataPadded.create(dimPadded);
-        Gadgetron::clear(&dataPadded);
+        std::vector<size_t> dimPadded;
+        data.get_dimensions(dimPadded);
+        dimPadded[0] = sizeX;
+        dimPadded[1] = sizeY;
+        dimPadded[2] = sizeZ;
+
+        if ( !dataPadded.dimensions_equal(&dimPadded) )
+        {
+            dataPadded.create(dimPadded);
+        }
+
+        if ( presetZeros )
+        {
+            Gadgetron::clear(&dataPadded);
+        }
 
         size_t num = data.get_number_of_elements()/(RO*E1*E2);
 
@@ -165,10 +183,10 @@ void zeropad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t size
     }
 }
 
-template EXPORTMRICORE void zeropad3D(const hoNDArray<float>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<float>& dataPadded);
-template EXPORTMRICORE void zeropad3D(const hoNDArray<double>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<double>& dataPadded);
-template EXPORTMRICORE void zeropad3D(const hoNDArray< std::complex<float> >& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray< std::complex<float> >& dataPadded);
-template EXPORTMRICORE void zeropad3D(const hoNDArray< std::complex<double> >& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray< std::complex<double> >& dataPadded);
+template EXPORTMRICORE void zeropad3D(const hoNDArray<float>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<float>& dataPadded, bool presetZeros);
+template EXPORTMRICORE void zeropad3D(const hoNDArray<double>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<double>& dataPadded, bool presetZeros);
+template EXPORTMRICORE void zeropad3D(const hoNDArray< std::complex<float> >& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray< std::complex<float> >& dataPadded, bool presetZeros);
+template EXPORTMRICORE void zeropad3D(const hoNDArray< std::complex<double> >& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray< std::complex<double> >& dataPadded, bool presetZeros);
 
 // ------------------------------------------------------------------------
 
