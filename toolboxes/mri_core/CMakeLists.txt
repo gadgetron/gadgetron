@@ -38,11 +38,13 @@ set( mri_core_header_files
         mri_core_export.h
         mri_core_data.h
         mri_core_utility.h
-        mri_core_grappa.h )
+        mri_core_grappa.h 
+        mri_core_parallel_imaging.h )
 
 set( mri_core_source_files
         mri_core_utility.cpp 
-        mri_core_grappa.cpp )
+        mri_core_grappa.cpp 
+        mri_core_parallel_imaging.cpp )
 
 add_library(gadgetron_toolbox_mri_core ${LIBTYPE}
      ${mri_core_header_files} ${mri_core_source_files} )

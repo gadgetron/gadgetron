@@ -24,58 +24,6 @@ namespace Gadgetron {
     // ----------------------------------------------------------------------------------------
 
     template<typename T> 
-    bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            boost::shared_ptr< std::vector<size_t> > dim = x.get_dimensions();
-            size_t NDim = dim->size();
-
-            std::vector<size_t> dimR(NDim-1);
-
-            size_t d;
-            for ( d=0; d<NDim-1; d++ )
-            {
-                dimR[d] = (*dim)[d];
-            }
-
-            if ( !r.dimensions_equal(&dimR) )
-            {
-                r.create(&dimR);
-            }
-
-            // Gadgetron::clear(&r);
-
-            if ( x.get_size(NDim-1) <= 1 )
-            {
-                memcpy(r.begin(), x.begin(), x.get_number_of_bytes());
-                return true;
-            }
-
-            size_t lastDim = x.get_size(NDim-1);
-            size_t NR = r.get_number_of_elements();
-            T* pA = const_cast<T*>(x.begin());
-            T* pR = r.begin();
-
-            memcpy(pR, pA, sizeof(T)*NR);
-
-            // sum over the last dim
-            hoNDArray<T> tmp;
-            for ( d=1; d<lastDim; d++ )
-            {
-                tmp.create(&dimR, pA+d*NR);
-                add(tmp, r, r);
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
     bool sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -587,213 +535,6 @@ namespace Gadgetron {
             GADGET_ERROR_MSG("Errors in multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R) ... ");
             return false;
         }
-        return true;
-    }
-
-    template <typename T> 
-    bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
-    {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()<=y.get_number_of_elements());
-        if ( r.get_number_of_elements()!=y.get_number_of_elements())
-        {
-            r = y;
-        }
-
-        long long Nx = x.get_number_of_elements();
-        long long N = y.get_number_of_elements() / Nx;
-
-        const T* pX = x.begin();
-
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(pX, y, r, Nx, N)
-        for ( n=0; n<N; n++ )
-        {
-            const T* pY = y.begin()+n*Nx;
-            T* pR = r.begin() + n*Nx;
-
-            long long ii;
-            for ( ii=0; ii<Nx; ii++ )
-            {
-                pR[ii] = pX[ii] + pY[ii];
-            }
-        }
-
-        //if ( typeid(T)==typeid(float) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        const T* pY = y.begin()+n*Nx;
-        //        T* pR = pR + n*Nx;
-
-        //        size_t ii;
-        //        for ( ii=0; ii<Nx; ii++ )
-        //        {
-        //            pR[ii] = pX[ii] + pY[ii];
-        //        }
-        //    }
-        //}
-        //else if ( typeid(T)==typeid(double) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else if ( typeid(T)==typeid( std::complex<float> ) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else if ( typeid(T)==typeid( std::complex<double> ) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else
-        //{
-        //    GADGET_ERROR_MSG("multipleAdd : unsupported type " << typeid(T).name());
-        //    return false;
-        //}
-
-        return true;
-    }
-
-    inline void multiplyCplx(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const std::complex<float>& a1 = x[n];
-            const std::complex<float>& b1 = y[n];
-            const float a = a1.real();
-            const float b = a1.imag();
-            const float c = b1.real();
-            const float d = b1.imag();
-
-            reinterpret_cast<float(&)[2]>(r[n])[0] = a*c-b*d;
-            reinterpret_cast<float(&)[2]>(r[n])[1] = a*d+b*c;
-        }
-    }
-
-    inline void multiplyCplx(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const std::complex<double>& a1 = x[n];
-            const std::complex<double>& b1 = y[n];
-            const double a = a1.real();
-            const double b = a1.imag();
-            const double c = b1.real();
-            const double d = b1.imag();
-
-            reinterpret_cast<double(&)[2]>(r[n])[0] = a*c-b*d;
-            reinterpret_cast<double(&)[2]>(r[n])[1] = a*d+b*c;
-        }
-    }
-
-    template <typename T> 
-    bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
-    {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()<=y.get_number_of_elements());
-        if ( r.get_number_of_elements()!=y.get_number_of_elements())
-        {
-            r = y;
-        }
-
-        long long Nx = x.get_number_of_elements();
-        long long N = y.get_number_of_elements() / Nx;
-
-        const T* pX = x.begin();
-
-        long long n;
-
-        if ( typeid(T)==typeid(float) )
-        {
-            #pragma omp parallel for default(none) private(n) shared(pX, y, r, Nx, N)
-            for ( n=0; n<N; n++ )
-            {
-                const T* pY = y.begin()+n*Nx;
-                T* pR = r.begin() + n*Nx;
-
-                long long ii;
-                for ( ii=0; ii<Nx; ii++ )
-                {
-                    pR[ii] = pX[ii] * pY[ii];
-                }
-            }
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            #pragma omp parallel for default(none) private(n) shared(pX, y, r, Nx, N)
-            for ( n=0; n<N; n++ )
-            {
-                const T* pY = y.begin()+n*Nx;
-                T* pR = r.begin() + n*Nx;
-
-                long long ii;
-                for ( ii=0; ii<Nx; ii++ )
-                {
-                    pR[ii] = pX[ii] * pY[ii];
-                }
-            }
-        }
-        else if ( typeid(T)==typeid( std::complex<float> ) )
-        {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
-            for ( n=0; n<N; n++ )
-            {
-                multiplyCplx(x.get_number_of_elements(), (const std::complex<float>*)(x.begin()), (const std::complex<float>*)(y.begin()+n*Nx), (std::complex<float>*)(r.begin()+n*Nx));
-            }
-        }
-        else if ( typeid(T)==typeid( std::complex<double> ) )
-        {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
-            for ( n=0; n<N; n++ )
-            {
-                multiplyCplx(x.get_number_of_elements(), (const std::complex<double>*)(x.begin()), (const std::complex<double>*)(y.begin()+n*Nx), (std::complex<double>*)(r.begin()+n*Nx));
-            }
-        }
-        else
-        {
-            GADGET_ERROR_MSG("multipleMultiply : unsupported type " << typeid(T).name());
-            return false;
-        }
-
         return true;
     }
 
@@ -1496,6 +1237,42 @@ namespace Gadgetron {
         return true;
     }
 
+    inline void multiplyCplx(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
+    {
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const std::complex<float>& a1 = x[n];
+            const std::complex<float>& b1 = y[n];
+            const float a = a1.real();
+            const float b = a1.imag();
+            const float c = b1.real();
+            const float d = b1.imag();
+
+            reinterpret_cast<float(&)[2]>(r[n])[0] = a*c-b*d;
+            reinterpret_cast<float(&)[2]>(r[n])[1] = a*d+b*c;
+        }
+    }
+
+    inline void multiplyCplx(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
+    {
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const std::complex<double>& a1 = x[n];
+            const std::complex<double>& b1 = y[n];
+            const double a = a1.real();
+            const double b = a1.imag();
+            const double c = b1.real();
+            const double d = b1.imag();
+
+            reinterpret_cast<double(&)[2]>(r[n])[0] = a*c-b*d;
+            reinterpret_cast<double(&)[2]>(r[n])[1] = a*d+b*c;
+        }
+    }
+
     template<typename T> 
     bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
     {
@@ -1672,11 +1449,6 @@ namespace Gadgetron {
         return true;
     }
 
-    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
@@ -1716,16 +1488,6 @@ namespace Gadgetron {
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<double>& x, const hoNDArray<double>& y, size_t n, hoNDArray<double>& r, bool copyY2R);
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, size_t n, hoNDArray< std::complex<float> >& r, bool copyY2R);
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, size_t n, hoNDArray< std::complex<double> >& r, bool copyY2R);
-
-    template EXPORTGTPLUS bool multipleAdd(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool multipleAdd(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multipleAdd(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool multipleAdd(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
     template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);

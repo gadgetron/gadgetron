@@ -26,7 +26,6 @@
 #include "ismrmrd/ismrmrd.h"
 #include "GadgetronTimer.h"
 #include "mri_core_utility.h"
-#include "mri_core_utility.h"
 
 #ifdef USE_OMP
     #include "omp.h"

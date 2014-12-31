@@ -6,8 +6,7 @@
 
 #pragma once
 
-#include "mri_core_export.h"
-#include "hoNDArray.h"
+#include "mri_core_parallel_imaging.h"
 #include "ho2DArray.h"
 #include "ho3DArray.h"
 #include "ho4DArray.h"
@@ -19,7 +18,7 @@ namespace Gadgetron
 {
 
 template <typename T> 
-class EXPORTMRICORE grappa
+class EXPORTMRICORE grappa : public parallelImaging<T>
 {
 public:
 

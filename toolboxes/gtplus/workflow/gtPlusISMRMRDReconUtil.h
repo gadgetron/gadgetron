@@ -68,12 +68,6 @@
 namespace Gadgetron {
 
     /**
-    * @brief sum over last dimension of an array
-             e.g. for a 4D array, sum over the 4th dimension and get a 3D array
-    */
-    template<typename T> EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r); // 
-
-    /**
     * @brief sum over the second last dimension of an array
              e.g. for a 4D array, sum over the 3rd dimension and get a 3D array
     */
@@ -108,13 +102,6 @@ namespace Gadgetron {
     */
     template<typename T> EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, size_t n, hoNDArray<T>& r, bool copyY2R=true);
     template<typename T> EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R=true);
-
-    /**
-    * @brief r = x add/multiply/divide y for every part of y
-    */
-    template<typename T> EXPORTGTPLUS bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multipleDivide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
 
     /**
     * @brief copy the sub-array of x to r

@@ -41,6 +41,12 @@ namespace Gadgetron
     // array manipulation
     // ------------------------------------------------------------------------
     /**
+    * @brief sum over last dimension of an array
+             e.g. for a 4D array, sum over the 4th dimension and get a 3D array
+    */
+    template<typename T> EXPORTMRICORE bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r); 
+
+    /**
     * @brief sum over the 1st dimension of an array
              e.g. for a 2D array, sum over the 1st dimension and get an array of [1 E1]
     */
@@ -109,4 +115,10 @@ namespace Gadgetron
              x : [RO E1 E2 srcCHA dstCHA ...], r: [E1 E2 srcCHA dstCHA RO ...]
     */
     template<typename T> EXPORTMRICORE bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief r = x add/multiply y for every part of y
+    */
+    template<typename T> EXPORTMRICORE bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+    template<typename T> EXPORTMRICORE bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
 }
