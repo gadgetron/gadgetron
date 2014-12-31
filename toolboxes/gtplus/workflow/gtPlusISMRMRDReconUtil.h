@@ -155,14 +155,6 @@ namespace Gadgetron {
     template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
 
     /**
-    * @brief Image domain unwrapping for 2D
-             x : [RO E1 srcCHA N], ker [RO E1 srcCHA dstCHA 1 or N], 
-             buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA N]
-             for the sake of speed, no check is made in this function
-    */
-    template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
-
-    /**
     * @brief compute periodic boundary values for an array
              x : [N 1] the data point location, y[N M] data point values at x
              r : [N+2 M], the data point values with computed boundaries

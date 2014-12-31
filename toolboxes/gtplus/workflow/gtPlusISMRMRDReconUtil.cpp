@@ -1173,47 +1173,13 @@ namespace Gadgetron {
         return true;
     }
 
-    inline void multiplyCplx(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const std::complex<float>& a1 = x[n];
-            const std::complex<float>& b1 = y[n];
-            const float a = a1.real();
-            const float b = a1.imag();
-            const float c = b1.real();
-            const float d = b1.imag();
-
-            reinterpret_cast<float(&)[2]>(r[n])[0] = a*c-b*d;
-            reinterpret_cast<float(&)[2]>(r[n])[1] = a*d+b*c;
-        }
-    }
-
-    inline void multiplyCplx(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const std::complex<double>& a1 = x[n];
-            const std::complex<double>& b1 = y[n];
-            const double a = a1.real();
-            const double b = a1.imag();
-            const double c = b1.real();
-            const double d = b1.imag();
-
-            reinterpret_cast<double(&)[2]>(r[n])[0] = a*c-b*d;
-            reinterpret_cast<double(&)[2]>(r[n])[1] = a*d+b*c;
-        }
-    }
-
     template<typename T> 
     bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
     {
         try
         {
+            typedef typename realType<T>::Type value_type;
+
             T* pX = const_cast<T*>(x.begin());
             T* ker = const_cast<T*>(kernel.begin());
             T* pY = y.begin();
@@ -1244,7 +1210,27 @@ namespace Gadgetron {
 
                 for ( dCha=0; dCha<dstCHA; dCha++ )
                 {
-                    multiplyCplx(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
+                    // multiplyCplx(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
+
+                    long long N = ro*e1*srcCHA;
+                    T* x = pX;
+                    T* y = ker+dCha*ro*e1*srcCHA;
+                    T* r = pBuf;
+
+                    long long n;
+                    #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
+                    for (n = 0; n < (long long)N; n++)
+                    {
+                        const T& a1 = x[n];
+                        const T& b1 = y[n];
+                        const value_type a = a1.real();
+                        const value_type b = a1.imag();
+                        const value_type c = b1.real();
+                        const value_type d = b1.imag();
+
+                        reinterpret_cast<value_type(&)[2]>(r[n])[0] = a*c-b*d;
+                        reinterpret_cast<value_type(&)[2]>(r[n])[1] = a*d+b*c;
+                    }
 
                     memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
                     for ( size_t sCha=1; sCha<srcCHA; sCha++ )
@@ -1268,120 +1254,6 @@ namespace Gadgetron {
         catch (...)
         {
             GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
-    {
-        try
-        {
-            long long ro = (long long)x.get_size(0);
-            long long e1 = (long long)x.get_size(1);
-            long long srcCHA = (long long)x.get_size(2);
-            long long N = (long long)x.get_size(3);
-
-            long long dstCHA = (long long)kernel.get_size(3);
-            long long kerN = (long long)kernel.get_size(4);
-
-            if ( (long long)buf.get_number_of_elements() < ro*e1*srcCHA )
-            {
-                buf.create(ro, e1, srcCHA);
-            }
-            T* pBuf = buf.begin();
-
-            long long n, dCha;
-
-            //#pragma omp parallel default(shared)
-            {
-                //#ifdef WIN32
-                //    int tid = omp_get_thread_num();
-                //    DWORD_PTR mask = (1 << tid);
-                //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
-                //    SetThreadAffinityMask( GetCurrentThread(), mask );
-                //#endif // WIN32
-
-                //#pragma omp for
-
-                //if ( typeid(T)==typeid( std::complex<float> ) )
-                //{
-                    const T* pXN = x.begin();
-                    T* pYN = y.begin();
-                    T* pBufN = buf.begin();
-                    const T* pKerN = kernel.begin();
-
-                    // #pragma omp parallel for default(none) private(dCha, n) shared(N, ro, e1, srcCHA, dstCHA, kerN, pXN, pYN, pBufN, pKerN)
-                    for ( dCha=0; dCha<(long long)dstCHA; dCha++ )
-                    {
-                        for ( n=0; n<N; n++  )
-                        {
-                            const T* ker = pKerN + n*ro*e1*srcCHA*dstCHA;
-                            if ( kerN <= n )
-                            {
-                                ker = pKerN + (kerN-1)*ro*e1*srcCHA*dstCHA;
-                            }
-
-                            const T* pX = pXN + n*ro*e1*srcCHA;
-                            T* pBuf =pBufN + n*ro*e1*srcCHA;
-
-                            multiplyCplx(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
-                        //}
-
-                        //for ( n=0; n<N; n++  )
-                        //{
-                            T* pY = pYN + n*ro*e1*dstCHA;
-                            //T* pBuf =pBufN + n*ro*e1*srcCHA;
-
-                            memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
-                            for ( long long sCha=1; sCha<srcCHA; sCha++ )
-                            {
-                                // Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
-                                size_t ii;
-                                size_t N2D=ro*e1;
-
-                                T* pY2D = pY+dCha*ro*e1;
-                                T* pBuf2D = pBuf+sCha*ro*e1;
-
-                                for ( ii=0; ii<N2D; ii++ )
-                                {
-                                    pY2D[ii] += pBuf2D[ii];
-                                }
-                            }
-                        }
-                    }
-                //}
-                //else if ( typeid(T)==typeid( std::complex<double> ) )
-                //{
-                //    for ( n=0; n<N; n++ )
-                //    {
-                //        const T* ker = kernel.begin() + n*ro*e1*srcCHA*dstCHA;
-                //        if ( kerN <= n )
-                //        {
-                //            ker = kernel.begin() + (kerN-1)*ro*e1*srcCHA*dstCHA;
-                //        }
-
-                //        const T* pX = x.begin() + n*ro*e1*srcCHA;
-                //        T* pY = y.begin() + n*ro*e1*dstCHA;
-
-                //        for ( long long dCha=0; dCha<dstCHA; dCha++ )
-                //        {
-                //            Gadgetron::math::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
-
-                //            memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
-                //            for ( long long sCha=1; sCha<srcCHA; sCha++ )
-                //            {
-                //                Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
-                //            }
-                //        }
-                //    }
-                //}
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
             return false;
         }
         return true;
@@ -1721,9 +1593,6 @@ namespace Gadgetron {
 
     template EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& ker, hoNDArray< std::complex<float> >& buf, hoNDArray< std::complex<float> >& y);
     template EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& ker, hoNDArray< std::complex<double> >& buf, hoNDArray< std::complex<double> >& y);
-
-    template EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& ker, hoNDArray< std::complex<float> >& buf, hoNDArray< std::complex<float> >& y);
-    template EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& ker, hoNDArray< std::complex<double> >& buf, hoNDArray< std::complex<double> >& y);
 
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<float>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<float>& vy);
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<double>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<double>& vy);
