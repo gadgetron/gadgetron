@@ -57,13 +57,13 @@ namespace Gadgetron{
 #endif // _WIN32
     }
 
-    GADGET_DEBUG2("Folder to store noise dependencies is %s\n", noise_dependency_folder_.c_str());
+    GDEBUG("Folder to store noise dependencies is %s\n", noise_dependency_folder_.c_str());
 
     str = this->get_string_value("noise_dependency_prefix");
     if ( !str->empty() ) noise_dependency_prefix_ = *str;
 
     perform_noise_adjust_ = this->get_string_value("perform_noise_adjust")->size() ? this->get_bool_value("perform_noise_adjust") : true;
-    GADGET_DEBUG2("NoiseAdjustGadget::perform_noise_adjust_ is %d\n", perform_noise_adjust_);
+    GDEBUG("NoiseAdjustGadget::perform_noise_adjust_ is %d\n", perform_noise_adjust_);
 
     noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
 
@@ -73,7 +73,7 @@ namespace Gadgetron{
       receiver_noise_bandwidth_ = (float)(current_ismrmrd_header_.acquisitionSystemInformation->relativeReceiverNoiseBandwidth ?
 					  *current_ismrmrd_header_.acquisitionSystemInformation->relativeReceiverNoiseBandwidth : 0.793f);
       
-      GADGET_DEBUG2("receiver_noise_bandwidth_ is %f\n", receiver_noise_bandwidth_);
+      GDEBUG("receiver_noise_bandwidth_ is %f\n", receiver_noise_bandwidth_);
     }
 
     // find the measurementID of this scan
@@ -82,7 +82,7 @@ namespace Gadgetron{
 	if ( current_ismrmrd_header_.measurementInformation->measurementID )
 	  {
 	    measurement_id_ = *current_ismrmrd_header_.measurementInformation->measurementID;
-	    GADGET_DEBUG2("Measurement ID is %s\n", measurement_id_.c_str());
+	    GDEBUG("Measurement ID is %s\n", measurement_id_.c_str());
 	  }
 
 	// find the noise depencies if any
@@ -96,7 +96,7 @@ namespace Gadgetron{
 		std::string dependencyType = iter->dependencyType;
 		std::string dependencyID = iter->measurementID;
 
-		GADGET_DEBUG2("Found dependency measurement : %s with ID %s\n", dependencyType.c_str(), dependencyID.c_str());
+		GDEBUG("Found dependency measurement : %s with ID %s\n", dependencyType.c_str(), dependencyID.c_str());
             
 		if ( dependencyType=="Noise" || dependencyType=="noise" ) {
 		  measurement_id_of_noise_dependency_ = dependencyID;
@@ -104,26 +104,26 @@ namespace Gadgetron{
 	      }
         
 	    if ( !measurement_id_of_noise_dependency_.empty() ) {
-	      GADGET_DEBUG2("Measurement ID of noise dependency is %s\n", measurement_id_of_noise_dependency_.c_str());
+	      GDEBUG("Measurement ID of noise dependency is %s\n", measurement_id_of_noise_dependency_.c_str());
 		  
 	      full_name_stored_noise_dependency_ = this->generateNoiseDependencyFilename(generateMeasurementIdOfNoiseDependency(measurement_id_of_noise_dependency_));
-	      GADGET_DEBUG2("Stored noise dependency is %s\n", full_name_stored_noise_dependency_.c_str());
+	      GDEBUG("Stored noise dependency is %s\n", full_name_stored_noise_dependency_.c_str());
 		  
 	      // try to load the precomputed noise prewhitener
 	      if ( !this->loadNoiseCovariance() ) {
-		GADGET_DEBUG2("Stored noise dependency is NOT found : %s\n", full_name_stored_noise_dependency_.c_str());
+		GDEBUG("Stored noise dependency is NOT found : %s\n", full_name_stored_noise_dependency_.c_str());
 		noiseCovarianceLoaded_ = false;
 		noise_dwell_time_us_ = -1;
 		noise_covariance_matrixf_.clear();
 	      } else {
-		GADGET_DEBUG2("Stored noise dependency is found : %s\n", full_name_stored_noise_dependency_.c_str());
-		GADGET_DEBUG2("Stored noise dwell time in us is %f\n", noise_dwell_time_us_);
-		GADGET_DEBUG2("Stored noise channel number is %d\n", noise_covariance_matrixf_.get_size(0));
+		GDEBUG("Stored noise dependency is found : %s\n", full_name_stored_noise_dependency_.c_str());
+		GDEBUG("Stored noise dwell time in us is %f\n", noise_dwell_time_us_);
+		GDEBUG("Stored noise channel number is %d\n", noise_covariance_matrixf_.get_size(0));
 		
 		if (noise_ismrmrd_header_.acquisitionSystemInformation) {
 		  if (noise_ismrmrd_header_.acquisitionSystemInformation->coilLabel.size() != 
 		      current_ismrmrd_header_.acquisitionSystemInformation->coilLabel.size()) {
-		    GADGET_DEBUG1("Length of coil label arrays do not match");
+		    GDEBUG("Length of coil label arrays do not match");
 		    return GADGET_FAIL;
 		  }
 		  
@@ -139,11 +139,11 @@ namespace Gadgetron{
 		    }
 		  }
 		  if (!labels_match) {
-		    GADGET_DEBUG1("Noise and measurement coil labels don't match\n");
+		    GDEBUG("Noise and measurement coil labels don't match\n");
 		    return GADGET_FAIL;
 		  }
 		} else if (current_ismrmrd_header_.acquisitionSystemInformation) {
-		  GADGET_DEBUG1("Noise ismrmrd header does not have acquisition system information but current header does\n");
+		  GDEBUG("Noise ismrmrd header does not have acquisition system information but current header does\n");
 		  return GADGET_FAIL;
 		}
 
@@ -159,7 +159,7 @@ namespace Gadgetron{
     boost::shared_ptr<std::string> uncomb_str = this->get_string_value("scale_only_channels_by_name");
     std::vector<std::string> uncomb;
     if (uncomb_str->size()) {
-      GADGET_DEBUG2("SCALE ONLY: %s\n",  uncomb_str->c_str());
+      GDEBUG("SCALE ONLY: %s\n",  uncomb_str->c_str());
       boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
       for (unsigned int i = 0; i < uncomb.size(); i++) {
 	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
@@ -240,7 +240,7 @@ namespace Gadgetron{
       delete [] buf;
       infile.close();
     } else {
-      GADGET_DEBUG1("Noise prewhitener file is not found. Proceeding without stored noise\n");
+      GDEBUG("Noise prewhitener file is not found. Proceeding without stored noise\n");
       return false;
     }
 
@@ -265,7 +265,7 @@ namespace Gadgetron{
     }
 
     if ( !covf.serialize(buf, len) ) {
-      GADGET_DEBUG1("Noise covariance serialization failed ...\n");
+      GDEBUG("Noise covariance serialization failed ...\n");
       return false;
     }
 
@@ -280,7 +280,7 @@ namespace Gadgetron{
 
     if (outfile.good())
       {
-	GADGET_DEBUG2("write out the noise dependency file : %s\n", filename.c_str());
+	GDEBUG("write out the noise dependency file : %s\n", filename.c_str());
 	outfile.write( reinterpret_cast<char*>(&xml_length), 4);
 	outfile.write( xml_str.c_str(), xml_length );
 	outfile.write( reinterpret_cast<char*>(&noise_dwell_time_us_), sizeof(float));
@@ -292,7 +292,7 @@ namespace Gadgetron{
 #ifndef _WIN32
 	int res = chmod(filename.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
 	if ( res != 0 ) {
-	  GADGET_DEBUG1("Changing noise prewhitener file permission failed ...\n");
+	  GDEBUG("Changing noise prewhitener file permission failed ...\n");
 	}
 #endif // _WIN32
       } else {
@@ -307,13 +307,13 @@ namespace Gadgetron{
 
   void NoiseAdjustGadget::computeNoisePrewhitener()
   {
-    GADGET_DEBUG2("Noise dwell time: %f\n", noise_dwell_time_us_);
-    GADGET_DEBUG2("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
+    GDEBUG("Noise dwell time: %f\n", noise_dwell_time_us_);
+    GDEBUG("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
     
     if (!noise_decorrelation_calculated_) {
       
       if (number_of_noise_samples_ > 0 ) {
-	GADGET_DEBUG1("Calculating noise decorrelation\n");
+	GDEBUG("Calculating noise decorrelation\n");
 	
 	noise_prewhitener_matrixf_ = noise_covariance_matrixf_;
 	
@@ -422,10 +422,10 @@ namespace Gadgetron{
 
 	noise_prewhitener_matrixf_ *= std::complex<float>(noise_bw_scale_factor_,0.0);
 
-	GADGET_DEBUG2("Noise dwell time: %f\n", noise_dwell_time_us_);
-	GADGET_DEBUG2("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
-	GADGET_DEBUG2("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
-	GADGET_DEBUG2("noise_bw_scale_factor: %f", noise_bw_scale_factor_);
+	GDEBUG("Noise dwell time: %f\n", noise_dwell_time_us_);
+	GDEBUG("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
+	GDEBUG("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
+	GDEBUG("noise_bw_scale_factor: %f", noise_bw_scale_factor_);
       }
 
       if (noise_decorrelation_calculated_) {
@@ -436,7 +436,7 @@ namespace Gadgetron{
     }
 
     if (this->next()->putq(m1) == -1) {
-      GADGET_DEBUG1("Error passing on data to next gadget\n");
+      GDEBUG("Error passing on data to next gadget\n");
       return GADGET_FAIL;
     }
     

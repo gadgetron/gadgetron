@@ -45,7 +45,7 @@ namespace Gadgetron {
       boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels_by_name");
       std::vector<std::string> uncomb;
       if (uncomb_str->size()) {
-	GADGET_DEBUG2("uncomb_str: %s\n",  uncomb_str->c_str());
+	GDEBUG("uncomb_str: %s\n",  uncomb_str->c_str());
 	boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
 	for (unsigned int i = 0; i < uncomb.size(); i++) {
 	  std::string ch = boost::algorithm::trim_copy(uncomb[i]);
@@ -63,7 +63,7 @@ namespace Gadgetron {
       char val[32];
       sprintf(val,"%d",(int)uncombined_channels_.size());
       this->set_parameter("present_uncombined_channels",val);
-      GADGET_DEBUG2("Number of uncombined channels (present_uncombined_channels) set to %d\n", uncombined_channels_.size());
+      GDEBUG("Number of uncombined channels (present_uncombined_channels) set to %d\n", uncombined_channels_.size());
 
       return GADGET_OK;
     }
@@ -103,7 +103,7 @@ namespace Gadgetron {
             //Are we ready for calculating PCA
             if (is_last_scan_in_slice || (profiles_available >= max_buffered_profiles_)) {
 
-                //GADGET_DEBUG2("Calculating PCA coefficients with %d profiles for %d coils\n", profiles_available, channels);
+                //GDEBUG("Calculating PCA coefficients with %d profiles for %d coils\n", profiles_available, channels);
                 int samples_to_use = samples_per_profile > samples_to_use_ ? samples_to_use_ : samples_per_profile;
 
                 //For some sequences there is so little data, we should just use it all.
@@ -119,7 +119,7 @@ namespace Gadgetron {
                 hoNDArray< std::complex<float> > A;
                 try{ A.create(&dims); }
                 catch (std::runtime_error & err){
-                    GADGET_DEBUG1("Unable to create array for PCA calculation\n");
+                    GDEBUG("Unable to create array for PCA calculation\n");
                     return GADGET_FAIL;
                 }
 
@@ -131,14 +131,14 @@ namespace Gadgetron {
                     data_offset = m1->getObjectPtr()->center_sample - (samples_to_use>>1);
                 }
 
-                //GADGET_DEBUG2("Data offset = %d\n", data_offset);
+                //GDEBUG("Data offset = %d\n", data_offset);
 
                 hoNDArray<std::complex<float> > means;
                 std::vector<size_t> means_dims; means_dims.push_back(channels);
 
                 try{means.create(&means_dims);}
                 catch (std::runtime_error& err){
-                    GADGET_DEBUG1("Unable to create temporary stoorage for mean values\n");
+                    GDEBUG("Unable to create temporary stoorage for mean values\n");
                     return GADGET_FAIL;
                 }
 
@@ -150,7 +150,7 @@ namespace Gadgetron {
                         AsContainerMessage<hoNDArray< std::complex<float> > >(buffer_[location][p]->cont());
 
                     if (!m_tmp) {
-                        GADGET_DEBUG2("Fatal error, unable to recover data from data buffer (%d,%d)\n", p, profiles_available);
+                        GDEBUG("Fatal error, unable to recover data from data buffer (%d,%d)\n", p, profiles_available);
                         return GADGET_FAIL;
                     }
 
@@ -169,7 +169,7 @@ namespace Gadgetron {
 			}
 			
 			sample_counter++;
-			//GADGET_DEBUG2("Sample counter = %d/%d\n", sample_counter, total_samples);
+			//GDEBUG("Sample counter = %d/%d\n", sample_counter, total_samples);
 		      }
                 }
 
@@ -201,7 +201,7 @@ namespace Gadgetron {
 
 
                 if( !arma::svd_econ(Um,Sv,Vm,Am.st(),'r') ){
-                    GADGET_DEBUG1("Failed to compute SVD\n");
+                    GDEBUG("Failed to compute SVD\n");
                     return GADGET_FAIL;
                 }
 		
@@ -241,7 +241,7 @@ namespace Gadgetron {
 		      comb_count++;
 		    }
 		  } 
-		  GADGET_DEBUG2("uncomb_count = %d, comb_count = %d\n", uncomb_count, comb_count);
+		  GDEBUG("uncomb_count = %d, comb_count = %d\n", uncomb_count, comb_count);
 
 		  //Delete the old one and set the new one
 		  delete pca_coefficients_[location];
@@ -256,7 +256,7 @@ namespace Gadgetron {
                 for (size_t p = 0; p < profiles_available; p++) {
                     ACE_Message_Block* mb = buffer_[location][p];
                     if (inherited::process(mb) != GADGET_OK) {
-                        GADGET_DEBUG1("Failed to reprocess buffered data\n");
+                        GDEBUG("Failed to reprocess buffered data\n");
                         return GADGET_FAIL;
                     }
                 }
@@ -264,7 +264,7 @@ namespace Gadgetron {
                 buffer_[location].clear();
             }
         } else {
-            //GADGET_DEBUG1("Not buffering anymore\n");
+            //GDEBUG("Not buffering anymore\n");
             GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
                 new GadgetContainerMessage< hoNDArray< std::complex<float> > >;
 
@@ -291,7 +291,7 @@ namespace Gadgetron {
             m2->release();
 
             if (this->next()->putq(m1) < 0) {
-                GADGET_DEBUG1("Unable to put message on Q");
+                GDEBUG("Unable to put message on Q");
                 return GADGET_FAIL;
             }
         }

@@ -23,10 +23,6 @@ namespace Gadgetron{
     std::string trigger_dimension = *this->get_string_value("trigger_dimension");
     std::string sorting_dimension = *this->get_string_value("sorting_dimension");
     
-    GDEBUG("WARNING: Unknown trigger dimension (%s), trigger condition set to NONE (end of scan)\n", trigger_dimension.c_str());
-    GADGET_DEBUG1("BLAH BLAH OLD DEBUG\n");
-    GDEBUG("Just the BLAH BLAH BLAH\n");
-
     if (trigger_dimension.size() == 0) {
       trigger_ = NONE;
     } else if (trigger_dimension.compare("kspace_encode_step_1") == 0) {
@@ -64,11 +60,11 @@ namespace Gadgetron{
     } else if (trigger_dimension.compare("user_7") == 0) {
       trigger_ = USER_7;
     } else {
-      GADGET_DEBUG2("WARNING: Unknown trigger dimension (%s), trigger condition set to NONE (end of scan)", trigger_dimension.c_str());
+      GDEBUG("WARNING: Unknown trigger dimension (%s), trigger condition set to NONE (end of scan)", trigger_dimension.c_str());
       trigger_ = NONE;
     }
   
-    GADGET_DEBUG2("TRIGGER DIMENSION IS: %s (%d)\n", trigger_dimension.c_str(), trigger_);
+    GDEBUG("TRIGGER DIMENSION IS: %s (%d)\n", trigger_dimension.c_str(), trigger_);
 
     if (sorting_dimension.size() == 0) {
       sort_ = NONE;
@@ -107,11 +103,11 @@ namespace Gadgetron{
     } else if (sorting_dimension.compare("user_7") == 0) {
       sort_ = USER_7;
     } else {
-      GADGET_DEBUG2("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", sorting_dimension.c_str());
+      GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", sorting_dimension.c_str());
       sort_ = NONE;
     }
   
-    GADGET_DEBUG2("SORTING DIMENSION IS: %s (%d)\n", sorting_dimension.c_str(), sort_);
+    GDEBUG("SORTING DIMENSION IS: %s (%d)\n", sorting_dimension.c_str(), sort_);
 
     trigger_events_ = 0;
 
@@ -187,7 +183,7 @@ namespace Gadgetron{
       sorting_index = 0;
       break;	
     default:
-      GADGET_DEBUG2("Unknown sorting condition %d\n", sort_);
+      GDEBUG("Unknown sorting condition %d\n", sort_);
       m1->release();
       return GADGET_FAIL;
     }
@@ -303,7 +299,7 @@ namespace Gadgetron{
       case NONE:
 	break;	
       default:
-	GADGET_DEBUG2("Unknown trigger condition %d\n", trigger_);
+	GDEBUG("Unknown trigger condition %d\n", trigger_);
 	return GADGET_FAIL;	
       }
     }
@@ -371,13 +367,13 @@ namespace Gadgetron{
     //We will keep track of the triggers we encounter
     trigger_events_++;
 
-    GADGET_DEBUG2("Trigger (%d) occurred, sending out %d buckets\n", trigger_events_, buckets_.size());
+    GDEBUG("Trigger (%d) occurred, sending out %d buckets\n", trigger_events_, buckets_.size());
     //Pass all buckets down the chain
     for (map_type_::iterator it = buckets_.begin(); it != buckets_.end(); it++) {
       if (it->second) {
 	  if (this->next()->putq(it->second) == -1) {
 	    it->second->release();
-	    GADGET_DEBUG1("Failed to pass bucket down the chain\n");
+	    GDEBUG("Failed to pass bucket down the chain\n");
 	    return GADGET_FAIL;
 	  }
       }
@@ -394,7 +390,7 @@ namespace Gadgetron{
     int ret = Gadget::close(flags);
     
     if ( flags != 0 ) {
-      GADGET_DEBUG1("AcquisitionAccumulateTriggerGadget::close\n");
+      GDEBUG("AcquisitionAccumulateTriggerGadget::close\n");
       trigger();
     }
     return ret;

@@ -50,11 +50,11 @@ namespace Gadgetron{
 			imagemb->getObjectPtr()->matrix_size[1] *  imagemb->getObjectPtr()->matrix_size[2]*imagemb->getObjectPtr()->channels;
 
 		if (expected_elements !=  datamb->getObjectPtr()->get_number_of_elements()) {
-			GADGET_DEBUG2("Number of header elements %d is inconsistent with number of elements in NDArray %d\n",expected_elements, datamb->getObjectPtr()->get_number_of_elements());
-			GADGET_DEBUG2("Header dimensions: %d, %d, %d, %d\n",imagemb->getObjectPtr()->matrix_size[0],imagemb->getObjectPtr()->matrix_size[1],imagemb->getObjectPtr()->matrix_size[2], imagemb->getObjectPtr()->channels);
-			GADGET_DEBUG2("Number of array dimensions: %d:\n", datamb->getObjectPtr()->get_number_of_dimensions());
+			GDEBUG("Number of header elements %d is inconsistent with number of elements in NDArray %d\n",expected_elements, datamb->getObjectPtr()->get_number_of_elements());
+			GDEBUG("Header dimensions: %d, %d, %d, %d\n",imagemb->getObjectPtr()->matrix_size[0],imagemb->getObjectPtr()->matrix_size[1],imagemb->getObjectPtr()->matrix_size[2], imagemb->getObjectPtr()->channels);
+			GDEBUG("Number of array dimensions: %d:\n", datamb->getObjectPtr()->get_number_of_dimensions());
 			for (size_t i = 0; i < datamb->getObjectPtr()->get_number_of_dimensions(); i++) {
-				GADGET_DEBUG2("Dimensions %d: %d\n", i, datamb->getObjectPtr()->get_size(i));
+				GDEBUG("Dimensions %d: %d\n", i, datamb->getObjectPtr()->get_size(i));
 			}
 			return -1;
 		}

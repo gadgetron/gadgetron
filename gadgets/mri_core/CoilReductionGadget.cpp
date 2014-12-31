@@ -30,7 +30,7 @@ namespace Gadgetron{
       if (coil_mask->compare(std::string("")) == 0) {
 	int coils_out = this->get_int_value("coils_out");
 	if (coils_out <= 0) {
-	  GADGET_DEBUG2("Invalid number of output coils %d\n", coils_out);
+	  GDEBUG("Invalid number of output coils %d\n", coils_out);
 	  return GADGET_FAIL;
 	}
 	coil_mask_ = std::vector<unsigned short>(coils_out,1);
@@ -41,7 +41,7 @@ namespace Gadgetron{
 	  std::string ch = boost::algorithm::trim_copy(chm[i]);
 	  if (ch.size() > 0) {
 	    size_t mv = static_cast<size_t>(ACE_OS::atoi(ch.c_str()));
-	    //GADGET_DEBUG2("Coil mask value: %d\n", mv);
+	    //GDEBUG("Coil mask value: %d\n", mv);
 	    if (mv > 0) {
 	      coil_mask_.push_back(1);
 	    } else {
@@ -55,7 +55,7 @@ namespace Gadgetron{
       while (coil_mask_.size() > coils_in_) coil_mask_.pop_back();
       
       if (coil_mask_.size() != coils_in_) {
-	GADGET_DEBUG1("Error configuring coils for coil reduction\n");
+	GDEBUG("Error configuring coils for coil reduction\n");
 	return GADGET_FAIL;
       }
       
@@ -64,7 +64,7 @@ namespace Gadgetron{
 	if (coil_mask_[i]) coils_out_++;
       }
       
-      GADGET_DEBUG2("Coil reduction from %d to %d\n", coils_in_, coils_out_);
+      GDEBUG("Coil reduction from %d to %d\n", coils_in_, coils_out_);
       
       return GADGET_OK;
     }
@@ -91,7 +91,7 @@ namespace Gadgetron{
         size_t coils_copied = 0;
         for (int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
             if (c > coil_mask_.size()) {
-                GADGET_DEBUG1("Fatal error, too many coils for coil mask\n");
+                GDEBUG("Fatal error, too many coils for coil mask\n");
                 m3->release();
                 return GADGET_FAIL;
             }
@@ -112,7 +112,7 @@ namespace Gadgetron{
         m1->getObjectPtr()->active_channels = coils_out_;
 	
         if( this->next()->putq(m1) < 0 ){
-	  GADGET_DEBUG1("Failed to put message on queue\n");
+	  GDEBUG("Failed to put message on queue\n");
 	  return GADGET_FAIL;
 	}
 	

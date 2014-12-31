@@ -19,8 +19,8 @@ namespace Gadgetron{
     ISMRMRD::deserialize(mb->rd_ptr(),h);
     
     if (h.encoding.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+      GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+      GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
 
@@ -31,8 +31,8 @@ namespace Gadgetron{
   sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
   
   if (sets_ > 2) {
-    GADGET_DEBUG1("Phase subtraction only implemented for two sets for now\n");
-    GADGET_DEBUG2("Number of sets detected: %d, bailing out.\n", sets_);
+    GDEBUG("Phase subtraction only implemented for two sets for now\n");
+    GDEBUG("Number of sets detected: %d, bailing out.\n", sets_);
     return GADGET_FAIL;
   }
   
@@ -67,7 +67,7 @@ namespace Gadgetron{
     //
 
     if( buffer_[set].enqueue_tail(m1) < 0 ){
-      GADGET_DEBUG1("Message enqueue failed\n");
+      GDEBUG("Message enqueue failed\n");
       return GADGET_FAIL;
     };
 
@@ -79,7 +79,7 @@ namespace Gadgetron{
       ACE_Message_Block *mbq1, *mbq2;
 
       if( buffer_[0].dequeue_head(mbq1) < 0 || buffer_[1].dequeue_head(mbq2) < 0 ) {
-	GADGET_DEBUG1("Message dequeue failed\n");
+	GDEBUG("Message dequeue failed\n");
 	if( buffer_[set].message_count() > 0 ) 
 	  buffer_[set].dequeue_tail(mbq1); // or m1 will be attempted deleted twice
 	return GADGET_FAIL;
@@ -101,7 +101,7 @@ namespace Gadgetron{
       //
 
       if( pm1->getObjectPtr()->image_index != pm2->getObjectPtr()->image_index ) {
-	GADGET_DEBUG2("Mismatch in image indices detected (%d, %d). Bailing out.\n", 
+	GDEBUG("Mismatch in image indices detected (%d, %d). Bailing out.\n", 
 		      pm1->getObjectPtr()->image_index, pm2->getObjectPtr()->image_index);
 	pm1->release();
 	if( buffer_[set].message_count() > 0 ){
@@ -112,7 +112,7 @@ namespace Gadgetron{
       }
       
       if (cpm1->getObjectPtr()->get_number_of_elements() != cpm2->getObjectPtr()->get_number_of_elements()) {
-	GADGET_DEBUG1("Mismatch in number of elements detected. Bailing out.\n");
+	GDEBUG("Mismatch in number of elements detected. Bailing out.\n");
 	pm1->release();
 	if( buffer_[set].message_count() > 0 ){
 	  pm2->release();

@@ -8,7 +8,7 @@ int ImageWriterGadget<T> ::
 process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
 	 GadgetContainerMessage< hoNDArray< T > >* m2)
 {
-    GADGET_DEBUG1("Writing image\n");
+    GDEBUG("Writing image\n");
 
     char filename[1024];
     switch (sizeof(T)) {

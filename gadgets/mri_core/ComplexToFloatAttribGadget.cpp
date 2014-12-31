@@ -60,7 +60,7 @@ namespace Gadgetron
             break;
 
             default:
-                GADGET_DEBUG2("Unknown image type %d, bailing out\n",m1->getObjectPtr()->image_type);
+                GDEBUG("Unknown image type %d, bailing out\n",m1->getObjectPtr()->image_type);
                 m1->release();
                 cm2->release();
                 return GADGET_FAIL;
@@ -77,7 +77,7 @@ namespace Gadgetron
         if (this->next()->putq(m1) == -1)
         {
             m1->release();
-            GADGET_DEBUG1("Unable to put unsigned short magnitude image on next gadgets queue");
+            GDEBUG("Unable to put unsigned short magnitude image on next gadgets queue");
             return GADGET_FAIL;
         }
 

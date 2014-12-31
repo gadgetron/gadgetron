@@ -71,19 +71,19 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
     try {
       deserialize(mb->rd_ptr(),h);
     } catch (...) {
-      GADGET_DEBUG1("Error parsing ISMRMRD Header");
+      GDEBUG("Error parsing ISMRMRD Header");
       throw;
       return GADGET_FAIL;
     }
 
     if( h.encoding.size() != 1)
     {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-      GADGET_DEBUG1("This simple WhiteNoiseInjectorGadget only supports one encoding space\n");
+      GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+      GDEBUG("This simple WhiteNoiseInjectorGadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
     if (!h.encoding[0].parallelImaging) {
-      GADGET_DEBUG1("Parallel Imaging section not found in header");
+      GDEBUG("Parallel Imaging section not found in header");
       return GADGET_FAIL;
     }
 
@@ -97,7 +97,7 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
 
     if ( !p_imaging.calibrationMode.is_present() )
     {
-        GADGET_DEBUG1("Parallel Imaging calibrationMode not found in header");
+        GDEBUG("Parallel Imaging calibrationMode not found in header");
         return GADGET_FAIL;
     }
 
@@ -119,7 +119,7 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
       is_other_ = true;
       GADGET_MSG("Calibration mode is other");
     } else {
-      GADGET_DEBUG1("Failed to process parallel imaging calibration mode");
+      GDEBUG("Failed to process parallel imaging calibration mode");
       return GADGET_FAIL;
     }
     

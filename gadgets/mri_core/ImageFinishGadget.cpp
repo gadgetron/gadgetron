@@ -26,7 +26,7 @@ int ImageFinishGadget<T>
 	  mb->getObjectPtr()->id = GADGET_MESSAGE_IMAGE_CPLX_FLOAT;
 	  break;
   default:
-	  GADGET_DEBUG2("Wrong data size detected: %d\n", sizeof(T));
+	  GDEBUG("Wrong data size detected: %d\n", sizeof(T));
 	  mb->release();
 	  m1->release();
 	  return GADGET_FAIL;
@@ -37,7 +37,7 @@ int ImageFinishGadget<T>
   int ret =  this->controller_->output_ready(mb);
 
   if ( (ret < 0) ) {
-	  GADGET_DEBUG1("Failed to return massage to controller\n");
+	  GDEBUG("Failed to return massage to controller\n");
 	  return GADGET_FAIL;
   }
 

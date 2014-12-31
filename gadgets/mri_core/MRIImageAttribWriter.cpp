@@ -67,12 +67,12 @@ int MRIImageAttribWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 
     if (expected_elements !=  datamb->getObjectPtr()->get_number_of_elements())
     {
-        GADGET_DEBUG2("Number of header elements %d is inconsistent with number of elements in NDArray %d\n",expected_elements, datamb->getObjectPtr()->get_number_of_elements());
-        GADGET_DEBUG2("Header dimensions: %d, %d, %d\n",RO,E1,E2);
-        GADGET_DEBUG2("Number of array dimensions: %d:\n", datamb->getObjectPtr()->get_number_of_dimensions());
+        GDEBUG("Number of header elements %d is inconsistent with number of elements in NDArray %d\n",expected_elements, datamb->getObjectPtr()->get_number_of_elements());
+        GDEBUG("Header dimensions: %d, %d, %d\n",RO,E1,E2);
+        GDEBUG("Number of array dimensions: %d:\n", datamb->getObjectPtr()->get_number_of_dimensions());
         for (size_t i = 0; i < datamb->getObjectPtr()->get_number_of_dimensions(); i++)
         {
-            GADGET_DEBUG2("Dimensions %d: %d\n", i, datamb->getObjectPtr()->get_size(i));
+            GDEBUG("Dimensions %d: %d\n", i, datamb->getObjectPtr()->get_size(i));
         }
         return -1;
     }

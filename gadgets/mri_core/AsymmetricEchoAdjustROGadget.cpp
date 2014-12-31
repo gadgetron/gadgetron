@@ -15,8 +15,8 @@ int AsymmetricEchoAdjustROGadget::process_config(ACE_Message_Block* mb)
   deserialize(mb->rd_ptr(),h);
 
   if (h.encoding.size() != 1) {
-    GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-    GADGET_DEBUG1("This partial fourier gadget only supports one encoding space\n");
+    GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+    GDEBUG("This partial fourier gadget only supports one encoding space\n");
     return GADGET_FAIL;
   }
 
@@ -80,7 +80,7 @@ int AsymmetricEchoAdjustROGadget
             }
             catch(...)
             {
-                GADGET_DEBUG1("Unable to create new data array for downsampled data\n");
+                GDEBUG("Unable to create new data array for downsampled data\n");
                 return GADGET_FAIL;
             }
             m3->getObjectPtr()->fill(0);

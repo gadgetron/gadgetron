@@ -35,11 +35,11 @@ namespace Gadgetron{
     } else if (N_dimension.compare("slice") == 0){
         N_ = SLICE;
     } else {
-        GADGET_DEBUG2("WARNING: Unknown N dimension (%s), N set to NONE", N_dimension.c_str());
+        GDEBUG("WARNING: Unknown N dimension (%s), N set to NONE", N_dimension.c_str());
         N_ = NONE;
     }
 
-    GADGET_DEBUG2("N DIMENSION IS: %s (%d)\n", N_dimension.c_str(), N_);
+    GDEBUG("N DIMENSION IS: %s (%d)\n", N_dimension.c_str(), N_);
 
     if (S_dimension.size() == 0) {
         S_ = NONE;
@@ -58,17 +58,17 @@ namespace Gadgetron{
     } else if (N_dimension.compare("slice") == 0){
         S_ = SLICE;
     } else {
-        GADGET_DEBUG2("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", S_dimension.c_str());
+        GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", S_dimension.c_str());
         S_ = NONE;
     }
 
-    GADGET_DEBUG2("S DIMENSION IS: %s (%d)\n", S_dimension.c_str(), S_);
+    GDEBUG("S DIMENSION IS: %s (%d)\n", S_dimension.c_str(), S_);
 
     split_slices_  = this->get_bool_value("split_slices");
-    GADGET_DEBUG2("SPLIT SLICES IS: %b\n", split_slices_);
+    GDEBUG("SPLIT SLICES IS: %b\n", split_slices_);
 
     ignore_segment_  = this->get_bool_value("ignore_segment");
-    GADGET_DEBUG2("IGNORE SEGMENT IS: %b\n", ignore_segment_);
+    GDEBUG("IGNORE SEGMENT IS: %b\n", ignore_segment_);
 
     // keep a copy of the deserialized ismrmrd xml header for runtime
     ISMRMRD::deserialize(mb->rd_ptr(), hdr_);
@@ -83,7 +83,7 @@ namespace Gadgetron{
     size_t key;
     std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > recon_data_buffers;
 
-    //GADGET_DEBUG1("BucketToBufferGadget::process\n");
+    //GDEBUG("BucketToBufferGadget::process\n");
 
     //Some information about the bucket
     //std::cout << "The Reference part: " << m1->getObjectPtr()->refstats_.size() << std::endl;
@@ -192,7 +192,7 @@ namespace Gadgetron{
 
 
     //Send all the ReconData messages
-    GADGET_DEBUG2("End of bucket reached, sending out %d ReconData buffers\n", recon_data_buffers.size());
+    GDEBUG("End of bucket reached, sending out %d ReconData buffers\n", recon_data_buffers.size());
     for(std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* >::iterator it = recon_data_buffers.begin(); it != recon_data_buffers.end(); it++)
       {
         //std::cout << "Sending: " << it->first << std::endl;
@@ -217,7 +217,7 @@ namespace Gadgetron{
   {
 
     int ret = Gadget::close(flags);
-    GADGET_DEBUG1("BucketToBufferGadget::close\n");
+    GDEBUG("BucketToBufferGadget::close\n");
 
     return ret;
   }
