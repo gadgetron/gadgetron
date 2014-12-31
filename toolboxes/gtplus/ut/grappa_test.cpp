@@ -144,7 +144,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
     // call the recon
     typedef std::complex<float> ValueType;
     typedef Gadgetron::gtPlus::gtPlusReconWorkOrder2DT<ValueType> WorkOrderType;
-    typedef std::pair<Gadgetron::gtPlus::ISMRMRDDIM, unsigned long long> DimensionRecordType;
+    typedef std::pair<Gadgetron::ISMRMRDDIM, unsigned long long> DimensionRecordType;
 
     WorkOrderType* workOrder = new WorkOrderType;
 
@@ -163,9 +163,9 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
     Gadgetron::gtPlus::gtPlusReconWorker2DTGRAPPA<ValueType> worker_grappa_;
 
     // parameters
-    Gadgetron::gtPlus::ISMRMRDDIM dim_4th_ = DIM_Phase;
-    Gadgetron::gtPlus::ISMRMRDDIM dim_5th_ = DIM_Slice;
-    Gadgetron::gtPlus::ISMRMRDDIM workOrder_ShareDim_ = DIM_NONE;
+    Gadgetron::ISMRMRDDIM dim_4th_ = DIM_Phase;
+    Gadgetron::ISMRMRDDIM dim_5th_ = DIM_Slice;
+    Gadgetron::ISMRMRDDIM workOrder_ShareDim_ = DIM_NONE;
 
     bool interleaved_same_combinationcoeff_allS_ = false;
     int interleaved_whichS_combinationcoeff_ = 0;
@@ -189,7 +189,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
     unsigned long long csm_kSize_ = 7;
     unsigned long long csm_powermethod_num_ = 3;
 
-    Gadgetron::gtPlus::ISMRMRDALGO recon_algorithm_ = ISMRMRD_GRAPPA;
+    Gadgetron::ISMRMRDALGO recon_algorithm_ = ISMRMRD_GRAPPA;
     bool recon_kspace_needed_ = true;
 
     unsigned long long grappa_kSize_RO_ = 5;
@@ -339,7 +339,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     // call the recon
     typedef std::complex<float> ValueType;
     typedef Gadgetron::gtPlus::gtPlusReconWorkOrder2DT<ValueType> WorkOrderType;
-    typedef std::pair<Gadgetron::gtPlus::ISMRMRDDIM, unsigned long long> DimensionRecordType;
+    typedef std::pair<Gadgetron::ISMRMRDDIM, unsigned long long> DimensionRecordType;
 
     WorkOrderType* workOrder = new WorkOrderType;
 
@@ -361,9 +361,9 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     Gadgetron::gtPlus::gtPlusReconWorker2DTGRAPPA<ValueType> worker_grappa_;
 
     // parameters
-    Gadgetron::gtPlus::ISMRMRDDIM dim_4th_ = DIM_Phase;
-    Gadgetron::gtPlus::ISMRMRDDIM dim_5th_ = DIM_Slice;
-    Gadgetron::gtPlus::ISMRMRDDIM workOrder_ShareDim_ = DIM_NONE;
+    Gadgetron::ISMRMRDDIM dim_4th_ = DIM_Phase;
+    Gadgetron::ISMRMRDDIM dim_5th_ = DIM_Slice;
+    Gadgetron::ISMRMRDDIM workOrder_ShareDim_ = DIM_NONE;
 
     bool interleaved_same_combinationcoeff_allS_ = false;
     int interleaved_whichS_combinationcoeff_ = 0;
@@ -387,7 +387,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     unsigned long long csm_kSize_ = 7;
     unsigned long long csm_powermethod_num_ = 3;
 
-    Gadgetron::gtPlus::ISMRMRDALGO recon_algorithm_ = ISMRMRD_GRAPPA;
+    Gadgetron::ISMRMRDALGO recon_algorithm_ = ISMRMRD_GRAPPA;
     bool recon_kspace_needed_ = true;
 
     unsigned long long grappa_kSize_RO_ = 5;
