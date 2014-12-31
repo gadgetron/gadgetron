@@ -24,58 +24,6 @@ namespace Gadgetron {
     // ----------------------------------------------------------------------------------------
 
     template<typename T> 
-    bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            boost::shared_ptr< std::vector<size_t> > dim = x.get_dimensions();
-            size_t NDim = dim->size();
-
-            std::vector<size_t> dimR(NDim-1);
-
-            size_t d;
-            for ( d=0; d<NDim-1; d++ )
-            {
-                dimR[d] = (*dim)[d];
-            }
-
-            if ( !r.dimensions_equal(&dimR) )
-            {
-                r.create(&dimR);
-            }
-
-            // Gadgetron::clear(&r);
-
-            if ( x.get_size(NDim-1) <= 1 )
-            {
-                memcpy(r.begin(), x.begin(), x.get_number_of_bytes());
-                return true;
-            }
-
-            size_t lastDim = x.get_size(NDim-1);
-            size_t NR = r.get_number_of_elements();
-            T* pA = const_cast<T*>(x.begin());
-            T* pR = r.begin();
-
-            memcpy(pR, pA, sizeof(T)*NR);
-
-            // sum over the last dim
-            hoNDArray<T> tmp;
-            for ( d=1; d<lastDim; d++ )
-            {
-                tmp.create(&dimR, pA+d*NR);
-                add(tmp, r, r);
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
     bool sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -250,259 +198,6 @@ namespace Gadgetron {
             GADGET_ERROR_MSG("Errors in divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
             return false;
         }
-        return true;
-    }
-
-    template<typename T> 
-    bool sumOver1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            size_t RO = x.get_size(0);
-            size_t num = x.get_number_of_elements()/(RO);
-
-            boost::shared_ptr< std::vector<size_t> > dim = x.get_dimensions();
-
-            std::vector<size_t> dimAve(*dim);
-            dimAve[0] = 1;
-            r.create(&dimAve);
-
-            const T* pX = x.begin();
-            T* pR = r.begin();
-
-            int n;
-            #pragma omp parallel for default(none) private(n) shared(RO, num, pX, pR)
-            for ( n=0; n<(int)num; n++ )
-            {
-                T xsum = pX[n*RO];
-                for (size_t ro=1; ro<RO; ro++ )
-                {
-                    xsum += pX[n*RO+ro];
-                }
-
-                pR[n] = xsum;
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in sumOver1stDimension(...) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool sumOver2ndDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            size_t NDim = x.get_number_of_dimensions();
-
-            if ( NDim < 2 )
-            {
-                r = x;
-                return true;
-            }
-
-            size_t RO = x.get_size(0);
-            size_t E1 = x.get_size(1);
-
-            size_t num = x.get_number_of_elements()/(RO*E1);
-
-            boost::shared_ptr< std::vector<size_t> > dim = x.get_dimensions();
-
-            std::vector<size_t> dimAve(*dim);
-            dimAve[1] = 1;
-            r.create(&dimAve);
-
-            int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, num)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, num, x, r)
-            #endif
-            for ( n=0; n<(int)num; n++ )
-            {
-                hoNDArray<T> xsum(RO, const_cast<T*>(r.begin()+n*RO));
-                memcpy(xsum.begin(), x.begin()+n*RO*E1, xsum.get_number_of_bytes());
-
-                for (size_t e1=1; e1<E1; e1++ )
-                {
-                    hoNDArray<T> x1D(RO, const_cast<T*>(x.begin()+n*RO*E1+e1*RO));
-                    Gadgetron::add(x1D, xsum, xsum);
-                }
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in sumOver2ndDimension(...) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool sumOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            size_t NDim = x.get_number_of_dimensions();
-
-            if ( NDim < 3 )
-            {
-                r = x;
-                return true;
-            }
-
-            size_t RO = x.get_size(0);
-            size_t E1 = x.get_size(1);
-            size_t CHA = x.get_size(2);
-
-            size_t num = x.get_number_of_elements()/(RO*E1*CHA);
-
-            boost::shared_ptr< std::vector<size_t> > dim = x.get_dimensions();
-
-            std::vector<size_t> dimAve(*dim);
-            dimAve[2] = 1;
-            r.create(&dimAve);
-
-            int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, num) if (num>1)
-            #else
-                #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, num, x, r) if (num>1)
-            #endif
-            {
-                hoNDArray<T> xsum;
-                hoNDArray<T> x2D;
-
-                #pragma omp for
-                for ( n=0; n<(int)num; n++ )
-                {
-                    xsum.create(RO, E1, const_cast<T*>(r.begin()+n*RO*E1));
-                    memcpy(xsum.begin(), x.begin()+n*RO*E1*CHA, xsum.get_number_of_bytes());
-
-                    for (size_t cha=1; cha<CHA; cha++ )
-                    {
-                        x2D.create(RO, E1, const_cast<T*>(x.begin()+n*RO*E1*CHA+cha*RO*E1));
-                        Gadgetron::add(x2D, xsum, xsum);
-                    }
-                }
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in sumOver3rdDimension(...) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> bool sumOver4thDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            size_t NDim = x.get_number_of_dimensions();
-
-            if ( NDim < 4 )
-            {
-                r = x;
-                return true;
-            }
-
-            size_t RO = x.get_size(0);
-            size_t E1 = x.get_size(1);
-            size_t CHA = x.get_size(2);
-            size_t N = x.get_size(3);
-
-            size_t num = x.get_number_of_elements()/(RO*E1*CHA*N);
-
-            boost::shared_ptr< std::vector<size_t> > dim = x.get_dimensions();
-
-            std::vector<size_t> dimAve(*dim);
-            dimAve[3] = 1;
-            r.create(&dimAve);
-
-            int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, num)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, num, x, r)
-            #endif
-            for ( n=0; n<(int)num; n++ )
-            {
-                hoNDArray<T> xsum(RO, E1, CHA, const_cast<T*>(r.begin()+n*RO*E1*CHA));
-                memcpy(xsum.begin(), x.begin()+n*RO*E1*CHA*N, xsum.get_number_of_bytes());
-
-                for (size_t nn=1; nn<N; nn++ )
-                {
-                    hoNDArray<T> x3D(RO, E1, CHA, const_cast<T*>(x.begin()+n*RO*E1*CHA*N+nn*RO*E1*CHA));
-                    Gadgetron::add(x3D, xsum, xsum);
-                }
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in sumOver4thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template<typename T> bool sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            size_t NDim = x.get_number_of_dimensions();
-
-            if ( NDim < 5 )
-            {
-                r = x;
-                return true;
-            }
-
-            size_t RO = x.get_size(0);
-            size_t E1 = x.get_size(1);
-            size_t CHA = x.get_size(2);
-            size_t N = x.get_size(3);
-            size_t S = x.get_size(4);
-
-            size_t num = x.get_number_of_elements()/(RO*E1*CHA*N*S);
-
-            boost::shared_ptr< std::vector<size_t> > dim = x.get_dimensions();
-
-            std::vector<size_t> dimAve(*dim);
-            dimAve[4] = 1;
-            r.create(&dimAve);
-
-            int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, S, num) if (num > 4)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, S, num, x, r) if (num > 4)
-            #endif
-            for ( n=0; n<(int)num; n++ )
-            {
-                hoNDArray<T> xsum(RO, E1, CHA, N, const_cast<T*>(r.begin()+n*RO*E1*CHA*N));
-                memcpy(xsum.begin(), x.begin()+n*RO*E1*CHA*N*S, xsum.get_number_of_bytes());
-
-                for (size_t s=1; s<S; s++ )
-                {
-                    hoNDArray<T> x4D(RO, E1, CHA, N, const_cast<T*>(x.begin()+n*RO*E1*CHA*N*S+s*RO*E1*CHA*N));
-                    Gadgetron::add(x4D, xsum, xsum);
-                }
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
-
         return true;
     }
 
@@ -840,213 +535,6 @@ namespace Gadgetron {
             GADGET_ERROR_MSG("Errors in multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R) ... ");
             return false;
         }
-        return true;
-    }
-
-    template <typename T> 
-    bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
-    {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()<=y.get_number_of_elements());
-        if ( r.get_number_of_elements()!=y.get_number_of_elements())
-        {
-            r = y;
-        }
-
-        long long Nx = x.get_number_of_elements();
-        long long N = y.get_number_of_elements() / Nx;
-
-        const T* pX = x.begin();
-
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(pX, y, r, Nx, N)
-        for ( n=0; n<N; n++ )
-        {
-            const T* pY = y.begin()+n*Nx;
-            T* pR = r.begin() + n*Nx;
-
-            long long ii;
-            for ( ii=0; ii<Nx; ii++ )
-            {
-                pR[ii] = pX[ii] + pY[ii];
-            }
-        }
-
-        //if ( typeid(T)==typeid(float) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        const T* pY = y.begin()+n*Nx;
-        //        T* pR = pR + n*Nx;
-
-        //        size_t ii;
-        //        for ( ii=0; ii<Nx; ii++ )
-        //        {
-        //            pR[ii] = pX[ii] + pY[ii];
-        //        }
-        //    }
-        //}
-        //else if ( typeid(T)==typeid(double) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else if ( typeid(T)==typeid( std::complex<float> ) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else if ( typeid(T)==typeid( std::complex<double> ) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else
-        //{
-        //    GADGET_ERROR_MSG("multipleAdd : unsupported type " << typeid(T).name());
-        //    return false;
-        //}
-
-        return true;
-    }
-
-    inline void multiplyCplx(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const std::complex<float>& a1 = x[n];
-            const std::complex<float>& b1 = y[n];
-            const float a = a1.real();
-            const float b = a1.imag();
-            const float c = b1.real();
-            const float d = b1.imag();
-
-            reinterpret_cast<float(&)[2]>(r[n])[0] = a*c-b*d;
-            reinterpret_cast<float(&)[2]>(r[n])[1] = a*d+b*c;
-        }
-    }
-
-    inline void multiplyCplx(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const std::complex<double>& a1 = x[n];
-            const std::complex<double>& b1 = y[n];
-            const double a = a1.real();
-            const double b = a1.imag();
-            const double c = b1.real();
-            const double d = b1.imag();
-
-            reinterpret_cast<double(&)[2]>(r[n])[0] = a*c-b*d;
-            reinterpret_cast<double(&)[2]>(r[n])[1] = a*d+b*c;
-        }
-    }
-
-    template <typename T> 
-    bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
-    {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()<=y.get_number_of_elements());
-        if ( r.get_number_of_elements()!=y.get_number_of_elements())
-        {
-            r = y;
-        }
-
-        long long Nx = x.get_number_of_elements();
-        long long N = y.get_number_of_elements() / Nx;
-
-        const T* pX = x.begin();
-
-        long long n;
-
-        if ( typeid(T)==typeid(float) )
-        {
-            #pragma omp parallel for default(none) private(n) shared(pX, y, r, Nx, N)
-            for ( n=0; n<N; n++ )
-            {
-                const T* pY = y.begin()+n*Nx;
-                T* pR = r.begin() + n*Nx;
-
-                long long ii;
-                for ( ii=0; ii<Nx; ii++ )
-                {
-                    pR[ii] = pX[ii] * pY[ii];
-                }
-            }
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            #pragma omp parallel for default(none) private(n) shared(pX, y, r, Nx, N)
-            for ( n=0; n<N; n++ )
-            {
-                const T* pY = y.begin()+n*Nx;
-                T* pR = r.begin() + n*Nx;
-
-                long long ii;
-                for ( ii=0; ii<Nx; ii++ )
-                {
-                    pR[ii] = pX[ii] * pY[ii];
-                }
-            }
-        }
-        else if ( typeid(T)==typeid( std::complex<float> ) )
-        {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
-            for ( n=0; n<N; n++ )
-            {
-                multiplyCplx(x.get_number_of_elements(), (const std::complex<float>*)(x.begin()), (const std::complex<float>*)(y.begin()+n*Nx), (std::complex<float>*)(r.begin()+n*Nx));
-            }
-        }
-        else if ( typeid(T)==typeid( std::complex<double> ) )
-        {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
-            for ( n=0; n<N; n++ )
-            {
-                multiplyCplx(x.get_number_of_elements(), (const std::complex<double>*)(x.begin()), (const std::complex<double>*)(y.begin()+n*Nx), (std::complex<double>*)(r.begin()+n*Nx));
-            }
-        }
-        else
-        {
-            GADGET_ERROR_MSG("multipleMultiply : unsupported type " << typeid(T).name());
-            return false;
-        }
-
         return true;
     }
 
@@ -1686,6 +1174,154 @@ namespace Gadgetron {
     }
 
     template<typename T> 
+    bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
+    {
+        try
+        {
+            typedef typename realType<T>::Type value_type;
+
+            T* pX = const_cast<T*>(x.begin());
+            T* ker = const_cast<T*>(kernel.begin());
+            T* pY = y.begin();
+
+            size_t ro = x.get_size(0);
+            size_t e1 = x.get_size(1);
+            size_t srcCHA = x.get_size(2);
+            size_t dstCHA = kernel.get_size(3);
+
+            if ( buf.get_number_of_elements() < ro*e1*srcCHA )
+            {
+                buf.create(ro, e1, srcCHA);
+            }
+            T* pBuf = buf.begin();
+
+            size_t dCha;
+
+            //#pragma omp parallel default(shared)
+            {
+                //#ifdef WIN32
+                //    int tid = omp_get_thread_num();
+                //    DWORD_PTR mask = (1 << tid);
+                //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
+                //    SetThreadAffinityMask( GetCurrentThread(), mask );
+                //#endif // WIN32
+
+                //#pragma omp for
+
+                for ( dCha=0; dCha<dstCHA; dCha++ )
+                {
+                    // multiplyCplx(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
+
+                    long long N = ro*e1*srcCHA;
+                    T* x = pX;
+                    T* y = ker+dCha*ro*e1*srcCHA;
+                    T* r = pBuf;
+
+                    long long n;
+                    #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
+                    for (n = 0; n < (long long)N; n++)
+                    {
+                        const T& a1 = x[n];
+                        const T& b1 = y[n];
+                        const value_type a = a1.real();
+                        const value_type b = a1.imag();
+                        const value_type c = b1.real();
+                        const value_type d = b1.imag();
+
+                        reinterpret_cast<value_type(&)[2]>(r[n])[0] = a*c-b*d;
+                        reinterpret_cast<value_type(&)[2]>(r[n])[1] = a*d+b*c;
+                    }
+
+                    memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
+                    for ( size_t sCha=1; sCha<srcCHA; sCha++ )
+                    {
+                        // Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
+
+                        size_t ii;
+                        size_t N2D=ro*e1;
+
+                        T* pY2D = pY+dCha*ro*e1;
+                        T* pBuf2D = pBuf+sCha*ro*e1;
+
+                        for ( ii=0; ii<N2D; ii++ )
+                        {
+                            pY2D[ii] += pBuf2D[ii];
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
+            return false;
+        }
+        return true;
+    }
+
+    template<typename CoordType, typename T> 
+    bool computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType start, CoordType end, hoNDArray<CoordType>& vx, hoNDArray<T>& vy)
+    {
+        try
+        {
+            typedef typename realType<T>::Type real_value_type;
+
+            size_t N = x.get_size(0);
+            size_t M = y.get_size(1);
+
+            GADGET_CHECK_RETURN_FALSE(y.get_size(0)==N);
+            GADGET_CHECK_RETURN_FALSE(start<=x(0));
+            GADGET_CHECK_RETURN_FALSE(end>=x(N-1));
+
+            vx.create(N+2);
+            vy.create(N+2, M);
+
+            size_t m, n;
+
+            vx(0) = start;
+            for ( n=0; n<N; n++ )
+            {
+                vx(n+1) = x(n);
+            }
+            vx(N+1) = end;
+
+            CoordType dS = x(0) - start;
+            CoordType dE = end - x(N-1);
+
+            // start, end
+            CoordType wS;
+            if ( dE+dS > FLT_EPSILON )
+                wS = dE/(dE+dS);
+            else
+                wS = dE/FLT_EPSILON;
+
+            for ( m=0; m<M; m++ )
+            {
+                T a = y(0, m);
+                T b = y(N-1, m);
+
+                vy(0, m) = b + (real_value_type)wS * ( a - b );
+                vy(N+1, m) = vy(0, m);
+            }
+
+            // middle
+            for ( n=0; n<N; n++ )
+            {
+                for ( m=0; m<M; m++ )
+                {
+                    vy(n+1, m) = y(n, m);
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType& start, CoordType& end, hoNDArray<T>& r) ... ");
+            return false;
+        }
+        return true;
+    }
+
+    template<typename T> 
     bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -1868,523 +1504,6 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T> 
-    bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-            size_t NDim = dimX->size();
-
-            if ( NDim < 4 )
-            {
-                r = x;
-                return true;
-            }
-
-            size_t RO = x.get_size(0);
-            size_t E1 = x.get_size(1);
-            size_t E2 = x.get_size(2);
-            size_t CHA = x.get_size(3);
-
-            std::vector<size_t> dimR(*dimX);
-            dimR[0] = E1;
-            dimR[1] = E2;
-            dimR[2] = CHA;
-            dimR[3] = RO;
-
-            r.create(&dimR);
-
-            size_t N4D = RO*E1*E2*CHA;
-
-            size_t N = x.get_number_of_elements()/N4D;
-
-            const T* pX = x.begin();
-            T* pR = r.begin();
-
-            long long n;
-            for ( n=0; n<(long long)N; n++ )
-            {
-                T* pRn = pR + n*N4D;
-                T* pXn = const_cast<T*>(pX) + n*N4D;
-
-                long long cha;
-
-                #pragma omp parallel for default(none) private(cha) shared(RO, E1, E2, CHA, pXn, pRn)
-                for ( cha=0; cha<(long long)CHA; cha++ )
-                {
-                    for ( size_t e2=0; e2<E2; e2++ )
-                    {
-                        for ( size_t e1=0; e1<E1; e1++ )
-                        {
-                            for ( size_t ro=0; ro<RO; ro++ )
-                            {
-                                pRn[e1+e2*E1+cha*E1*E2+ro*E1*E2*CHA] = pXn[ro+e1*RO+e2*RO*E1+cha*RO*E1*E2];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-            size_t NDim = dimX->size();
-
-            if ( NDim < 4 )
-            {
-                r = x;
-                return true;
-            }
-
-            size_t E1 = x.get_size(0);
-            size_t E2 = x.get_size(1);
-            size_t CHA = x.get_size(2);
-            size_t RO = x.get_size(3);
-
-            std::vector<size_t> dimR(*dimX);
-            dimR[0] = RO;
-            dimR[1] = E1;
-            dimR[2] = E2;
-            dimR[3] = CHA;
-
-            r.create(&dimR);
-
-            size_t N4D = RO*E1*E2*CHA;
-
-            size_t N = x.get_number_of_elements()/N4D;
-
-            const T* pX = x.begin();
-            T* pR = r.begin();
-
-            long long n;
-            for ( n=0; n<(long long)N; n++ )
-            {
-                T* pRn = pR + n*N4D;
-                T* pXn = const_cast<T*>(pX) + n*N4D;
-
-                long long cha;
-
-                #pragma omp parallel for default(none) private(cha) shared(RO, E1, E2, CHA, pXn, pRn)
-                for ( cha=0; cha<(long long)CHA; cha++ )
-                {
-                    for ( size_t e2=0; e2<E2; e2++ )
-                    {
-                        for ( size_t e1=0; e1<E1; e1++ )
-                        {
-                            size_t indRn = e1*RO+e2*RO*E1+cha*RO*E1*E2;
-                            size_t indXn = e1+e2*E1+cha*E1*E2;
-                            for ( size_t ro=0; ro<RO; ro++ )
-                            {
-                                pRn[ro+indRn] = pXn[indXn+ro*E1*E2*CHA];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-            size_t NDim = dimX->size();
-
-            if ( NDim < 3 )
-            {
-                r = x;
-                return true;
-            }
-
-            size_t RO = x.get_size(0);
-            size_t E1 = x.get_size(1);
-            size_t E2 = x.get_size(2);
-
-            std::vector<size_t> dimR(*dimX);
-            dimR[0] = E2;
-            dimR[1] = RO;
-            dimR[2] = E1;
-
-            r.create(&dimR);
-
-            size_t N3D = RO*E1*E2;
-
-            size_t N = x.get_number_of_elements()/N3D;
-
-            const T* pX = x.begin();
-            T* pR = r.begin();
-
-            long long n, e2;
-            for ( n=0; n<(long long)N; n++ )
-            {
-                T* pRn = pR + n*N3D;
-                T* pXn = const_cast<T*>(pX) + n*N3D;
-
-                #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, pXn, pRn)
-                for ( e2=0; e2<(long long)E2; e2++ )
-                {
-                    for ( size_t e1=0; e1<E1; e1++ )
-                    {
-                        size_t indRn = e2+e1*E2*RO;
-                        size_t indXn = e1*RO+e2*RO*E1;
-                        for ( size_t ro=0; ro<RO; ro++ )
-                        {
-                            pRn[ro*E2+indRn] = pXn[ro+indXn];
-                        }
-                    }
-                }
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-            size_t NDim = dimX->size();
-
-            if ( NDim < 5 )
-            {
-                r = x;
-                return true;
-            }
-
-            size_t RO = x.get_size(0);
-            size_t E1 = x.get_size(1);
-            size_t E2 = x.get_size(2);
-            size_t srcCHA = x.get_size(3);
-            size_t dstCHA = x.get_size(4);
-
-            std::vector<size_t> dimR(*dimX);
-            dimR[0] = E1;
-            dimR[1] = E2;
-            dimR[2] = srcCHA;
-            dimR[3] = dstCHA;
-            dimR[4] = RO;
-
-            r.create(&dimR);
-
-            size_t N5D = RO*E1*E2*srcCHA*dstCHA;
-
-            size_t N = x.get_number_of_elements()/N5D;
-
-            const T* pX = x.begin();
-            T* pR = r.begin();
-
-            long long n;
-            for ( n=0; n<(long long)N; n++ )
-            {
-                T* pRn = pR + n*N5D;
-                T* pXn = const_cast<T*>(pX) + n*N5D;
-
-                long long dcha;
-
-                #pragma omp parallel for default(none) private(dcha) shared(RO, E1, E2, srcCHA, dstCHA, pXn, pRn)
-                for ( dcha=0; dcha<(long long)dstCHA; dcha++ )
-                {
-                    for ( size_t scha=0; scha<(int)srcCHA; scha++ )
-                    {
-                        for ( size_t e2=0; e2<E2; e2++ )
-                        {
-                            for ( size_t e1=0; e1<E1; e1++ )
-                            {
-                                size_t indRn = e1+e2*E1+scha*E1*E2+dcha*E1*E2*srcCHA;
-                                size_t indXn = e1*RO+e2*RO*E1+scha*RO*E1*E2+dcha*RO*E1*E2*srcCHA;
-                                for ( size_t ro=0; ro<RO; ro++ )
-                                {
-                                    pRn[indRn+ro*E1*E2*srcCHA*dstCHA] = pXn[ro+indXn];
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
-    {
-        try
-        {
-            T* pX = const_cast<T*>(x.begin());
-            T* ker = const_cast<T*>(kernel.begin());
-            T* pY = y.begin();
-
-            size_t ro = x.get_size(0);
-            size_t e1 = x.get_size(1);
-            size_t srcCHA = x.get_size(2);
-            size_t dstCHA = kernel.get_size(3);
-
-            if ( buf.get_number_of_elements() < ro*e1*srcCHA )
-            {
-                buf.create(ro, e1, srcCHA);
-            }
-            T* pBuf = buf.begin();
-
-            size_t dCha;
-
-            //#pragma omp parallel default(shared)
-            {
-                //#ifdef WIN32
-                //    int tid = omp_get_thread_num();
-                //    DWORD_PTR mask = (1 << tid);
-                //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
-                //    SetThreadAffinityMask( GetCurrentThread(), mask );
-                //#endif // WIN32
-
-                //#pragma omp for
-
-                for ( dCha=0; dCha<dstCHA; dCha++ )
-                {
-                    multiplyCplx(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
-
-                    memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
-                    for ( size_t sCha=1; sCha<srcCHA; sCha++ )
-                    {
-                        // Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
-
-                        size_t ii;
-                        size_t N2D=ro*e1;
-
-                        T* pY2D = pY+dCha*ro*e1;
-                        T* pBuf2D = pBuf+sCha*ro*e1;
-
-                        for ( ii=0; ii<N2D; ii++ )
-                        {
-                            pY2D[ii] += pBuf2D[ii];
-                        }
-                    }
-                }
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename T> 
-    bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
-    {
-        try
-        {
-            long long ro = (long long)x.get_size(0);
-            long long e1 = (long long)x.get_size(1);
-            long long srcCHA = (long long)x.get_size(2);
-            long long N = (long long)x.get_size(3);
-
-            long long dstCHA = (long long)kernel.get_size(3);
-            long long kerN = (long long)kernel.get_size(4);
-
-            if ( (long long)buf.get_number_of_elements() < ro*e1*srcCHA )
-            {
-                buf.create(ro, e1, srcCHA);
-            }
-            T* pBuf = buf.begin();
-
-            long long n, dCha;
-
-            //#pragma omp parallel default(shared)
-            {
-                //#ifdef WIN32
-                //    int tid = omp_get_thread_num();
-                //    DWORD_PTR mask = (1 << tid);
-                //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
-                //    SetThreadAffinityMask( GetCurrentThread(), mask );
-                //#endif // WIN32
-
-                //#pragma omp for
-
-                //if ( typeid(T)==typeid( std::complex<float> ) )
-                //{
-                    const T* pXN = x.begin();
-                    T* pYN = y.begin();
-                    T* pBufN = buf.begin();
-                    const T* pKerN = kernel.begin();
-
-                    // #pragma omp parallel for default(none) private(dCha, n) shared(N, ro, e1, srcCHA, dstCHA, kerN, pXN, pYN, pBufN, pKerN)
-                    for ( dCha=0; dCha<(long long)dstCHA; dCha++ )
-                    {
-                        for ( n=0; n<N; n++  )
-                        {
-                            const T* ker = pKerN + n*ro*e1*srcCHA*dstCHA;
-                            if ( kerN <= n )
-                            {
-                                ker = pKerN + (kerN-1)*ro*e1*srcCHA*dstCHA;
-                            }
-
-                            const T* pX = pXN + n*ro*e1*srcCHA;
-                            T* pBuf =pBufN + n*ro*e1*srcCHA;
-
-                            multiplyCplx(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
-                        //}
-
-                        //for ( n=0; n<N; n++  )
-                        //{
-                            T* pY = pYN + n*ro*e1*dstCHA;
-                            //T* pBuf =pBufN + n*ro*e1*srcCHA;
-
-                            memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
-                            for ( long long sCha=1; sCha<srcCHA; sCha++ )
-                            {
-                                // Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
-                                size_t ii;
-                                size_t N2D=ro*e1;
-
-                                T* pY2D = pY+dCha*ro*e1;
-                                T* pBuf2D = pBuf+sCha*ro*e1;
-
-                                for ( ii=0; ii<N2D; ii++ )
-                                {
-                                    pY2D[ii] += pBuf2D[ii];
-                                }
-                            }
-                        }
-                    }
-                //}
-                //else if ( typeid(T)==typeid( std::complex<double> ) )
-                //{
-                //    for ( n=0; n<N; n++ )
-                //    {
-                //        const T* ker = kernel.begin() + n*ro*e1*srcCHA*dstCHA;
-                //        if ( kerN <= n )
-                //        {
-                //            ker = kernel.begin() + (kerN-1)*ro*e1*srcCHA*dstCHA;
-                //        }
-
-                //        const T* pX = x.begin() + n*ro*e1*srcCHA;
-                //        T* pY = y.begin() + n*ro*e1*dstCHA;
-
-                //        for ( long long dCha=0; dCha<dstCHA; dCha++ )
-                //        {
-                //            Gadgetron::math::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
-
-                //            memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
-                //            for ( long long sCha=1; sCha<srcCHA; sCha++ )
-                //            {
-                //                Gadgetron::math::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
-                //            }
-                //        }
-                //    }
-                //}
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template<typename CoordType, typename T> 
-    bool computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType start, CoordType end, hoNDArray<CoordType>& vx, hoNDArray<T>& vy)
-    {
-        try
-        {
-            typedef typename realType<T>::Type real_value_type;
-
-            size_t N = x.get_size(0);
-            size_t M = y.get_size(1);
-
-            GADGET_CHECK_RETURN_FALSE(y.get_size(0)==N);
-            GADGET_CHECK_RETURN_FALSE(start<=x(0));
-            GADGET_CHECK_RETURN_FALSE(end>=x(N-1));
-
-            vx.create(N+2);
-            vy.create(N+2, M);
-
-            size_t m, n;
-
-            vx(0) = start;
-            for ( n=0; n<N; n++ )
-            {
-                vx(n+1) = x(n);
-            }
-            vx(N+1) = end;
-
-            CoordType dS = x(0) - start;
-            CoordType dE = end - x(N-1);
-
-            // start, end
-            CoordType wS;
-            if ( dE+dS > FLT_EPSILON )
-                wS = dE/(dE+dS);
-            else
-                wS = dE/FLT_EPSILON;
-
-            for ( m=0; m<M; m++ )
-            {
-                T a = y(0, m);
-                T b = y(N-1, m);
-
-                vy(0, m) = b + (real_value_type)wS * ( a - b );
-                vy(N+1, m) = vy(0, m);
-            }
-
-            // middle
-            for ( n=0; n<N; n++ )
-            {
-                for ( m=0; m<M; m++ )
-                {
-                    vy(n+1, m) = y(n, m);
-                }
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType& start, CoordType& end, hoNDArray<T>& r) ... ");
-            return false;
-        }
-        return true;
-    }
-
-    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
@@ -2399,31 +1518,6 @@ namespace Gadgetron {
     template EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
     template EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
     template EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray<float>& x3D, const hoNDArray<float>& y4D, hoNDArray<float>& r);
     template EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray<double>& x3D, const hoNDArray<double>& y4D, hoNDArray<double>& r);
@@ -2449,16 +1543,6 @@ namespace Gadgetron {
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<double>& x, const hoNDArray<double>& y, size_t n, hoNDArray<double>& r, bool copyY2R);
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, size_t n, hoNDArray< std::complex<float> >& r, bool copyY2R);
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, size_t n, hoNDArray< std::complex<double> >& r, bool copyY2R);
-
-    template EXPORTGTPLUS bool multipleAdd(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool multipleAdd(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multipleAdd(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool multipleAdd(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
     template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
@@ -2507,6 +1591,19 @@ namespace Gadgetron {
     template EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& std, bool NMinusOne);
     template EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& std, bool NMinusOne);
 
+    template EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& ker, hoNDArray< std::complex<float> >& buf, hoNDArray< std::complex<float> >& y);
+    template EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& ker, hoNDArray< std::complex<double> >& buf, hoNDArray< std::complex<double> >& y);
+
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<float>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<float>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<double>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<double>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray< std::complex<float> >& y, float start, float end, hoNDArray<float>& vx, hoNDArray< std::complex<float> >& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray< std::complex<double> >& y, float start, float end, hoNDArray<float>& vx, hoNDArray< std::complex<double> >& vy);
+
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<double>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<double>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<float>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<float>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray< std::complex<float> >& y, double start, double end, hoNDArray<double>& vx, hoNDArray< std::complex<float> >& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray< std::complex<double> >& y, double start, double end, hoNDArray<double>& vx, hoNDArray< std::complex<double> >& vy);
+
     template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
     template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
@@ -2522,39 +1619,4 @@ namespace Gadgetron {
     template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
     template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
-    template EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& ker, hoNDArray< std::complex<float> >& buf, hoNDArray< std::complex<float> >& y);
-    template EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& ker, hoNDArray< std::complex<double> >& buf, hoNDArray< std::complex<double> >& y);
-
-    template EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& ker, hoNDArray< std::complex<float> >& buf, hoNDArray< std::complex<float> >& y);
-    template EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& ker, hoNDArray< std::complex<double> >& buf, hoNDArray< std::complex<double> >& y);
-
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<float>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<float>& vy);
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<double>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<double>& vy);
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray< std::complex<float> >& y, float start, float end, hoNDArray<float>& vx, hoNDArray< std::complex<float> >& vy);
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray< std::complex<double> >& y, float start, float end, hoNDArray<float>& vx, hoNDArray< std::complex<double> >& vy);
-
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<double>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<double>& vy);
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<float>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<float>& vy);
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray< std::complex<float> >& y, double start, double end, hoNDArray<double>& vx, hoNDArray< std::complex<float> >& vy);
-    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray< std::complex<double> >& y, double start, double end, hoNDArray<double>& vx, hoNDArray< std::complex<double> >& vy);
 }

@@ -441,7 +441,7 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
     workOrder.CloudSize_ = CloudSize_;
     workOrder.gt_cloud_ = gt_cloud_;
 
-    if ( workOrder.acceFactorE1_>1 && workOrder.CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+    if ( workOrder.acceFactorE1_>1 && workOrder.CalibMode_==Gadgetron::ISMRMRD_interleaved )
     {
         Gadgetron::fillSampledLinesUpTo11DArray(job->kspace, workOrder.data_, job->timeStamp);
     }
@@ -492,7 +492,7 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
     {
         workflow_.setRefArray(workOrder.ref_);
     }
-    else if ( para.workOrderPara_.CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+    else if ( para.workOrderPara_.CalibMode_==Gadgetron::ISMRMRD_interleaved )
     {
         workOrder.ref_ = workOrder.data_;
         workflow_.setRefArray(workOrder.ref_);
@@ -501,11 +501,11 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
     // set the work flow for worker and workOrder
     if ( workOrder.acceFactorE1_ > 1 )
     {
-        if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_SPIRIT )
+        if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_SPIRIT )
         {
             workflow_.worker_ = &worker_spirit_;
         }
-        else if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_L1SPIRIT )
+        else if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_L1SPIRIT )
         {
             workflow_.worker_ = &worker_spirit_L1_ncg_;
         }
@@ -667,7 +667,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
         size_t E1_ref = workOrder.ref_.get_size(1);
         size_t E2_ref = workOrder.ref_.get_size(4);
 
-        if ( workOrder.CalibMode_ == Gadgetron::gtPlus::ISMRMRD_interleaved )
+        if ( workOrder.CalibMode_ == Gadgetron::ISMRMRD_interleaved )
         {
             RO_ref = RO;
             E1_ref = E1;

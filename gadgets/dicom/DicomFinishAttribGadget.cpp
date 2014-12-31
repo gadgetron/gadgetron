@@ -2,7 +2,7 @@
 #include "boost/date_time/gregorian/gregorian.hpp"            
 
 #include "DicomFinishAttribGadget.h"
-#include "GtPlusDefinition.h"
+#include "mri_core_definition.h"
 #include "gtPlusIOAnalyze.h"
 #include "ismrmrd/xml.h"
 
@@ -571,7 +571,7 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
     // image data role
     size_t n;
 
-    size_t num = img_attrib->length(GTPLUS_DATA_ROLE);
+    size_t num = img_attrib->length(GADGETRON_DATA_ROLE);
 
     std::vector<std::string> dataRole;
     if ( num == 0 )
@@ -583,21 +583,21 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
         dataRole.resize(num);
         for ( n=0; n<num; n++ )
         {
-            dataRole[n] = std::string( img_attrib->as_str(GTPLUS_DATA_ROLE, n) );
+            dataRole[n] = std::string( img_attrib->as_str(GADGETRON_DATA_ROLE, n) );
         }
     }
 
-    long imageNumber = img_attrib->as_long(GTPLUS_IMAGENUMBER, 0);
+    long imageNumber = img_attrib->as_long(GADGETRON_IMAGENUMBER, 0);
 
     long cha, slc, e2, con, phs, rep, set, ave;
-    cha = img_attrib->as_long(GTPLUS_CHA,        0);
-    slc = img_attrib->as_long(GTPLUS_SLC,        0);
-    e2  = img_attrib->as_long(GTPLUS_E2,         0);
-    con = img_attrib->as_long(GTPLUS_CONTRAST,   0);
-    phs = img_attrib->as_long(GTPLUS_PHASE,      0);
-    rep = img_attrib->as_long(GTPLUS_REP,        0);
-    set = img_attrib->as_long(GTPLUS_SET,        0);
-    ave = img_attrib->as_long(GTPLUS_AVERAGE,    0);
+    cha = img_attrib->as_long(GADGETRON_CHA,        0);
+    slc = img_attrib->as_long(GADGETRON_SLC,        0);
+    e2  = img_attrib->as_long(GADGETRON_E2,         0);
+    con = img_attrib->as_long(GADGETRON_CONTRAST,   0);
+    phs = img_attrib->as_long(GADGETRON_PHASE,      0);
+    rep = img_attrib->as_long(GADGETRON_REP,        0);
+    set = img_attrib->as_long(GADGETRON_SET,        0);
+    ave = img_attrib->as_long(GADGETRON_AVERAGE,    0);
 
     std::ostringstream ostr;
 

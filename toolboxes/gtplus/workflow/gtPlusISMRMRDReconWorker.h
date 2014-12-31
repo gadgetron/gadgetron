@@ -313,6 +313,19 @@ public:
 
     // given the number of nodes in a cloud and corresponding computing power indexes, spread the jobs on the nodes
     virtual bool scheduleJobForNodes(gtPlusReconWorkOrder<T>* workOrder2DT, size_t numOfJobs, std::vector<int>& nodeIdForJob);
+
+    /// helper functions for array manipulation
+    /// permute RO dimension of x to the 4th dimension, x : [RO E1 E2 CHA ...], r: [E1 E2 CHA RO ...]
+    bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /// permute the 3rd dimension of x to the 1st dimension, x : [RO E1 E2 CHA ...], r: [E2 RO E1 CHA ...]
+    bool permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /// permute RO dimension of x back to the 1st dimension, x : [E1 E2 CHA RO ...], r: [RO E1 E2 CHA ...]
+    bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /// permute RO dimension of x to the 5th dimension, x : [RO E1 E2 srcCHA dstCHA ...], r: [E1 E2 srcCHA dstCHA RO ...]
+    /// bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
 };
 
 template <typename T> 
@@ -616,5 +629,277 @@ scheduleJobForNodes(gtPlusReconWorkOrder<T>* workOrder, size_t numOfJobs, std::v
 
     return true;
 }
+
+template<typename T> 
+bool gtPlusReconWorker<T>::permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+{
+    try
+    {
+        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+        size_t NDim = dimX->size();
+
+        if ( NDim < 4 )
+        {
+            r = x;
+            return true;
+        }
+
+        size_t RO = x.get_size(0);
+        size_t E1 = x.get_size(1);
+        size_t E2 = x.get_size(2);
+        size_t CHA = x.get_size(3);
+
+        std::vector<size_t> dimR(*dimX);
+        dimR[0] = E1;
+        dimR[1] = E2;
+        dimR[2] = CHA;
+        dimR[3] = RO;
+
+        r.create(&dimR);
+
+        size_t N4D = RO*E1*E2*CHA;
+
+        size_t N = x.get_number_of_elements()/N4D;
+
+        const T* pX = x.begin();
+        T* pR = r.begin();
+
+        long long n;
+        for ( n=0; n<(long long)N; n++ )
+        {
+            T* pRn = pR + n*N4D;
+            T* pXn = const_cast<T*>(pX) + n*N4D;
+
+            long long cha;
+
+            #pragma omp parallel for default(none) private(cha) shared(RO, E1, E2, CHA, pXn, pRn)
+            for ( cha=0; cha<(long long)CHA; cha++ )
+            {
+                for ( size_t e2=0; e2<E2; e2++ )
+                {
+                    for ( size_t e1=0; e1<E1; e1++ )
+                    {
+                        for ( size_t ro=0; ro<RO; ro++ )
+                        {
+                            pRn[e1+e2*E1+cha*E1*E2+ro*E1*E2*CHA] = pXn[ro+e1*RO+e2*RO*E1+cha*RO*E1*E2];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusReconWorker<T>::permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        return false;
+    }
+    return true;
+}
+
+template<typename T> 
+bool gtPlusReconWorker<T>::permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
+{
+    try
+    {
+        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+        size_t NDim = dimX->size();
+
+        if ( NDim < 3 )
+        {
+            r = x;
+            return true;
+        }
+
+        size_t RO = x.get_size(0);
+        size_t E1 = x.get_size(1);
+        size_t E2 = x.get_size(2);
+
+        std::vector<size_t> dimR(*dimX);
+        dimR[0] = E2;
+        dimR[1] = RO;
+        dimR[2] = E1;
+
+        r.create(&dimR);
+
+        size_t N3D = RO*E1*E2;
+
+        size_t N = x.get_number_of_elements()/N3D;
+
+        const T* pX = x.begin();
+        T* pR = r.begin();
+
+        long long n, e2;
+        for ( n=0; n<(long long)N; n++ )
+        {
+            T* pRn = pR + n*N3D;
+            T* pXn = const_cast<T*>(pX) + n*N3D;
+
+            #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, pXn, pRn)
+            for ( e2=0; e2<(long long)E2; e2++ )
+            {
+                for ( size_t e1=0; e1<E1; e1++ )
+                {
+                    size_t indRn = e2+e1*E2*RO;
+                    size_t indXn = e1*RO+e2*RO*E1;
+                    for ( size_t ro=0; ro<RO; ro++ )
+                    {
+                        pRn[ro*E2+indRn] = pXn[ro+indXn];
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusReconWorker<T>::permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        return false;
+    }
+    return true;
+}
+
+template<typename T> 
+bool gtPlusReconWorker<T>::permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+{
+    try
+    {
+        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+        size_t NDim = dimX->size();
+
+        if ( NDim < 4 )
+        {
+            r = x;
+            return true;
+        }
+
+        size_t E1 = x.get_size(0);
+        size_t E2 = x.get_size(1);
+        size_t CHA = x.get_size(2);
+        size_t RO = x.get_size(3);
+
+        std::vector<size_t> dimR(*dimX);
+        dimR[0] = RO;
+        dimR[1] = E1;
+        dimR[2] = E2;
+        dimR[3] = CHA;
+
+        r.create(&dimR);
+
+        size_t N4D = RO*E1*E2*CHA;
+
+        size_t N = x.get_number_of_elements()/N4D;
+
+        const T* pX = x.begin();
+        T* pR = r.begin();
+
+        long long n;
+        for ( n=0; n<(long long)N; n++ )
+        {
+            T* pRn = pR + n*N4D;
+            T* pXn = const_cast<T*>(pX) + n*N4D;
+
+            long long cha;
+
+            #pragma omp parallel for default(none) private(cha) shared(RO, E1, E2, CHA, pXn, pRn)
+            for ( cha=0; cha<(long long)CHA; cha++ )
+            {
+                for ( size_t e2=0; e2<E2; e2++ )
+                {
+                    for ( size_t e1=0; e1<E1; e1++ )
+                    {
+                        size_t indRn = e1*RO+e2*RO*E1+cha*RO*E1*E2;
+                        size_t indXn = e1+e2*E1+cha*E1*E2;
+                        for ( size_t ro=0; ro<RO; ro++ )
+                        {
+                            pRn[ro+indRn] = pXn[indXn+ro*E1*E2*CHA];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusReconWorker<T>::permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        return false;
+    }
+    return true;
+}
+
+//template<typename T> 
+//bool gtPlusReconWorker<T>::permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+//{
+//    try
+//    {
+//        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+//
+//        size_t NDim = dimX->size();
+//
+//        if ( NDim < 5 )
+//        {
+//            r = x;
+//            return true;
+//        }
+//
+//        size_t RO = x.get_size(0);
+//        size_t E1 = x.get_size(1);
+//        size_t E2 = x.get_size(2);
+//        size_t srcCHA = x.get_size(3);
+//        size_t dstCHA = x.get_size(4);
+//
+//        std::vector<size_t> dimR(*dimX);
+//        dimR[0] = E1;
+//        dimR[1] = E2;
+//        dimR[2] = srcCHA;
+//        dimR[3] = dstCHA;
+//        dimR[4] = RO;
+//
+//        r.create(&dimR);
+//
+//        size_t N5D = RO*E1*E2*srcCHA*dstCHA;
+//
+//        size_t N = x.get_number_of_elements()/N5D;
+//
+//        const T* pX = x.begin();
+//        T* pR = r.begin();
+//
+//        long long n;
+//        for ( n=0; n<(long long)N; n++ )
+//        {
+//            T* pRn = pR + n*N5D;
+//            T* pXn = const_cast<T*>(pX) + n*N5D;
+//
+//            long long dcha;
+//
+//            #pragma omp parallel for default(none) private(dcha) shared(RO, E1, E2, srcCHA, dstCHA, pXn, pRn)
+//            for ( dcha=0; dcha<(long long)dstCHA; dcha++ )
+//            {
+//                for ( size_t scha=0; scha<(int)srcCHA; scha++ )
+//                {
+//                    for ( size_t e2=0; e2<E2; e2++ )
+//                    {
+//                        for ( size_t e1=0; e1<E1; e1++ )
+//                        {
+//                            size_t indRn = e1+e2*E1+scha*E1*E2+dcha*E1*E2*srcCHA;
+//                            size_t indXn = e1*RO+e2*RO*E1+scha*RO*E1*E2+dcha*RO*E1*E2*srcCHA;
+//                            for ( size_t ro=0; ro<RO; ro++ )
+//                            {
+//                                pRn[indRn+ro*E1*E2*srcCHA*dstCHA] = pXn[ro+indXn];
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    catch (...)
+//    {
+//        GADGET_ERROR_MSG("Errors in gtPlusReconWorker<T>::permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+//        return false;
+//    }
+//    return true;
+//}
 
 }}

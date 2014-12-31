@@ -3110,47 +3110,47 @@ bool gtPlusISMRMRDReconUtil<T>::getISMRMRDDimIndex(const ISMRMRDDIM& dim, long l
 {
     switch (dim)
     {
-        case Gadgetron::gtPlus::DIM_ReadOut:
+        case Gadgetron::DIM_ReadOut:
             ind = 0;
         break;
 
-        case Gadgetron::gtPlus::DIM_Encoding1:
+        case Gadgetron::DIM_Encoding1:
             ind = 1;
         break;
 
-        case Gadgetron::gtPlus::DIM_Channel:
+        case Gadgetron::DIM_Channel:
             ind = 2;
         break;
 
-        case Gadgetron::gtPlus::DIM_Slice:
+        case Gadgetron::DIM_Slice:
             ind = 3;
         break;
 
-        case Gadgetron::gtPlus::DIM_Encoding2:
+        case Gadgetron::DIM_Encoding2:
             ind = 4;
         break;
 
-        case Gadgetron::gtPlus::DIM_Contrast:
+        case Gadgetron::DIM_Contrast:
             ind = 5;
         break;
 
-        case Gadgetron::gtPlus::DIM_Phase:
+        case Gadgetron::DIM_Phase:
             ind = 6;
         break;
 
-        case Gadgetron::gtPlus::DIM_Repetition:
+        case Gadgetron::DIM_Repetition:
             ind = 7;
         break;
 
-        case Gadgetron::gtPlus::DIM_Set:
+        case Gadgetron::DIM_Set:
             ind = 8;
         break;
 
-        case Gadgetron::gtPlus::DIM_Segment:
+        case Gadgetron::DIM_Segment:
             ind = 9;
         break;
 
-        case Gadgetron::gtPlus::DIM_Average:
+        case Gadgetron::DIM_Average:
             ind = 10;
         break;
 

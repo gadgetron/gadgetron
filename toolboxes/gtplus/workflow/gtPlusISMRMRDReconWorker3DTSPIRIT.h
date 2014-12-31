@@ -383,7 +383,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             // hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, N, gtPlus_mem_manager_);
             hoNDArray<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, N);
             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permute kspace RO to 4th dimension ... "));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
+            GADGET_CHECK_RETURN_FALSE(this->permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "kspaceIfftROPermuted");
 
@@ -415,7 +415,6 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->kernelIm_, "kernelImBeforePermuted");
 
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permute kernel RO to 5th dimension ... "));
-                // GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo5thDimensionFor3DRecon( *workOrder3DT->kernelIm_, kerPermuted));
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension( *workOrder3DT->kernelIm_, kerPermuted));
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
@@ -442,7 +441,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             if ( workOrder3DT->coilMap_->get_number_of_elements() > 0 )
             {
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permute coil map RO to 4th dimension ... "));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(*workOrder3DT->coilMap_, *coilMapPermuted));
+                GADGET_CHECK_RETURN_FALSE(this->permuteROTo4thDimensionFor3DRecon(*workOrder3DT->coilMap_, *coilMapPermuted));
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "coilMapPermuted");
 
@@ -641,7 +640,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
             // permute the unwrapped kspace
             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue RO to 1st dimension ... "));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo1stDimensionFor3DRecon(workOrder3DTJobSplit.fullkspace_, kspaceIfftRO));
+            GADGET_CHECK_RETURN_FALSE(this->permuteROTo1stDimensionFor3DRecon(workOrder3DTJobSplit.fullkspace_, kspaceIfftRO));
             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftRO, "res_fullkspace_ROinIm");
@@ -891,7 +890,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
         hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, gtPlus_mem_manager_);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue RO to 4th dimension ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
+        GADGET_CHECK_RETURN_FALSE(this->permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "kspaceIfftROPermuted");
 
@@ -985,7 +984,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         // permute the unwrapped kspace
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue RO to 1st dimension ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo1stDimensionFor3DRecon(resDecoupled, kspaceIfftRO));
+        GADGET_CHECK_RETURN_FALSE(this->permuteROTo1stDimensionFor3DRecon(resDecoupled, kspaceIfftRO));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         // perform fft along the first dimension

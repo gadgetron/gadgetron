@@ -54,6 +54,7 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm 
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+        ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
         ${CMAKE_SOURCE_DIR}/apps/gadgetron
         ${CMAKE_SOURCE_DIR}/apps/matlab
         ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
@@ -167,7 +168,6 @@ if ( HAS_64_BIT )
     endif(MATLAB_FOUND)
 
     set(gtplus_files GtPlusExport.h 
-                GtPlusDefinition.h 
                 ${util_header_files} 
                 ${util_src_files} )
 
@@ -208,7 +208,8 @@ if ( HAS_64_BIT )
                           gadgetron_toolbox_cpucore_math 
                           gadgetron_toolbox_cpufft
                           gadgetron_toolbox_gtplus_io 
-                          gadgetron_toolbox_cpucore_math )
+                          gadgetron_toolbox_cpucore_math 
+                          gadgetron_toolbox_mri_core )
 
     install(TARGETS gadgetron_toolbox_gtplus DESTINATION lib COMPONENT main)
     install(TARGETS gadgetron_toolbox_gtplus_io DESTINATION lib COMPONENT main)
@@ -216,7 +217,6 @@ if ( HAS_64_BIT )
     # install gtplus files
     install (FILES  
             GtPlusExport.h 
-            GtPlusDefinition.h 
             ${util_header_files} 
             ${workflow_header_files} 
             ${algorithm_header_files} 

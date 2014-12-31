@@ -165,14 +165,14 @@ int GtPlusRecon3DTGadget::process_config(ACE_Message_Block* mb)
             numOfBytes = (size_t)( (double)matrix_size_encoding_[0]*kSpaceMaxAcqE1No_*kSpaceMaxAcqE2No_*num_acq_channels_*para_.workOrderPara_.coil_compression_num_modesKept_*sizeof(ValueType) );
         }
 
-        if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_GRAPPA && para_.workOrderPara_.job_num_of_N_>0 )
+        if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_GRAPPA && para_.workOrderPara_.job_num_of_N_>0 )
         {
             numOfBytes = (size_t)( (double)para_.workOrderPara_.job_num_of_N_*kSpaceMaxAcqE1No_*kSpaceMaxAcqE2No_*num_acq_channels_*para_.workOrderPara_.coil_compression_num_modesKept_*sizeof(ValueType)*1.5 );
         }
     }
     else
     {
-        if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_SPIRIT || para_.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_L1SPIRIT )
+        if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_SPIRIT || para_.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_L1SPIRIT )
         {
             numOfBytes = (size_t)((double)matrix_size_encoding_[0]*kSpaceMaxAcqE1No_*kSpaceMaxAcqE2No_*num_acq_channels_*num_acq_channels_*sizeof(ValueType)*0.8);
         }
@@ -347,7 +347,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         GADGET_CHECK_RETURN(workflow_.recon(), GADGET_FAIL);
 
         GADGET_CHECK_RETURN(this->scalingImages(workflow_.res_), GADGET_FAIL);
-        GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, image_series_+1, workOrder->dataDimStartingIndexes_, "Other", GTPLUS_IMAGE_OTHER), GADGET_FAIL);
+        GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, image_series_+1, workOrder->dataDimStartingIndexes_, "Other", GADGETRON_IMAGE_OTHER), GADGET_FAIL);
 
         workflow_.res_.clear();
         workflow_.data_ = NULL;
@@ -377,7 +377,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     {
         workflow_.setRefArray(workOrder->ref_);
     }
-    else if ( CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+    else if ( CalibMode_==Gadgetron::ISMRMRD_interleaved )
     {
         workOrder->ref_ = workOrder->data_;
         workflow_.setRefArray(workOrder->ref_);
@@ -386,11 +386,11 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     // set the work flow for worker and workOrder
     if ( workOrder->acceFactorE1_>1 || workOrder->acceFactorE2_>1 )
     {
-        if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_SPIRIT )
+        if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_SPIRIT )
         {
             workflow_.worker_ = &worker_spirit_;
         }
-        else if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_L1SPIRIT )
+        else if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_L1SPIRIT )
         {
             workflow_.worker_ = &worker_spirit_L1_ncg_;
         }
@@ -465,24 +465,24 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
     // send out the results
     GADGET_CHECK_RETURN(this->scalingImages(workflow_.res_), GADGET_FAIL);
-    GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, image_series_, workOrder->dataDimStartingIndexes_, "Image", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
+    GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, image_series_, workOrder->dataDimStartingIndexes_, "Image", GADGETRON_IMAGE_REGULAR), GADGET_FAIL);
 
     if ( workflow_.workOrder_->gfactor_needed_ )
     {
         Gadgetron::scal((float)scalingFactor_gfactor_, workflow_.gfactor_);
-        GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.gfactor_, image_series_+1, workOrder->dataDimStartingIndexes_, "gfactor", GTPLUS_IMAGE_GFACTOR), GADGET_FAIL);
+        GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.gfactor_, image_series_+1, workOrder->dataDimStartingIndexes_, "gfactor", GADGETRON_IMAGE_GFACTOR), GADGET_FAIL);
     }
 
     if ( scalingFactor_snr_image_>0 && snrImage.get_number_of_elements()>0 && snrImageComputed )
     {
         Gadgetron::scal((float)scalingFactor_snr_image_, snrImage);
-        GADGET_CHECK_RETURN(this->sendOutRecon(images, snrImage, image_series_+2, workOrder->dataDimStartingIndexes_, "snr_map", GTPLUS_IMAGE_SNR_MAP), GADGET_FAIL);
+        GADGET_CHECK_RETURN(this->sendOutRecon(images, snrImage, image_series_+2, workOrder->dataDimStartingIndexes_, "snr_map", GADGETRON_IMAGE_SNR_MAP), GADGET_FAIL);
     }
 
     if ( scalingFactor_std_map_>0 && stdMap.get_number_of_elements()>0 && stdMapComputed )
     {
         Gadgetron::scal((float)scalingFactor_std_map_, stdMap);
-        GADGET_CHECK_RETURN(this->sendOutRecon(images, stdMap, image_series_+3, workOrder->dataDimStartingIndexes_, "std_map", GTPLUS_IMAGE_STD_MAP), GADGET_FAIL);
+        GADGET_CHECK_RETURN(this->sendOutRecon(images, stdMap, image_series_+3, workOrder->dataDimStartingIndexes_, "std_map", GADGETRON_IMAGE_STD_MAP), GADGET_FAIL);
     }
 
     GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon3DTGadget::process(...) ends ... ");

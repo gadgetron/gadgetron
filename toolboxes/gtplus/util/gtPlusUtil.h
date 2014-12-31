@@ -32,7 +32,7 @@
     #include <omp.h>
 #endif // USE_OMP
 
-#include "GtPlusDefinition.h"
+#include "mri_core_definition.h"
 
 namespace Gadgetron { namespace gtPlus {
 

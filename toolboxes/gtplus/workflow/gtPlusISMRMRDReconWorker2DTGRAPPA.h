@@ -117,11 +117,12 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         size_t refN = ref_dst.get_size(3);
         size_t dstCHA = ref_dst.get_size(2);
 
-        gtPlusGRAPPA<T> grappa_local;
+        // gtPlusGRAPPA<T> grappa_local;
+        Gadgetron::grappa<T> grappa_local;
 
         std::vector<int> kE1, oE1;
         bool fitItself = true;
-        GADGET_CHECK_RETURN_FALSE(grappa_local.kerPattern(kE1, oE1, (size_t)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
+        grappa_local.kerPattern(kE1, oE1, (size_t)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself);
 
         size_t kRO = workOrder2DT->grappa_kSize_RO_;
         size_t kNE1 = workOrder2DT->grappa_kSize_E1_;
@@ -140,15 +141,15 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         filename = "acsDst";
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, filename+suffix);
 
-        grappa_local.calib_use_gpu_  = workOrder2DT->grappa_use_gpu_;
+        // grappa_local.calib_use_gpu_  = workOrder2DT->grappa_use_gpu_;
 
         ho5DArray<T> ker(kRO, kNE1, srcCHA, dstCHA, oNE1, workOrder2DT->kernel_->begin()+n*kRO*kNE1*srcCHA*dstCHA*oNE1+usedS*kRO*kNE1*srcCHA*dstCHA*oNE1*refN);
 
-         Gadgetron::GadgetronTimer gt_timer_local;
-         gt_timer_local.set_timing_in_destruction(false);
+        Gadgetron::GadgetronTimer gt_timer_local;
+        gt_timer_local.set_timing_in_destruction(false);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("grappa_local.calib ... "));
-        GADGET_CHECK_RETURN_FALSE(grappa_local.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, kRO, kE1, oE1, ker));
+        grappa_local.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, kRO, kE1, oE1, ker);
         GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
 
         filename = "ker";
@@ -156,7 +157,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
         GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("grappa_local.imageDomainKernel ... "));
-        GADGET_CHECK_RETURN_FALSE(grappa_local.imageDomainKernel(ker, kRO, kE1, oE1, RO, E1, kIm));
+        grappa_local.imageDomainKernel(ker, kRO, kE1, oE1, RO, E1, kIm);
         GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
 
         filename = "kIm";
@@ -167,12 +168,12 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         hoNDArray<T> gFactor(RO, E1, workOrder2DT->gfactor_.begin()+n*RO*E1+usedS*RO*E1*refN);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("unmixCoeff ... "));
-        GADGET_CHECK_RETURN_FALSE(this->unmixCoeff(kIm, coilMap, unmixC, gFactor));
+        grappa_local.unmixCoeff(kIm, coilMap, workOrder2DT->acceFactorE1_, unmixC, gFactor);
         GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("scale gfactor ... "));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder2DT->acceFactorE1_), gFactor));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
+        //GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("scale gfactor ... "));
+        //GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder2DT->acceFactorE1_), gFactor));
+        //GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
 
         filename = "unmixC";
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, filename+suffix);
