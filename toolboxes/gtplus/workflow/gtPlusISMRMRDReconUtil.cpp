@@ -1173,6 +1173,42 @@ namespace Gadgetron {
         return true;
     }
 
+    inline void multiplyCplx(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
+    {
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const std::complex<float>& a1 = x[n];
+            const std::complex<float>& b1 = y[n];
+            const float a = a1.real();
+            const float b = a1.imag();
+            const float c = b1.real();
+            const float d = b1.imag();
+
+            reinterpret_cast<float(&)[2]>(r[n])[0] = a*c-b*d;
+            reinterpret_cast<float(&)[2]>(r[n])[1] = a*d+b*c;
+        }
+    }
+
+    inline void multiplyCplx(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
+    {
+        long long n;
+        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const std::complex<double>& a1 = x[n];
+            const std::complex<double>& b1 = y[n];
+            const double a = a1.real();
+            const double b = a1.imag();
+            const double c = b1.real();
+            const double d = b1.imag();
+
+            reinterpret_cast<double(&)[2]>(r[n])[0] = a*c-b*d;
+            reinterpret_cast<double(&)[2]>(r[n])[1] = a*d+b*c;
+        }
+    }
+
     template<typename T> 
     bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
     {
@@ -1235,42 +1271,6 @@ namespace Gadgetron {
             return false;
         }
         return true;
-    }
-
-    inline void multiplyCplx(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const std::complex<float>& a1 = x[n];
-            const std::complex<float>& b1 = y[n];
-            const float a = a1.real();
-            const float b = a1.imag();
-            const float c = b1.real();
-            const float d = b1.imag();
-
-            reinterpret_cast<float(&)[2]>(r[n])[0] = a*c-b*d;
-            reinterpret_cast<float(&)[2]>(r[n])[1] = a*d+b*c;
-        }
-    }
-
-    inline void multiplyCplx(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> * r)
-    {
-        long long n;
-        #pragma omp parallel for default(none) private(n) shared(N, x, y, r) if (N>64*1024)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const std::complex<double>& a1 = x[n];
-            const std::complex<double>& b1 = y[n];
-            const double a = a1.real();
-            const double b = a1.imag();
-            const double c = b1.real();
-            const double d = b1.imag();
-
-            reinterpret_cast<double(&)[2]>(r[n])[0] = a*c-b*d;
-            reinterpret_cast<double(&)[2]>(r[n])[1] = a*d+b*c;
-        }
     }
 
     template<typename T> 
