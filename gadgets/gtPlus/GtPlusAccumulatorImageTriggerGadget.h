@@ -57,7 +57,7 @@ public:
     /// e.g., if the PHS dimension limit is 40 and the dimension PHS is under the trigger, all 40 images 
     /// will be sent to the next gadget as a data buffer
     /// every buffered images will only  be sent once
-    /// GTPLUS_IMAGE_GFACTOR gfactor images will be sent to the next gadget immediately
+    /// GADGETRON_IMAGE_GFACTOR gfactor images will be sent to the next gadget immediately
 
     /// dimension limits
     /// the dimension limits by default is read from the protocol,but 
@@ -93,11 +93,11 @@ protected:
     // set dimensions under trigger
     void setDimensionsUnderTrigger();
 
-    // buffer for regular images whose data role is GTPLUS_IMAGE_REGULAR
+    // buffer for regular images whose data role is GADGETRON_IMAGE_REGULAR
     ImageBufferType imageBuffer_;
     ImageSentFlagBufferType imageSent_;
 
-    // buffer for other images whole data role is not GTPLUS_IMAGE_REGULAR and not GTPLUS_IMAGE_GFACTOR
+    // buffer for other images whole data role is not GADGETRON_IMAGE_REGULAR and not GADGETRON_IMAGE_GFACTOR
     ImageBufferType otherBuffer_;
     ImageSentFlagBufferType otherSent_;
 

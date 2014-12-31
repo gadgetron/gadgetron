@@ -116,7 +116,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE1_ is " << workOrder_.acceFactorE1_);
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE2_ is " << workOrder_.acceFactorE2_);
 
-    workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_NONE;
+    workOrder_.InterleaveDim_ = Gadgetron::DIM_NONE;
 
     if ( !p_imaging.calibrationMode.is_present() )
     {
@@ -127,30 +127,30 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     std::string calib = *p_imaging.calibrationMode;
     if ( calib.compare("interleaved") == 0 )
     {
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
+        workOrder_.CalibMode_ = Gadgetron::ISMRMRD_interleaved;
         GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is interleaved");
 
         if ( p_imaging.interleavingDimension )
         {
             if ( p_imaging.interleavingDimension->compare("phase") == 0 )
             {
-                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
+                workOrder_.InterleaveDim_ = Gadgetron::DIM_Phase;
             }
             else if ( p_imaging.interleavingDimension->compare("repetition") == 0 )
             {
-                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Repetition;
+                workOrder_.InterleaveDim_ = Gadgetron::DIM_Repetition;
             }
             else if ( p_imaging.interleavingDimension->compare("average") == 0 )
             {
-                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Average;
+                workOrder_.InterleaveDim_ = Gadgetron::DIM_Average;
             }
             else if ( p_imaging.interleavingDimension->compare("contrast") == 0 )
             {
-                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Contrast;
+                workOrder_.InterleaveDim_ = Gadgetron::DIM_Contrast;
             }
             else if ( p_imaging.interleavingDimension->compare("other") == 0 )
             {
-                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_other1;
+                workOrder_.InterleaveDim_ = Gadgetron::DIM_other1;
             }
             else
             {
@@ -162,28 +162,28 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     }
     else if ( calib.compare("embedded") == 0 )
     {
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_embedded;
+        workOrder_.CalibMode_ = Gadgetron::ISMRMRD_embedded;
         GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is embedded");
     }
     else if ( calib.compare("separate") == 0 )
     {
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_separate;
+        workOrder_.CalibMode_ = Gadgetron::ISMRMRD_separate;
         GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is separate");
     }
     else if ( calib.compare("external") == 0 )
     {
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_external;
+        workOrder_.CalibMode_ = Gadgetron::ISMRMRD_external;
     }
     else if ( (calib.compare("other") == 0) && workOrder_.acceFactorE1_==1 && workOrder_.acceFactorE2_==1 )
     {
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_noacceleration;
+        workOrder_.CalibMode_ = Gadgetron::ISMRMRD_noacceleration;
         workOrder_.acceFactorE1_=1;
     }
     else if ( (calib.compare("other") == 0) &&  (workOrder_.acceFactorE1_>1 || workOrder_.acceFactorE2_>1) )
     {
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
+        workOrder_.CalibMode_ = Gadgetron::ISMRMRD_interleaved;
         workOrder_.acceFactorE1_=2;
-        workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
+        workOrder_.InterleaveDim_ = Gadgetron::DIM_Phase;
     }
     else
     {
@@ -441,7 +441,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
     }
 
     // store ref read out
-    if ( bIsRef && (workOrder_.CalibMode_ != Gadgetron::gtPlus::ISMRMRD_interleaved) )
+    if ( bIsRef && (workOrder_.CalibMode_ != Gadgetron::ISMRMRD_interleaved) )
     {
         if ( !storeRefData(m1, m2, bIsReflect) )
         {
@@ -621,8 +621,8 @@ resetTriggerStatus(GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1)
 
 bool GtPlusAccumulatorWorkOrderTriggerGadget::
 triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-            Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, 
-            Gadgetron::gtPlus::ISMRMRDDIM& triggerDim2_,
+            Gadgetron::ISMRMRDDIM& triggerDim1_, 
+            Gadgetron::ISMRMRDDIM& triggerDim2_,
             int numOfKSpace_triggerDim1_)
 {
     //bool is_first_acq_in_slice = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
@@ -889,7 +889,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 }
 
 bool GtPlusAccumulatorWorkOrderTriggerGadget::
-triggerWorkOrderLastCountInClose(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, Gadgetron::gtPlus::ISMRMRDDIM& triggerDim2_, int numOfKSpace_triggerDim1_)
+triggerWorkOrderLastCountInClose(Gadgetron::ISMRMRDDIM& triggerDim1_, Gadgetron::ISMRMRDDIM& triggerDim2_, int numOfKSpace_triggerDim1_)
 {
     GADGET_CONDITION_MSG(verboseMode_, "Current Dim1 InClose : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << curr_dim1_);
     GADGET_CONDITION_MSG(verboseMode_, "Current Dim2 InClose : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << curr_dim2_);
@@ -1806,7 +1806,7 @@ computeEncodedSizeE2(size_t centerE2, size_t maxE2)
 }
 
 bool GtPlusAccumulatorWorkOrderTriggerGadget::
-triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_)
+triggerByDimEqual(Gadgetron::ISMRMRDDIM& triggerDim, size_t value, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_)
 {
     try
     {
@@ -1914,7 +1914,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool 
 }
 
 bool GtPlusAccumulatorWorkOrderTriggerGadget::
-triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_)
+triggerByDimLessEqual(Gadgetron::ISMRMRDDIM& triggerDim, size_t value, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_)
 {
     try
     {
@@ -2022,7 +2022,7 @@ triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, b
 }
 
 bool GtPlusAccumulatorWorkOrderTriggerGadget::
-triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gadgetron::gtPlus::ISMRMRDDIM& triggerDim2, size_t value2, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_)
+triggerByDimEqual(Gadgetron::ISMRMRDDIM& triggerDim1, size_t value1, Gadgetron::ISMRMRDDIM& triggerDim2, size_t value2, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_)
 {
     try
     {
@@ -2131,7 +2131,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gad
 
 
 bool GtPlusAccumulatorWorkOrderTriggerGadget::
-triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gadgetron::gtPlus::ISMRMRDDIM& triggerDim2, size_t value2, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_)
+triggerByDim1LessEqualDim2Equal(Gadgetron::ISMRMRDDIM& triggerDim1, size_t value1, Gadgetron::ISMRMRDDIM& triggerDim2, size_t value2, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_)
 {
     try
     {
@@ -2339,7 +2339,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
 }
 
 size_t GtPlusAccumulatorWorkOrderTriggerGadget::
-getDimValue(const ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::gtPlus::ISMRMRDDIM& dim)
+getDimValue(const ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::ISMRMRDDIM& dim)
 {
     if ( dim == DIM_Encoding1 )             return acqHeader.idx.kspace_encode_step_1;
     if ( dim == DIM_Slice )                 return acqHeader.idx.slice;
@@ -2355,7 +2355,7 @@ getDimValue(const ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::gtPlus::ISMR
 }
 
 void GtPlusAccumulatorWorkOrderTriggerGadget::
-setDimValue(ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value)
+setDimValue(ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::ISMRMRDDIM& dim, size_t value)
 {
     if ( dim == DIM_Encoding1 ) acqHeader.idx.kspace_encode_step_1  = (uint16_t)value;
     if ( dim == DIM_Slice ) acqHeader.idx.slice                     = (uint16_t)value;

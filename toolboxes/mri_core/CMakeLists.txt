@@ -36,6 +36,7 @@ include_directories(
 
 set( mri_core_header_files
         mri_core_export.h
+        mri_core_definition.h
         mri_core_data.h
         mri_core_utility.h
         mri_core_grappa.h 

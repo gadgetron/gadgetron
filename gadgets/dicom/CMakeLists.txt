@@ -63,6 +63,7 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+        ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
         ${CMAKE_SOURCE_DIR}/apps/gadgetron
         ${CMAKE_SOURCE_DIR}/apps/matlab
         ${CMAKE_SOURCE_DIR}/gadgets/mri_core 

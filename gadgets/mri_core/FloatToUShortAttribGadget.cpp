@@ -7,7 +7,7 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "FloatToUShortAttribGadget.h"
-#include "GtPlusDefinition.h"
+#include "mri_core_definition.h"
 
 namespace Gadgetron
 {
@@ -77,11 +77,11 @@ namespace Gadgetron
                     dst[i] = static_cast<unsigned short>(pix_val+0.5);
                 }
 
-                if ( m3->getObjectPtr()->length(GTPLUS_IMAGE_WINDOWCENTER) > 0 )
+                if ( m3->getObjectPtr()->length(GADGETRON_IMAGE_WINDOWCENTER) > 0 )
                 {
                     long windowCenter;
-                    windowCenter = m3->getObjectPtr()->as_long(GTPLUS_IMAGE_WINDOWCENTER, 0);
-                    m3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, windowCenter+(long)intensity_offset_value_);
+                    windowCenter = m3->getObjectPtr()->as_long(GADGETRON_IMAGE_WINDOWCENTER, 0);
+                    m3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, windowCenter+(long)intensity_offset_value_);
                 }
             }
             break;

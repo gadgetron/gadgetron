@@ -379,23 +379,23 @@ int GtPlusAccumulatorImageTriggerGadget::process(GadgetContainerMessage<ISMRMRD:
 {
     // find the data role
     std::string dataRole;
-    dataRole = std::string(m3->getObjectPtr()->as_str(GTPLUS_DATA_ROLE, 0));
+    dataRole = std::string(m3->getObjectPtr()->as_str(GADGETRON_DATA_ROLE, 0));
 
     GADGET_CONDITION_MSG(verboseMode_, "--> receive image : " << m1->getObjectPtr()->image_index << " -- " << dataRole);
 
-    if ( dataRole == GTPLUS_IMAGE_REGULAR )
+    if ( dataRole == GADGETRON_IMAGE_REGULAR )
     {
         GADGET_CHECK_RETURN(this->storeImage(*m1->getObjectPtr(), *m2->getObjectPtr(), *m3->getObjectPtr(), imageBuffer_), GADGET_FAIL);
         GADGET_CHECK_RETURN(this->trigger(imageBuffer_, imageSent_, false), GADGET_FAIL);
     }
 
-    if ( dataRole == GTPLUS_IMAGE_OTHER )
+    if ( dataRole == GADGETRON_IMAGE_OTHER )
     {
         GADGET_CHECK_RETURN(this->storeImage(*m1->getObjectPtr(), *m2->getObjectPtr(), *m3->getObjectPtr(), otherBuffer_), GADGET_FAIL);
         GADGET_CHECK_RETURN(this->trigger(otherBuffer_, otherSent_, false), GADGET_FAIL);
     }
 
-    if ( dataRole == GTPLUS_IMAGE_GFACTOR )
+    if ( dataRole == GADGETRON_IMAGE_GFACTOR )
     {
         // pass the image to the next gadget
         Gadgetron::GadgetContainerMessage<ImageBufferType>* cm1 = new Gadgetron::GadgetContainerMessage<ImageBufferType>();
@@ -668,11 +668,11 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
 {
     try
     {
-        long long cha = attrib.as_long(GTPLUS_CHA, 0);
+        long long cha = attrib.as_long(GADGETRON_CHA, 0);
 
         size_t slc = imgHeader.slice;
 
-        long long e2 = attrib.as_long(GTPLUS_E2, 0);
+        long long e2 = attrib.as_long(GADGETRON_E2, 0);
 
         size_t con = imgHeader.contrast;
         size_t phs = imgHeader.phase;
@@ -688,7 +688,7 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
         storedImage->attrib_ = attrib;
         GADGET_CHECK_RETURN_FALSE(gtPlus_util_.setMetaAttributesFromImageHeaderISMRMRD(imgHeader, storedImage->attrib_));
 
-        storedImage->attrib_.set(GTPLUS_PASS_IMMEDIATE, (long)0);
+        storedImage->attrib_.set(GADGETRON_PASS_IMMEDIATE, (long)0);
         buf(cha, slc, e2, con, phs, rep, set, ave) = storedImage;
 
         if ( pass_image_immediate_ )
@@ -704,7 +704,7 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
             *imgBuf(0) = *storedImage;
 
             // set the pass_image flag, so next gadget knows
-            imgBuf(0)->attrib_.set(GTPLUS_PASS_IMMEDIATE, (long)1);
+            imgBuf(0)->attrib_.set(GADGETRON_PASS_IMMEDIATE, (long)1);
 
             if (this->next()->putq(cm1) < 0) 
             {

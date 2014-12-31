@@ -171,7 +171,7 @@ int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlus
         // set the data and ref arrays
 
         // get the data to be compressed format
-        if ( workOrder->acceFactorE1_>1 && workOrder->CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+        if ( workOrder->acceFactorE1_>1 && workOrder->CalibMode_==Gadgetron::ISMRMRD_interleaved )
         {
             Gadgetron::extractSampledLinesUpTo11DArray(workOrder->data_, jobListCloud[0]->kspace, workOrder->time_stamp_, workOrder->acceFactorE1_, workOrder->acceFactorE2_);
         }
@@ -186,7 +186,7 @@ int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlus
         {
             jobListCloud[0]->ref = workOrder->ref_;
         }
-        else if ( CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+        else if ( CalibMode_==Gadgetron::ISMRMRD_interleaved )
         {
             // jobListCloud[0]->ref = workOrder->data_;
             jobListCloud[0]->ref.clear();
@@ -322,7 +322,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
         {
             workflow_.setRefArray(workOrder.ref_);
         }
-        else if ( para.workOrderPara_.CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+        else if ( para.workOrderPara_.CalibMode_==Gadgetron::ISMRMRD_interleaved )
         {
             workOrder.ref_ = workOrder.data_;
             workflow_.setRefArray(workOrder.ref_);
@@ -331,11 +331,11 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
         // set the work flow for worker and workOrder
         if ( workOrder.acceFactorE1_ > 1 )
         {
-            if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_SPIRIT )
+            if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_SPIRIT )
             {
                 workflow_.worker_ = &worker_spirit_;
             }
-            else if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_L1SPIRIT )
+            else if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_L1SPIRIT )
             {
                 workflow_.worker_ = &worker_spirit_L1_ncg_;
             }
@@ -507,7 +507,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
 
                         if ( this->send_out_recon_ )
                         {
-                            GADGET_CHECK_RETURN(this->sendOutRecon(&image_headers_[ii], packages_received_[ii].complexIm, image_series_, dataDimStartingIndexes, "Image", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
+                            GADGET_CHECK_RETURN(this->sendOutRecon(&image_headers_[ii], packages_received_[ii].complexIm, image_series_, dataDimStartingIndexes, "Image", GADGETRON_IMAGE_REGULAR), GADGET_FAIL);
                         }
 
                         if ( this->send_out_recon_second_ )
@@ -523,7 +523,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                                                                             packages_received_[ii].resTimeStampSecond, 
                                                                             packages_received_[ii].resPhysioTimeStampSecond, 
                                                                             image_series_+1, dataDimStartingIndexes, 
-                                                                            "ImageRetro", GTPLUS_IMAGE_RETRO), GADGET_FAIL);
+                                                                            "ImageRetro", GADGETRON_IMAGE_RETRO), GADGET_FAIL);
                                 }
                                 else
                                 {
@@ -532,7 +532,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                                                                             packages_received_[ii].resTimeStampSecond, 
                                                                             packages_received_[ii].resPhysioTimeStampSecond, 
                                                                             image_series_+1, dataDimStartingIndexes, 
-                                                                            "Image", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
+                                                                            "Image", GADGETRON_IMAGE_REGULAR), GADGET_FAIL);
                                 }
                             }
                         }
@@ -627,7 +627,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                 if ( gadget_->send_out_recon_ )
                 {
                     GADGET_CHECK_RETURN(gadget_->sendOutRecon(&gadget_->image_headers_[jobID], 
-                        gadget_->packages_received_[jobID].complexIm, gadget_->image_series_, dataDimStartingIndexes, "Image", GTPLUS_IMAGE_REGULAR), false);
+                        gadget_->packages_received_[jobID].complexIm, gadget_->image_series_, dataDimStartingIndexes, "Image", GADGETRON_IMAGE_REGULAR), false);
                 }
 
                 if ( gadget_->send_out_recon_second_ )
@@ -657,7 +657,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                                                                         gadget_->packages_received_[jobID].resTimeStampSecond,
                                                                         gadget_->packages_received_[jobID].resPhysioTimeStampSecond,
                                                                         gadget_->image_series_+1, dataDimStartingIndexes, 
-                                                                        "ImageRetro", GTPLUS_IMAGE_RETRO), false);
+                                                                        "ImageRetro", GADGETRON_IMAGE_RETRO), false);
                             }
                             else
                             {
@@ -666,7 +666,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                                                                         gadget_->packages_received_[jobID].resTimeStampSecond,
                                                                         gadget_->packages_received_[jobID].resPhysioTimeStampSecond,
                                                                         gadget_->image_series_+1, dataDimStartingIndexes, 
-                                                                        "Image", GTPLUS_IMAGE_REGULAR), false);
+                                                                        "Image", GADGETRON_IMAGE_REGULAR), false);
                             }
                         }
                     }

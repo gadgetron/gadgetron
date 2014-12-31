@@ -57,14 +57,13 @@
 #include "gtPlusIOAnalyze.h"
 #include "hoNDArrayMemoryManaged.h"
 #include "GadgetronTimer.h"
+#include "mri_core_definition.h"
 #include "mri_core_utility.h"
 #include "mri_core_grappa.h"
 
 #ifdef USE_OMP
     #include <omp.h>
 #endif // USE_OMP
-
-#include "GtPlusDefinition.h"
 
 namespace Gadgetron {
 

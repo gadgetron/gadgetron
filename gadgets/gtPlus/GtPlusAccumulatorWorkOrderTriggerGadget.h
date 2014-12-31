@@ -91,28 +91,28 @@ public:
     // the trigger is performed whenever the triggerDim2_ is changed
 
     // noacceleration
-    Gadgetron::gtPlus::ISMRMRDDIM noacceleration_triggerDim1_;
-    Gadgetron::gtPlus::ISMRMRDDIM noacceleration_triggerDim2_;
+    Gadgetron::ISMRMRDDIM noacceleration_triggerDim1_;
+    Gadgetron::ISMRMRDDIM noacceleration_triggerDim2_;
     int noacceleration_numOfKSpace_triggerDim1_;
 
     // interleaved
-    Gadgetron::gtPlus::ISMRMRDDIM interleaved_triggerDim1_;
-    Gadgetron::gtPlus::ISMRMRDDIM interleaved_triggerDim2_;
+    Gadgetron::ISMRMRDDIM interleaved_triggerDim1_;
+    Gadgetron::ISMRMRDDIM interleaved_triggerDim2_;
     int interleaved_numOfKSpace_triggerDim1_;
 
     // embedded
-    Gadgetron::gtPlus::ISMRMRDDIM embedded_triggerDim1_;
-    Gadgetron::gtPlus::ISMRMRDDIM embedded_triggerDim2_;
+    Gadgetron::ISMRMRDDIM embedded_triggerDim1_;
+    Gadgetron::ISMRMRDDIM embedded_triggerDim2_;
     int embedded_numOfKSpace_triggerDim1_;
 
     // separate
-    Gadgetron::gtPlus::ISMRMRDDIM separate_triggerDim1_;
-    Gadgetron::gtPlus::ISMRMRDDIM separate_triggerDim2_;
+    Gadgetron::ISMRMRDDIM separate_triggerDim1_;
+    Gadgetron::ISMRMRDDIM separate_triggerDim2_;
     int separate_numOfKSpace_triggerDim1_;
 
     // for other kspace data, if other_kspace_matching_Dim != DIM_NONE, the other data dimension will be made to match the image data at 
     // dimension other_kspace_matching_Dim
-    Gadgetron::gtPlus::ISMRMRDDIM other_kspace_matching_Dim_;
+    Gadgetron::ISMRMRDDIM other_kspace_matching_Dim_;
 
     // default behavior is to compare the readout geometry
     // if the imaging slice changes, the trigger status is reset
@@ -161,15 +161,15 @@ protected:
     // the next work orders will be sent out when triggerDim1_ changes with workFlow_BufferKernel_==false and workFlow_use_BufferedKernel_==true
     // when the triggerDim2_ changes, the status will be reset
     virtual bool triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, 
-            Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, Gadgetron::gtPlus::ISMRMRDDIM& triggerDim2_, int numOfKSpace_triggerDim1_);
+            Gadgetron::ISMRMRDDIM& triggerDim1_, Gadgetron::ISMRMRDDIM& triggerDim2_, int numOfKSpace_triggerDim1_);
 
     // trigger by extract array with triggerDim being value
-    virtual bool triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_);
-    virtual bool triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_);
-    virtual bool triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gadgetron::gtPlus::ISMRMRDDIM& triggerDim2, size_t value2, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_);
+    virtual bool triggerByDimEqual(Gadgetron::ISMRMRDDIM& triggerDim, size_t value, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_);
+    virtual bool triggerByDimLessEqual(Gadgetron::ISMRMRDDIM& triggerDim, size_t value, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_);
+    virtual bool triggerByDimEqual(Gadgetron::ISMRMRDDIM& triggerDim1, size_t value1, Gadgetron::ISMRMRDDIM& triggerDim2, size_t value2, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_);
 
     // trigger by extract array with triggerDim being <= value
-    virtual bool triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gadgetron::gtPlus::ISMRMRDDIM& triggerDim2, size_t value2, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_);
+    virtual bool triggerByDim1LessEqualDim2Equal(Gadgetron::ISMRMRDDIM& triggerDim1, size_t value1, Gadgetron::ISMRMRDDIM& triggerDim2, size_t value2, bool workFlow_BufferKernel_, bool workFlow_use_BufferedKernel_);
 
     // whether need to trigger all buffered data in close()
     bool needTriggerWorkOrderAllInClose();
@@ -177,10 +177,10 @@ protected:
     virtual bool triggerWorkOrderAllInClose();
 
     // trigger the last count in the close function
-    virtual bool triggerWorkOrderLastCountInClose(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, Gadgetron::gtPlus::ISMRMRDDIM& triggerDim2_, int numOfKSpace_triggerDim1_);
+    virtual bool triggerWorkOrderLastCountInClose(Gadgetron::ISMRMRDDIM& triggerDim1_, Gadgetron::ISMRMRDDIM& triggerDim2_, int numOfKSpace_triggerDim1_);
 
-    size_t getDimValue(const ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::gtPlus::ISMRMRDDIM& dim);
-    void setDimValue(ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value);
+    size_t getDimValue(const ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::ISMRMRDDIM& dim);
+    void setDimValue(ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::ISMRMRDDIM& dim, size_t value);
 
     // buffer for per 2D image information
     GtPlusGadgetImageArray* messageImage_;

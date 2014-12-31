@@ -168,7 +168,6 @@ if ( HAS_64_BIT )
     endif(MATLAB_FOUND)
 
     set(gtplus_files GtPlusExport.h 
-                GtPlusDefinition.h 
                 ${util_header_files} 
                 ${util_src_files} )
 
@@ -218,7 +217,6 @@ if ( HAS_64_BIT )
     # install gtplus files
     install (FILES  
             GtPlusExport.h 
-            GtPlusDefinition.h 
             ${util_header_files} 
             ${workflow_header_files} 
             ${algorithm_header_files} 
