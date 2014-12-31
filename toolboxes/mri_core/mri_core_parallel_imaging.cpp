@@ -26,7 +26,7 @@ void parallelImaging<T>::printInfo(std::ostream& os)
 }
 
 template <typename T> 
-void parallelImaging<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, hoNDArray<T>& unmixCoeff, hoNDArray<T>& gFactor)
+void parallelImaging<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, double acceFactorE1, hoNDArray<T>& unmixCoeff, hoNDArray<T>& gFactor)
 {
     try
     {
@@ -34,6 +34,8 @@ void parallelImaging<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDArray<T
         size_t E1 = kerIm.get_size(1);
         size_t srcCHA = kerIm.get_size(2);
         size_t dstCHA = kerIm.get_size(3);
+
+        GADGET_CHECK_THROW(acceFactorE1>=1);
 
         GADGET_CHECK_THROW(coilMap.get_size(0)==RO);
         GADGET_CHECK_THROW(coilMap.get_size(1)==E1);
@@ -80,6 +82,8 @@ void parallelImaging<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDArray<T
         Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff);
         Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor);
         Gadgetron::sqrt(gFactor, gFactor);
+
+        Gadgetron::scal( (value_type)(1.0/acceFactorE1), gFactor);
     }
     catch(...)
     {
@@ -140,7 +144,7 @@ void parallelImaging<T>::applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm, con
 }
 
 template <typename T> 
-void parallelImaging<T>::unmixCoeff3D(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, hoNDArray<T>& unmixCoeff, hoNDArray<T>& gFactor)
+void parallelImaging<T>::unmixCoeff3D(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, double acceFactorE1, double acceFactorE2, hoNDArray<T>& unmixCoeff, hoNDArray<T>& gFactor)
 {
     try
     {
@@ -149,6 +153,9 @@ void parallelImaging<T>::unmixCoeff3D(const hoNDArray<T>& kerIm, const hoNDArray
         size_t E2 = kerIm.get_size(2);
         size_t srcCHA = kerIm.get_size(3);
         size_t dstCHA = kerIm.get_size(4);
+
+        GADGET_CHECK_THROW(acceFactorE1>=1);
+        GADGET_CHECK_THROW(acceFactorE2>=1);
 
         GADGET_CHECK_THROW(coilMap.get_size(0)==RO);
         GADGET_CHECK_THROW(coilMap.get_size(1)==E1);
@@ -196,6 +203,8 @@ void parallelImaging<T>::unmixCoeff3D(const hoNDArray<T>& kerIm, const hoNDArray
         Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff);
         Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor);
         Gadgetron::sqrt(gFactor, gFactor);
+
+        Gadgetron::scal( (value_type)(1.0/(acceFactorE1*acceFactorE2)), gFactor);
     }
     catch(...)
     {

@@ -17,6 +17,8 @@ class EXPORTMRICORE parallelImaging
 {
 public:
 
+    typedef typename realType<T>::Type value_type;
+
     parallelImaging(){}
     virtual ~parallelImaging() {}
 
@@ -30,7 +32,7 @@ public:
     // coilMap: [RO E1 dstCHA]
     // unmixCoeff: [RO E1 srcCHA]
     // gFactor: [RO E1]
-    void unmixCoeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, hoNDArray<T>& unmixCoeff, hoNDArray<T>& gFactor);
+    void unmixCoeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, double acceFactorE1, hoNDArray<T>& unmixCoeff, hoNDArray<T>& gFactor);
 
     /// apply unmixing coefficient
     /// kspace: [RO E1 srcCHA ...]
@@ -48,7 +50,7 @@ public:
     // coilMap: [RO E1 E2 dstCHA]
     // unmixCoeff: [RO E1 E2 srcCHA]
     // gFactor: [RO E1 E2]
-    void unmixCoeff3D(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, hoNDArray<T>& unmixCoeff, hoNDArray<T>& gFactor);
+    void unmixCoeff3D(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, double acceFactorE1, double acceFactorE2, hoNDArray<T>& unmixCoeff, hoNDArray<T>& gFactor);
 
     /// apply unmixing coefficient
     /// kspace: [RO E1 E2 srcCHA ...]

@@ -22,6 +22,8 @@ class EXPORTMRICORE grappa : public parallelImaging<T>
 {
 public:
 
+    typedef typename realType<T>::Type value_type;
+
     grappa(){}
     virtual ~grappa() {}
 
