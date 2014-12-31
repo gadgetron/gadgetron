@@ -19,7 +19,7 @@ namespace Gadgetron{
     
     
     if (h.encoding.size() != 1) {
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+      GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
     
@@ -84,7 +84,7 @@ namespace Gadgetron{
     }
         
     if (this->next()->putq(m1) < 0) {
-      GADGET_DEBUG1("Failed to put job on queue.\n");
+      GDEBUG("Failed to put job on queue.\n");
       return GADGET_FAIL;
     }
     

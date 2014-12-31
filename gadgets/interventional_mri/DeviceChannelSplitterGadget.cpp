@@ -22,7 +22,7 @@ int DeviceChannelSplitterGadget<T>
   size_t image_elements = dim_x*dim_y*dim_z;
 
   if (header_channels != array_channels) {
-    GADGET_DEBUG2("Inconsistent number of header channels (%d) and array channels (%d)\n", header_channels, array_channels);
+    GDEBUG("Inconsistent number of header channels (%d) and array channels (%d)\n", header_channels, array_channels);
     m1->release();
     return GADGET_FAIL;
   }
@@ -36,7 +36,7 @@ int DeviceChannelSplitterGadget<T>
     im1->getObjectPtr()->channels = 1;
     
     /*
-    GADGET_DEBUG2("Image with matrix (cha=%d): %d, %d, %d and fov %f, %f, %f\n", 
+    GDEBUG("Image with matrix (cha=%d): %d, %d, %d and fov %f, %f, %f\n", 
 		  i,
 		  im1->getObjectPtr()->matrix_size[0], 
 		  im1->getObjectPtr()->matrix_size[1], 

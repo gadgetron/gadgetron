@@ -162,7 +162,7 @@ namespace Gadgetron
                 return -1;
             }
 
-            GADGET_DEBUG2("--> send job, size of job : %f MBytes ... \n", sizeOfJob/1024.0/1024);
+            GDEBUG("--> send job, size of job : %f MBytes ... \n", sizeOfJob/1024.0/1024);
 
             size_t maxBytesPerSend = (size_t)(512.0*1024*1024);
 

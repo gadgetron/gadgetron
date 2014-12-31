@@ -716,7 +716,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
     }
     catch(...)
     {
-        GADGET_DEBUG1("GtPlusRecon2DTGadgetCloudSender handling close...\n");
+        GDEBUG("GtPlusRecon2DTGadgetCloudSender handling close...\n");
         return false;
     }
 

@@ -220,7 +220,7 @@ sendOutJob(int jobID, GtPlusReconJobTypeCPFL* job)
         int ret =  this->controller_->output_ready(mb);
         if (ret < 0)
         {
-            GADGET_DEBUG1("Failed to return GtPlusReconJob3DTGadget job massage to controller\n");
+            GDEBUG("Failed to return GtPlusReconJob3DTGadget job massage to controller\n");
             return false;
         }
     }

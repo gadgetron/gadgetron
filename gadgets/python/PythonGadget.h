@@ -31,25 +31,25 @@ namespace Gadgetron{
 	boost::shared_ptr<std::string> pydatafunc    = this->get_string_value("input_function");
 	boost::shared_ptr<std::string> pyconfigfunc  = this->get_string_value("config_function");
 
-	GADGET_DEBUG2("Python Module          : %s\n", pymod.get()->c_str());
-	GADGET_DEBUG2("Python Ref Function    : %s\n", pyreffunc.get()->c_str());
-	GADGET_DEBUG2("Python Data Function   : %s\n", pydatafunc.get()->c_str());
-	GADGET_DEBUG2("Python Config Function : %s\n", pyconfigfunc.get()->c_str());
+	GDEBUG("Python Module          : %s\n", pymod.get()->c_str());
+	GDEBUG("Python Ref Function    : %s\n", pyreffunc.get()->c_str());
+	GDEBUG("Python Data Function   : %s\n", pydatafunc.get()->c_str());
+	GDEBUG("Python Config Function : %s\n", pyconfigfunc.get()->c_str());
 
 	if (communicator_->addPath(*pypath.get()) != GADGET_OK) {
-	  GADGET_DEBUG2("Failed to add paths in Gadget %s\n", this->module()->name());
+	  GDEBUG("Failed to add paths in Gadget %s\n", this->module()->name());
 	  return GADGET_FAIL;
 	}
 
 	if (communicator_->registerGadget(this, *pymod.get(),
 					  *pyreffunc.get(), *pyconfigfunc.get(),
 					  *pydatafunc.get()) != GADGET_OK) {
-	  GADGET_DEBUG2("Failed to register Gadget (%s) with PythonCommunicator\n", this->module()->name());
+	  GDEBUG("Failed to register Gadget (%s) with PythonCommunicator\n", this->module()->name());
 	  return GADGET_FAIL;
 	}
 
 	if (communicator_->processConfig(this, mb) != GADGET_OK) {
-	  GADGET_DEBUG2("Failed to process config in Python module of Gadget (%s)\n", this->module()->name());
+	  GDEBUG("Failed to process config in Python module of Gadget (%s)\n", this->module()->name());
 	  return GADGET_FAIL;
 	}
 
@@ -63,18 +63,18 @@ namespace Gadgetron{
 	//We want to avoid a deadlock for the Python GIL if this python call results in an output that the GadgetReference will not be able to get rid of.
 	//This is kind of a nasty busy wait, maybe we should add an event handler to the NotificationStrategy of the Q or something, but for now, this will do it.
 	while (this->next()->msg_queue()->is_full()) {
-	  //GADGET_DEBUG2("Gadget (%s) sleeping while downstream Gadget (%s) does some work\n", this->module()->name(), this->next()->module()->name());
+	  //GDEBUG("Gadget (%s) sleeping while downstream Gadget (%s) does some work\n", this->module()->name(), this->next()->module()->name());
 	  ACE_Time_Value tv(0,10000); //Sleep for 10ms while the downstream Gadget does some work
 	  ACE_OS::sleep(tv);
 	}
 
-	//GADGET_DEBUG2("Process called in Gadget (%s)\n", this->module()->name());
+	//GDEBUG("Process called in Gadget (%s)\n", this->module()->name());
 	if (communicator_->process(this,m1,m2) != GADGET_OK) {
-	  GADGET_DEBUG2("Failed to process data for Gadget (%s)\n", this->module()->name());
+	  GDEBUG("Failed to process data for Gadget (%s)\n", this->module()->name());
 	  return GADGET_FAIL;
 	}
 
-	//GADGET_DEBUG2("Process done in Gadget (%s)\n", this->module()->name());
+	//GDEBUG("Process done in Gadget (%s)\n", this->module()->name());
 	return GADGET_OK;
       }
   

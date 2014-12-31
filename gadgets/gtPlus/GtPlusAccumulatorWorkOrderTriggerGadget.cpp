@@ -72,7 +72,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     try {
       deserialize(mb->rd_ptr(),h);
     } catch (...) {
-      GADGET_DEBUG1("Error parsing ISMRMRD Header");
+      GDEBUG("Error parsing ISMRMRD Header");
       throw;
       return GADGET_FAIL;
     }
@@ -82,8 +82,8 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     // e.g. Parallel imaging reference scan collected with GRE and data with EPI
     if (h.encoding.size() > 2)
     {
-        GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-        GADGET_DEBUG1("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding space\n");
+        GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+        GDEBUG("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding space\n");
         return GADGET_FAIL;
     } 
     else if (h.encoding.size() == 2)
@@ -95,8 +95,8 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
             (h.encoding[0].reconSpace.fieldOfView_mm.y == h.encoding[1].reconSpace.fieldOfView_mm.y) &&
             (h.encoding[0].reconSpace.fieldOfView_mm.z == h.encoding[1].reconSpace.fieldOfView_mm.z)) )
         {
-            GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-            GADGET_DEBUG1("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding spaces with identical recon spaces.\n");
+            GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+            GDEBUG("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding spaces with identical recon spaces.\n");
             return GADGET_FAIL;
         }
     }
@@ -104,7 +104,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     // find out the PAT mode
     if (!h.encoding[0].parallelImaging)
     {
-      GADGET_DEBUG1("Parallel Imaging section not found in header");
+      GDEBUG("Parallel Imaging section not found in header");
       return GADGET_FAIL;
     }
 
@@ -120,7 +120,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     if ( !p_imaging.calibrationMode.is_present() )
     {
-        GADGET_DEBUG1("Parallel Imaging calibrationMode not found in header");
+        GDEBUG("Parallel Imaging calibrationMode not found in header");
         return GADGET_FAIL;
     }
 
@@ -154,7 +154,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
             }
             else
             {
-                GADGET_DEBUG1("Unknown interleaving dimension. Bailing out");
+                GDEBUG("Unknown interleaving dimension. Bailing out");
                 return GADGET_FAIL;
             }
             GADGET_CONDITION_MSG(verboseMode_, "InterleaveDim is " << gtPlus_util_.getISMRMRDDimName(workOrder_.InterleaveDim_));
@@ -187,7 +187,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     }
     else
     {
-        GADGET_DEBUG1("Failed to process parallel imaging calibration mode");
+        GDEBUG("Failed to process parallel imaging calibration mode");
         return GADGET_FAIL;
     }
     
@@ -223,7 +223,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     if ( (!e_limits.kspace_encoding_step_1) || (!e_limits.kspace_encoding_step_2))
     {
-        GADGET_DEBUG1("kspace_encoding_step_1 and kspace_encoding_step_2 limits are required. Not found. Bailing out.");
+        GDEBUG("kspace_encoding_step_1 and kspace_encoding_step_2 limits are required. Not found. Bailing out.");
         return GADGET_FAIL;
     }
 
@@ -317,7 +317,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
             bIsKSpace, bIsRef, bIsNoise, bIsPhaseCorr, bIsReflect, bIsOther,
             bIsNavigator, bIsRTFeedback, bIsHPFeedback, bIsDummyScan) )
     {
-        GADGET_DEBUG1("Failed check readout status\n");
+        GDEBUG("Failed check readout status\n");
         return GADGET_FAIL;
     }
 
@@ -435,7 +435,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
     {
         if ( !storeImageData(m1, m2, bIsReflect) )
         {
-            GADGET_DEBUG1("Failed check readout status\n");
+            GDEBUG("Failed check readout status\n");
             return GADGET_FAIL;
         }
     }
@@ -445,7 +445,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
     {
         if ( !storeRefData(m1, m2, bIsReflect) )
         {
-            GADGET_DEBUG1("Failed check readout status\n");
+            GDEBUG("Failed check readout status\n");
             return GADGET_FAIL;
         }
     }
@@ -501,7 +501,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
     // perform triggering
     if ( !triggerWorkOrder(m1, false, bIsKSpace) )
     {
-        GADGET_DEBUG1("Failed triggerWorkOrder(m1)\n");
+        GDEBUG("Failed triggerWorkOrder(m1)\n");
         return GADGET_FAIL;
     }
 
@@ -1153,7 +1153,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             }
             catch(...)
             {
-                GADGET_DEBUG1("Failed create buffer\n");
+                GDEBUG("Failed create buffer\n");
                 return false;
             }
 
@@ -1166,7 +1166,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
 
             if (!(messageImage_ = new GtPlusGadgetImageArray(matrix_size))) 
             {
-                GADGET_DEBUG1("Failed create buffer\n");
+                GDEBUG("Failed create buffer\n");
                 return false;
             }
         }
@@ -1192,7 +1192,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
         std::complex<float>* d = m2->getObjectPtr()->get_data_ptr();
         if (samples != static_cast<size_t>(dimensions_[0])) 
         {
-            GADGET_DEBUG1("Wrong number of samples received\n");
+            GDEBUG("Wrong number of samples received\n");
             return false;
         }
 
@@ -1250,13 +1250,13 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
 
         if ( !fillImageInfo(m1, messageImage_, idx) )
         {
-            GADGET_DEBUG1("Failed in fillImageInfo(m1, messageImage_, idx)\n");
+            GDEBUG("Failed in fillImageInfo(m1, messageImage_, idx)\n");
             return false;
         }
     }
     catch(...)
     {
-        GADGET_DEBUG1("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(...) ... \n");
+        GDEBUG("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(...) ... \n");
         return false;
     }
 
@@ -1345,7 +1345,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             }
             catch(...)
             {
-                GADGET_DEBUG1("Failed create ref buffer\n");
+                GDEBUG("Failed create ref buffer\n");
                 return false;
             }
         }
@@ -1390,7 +1390,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
         std::complex<float>* d = m2->getObjectPtr()->get_data_ptr();
         if (samples != static_cast<size_t>(workOrder_.ref_.get_size(0))) 
         {
-            GADGET_DEBUG1("Wrong number of samples received\n");
+            GDEBUG("Wrong number of samples received\n");
             return false;
         }
 
@@ -1462,7 +1462,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
     }
     catch(...)
     {
-        GADGET_DEBUG1("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::storeRefData(...) ... \n");
+        GDEBUG("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::storeRefData(...) ... \n");
         return false;
     }
 
@@ -1569,7 +1569,7 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
         }
         catch(...)
         {
-            GADGET_DEBUG1("Failed create buffer\n");
+            GDEBUG("Failed create buffer\n");
             return false;
         }
 
@@ -1609,7 +1609,7 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
     }
     catch(...)
     {
-        GADGET_DEBUG1("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::fillBuffer(...) ... \n");
+        GDEBUG("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::fillBuffer(...) ... \n");
         return false;
     }
 
@@ -1766,7 +1766,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
     }
     catch(...)
     {
-        GADGET_DEBUG1("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(...) ... \n");
+        GDEBUG("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(...) ... \n");
         return false;
     }
 
@@ -1858,7 +1858,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool 
 
             if ( !fillBuffer(phaseCorrBuffer_, workOrder_.phaseCorr_, workOrder_.reflect_phaseCorr_) )
             {
-                GADGET_DEBUG1("fillBuffer(phaseCorrBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(phaseCorrBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -1874,7 +1874,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool 
             ReflectBufferType tmpBuf;
             if ( !fillBuffer(noiseBuffer_, workOrder_.noise_, tmpBuf) )
             {
-                GADGET_DEBUG1("fillBuffer(noiseBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(noiseBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -1888,7 +1888,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool 
 
             if ( !fillBuffer(otherBuffer_, workOrder_.other_, workOrder_.reflect_other_) )
             {
-                GADGET_DEBUG1("fillBuffer(otherBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(otherBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -1966,7 +1966,7 @@ triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, b
 
             if ( !fillBuffer(phaseCorrBuffer_, workOrder_.phaseCorr_, workOrder_.reflect_phaseCorr_) )
             {
-                GADGET_DEBUG1("fillBuffer(phaseCorrBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(phaseCorrBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -1982,7 +1982,7 @@ triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, b
             ReflectBufferType tmpBuf;
             if ( !fillBuffer(noiseBuffer_, workOrder_.noise_, tmpBuf) )
             {
-                GADGET_DEBUG1("fillBuffer(noiseBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(noiseBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -1996,7 +1996,7 @@ triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, b
 
             if ( !fillBuffer(otherBuffer_, workOrder_.other_, workOrder_.reflect_other_) )
             {
-                GADGET_DEBUG1("fillBuffer(otherBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(otherBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -2074,7 +2074,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gad
 
             if ( !fillBuffer(phaseCorrBuffer_, workOrder_.phaseCorr_, workOrder_.reflect_phaseCorr_) )
             {
-                GADGET_DEBUG1("fillBuffer(phaseCorrBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(phaseCorrBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -2090,7 +2090,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gad
             ReflectBufferType tmpBuf;
             if ( !fillBuffer(noiseBuffer_, workOrder_.noise_, tmpBuf) )
             {
-                GADGET_DEBUG1("fillBuffer(noiseBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(noiseBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -2104,7 +2104,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gad
 
             if ( !fillBuffer(otherBuffer_, workOrder_.other_, workOrder_.reflect_other_) )
             {
-                GADGET_DEBUG1("fillBuffer(otherBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(otherBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -2182,7 +2182,7 @@ triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size
 
             if ( !fillBuffer(phaseCorrBuffer_, workOrder_.phaseCorr_, workOrder_.reflect_phaseCorr_) )
             {
-                GADGET_DEBUG1("fillBuffer(phaseCorrBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(phaseCorrBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -2198,7 +2198,7 @@ triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size
             ReflectBufferType tmpBuf;
             if ( !fillBuffer(noiseBuffer_, workOrder_.noise_, tmpBuf) )
             {
-                GADGET_DEBUG1("fillBuffer(noiseBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(noiseBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -2212,7 +2212,7 @@ triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size
 
             if ( !fillBuffer(otherBuffer_, workOrder_.other_, workOrder_.reflect_other_) )
             {
-                GADGET_DEBUG1("fillBuffer(otherBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(otherBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -2284,7 +2284,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
 
             if ( !fillBuffer(phaseCorrBuffer_, workOrder_.phaseCorr_, workOrder_.reflect_phaseCorr_) )
             {
-                GADGET_DEBUG1("fillBuffer(phaseCorrBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(phaseCorrBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -2300,7 +2300,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
             ReflectBufferType tmpBuf;
             if ( !fillBuffer(noiseBuffer_, workOrder_.noise_, tmpBuf) )
             {
-                GADGET_DEBUG1("fillBuffer(noiseBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(noiseBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -2314,7 +2314,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
 
             if ( !fillBuffer(otherBuffer_, workOrder_.other_, workOrder_.reflect_other_) )
             {
-                GADGET_DEBUG1("fillBuffer(otherBuffer_) failed ... \n");
+                GDEBUG("fillBuffer(otherBuffer_) failed ... \n");
                 cm1->release();
                 return false;
             }
@@ -2388,7 +2388,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::close(unsigned long flags)
             // never been triggered, so need to trigger with all data buffered
             if ( !triggerWorkOrderAllInClose() )
             {
-                GADGET_DEBUG1("triggerWorkOrderAllInClose() failed ... \n");
+                GDEBUG("triggerWorkOrderAllInClose() failed ... \n");
                 return GADGET_FAIL;
             }
         }
@@ -2397,7 +2397,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::close(unsigned long flags)
             // need to trigger the last portion of kspace
             //if ( !triggerWorkOrder(NULL, true, true) )
             //{
-            //    GADGET_DEBUG1("Failed triggerWorkOrder(inClose)\n");
+            //    GDEBUG("Failed triggerWorkOrder(inClose)\n");
             //    return GADGET_FAIL;
             //}
         }

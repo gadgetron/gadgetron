@@ -16,7 +16,7 @@
     do {                                                                    \
         status = dataset->putAndInsertString(k, s);            \
         if (!status.good()) {                                               \
-            GADGET_DEBUG2("Failed to insert DICOM field (0x%04X,0x%04X) at "\
+            GDEBUG("Failed to insert DICOM field (0x%04X,0x%04X) at "\
                 "line %u\n", k.getGroup(), k.getElement(), __LINE__);       \
             return GADGET_FAIL;                                             \
         }                                                                   \
@@ -37,50 +37,50 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Ensure DICOM dictionary is loaded
     if (!dcmDataDict.isDictionaryLoaded()) {
-        GADGET_DEBUG1("Dictionary not loaded!  Set DCMDICTPATH\n");
+        GDEBUG("Dictionary not loaded!  Set DCMDICTPATH\n");
         return GADGET_FAIL;
     }
 
     ISMRMRD::ExperimentalConditions exp_cond = h.experimentalConditions;
 
     if (!h.subjectInformation) {
-        GADGET_DEBUG1("Header missing SubjectInformation parameters\n");
+        GDEBUG("Header missing SubjectInformation parameters\n");
         return GADGET_FAIL;
     }
 
     ISMRMRD::SubjectInformation patient_info = *h.subjectInformation;
 
     if (!h.studyInformation) {
-      GADGET_DEBUG1("Header missing StudyInformation parameters\n");
+      GDEBUG("Header missing StudyInformation parameters\n");
       return GADGET_FAIL;
     }
 
     ISMRMRD::StudyInformation study_info = *h.studyInformation;
 
     if (!h.measurementInformation) {
-        GADGET_DEBUG1("Header missing MeasurementInformation parameters\n");
+        GDEBUG("Header missing MeasurementInformation parameters\n");
         return GADGET_FAIL;
     }
 
     ISMRMRD::MeasurementInformation meas_info = *h.measurementInformation;
 
     if (!h.acquisitionSystemInformation) {
-        GADGET_DEBUG1("Header missing AcquisitionSystemInformation parameters\n");
+        GDEBUG("Header missing AcquisitionSystemInformation parameters\n");
         return GADGET_FAIL;
     }
 
     ISMRMRD::AcquisitionSystemInformation sys_info = *h.acquisitionSystemInformation;
 
     if (!h.sequenceParameters) {
-        GADGET_DEBUG1("Header missing SequenceTiming parameters\n");
+        GDEBUG("Header missing SequenceTiming parameters\n");
         return GADGET_FAIL;
     }
 
     ISMRMRD::SequenceParameters seq_info = *h.sequenceParameters;
 
     if (h.encoding.size() == 0) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-      GADGET_DEBUG1("This Gadget needs an encoding description\n");
+      GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+      GDEBUG("This Gadget needs an encoding description\n");
       return GADGET_FAIL;
     }
 
@@ -106,13 +106,13 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
         status = metainfo->putAndInsertString(DcmTagKey(0x0002,0x0016),
                 sys_info.stationName->c_str());
         if (!status.good()) {
-            GADGET_DEBUG1("Failed to set AET in MetaInfo\n");
+            GDEBUG("Failed to set AET in MetaInfo\n");
             return GADGET_FAIL;
         }
     } else {
         status = metainfo->putAndInsertString(DcmTagKey(0x0002,0x0016), "none");
         if (!status.good()) {
-            GADGET_DEBUG1("Failed to set AET in MetaInfo\n");
+            GDEBUG("Failed to set AET in MetaInfo\n");
             return GADGET_FAIL;
         }
     }
@@ -121,7 +121,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     key.set(0x0008, 0x0000);
     status = dataset->insertEmptyElement(key);
     if (status.bad()) {
-        GADGET_DEBUG1("Failed to write 0x0008 Group Length\n");
+        GDEBUG("Failed to write 0x0008 Group Length\n");
         return GADGET_FAIL;
     }
 
@@ -278,7 +278,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     key.set(0x0010, 0x0000);
     status = dataset->insertEmptyElement(key);
     if (!status.good()) {
-        GADGET_DEBUG1("Failed to write 0x0010 Group Length\n");
+        GDEBUG("Failed to write 0x0010 Group Length\n");
         return GADGET_FAIL;
     }
 
@@ -350,7 +350,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     key.set(0x0018, 0x0000);
     status = dataset->insertEmptyElement(key);
     if (!status.good()) {
-        GADGET_DEBUG1("Failed to write 0x0018 Group Length\n");
+        GDEBUG("Failed to write 0x0018 Group Length\n");
         return GADGET_FAIL;
     }
 
@@ -486,7 +486,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     key.set(0x0020, 0x0000);
     status = dataset->insertEmptyElement(key);
     if (!status.good()) {
-        GADGET_DEBUG1("Failed to write 0x0020 Group Length\n");
+        GDEBUG("Failed to write 0x0020 Group Length\n");
         return GADGET_FAIL;
     }
 
@@ -520,7 +520,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     key.set(0x0028, 0x0000);
     status = dataset->insertEmptyElement(key);
     if (!status.good()) {
-        GADGET_DEBUG1("Failed to write 0x0028 Group Length\n");
+        GDEBUG("Failed to write 0x0028 Group Length\n");
         return GADGET_FAIL;
     }
 
@@ -554,7 +554,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     key.set(0x0028, 0x0103);
     WRITE_DCM_STRING(key, "1");
 
-    //GADGET_DEBUG1("Finished populating DICOM fields\n");
+    //GDEBUG("Finished populating DICOM fields\n");
 
     /* clean up the buffer we created for ACE_OS::snprintf */
     delete[] buf;
@@ -579,7 +579,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     try {
         pixels->getObjectPtr()->create(dims.get());
     } catch (bad_alloc& err) {
-        GADGET_DEBUG1("Unable to create short storage in DicomFinishGadget");
+        GDEBUG("Unable to create short storage in DicomFinishGadget");
         return GADGET_FAIL;
     }
 
@@ -643,7 +643,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     im_dim[3] = img->matrix_size[1];
     status = dataset->putAndInsertUint16Array(key, im_dim, 4);
     if (!status.good()) {
-        GADGET_DEBUG1("Failed to stuff image dimensions\n");
+        GDEBUG("Failed to stuff image dimensions\n");
         return GADGET_FAIL;
     }
 
@@ -727,21 +727,21 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     key.set(0x7fe0, 0x0000);
     status = dataset->insertEmptyElement(key);
     if (!status.good()) {
-        GADGET_DEBUG1("Failed to write 0x7fe0 Group Length\n");
+        GDEBUG("Failed to write 0x7fe0 Group Length\n");
         return GADGET_FAIL;
     }
 
     // Pixel Data
     if ((unsigned long)img->matrix_size[0] * (unsigned long)img->matrix_size[1] * (unsigned long) img->matrix_size[2] !=
                 data->get_number_of_elements()) {
-        GADGET_DEBUG1("Mismatch in image dimensions and available data\n");
+        GDEBUG("Mismatch in image dimensions and available data\n");
         return GADGET_FAIL;
     }
     key.set(0x7fe0, 0x0010);
     status = dataset->putAndInsertUint16Array(key, (unsigned short *)data->get_data_ptr(),
             data->get_number_of_elements());
     if (!status.good()) {
-        GADGET_DEBUG1("Failed to stuff Pixel Data\n");
+        GDEBUG("Failed to stuff Pixel Data\n");
         return GADGET_FAIL;
     }
 
@@ -796,10 +796,10 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
 
     int ret =  this->controller_->output_ready(mb);
 
-    //GADGET_DEBUG1("Finished Finishing DICOM\n");
+    //GDEBUG("Finished Finishing DICOM\n");
 
     if ( (ret < 0) ) {
-        GADGET_DEBUG1("Failed to return message to controller\n");
+        GDEBUG("Failed to return message to controller\n");
         return GADGET_FAIL;
     }
 

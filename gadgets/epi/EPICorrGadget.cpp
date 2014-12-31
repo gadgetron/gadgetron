@@ -13,8 +13,8 @@ int EPICorrGadget::process_config(ACE_Message_Block* mb)
   ISMRMRD::deserialize(mb->rd_ptr(),h);
 
   if (h.encoding.size() == 0) {
-    GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-    GADGET_DEBUG1("This Gadget needs an encoding description\n");
+    GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+    GDEBUG("This Gadget needs an encoding description\n");
     return GADGET_FAIL;
   }
 
@@ -27,12 +27,12 @@ int EPICorrGadget::process_config(ACE_Message_Block* mb)
   if (h.encoding[0].trajectoryDescription) {
     traj_desc = *h.encoding[0].trajectoryDescription;
   } else {
-    GADGET_DEBUG1("Trajectory description missing");
+    GDEBUG("Trajectory description missing");
     return GADGET_FAIL;
   }
 
   if (std::strcmp(traj_desc.identifier.c_str(), "ConventionalEPI")) {
-    GADGET_DEBUG1("Expected trajectory description identifier 'ConventionalEPI', not found.");
+    GDEBUG("Expected trajectory description identifier 'ConventionalEPI', not found.");
     return GADGET_FAIL;
   }
 

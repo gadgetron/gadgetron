@@ -49,7 +49,7 @@ int DicomImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 
     status = dcmFile->write(out_stream, EXS_LittleEndianExplicit, EET_ExplicitLength, NULL);
     if (!status.good()) {
-        GADGET_DEBUG2("Failed to write DcmFileFormat to DcmOutputStream(%s)\n", status.text());
+        GDEBUG("Failed to write DcmFileFormat to DcmOutputStream(%s)\n", status.text());
         return GADGET_FAIL;
     }
 
@@ -115,7 +115,7 @@ int DicomImageAttribWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 
     status = dcmFile->write(out_stream, EXS_LittleEndianExplicit, EET_ExplicitLength, NULL);
     if (!status.good()) {
-        GADGET_DEBUG2("Failed to write DcmFileFormat to DcmOutputStream(%s)\n", status.text());
+        GDEBUG("Failed to write DcmFileFormat to DcmOutputStream(%s)\n", status.text());
         return GADGET_FAIL;
     }
 

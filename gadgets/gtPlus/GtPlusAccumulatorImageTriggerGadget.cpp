@@ -54,7 +54,7 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
     try {
       deserialize(mb->rd_ptr(),h);
     } catch (...) {
-      GADGET_DEBUG1("Error parsing ISMRMRD Header");
+      GDEBUG("Error parsing ISMRMRD Header");
       throw;
       return GADGET_FAIL;
     }
@@ -62,8 +62,8 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
     // seq object
     if (h.encoding.size() != 1)
     {
-        GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-        GADGET_DEBUG1("This simple GtPlusAccumulatorImageTriggerGadget only supports one encoding space\n");
+        GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+        GDEBUG("This simple GtPlusAccumulatorImageTriggerGadget only supports one encoding space\n");
         return GADGET_FAIL;
     }
 

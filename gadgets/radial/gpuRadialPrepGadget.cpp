@@ -43,7 +43,7 @@ namespace Gadgetron{
   
   int gpuRadialPrepGadget::process_config(ACE_Message_Block* mb)
   {
-    //GADGET_DEBUG1("gpuRadialPrepGadget::process_config\n");
+    //GDEBUG("gpuRadialPrepGadget::process_config\n");
 
     // Get configuration values from config file
     //
@@ -62,17 +62,17 @@ namespace Gadgetron{
     sliding_window_rotations_ = get_int_value(std::string("sliding_window_rotations").c_str());
 
     if( sliding_window_profiles_>0 && sliding_window_rotations_>0 ){
-      GADGET_DEBUG1( "Error: Sliding window reconstruction is not yet supported for both profiles and frames simultaneously.\n" );
+      GDEBUG( "Error: Sliding window reconstruction is not yet supported for both profiles and frames simultaneously.\n" );
       return GADGET_FAIL;
     }
 
     if( sliding_window_profiles_>0 && rotations_per_reconstruction_>0 ){
-      GADGET_DEBUG1( "Error: Sliding window reconstruction over profiles is not yet supported for multiframe reconstructions.\n" );
+      GDEBUG( "Error: Sliding window reconstruction over profiles is not yet supported for multiframe reconstructions.\n" );
       return GADGET_FAIL;
     }
     
     if( sliding_window_rotations_ > 0 && sliding_window_rotations_ >= rotations_per_reconstruction_ ){
-      GADGET_DEBUG1( "Error: Illegal sliding window configuration.\n" );
+      GDEBUG( "Error: Illegal sliding window configuration.\n" );
       return GADGET_FAIL;
     }
 
@@ -81,28 +81,28 @@ namespace Gadgetron{
 
     int number_of_devices;
     if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to query number of CUDA devices.\n" );
+      GDEBUG( "Error: unable to query number of CUDA devices.\n" );
       return GADGET_FAIL;
     }
 
     if (number_of_devices == 0) {
-      GADGET_DEBUG1( "Error: No available CUDA devices.\n" );
+      GDEBUG( "Error: No available CUDA devices.\n" );
       return GADGET_FAIL;
     }
 
     if (device_number_ >= number_of_devices) {
-      GADGET_DEBUG2("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
+      GDEBUG("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
       device_number_ = (device_number_%number_of_devices);
     }
 
     if (cudaSetDevice(device_number_)!= cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to set CUDA device.\n" );
+      GDEBUG( "Error: unable to set CUDA device.\n" );
       return GADGET_FAIL;
     }
 
     cudaDeviceProp deviceProp;
     if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to query device properties.\n" );
+      GDEBUG( "Error: unable to query device properties.\n" );
       return GADGET_FAIL;
     }
     
@@ -121,7 +121,7 @@ namespace Gadgetron{
     
     
     if (h.encoding.size() != 1) {
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+      GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
     
@@ -146,10 +146,10 @@ namespace Gadgetron{
     // In case the warp_size constraint kicked in
     oversampling_factor_ = float(image_dimensions_recon_os_[0])/float(image_dimensions_recon_[0]); 
     
-    GADGET_DEBUG2("matrix_size_x : %d, recon: %d, recon_os: %d\n", 
+    GDEBUG("matrix_size_x : %d, recon: %d, recon_os: %d\n", 
                   image_dimensions_[0], image_dimensions_recon_[0], image_dimensions_recon_os_[0]);
 
-    GADGET_DEBUG2("matrix_size_y : %d, recon: %d, recon_os: %d\n", 
+    GDEBUG("matrix_size_y : %d, recon: %d, recon_os: %d\n", 
                   image_dimensions_[1], image_dimensions_recon_[1], image_dimensions_recon_os_[1]);
     
     fov_.push_back(r_space.fieldOfView_mm.x);
@@ -205,7 +205,7 @@ namespace Gadgetron{
         !buffer_update_needed_.get() ||
         !num_coils_.get() ||
         !reconfigure_ ){
-      GADGET_DEBUG1("Failed to allocate host memory (1)\n");
+      GDEBUG("Failed to allocate host memory (1)\n");
       return GADGET_FAIL;
     }
 
@@ -249,7 +249,7 @@ namespace Gadgetron{
     slice_dir_ = boost::shared_array<float[3]>(new float[slices_*sets_][3]);
 
     if( !position_.get() || !read_dir_.get() || !phase_dir_.get() || !slice_dir_.get() ){
-      GADGET_DEBUG1("Failed to allocate host memory (2)\n");
+      GDEBUG("Failed to allocate host memory (2)\n");
       return GADGET_FAIL;
     }
 
@@ -275,7 +275,7 @@ namespace Gadgetron{
     host_weights_recon_ = boost::shared_array< hoNDArray<float> >(new hoNDArray<float>[slices_*sets_]);
 
     if( !csm_host_.get() || !reg_host_.get() || !host_traj_recon_.get() || !host_weights_recon_ ){
-      GADGET_DEBUG1("Failed to allocate host memory (3)\n");
+      GDEBUG("Failed to allocate host memory (3)\n");
       return GADGET_FAIL;
     }
 
@@ -306,11 +306,11 @@ namespace Gadgetron{
       samples_per_profile_ = m1->getObjectPtr()->number_of_samples;
     
     if( samples_per_profile_ != m1->getObjectPtr()->number_of_samples ){
-      GADGET_DEBUG1("Unexpected change in the incoming profiles' lengths\n");
+      GDEBUG("Unexpected change in the incoming profiles' lengths\n");
       return GADGET_FAIL;
     }
     
-    //GADGET_DEBUG1("gpuRadialPrepGadget::process\n");
+    //GDEBUG("gpuRadialPrepGadget::process\n");
 
     boost::shared_ptr<GPUTimer> process_timer;
     if( output_timing_ )
@@ -321,13 +321,13 @@ namespace Gadgetron{
     // - or if the reconfigure_ flag is set
 
     if( num_coils_[set*slices_+slice] != m1->getObjectPtr()->active_channels ){
-      GADGET_DEBUG1("Reconfiguring due to change in the number of coils\n");
+      GDEBUG("Reconfiguring due to change in the number of coils\n");
       num_coils_[set*slices_+slice] = m1->getObjectPtr()->active_channels;
       reconfigure(set, slice);
     }
 
     if( reconfigure_[set*slices_+slice] ){
-      GADGET_DEBUG1("Reconfiguring due to boolean indicator\n");
+      GDEBUG("Reconfiguring due to boolean indicator\n");
       reconfigure(set, slice);
     }
 
@@ -367,7 +367,7 @@ namespace Gadgetron{
         if( mode_ == 0 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 ){
           unsigned int acceleration_factor = profile - previous_profile_[set*slices_+slice];
           if( acceleration_factor != frames_per_rotation_[set*slices_+slice] ){
-            GADGET_DEBUG1("Reconfiguring due to change in acceleration factor\n");
+            GDEBUG("Reconfiguring due to change in acceleration factor\n");
             frames_per_rotation_[set*slices_+slice] = acceleration_factor;
             reconfigure(set, slice);
           }
@@ -377,7 +377,7 @@ namespace Gadgetron{
         if( get_int_value(std::string("profiles_per_frame").c_str()) == 0 && // make sure the user did not specify a desired value for this variable
             profiles_counter_frame_[set*slices_+slice] > 0 &&
             profiles_counter_frame_[set*slices_+slice] != profiles_per_frame_[set*slices_+slice] ){ // a new acceleration factor is detected
-          GADGET_DEBUG1("Reconfiguring due to new slice detection\n");
+          GDEBUG("Reconfiguring due to new slice detection\n");
           new_frame_detected = true;
           profiles_per_frame_[set*slices_+slice] = profiles_counter_frame_[set*slices_+slice];
           if( mode_ == 1 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 )
@@ -413,7 +413,7 @@ namespace Gadgetron{
         extract_samples_from_queue( &frame_profiles_queue_[set*slices_+slice], false, set, slice );
 
       if( host_samples.get() == 0x0 ){
-        GADGET_DEBUG1("Failed to extract frame data from queue\n");
+        GDEBUG("Failed to extract frame data from queue\n");
         return GADGET_FAIL;
       }
       
@@ -520,7 +520,7 @@ namespace Gadgetron{
         extract_samples_from_queue( &recon_profiles_queue_[set*slices_+slice], true, set, slice );
       
       if( samples_host.get() == 0x0 ){
-        GADGET_DEBUG1("Failed to extract frame data from queue\n");
+        GDEBUG("Failed to extract frame data from queue\n");
         return GADGET_FAIL;
       }
            
@@ -552,7 +552,7 @@ namespace Gadgetron{
       
       if( image_headers_queue_[set*slices_+slice].message_count() != frames_per_reconstruction ){
         m4->release();
-        GADGET_DEBUG2("Unexpected size of image header queue: %d, %d\n", 
+        GDEBUG("Unexpected size of image header queue: %d, %d\n", 
                       image_headers_queue_[set*slices_+slice].message_count(), frames_per_reconstruction);
         return GADGET_FAIL;
       }
@@ -566,7 +566,7 @@ namespace Gadgetron{
 
         if( image_headers_queue_[set*slices_+slice].dequeue_head(mbq) < 0 ) {
           m4->release();
-          GADGET_DEBUG1("Image header dequeue failed\n");
+          GDEBUG("Image header dequeue failed\n");
           return GADGET_FAIL;
         }
 	
@@ -591,10 +591,10 @@ namespace Gadgetron{
       *m3->getObjectPtr() = m4->getObjectPtr()->image_headers_[0];
       m3->cont(m4);
       
-      //GADGET_DEBUG1("Putting job on queue\n");
+      //GDEBUG("Putting job on queue\n");
       
       if (this->next()->putq(m3) < 0) {
-        GADGET_DEBUG1("Failed to put job on queue.\n");
+        GDEBUG("Failed to put job on queue.\n");
         m3->release();
         return GADGET_FAIL;
       }
@@ -629,7 +629,7 @@ namespace Gadgetron{
   int 
   gpuRadialPrepGadget::calculate_trajectory_for_reconstruction(long profile_offset, unsigned int set, unsigned int slice)
   {   
-    //GADGET_DEBUG1("Calculating trajectory for reconstruction\n");
+    //GDEBUG("Calculating trajectory for reconstruction\n");
 
     switch(mode_){
       
@@ -672,7 +672,7 @@ namespace Gadgetron{
       break;
 	
     default:
-      GADGET_DEBUG1("Illegal trajectory mode\n");
+      GDEBUG("Illegal trajectory mode\n");
       return GADGET_FAIL;
       break;
     }
@@ -682,7 +682,7 @@ namespace Gadgetron{
   int
   gpuRadialPrepGadget::calculate_density_compensation_for_reconstruction( unsigned int set, unsigned int slice)
   {
-    //GADGET_DEBUG1("Calculating dcw for reconstruction\n");
+    //GDEBUG("Calculating dcw for reconstruction\n");
     
     switch(mode_){
       
@@ -702,7 +702,7 @@ namespace Gadgetron{
       break;
       
     default:
-      GADGET_DEBUG1("Illegal dcw mode\n");
+      GDEBUG("Illegal dcw mode\n");
       return GADGET_FAIL;
       break;
     }
@@ -712,7 +712,7 @@ namespace Gadgetron{
   boost::shared_ptr< cuNDArray<floatd2> > 
   gpuRadialPrepGadget::calculate_trajectory_for_frame(long profile_offset, unsigned int set, unsigned int slice)
   {
-    //GADGET_DEBUG1("Calculating trajectory for buffer frame\n");
+    //GDEBUG("Calculating trajectory for buffer frame\n");
 
     boost::shared_ptr< cuNDArray<floatd2> > result;
 
@@ -740,7 +740,7 @@ namespace Gadgetron{
       break;	
 	
     default:
-      GADGET_DEBUG1("Illegal trajectory mode\n");
+      GDEBUG("Illegal trajectory mode\n");
       break;
     }
     
@@ -750,7 +750,7 @@ namespace Gadgetron{
   boost::shared_ptr< cuNDArray<float> >
   gpuRadialPrepGadget::calculate_density_compensation_for_frame(unsigned int set, unsigned int slice)
   {    
-    //GADGET_DEBUG1("Calculating dcw for buffer frame\n");
+    //GDEBUG("Calculating dcw for buffer frame\n");
 
     switch(mode_){
       
@@ -769,7 +769,7 @@ namespace Gadgetron{
       break;
       
     default:
-      GADGET_DEBUG1("Illegal dcw mode\n");
+      GDEBUG("Illegal dcw mode\n");
       return boost::shared_ptr< cuNDArray<float> >();
       break;
     }   
@@ -779,7 +779,7 @@ namespace Gadgetron{
   boost::shared_ptr< cuNDArray<floatd2> > 
   gpuRadialPrepGadget::calculate_trajectory_for_rhs(long profile_offset, unsigned int set, unsigned int slice)
   {
-    //GADGET_DEBUG1("Calculating trajectory for rhs\n");
+    //GDEBUG("Calculating trajectory for rhs\n");
 
     switch(mode_){
 
@@ -807,7 +807,7 @@ namespace Gadgetron{
       break;	
 	
     default:
-      GADGET_DEBUG1("Illegal trajectory mode\n");
+      GDEBUG("Illegal trajectory mode\n");
       return boost::shared_ptr< cuNDArray<floatd2> >();
       break;
     }
@@ -816,7 +816,7 @@ namespace Gadgetron{
   boost::shared_ptr< cuNDArray<float> >
   gpuRadialPrepGadget::calculate_density_compensation_for_rhs(unsigned int set, unsigned int slice)
   {
-    //GADGET_DEBUG1("Calculating dcw for rhs\n");
+    //GDEBUG("Calculating dcw for rhs\n");
     
     switch(mode_){
       
@@ -846,7 +846,7 @@ namespace Gadgetron{
       break;
       
     default:
-      GADGET_DEBUG1("Illegal dcw mode\n");
+      GDEBUG("Illegal dcw mode\n");
       return boost::shared_ptr< cuNDArray<float> >();
       break;
     }
@@ -856,7 +856,7 @@ namespace Gadgetron{
   extract_samples_from_queue( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool sliding_window,
                               unsigned int set, unsigned int slice )
   {    
-    //GADGET_DEBUG1("Emptying queue...\n");
+    //GDEBUG("Emptying queue...\n");
 
     unsigned int profiles_buffered = queue->message_count();
     
@@ -870,14 +870,14 @@ namespace Gadgetron{
 
       ACE_Message_Block* mbq;
       if (queue->dequeue_head(mbq) < 0) {
-        GADGET_DEBUG1("Message dequeue failed\n");
+        GDEBUG("Message dequeue failed\n");
         return boost::shared_ptr< hoNDArray<float_complext> >();
       }
       
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
 	
       if (!daq) {
-        GADGET_DEBUG1("Unable to interpret data on message queue\n");
+        GDEBUG("Unable to interpret data on message queue\n");
         return boost::shared_ptr< hoNDArray<float_complext> >();
       }
 	
@@ -920,7 +920,7 @@ namespace Gadgetron{
 
   void gpuRadialPrepGadget::reconfigure(unsigned int set, unsigned int slice, bool use_dcw)
   {    
-    GADGET_DEBUG2("\nReconfiguring:\n#profiles/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", 
+    GDEBUG("\nReconfiguring:\n#profiles/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", 
                   profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice], rotations_per_reconstruction_);
 
     calculate_trajectory_for_reconstruction(0, set, slice);

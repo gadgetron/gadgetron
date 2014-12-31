@@ -48,7 +48,7 @@ apply(hoNDArray< std::complex<T> >* data_in,
 
   mutex_.acquire();
   if (!weights_are_valid_) {
-	  GADGET_DEBUG1("Releasing Mutex to Wait for result\n");
+	  GDEBUG("Releasing Mutex to Wait for result\n");
 	  mutex_.release();
 	  cond_.wait();
 	  mutex_.acquire();

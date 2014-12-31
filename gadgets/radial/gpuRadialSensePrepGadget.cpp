@@ -17,7 +17,7 @@ namespace Gadgetron{
       acc_buffer->get_accumulated_coil_images();
     
     if( !csm_data.get() ){
-      GADGET_DEBUG1("Error during accumulation buffer computation\n");
+      GDEBUG("Error during accumulation buffer computation\n");
       return boost::shared_ptr< hoNDArray<float_complext> >();
     }
     
@@ -25,7 +25,7 @@ namespace Gadgetron{
       estimate_b1_map<float,2>( csm_data.get() );
   
     if( !csm.get() ){
-      GADGET_DEBUG1("Error during coil estimation\n");
+      GDEBUG("Error during coil estimation\n");
       return boost::shared_ptr< hoNDArray<float_complext> >();
     }            
     
@@ -51,7 +51,7 @@ namespace Gadgetron{
       acc_buffer->get_combined_coil_image();
     
     if( !reg_image.get() ){
-      GADGET_DEBUG1("Error computing regularization image\n");
+      GDEBUG("Error computing regularization image\n");
       return boost::shared_ptr< hoNDArray<float_complext> >();
     }            
     

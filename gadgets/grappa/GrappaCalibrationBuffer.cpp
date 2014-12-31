@@ -29,7 +29,7 @@ namespace Gadgetron{
 					 unsigned short line_offset, unsigned short partition_offset)
   {
     if (!buffer_.get_data_ptr()) {
-      GADGET_DEBUG1("Buffer not allocated, cannot add data");
+      GDEBUG("Buffer not allocated, cannot add data");
       return GADGET_FAIL;
     }
   
@@ -39,7 +39,7 @@ namespace Gadgetron{
     unsigned int slice = m1->idx.slice; //We should probably check this
 
     if (samples != dimensions_[0]) {
-      GADGET_DEBUG1("Wrong number of samples received\n");
+      GDEBUG("Wrong number of samples received\n");
       return GADGET_FAIL;    
     }
 
@@ -60,7 +60,7 @@ namespace Gadgetron{
                                                   m1->read_dir, m1->phase_dir, m1->slice_dir);
 
     if ( buf_update < 0) {
-      GADGET_DEBUG2("Unable to update buffer counter for line %d\n", line);
+      GDEBUG("Unable to update buffer counter for line %d\n", line);
       return GADGET_FAIL;
     }
 
@@ -99,16 +99,16 @@ namespace Gadgetron{
       }
  
       if (buffer_counter_.get_region_of_support(min_ky, max_ky) < 0) {
-        GADGET_DEBUG1("Unable to query min_ky, max_ky\n");
+        GDEBUG("Unable to query min_ky, max_ky\n");
         return GADGET_FAIL;
       }
     
       //If there is nothing on the queue, we might as well recalculate
       if (weights_calculator_->msg_queue()->message_count() < 1) {
-        //GADGET_DEBUG1("Queue is empty, invalidating weights\n");
+        //GDEBUG("Queue is empty, invalidating weights\n");
         weights_invalid_ = true;
       } else {
-        //GADGET_DEBUG1("Queue is NOT EMPTY, calculation not triggered\n");
+        //GDEBUG("Queue is NOT EMPTY, calculation not triggered\n");
       }
 
       if (weights_invalid_ && ((max_ky-min_ky) > acceleration_factor_)) {
@@ -118,11 +118,11 @@ namespace Gadgetron{
 
         std::vector<unsigned int> uncombined_channel_weights;
 
-        //GADGET_DEBUG2("sampled_region[0] = %d,%d\n", sampled_region[0].first, sampled_region[0].second);
-        //GADGET_DEBUG2("sampled_region[1] = %d,%d\n", sampled_region[1].first, sampled_region[1].second);
+        //GDEBUG("sampled_region[0] = %d,%d\n", sampled_region[0].first, sampled_region[0].second);
+        //GDEBUG("sampled_region[1] = %d,%d\n", sampled_region[1].first, sampled_region[1].second);
 
         if (!weights_calculator_) {
-          GADGET_DEBUG1("Weights calculator not defined\n");
+          GDEBUG("Weights calculator not defined\n");
           return GADGET_FAIL;
         }
 

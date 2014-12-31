@@ -16,12 +16,12 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
   verboseMode_ = this->get_bool_value("verboseMode");
 
   if (h.encoding.size() == 0) {
-    GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-    GADGET_DEBUG1("This Gadget needs an encoding description\n");
+    GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+    GDEBUG("This Gadget needs an encoding description\n");
     return GADGET_FAIL;
   }
 
-  GADGET_DEBUG2("Number of encoding spaces = %d\n", h.encoding.size());
+  GDEBUG("Number of encoding spaces = %d\n", h.encoding.size());
 
   // Get the encoding space and trajectory description
   ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
@@ -32,12 +32,12 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
   if (h.encoding[0].trajectoryDescription) {
     traj_desc = *h.encoding[0].trajectoryDescription;
   } else {
-    GADGET_DEBUG1("Trajectory description missing");
+    GDEBUG("Trajectory description missing");
     return GADGET_FAIL;
   }
 
   if (std::strcmp(traj_desc.identifier.c_str(), "ConventionalEPI")) {
-    GADGET_DEBUG1("Expected trajectory description identifier 'ConventionalEPI', not found.");
+    GDEBUG("Expected trajectory description identifier 'ConventionalEPI', not found.");
     return GADGET_FAIL;
   }
 
@@ -60,7 +60,7 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
     } else if (std::strcmp(i->name.c_str(),"numSamples") == 0) {
       reconx.numSamples_ = i->value;
     } else {
-      GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+      GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
     }
   }
 
@@ -69,7 +69,7 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
     if (std::strcmp(i->name.c_str(),"dwellTime") == 0) {
       reconx.dwellTime_ = i->value;
     } else {
-      GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+      GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
     }
   }
 

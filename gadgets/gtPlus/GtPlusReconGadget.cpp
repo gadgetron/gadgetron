@@ -655,11 +655,11 @@ namespace Gadgetron
         try {
             deserialize(mb->rd_ptr(),h);
         } catch (...) {
-            GADGET_DEBUG1("Error parsing ISMRMRD Header");
+            GDEBUG("Error parsing ISMRMRD Header");
         }
 
         if (!h.acquisitionSystemInformation) {
-            GADGET_DEBUG1("acquisitionSystemInformation not found in header. Bailing out");
+            GDEBUG("acquisitionSystemInformation not found in header. Bailing out");
             return GADGET_FAIL;
         }
         num_acq_channels_ = h.acquisitionSystemInformation->receiverChannels;
@@ -667,8 +667,8 @@ namespace Gadgetron
         GADGET_CONDITION_MSG(verboseMode_, "Number of acquisition channels : " << num_acq_channels_);
 
         if (h.encoding.size() < 1 || h.encoding.size() > 2) {
-            GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-            GADGET_DEBUG1("This GtPlusReconGadget only supports one or two encoding spaces\n");
+            GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+            GDEBUG("This GtPlusReconGadget only supports one or two encoding spaces\n");
             return GADGET_FAIL;
         }
 
@@ -710,8 +710,8 @@ namespace Gadgetron
                 (h.encoding[0].reconSpace.fieldOfView_mm.y == h.encoding[1].reconSpace.fieldOfView_mm.y) &&
                 (h.encoding[0].reconSpace.fieldOfView_mm.z == h.encoding[1].reconSpace.fieldOfView_mm.z)) )
             {
-                GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-                GADGET_DEBUG1("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding spaces with identical recon spaces.\n");
+                GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+                GDEBUG("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding spaces with identical recon spaces.\n");
                 return GADGET_FAIL;
             }
         }
@@ -751,7 +751,7 @@ namespace Gadgetron
 
         // find out the PAT mode
         if (!h.encoding[0].parallelImaging) {
-            GADGET_DEBUG1("Parallel Imaging section not found in header");
+            GDEBUG("Parallel Imaging section not found in header");
             return GADGET_FAIL;
         }
 
@@ -817,7 +817,7 @@ namespace Gadgetron
                 } else if ( p_imaging.interleavingDimension->compare("other") == 0 ) {
                     InterleaveDim_ = Gadgetron::gtPlus::DIM_other1;
                 } else {
-                    GADGET_DEBUG1("Unknown interleaving dimension. Bailing out");
+                    GDEBUG("Unknown interleaving dimension. Bailing out");
                     return GADGET_FAIL;
                 }
             }
@@ -1540,7 +1540,7 @@ namespace Gadgetron
                                             }
                                             catch(...)
                                             {
-                                                GADGET_DEBUG1("Unable to allocate new image\n");
+                                                GDEBUG("Unable to allocate new image\n");
                                                 cm1->release();
                                                 return false;
                                             }
@@ -1662,7 +1662,7 @@ namespace Gadgetron
             }
             catch(...)
             {
-                GADGET_DEBUG1("Unable to allocate new image\n");
+                GDEBUG("Unable to allocate new image\n");
                 cm1->release();
                 return false;
             }

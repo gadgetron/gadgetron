@@ -26,7 +26,7 @@ namespace Gadgetron{
   
   
   if (h.encoding.size() != 1) {
-    GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+    GDEBUG("This Gadget only supports one encoding space\n");
     return GADGET_FAIL;
   }
 
@@ -39,12 +39,12 @@ namespace Gadgetron{
   if (h.encoding[0].trajectoryDescription) {
     traj_desc = *h.encoding[0].trajectoryDescription;
   } else {
-    GADGET_DEBUG1("Trajectory description missing");
+    GDEBUG("Trajectory description missing");
     return GADGET_FAIL;
   }
 
   if (std::strcmp(traj_desc.identifier.c_str(), "HargreavesVDS2000")) {
-    GADGET_DEBUG1("Expected trajectory description identifier 'HargreavesVDS2000', not found.");
+    GDEBUG("Expected trajectory description identifier 'HargreavesVDS2000', not found.");
     return GADGET_FAIL;
   }
 
@@ -66,7 +66,7 @@ namespace Gadgetron{
       } else if (std::strcmp(i->name.c_str(),"SamplingTime_ns") == 0) {
 	sampling_time_ns = i->value;
     } else {
-      GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+      GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
     }
   }
 
@@ -80,12 +80,12 @@ namespace Gadgetron{
       } else if (std::strcmp(i->name.c_str(),"krmax_per_cm") == 0) {
 	kr_max= i->value;
       } else {
-	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+	GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
       }
   }
   
   if ((interleaves < 0) || (fov_coefficients < 0) || (sampling_time_ns < 0) || (max_grad < 0) || (max_slew < 0) || (fov_coeff < 0) || (kr_max < 0)) {
-    GADGET_DEBUG1("Appropriate parameters for calculating spiral trajectory not found in XML configuration\n");
+    GDEBUG("Appropriate parameters for calculating spiral trajectory not found in XML configuration\n");
     return GADGET_FAIL;
   }
 
@@ -101,14 +101,14 @@ namespace Gadgetron{
   samples_to_skip_start_  =  0; //n.get<int>(std::string("samplestoskipstart.value"))[0];
   samples_to_skip_end_    = -1; //n.get<int>(std::string("samplestoskipend.value"))[0];
   
-  GADGET_DEBUG2("smax:                    %f\n", smax_);
-  GADGET_DEBUG2("gmax:                    %f\n", gmax_);
-  GADGET_DEBUG2("Tsamp_ns:                %d\n", Tsamp_ns_);
-  GADGET_DEBUG2("Nints:                   %d\n", Nints_);
-  GADGET_DEBUG2("fov:                     %f\n", fov_);
-  GADGET_DEBUG2("krmax:                   %f\n", krmax_);
-  GADGET_DEBUG2("samples_to_skip_start_ : %d\n", samples_to_skip_start_);
-  GADGET_DEBUG2("samples_to_skip_end_   : %d\n", samples_to_skip_end_);
+  GDEBUG("smax:                    %f\n", smax_);
+  GDEBUG("gmax:                    %f\n", gmax_);
+  GDEBUG("Tsamp_ns:                %d\n", Tsamp_ns_);
+  GDEBUG("Nints:                   %d\n", Nints_);
+  GDEBUG("fov:                     %f\n", fov_);
+  GDEBUG("krmax:                   %f\n", krmax_);
+  GDEBUG("samples_to_skip_start_ : %d\n", samples_to_skip_start_);
+  GDEBUG("samples_to_skip_end_   : %d\n", samples_to_skip_end_);
   
   return GADGET_OK;
   }
@@ -145,7 +145,7 @@ namespace Gadgetron{
       calc_vds(smax_,gmax_,sample_time,sample_time,Nints_,&fov_,nfov,krmax_,ngmax,&xgrad,&ygrad,&ngrad);
 
       samples_per_interleave_ = std::min(ngrad,static_cast<int>(m1->getObjectPtr()->number_of_samples));
-      GADGET_DEBUG2("Using %d samples per interleave\n", samples_per_interleave_);
+      GDEBUG("Using %d samples per interleave\n", samples_per_interleave_);
 
       // Calculate the trajectory and weights
       calc_traj(xgrad, ygrad, samples_per_interleave_, Nints_, sample_time, krmax_, &x_trajectory, &y_trajectory, &weighting);
@@ -180,7 +180,7 @@ namespace Gadgetron{
 
     if (samples_to_skip_end_ == -1) {
       samples_to_skip_end_ = m1->getObjectPtr()->number_of_samples-samples_per_interleave_;
-      GADGET_DEBUG2("Adjusting samples_to_skip_end_ = %d\n", samples_to_skip_end_);
+      GDEBUG("Adjusting samples_to_skip_end_ = %d\n", samples_to_skip_end_);
     }
 
     // Define some utility variables
@@ -207,7 +207,7 @@ namespace Gadgetron{
     m2->cont(cont);
     
     if (this->next()->putq(m1) < 0) {
-      GADGET_DEBUG1("Failed to put job on queue.\n");
+      GDEBUG("Failed to put job on queue.\n");
       return GADGET_FAIL;
     }
     
