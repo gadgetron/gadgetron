@@ -2,6 +2,7 @@
 #include "AcquisitionAccumulateTriggerGadget.h"
 #include "Gadgetron.h"
 #include "mri_core_data.h"
+#include "log.h"
 
 namespace Gadgetron{
 
@@ -22,6 +23,10 @@ namespace Gadgetron{
     std::string trigger_dimension = *this->get_string_value("trigger_dimension");
     std::string sorting_dimension = *this->get_string_value("sorting_dimension");
     
+    GDEBUG("WARNING: Unknown trigger dimension (%s), trigger condition set to NONE (end of scan)\n", trigger_dimension.c_str());
+    GADGET_DEBUG1("BLAH BLAH OLD DEBUG\n");
+    GDEBUG("Just the BLAH BLAH BLAH\n");
+
     if (trigger_dimension.size() == 0) {
       trigger_ = NONE;
     } else if (trigger_dimension.compare("kspace_encode_step_1") == 0) {

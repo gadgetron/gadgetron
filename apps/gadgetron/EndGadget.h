@@ -16,7 +16,7 @@ class EndGadget : public Gadget
 {
 	virtual int close(unsigned long flags)
 	{
-		GADGET_DEBUG2("Close called in EndGadget with flags %d\n", flags);
+		GDEBUG("Close called in EndGadget with flags %d\n", flags);
 
 		GadgetContainerMessage<GadgetMessageIdentifier>* mb =
 				new GadgetContainerMessage<GadgetMessageIdentifier>();
@@ -27,7 +27,7 @@ class EndGadget : public Gadget
 			return GADGET_FAIL;
 		}
 
-		GADGET_DEBUG2("Calling close in base class  with flags %d\n", flags);
+		GDEBUG("Calling close in base class  with flags %d\n", flags);
 		return Gadget::close(flags);
 	}
 

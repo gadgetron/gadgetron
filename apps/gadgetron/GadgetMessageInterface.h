@@ -172,13 +172,13 @@ class GadgetMessageConfigFileReader : public GadgetMessageReader
       new GadgetContainerMessage<GadgetMessageConfigurationFile>();
     
     if (!mb1) {
-      GADGET_DEBUG1("Unable to allocate GadgetMessageConfigurationFile\n");
+      GDEBUG("Unable to allocate GadgetMessageConfigurationFile\n");
       return 0;
     }
 
     ssize_t recv_cnt = 0;
     if ((recv_cnt = stream->recv_n (mb1->getObjectPtr(), sizeof(GadgetMessageConfigurationFile))) <= 0) {
-      GADGET_DEBUG1("Unable to read configuration file information\n");
+      GDEBUG("Unable to read configuration file information\n");
       mb1->release();
       return 0;
     }
@@ -197,7 +197,7 @@ class GadgetMessageScriptReader : public GadgetMessageReader
 
     ssize_t recv_cnt = 0;
     if ((recv_cnt = stream->recv_n (&ms, sizeof(GadgetMessageScript))) <= 0) {
-      GADGET_DEBUG1("Unable to read configuration file information\n");
+      GDEBUG("Unable to read configuration file information\n");
        return 0;
     }
     

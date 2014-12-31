@@ -398,6 +398,7 @@ def main():
         myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin" + ":" + myenv["GADGETRON_HOME"] + "/bin"
 
     myenv["ACE_DEBUG"] = "1"
+    #myenv["GADGETRON_LOG_MASK"] = "1"
 
     if platform.system() == "Windows":
         os.putenv('PATH', myenv['PATH'])

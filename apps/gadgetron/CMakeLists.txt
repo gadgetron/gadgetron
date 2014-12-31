@@ -33,6 +33,7 @@ add_executable(gadgetron
 
 target_link_libraries(gadgetron 
   gadgetron_gadgetbase
+  gadgetron_toolbox_log
   gadgetron_toolbox_gadgettools gadgetron_toolbox_cloudbus 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
@@ -50,6 +51,7 @@ add_executable(gadgetron_info
 )
 
 target_link_libraries(gadgetron_info 
+  gadgetron_toolbox_log
   gadgetron_gadgetbase
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
@@ -68,6 +70,7 @@ add_library(gadgetron_gadgetbase SHARED
 target_link_libraries(gadgetron_gadgetbase
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   gadgetron_toolbox_gadgettools
+  gadgetron_toolbox_log
 )
 
 set_target_properties (gadgetron_gadgetbase PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_GADGETBASE__")

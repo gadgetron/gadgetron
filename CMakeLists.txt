@@ -90,6 +90,8 @@ else (WIN32)
     endif (UNIX)
 endif (WIN32)
 
+include_directories(${CMAKE_SOURCE_DIR}/toolboxes/log)
+
 # whether to suppress compilation warnings
 OPTION(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
 if (BUILD_SUPPRESS_WARNINGS)

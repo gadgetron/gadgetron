@@ -101,26 +101,26 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
 	}
 
 	if (id.id == GADGET_MESSAGE_CLOSE) {
-		GADGET_DEBUG1("Received close signal from client. Closing stream...\n");
+		GDEBUG("Received close signal from client. Closing stream...\n");
 		stream_.close(1); //Shutdown gadgets and wait for them
-		GADGET_DEBUG1("Stream closed\n");
-		GADGET_DEBUG1("Closing writer task\n");
+		GDEBUG("Stream closed\n");
+		GDEBUG("Closing writer task\n");
 		this->writer_task_.close(1);
-		GADGET_DEBUG1("Writer task closed\n");
+		GDEBUG("Writer task closed\n");
 		return 0;
 	}
 
 	GadgetMessageReader* r = readers_.find(id.id);
 
 	if (!r) {
-		GADGET_DEBUG2("Unrecognized Message ID received: %d\n", id.id);
+		GDEBUG("Unrecognized Message ID received: %d\n", id.id);
 		return GADGET_FAIL;
 	}
 
 	ACE_Message_Block* mb = r->read(&peer());
 
 	if (!mb) {
-		GADGET_DEBUG1("GadgetMessageReader returned null pointer\n");
+		GDEBUG("GadgetMessageReader returned null pointer\n");
 		return GADGET_FAIL;
 	}
 
@@ -130,12 +130,12 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
 				AsContainerMessage<GadgetMessageConfigurationFile>(mb);
 
 		if (!cfgm) {
-			GADGET_DEBUG1("Failed to cast message block to configuration file\n");
+			GDEBUG("Failed to cast message block to configuration file\n");
 			mb->release();
 			return GADGET_FAIL;
 		} else {
 			if (this->configure_from_file(std::string(cfgm->getObjectPtr()->configuration_file)) != GADGET_OK) {
-				GADGET_DEBUG1("GadgetStream configuration failed\n");
+				GDEBUG("GadgetStream configuration failed\n");
 				mb->release();
 				return GADGET_FAIL;
 			} else {
@@ -146,7 +146,7 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
 	} else if (id.id == GADGET_MESSAGE_CONFIG_SCRIPT) {
 		std::string xml_config(mb->rd_ptr(), mb->length());
 		if (this->configure(xml_config) != GADGET_OK) {
-			GADGET_DEBUG1("GadgetStream configuration failed\n");
+			GDEBUG("GadgetStream configuration failed\n");
 			mb->release();
 			return GADGET_FAIL;
 		} else {
@@ -157,7 +157,7 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
 
 	ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,10000); //10ms from now
 	if (stream_.put(mb) == -1) {
-		GADGET_DEBUG2("Failed to put stuff on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
+		GDEBUG("Failed to put stuff on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
 		mb->release();
 		return GADGET_FAIL;
 	}
@@ -176,12 +176,12 @@ int GadgetStreamController::output_ready(ACE_Message_Block* mb)
 
 int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 {
-	GADGET_DEBUG1("handle_close called\n");
+	GDEBUG("handle_close called\n");
 
 	if (mask == ACE_Event_Handler::WRITE_MASK)
 		return 0;
 
-	GADGET_DEBUG1("Shutting down stream and closing up shop...\n");
+	GDEBUG("Shutting down stream and closing up shop...\n");
 
 	this->stream_.close();
 
@@ -194,7 +194,7 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 	int messages_dropped = this->msg_queue ()->flush();
 
 	if (messages_dropped) {
-		GADGET_DEBUG2("Flushed %d messages from output queue\n", messages_dropped);
+		GDEBUG("Flushed %d messages from output queue\n", messages_dropped);
 		this->reactor ()->handle_events(); //Flush any remaining events before we delete this Stream Controller
 	}
 
@@ -212,7 +212,7 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 	}
 	dll_handles_.clear();
 
-	GADGET_DEBUG1("Stream is closed\n");
+	GDEBUG("Stream is closed\n");
 
 	delete this;
 	return 0;
@@ -226,7 +226,7 @@ Gadget* GadgetStreamController::find_gadget(std::string gadget_name)
 		Gadget* g = dynamic_cast<Gadget*>(gm->writer());
 		return g;
 	} else {
-		GADGET_DEBUG2("Gadget with name %s not found! Returning null pointer\n", gadget_name.c_str());
+		GDEBUG("Gadget with name %s not found! Returning null pointer\n", gadget_name.c_str());
 	}
 
 	return 0;
@@ -242,7 +242,7 @@ int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 	ACE_TCHAR config_file_name[4096];
 	ACE_OS::sprintf(config_file_name, "%s/%s/%s", gadgetron_home_.c_str(), GADGETRON_CONFIG_PATH, config_xml_filename.c_str());
 
-	GADGET_DEBUG2("Running configuration: %s\n", config_file_name);
+	GDEBUG("Running configuration: %s\n", config_file_name);
 
 	std::ifstream file (config_file_name, std::ios::in|std::ios::binary|std::ios::ate);
 	if (file.is_open())
@@ -250,7 +250,7 @@ int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 		size_t size = file.tellg();
 		char* buffer = new char [size];
 		if (!buffer) {
-			GADGET_DEBUG1("Unable to create temporary buffer for configuration file\n");
+			GDEBUG("Unable to create temporary buffer for configuration file\n");
 			return GADGET_FAIL;
 		}
 		file.seekg (0, std::ios::beg);
@@ -262,7 +262,7 @@ int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 		delete[] buffer;
 
 	} else {
-		GADGET_DEBUG2("Unable to open configuation file: %s\n", config_file_name);
+		GDEBUG("Unable to open configuation file: %s\n", config_file_name);
 		return GADGET_FAIL;
 	}
 
@@ -276,13 +276,13 @@ int GadgetStreamController::configure(std::string config_xml_string)
   try {
     deserialize(config_xml_string.c_str(), cfg);  
   }  catch (const std::runtime_error& e) {
-    GADGET_DEBUG2("Failed to parse Gadget Stream Configuration: %s\n", e.what());
+    GDEBUG("Failed to parse Gadget Stream Configuration: %s\n", e.what());
     return GADGET_FAIL;
   }
 
-  GADGET_DEBUG2("Found %d readers\n", cfg.reader.size());
-  GADGET_DEBUG2("Found %d writers\n", cfg.writer.size());
-  GADGET_DEBUG2("Found %d gadgets\n", cfg.gadget.size());
+  GDEBUG("Found %d readers\n", cfg.reader.size());
+  GDEBUG("Found %d writers\n", cfg.writer.size());
+  GDEBUG("Found %d gadgets\n", cfg.gadget.size());
   
   //Configuration of readers
   for (std::vector<GadgetronXML::Reader>::iterator i = cfg.reader.begin();
@@ -298,17 +298,17 @@ int GadgetStreamController::configure(std::string config_xml_string)
       dllname = i->dll;
       classname = i->classname;
 
-      GADGET_DEBUG1("--Found reader declaration\n");
-      GADGET_DEBUG2("  Reader dll: %s\n", dllname.c_str());
-      GADGET_DEBUG2("  Reader class: %s\n", classname.c_str());
-      GADGET_DEBUG2("  Reader slot: %d\n", slot);
+      GDEBUG("--Found reader declaration\n");
+      GDEBUG("  Reader dll: %s\n", dllname.c_str());
+      GDEBUG("  Reader class: %s\n", classname.c_str());
+      GDEBUG("  Reader slot: %d\n", slot);
 
       GadgetMessageReader* r =
 	load_dll_component<GadgetMessageReader>(dllname.c_str(),
 						classname.c_str());
       
       if (!r) {
-	GADGET_DEBUG1("Failed to load GadgetMessageReader from DLL\n");
+	GDEBUG("Failed to load GadgetMessageReader from DLL\n");
 	return GADGET_FAIL;
       }
       
@@ -331,17 +331,17 @@ int GadgetStreamController::configure(std::string config_xml_string)
       dllname = i->dll;
       classname = i->classname;
 
-      GADGET_DEBUG1("--Found writer declaration\n");
-      GADGET_DEBUG2("  Reader dll: %s\n", dllname.c_str());
-      GADGET_DEBUG2("  Reader class: %s\n", classname.c_str());
-      GADGET_DEBUG2("  Reader slot: %d\n", slot);
+      GDEBUG("--Found writer declaration\n");
+      GDEBUG("  Reader dll: %s\n", dllname.c_str());
+      GDEBUG("  Reader class: %s\n", classname.c_str());
+      GDEBUG("  Reader slot: %d\n", slot);
       
       GadgetMessageWriter* w =
 	load_dll_component<GadgetMessageWriter>(dllname.c_str(),
 						classname.c_str());
       
       if (!w) {
-	GADGET_DEBUG1("Failed to load GadgetMessageWriter from DLL\n");
+	GDEBUG("Failed to load GadgetMessageWriter from DLL\n");
 	return GADGET_FAIL;
       }
       
@@ -350,7 +350,7 @@ int GadgetStreamController::configure(std::string config_xml_string)
   //Configuration of writers end
 
   //Let's configure the stream
-  GADGET_DEBUG2("Processing %d gadgets in reverse order\n",cfg.gadget.size());
+  GDEBUG("Processing %d gadgets in reverse order\n",cfg.gadget.size());
 
   for (std::vector<GadgetronXML::Gadget>::reverse_iterator i = cfg.gadget.rbegin();
        i != cfg.gadget.rend();
@@ -364,17 +364,17 @@ int GadgetStreamController::configure(std::string config_xml_string)
       dllname = i->dll;
       classname = i->classname;
 
-      GADGET_DEBUG1("--Found gadget declaration\n");
-      GADGET_DEBUG2("  Gadget Name: %s\n", gadgetname.c_str());
-      GADGET_DEBUG2("  Gadget dll: %s\n", dllname.c_str());
-      GADGET_DEBUG2("  Gadget class: %s\n", classname.c_str());
+      GDEBUG("--Found gadget declaration\n");
+      GDEBUG("  Gadget Name: %s\n", gadgetname.c_str());
+      GDEBUG("  Gadget dll: %s\n", dllname.c_str());
+      GDEBUG("  Gadget class: %s\n", classname.c_str());
 
       GadgetModule* m = create_gadget_module(dllname.c_str(),
 					     classname.c_str(),
 					     gadgetname.c_str());
       
       if (!m) {
-	GADGET_DEBUG2("Failed to create GadgetModule from %s:%s\n",
+	GDEBUG("Failed to create GadgetModule from %s:%s\n",
 		      classname.c_str(),
 		      dllname.c_str());
 	return GADGET_FAIL;
@@ -382,14 +382,14 @@ int GadgetStreamController::configure(std::string config_xml_string)
       
       Gadget* g = dynamic_cast<Gadget*>(m->writer());//Get the gadget out of the module
       
-      GADGET_DEBUG2("  Gadget parameters: %d\n", i->property.size());
+      GDEBUG("  Gadget parameters: %d\n", i->property.size());
       for (std::vector<GadgetronXML::GadgetronParameter>::iterator p = i->property.begin();
 	   p != i->property.end();
 	   ++p)
 	{
 	  std::string pname(p->name);
 	  std::string pval(p->value);
-	  GADGET_DEBUG2("Setting parameter %s = %s\n", pname.c_str(),pval.c_str());
+	  GDEBUG("Setting parameter %s = %s\n", pname.c_str(),pval.c_str());
 	  g->set_parameter(pname.c_str(),pval.c_str(),false);
 	}
       
@@ -403,14 +403,14 @@ int GadgetStreamController::configure(std::string config_xml_string)
         }
 
       if (stream_.push(m) < 0) {
-	GADGET_DEBUG2("Failed to push Gadget %s onto stream\n", gadgetname.c_str());
+	GDEBUG("Failed to push Gadget %s onto stream\n", gadgetname.c_str());
 	delete m;
 	return GADGET_FAIL;
       }
       
     }
 
-  GADGET_DEBUG1("Gadget Stream configured\n");
+  GDEBUG("Gadget Stream configured\n");
   stream_configured_ = true;
 
   return GADGET_OK;
@@ -424,7 +424,7 @@ GadgetModule * GadgetStreamController::create_gadget_module(const char* DLL,
 	Gadget* g = load_dll_component<Gadget>(DLL,gadget);
 
 	if (!g) {
-		GADGET_DEBUG1("Failed to load gadget using factory\n");
+		GDEBUG("Failed to load gadget using factory\n");
 		return 0;
 	}
 
@@ -460,10 +460,10 @@ T* GadgetStreamController::load_dll_component(const char* DLL, const char* compo
 	dll = dllmgr->open_dll (dllname, ACE_DEFAULT_SHLIB_MODE, dll_handle );
 
 	if (!dll) {
-		GADGET_DEBUG1("Failed to load DLL, Possible reasons: \n");
-		GADGET_DEBUG1("   * Name of DLL is wrong in XML file \n");
-		GADGET_DEBUG1("   * Path of DLL is not in your DLL search path (LD_LIBRARY_PATH on Unix)\n");
-		GADGET_DEBUG1("   * Path of other DLLs that this DLL depends on is not in the search path\n");
+		GDEBUG("Failed to load DLL, Possible reasons: \n");
+		GDEBUG("   * Name of DLL is wrong in XML file \n");
+		GDEBUG("   * Path of DLL is not in your DLL search path (LD_LIBRARY_PATH on Unix)\n");
+		GDEBUG("   * Path of other DLLs that this DLL depends on is not in the search path\n");
 		return 0;
 	} else {
 		dll_handles_.push_back(dll);
@@ -477,14 +477,14 @@ T* GadgetStreamController::load_dll_component(const char* DLL, const char* compo
 	ComponentCreator cc = reinterpret_cast<ComponentCreator> (tmp);
 
 	if (cc == 0) {
-		GADGET_DEBUG2("Failed to load factory (%s) from DLL (%s)\n", dllname, factoryname);
+		GDEBUG("Failed to load factory (%s) from DLL (%s)\n", dllname, factoryname);
 		return 0;
 	}
 
 	T* c = cc();
 
 	if (!c) {
-		GADGET_DEBUG1("Failed to create component using factory\n");
+		GDEBUG("Failed to create component using factory\n");
 		return 0;
 	}
 

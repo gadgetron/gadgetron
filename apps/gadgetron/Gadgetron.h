@@ -2,6 +2,7 @@
 #define GADGETRON_H
 
 #include "ace/Log_Msg.h"
+#include "log.h"
 
 //#include "Gadget.h"
 //#include "GadgetContainerMessage.h"

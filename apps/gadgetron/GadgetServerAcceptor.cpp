@@ -45,7 +45,7 @@ int GadgetServerAcceptor::handle_close (ACE_HANDLE, ACE_Reactor_Mask)
   ACE_DEBUG( (LM_DEBUG, 
 	      ACE_TEXT("GadgetServerAcceptor::handle_close")) );
   
-  GADGET_DEBUG1("Close Data Acceptor\n");
+  GDEBUG("Close Data Acceptor\n");
 
   if (this->acceptor_.get_handle () != ACE_INVALID_HANDLE) {
     ACE_Reactor_Mask m = 

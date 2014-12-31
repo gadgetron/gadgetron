@@ -19,6 +19,7 @@
 #include "GadgetronExport.h"
 #include "Gadgetron.h"
 #include "gadgetron_config.h"
+#include "log.h"
 
 #include <stdexcept>
 
@@ -54,7 +55,7 @@ namespace Gadgetron{
         virtual ~Gadget()
         {
 	  if (this->module()) {
-            GADGET_DEBUG2("Shutting down Gadget (%s)\n", this->module()->name());
+            GDEBUG("Shutting down Gadget (%s)\n", this->module()->name());
 	  }
         }
 
@@ -71,7 +72,7 @@ namespace Gadgetron{
 
             int t = this->get_int_value("threads");
             if (t > 0) {
-                GADGET_DEBUG2("Setting number of threads of gadget %s to %d\n", this->module()->name(), t);
+                GDEBUG("Setting number of threads of gadget %s to %d\n", this->module()->name(), t);
                 this->desired_threads(t);
             }
 
@@ -112,19 +113,19 @@ namespace Gadgetron{
         virtual int close(unsigned long flags)
         {
             ACE_TRACE(( ACE_TEXT("Gadget::close") ));
-            GADGET_DEBUG2("Gadget (%s) Close Called with flags = %d\n", this->module()->name(), flags);
+            GDEBUG("Gadget (%s) Close Called with flags = %d\n", this->module()->name(), flags);
             int rval = 0;
             if (flags == 1) {
                 ACE_Message_Block *hangup = new ACE_Message_Block();
                 hangup->msg_type( ACE_Message_Block::MB_HANGUP );
                 if (this->putq(hangup) == -1) {
                     hangup->release();
-                    GADGET_DEBUG2("Gadget (%s) failed to put hang up message on queue\n", this->module()->name());
+                    GDEBUG("Gadget (%s) failed to put hang up message on queue\n", this->module()->name());
                     return GADGET_FAIL;
                 }
-                GADGET_DEBUG2("Gadget (%s) waiting for thread to finish\n", this->module()->name());
+                GDEBUG("Gadget (%s) waiting for thread to finish\n", this->module()->name());
                 rval = this->wait();
-                GADGET_DEBUG2("Gadget (%s) thread finished\n", this->module()->name());
+                GDEBUG("Gadget (%s) thread finished\n", this->module()->name());
                 controller_ = 0;
             }
             return rval;
@@ -136,21 +137,21 @@ namespace Gadgetron{
 
             for (ACE_Message_Block *m = 0; ;) {
 
-                //GADGET_DEBUG2("Waiting for message in Gadget (%s)\n", this->module()->name());
+                //GDEBUG("Waiting for message in Gadget (%s)\n", this->module()->name());
                 if (this->getq(m) == -1) {
-                    GADGET_DEBUG2("Gadget (%s) failed to get message from queue\n", this->module()->name());
+                    GDEBUG("Gadget (%s) failed to get message from queue\n", this->module()->name());
                     return GADGET_FAIL;
                 }
-                //GADGET_DEBUG2("Message Received in Gadget (%s)\n", this->module()->name());
+                //GDEBUG("Message Received in Gadget (%s)\n", this->module()->name());
 
                 //If this is a hangup message, we are done, put the message back on the queue before breaking
                 if (m->msg_type() == ACE_Message_Block::MB_HANGUP) {
-                    //GADGET_DEBUG2("Gadget (%s) Hangup message encountered\n", this->module()->name());
+                    //GDEBUG("Gadget (%s) Hangup message encountered\n", this->module()->name());
                     if (this->putq(m) == -1) {
-                        GADGET_DEBUG2("Gadget (%s) failed to put hang up message on queue (for other threads)\n", this->module()->name());
+                        GDEBUG("Gadget (%s) failed to put hang up message on queue (for other threads)\n", this->module()->name());
                         return GADGET_FAIL;
                     }
-                    //GADGET_DEBUG2("Gadget (%s) breaking loop\n", this->module()->name());
+                    //GDEBUG("Gadget (%s) breaking loop\n", this->module()->name());
                     break;
                 }
 
@@ -168,7 +169,7 @@ namespace Gadgetron{
                     if (success == -1) {
                         m->release();
                         this->flush();
-                        GADGET_DEBUG2("Gadget (%s) process config failed\n", this->module()->name());
+                        GDEBUG("Gadget (%s) process config failed\n", this->module()->name());
                         return GADGET_FAIL;
 
                     }
@@ -177,7 +178,7 @@ namespace Gadgetron{
                     if (this->next()) {
                         if (this->next()->putq(m) == -1) {
                             m->release();
-                            GADGET_DEBUG2("Gadget (%s) process config failed to put config on dowstream gadget\n", this->module()->name());
+                            GDEBUG("Gadget (%s) process config failed to put config on dowstream gadget\n", this->module()->name());
                             return GADGET_FAIL;
                         }
                     }
@@ -194,7 +195,7 @@ namespace Gadgetron{
                 if (success == -1) {
                     m->release();
                     this->flush();
-                    GADGET_DEBUG2("Gadget (%s) process failed\n", this->module()->name());
+                    GDEBUG("Gadget (%s) process failed\n", this->module()->name());
                     return GADGET_FAIL;
                 }
             }
