@@ -108,7 +108,7 @@ splitJob(gtPlusReconWorkOrder3DT<T>* workOrder3DT, size_t& jobN)
         {
             size_t jobN = jobMegaBytes/(E1*E2*srcCHA*dstCHA*sizeof(T)/1024/1024);
             if ( jobN < RO ) splitJobs = true;
-            GADGET_MSG("grappa - 3DT - size of largest job : " << jobN);
+            GADGET_MSG_DEPRECATED("grappa - 3DT - size of largest job : " << jobN);
         }
     }
 
@@ -453,7 +453,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                             start = end-jobN+1;
                         }
 
-                        GADGET_MSG("grappa 3D - processing " << start << " to " << end << " ... ");
+                        GADGET_MSG_DEPRECATED("grappa 3D - processing " << start << " to " << end << " ... ");
 
                         if ( (refN<N) || (refN==1) )
                         {

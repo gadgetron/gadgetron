@@ -2167,7 +2167,7 @@ namespace Gadgetron {
                 //#ifdef WIN32
                 //    int tid = omp_get_thread_num();
                 //    DWORD_PTR mask = (1 << tid);
-                //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
+                //    // GADGET_MSG_DEPRECATED("thread id : " << tid << " - mask : " << mask);
                 //    SetThreadAffinityMask( GetCurrentThread(), mask );
                 //#endif // WIN32
 
@@ -2230,7 +2230,7 @@ namespace Gadgetron {
                 //#ifdef WIN32
                 //    int tid = omp_get_thread_num();
                 //    DWORD_PTR mask = (1 << tid);
-                //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
+                //    // GADGET_MSG_DEPRECATED("thread id : " << tid << " - mask : " << mask);
                 //    SetThreadAffinityMask( GetCurrentThread(), mask );
                 //#endif // WIN32
 

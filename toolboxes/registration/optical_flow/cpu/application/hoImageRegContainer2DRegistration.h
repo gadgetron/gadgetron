@@ -50,7 +50,7 @@ namespace Gadgetron
         obj.print(outs);
         outs << std::ends;
         std::string msg(outs.str());
-        GADGET_MSG(msg.c_str());
+        GADGET_MSG_DEPRECATED(msg.c_str());
     }
 
     enum GT_IMAGE_REG_CONTAINER_MODE
@@ -579,7 +579,7 @@ namespace Gadgetron
             {
                 std::ostringstream outs;
                 reg.print(outs);
-                GADGET_MSG(outs.str());
+                GADGET_MSG_DEPRECATED(outs.str());
             }
 
             GADGET_CHECK_RETURN_FALSE(reg.initialize());
@@ -782,7 +782,7 @@ namespace Gadgetron
             else if ( container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_RIGID 
                         || container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_AFFINE )
             {
-                GADGET_MSG("To be implemented ...");
+                GADGET_MSG_DEPRECATED("To be implemented ...");
             }
         }
         catch(...)
@@ -818,7 +818,7 @@ namespace Gadgetron
                 warped_container_.get_all_images(warpedImages);
             }
 
-            GADGET_MSG("registerOverContainer2DPairWise - threading ... ");
+            GADGET_MSG_DEPRECATED("registerOverContainer2DPairWise - threading ... ");
 
             #ifdef USE_OMP
                 int numOfProcs = omp_get_num_procs();
@@ -826,12 +826,12 @@ namespace Gadgetron
                 if ( numOfImages < numOfProcs-1 )
                 {
                     omp_set_nested(1);
-                    GADGET_MSG("registerOverContainer2DPairWise - nested openMP on ... ");
+                    GADGET_MSG_DEPRECATED("registerOverContainer2DPairWise - nested openMP on ... ");
                 }
                 else
                 {
                     omp_set_nested(0);
-                    GADGET_MSG("registerOverContainer2DPairWise - nested openMP off ... ");
+                    GADGET_MSG_DEPRECATED("registerOverContainer2DPairWise - nested openMP off ... ");
                 }
             #endif // USE_OMP
 
@@ -930,7 +930,7 @@ namespace Gadgetron
             else if ( container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_RIGID 
                         || container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_AFFINE )
             {
-                GADGET_MSG("To be implemented ...");
+                GADGET_MSG_DEPRECATED("To be implemented ...");
             }
 
             #ifdef USE_OMP
@@ -998,12 +998,12 @@ namespace Gadgetron
                 if ( numOfImages < numOfProcs-1 )
                 {
                     omp_set_nested(1);
-                    GADGET_MSG("registerOverContainer2DFixedReference - nested openMP on ... ");
+                    GADGET_MSG_DEPRECATED("registerOverContainer2DFixedReference - nested openMP on ... ");
                 }
                 else
                 {
                     omp_set_nested(0);
-                    GADGET_MSG("registerOverContainer2DFixedReference - nested openMP off ... ");
+                    GADGET_MSG_DEPRECATED("registerOverContainer2DFixedReference - nested openMP off ... ");
                 }
             #endif // USE_OMP
 
@@ -1109,7 +1109,7 @@ namespace Gadgetron
             else if ( container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_RIGID 
                         || container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_AFFINE )
             {
-                GADGET_MSG("To be implemented ...");
+                GADGET_MSG_DEPRECATED("To be implemented ...");
             }
 
             #ifdef USE_OMP
@@ -1330,7 +1330,7 @@ namespace Gadgetron
             else if ( container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_RIGID 
                         || container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_AFFINE )
             {
-                GADGET_MSG("To be implemented ...");
+                GADGET_MSG_DEPRECATED("To be implemented ...");
             }
 
             #ifdef USE_OMP

@@ -135,9 +135,9 @@ int main(int argc, char** argv)
     boost::shared_ptr< hoNDArray<std::complex<float> > > S_chol = read_nd_array< std::complex<float> >(filenameS_chol.c_str());
     boost::shared_ptr< hoNDArray<std::complex<float> > > S_chol_inv = read_nd_array< std::complex<float> >(filenameS_chol_inv.c_str());
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("matrix multiplication");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("matrix multiplication");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     std::complex<float> alpha(1.0,0);
     std::complex<float> beta(1.0,0);
@@ -217,27 +217,27 @@ int main(int argc, char** argv)
         res_f_math.create(a.get_dimensions());
     }
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("axpy");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("axpy");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("axpy Time (MKL)", true);
         Gadgetron::axpy( alpha, a, b, res);
     }
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector add");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector add");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("vzAdd Time (MKL)", true);
         Gadgetron::add( *A.get(), *A.get(), res);
     }
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector subtract");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector subtract");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("vzSub Time (MKL)", true);
@@ -245,9 +245,9 @@ int main(int argc, char** argv)
     }
 
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector multiplication");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector multiplication");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("vzMul Time (MKL)", true);
@@ -256,9 +256,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "multiply");
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector addEpsilon");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector addEpsilon");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     res = a;
     res_math = a;
@@ -270,9 +270,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "addEpsilon");
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector divide");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector divide");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("divide Time (MKL)", true);
@@ -281,9 +281,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "divide");
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector sqrt");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector sqrt");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("sqrt Time (MKL)", true);
@@ -292,9 +292,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "sqrt");
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector conjugate");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector conjugate");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("conjugate Time (MKL)", true);
@@ -303,9 +303,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "conjugate");
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector conjugate multiplication");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector conjugate multiplication");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("vcMulByConj Time (MKL)", true);
@@ -314,9 +314,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "multiplyConj");
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector scal");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector scal");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     res = a;
     res_math = a;
@@ -328,9 +328,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "scal");
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector dotc");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector dotc");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     std::complex<float> rdotc(0);
 
@@ -340,9 +340,9 @@ int main(int argc, char** argv)
     }
     std::cout << "dotc = " << rdotc << std::endl;
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector dotu");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector dotu");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     std::complex<float> rdotu;
 
@@ -352,9 +352,9 @@ int main(int argc, char** argv)
     }
     std::cout << "dotu = " << rdotu << std::endl;
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector absolute");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector absolute");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("absolute Time (MKL)", true);
@@ -363,27 +363,27 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "absolute");
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector argument");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector argument");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("argument Time (MKL)", true);
         Gadgetron::argument( a, res_f);
     }
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("vector inv");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("vector inv");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("inv Time (MKL)", true);
         Gadgetron::inv( a, res);
     }
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("norm2");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("norm2");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     float rn;
 
@@ -393,9 +393,9 @@ int main(int argc, char** argv)
     }
     std::cout << "nrm2 = " << rn << std::endl;
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("norm1");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("norm1");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("Time (MKL)", true);
@@ -403,9 +403,9 @@ int main(int argc, char** argv)
     }
     std::cout << "nrm1 = " << rn << std::endl;
 
-    GADGET_MSG("------------------------------------------------------------------");
-    GADGET_MSG("conv2");
-    GADGET_MSG("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GADGET_MSG_DEPRECATED("conv2");
+    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
     hoNDArray<std::complex<float> > ker;
     ker.create(3, 3);

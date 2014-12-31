@@ -108,12 +108,12 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
         {
             if ( workOrder2DT->kspace_initial_.get_number_of_elements() == kspace.get_number_of_elements() )
             {
-                GADGET_MSG("Start the iteration with the input initial kspace ... ");
+                GADGET_MSG_DEPRECATED("Start the iteration with the input initial kspace ... ");
                 memcpy(kspaceLinear.begin(), workOrder2DT->kspace_initial_.begin(), kspace.get_number_of_bytes());
             }
             else
             {
-                GADGET_MSG("Start the iteration with the input kspace ... ");
+                GADGET_MSG_DEPRECATED("Start the iteration with the input kspace ... ");
             }
         }
 

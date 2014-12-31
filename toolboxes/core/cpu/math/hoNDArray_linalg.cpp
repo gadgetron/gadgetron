@@ -1,4 +1,4 @@
-
+#include "log.h"
 #include "hoNDArray_linalg.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
@@ -1840,17 +1840,17 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
     // hoNDArray<T> ACopy(A);
     // GADGET_CHECK_THROW(gemm(AHA, ACopy, true, A, false));
 
-    //GADGET_MSG("SolveLinearSystem_Tikhonov - A = " << Gadgetron::norm2(A));
-    //GADGET_MSG("SolveLinearSystem_Tikhonov - b = " << Gadgetron::norm2(b));
+    //GADGET_MSG_DEPRECATED("SolveLinearSystem_Tikhonov - A = " << Gadgetron::norm2(A));
+    //GADGET_MSG_DEPRECATED("SolveLinearSystem_Tikhonov - b = " << Gadgetron::norm2(b));
 
     char uplo = 'L';
     bool isAHA = true;
     herk(AHA, A, uplo, isAHA);
-    //GADGET_MSG("SolveLinearSystem_Tikhonov - AHA = " << Gadgetron::norm2(AHA));
+    //GADGET_MSG_DEPRECATED("SolveLinearSystem_Tikhonov - AHA = " << Gadgetron::norm2(AHA));
 
     x.create(A.get_size(1), b.get_size(1));
     gemm(x, A, true, b, false);
-    //GADGET_MSG("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
+    //GADGET_MSG_DEPRECATED("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
 
     // apply the Tikhonov regularization
     // Ideally, we shall apply the regularization is lamda*maxEigenValue
@@ -1873,7 +1873,7 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
         // trA += std::sqrt(rv*rv + iv*iv);
         trA += abs( AHA(c, c) );
     }
-    //GADGET_MSG("SolveLinearSystem_Tikhonov - trA = " << trA);
+    //GADGET_MSG_DEPRECATED("SolveLinearSystem_Tikhonov - trA = " << trA);
 
     double value = trA*lamda/col;
     for ( c=0; c<col; c++ )
@@ -1890,8 +1890,8 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
     if ( trA/col < 4.0 )
     {
         typename realType<T>::Type scalingFactor = (typename realType<T>::Type)(col*4.0/trA);
-        GADGET_MSG("SolveLinearSystem_Tikhonov - trA is too small : " << trA << " for matrix order : " << col);
-        GADGET_MSG("SolveLinearSystem_Tikhonov - scale the AHA and x by " << scalingFactor);
+        GADGET_MSG_DEPRECATED("SolveLinearSystem_Tikhonov - trA is too small : " << trA << " for matrix order : " << col);
+        GADGET_MSG_DEPRECATED("SolveLinearSystem_Tikhonov - scale the AHA and x by " << scalingFactor);
         Gadgetron::scal( scalingFactor, AHA);
         Gadgetron::scal( scalingFactor, x);
     }
@@ -1899,19 +1899,19 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
     try
     {
         posv(AHA, x);
-        //GADGET_MSG("SolveLinearSystem_Tikhonov - solution = " << Gadgetron::norm2(x));
+        //GADGET_MSG_DEPRECATED("SolveLinearSystem_Tikhonov - solution = " << Gadgetron::norm2(x));
     }
     catch(...)
     {
         GADGET_ERROR_MSG("posv failed in SolveLinearSystem_Tikhonov(... ) ... ");
-        GADGET_MSG("A = " << Gadgetron::norm2(A));
-        GADGET_MSG("b = " << Gadgetron::norm2(b));
-        GADGET_MSG("AHA = " << Gadgetron::norm2(AHA));
-        GADGET_MSG("trA = " << trA);
-        GADGET_MSG("x = " << Gadgetron::norm2(x));
+        GADGET_MSG_DEPRECATED("A = " << Gadgetron::norm2(A));
+        GADGET_MSG_DEPRECATED("b = " << Gadgetron::norm2(b));
+        GADGET_MSG_DEPRECATED("AHA = " << Gadgetron::norm2(AHA));
+        GADGET_MSG_DEPRECATED("trA = " << trA);
+        GADGET_MSG_DEPRECATED("x = " << Gadgetron::norm2(x));
 
         gemm(x, A, true, b, false);
-        GADGET_MSG("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
+        GADGET_MSG_DEPRECATED("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
 
         try
         {
@@ -1922,7 +1922,7 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
             GADGET_ERROR_MSG("hesv failed in SolveLinearSystem_Tikhonov(... ) ... ");
 
             gemm(x, A, true, b, false);
-            GADGET_MSG("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
+            GADGET_MSG_DEPRECATED("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
 
             try
             {

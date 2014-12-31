@@ -183,18 +183,18 @@ namespace Gadgetron
             GADGET_CHECK_RETURN_FALSE(warper_->warp(*target_, *source_, use_world_coordinate_, warpped_));
             curr_dissimilarity_ = dissimilarity_->evaluate(warpped_);
 
-            GADGET_CHECK_PERFORM(verbose_, GADGET_MSG("----> Initial image dissimilarity : " << curr_dissimilarity_) );
+            GADGET_CHECK_PERFORM(verbose_, GADGET_MSG_DEPRECATED("----> Initial image dissimilarity : " << curr_dissimilarity_) );
 
             unsigned int totalIterNum = 0;
 
             unsigned int div;
             for ( div=0; div<div_num_; div++ )
             {
-                GADGET_CHECK_PERFORM(verbose_, GADGET_MSG("----> Parameter division " << div << " [out of " << div_num_ << "] ") );
+                GADGET_CHECK_PERFORM(verbose_, GADGET_MSG_DEPRECATED("----> Parameter division " << div << " [out of " << div_num_ << "] ") );
 
                 for ( iter_num_=0; iter_num_<max_iter_num_; iter_num_++ )
                 {
-                    GADGET_CHECK_PERFORM(verbose_, GADGET_MSG("--> Iteration " << iter_num_ << " [out of " << max_iter_num_ << "] : \t" << curr_dissimilarity_) );
+                    GADGET_CHECK_PERFORM(verbose_, GADGET_MSG_DEPRECATED("--> Iteration " << iter_num_ << " [out of " << max_iter_num_ << "] : \t" << curr_dissimilarity_) );
 
                     prev_dissimilarity_ = curr_dissimilarity_;
 
@@ -218,7 +218,7 @@ namespace Gadgetron
                 }
             }
 
-            GADGET_CHECK_PERFORM(verbose_, GADGET_MSG("----> Total iteration number : " << totalIterNum) );
+            GADGET_CHECK_PERFORM(verbose_, GADGET_MSG_DEPRECATED("----> Total iteration number : " << totalIterNum) );
         }
         catch(...)
         {

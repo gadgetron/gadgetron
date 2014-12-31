@@ -178,7 +178,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         bool useGPU = (typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_);
         //if ( useGPU )
         //{
-        //    GADGET_MSG("spirit 2D - calling GPU kernel estimation ... "); 
+        //    GADGET_MSG_DEPRECATED("spirit 2D - calling GPU kernel estimation ... "); 
         //}
 
         const T* pAcsSrc = acsSrc.begin();
@@ -562,7 +562,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                             }
 
                             lenRO = eRO-sRO+1;
-                            GADGET_MSG("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
+                            GADGET_MSG_DEPRECATED("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
                         }
                         catch(...)
                         {
@@ -583,7 +583,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
         bool useGPU = (typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_);
         if ( useGPU )
         {
-            GADGET_MSG("spirit 3D - calling GPU kernel estimation ... ");
+            GADGET_MSG_DEPRECATED("spirit 3D - calling GPU kernel estimation ... ");
         }
 
         #ifdef GCC_OLD_FLAG

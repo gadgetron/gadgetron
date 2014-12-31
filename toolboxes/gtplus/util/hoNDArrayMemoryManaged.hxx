@@ -132,7 +132,7 @@ hoNDArrayMemoryManaged<T>::hoNDArrayMemoryManaged(boost::shared_ptr< std::vector
 template <typename T> 
 hoNDArrayMemoryManaged<T>::~hoNDArrayMemoryManaged()
 {
-    // GADGET_MSG("In ~hoNDArrayMemoryManaged()");
+    // GADGET_MSG_DEPRECATED("In ~hoNDArrayMemoryManaged()");
     if (this->delete_data_on_destruct_)
     {
         //if ( mem_manager_ )
@@ -271,7 +271,7 @@ inline void hoNDArrayMemoryManaged<T>::_deallocate_memory( double* data )
 template <typename T> 
 inline void hoNDArrayMemoryManaged<T>::_allocate_memory( size_t size, std::complex<float>** data )
 {
-    //GADGET_MSG("-----> In hoNDArrayMemoryManaged::_allocate_memory(size) : " << size/1024/1024.0 << " MegaBytes ");
+    //GADGET_MSG_DEPRECATED("-----> In hoNDArrayMemoryManaged::_allocate_memory(size) : " << size/1024/1024.0 << " MegaBytes ");
     if ( mem_manager_ )
     {
         *data = (std::complex<float>*) mem_manager_->allocate(size*sizeof(std::complex<float>));

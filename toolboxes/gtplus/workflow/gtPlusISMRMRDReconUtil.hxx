@@ -4991,7 +4991,7 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
             Gadgetron::norm2(diffR, vDiffR);
             Gadgetron::norm2(R, vR);
 
-            // GADGET_MSG("coilMap2DNIH2Inner - iter : " << iter << " - norm(prevR-R)/norm(R) : " << vDiffR/vR);
+            // GADGET_MSG_DEPRECATED("coilMap2DNIH2Inner - iter : " << iter << " - norm(prevR-R)/norm(R) : " << vDiffR/vR);
 
             if ( vDiffR/vR < thres ) break;
         }
@@ -5245,12 +5245,12 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
         {
             if ( algo == ISMRMRD_SOUHEIL_ITER )
             {
-                GADGET_MSG("calling 3D version of Souhiel iterative coil map estimation ... ");
+                GADGET_MSG_DEPRECATED("calling 3D version of Souhiel iterative coil map estimation ... ");
                 GADGET_CHECK_RETURN_FALSE(this->coilMap3DNIH2Inner(data, coilMap, ks, ks, iterNum, thres));
             }
             else if ( algo==ISMRMRD_SOUHEIL && E2>5*ks && true3D )
             {
-                GADGET_MSG("calling 3D version of Souhiel coil map estimation ... ");
+                GADGET_MSG_DEPRECATED("calling 3D version of Souhiel coil map estimation ... ");
                 GADGET_CHECK_RETURN_FALSE(this->coilMap3DNIHInner(data, coilMap, ks, power));
             }
             else

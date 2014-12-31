@@ -22,6 +22,7 @@
 #include <valarray>
 #include <omp.h>
 #include "hoArmadillo.h"
+#include "log.h"
 
 #define DIFF_LIMIT 1e-5
 
@@ -340,9 +341,9 @@ int main(int argc, char** argv)
   float rn;
 
 
-  GADGET_MSG("------------------------------------------------------------------");
-  GADGET_MSG("matrix multiplication");
-  GADGET_MSG("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("matrix multiplication");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("GEMM Time (system)", true);
@@ -428,9 +429,9 @@ int main(int argc, char** argv)
     std::cout << "Complex Triangular inversion SUCCESS with diff: " << diff << std::endl;
   }
 
-  GADGET_MSG("------------------------------------------------------------------");
-  GADGET_MSG("vector add");
-  GADGET_MSG("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("vector add");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
   {
     GadgetronTimer t("allocate res", true);
     res = a;
@@ -456,9 +457,9 @@ int main(int argc, char** argv)
     Gadgetron::add( *A.get(), *A.get(), res);
   }
 
-  GADGET_MSG("------------------------------------------------------------------");
-  GADGET_MSG("vector multiplication");
-  GADGET_MSG("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("vector multiplication");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("operator *", true);
@@ -480,9 +481,9 @@ int main(int argc, char** argv)
     vecMult( a.get_number_of_elements(), a.get_data_ptr(), b.get_data_ptr(), res.get_data_ptr());
   }
 
-  GADGET_MSG("------------------------------------------------------------------");
-  GADGET_MSG("norm2");
-  GADGET_MSG("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("norm2");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("nrm2", true);
@@ -508,9 +509,9 @@ int main(int argc, char** argv)
   }
   std::cout << "nrm2 = " << rn << std::endl;
 
-  GADGET_MSG("------------------------------------------------------------------");
-  GADGET_MSG("norm1");
-  GADGET_MSG("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("norm1");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("nrm1", true);
@@ -537,9 +538,9 @@ int main(int argc, char** argv)
 
   std::cout << "nrm1 = " << rn << std::endl;
 
-  GADGET_MSG("------------------------------------------------------------------");
-  GADGET_MSG("axpy");
-  GADGET_MSG("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("axpy");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("axpy Time (system)", true);
@@ -556,21 +557,21 @@ int main(int argc, char** argv)
     Gadgetron::axpy( alpha, a, b, res);
   }
 
-  GADGET_MSG("------------------------------------------------------------------");
-  GADGET_MSG("fft 2D");
-  GADGET_MSG("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GADGET_MSG_DEPRECATED("fft 2D");
+  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("fft2 (MKL)", true);
     hoNDFFT<float>::instance()->fft2(a, res);
   }
-  Gadgetron::norm2(res, rn); GADGET_MSG("rn = " << rn);
+  Gadgetron::norm2(res, rn); GADGET_MSG_DEPRECATED("rn = " << rn);
 
   {
     GadgetronTimer t("fftw_fft2", true);
     fftw_fft2(a, res, true);
   }
-  Gadgetron::norm2(res, rn); GADGET_MSG("rn = " << rn);
+  Gadgetron::norm2(res, rn); GADGET_MSG_DEPRECATED("rn = " << rn);
 
   return 0;
 }

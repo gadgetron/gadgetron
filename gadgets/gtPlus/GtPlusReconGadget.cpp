@@ -847,7 +847,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_MSG("GtPlusRecon, debugFolder is not set ...");
+            GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder is not set ...");
         }
 
         if ( !debugFolder2_.empty() )
@@ -856,7 +856,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_MSG("GtPlusRecon, debugFolder2 is not set ...");
+            GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder2 is not set ...");
         }
 
         // ---------------------------------------------------------------------------------------------------------
@@ -1897,9 +1897,9 @@ namespace Gadgetron
             std::string procTime;
             gtPlus_util_.getCurrentMoment(procTime);
 
-            GADGET_MSG("* ============================================================================== *");
-            GADGET_MSG("---> MR recon phase, Currnt processing time : " << procTime << " <---");
-            GADGET_MSG("* ============================================================================== *");
+            GADGET_MSG_DEPRECATED("* ============================================================================== *");
+            GADGET_MSG_DEPRECATED("---> MR recon phase, Currnt processing time : " << procTime << " <---");
+            GADGET_MSG_DEPRECATED("* ============================================================================== *");
         }
 
         return GADGET_OK;

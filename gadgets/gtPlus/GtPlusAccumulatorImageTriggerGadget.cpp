@@ -615,7 +615,7 @@ bool GtPlusAccumulatorImageTriggerGadget::trigger(ImageBufferType& buf, ImageSen
                                                     }
                                                 }
 
-                                                GADGET_MSG("--> Accumulator image trigger for [CHA SLC E2 CON PHS REP SET AVE] : [" 
+                                                GADGET_MSG_DEPRECATED("--> Accumulator image trigger for [CHA SLC E2 CON PHS REP SET AVE] : [" 
                                                                                                                             << image_ind[0] << " " 
                                                                                                                             << image_ind[1] << " " 
                                                                                                                             << image_ind[2] << " " 

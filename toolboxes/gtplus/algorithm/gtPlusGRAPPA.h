@@ -256,10 +256,10 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         //typename realType<T>::Type v;
 
         //Gadgetron::norm2(A, v);
-        //GADGET_MSG("A = " << v);
+        //GADGET_MSG_DEPRECATED("A = " << v);
 
         //Gadgetron::norm2(B, v);
-        //GADGET_MSG("B = " << v);
+        //GADGET_MSG_DEPRECATED("B = " << v);
 
         //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("SolveLinearSystem_Tikhonov"));
         //#ifdef USE_CUDA
@@ -268,7 +268,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         //    {
         //        if ( typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_ )
         //        {
-        //            GADGET_MSG("grappa 2D - calling GPU kernel estimation ... ");
+        //            GADGET_MSG_DEPRECATED("grappa 2D - calling GPU kernel estimation ... ");
         //            hoNDArray<float_complext> A_tmp(A.get_dimensions(), reinterpret_cast<float_complext*>(A.begin()));
         //            hoNDArray<float_complext> B_tmp(B.get_dimensions(), reinterpret_cast<float_complext*>(B.begin()));
 
@@ -322,7 +322,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
 
         //Gadgetron::norm2(x, v);
-        //GADGET_MSG("x = " << v);
+        //GADGET_MSG_DEPRECATED("x = " << v);
 
         // the matrix dimension just matches
         // hoMatrix<T> xt(x.cols(), x.rows(), ker.begin());
@@ -330,7 +330,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         memcpy(ker.begin(), x.begin(), ker.get_number_of_bytes());
 
         //Gadgetron::norm2(ker, v);
-        //GADGET_MSG("ker = " << v);
+        //GADGET_MSG_DEPRECATED("ker = " << v);
     }
     catch(...)
     {
@@ -518,7 +518,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
                             }
 
                             lenRO = eRO-sRO+1;
-                            GADGET_MSG("gtPlusGRAPPA<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
+                            GADGET_MSG_DEPRECATED("gtPlusGRAPPA<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
                         }
                         catch(...)
                         {
@@ -607,10 +607,10 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         //typename realType<T>::Type v;
 
         //Gadgetron::norm2(A, v);
-        //GADGET_MSG("A = " << v);
+        //GADGET_MSG_DEPRECATED("A = " << v);
 
         //Gadgetron::norm2(B, v);
-        //GADGET_MSG("B = " << v);
+        //GADGET_MSG_DEPRECATED("B = " << v);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - solve linear system ... "));
         //#ifdef USE_CUDA
@@ -619,7 +619,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         //    {
         //        if ( typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_ )
         //        {
-        //            GADGET_MSG("grappa 3D - calling GPU kernel estimation ... ");
+        //            GADGET_MSG_DEPRECATED("grappa 3D - calling GPU kernel estimation ... ");
         //            //hoNDArray<float_complext> A_tmp(A.get_dimensions(), reinterpret_cast<float_complext*>(A.begin()));
         //            //hoNDArray<float_complext> B_tmp(B.get_dimensions(), reinterpret_cast<float_complext*>(B.begin()));
 
@@ -684,7 +684,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         //Gadgetron::norm2(x, v);
-        //GADGET_MSG("x = " << v);
+        //GADGET_MSG_DEPRECATED("x = " << v);
 
         // the matrix dimension just matches
         //hoMatrix<T> xt(x.cols(), x.rows(), ker.begin());
@@ -692,7 +692,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         memcpy(ker.begin(), x.begin(), ker.get_number_of_bytes());
 
         //Gadgetron::norm2(ker, v);
-        //GADGET_MSG("ker = " << v);
+        //GADGET_MSG_DEPRECATED("ker = " << v);
     }
     catch(...)
     {

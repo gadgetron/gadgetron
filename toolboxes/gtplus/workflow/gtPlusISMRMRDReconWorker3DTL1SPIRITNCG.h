@@ -262,7 +262,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         hoNDArray<T> kerImE1E2RO;
         if ( kerE1!=E1 || kerE2!=E2 )
         {
-            GADGET_MSG("gtPlusReconWorker3DTL1SPIRITNCG, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
+            GADGET_MSG_DEPRECATED("gtPlusReconWorker3DTL1SPIRITNCG, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
 
             if ( gtPlus_mem_manager_ )
             {
@@ -522,7 +522,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         hoNDArray<T> kerImE1E2RO;
         if ( kerE1!=E1 || kerE2!=E2 )
         {
-            GADGET_MSG("gtPlusReconWorker3DTL1SPIRITNCG, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
+            GADGET_MSG_DEPRECATED("gtPlusReconWorker3DTL1SPIRITNCG, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
 
             if ( gtPlus_mem_manager_ )
             {

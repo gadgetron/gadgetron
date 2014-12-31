@@ -51,7 +51,7 @@ namespace Gadgetron
             }
             else
             {
-                GADGET_MSG("GtPlusImageRecon, debugFolder is not set ...");
+                GADGET_MSG_DEPRECATED("GtPlusImageRecon, debugFolder is not set ...");
             }
 
             performTiming_ = this->get_bool_value("performTiming");
@@ -608,9 +608,9 @@ namespace Gadgetron
             std::string procTime;
             gtPlus_util_.getCurrentMoment(procTime);
 
-            GADGET_MSG("* ============================================================================== *");
-            GADGET_MSG("---> Image recon phase, Current processing time : " << procTime << " <---");
-            GADGET_MSG("* ============================================================================== *");
+            GADGET_MSG_DEPRECATED("* ============================================================================== *");
+            GADGET_MSG_DEPRECATED("---> Image recon phase, Current processing time : " << procTime << " <---");
+            GADGET_MSG_DEPRECATED("* ============================================================================== *");
         }
 
         return GADGET_OK;

@@ -302,7 +302,7 @@ namespace Gadgetron
 
             if ( verbose_ )
             {
-                GADGET_MSG("Initial transformation : ");
+                GADGET_MSG_DEPRECATED("Initial transformation : ");
                 transform_->print(std::cout);
             }
 
@@ -314,7 +314,7 @@ namespace Gadgetron
 
                 if ( verbose_ )
                 {
-                    GADGET_MSG("Transformation for level " << level << " : ");
+                    GADGET_MSG_DEPRECATED("Transformation for level " << level << " : ");
                     transform_->printTransform(std::cout);
                 }
 

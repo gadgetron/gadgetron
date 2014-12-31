@@ -70,7 +70,7 @@ int GtPlusReconJob2DTGadget::process_config(ACE_Message_Block* mb)
     }
     else
     {
-        GADGET_MSG("GtPlusRecon, debugFolder is not set ...");
+        GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder is not set ...");
     }
 
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);

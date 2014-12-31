@@ -1,6 +1,6 @@
 #ifndef GADGETRONCOMMON_H
 #define GADGETRONCOMMON_H
-
+//#include "log.h"
 #include <iostream>
 
 #ifndef _WIN32
@@ -28,11 +28,11 @@
 #endif // _WIN32
 
 //MACROS FOR LOGGING
-#define GADGET_MSG(message) { std::cout << message << std::endl; }
+//#define GADGET_MSG_DEPRECATED(message) { std::cout << message << std::endl; }
 #define GADGET_ERROR_MSG(message) { std::cout << " (" << __FILE__ << ", " << __LINE__ << ") -> error happend: " << message << std::endl; }
 #define GADGET_WARN_MSG(message) { std::cout << " (" << __FILE__ << ", " << __LINE__ << ") -> warning released: " << message << std::endl; }
 
-#define GADGET_CONDITION_MSG(con, message) { if ( con ) GADGET_MSG(message) }
+#define GADGET_CONDITION_MSG(con, message) { if ( con ) GADGET_MSG_DEPRECATED(message) }
 #define GADGET_CONDITION_WARN_MSG(con, message) { if ( con ) GADGET_WARN_MSG(message) }
 
 #define GADGET_THROW(msg) { GADGET_ERROR_MSG(msg); throw std::runtime_error(msg); }

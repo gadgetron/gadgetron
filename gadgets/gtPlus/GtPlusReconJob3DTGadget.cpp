@@ -74,7 +74,7 @@ int GtPlusReconJob3DTGadget::process_config(ACE_Message_Block* mb)
     }
     else
     {
-        GADGET_MSG("GtPlusRecon, debugFolder is not set ...");
+        GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder is not set ...");
     }
 
     if ( !debugFolder2_.empty() )
@@ -83,7 +83,7 @@ int GtPlusReconJob3DTGadget::process_config(ACE_Message_Block* mb)
     }
     else
     {
-        GADGET_MSG("GtPlusRecon, debugFolder2 is not set ...");
+        GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder2 is not set ...");
     }
 
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);

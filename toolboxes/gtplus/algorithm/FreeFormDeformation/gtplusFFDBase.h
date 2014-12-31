@@ -798,8 +798,8 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayTy
 
             if ( totalResidual < thresResidual )
             {
-                GADGET_MSG("BSpline FFD residual is too small : " << totalResidual);
-                GADGET_MSG("No further refinement will be computed ... ");
+                GADGET_MSG_DEPRECATED("BSpline FFD residual is too small : " << totalResidual);
+                GADGET_MSG_DEPRECATED("No further refinement will be computed ... ");
                 break;
             }
 
@@ -859,8 +859,8 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxW(const CoordArrayT
 
             if ( totalResidual < thresResidual )
             {
-                GADGET_MSG("BSpline FFD residual is too small : " << totalResidual);
-                GADGET_MSG("No further refinement will be computed ... ");
+                GADGET_MSG_DEPRECATED("BSpline FFD residual is too small : " << totalResidual);
+                GADGET_MSG_DEPRECATED("No further refinement will be computed ... ");
                 break;
             }
 

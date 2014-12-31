@@ -47,11 +47,11 @@ namespace Gadgetron
  }
 
 //Deprecated logging macros kept here for backwards compatibility
-#define GADGET_MSG_DEPRECATED(message) \
-  {				       \
-     std::stringstream str;	       \
-     str << message << std::endl;      \
-     GDEBUG(str.str().c_str());	       \
+#define GADGET_MSG_DEPRECATED(message)			\
+  {							\
+    std::stringstream gadget_msg_dep_str;		\
+    gadget_msg_dep_str  << message << std::endl;	\
+    GDEBUG(gadget_msg_dep_str.str().c_str());		\
   }
 
 #endif //GADGETRON_LOG_H

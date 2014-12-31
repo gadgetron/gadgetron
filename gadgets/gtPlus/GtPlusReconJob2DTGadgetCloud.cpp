@@ -2,6 +2,7 @@
 #include "GtPlusReconJob2DTGadgetCloud.h"
 #include "GtPlusGadgetOpenMP.h"
 #include "gadgetron_paths.h"
+#include "log.h"
 
 using namespace Gadgetron::gtPlus;
 
@@ -247,7 +248,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
     }
     else
     {
-        GADGET_MSG("GtPlusRecon, debugFolder is not set ...");
+        GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder is not set ...");
     }
 
     if ( !debugFolder2_.empty() )
@@ -256,7 +257,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
     }
     else
     {
-        GADGET_MSG("GtPlusRecon, debugFolder2 is not set ...");
+        GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder2 is not set ...");
     }
 
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
@@ -602,9 +603,9 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
         std::string procTime;
         gtPlus_util_.getCurrentMoment(procTime);
 
-        GADGET_MSG("* ============================================================================== *");
-        GADGET_MSG("---> MR recon 2DT gadget cloud, Currnt processing time : " << procTime << " <---");
-        GADGET_MSG("* ============================================================================== *");
+        GADGET_MSG_DEPRECATED("* ============================================================================== *");
+        GADGET_MSG_DEPRECATED("---> MR recon 2DT gadget cloud, Currnt processing time : " << procTime << " <---");
+        GADGET_MSG_DEPRECATED("* ============================================================================== *");
     }
 
     return GADGET_OK;

@@ -67,7 +67,7 @@ public:
         if ( workOrder2DT->recon_auto_parameters_ )
         {
             this->autoReconParameter(workOrder2DT);
-            GADGET_MSG("Gt Plus 2DT -- automatic paramter selection ---");
+            GADGET_MSG_DEPRECATED("Gt Plus 2DT -- automatic paramter selection ---");
             if ( !this->debugFolder_.empty() ) { workOrder2DT->print(std::cout); }
         }
 
@@ -543,7 +543,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                 }
 
                 eigenValues.print(std::cout);
-                GADGET_MSG("Upstream coil compression, number of channel kept is " << coeff.cols());
+                GADGET_MSG_DEPRECATED("Upstream coil compression, number of channel kept is " << coeff.cols());
 
                 size_t n;
                 for ( n=0; n<upstreamCoilCoeffRef.size(); n++ )
@@ -602,7 +602,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                     }
 
                     GADGET_CHECK_PERFORM(!debugFolder_.empty(), eigenValues.print(std::cout));
-                    GADGET_MSG("Upstream coil compression, number of channel kept is " << coeff.cols());
+                    GADGET_MSG_DEPRECATED("Upstream coil compression, number of channel kept is " << coeff.cols());
 
                     if ( s < upstreamCoilCoeffRef.size() )
                     {
@@ -747,7 +747,7 @@ bool gtPlusReconWorker2DT<T>::coilCompression(gtPlusReconWorkOrder2DT<T>* workOr
                     }
 
                     GADGET_CHECK_PERFORM(!debugFolder_.empty(), eigenValues.print(std::cout));
-                    GADGET_MSG("Coil compression, number of channel kept is " << coeff.cols());
+                    GADGET_MSG_DEPRECATED("Coil compression, number of channel kept is " << coeff.cols());
                 }
                 else
                 {
@@ -791,7 +791,7 @@ bool gtPlusReconWorker2DT<T>::coilCompression(gtPlusReconWorkOrder2DT<T>* workOr
                         }
 
                         GADGET_CHECK_PERFORM(!debugFolder_.empty(), eigenValues.print(std::cout));
-                        GADGET_MSG("Coil compression, number of channel kept is " << coeff.cols());
+                        GADGET_MSG_DEPRECATED("Coil compression, number of channel kept is " << coeff.cols());
                     }
 
                     if ( S < dataS )
@@ -1077,7 +1077,7 @@ performCalib(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& ref_s
                     if ( S < omp_get_num_procs()/2 )
                     {
                         omp_set_nested(1);
-                        GADGET_MSG("performCalib, nested omp is on ... ");
+                        GADGET_MSG_DEPRECATED("performCalib, nested omp is on ... ");
                     }
                 #endif // USE_OMP
 
@@ -1455,7 +1455,7 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
 
         if ( ref_fillback )
         {
-            GADGET_MSG("Fill back the reference kspace lines to the reconstruction ");
+            GADGET_MSG_DEPRECATED("Fill back the reference kspace lines to the reconstruction ");
 
             hoNDArray<T> ref_dst;
             if ( workOrder2DT->coil_compression_ )
@@ -1783,9 +1783,9 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
         }
 
         partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
-        GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG("Partial fourier scaling factor : " << partialFourierCompensationFactor));
+        GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG_DEPRECATED("Partial fourier scaling factor : " << partialFourierCompensationFactor));
 
-        GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG("Partial fourier algorithm : " << gtPlus_util_.getNameFromISMRMRDPartialFourierReconAlgo(workOrder2DT->partialFourier_algo_) ));
+        GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG_DEPRECATED("Partial fourier algorithm : " << gtPlus_util_.getNameFromISMRMRDPartialFourierReconAlgo(workOrder2DT->partialFourier_algo_) ));
 
         if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
         {
@@ -2068,7 +2068,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
 
             if ( !debugFolder_.empty() )
             {
-                GADGET_MSG("Homodyne iter : " << ii << " - thres : " << thres << " ... ");
+                GADGET_MSG_DEPRECATED("Homodyne iter : " << ii << " - thres : " << thres << " ... ");
             }
 
             if ( thres < workOrder2DT.partialFourier_homodyne_thres_ )
@@ -2334,7 +2334,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
 
             if ( !debugFolder_.empty() )
             {
-                GADGET_MSG("POCS iter : " << ii << " - thres : " << thres << " ... ");
+                GADGET_MSG_DEPRECATED("POCS iter : " << ii << " - thres : " << thres << " ... ");
             }
 
             if ( thres < workOrder2DT.partialFourier_POCS_thres_ )
@@ -2780,7 +2780,7 @@ estimateJobSize(gtPlusReconWorkOrder<T>* workOrder2DT, size_t maxNumOfBytesPerJo
         GADGET_CHECK_RETURN_FALSE(this->computeEffectiveNodeNumberBasedOnComputingPowerIndex(workOrder2DT, nodeN));
         if ( workOrder2DT->job_perform_on_control_node_ ) nodeN++;
 
-        GADGET_MSG("GtPlus Cloud 2DT - job_perform_on_control_node is " << workOrder2DT->job_perform_on_control_node_  << " - nodeN is " << nodeN << " - overlapBetweenJobs is " << overlapBetweenJobs << " ... ");
+        GADGET_MSG_DEPRECATED("GtPlus Cloud 2DT - job_perform_on_control_node is " << workOrder2DT->job_perform_on_control_node_  << " - nodeN is " << nodeN << " - overlapBetweenJobs is " << overlapBetweenJobs << " ... ");
 
         // adjust jobN according to cloud size
         size_t RO = workOrder2DT->data_.get_size(0);
@@ -2804,7 +2804,7 @@ estimateJobSize(gtPlusReconWorkOrder<T>* workOrder2DT, size_t maxNumOfBytesPerJo
             numOfBytesPerJob = sizeof(T)*( RO*E1*srcCHA*dstCHA*jobSize + 2*RO*E1*srcCHA*jobSize );
         }
 
-        GADGET_MSG("GtPlus Cloud 2DT - jobSize is " << jobSize << "; every job has " << numOfBytesPerJob/1024.0/1024 << " MBytes ... ");
+        GADGET_MSG_DEPRECATED("GtPlus Cloud 2DT - jobSize is " << jobSize << "; every job has " << numOfBytesPerJob/1024.0/1024 << " MBytes ... ");
     }
     catch(...)
     {

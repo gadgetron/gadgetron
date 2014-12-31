@@ -5,6 +5,7 @@
 
 #include <gtPlusMemoryManager.h>
 #include <cstring>
+#include "log.h"
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -165,7 +166,7 @@ void gtPlusMemoryManager::defragmentImpl()
 {
     try
     {
-        GADGET_MSG("-----> gtPlusMemoryManager::defragmentImpl() ... ");
+        GADGET_MSG_DEPRECATED("-----> gtPlusMemoryManager::defragmentImpl() ... ");
         size_t N = free_list_.size();
         memObjList_.resize(N);
 
@@ -279,7 +280,7 @@ bool gtPlusMemoryManager::increase(size_t added_bytes)
 {
     try
     {
-        GADGET_MSG("-----> gtPlusMemoryManager::increase() : " << added_bytes/1024/1024 << " MegaBytes ");
+        GADGET_MSG_DEPRECATED("-----> gtPlusMemoryManager::increase() : " << added_bytes/1024/1024 << " MegaBytes ");
 
         void* ptr;
         _allocate_memory(added_bytes, ptr);

@@ -224,7 +224,7 @@ solve(const Array_Type_I& b, Array_Type_O& x)
 
             //if (printIter_)
             //{
-            //    GADGET_MSG("Iteration " << ii << " - normar/(norma*normr) = " << std::abs(normar/(norma*normr)) << " - normr = " << std::abs(normr) );
+            //    GADGET_MSG_DEPRECATED("Iteration " << ii << " - normar/(norma*normr) = " << std::abs(normar/(norma*normr)) << " - normr = " << std::abs(normr) );
             //}
 
             // x = x + phi * d;
@@ -251,7 +251,7 @@ solve(const Array_Type_I& b, Array_Type_O& x)
 
         if (printIter_)
         {
-            GADGET_MSG("Total iteration number is  " << ii << " - relative norm is " << std::abs(normar/(norma*normr)) << " ... ");
+            GADGET_MSG_DEPRECATED("Total iteration number is  " << ii << " - relative norm is " << std::abs(normar/(norma*normr)) << " ... ");
         }
 
         if (flag == 1)
@@ -270,7 +270,7 @@ solve(const Array_Type_I& b, Array_Type_O& x)
         //if (printIter_)
         //{
         //    value_type relres = normr/n2b;
-        //    GADGET_MSG("Flag = " << flag << " - relres = " << std::abs(relres) );
+        //    GADGET_MSG_DEPRECATED("Flag = " << flag << " - relres = " << std::abs(relres) );
         //}
     }
     catch(...)

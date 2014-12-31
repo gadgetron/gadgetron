@@ -221,12 +221,12 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             int numThreads = (int)( (N<64) ? N : 64 );
 
             int numOpenMPProcs = omp_get_num_procs();
-            GADGET_MSG("gtPlusReconWorker2DTSPIRIT, numOpenMPProcs : " << numOpenMPProcs);
+            GADGET_MSG_DEPRECATED("gtPlusReconWorker2DTSPIRIT, numOpenMPProcs : " << numOpenMPProcs);
 
             if ( numThreads > numOpenMPProcs ) numThreads = numOpenMPProcs;
 
             int maxOpenMPThreads = omp_get_max_threads();
-            GADGET_MSG("gtPlusReconWorker2DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
+            GADGET_MSG_DEPRECATED("gtPlusReconWorker2DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
 
             int allowOpenMPNested = omp_get_nested();
 
@@ -241,11 +241,11 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                 allowOpenMPNested = 0;
             }
 
-            GADGET_MSG("gtPlusReconWorker2DTSPIRIT, allowOpenMPNested : " << allowOpenMPNested);
-            GADGET_MSG("gtPlusReconWorker2DTSPIRIT, numThreads : " << numThreads);
+            GADGET_MSG_DEPRECATED("gtPlusReconWorker2DTSPIRIT, allowOpenMPNested : " << allowOpenMPNested);
+            GADGET_MSG_DEPRECATED("gtPlusReconWorker2DTSPIRIT, numThreads : " << numThreads);
         #endif
 
-        GADGET_MSG("gtPlusReconWorker2DTSPIRIT, processing starts ... ");
+        GADGET_MSG_DEPRECATED("gtPlusReconWorker2DTSPIRIT, processing starts ... ");
 
         hoNDArray<T> ker_Shifted(adj_forward_G_I);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(adj_forward_G_I, ker_Shifted);
@@ -421,7 +421,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
         }
         else
         {
-            GADGET_MSG("SPIRIT - 2DT - spirit_ncg_scale_factor_ is preset : " << workOrder2DT->spirit_ncg_scale_factor_ << " ... ");
+            GADGET_MSG_DEPRECATED("SPIRIT - 2DT - spirit_ncg_scale_factor_ is preset : " << workOrder2DT->spirit_ncg_scale_factor_ << " ... ");
         }
 
         // split the jobs
@@ -443,7 +443,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             {
                 size_t jobN = jobMegaBytes/(RO*E1*srcCHA*dstCHA*sizeof(T)/1024/1024);
                 if ( jobN < N ) splitJobs = true;
-                GADGET_MSG("SPIRIT - 2DT - size of largest job : " << jobN);
+                GADGET_MSG_DEPRECATED("SPIRIT - 2DT - size of largest job : " << jobN);
             }
         }
 
@@ -466,10 +466,10 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                 GADGET_CHECK_RETURN_FALSE(this->estimateJobSize(workOrder2DT, maxNumOfBytesPerJob, overlapN, cloudSize, jobN));
 
-                //GADGET_MSG("SPIRIT - 2DT - cloudSize is " << cloudSize << " - N is " << N << " ... ");
+                //GADGET_MSG_DEPRECATED("SPIRIT - 2DT - cloudSize is " << cloudSize << " - N is " << N << " ... ");
                 //unsigned int nodeN = cloudSize;
                 //if ( runJobsOnLocalNode ) nodeN++;
-                //GADGET_MSG("SPIRIT - 2DT - runJobsOnLocalNode is " << runJobsOnLocalNode << " - nodeN is " << nodeN << " - overlapN is " << overlapN << " ... ");
+                //GADGET_MSG_DEPRECATED("SPIRIT - 2DT - runJobsOnLocalNode is " << runJobsOnLocalNode << " - nodeN is " << nodeN << " - overlapN is " << overlapN << " ... ");
 
                 //// adjust jobN according to cloud size
                 //jobN = std::ceil( (double)(N+overlapN*(nodeN-1))/(double)nodeN );
@@ -483,7 +483,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                 //    numOfBytesPerJob = sizeof(T)*( RO*E1*srcCHA*dstCHA*jobN + 2*RO*E1*srcCHA*jobN );
                 //}
 
-                //GADGET_MSG("SPIRIT - 2DT - jobN is " << jobN << "; every job has " << numOfBytesPerJob/1024.0/1024 << " MBytes ... ");
+                //GADGET_MSG_DEPRECATED("SPIRIT - 2DT - jobN is " << jobN << "; every job has " << numOfBytesPerJob/1024.0/1024 << " MBytes ... ");
 
                 // split the job
                 GADGET_CHECK_RETURN_FALSE(this->splitReconJob(workOrder2DT, const_cast<hoNDArray<T>&>(data_dst), *(workOrder2DT->kernelIm_), splitByS, jobN, jobMegaBytes, overlapN, jobList));
@@ -508,11 +508,11 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     completedJobList[j].job_index_S_ = jobList[j].job_index_S_;
                 }
 
-                GADGET_MSG("SPIRIT - 2DT - total job : " << jobList.size() << " - job N : " << jobN << " - cloud size : " << cloudSize);
+                GADGET_MSG_DEPRECATED("SPIRIT - 2DT - total job : " << jobList.size() << " - job N : " << jobN << " - cloud size : " << cloudSize);
 
                 unsigned int numOfJobRunOnCloud = (unsigned int)(jobList.size() - jobList.size()/(cloudSize+1));
                 if ( !runJobsOnLocalNode ) numOfJobRunOnCloud = (unsigned int)jobList.size();
-                GADGET_MSG("SPIRIT - 2DT - numOfJobRunOnCloud : " << numOfJobRunOnCloud << " ... ");
+                GADGET_MSG_DEPRECATED("SPIRIT - 2DT - numOfJobRunOnCloud : " << numOfJobRunOnCloud << " ... ");
 
                 typedef Gadgetron::GadgetCloudController< gtPlusReconJob2DT<T> > GTCloudControllerType;
                 GTCloudControllerType controller;
@@ -536,7 +536,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                         // node_ids[j] = j%cloudSize;
                         jobListCloud[j] = &jobList[j];
                         completedJobListCloud[j] = &completedJobList[j];
-                        GADGET_MSG("--> job " << j << " runs on node " << node_ids[j] << " ... ");
+                        GADGET_MSG_DEPRECATED("--> job " << j << " runs on node " << node_ids[j] << " ... ");
                     }
 
                     std::vector<GadgetMessageReader*> readers(cloudSize, NULL);
@@ -576,7 +576,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                             // run the left over jobs on the local computer
                             for ( j=numOfJobRunOnCloud; j<jobList.size(); j++ )
                             {
-                                GADGET_MSG("SPIRIT - 2DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
+                                GADGET_MSG_DEPRECATED("SPIRIT - 2DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
                                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 2DT ... "));
                                 GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
@@ -608,7 +608,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                                     || jobList[j].complexIm.get_size(2)!= jobList[j].kspace.get_size(2) ) 
                                    )
                                 {
-                                    GADGET_MSG("SPIRIT - 2DT - uncompleted cloud job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
+                                    GADGET_MSG_DEPRECATED("SPIRIT - 2DT - uncompleted cloud job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
                                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3DT ... "));
                                     GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
@@ -634,12 +634,12 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             {
                 GADGET_CHECK_RETURN_FALSE(this->splitReconJob(workOrder2DT, const_cast<hoNDArray<T>&>(data_dst), *(workOrder2DT->kernelIm_), splitByS, jobN, jobMegaBytes, overlapN, jobList));
 
-                GADGET_MSG("SPIRIT - 2DT - total job : " << jobList.size());
+                GADGET_MSG_DEPRECATED("SPIRIT - 2DT - total job : " << jobList.size());
 
                 size_t j;
                 for ( j=0; j<jobList.size(); j++ )
                 {
-                    GADGET_MSG("SPIRIT - 2DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
+                    GADGET_MSG_DEPRECATED("SPIRIT - 2DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("L1 SPIRIT NCG 2DT ... "));
                     GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));

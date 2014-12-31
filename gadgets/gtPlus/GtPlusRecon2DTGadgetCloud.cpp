@@ -472,7 +472,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                 // special check if the second set of recon results is needed
                 if ( recon_res_second_required_ )
                 {
-                    GADGET_MSG("Check received recon results (second set) ... ");
+                    GADGET_MSG_DEPRECATED("Check received recon results (second set) ... ");
 
                     if (packages_received_[ii].complexImSecond.get_number_of_elements() == 0)
                     {
@@ -634,7 +634,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                 {
                     if ( gadget_->packages_received_[jobID].complexImSecond.get_number_of_elements() > 0 )
                     {
-                        GADGET_MSG("Check received recon results (second set) in cloud sender ... ");
+                        GADGET_MSG_DEPRECATED("Check received recon results (second set) in cloud sender ... ");
 
                         // check the images are not empty
                         float v(0);
