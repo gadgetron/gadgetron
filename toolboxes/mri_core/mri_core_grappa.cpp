@@ -682,14 +682,45 @@ imageDomainKernelRO3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int
 
         // GADGET_CHECK_THROW(Gadgetron::permuteROTo3rdDimensionFor3DRecon(kImROTemp, kImRO));
 
-        std::vector<size_t> orders(5, 0);
-        orders[0] = 1;
-        orders[1] = 2;
-        orders[2] = 0;
-        orders[3] = 3;
-        orders[4] = 4;
+        //std::vector<size_t> orders(5, 0);
+        //orders[0] = 1;
+        //orders[1] = 2;
+        //orders[2] = 0;
+        //orders[3] = 3;
+        //orders[4] = 4;
 
-        Gadgetron::permute(&kImROTemp, &kImRO, &orders);
+        //Gadgetron::permute(&kImROTemp, &kImRO, &orders);
+
+        // permute RO to 3rd dimension
+        size_t RO = ro;
+        size_t E1 = kConvE1;
+        size_t E2 = kConvE2;
+
+        size_t N3D = RO*E1*E2;
+        size_t N = srcCHA*dstCHA;
+
+        const T* pX = kImROTemp.begin();
+        T* pR = kImRO.begin();
+
+        long long n;
+
+        #pragma omp parallel for default(none) private(n) shared(RO, E1, E2, N, pR, N3D, pX)
+        for ( n=0; n<(long long)N; n++ )
+        {
+            T* pRn = pR + n*N3D;
+            T* pXn = const_cast<T*>(pX) + n*N3D;
+
+            for ( size_t e2=0; e2<E2; e2++ )
+            {
+                for ( size_t e1=0; e1<E1; e1++ )
+                {
+                    for ( size_t ro=0; ro<RO; ro++ )
+                    {
+                        pRn[e1+e2*E1+ro*E1*E2] = pXn[ro+e1*RO+e2*RO*E1];
+                    }
+                }
+            }
+        }
     }
     catch(...)
     {
