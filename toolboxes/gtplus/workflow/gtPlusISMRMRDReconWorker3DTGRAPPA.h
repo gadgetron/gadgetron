@@ -511,7 +511,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                     }
 
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permuteROTo3rdDimensionFor3DRecon for unwrapped images ... "));
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::permute3rdDimensionTo1stDimension(unwrappedImPermuted, workOrder3DT->fullkspace_));
+                    GADGET_CHECK_RETURN_FALSE(this->permute3rdDimensionTo1stDimension(unwrappedImPermuted, workOrder3DT->fullkspace_));
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
                 }
                 else

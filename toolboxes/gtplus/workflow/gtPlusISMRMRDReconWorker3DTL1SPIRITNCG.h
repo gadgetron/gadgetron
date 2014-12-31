@@ -203,7 +203,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
         hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, gtPlus_mem_manager_);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue RO to 4th dimension ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
+        GADGET_CHECK_RETURN_FALSE(this->permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "kspaceIfftROPermuted");
 
@@ -217,7 +217,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
         hoNDArray<T> coilMapN(RO, E1, E2, dstCHA, workOrder3DT->coilMap_->begin()+n*RO*E1*E2*dstCHA);
         hoNDArray<T> coilMapPermuted(E1, E2, dstCHA, RO);
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue coil map RO to 4th dimension ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(coilMapN, coilMapPermuted));
+        GADGET_CHECK_RETURN_FALSE(this->permuteROTo4thDimensionFor3DRecon(coilMapN, coilMapPermuted));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, coilMapPermuted, "coilMapPermuted");
 
@@ -226,7 +226,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         // permute the unwrapped kspace
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue RO to 1st dimension ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo1stDimensionFor3DRecon(resPermuted, kspaceIfftRO));
+        GADGET_CHECK_RETURN_FALSE(this->permuteROTo1stDimensionFor3DRecon(resPermuted, kspaceIfftRO));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         // perform fft along the first dimension

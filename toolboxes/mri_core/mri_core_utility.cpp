@@ -699,526 +699,303 @@ template EXPORTMRICORE bool sumOver5thDimension(const hoNDArray< std::complex<do
 
 // ------------------------------------------------------------------------
 
-template<typename T> 
-bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-{
-    try
-    {
-        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-        size_t NDim = dimX->size();
-
-        if ( NDim <= 5 )
-        {
-            r = x;
-            return true;
-        }
-
-        size_t RO = x.get_size(0);
-        size_t E1 = x.get_size(1);
-        size_t CHA = x.get_size(2);
-        size_t SLC = x.get_size(3);
-        size_t E2 = x.get_size(4);
-
-        std::vector<size_t> dimR(*dimX);
-        dimR[2] = E2;
-        dimR[3] = CHA;
-        dimR[4] = SLC;
-
-        r.create(&dimR);
-
-        size_t N2D = RO*E1;
-        size_t N5D = RO*E1*CHA*E2*SLC;
-
-        size_t N = x.get_number_of_elements()/N5D;
-
-        const T* pX = x.begin();
-        T* pR = r.begin();
-
-        size_t n;
-        for ( n=0; n<N; n++ )
-        {
-            int e2;
-            #pragma omp parallel for default(none) private(e2) shared(N5D, N2D, pX, pR, CHA, SLC, E2, n)
-            for ( e2=0; e2<E2; e2++ )
-            {
-                for ( size_t slc=0; slc<SLC; slc++ )
-                {
-                    for ( size_t cha=0; cha<CHA; cha++ )
-                    {
-                        memcpy(pR+n*N5D+slc*CHA*E2*N2D+cha*E2*N2D+e2*N2D, pX+n*N5D+e2*SLC*CHA*N2D+slc*CHA*N2D+cha*N2D, sizeof(T)*N2D);
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-{
-    try
-    {
-        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-        size_t NDim = dimX->size();
-
-        if ( NDim < 5 )
-        {
-            r = x;
-            return true;
-        }
-
-        size_t RO = x.get_size(0);
-        size_t E1 = x.get_size(1);
-        size_t E2 = x.get_size(2);
-        size_t CHA = x.get_size(3);
-        size_t SLC = x.get_size(4);
-
-        std::vector<size_t> dimR(*dimX);
-        dimR[2] = CHA;
-        dimR[3] = SLC;
-        dimR[4] = E2;
-
-        r.create(&dimR);
-
-        size_t N2D = RO*E1;
-        size_t N5D = RO*E1*CHA*E2*SLC;
-
-        size_t N = x.get_number_of_elements()/N5D;
-
-        const T* pX = x.begin();
-        T* pR = r.begin();
-
-        size_t n;
-        for ( n=0; n<N; n++ )
-        {
-            int e2;
-            #pragma omp parallel for default(none) private(e2) shared(N5D, N2D, pX, pR, CHA, SLC, E2, n)
-            for ( e2=0; e2<E2; e2++ )
-            {
-                for ( size_t slc=0; slc<SLC; slc++ )
-                {
-                    for ( size_t cha=0; cha<CHA; cha++ )
-                    {
-                        memcpy(pR+n*N5D+e2*SLC*CHA*N2D+slc*CHA*N2D+cha*N2D, pX+n*N5D+slc*CHA*E2*N2D+cha*E2*N2D+e2*N2D, sizeof(T)*N2D);
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
-{
-    try
-    {
-        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-        size_t NDim = dimX->size();
-
-        if ( NDim < 3 )
-        {
-            r = x;
-            return true;
-        }
-
-        size_t RO = x.get_size(0);
-        size_t E1 = x.get_size(1);
-        size_t E2 = x.get_size(2);
-
-        std::vector<size_t> dimR(*dimX);
-        dimR[0] = E1;
-        dimR[1] = E2;
-        dimR[2] = RO;
-
-        r.create(&dimR);
-
-        size_t N3D = RO*E1*E2;
-
-        size_t N = x.get_number_of_elements()/N3D;
-
-        const T* pX = x.begin();
-        T* pR = r.begin();
-
-        long long n;
-
-        #pragma omp parallel for default(none) private(n) shared(RO, E1, E2, N, pR, N3D, pX)
-        for ( n=0; n<(long long)N; n++ )
-        {
-            T* pRn = pR + n*N3D;
-            T* pXn = const_cast<T*>(pX) + n*N3D;
-
-            for ( size_t e2=0; e2<E2; e2++ )
-            {
-                for ( size_t e1=0; e1<E1; e1++ )
-                {
-                    for ( size_t ro=0; ro<RO; ro++ )
-                    {
-                        pRn[e1+e2*E1+ro*E1*E2] = pXn[ro+e1*RO+e2*RO*E1];
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
-{
-    try
-    {
-        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-        size_t NDim = dimX->size();
-
-        if ( NDim < 4 )
-        {
-            r = x;
-            return true;
-        }
-
-        size_t RO = x.get_size(0);
-        size_t E1 = x.get_size(1);
-        size_t E2 = x.get_size(2);
-        size_t CHA = x.get_size(3);
-
-        std::vector<size_t> dimR(*dimX);
-        dimR[0] = E1;
-        dimR[1] = E2;
-        dimR[2] = CHA;
-        dimR[3] = RO;
-
-        r.create(&dimR);
-
-        size_t N4D = RO*E1*E2*CHA;
-
-        size_t N = x.get_number_of_elements()/N4D;
-
-        const T* pX = x.begin();
-        T* pR = r.begin();
-
-        long long n;
-        for ( n=0; n<(long long)N; n++ )
-        {
-            T* pRn = pR + n*N4D;
-            T* pXn = const_cast<T*>(pX) + n*N4D;
-
-            long long cha;
-
-            #pragma omp parallel for default(none) private(cha) shared(RO, E1, E2, CHA, pXn, pRn)
-            for ( cha=0; cha<(long long)CHA; cha++ )
-            {
-                for ( size_t e2=0; e2<E2; e2++ )
-                {
-                    for ( size_t e1=0; e1<E1; e1++ )
-                    {
-                        for ( size_t ro=0; ro<RO; ro++ )
-                        {
-                            pRn[e1+e2*E1+cha*E1*E2+ro*E1*E2*CHA] = pXn[ro+e1*RO+e2*RO*E1+cha*RO*E1*E2];
-                        }
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
-{
-    try
-    {
-        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-        size_t NDim = dimX->size();
-
-        if ( NDim < 4 )
-        {
-            r = x;
-            return true;
-        }
-
-        size_t E1 = x.get_size(0);
-        size_t E2 = x.get_size(1);
-        size_t CHA = x.get_size(2);
-        size_t RO = x.get_size(3);
-
-        std::vector<size_t> dimR(*dimX);
-        dimR[0] = RO;
-        dimR[1] = E1;
-        dimR[2] = E2;
-        dimR[3] = CHA;
-
-        r.create(&dimR);
-
-        size_t N4D = RO*E1*E2*CHA;
-
-        size_t N = x.get_number_of_elements()/N4D;
-
-        const T* pX = x.begin();
-        T* pR = r.begin();
-
-        long long n;
-        for ( n=0; n<(long long)N; n++ )
-        {
-            T* pRn = pR + n*N4D;
-            T* pXn = const_cast<T*>(pX) + n*N4D;
-
-            long long cha;
-
-            #pragma omp parallel for default(none) private(cha) shared(RO, E1, E2, CHA, pXn, pRn)
-            for ( cha=0; cha<(long long)CHA; cha++ )
-            {
-                for ( size_t e2=0; e2<E2; e2++ )
-                {
-                    for ( size_t e1=0; e1<E1; e1++ )
-                    {
-                        size_t indRn = e1*RO+e2*RO*E1+cha*RO*E1*E2;
-                        size_t indXn = e1+e2*E1+cha*E1*E2;
-                        for ( size_t ro=0; ro<RO; ro++ )
-                        {
-                            pRn[ro+indRn] = pXn[indXn+ro*E1*E2*CHA];
-                        }
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
-{
-    try
-    {
-        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-        size_t NDim = dimX->size();
-
-        if ( NDim < 3 )
-        {
-            r = x;
-            return true;
-        }
-
-        size_t RO = x.get_size(0);
-        size_t E1 = x.get_size(1);
-        size_t E2 = x.get_size(2);
-
-        std::vector<size_t> dimR(*dimX);
-        dimR[0] = E2;
-        dimR[1] = RO;
-        dimR[2] = E1;
-
-        r.create(&dimR);
-
-        size_t N3D = RO*E1*E2;
-
-        size_t N = x.get_number_of_elements()/N3D;
-
-        const T* pX = x.begin();
-        T* pR = r.begin();
-
-        long long n, e2;
-        for ( n=0; n<(long long)N; n++ )
-        {
-            T* pRn = pR + n*N3D;
-            T* pXn = const_cast<T*>(pX) + n*N3D;
-
-            #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, pXn, pRn)
-            for ( e2=0; e2<(long long)E2; e2++ )
-            {
-                for ( size_t e1=0; e1<E1; e1++ )
-                {
-                    size_t indRn = e2+e1*E2*RO;
-                    size_t indXn = e1*RO+e2*RO*E1;
-                    for ( size_t ro=0; ro<RO; ro++ )
-                    {
-                        pRn[ro*E2+indRn] = pXn[ro+indXn];
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
-{
-    try
-    {
-        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-        size_t NDim = dimX->size();
-
-        if ( NDim < 5 )
-        {
-            r = x;
-            return true;
-        }
-
-        size_t RO = x.get_size(0);
-        size_t E1 = x.get_size(1);
-        size_t E2 = x.get_size(2);
-        size_t srcCHA = x.get_size(3);
-        size_t dstCHA = x.get_size(4);
-
-        std::vector<size_t> dimR(*dimX);
-        dimR[0] = E1;
-        dimR[1] = E2;
-        dimR[2] = srcCHA;
-        dimR[3] = dstCHA;
-        dimR[4] = RO;
-
-        r.create(&dimR);
-
-        size_t N5D = RO*E1*E2*srcCHA*dstCHA;
-
-        size_t N = x.get_number_of_elements()/N5D;
-
-        const T* pX = x.begin();
-        T* pR = r.begin();
-
-        long long n;
-        for ( n=0; n<(long long)N; n++ )
-        {
-            T* pRn = pR + n*N5D;
-            T* pXn = const_cast<T*>(pX) + n*N5D;
-
-            long long dcha;
-
-            #pragma omp parallel for default(none) private(dcha) shared(RO, E1, E2, srcCHA, dstCHA, pXn, pRn)
-            for ( dcha=0; dcha<(long long)dstCHA; dcha++ )
-            {
-                for ( size_t scha=0; scha<(int)srcCHA; scha++ )
-                {
-                    for ( size_t e2=0; e2<E2; e2++ )
-                    {
-                        for ( size_t e1=0; e1<E1; e1++ )
-                        {
-                            size_t indRn = e1+e2*E1+scha*E1*E2+dcha*E1*E2*srcCHA;
-                            size_t indXn = e1*RO+e2*RO*E1+scha*RO*E1*E2+dcha*RO*E1*E2*srcCHA;
-                            for ( size_t ro=0; ro<RO; ro++ )
-                            {
-                                pRn[indRn+ro*E1*E2*srcCHA*dstCHA] = pXn[ro+indXn];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-        return false;
-    }
-    return true;
-}
-
-template EXPORTMRICORE bool permuteE2To3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-template EXPORTMRICORE bool permuteE2To3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-template EXPORTMRICORE bool permuteE2To3rdDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-template EXPORTMRICORE bool permuteE2To3rdDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-template EXPORTMRICORE bool permuteE2To5thDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-template EXPORTMRICORE bool permuteE2To5thDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-template EXPORTMRICORE bool permuteE2To5thDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-template EXPORTMRICORE bool permuteE2To5thDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-template EXPORTMRICORE bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
-template EXPORTMRICORE bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-template EXPORTMRICORE bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-template EXPORTMRICORE bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-template EXPORTMRICORE bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
-template EXPORTMRICORE bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-template EXPORTMRICORE bool permuteROTo4thDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-template EXPORTMRICORE bool permuteROTo4thDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-template EXPORTMRICORE bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
-template EXPORTMRICORE bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-template EXPORTMRICORE bool permuteROTo1stDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-template EXPORTMRICORE bool permuteROTo1stDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-template EXPORTMRICORE bool permute3rdDimensionTo1stDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
-template EXPORTMRICORE bool permute3rdDimensionTo1stDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
-template EXPORTMRICORE bool permute3rdDimensionTo1stDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-template EXPORTMRICORE bool permute3rdDimensionTo1stDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-template EXPORTMRICORE bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
-template EXPORTMRICORE bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
-template EXPORTMRICORE bool permuteROTo5thDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
-template EXPORTMRICORE bool permuteROTo5thDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
-
-template <typename T> 
-bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
-{
-    GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()<=y.get_number_of_elements());
-    if ( r.get_number_of_elements()!=y.get_number_of_elements())
-    {
-        r = y;
-    }
-
-    long long Nx = x.get_number_of_elements();
-    long long N = y.get_number_of_elements() / Nx;
-
-    const T* pX = x.begin();
-
-    long long n;
-    #pragma omp parallel for default(none) private(n) shared(pX, y, r, Nx, N)
-    for ( n=0; n<N; n++ )
-    {
-        const T* pY = y.begin()+n*Nx;
-        T* pR = r.begin() + n*Nx;
-
-        long long ii;
-        for ( ii=0; ii<Nx; ii++ )
-        {
-            pR[ii] = pX[ii] + pY[ii];
-        }
-    }
-
-    return true;
-}
+//template<typename T> 
+//bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+//{
+//    try
+//    {
+//        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+//
+//        size_t NDim = dimX->size();
+//
+//        if ( NDim < 3 )
+//        {
+//            r = x;
+//            return true;
+//        }
+//
+//        size_t RO = x.get_size(0);
+//        size_t E1 = x.get_size(1);
+//        size_t E2 = x.get_size(2);
+//
+//        std::vector<size_t> dimR(*dimX);
+//        dimR[0] = E1;
+//        dimR[1] = E2;
+//        dimR[2] = RO;
+//
+//        r.create(&dimR);
+//
+//        size_t N3D = RO*E1*E2;
+//
+//        size_t N = x.get_number_of_elements()/N3D;
+//
+//        const T* pX = x.begin();
+//        T* pR = r.begin();
+//
+//        long long n;
+//
+//        #pragma omp parallel for default(none) private(n) shared(RO, E1, E2, N, pR, N3D, pX)
+//        for ( n=0; n<(long long)N; n++ )
+//        {
+//            T* pRn = pR + n*N3D;
+//            T* pXn = const_cast<T*>(pX) + n*N3D;
+//
+//            for ( size_t e2=0; e2<E2; e2++ )
+//            {
+//                for ( size_t e1=0; e1<E1; e1++ )
+//                {
+//                    for ( size_t ro=0; ro<RO; ro++ )
+//                    {
+//                        pRn[e1+e2*E1+ro*E1*E2] = pXn[ro+e1*RO+e2*RO*E1];
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    catch (...)
+//    {
+//        GADGET_ERROR_MSG("Errors in permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+//        return false;
+//    }
+//    return true;
+//}
+
+//template<typename T> 
+//bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+//{
+//    try
+//    {
+//        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+//
+//        size_t NDim = dimX->size();
+//
+//        if ( NDim < 4 )
+//        {
+//            r = x;
+//            return true;
+//        }
+//
+//        size_t RO = x.get_size(0);
+//        size_t E1 = x.get_size(1);
+//        size_t E2 = x.get_size(2);
+//        size_t CHA = x.get_size(3);
+//
+//        std::vector<size_t> dimR(*dimX);
+//        dimR[0] = E1;
+//        dimR[1] = E2;
+//        dimR[2] = CHA;
+//        dimR[3] = RO;
+//
+//        r.create(&dimR);
+//
+//        size_t N4D = RO*E1*E2*CHA;
+//
+//        size_t N = x.get_number_of_elements()/N4D;
+//
+//        const T* pX = x.begin();
+//        T* pR = r.begin();
+//
+//        long long n;
+//        for ( n=0; n<(long long)N; n++ )
+//        {
+//            T* pRn = pR + n*N4D;
+//            T* pXn = const_cast<T*>(pX) + n*N4D;
+//
+//            long long cha;
+//
+//            #pragma omp parallel for default(none) private(cha) shared(RO, E1, E2, CHA, pXn, pRn)
+//            for ( cha=0; cha<(long long)CHA; cha++ )
+//            {
+//                for ( size_t e2=0; e2<E2; e2++ )
+//                {
+//                    for ( size_t e1=0; e1<E1; e1++ )
+//                    {
+//                        for ( size_t ro=0; ro<RO; ro++ )
+//                        {
+//                            pRn[e1+e2*E1+cha*E1*E2+ro*E1*E2*CHA] = pXn[ro+e1*RO+e2*RO*E1+cha*RO*E1*E2];
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    catch (...)
+//    {
+//        GADGET_ERROR_MSG("Errors in permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+//        return false;
+//    }
+//    return true;
+//}
+
+//template<typename T> 
+//bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+//{
+//    try
+//    {
+//        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+//
+//        size_t NDim = dimX->size();
+//
+//        if ( NDim < 4 )
+//        {
+//            r = x;
+//            return true;
+//        }
+//
+//        size_t E1 = x.get_size(0);
+//        size_t E2 = x.get_size(1);
+//        size_t CHA = x.get_size(2);
+//        size_t RO = x.get_size(3);
+//
+//        std::vector<size_t> dimR(*dimX);
+//        dimR[0] = RO;
+//        dimR[1] = E1;
+//        dimR[2] = E2;
+//        dimR[3] = CHA;
+//
+//        r.create(&dimR);
+//
+//        size_t N4D = RO*E1*E2*CHA;
+//
+//        size_t N = x.get_number_of_elements()/N4D;
+//
+//        const T* pX = x.begin();
+//        T* pR = r.begin();
+//
+//        long long n;
+//        for ( n=0; n<(long long)N; n++ )
+//        {
+//            T* pRn = pR + n*N4D;
+//            T* pXn = const_cast<T*>(pX) + n*N4D;
+//
+//            long long cha;
+//
+//            #pragma omp parallel for default(none) private(cha) shared(RO, E1, E2, CHA, pXn, pRn)
+//            for ( cha=0; cha<(long long)CHA; cha++ )
+//            {
+//                for ( size_t e2=0; e2<E2; e2++ )
+//                {
+//                    for ( size_t e1=0; e1<E1; e1++ )
+//                    {
+//                        size_t indRn = e1*RO+e2*RO*E1+cha*RO*E1*E2;
+//                        size_t indXn = e1+e2*E1+cha*E1*E2;
+//                        for ( size_t ro=0; ro<RO; ro++ )
+//                        {
+//                            pRn[ro+indRn] = pXn[indXn+ro*E1*E2*CHA];
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    catch (...)
+//    {
+//        GADGET_ERROR_MSG("Errors in permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+//        return false;
+//    }
+//    return true;
+//}
+
+
+
+//template<typename T> 
+//bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+//{
+//    try
+//    {
+//        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+//
+//        size_t NDim = dimX->size();
+//
+//        if ( NDim < 5 )
+//        {
+//            r = x;
+//            return true;
+//        }
+//
+//        size_t RO = x.get_size(0);
+//        size_t E1 = x.get_size(1);
+//        size_t E2 = x.get_size(2);
+//        size_t srcCHA = x.get_size(3);
+//        size_t dstCHA = x.get_size(4);
+//
+//        std::vector<size_t> dimR(*dimX);
+//        dimR[0] = E1;
+//        dimR[1] = E2;
+//        dimR[2] = srcCHA;
+//        dimR[3] = dstCHA;
+//        dimR[4] = RO;
+//
+//        r.create(&dimR);
+//
+//        size_t N5D = RO*E1*E2*srcCHA*dstCHA;
+//
+//        size_t N = x.get_number_of_elements()/N5D;
+//
+//        const T* pX = x.begin();
+//        T* pR = r.begin();
+//
+//        long long n;
+//        for ( n=0; n<(long long)N; n++ )
+//        {
+//            T* pRn = pR + n*N5D;
+//            T* pXn = const_cast<T*>(pX) + n*N5D;
+//
+//            long long dcha;
+//
+//            #pragma omp parallel for default(none) private(dcha) shared(RO, E1, E2, srcCHA, dstCHA, pXn, pRn)
+//            for ( dcha=0; dcha<(long long)dstCHA; dcha++ )
+//            {
+//                for ( size_t scha=0; scha<(int)srcCHA; scha++ )
+//                {
+//                    for ( size_t e2=0; e2<E2; e2++ )
+//                    {
+//                        for ( size_t e1=0; e1<E1; e1++ )
+//                        {
+//                            size_t indRn = e1+e2*E1+scha*E1*E2+dcha*E1*E2*srcCHA;
+//                            size_t indXn = e1*RO+e2*RO*E1+scha*RO*E1*E2+dcha*RO*E1*E2*srcCHA;
+//                            for ( size_t ro=0; ro<RO; ro++ )
+//                            {
+//                                pRn[indRn+ro*E1*E2*srcCHA*dstCHA] = pXn[ro+indXn];
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    catch (...)
+//    {
+//        GADGET_ERROR_MSG("Errors in permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+//        return false;
+//    }
+//    return true;
+//}
+
+//template EXPORTMRICORE bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
+//template EXPORTMRICORE bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
+//template EXPORTMRICORE bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+//template EXPORTMRICORE bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+
+//template EXPORTMRICORE bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
+//template EXPORTMRICORE bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
+//template EXPORTMRICORE bool permuteROTo4thDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+//template EXPORTMRICORE bool permuteROTo4thDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+
+//template EXPORTMRICORE bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
+//template EXPORTMRICORE bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
+//template EXPORTMRICORE bool permuteROTo1stDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+//template EXPORTMRICORE bool permuteROTo1stDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+
+//template EXPORTMRICORE bool permute3rdDimensionTo1stDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
+//template EXPORTMRICORE bool permute3rdDimensionTo1stDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
+//template EXPORTMRICORE bool permute3rdDimensionTo1stDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+//template EXPORTMRICORE bool permute3rdDimensionTo1stDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+
+//template EXPORTMRICORE bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
+//template EXPORTMRICORE bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
+//template EXPORTMRICORE bool permuteROTo5thDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+//template EXPORTMRICORE bool permuteROTo5thDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
 inline void multiplyCplx(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> * r)
 {
@@ -1334,11 +1111,6 @@ bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>
 
     return true;
 }
-
-template EXPORTMRICORE bool multipleAdd(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-template EXPORTMRICORE bool multipleAdd(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-template EXPORTMRICORE bool multipleAdd(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-template EXPORTMRICORE bool multipleAdd(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
 template EXPORTMRICORE bool multipleMultiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
 template EXPORTMRICORE bool multipleMultiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);

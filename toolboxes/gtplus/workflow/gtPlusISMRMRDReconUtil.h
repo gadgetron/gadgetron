@@ -168,6 +168,19 @@ namespace Gadgetron {
              r : [N+2 M], the data point values with computed boundaries
     */
     template<typename CoordType, typename T> EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType start, CoordType end, hoNDArray<CoordType>& vx, hoNDArray<T>& vy);
+
+    /// permute E2 dimension of x : [RO E1 CHA SLC E2 ...] to r: [RO E1 E2 CHA SLC ...]
+    template<typename T> EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /// permute E2 dimension of x : [RO E1 E2 CHA SLC ...] to r: [RO E1 CHA SLC E2 ...]
+    template<typename T> EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief permute RO dimension of x to the 3rd dimension
+             x : [RO E1 E2 ...], r: [E1 E2 RO ...]
+    */
+    template<typename T> EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+
 }
 
 namespace Gadgetron { namespace gtPlus {

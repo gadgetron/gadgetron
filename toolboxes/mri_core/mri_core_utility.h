@@ -77,48 +77,7 @@ namespace Gadgetron
     template<typename T> EXPORTMRICORE bool sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
 
     /**
-    * @brief permute E2 dimension of x : [RO E1 CHA SLC E2 ...] to r: [RO E1 E2 CHA SLC ...]
+    * @brief r = x multiply y for every part of y
     */
-    template<typename T> EXPORTMRICORE bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute E2 dimension of x : [RO E1 E2 CHA SLC ...] to r: [RO E1 CHA SLC E2 ...]
-    */
-    template<typename T> EXPORTMRICORE bool permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 3rd dimension
-             x : [RO E1 E2 ...], r: [E1 E2 RO ...]
-    */
-    template<typename T> EXPORTMRICORE bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 4th dimension
-             x : [RO E1 E2 CHA ...], r: [E1 E2 CHA RO ...]
-    */
-    template<typename T> EXPORTMRICORE bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x back to the 1st dimension
-             x : [E1 E2 CHA RO ...], r: [RO E1 E2 CHA ...]
-    */
-    template<typename T> EXPORTMRICORE bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute the 3rd dimension of x to the 1st dimension
-             x : [RO E1 E2 CHA ...], r: [E2 RO E1 CHA ...]
-    */
-    template<typename T> EXPORTMRICORE bool permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 5th dimension
-             x : [RO E1 E2 srcCHA dstCHA ...], r: [E1 E2 srcCHA dstCHA RO ...]
-    */
-    template<typename T> EXPORTMRICORE bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief r = x add/multiply y for every part of y
-    */
-    template<typename T> EXPORTMRICORE bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
     template<typename T> EXPORTMRICORE bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
 }

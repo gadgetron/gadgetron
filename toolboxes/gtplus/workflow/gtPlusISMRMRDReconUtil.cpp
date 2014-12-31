@@ -1449,6 +1449,189 @@ namespace Gadgetron {
         return true;
     }
 
+    template<typename T> 
+    bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
+    {
+        try
+        {
+            boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+            size_t NDim = dimX->size();
+
+            if ( NDim <= 5 )
+            {
+                r = x;
+                return true;
+            }
+
+            size_t RO = x.get_size(0);
+            size_t E1 = x.get_size(1);
+            size_t CHA = x.get_size(2);
+            size_t SLC = x.get_size(3);
+            size_t E2 = x.get_size(4);
+
+            std::vector<size_t> dimR(*dimX);
+            dimR[2] = E2;
+            dimR[3] = CHA;
+            dimR[4] = SLC;
+
+            r.create(&dimR);
+
+            size_t N2D = RO*E1;
+            size_t N5D = RO*E1*CHA*E2*SLC;
+
+            size_t N = x.get_number_of_elements()/N5D;
+
+            const T* pX = x.begin();
+            T* pR = r.begin();
+
+            size_t n;
+            for ( n=0; n<N; n++ )
+            {
+                int e2;
+                #pragma omp parallel for default(none) private(e2) shared(N5D, N2D, pX, pR, CHA, SLC, E2, n)
+                for ( e2=0; e2<E2; e2++ )
+                {
+                    for ( size_t slc=0; slc<SLC; slc++ )
+                    {
+                        for ( size_t cha=0; cha<CHA; cha++ )
+                        {
+                            memcpy(pR+n*N5D+slc*CHA*E2*N2D+cha*E2*N2D+e2*N2D, pX+n*N5D+e2*SLC*CHA*N2D+slc*CHA*N2D+cha*N2D, sizeof(T)*N2D);
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            return false;
+        }
+        return true;
+    }
+
+    template<typename T> 
+    bool permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
+    {
+        try
+        {
+            boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+            size_t NDim = dimX->size();
+
+            if ( NDim < 5 )
+            {
+                r = x;
+                return true;
+            }
+
+            size_t RO = x.get_size(0);
+            size_t E1 = x.get_size(1);
+            size_t E2 = x.get_size(2);
+            size_t CHA = x.get_size(3);
+            size_t SLC = x.get_size(4);
+
+            std::vector<size_t> dimR(*dimX);
+            dimR[2] = CHA;
+            dimR[3] = SLC;
+            dimR[4] = E2;
+
+            r.create(&dimR);
+
+            size_t N2D = RO*E1;
+            size_t N5D = RO*E1*CHA*E2*SLC;
+
+            size_t N = x.get_number_of_elements()/N5D;
+
+            const T* pX = x.begin();
+            T* pR = r.begin();
+
+            size_t n;
+            for ( n=0; n<N; n++ )
+            {
+                int e2;
+                #pragma omp parallel for default(none) private(e2) shared(N5D, N2D, pX, pR, CHA, SLC, E2, n)
+                for ( e2=0; e2<E2; e2++ )
+                {
+                    for ( size_t slc=0; slc<SLC; slc++ )
+                    {
+                        for ( size_t cha=0; cha<CHA; cha++ )
+                        {
+                            memcpy(pR+n*N5D+e2*SLC*CHA*N2D+slc*CHA*N2D+cha*N2D, pX+n*N5D+slc*CHA*E2*N2D+cha*E2*N2D+e2*N2D, sizeof(T)*N2D);
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            return false;
+        }
+        return true;
+    }
+
+    template<typename T> 
+    bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+    {
+        try
+        {
+            boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+            size_t NDim = dimX->size();
+
+            if ( NDim < 3 )
+            {
+                r = x;
+                return true;
+            }
+
+            size_t RO = x.get_size(0);
+            size_t E1 = x.get_size(1);
+            size_t E2 = x.get_size(2);
+
+            std::vector<size_t> dimR(*dimX);
+            dimR[0] = E1;
+            dimR[1] = E2;
+            dimR[2] = RO;
+
+            r.create(&dimR);
+
+            size_t N3D = RO*E1*E2;
+
+            size_t N = x.get_number_of_elements()/N3D;
+
+            const T* pX = x.begin();
+            T* pR = r.begin();
+
+            long long n;
+
+            #pragma omp parallel for default(none) private(n) shared(RO, E1, E2, N, pR, N3D, pX)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                T* pRn = pR + n*N3D;
+                T* pXn = const_cast<T*>(pX) + n*N3D;
+
+                for ( size_t e2=0; e2<E2; e2++ )
+                {
+                    for ( size_t e1=0; e1<E1; e1++ )
+                    {
+                        for ( size_t ro=0; ro<RO; ro++ )
+                        {
+                            pRn[e1+e2*E1+ro*E1*E2] = pXn[ro+e1*RO+e2*RO*E1];
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            return false;
+        }
+        return true;
+    }
+
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
     template EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
@@ -1551,4 +1734,20 @@ namespace Gadgetron {
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<float>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<float>& vy);
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray< std::complex<float> >& y, double start, double end, hoNDArray<double>& vx, hoNDArray< std::complex<float> >& vy);
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray< std::complex<double> >& y, double start, double end, hoNDArray<double>& vx, hoNDArray< std::complex<double> >& vy);
+
+    template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+
+    template EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+
+    template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
+    template EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+
 }

@@ -680,7 +680,16 @@ imageDomainKernelRO3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int
 
         GADGET_CHECK_THROW(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImROTemp));
 
-        GADGET_CHECK_THROW(Gadgetron::permuteROTo3rdDimensionFor3DRecon(kImROTemp, kImRO));
+        // GADGET_CHECK_THROW(Gadgetron::permuteROTo3rdDimensionFor3DRecon(kImROTemp, kImRO));
+
+        std::vector<size_t> orders(5, 0);
+        orders[0] = 1;
+        orders[1] = 2;
+        orders[2] = 0;
+        orders[3] = 3;
+        orders[4] = 4;
+
+        Gadgetron::permute(&kImROTemp, &kImRO, &orders);
     }
     catch(...)
     {

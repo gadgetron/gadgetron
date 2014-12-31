@@ -157,6 +157,8 @@ protected:
     bool copyReconResultsSecond(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9);
     bool copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool gfactor_needed);
     bool copyWrapAroundMap(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool wrap_around_map_needed);
+
+    /// helper array permuting functions used in the recon class
 };
 
 template <typename T> 
