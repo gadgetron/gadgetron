@@ -7,38 +7,53 @@
 
 #include <sstream> //For deprecated macros
 
-//Log levels
-#define GADGETRON_LOG_LEVEL_DEBUG   (1<<0)
-#define GADGETRON_LOG_LEVEL_INFO    (1<<1)
-#define GADGETRON_LOG_LEVEL_WARNING (1<<2)
-#define GADGETRON_LOG_LEVEL_ERROR   (1<<3)
-
-//Log output options
-#define GADGETRON_LOG_PRINT_FILELOC  (1<<8)
-#define GADGETRON_LOG_PRINT_LEVEL    (1<<9)
-#define GADGETRON_LOG_PRINT_DATETIME (1<<10)
-
 #define GADGETRON_LOG_MASK_ENVIRONMENT "GADGETRON_LOG_MASK"
 
 namespace Gadgetron
 {
+  enum GadgetronLogLevel
+  {
+    GADGETRON_LOG_LEVEL_DEBUG = 0,
+    GADGETRON_LOG_LEVEL_INFO,
+    GADGETRON_LOG_LEVEL_WARNING,
+    GADGETRON_LOG_LEVEL_ERROR,
+    GADGETRON_LOG_LEVEL_MAX
+  };
+
+  enum GadgetronLogOutput
+  {
+    GADGETRON_LOG_PRINT_FILELOC = 0,
+    GADGETRON_LOG_PRINT_LEVEL,
+    GADGETRON_LOG_PRINT_DATETIME,
+    GADGETRON_LOG_PRINT_MAX
+  };
+
   class EXPORTGADGETRONLOG GadgetronLogger
   {
   public:
     static GadgetronLogger* instance();
-    void Log(uint16_t LEVEL, const char* filename, int lineno, const char* cformatting, ...);
+    void log(GadgetronLogLevel LEVEL, const char* filename, int lineno, const char* cformatting, ...);
+
+    void enableLogLevel(GadgetronLogLevel LEVEL);
+    void disableLogLevel(GadgetronLogLevel LEVEL);
+    bool isLevelEnabled(GadgetronLogLevel LEVEL);
+
+    void enableOutput(GadgetronLogOutput OUTPUT);
+    void disableOutput(GadgetronLogOutput OUTPUT);
+    bool isOutputEnabled(GadgetronLogOutput OUTPUT);
 
   protected:
     GadgetronLogger();
     static GadgetronLogger* instance_;
-    uint16_t log_mask_;
+    uint64_t level_mask_;
+    uint64_t print_mask_;
   };
 }
 
-#define GDEBUG(...) Gadgetron::GadgetronLogger::instance()->Log(GADGETRON_LOG_LEVEL_DEBUG,   __FILE__, __LINE__, __VA_ARGS__)
-#define GINFO(...)  Gadgetron::GadgetronLogger::instance()->Log(GADGETRON_LOG_LEVEL_INFO,    __FILE__, __LINE__, __VA_ARGS__)
-#define GWARN(...)  Gadgetron::GadgetronLogger::instance()->Log(GADGETRON_LOG_LEVEL_WARNING, __FILE__, __LINE__, __VA_ARGS__)
-#define GERROR(...) Gadgetron::GadgetronLogger::instance()->Log(GADGETRON_LOG_LEVEL_ERROR,   __FILE__, __LINE__, __VA_ARGS__)
+#define GDEBUG(...) Gadgetron::GadgetronLogger::instance()->log(GADGETRON_LOG_LEVEL_DEBUG,   __FILE__, __LINE__, __VA_ARGS__)
+#define GINFO(...)  Gadgetron::GadgetronLogger::instance()->log(GADGETRON_LOG_LEVEL_INFO,    __FILE__, __LINE__, __VA_ARGS__)
+#define GWARN(...)  Gadgetron::GadgetronLogger::instance()->log(GADGETRON_LOG_LEVEL_WARNING, __FILE__, __LINE__, __VA_ARGS__)
+#define GERROR(...) Gadgetron::GadgetronLogger::instance()->log(GADGETRON_LOG_LEVEL_ERROR,   __FILE__, __LINE__, __VA_ARGS__)
 
 #define GEXCEPTION(err, message);	  \
   {					  \
