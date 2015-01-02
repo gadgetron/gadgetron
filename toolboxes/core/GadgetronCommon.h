@@ -59,12 +59,4 @@
 #define GT_MKINT(a)    (((a)>=0)?((int)((a)+0.5)):((int)((a)-0.5)))
 #define GT_SQR(a)      ((a)*(a))
 
-namespace Gadgetron
-{
-
-struct rgb_type { unsigned char r,g,b; };
-struct rgba_type { unsigned char r,g,b,a; };
-
-}
-
 #endif  //GADGETRONCOMMON_H

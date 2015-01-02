@@ -20,7 +20,12 @@
 
 #include "hoNDArray_fileio.h"
 
-namespace Gadgetron { namespace gtPlus {
+namespace Gadgetron { 
+
+  struct rgb_type { unsigned char r,g,b; };
+  struct rgba_type { unsigned char r,g,b,a; };
+
+  namespace gtPlus {
 
 class EXPORTGTPLUSIO gtPlusIOWorker
 {
