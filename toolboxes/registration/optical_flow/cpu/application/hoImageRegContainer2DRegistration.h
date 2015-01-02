@@ -1146,6 +1146,7 @@ namespace Gadgetron
             // for every row, two registration tasks can be formatted
 
             long long numOfTasks = (long long)(2*row);
+            GADGET_MSG("hoImageRegContainer2DRegistration<...>::registerOverContainer2DProgressive(...), numOfTasks : " << numOfTasks);
 
             std::vector< std::vector<TargetType*> > regImages(numOfTasks);
             std::vector< std::vector<TargetType*> > warpedImages(numOfTasks);
@@ -1255,21 +1256,22 @@ namespace Gadgetron
             #ifdef USE_OMP
                 int numOfProcs = omp_get_num_procs();
                 int nested = omp_get_nested();
-                //if ( numOfTasks < numOfProcs-1 )
-                //{
-                //    omp_set_nested(1);
-                //}
-                //else
-                //{
+                if ( numOfTasks < numOfProcs-1 )
+                {
+                    omp_set_nested(1);
+                    GADGET_MSG("registerOverContainer2DProgressive - nested openMP on ... ");
+                }
+                else
+                {
                     omp_set_nested(0);
-                //}
+                }
             #endif // USE_OMP
 
             if ( container_reg_transformation_ == GT_IMAGE_REG_TRANSFORMATION_DEFORMATION_FIELD )
             {
                 bool initial = false;
 
-                #pragma omp parallel default(none) private(n, ii) shared(numOfTasks, initial, regImages, warpedImages, deform) if ( numOfTasks > 6)
+                #pragma omp parallel default(none) private(n, ii) shared(numOfTasks, initial, regImages, warpedImages, deform)
                 {
                     DeformationFieldType* deformCurr[DIn];
 
@@ -1300,7 +1302,7 @@ namespace Gadgetron
             {
                 bool initial = false;
 
-                #pragma omp parallel default(none) private(n, ii) shared(numOfTasks, initial, regImages, warpedImages, deform, deformInv) if ( numOfTasks > 6)
+                #pragma omp parallel default(none) private(n, ii) shared(numOfTasks, initial, regImages, warpedImages, deform, deformInv)
                 {
                     DeformationFieldType* deformCurr[DIn];
                     DeformationFieldType* deformInvCurr[DIn];
