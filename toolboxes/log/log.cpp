@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string>
+#include <time.h>
 
 namespace Gadgetron
 {
@@ -26,6 +27,8 @@ namespace Gadgetron
       log_mask_ |= GADGETRON_LOG_LEVEL_WARNING;
       log_mask_ |= GADGETRON_LOG_LEVEL_ERROR;
       log_mask_ |= GADGETRON_LOG_PRINT_FILELOC;
+      log_mask_ |= GADGETRON_LOG_PRINT_LEVEL;
+      log_mask_ |= GADGETRON_LOG_PRINT_DATETIME;
     }
   }
 
@@ -36,8 +39,44 @@ namespace Gadgetron
     if (!(LEVEL & log_mask_)) return;
 
     const char* fmt = cformatting;
-
     std::string fmt_str;
+
+    if (log_mask_ & GADGETRON_LOG_PRINT_DATETIME) {
+      time_t rawtime;
+      struct tm * timeinfo;
+
+      time ( &rawtime );
+      timeinfo = localtime ( &rawtime );
+      
+      //Time the format YYYY-MM-DD HH:MM:SS
+      char timestr[22];sprintf(timestr, "%d-%02d-%02d %02d:%02d:%02d ",
+			       timeinfo->tm_year+1900, timeinfo->tm_mon+1, timeinfo->tm_mday,
+			       timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
+      fmt_str += std::string(timestr);
+      fmt = fmt_str.c_str();
+    }
+
+    if (log_mask_ & GADGETRON_LOG_PRINT_LEVEL) {
+      switch (LEVEL) {
+      case GADGETRON_LOG_LEVEL_DEBUG:
+	fmt_str += "DEBUG ";
+	break;
+      case GADGETRON_LOG_LEVEL_INFO:
+	fmt_str += "INFO ";
+	break;
+      case GADGETRON_LOG_LEVEL_WARNING:
+	fmt_str += "WARNING ";
+	break;
+      case GADGETRON_LOG_LEVEL_ERROR:
+	fmt_str += "ERROR ";
+	break;
+      default:
+	;
+      }
+      fmt = fmt_str.c_str();
+    }
+
     if (log_mask_ & GADGETRON_LOG_PRINT_FILELOC) {
       char linenostr[8];sprintf(linenostr, "%d", lineno);
       fmt_str += std::string("[") + std::string(filename);

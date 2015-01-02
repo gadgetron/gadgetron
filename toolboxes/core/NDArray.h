@@ -7,7 +7,7 @@
 #pragma once
 
 #include "GadgetronException.h"
-#include "GadgetronCommon.h"
+#include "log.h"
 
 #include <new>
 #include <vector>
@@ -19,6 +19,9 @@
 
 namespace Gadgetron{
 
+    //TODO: This definition should probably be removed or renamed at least
+    typedef long long gt_index_type;
+  
     template <typename T> class NDArray
     {
     public:
