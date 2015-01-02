@@ -202,10 +202,6 @@ template <typename T>
 bool gtPlusReconWorker2DTSPIRIT<T>::
 performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspace, hoNDArray<T>& adj_forward_G_I, hoNDArray<T>& res, size_t s)
 {
-    #ifdef USE_OMP
-        int nested = omp_get_nested();
-    #endif // USE_OMP
-
     try
     {
         size_t refN = adj_forward_G_I.get_size(4);
@@ -231,21 +227,6 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
 
             int maxOpenMPThreads = omp_get_max_threads();
             GADGET_MSG("gtPlusReconWorker2DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
-
-            int allowOpenMPNested = 0;
-
-            if ( N < numOpenMPProcs-2 )
-            {
-                omp_set_nested(1);
-                allowOpenMPNested = 1;
-            }
-            else
-            {
-                omp_set_nested(0);
-                allowOpenMPNested = 0;
-            }
-
-            GADGET_MSG("gtPlusReconWorker2DTSPIRIT, allowOpenMPNested : " << allowOpenMPNested);
             GADGET_MSG("gtPlusReconWorker2DTSPIRIT, numThreads : " << numThreads);
         #endif
 
@@ -367,10 +348,6 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             }
         }
 
-        #ifdef USE_OMP
-            omp_set_nested(nested);
-        #endif
-
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "res_Shifted");
 
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fftshift2D(res, kspace_Shifted);
@@ -380,11 +357,6 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
     catch(...)
     {
         GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTSPIRIT<T>::performUnwarppingImpl(...) ... ");
-
-        #ifdef USE_OMP
-            omp_set_nested(nested);
-        #endif
-
         return false;
     }
 

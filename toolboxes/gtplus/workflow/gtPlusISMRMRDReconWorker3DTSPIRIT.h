@@ -702,10 +702,6 @@ template <typename T>
 bool gtPlusReconWorker3DTSPIRIT<T>::
 performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspace, hoNDArray<T>& ker, hoNDArray<T>& /*coilMap*/, hoNDArray<T>& res)
 {
-    #ifdef USE_OMP
-        int nested = omp_get_nested();
-    #endif // USE_OMP
-
     try
     {
         size_t E1 = kspace.get_size(0);
@@ -748,28 +744,12 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         long long NUM = (long long)RO;
 
         #ifdef USE_OMP
-            int numThreads = (int)( (NUM<16) ? NUM : 16 );
+            int numThreads = NUM;
 
             int numOpenMPProcs = omp_get_num_procs();
             GADGET_MSG("gtPlusReconWorker3DTSPIRIT, numOpenMPProcs : " << numOpenMPProcs);
 
-            int maxOpenMPThreads = omp_get_max_threads();
-            GADGET_MSG("gtPlusReconWorker3DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
-
-            int allowOpenMPNested = 0;
-
-            if ( NUM < numOpenMPProcs-2 )
-            {
-                omp_set_nested(1);
-                allowOpenMPNested = 1;
-            }
-            else
-            {
-                omp_set_nested(0);
-                allowOpenMPNested = 0;
-            }
-
-            GADGET_MSG("gtPlusReconWorker3DTSPIRIT, allowOpenMPNested : " << allowOpenMPNested);
+            if ( numThreads > numOpenMPProcs ) numThreads = numOpenMPProcs;
             GADGET_MSG("gtPlusReconWorker3DTSPIRIT, numThreads : " << numThreads);
         #endif
 
@@ -851,10 +831,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
             delete pCGSolver;
         }
 
-        #ifdef USE_OMP
-            omp_set_nested(nested);
-        #endif
-
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "res_Shifted");
 
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fftshift2D(res, kspace_Shifted);
@@ -865,11 +841,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
     catch(...)
     {
         GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DTSPIRIT<T>::performUnwarppingImplROPermuted(...) ... ");
-
-        #ifdef USE_OMP
-            omp_set_nested(nested);
-        #endif
-
         return false;
     }
 

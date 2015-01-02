@@ -798,10 +798,6 @@ namespace Gadgetron
     bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
     registerOverContainer2DPairWise(TargetContinerType& targetContainer, SourceContinerType& sourceContainer, bool warped)
     {
-        #ifdef USE_OMP
-            int nested = omp_get_nested();
-        #endif // USE_OMP
-
         try
         {
             GADGET_CHECK_RETURN_FALSE(this->initialize(targetContainer, warped));
@@ -823,20 +819,6 @@ namespace Gadgetron
             }
 
             GADGET_MSG("registerOverContainer2DPairWise - threading ... ");
-
-            #ifdef USE_OMP
-                int numOfProcs = omp_get_num_procs();
-                if ( numOfImages < numOfProcs-1 )
-                {
-                    omp_set_nested(1);
-                    GADGET_MSG("registerOverContainer2DPairWise - nested openMP on ... ");
-                }
-                else
-                {
-                    omp_set_nested(0);
-                    GADGET_MSG("registerOverContainer2DPairWise - nested openMP off ... ");
-                }
-            #endif // USE_OMP
 
             unsigned int ii;
             long long n;
@@ -935,19 +917,10 @@ namespace Gadgetron
             {
                 GADGET_MSG("To be implemented ...");
             }
-
-            #ifdef USE_OMP
-                omp_set_nested(nested);
-            #endif // USE_OMP
         }
         catch(...)
         {
             GADGET_ERROR_MSG("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DPairWise(...) ... ");
-
-            #ifdef USE_OMP
-                omp_set_nested(nested);
-            #endif // USE_OMP
-
             return false;
         }
 
@@ -958,10 +931,6 @@ namespace Gadgetron
     bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
     registerOverContainer2DFixedReference(TargetContinerType& imageContainer, const std::vector<unsigned int>& referenceFrame, bool warped)
     {
-        #ifdef USE_OMP
-            int nested = omp_get_nested();
-        #endif // USE_OMP
-
         try
         {
             GADGET_CHECK_RETURN_FALSE(this->initialize(imageContainer, warped));
@@ -1003,20 +972,6 @@ namespace Gadgetron
             }
 
             GADGET_CHECK_RETURN_FALSE(numOfImages==targetImages.size());
-
-            #ifdef USE_OMP
-                int numOfProcs = omp_get_num_procs();
-                if ( numOfImages < numOfProcs-1 )
-                {
-                    omp_set_nested(1);
-                    GADGET_MSG("registerOverContainer2DFixedReference - nested openMP on ... ");
-                }
-                else
-                {
-                    omp_set_nested(0);
-                    GADGET_MSG("registerOverContainer2DFixedReference - nested openMP off ... ");
-                }
-            #endif // USE_OMP
 
             if ( container_reg_transformation_ == GT_IMAGE_REG_TRANSFORMATION_DEFORMATION_FIELD )
             {
@@ -1122,19 +1077,10 @@ namespace Gadgetron
             {
                 GADGET_MSG("To be implemented ...");
             }
-
-            #ifdef USE_OMP
-                omp_set_nested(nested);
-            #endif // USE_OMP
         }
         catch(...)
         {
             GADGET_ERROR_MSG("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DFixedReference(...) ... ");
-
-            #ifdef USE_OMP
-                omp_set_nested(nested);
-            #endif // USE_OMP
-
             return false;
         }
 
@@ -1145,10 +1091,6 @@ namespace Gadgetron
     bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
     registerOverContainer2DProgressive(TargetContinerType& imageContainer, const std::vector<unsigned int>& referenceFrame)
     {
-        #ifdef USE_OMP
-            int nested = omp_get_nested();
-        #endif // USE_OMP
-
         try
         {
             bool warped = true;
@@ -1273,19 +1215,6 @@ namespace Gadgetron
                 }
             }
 
-            #ifdef USE_OMP
-                int numOfProcs = omp_get_num_procs();
-                if ( numOfTasks < numOfProcs-1 )
-                {
-                    omp_set_nested(1);
-                    GADGET_MSG("registerOverContainer2DProgressive - nested openMP on ... ");
-                }
-                else
-                {
-                    omp_set_nested(0);
-                }
-            #endif // USE_OMP
-
             if ( container_reg_transformation_ == GT_IMAGE_REG_TRANSFORMATION_DEFORMATION_FIELD )
             {
                 bool initial = false;
@@ -1353,19 +1282,10 @@ namespace Gadgetron
             {
                 GADGET_MSG("To be implemented ...");
             }
-
-            #ifdef USE_OMP
-                omp_set_nested(nested);
-            #endif // USE_OMP
         }
         catch(...)
         {
             GADGET_ERROR_MSG("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DProgressive(...) ... ");
-
-            #ifdef USE_OMP
-                omp_set_nested(nested);
-            #endif // USE_OMP
-
             return false;
         }
 
