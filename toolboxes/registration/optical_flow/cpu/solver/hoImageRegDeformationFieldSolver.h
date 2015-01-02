@@ -358,7 +358,7 @@ namespace Gadgetron
                     {
                         CoordType ix, iy, wx, wy, pX, pY, deltaWX, deltaWY;
 
-                        // #pragma omp parallel for default(none) private(y, x, ix, iy, wx, wy, pX, pY, deltaWX, deltaWY) shared(sx, sy, target, deform_delta, deform_updated, transform)
+                        // #pragma omp parallel for default(none) private(y, x, ix, iy, wx, wy, pX, pY, deltaWX, deltaWY) shared(sx, sy, target, deform_delta, deform_updated, transform) num_threads(2)
                         for ( y=0; y<sy; y++ )
                         {
                             for ( x=0; x<sx; x++ )
@@ -465,7 +465,7 @@ namespace Gadgetron
                     {
                         CoordType pX, pY;
 
-                        // #pragma omp parallel for default(none) private(y, x, pX, pY) shared(sx, sy, deform_delta, deform_updated, transform)
+                        // #pragma omp parallel for default(none) private(y, x, pX, pY) shared(sx, sy, deform_delta, deform_updated, transform) num_threads(2)
                         for ( y=0; y<sy; y++ )
                         {
                             for ( x=0; x<sx; x++ )
@@ -562,7 +562,7 @@ namespace Gadgetron
                         {
                             CoordType pX, pY;
 
-                            // #pragma omp parallel for default(none) private(y, x, pX, pY) shared(sx, sy, deform_updated)
+                            // #pragma omp parallel for default(none) private(y, x, pX, pY) shared(sx, sy, deform_updated) num_threads(2)
                             for ( y=0; y<sy; y++ )
                             {
                                 for ( x=0; x<sx; x++ )

@@ -820,21 +820,6 @@ namespace Gadgetron
 
             GADGET_MSG("registerOverContainer2DPairWise - threading ... ");
 
-            #ifdef USE_OMP
-                int numOfProcs = omp_get_num_procs();
-                int nested = omp_get_nested();
-                if ( numOfImages < numOfProcs-1 )
-                {
-                    omp_set_nested(1);
-                    GADGET_MSG("registerOverContainer2DPairWise - nested openMP on ... ");
-                }
-                else
-                {
-                    omp_set_nested(0);
-                    GADGET_MSG("registerOverContainer2DPairWise - nested openMP off ... ");
-                }
-            #endif // USE_OMP
-
             unsigned int ii;
             long long n;
 
@@ -932,10 +917,6 @@ namespace Gadgetron
             {
                 GADGET_MSG("To be implemented ...");
             }
-
-            #ifdef USE_OMP
-                omp_set_nested(nested);
-            #endif // USE_OMP
         }
         catch(...)
         {
@@ -991,21 +972,6 @@ namespace Gadgetron
             }
 
             GADGET_CHECK_RETURN_FALSE(numOfImages==targetImages.size());
-
-            #ifdef USE_OMP
-                int numOfProcs = omp_get_num_procs();
-                int nested = omp_get_nested();
-                if ( numOfImages < numOfProcs-1 )
-                {
-                    omp_set_nested(1);
-                    GADGET_MSG("registerOverContainer2DFixedReference - nested openMP on ... ");
-                }
-                else
-                {
-                    omp_set_nested(0);
-                    GADGET_MSG("registerOverContainer2DFixedReference - nested openMP off ... ");
-                }
-            #endif // USE_OMP
 
             if ( container_reg_transformation_ == GT_IMAGE_REG_TRANSFORMATION_DEFORMATION_FIELD )
             {
@@ -1111,10 +1077,6 @@ namespace Gadgetron
             {
                 GADGET_MSG("To be implemented ...");
             }
-
-            #ifdef USE_OMP
-                omp_set_nested(nested);
-            #endif // USE_OMP
         }
         catch(...)
         {
@@ -1146,6 +1108,7 @@ namespace Gadgetron
             // for every row, two registration tasks can be formatted
 
             long long numOfTasks = (long long)(2*row);
+            GADGET_MSG("hoImageRegContainer2DRegistration<...>::registerOverContainer2DProgressive(...), numOfTasks : " << numOfTasks);
 
             std::vector< std::vector<TargetType*> > regImages(numOfTasks);
             std::vector< std::vector<TargetType*> > warpedImages(numOfTasks);
@@ -1252,24 +1215,11 @@ namespace Gadgetron
                 }
             }
 
-            #ifdef USE_OMP
-                int numOfProcs = omp_get_num_procs();
-                int nested = omp_get_nested();
-                //if ( numOfTasks < numOfProcs-1 )
-                //{
-                //    omp_set_nested(1);
-                //}
-                //else
-                //{
-                    omp_set_nested(0);
-                //}
-            #endif // USE_OMP
-
             if ( container_reg_transformation_ == GT_IMAGE_REG_TRANSFORMATION_DEFORMATION_FIELD )
             {
                 bool initial = false;
 
-                #pragma omp parallel default(none) private(n, ii) shared(numOfTasks, initial, regImages, warpedImages, deform) if ( numOfTasks > 6)
+                #pragma omp parallel default(none) private(n, ii) shared(numOfTasks, initial, regImages, warpedImages, deform)
                 {
                     DeformationFieldType* deformCurr[DIn];
 
@@ -1300,7 +1250,7 @@ namespace Gadgetron
             {
                 bool initial = false;
 
-                #pragma omp parallel default(none) private(n, ii) shared(numOfTasks, initial, regImages, warpedImages, deform, deformInv) if ( numOfTasks > 6)
+                #pragma omp parallel default(none) private(n, ii) shared(numOfTasks, initial, regImages, warpedImages, deform, deformInv)
                 {
                     DeformationFieldType* deformCurr[DIn];
                     DeformationFieldType* deformInvCurr[DIn];
@@ -1332,10 +1282,6 @@ namespace Gadgetron
             {
                 GADGET_MSG("To be implemented ...");
             }
-
-            #ifdef USE_OMP
-                omp_set_nested(nested);
-            #endif // USE_OMP
         }
         catch(...)
         {
