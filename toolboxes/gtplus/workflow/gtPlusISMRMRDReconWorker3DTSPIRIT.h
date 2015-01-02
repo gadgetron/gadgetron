@@ -744,7 +744,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         long long NUM = (long long)RO;
 
         #ifdef USE_OMP
-            int numThreads = (int)( (NUM<16) ? NUM : 16 );
+            int numThreads = NUM;
 
             int numOpenMPProcs = omp_get_num_procs();
             GDEBUG_STREAM("gtPlusReconWorker3DTSPIRIT, numOpenMPProcs : " << numOpenMPProcs);
@@ -767,6 +767,10 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
             GDEBUG_STREAM("gtPlusReconWorker3DTSPIRIT, allowOpenMPNested : " << allowOpenMPNested);
             GDEBUG_STREAM("gtPlusReconWorker3DTSPIRIT, numThreads : " << numThreads);
+
+            if ( numThreads > numOpenMPProcs ) numThreads = numOpenMPProcs;
+            GDEBUG_STREAM("gtPlusReconWorker3DTSPIRIT, numThreads : " << numThreads);
+
         #endif
 
         long long t;
@@ -846,10 +850,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
             delete pCGSolver;
         }
-
-        #ifdef USE_OMP
-            omp_set_nested(0);
-        #endif
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "res_Shifted");
 

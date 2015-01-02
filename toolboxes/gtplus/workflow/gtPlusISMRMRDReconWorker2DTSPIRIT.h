@@ -226,6 +226,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             if ( numThreads > numOpenMPProcs ) numThreads = numOpenMPProcs;
 
             int maxOpenMPThreads = omp_get_max_threads();
+
             GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
 
             int allowOpenMPNested = omp_get_nested();
@@ -242,6 +243,8 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             }
 
             GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, allowOpenMPNested : " << allowOpenMPNested);
+            GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, numThreads : " << numThreads);
+            GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
             GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, numThreads : " << numThreads);
         #endif
 
@@ -362,10 +365,6 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace_n_setAcq");
             }
         }
-
-        #ifdef USE_OMP
-            omp_set_nested(0);
-        #endif
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "res_Shifted");
 
