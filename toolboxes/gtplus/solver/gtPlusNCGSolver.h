@@ -129,7 +129,7 @@ grad(const Array_Type_I& x, Array_Type_I& g)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gtPlusNCGSolver<Array_Type_I, Array_Type_O, Oper_Type>::grad(...) ... ");
+        GERROR_STREAM("Errors happened in gtPlusNCGSolver<Array_Type_I, Array_Type_O, Oper_Type>::grad(...) ... ");
         return false;
     }
 
@@ -161,7 +161,7 @@ obj(const Array_Type_I& x, ValueType& ob)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gtPlusNCGSolver<Array_Type_I, Array_Type_O, Oper_Type>::obj(...) ... ");
+        GERROR_STREAM("Errors happened in gtPlusNCGSolver<Array_Type_I, Array_Type_O, Oper_Type>::obj(...) ... ");
         return false;
     }
 
@@ -180,14 +180,14 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
         Array_Type_I g0(*x0_);
         GADGET_CHECK_RETURN_FALSE(this->grad(*x0_, g0));
 
-        //Gadgetron::norm2(*x0_, v); GADGET_MSG_DEPRECATED(v);
-        //Gadgetron::norm2(g0, v); GADGET_MSG_DEPRECATED(v);
+        //Gadgetron::norm2(*x0_, v); GDEBUG_STREAM(v);
+        //Gadgetron::norm2(g0, v); GDEBUG_STREAM(v);
 
         // dx = -g0;
         Array_Type_I dx(g0);
         GADGET_CHECK_EXCEPTION_RETURN_FALSE( Gadgetron::scal( (value_type)(-1), dx ) );
 
-        //Gadgetron::norm2(dx, v); GADGET_MSG_DEPRECATED(v);
+        //Gadgetron::norm2(dx, v); GDEBUG_STREAM(v);
 
         // initialize x
         x = *x0_;
@@ -209,7 +209,7 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
 
         if (printIter_)
         {
-            GADGET_MSG_DEPRECATED("To determine t0, --- ori and curr obj: " << oriF << " - " << currF << " ... ");
+            GDEBUG_STREAM("To determine t0, --- ori and curr obj: " << oriF << " - " << currF << " ... ");
         }
 
         unsigned int numOfTries = 0;
@@ -239,8 +239,8 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
 
             this->obj(xTmp, currF);
 
-            GADGET_MSG_DEPRECATED("t0 is " << t0 << " ... ");
-            GADGET_MSG_DEPRECATED("To determine t0, --- ori and curr obj: " << oriF << " - " << currF << " ... ");
+            GDEBUG_STREAM("t0 is " << t0 << " ... ");
+            GDEBUG_STREAM("To determine t0, --- ori and curr obj: " << oriF << " - " << currF << " ... ");
 
             changeRatio = std::abs(currF.real() - oriF.real())/currF.real();
             changeRatio2 = std::abs(currF.real() - oriF.real())/oriF.real();
@@ -255,11 +255,11 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
             Gadgetron::scal(t0, dxTmp);
             Gadgetron::add(x, dxTmp, xTmp);
 
-            //Gadgetron::norm2(xTmp, v); GADGET_MSG_DEPRECATED(v);
+            //Gadgetron::norm2(xTmp, v); GDEBUG_STREAM(v);
 
             this->grad(xTmp, gTmp);
 
-            //Gadgetron::norm2(gTmp, v); GADGET_MSG_DEPRECATED(v);
+            //Gadgetron::norm2(gTmp, v); GDEBUG_STREAM(v);
 
             // phiPrev = gTmp(:)'*dx(:);
             Gadgetron::dotc(gTmp, dx, phiPrev);
@@ -334,7 +334,7 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
 
             if (printIter_)
             {
-                GADGET_MSG_DEPRECATED("Iteration " << nIter << " --- prev and curr obj: " << prevF << " - " << currF << " - line search: " << lsiter);
+                GDEBUG_STREAM("Iteration " << nIter << " --- prev and curr obj: " << prevF << " - " << currF << " - line search: " << lsiter);
             }
 
             // perform call back
@@ -351,7 +351,7 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
                 }
 
                 GADGET_CHECK_RETURN_FALSE(callback_->callBack(nIter, x));
-                GADGET_MSG_DEPRECATED("exit is " << callback_->exit());
+                GDEBUG_STREAM("exit is " << callback_->exit());
 
                 nIter = nIter + 1;
             }
@@ -375,7 +375,7 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gtPlusNCGSolver<Array_Type_I, Array_Type_O, Oper_Type>::solve(...) ... ");
+        GERROR_STREAM("Errors happened in gtPlusNCGSolver<Array_Type_I, Array_Type_O, Oper_Type>::solve(...) ... ");
         return false;
     }
 

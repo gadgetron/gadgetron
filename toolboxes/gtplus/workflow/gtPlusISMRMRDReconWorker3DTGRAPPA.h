@@ -108,7 +108,7 @@ splitJob(gtPlusReconWorkOrder3DT<T>* workOrder3DT, size_t& jobN)
         {
             size_t jobN = jobMegaBytes/(E1*E2*srcCHA*dstCHA*sizeof(T)/1024/1024);
             if ( jobN < RO ) splitJobs = true;
-            GADGET_MSG_DEPRECATED("grappa - 3DT - size of largest job : " << jobN);
+            GDEBUG_STREAM("grappa - 3DT - size of largest job : " << jobN);
         }
     }
 
@@ -453,7 +453,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                             start = end-jobN+1;
                         }
 
-                        GADGET_MSG_DEPRECATED("grappa 3D - processing " << start << " to " << end << " ... ");
+                        GDEBUG_STREAM("grappa 3D - processing " << start << " to " << end << " ... ");
 
                         if ( (refN<N) || (refN==1) )
                         {
@@ -610,7 +610,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DTGRAPPA<T>::performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& data) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DTGRAPPA<T>::performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& data) ... ");
         return false;
     }
 
@@ -631,7 +631,7 @@ bool gtPlusReconWorker3DTGRAPPA<T>::performRecon(gtPlusReconWorkOrder3DT<T>* wor
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DTGRAPPA<T>::performRecon(gtPlusReconWorkOrder3DT<T>* workOrder3DT) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DTGRAPPA<T>::performRecon(gtPlusReconWorkOrder3DT<T>* workOrder3DT) ... ");
         return false;
     }
 

@@ -127,7 +127,7 @@ bool gtPlusISMRMRDReconCoilMapEstimation<T>::coilMap2DSPIRIT(const hoNDArray<T>&
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconCoilMapEstimation<T>::coilMap2DSPIRIT(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconCoilMapEstimation<T>::coilMap2DSPIRIT(...) ... ");
         return false;
     }
 

@@ -146,7 +146,7 @@ bool gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT<T>* workOrder2DT) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT<T>* workOrder2DT) ... ");
         return false;
     }
 

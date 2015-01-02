@@ -76,10 +76,10 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
     findMatrixSizeRecon(h, matrix_size_recon_);
     findFOVRecon(h, field_of_view_recon_);
 
-    GADGET_CONDITION_MSG(verboseMode_, "Encoding matrix size: " << matrix_size_encoding_[0] << " " << matrix_size_encoding_[1] << " " << matrix_size_encoding_[2]);
-    GADGET_CONDITION_MSG(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
-    GADGET_CONDITION_MSG(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
-    GADGET_CONDITION_MSG(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Encoding matrix size: " << matrix_size_encoding_[0] << " " << matrix_size_encoding_[1] << " " << matrix_size_encoding_[2]);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
 
     // ---------------------------------------------------------------------------------------------------------
     // encoding limits
@@ -222,7 +222,7 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
     // set the dimensions under/not under trigger
     this->setDimensionsUnderTrigger();
 
-    GADGET_CONDITION_MSG(verboseMode_, "dimension limits                [Cha Slice E2 Con Phase Rep Set Ave] = [" 
+    GDEBUG_CONDITION_STREAM(verboseMode_, "dimension limits                [Cha Slice E2 Con Phase Rep Set Ave] = [" 
                                << " " << dimensions_[0] 
                                << " " << dimensions_[1] 
                                << " " << dimensions_[2] 
@@ -232,7 +232,7 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
                                << " " << dimensions_[6] 
                                << " " << dimensions_[7] << "]");
 
-    GADGET_CONDITION_MSG(verboseMode_, "dimension under trigger         [Cha Slice E2 Con Phase Rep Set Ave] = [" 
+    GDEBUG_CONDITION_STREAM(verboseMode_, "dimension under trigger         [Cha Slice E2 Con Phase Rep Set Ave] = [" 
                                << " " << dim_under_trigger_[0] 
                                << " " << dim_under_trigger_[1] 
                                << " " << dim_under_trigger_[2] 
@@ -242,7 +242,7 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
                                << " " << dim_under_trigger_[6] 
                                << " " << dim_under_trigger_[7] << "]");
 
-    GADGET_CONDITION_MSG(verboseMode_, "dimension limits under trigger  [Cha Slice E2 Con Phase Rep Set Ave] = [" 
+    GDEBUG_CONDITION_STREAM(verboseMode_, "dimension limits under trigger  [Cha Slice E2 Con Phase Rep Set Ave] = [" 
                                << " " << dim_limit_under_trigger_[0] 
                                << " " << dim_limit_under_trigger_[1] 
                                << " " << dim_limit_under_trigger_[2] 
@@ -252,7 +252,7 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
                                << " " << dim_limit_under_trigger_[6] 
                                << " " << dim_limit_under_trigger_[7] << "]");
 
-    GADGET_CONDITION_MSG(verboseMode_, "dimension NOT under trigger     [Cha Slice E2 Con Phase Rep Set Ave] = [" 
+    GDEBUG_CONDITION_STREAM(verboseMode_, "dimension NOT under trigger     [Cha Slice E2 Con Phase Rep Set Ave] = [" 
                                << " " << dim_not_under_trigger_[0] 
                                << " " << dim_not_under_trigger_[1] 
                                << " " << dim_not_under_trigger_[2] 
@@ -262,7 +262,7 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
                                << " " << dim_not_under_trigger_[6] 
                                << " " << dim_not_under_trigger_[7] << "]");
 
-    GADGET_CONDITION_MSG(verboseMode_, "dimension limits NOT under trigger [Cha Slice E2 Con Phase Rep Set Ave] = [" 
+    GDEBUG_CONDITION_STREAM(verboseMode_, "dimension limits NOT under trigger [Cha Slice E2 Con Phase Rep Set Ave] = [" 
                                << " " << dim_limit_not_under_trigger_[0] 
                                << " " << dim_limit_not_under_trigger_[1] 
                                << " " << dim_limit_not_under_trigger_[2] 
@@ -381,7 +381,7 @@ int GtPlusAccumulatorImageTriggerGadget::process(GadgetContainerMessage<ISMRMRD:
     std::string dataRole;
     dataRole = std::string(m3->getObjectPtr()->as_str(GTPLUS_DATA_ROLE, 0));
 
-    GADGET_CONDITION_MSG(verboseMode_, "--> receive image : " << m1->getObjectPtr()->image_index << " -- " << dataRole);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "--> receive image : " << m1->getObjectPtr()->image_index << " -- " << dataRole);
 
     if ( dataRole == GTPLUS_IMAGE_REGULAR )
     {
@@ -615,7 +615,7 @@ bool GtPlusAccumulatorImageTriggerGadget::trigger(ImageBufferType& buf, ImageSen
                                                     }
                                                 }
 
-                                                GADGET_MSG_DEPRECATED("--> Accumulator image trigger for [CHA SLC E2 CON PHS REP SET AVE] : [" 
+                                                GDEBUG_STREAM("--> Accumulator image trigger for [CHA SLC E2 CON PHS REP SET AVE] : [" 
                                                                                                                             << image_ind[0] << " " 
                                                                                                                             << image_ind[1] << " " 
                                                                                                                             << image_ind[2] << " " 
@@ -657,7 +657,7 @@ bool GtPlusAccumulatorImageTriggerGadget::trigger(ImageBufferType& buf, ImageSen
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happens in GtPlusAccumulatorImageTriggerGadget::trigger(...) ... ");
+        GERROR_STREAM("Error happens in GtPlusAccumulatorImageTriggerGadget::trigger(...) ... ");
         return false;
     }
 
@@ -715,7 +715,7 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happens in GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader& imgHeader, const hoNDArray<ValueType>& img, const ISMRMRD::MetaContainer& attrib, ImageBufferType& buf) ... ");
+        GERROR_STREAM("Error happens in GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader& imgHeader, const hoNDArray<ValueType>& img, const ISMRMRD::MetaContainer& attrib, ImageBufferType& buf) ... ");
         return false;
     }
 
@@ -724,7 +724,7 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
 
 int GtPlusAccumulatorImageTriggerGadget::close(unsigned long flags)
 {
-    GADGET_CONDITION_MSG(true, "GtPlusAccumulatorImageTriggerGadget - close(flags) : " << flags);
+    GDEBUG_CONDITION_STREAM(true, "GtPlusAccumulatorImageTriggerGadget - close(flags) : " << flags);
 
     if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
 
@@ -732,7 +732,7 @@ int GtPlusAccumulatorImageTriggerGadget::close(unsigned long flags)
     {
         triggered_in_close_ = true;
 
-        GADGET_CONDITION_MSG(true, "GtPlusAccumulatorImageTriggerGadget - trigger in close(flags) ... ");
+        GDEBUG_CONDITION_STREAM(true, "GtPlusAccumulatorImageTriggerGadget - trigger in close(flags) ... ");
 
         GADGET_CHECK_RETURN(this->trigger(imageBuffer_, imageSent_, true), GADGET_FAIL);
         GADGET_CHECK_RETURN(this->trigger(otherBuffer_, otherSent_, true), GADGET_FAIL);

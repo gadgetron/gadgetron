@@ -202,7 +202,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDissimilarityHistogramBased<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityHistogramBased<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
         }
 
         return this->dissimilarity_;

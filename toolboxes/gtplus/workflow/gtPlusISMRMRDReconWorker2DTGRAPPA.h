@@ -92,7 +92,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTGRAPPA<T>::performCalibPrep(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTGRAPPA<T>::performCalibPrep(...) ... ");
         return false;
     }
 
@@ -200,7 +200,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTGRAPPA<T>::performCalibImpl(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTGRAPPA<T>::performCalibImpl(...) ... ");
         return false;
     }
 
@@ -423,7 +423,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTGRAPPA<T>::performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& data) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTGRAPPA<T>::performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& data) ... ");
         return false;
     }
 

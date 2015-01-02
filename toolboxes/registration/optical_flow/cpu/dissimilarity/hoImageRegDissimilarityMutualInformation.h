@@ -162,7 +162,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
         }
 
         return this->dissimilarity_;
@@ -269,7 +269,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate() ... ");
             return false;
         }
 

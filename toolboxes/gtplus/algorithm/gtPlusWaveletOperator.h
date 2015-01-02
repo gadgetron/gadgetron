@@ -216,7 +216,7 @@ L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm) ... ");
         return false;
     }
     return true;
@@ -236,7 +236,7 @@ L1NormTotal(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm, T& L1Coeff
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::L1NormTotal(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm, T& L1CoeffNorm) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::L1NormTotal(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm, T& L1CoeffNorm) ... ");
         return false;
     }
     return true;
@@ -313,7 +313,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T mu, T p, bool processApproxCoeff) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T mu, T p, bool processApproxCoeff) ... ");
         return false;
     }
     return true;
@@ -332,7 +332,7 @@ proximity(hoNDArray<T>& wavCoeff, value_type thres)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::proximity(hoNDArray<T>& wavCoeff, value_type thres) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::proximity(hoNDArray<T>& wavCoeff, value_type thres) ... ");
         return false;
     }
     return true;
@@ -476,7 +476,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, value_t
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff) ... ");
         return false;
     }
     return true;
@@ -507,7 +507,7 @@ grad(const hoNDArray<T>& x, hoNDArray<T>& g)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
         return false;
     }
 
@@ -534,7 +534,7 @@ obj(const hoNDArray<T>& x, T& obj)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::obj(const hoNDArray<T>& x, T& obj) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::obj(const hoNDArray<T>& x, T& obj) ... ");
         return false;
     }
 
@@ -612,7 +612,7 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::gradTask(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::gradTask(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
         return false;
     }
 
@@ -662,7 +662,7 @@ objTask(const hoNDArray<T>& x, T& obj)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::objTask(const hoNDArray<T>& x, T& obj) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::objTask(const hoNDArray<T>& x, T& obj) ... ");
         return false;
     }
 

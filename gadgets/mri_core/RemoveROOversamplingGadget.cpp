@@ -41,7 +41,7 @@ namespace Gadgetron{
         // limit the number of threads used to be 1
 #ifdef USE_OMP
         omp_set_num_threads(1);
-        GADGET_MSG_DEPRECATED("RemoveROOversamplingGadget:omp_set_num_threads(1) ... ");
+        GDEBUG_STREAM("RemoveROOversamplingGadget:omp_set_num_threads(1) ... ");
 #endif // USE_OMP
 
     // If the encoding and recon matrix size and FOV are the same

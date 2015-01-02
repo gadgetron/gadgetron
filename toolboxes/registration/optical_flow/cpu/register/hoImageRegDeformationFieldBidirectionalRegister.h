@@ -324,7 +324,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::initialize() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::initialize() ... ");
         }
 
         return true;
@@ -459,7 +459,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::performRegistration() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalRegister<ValueType, CoordType, D>::performRegistration() ... ");
         }
 
         return true;

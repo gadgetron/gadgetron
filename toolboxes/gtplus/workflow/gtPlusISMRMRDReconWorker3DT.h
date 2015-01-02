@@ -46,7 +46,7 @@ public:
         Gadgetron::norm2(workOrder->data_, v);
         if ( v <= 0 )
         {
-            GADGET_WARN_MSG("gtPlusReconWorker2DT, performRecon(workOrder) : incoming data contains all-zeros ... ");
+            GWARN_STREAM("gtPlusReconWorker2DT, performRecon(workOrder) : incoming data contains all-zeros ... ");
 
             boost::shared_ptr< std::vector<size_t> > dims = workOrder->data_.get_dimensions();
             (*dims)[3] = workOrder->num_channels_res_;
@@ -62,7 +62,7 @@ public:
         if ( workOrder3DT->recon_auto_parameters_ )
         {
             this->autoReconParameter(workOrder3DT);
-            GADGET_MSG_DEPRECATED("Gt Plus 3DT -- automatic paramter selection ---");
+            GDEBUG_STREAM("Gt Plus 3DT -- automatic paramter selection ---");
             if ( !this->debugFolder_.empty() ) { workOrder3DT->print(std::cout); }
         }
 
@@ -311,7 +311,7 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT) ... ");
         return false;
     }
 
@@ -413,7 +413,7 @@ estimateCoilMap(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& re
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::estimateCoilMap(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::estimateCoilMap(...) ... ");
         return false;
     }
 
@@ -514,7 +514,7 @@ performCalib(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& ref_s
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::performCalib(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::performCalib(...) ... ");
         return false;
     }
 
@@ -616,7 +616,7 @@ bool gtPlusReconWorker3DT<T>::performRefFilter(WorkOrderType* workOrder3DT,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::performRefFilter(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::performRefFilter(...) ... ");
         return false;
     }
 
@@ -670,7 +670,7 @@ bool gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(WorkOrderType* workOrder3
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(...) ... ");
         return false;
     }
 
@@ -902,7 +902,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
         }
         else
         {
-            GADGET_ERROR_MSG("CalibMode is not supported in gtPlusReconWorker3DT<T>::prepRef(...) : " << workOrder3DT->CalibMode_);
+            GERROR_STREAM("CalibMode is not supported in gtPlusReconWorker3DT<T>::prepRef(...) : " << workOrder3DT->CalibMode_);
             return false;
         }
 
@@ -936,7 +936,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
 
             // GADGET_CHECK_PERFORM(!debugFolder_.empty(), eigenValues.print(std::cout));
             eigenValues.print(std::cout);
-            GADGET_MSG_DEPRECATED("Upstream coil compression, number of channel kept is " << coeff.cols());
+            GDEBUG_STREAM("Upstream coil compression, number of channel kept is " << coeff.cols());
 
             size_t n;
             std::vector<hoMatrix<T> > upstreamCoilCoeffRef(workOrder3DT->ref_.get_size(4)), upstreamCoilCoeffRefRecon(refRecon.get_size(4)), upstreamCoilCoeffData(workOrder3DT->data_.get_size(4));
@@ -1020,7 +1020,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::prepRef(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::prepRef(...) ... ");
         return false;
     }
 
@@ -1082,7 +1082,7 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                     }
 
                     GADGET_CHECK_PERFORM(!debugFolder_.empty(), eigenValues.print(std::cout));
-                    GADGET_MSG_DEPRECATED("Coil compression, number of channel kept is " << coeff.cols());
+                    GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.cols());
                 }
                 else
                 {
@@ -1125,7 +1125,7 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                         }
 
                         GADGET_CHECK_PERFORM(!debugFolder_.empty(), eigenValues.print(std::cout));
-                        GADGET_MSG_DEPRECATED("Coil compression, number of channel kept is " << coeff.cols());
+                        GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.cols());
                     }
                 }
             }
@@ -1149,7 +1149,7 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT) ... ");
         return false;
     }
 
@@ -1216,7 +1216,7 @@ bool gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, hoNDArray<T>& unmixCoeff, hoNDArray<T>& gFactor) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, hoNDArray<T>& unmixCoeff, hoNDArray<T>& gFactor) ... ");
         return false;
     }
 
@@ -1249,7 +1249,7 @@ bool gtPlusReconWorker3DT<T>::applyImageDomainKernel(const hoNDArray<T>& kspace,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::applyImageDomainKernel(const hoNDArray<T>& kspace, const hoNDArray<T>& kerIm, hoNDArray<T>& complexIm) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::applyImageDomainKernel(const hoNDArray<T>& kspace, const hoNDArray<T>& kerIm, hoNDArray<T>& complexIm) ... ");
         return false;
     }
 
@@ -1414,7 +1414,7 @@ bool gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& aliasedIm, const hoNDArray<T>& kerIm, hoNDArray<T>& kerImBuffer, hoNDArray<T>& complexIm) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& aliasedIm, const hoNDArray<T>& kerIm, hoNDArray<T>& kerImBuffer, hoNDArray<T>& complexIm) ... ");
         return false;
     }
 
@@ -1439,7 +1439,7 @@ bool gtPlusReconWorker3DT<T>::applyUnmixCoeff(const hoNDArray<T>& kspace, const 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::applyUnmixCoeff(const hoNDArray<T>& kspace, const hoNDArray<T>& unmixCoeff, hoNDArray<T>& complexIm) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::applyUnmixCoeff(const hoNDArray<T>& kspace, const hoNDArray<T>& unmixCoeff, hoNDArray<T>& complexIm) ... ");
         return false;
     }
 
@@ -1476,7 +1476,7 @@ bool gtPlusReconWorker3DT<T>::applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm, const hoNDArray<T>& unmixCoeff, hoNDArray<T>& complexIm) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm, const hoNDArray<T>& unmixCoeff, hoNDArray<T>& complexIm) ... ");
         return false;
     }
 
@@ -1750,7 +1750,7 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT) ... ");
         return false;
     }
 
@@ -1790,7 +1790,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
         }
 
         partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
-        GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG_DEPRECATED("Partial fourier scaling factor : " << partialFourierCompensationFactor));
+        GADGET_CHECK_PERFORM(performTiming_, GDEBUG_STREAM("Partial fourier scaling factor : " << partialFourierCompensationFactor));
 
         // if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING ) return true;
 
@@ -1869,7 +1869,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::performPartialFourierHandling(gtPlusReconworkOrder3DT<T>* workOrder3DT) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::performPartialFourierHandling(gtPlusReconworkOrder3DT<T>* workOrder3DT) ... ");
         return false;
     }
 
@@ -1881,7 +1881,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder3D
 {
     try
     {
-        GADGET_MSG_DEPRECATED("--> Into gt Plus 3DT partial fourier filter ... ");
+        GDEBUG_STREAM("--> Into gt Plus 3DT partial fourier filter ... ");
 
         size_t RO = kspace.get_size(0);
         size_t E1 = kspace.get_size(1);
@@ -1955,7 +1955,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder3D
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder3DT<T>& workOrder3DT, hoNDArray<T>& kspace) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder3DT<T>& workOrder3DT, hoNDArray<T>& kspace) ... ");
         return false;
     }
 
@@ -1967,7 +1967,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
 {
     try
     {
-        GADGET_MSG_DEPRECATED("--> Into gt Plus 3DT partial fourier POCS ... ");
+        GDEBUG_STREAM("--> Into gt Plus 3DT partial fourier POCS ... ");
 
         size_t RO = kspace.get_size(0);
         size_t E1 = kspace.get_size(1);
@@ -2110,7 +2110,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
 
             if ( !debugFolder_.empty() )
             {
-                GADGET_MSG_DEPRECATED("POCS iter : " << ii << " - thres : " << thres << " ... ");
+                GDEBUG_STREAM("POCS iter : " << ii << " - thres : " << thres << " ... ");
             }
 
             if ( thres < workOrder3DT.partialFourier_POCS_thres_ )
@@ -2139,7 +2139,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& workOrder3DT, hoNDArray<T>& kspace) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& workOrder3DT, hoNDArray<T>& kspace) ... ");
         return false;
     }
 
@@ -2151,7 +2151,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
 {
     try
     {
-        GADGET_MSG_DEPRECATED("--> Into gt Plus 3DT partial fourier FengHuang ... ");
+        GDEBUG_STREAM("--> Into gt Plus 3DT partial fourier FengHuang ... ");
 
         size_t RO = kspace.get_size(0);
         size_t E1 = kspace.get_size(1);
@@ -2340,7 +2340,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType& workOrder3DT, hoNDArray<T>& kspace) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType& workOrder3DT, hoNDArray<T>& kspace) ... ");
         return false;
     }
 
@@ -2465,7 +2465,7 @@ bool gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const hoNDArray<T>& src, const hoNDArray<T>& dst, ho6DArray<T>& kernel) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const hoNDArray<T>& src, const hoNDArray<T>& dst, ho6DArray<T>& kernel) ... ");
         return false;
     }
 
@@ -2749,7 +2749,7 @@ bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::performReconFangHuang(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::performReconFangHuang(...) ... ");
         return false;
     }
 
@@ -2766,7 +2766,7 @@ estimateJobSize(gtPlusReconWorkOrder<T>* workOrder3DT, size_t maxNumOfBytesPerJo
         GADGET_CHECK_RETURN_FALSE(this->computeEffectiveNodeNumberBasedOnComputingPowerIndex(workOrder3DT, nodeN));
         if ( workOrder3DT->job_perform_on_control_node_ ) nodeN++;
 
-        GADGET_MSG_DEPRECATED("GtPlus Cloud 3DT - job_perform_on_control_node is " << workOrder3DT->job_perform_on_control_node_  << " - nodeN is " << nodeN << " - overlapBetweenJobs is " << overlapBetweenJobs << " ... ");
+        GDEBUG_STREAM("GtPlus Cloud 3DT - job_perform_on_control_node is " << workOrder3DT->job_perform_on_control_node_  << " - nodeN is " << nodeN << " - overlapBetweenJobs is " << overlapBetweenJobs << " ... ");
 
         // adjust jobN according to cloud size
         size_t RO = workOrder3DT->data_.get_size(0);
@@ -2790,11 +2790,11 @@ estimateJobSize(gtPlusReconWorkOrder<T>* workOrder3DT, size_t maxNumOfBytesPerJo
             numOfBytesPerJob = sizeof(T)*( E1*E2*srcCHA*dstCHA*jobSize + 2*E1*E2*srcCHA*jobSize );
         }
 
-        GADGET_MSG_DEPRECATED("GtPlus Cloud 3DT - jobSize is " << jobSize << "; every job has " << numOfBytesPerJob/1024.0/1024 << " MBytes ... ");
+        GDEBUG_STREAM("GtPlus Cloud 3DT - jobSize is " << jobSize << "; every job has " << numOfBytesPerJob/1024.0/1024 << " MBytes ... ");
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DT<T>::estimateJobSize(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::estimateJobSize(...) ... ");
         return false;
     }
 

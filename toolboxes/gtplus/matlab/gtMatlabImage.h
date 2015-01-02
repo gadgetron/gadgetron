@@ -156,7 +156,7 @@ bool gtMatlabImageHeader<T, D>::toMatlab(mxArray*& header)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in gtMatlabImageHeader<T, D>::toMatlab(mxArray*& header) ... ");
+        GERROR_STREAM("Error happened in gtMatlabImageHeader<T, D>::toMatlab(mxArray*& header) ... ");
         return false;
     }
 
@@ -245,7 +245,7 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header) ... ");
+        GERROR_STREAM("Error happened in gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header) ... ");
         return false;
     }
 

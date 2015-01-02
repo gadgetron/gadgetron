@@ -50,7 +50,7 @@ namespace Gadgetron
         obj.print(outs);
         outs << std::ends;
         std::string msg(outs.str());
-        GADGET_MSG_DEPRECATED(msg.c_str());
+        GDEBUG_STREAM(msg.c_str());
     }
 
     enum GT_IMAGE_REG_CONTAINER_MODE
@@ -79,7 +79,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Unrecognized image registration container mode type : " << v);
+                GERROR_STREAM("Unrecognized image registration container mode type : " << v);
         }
 
         return name;
@@ -103,7 +103,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_ERROR_MSG("Unrecognized image registration container mode name : " << name);
+            GERROR_STREAM("Unrecognized image registration container mode name : " << name);
         }
 
         return v;
@@ -323,7 +323,7 @@ namespace Gadgetron
             }
             catch(...)
             {
-                GADGET_ERROR_MSG("Errors happened in hoImageRegContainer2DRegistration<...>::warpContainer2D(...) ... ");
+                GERROR_STREAM("Errors happened in hoImageRegContainer2DRegistration<...>::warpContainer2D(...) ... ");
                 return false;
             }
 
@@ -533,7 +533,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerTwoImagesParametric(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerTwoImagesParametric(...) ... ");
             return false;
         }
 
@@ -579,7 +579,7 @@ namespace Gadgetron
             {
                 std::ostringstream outs;
                 reg.print(outs);
-                GADGET_MSG_DEPRECATED(outs.str());
+                GDEBUG_STREAM(outs.str());
             }
 
             GADGET_CHECK_RETURN_FALSE(reg.initialize());
@@ -632,7 +632,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerTwoImagesDeformationField(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerTwoImagesDeformationField(...) ... ");
             return false;
         }
 
@@ -738,7 +738,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerTwoImagesDeformationFieldBidirectional(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerTwoImagesDeformationFieldBidirectional(...) ... ");
             return false;
         }
 
@@ -782,12 +782,12 @@ namespace Gadgetron
             else if ( container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_RIGID 
                         || container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_AFFINE )
             {
-                GADGET_MSG_DEPRECATED("To be implemented ...");
+                GDEBUG_STREAM("To be implemented ...");
             }
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::initialize(const TargetContinerType& targetContainer) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::initialize(const TargetContinerType& targetContainer) ... ");
             return false;
         }
 
@@ -818,7 +818,7 @@ namespace Gadgetron
                 warped_container_.get_all_images(warpedImages);
             }
 
-            GADGET_MSG_DEPRECATED("registerOverContainer2DPairWise - threading ... ");
+            GDEBUG_STREAM("registerOverContainer2DPairWise - threading ... ");
 
             #ifdef USE_OMP
                 int numOfProcs = omp_get_num_procs();
@@ -826,12 +826,12 @@ namespace Gadgetron
                 if ( numOfImages < numOfProcs-1 )
                 {
                     omp_set_nested(1);
-                    GADGET_MSG_DEPRECATED("registerOverContainer2DPairWise - nested openMP on ... ");
+                    GDEBUG_STREAM("registerOverContainer2DPairWise - nested openMP on ... ");
                 }
                 else
                 {
                     omp_set_nested(0);
-                    GADGET_MSG_DEPRECATED("registerOverContainer2DPairWise - nested openMP off ... ");
+                    GDEBUG_STREAM("registerOverContainer2DPairWise - nested openMP off ... ");
                 }
             #endif // USE_OMP
 
@@ -930,7 +930,7 @@ namespace Gadgetron
             else if ( container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_RIGID 
                         || container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_AFFINE )
             {
-                GADGET_MSG_DEPRECATED("To be implemented ...");
+                GDEBUG_STREAM("To be implemented ...");
             }
 
             #ifdef USE_OMP
@@ -939,7 +939,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DPairWise(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DPairWise(...) ... ");
             return false;
         }
 
@@ -998,12 +998,12 @@ namespace Gadgetron
                 if ( numOfImages < numOfProcs-1 )
                 {
                     omp_set_nested(1);
-                    GADGET_MSG_DEPRECATED("registerOverContainer2DFixedReference - nested openMP on ... ");
+                    GDEBUG_STREAM("registerOverContainer2DFixedReference - nested openMP on ... ");
                 }
                 else
                 {
                     omp_set_nested(0);
-                    GADGET_MSG_DEPRECATED("registerOverContainer2DFixedReference - nested openMP off ... ");
+                    GDEBUG_STREAM("registerOverContainer2DFixedReference - nested openMP off ... ");
                 }
             #endif // USE_OMP
 
@@ -1109,7 +1109,7 @@ namespace Gadgetron
             else if ( container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_RIGID 
                         || container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_AFFINE )
             {
-                GADGET_MSG_DEPRECATED("To be implemented ...");
+                GDEBUG_STREAM("To be implemented ...");
             }
 
             #ifdef USE_OMP
@@ -1118,7 +1118,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DFixedReference(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DFixedReference(...) ... ");
             return false;
         }
 
@@ -1330,7 +1330,7 @@ namespace Gadgetron
             else if ( container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_RIGID 
                         || container_reg_transformation_==GT_IMAGE_REG_TRANSFORMATION_AFFINE )
             {
-                GADGET_MSG_DEPRECATED("To be implemented ...");
+                GDEBUG_STREAM("To be implemented ...");
             }
 
             #ifdef USE_OMP
@@ -1339,7 +1339,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DProgressive(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DProgressive(...) ... ");
             return false;
         }
 

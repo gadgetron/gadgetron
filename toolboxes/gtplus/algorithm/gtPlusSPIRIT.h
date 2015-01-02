@@ -128,14 +128,14 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         long long kROhalf = kRO/2;
         if ( 2*kROhalf == kRO )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*kROhalf == kRO " << kRO);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib(...) - 2*kROhalf == kRO " << kRO);
         }
         kRO = 2*kROhalf + 1;
 
         long long kE1half = kE1/2;
         if ( 2*kE1half == kE1 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*kE1half == kE1 " << kE1);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib(...) - 2*kE1half == kE1 " << kE1);
         }
         kE1 = 2*kE1half + 1;
 
@@ -145,14 +145,14 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         long long oROhalf = oRO/2;
         if ( 2*oROhalf == oRO )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*oROhalf == oRO " << oRO);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib(...) - 2*oROhalf == oRO " << oRO);
         }
         oRO = 2*oROhalf + 1;
 
         long long oE1half = oE1/2;
         if ( 2*oE1half == oE1 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*oE1half == oE1 " << oE1);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib(...) - 2*oE1half == oE1 " << oE1);
         }
         oE1 = 2*oE1half + 1;
 
@@ -178,7 +178,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         bool useGPU = (typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_);
         //if ( useGPU )
         //{
-        //    GADGET_MSG_DEPRECATED("spirit 2D - calling GPU kernel estimation ... "); 
+        //    GDEBUG_STREAM("spirit 2D - calling GPU kernel estimation ... "); 
         //}
 
         const T* pAcsSrc = acsSrc.begin();
@@ -277,7 +277,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
 
                 //            if ( ret != 0 )
                 //            {
-                //                GADGET_ERROR_MSG("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
+                //                GERROR_STREAM("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
                 //                SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //            }
                 //            else
@@ -287,13 +287,13 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
                 //        }
                 //        else
                 //        {
-                //            GADGET_WARN_MSG("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
+                //            GWARN_STREAM("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
                 //            SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //        }
                 //    }
                 //    catch(...)
                 //    {
-                //        GADGET_ERROR_MSG("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
+                //        GERROR_STREAM("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
                 //        SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //    }
                 //#else
@@ -333,7 +333,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::calib(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::calib(...) ... ");
         return false;
     }
 
@@ -433,7 +433,7 @@ imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, s
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::imageDomainKernel(...) ... ");
         return false;
     }
 
@@ -461,21 +461,21 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
         long long kROhalf = kRO/2;
         if ( 2*kROhalf == kRO )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*kROhalf == kRO " << kRO);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*kROhalf == kRO " << kRO);
         }
         kRO = 2*kROhalf + 1;
 
         long long kE1half = kE1/2;
         if ( 2*kE1half == kE1 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*kE1half == kE1 " << kE1);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*kE1half == kE1 " << kE1);
         }
         kE1 = 2*kE1half + 1;
 
         long long kE2half = kE2/2;
         if ( 2*kE2half == kE2 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*kE2half == kE2 " << kE2);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*kE2half == kE2 " << kE2);
         }
         kE2 = 2*kE2half + 1;
 
@@ -486,21 +486,21 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
         long long oROhalf = oRO/2;
         if ( 2*oROhalf == oRO )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*oROhalf == oRO " << oRO);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*oROhalf == oRO " << oRO);
         }
         oRO = 2*oROhalf + 1;
 
         long long oE1half = oE1/2;
         if ( 2*oE1half == oE1 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*oE1half == oE1 " << oE1);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*oE1half == oE1 " << oE1);
         }
         oE1 = 2*oE1half + 1;
 
         long long oE2half = oE2/2;
         if ( 2*oE2half == oE2 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*oE2half == oE2 " << oE2);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*oE2half == oE2 " << oE2);
         }
         oE2 = 2*oE2half + 1;
 
@@ -562,17 +562,17 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                             }
 
                             lenRO = eRO-sRO+1;
-                            GADGET_MSG_DEPRECATED("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
+                            GDEBUG_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
                         }
                         catch(...)
                         {
-                            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
                         }
                     }
                 }
                 else
                 {
-                    GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                    GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
                 }
             }
         }
@@ -583,7 +583,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
         bool useGPU = (typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_);
         if ( useGPU )
         {
-            GADGET_MSG_DEPRECATED("spirit 3D - calling GPU kernel estimation ... ");
+            GDEBUG_STREAM("spirit 3D - calling GPU kernel estimation ... ");
         }
 
         #ifdef GCC_OLD_FLAG
@@ -696,7 +696,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
 
                 //            if ( ret != 0 )
                 //            {
-                //                GADGET_ERROR_MSG("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
+                //                GERROR_STREAM("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
                 //                SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //            }
                 //            else
@@ -706,13 +706,13 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                 //        }
                 //        else
                 //        {
-                //            GADGET_WARN_MSG("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
+                //            GWARN_STREAM("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
                 //            SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //        }
                 //    }
                 //    catch(...)
                 //    {
-                //        GADGET_ERROR_MSG("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
+                //        GERROR_STREAM("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
                 //        SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //    }
                 //#else
@@ -770,7 +770,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::calib3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::calib3D(...) ... ");
         return false;
     }
 
@@ -966,7 +966,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::kspaceDomainConvKernel3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::kspaceDomainConvKernel3D(...) ... ");
         return false;
     }
 
@@ -1015,7 +1015,7 @@ imageDomainKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainKernel3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::imageDomainKernel3D(...) ... ");
         return false;
     }
 
@@ -1073,7 +1073,7 @@ imageDomainKernelRO3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainKernelRO3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::imageDomainKernelRO3D(...) ... ");
         return false;
     }
 
@@ -1115,7 +1115,7 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainKernelE1E2RO(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::imageDomainKernelE1E2RO(...) ... ");
         return false;
     }
 
@@ -1145,7 +1145,7 @@ imageDomainAdjointKernel(const hoNDArray<T>& kIm, hoNDArray<T>& adjkIm)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainAdjointKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::imageDomainAdjointKernel(...) ... ");
         return false;
     }
 
@@ -1210,7 +1210,7 @@ bool gtPlusSPIRIT<T>::AdjointForwardKernel(const hoNDArray<T>& kImS2D, const hoN
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::AdjointForwardKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::AdjointForwardKernel(...) ... ");
         return false;
     }
 

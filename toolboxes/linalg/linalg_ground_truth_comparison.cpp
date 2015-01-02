@@ -135,9 +135,9 @@ int main(int argc, char** argv)
     boost::shared_ptr< hoNDArray<std::complex<float> > > S_chol = read_nd_array< std::complex<float> >(filenameS_chol.c_str());
     boost::shared_ptr< hoNDArray<std::complex<float> > > S_chol_inv = read_nd_array< std::complex<float> >(filenameS_chol_inv.c_str());
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("matrix multiplication");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("matrix multiplication");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     std::complex<float> alpha(1.0,0);
     std::complex<float> beta(1.0,0);
@@ -217,27 +217,27 @@ int main(int argc, char** argv)
         res_f_math.create(a.get_dimensions());
     }
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("axpy");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("axpy");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("axpy Time (MKL)", true);
         Gadgetron::axpy( alpha, a, b, res);
     }
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector add");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector add");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("vzAdd Time (MKL)", true);
         Gadgetron::add( *A.get(), *A.get(), res);
     }
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector subtract");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector subtract");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("vzSub Time (MKL)", true);
@@ -245,9 +245,9 @@ int main(int argc, char** argv)
     }
 
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector multiplication");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector multiplication");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("vzMul Time (MKL)", true);
@@ -256,9 +256,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "multiply");
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector addEpsilon");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector addEpsilon");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     res = a;
     res_math = a;
@@ -270,9 +270,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "addEpsilon");
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector divide");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector divide");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("divide Time (MKL)", true);
@@ -281,9 +281,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "divide");
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector sqrt");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector sqrt");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("sqrt Time (MKL)", true);
@@ -292,9 +292,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "sqrt");
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector conjugate");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector conjugate");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("conjugate Time (MKL)", true);
@@ -303,9 +303,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "conjugate");
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector conjugate multiplication");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector conjugate multiplication");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("vcMulByConj Time (MKL)", true);
@@ -314,9 +314,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "multiplyConj");
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector scal");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector scal");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     res = a;
     res_math = a;
@@ -328,9 +328,9 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "scal");
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector dotc");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector dotc");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     std::complex<float> rdotc(0);
 
@@ -340,9 +340,9 @@ int main(int argc, char** argv)
     }
     std::cout << "dotc = " << rdotc << std::endl;
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector dotu");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector dotu");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     std::complex<float> rdotu;
 
@@ -352,9 +352,9 @@ int main(int argc, char** argv)
     }
     std::cout << "dotu = " << rdotu << std::endl;
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector absolute");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector absolute");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("absolute Time (MKL)", true);
@@ -363,27 +363,27 @@ int main(int argc, char** argv)
 
     compare_result(res, res_math, "absolute");
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector argument");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector argument");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("argument Time (MKL)", true);
         Gadgetron::argument( a, res_f);
     }
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("vector inv");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("vector inv");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("inv Time (MKL)", true);
         Gadgetron::inv( a, res);
     }
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("norm2");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("norm2");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     float rn;
 
@@ -393,9 +393,9 @@ int main(int argc, char** argv)
     }
     std::cout << "nrm2 = " << rn << std::endl;
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("norm1");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("norm1");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     {
         GadgetronTimer t("Time (MKL)", true);
@@ -403,9 +403,9 @@ int main(int argc, char** argv)
     }
     std::cout << "nrm1 = " << rn << std::endl;
 
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-    GADGET_MSG_DEPRECATED("conv2");
-    GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+    GDEBUG_STREAM("------------------------------------------------------------------");
+    GDEBUG_STREAM("conv2");
+    GDEBUG_STREAM("------------------------------------------------------------------");
 
     hoNDArray<std::complex<float> > ker;
     ker.create(3, 3);

@@ -152,7 +152,7 @@ inline bool gtPlusSPIRIT2DOperator<T>::forwardOperator(const hoNDArray<T>& x, ho
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT2DOperator<T>::forwardOperator(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT2DOperator<T>::forwardOperator(...) ... ");
         return false;
     }
 
@@ -198,7 +198,7 @@ inline bool gtPlusSPIRIT2DOperator<T>::adjointOperator(const hoNDArray<T>& x, ho
             //    //#ifdef WIN32
             //    //    int tid = omp_get_thread_num();
             //    //    DWORD_PTR mask = (1 << tid);
-            //    //    // GADGET_MSG_DEPRECATED("thread id : " << tid << " - mask : " << mask);
+            //    //    // GDEBUG_STREAM("thread id : " << tid << " - mask : " << mask);
             //    //    SetThreadAffinityMask( GetCurrentThread(), mask );
             //    //#endif // WIN32
 
@@ -233,7 +233,7 @@ inline bool gtPlusSPIRIT2DOperator<T>::adjointOperator(const hoNDArray<T>& x, ho
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITOperator<T>::adjointOperator(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITOperator<T>::adjointOperator(...) ... ");
         return false;
     }
     return true;

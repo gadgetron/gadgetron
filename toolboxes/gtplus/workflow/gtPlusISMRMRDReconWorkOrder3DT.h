@@ -291,7 +291,7 @@ bool gtPlusReconWorkOrder3DT<T>::reset()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorkOrder3DT<T>::reset() ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorkOrder3DT<T>::reset() ... ");
         return false;
     }
 

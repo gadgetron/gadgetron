@@ -116,7 +116,7 @@ setForwardKernel(boost::shared_ptr< hoNDArray<T> >& forward_kernel, bool compute
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT2DTOperator<T>::setForwardKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT2DTOperator<T>::setForwardKernel(...) ... ");
         return false;
     }
 
@@ -133,7 +133,7 @@ setAdjointForwardKernel(boost::shared_ptr< hoNDArray<T> >& adjoint_forward_kerne
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT2DTOperator<T>::setAdjointForwardKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT2DTOperator<T>::setAdjointForwardKernel(...) ... ");
         return false;
     }
 
@@ -194,7 +194,7 @@ setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT2DTOperator<T>::setAcquiredPoints(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT2DTOperator<T>::setAcquiredPoints(...) ... ");
         return false;
     }
 
@@ -282,7 +282,7 @@ bool gtPlusSPIRIT2DTOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT2DTOperator<T>::grad(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT2DTOperator<T>::grad(...) ... ");
         return false;
     }
 
@@ -347,7 +347,7 @@ bool gtPlusSPIRIT2DTOperator<T>::obj(const hoNDArray<T>& x, T& obj)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT2DTOperator<T>::grad(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT2DTOperator<T>::grad(...) ... ");
         return false;
     }
 

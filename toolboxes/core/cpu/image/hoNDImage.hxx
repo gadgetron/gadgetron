@@ -2668,7 +2668,7 @@ namespace Gadgetron
 
         if ( !this->in_image_region(start, size) )
         {
-        	GADGET_WARN_MSG("Sub-image regin is not in the image ... ");
+        	GWARN_STREAM("Sub-image regin is not in the image ... ");
             return;
         }
 
@@ -2758,7 +2758,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImage<T, D>::serializeImage(...) ... ");
+            GERROR_STREAM("Errors happened in hoNDImage<T, D>::serializeImage(...) ... ");
             return false;
         }
 
@@ -2774,7 +2774,7 @@ namespace Gadgetron
             memcpy(&NDim, buf, sizeof(unsigned int));
             if ( NDim != D )
             {
-                GADGET_ERROR_MSG("hoNDImage<T, D>::deserialize(...) : number of image dimensions does not match ... ");
+                GERROR_STREAM("hoNDImage<T, D>::deserialize(...) : number of image dimensions does not match ... ");
                 return false;
             }
 
@@ -2821,7 +2821,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImage<T, D>::deserializeImage(...) ... ");
+            GERROR_STREAM("Errors happened in hoNDImage<T, D>::deserializeImage(...) ... ");
             return false;
         }
 
@@ -2884,7 +2884,7 @@ namespace Gadgetron
             if ( bufImage != NULL ) delete [] bufImage;
             if ( bufAttrib != NULL ) delete [] bufAttrib;
 
-            GADGET_ERROR_MSG("Errors happened in hoNDImage<T, D>::serialize(char*& buf, size_t& len) ... ");
+            GERROR_STREAM("Errors happened in hoNDImage<T, D>::serialize(char*& buf, size_t& len) ... ");
             return false;
         }
 
@@ -2914,7 +2914,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImage<T, D>::deserialize(char* buf, size_t& len) ... ");
+            GERROR_STREAM("Errors happened in hoNDImage<T, D>::deserialize(char* buf, size_t& len) ... ");
             return false;
         }
 

@@ -33,9 +33,9 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
     noise_std_ = (float)this->get_double_value("noise_std");
     add_noise_ref_ = this->get_bool_value("add_noise_ref");
 
-    GADGET_MSG_DEPRECATED("noise mean is " << noise_mean_);
-    GADGET_MSG_DEPRECATED("noise std is " << noise_std_);
-    GADGET_MSG_DEPRECATED("add_noise_ref is " << add_noise_ref_);
+    GDEBUG_STREAM("noise mean is " << noise_mean_);
+    GDEBUG_STREAM("noise std is " << noise_std_);
+    GDEBUG_STREAM("add_noise_ref is " << add_noise_ref_);
 
     randn_->setPara(noise_mean_, noise_std_);
 
@@ -92,8 +92,8 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
     acceFactorE1_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_1);
     acceFactorE2_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_2);
 
-    GADGET_MSG_DEPRECATED("acceFactorE1_ is " << acceFactorE1_);
-    GADGET_MSG_DEPRECATED("acceFactorE2_ is " << acceFactorE2_);
+    GDEBUG_STREAM("acceFactorE1_ is " << acceFactorE1_);
+    GDEBUG_STREAM("acceFactorE2_ is " << acceFactorE2_);
 
     if ( !p_imaging.calibrationMode.is_present() )
     {
@@ -105,19 +105,19 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
     if ( calib.compare("interleaved") == 0 )
     {
       is_interleaved_ = true;
-      GADGET_MSG_DEPRECATED("Calibration mode is interleaved");
+      GDEBUG_STREAM("Calibration mode is interleaved");
     } else if ( calib.compare("embedded") == 0 ) {
       is_embeded_ = true;
-      GADGET_MSG_DEPRECATED("Calibration mode is embedded");
+      GDEBUG_STREAM("Calibration mode is embedded");
     } else if ( calib.compare("separate") == 0 ) {
       is_seperate_ = true;
-      GADGET_MSG_DEPRECATED("Calibration mode is separate");
+      GDEBUG_STREAM("Calibration mode is separate");
     } else if ( calib.compare("external") == 0 ) {
       is_external_ = true;
-      GADGET_MSG_DEPRECATED("Calibration mode is external");
+      GDEBUG_STREAM("Calibration mode is external");
     } else if ( (calib.compare("other") == 0)) {
       is_other_ = true;
-      GADGET_MSG_DEPRECATED("Calibration mode is other");
+      GDEBUG_STREAM("Calibration mode is other");
     } else {
       GDEBUG("Failed to process parallel imaging calibration mode");
       return GADGET_FAIL;
@@ -146,7 +146,7 @@ int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::Acquisitio
 
             if ( !add_noise )
             {
-                GADGET_MSG_DEPRECATED("WhiteNoiseInjectorGadget, noise is not added to the ref acquisitions ... ");
+                GDEBUG_STREAM("WhiteNoiseInjectorGadget, noise is not added to the ref acquisitions ... ");
             }
         }
 
@@ -160,13 +160,13 @@ int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::Acquisitio
 
             if ( !randn_->gen(noise_) )
             {
-                GADGET_ERROR_MSG("WhiteNoiseInjectorGadget, randn_->gen(noise_) failed ... ");
+                GERROR_STREAM("WhiteNoiseInjectorGadget, randn_->gen(noise_) failed ... ");
                 return GADGET_FAIL;
             }
 
             if ( !noise_fl_.copyFrom(noise_) )
             {
-                GADGET_ERROR_MSG("WhiteNoiseInjectorGadget, noise_fl_.copyFrom(noise_) failed ... ");
+                GERROR_STREAM("WhiteNoiseInjectorGadget, noise_fl_.copyFrom(noise_) failed ... ");
                 return GADGET_FAIL;
             }
 
@@ -176,7 +176,7 @@ int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::Acquisitio
             }
             catch(...)
             {
-                GADGET_ERROR_MSG("WhiteNoiseInjectorGadget, Gadgetron::add(*m2->getObjectPtr(), noise_, *m2->getObjectPtr()) failed ... ");
+                GERROR_STREAM("WhiteNoiseInjectorGadget, Gadgetron::add(*m2->getObjectPtr(), noise_, *m2->getObjectPtr()) failed ... ");
                 return GADGET_FAIL;
             }
         }

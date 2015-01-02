@@ -278,11 +278,11 @@ namespace Gadgetron
 
             GADGET_CHECK_RETURN_FALSE( this->enforceInverseTransform(transform_inverse_, transform_, deform_delta_, inverse_deform_enforce_iter_) );
 
-            GADGET_CHECK_PERFORM(verbose_, GADGET_MSG_DEPRECATED("----> Total iteration number : " << iter_num_) );
+            GADGET_CHECK_PERFORM(verbose_, GDEBUG_STREAM("----> Total iteration number : " << iter_num_) );
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::solve() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::solve() ... ");
             return false;
         }
 
@@ -573,7 +573,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::enforceInverseTransform(...) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::enforceInverseTransform(...) ... ");
             return false;
         }
 

@@ -79,7 +79,7 @@ class DependencyQueryReader : public GadgetMessageReader
             {
                 delete[] buf;
 
-                GADGET_ERROR_MSG("File " << filename_ << " is not good for writing\n");
+                GERROR_STREAM("File " << filename_ << " is not good for writing\n");
                 return 0;
             }
 

@@ -146,7 +146,7 @@ protected:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::permuteArrayOrder(hoNDArray<T>& data, const std::vector<int>& order) ... ");
+            GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::permuteArrayOrder(hoNDArray<T>& data, const std::vector<int>& order) ... ");
             return false;
         }
 
@@ -299,7 +299,7 @@ preProcessing()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::preProcessing() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::preProcessing() ... ");
         return false;
     }
 
@@ -436,7 +436,7 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::convertToReconSpace2D(const hoNDArray& input_, hoNDArray& output_, bool isKSpace) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::convertToReconSpace2D(const hoNDArray& input_, hoNDArray& output_, bool isKSpace) ... ");
         return false;
     }
 
@@ -612,7 +612,7 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::convertToReconSpace3D(const hoNDArray& input_, hoNDArray& output_, bool isKSpace) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::convertToReconSpace3D(const hoNDArray& input_, hoNDArray& output_, bool isKSpace) ... ");
         return false;
     }
 
@@ -876,7 +876,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::postProcessing(res) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::postProcessing(res) ... ");
         return false;
     }
 
@@ -900,7 +900,7 @@ postProcessing()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::postProcessing() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::postProcessing() ... ");
         return false;
     }
 
@@ -942,9 +942,9 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
             }
         }
 
-        GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon dimensions : " << this->printISMRMRDDimensions(dims));
-        GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon size       : " << this->printISMRMRDDimensionSize(dimSize));
-        GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon ref size   : " << this->printISMRMRDDimensionSize(dimSizeRef));
+        GDEBUG_CONDITION_STREAM(!debugFolder_.empty(), "Recon dimensions : " << this->printISMRMRDDimensions(dims));
+        GDEBUG_CONDITION_STREAM(!debugFolder_.empty(), "Recon size       : " << this->printISMRMRDDimensionSize(dimSize));
+        GDEBUG_CONDITION_STREAM(!debugFolder_.empty(), "Recon ref size   : " << this->printISMRMRDDimensionSize(dimSizeRef));
 
         bool gfactor_needed = workOrder_->gfactor_needed_;
         bool wrap_around_map_needed = workOrder_->wrap_around_map_needed_;
@@ -1026,8 +1026,8 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
 
         std::vector<ISMRMRDDIM> dimsRes(dims);
 
-        GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon res dimensions : " << this->printISMRMRDDimensions(dimsRes));
-        GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon res size       : " << this->printISMRMRDDimensionSize(dimResSize));
+        GDEBUG_CONDITION_STREAM(!debugFolder_.empty(), "Recon res dimensions : " << this->printISMRMRDDimensions(dimsRes));
+        GDEBUG_CONDITION_STREAM(!debugFolder_.empty(), "Recon res size       : " << this->printISMRMRDDimensionSize(dimResSize));
 
         bool shareAcrossWorkOrders = (WorkOrderShareDim_!=DIM_NONE);
 
@@ -1117,7 +1117,7 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
                                     }
                                     else
                                     {
-                                        GADGET_WARN_MSG("dims[2] != DIM_Channel, the time stamps will not be copied ... ");
+                                        GWARN_STREAM("dims[2] != DIM_Channel, the time stamps will not be copied ... ");
 
                                         for ( dim2=0; dim2<dimSize[2]; dim2++ )
                                         {
@@ -1501,7 +1501,7 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::configureWorkOrder(const std::vector<ISMRMRDDIM>& dims) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::configureWorkOrder(const std::vector<ISMRMRDDIM>& dims) ... ");
         return false;
     }
 
@@ -1595,7 +1595,7 @@ copyReconResultsSecond(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyReconResultsSecond() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyReconResultsSecond() ... ");
         return false;
     }
 
@@ -1685,7 +1685,7 @@ copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, boo
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyGFactor() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyGFactor() ... ");
         return false;
     }
 
@@ -1779,7 +1779,7 @@ copyWrapAroundMap(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyWrapAroundMap() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyWrapAroundMap() ... ");
         return false;
     }
 

@@ -109,7 +109,7 @@ int NoiseAdjustGadget_unoptimized::process_config(ACE_Message_Block* mb)
     receiver_noise_bandwidth_ = (float)(h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth ?
 					*h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth : 1.0f);
     
-    GADGET_MSG_DEPRECATED("receiver_noise_bandwidth_ is " << receiver_noise_bandwidth_);
+    GDEBUG_STREAM("receiver_noise_bandwidth_ is " << receiver_noise_bandwidth_);
   }
   
   return GADGET_OK;

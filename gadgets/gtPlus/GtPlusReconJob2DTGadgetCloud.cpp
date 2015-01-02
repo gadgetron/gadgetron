@@ -74,123 +74,123 @@ bool GtPlusReconJob2DTGadgetCloud::readParameters()
 {
     try
     {
-        GADGET_CONDITION_MSG(verboseMode_, "------> GtPlusReconJob2DTGadgetCloud parameters <------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlusReconJob2DTGadgetCloud parameters <------");
 
         boost::shared_ptr<std::string> str = this->get_string_value("debugFolder");
         debugFolder_ = *str;
-        GADGET_CONDITION_MSG(verboseMode_, "debugFolder_ is " << debugFolder_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder_ is " << debugFolder_);
 
         str = this->get_string_value("debugFolder2");
         debugFolder2_ = *str;
-        GADGET_CONDITION_MSG(verboseMode_, "debugFolder2_ is " << debugFolder2_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder2_ is " << debugFolder2_);
 
         str = this->get_string_value("cloudNodeFile");
         cloud_node_file_ = *str;
-        GADGET_CONDITION_MSG(verboseMode_, "cloud_node_file_ is " << cloud_node_file_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "cloud_node_file_ is " << cloud_node_file_);
 
         performTiming_ = this->get_bool_value("performTiming");
-        GADGET_CONDITION_MSG(verboseMode_, "performTiming_ is " << performTiming_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "performTiming_ is " << performTiming_);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
         // kspace filter parameters
         str = this->get_string_value("filterRO");
         filterRO_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
         filterRO_sigma_ = this->get_double_value("filterRO_sigma");
         filterRO_width_ = this->get_double_value("filterRO_width");
-        GADGET_CONDITION_MSG(verboseMode_, "filterRO_type_ is " << *str);
-        GADGET_CONDITION_MSG(verboseMode_, "filterRO_sigma_ is " << filterRO_sigma_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterRO_width_ is " << filterRO_width_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_type_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_sigma_ is " << filterRO_sigma_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_width_ is " << filterRO_width_);
 
         str = this->get_string_value("filterE1");
         filterE1_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
         filterE1_sigma_ = this->get_double_value("filterE1_sigma");
         filterE1_width_ = this->get_double_value("filterE1_width");
-        GADGET_CONDITION_MSG(verboseMode_, "filterE1_type_ is " << *str);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE1_sigma_ is " << filterE1_sigma_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE1_width_ is " << filterE1_width_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_type_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_sigma_ is " << filterE1_sigma_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_width_ is " << filterE1_width_);
 
         str = this->get_string_value("filterE2");
         filterE2_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
         filterE2_sigma_ = this->get_double_value("filterE2_sigma");
         filterE2_width_ = this->get_double_value("filterE2_width");
-        GADGET_CONDITION_MSG(verboseMode_, "filterE2_type_ is " << *str);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE2_sigma_ is " << filterE2_sigma_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE2_width_ is " << filterE2_width_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_type_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_sigma_ is " << filterE2_sigma_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_width_ is " << filterE2_width_);
 
         str = this->get_string_value("filterRefRO");
         filterRO_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
         filterRO_ref_sigma_ = this->get_double_value("filterRefRO_sigma");
         filterRO_ref_width_ = this->get_double_value("filterRefRO_width");
-        GADGET_CONDITION_MSG(verboseMode_, "filterRO_ref_type_ is " << *str);
-        GADGET_CONDITION_MSG(verboseMode_, "filterRO_ref_sigma_ is " << filterRO_ref_sigma_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterRO_ref_width_ is " << filterRO_ref_width_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_ref_type_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_ref_sigma_ is " << filterRO_ref_sigma_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_ref_width_ is " << filterRO_ref_width_);
 
         str = this->get_string_value("filterRefE1");
         filterE1_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
         filterE1_ref_sigma_ = this->get_double_value("filterRefE1_sigma");
         filterE1_ref_width_ = this->get_double_value("filterRefE1_width");
-        GADGET_CONDITION_MSG(verboseMode_, "filterE1_ref_type_ is " << *str);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE1_ref_sigma_ is " << filterE1_ref_sigma_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE1_ref_width_ is " << filterE1_ref_width_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_ref_type_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_ref_sigma_ is " << filterE1_ref_sigma_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_ref_width_ is " << filterE1_ref_width_);
 
         str = this->get_string_value("filterRefE2");
         filterE2_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
         filterE2_ref_sigma_ = this->get_double_value("filterRefE2_sigma");
         filterE2_ref_width_ = this->get_double_value("filterRefE2_width");
-        GADGET_CONDITION_MSG(verboseMode_, "filterE2_ref_type_ is " << *str);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE2_ref_sigma_ is " << filterE2_ref_sigma_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE2_ref_width_ is " << filterE2_ref_width_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_ref_type_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_ref_sigma_ is " << filterE2_ref_sigma_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_ref_width_ is " << filterE2_ref_width_);
 
         str = this->get_string_value("filterPartialFourierRO");
         filterRO_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
         filterRO_pf_sigma_ = this->get_double_value("filterPartialFourierRO_sigma");
         filterRO_pf_width_ = this->get_double_value("filterPartialFourierRO_width");
         filterRO_pf_densityComp_ = this->get_bool_value("filterPartialFourierRO_densityComp");
-        GADGET_CONDITION_MSG(verboseMode_, "filterRO_pf_type_ is " << *str);
-        GADGET_CONDITION_MSG(verboseMode_, "filterRO_pf_sigma_ is " << filterRO_pf_sigma_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterRO_pf_width_ is " << filterRO_pf_width_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterRO_pf_densityComp_ is " << filterRO_pf_densityComp_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_type_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_sigma_ is " << filterRO_pf_sigma_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_width_ is " << filterRO_pf_width_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_densityComp_ is " << filterRO_pf_densityComp_);
 
         str = this->get_string_value("filterPartialFourierE1");
         filterE1_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
         filterE1_pf_sigma_ = this->get_double_value("filterPartialFourierE1_sigma");
         filterE1_pf_width_ = this->get_double_value("filterPartialFourierE1_width");
         filterE1_pf_densityComp_ = this->get_bool_value("filterPartialFourierE1_densityComp");
-        GADGET_CONDITION_MSG(verboseMode_, "filterE1_pf_type_ is " << *str);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE1_pf_sigma_ is " << filterE1_pf_sigma_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE1_pf_width_ is " << filterE1_pf_width_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE1_pf_densityComp_ is " << filterE1_pf_densityComp_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_type_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_sigma_ is " << filterE1_pf_sigma_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_width_ is " << filterE1_pf_width_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_densityComp_ is " << filterE1_pf_densityComp_);
 
         str = this->get_string_value("filterPartialFourierE2");
         filterE2_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
         filterE2_pf_sigma_ = this->get_double_value("filterPartialFourierE2_sigma");
         filterE2_pf_width_ = this->get_double_value("filterPartialFourierE2_width");
         filterE2_pf_densityComp_ = this->get_bool_value("filterPartialFourierE2_densityComp");
-        GADGET_CONDITION_MSG(verboseMode_, "filterE2_pf_type_ is " << *str);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE2_pf_sigma_ is " << filterE2_pf_sigma_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE2_pf_width_ is " << filterE2_pf_width_);
-        GADGET_CONDITION_MSG(verboseMode_, "filterE2_pf_densityComp_ is " << filterE2_pf_densityComp_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_type_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_sigma_ is " << filterE2_pf_sigma_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_width_ is " << filterE2_pf_width_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_densityComp_ is " << filterE2_pf_densityComp_);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
         job_split_by_S_ = this->get_bool_value("job_split_by_S");
         job_num_of_N_ = (size_t)(this->get_int_value("job_num_of_N"));
         job_max_Megabytes_ = (size_t)(this->get_int_value("job_max_Megabytes"));
         job_overlap_ = (size_t)(this->get_int_value("job_overlap"));
 
-        GADGET_CONDITION_MSG(verboseMode_, "job_split_by_S_ is " << job_split_by_S_);
-        GADGET_CONDITION_MSG(verboseMode_, "job_num_of_N_ is " << job_num_of_N_);
-        GADGET_CONDITION_MSG(verboseMode_, "job_max_Megabytes_ is " << job_max_Megabytes_);
-        GADGET_CONDITION_MSG(verboseMode_, "job_overlap_ is " << job_overlap_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "job_split_by_S_ is " << job_split_by_S_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "job_num_of_N_ is " << job_num_of_N_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "job_max_Megabytes_ is " << job_max_Megabytes_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "job_overlap_ is " << job_overlap_);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
         CloudComputing_ = this->get_bool_value("CloudComputing");
         CloudSize_ = (unsigned int)(this->get_int_value("CloudSize"));
 
-        GADGET_CONDITION_MSG(verboseMode_, "CloudComputing_ is " << CloudComputing_);
-        GADGET_CONDITION_MSG(verboseMode_, "CloudSize_ is " << CloudSize_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "CloudComputing_ is " << CloudComputing_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "CloudSize_ is " << CloudSize_);
 
         // read in the cloud information for every node
         gt_cloud_.resize(CloudSize_);
@@ -217,14 +217,14 @@ bool GtPlusReconJob2DTGadgetCloud::readParameters()
             unsigned int computingPowerIndex = this->get_int_value(ostreamstr4.str().c_str());
             gt_cloud_[ii].get<3>() = computingPowerIndex;
 
-            GADGET_CONDITION_MSG(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
         }
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusReconJob2DTGadgetCloud::readParameters() ... ");
+        GERROR_STREAM("Errors in GtPlusReconJob2DTGadgetCloud::readParameters() ... ");
         return false;
     }
 
@@ -248,7 +248,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
     }
     else
     {
-        GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder is not set ...");
+        GDEBUG_STREAM("GtPlusRecon, debugFolder is not set ...");
     }
 
     if ( !debugFolder2_.empty() )
@@ -257,7 +257,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
     }
     else
     {
-        GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder2 is not set ...");
+        GDEBUG_STREAM("GtPlusRecon, debugFolder2 is not set ...");
     }
 
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
@@ -318,12 +318,12 @@ bool GtPlusReconJob2DTGadgetCloud::parseGTCloudNodeFile(const std::string& filen
     std::string nodeFileName = get_gadgetron_home();
     nodeFileName.append("/config/gtCloud/");
     nodeFileName.append(filename);
-    GADGET_CONDITION_MSG(verboseMode_, "Cloud node file name is " << nodeFileName);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud node file name is " << nodeFileName);
 
     std::ifstream fs(nodeFileName.c_str(), std::ios::in);
     if (!fs.is_open()) 
     {
-        GADGET_WARN_MSG("Cannot open GT CloudNodeFile; use the local setting instead ... ");
+        GWARN_STREAM("Cannot open GT CloudNodeFile; use the local setting instead ... ");
         return false;
     }
 
@@ -360,7 +360,7 @@ bool GtPlusReconJob2DTGadgetCloud::parseGTCloudNodeFile(const std::string& filen
         gtCloud[n].get<2>() = xmlGadgetNode;
         gtCloud[n].get<3>() = computingPowerIndex;
 
-        GADGET_CONDITION_MSG(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
     }
 
     fs.close();
@@ -387,21 +387,21 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
                 if ( CloudSize_ == 0 )
                 {
                     CloudComputing_ = false;
-                    GADGET_CONDITION_MSG(verboseMode_, "GtPlusReconJob2DTGadgetCloud : cannot find algorithm nodes ... ");
+                    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusReconJob2DTGadgetCloud : cannot find algorithm nodes ... ");
                 }
             }
         }
     }
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusReconJob2DTGadgetCloud::process(...) starts ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusReconJob2DTGadgetCloud::process(...) starts ... ");
 
     int* jobID = m1->getObjectPtr();
-    GADGET_CONDITION_MSG(verboseMode_, "--> arriving job : " << *jobID << " ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "--> arriving job : " << *jobID << " ... ");
 
     GtPlusRecon2DTCloudPackageCPFL* job = m2->getObjectPtr();
 
     boost::shared_ptr< std::vector<size_t> > dims = job->kspace.get_dimensions();
 
-    GADGET_CONDITION_MSG(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
+    GDEBUG_CONDITION_STREAM(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
         << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
         << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << "]");
 
@@ -533,7 +533,7 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
 
     if ( !succeed )
     {
-        GADGET_ERROR_MSG("GtPlusReconJob2DTGadgetCloud::process(...) failed... ");
+        GERROR_STREAM("GtPlusReconJob2DTGadgetCloud::process(...) failed... ");
     }
 
     GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
@@ -585,7 +585,7 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
     // send out the results
     GADGET_CHECK_RETURN(this->sendOutJob(*jobID, job), GADGET_FAIL);
 
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusReconJob2DTGadgetCloud::process(...) ends ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusReconJob2DTGadgetCloud::process(...) ends ... ");
 
     // reset the status
     workflow_.data_ = NULL;
@@ -603,9 +603,9 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
         std::string procTime;
         gtPlus_util_.getCurrentMoment(procTime);
 
-        GADGET_MSG_DEPRECATED("* ============================================================================== *");
-        GADGET_MSG_DEPRECATED("---> MR recon 2DT gadget cloud, Currnt processing time : " << procTime << " <---");
-        GADGET_MSG_DEPRECATED("* ============================================================================== *");
+        GDEBUG_STREAM("* ============================================================================== *");
+        GDEBUG_STREAM("---> MR recon 2DT gadget cloud, Currnt processing time : " << procTime << " <---");
+        GDEBUG_STREAM("* ============================================================================== *");
     }
 
     return GADGET_OK;
@@ -648,7 +648,7 @@ sendOutJob(int jobID, GtPlusRecon2DTCloudPackageCPFL* job)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusReconJob2DTGadgetCloud::sendOutJob(...) ... ");
+        GERROR_STREAM("Errors in GtPlusReconJob2DTGadgetCloud::sendOutJob(...) ... ");
         return false;
     }
 
@@ -787,7 +787,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusReconJob2DTGadgetCloud::generateKSpaceFilter(...) ... ");
+        GERROR_STREAM("Errors in GtPlusReconJob2DTGadgetCloud::generateKSpaceFilter(...) ... ");
         return false;
     }
 

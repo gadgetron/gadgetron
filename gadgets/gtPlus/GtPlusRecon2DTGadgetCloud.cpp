@@ -43,7 +43,7 @@ int GtPlusRecon2DTGadgetCloud::process_config(ACE_Message_Block* mb)
             // set up the cloud
             if (controller_.open () == -1)
             {
-                GADGET_ERROR_MSG("Cloud controller cannot open the cloud ...");
+                GERROR_STREAM("Cloud controller cannot open the cloud ...");
                 controller_.handle_close (ACE_INVALID_HANDLE, 0);
                 CloudComputing_ = false;
             }
@@ -61,13 +61,13 @@ int GtPlusRecon2DTGadgetCloud::process_config(ACE_Message_Block* mb)
 
                 if ( controller_.createConnector(gt_cloud_, GADGET_MESSAGE_GADGETCLOUD_JOB, readers_, GADGET_MESSAGE_GADGETCLOUD_JOB, writers_) != 0 )
                 {
-                    GADGET_ERROR_MSG("Cloud controller_ creates connectors failed ...");
+                    GERROR_STREAM("Cloud controller_ creates connectors failed ...");
                     controller_.handle_close (ACE_INVALID_HANDLE, 0);
                     CloudComputing_ = false;
                 }
                 else if ( controller_.connectToCloud(gt_cloud_) != 0 )
                 {
-                    GADGET_ERROR_MSG("Cloud controller_ cannot connect to the cloud ...");
+                    GERROR_STREAM("Cloud controller_ cannot connect to the cloud ...");
                     controller_.handle_close (ACE_INVALID_HANDLE, 0);
                     CloudComputing_ = false;
                 }
@@ -80,7 +80,7 @@ int GtPlusRecon2DTGadgetCloud::process_config(ACE_Message_Block* mb)
 
 int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlusGadgetImageArray >* m1, Gadgetron::GadgetContainerMessage< WorkOrderType > * m2)
 {
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadgetCloud::process(...) starts ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadgetCloud::process(...) starts ... ");
 
     processed_called_times_++;
 
@@ -99,7 +99,7 @@ int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlus
 
         boost::shared_ptr< std::vector<size_t> > dims = workOrder->data_.get_dimensions();
 
-        GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
+        GDEBUG_CONDITION_STREAM(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
             << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
             << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << " " << (*dims)[10] << "]");
 
@@ -196,7 +196,7 @@ int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlus
 
         if ( controller_.runJobsOnCloud(jobListCloud, completedJobListCloud, node_ids) != 0 )
         {
-            GADGET_ERROR_MSG("Cloud controller runs jobs on the cloud failed ...");
+            GERROR_STREAM("Cloud controller runs jobs on the cloud failed ...");
             controller_.handle_close (ACE_INVALID_HANDLE, 0);
 
             // run locally
@@ -227,7 +227,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
         boost::shared_ptr< std::vector<size_t> > dims = job->kspace.get_dimensions();
 
-        GADGET_CONDITION_MSG(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
+        GDEBUG_CONDITION_STREAM(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
             << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
             << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << " " << (*dims)[10] << "]");
 
@@ -419,7 +419,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
             jobReceived.res.clear();
         }
 
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadgetCloud::process(...) ends ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadgetCloud::process(...) ends ... ");
 
         // reset the status
         workflow_.data_ = NULL;
@@ -431,7 +431,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPackageType& jobReceived) ... ");
+        GERROR_STREAM("Errors happened in GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPackageType& jobReceived) ... ");
         return false;
     }
 
@@ -440,13 +440,13 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
 int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
 {
-    GADGET_CONDITION_MSG(true, "GtPlusRecon2DTGadgetCloud - close(flags) : " << flags);
+    GDEBUG_CONDITION_STREAM(true, "GtPlusRecon2DTGadgetCloud - close(flags) : " << flags);
 
     if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
 
     if ( flags!=0 )
     {
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadgetCloud number of total jobs : " << num_of_jobs_ << " ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadgetCloud number of total jobs : " << num_of_jobs_ << " ... ");
 
         if ( CloudComputing_ )
         {
@@ -472,7 +472,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                 // special check if the second set of recon results is needed
                 if ( recon_res_second_required_ )
                 {
-                    GADGET_MSG_DEPRECATED("Check received recon results (second set) ... ");
+                    GDEBUG_STREAM("Check received recon results (second set) ... ");
 
                     if (packages_received_[ii].complexImSecond.get_number_of_elements() == 0)
                     {
@@ -487,7 +487,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                         if ( GT_ABS(v) < FLT_EPSILON )
                         {
                             recomputeJob = true;
-                            GADGET_WARN_MSG("Received recon results (second set) contain no content ... ");
+                            GWARN_STREAM("Received recon results (second set) contain no content ... ");
                         }
                     }
                 }
@@ -634,7 +634,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                 {
                     if ( gadget_->packages_received_[jobID].complexImSecond.get_number_of_elements() > 0 )
                     {
-                        GADGET_MSG_DEPRECATED("Check received recon results (second set) in cloud sender ... ");
+                        GDEBUG_STREAM("Check received recon results (second set) in cloud sender ... ");
 
                         // check the images are not empty
                         float v(0);
@@ -644,7 +644,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                         if ( GT_ABS(v) < FLT_EPSILON )
                         {
                             reconResSecondValid = false;
-                            GADGET_WARN_MSG("Received recon results (second set) contain no content ... ");
+                            GWARN_STREAM("Received recon results (second set) contain no content ... ");
                         }
 
                         if ( reconResSecondValid )

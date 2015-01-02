@@ -40,7 +40,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in corrCoef(const hoNDImage<T, D>& a, const hoNDImage<T, D>& b, T& r) ... ");
+            GERROR_STREAM("Errors happened in corrCoef(const hoNDImage<T, D>& a, const hoNDImage<T, D>& b, T& r) ... ");
             return false;
         }
 
@@ -67,7 +67,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in downsampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, float ratio[]) ... ");
+            GERROR_STREAM("Errors happened in downsampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, float ratio[]) ... ");
             return false;
         }
 
@@ -94,7 +94,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in upsampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, float ratio[]) ... ");
+            GERROR_STREAM("Errors happened in upsampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, float ratio[]) ... ");
             return false;
         }
 
@@ -266,7 +266,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in resampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, size_t size_out[D]) ... ");
+            GERROR_STREAM("Errors happened in resampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, size_t size_out[D]) ... ");
             return false;
         }
 
@@ -455,7 +455,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in downsampleImageBy2WithAveraging(const hoNDImage<T, D>& in, hoNDImage<T, D>& out) ... ");
+            GERROR_STREAM("Errors happened in downsampleImageBy2WithAveraging(const hoNDImage<T, D>& in, hoNDImage<T, D>& out) ... ");
             return false;
         }
 
@@ -654,7 +654,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in expandImageBy2(const hoNDImage<T, D>& in, BoundaryHandlerType& bh, hoNDImage<T, D>& out) ... ");
+            GERROR_STREAM("Errors happened in expandImageBy2(const hoNDImage<T, D>& in, BoundaryHandlerType& bh, hoNDImage<T, D>& out) ... ");
             return false;
         }
 
@@ -932,7 +932,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in filterMedian(const ArrayType& img, size_t w[], ArrayType& img_out) ... ");
+            GERROR_STREAM("Errors happened in filterMedian(const ArrayType& img, size_t w[], ArrayType& img_out) ... ");
             return false;
         }
 
@@ -1013,7 +1013,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in filter1D(const ArrayType& img, const hoNDArray<T>& ker, GT_BOUNDARY_CONDITION bh, ArrayType& img_out) ... ");
+            GERROR_STREAM("Errors happened in filter1D(const ArrayType& img, const hoNDArray<T>& ker, GT_BOUNDARY_CONDITION bh, ArrayType& img_out) ... ");
             return false;
         }
 

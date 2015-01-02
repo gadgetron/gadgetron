@@ -64,7 +64,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     timeStampResolution_ = (float)this->get_double_value("timeStampResolution");
     if ( timeStampResolution_ < FLT_EPSILON ) timeStampResolution_ = 0.0025f;
-    GADGET_CONDITION_MSG(verboseMode_, "timeStampResolution_ is " << timeStampResolution_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "timeStampResolution_ is " << timeStampResolution_);
 
     // ---------------------------------------------------------------------------------------------------------
     // pass the xml file
@@ -113,8 +113,8 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     workOrder_.acceFactorE1_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_1);
     workOrder_.acceFactorE2_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_2);
 
-    GADGET_CONDITION_MSG(verboseMode_, "acceFactorE1_ is " << workOrder_.acceFactorE1_);
-    GADGET_CONDITION_MSG(verboseMode_, "acceFactorE2_ is " << workOrder_.acceFactorE2_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "acceFactorE1_ is " << workOrder_.acceFactorE1_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "acceFactorE2_ is " << workOrder_.acceFactorE2_);
 
     workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_NONE;
 
@@ -128,7 +128,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     if ( calib.compare("interleaved") == 0 )
     {
         workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
-        GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is interleaved");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Calibration mode is interleaved");
 
         if ( p_imaging.interleavingDimension )
         {
@@ -157,18 +157,18 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
                 GDEBUG("Unknown interleaving dimension. Bailing out");
                 return GADGET_FAIL;
             }
-            GADGET_CONDITION_MSG(verboseMode_, "InterleaveDim is " << gtPlus_util_.getISMRMRDDimName(workOrder_.InterleaveDim_));
+            GDEBUG_CONDITION_STREAM(verboseMode_, "InterleaveDim is " << gtPlus_util_.getISMRMRDDimName(workOrder_.InterleaveDim_));
         }
     }
     else if ( calib.compare("embedded") == 0 )
     {
         workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_embedded;
-        GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is embedded");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Calibration mode is embedded");
     }
     else if ( calib.compare("separate") == 0 )
     {
         workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_separate;
-        GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is separate");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Calibration mode is separate");
     }
     else if ( calib.compare("external") == 0 )
     {
@@ -201,10 +201,10 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     findMatrixSizeRecon(h, matrix_size_recon_);
     findFOVRecon(h, field_of_view_recon_);
 
-    GADGET_CONDITION_MSG(verboseMode_, "Encoding matrix size: " << matrix_size_encoding_[0] << " " << matrix_size_encoding_[1] << " " << matrix_size_encoding_[2]);
-    GADGET_CONDITION_MSG(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
-    GADGET_CONDITION_MSG(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
-    GADGET_CONDITION_MSG(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Encoding matrix size: " << matrix_size_encoding_[0] << " " << matrix_size_encoding_[1] << " " << matrix_size_encoding_[2]);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
 
     // ---------------------------------------------------------------------------------------------------------
     // handle partial fourier
@@ -213,10 +213,10 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
     workOrder_.kSpaceMaxEncode1_ = matrix_size_encoding_[1]-1;
-    GADGET_CONDITION_MSG(verboseMode_, "matrix size kSpaceMaxEncode1_ is " << workOrder_.kSpaceMaxEncode1_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "matrix size kSpaceMaxEncode1_ is " << workOrder_.kSpaceMaxEncode1_);
 
     workOrder_.kSpaceMaxEncode2_ = matrix_size_encoding_[2]-1;
-    GADGET_CONDITION_MSG(verboseMode_, "matrix size kSpaceMaxEncode2_ is " << workOrder_.kSpaceMaxEncode2_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "matrix size kSpaceMaxEncode2_ is " << workOrder_.kSpaceMaxEncode2_);
 
     space_size_[1] = workOrder_.kSpaceMaxEncode1_+1;
     space_size_[2] = workOrder_.kSpaceMaxEncode2_+1;
@@ -230,20 +230,20 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     max_sampled_E1_ = e_limits.kspace_encoding_step_1->maximum;
     max_sampled_E2_ = e_limits.kspace_encoding_step_2->maximum;
 
-    GADGET_CONDITION_MSG(verboseMode_, "max_sampled_E1_ is " << max_sampled_E1_);
-    GADGET_CONDITION_MSG(verboseMode_, "max_sampled_E2_ is " << max_sampled_E2_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "max_sampled_E1_ is " << max_sampled_E1_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "max_sampled_E2_ is " << max_sampled_E2_);
 
     center_line_E1_ = e_limits.kspace_encoding_step_1->center;
     center_line_E2_ = e_limits.kspace_encoding_step_2->center;
 
-    GADGET_CONDITION_MSG(verboseMode_, "center_line_E1_ is " << center_line_E1_);
-    GADGET_CONDITION_MSG(verboseMode_, "center_line_E2_ is " << center_line_E2_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "center_line_E1_ is " << center_line_E1_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "center_line_E2_ is " << center_line_E2_);
 
     workOrder_.kSpaceCenterEncode1_ = center_line_E1_;
-    GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode1_ is " << workOrder_.kSpaceCenterEncode1_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "kSpaceCenterEncode1_ is " << workOrder_.kSpaceCenterEncode1_);
 
     workOrder_.kSpaceCenterEncode2_ = center_line_E2_;
-    GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode2_ is " << workOrder_.kSpaceCenterEncode2_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "kSpaceCenterEncode2_ is " << workOrder_.kSpaceCenterEncode2_);
 
     // ---------------------------------------------------------------------------------------------------------
     // handle retro-gating
@@ -325,7 +325,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
 
     if ( scan_counter%1000 == 0 )
     {
-        GADGET_CONDITION_MSG(verboseMode_, "--> receive scan : " << scan_counter);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "--> receive scan : " << scan_counter);
     }
 
     // combine the segmentes
@@ -346,8 +346,8 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
         {
             gtPlus_util_.findStartEndROAfterZeroFilling(m1->getObjectPtr()->center_sample, m1->getObjectPtr()->number_of_samples, workOrder_.start_RO_, workOrder_.end_RO_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "start_RO : " << workOrder_.start_RO_);
-            GADGET_CONDITION_MSG(verboseMode_, "end_RO : " << workOrder_.end_RO_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "start_RO : " << workOrder_.start_RO_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "end_RO : " << workOrder_.end_RO_);
 
             workOrder_.kSpaceCenterRO_ = m1->getObjectPtr()->center_sample;
             workOrder_.kSpaceMaxRO_ = m1->getObjectPtr()->number_of_samples;
@@ -356,7 +356,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
         // if partial fourier or asymmetric echo is used, correct the kSpaceCenter
         if ( GT_ABS(space_size_[1]-max_sampled_E1_) > workOrder_.acceFactorE1_ )
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Partial fourier along E1 ... ");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Partial fourier along E1 ... ");
 
             // if ( (m1->getObjectPtr()->idx.user[5]>0) && (GT_ABS( (long long)m1->getObjectPtr()->idx.user[5] - (long long)space_size_[1]/2 )<2) )
             if ( (m1->getObjectPtr()->idx.user[5]>0) )
@@ -388,7 +388,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
 
         if ( GT_ABS(space_size_[2]-max_sampled_E2_) > workOrder_.acceFactorE2_ )
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Partial fourier along E2 ... ");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Partial fourier along E2 ... ");
 
             // if ( (m1->getObjectPtr()->idx.user[6]>0) && (GT_ABS( (long long)m1->getObjectPtr()->idx.user[6] - (long long)space_size_[2]/2 )<2) )
             if ( (m1->getObjectPtr()->idx.user[6]>0) )
@@ -537,7 +537,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::needTriggerWorkOrderAllInClose()
     }
     else
     {
-        GADGET_ERROR_MSG("Unsupported calibration mode : " << workOrder_.CalibMode_);
+        GERROR_STREAM("Unsupported calibration mode : " << workOrder_.CalibMode_);
         return true;
     }
 
@@ -605,7 +605,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrder(GadgetContainerMe
     }
     else
     {
-        GADGET_ERROR_MSG("Unsupported calibration mode : " << workOrder_.CalibMode_);
+        GERROR_STREAM("Unsupported calibration mode : " << workOrder_.CalibMode_);
         return false;
     }
 
@@ -649,16 +649,16 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
     if ( is_last_acq && ( (triggerDim1_!=DIM_NONE) || (triggerDim2_!=DIM_NONE) ) )
     {
-        GADGET_CONDITION_MSG(true, "Last scan in measurement - " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << curr_dim1_ << " - " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << curr_dim2_);
+        GDEBUG_CONDITION_STREAM(true, "Last scan in measurement - " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << curr_dim1_ << " - " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << curr_dim2_);
 
         if ( curr_dim1_==0 && curr_dim2_== 0 )
         {
-            GADGET_CONDITION_MSG(true, "Last scan in measurement - not trigger ... ");
+            GDEBUG_CONDITION_STREAM(true, "Last scan in measurement - not trigger ... ");
             return true;
         }
 
         triggered_in_process_last_acq_ = true;
-        GADGET_CONDITION_MSG(true, "Last scan in measurement - triggered_in_process_last_acq_ : " << triggered_in_process_last_acq_);
+        GDEBUG_CONDITION_STREAM(true, "Last scan in measurement - triggered_in_process_last_acq_ : " << triggered_in_process_last_acq_);
 
         if ( workOrder_.CalibMode_ == ISMRMRD_interleaved )
         {
@@ -680,7 +680,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
         else
         {
             triggered_in_process_last_acq_ = false;
-            GADGET_ERROR_MSG("Unsupported calibration mode : " << workOrder_.CalibMode_);
+            GERROR_STREAM("Unsupported calibration mode : " << workOrder_.CalibMode_);
             return false;
         }
 
@@ -691,14 +691,14 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     {
         prev_dim1_ = curr_dim1_;
         count_dim1_ = 0;
-        GADGET_CONDITION_MSG(verboseMode_, "Current Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << curr_dim1_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Current Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << curr_dim1_);
     }
 
     if ( prev_dim2_ == -1 )
     {
         prev_dim2_ = curr_dim2_;
         count_dim1_ = 0;
-        GADGET_CONDITION_MSG(verboseMode_, "Current Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << curr_dim2_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Current Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << curr_dim2_);
     }
 
     if ( prev_acq_header_.measurement_uid == 0 ) prev_acq_header_ = *(m1->getObjectPtr());
@@ -709,9 +709,9 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     if ( prev_dim1_ != curr_dim1_ )
     {
         count_dim1_++;
-        GADGET_CONDITION_MSG(verboseMode_, "Current Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << curr_dim1_);
-        GADGET_CONDITION_MSG(verboseMode_, "Current Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << curr_dim2_);
-        GADGET_CONDITION_MSG(verboseMode_, "count_dim1_ : " << count_dim1_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Current Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << curr_dim1_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Current Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << curr_dim2_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "count_dim1_ : " << count_dim1_);
     }
 
     if ( (triggerDim1_==DIM_NONE) && (triggerDim2_==DIM_NONE) )
@@ -739,7 +739,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
         if ( curr_dim2_!= prev_dim2_local_ )
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
             GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
             triggered_in_process_ = true;
         }
@@ -760,7 +760,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
                 if ( resetTriggerStatus(m1) )
                 {
                     count_dim1_ = 0;
-                    GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
+                    GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
 
                     workFlow_BufferKernel_ = false;
                     workFlow_use_BufferedKernel_ = true;
@@ -770,7 +770,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
                 if ( count_dim1_ == numOfAcquiredKSpaceForTriggerDim1 )
                 {
-                    GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
+                    GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
 
                     workFlow_BufferKernel_ = true;
                     workFlow_use_BufferedKernel_ = false;
@@ -779,7 +779,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
                 }
                 else if ( count_dim1_ > numOfAcquiredKSpaceForTriggerDim1 )
                 {
-                    GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
+                    GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
 
                     workFlow_BufferKernel_ = false;
                     workFlow_use_BufferedKernel_ = true;
@@ -794,7 +794,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
         {
             if ( curr_dim1_!= prev_dim1_local_ )
             {
-                GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
+                GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
                 GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim1_, prev_dim1_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
                 triggered_in_process_ = true;
             }
@@ -818,7 +818,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
                 if ( count_dim1_ > numOfAcquiredKSpaceForTriggerDim1 )
                 {
                     count_dim1_ = 0;
-                    GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
+                    GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
                         << "; Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
 
                     workFlow_BufferKernel_ = false;
@@ -830,7 +830,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
                 if ( count_dim1_ <= numOfAcquiredKSpaceForTriggerDim1 && !triggered_in_process_by_numOfKSpace_triggerDim1_ ) // the trigger never happened
                 {
                     count_dim1_ = 0;
-                    GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
+                    GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
                         << "; Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
 
                     workFlow_BufferKernel_ = false;
@@ -847,7 +847,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
             {
                 if ( count_dim1_ == numOfAcquiredKSpaceForTriggerDim1 )
                 {
-                    GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
+                    GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
                         << "; Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
 
                     workFlow_BufferKernel_ = true;
@@ -858,7 +858,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
                 }
                 else if ( count_dim1_ > numOfAcquiredKSpaceForTriggerDim1 )
                 {
-                    GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
+                    GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
                         << "; Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
 
                     workFlow_BufferKernel_ = false;
@@ -876,7 +876,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
             // trigger whenever the Dim2 is changed
             if ( curr_dim2_!= prev_dim2_local_ )
             {
-                GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
+                GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
                 GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
                 triggered_in_process_ = true;
             }
@@ -891,8 +891,8 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 bool GtPlusAccumulatorWorkOrderTriggerGadget::
 triggerWorkOrderLastCountInClose(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, Gadgetron::gtPlus::ISMRMRDDIM& triggerDim2_, int numOfKSpace_triggerDim1_)
 {
-    GADGET_CONDITION_MSG(verboseMode_, "Current Dim1 InClose : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << curr_dim1_);
-    GADGET_CONDITION_MSG(verboseMode_, "Current Dim2 InClose : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << curr_dim2_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Current Dim1 InClose : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << curr_dim1_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "Current Dim2 InClose : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << curr_dim2_);
 
     if ( prev_dim1_ != curr_dim1_ )
     {
@@ -917,7 +917,7 @@ triggerWorkOrderLastCountInClose(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, Ga
     // trigger whenever the Dim2 is changed
     if (  triggerDim1_==DIM_NONE && triggerDim2_!=DIM_NONE  )
     {
-        GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
         GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
     }
 
@@ -928,14 +928,14 @@ triggerWorkOrderLastCountInClose(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, Ga
         {
             if ( count_dim1_ <= numOfAcquiredKSpaceForTriggerDim1 )
             {
-                GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " <= " << prev_dim1_local_);
+                GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " <= " << prev_dim1_local_);
                 workFlow_BufferKernel_ = true;
                 workFlow_use_BufferedKernel_ = false;
                 GADGET_CHECK_RETURN_FALSE(triggerByDimLessEqual(triggerDim1_, prev_dim1_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
             }
             else if ( count_dim1_ > numOfAcquiredKSpaceForTriggerDim1 )
             {
-                GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
+                GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
                 workFlow_BufferKernel_ = false;
                 workFlow_use_BufferedKernel_ = true;
                 GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim1_, prev_dim1_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
@@ -943,7 +943,7 @@ triggerWorkOrderLastCountInClose(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, Ga
         }
         else
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
             GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim1_, prev_dim1_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
         }
     }
@@ -954,14 +954,14 @@ triggerWorkOrderLastCountInClose(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, Ga
         {
             if ( count_dim1_ <= numOfAcquiredKSpaceForTriggerDim1 ) // no more data will be available, so have to do the recon
             {
-                GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " <= " << prev_dim1_local_);
+                GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " <= " << prev_dim1_local_);
                 workFlow_BufferKernel_ = true;
                 workFlow_use_BufferedKernel_ = false;
                 GADGET_CHECK_RETURN_FALSE(triggerByDim1LessEqualDim2Equal(triggerDim1_, prev_dim1_local_, triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
             }
             else if ( count_dim1_ > numOfAcquiredKSpaceForTriggerDim1 )
             {
-                GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
+                GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_);
                 workFlow_BufferKernel_ = false;
                 workFlow_use_BufferedKernel_ = true;
                 GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim1_, prev_dim1_local_, triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
@@ -969,7 +969,7 @@ triggerWorkOrderLastCountInClose(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, Ga
         }
         else
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Trigger Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
             GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
         }
     }
@@ -1098,7 +1098,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             if ( samples > meas_max_ro_ ) meas_max_ro_ = samples;
 
             // find the loop counter boundary and allocate the buffer
-            GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
+            GDEBUG_CONDITION_STREAM(verboseMode_, "[RO E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
                                << meas_max_ro_ 
                                << " " << E1 
                                << " " << meas_max_channel_ 
@@ -1127,7 +1127,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             size_t N = dimensions_.size();
             for ( ii=0; ii<N; ii++ )
             {
-                GADGET_CONDITION_MSG(verboseMode_, "dimensions_[" << ii << "] = " << dimensions_[ii]);
+                GDEBUG_CONDITION_STREAM(verboseMode_, "dimensions_[" << ii << "] = " << dimensions_[ii]);
             }
 
             // allocate data buffer
@@ -1299,7 +1299,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             if ( RO < samples ) RO = samples;
 
             // find the loop counter boundary and allocate the buffer
-            GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
+            GDEBUG_CONDITION_STREAM(verboseMode_, "[RO E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
                                << RO 
                                << " " << E1 
                                << " " << meas_max_channel_ 
@@ -1328,7 +1328,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             size_t N = dimensions_.size();
             for ( ii=0; ii<N; ii++ )
             {
-                GADGET_CONDITION_MSG(verboseMode_, "ref dimensions_[" << ii << "] = " << dimensions_[ii]);
+                GDEBUG_CONDITION_STREAM(verboseMode_, "ref dimensions_[" << ii << "] = " << dimensions_[ii]);
             }
 
             // allocate data buffer
@@ -1529,7 +1529,7 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
                 max_channel = readOutBuffer[a].acqHead_.active_channels;
         }
 
-        GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Contrast Phase Rep Set Seg Ave] = [" 
+        GDEBUG_CONDITION_STREAM(verboseMode_, "[RO E1 Cha Slice E2 Contrast Phase Rep Set Seg Ave] = [" 
                                << max_col 
                                << " " << max_idx.kspace_encode_step_1+1 
                                << " " << max_channel 
@@ -1635,7 +1635,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
             || (idx.segment>=messageImage->matrix_size[9])
             || (idx.average>=messageImage->matrix_size[10]) )
         {
-            GADGET_WARN_MSG("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG AVE] = [ " 
+            GWARN_STREAM("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG AVE] = [ " 
                                                                             << idx.slice << " " << idx.kspace_encode_step_2 << " " 
                                                                             << idx.contrast << " " << idx.phase << " " 
                                                                             << idx.repetition << " " << idx.set << " " 
@@ -1645,7 +1645,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
 
         if( offset >= messageImage->max_num_of_images_ )
         {
-            GADGET_WARN_MSG("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG AVE] = [ " 
+            GWARN_STREAM("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG AVE] = [ " 
                                                                             << idx.slice << " " << idx.kspace_encode_step_2 << " " 
                                                                             << idx.contrast << " " << idx.phase << " " << idx.repetition << " " 
                                                                             << idx.set << " " << idx.segment << " " << idx.average << " ] ");
@@ -1663,7 +1663,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
                     && messageImage->imageArray_[offset].flags==0 
                     && messageImage->imageArray_[offset].measurement_uid==0 )
         {
-            GADGET_CONDITION_MSG(verboseMode_, "--> buffer image header - offset = " << offset << " - [SLC E2 CON PHS REP SET SEG AVE] = [" 
+            GDEBUG_CONDITION_STREAM(verboseMode_, "--> buffer image header - offset = " << offset << " - [SLC E2 CON PHS REP SET SEG AVE] = [" 
                                                                       << idx.slice << " " 
                                                                       << idx.kspace_encode_step_2 << " " 
                                                                       << idx.contrast << " " 
@@ -1810,7 +1810,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool 
 {
     try
     {
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - triggerByDimEqual(triggerDim, value) ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - triggerByDimEqual(triggerDim, value) ... ");
 
         GadgetContainerMessage<GtPlusGadgetImageArray>* cm1 = new GadgetContainerMessage<GtPlusGadgetImageArray>();
         GadgetContainerMessage< WorkOrderType >* cm2 = new GadgetContainerMessage< WorkOrderType >();
@@ -1854,7 +1854,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool 
 
         if (!phaseCorrBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - phase correction signal found : " << phaseCorrBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - phase correction signal found : " << phaseCorrBuffer_.size());
 
             if ( !fillBuffer(phaseCorrBuffer_, workOrder_.phaseCorr_, workOrder_.reflect_phaseCorr_) )
             {
@@ -1869,7 +1869,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool 
 
         if (!noiseBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorGadget - noise signal found : " << noiseBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorGadget - noise signal found : " << noiseBuffer_.size());
 
             ReflectBufferType tmpBuf;
             if ( !fillBuffer(noiseBuffer_, workOrder_.noise_, tmpBuf) )
@@ -1884,7 +1884,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool 
 
         if (!otherBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorGadget - other signal found : " << otherBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorGadget - other signal found : " << otherBuffer_.size());
 
             if ( !fillBuffer(otherBuffer_, workOrder_.other_, workOrder_.reflect_other_) )
             {
@@ -1906,7 +1906,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::triggerByDimEqual(triggerDim, value) ... ");
+        GERROR_STREAM("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::triggerByDimEqual(triggerDim, value) ... ");
         return false;
     }
 
@@ -1918,7 +1918,7 @@ triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, b
 {
     try
     {
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - triggerByDimEqual(triggerDim, value) ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - triggerByDimEqual(triggerDim, value) ... ");
 
         GadgetContainerMessage<GtPlusGadgetImageArray>* cm1 = new GadgetContainerMessage<GtPlusGadgetImageArray>();
         GadgetContainerMessage< WorkOrderType >* cm2 = new GadgetContainerMessage< WorkOrderType >();
@@ -1962,7 +1962,7 @@ triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, b
 
         if (!phaseCorrBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - phase correction signal found : " << phaseCorrBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - phase correction signal found : " << phaseCorrBuffer_.size());
 
             if ( !fillBuffer(phaseCorrBuffer_, workOrder_.phaseCorr_, workOrder_.reflect_phaseCorr_) )
             {
@@ -1977,7 +1977,7 @@ triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, b
 
         if (!noiseBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorGadget - noise signal found : " << noiseBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorGadget - noise signal found : " << noiseBuffer_.size());
 
             ReflectBufferType tmpBuf;
             if ( !fillBuffer(noiseBuffer_, workOrder_.noise_, tmpBuf) )
@@ -1992,7 +1992,7 @@ triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, b
 
         if (!otherBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorGadget - other signal found : " << otherBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorGadget - other signal found : " << otherBuffer_.size());
 
             if ( !fillBuffer(otherBuffer_, workOrder_.other_, workOrder_.reflect_other_) )
             {
@@ -2014,7 +2014,7 @@ triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, b
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::triggerByDimLessEqual(triggerDim, value) ... ");
+        GERROR_STREAM("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::triggerByDimLessEqual(triggerDim, value) ... ");
         return false;
     }
 
@@ -2026,7 +2026,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gad
 {
     try
     {
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - triggerByDimEqual(triggerDim1, value1, triggerDim2, value2) ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - triggerByDimEqual(triggerDim1, value1, triggerDim2, value2) ... ");
 
         GadgetContainerMessage<GtPlusGadgetImageArray>* cm1 = new GadgetContainerMessage<GtPlusGadgetImageArray>();
         GadgetContainerMessage< WorkOrderType >* cm2 = new GadgetContainerMessage< WorkOrderType >();
@@ -2070,7 +2070,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gad
 
         if (!phaseCorrBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - phase correction signal found : " << phaseCorrBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - phase correction signal found : " << phaseCorrBuffer_.size());
 
             if ( !fillBuffer(phaseCorrBuffer_, workOrder_.phaseCorr_, workOrder_.reflect_phaseCorr_) )
             {
@@ -2085,7 +2085,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gad
 
         if (!noiseBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorGadget - noise signal found : " << noiseBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorGadget - noise signal found : " << noiseBuffer_.size());
 
             ReflectBufferType tmpBuf;
             if ( !fillBuffer(noiseBuffer_, workOrder_.noise_, tmpBuf) )
@@ -2100,7 +2100,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gad
 
         if (!otherBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorGadget - other signal found : " << otherBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorGadget - other signal found : " << otherBuffer_.size());
 
             if ( !fillBuffer(otherBuffer_, workOrder_.other_, workOrder_.reflect_other_) )
             {
@@ -2122,7 +2122,7 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gad
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::triggerByDimEqual(triggerDim1, value1, triggerDim2, value2) ... ");
+        GERROR_STREAM("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::triggerByDimEqual(triggerDim1, value1, triggerDim2, value2) ... ");
         return false;
     }
 
@@ -2135,7 +2135,7 @@ triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size
 {
     try
     {
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - triggerByDim1LessEqualDim2Equal(triggerDim1, value1, triggerDim2, value2) ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - triggerByDim1LessEqualDim2Equal(triggerDim1, value1, triggerDim2, value2) ... ");
 
         GadgetContainerMessage<GtPlusGadgetImageArray>* cm1 = new GadgetContainerMessage<GtPlusGadgetImageArray>();
         GadgetContainerMessage< WorkOrderType >* cm2 = new GadgetContainerMessage< WorkOrderType >();
@@ -2178,7 +2178,7 @@ triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size
 
         if (!phaseCorrBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - phase correction signal found : " << phaseCorrBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - phase correction signal found : " << phaseCorrBuffer_.size());
 
             if ( !fillBuffer(phaseCorrBuffer_, workOrder_.phaseCorr_, workOrder_.reflect_phaseCorr_) )
             {
@@ -2193,7 +2193,7 @@ triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size
 
         if (!noiseBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorGadget - noise signal found : " << noiseBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorGadget - noise signal found : " << noiseBuffer_.size());
 
             ReflectBufferType tmpBuf;
             if ( !fillBuffer(noiseBuffer_, workOrder_.noise_, tmpBuf) )
@@ -2208,7 +2208,7 @@ triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size
 
         if (!otherBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorGadget - other signal found : " << otherBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorGadget - other signal found : " << otherBuffer_.size());
 
             if ( !fillBuffer(otherBuffer_, workOrder_.other_, workOrder_.reflect_other_) )
             {
@@ -2230,7 +2230,7 @@ triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::triggerByDim1LessEqualDim2Equal(triggerDim1, value1, triggerDim2, value2) ... ");
+        GERROR_STREAM("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::triggerByDim1LessEqualDim2Equal(triggerDim1, value1, triggerDim2, value2) ... ");
         return false;
     }
 
@@ -2241,7 +2241,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
 {
     try
     {
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - triggerWorkOrderAllInClose ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - triggerWorkOrderAllInClose ... ");
 
         GadgetContainerMessage<GtPlusGadgetImageArray>* cm1 = new GadgetContainerMessage<GtPlusGadgetImageArray>();
         GadgetContainerMessage< WorkOrderType >* cm2 = new GadgetContainerMessage< WorkOrderType >();
@@ -2280,7 +2280,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
 
         if (!phaseCorrBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - phase correction signal found : " << phaseCorrBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorWorkOrderTriggerGadget - phase correction signal found : " << phaseCorrBuffer_.size());
 
             if ( !fillBuffer(phaseCorrBuffer_, workOrder_.phaseCorr_, workOrder_.reflect_phaseCorr_) )
             {
@@ -2295,7 +2295,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
 
         if (!noiseBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorGadget - noise signal found : " << noiseBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorGadget - noise signal found : " << noiseBuffer_.size());
 
             ReflectBufferType tmpBuf;
             if ( !fillBuffer(noiseBuffer_, workOrder_.noise_, tmpBuf) )
@@ -2310,7 +2310,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
 
         if (!otherBuffer_.empty())
         {
-            GADGET_CONDITION_MSG(verboseMode_, "GtPlusAccumulatorGadget - other signal found : " << otherBuffer_.size());
+            GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusAccumulatorGadget - other signal found : " << otherBuffer_.size());
 
             if ( !fillBuffer(otherBuffer_, workOrder_.other_, workOrder_.reflect_other_) )
             {
@@ -2331,7 +2331,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose() ... ");
+        GERROR_STREAM("Errors in GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose() ... ");
         return false;
     }
 
@@ -2372,7 +2372,7 @@ setDimValue(ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::gtPlus::ISMRMRDDIM
 
 int GtPlusAccumulatorWorkOrderTriggerGadget::close(unsigned long flags)
 {
-    GADGET_CONDITION_MSG(true, "GtPlusAccumulatorWorkOrderTriggerGadget - close(flags) : " << flags);
+    GDEBUG_CONDITION_STREAM(true, "GtPlusAccumulatorWorkOrderTriggerGadget - close(flags) : " << flags);
 
     if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
 
@@ -2381,7 +2381,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::close(unsigned long flags)
     {
         triggered_in_close_ = true;
 
-        GADGET_CONDITION_MSG(true, "GtPlusAccumulatorWorkOrderTriggerGadget - trigger in close(flags) ... ");
+        GDEBUG_CONDITION_STREAM(true, "GtPlusAccumulatorWorkOrderTriggerGadget - trigger in close(flags) ... ");
 
         if ( needTriggerWorkOrderAllInClose() )
         {

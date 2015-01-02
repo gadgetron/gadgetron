@@ -138,7 +138,7 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet2DOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet2DOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
         return false;
     }
     return true;
@@ -189,7 +189,7 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet2DOperator<T>::adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet2DOperator<T>::adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
         return false;
     }
     return true;
@@ -271,7 +271,7 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet2DOperator<T>::dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet2DOperator<T>::dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
         return false;
     }
     return true;
@@ -356,7 +356,7 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet2DOperator<T>::idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet2DOperator<T>::idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
         return false;
     }
     return true;

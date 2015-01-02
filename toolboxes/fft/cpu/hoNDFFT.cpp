@@ -214,7 +214,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshift1D(const ComplexType* a, ComplexType* r, size_t x, size_t pivot) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshift1D(const ComplexType* a, ComplexType* r, size_t x, size_t pivot) ...");
             return false;
         }
 
@@ -248,7 +248,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshiftPivot1D(ComplexType* a, size_t x, size_t n, size_t pivot) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshiftPivot1D(ComplexType* a, size_t x, size_t n, size_t pivot) ...");
             return false;
         }
 
@@ -270,7 +270,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshiftPivot1D(const ComplexType* a, ComplexType* r, size_t x, size_t n, size_t pivot) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshiftPivot1D(const ComplexType* a, ComplexType* r, size_t x, size_t n, size_t pivot) ...");
             return false;
         }
 
@@ -290,7 +290,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshift1D(hoNDArray< ComplexType >& a) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshift1D(hoNDArray< ComplexType >& a) ...");
             return false;
         }
 
@@ -315,7 +315,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshift1D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshift1D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r) ...");
             return false;
         }
 
@@ -335,7 +335,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::ifftshift1D(hoNDArray< ComplexType >& a) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::ifftshift1D(hoNDArray< ComplexType >& a) ...");
             return false;
         }
 
@@ -360,7 +360,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::ifftshift1D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::ifftshift1D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r) ...");
             return false;
         }
 
@@ -402,7 +402,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty) ...");
             return false;
         }
 
@@ -450,7 +450,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty) ...");
             return false;
         }
 
@@ -472,7 +472,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n) ...");
             return false;
         }
 
@@ -494,7 +494,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::ifftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::ifftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n) ...");
             return false;
         }
 
@@ -515,7 +515,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshift2D(ComplexType* a, size_t x, size_t y, size_t n) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshift2D(ComplexType* a, size_t x, size_t y, size_t n) ...");
             return false;
         }
 
@@ -536,7 +536,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::ifftshift2D(ComplexType* a, size_t x, size_t y, size_t n) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::ifftshift2D(ComplexType* a, size_t x, size_t y, size_t n) ...");
             return false;
         }
 
@@ -643,7 +643,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshiftPivot3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n, unsigned pivotx, unsigned pivoty,  unsigned pivotz) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshiftPivot3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n, unsigned pivotx, unsigned pivoty,  unsigned pivotz) ...");
             return false;
         }
 
@@ -718,7 +718,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshiftPivot3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n, unsigned pivotx, unsigned pivoty,  unsigned pivotz) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshiftPivot3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n, unsigned pivotx, unsigned pivoty,  unsigned pivotz) ...");
             return false;
         }
 
@@ -741,7 +741,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n) ...");
             return false;
         }
 
@@ -764,7 +764,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::ifftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::ifftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n) ...");
             return false;
         }
 
@@ -786,7 +786,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshift3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::fftshift3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n) ...");
             return false;
         }
 
@@ -808,7 +808,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::ifftshift3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n) ...");
+            GERROR_STREAM("Errors in hoNDFFT<T>::ifftshift3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n) ...");
             return false;
         }
 

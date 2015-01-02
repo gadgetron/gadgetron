@@ -7,6 +7,7 @@
 #pragma once
 
 #include "GadgetronException.h"
+#include "GadgetronCommon.h"
 #include "log.h"
 
 #include <new>

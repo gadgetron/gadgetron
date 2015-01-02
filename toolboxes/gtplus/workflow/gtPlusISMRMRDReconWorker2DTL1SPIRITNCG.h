@@ -108,12 +108,12 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
         {
             if ( workOrder2DT->kspace_initial_.get_number_of_elements() == kspace.get_number_of_elements() )
             {
-                GADGET_MSG_DEPRECATED("Start the iteration with the input initial kspace ... ");
+                GDEBUG_STREAM("Start the iteration with the input initial kspace ... ");
                 memcpy(kspaceLinear.begin(), workOrder2DT->kspace_initial_.begin(), kspace.get_number_of_bytes());
             }
             else
             {
-                GADGET_MSG_DEPRECATED("Start the iteration with the input kspace ... ");
+                GDEBUG_STREAM("Start the iteration with the input kspace ... ");
             }
         }
 
@@ -332,7 +332,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTL1SPIRITNCG<T>::performUnwarppingImpl(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTL1SPIRITNCG<T>::performUnwarppingImpl(...) ... ");
         return false;
     }
 
@@ -354,7 +354,7 @@ performUnwarppingImpl(gtPlusReconJob2DT<T>& job)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTL1SPIRITNCG<T>::performUnwarppingImpl(job) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTL1SPIRITNCG<T>::performUnwarppingImpl(job) ... ");
         return false;
     }
 

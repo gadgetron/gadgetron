@@ -33,24 +33,24 @@ bool GtPlusReconJob3DTGadget::readParameters()
 {
     try
     {
-        GADGET_CONDITION_MSG(verboseMode_, "------> GtPlusReconJob3DTGadget parameters <------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlusReconJob3DTGadget parameters <------");
 
         boost::shared_ptr<std::string> str = this->get_string_value("debugFolder");
         debugFolder_ = *str;
-        GADGET_CONDITION_MSG(verboseMode_, "debugFolder_ is " << debugFolder_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder_ is " << debugFolder_);
 
         str = this->get_string_value("debugFolder2");
         debugFolder2_ = *str;
-        GADGET_CONDITION_MSG(verboseMode_, "debugFolder2_ is " << debugFolder2_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder2_ is " << debugFolder2_);
 
         performTiming_ = this->get_bool_value("performTiming");
-        GADGET_CONDITION_MSG(verboseMode_, "performTiming_ is " << performTiming_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "performTiming_ is " << performTiming_);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusReconJob3DTGadget::readParameters() ... ");
+        GERROR_STREAM("Errors in GtPlusReconJob3DTGadget::readParameters() ... ");
         return false;
     }
 
@@ -74,7 +74,7 @@ int GtPlusReconJob3DTGadget::process_config(ACE_Message_Block* mb)
     }
     else
     {
-        GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder is not set ...");
+        GDEBUG_STREAM("GtPlusRecon, debugFolder is not set ...");
     }
 
     if ( !debugFolder2_.empty() )
@@ -83,7 +83,7 @@ int GtPlusReconJob3DTGadget::process_config(ACE_Message_Block* mb)
     }
     else
     {
-        GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder2 is not set ...");
+        GDEBUG_STREAM("GtPlusRecon, debugFolder2 is not set ...");
     }
 
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
@@ -106,13 +106,13 @@ int GtPlusReconJob3DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
         GADGET_CHECK_RETURN( (this->process_config(m1)==0), GADGET_FAIL);
         process_config_called_ = true;
     }
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusReconJob3DTGadget::process(...) starts ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusReconJob3DTGadget::process(...) starts ... ");
 
     int* jobID = m1->getObjectPtr();
-    GADGET_CONDITION_MSG(verboseMode_, "--> arriving job : " << *jobID << " ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "--> arriving job : " << *jobID << " ... ");
 
     GtPlusReconJobTypeCPFL* job = m2->getObjectPtr();
-    GADGET_CONDITION_MSG(verboseMode_, "    job array size : [ " << job->kspace.get_size(0) << " " 
+    GDEBUG_CONDITION_STREAM(verboseMode_, "    job array size : [ " << job->kspace.get_size(0) << " " 
                                                                  << job->kspace.get_size(1) << " " 
                                                                  << job->kspace.get_size(2) << " " 
                                                                  << job->kspace.get_size(3) << " ] ... ");
@@ -182,7 +182,7 @@ int GtPlusReconJob3DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
     // send out the results
     GADGET_CHECK_RETURN(this->sendOutJob(*jobID, job), GADGET_FAIL);
 
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusReconJob3DTGadget::process(...) ends ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusReconJob3DTGadget::process(...) ends ... ");
 
     m1->release();
 
@@ -226,7 +226,7 @@ sendOutJob(int jobID, GtPlusReconJobTypeCPFL* job)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusReconJob3DTGadget::sendOutJob(...) ... ");
+        GERROR_STREAM("Errors in GtPlusReconJob3DTGadget::sendOutJob(...) ... ");
         return false;
     }
 

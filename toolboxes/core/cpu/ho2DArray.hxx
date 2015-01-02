@@ -143,7 +143,7 @@ bool ho2DArray<T>::createArray(size_t sx, size_t sy)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("ho2DArray<T>::createArray(size_t sx, size_t sy) ...");
+        GERROR_STREAM("ho2DArray<T>::createArray(size_t sx, size_t sy) ...");
         return false;
     }
 
@@ -164,7 +164,7 @@ bool ho2DArray<T>::createArray(size_t sx, size_t sy, T* data, bool delete_data_o
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("ho2DArray<T>::createArray(size_t sx, size_t sy, T* data, bool delete_data_on_destruct) ...");
+        GERROR_STREAM("ho2DArray<T>::createArray(size_t sx, size_t sy, T* data, bool delete_data_on_destruct) ...");
         return false;
     }
 
@@ -213,7 +213,7 @@ bool ho2DArray<T>::init_accesser()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in ho2DArray<T>::init_accesser() ...");
+        GERROR_STREAM("Errors in ho2DArray<T>::init_accesser() ...");
         return false;
     }
 
@@ -233,7 +233,7 @@ bool ho2DArray<T>::release_accesser()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in ho2DArray<T>::release_accesser() ...");
+        GERROR_STREAM("Errors in ho2DArray<T>::release_accesser() ...");
         return false;
     }
 

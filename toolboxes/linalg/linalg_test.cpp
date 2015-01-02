@@ -116,7 +116,7 @@ bool multiplyOwn(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     }
   catch(...)
     {
-      GADGET_ERROR_MSG("Error happened in multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
+      GERROR_STREAM("Error happened in multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
       return false;
     }
 
@@ -341,9 +341,9 @@ int main(int argc, char** argv)
   float rn;
 
 
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-  GADGET_MSG_DEPRECATED("matrix multiplication");
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GDEBUG_STREAM("------------------------------------------------------------------");
+  GDEBUG_STREAM("matrix multiplication");
+  GDEBUG_STREAM("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("GEMM Time (system)", true);
@@ -429,9 +429,9 @@ int main(int argc, char** argv)
     std::cout << "Complex Triangular inversion SUCCESS with diff: " << diff << std::endl;
   }
 
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-  GADGET_MSG_DEPRECATED("vector add");
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GDEBUG_STREAM("------------------------------------------------------------------");
+  GDEBUG_STREAM("vector add");
+  GDEBUG_STREAM("------------------------------------------------------------------");
   {
     GadgetronTimer t("allocate res", true);
     res = a;
@@ -457,9 +457,9 @@ int main(int argc, char** argv)
     Gadgetron::add( *A.get(), *A.get(), res);
   }
 
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-  GADGET_MSG_DEPRECATED("vector multiplication");
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GDEBUG_STREAM("------------------------------------------------------------------");
+  GDEBUG_STREAM("vector multiplication");
+  GDEBUG_STREAM("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("operator *", true);
@@ -481,9 +481,9 @@ int main(int argc, char** argv)
     vecMult( a.get_number_of_elements(), a.get_data_ptr(), b.get_data_ptr(), res.get_data_ptr());
   }
 
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-  GADGET_MSG_DEPRECATED("norm2");
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GDEBUG_STREAM("------------------------------------------------------------------");
+  GDEBUG_STREAM("norm2");
+  GDEBUG_STREAM("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("nrm2", true);
@@ -509,9 +509,9 @@ int main(int argc, char** argv)
   }
   std::cout << "nrm2 = " << rn << std::endl;
 
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-  GADGET_MSG_DEPRECATED("norm1");
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GDEBUG_STREAM("------------------------------------------------------------------");
+  GDEBUG_STREAM("norm1");
+  GDEBUG_STREAM("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("nrm1", true);
@@ -538,9 +538,9 @@ int main(int argc, char** argv)
 
   std::cout << "nrm1 = " << rn << std::endl;
 
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-  GADGET_MSG_DEPRECATED("axpy");
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GDEBUG_STREAM("------------------------------------------------------------------");
+  GDEBUG_STREAM("axpy");
+  GDEBUG_STREAM("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("axpy Time (system)", true);
@@ -557,21 +557,21 @@ int main(int argc, char** argv)
     Gadgetron::axpy( alpha, a, b, res);
   }
 
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
-  GADGET_MSG_DEPRECATED("fft 2D");
-  GADGET_MSG_DEPRECATED("------------------------------------------------------------------");
+  GDEBUG_STREAM("------------------------------------------------------------------");
+  GDEBUG_STREAM("fft 2D");
+  GDEBUG_STREAM("------------------------------------------------------------------");
 
   {
     GadgetronTimer t("fft2 (MKL)", true);
     hoNDFFT<float>::instance()->fft2(a, res);
   }
-  Gadgetron::norm2(res, rn); GADGET_MSG_DEPRECATED("rn = " << rn);
+  Gadgetron::norm2(res, rn); GDEBUG_STREAM("rn = " << rn);
 
   {
     GadgetronTimer t("fftw_fft2", true);
     fftw_fft2(a, res, true);
   }
-  Gadgetron::norm2(res, rn); GADGET_MSG_DEPRECATED("rn = " << rn);
+  Gadgetron::norm2(res, rn); GDEBUG_STREAM("rn = " << rn);
 
   return 0;
 }

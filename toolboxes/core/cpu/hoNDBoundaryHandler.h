@@ -45,7 +45,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Unrecognized boundary handler type : " << bh);
+                GERROR_STREAM("Unrecognized boundary handler type : " << bh);
         }
 
         return name;
@@ -73,7 +73,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_ERROR_MSG("Unrecognized boundary handler name : " << bh_name);
+            GERROR_STREAM("Unrecognized boundary handler name : " << bh_name);
         }
 
         return bh;
@@ -266,7 +266,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Unrecognized boundary handler type : " << bh);
+                GERROR_STREAM("Unrecognized boundary handler type : " << bh);
         }
 
         return res;

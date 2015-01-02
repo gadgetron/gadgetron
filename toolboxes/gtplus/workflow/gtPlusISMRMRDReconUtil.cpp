@@ -69,7 +69,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -134,7 +134,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -191,7 +191,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOverLastDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r) ... ");
+            GERROR_STREAM("Errors in multiplyOverLastDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r) ... ");
             return false;
         }
         return true;
@@ -247,7 +247,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -285,7 +285,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in sumOver1stDimension(...) ... ");
+            GERROR_STREAM("Errors in sumOver1stDimension(...) ... ");
             return false;
         }
 
@@ -336,7 +336,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in sumOver2ndDimension(...) ... ");
+            GERROR_STREAM("Errors in sumOver2ndDimension(...) ... ");
             return false;
         }
 
@@ -394,7 +394,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in sumOver3rdDimension(...) ... ");
+            GERROR_STREAM("Errors in sumOver3rdDimension(...) ... ");
             return false;
         }
 
@@ -446,7 +446,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in sumOver4thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in sumOver4thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
 
@@ -499,7 +499,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
 
@@ -561,7 +561,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOver3rdDimension(const hoNDArray<float>& x3D, const hoNDArray<float>& y4D, hoNDArray<float>& r) ... ");
+            GERROR_STREAM("Errors in multiplyOver3rdDimension(const hoNDArray<float>& x3D, const hoNDArray<float>& y4D, hoNDArray<float>& r) ... ");
             return false;
         }
         return true;
@@ -621,7 +621,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOver4thDimension(const hoNDArray<float>& x4D, const hoNDArray<float>& y5D, hoNDArray<float>& r) ... ");
+            GERROR_STREAM("Errors in multiplyOver4thDimension(const hoNDArray<float>& x4D, const hoNDArray<float>& y5D, hoNDArray<float>& r) ... ");
             return false;
         }
         return true;
@@ -695,7 +695,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOver4thDimensionExcept(const hoNDArray<float>& x4D, const hoNDArray<float>& y5D, size_t n, hoNDArray<float>& r, bool copyY2R) ... ");
+            GERROR_STREAM("Errors in multiplyOver4thDimensionExcept(const hoNDArray<float>& x4D, const hoNDArray<float>& y5D, size_t n, hoNDArray<float>& r, bool copyY2R) ... ");
             return false;
         }
         return true;
@@ -759,7 +759,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOver5thDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r) ... ");
+            GERROR_STREAM("Errors in multiplyOver5thDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r) ... ");
             return false;
         }
         return true;
@@ -837,7 +837,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R) ... ");
+            GERROR_STREAM("Errors in multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R) ... ");
             return false;
         }
         return true;
@@ -928,7 +928,7 @@ namespace Gadgetron {
         //}
         //else
         //{
-        //    GADGET_ERROR_MSG("multipleAdd : unsupported type " << typeid(T).name());
+        //    GERROR_STREAM("multipleAdd : unsupported type " << typeid(T).name());
         //    return false;
         //}
 
@@ -1043,7 +1043,7 @@ namespace Gadgetron {
         }
         else
         {
-            GADGET_ERROR_MSG("multipleMultiply : unsupported type " << typeid(T).name());
+            GERROR_STREAM("multipleMultiply : unsupported type " << typeid(T).name());
             return false;
         }
 
@@ -1359,7 +1359,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in extractSampledLinesUpTo11DArray(...) ... ");
+            GERROR_STREAM("Errors in extractSampledLinesUpTo11DArray(...) ... ");
             return false;
         }
 
@@ -1474,7 +1474,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in fillSampledLinesUpTo11DArray(...) ... ");
+            GERROR_STREAM("Errors in fillSampledLinesUpTo11DArray(...) ... ");
             return false;
         }
 
@@ -1563,7 +1563,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in stdOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& std, bool NMinusOne) ... ");
+            GERROR_STREAM("Errors in stdOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& std, bool NMinusOne) ... ");
             return false;
         }
 
@@ -1624,7 +1624,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in cropOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end) ... ");
+            GERROR_STREAM("Errors in cropOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end) ... ");
             return false;
         }
         return true;
@@ -1679,7 +1679,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in setSubArrayOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end) ... ");
+            GERROR_STREAM("Errors in setSubArrayOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end) ... ");
             return false;
         }
         return true;
@@ -1740,7 +1740,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -1801,7 +1801,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -1862,7 +1862,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -1929,7 +1929,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -1998,7 +1998,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -2060,7 +2060,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -2134,7 +2134,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -2167,7 +2167,7 @@ namespace Gadgetron {
                 //#ifdef WIN32
                 //    int tid = omp_get_thread_num();
                 //    DWORD_PTR mask = (1 << tid);
-                //    // GADGET_MSG_DEPRECATED("thread id : " << tid << " - mask : " << mask);
+                //    // GDEBUG_STREAM("thread id : " << tid << " - mask : " << mask);
                 //    SetThreadAffinityMask( GetCurrentThread(), mask );
                 //#endif // WIN32
 
@@ -2198,7 +2198,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
+            GERROR_STREAM("Errors in imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
             return false;
         }
         return true;
@@ -2230,7 +2230,7 @@ namespace Gadgetron {
                 //#ifdef WIN32
                 //    int tid = omp_get_thread_num();
                 //    DWORD_PTR mask = (1 << tid);
-                //    // GADGET_MSG_DEPRECATED("thread id : " << tid << " - mask : " << mask);
+                //    // GDEBUG_STREAM("thread id : " << tid << " - mask : " << mask);
                 //    SetThreadAffinityMask( GetCurrentThread(), mask );
                 //#endif // WIN32
 
@@ -2312,7 +2312,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
+            GERROR_STREAM("Errors in imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
             return false;
         }
         return true;
@@ -2374,7 +2374,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType& start, CoordType& end, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType& start, CoordType& end, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;

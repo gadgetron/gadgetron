@@ -327,7 +327,7 @@ bool ho6DArray<T>::init_accesser()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in ho6DArray<T>::init_accesser() ...");
+        GERROR_STREAM("Errors in ho6DArray<T>::init_accesser() ...");
         return false;
     }
 
@@ -351,7 +351,7 @@ bool ho6DArray<T>::release_accesser()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in ho6DArray<T>::release_accesser() ...");
+        GERROR_STREAM("Errors in ho6DArray<T>::release_accesser() ...");
         return false;
     }
 

@@ -355,7 +355,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Unrecognized image dissimilarity type : " << v);
+                GERROR_STREAM("Unrecognized image dissimilarity type : " << v);
         }
 
         res->setBackgroundValue(bg_value_);
@@ -545,7 +545,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegRegister<ValueType, CoordType, DIn, DOut>::initialize() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegRegister<ValueType, CoordType, DIn, DOut>::initialize() ... ");
         }
 
         return true;

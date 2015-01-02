@@ -22,7 +22,7 @@ int PartialFourierAdjustROGadget::process_config(ACE_Message_Block* mb)
 
   ISMRMRD::EncodingSpaceType e_space = h.encoding[0].encodedSpace;
   maxRO_ = e_space.matrixSize.x;
-  GADGET_MSG_DEPRECATED("max RO : " << maxRO_);
+  GDEBUG_STREAM("max RO : " << maxRO_);
   return GADGET_OK;
 }
 

@@ -334,7 +334,7 @@ bool GtPlusGadgetImageArray::copy(const GtPlusGadgetImageArray& imageArray)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusGadgetImageArray::copy(const GtPlusGadgetImageArray& imageArray) ... ");
+        GERROR_STREAM("Errors in GtPlusGadgetImageArray::copy(const GtPlusGadgetImageArray& imageArray) ... ");
         return false;
     }
 
@@ -429,7 +429,7 @@ extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, G
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusGadgetImageArray::extractGadgetImageArrayEqual(dim, value) ... ");
+        GERROR_STREAM("Errors in GtPlusGadgetImageArray::extractGadgetImageArrayEqual(dim, value) ... ");
         return false;
     }
 
@@ -476,7 +476,7 @@ extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim1, size_t value1,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusGadgetImageArray::extractGadgetImageArrayEqual(dim1, value1, dim2, value2) ... ");
+        GERROR_STREAM("Errors in GtPlusGadgetImageArray::extractGadgetImageArrayEqual(dim1, value1, dim2, value2) ... ");
         return false;
     }
 
@@ -513,7 +513,7 @@ extractGadgetImageArrayLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t valu
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusGadgetImageArray::extractGadgetImageArrayLessEqual(dim, value) ... ");
+        GERROR_STREAM("Errors in GtPlusGadgetImageArray::extractGadgetImageArrayLessEqual(dim, value) ... ");
         return false;
     }
 
@@ -561,7 +561,7 @@ extractGadgetImageArray_Dim1LessEqual_Dim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& d
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusGadgetImageArray::extractGadgetImageArray_Dim1LessEqual_Dim2Equal(...) ... ");
+        GERROR_STREAM("Errors in GtPlusGadgetImageArray::extractGadgetImageArray_Dim1LessEqual_Dim2Equal(...) ... ");
         return false;
     }
 
@@ -619,7 +619,7 @@ getSubImageArray(size_t* startInd, size_t* endInd, GtPlusGadgetImageArray& image
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusGadgetImageArray::getSubImageArray(...) ... ");
+        GERROR_STREAM("Errors in GtPlusGadgetImageArray::getSubImageArray(...) ... ");
         return false;
     }
 

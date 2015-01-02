@@ -384,7 +384,7 @@ namespace Gadgetron {
       }
     catch (...)
       {
-        GADGET_ERROR_MSG("Errors in permuteFirstTwoDimensions(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        GERROR_STREAM("Errors in permuteFirstTwoDimensions(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
         return false;
       }
     return true;
@@ -437,7 +437,7 @@ namespace Gadgetron {
       }
     catch (...)
       {
-        GADGET_ERROR_MSG("Errors in permuteLastTwoDimensions(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        GERROR_STREAM("Errors in permuteLastTwoDimensions(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
         return false;
       }
     return true;
@@ -476,7 +476,7 @@ namespace Gadgetron {
       }
     catch (...)
       {
-        GADGET_ERROR_MSG("Errors in repmatLastDimension(hoNDArray<T>& x, size_t indLastDim) ... ");
+        GERROR_STREAM("Errors in repmatLastDimension(hoNDArray<T>& x, size_t indLastDim) ... ");
         return false;
       }
     return true;

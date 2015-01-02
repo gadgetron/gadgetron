@@ -235,7 +235,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DTL1SPIRITNCG<T>::performUnwarppingImpl(gtPlusReconWorkOrder3DT<T>* workOrder3DT, hoNDArray<T>& kspace, hoNDArray<T>& adj_forward_G_I, hoNDArray<T>& res) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DTL1SPIRITNCG<T>::performUnwarppingImpl(gtPlusReconWorkOrder3DT<T>* workOrder3DT, hoNDArray<T>& kspace, hoNDArray<T>& adj_forward_G_I, hoNDArray<T>& res) ... ");
         return false;
     }
 
@@ -262,7 +262,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         hoNDArray<T> kerImE1E2RO;
         if ( kerE1!=E1 || kerE2!=E2 )
         {
-            GADGET_MSG_DEPRECATED("gtPlusReconWorker3DTL1SPIRITNCG, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
+            GDEBUG_STREAM("gtPlusReconWorker3DTL1SPIRITNCG, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
 
             if ( gtPlus_mem_manager_ )
             {
@@ -495,7 +495,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DTL1SPIRITNCG<T>::performUnwarppingImplROPermuted(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DTL1SPIRITNCG<T>::performUnwarppingImplROPermuted(...) ... ");
         return false;
     }
 
@@ -522,7 +522,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         hoNDArray<T> kerImE1E2RO;
         if ( kerE1!=E1 || kerE2!=E2 )
         {
-            GADGET_MSG_DEPRECATED("gtPlusReconWorker3DTL1SPIRITNCG, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
+            GDEBUG_STREAM("gtPlusReconWorker3DTL1SPIRITNCG, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
 
             if ( gtPlus_mem_manager_ )
             {
@@ -747,7 +747,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DTL1SPIRITNCG<T>::performUnwarppingImplROPermuted(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DTL1SPIRITNCG<T>::performUnwarppingImplROPermuted(...) ... ");
         return false;
     }
 
@@ -771,7 +771,7 @@ performUnwarppingImpl(gtPlusReconJob2DT<T>& job)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DTL1SPIRITNCG<T>::performUnwarppingImpl(job) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker3DTL1SPIRITNCG<T>::performUnwarppingImpl(job) ... ");
         return false;
     }
 

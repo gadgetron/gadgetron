@@ -326,7 +326,7 @@ bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFD4D(CoordType px, CoordTy
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in evaluateFFD4D(CoordType px, CoordType py, CoordType pz, CoordType ps, size_t ordx, size_t ordy, size_t ordz, size_t ords, T r[DOut]) const ... ");
+        GERROR_STREAM("Error happened in evaluateFFD4D(CoordType px, CoordType py, CoordType pz, CoordType ps, size_t ordx, size_t ordy, size_t ordz, size_t ords, T r[DOut]) const ... ");
         return false;
     }
 
@@ -683,7 +683,7 @@ bool gtplusBSplineFFD4D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N) ... ");
+        GERROR_STREAM("Error happened in ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N) ... ");
         return false;
     }
 
@@ -874,7 +874,7 @@ bool gtplusBSplineFFD4D<T, CoordType, DOut>::refine()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in refine() ... ");
+        GERROR_STREAM("Error happened in refine() ... ");
         return false;
     }
 

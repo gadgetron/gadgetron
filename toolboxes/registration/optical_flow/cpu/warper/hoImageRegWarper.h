@@ -358,7 +358,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegWarper<ValueType, CoordType, DIn, DOut>::\
+            GERROR_STREAM("Errors happened in hoImageRegWarper<ValueType, CoordType, DIn, DOut>::\
                                     warp(const TargetType& target, const SourceType& source, bool useWorldCoordinate, TargetType& warped) ... ");
             return false;
         }
@@ -504,7 +504,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegWarper<ValueType, CoordType, DIn, DOut>::\
+            GERROR_STREAM("Errors happened in hoImageRegWarper<ValueType, CoordType, DIn, DOut>::\
                                     warpWithDeformationFieldWorldCoordinate(const TargetType& target, const SourceType& source, TargetType& warped) ... ");
             return false;
         }

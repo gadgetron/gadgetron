@@ -183,7 +183,7 @@ bool gtPlusOperator<T>::restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoND
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gtPlusOperator<T>::restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoNDArray<T>& y) ... ");
+        GERROR_STREAM("Errors happened in gtPlusOperator<T>::restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoNDArray<T>& y) ... ");
         return false;
     }
 
@@ -228,7 +228,7 @@ setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusOperator<T>::setAcquiredPoints(...) ... ");
+        GERROR_STREAM("Errors in gtPlusOperator<T>::setAcquiredPoints(...) ... ");
         return false;
     }
 
@@ -245,7 +245,7 @@ setCoilSenMap(boost::shared_ptr< hoNDArray<T> >& senMap)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusOperator<T>::setCoilSenMap(...) ... ");
+        GERROR_STREAM("Errors in gtPlusOperator<T>::setCoilSenMap(...) ... ");
         return false;
     }
 

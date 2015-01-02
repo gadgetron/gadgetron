@@ -34,16 +34,16 @@ namespace Gadgetron
     {
         try
         {
-            GADGET_CONDITION_MSG(verboseMode_, "------> GtPlusImageReconGadget parameters <------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlusImageReconGadget parameters <------");
 
             verboseMode_ = this->get_bool_value("verboseMode");
-            GADGET_CONDITION_MSG(verboseMode_, "verboseMode_ is " << verboseMode_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "verboseMode_ is " << verboseMode_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             boost::shared_ptr<std::string> str = this->get_string_value("debugFolder");
             debugFolder_ = *str;
-            GADGET_CONDITION_MSG(verboseMode_, "debugFolder_ is " << debugFolder_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder_ is " << debugFolder_);
 
             if ( !debugFolder_.empty() )
             {
@@ -51,17 +51,17 @@ namespace Gadgetron
             }
             else
             {
-                GADGET_MSG_DEPRECATED("GtPlusImageRecon, debugFolder is not set ...");
+                GDEBUG_STREAM("GtPlusImageRecon, debugFolder is not set ...");
             }
 
             performTiming_ = this->get_bool_value("performTiming");
-            GADGET_CONDITION_MSG(verboseMode_, "performTiming_ is " << performTiming_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "performTiming_ is " << performTiming_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in GtPlusImageReconGadget::readParameters() ... ");
+            GERROR_STREAM("Errors in GtPlusImageReconGadget::readParameters() ... ");
             return false;
         }
 
@@ -97,7 +97,7 @@ namespace Gadgetron
 
     int GtPlusImageReconGadget::process(GadgetContainerMessage<ImageBufferType>* m1)
     {
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusImageReconGadget::process(...) starts ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusImageReconGadget::process(...) starts ... ");
 
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
@@ -142,7 +142,7 @@ namespace Gadgetron
         std::vector<std::string> dataRole;
 
         boost::shared_ptr< std::vector<size_t> > dims = ori.get_dimensions();
-        GADGET_CONDITION_MSG(verboseMode_, "[Cha Slice E2 Con Phase Rep Set Ave] = [" << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " 
+        GDEBUG_CONDITION_STREAM(verboseMode_, "[Cha Slice E2 Con Phase Rep Set Ave] = [" << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " 
             << (*dims)[3] << " " << (*dims)[4]  << " " << (*dims)[5] << " " 
             << (*dims)[6] << " " << (*dims)[7] << "]");
 
@@ -164,7 +164,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in GtPlusImageReconGadget::fillWithNULL(ImageBufferType& buf) ... ");
+            GERROR_STREAM("Errors happened in GtPlusImageReconGadget::fillWithNULL(ImageBufferType& buf) ... ");
             return false;
         }
 
@@ -189,7 +189,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in GtPlusImageReconGadget::releaseImageBuffer(ImageBufferType& buf) ... ");
+            GERROR_STREAM("Errors happened in GtPlusImageReconGadget::releaseImageBuffer(ImageBufferType& buf) ... ");
             return false;
         }
 
@@ -281,7 +281,7 @@ namespace Gadgetron
             size_t SET = images.get_size(6);
             size_t AVE = images.get_size(7);
 
-            GADGET_CONDITION_MSG(verboseMode_, "--> GtPlusImageReconGadget, sending out images, array boundary [CHA SLC E2 CON PHS REP SET AVE] = [" 
+            GDEBUG_CONDITION_STREAM(verboseMode_, "--> GtPlusImageReconGadget, sending out images, array boundary [CHA SLC E2 CON PHS REP SET AVE] = [" 
                 << CHA << " " << SLC << " " 
                 << E2 << " " << CON << " " 
                 << PHS << " " << REP << " " 
@@ -493,7 +493,7 @@ namespace Gadgetron
                                                                 }
                                                                 catch(...)
                                                                 {
-                                                                    GADGET_WARN_MSG("Image attrib does not have the scale ratio ...");
+                                                                    GWARN_STREAM("Image attrib does not have the scale ratio ...");
                                                                     scalingRatio = 1;
                                                                 }
 
@@ -539,7 +539,7 @@ namespace Gadgetron
                                                             Gadgetron::appendISMRMRMetaValues(*cm3->getObjectPtr(), GTPLUS_SEQUENCEDESCRIPTION, dataRoleAll);
                                                         }
 
-                                                        GADGET_CONDITION_MSG(verboseMode_, "--> GtPlusImageReconGadget, sending out 2D image [CHA SLC E2 CON PHS REP SET AVE] = [" 
+                                                        GDEBUG_CONDITION_STREAM(verboseMode_, "--> GtPlusImageReconGadget, sending out 2D image [CHA SLC E2 CON PHS REP SET AVE] = [" 
                                                             << cha << " " 
                                                             << cm1->getObjectPtr()->slice << " " 
                                                             << e2 << " " 
@@ -590,7 +590,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in GtPlusImageReconGadget::sendOutImages(images, seriesNum, processStr, dataRole) ... ");
+            GERROR_STREAM("Errors happened in GtPlusImageReconGadget::sendOutImages(images, seriesNum, processStr, dataRole) ... ");
             return false;
         }
 
@@ -599,7 +599,7 @@ namespace Gadgetron
 
     int GtPlusImageReconGadget::close(unsigned long flags)
     {
-        GADGET_CONDITION_MSG(true, "GtPlusImageReconGadget - close(flags) : " << flags);
+        GDEBUG_CONDITION_STREAM(true, "GtPlusImageReconGadget - close(flags) : " << flags);
 
         if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
 
@@ -608,9 +608,9 @@ namespace Gadgetron
             std::string procTime;
             gtPlus_util_.getCurrentMoment(procTime);
 
-            GADGET_MSG_DEPRECATED("* ============================================================================== *");
-            GADGET_MSG_DEPRECATED("---> Image recon phase, Current processing time : " << procTime << " <---");
-            GADGET_MSG_DEPRECATED("* ============================================================================== *");
+            GDEBUG_STREAM("* ============================================================================== *");
+            GDEBUG_STREAM("---> Image recon phase, Current processing time : " << procTime << " <---");
+            GDEBUG_STREAM("* ============================================================================== *");
         }
 
         return GADGET_OK;

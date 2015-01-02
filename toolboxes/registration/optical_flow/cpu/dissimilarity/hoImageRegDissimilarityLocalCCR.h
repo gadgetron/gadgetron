@@ -321,7 +321,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDissimilarityLocalCCR<ValueType, D>::evaluate(w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityLocalCCR<ValueType, D>::evaluate(w) ... ");
         }
 
         return this->dissimilarity_;
@@ -392,7 +392,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDissimilarityLocalCCR<ValueType, D>::evaluateDeriv(w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityLocalCCR<ValueType, D>::evaluateDeriv(w) ... ");
             return false;
         }
 

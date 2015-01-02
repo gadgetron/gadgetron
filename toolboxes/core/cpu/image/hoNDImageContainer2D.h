@@ -237,7 +237,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col) ... ");
             return false;
         }
 
@@ -268,7 +268,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions) ... ");
             return false;
         }
 
@@ -299,7 +299,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize) ... ");
             return false;
         }
 
@@ -330,7 +330,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin) ... ");
             return false;
         }
 
@@ -361,7 +361,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::create(const std::vector<size_t>& col, const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis) ... ");
             return false;
         }
 
@@ -412,7 +412,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::create(value_type* buf, const std::vector<size_t>& dim) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::create(value_type* buf, const std::vector<size_t>& dim) ... ");
             return false;
         }
 
@@ -448,7 +448,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::clear() ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::clear() ... ");
             return false;
         }
 
@@ -482,7 +482,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::copyFrom(const Self& a) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::copyFrom(const Self& a) ... ");
             return false;
         }
 
@@ -508,7 +508,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::fillWithZeros() ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::fillWithZeros() ... ");
             return false;
         }
 
@@ -525,7 +525,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::push_back(ImageType& im, size_t row) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::push_back(ImageType& im, size_t row) ... ");
             return false;
         }
 
@@ -542,7 +542,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::push_front(ImageType& im, size_t row) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::push_front(ImageType& im, size_t row) ... ");
             return false;
         }
 
@@ -561,7 +561,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::insert(ImageType& im, size_t row, size_t col) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::insert(ImageType& im, size_t row, size_t col) ... ");
             return false;
         }
 
@@ -579,7 +579,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::pop_back(ImageType*& im, size_t row) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::pop_back(ImageType*& im, size_t row) ... ");
             return false;
         }
 
@@ -603,7 +603,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::pop_front(ImageType*& im, size_t row) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::pop_front(ImageType*& im, size_t row) ... ");
             return false;
         }
 
@@ -624,7 +624,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::remove(ImageType*& im, size_t row, size_t col) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::remove(ImageType*& im, size_t row, size_t col) ... ");
             return false;
         }
 
@@ -642,7 +642,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::remove(size_t row, size_t col) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::remove(size_t row, size_t col) ... ");
             return false;
         }
 
@@ -662,7 +662,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::expand(size_t newRows) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::expand(size_t newRows) ... ");
             return false;
         }
 
@@ -679,7 +679,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::insert(std::vector<ImageType*>& im_array, size_t row) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::insert(std::vector<ImageType*>& im_array, size_t row) ... ");
             return false;
         }
 
@@ -697,7 +697,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::remove(std::vector<ImageType*>& im_array, size_t row) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::remove(std::vector<ImageType*>& im_array, size_t row) ... ");
             return false;
         }
 
@@ -728,7 +728,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::remove(size_t row) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::remove(size_t row) ... ");
             return false;
         }
 
@@ -782,7 +782,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::get(std::vector<ImageType*>& im_array, size_t row) const ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::get(std::vector<ImageType*>& im_array, size_t row) const ... ");
             return false;
         }
 
@@ -809,7 +809,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::get(std::vector<ImageType*>& im_array, size_t row) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::get(std::vector<ImageType*>& im_array, size_t row) ... ");
             return false;
         }
     }
@@ -840,7 +840,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::get(std::vector<ImageType*>& im_array, size_t row) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::get(std::vector<ImageType*>& im_array, size_t row) ... ");
             return false;
         }
 
@@ -895,7 +895,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::to_NDArray(size_t row, hoNDArray<value_type>& a) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::to_NDArray(size_t row, hoNDArray<value_type>& a) ... ");
             return false;
         }
 
@@ -1121,7 +1121,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::serialize(char*& buf, size_t& len) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::serialize(char*& buf, size_t& len) ... ");
             return false;
         }
 
@@ -1178,7 +1178,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageContainer2D<ImageType>::deserialize(char* buf, size_t& len) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageContainer2D<ImageType>::deserialize(char* buf, size_t& len) ... ");
             return false;
         }
 

@@ -117,51 +117,51 @@ namespace Gadgetron
     {
         try
         {
-            GADGET_CONDITION_MSG(verboseMode_, "------> GtPlusReconGadget parameters <------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlusReconGadget parameters <------");
 
             min_intensity_value_ = this->get_int_value("min_intensity_value");
-            GADGET_CONDITION_MSG(verboseMode_, "min_intensity_value_ is " << min_intensity_value_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "min_intensity_value_ is " << min_intensity_value_);
 
             max_intensity_value_ = this->get_int_value("max_intensity_value");
-            GADGET_CONDITION_MSG(verboseMode_, "max_intensity_value_ is " << max_intensity_value_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "max_intensity_value_ is " << max_intensity_value_);
 
             scalingFactor_ = this->get_double_value("scalingFactor");
-            GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_ is " << scalingFactor_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "scalingFactor_ is " << scalingFactor_);
 
             scalingFactor_gfactor_ = this->get_double_value("scalingFactor_gfactor");
             if ( scalingFactor_gfactor_ == 0 ) scalingFactor_gfactor_ = 100;
-            GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_gfactor_ is " << scalingFactor_gfactor_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "scalingFactor_gfactor_ is " << scalingFactor_gfactor_);
 
             scalingFactor_wrap_around_map_ = this->get_double_value("scalingFactor_wrap_around_map");
             if ( scalingFactor_wrap_around_map_ == 0 ) scalingFactor_wrap_around_map_ = 1000;
-            GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_wrap_around_map_ is " << scalingFactor_wrap_around_map_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "scalingFactor_wrap_around_map_ is " << scalingFactor_wrap_around_map_);
 
             scalingFactor_snr_image_ = this->get_double_value("scalingFactor_snr_image");
             if ( scalingFactor_snr_image_ == 0 ) scalingFactor_snr_image_ = 10;
-            GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_snr_image_ is " << scalingFactor_snr_image_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "scalingFactor_snr_image_ is " << scalingFactor_snr_image_);
 
             scalingFactor_std_map_ = this->get_double_value("scalingFactor_std_map");
             if ( scalingFactor_std_map_ == 0 ) scalingFactor_std_map_ = 1000;
-            GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_std_map_ is " << scalingFactor_std_map_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "scalingFactor_std_map_ is " << scalingFactor_std_map_);
 
             start_frame_for_std_map_ = this->get_int_value("start_frame_for_std_map");
             if ( start_frame_for_std_map_ == 0 ) start_frame_for_std_map_ = 5;
-            GADGET_CONDITION_MSG(verboseMode_, "start_frame_for_std_map_ is " << start_frame_for_std_map_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "start_frame_for_std_map_ is " << start_frame_for_std_map_);
 
             use_constant_scalingFactor_ = this->get_bool_value("use_constant_scalingFactor");
-            GADGET_CONDITION_MSG(verboseMode_, "use_constant_scalingFactor_ is " << use_constant_scalingFactor_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "use_constant_scalingFactor_ is " << use_constant_scalingFactor_);
 
             boost::shared_ptr<std::string> str = this->get_string_value("debugFolder");
             debugFolder_ = *str;
-            GADGET_CONDITION_MSG(verboseMode_, "debugFolder_ is " << debugFolder_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder_ is " << debugFolder_);
 
             boost::shared_ptr<std::string> str2 = this->get_string_value("debugFolder2");
             debugFolder2_ = *str2;
-            GADGET_CONDITION_MSG(verboseMode_, "debugFolder2_ is " << debugFolder2_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder2_ is " << debugFolder2_);
 
             timeStampResolution_ = (float)this->get_double_value("timeStampResolution");
             if ( timeStampResolution_ < FLT_EPSILON ) timeStampResolution_ = 0.0025f;
-            GADGET_CONDITION_MSG(verboseMode_, "timeStampResolution_ is " << timeStampResolution_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "timeStampResolution_ is " << timeStampResolution_);
 
             str = this->get_string_value("send_out_recon");
             if ( !str->empty() )
@@ -172,7 +172,7 @@ namespace Gadgetron
             {
                 send_out_recon_ = true;
             }
-            GADGET_CONDITION_MSG(verboseMode_, "send_out_recon_ is " << send_out_recon_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "send_out_recon_ is " << send_out_recon_);
 
             str = this->get_string_value("send_out_recon_second");
             if ( !str->empty() )
@@ -183,104 +183,104 @@ namespace Gadgetron
             {
                 send_out_recon_second_ = true;
             }
-            GADGET_CONDITION_MSG(verboseMode_, "send_out_recon_second_ is " << send_out_recon_second_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "send_out_recon_second_ is " << send_out_recon_second_);
 
             performTiming_ = this->get_bool_value("performTiming");
-            GADGET_CONDITION_MSG(verboseMode_, "performTiming_ is " << performTiming_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "performTiming_ is " << performTiming_);
 
             performTiming_ = this->get_bool_value("performTiming");
-            GADGET_CONDITION_MSG(verboseMode_, "performTiming_ is " << performTiming_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "performTiming_ is " << performTiming_);
 
             // kspace filter parameters
             str = this->get_string_value("filterRO");
             filterRO_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
             filterRO_sigma_ = this->get_double_value("filterRO_sigma");
             filterRO_width_ = this->get_double_value("filterRO_width");
-            GADGET_CONDITION_MSG(verboseMode_, "filterRO_type_ is " << *str);
-            GADGET_CONDITION_MSG(verboseMode_, "filterRO_sigma_ is " << filterRO_sigma_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterRO_width_ is " << filterRO_width_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_type_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_sigma_ is " << filterRO_sigma_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_width_ is " << filterRO_width_);
 
             str = this->get_string_value("filterE1");
             filterE1_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
             filterE1_sigma_ = this->get_double_value("filterE1_sigma");
             filterE1_width_ = this->get_double_value("filterE1_width");
-            GADGET_CONDITION_MSG(verboseMode_, "filterE1_type_ is " << *str);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE1_sigma_ is " << filterE1_sigma_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE1_width_ is " << filterE1_width_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_type_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_sigma_ is " << filterE1_sigma_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_width_ is " << filterE1_width_);
 
             str = this->get_string_value("filterE2");
             filterE2_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
             filterE2_sigma_ = this->get_double_value("filterE2_sigma");
             filterE2_width_ = this->get_double_value("filterE2_width");
-            GADGET_CONDITION_MSG(verboseMode_, "filterE2_type_ is " << *str);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE2_sigma_ is " << filterE2_sigma_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE2_width_ is " << filterE2_width_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_type_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_sigma_ is " << filterE2_sigma_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_width_ is " << filterE2_width_);
 
             str = this->get_string_value("filterRefRO");
             filterRO_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
             filterRO_ref_sigma_ = this->get_double_value("filterRefRO_sigma");
             filterRO_ref_width_ = this->get_double_value("filterRefRO_width");
-            GADGET_CONDITION_MSG(verboseMode_, "filterRO_ref_type_ is " << *str);
-            GADGET_CONDITION_MSG(verboseMode_, "filterRO_ref_sigma_ is " << filterRO_ref_sigma_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterRO_ref_width_ is " << filterRO_ref_width_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_ref_type_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_ref_sigma_ is " << filterRO_ref_sigma_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_ref_width_ is " << filterRO_ref_width_);
 
             str = this->get_string_value("filterRefE1");
             filterE1_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
             filterE1_ref_sigma_ = this->get_double_value("filterRefE1_sigma");
             filterE1_ref_width_ = this->get_double_value("filterRefE1_width");
-            GADGET_CONDITION_MSG(verboseMode_, "filterE1_ref_type_ is " << *str);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE1_ref_sigma_ is " << filterE1_ref_sigma_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE1_ref_width_ is " << filterE1_ref_width_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_ref_type_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_ref_sigma_ is " << filterE1_ref_sigma_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_ref_width_ is " << filterE1_ref_width_);
 
             str = this->get_string_value("filterRefE2");
             filterE2_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
             filterE2_ref_sigma_ = this->get_double_value("filterRefE2_sigma");
             filterE2_ref_width_ = this->get_double_value("filterRefE2_width");
-            GADGET_CONDITION_MSG(verboseMode_, "filterE2_ref_type_ is " << *str);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE2_ref_sigma_ is " << filterE2_ref_sigma_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE2_ref_width_ is " << filterE2_ref_width_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_ref_type_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_ref_sigma_ is " << filterE2_ref_sigma_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_ref_width_ is " << filterE2_ref_width_);
 
             str = this->get_string_value("filterPartialFourierRO");
             filterRO_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
             filterRO_pf_sigma_ = this->get_double_value("filterPartialFourierRO_sigma");
             filterRO_pf_width_ = this->get_double_value("filterPartialFourierRO_width");
             filterRO_pf_densityComp_ = this->get_bool_value("filterPartialFourierRO_densityComp");
-            GADGET_CONDITION_MSG(verboseMode_, "filterRO_pf_type_ is " << *str);
-            GADGET_CONDITION_MSG(verboseMode_, "filterRO_pf_sigma_ is " << filterRO_pf_sigma_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterRO_pf_width_ is " << filterRO_pf_width_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterRO_pf_densityComp_ is " << filterRO_pf_densityComp_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_type_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_sigma_ is " << filterRO_pf_sigma_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_width_ is " << filterRO_pf_width_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_densityComp_ is " << filterRO_pf_densityComp_);
 
             str = this->get_string_value("filterPartialFourierE1");
             filterE1_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
             filterE1_pf_sigma_ = this->get_double_value("filterPartialFourierE1_sigma");
             filterE1_pf_width_ = this->get_double_value("filterPartialFourierE1_width");
             filterE1_pf_densityComp_ = this->get_bool_value("filterPartialFourierE1_densityComp");
-            GADGET_CONDITION_MSG(verboseMode_, "filterE1_pf_type_ is " << *str);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE1_pf_sigma_ is " << filterE1_pf_sigma_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE1_pf_width_ is " << filterE1_pf_width_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE1_pf_densityComp_ is " << filterE1_pf_densityComp_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_type_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_sigma_ is " << filterE1_pf_sigma_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_width_ is " << filterE1_pf_width_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_densityComp_ is " << filterE1_pf_densityComp_);
 
             str = this->get_string_value("filterPartialFourierE2");
             filterE2_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
             filterE2_pf_sigma_ = this->get_double_value("filterPartialFourierE2_sigma");
             filterE2_pf_width_ = this->get_double_value("filterPartialFourierE2_width");
             filterE2_pf_densityComp_ = this->get_bool_value("filterPartialFourierE2_densityComp");
-            GADGET_CONDITION_MSG(verboseMode_, "filterE2_pf_type_ is " << *str);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE2_pf_sigma_ is " << filterE2_pf_sigma_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE2_pf_width_ is " << filterE2_pf_width_);
-            GADGET_CONDITION_MSG(verboseMode_, "filterE2_pf_densityComp_ is " << filterE2_pf_densityComp_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_type_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_sigma_ is " << filterE2_pf_sigma_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_width_ is " << filterE2_pf_width_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_densityComp_ is " << filterE2_pf_densityComp_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             CloudComputing_ = this->get_bool_value("CloudComputing");
             CloudSize_ = (unsigned int)(this->get_int_value("CloudSize"));
 
-            GADGET_CONDITION_MSG(verboseMode_, "CloudComputing_ is " << CloudComputing_);
-            GADGET_CONDITION_MSG(verboseMode_, "CloudSize_ is " << CloudSize_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "CloudComputing_ is " << CloudComputing_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "CloudSize_ is " << CloudSize_);
 
             str = this->get_string_value("cloudNodeFile");
             cloud_node_file_ = *str;
-            GADGET_CONDITION_MSG(verboseMode_, "cloud_node_file_ is " << cloud_node_file_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "cloud_node_file_ is " << cloud_node_file_);
 
             // read in the cloud information for every node
             gt_cloud_.resize(CloudSize_);
@@ -307,85 +307,85 @@ namespace Gadgetron
                 unsigned int computingPowerIndex = this->get_int_value(ostreamstr4.str().c_str());
                 gt_cloud_[ii].get<3>() = computingPowerIndex;
 
-                GADGET_CONDITION_MSG(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
+                GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
             }
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             thread_number_ratio_ = (float)this->get_double_value("thread_number_ratio");
             if ( thread_number_ratio_>1 || thread_number_ratio_<0 ) thread_number_ratio_ = 0;
-            GADGET_CONDITION_MSG(verboseMode_, "thread_number_ratio_ is " << thread_number_ratio_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "thread_number_ratio_ is " << thread_number_ratio_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "==================================================================");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "==================================================================");
 
-            GADGET_CONDITION_MSG(verboseMode_, "------> GtPlus recon parameters <------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlus recon parameters <------");
 
             workOrderPara_.upstream_coil_compression_ = this->get_bool_value("upstream_coil_compression");
-            GADGET_CONDITION_MSG(verboseMode_, "upstream_coil_compression_ is " << workOrderPara_.upstream_coil_compression_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "upstream_coil_compression_ is " << workOrderPara_.upstream_coil_compression_);
 
             workOrderPara_.upstream_coil_compression_thres_ = this->get_double_value("upstream_coil_compression_thres");
-            GADGET_CONDITION_MSG(verboseMode_, "upstream_coil_compression_thres_ is " << workOrderPara_.upstream_coil_compression_thres_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "upstream_coil_compression_thres_ is " << workOrderPara_.upstream_coil_compression_thres_);
 
             workOrderPara_.upstream_coil_compression_num_modesKept_ = this->get_int_value("upstream_coil_compression_num_modesKept");
-            GADGET_CONDITION_MSG(verboseMode_, "upstream_coil_compression_num_modesKept_ is " << workOrderPara_.upstream_coil_compression_num_modesKept_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "upstream_coil_compression_num_modesKept_ is " << workOrderPara_.upstream_coil_compression_num_modesKept_);
 
             workOrderPara_.downstream_coil_compression_ = this->get_bool_value("downstream_coil_compression");
-            GADGET_CONDITION_MSG(verboseMode_, "downstream_coil_compression_ is " << workOrderPara_.downstream_coil_compression_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "downstream_coil_compression_ is " << workOrderPara_.downstream_coil_compression_);
 
             workOrderPara_.coil_compression_thres_ = this->get_double_value("coil_compression_thres");
 
             if ( workOrderPara_.upstream_coil_compression_ && (workOrderPara_.coil_compression_thres_ > workOrderPara_.upstream_coil_compression_thres_) )
                 workOrderPara_.coil_compression_thres_ = workOrderPara_.upstream_coil_compression_thres_;
 
-            GADGET_CONDITION_MSG(verboseMode_, "coil_compression_thres_ is " << workOrderPara_.coil_compression_thres_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "coil_compression_thres_ is " << workOrderPara_.coil_compression_thres_);
 
             workOrderPara_.coil_compression_num_modesKept_ = this->get_int_value("coil_compression_num_modesKept");
 
             if ( workOrderPara_.upstream_coil_compression_ && (workOrderPara_.coil_compression_num_modesKept_ > workOrderPara_.upstream_coil_compression_num_modesKept_) )
                 workOrderPara_.coil_compression_num_modesKept_ = workOrderPara_.upstream_coil_compression_num_modesKept_;
 
-            GADGET_CONDITION_MSG(verboseMode_, "coil_compression_num_modesKept_ is " << workOrderPara_.coil_compression_num_modesKept_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "coil_compression_num_modesKept_ is " << workOrderPara_.coil_compression_num_modesKept_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             str = this->get_string_value("coil_map_algorithm");
             workOrderPara_.coil_map_algorithm_ = gtPlus_util_.getISMRMRDCoilMapAlgoFromName(*str);
-            GADGET_CONDITION_MSG(verboseMode_, "coil_map_algorithm_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "coil_map_algorithm_ is " << *str);
 
             workOrderPara_.csm_kSize_ = (size_t)(this->get_int_value("csm_kSize"));
-            GADGET_CONDITION_MSG(verboseMode_, "csm_kSize_ is " << workOrderPara_.csm_kSize_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "csm_kSize_ is " << workOrderPara_.csm_kSize_);
 
             workOrderPara_.csm_powermethod_num_ = (size_t)(this->get_int_value("csm_powermethod_num"));
-            GADGET_CONDITION_MSG(verboseMode_, "csm_powermethod_num_ is " << workOrderPara_.csm_powermethod_num_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "csm_powermethod_num_ is " << workOrderPara_.csm_powermethod_num_);
 
             workOrderPara_.csm_true_3D_ = this->get_bool_value("csm_true_3D");
-            GADGET_CONDITION_MSG(verboseMode_, "csm_true_3D_ is " << workOrderPara_.csm_true_3D_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "csm_true_3D_ is " << workOrderPara_.csm_true_3D_);
 
             workOrderPara_.csm_iter_num_ = (size_t)(this->get_int_value("csm_iter_num"));
-            GADGET_CONDITION_MSG(verboseMode_, "csm_iter_num_ is " << workOrderPara_.csm_iter_num_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "csm_iter_num_ is " << workOrderPara_.csm_iter_num_);
 
             workOrderPara_.csm_iter_thres_ = this->get_double_value("csm_iter_thres");
-            GADGET_CONDITION_MSG(verboseMode_, "csm_iter_thres_ is " << workOrderPara_.csm_iter_thres_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "csm_iter_thres_ is " << workOrderPara_.csm_iter_thres_);
 
             workOrderPara_.csm_use_gpu_ = this->get_bool_value("csm_use_gpu");
-            GADGET_CONDITION_MSG(verboseMode_, "csm_use_gpu_ is " << workOrderPara_.csm_use_gpu_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "csm_use_gpu_ is " << workOrderPara_.csm_use_gpu_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             str = this->get_string_value("recon_algorithm");
             workOrderPara_.recon_algorithm_ = gtPlus_util_.getISMRMRDReconAlgoFromName(*str);
-            GADGET_CONDITION_MSG(verboseMode_, "recon_algorithm_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "recon_algorithm_ is " << *str);
 
             workOrderPara_.recon_auto_parameters_ = this->get_bool_value("recon_auto_parameters");
-            GADGET_CONDITION_MSG(verboseMode_, "recon_auto_parameters_ is " << workOrderPara_.recon_auto_parameters_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "recon_auto_parameters_ is " << workOrderPara_.recon_auto_parameters_);
 
             workOrderPara_.gfactor_needed_ = this->get_bool_value("gfactor_needed");
-            GADGET_CONDITION_MSG(verboseMode_, "gfactor_needed_ is " << workOrderPara_.gfactor_needed_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "gfactor_needed_ is " << workOrderPara_.gfactor_needed_);
 
             workOrderPara_.wrap_around_map_needed_ = this->get_bool_value("wrap_around_map_needed");
-            GADGET_CONDITION_MSG(verboseMode_, "wrap_around_map_needed_ is " << workOrderPara_.wrap_around_map_needed_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "wrap_around_map_needed_ is " << workOrderPara_.wrap_around_map_needed_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             workOrderPara_.grappa_kSize_RO_ = (size_t)(this->get_int_value("grappa_kSize_RO"));
             workOrderPara_.grappa_kSize_E1_ = (size_t)(this->get_int_value("grappa_kSize_E1"));
@@ -394,14 +394,14 @@ namespace Gadgetron
             workOrderPara_.grappa_calib_over_determine_ratio_ = this->get_double_value("grappa_calib_over_determine_ratio");
             workOrderPara_.grappa_use_gpu_ = this->get_bool_value("grappa_use_gpu");
 
-            GADGET_CONDITION_MSG(verboseMode_, "grappa_kSize_RO_ is " << workOrderPara_.grappa_kSize_RO_);
-            GADGET_CONDITION_MSG(verboseMode_, "grappa_kSize_E1_ is " << workOrderPara_.grappa_kSize_E1_);
-            GADGET_CONDITION_MSG(verboseMode_, "grappa_kSize_E2_ is " << workOrderPara_.grappa_kSize_E2_);
-            GADGET_CONDITION_MSG(verboseMode_, "grappa_reg_lamda_ is " << workOrderPara_.grappa_reg_lamda_);
-            GADGET_CONDITION_MSG(verboseMode_, "grappa_calib_over_determine_ratio_ is " << workOrderPara_.grappa_calib_over_determine_ratio_);
-            GADGET_CONDITION_MSG(verboseMode_, "grappa_use_gpu_ is " << workOrderPara_.grappa_use_gpu_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "grappa_kSize_RO_ is " << workOrderPara_.grappa_kSize_RO_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "grappa_kSize_E1_ is " << workOrderPara_.grappa_kSize_E1_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "grappa_kSize_E2_ is " << workOrderPara_.grappa_kSize_E2_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "grappa_reg_lamda_ is " << workOrderPara_.grappa_reg_lamda_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "grappa_calib_over_determine_ratio_ is " << workOrderPara_.grappa_calib_over_determine_ratio_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "grappa_use_gpu_ is " << workOrderPara_.grappa_use_gpu_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             workOrderPara_.spirit_kSize_RO_ = (size_t)(this->get_int_value("spirit_kSize_RO"));
             if ( workOrderPara_.spirit_kSize_RO_ == 0 ) workOrderPara_.spirit_kSize_RO_ = 7;
@@ -427,18 +427,18 @@ namespace Gadgetron
 
             workOrderPara_.spirit_print_iter_ = this->get_bool_value("spirit_print_iter");
 
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_kSize_RO_ is " << workOrderPara_.spirit_kSize_RO_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_kSize_E1_ is " << workOrderPara_.spirit_kSize_E1_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_kSize_E2_ is " << workOrderPara_.spirit_kSize_E2_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_reg_lamda_ is " << workOrderPara_.spirit_reg_lamda_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_use_gpu_ is " << workOrderPara_.spirit_use_gpu_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_calib_over_determine_ratio_ is " << workOrderPara_.spirit_calib_over_determine_ratio_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_solve_symmetric_ is " << workOrderPara_.spirit_solve_symmetric_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_iter_max_ is " << workOrderPara_.spirit_iter_max_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_iter_thres_ is " << workOrderPara_.spirit_iter_thres_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_print_iter_ is " << workOrderPara_.spirit_print_iter_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_kSize_RO_ is " << workOrderPara_.spirit_kSize_RO_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_kSize_E1_ is " << workOrderPara_.spirit_kSize_E1_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_kSize_E2_ is " << workOrderPara_.spirit_kSize_E2_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_reg_lamda_ is " << workOrderPara_.spirit_reg_lamda_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_use_gpu_ is " << workOrderPara_.spirit_use_gpu_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_calib_over_determine_ratio_ is " << workOrderPara_.spirit_calib_over_determine_ratio_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_solve_symmetric_ is " << workOrderPara_.spirit_solve_symmetric_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_iter_max_ is " << workOrderPara_.spirit_iter_max_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_iter_thres_ is " << workOrderPara_.spirit_iter_thres_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_print_iter_ is " << workOrderPara_.spirit_print_iter_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             workOrderPara_.spirit_perform_linear_ = this->get_bool_value("spirit_perform_linear");
             workOrderPara_.spirit_perform_nonlinear_ = this->get_bool_value("spirit_perform_nonlinear");
@@ -460,31 +460,31 @@ namespace Gadgetron
             workOrderPara_.spirit_2D_scale_per_chunk_ = this->get_bool_value("spirit_2D_scale_per_chunk");
             workOrderPara_.spirit_3D_scale_per_chunk_ = this->get_bool_value("spirit_3D_scale_per_chunk");
 
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_perform_linear_ is " << workOrderPara_.spirit_perform_linear_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_perform_nonlinear_ is " << workOrderPara_.spirit_perform_nonlinear_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_parallel_imaging_lamda_ is " << workOrderPara_.spirit_parallel_imaging_lamda_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_image_reg_lamda_ is " << workOrderPara_.spirit_image_reg_lamda_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_data_fidelity_lamda_ is " << workOrderPara_.spirit_data_fidelity_lamda_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_ncg_iter_max_ is " << workOrderPara_.spirit_ncg_iter_max_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_ncg_iter_thres_ is " << workOrderPara_.spirit_ncg_iter_thres_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_ncg_print_iter_ is " << workOrderPara_.spirit_ncg_print_iter_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_use_coil_sen_map_ is " << workOrderPara_.spirit_use_coil_sen_map_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_use_moco_enhancement_ is " << workOrderPara_.spirit_use_moco_enhancement_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_recon_moco_images_ is " << workOrderPara_.spirit_recon_moco_images_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_RO_enhancement_ratio_ is " << workOrderPara_.spirit_RO_enhancement_ratio_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_E1_enhancement_ratio_ is " << workOrderPara_.spirit_E1_enhancement_ratio_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_E2_enhancement_ratio_ is " << workOrderPara_.spirit_E2_enhancement_ratio_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_temporal_enhancement_ratio_ is " << workOrderPara_.spirit_temporal_enhancement_ratio_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_2D_scale_per_chunk_ is " << workOrderPara_.spirit_2D_scale_per_chunk_);
-            GADGET_CONDITION_MSG(verboseMode_, "spirit_3D_scale_per_chunk_ is " << workOrderPara_.spirit_3D_scale_per_chunk_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_perform_linear_ is " << workOrderPara_.spirit_perform_linear_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_perform_nonlinear_ is " << workOrderPara_.spirit_perform_nonlinear_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_parallel_imaging_lamda_ is " << workOrderPara_.spirit_parallel_imaging_lamda_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_image_reg_lamda_ is " << workOrderPara_.spirit_image_reg_lamda_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_data_fidelity_lamda_ is " << workOrderPara_.spirit_data_fidelity_lamda_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_ncg_iter_max_ is " << workOrderPara_.spirit_ncg_iter_max_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_ncg_iter_thres_ is " << workOrderPara_.spirit_ncg_iter_thres_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_ncg_print_iter_ is " << workOrderPara_.spirit_ncg_print_iter_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_use_coil_sen_map_ is " << workOrderPara_.spirit_use_coil_sen_map_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_use_moco_enhancement_ is " << workOrderPara_.spirit_use_moco_enhancement_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_recon_moco_images_ is " << workOrderPara_.spirit_recon_moco_images_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_RO_enhancement_ratio_ is " << workOrderPara_.spirit_RO_enhancement_ratio_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_E1_enhancement_ratio_ is " << workOrderPara_.spirit_E1_enhancement_ratio_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_E2_enhancement_ratio_ is " << workOrderPara_.spirit_E2_enhancement_ratio_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_temporal_enhancement_ratio_ is " << workOrderPara_.spirit_temporal_enhancement_ratio_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_2D_scale_per_chunk_ is " << workOrderPara_.spirit_2D_scale_per_chunk_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "spirit_3D_scale_per_chunk_ is " << workOrderPara_.spirit_3D_scale_per_chunk_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             str = this->get_string_value("retro_gated_interp_method");
             workOrderPara_.retro_gated_interp_method_ = gtPlus_util_.getISMRMRDRetroGatingInterpFromName(*str);
-            GADGET_CONDITION_MSG(verboseMode_, "retro_gated_interp_method_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "retro_gated_interp_method_ is " << *str);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             workOrderPara_.job_split_by_S_ = this->get_bool_value("job_split_by_S");
             workOrderPara_.job_num_of_N_ = (size_t)(this->get_int_value("job_num_of_N"));
@@ -492,35 +492,35 @@ namespace Gadgetron
             workOrderPara_.job_overlap_ = (size_t)(this->get_int_value("job_overlap"));
             workOrderPara_.job_perform_on_control_node_ = this->get_bool_value("job_perform_on_control_node");
 
-            GADGET_CONDITION_MSG(verboseMode_, "job_split_by_S_ is " << workOrderPara_.job_split_by_S_);
-            GADGET_CONDITION_MSG(verboseMode_, "job_num_of_N_ is " << workOrderPara_.job_num_of_N_);
-            GADGET_CONDITION_MSG(verboseMode_, "job_max_Megabytes_ is " << workOrderPara_.job_max_Megabytes_);
-            GADGET_CONDITION_MSG(verboseMode_, "job_overlap_ is " << workOrderPara_.job_overlap_);
-            GADGET_CONDITION_MSG(verboseMode_, "job_perform_on_control_node_ is " << workOrderPara_.job_perform_on_control_node_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "job_split_by_S_ is " << workOrderPara_.job_split_by_S_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "job_num_of_N_ is " << workOrderPara_.job_num_of_N_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "job_max_Megabytes_ is " << workOrderPara_.job_max_Megabytes_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "job_overlap_ is " << workOrderPara_.job_overlap_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "job_perform_on_control_node_ is " << workOrderPara_.job_perform_on_control_node_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             str = this->get_string_value("partialFourier_algo");
             workOrderPara_.partialFourier_algo_ = gtPlus_util_.getISMRMRDPartialFourierReconAlgoFromName(*str);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_algo_ is " << *str);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_algo_ is " << *str);
 
             workOrderPara_.partialFourier_homodyne_iters_ = (size_t)(this->get_int_value("partialFourier_homodyne_iters"));
             workOrderPara_.partialFourier_homodyne_thres_ = this->get_double_value("partialFourier_homodyne_thres");
             workOrderPara_.partialFourier_homodyne_densityComp_ = this->get_bool_value("partialFourier_homodyne_densityComp");
 
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_homodyne_iters_ is " << workOrderPara_.partialFourier_homodyne_iters_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_homodyne_thres_ is " << workOrderPara_.partialFourier_homodyne_thres_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_homodyne_densityComp_ is " << workOrderPara_.partialFourier_homodyne_densityComp_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_homodyne_iters_ is " << workOrderPara_.partialFourier_homodyne_iters_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_homodyne_thres_ is " << workOrderPara_.partialFourier_homodyne_thres_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_homodyne_densityComp_ is " << workOrderPara_.partialFourier_homodyne_densityComp_);
 
             workOrderPara_.partialFourier_POCS_iters_ = (size_t)(this->get_int_value("partialFourier_POCS_iters"));
             workOrderPara_.partialFourier_POCS_thres_ = this->get_double_value("partialFourier_POCS_thres");
             workOrderPara_.partialFourier_POCS_transitBand_ = (size_t)(this->get_int_value("partialFourier_POCS_transitBand"));
             workOrderPara_.partialFourier_POCS_transitBand_E2_ = (size_t)(this->get_int_value("partialFourier_POCS_transitBand_E2"));
 
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_POCS_iters_ is " << workOrderPara_.partialFourier_POCS_iters_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_POCS_thres_ is " << workOrderPara_.partialFourier_POCS_thres_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_POCS_transitBand_ is " << workOrderPara_.partialFourier_POCS_transitBand_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_POCS_transitBand_ is " << workOrderPara_.partialFourier_POCS_transitBand_E2_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_POCS_iters_ is " << workOrderPara_.partialFourier_POCS_iters_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_POCS_thres_ is " << workOrderPara_.partialFourier_POCS_thres_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_POCS_transitBand_ is " << workOrderPara_.partialFourier_POCS_transitBand_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_POCS_transitBand_ is " << workOrderPara_.partialFourier_POCS_transitBand_E2_);
 
             workOrderPara_.partialFourier_FengHuang_kSize_RO_ = (size_t)(this->get_int_value("partialFourier_FengHuang_kSize_RO"));
             workOrderPara_.partialFourier_FengHuang_kSize_E1_ = (size_t)(this->get_int_value("partialFourier_FengHuang_kSize_E1"));
@@ -530,24 +530,24 @@ namespace Gadgetron
             workOrderPara_.partialFourier_FengHuang_transitBand_ = (size_t)(this->get_int_value("partialFourier_FengHuang_transitBand"));
             workOrderPara_.partialFourier_FengHuang_transitBand_E2_ = (size_t)(this->get_int_value("partialFourier_FengHuang_transitBand_E2"));
 
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_FengHuang_kSize_RO_ is " << workOrderPara_.partialFourier_FengHuang_kSize_RO_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_FengHuang_kSize_E1_ is " << workOrderPara_.partialFourier_FengHuang_kSize_E1_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_FengHuang_kSize_E2_ is " << workOrderPara_.partialFourier_FengHuang_kSize_E2_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_FengHuang_thresReg_ is " << workOrderPara_.partialFourier_FengHuang_thresReg_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_FengHuang_sameKernel_allN_ is " << workOrderPara_.partialFourier_FengHuang_sameKernel_allN_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_FengHuang_transitBand_ is " << workOrderPara_.partialFourier_FengHuang_transitBand_);
-            GADGET_CONDITION_MSG(verboseMode_, "partialFourier_FengHuang_transitBand_E2_ is " << workOrderPara_.partialFourier_FengHuang_transitBand_E2_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_FengHuang_kSize_RO_ is " << workOrderPara_.partialFourier_FengHuang_kSize_RO_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_FengHuang_kSize_E1_ is " << workOrderPara_.partialFourier_FengHuang_kSize_E1_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_FengHuang_kSize_E2_ is " << workOrderPara_.partialFourier_FengHuang_kSize_E2_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_FengHuang_thresReg_ is " << workOrderPara_.partialFourier_FengHuang_thresReg_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_FengHuang_sameKernel_allN_ is " << workOrderPara_.partialFourier_FengHuang_sameKernel_allN_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_FengHuang_transitBand_ is " << workOrderPara_.partialFourier_FengHuang_transitBand_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "partialFourier_FengHuang_transitBand_E2_ is " << workOrderPara_.partialFourier_FengHuang_transitBand_E2_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             recon_kspace_needed_ = this->get_bool_value("recon_kspace_needed");
-            GADGET_CONDITION_MSG(verboseMode_, "recon_kspace_needed_ is " << recon_kspace_needed_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "recon_kspace_needed_ is " << recon_kspace_needed_);
 
-            GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in GtPlusReconGadget::readParameters() ... ");
+            GERROR_STREAM("Errors in GtPlusReconGadget::readParameters() ... ");
             return false;
         }
 
@@ -575,7 +575,7 @@ namespace Gadgetron
                 gtCloud[n].get<2>() = *this->get_string_value("CloudNodeXMLConfiguration");
                 gtCloud[n].get<3>() = nodes[n].compute_capability;
 
-                GADGET_CONDITION_MSG(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
+                GDEBUG_CONDITION_STREAM(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
             }
 
             return true; //We will leave the function here
@@ -585,12 +585,12 @@ namespace Gadgetron
         std::string nodeFileName = get_gadgetron_home();
         nodeFileName.append("/config/gtCloud/");
         nodeFileName.append(filename);
-        GADGET_CONDITION_MSG(verboseMode_, "Cloud node file name is " << nodeFileName);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud node file name is " << nodeFileName);
 
         std::ifstream fs(nodeFileName.c_str(), std::ios::in);
         if (!fs.is_open()) 
         {
-            GADGET_WARN_MSG("Cannot open GT CloudNodeFile; use the local setting instead ... ");
+            GWARN_STREAM("Cannot open GT CloudNodeFile; use the local setting instead ... ");
             return false;
         }
 
@@ -627,7 +627,7 @@ namespace Gadgetron
             gtCloud[n].get<2>() = xmlGadgetNode;
             gtCloud[n].get<3>() = computingPowerIndex;
 
-            GADGET_CONDITION_MSG(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
         }
 
         fs.close();
@@ -664,7 +664,7 @@ namespace Gadgetron
         }
         num_acq_channels_ = h.acquisitionSystemInformation->receiverChannels;
 
-        GADGET_CONDITION_MSG(verboseMode_, "Number of acquisition channels : " << num_acq_channels_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Number of acquisition channels : " << num_acq_channels_);
 
         if (h.encoding.size() < 1 || h.encoding.size() > 2) {
             GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
@@ -680,23 +680,23 @@ namespace Gadgetron
         matrix_size_encoding_[0] = e_space.matrixSize.x;
         matrix_size_encoding_[1] = e_space.matrixSize.y;
         matrix_size_encoding_[2] = e_space.matrixSize.z;
-        GADGET_CONDITION_MSG(verboseMode_, "Encoding matrix size: " << matrix_size_encoding_[0] << " " << matrix_size_encoding_[1] << " " << matrix_size_encoding_[2]);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Encoding matrix size: " << matrix_size_encoding_[0] << " " << matrix_size_encoding_[1] << " " << matrix_size_encoding_[2]);
 
         field_of_view_encoding_[0] = e_space.fieldOfView_mm.x;
         field_of_view_encoding_[1] = e_space.fieldOfView_mm.y;
         field_of_view_encoding_[2] = e_space.fieldOfView_mm.z;
-        GADGET_CONDITION_MSG(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
 
         // find the recon space
         matrix_size_recon_[0] = r_space.matrixSize.x;
         matrix_size_recon_[1] = r_space.matrixSize.y;
         matrix_size_recon_[2] = r_space.matrixSize.z;
-        GADGET_CONDITION_MSG(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
 
         field_of_view_recon_[0] = r_space.fieldOfView_mm.x;
         field_of_view_recon_[1] = r_space.fieldOfView_mm.y;
         field_of_view_recon_[2] = r_space.fieldOfView_mm.z;
-        GADGET_CONDITION_MSG(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
 
         // this gadget supports two encoding spaces only if the
         // second encoding space has the same field of view and resolution as the first
@@ -717,16 +717,16 @@ namespace Gadgetron
         }
 
         reconE1_ = matrix_size_recon_[1];
-        GADGET_CONDITION_MSG(verboseMode_, "reconE1_ is " << reconE1_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "reconE1_ is " << reconE1_);
 
         reconE2_ = matrix_size_recon_[2];
-        GADGET_CONDITION_MSG(verboseMode_, "reconE2_ is " << reconE2_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "reconE2_ is " << reconE2_);
 
         kSpaceMaxAcqE1No_ = matrix_size_encoding_[1]-1;
-        GADGET_CONDITION_MSG(verboseMode_, "kSpaceMaxAcqE1No_ is " << kSpaceMaxAcqE1No_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "kSpaceMaxAcqE1No_ is " << kSpaceMaxAcqE1No_);
 
         kSpaceMaxAcqE2No_ = matrix_size_encoding_[2]-1;
-        GADGET_CONDITION_MSG(verboseMode_, "kSpaceMaxAcqE2No_ is " << kSpaceMaxAcqE2No_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "kSpaceMaxAcqE2No_ is " << kSpaceMaxAcqE2No_);
 
         aSpacing_[0] = field_of_view_recon_[0]/matrix_size_recon_[0];
         aSpacing_[1] = field_of_view_recon_[1]/reconE1_;
@@ -759,8 +759,8 @@ namespace Gadgetron
 
         acceFactorE1_ = (long)(p_imaging.accelerationFactor.kspace_encoding_step_1);
         acceFactorE2_ = (long)(p_imaging.accelerationFactor.kspace_encoding_step_2);
-        GADGET_CONDITION_MSG(verboseMode_, "acceFactorE1 is " << acceFactorE1_);
-        GADGET_CONDITION_MSG(verboseMode_, "acceFactorE2 is " << acceFactorE2_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "acceFactorE1 is " << acceFactorE1_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "acceFactorE2 is " << acceFactorE2_);
 
         std::string calib = *p_imaging.calibrationMode;
 
@@ -772,28 +772,28 @@ namespace Gadgetron
 
         if ( separate )
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is separate");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Colibration mode is separate");
         }
         else if ( embedded )
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is embedded");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Colibration mode is embedded");
         }
         else if ( interleaved )
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is interleaved");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Colibration mode is interleaved");
         }
         else if ( external )
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is external");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Colibration mode is external");
         }
         else if ( other )
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is other");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Colibration mode is other");
         }
 
         //if ( other_ && acceFactorE1_==1 && acceFactorE2_==1 )
         //{
-        //    GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is changed to ISMRMRD_interleaved");
+        //    GDEBUG_CONDITION_STREAM(verboseMode_, "Colibration mode is changed to ISMRMRD_interleaved");
         //    CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
         //    acceFactorE1_ = 2;
         //}
@@ -847,7 +847,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder is not set ...");
+            GDEBUG_STREAM("GtPlusRecon, debugFolder is not set ...");
         }
 
         if ( !debugFolder2_.empty() )
@@ -856,7 +856,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_MSG_DEPRECATED("GtPlusRecon, debugFolder2 is not set ...");
+            GDEBUG_STREAM("GtPlusRecon, debugFolder2 is not set ...");
         }
 
         // ---------------------------------------------------------------------------------------------------------
@@ -870,7 +870,7 @@ namespace Gadgetron
 
     int GtPlusReconGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadgetImageArray >* m1, Gadgetron::GadgetContainerMessage< WorkOrderType > * m2)
     {
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusReconGadget::process(...) starts ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusReconGadget::process(...) starts ... ");
 
         processed_called_times_++;
 
@@ -878,7 +878,7 @@ namespace Gadgetron
 
         boost::shared_ptr< std::vector<size_t> > dims = m2->getObjectPtr()->data_.get_dimensions();
 
-        GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
+        GDEBUG_CONDITION_STREAM(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
             << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " 
             << (*dims)[3] << " " << (*dims)[4] << " " << (*dims)[5] << " " 
             << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " 
@@ -886,7 +886,7 @@ namespace Gadgetron
 
         dimensions_ = *dims;
 
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusReconGadget::process(...) ends ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusReconGadget::process(...) ends ... ");
 
         m1->release();
         return GADGET_OK;
@@ -984,12 +984,12 @@ namespace Gadgetron
 
             if ( (maxInten<min_intensity_value_) || (maxInten>max_intensity_value_) )
             {
-                GADGET_CONDITION_MSG(verboseMode_, "Using the dynamic intensity scaling factor - may not have noise prewhitening performed ... ");
+                GDEBUG_CONDITION_STREAM(verboseMode_, "Using the dynamic intensity scaling factor - may not have noise prewhitening performed ... ");
                 scalingFactor_ = (float)(max_intensity_value_US_)/maxInten;
             }
             else
             {
-                GADGET_CONDITION_MSG(verboseMode_, "Using the fixed intensity scaling factor - must have noise prewhitening performed ... ");
+                GDEBUG_CONDITION_STREAM(verboseMode_, "Using the fixed intensity scaling factor - must have noise prewhitening performed ... ");
                 scalingFactor_ = SNR_NOISEFLOOR_SCALEFACTOR;
 
                 while ( (maxInten*scalingFactor_ > max_intensity_value_) && (scalingFactor_>=2) )
@@ -999,19 +999,19 @@ namespace Gadgetron
 
                 if (maxInten*scalingFactor_ > max_intensity_value_)
                 {
-                    GADGET_CONDITION_MSG(verboseMode_, "The fixed intensity scaling factor leads to dynamic range overflow - switch to dyanmic intensity scaling ... ");
+                    GDEBUG_CONDITION_STREAM(verboseMode_, "The fixed intensity scaling factor leads to dynamic range overflow - switch to dyanmic intensity scaling ... ");
                     scalingFactor_ = (float)(max_intensity_value_)/maxInten;
                 }
 
                 use_constant_scalingFactor_ = true;
             }
 
-            GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_ : " << scalingFactor_);
+            GDEBUG_CONDITION_STREAM(verboseMode_, "scalingFactor_ : " << scalingFactor_);
             scal((float)scalingFactor_, mag);
         }
         else
         {
-            GADGET_CONDITION_MSG(verboseMode_, "Using the fixed intensity scaling factor - scaling factor has been preset to be : " << scalingFactor_ << " ... ");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Using the fixed intensity scaling factor - scaling factor has been preset to be : " << scalingFactor_ << " ... ");
             scal((float)scalingFactor_, mag);
         }
 
@@ -1150,7 +1150,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in GtPlusReconGadget::generateKSpaceFilter(...) ... ");
+            GERROR_STREAM("Errors in GtPlusReconGadget::generateKSpaceFilter(...) ... ");
             return false;
         }
 
@@ -1207,7 +1207,7 @@ namespace Gadgetron
             imageHeader.position[1] = posVecCurr[1];
             imageHeader.position[2] = posVecCurr[2];
 
-            GADGET_CONDITION_MSG(verboseMode_, "--> image position : [" << imageHeader.position[0] << " , " << imageHeader.position[1] << " , " << imageHeader.position[2] << "]");
+            GDEBUG_CONDITION_STREAM(verboseMode_, "--> image position : [" << imageHeader.position[0] << " , " << imageHeader.position[1] << " , " << imageHeader.position[2] << "]");
 
             imageHeader.field_of_view[2] = (float)(aSpacing_[2]);
 
@@ -1216,7 +1216,7 @@ namespace Gadgetron
 
         if ( imageHeader.measurement_uid == 0 )
         {
-            GADGET_WARN_MSG("imageHeader.measurement_uid == 0");
+            GWARN_STREAM("imageHeader.measurement_uid == 0");
         }
 
         return true;
@@ -1232,7 +1232,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in GtPlusReconGadget::sendOutRecon(complex float) ... ");
+            GERROR_STREAM("Errors in GtPlusReconGadget::sendOutRecon(complex float) ... ");
             return false;
         }
 
@@ -1257,7 +1257,7 @@ namespace Gadgetron
             size_t SET = (*dims)[8];
             size_t AVE = (*dims)[9];
 
-            GADGET_CONDITION_MSG(true, "sending out images, acquisition boundary [RO E1 CHA SLC E2 CON PHS REP SET AVE] = [" 
+            GDEBUG_CONDITION_STREAM(true, "sending out images, acquisition boundary [RO E1 CHA SLC E2 CON PHS REP SET AVE] = [" 
                 << RO << " " << E1 << " " << CHA << " " 
                 << SLC << " " << E2 << " " << CON << " " 
                 << PHS << " " << REP << " " << SET << " " 
@@ -1358,7 +1358,7 @@ namespace Gadgetron
                                             if ( timeStamp(ind) > 0 )
                                             {
                                                 imageHeaderSent.acquisition_time_stamp = (uint32_t)( (double)(timeStamp(ind)/timeStampResolution_) + 0.5 );
-                                                GADGET_CONDITION_MSG(verboseMode_, "Set acquisition time stamp : " << imageHeaderSent.acquisition_time_stamp);
+                                                GDEBUG_CONDITION_STREAM(verboseMode_, "Set acquisition time stamp : " << imageHeaderSent.acquisition_time_stamp);
                                             }
                                         }
 
@@ -1367,7 +1367,7 @@ namespace Gadgetron
                                             if ( physioTimeStamp(ind) > 0 )
                                             {
                                                 imageHeaderSent.physiology_time_stamp[0] = (uint32_t)( (double)(physioTimeStamp(ind)/timeStampResolution_) + 0.5 );
-                                                GADGET_CONDITION_MSG(verboseMode_, "Set physio time stamp : " << imageHeaderSent.physiology_time_stamp[0]);
+                                                GDEBUG_CONDITION_STREAM(verboseMode_, "Set physio time stamp : " << imageHeaderSent.physiology_time_stamp[0]);
                                             }
                                         }
 
@@ -1398,7 +1398,7 @@ namespace Gadgetron
                                             // image number and image series
                                             cm1->getObjectPtr()->image_index = (uint16_t)computeSeriesImageNumber ( *(cm1->getObjectPtr()), CHA, cha, E2, e2);
                                             cm1->getObjectPtr()->image_series_index = seriesNum;
-                                            // GADGET_CONDITION_MSG(verboseMode_, "image number " << cm1->getObjectPtr()->image_index << "    image series " << cm1->getObjectPtr()->image_series_index << " ... ");
+                                            // GDEBUG_CONDITION_STREAM(verboseMode_, "image number " << cm1->getObjectPtr()->image_index << "    image series " << cm1->getObjectPtr()->image_series_index << " ... ");
 
                                             // ----------------------------------------------------------
                                             // set the image attributes
@@ -1554,7 +1554,7 @@ namespace Gadgetron
                                                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, *cm2->getObjectPtr(), ostr.str());
                                             }
 
-                                            GADGET_CONDITION_MSG(verboseMode_, "sending out " << dataRole << " image [CHA SLC E2 CON PHS REP SET AVE] = [" 
+                                            GDEBUG_CONDITION_STREAM(verboseMode_, "sending out " << dataRole << " image [CHA SLC E2 CON PHS REP SET AVE] = [" 
                                                 << cha << " " 
                                                 << cm1->getObjectPtr()->slice << " " 
                                                 << e2 << " " 
@@ -1568,7 +1568,7 @@ namespace Gadgetron
                                             // send out the images
                                             if (this->next()->putq(cm1) < 0) 
                                             {
-                                                GADGET_ERROR_MSG("Put image to Q failed ... ");
+                                                GERROR_STREAM("Put image to Q failed ... ");
                                                 return false;
                                             }
                                         }
@@ -1582,7 +1582,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in GtPlusReconGadget::sendOutRecon(complex float, time stamp) ... ");
+            GERROR_STREAM("Errors in GtPlusReconGadget::sendOutRecon(complex float, time stamp) ... ");
             return false;
         }
 
@@ -1601,7 +1601,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Exceptions happened in GtPlusReconGadget::sendOutRecon2D(...) ... ");
+            GERROR_STREAM("Exceptions happened in GtPlusReconGadget::sendOutRecon2D(...) ... ");
             return false;
         }
 
@@ -1684,7 +1684,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in GtPlusReconGadget::sendOutRecon2D(float) ... ");
+            GERROR_STREAM("Errors in GtPlusReconGadget::sendOutRecon2D(float) ... ");
             return false;
         }
 
@@ -1879,7 +1879,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in GtPlusReconGadget::computeSNRImage(res, gfactor, snrImage, stdmap) ... ");
+            GERROR_STREAM("Errors in GtPlusReconGadget::computeSNRImage(res, gfactor, snrImage, stdmap) ... ");
             return false;
         }
 
@@ -1888,7 +1888,7 @@ namespace Gadgetron
 
     int GtPlusReconGadget::close(unsigned long flags)
     {
-        GADGET_CONDITION_MSG(true, "GtPlusReconGadget - close(flags) : " << flags);
+        GDEBUG_CONDITION_STREAM(true, "GtPlusReconGadget - close(flags) : " << flags);
 
         if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
 
@@ -1897,9 +1897,9 @@ namespace Gadgetron
             std::string procTime;
             gtPlus_util_.getCurrentMoment(procTime);
 
-            GADGET_MSG_DEPRECATED("* ============================================================================== *");
-            GADGET_MSG_DEPRECATED("---> MR recon phase, Currnt processing time : " << procTime << " <---");
-            GADGET_MSG_DEPRECATED("* ============================================================================== *");
+            GDEBUG_STREAM("* ============================================================================== *");
+            GDEBUG_STREAM("---> MR recon phase, Currnt processing time : " << procTime << " <---");
+            GDEBUG_STREAM("* ============================================================================== *");
         }
 
         return GADGET_OK;

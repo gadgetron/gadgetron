@@ -296,7 +296,7 @@ namespace Gadgetron{
 #endif // _WIN32
       } else {
       delete [] buf;
-      GADGET_ERROR_MSG("Noise prewhitener file is not good for writing");
+      GERROR_STREAM("Noise prewhitener file is not good for writing");
       return false;
     }
 

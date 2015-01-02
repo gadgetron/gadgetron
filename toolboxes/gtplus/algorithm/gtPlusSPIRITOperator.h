@@ -158,7 +158,7 @@ setForwardKernel(boost::shared_ptr< hoNDArray<T> >& forward_kernel, bool compute
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITOperator<T>::setForwardKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITOperator<T>::setForwardKernel(...) ... ");
         return false;
     }
 
@@ -195,7 +195,7 @@ setAdjointForwardKernel(boost::shared_ptr< hoNDArray<T> >& adjoint_forward_kerne
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITOperator<T>::setAdjointForwardKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITOperator<T>::setAdjointForwardKernel(...) ... ");
         return false;
     }
 
@@ -266,7 +266,7 @@ bool gtPlusSPIRITOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITOperator<T>::forwardOperator(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITOperator<T>::forwardOperator(...) ... ");
         return false;
     }
 
@@ -303,7 +303,7 @@ bool gtPlusSPIRITOperator<T>::adjointOperator(const hoNDArray<T>& x, hoNDArray<T
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITOperator<T>::adjointOperator(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITOperator<T>::adjointOperator(...) ... ");
         return false;
     }
     return true;
@@ -348,7 +348,7 @@ bool gtPlusSPIRITOperator<T>::computeRighHandSide(const hoNDArray<T>& x, hoNDArr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITOperator<T>::computeRighHandSide(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITOperator<T>::computeRighHandSide(...) ... ");
         return false;
     }
 
@@ -385,7 +385,7 @@ bool gtPlusSPIRITOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITOperator<T>::grad(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITOperator<T>::grad(...) ... ");
         return false;
     }
 
@@ -416,7 +416,7 @@ bool gtPlusSPIRITOperator<T>::obj(const hoNDArray<T>& x, T& obj)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITOperator<T>::grad(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITOperator<T>::grad(...) ... ");
         return false;
     }
 

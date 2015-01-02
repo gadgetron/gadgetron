@@ -290,7 +290,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in exportArrayComplexRealImag(const hoNDArray<T>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in exportArrayComplexRealImag(const hoNDArray<T>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -363,7 +363,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in exportArrayComplex(const hoNDArray<T>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in exportArrayComplex(const hoNDArray<T>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -398,7 +398,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in importArrayComplex(const hoNDArray<T>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in importArrayComplex(const hoNDArray<T>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -428,7 +428,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in importArrayComplex(hoNDArray<T>& a, const std::string& filename_real, const std::string& filename_imag) ... ");
+            GERROR_STREAM("Errors in importArrayComplex(hoNDArray<T>& a, const std::string& filename_real, const std::string& filename_imag) ... ");
             return false;
         }
 
@@ -511,7 +511,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in export4DArray(const hoNDArray<T>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in export4DArray(const hoNDArray<T>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -546,7 +546,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in export4DArrayComplex(const hoNDArray<T>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in export4DArrayComplex(const hoNDArray<T>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -578,7 +578,7 @@ public:
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in gtPlusIOBase::readFromFile(const std::string& filename, char*& data, long long& length) ... ");
+            GERROR_STREAM("Errors in gtPlusIOBase::readFromFile(const std::string& filename, char*& data, long long& length) ... ");
             return false;
         }
 
@@ -609,7 +609,7 @@ public:
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in gtPlusIOBase::writeToFile(const std::string& filename, char* data, long long length) ... ");
+            GERROR_STREAM("Errors in gtPlusIOBase::writeToFile(const std::string& filename, char* data, long long length) ... ");
             return false;
         }
 
@@ -784,7 +784,7 @@ protected:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in readData(const std::string& filename, T* data, long long len) ... ");
+            GERROR_STREAM("Errors in readData(const std::string& filename, T* data, long long len) ... ");
             return false;
         }
 
@@ -804,7 +804,7 @@ protected:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in writeData(const std::string& filename, const T* data, long long len) ... ");
+            GERROR_STREAM("Errors in writeData(const std::string& filename, const T* data, long long len) ... ");
             return false;
         }
 
