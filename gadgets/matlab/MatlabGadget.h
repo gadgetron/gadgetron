@@ -2,11 +2,10 @@
 
 #include "gadgetron_matlab_export.h"
 #include "Gadget.h"
-#include "Gadgetron.h"
 #include "gadgetron_paths.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
-
+#include "log.h"
 #include "engine.h"     // Matlab Engine header
 
 #include "ace/Synch.h"  // For the MatlabCommandServer

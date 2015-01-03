@@ -18,6 +18,7 @@ set_target_properties(gadgetron_matlab PROPERTIES VERSION ${GADGETRON_VERSION_ST
 
 target_link_libraries(
     gadgetron_matlab
+    gadgetron_toolbox_log
     gadgetron_gadgetbase
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpucore_math

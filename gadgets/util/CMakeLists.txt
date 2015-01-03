@@ -16,6 +16,7 @@ set_target_properties(gadgetron_util PROPERTIES VERSION ${GADGETRON_VERSION_STRI
 
 target_link_libraries(gadgetron_util
     gadgetron_gadgetbase
+    gadgetron_toolbox_log
     ${ACE_LIBRARIES}
 )
 

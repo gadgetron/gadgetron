@@ -38,6 +38,7 @@ set_target_properties(gadgetron_interventional_mri PROPERTIES VERSION ${GADGETRO
 
 target_link_libraries(gadgetron_interventional_mri
     gadgetron_gadgetbase
+    gadgetron_toolbox_log
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_gadgettools
     ${ISMRMRD_LIBRARIES} 

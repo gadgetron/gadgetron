@@ -19,6 +19,7 @@ set_target_properties(gadgetron_toolbox_gpufft PROPERTIES VERSION ${GADGETRON_VE
 
 target_link_libraries(gadgetron_toolbox_gpufft 
   gadgetron_toolbox_cpucore
+  gadgetron_toolbox_log
   gadgetron_toolbox_gpucore 
   ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES} 

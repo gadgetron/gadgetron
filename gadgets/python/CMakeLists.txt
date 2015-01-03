@@ -35,6 +35,7 @@ set_target_properties(gadgetron_python PROPERTIES VERSION ${GADGETRON_VERSION_ST
 
 target_link_libraries(gadgetron_python
         gadgetron_gadgetbase
+	gadgetron_toolbox_log
 	${ISMRMRD_LIBRARIES} 
 	optimized ${ACE_LIBRARIES}  
 	debug ${ACE_DEBUG_LIBRARY} 
@@ -43,6 +44,7 @@ target_link_libraries(gadgetron_python
     ${MKL_LIBRARIES})
 	
 target_link_libraries(GadgetronPythonMRI
+    gadgetron_toolbox_log
     ${ISMRMRD_LIBRARIES}
 	optimized ${ACE_LIBRARIES}  
 	debug ${ACE_DEBUG_LIBRARY} 

@@ -24,6 +24,7 @@ set_target_properties(gadgetron_toolbox_cpufft PROPERTIES VERSION ${GADGETRON_VE
 if (MKL_FOUND)
     target_link_libraries(gadgetron_toolbox_cpufft
       gadgetron_toolbox_cpucore
+      gadgetron_toolbox_log
       gadgetron_toolbox_cpucore_math
       ${MKL_LIBRARIES} 
       ${Boost_LIBRARIES} 
@@ -31,6 +32,7 @@ if (MKL_FOUND)
 else (MKL_FOUND)
 target_link_libraries(gadgetron_toolbox_cpufft
   gadgetron_toolbox_cpucore
+  gadgetron_toolbox_log
   gadgetron_toolbox_cpucore_math
   ${FFTW3_LIBRARIES} 
   ${Boost_LIBRARIES} 

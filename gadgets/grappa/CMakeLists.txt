@@ -35,6 +35,7 @@ set_target_properties(gadgetron_grappa PROPERTIES VERSION ${GADGETRON_VERSION_ST
 
 target_link_libraries(gadgetron_grappa 
   gadgetron_gadgetbase
+  gadgetron_toolbox_log
   gadgetron_toolbox_gpuparallelmri
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpufft

@@ -142,6 +142,7 @@ set_target_properties(gadgetronPlus PROPERTIES VERSION ${GADGETRON_VERSION_STRIN
 
 target_link_libraries(gadgetronPlus 
     gadgetron_gadgetbase
+    gadgetron_toolbox_log
     gadgetron_toolbox_cpucore 
     gadgetron_toolbox_cpucore_math 
     gadgetron_toolbox_cpufft

@@ -11,7 +11,8 @@ add_library(gadgetron_toolbox_cloudbus SHARED
   cloudbus_export.h
 )
 
-target_link_libraries(gadgetron_toolbox_cloudbus 
+target_link_libraries(gadgetron_toolbox_cloudbus
+		     gadgetron_toolbox_log
                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 set_target_properties(gadgetron_toolbox_cloudbus PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_CLOUDBUS__")
