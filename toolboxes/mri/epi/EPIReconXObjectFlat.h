@@ -142,7 +142,7 @@ template <typename T> int EPIReconXObjectFlat<T>::apply(ISMRMRD::AcquisitionHead
     arma::mat Qp(numSamples_, Ne);
     arma::mat Qn(numSamples_, Ne);
     for (p=0; p<numSamples_; p++) {
-      //std::cout << trajectoryPos_(p) << "    " << trajectoryNeg_(p) << std::endl;
+      //GDEBUG_STREAM(trajectoryPos_(p) << "    " << trajectoryNeg_(p) << std::endl);
       for (q=0; q<Ne; q++) {
 	Qp(p,q) = sinc(trajectoryPos_(p)-keven(q));
 	Qn(p,q) = sinc(trajectoryNeg_(p)-keven(q));

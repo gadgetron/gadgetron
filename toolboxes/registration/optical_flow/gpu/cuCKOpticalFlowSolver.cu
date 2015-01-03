@@ -73,7 +73,7 @@ namespace Gadgetron{
     cuNDArray<T> *pong = displacements_pong.get();
 
     if( this->output_mode_ >= cuOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
-      std::cout << std::endl;
+      GDEBUG_STREAM(std::endl);
     }
 
     //
@@ -83,7 +83,7 @@ namespace Gadgetron{
     while(true){
     
       if( this->output_mode_ >= cuOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
-        std::cout << "."; std::cout.flush();
+        GDEBUG_STREAM("."; std::cout.flush());
       }
     
       // Clear termination flag
@@ -120,7 +120,7 @@ namespace Gadgetron{
     
       if( _continue_flag == 0 ){
         if( this->output_mode_ >= cuOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
-          std::cout << std::endl << "Break after " << iteration_no+1 << " iterations" << std::endl;
+          GDEBUG_STREAM(std::endl << "Break after " << iteration_no+1 << " iterations" << std::endl);
         }
         break;
       }

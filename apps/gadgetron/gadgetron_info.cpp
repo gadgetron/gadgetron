@@ -67,26 +67,26 @@ size_t get_system_memory_size()
 
 int main(int argc, char** argv)
 {
-  std::cout << "Gadgetron Version Info" << std::endl;
-  std::cout << "  -- Version            : " << GADGETRON_VERSION_STRING << std::endl;
-  std::cout << "  -- Git SHA1           : " << GADGETRON_GIT_SHA1_HASH << std::endl;
-  std::cout << "  -- System Memory size : " << get_system_memory_size()/(1024*1024) << " MB" << std::endl;
+  GDEBUG_STREAM("Gadgetron Version Info" << std::endl);
+  GDEBUG_STREAM("  -- Version            : " << GADGETRON_VERSION_STRING << std::endl);
+  GDEBUG_STREAM("  -- Git SHA1           : " << GADGETRON_GIT_SHA1_HASH << std::endl);
+  GDEBUG_STREAM("  -- System Memory size : " << get_system_memory_size()/(1024*1024) << " MB" << std::endl);
 
 #if defined COMPILING_WITH_PYTHON_SUPPORT
-  std::cout << "  -- Python Support     : YES" << std::endl;
+  GDEBUG_STREAM("  -- Python Support     : YES" << std::endl);
 #else
-  std::cout << "  -- Python Support     : NO" << std::endl; 
+  GDEBUG_STREAM("  -- Python Support     : NO" << std::endl); 
 #endif
 
 #if defined USE_CUDA
-  std::cout << "  -- CUDA Support       : YES (" << GADGETRON_CUDA_NVCC_FLAGS << ")" << std::endl;
+  GDEBUG_STREAM("  -- CUDA Support       : YES (" << GADGETRON_CUDA_NVCC_FLAGS << ")" << std::endl);
   int deviceCount = 0;
   cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
   
   if (error_id != cudaSuccess) {
-    std::cout << "    * Unable to get device count" << std::endl;
+    GDEBUG_STREAM("    * Unable to get device count" << std::endl);
   } else {
-    std::cout << "    * Number of CUDA capable devices: " << deviceCount << std::endl;
+    GDEBUG_STREAM("    * Number of CUDA capable devices: " << deviceCount << std::endl);
     if (deviceCount) {
       
       int dev, driverVersion = 0, runtimeVersion = 0;
@@ -99,29 +99,29 @@ int main(int argc, char** argv)
         cudaDriverGetVersion(&driverVersion);
         cudaRuntimeGetVersion(&runtimeVersion);
 
-	std::cout << "      - Device " << dev << ": " << deviceProp.name << std::endl; 
+	GDEBUG_STREAM("      - Device " << dev << ": " << deviceProp.name << std::endl); 
 	std::cout << "         + CUDA Driver Version / Runtime Version: " 
 		  <<  (driverVersion/1000)  << "." << (driverVersion%100)/10 << "/" 
 		  <<  (runtimeVersion/1000) << "." << (runtimeVersion%100)/10 << std::endl;
-	std::cout << "         + CUDA Capability Major/Minor version number: " <<  deviceProp.major << "." << deviceProp.minor << std::endl;
-	std::cout << "         + Total amount of global GPU memory: " << (float)deviceProp.totalGlobalMem/1048576.0f << " MB" << std::endl;
+	GDEBUG_STREAM("         + CUDA Capability Major/Minor version number: " <<  deviceProp.major << "." << deviceProp.minor << std::endl);
+	GDEBUG_STREAM("         + Total amount of global GPU memory: " << (float)deviceProp.totalGlobalMem/1048576.0f << " MB" << std::endl);
       }
     }
   }
 #else
-  std::cout << "  -- CUDA Support       : NO" << std::endl; 
+  GDEBUG_STREAM("  -- CUDA Support       : NO" << std::endl); 
 #endif
     
-  std::cout << std::endl;
+  GDEBUG_STREAM(std::endl);
 
   if (argc == 1) {
     return 0;
   }
 
   if ((argc == 2) || (argc > 3)) {
-    std::cout << "Invalid number of arguments (" << argc -1 << ")." << std::endl;
-    std::cout << "Usage (gadget library info):  " << argc << std::endl;
-    std::cout << " -- gadgetron_info <SHARED LIB> <GADGET_INFO>" << std::endl;
+    GDEBUG_STREAM("Invalid number of arguments (" << argc -1 << ")." << std::endl);
+    GDEBUG_STREAM("Usage (gadget library info):  " << argc << std::endl);
+    GDEBUG_STREAM(" -- gadgetron_info <SHARED LIB> <GADGET_INFO>" << std::endl);
     return -1; 
   }
 
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
   const char* component_name = argv[2];
 
   //We must be investigating a certain gadget
-  std::cout << "Examining Gadget (SHARED LIB): " << component_name << " (" << DLL << ")" << std::endl;
+  GDEBUG_STREAM("Examining Gadget (SHARED LIB): " << component_name << " (" << DLL << ")" << std::endl);
 
   //Attempt to load Gadget
   //ACE_DLL_Manager* dllmgr = ACE_DLL_Manager::instance();
@@ -148,12 +148,12 @@ int main(int argc, char** argv)
   ACE_OS::sprintf(factoryname, "make_%s", component_name);
   
   if (dll.open(dllname, ACE_DEFAULT_SHLIB_MODE, dll_handle )) {
-    std::cout << "Failed to load DLL (" << DLL << "), Possible reasons:" << std::endl;
-    std::cout << "   - Name of DLL is wrong" << std::endl;
-    std::cout << "   - Path of DLL is not in your DLL search path (LD_LIBRARY_PATH on Unix)" << std::endl;
-    std::cout << "   - Path of other DLLs that this DLL depends on is not in the search path" << std::endl;
-    std::cout << "" << std::endl;
-    std::cout << "Set environment variable ACE_DEBUG=1 to get more information" << std::endl << std::endl; 
+    GDEBUG_STREAM("Failed to load DLL (" << DLL << "), Possible reasons:" << std::endl);
+    GDEBUG_STREAM("   - Name of DLL is wrong" << std::endl);
+    GDEBUG_STREAM("   - Path of DLL is not in your DLL search path (LD_LIBRARY_PATH on Unix)" << std::endl);
+    GDEBUG_STREAM("   - Path of other DLLs that this DLL depends on is not in the search path" << std::endl);
+    GDEBUG_STREAM("" << std::endl);
+    GDEBUG_STREAM("Set environment variable ACE_DEBUG=1 to get more information" << std::endl << std::endl); 
     return 0;
   } 
 
@@ -165,17 +165,17 @@ int main(int argc, char** argv)
   ComponentCreator cc = reinterpret_cast<ComponentCreator> (tmp);
   
   if (cc == 0) {
-    std::cout << "Failed to load factory (" << factoryname << ") from DLL (" << dllname << ")" << std::endl;
+    GDEBUG_STREAM("Failed to load factory (" << factoryname << ") from DLL (" << dllname << ")" << std::endl);
     return -1;
   }
   
   Gadget* g = cc();
   if (!g) {
-    std::cout << "Failed to create component using factory" << std::endl;
+    GDEBUG_STREAM("Failed to create component using factory" << std::endl);
     return 0;
   }
 
-  std::cout << "  -- Gadget compiled against Gadgetron version " << g->get_gadgetron_version() << std::endl;
+  GDEBUG_STREAM("  -- Gadget compiled against Gadgetron version " << g->get_gadgetron_version() << std::endl);
 
   delete g;
 

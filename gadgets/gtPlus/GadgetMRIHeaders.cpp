@@ -94,22 +94,22 @@ void GadgetMessageAcquisition::set_quarternion(unsigned int index, float quar)
 
 void GadgetMessageAcquisition::dump()
 {
-    std::cout << "GadgetMessageAcquisition" << std::endl;
-    std::cout << "----------------------------------------------------------" << std::endl;
-    std::cout << "flags            : " << flags << std::endl;
-    std::cout << "meas_uid         : " << meas_uid << std::endl;
-    std::cout << "scan_counter     : " << scan_counter << std::endl;
-    std::cout << "time_stamp       : " << time_stamp << std::endl;
-    std::cout << "pmu_time_stamp   : " << pmu_time_stamp << std::endl;
-    std::cout << "samples          : " << samples << std::endl;
-    std::cout << "channels         : " << channels << std::endl;
-    std::cout << "position         : " << position[0] << " " << position[1] << " " << position[2] << std::endl;
-    std::cout << "quarternion      : " << quarternion[0] << " " << quarternion[1] << " " << quarternion[2] << " " << quarternion[3] << std::endl;
-    std::cout << "table_position   : " << table_position << std::endl;
-    std::cout << "idx     : ";            idx.dump();
-    std::cout << "min_idx : ";            min_idx.dump();
-    std::cout << "max_idx : ";            max_idx.dump();
-    std::cout << "----------------------------------------------------------" << std::endl;
+    GDEBUG_STREAM("GadgetMessageAcquisition" << std::endl);
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
+    GDEBUG_STREAM("flags            : " << flags << std::endl);
+    GDEBUG_STREAM("meas_uid         : " << meas_uid << std::endl);
+    GDEBUG_STREAM("scan_counter     : " << scan_counter << std::endl);
+    GDEBUG_STREAM("time_stamp       : " << time_stamp << std::endl);
+    GDEBUG_STREAM("pmu_time_stamp   : " << pmu_time_stamp << std::endl);
+    GDEBUG_STREAM("samples          : " << samples << std::endl);
+    GDEBUG_STREAM("channels         : " << channels << std::endl);
+    GDEBUG_STREAM("position         : " << position[0] << " " << position[1] << " " << position[2] << std::endl);
+    GDEBUG_STREAM("quarternion      : " << quarternion[0] << " " << quarternion[1] << " " << quarternion[2] << " " << quarternion[3] << std::endl);
+    GDEBUG_STREAM("table_position   : " << table_position << std::endl);
+    GDEBUG_STREAM("idx     : ";            idx.dump());
+    GDEBUG_STREAM("min_idx : ";            min_idx.dump());
+    GDEBUG_STREAM("max_idx : ";            max_idx.dump());
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
 }
 
 // --------------------------------------------------------------------
@@ -236,27 +236,27 @@ void GadgetMessageImage::set_quarternion(unsigned int index, float quar)
 
 void GadgetMessageImage::dumpInfo()
 {
-    std::cout << "flags                 : " << flags << std::endl;
-    std::cout << "matrix_size           : " << matrix_size[0] << " " << matrix_size[1] << " " << matrix_size[2] << std::endl;
-    std::cout << "channels              : " << channels << std::endl;
-    std::cout << "position              : " << position[0] << " " << position[1] << " " << position[2] << std::endl;
-    std::cout << "quarternion           : " << quarternion[0] << " " << quarternion[1] << " " << quarternion[2] << " " << quarternion[3] << std::endl;
-    std::cout << "table_position        : " << table_position << std::endl;
-    std::cout << "data_idx_min          : ";   data_idx_min.dump();
-    std::cout << "data_idx_max          : ";   data_idx_max.dump();
-    std::cout << "data_idx_current      : ";   data_idx_current.dump();
-    std::cout << "time_stamp            : " << time_stamp << std::endl;
-    std::cout << "pmu_time_stamp        : " << pmu_time_stamp << std::endl;
-    std::cout << "image_format          : " << image_format << std::endl;
-    std::cout << "image_type            : " << image_type << std::endl;
-    std::cout << "image_index           : " << image_index << std::endl;
-    std::cout << "image_series_index    : " << image_series_index << std::endl;
+    GDEBUG_STREAM("flags                 : " << flags << std::endl);
+    GDEBUG_STREAM("matrix_size           : " << matrix_size[0] << " " << matrix_size[1] << " " << matrix_size[2] << std::endl);
+    GDEBUG_STREAM("channels              : " << channels << std::endl);
+    GDEBUG_STREAM("position              : " << position[0] << " " << position[1] << " " << position[2] << std::endl);
+    GDEBUG_STREAM("quarternion           : " << quarternion[0] << " " << quarternion[1] << " " << quarternion[2] << " " << quarternion[3] << std::endl);
+    GDEBUG_STREAM("table_position        : " << table_position << std::endl);
+    GDEBUG_STREAM("data_idx_min          : ";   data_idx_min.dump());
+    GDEBUG_STREAM("data_idx_max          : ";   data_idx_max.dump());
+    GDEBUG_STREAM("data_idx_current      : ";   data_idx_current.dump());
+    GDEBUG_STREAM("time_stamp            : " << time_stamp << std::endl);
+    GDEBUG_STREAM("pmu_time_stamp        : " << pmu_time_stamp << std::endl);
+    GDEBUG_STREAM("image_format          : " << image_format << std::endl);
+    GDEBUG_STREAM("image_type            : " << image_type << std::endl);
+    GDEBUG_STREAM("image_index           : " << image_index << std::endl);
+    GDEBUG_STREAM("image_series_index    : " << image_series_index << std::endl);
 }
 
 void GadgetMessageImage::dump()
 {
-    std::cout << "GadgetMessageImage" << std::endl;
-    std::cout << "----------------------------------------------------------" << std::endl;
+    GDEBUG_STREAM("GadgetMessageImage" << std::endl);
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
     dumpInfo();
-    std::cout << "----------------------------------------------------------" << std::endl;
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
 }

@@ -50,10 +50,10 @@ namespace Gadgetron
   };
 }
 
-#define GDEBUG(...) Gadgetron::GadgetronLogger::instance()->log(GADGETRON_LOG_LEVEL_DEBUG,   __FILE__, __LINE__, __VA_ARGS__)
-#define GINFO(...)  Gadgetron::GadgetronLogger::instance()->log(GADGETRON_LOG_LEVEL_INFO,    __FILE__, __LINE__, __VA_ARGS__)
-#define GWARN(...)  Gadgetron::GadgetronLogger::instance()->log(GADGETRON_LOG_LEVEL_WARNING, __FILE__, __LINE__, __VA_ARGS__)
-#define GERROR(...) Gadgetron::GadgetronLogger::instance()->log(GADGETRON_LOG_LEVEL_ERROR,   __FILE__, __LINE__, __VA_ARGS__)
+#define GDEBUG(...) Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_DEBUG,   __FILE__, __LINE__, __VA_ARGS__)
+#define GINFO(...)  Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_INFO,    __FILE__, __LINE__, __VA_ARGS__)
+#define GWARN(...)  Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_WARNING, __FILE__, __LINE__, __VA_ARGS__)
+#define GERROR(...) Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_ERROR,   __FILE__, __LINE__, __VA_ARGS__)
 
 #define GEXCEPTION(err, message);	  \
   {					  \

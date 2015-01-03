@@ -94,7 +94,7 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
     //else
     //{
     //    meas_max_idx_.kspace_encode_step_1 = 0;
-    //    std::cout << "Setting number of kspace_encode_step_1 to 0" << std::endl;
+    //    GDEBUG_STREAM("Setting number of kspace_encode_step_1 to 0" << std::endl);
     //    return GADGET_FAIL;
     //}
 

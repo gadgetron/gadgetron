@@ -86,7 +86,7 @@ namespace Gadgetron{
     hoNDArray<T> *pong = displacements_pong.get(); 
 
     if( this->output_mode_ >= hoOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
-      std::cout << std::endl;
+      GDEBUG_STREAM(std::endl);
     }
 
     //
@@ -96,7 +96,7 @@ namespace Gadgetron{
     while(true){
     
       if( this->output_mode_ >= hoOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
-	std::cout << "."; std::cout.flush();
+	GDEBUG_STREAM("."; std::cout.flush());
       }
     
       // Continuation flag used for early Jacobi termination
@@ -264,7 +264,7 @@ namespace Gadgetron{
       
       if( continue_flag == 0 ){
 	if( this->output_mode_ >= hoOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
-	  std::cout << std::endl << "Break after " << iteration_no+1 << " iterations" << std::endl;
+	  GDEBUG_STREAM(std::endl << "Break after " << iteration_no+1 << " iterations" << std::endl);
 	}
 	break;
       }

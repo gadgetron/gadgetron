@@ -209,7 +209,7 @@ namespace Gadgetron{
         generalOperator<ARRAY_TYPE>::set_domain_dimensions(dims);
         op->set_domain_dimensions(dims);
         if (op->get_codomain_dimensions()->size() == 0){
-          std::cout << "WARNING: Codomain dimension not set. Setting to domain_dimension" << std::endl;
+          GDEBUG_STREAM("WARNING: Codomain dimension not set. Setting to domain_dimension" << std::endl);
           op->set_codomain_dimensions(dims);
         }
       }
@@ -305,7 +305,7 @@ namespace Gadgetron{
           boost::shared_ptr<linearOperator<ARRAY_TYPE> > op = group[i];
           op->set_domain_dimensions(dims);
           if (op->get_codomain_dimensions()->size() == 0){
-            std::cout << "WARNING: Codomain dimension not set. Setting to domain_dimension" << std::endl;
+            GDEBUG_STREAM("WARNING: Codomain dimension not set. Setting to domain_dimension" << std::endl);
             op->set_codomain_dimensions(dims);
           }
         }

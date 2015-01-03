@@ -81,7 +81,7 @@ cublasHandle_t* CUBLASContextProvider::getCublasHandle(int device_no)
 
 	cublasHandle_t handle; // this is a struct pointer
 
-	//std::cout << "*********   CREATING NEW CONTEXT ************" << std::endl;
+	//GDEBUG_STREAM("*********   CREATING NEW CONTEXT ************" << std::endl);
 
 	if (cublasCreate_v2(&handle) != CUBLAS_STATUS_SUCCESS) {
 		std::cerr << "CUBLASContextProvider: unable to create cublas handle\n" << std::endl;

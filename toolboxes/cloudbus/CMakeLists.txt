@@ -21,6 +21,7 @@ set_target_properties(gadgetron_toolbox_cloudbus  PROPERTIES VERSION ${GADGETRON
 add_executable(gadgetron_cloudbus cloudbus_main.cpp)
 target_link_libraries(gadgetron_cloudbus 
                      gadgetron_toolbox_cloudbus 
+		     gadgetron_toolbox_log
                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 
 install(TARGETS gadgetron_toolbox_cloudbus DESTINATION lib COMPONENT main)

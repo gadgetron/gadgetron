@@ -34,7 +34,7 @@ namespace Gadgetron
     virtual boost::shared_ptr<ARRAY_TYPE_OUT> get_x0(){ return x0_; }
 
     virtual void solver_warning(std::string warn){
-      std::cout << warn << std::endl;
+      GDEBUG_STREAM(warn << std::endl);
     }
 
     // Invoke solver

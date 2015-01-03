@@ -26,7 +26,7 @@ static void usage()
     outs << "                    -o <Query out file>            (default dependency.xml)" << endl;
     outs << std::ends; 
 
-    std::cout << outs.str();
+    GDEBUG_STREAM(outs.str());
 }
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )

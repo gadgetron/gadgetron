@@ -84,7 +84,7 @@ namespace Gadgetron{
             fft_storage = (T*)fftw_malloc_ptr_(sizeof(T)*length*2);
             if (fft_storage == 0)
             {
-                std::cout << "Failed to allocate buffer for FFT" << std::endl;
+                GDEBUG_STREAM("Failed to allocate buffer for FFT" << std::endl);
                 return;
             }
             fft_buffer = (T*)fft_storage;
@@ -96,7 +96,7 @@ namespace Gadgetron{
             if (fft_plan == 0)
             {
                 fftw_free_ptr_(fft_storage);
-                std::cout << "Failed to create plan for FFT" << std::endl;
+                GDEBUG_STREAM("Failed to create plan for FFT" << std::endl);
                 return;
             }
             mutex_.unlock();

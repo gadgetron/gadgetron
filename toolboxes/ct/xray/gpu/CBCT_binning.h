@@ -129,7 +129,7 @@ namespace Gadgetron {
       errCode=H5LTread_dataset (file_id, "/numBins", H5T_NATIVE_UINT, &numBins);
       if(errCode < 0)
         throw std::runtime_error("Error reading /numBins_dataformat_version");
-      //std::cout << "Found " << numBins << " bins in file" << filename << std::endl;
+      //GDEBUG_STREAM("Found " << numBins << " bins in file" << filename << std::endl);
 
       // Ok, so this really isn't very elegant.
       // A folder in the hdf5 file containing the data would be better...

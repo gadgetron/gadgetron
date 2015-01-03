@@ -1,7 +1,7 @@
 #ifndef URLENCODE_H
 #define URLENCODE_H
 
-#include <iostream>
+#include "log.h"
 
 namespace Gadgetron {
 
@@ -13,7 +13,7 @@ namespace Gadgetron {
 inline std::string url_encode(const std::string& in) {
 	char* tmp = new char[in.size()*4]; //Leave us plenty of space
 	if (!tmp) {
-		std::cout << "Failed to allocate temporary space for string in url_encode" << std::endl;
+		GDEBUG_STREAM("Failed to allocate temporary space for string in url_encode" << std::endl);
 		return in;
 	}
 

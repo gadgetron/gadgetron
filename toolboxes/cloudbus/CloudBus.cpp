@@ -1,4 +1,5 @@
 #include "CloudBus.h"
+#include "log.h"
 
 namespace Gadgetron
 {
@@ -36,7 +37,7 @@ namespace Gadgetron
   int CloudBusReceiverTask::open(void*)
   {
     if (mcast_dgram_.join(mcast_addr_) == -1) {
-      std::cout << "Error doing dgram join" << std::endl;
+      GDEBUG_STREAM("Error doing dgram join" << std::endl);
       return -1;
     }
     return CloudBusTask::open();      
@@ -74,7 +75,7 @@ namespace Gadgetron
   int CloudBusSenderTask::open(void*)
   {
     if (mcast_dgram_.open(mcast_addr_) == -1) {
-      std::cout << "Error doing dgram open" << std::endl;
+      GDEBUG_STREAM("Error doing dgram open" << std::endl);
       return -1;
     }
     return CloudBusTask::open();      
@@ -84,8 +85,8 @@ namespace Gadgetron
   {
     char buffer[GADGETRON_NODE_INFO_MESSAGE_LENGTH]; //Size of message
     if (CloudBus::instance()->uuid_.size() != 16) {
-      std::cout << "Severe problem, UUID is != 16" << std::endl;
-      std::cout << "uuid: " << CloudBus::instance()->uuid_ << "(" << CloudBus::instance()->uuid_.size() << ")" << std::endl;
+      GDEBUG_STREAM("Severe problem, UUID is != 16" << std::endl);
+      GDEBUG_STREAM("uuid: " << CloudBus::instance()->uuid_ << "(" << CloudBus::instance()->uuid_.size() << ")" << std::endl);
     }
     
     memcpy(buffer                        ,  CloudBus::instance()->uuid_.begin(), 16);
@@ -95,7 +96,7 @@ namespace Gadgetron
     while (true) {
       if (!CloudBus::instance()->query_mode_) {
 	if (mcast_dgram_.send(buffer, GADGETRON_NODE_INFO_MESSAGE_LENGTH) == -1) {
-	  std::cout << "Failed to send dgram data" << std::endl;
+	  GDEBUG_STREAM("Failed to send dgram data" << std::endl);
 	}
       }
       CloudBus::instance()->remove_stale_nodes();
@@ -186,7 +187,7 @@ namespace Gadgetron
     map_type_::iterator it = nodes_.find(key);
     if (it == nodes_.end()) {
       if (info.uuid != node_info_.uuid) { //Reject stuff coming from myself
-	std::cout << "---->>>> New Cloud Node <<<<< ----- " << info.uuid << " (" << info.address << ":" << info.port << ", " << info.compute_capability << ")" << std::endl;
+	GDEBUG_STREAM("---->>>> New Cloud Node <<<<< ----- " << info.uuid << " (" << info.address << ":" << info.port << ", " << info.compute_capability << ")" << std::endl);
       } 
     } 
 
@@ -204,7 +205,7 @@ namespace Gadgetron
     for (map_type_::iterator it = nodes_.begin(); it != nodes_.end(); ++it) {
       if (fabs(difftime(it->second.second,now)) > 30) {
         GadgetronNodeInfo n = it->second.first;
-        std::cout << "---->>>> DELETING STALE CLOUD NODE <<<<< ----- " << n.uuid << " (" << n.address << ":" << n.port  << ", " << n.compute_capability << ")" << std::endl;
+        GDEBUG_STREAM("---->>>> DELETING STALE CLOUD NODE <<<<< ----- " << n.uuid << " (" << n.address << ":" << n.port  << ", " << n.compute_capability << ")" << std::endl);
       }
       else
       {
