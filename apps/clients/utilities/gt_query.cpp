@@ -67,8 +67,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
     if (con.open(host,port) != 0)
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to connect to the Gadgetron host")));
-        return -1;
+      GERROR("Unable to connect to the Gadgetron host\n");
+      return -1;
     }
 
     // need to register a reader
@@ -77,8 +77,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
     //Tell Gadgetron which XML configuration to run.
     if (con.send_gadgetron_configuration_file(std::string("gtquery.xml")) != 0)
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to send XML configuration to the Gadgetron host")));
-        return -1;
+      GERROR("Unable to send XML configuration to the Gadgetron host\n");
+      return -1;
     }
 
     GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
@@ -88,8 +88,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
     if (con.putq(m1) == -1)
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to put CLOSE package on queue")));
-        return -1;
+      GERROR("Unable to put CLOSE package on queue\n");
+      return -1;
     }
 
     con.wait();

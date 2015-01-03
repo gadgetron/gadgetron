@@ -76,6 +76,14 @@ namespace Gadgetron
      Log levels are defined in @GadgetronLogLevel
      Ouput options are defined in @GadgetronLogOutput
  
+     The logger checks the environment variable GADGETRON_LOG_MASK. If it is set,
+     it disables all log levels and outputs and only enables the ones in the mask. 
+     It can be specified with (on unix system):
+
+     export GADGETRON_LOG_MASK="LEVEL_INFO,LEVEL_DEBUG,PRINT_FILELOC,PRINT_DATETIME"
+     
+     Any (or no) seperator is allowed between the levels and ourput options.
+
    */
   class EXPORTGADGETRONLOG GadgetronLogger
   {
