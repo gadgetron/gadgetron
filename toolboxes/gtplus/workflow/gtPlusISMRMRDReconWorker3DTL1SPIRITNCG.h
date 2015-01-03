@@ -202,32 +202,32 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, gtPlus_mem_manager_);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue RO to 4th dimension ... "));
+        if ( performTiming_ ) { gt_timer3_.start("permtue RO to 4th dimension ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "kspaceIfftROPermuted");
 
         // permute kernel
         hoNDArray<T> kerPermuted(E1, E2, srcCHA, dstCHA, RO);
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permute kernel RO to 5th dimension ... "));
+        if ( performTiming_ ) { gt_timer3_.start("permute kernel RO to 5th dimension ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension( adj_forward_G_I, kerPermuted));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         // permute coil map
         hoNDArray<T> coilMapN(RO, E1, E2, dstCHA, workOrder3DT->coilMap_->begin()+n*RO*E1*E2*dstCHA);
         hoNDArray<T> coilMapPermuted(E1, E2, dstCHA, RO);
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue coil map RO to 4th dimension ... "));
+        if ( performTiming_ ) { gt_timer3_.start("permtue coil map RO to 4th dimension ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(coilMapN, coilMapPermuted));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, coilMapPermuted, "coilMapPermuted");
 
         hoNDArray<T> resPermuted(E1, E2, dstCHA, RO);
         GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImplROPermuted(workOrder3DT, kspaceIfftROPermuted, kerPermuted, coilMapPermuted, resPermuted));
 
         // permute the unwrapped kspace
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue RO to 1st dimension ... "));
+        if ( performTiming_ ) { gt_timer3_.start("permtue RO to 1st dimension ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo1stDimensionFor3DRecon(resPermuted, kspaceIfftRO));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         // perform fft along the first dimension
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(kspaceIfftRO, res));
@@ -289,9 +289,9 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
         if ( performLinear )
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit linear solver for 3DT ... "));
+            if ( performTiming_ ) { gt_timer3_.start("NCG spirit linear solver for 3DT ... "); }
             GADGET_CHECK_RETURN_FALSE(BaseClass::performUnwarppingImplROPermuted(workOrder3DT, kspace, *kerIm, coilMap, kspaceLinear));
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+            if ( performTiming_ ) { gt_timer3_.stop(); }
         }
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceLinear, "kspaceLinear");
@@ -362,9 +362,9 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.add(spirit, (value_type)(workOrder3DT->spirit_parallel_imaging_lamda_) );
                     ncgsolver.add(wavNullSpace3DOperator, (value_type)(workOrder3DT->spirit_image_reg_lamda_) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 3DT ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 3DT ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3DT_res");
 
@@ -401,9 +401,9 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.add(wavNoNullSpace3DOperator, (value_type)(workOrder3DT->spirit_image_reg_lamda_) );
                     ncgsolver.add(dataOper, (value_type)(workOrder3DT->spirit_data_fidelity_lamda_) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 3DT without null space ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 3DT without null space ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3DT_res_noNullSpace");
                 }
@@ -444,9 +444,9 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.add(spirit, (value_type)(workOrder3DT->spirit_parallel_imaging_lamda_) );
                     ncgsolver.add(wavNullSpace2DOperator, (value_type)(workOrder3DT->spirit_image_reg_lamda_) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 3D ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 3D ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3D_res");
 
@@ -478,9 +478,9 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.add(wavNoNullSpace2DOperator, (value_type)(workOrder3DT->spirit_image_reg_lamda_) );
                     ncgsolver.add(dataOper, (value_type)(workOrder3DT->spirit_data_fidelity_lamda_) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 3D without null space ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 3D without null space ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3D_res_noNullSpace");
                 }
@@ -614,9 +614,9 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.add(spirit, (value_type)(workOrder3DT->spirit_parallel_imaging_lamda_) );
                     ncgsolver.add(wavNullSpace3DOperator, (value_type)(workOrder3DT->spirit_image_reg_lamda_) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 3DT ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 3DT ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3DT_res");
 
@@ -653,9 +653,9 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.add(wavNoNullSpace3DOperator, (value_type)(workOrder3DT->spirit_image_reg_lamda_) );
                     ncgsolver.add(dataOper, (value_type)(workOrder3DT->spirit_data_fidelity_lamda_) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 3DT without null space ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 3DT without null space ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3DT_res_noNullSpace");
                 }
@@ -696,9 +696,9 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.add(spirit, (value_type)(workOrder3DT->spirit_parallel_imaging_lamda_) );
                     ncgsolver.add(wavNullSpace2DOperator, (value_type)(workOrder3DT->spirit_image_reg_lamda_) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 3D ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 3D ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3D_res");
 
@@ -730,9 +730,9 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.add(wavNoNullSpace2DOperator, (value_type)(workOrder3DT->spirit_image_reg_lamda_) );
                     ncgsolver.add(dataOper, (value_type)(workOrder3DT->spirit_data_fidelity_lamda_) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 3D without null space ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 3D without null space ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3D_res_noNullSpace");
                 }

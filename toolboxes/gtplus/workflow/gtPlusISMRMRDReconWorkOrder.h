@@ -8,6 +8,9 @@
 #include "ismrmrd/ismrmrd.h"
 #include "gtPlusISMRMRDReconUtil.h"
 
+// MACROS FOR PRINTING
+#define GADGET_OSTREAM_PRINT(os, content) { os << #content << " is " << content << std::endl; }
+
 namespace Gadgetron { namespace gtPlus {
 
 #define MAX_MOCO_LEVEL 16

@@ -59,7 +59,7 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
 
         if ( !workOrder3DT->workFlow_use_BufferedKernel_ )
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("prepRef"));
+            if ( performTiming_ ) { gt_timer1_.start("prepRef"); }
             GADGET_CHECK_RETURN_FALSE(this->prepRef(workOrder3DT, workOrder3DT->ref_, 
                                                 workOrder3DT->ref_recon_, 
                                                 workOrder3DT->ref_coil_map_, 
@@ -67,7 +67,7 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
                                                 workOrder3DT->start_E1_, workOrder3DT->end_E1_, 
                                                 workOrder3DT->start_E2_, workOrder3DT->end_E2_, 
                                                 workOrder3DT->data_.get_size(1), workOrder3DT->data_.get_size(2)));
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            if ( performTiming_ ) { gt_timer1_.stop(); }
         }
 
         size_t RO = workOrder3DT->data_.get_size(0);
@@ -123,13 +123,13 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
 
         workOrder3DT->complexIm_.create(RO, E1, E2, N);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("perform coil combination"));
+        if ( performTiming_ ) { gt_timer1_.start("perform coil combination"); }
 
         hoNDArrayMemoryManaged<T> buffer3DT(workOrder3DT->data_.get_dimensions(), gtPlus_mem_manager_);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->data_, buffer3DT);
         gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+        if ( performTiming_ ) { gt_timer1_.stop(); }
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "combined");
     }

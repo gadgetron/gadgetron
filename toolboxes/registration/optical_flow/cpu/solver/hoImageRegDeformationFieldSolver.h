@@ -240,13 +240,13 @@ namespace Gadgetron
                 GADGET_CHECK_RETURN_FALSE(warper.warp(*target, *source, use_world_coordinate_, warped));
             }
 
-            GADGET_CHECK_PERFORM(!debugFolder_.empty(), GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, warped, "DeformationFieldSolver_warpped"));
+            if ( !debugFolder_.empty() ) {  GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, warped, "DeformationFieldSolver_warpped"); }
 
             // evaluate the dissimilarity and get the intensity comparison function
             GADGET_CHECK_RETURN_FALSE(dissimilarity.evaluateDeriv(warped));
 
             curr_dissimilarity = dissimilarity.getDissimilarity();
-            GADGET_CHECK_PERFORM(verbose_, GDEBUG_STREAM("--> Iteration " << iter_num << " [out of " << max_iter_num << "] : \t" << curr_dissimilarity) );
+            if ( verbose_ ) { GDEBUG_STREAM("--> Iteration " << iter_num << " [out of " << max_iter_num << "] : \t" << curr_dissimilarity); }
 
             if ( prev_dissimilarity < curr_dissimilarity + dissimilarity_thres_ )
             {
@@ -258,7 +258,7 @@ namespace Gadgetron
 
                 step_size_para_ *= step_size_div_para_;
 
-                GADGET_CHECK_PERFORM(verbose_, GDEBUG_STREAM("----> Parameter division " << divTimes << " [out of " << div_num_ << "] ") );
+                if ( verbose_ ) { GDEBUG_STREAM("----> Parameter division " << divTimes << " [out of " << div_num_ << "] "); }
             }
 
             prev_dissimilarity = curr_dissimilarity;
@@ -630,7 +630,7 @@ namespace Gadgetron
 
             bool stopIteration = false;
 
-            GADGET_CHECK_PERFORM(verbose_, GDEBUG_STREAM("--> DeformationFieldSolver ... ") );
+            if ( verbose_ ) { GDEBUG_STREAM("--> DeformationFieldSolver ... "); }
             for ( iter_num_=0; iter_num_<max_iter_num_; iter_num_++ )
             {
                 GADGET_CHECK_RETURN_FALSE( this->solve_once(target_, source_, warpped_, iter_num_, max_iter_num_, 
@@ -643,7 +643,7 @@ namespace Gadgetron
                 if ( stopIteration ) break;
             }
 
-            GADGET_CHECK_PERFORM(verbose_, GDEBUG_STREAM("----> Total iteration number : " << iter_num_) );
+            if ( verbose_ ) { GDEBUG_STREAM("----> Total iteration number : " << iter_num_); }
         }
         catch(...)
         {

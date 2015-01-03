@@ -198,7 +198,7 @@ namespace Gadgetron
                 }
             }
 
-            GADGET_CHECK_PERFORM(!debugFolder_.empty(), GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, hist_, "hist2D"));
+            if ( !debugFolder_.empty() ) {  GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, hist_, "hist2D"); }
         }
         catch(...)
         {

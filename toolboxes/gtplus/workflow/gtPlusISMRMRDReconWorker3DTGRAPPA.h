@@ -163,7 +163,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
     if ( !splitJobs )
     {
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("allocate image domain kernel ... "));
+        if ( performTiming_ ) { gt_timer3_.start("allocate image domain kernel ... "); }
         if ( gtPlus_mem_manager_ )
         {
             if ( workOrder3DT->kernelIm_->get_number_of_elements() != (size_t)RO*E1*E2*srcCHA*dstCHA*refN )
@@ -175,7 +175,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         {
             workOrder3DT->kernelIm_->create(RO, E1, E2, srcCHA, dstCHA, refN);
         }
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     else
     {
@@ -193,7 +193,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         }
         int convKE2 = 2*maxKE2+1;
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("allocate image domain kernel only along RO ... "));
+        if ( performTiming_ ) { gt_timer3_.start("allocate image domain kernel only along RO ... "); }
         if ( gtPlus_mem_manager_ )
         {
             if ( workOrder3DT->kernelIm_->get_number_of_elements() != (size_t)RO*convKE1*convKE2*srcCHA*dstCHA*refN )
@@ -207,12 +207,12 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
             // pre-set to zero is needed here
             memset(workOrder3DT->kernelIm_->begin(), 0, workOrder3DT->kernelIm_->get_number_of_bytes());
         }
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
 
     if ( !reconKSpace )
     {
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("allocate unmixing coefficient ... "));
+        if ( performTiming_ ) { gt_timer3_.start("allocate unmixing coefficient ... "); }
         if ( gtPlus_mem_manager_ )
         {
             if ( workOrder3DT->unmixingCoeffIm_->get_number_of_elements() != (size_t)RO*E1*E2*srcCHA*refN )
@@ -225,7 +225,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
             workOrder3DT->unmixingCoeffIm_->create(RO, E1, E2, srcCHA, refN);
         }
         Gadgetron::clear(workOrder3DT->unmixingCoeffIm_.get());
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         workOrder3DT->gfactor_.create(RO, E1, E2, refN);
         Gadgetron::clear(&(workOrder3DT->gfactor_));
@@ -279,9 +279,9 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     grappa_.calib_use_gpu_  = workOrder3DT->grappa_use_gpu_;
 
     ho7DArray<T> ker(kRO, kNE1, kNE2, srcCHA, dstCHA, oNE1, oNE2, workOrder3DT->kernel_->begin()+usedN*kRO*kNE1*kNE2*srcCHA*dstCHA*oNE1*oNE2);
-    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration ... "));
+    if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration ... "); }
     grappa_.calib3D(acsSrc, acsDst, workOrder3DT->grappa_reg_lamda_, workOrder3DT->grappa_calib_over_determine_ratio_, kRO, kE1, kE2, oE1, oE2, ker);
-    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+    if ( performTiming_ ) { gt_timer3_.stop(); }
 
     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker"+suffix);
 
@@ -291,9 +291,9 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     if ( !splitJobs )
     {
         hoNDArray<T> kIm(RO, E1, E2, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*RO*E1*E2*srcCHA*dstCHA);
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D image domain kernel ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D image domain kernel ... "); }
         grappa_.imageDomainKernel3D(ker, kRO, kE1, kE2, oE1, oE2, RO, E1, E2, kIm);
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( !reconKSpace )
         {
@@ -328,9 +328,9 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
         hoNDArray<T> kIm(convKE1, convKE2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*convKE1*convKE2*RO*srcCHA*dstCHA);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D image domain kernel only along RO ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D image domain kernel only along RO ... "); }
         GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelRO3D(ker, kRO, kE1, kE2, oE1, oE2, RO, kIm));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( !debugFolder_.empty() )
         {
@@ -364,7 +364,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
         hoNDArrayMemoryManaged<T> aliasedIm(gtPlus_mem_manager_);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D compute aliased image ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D compute aliased image ... "); }
         if ( workOrder3DT->downstream_coil_compression_ )
         {
             aliasedIm.create(workOrder3DT->data_.get_dimensions());
@@ -389,7 +389,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             }
         }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aliasedIm, "aliasedIm");
 
@@ -415,32 +415,32 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
                     hoNDArray<T> kImPermutedJob(kE1, kE2, jobN, srcCHA, dstCHA);
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D allocate buffer for kImPermutedZeroFilledJob ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("grappa 3D allocate buffer for kImPermutedZeroFilledJob ... "); }
                     hoNDArrayMemoryManaged<T> kImPermutedZeroFilledJob(E1, E2, jobN, srcCHA, dstCHA, gtPlus_mem_manager_);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     // aliased images
                     hoNDArray<T> aliasedImPermutedJob(E1, E2, jobN, srcCHA);
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D allocate buffer for aliasedIm permuted ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("grappa 3D allocate buffer for aliasedIm permuted ... "); }
                     hoNDArrayMemoryManaged<T> aliasedImPermuted(E1, E2, RO, srcCHA, N, gtPlus_mem_manager_);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permuteROTo3rdDimensionFor3DRecon for aliased images ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("permuteROTo3rdDimensionFor3DRecon for aliased images ... "); }
                     GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo3rdDimensionFor3DRecon(aliasedIm, aliasedImPermuted));
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     // unwrapped images
                     hoNDArray<T> unwrappedImPermutedJob(E1, E2, jobN, srcCHA, N);
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D allocate buffer for unwrapped images permuted ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("grappa 3D allocate buffer for unwrapped images permuted ... "); }
                     hoNDArrayMemoryManaged<T> unwrappedImPermuted(E1, E2, RO, dstCHA, N, gtPlus_mem_manager_);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     // buffer
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D allocate buffer for unwrapping ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("grappa 3D allocate buffer for unwrapping ... "); }
                     hoNDArrayMemoryManaged<T> buffer3DT_unwrapping(E1, E2, jobN, srcCHA, gtPlus_mem_manager_);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     size_t ro=0;
                     while ( ro<RO )
@@ -459,25 +459,25 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                         {
                             hoNDArray<T> kImPermuted(kE1, kE2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin());
 
-                            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("cropOver3rdDimension hybrid domain kernel ... "));
+                            if ( performTiming_ ) { gt_timer3_.start("cropOver3rdDimension hybrid domain kernel ... "); }
                             GADGET_CHECK_RETURN_FALSE(cropOver3rdDimension(kImPermuted, kImPermutedJob, start, end));
-                            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                            if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("imageDomainKernelE1E2RO ... "));
+                            if ( performTiming_ ) { gt_timer3_.start("imageDomainKernelE1E2RO ... "); }
                             GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelE1E2RO(kImPermutedJob, (int)E1, (int)E2, kImPermutedZeroFilledJob));
-                            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                            if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("cropOver3rdDimension aliased images ... "));
+                            if ( performTiming_ ) { gt_timer3_.start("cropOver3rdDimension aliased images ... "); }
                             GADGET_CHECK_RETURN_FALSE(cropOver3rdDimension(aliasedImPermuted, aliasedImPermutedJob, start, end));
-                            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                            if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D apply image domain kernel for every channel and every job ... "));
+                            if ( performTiming_ ) { gt_timer3_.start("grappa 3D apply image domain kernel for every channel and every job ... "); }
                             this->applyImageDomainKernelImage(aliasedImPermutedJob, kImPermutedZeroFilledJob, buffer3DT_unwrapping, unwrappedImPermutedJob);
-                            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                            if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("setSubArrayOver3rdDimension unwrapped images ... "));
+                            if ( performTiming_ ) { gt_timer3_.start("setSubArrayOver3rdDimension unwrapped images ... "); }
                             GADGET_CHECK_RETURN_FALSE(setSubArrayOver3rdDimension(unwrappedImPermutedJob, unwrappedImPermuted, start, end));
-                            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                            if ( performTiming_ ) { gt_timer3_.stop(); }
                         }
                         else
                         {
@@ -485,36 +485,36 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                             {
                                 hoNDArray<T> kImPermuted(kE1, kE2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+n*kE1*kE2*RO*srcCHA*dstCHA);
 
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("cropOver3rdDimension hybrid domain kernel ... "));
+                                if ( performTiming_ ) { gt_timer3_.start("cropOver3rdDimension hybrid domain kernel ... "); }
                                 GADGET_CHECK_RETURN_FALSE(cropOver3rdDimension(kImPermuted, kImPermutedJob, start, end));
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("imageDomainKernelE1E2RO ... "));
+                                if ( performTiming_ ) { gt_timer3_.start("imageDomainKernelE1E2RO ... "); }
                                 GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelE1E2RO(kImPermutedJob, (int)E1, (int)E2, kImPermutedZeroFilledJob));
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                if ( performTiming_ ) { gt_timer3_.stop(); }
 
                                 hoNDArray<T> aliasedImPermutedN(E1, E2, RO, srcCHA, aliasedImPermuted.begin()+n*E1*E2*RO*srcCHA);
 
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("cropOver3rdDimension aliased images ... "));
+                                if ( performTiming_ ) { gt_timer3_.start("cropOver3rdDimension aliased images ... "); }
                                 GADGET_CHECK_RETURN_FALSE(cropOver3rdDimension(aliasedImPermutedN, aliasedImPermutedJob, start, end));
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D apply image domain kernel for every channel and every job ... "));
+                                if ( performTiming_ ) { gt_timer3_.start("grappa 3D apply image domain kernel for every channel and every job ... "); }
                                 this->applyImageDomainKernelImage(aliasedImPermutedJob, kImPermutedZeroFilledJob, buffer3DT_unwrapping, unwrappedImPermutedJob);
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("setSubArrayOver3rdDimension unwrapped images ... "));
+                                if ( performTiming_ ) { gt_timer3_.start("setSubArrayOver3rdDimension unwrapped images ... "); }
                                 GADGET_CHECK_RETURN_FALSE(setSubArrayOver3rdDimension(unwrappedImPermutedJob, unwrappedImPermuted, start, end));
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                if ( performTiming_ ) { gt_timer3_.stop(); }
                             }
                         }
 
                         ro += jobN;
                     }
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permuteROTo3rdDimensionFor3DRecon for unwrapped images ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("permuteROTo3rdDimensionFor3DRecon for unwrapped images ... "); }
                     GADGET_CHECK_RETURN_FALSE(Gadgetron::permute3rdDimensionTo1stDimension(unwrappedImPermuted, workOrder3DT->fullkspace_));
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
                 }
                 else
                 {
@@ -530,13 +530,13 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 {
                     hoNDArray<T> kIm(RO, E1, E2, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin());
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D allocate buffer for unwarpping ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("grappa 3D allocate buffer for unwarpping ... "); }
                     hoNDArrayMemoryManaged<T> buffer3DT_unwrapping(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D apply image domain kernel for every channel ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("grappa 3D apply image domain kernel for every channel ... "); }
                     this->applyImageDomainKernelImage(aliasedIm, kIm, buffer3DT_unwrapping, workOrder3DT->fullkspace_);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->fullkspace_, "unwarppedIm");
                 }
@@ -568,28 +568,28 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 && (workOrder3DT->coilMap_->get_size(2)==E2) 
                 && (workOrder3DT->coilMap_->get_size(3)==dstCHA) )
             {
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D coil combination ... "));
+                if ( performTiming_ ) { gt_timer3_.start("grappa 3D coil combination ... "); }
                 gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(workOrder3DT->fullkspace_, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                if ( performTiming_ ) { gt_timer3_.stop(); }
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "combined");
             }
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D go back to kspace ... "));
+            if ( performTiming_ ) { gt_timer3_.start("grappa 3D go back to kspace ... "); }
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(workOrder3DT->fullkspace_);
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+            if ( performTiming_ ) { gt_timer3_.stop(); }
         }
         else
         {
             if ( (refN<N) || (refN==1) )
             {
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D test ... "));
+                if ( performTiming_ ) { gt_timer3_.start("grappa 3D test ... "); }
                 hoNDArray<T> unmixCoeff(RO, E1, E2, srcCHA, workOrder3DT->unmixingCoeffIm_->begin());
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D apply unmixing coeff ... "));
+                if ( performTiming_ ) { gt_timer3_.start("grappa 3D apply unmixing coeff ... "); }
                 this->applyUnmixCoeffImage(aliasedIm, unmixCoeff, workOrder3DT->complexIm_);
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                if ( performTiming_ ) { gt_timer3_.stop(); }
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "unwarppedIm");
             }

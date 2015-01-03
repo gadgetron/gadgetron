@@ -166,7 +166,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
     if ( !splitJobs )
     {
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("allocate image domain kernel ... "));
+        if ( performTiming_ ) { gt_timer3_.start("allocate image domain kernel ... "); }
         if ( gtPlus_mem_manager_ )
         {
             if ( workOrder3DT->kernelIm_->get_number_of_elements() != (size_t)RO*E1*E2*srcCHA*dstCHA*refN )
@@ -180,14 +180,14 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
             // pre-set to zero is needed here
             memset(workOrder3DT->kernelIm_->begin(), 0, workOrder3DT->kernelIm_->get_number_of_bytes());
         }
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     else
     {
         size_t convKE1 = 2*kE1-1;
         size_t convKE2 = 2*kE2-1;
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("allocate image domain kernel only along RO ... "));
+        if ( performTiming_ ) { gt_timer3_.start("allocate image domain kernel only along RO ... "); }
         if ( gtPlus_mem_manager_ )
         {
             if ( workOrder3DT->kernelIm_->get_number_of_elements() != (size_t)RO*convKE1*convKE2*srcCHA*dstCHA*refN )
@@ -201,7 +201,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
             // pre-set to zero is needed here
             memset(workOrder3DT->kernelIm_->begin(), 0, workOrder3DT->kernelIm_->get_number_of_bytes());
         }
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
 
     return true;
@@ -243,9 +243,9 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
     spirit_.calib_use_gpu_ = workOrder3DT->spirit_use_gpu_;
 
-    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3D calibration ... "));
+    if ( performTiming_ ) { gt_timer3_.start("SPIRIT 3D calibration ... "); }
     GADGET_CHECK_RETURN_FALSE(spirit_.calib3D(acsSrc, acsDst, workOrder3DT->spirit_reg_lamda_, workOrder3DT->spirit_calib_over_determine_ratio_, kRO, kE1, kE2, oRO, oE1, oE2, ker));
-    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+    if ( performTiming_ ) { gt_timer3_.stop(); }
 
     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
 
@@ -258,9 +258,9 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     {
         hoNDArray<T> kIm(E1, E2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*E1*E2*RO*srcCHA*dstCHA);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3D image domain kernel ... "));
+        if ( performTiming_ ) { gt_timer3_.start("SPIRIT 3D image domain kernel ... "); }
         GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernel3D(ker, kRO, kE1, kE2, oRO, oE1, oE2, RO, E1, E2, kIm, minusI));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( !debugFolder_.empty() )
         {
@@ -275,9 +275,9 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
         hoNDArray<T> kIm(convKE1, convKE2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*convKE1*convKE2*RO*srcCHA*dstCHA);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3D image domain kernel only along RO ... "));
+        if ( performTiming_ ) { gt_timer3_.start("SPIRIT 3D image domain kernel only along RO ... "); }
         GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelRO3D(ker, kRO, kE1, kE2, oRO, oE1, oE2, RO, kIm, minusI));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( !debugFolder_.empty() )
         {
@@ -382,9 +382,9 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
             // hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, N, gtPlus_mem_manager_);
             hoNDArray<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, N);
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permute kspace RO to 4th dimension ... "));
+            if ( performTiming_ ) { gt_timer3_.start("permute kspace RO to 4th dimension ... "); }
             GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+            if ( performTiming_ ) { gt_timer3_.stop(); }
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "kspaceIfftROPermuted");
 
             hoNDArrayMemoryManaged<T> kerPermuted;
@@ -398,7 +398,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 size_t maxFreeChunk = gtPlus_mem_manager_->maxFreeMemoryChunkSize();
                 GDEBUG_STREAM("SPIRIT - 3DT - maximal free chunk of managed memory : " << maxFreeChunk/1024.0/1024 << " MBytes ... ");
 
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("allocate permuted kernel ... "));
+                if ( performTiming_ ) { gt_timer3_.start("allocate permuted kernel ... "); }
                 if ( maxFreeChunk >= kerImSize )
                 {
                     kerPermuted.setMemoryManager(gtPlus_mem_manager_);
@@ -410,14 +410,14 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                     T* pData = new T[kerN];
                     kerPermuted.create(kImE1, kImE2, srcCHA, dstCHA, kImRO, N, pData, true);
                 }
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                if ( performTiming_ ) { gt_timer3_.stop(); }
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->kernelIm_, "kernelImBeforePermuted");
 
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permute kernel RO to 5th dimension ... "));
+                if ( performTiming_ ) { gt_timer3_.start("permute kernel RO to 5th dimension ... "); }
                 // GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo5thDimensionFor3DRecon( *workOrder3DT->kernelIm_, kerPermuted));
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension( *workOrder3DT->kernelIm_, kerPermuted));
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                if ( performTiming_ ) { gt_timer3_.stop(); }
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kerPermuted, "kerPermuted");
 
@@ -441,9 +441,9 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             boost::shared_ptr< hoNDArray<T> > coilMapPermuted = boost::shared_ptr< hoNDArray<T> >(new hoNDArray<T>()) ;
             if ( workOrder3DT->coilMap_->get_number_of_elements() > 0 )
             {
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permute coil map RO to 4th dimension ... "));
+                if ( performTiming_ ) { gt_timer3_.start("permute coil map RO to 4th dimension ... "); }
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(*workOrder3DT->coilMap_, *coilMapPermuted));
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                if ( performTiming_ ) { gt_timer3_.stop(); }
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "coilMapPermuted");
 
                 workOrder3DTJobSplit.coilMap_ = coilMapPermuted;
@@ -562,9 +562,9 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                             {
                                 GDEBUG_STREAM("SPIRIT - 3DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3DT ... "));
+                                if ( performTiming_ ) { gt_timer3_.start("SPIRIT 3DT ... "); }
                                 GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                if ( performTiming_ ) { gt_timer3_.stop(); }
 
                                 std::ostringstream ostr;
                                 ostr << "job_fullkspace" << "_" << j;
@@ -594,9 +594,9 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                                 {
                                     GDEBUG_STREAM("SPIRIT - 3DT - uncompleted cloud job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
-                                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3DT ... "));
+                                    if ( performTiming_ ) { gt_timer3_.start("SPIRIT 3DT ... "); }
                                     GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
-                                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                                     std::ostringstream ostr;
                                     ostr << "job_fullkspace" << "_" << j;
@@ -620,9 +620,9 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 {
                     GDEBUG_STREAM("SPIRIT - 3DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3DT ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("SPIRIT 3DT ... "); }
                     GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     std::ostringstream ostr;
                     ostr << "job_fullkspace" << "_" << j;
@@ -640,9 +640,9 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             jobList.clear();
 
             // permute the unwrapped kspace
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue RO to 1st dimension ... "));
+            if ( performTiming_ ) { gt_timer3_.start("permtue RO to 1st dimension ... "); }
             GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo1stDimensionFor3DRecon(workOrder3DTJobSplit.fullkspace_, kspaceIfftRO));
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+            if ( performTiming_ ) { gt_timer3_.stop(); }
 
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftRO, "res_fullkspace_ROinIm");
 
@@ -663,9 +663,9 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
                 hoNDArray<T> unwarppedKSpace(RO, E1, E2, dstCHA, workOrder3DT->fullkspace_.begin()+n*RO*E1*E2*dstCHA);
 
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D unwrapping ... "));
+                if ( performTiming_ ) { gt_timer3_.start("spirit 3D unwrapping ... "); }
                 GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(workOrder3DT, aliasedKSpace, kIm, unwarppedKSpace, n));
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                if ( performTiming_ ) { gt_timer3_.stop(); }
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace");
             }
@@ -682,9 +682,9 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->fullkspace_, complexImMultiChannel);
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImMultiChannel, "unwarppedComplexIm");
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D coil combination ... "));
+            if ( performTiming_ ) { gt_timer3_.start("spirit 3D coil combination ... "); }
             gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(complexImMultiChannel, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+            if ( performTiming_ ) { gt_timer3_.stop(); }
 
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "combined");
         }
@@ -720,7 +720,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         {
             GDEBUG_STREAM("gtPlusReconWorker3DTSPIRIT, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("kernel conversion along E1 and E2 ... "));
+            if ( performTiming_ ) { gt_timer3_.start("kernel conversion along E1 and E2 ... "); }
 
             if ( gtPlus_mem_manager_ )
             {
@@ -736,7 +736,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
             GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelE1E2RO(ker, (int)E1, (int)E2, kerImE1E2RO));
             kerIm = &kerImE1E2RO;
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+            if ( performTiming_ ) { gt_timer3_.stop(); }
         }
 
         res.create(kspace.get_dimensions());
@@ -890,9 +890,9 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, gtPlus_mem_manager_);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue RO to 4th dimension ... "));
+        if ( performTiming_ ) { gt_timer3_.start("permtue RO to 4th dimension ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "kspaceIfftROPermuted");
 
         T* pKspaceIfftROPermuted = kspaceIfftROPermuted.begin();
@@ -984,9 +984,9 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, resDecoupled, "resDecoupled");
 
         // permute the unwrapped kspace
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("permtue RO to 1st dimension ... "));
+        if ( performTiming_ ) { gt_timer3_.start("permtue RO to 1st dimension ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo1stDimensionFor3DRecon(resDecoupled, kspaceIfftRO));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         // perform fft along the first dimension
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(kspaceIfftRO, res));

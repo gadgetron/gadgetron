@@ -180,9 +180,9 @@ int GtPlusRecon2DTGadget::process_config(ACE_Message_Block* mb)
     size_t numOfBytes = matrix_size_encoding_[0]*kSpaceMaxAcqE1No_*num_acq_channels_*num_acq_channels_*sizeof(ValueType);
     GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadget::Pre allocate : " << numOfBytes/1024.0/1024.0 << " Megabytes ... ");
 
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Pre-allocate memory ... "); }
     mem_manager_->increase(numOfBytes);
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
     worker_noacceleration_.gtPlus_mem_manager_ = mem_manager_;
@@ -361,7 +361,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     // ------------------------------------------------------------------
     // perform the recon
     // ------------------------------------------------------------------
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Recon 2DT workorder ..."); }
 
     GADGET_CHECK_RETURN(this->generateKSpaceFilter(*workOrder), GADGET_FAIL);
 
@@ -424,7 +424,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     GADGET_CHECK_RETURN(workflow_.recon(), GADGET_FAIL);
     GADGET_CHECK_RETURN(workflow_.postProcessing(), GADGET_FAIL);
 
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     if ( !debugFolder2_fullPath_.empty() )
     {

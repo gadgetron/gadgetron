@@ -198,13 +198,13 @@ namespace Gadgetron
 
             /// we rewrite these code for gadgetron
 
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("1"));
+            //if ( performTiming_ ) { gt_timer1_.start("1"); }
             BaseClass::evaluate(w);
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            //if ( performTiming_ ) { gt_timer1_.stop(); }
 
             long long N = (long long)target.get_number_of_elements();
 
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("2"));
+            //if ( performTiming_ ) { gt_timer1_.start("2"); }
             //mu1.copyFrom(target);
             //mu2.copyFrom(warped);
             //Gadgetron::multiply(mu1, mu1, v1);

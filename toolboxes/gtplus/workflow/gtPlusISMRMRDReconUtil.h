@@ -65,18 +65,6 @@
 
 #include "GtPlusDefinition.h"
 
-// Macros FOR TIMING
-#define GADGET_START_TIMING(timer, oper) { timer.start(#oper); } 
-#define GADGET_STOP_TIMING(timer) { timer.stop(); }
-
-#define GADGET_START_TIMING_CONDITION(timer, oper, con) { if ( con ) { timer.start(#oper); } } 
-#define GADGET_STOP_TIMING_CONDITION(timer, con) { if ( con ) { timer.stop(); } }
-
-// MACROS FOR PRINTING
-#define GADGET_OSTREAM_PRINT(os, content) { os << #content << " is " << content << std::endl; }
-
-#define GADGET_CHECK_PERFORM(con, action) { if ( con ) { action; } }
-
 // MACROS for EXPORTING
 #define GADGET_EXPORT_ARRAY(debugFolder, exporter, a, filename) { if ( !debugFolder.empty() ) { exporter.exportArray(a, debugFolder+filename); } }
 #define GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, exporter, a, filename) { if ( !debugFolder.empty() ) { exporter.exportArrayComplex(a, debugFolder+filename); } }

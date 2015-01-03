@@ -260,9 +260,9 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
         GDEBUG_STREAM("GtPlusRecon, debugFolder2 is not set ...");
     }
 
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Pre-allocate memory ... "); }
     mem_manager_->increase( (size_t)(2.0*1024*1024*1024) );
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
     worker_noacceleration_.gtPlus_mem_manager_ = mem_manager_;
@@ -473,7 +473,7 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
     if ( !debugFolder_fullPath_.empty() ) workflow_.debugFolder_ = debugFolder_fullPath_;
 
     // perform the recon
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder on cloud node ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Recon 2DT workorder on cloud node ... "); }
 
     GADGET_CHECK_RETURN(this->generateKSpaceFilter(workOrder), GADGET_FAIL);
 
@@ -536,7 +536,7 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
         GERROR_STREAM("GtPlusReconJob2DTGadgetCloud::process(...) failed... ");
     }
 
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     if ( !debugFolder2_fullPath_.empty() )
     {

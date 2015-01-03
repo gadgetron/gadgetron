@@ -259,8 +259,6 @@ preProcessing()
             GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().computeNoisePrewhiteningMatrix(*noise_, noiseBW_, receriverBWRatio_, ADCSamplingTimeinSecond_, prewhiteningMatrix));
             GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().performNoisePrewhitening(*data_, prewhiteningMatrix));
 
-            // GADGET_CHECK_PERFORM(!debugFolder_.empty(), prewhiteningMatrix.print(std::cout));
-
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *data_, "kspace_noiseprewhitenned");
 
             if ( ref_!=NULL && ref_apply_noisePreWhitening_ )
@@ -655,7 +653,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
 
         if ( E2_.second > 1 )
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("postProcessing - permute res array ... "));
+            if ( performTiming_ ) { gt_timer1_.start("postProcessing - permute res array ... "); }
             // boost::shared_ptr< hoNDArray<T> > data_permuted = Gadgetron::permute(const_cast<hoNDArray<T>*>(&dataCurr_), &order);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(res, dataCurr_));
 
@@ -669,7 +667,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(wrap_around_map_, wrap_around_mapCurr_));
             }
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            if ( performTiming_ ) { gt_timer1_.stop(); }
 
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dataCurr_, "data_permuted");
 
@@ -691,15 +689,15 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                         && (workOrder_->filterE1_.get_number_of_elements() == E1) 
                         && (workOrder_->filterE2_.get_number_of_elements() == E2) )
             {
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("postProcessing - fft3c ... "));
+                if ( performTiming_ ) { gt_timer1_.start("postProcessing - fft3c ... "); }
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res));
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+                if ( performTiming_ ) { gt_timer1_.stop(); }
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "kspace_beforefiltered");
 
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("postProcessing - 3D kspace filter ... "));
+                if ( performTiming_ ) { gt_timer1_.start("postProcessing - 3D kspace filter ... "); }
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterROE1E2(res, workOrder_->filterRO_, workOrder_->filterE1_, workOrder_->filterE2_, dataCurr_));
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+                if ( performTiming_ ) { gt_timer1_.stop(); }
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dataCurr_, "kspace_afterfiltered");
                 inKSpace = true;

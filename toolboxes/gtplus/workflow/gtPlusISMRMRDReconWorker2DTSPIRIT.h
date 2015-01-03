@@ -577,9 +577,9 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                             {
                                 GDEBUG_STREAM("SPIRIT - 2DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 2DT ... "));
+                                if ( performTiming_ ) { gt_timer3_.start("SPIRIT 2DT ... "); }
                                 GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                if ( performTiming_ ) { gt_timer3_.stop(); }
 
                                 std::ostringstream ostr;
                                 ostr << "job_fullkspace" << "_" << j;
@@ -609,9 +609,9 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                                 {
                                     GDEBUG_STREAM("SPIRIT - 2DT - uncompleted cloud job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
-                                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3DT ... "));
+                                    if ( performTiming_ ) { gt_timer3_.start("SPIRIT 3DT ... "); }
                                     GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
-                                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                                     std::ostringstream ostr;
                                     ostr << "job_fullkspace" << "_" << j;
@@ -640,9 +640,9 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                 {
                     GDEBUG_STREAM("SPIRIT - 2DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("L1 SPIRIT NCG 2DT ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("L1 SPIRIT NCG 2DT ... "); }
                     GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, jobList[j].res, "job_fullkspace");
                 }

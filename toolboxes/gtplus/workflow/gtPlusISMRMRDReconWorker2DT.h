@@ -513,7 +513,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
         // if the upstream coil compression is needed
         if ( workOrder2DT->upstream_coil_compression_ )
         {
-            GADGET_CHECK_PERFORM(!debugFolder_.empty(), "Upstream coil compression ... ");
+            if ( !debugFolder_.empty() ) { GDEBUG_STREAM("Upstream coil compression ... "); }
 
             std::vector<hoMatrix<T> > upstreamCoilCoeffRef(workOrder2DT->ref_.get_size(4)), upstreamCoilCoeffRefRecon(refRecon.get_size(4)), upstreamCoilCoeffData(workOrder2DT->data_.get_size(4));
 
@@ -601,7 +601,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                                         (int)num_modesKept, coeff, eigenValues));
                     }
 
-                    GADGET_CHECK_PERFORM(!debugFolder_.empty(), eigenValues.print(std::cout));
+                    if ( !debugFolder_.empty() ) {  eigenValues.print(std::cout); }
                     GDEBUG_STREAM("Upstream coil compression, number of channel kept is " << coeff.cols());
 
                     if ( s < upstreamCoilCoeffRef.size() )
@@ -619,58 +619,58 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                 omp_set_nested(1);
             #endif // USE_OMP
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("apply upstream coil compression ... "));
+            if ( performTiming_ ) { gt_timer2_.start("apply upstream coil compression ... "); }
             #pragma omp parallel sections default(shared)
             {
 
                 #pragma omp section
                 {
-                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("apply the coil compression on data ... "));
+                    //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on data ... "); }
                     // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_, true));
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("applyKLCoilCompressionCoeff ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("applyKLCoilCompressionCoeff ... "); }
                     gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder2DT->data_, upstreamCoilCoeffData, data_dst_);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("copy data ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("copy data ... "); }
                     workOrder2DT->data_ = data_dst_;
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                    //if ( performTiming_ ) { gt_timer2_.stop(); }
                 }
 
                 #pragma omp section
                 {
-                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("apply the coil compression on ref ... "));
+                    //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on ref ... "); }
                     //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeff, ref_dst_, true));
                     gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder2DT->ref_, upstreamCoilCoeffRef, ref_dst_);
                     workOrder2DT->ref_ = ref_dst_;
-                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                    //if ( performTiming_ ) { gt_timer2_.stop(); }
                 }
 
                 #pragma omp section
                 {
-                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("apply the coil compression on refRecon ... "));
+                    //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on refRecon ... "); }
                     hoNDArray<T> refRecon_upstream;
                     //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refRecon, upstreamCoilCoeff, refRecon_upstream, true));
                     gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refRecon, upstreamCoilCoeffRefRecon, refRecon_upstream);
                     refRecon = refRecon_upstream;
                     refRecon_upstream.clear();
-                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                    //if ( performTiming_ ) { gt_timer2_.stop(); }
                 }
 
                 #pragma omp section
                 {
-                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("apply the coil compression on ref for coil map ... "));
+                    //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on ref for coil map ... "); }
                     hoNDArray<T> refCoilMap_upstream;
                     //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refCoilMap, upstreamCoilCoeff, refCoilMap_upstream, true));
                     gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refCoilMap, upstreamCoilCoeffRefRecon, refCoilMap_upstream);
                     refCoilMap = refCoilMap_upstream;
                     refCoilMap_upstream.clear();
-                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                    //if ( performTiming_ ) { gt_timer2_.stop(); }
                 }
             }
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+            if ( performTiming_ ) { gt_timer2_.stop(); }
 
             #ifdef USE_OMP
                 omp_set_nested(0);
@@ -746,7 +746,7 @@ bool gtPlusReconWorker2DT<T>::coilCompression(gtPlusReconWorkOrder2DT<T>* workOr
                         (*workOrder2DT->coilCompressionCoef_)[s] = coeff;
                     }
 
-                    GADGET_CHECK_PERFORM(!debugFolder_.empty(), eigenValues.print(std::cout));
+                    if ( !debugFolder_.empty() ) {  eigenValues.print(std::cout); }
                     GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.cols());
                 }
                 else
@@ -790,7 +790,7 @@ bool gtPlusReconWorker2DT<T>::coilCompression(gtPlusReconWorkOrder2DT<T>* workOr
                             workOrder2DT->coilCompressionCoef_->push_back(coeff);
                         }
 
-                        GADGET_CHECK_PERFORM(!debugFolder_.empty(), eigenValues.print(std::cout));
+                        if ( !debugFolder_.empty() ) {  eigenValues.print(std::cout); }
                         GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.cols());
                     }
 
@@ -830,14 +830,14 @@ bool gtPlusReconWorker2DT<T>::performRecon(gtPlusReconWorkOrder2DT<T>* workOrder
     {
         if ( !workOrder2DT->workFlow_use_BufferedKernel_ )
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("prepRef"));
+            if ( performTiming_ ) { gt_timer1_.start("prepRef"); }
             GADGET_CHECK_RETURN_FALSE(prepRef(workOrder2DT, workOrder2DT->ref_, workOrder2DT->ref_recon_, workOrder2DT->ref_coil_map_, 
                         workOrder2DT->start_RO_, workOrder2DT->end_RO_, workOrder2DT->start_E1_, workOrder2DT->end_E1_, workOrder2DT->data_.get_size(1)));
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            if ( performTiming_ ) { gt_timer1_.stop(); }
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("coilCompression"));
+            if ( performTiming_ ) { gt_timer1_.start("coilCompression"); }
             GADGET_CHECK_RETURN_FALSE(coilCompression(workOrder2DT));
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            if ( performTiming_ ) { gt_timer1_.stop(); }
         }
 
          // apply coil compression coefficients
@@ -889,25 +889,25 @@ bool gtPlusReconWorker2DT<T>::performRecon(gtPlusReconWorkOrder2DT<T>* workOrder
                 ref_coil_map_dst_ = workOrder2DT->ref_coil_map_;
             }
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("estimateCoilMap"));
+            if ( performTiming_ ) { gt_timer1_.start("estimateCoilMap"); }
             GADGET_CHECK_RETURN_FALSE(this->estimateCoilMap(workOrder2DT, ref_src_, ref_dst_, ref_coil_map_dst_));
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            if ( performTiming_ ) { gt_timer1_.stop(); }
 
             if ( workOrder2DT->acceFactorE1_>1 )
             {
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("performCalib"));
+                if ( performTiming_ ) { gt_timer1_.start("performCalib"); }
                 GADGET_CHECK_RETURN_FALSE(this->performCalib(workOrder2DT, ref_src_, ref_dst_, ref_coil_map_dst_));
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+                if ( performTiming_ ) { gt_timer1_.stop(); }
             }
         }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("performUnwrapping"));
+        if ( performTiming_ ) { gt_timer1_.start("performUnwrapping"); }
         GADGET_CHECK_RETURN_FALSE(this->performUnwrapping(workOrder2DT, data_dst_));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+        if ( performTiming_ ) { gt_timer1_.stop(); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("afterUnwrapping"));
+        if ( performTiming_ ) { gt_timer1_.start("afterUnwrapping"); }
         GADGET_CHECK_RETURN_FALSE(this->afterUnwrapping(workOrder2DT));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+        if ( performTiming_ ) { gt_timer1_.stop(); }
     }
     catch(...)
     {
@@ -1271,7 +1271,7 @@ bool gtPlusReconWorker2DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
 
         if ( num <= 8 )
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("applyImageDomainKernelImage - multipleMultiply - sumOverSecondLastDimension ... "));
+            if ( performTiming_ ) { gt_timer3_.start("applyImageDomainKernelImage - multipleMultiply - sumOverSecondLastDimension ... "); }
             for ( n=0; n<(int)num; n++ )
             {
                 hoNDArray<T> buf3D(&dim3D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*srcCHA));
@@ -1280,7 +1280,7 @@ bool gtPlusReconWorker2DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
                 Gadgetron::multipleMultiply(buf3D, kerIm, kerImBuffer);
                 Gadgetron::sumOverSecondLastDimension(kerImBuffer, bufIm3D);
             }
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+            if ( performTiming_ ) { gt_timer3_.stop(); }
         }
         else
         {
@@ -1487,10 +1487,10 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
 
         if ( fullres_coilmap )
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("full res coil map : allocate buffer 2DT ...  "));
+            if ( performTiming_ ) { gt_timer2_.start("full res coil map : allocate buffer 2DT ...  "); }
             //hoNDArrayMemoryManaged<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
             hoNDArray<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions());
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+            if ( performTiming_ ) { gt_timer2_.stop(); }
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->fullkspace_, buffer2DT_, buffer2DT_Two));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_, "ComplexIm_afterRefFill");
@@ -1550,9 +1550,9 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
 
                         hoNDArray<T> coilMapS(RO, E1, dstCHA, 1, workOrder2DT->coilMap_->begin()+whichS_coilmap*RO*E1*dstCHA);
 
-                        GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("coilMap2DNIH ...  "));
+                        if ( performTiming_ ) { gt_timer2_.start("coilMap2DNIH ...  "); }
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(aveComplexImS, coilMapS, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, (value_type)workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_));
-                        GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                        if ( performTiming_ ) { gt_timer2_.stop(); }
 
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, coilMapS, "coilMapS");
 
@@ -1600,7 +1600,7 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
 
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aveComplexIm, "aveComplexIm");
 
-                        GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("coilMap2DNIH ...  "));
+                        if ( performTiming_ ) { gt_timer2_.start("coilMap2DNIH ...  "); }
 
                         gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(aveComplexIm, *workOrder2DT->coilMap_, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, (value_type)workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_);
 
@@ -1622,7 +1622,7 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                         //    //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImS, coilMapS, complexImCombinedS));
                         //    gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImS, coilMapS, complexImCombinedS);
                         //}
-                        GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                        if ( performTiming_ ) { gt_timer2_.stop(); }
 
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder2DT->coilMap_, "coilMap_fullres");
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexImCombined");
@@ -1640,7 +1640,7 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                 {
                     workOrder2DT->coilMap_->create(RO, E1, dstCHA, N, S);
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("coilMap2DNIH ...  "));
+                    if ( performTiming_ ) { gt_timer2_.start("coilMap2DNIH ...  "); }
                     if ( same_coilmap_allS )
                     {
                         hoNDArray<T> complexImS(RO, E1, dstCHA, N, buffer2DT_.begin()+whichS_coilmap*RO*E1*dstCHA*N);
@@ -1655,7 +1655,7 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, (value_type)workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_));
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder2DT->coilMap_, "coilMap_fullres");
                     }
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                    if ( performTiming_ ) { gt_timer2_.stop(); }
 
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_");
@@ -1783,9 +1783,9 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
         }
 
         partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
-        GADGET_CHECK_PERFORM(performTiming_, GDEBUG_STREAM("Partial fourier scaling factor : " << partialFourierCompensationFactor));
+        if ( performTiming_ ) { GDEBUG_STREAM("Partial fourier scaling factor : " << partialFourierCompensationFactor); }
 
-        GADGET_CHECK_PERFORM(performTiming_, GDEBUG_STREAM("Partial fourier algorithm : " << gtPlus_util_.getNameFromISMRMRDPartialFourierReconAlgo(workOrder2DT->partialFourier_algo_) ));
+        if ( performTiming_ ) { GDEBUG_STREAM("Partial fourier algorithm : " << gtPlus_util_.getNameFromISMRMRDPartialFourierReconAlgo(workOrder2DT->partialFourier_algo_)); }
 
         if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
         {
@@ -2403,9 +2403,9 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFengHuangRecon(gtPlusReconWor
         }
 
         // compute the conjugate symmetric kspace
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("conjugateSymmetry2D"));
+        if ( performTiming_ ) { gt_timer1_.start("conjugateSymmetry2D"); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().conjugateSymmetry2D(kspace, buffer2DT_));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+        if ( performTiming_ ) { gt_timer1_.stop(); }
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_, "kspaceConj_FengHuang");
 
@@ -2453,20 +2453,20 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFengHuangRecon(gtPlusReconWor
 
         // estimate the kernels
         ho6DArray<T> kernel; // [RO E1 srcCHA dstCHA N S]
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("calibFengHuang"));
+        if ( performTiming_ ) { gt_timer1_.start("calibFengHuang"); }
         GADGET_CHECK_RETURN_FALSE(this->calibFengHuang(workOrder2DT, src, dst, kernel));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+        if ( performTiming_ ) { gt_timer1_.stop(); }
 
         // perform the recon
         if ( workOrder2DT.partialFourier_FengHuang_transitBand_==0 )
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("performReconFangHuang"));
+            if ( performTiming_ ) { gt_timer1_.start("performReconFangHuang"); }
             GADGET_CHECK_RETURN_FALSE(this->performReconFangHuang(workOrder2DT, buffer2DT_, kspace, (int)startRO, (int)endRO, (int)startE1, (int)endE1, kernel));
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            if ( performTiming_ ) { gt_timer1_.stop(); }
         }
         else
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("performReconFangHuang with transition band"));
+            if ( performTiming_ ) { gt_timer1_.start("performReconFangHuang with transition band"); }
 
             size_t tb =  (int)workOrder2DT.partialFourier_FengHuang_transitBand_;
 
@@ -2521,7 +2521,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFengHuangRecon(gtPlusReconWor
 
             kspace = buffer2DT_partial_fourier_kspaceIter_;
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            if ( performTiming_ ) { gt_timer1_.stop(); }
         }
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_after_FengHuang");

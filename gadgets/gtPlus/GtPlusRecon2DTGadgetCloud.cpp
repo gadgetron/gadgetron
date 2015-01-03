@@ -87,7 +87,7 @@ int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlus
     // start a gadget level timer
     if ( processed_called_times_ == 1 )
     {
-        GADGET_START_TIMING(gt_timer_2DT_cloud_, "GtPlusRecon2DTGadgetCloud::process(...) gadegt level timer ... ");
+        gt_timer_2DT_cloud_.start("GtPlusRecon2DTGadgetCloud::process(...) gadegt level timer ... ");
     }
 
     // send out the package to current node
@@ -303,7 +303,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
         }
 
         // perform the recon
-        GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder on master node ... ", performTiming_);
+        if ( performTiming_ ) { gt_timer1_.start("Recon 2DT workorder on master node ... "); }
 
         GADGET_CHECK_RETURN_FALSE(this->generateKSpaceFilter(workOrder));
 
@@ -360,7 +360,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
             }
         }
 
-        GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+        if ( performTiming_ ) { gt_timer1_.stop(); }
 
         if ( !debugFolder_fullPath_.empty() )
         {
@@ -582,7 +582,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
             }
         }
 
-        GADGET_STOP_TIMING(gt_timer_2DT_cloud_);
+        gt_timer_2DT_cloud_.stop();
     }
 
     return GADGET_OK;

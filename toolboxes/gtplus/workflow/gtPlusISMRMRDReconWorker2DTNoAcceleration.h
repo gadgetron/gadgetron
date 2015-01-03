@@ -58,10 +58,10 @@ bool gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT
 
         if ( !workOrder2DT->workFlow_use_BufferedKernel_ )
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("prepRef"));
+            if ( performTiming_ ) { gt_timer1_.start("prepRef"); }
             GADGET_CHECK_RETURN_FALSE(this->prepRef(workOrder2DT, workOrder2DT->ref_, workOrder2DT->ref_recon_, workOrder2DT->ref_coil_map_, 
                                                 workOrder2DT->start_RO_, workOrder2DT->end_RO_, workOrder2DT->start_E1_, workOrder2DT->end_E1_, workOrder2DT->data_.get_size(1)));
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            if ( performTiming_ ) { gt_timer1_.stop(); }
         }
 
         size_t RO = workOrder2DT->data_.get_size(0);
@@ -113,7 +113,7 @@ bool gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT
 
         workOrder2DT->complexIm_.create(RO, E1, N, S);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("perform coil combination"));
+        if ( performTiming_ ) { gt_timer1_.start("perform coil combination"); }
 
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_unwrapping_);
 
@@ -140,7 +140,7 @@ bool gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT
                 }
             }
         }*/
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+        if ( performTiming_ ) { gt_timer1_.stop(); }
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "combined");
     }

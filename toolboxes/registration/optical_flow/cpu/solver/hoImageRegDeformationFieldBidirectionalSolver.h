@@ -278,7 +278,7 @@ namespace Gadgetron
 
             GADGET_CHECK_RETURN_FALSE( this->enforceInverseTransform(transform_inverse_, transform_, deform_delta_, inverse_deform_enforce_iter_) );
 
-            GADGET_CHECK_PERFORM(verbose_, GDEBUG_STREAM("----> Total iteration number : " << iter_num_) );
+            if ( verbose_ ) { GDEBUG_STREAM("----> Total iteration number : " << iter_num_); }
         }
         catch(...)
         {

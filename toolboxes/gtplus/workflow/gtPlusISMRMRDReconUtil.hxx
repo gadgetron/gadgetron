@@ -5266,24 +5266,18 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
                     hoNDArray<T> data2D(RO, E1, CHA);
                     hoNDArray<T> coilMap2D(RO, E1, CHA);
 
-                    Gadgetron::GadgetronTimer gt_timer3_(false);
-                    bool timing = false;
-
                     #pragma omp for
                     for ( e2=0; e2<(int)E2; e2++ )
                     {
                         long long cha;
 
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.start("memcpy 1 ... "));
                         for ( cha=0; cha<(long long)CHA; cha++ )
                         {
                             memcpy(data2D.begin()+cha*RO*E1, dataCurr.begin()+cha*RO*E1*E2+e2*RO*E1, sizeof(T)*RO*E1);
                         }
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.stop());
 
                         //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, data2D, "data2D");
 
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.start("coilMap2DNIHInner"));
                         if ( algo == ISMRMRD_SOUHEIL_ITER )
                         {
                             coilMap2DNIH2Inner(data2D, coilMap2D, ks, iterNum, thres);
@@ -5292,16 +5286,13 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
                         {
                             coilMap2DNIHInner(data2D, coilMap2D, ks, power);
                         }
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.stop());
 
                         //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMap2D, "coilMap2D");
 
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.start("memcpy 2 ... "));
                         for ( cha=0; cha<(long long)CHA; cha++ )
                         {
                             memcpy(coilMapCurr.begin()+cha*RO*E1*E2+e2*RO*E1, coilMap2D.begin()+cha*RO*E1, sizeof(T)*RO*E1);
                         }
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.stop());
 
                         //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMapCurr, "coilMapCurr");
                     }
