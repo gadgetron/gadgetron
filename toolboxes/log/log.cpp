@@ -27,9 +27,8 @@ namespace Gadgetron
 
       //Which log levels are enabled
       if (log_mask_str.find("ALL") != std::string::npos) {
-	uint64_t null_mask;
-	level_mask_ |= ~null_mask;
-	print_mask_ |= ~null_mask;
+	enableAllOutputOptions();
+	enableAllLogLevels();
 	return;
       }
       
@@ -46,21 +45,21 @@ namespace Gadgetron
 	enableLogLevel(GADGETRON_LOG_LEVEL_ERROR);
 
       if (log_mask_str.find("PRINT_FILELOC") != std::string::npos) 
-	enableOutput(GADGETRON_LOG_PRINT_FILELOC);
+	enableOutputOption(GADGETRON_LOG_PRINT_FILELOC);
 
       if (log_mask_str.find("PRINT_LEVEL") != std::string::npos) 
-	enableOutput(GADGETRON_LOG_PRINT_LEVEL);
+	enableOutputOption(GADGETRON_LOG_PRINT_LEVEL);
       
       if (log_mask_str.find("PRINT_DATETIME") != std::string::npos) 
-	enableOutput(GADGETRON_LOG_PRINT_DATETIME);
+	enableOutputOption(GADGETRON_LOG_PRINT_DATETIME);
     } else {
       enableLogLevel(GADGETRON_LOG_LEVEL_DEBUG);
       enableLogLevel(GADGETRON_LOG_LEVEL_INFO);
       enableLogLevel(GADGETRON_LOG_LEVEL_WARNING);
       enableLogLevel(GADGETRON_LOG_LEVEL_ERROR);
-      enableOutput(GADGETRON_LOG_PRINT_FILELOC);
-      enableOutput(GADGETRON_LOG_PRINT_LEVEL);
-      enableOutput(GADGETRON_LOG_PRINT_DATETIME);
+      enableOutputOption(GADGETRON_LOG_PRINT_FILELOC);
+      enableOutputOption(GADGETRON_LOG_PRINT_LEVEL);
+      enableOutputOption(GADGETRON_LOG_PRINT_DATETIME);
     }
   }
 
@@ -74,7 +73,7 @@ namespace Gadgetron
     std::string fmt_str;
     bool append_cformatting_needed = false; //Will be set to true if we add any additional labels
 
-    if (isOutputEnabled(GADGETRON_LOG_PRINT_DATETIME)) {
+    if (isOutputOptionEnabled(GADGETRON_LOG_PRINT_DATETIME)) {
       time_t rawtime;
       struct tm * timeinfo;
 
@@ -90,7 +89,7 @@ namespace Gadgetron
       append_cformatting_needed = true;
     }
 
-    if (isOutputEnabled(GADGETRON_LOG_PRINT_LEVEL)) {
+    if (isOutputOptionEnabled(GADGETRON_LOG_PRINT_LEVEL)) {
       switch (LEVEL) {
       case GADGETRON_LOG_LEVEL_DEBUG:
 	fmt_str += "DEBUG ";
@@ -110,7 +109,7 @@ namespace Gadgetron
       append_cformatting_needed = true;
     }
 
-    if (isOutputEnabled(GADGETRON_LOG_PRINT_FILELOC)) {
+    if (isOutputOptionEnabled(GADGETRON_LOG_PRINT_FILELOC)) {
       char linenostr[8];sprintf(linenostr, "%d", lineno);
       fmt_str += std::string("[") + std::string(filename);
       fmt_str += std::string(":") + std::string(linenostr);
@@ -151,23 +150,46 @@ namespace Gadgetron
     return ((1<<LEVEL) & level_mask_)>0;
   }
   
-  void GadgetronLogger::enableOutput(GadgetronLogOutput OUTPUT) 
+  void GadgetronLogger::enableAllLogLevels()
+  {
+    uint64_t null_mask = 0;
+    level_mask_ |= ~null_mask;
+  }
+
+  void GadgetronLogger::disableAllLogLevels()
+  {
+    level_mask_ = 0;
+  }
+
+  void GadgetronLogger::enableOutputOption(GadgetronLogOutput OUTPUT) 
   {
     if (OUTPUT < GADGETRON_LOG_PRINT_MAX) {
       print_mask_ |= (1<<OUTPUT);
     }    
   }
 
-  void GadgetronLogger::disableOutput(GadgetronLogOutput OUTPUT) 
+  void GadgetronLogger::disableOutputOption(GadgetronLogOutput OUTPUT) 
   {
     if (OUTPUT < GADGETRON_LOG_PRINT_MAX) {
       print_mask_ &= ~(1<<OUTPUT);
     }    
   }
  
-  bool GadgetronLogger::isOutputEnabled(GadgetronLogOutput OUTPUT)
+  bool GadgetronLogger::isOutputOptionEnabled(GadgetronLogOutput OUTPUT)
   {
     if (OUTPUT >= GADGETRON_LOG_PRINT_MAX) return false;
     return ((1<<OUTPUT) & print_mask_)>0;
   }
+  
+  void GadgetronLogger::enableAllOutputOptions() 
+  {
+    uint64_t null_mask = 0;
+    print_mask_ |= ~null_mask;
+  }
+
+  void GadgetronLogger::disableAllOutputOptions() 
+  {
+    print_mask_ = 0;
+  }
+
 }

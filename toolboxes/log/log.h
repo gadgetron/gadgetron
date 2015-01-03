@@ -37,10 +37,14 @@ namespace Gadgetron
     void enableLogLevel(GadgetronLogLevel LEVEL);
     void disableLogLevel(GadgetronLogLevel LEVEL);
     bool isLevelEnabled(GadgetronLogLevel LEVEL);
+    void enableAllLogLevels();
+    void disableAllLogLevels();
 
-    void enableOutput(GadgetronLogOutput OUTPUT);
-    void disableOutput(GadgetronLogOutput OUTPUT);
-    bool isOutputEnabled(GadgetronLogOutput OUTPUT);
+    void enableOutputOption(GadgetronLogOutput OUTPUT);
+    void disableOutputOption(GadgetronLogOutput OUTPUT);
+    bool isOutputOptionEnabled(GadgetronLogOutput OUTPUT);
+    void enableAllOutputOptions();
+    void disableAllOutputOptions();
 
   protected:
     GadgetronLogger();
