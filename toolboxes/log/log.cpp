@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <string>
 #include <time.h>
-#include <iostream>
+#include <cstring>
 
 namespace Gadgetron
 {
@@ -110,8 +110,21 @@ namespace Gadgetron
     }
 
     if (isOutputOptionEnabled(GADGETRON_LOG_PRINT_FILELOC)) {
+      if (!isOutputOptionEnabled(GADGETRON_LOG_PRINT_FOLDER)) {
+	const char* base_start = strrchr(filename,'/');
+	if (!base_start) {
+	  base_start = strrchr(filename,'\\'); //Maybe using backslashes
+	}
+	if (base_start) {
+	  base_start++;
+	  fmt_str += std::string("[") + std::string(base_start);
+	} else {
+	  std::string("[") + std::string(filename);
+	}
+      } else {
+	fmt_str += std::string("[") + std::string(filename);
+      }
       char linenostr[8];sprintf(linenostr, "%d", lineno);
-      fmt_str += std::string("[") + std::string(filename);
       fmt_str += std::string(":") + std::string(linenostr);
       fmt_str += std::string("] ");
       append_cformatting_needed = true;

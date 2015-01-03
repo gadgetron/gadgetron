@@ -11,27 +11,79 @@
 
 namespace Gadgetron
 {
+  /**
+     Gadgetron log levels
+   */
   enum GadgetronLogLevel
   {
-    GADGETRON_LOG_LEVEL_DEBUG = 0,
-    GADGETRON_LOG_LEVEL_INFO,
-    GADGETRON_LOG_LEVEL_WARNING,
-    GADGETRON_LOG_LEVEL_ERROR,
-    GADGETRON_LOG_LEVEL_MAX
+    GADGETRON_LOG_LEVEL_DEBUG = 0,     //!< Debug information
+    GADGETRON_LOG_LEVEL_INFO,          //!< Regular application information
+    GADGETRON_LOG_LEVEL_WARNING,       //!< Warnings about events that could lead to failues
+    GADGETRON_LOG_LEVEL_ERROR,         //!< Errors after which application will be unable to continue
+    GADGETRON_LOG_LEVEL_VERBOSE,       //!< Verbose information about algorithm parameters, etc. 
+    GADGETRON_LOG_LEVEL_MAX            //!< All log levels must have values lower than this
   };
 
+  /**
+     Gadgetron output options. These options control what context information
+     will be printed with the log statements.
+   */
   enum GadgetronLogOutput
   {
-    GADGETRON_LOG_PRINT_FILELOC = 0,
-    GADGETRON_LOG_PRINT_LEVEL,
-    GADGETRON_LOG_PRINT_DATETIME,
-    GADGETRON_LOG_PRINT_MAX
+    GADGETRON_LOG_PRINT_FILELOC = 0,  //!< Print filename and line in file
+    GADGETRON_LOG_PRINT_FOLDER,       //!< Print the folder name too (full filename)
+    GADGETRON_LOG_PRINT_LEVEL,        //!< Print Log Level
+    GADGETRON_LOG_PRINT_DATETIME,     //!< Print date and time
+    GADGETRON_LOG_PRINT_MAX           //!< All print options must have lower values than this
   };
 
+  /**
+     Main logging utility class for the Gadgetron and associated toolboxes. 
+
+     This is a process wide singleton. 
+
+     Logging/Debug messages should be done with the convenience macros:
+
+     GDEBUG
+     GDINFO
+     GWARN
+     GERROR
+     GVERBOSE
+
+     These macros use a printf style syntax:
+
+     GDEBUG("Here we are logging some values %f, %d\n", myFloat, myInt);
+
+     The c++ std::cout is not recommended for logging as it does not add
+     filename, log level, timing or other context information to the logging
+     statements. Use of std::cout can also cause log lines from different threads
+     to be interleaved. For people more comfortable with the std::cout style 
+     syntax, we provide the macros:
+
+     GDEBUG_STREAM
+     GINFO_STREAM
+     GWARN_STREAM
+     GERROR_STREAM
+     GVERBOSE_STREAM
+
+     To use them:
+     
+     GDEBUG("Here we are logging some values " << myFloat << ", " << myInt << std::endl);
+
+     It is possible to control which log levels are output using the @enableLogLevel, @disableLogLevel, 
+     @enableOutputOption, and @disableOutputOption functions. 
+
+     Log levels are defined in @GadgetronLogLevel
+     Ouput options are defined in @GadgetronLogOutput
+ 
+   */
   class EXPORTGADGETRONLOG GadgetronLogger
   {
   public:
+    ///Function for accessing the process wide singleton
     static GadgetronLogger* instance();
+
+    ///Generic log function. Use the logging macros for easy access to this function
     void log(GadgetronLogLevel LEVEL, const char* filename, int lineno, const char* cformatting, ...);
 
     void enableLogLevel(GadgetronLogLevel LEVEL);
@@ -54,10 +106,11 @@ namespace Gadgetron
   };
 }
 
-#define GDEBUG(...) Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_DEBUG,   __FILE__, __LINE__, __VA_ARGS__)
-#define GINFO(...)  Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_INFO,    __FILE__, __LINE__, __VA_ARGS__)
-#define GWARN(...)  Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_WARNING, __FILE__, __LINE__, __VA_ARGS__)
-#define GERROR(...) Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_ERROR,   __FILE__, __LINE__, __VA_ARGS__)
+#define GDEBUG(...)   Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_DEBUG,   __FILE__, __LINE__, __VA_ARGS__)
+#define GINFO(...)    Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_INFO,    __FILE__, __LINE__, __VA_ARGS__)
+#define GWARN(...)    Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_WARNING, __FILE__, __LINE__, __VA_ARGS__)
+#define GERROR(...)   Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_ERROR,   __FILE__, __LINE__, __VA_ARGS__)
+#define GVERBOSE(...) Gadgetron::GadgetronLogger::instance()->log(Gadgetron::GADGETRON_LOG_LEVEL_VERBOSE,   __FILE__, __LINE__, __VA_ARGS__)
 
 #define GEXCEPTION(err, message);	  \
   {					  \
@@ -67,12 +120,26 @@ namespace Gadgetron
     GDEBUG(gdb.c_str());		  \
  }
 
-//Deprecated logging macros kept here for backwards compatibility
+//Stream syntax log level functions
 #define GDEBUG_STREAM(message)				\
   {							\
     std::stringstream gadget_msg_dep_str;		\
     gadget_msg_dep_str  << message << std::endl;	\
     GDEBUG(gadget_msg_dep_str.str().c_str());		\
+  }
+
+#define GINFO_STREAM(message)				\
+  {							\
+    std::stringstream gadget_msg_dep_str;		\
+    gadget_msg_dep_str  << message << std::endl;	\
+    GINFO(gadget_msg_dep_str.str().c_str());		\
+  }
+
+#define GWARN_STREAM(message)					\
+  {								\
+    std::stringstream gadget_msg_dep_str;			\
+    gadget_msg_dep_str  << message << std::endl;		\
+    GWARN(gadget_msg_dep_str.str().c_str());			\
   }
 
 #define GERROR_STREAM(message)					\
@@ -81,13 +148,14 @@ namespace Gadgetron
     gadget_msg_dep_str  << message << std::endl;		\
     GERROR(gadget_msg_dep_str.str().c_str());			\
   }
-     
-#define GWARN_STREAM(message)					\
+
+#define GVERBOSE_STREAM(message)					\
   {								\
     std::stringstream gadget_msg_dep_str;			\
     gadget_msg_dep_str  << message << std::endl;		\
-    GERROR(gadget_msg_dep_str.str().c_str());			\
+    GVERBOSE(gadget_msg_dep_str.str().c_str());			\
   }
+     
 
 //Older debugging macros
 //TODO: Review and check that they are up to date
