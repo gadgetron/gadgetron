@@ -1138,7 +1138,7 @@ namespace Gadgetron
             // for every row, two registration tasks can be formatted
 
             long long numOfTasks = (long long)(2*row);
-            GADGET_MSG("hoImageRegContainer2DRegistration<...>::registerOverContainer2DProgressive(...), numOfTasks : " << numOfTasks);
+            GDEBUG_STREAM("hoImageRegContainer2DRegistration<...>::registerOverContainer2DProgressive(...), numOfTasks : " << numOfTasks);
 
             std::vector< std::vector<TargetType*> > regImages(numOfTasks);
             std::vector< std::vector<TargetType*> > warpedImages(numOfTasks);
