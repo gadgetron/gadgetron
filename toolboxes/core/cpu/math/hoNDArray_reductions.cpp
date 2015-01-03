@@ -82,7 +82,7 @@ namespace Gadgetron{
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            sum += GT_ABS(x[i]);
+            sum += std::abs(x[i]);
         }
 
         r = sum;
@@ -95,7 +95,7 @@ namespace Gadgetron{
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            sum += GT_ABS(x[i]);
+            sum += std::abs(x[i]);
         }
 
         r = sum;
@@ -111,7 +111,7 @@ namespace Gadgetron{
             const  std::complex<float> & c = x[i];
             const float re = c.real();
             const float im = c.imag();
-            sum += ( GT_ABS(re) + GT_ABS(im) );
+            sum += ( std::abs(re) + std::abs(im) );
         }
 
         r = sum;
@@ -127,7 +127,7 @@ namespace Gadgetron{
             const  std::complex<double> & c = x[i];
             const double re = c.real();
             const double im = c.imag();
-            sum += ( GT_ABS(re) + GT_ABS(im) );
+            sum += ( std::abs(re) + std::abs(im) );
         }
 
         r = sum;
@@ -194,7 +194,7 @@ namespace Gadgetron{
         for (n=0; n<(long long)N; n++)
         {
             const T& c = x[n];
-            norm1Sum += GT_ABS(c);
+            norm1Sum += std::abs(c);
         }
 
         r = norm1Sum;

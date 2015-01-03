@@ -312,14 +312,14 @@ namespace Gadgetron
         {
             GADGET_CHECK_RETURN_FALSE( matrix.createMatrix(4, 4) );
 
-            double cosrx = std::cos(rx*GT_PI/180.0);
-            double sinrx = std::sin(rx*GT_PI/180.0);
+            double cosrx = std::cos(rx*M_PI/180.0);
+            double sinrx = std::sin(rx*M_PI/180.0);
 
-            double cosry = std::cos(ry*GT_PI/180.0);
-            double sinry = std::sin(ry*GT_PI/180.0);
+            double cosry = std::cos(ry*M_PI/180.0);
+            double sinry = std::sin(ry*M_PI/180.0);
 
-            double cosrz = std::cos(rz*GT_PI/180.0);
-            double sinrz = std::sin(rz*GT_PI/180.0);
+            double cosrz = std::cos(rz*M_PI/180.0);
+            double sinrz = std::sin(rz*M_PI/180.0);
 
             matrix(0, 0) = cosry*cosrz;                         matrix(0, 1) = cosry*sinrz;                             matrix(0, 2) = -sinry;           matrix(0, 3) = tx;
             matrix(1, 0) = sinrx*sinry*cosrz-cosrx*sinrz;       matrix(1, 1) = sinrx*sinry*sinrz+cosrx*cosrz;           matrix(1, 2) = sinrx*cosry;      matrix(1, 3) = ty;
@@ -342,7 +342,7 @@ namespace Gadgetron
         {
             ry_ = asin(-1 * matrix_(0, 2));
 
-            if ( GT_ABS( std::cos(ry_) ) > 1e-6 )
+            if ( std::abs( std::cos(ry_) ) > 1e-6 )
             {
                 rx_ = atan2(matrix_(1, 2), matrix_(2, 2));
                 rz_ = atan2(matrix_(0, 1), matrix_(0, 0));
@@ -356,9 +356,9 @@ namespace Gadgetron
             tx_ = matrix_(0, 3);
             ty_ = matrix_(1, 3);
             tz_ = matrix_(2, 3);
-            rx_ *= 180.0/GT_PI;
-            ry_ *= 180.0/GT_PI;
-            rz_ *= 180.0/GT_PI;
+            rx_ *= 180.0/M_PI;
+            ry_ *= 180.0/M_PI;
+            rz_ *= 180.0/M_PI;
         }
         catch(...)
         {
@@ -377,14 +377,14 @@ namespace Gadgetron
             jac.createMatrix(3, num_parameters_);
             Gadgetron::clear(jac);
 
-            double cosrx = std::cos(rx_*GT_PI/180.0);
-            double sinrx = std::sin(rx_*GT_PI/180.0);
+            double cosrx = std::cos(rx_*M_PI/180.0);
+            double sinrx = std::sin(rx_*M_PI/180.0);
 
-            double cosry = std::cos(ry_*GT_PI/180.0);
-            double sinry = std::sin(ry_*GT_PI/180.0);
+            double cosry = std::cos(ry_*M_PI/180.0);
+            double sinry = std::sin(ry_*M_PI/180.0);
 
-            double cosrz = std::cos(rz_*GT_PI/180.0);
-            double sinrz = std::sin(rz_*GT_PI/180.0);
+            double cosrz = std::cos(rz_*M_PI/180.0);
+            double sinrz = std::sin(rz_*M_PI/180.0);
 
             jac(0, 0) = 1;
             jac(0, 1) = 0;

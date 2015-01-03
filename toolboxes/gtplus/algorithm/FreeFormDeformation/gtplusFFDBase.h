@@ -18,6 +18,7 @@
 #pragma once
 
 #include <typeinfo>
+#include <cmath>
 #include "GadgetronTimer.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusIOAnalyze.h"
@@ -26,6 +27,8 @@
 #ifdef USE_OMP
     #include "omp.h"
 #endif // USE_OMP
+
+#define FFD_MKINT(a) (((a)>=0)?((int)((a)+0.5)):((int)((a)-0.5)))
 
 namespace Gadgetron { namespace gtPlus {
 

@@ -171,7 +171,7 @@ setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace)
         for ( ii=0; ii<(long long)N; ii++ )
         {
             // if ( std::abs( (*kspace)(ii) ) < DBL_EPSILON )
-            if ( GT_ABS((*kspace)(ii).real()) < DBL_EPSILON )
+            if ( std::abs((*kspace)(ii).real()) < DBL_EPSILON )
             {
                 this->unacquired_points_indicator_(ii) = 1.0;
             }

@@ -1,6 +1,9 @@
 
 #include "gtPlusISMRMRDReconUtil.h"
 #include "hoNDArray_elemwise.h"
+#include <algorithm>
+
+#define GT_IMAGING_GEOMETRY_DELTA 0.001
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -1577,7 +1580,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
 
                     for ( ii=1; ii<=width; ii++ )
                     {
-                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(2*width+1) ) )) );
+                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(2*width+1) ) )) );
                     }
 
                     if ( len%2 == 0 )
@@ -1611,7 +1614,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
                         double halfLen = (double)( (N+1)/2 );
                         for ( ii=1; ii<=halfLen; ii++ )
                         {
-                            filter(ii) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(N+1) ) )) );
+                            filter(ii) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(N+1) ) )) );
                         }
 
                         for ( ii=(size_t)halfLen; ii<N; ii++ )
@@ -1626,7 +1629,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
                         double halfLen = (double)( (len+1)/2 );
                         for ( ii=1; ii<=(size_t)halfLen; ii++ )
                         {
-                            filter(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(len+1) ) )) );
+                            filter(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(len+1) ) )) );
                         }
 
                         for ( ii=(size_t)halfLen; ii<len; ii++ )
@@ -1698,7 +1701,7 @@ generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& fil
                  {
                     for ( ii=1; ii<=width; ii++ )
                     {
-                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(2*width+1) ) )) );
+                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(2*width+1) ) )) );
                     }
                 }
             break;
@@ -1890,7 +1893,7 @@ generateSymmetricFilterForRef(size_t len, size_t start, size_t end,
         }
         else if ( start>0 && end<len-1 )
         {
-            lenFilter = GT_MIN(lenFilterStart, lenFilterEnd);
+            lenFilter = ( (lenFilterStart<lenFilterEnd) ? lenFilterStart : lenFilterEnd );
         }
         else
         {

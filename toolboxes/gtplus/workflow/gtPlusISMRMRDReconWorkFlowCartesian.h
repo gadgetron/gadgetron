@@ -321,7 +321,7 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
         output_ = input_;
 
         // if encoded FOV are the same as recon FOV
-        if ( (GT_ABS(encodingFOV_RO_/2 - reconFOV_RO_)<0.1) && (GT_ABS(encodingFOV_E1_-reconFOV_E1_)<0.1) )
+        if ( (std::abs(encodingFOV_RO_/2 - reconFOV_RO_)<0.1) && (std::abs(encodingFOV_E1_-reconFOV_E1_)<0.1) )
         {
             if ( isKSpace )
             {
@@ -456,7 +456,7 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
         output_ = input_;
 
         // if encoded FOV are the same as recon FOV
-        if ( (GT_ABS(encodingFOV_RO_/2 - reconFOV_RO_)<0.1) && (GT_ABS(encodingFOV_E1_-reconFOV_E1_)<0.1) && (GT_ABS(encodingFOV_E2_-reconFOV_E2_)<0.1) )
+        if ( (std::abs(encodingFOV_RO_/2 - reconFOV_RO_)<0.1) && (std::abs(encodingFOV_E1_-reconFOV_E1_)<0.1) && (std::abs(encodingFOV_E2_-reconFOV_E2_)<0.1) )
         {
             if ( isKSpace )
             {

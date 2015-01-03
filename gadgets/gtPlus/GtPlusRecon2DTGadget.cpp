@@ -230,7 +230,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     dimensions_ = *dims;
 
     // fill in more parameters
-    para_.reconSizeRO_ = GT_MAX(matrix_size_recon_[0], (*dims)[0]);
+    para_.reconSizeRO_ = std::max(matrix_size_recon_[0], (*dims)[0]);
     para_.reconSizeE1_ = reconE1_;
     para_.reconSizeE2_ = reconE2_;
     para_.encodingFOV_RO_ = field_of_view_encoding_[0];

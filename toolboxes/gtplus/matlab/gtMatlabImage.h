@@ -15,6 +15,7 @@
 #include <string>
 #include <iostream>
 #include <strstream>
+#include <algorithm>
 
 #include "hoNDArray.h"
 #include "hoNDImage.h"
@@ -175,11 +176,13 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
         mxArray* aMx = mxGetField(header, 0, header_fields_[0]);
         size_t N = mxGetNumberOfElements(aMx);
 
+        unsigned int minDN = ( (D<N) ? D : N );
+
         if ( mxIsSingle(aMx) )
         {
             float* pr = static_cast<float*>(mxGetData(aMx));
 
-            for ( ii=0; ii<GT_MIN(D, N); ii++ )
+            for ( ii=0; ii<minDN; ii++ )
             {
                 origin_[ii] = (coord_type)pr[ii];
             }
@@ -188,7 +191,7 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
         {
             double* pr = static_cast<double*>(mxGetData(aMx));
 
-            for ( ii=0; ii<GT_MIN(D, N); ii++ )
+            for ( ii=0; ii<minDN; ii++ )
             {
                 origin_[ii] = (coord_type)pr[ii];
             }
@@ -201,7 +204,7 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
         {
             float* pr = static_cast<float*>(mxGetData(aMx));
 
-            for ( ii=0; ii<GT_MIN(D, N); ii++ )
+            for ( ii=0; ii<minDN; ii++ )
             {
                 pixelSize_[ii] = (coord_type)pr[ii];
             }
@@ -210,7 +213,7 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
         {
             double* pr = static_cast<double*>(mxGetData(aMx));
 
-            for ( ii=0; ii<GT_MIN(D, N); ii++ )
+            for ( ii=0; ii<minDN; ii++ )
             {
                 pixelSize_[ii] = (coord_type)pr[ii];
             }
@@ -222,9 +225,9 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
         {
             float* pr = static_cast<float*>(mxGetData(aMx));
 
-            for ( jj=0; jj<GT_MIN(D, N); jj++ )
+            for ( jj=0; jj<minDN; jj++ )
             {
-                for ( ii=0; ii<GT_MIN(D, N); ii++ )
+                for ( ii=0; ii<minDN; ii++ )
                 {
                     axis_[jj][ii] = (coord_type)pr[jj + ii*D];
                 }
@@ -234,9 +237,9 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
         {
             double* pr = static_cast<double*>(mxGetData(aMx));
 
-            for ( jj=0; jj<GT_MIN(D, N); jj++ )
+            for ( jj=0; jj<minDN; jj++ )
             {
-                for ( ii=0; ii<GT_MIN(D, N); ii++ )
+                for ( ii=0; ii<minDN; ii++ )
                 {
                     axis_[jj][ii] = (coord_type)pr[jj + ii*D];
                 }

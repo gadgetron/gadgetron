@@ -264,7 +264,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
         const T* pCoeffNorm = wavCoeffNorm.begin();
         T* pBuf = wav_coeff_norm_approx_.begin();
 
-        if ( GT_ABS(std::abs(p) - 1.0) < 0.001 )
+        if ( std::abs(std::abs(p) - 1.0) < 0.001 )
         {
             #pragma omp parallel for default(none) private(ii) shared(N, pBuf, pCoeffNorm, mu)
             for ( ii=0; ii<N; ii++ )

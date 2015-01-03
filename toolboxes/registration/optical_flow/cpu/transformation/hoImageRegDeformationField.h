@@ -708,7 +708,7 @@ namespace Gadgetron
                                 - jacCurr(0, 0)*jacCurr(2, 1)*jacCurr(1, 2);
                         }
 
-                        if ( GT_ABS(det) < FLT_EPSILON ) det = FLT_EPSILON;
+                        if ( std::abs(det) < FLT_EPSILON ) det = FLT_EPSILON;
                         logJac(n) = std::log(det);
                     }
                 }

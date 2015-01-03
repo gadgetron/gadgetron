@@ -1176,7 +1176,7 @@ namespace Gadgetron
             size_t midE2 = E2/2;
             size_t offset = images->get_offset(slc, midE2, con, phs, rep, set, 0, ave);
 
-            while ( GT_ABS(imageHeader.slice_dir[0])<1e-6 && GT_ABS(imageHeader.slice_dir[1])<1e-6 && GT_ABS(imageHeader.slice_dir[2])<1e-6 )
+            while ( std::abs(imageHeader.slice_dir[0])<1e-6 && std::abs(imageHeader.slice_dir[1])<1e-6 && std::abs(imageHeader.slice_dir[2])<1e-6 )
             {
                 imageHeader = images->imageArray_[offset];
                 midE2++;

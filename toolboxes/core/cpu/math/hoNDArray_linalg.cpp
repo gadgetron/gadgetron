@@ -1681,7 +1681,7 @@ void getrf(hoNDArray<T>& A, hoNDArray<lapack_int>& ipiv)
         T* pA = A.begin();
         lapack_int lda = (lapack_int)A.get_size(0);
 
-        ipiv.create( GT_MIN(m, n) );
+        ipiv.create( std::min(m, n) );
         lapack_int* pIPIV = ipiv.begin();
 
         //if ( typeid(T)==typeid(float) )

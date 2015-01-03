@@ -106,7 +106,7 @@ int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlus
         dimensions_ = *dims;
 
         // fill in more parameters
-        para_.reconSizeRO_ = GT_MAX(matrix_size_recon_[0], (*dims)[0]);
+        para_.reconSizeRO_ = std::max(matrix_size_recon_[0], (*dims)[0]);
         para_.reconSizeE1_ = reconE1_;
         para_.reconSizeE2_ = reconE2_;
         para_.encodingFOV_RO_ = field_of_view_encoding_[0];
@@ -484,7 +484,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                         real_value_type v(0);
                         Gadgetron::norm2(packages_received_[ii].complexImSecond, v);
 
-                        if ( GT_ABS(v) < FLT_EPSILON )
+                        if ( std::abs(v) < FLT_EPSILON )
                         {
                             recomputeJob = true;
                             GWARN_STREAM("Received recon results (second set) contain no content ... ");
@@ -641,7 +641,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                         Gadgetron::norm2(gadget_->packages_received_[jobID].complexImSecond, v);
 
                         bool reconResSecondValid = true;
-                        if ( GT_ABS(v) < FLT_EPSILON )
+                        if ( std::abs(v) < FLT_EPSILON )
                         {
                             reconResSecondValid = false;
                             GWARN_STREAM("Received recon results (second set) contain no content ... ");

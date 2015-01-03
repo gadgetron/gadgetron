@@ -379,7 +379,7 @@ namespace Gadgetron
                     bool downsampledBy2 = true;
                     for ( jj=0; jj<D; jj++ )
                     {
-                        if ( GT_ABS(ratio[jj]-2.0f) > FLT_EPSILON )
+                        if ( std::abs(ratio[jj]-2.0f) > FLT_EPSILON )
                         {
                             downsampledBy2 = false;
                             break;

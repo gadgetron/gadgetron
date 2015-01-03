@@ -530,7 +530,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
 
         for ( d=0; d<DIn; d++ )
         {
-            dim[d] = GT_MKINT( (end(d)-start(d))/gridCtrlPtSpacing[d] ) + 1;
+            dim[d] = FFD_MKINT( (end(d)-start(d))/gridCtrlPtSpacing[d] ) + 1;
             pixelSize[d] = (end(d)-start(d))/(dim[d]-1);
 
             /// add the padding
@@ -616,7 +616,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
 
         for ( d=0; d<DIn; d++ )
         {
-            dim[d] = GT_MKINT( (end(d)-start(d))/gridCtrlPtSpacing[d] ) + 1;
+            dim[d] = FFD_MKINT( (end(d)-start(d))/gridCtrlPtSpacing[d] ) + 1;
             pixelSize[d] = (end(d)-start(d))/(dim[d]-1);
 
             /// add the padding

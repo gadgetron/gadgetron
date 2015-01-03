@@ -138,8 +138,8 @@ namespace Gadgetron
                     ValueType vt = target(n);
                     ValueType vw = warped(n);
 
-                    if ( GT_ABS(vt-bg_value_)<FLT_EPSILON 
-                        && GT_ABS(vw-bg_value_)<FLT_EPSILON )
+                    if ( std::abs(vt-bg_value_)<FLT_EPSILON 
+                        && std::abs(vw-bg_value_)<FLT_EPSILON )
                     {
                         continue;
                     }
@@ -179,8 +179,8 @@ namespace Gadgetron
                     ValueType vt = target(n);
                     ValueType vw = warped(n);
 
-                    if ( GT_ABS(vt-bg_value_)<FLT_EPSILON 
-                        && GT_ABS(vw-bg_value_)<FLT_EPSILON )
+                    if ( std::abs(vt-bg_value_)<FLT_EPSILON 
+                        && std::abs(vw-bg_value_)<FLT_EPSILON )
                     {
                         continue;
                     }

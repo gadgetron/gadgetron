@@ -294,7 +294,7 @@ namespace Gadgetron
             /// compensate for non-isotropic pixel sizes
             for ( ii=0; ii<D; ii++ )
             {
-                if ( GT_ABS(deform_delta_scale_factor[ii]-1) > FLT_EPSILON )
+                if ( std::abs(deform_delta_scale_factor[ii]-1) > FLT_EPSILON )
                 {
                     Gadgetron::scal(deform_delta_scale_factor[ii], deform_delta[ii]);
                 }

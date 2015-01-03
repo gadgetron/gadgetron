@@ -794,7 +794,7 @@ namespace Gadgetron{
         #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
         for ( n=0; n<(long long)N; n++ )
         {
-            r[n]= GT_ABS(x[n]);
+            r[n]= std::abs(x[n]);
         }
     }
 
