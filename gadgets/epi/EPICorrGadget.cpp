@@ -37,7 +37,7 @@ int EPICorrGadget::process_config(ACE_Message_Block* mb)
 
 
   for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
-    if (i->name.c_str() == "numberOfNavigators") {
+    if (i->name == "numberOfNavigators") {
       numNavigators_ = i->value;
     } else if (i->name == "etl") {
       etl_ = i->value;
