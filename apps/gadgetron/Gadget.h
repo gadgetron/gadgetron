@@ -11,7 +11,7 @@
 #include <ace/SOCK_Stream.h>
 
 #include <map>
-#include <string>
+#include <cstring>
 #include <boost/shared_ptr.hpp>
 
 #include "gadgetbase_export.h"
