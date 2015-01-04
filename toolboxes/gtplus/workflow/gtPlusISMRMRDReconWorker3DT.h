@@ -221,9 +221,9 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
             {
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->data_, "data_");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->data_, debugFolder_+"data_"); }
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_, true));
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, data_dst_, "data_dst_");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(data_dst_, debugFolder_+"data_dst_"); }
             }
             else
             {
@@ -247,26 +247,26 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
                 {
                     #pragma omp section
                     {
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ref_src_, "ref_src_");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref_src_, debugFolder_+"ref_src_"); }
                         //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(ref_src_, *workOrder3DT->coilCompressionCoef_, ref_dst_, true));
                         gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(ref_src_, *workOrder3DT->coilCompressionCoef_, ref_dst_, true);
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ref_dst_, "ref_dst_");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref_dst_, debugFolder_+"ref_dst_"); }
                     }
 
                     #pragma omp section
                     {
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->data_, "data_");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->data_, debugFolder_+"data_"); }
                         //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_, true));
                         gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_, true);
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, data_dst_, "data_dst_");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(data_dst_, debugFolder_+"data_dst_"); }
                     }
 
                     #pragma omp section
                     {
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->ref_coil_map_, "ref_coil_map_");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->ref_coil_map_, debugFolder_+"ref_coil_map_"); }
                         //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_coil_map_, *workOrder3DT->coilCompressionCoef_, ref_coil_map_dst_, true));
                         gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_coil_map_, *workOrder3DT->coilCompressionCoef_, ref_coil_map_dst_, true);
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ref_coil_map_dst_, "ref_coil_map_dst_");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref_coil_map_dst_, debugFolder_+"ref_coil_map_dst_"); }
                     }
                 }
 
@@ -408,7 +408,7 @@ estimateCoilMap(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& re
                 }
             }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->coilMap_, debugFolder_+"coilMap_"); }
         }
     }
     catch(...)
@@ -484,8 +484,8 @@ performCalib(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& ref_s
                         GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder3DT->unmixingCoeffIm_, usedN));
                         GADGET_CHECK_RETURN_FALSE(repmatLastDimension(workOrder3DT->gfactor_, usedN));
 
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->unmixingCoeffIm_, "unmixingCoeffIm_");
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->gfactor_, "gfactor_");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->unmixingCoeffIm_, debugFolder_+"unmixingCoeffIm_"); }
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->gfactor_, debugFolder_+"gfactor_"); }
                     }
                 }
             }
@@ -650,7 +650,7 @@ bool gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(WorkOrderType* workOrder3
             hoMatrix<T> A(RO*E1*E2*CHA, N, const_cast<T*>(ref.begin()));
             hoMatrix<T> A_KLF(RO*E1*E2*CHA, N, refKLF.begin());
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLFilter(A, numOfModes, A_KLF));
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refKLF, "refKLF");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refKLF, debugFolder_+"refKLF"); }
 
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(refKLF, refRecon));
         }
@@ -709,7 +709,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
         {
             GADGET_CHECK_RETURN_FALSE(prepRefByAveragingCrossN(workOrder3DT, ref, true, 0, refRecon));
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refRecon, "refRecon_interleaved");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refRecon, debugFolder_+"refRecon_interleaved"); }
 
             GADGET_CHECK_RETURN_FALSE(performRefFilter(workOrder3DT, refRecon, refCoilMap, startRO, endRO, startE1, endE1, startE2, endE2));
 
@@ -784,7 +784,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
             crop_size[3] = srcCHA;
             crop_size[4] = refRecon.get_size(4);
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refRecon, "refRecon_beforeCrop");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refRecon, debugFolder_+"refRecon_beforeCrop"); }
 
             if ( workOrder3DT->CalibMode_ == ISMRMRD_embedded )
             {
@@ -792,7 +792,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 hoNDArray<T> croppedRef;
                 GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 if ( performTiming_ ) { gt_timer2_.stop(); }
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, croppedRef, "refRecon_afterCrop");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(croppedRef, debugFolder_+"refRecon_afterCrop"); }
 
                 if ( workOrder3DT->recon_algorithm_ == ISMRMRD_SPIRIT 
                     || workOrder3DT->recon_algorithm_ == ISMRMRD_L1SPIRIT 
@@ -805,7 +805,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
 
                 GADGET_CHECK_RETURN_FALSE(prepRefByAveragingCrossN(workOrder3DT, croppedRef, workOrder3DT->embedded_averageall_ref_, 0, refRecon));
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refRecon, "refRecon_afterCrop_prepCrossN");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refRecon, debugFolder_+"refRecon_afterCrop_prepCrossN"); }
 
                 crop_size[4] = refRecon.get_size(4);
 
@@ -814,7 +814,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 GADGET_CHECK_RETURN_FALSE(setSubArrayUpTo11DArray(refRecon, refCoilMap, crop_offset, crop_size));
                 if ( performTiming_ ) { gt_timer2_.stop(); }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refCoilMap, "refCoilMap");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refCoilMap, debugFolder_+"refCoilMap"); }
 
                 if ( performTiming_ ) { gt_timer2_.start("perform ref coil map filter ... "); }
                 // hoNDArray<T> refCoilMapTmp(refCoilMap);
@@ -822,7 +822,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 // GADGET_CHECK_RETURN_FALSE(performRefFilter(workOrder3DT, refCoilMapTmp, refCoilMap, startRO, endRO, startE1, endE1, startE2, endE2));
                 GADGET_CHECK_RETURN_FALSE(performRefFilter(workOrder3DT, refCoilMap, refCoilMap, startRO, endRO, startE1, endE1, startE2, endE2));
                 if ( performTiming_ ) { gt_timer2_.stop(); }
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refCoilMap, "refCoilMap_filtered");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refCoilMap, debugFolder_+"refCoilMap_filtered"); }
 
                 if ( refRecon.get_size(0) == RO )
                 {
@@ -846,16 +846,16 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
             {
                 hoNDArray<T> croppedRef;
                 GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, croppedRef, "croppedRef");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(croppedRef, debugFolder_+"croppedRef"); }
 
                 GADGET_CHECK_RETURN_FALSE(performRefFilter(workOrder3DT, croppedRef, refCoilMap, startRO, endRO, startE1, endE1, startE2, endE2));
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refCoilMap, "croppedRef_filtered");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refCoilMap, debugFolder_+"croppedRef_filtered"); }
 
                 refRecon = croppedRef;
 
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.zeropad3D(refCoilMap, dataRO, dataE1, dataE2, croppedRef));
                 refCoilMap = croppedRef;
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refCoilMap, "refCoilMap");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refCoilMap, debugFolder_+"refCoilMap"); }
 
                 if ( refRecon.get_size(0) == RO )
                 {
@@ -906,8 +906,8 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
             return false;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refRecon, "refRecon");
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refCoilMap, "refCoilMap");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refRecon, debugFolder_+"refRecon"); }
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refCoilMap, debugFolder_+"refCoilMap"); }
 
         // if the upstream coil compression is needed
         if ( workOrder3DT->upstream_coil_compression_ )
@@ -1059,7 +1059,7 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                     hoNDArray<T> aveAll;
                     GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(workOrder3DT->ref_recon_, aveAll));
                     aveAll.squeeze();
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aveAll, "aveAll");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(aveAll, debugFolder_+"aveAll"); }
 
                     hoMatrix<T> coeff, eigenValues;
                     if ( workOrder3DT->coil_compression_num_modesKept_ > 0 )
@@ -1563,15 +1563,15 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                 ref_dst = workOrder3DT->ref_;
             }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ref_dst, "ref_dst");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref_dst, debugFolder_+"ref_dst"); }
 
             if ( (ref_dst.get_size(3)==dstCHA) && (ref_dst.get_size(4)==N) )
             {
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->fullkspace_, "fullkspace_");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->fullkspace_, debugFolder_+"fullkspace_"); }
 
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1E2(ref_dst, workOrder3DT->fullkspace_, 0, RO-1, startE1_, endE1_, startE2_, endE2_));
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->fullkspace_, "fullkspace_After");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->fullkspace_, debugFolder_+"fullkspace_After"); }
             }
 
             if ( performTiming_ ) { gt_timer2_.stop(); }
@@ -1593,14 +1593,14 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
             if ( performTiming_ ) { gt_timer2_.start("full res coil map : go to image domain ...  "); }
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->fullkspace_, buffer3DT, buffer3DT_Two));
             if ( performTiming_ ) { gt_timer2_.stop(); }
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT, "ComplexIm_afterRefFill");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT, debugFolder_+"ComplexIm_afterRefFill"); }
 
             if ( averageallN_coilmap )
             {
                 if ( workOrder3DT->workFlow_use_BufferedKernel_ )
                 {
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "complexImCombined");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexImCombined"); }
                 }
                 else
                 {
@@ -1613,25 +1613,25 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                         hoNDArray<T> aveComplexIm(RO, E1, E2, dstCHA, 1);
                         GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(buffer3DT, aveComplexIm));
 
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aveComplexIm, "aveComplexIm");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(aveComplexIm, debugFolder_+"aveComplexIm"); }
 
                         if ( performTiming_ ) { gt_timer2_.start("full res coil map : compute 3D coil map ...  "); }
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(aveComplexIm, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         if ( performTiming_ ) { gt_timer2_.stop(); }
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->coilMap_, debugFolder_+"coilMap_fullres"); }
                     }
                     else
                     {
                         if ( performTiming_ ) { gt_timer2_.start("full res coil map : compute 3D coil map ...  "); }
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         if ( performTiming_ ) { gt_timer2_.stop(); }
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->coilMap_, debugFolder_+"coilMap_fullres"); }
                     }
 
                     if ( performTiming_ ) { gt_timer2_.start("full res coil map : coil combine 3D ...  "); }
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
                     if ( performTiming_ ) { gt_timer2_.stop(); }
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "complexImCombined");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexImCombined"); }
                 }
             }
             else
@@ -1639,7 +1639,7 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                 if ( workOrder3DT->workFlow_use_BufferedKernel_ )
                 {
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "complexIm_");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_"); }
                 }
                 else
                 {
@@ -1652,16 +1652,16 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
 
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(complexImN, coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder3DT->coilMap_, whichN_coilmap));
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->coilMap_, debugFolder_+"coilMap_fullres"); }
                     }
                     else
                     {
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->coilMap_, debugFolder_+"coilMap_fullres"); }
                     }
 
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "complexIm_");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_"); }
                 }
             }
         }
@@ -1684,7 +1684,7 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                 // if the partial fourier handling is used to compute updated full kspace, the coil combination needs to be repeated
                 if ( partialFourierHandling )
                 {
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "complexIm_origin_noFullResCoilMap_");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_origin_noFullResCoilMap_"); }
 
                     if ( performTiming_ ) { gt_timer2_.start("after partial fourier handling, allocate buffer 3DT ...  "); }
                     hoNDArrayMemoryManaged<T> buffer3DT(workOrder3DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
@@ -1697,14 +1697,14 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                         hoNDArray<T> buffer3DT_Two(workOrder3DT->data_.get_dimensions());
                         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->data_, buffer3DT, buffer3DT_Two));
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "complexIm_noFullResCoilMap_");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_noFullResCoilMap_"); }
                     }
                     else if ( workOrder3DT->fullkspace_.get_number_of_elements() > 0 )
                     {
                         hoNDArray<T> buffer3DT_Two(workOrder3DT->fullkspace_.get_dimensions());
                         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->fullkspace_, buffer3DT, buffer3DT_Two));
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "complexIm_noFullResCoilMap_");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_noFullResCoilMap_"); }
                     }
                 }
             }
@@ -1894,7 +1894,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder3D
             return true;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_before_PF_Filter");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_before_PF_Filter"); }
 
         hoNDArrayMemoryManaged<T> buffer3DT_partial_fourier(kspace.get_dimensions(), gtPlus_mem_manager_);
 
@@ -1949,7 +1949,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder3D
                 kspace = *pDst;
             }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_after_PF_Filter");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_PF_Filter"); }
         }
     }
     catch(...)
@@ -1982,7 +1982,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
             return true;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_before_POCS");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_before_POCS"); }
 
         // create kspace filter for homodyne phase estimation
         ISMRMRDKSPACEFILTER filter_ref_type_ = ISMRMRD_FILTER_HANNING;
@@ -2005,7 +2005,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
             endRO = workOrder3DT.end_RO_;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filterRO, "filterRO_POCS");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterRO, debugFolder_+"filterRO_POCS"); }
 
         size_t startE1(0), endE1(E1-1);
         hoNDArray<T> filterE1(E1);
@@ -2023,7 +2023,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
             endE1 = workOrder3DT.end_E1_;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filterE1, "filterE1_POCS");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterE1, debugFolder_+"filterE1_POCS"); }
 
         size_t startE2(0), endE2(E2-1);
         hoNDArray<T> filterE2(E1);
@@ -2041,7 +2041,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
             endE2 = workOrder3DT.end_E2_;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filterE2, "filterE2_POCS");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterE2, debugFolder_+"filterE2_POCS"); }
 
         hoNDArrayMemoryManaged<T> kspaceIter(kspace.get_dimensions(), gtPlus_mem_manager_);
         kspaceIter = kspace;
@@ -2055,18 +2055,18 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
 
         // kspace filter
         GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspace3DfilterROE1E2(kspaceIter, filterRO, filterE1, filterE2, buffer3DT_partial_fourier));
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT_partial_fourier, "POCS_afterFiltered");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT_partial_fourier, debugFolder_+"POCS_afterFiltered"); }
 
         // go to image domain
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(buffer3DT_partial_fourier));
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT_partial_fourier, "POCS_afterFiltered_complexIm");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT_partial_fourier, debugFolder_+"POCS_afterFiltered_complexIm"); }
 
         // get the complex image phase for the filtered kspace
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(buffer3DT_partial_fourier, mag));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::addEpsilon(mag));
         GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::divide(buffer3DT_partial_fourier, magComplex, buffer3DT));
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT, "POCS_afterFiltered_complexIm_phase");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT, debugFolder_+"POCS_afterFiltered_complexIm_phase"); }
 
         // complex images, initialized as not filtered complex image
         hoNDArrayMemoryManaged<T> complexIm(kspaceIter, gtPlus_mem_manager_);
@@ -2082,22 +2082,22 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
             GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(complexImPOCS, mag));
             GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
             GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(magComplex, buffer3DT, complexImPOCS));
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImPOCS, "POCS_complexImPOCS");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImPOCS, debugFolder_+"POCS_complexImPOCS"); }
 
             // go back to kspace
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(complexImPOCS, kspaceIter));
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIter, "POCS_kspaceIter");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"POCS_kspaceIter"); }
 
             // buffer kspace during iteration
             buffer3DT_partial_fourierkspaceIter = kspaceIter;
 
             // restore the acquired region
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1E2(kspace, kspaceIter, startRO, endRO, startE1, endE1, startE2, endE2));
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIter, "POCS_kspaceIter_copyOri");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"POCS_kspaceIter_copyOri"); }
 
             // update complex image
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kspaceIter, complexImPOCS));
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImPOCS, "POCS_kspaceIter_copyOri_complexImPOCS");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImPOCS, debugFolder_+"POCS_kspaceIter_copyOri_complexImPOCS"); }
 
             // compute threshold to stop the iteration
             GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(complexImPOCS, complexIm, buffer3DT_partial_fourier));
@@ -2120,7 +2120,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
             complexIm = complexImPOCS;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT_partial_fourierkspaceIter, "kspaceIter_after_POCS");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT_partial_fourierkspaceIter, debugFolder_+"kspaceIter_after_POCS"); }
 
         if ( workOrder3DT.partialFourier_POCS_transitBand_ == 0 )
         {
@@ -2134,7 +2134,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
             kspace = buffer3DT_partial_fourierkspaceIter;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_after_POCS");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_POCS"); }
     }
     catch(...)
     {
@@ -2166,7 +2166,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
             return true;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_before_FengHuang");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_before_FengHuang"); }
 
         size_t startRO(0), endRO(RO-1);
         if ( workOrder3DT.start_RO_>=0 && workOrder3DT.end_RO_<RO )
@@ -2196,7 +2196,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().conjugateSymmetry3D(kspace, buffer3DT));
         if ( performTiming_ ) { gt_timer1_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT, "kspaceConj_FengHuang");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT, debugFolder_+"kspaceConj_FengHuang"); }
 
         // find the symmetric region in the kspace
         size_t startSymRO, endSymRO;
@@ -2227,8 +2227,8 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
         GADGET_CHECK_RETURN_FALSE(Gadgetron::cropUpTo11DArray(buffer3DT, src, start, size));
         GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(kspace, dst, start, size));
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, src, "src_FengHuang");
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dst, "dst_FengHuang");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(src, debugFolder_+"src_FengHuang"); }
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(dst, debugFolder_+"dst_FengHuang"); }
 
         if ( workOrder3DT.partialFourier_FengHuang_sameKernel_allN_ )
         {
@@ -2239,8 +2239,8 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(dst, ave4D));
             dst = ave4D;
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, src, "src_ave4D_FengHuang");
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dst, "dst_ave4D_FengHuang");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(src, debugFolder_+"src_ave4D_FengHuang"); }
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(dst, debugFolder_+"dst_ave4D_FengHuang"); }
         }
 
         // estimate the kernels
@@ -2322,9 +2322,9 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
             GADGET_CHECK_RETURN_FALSE(this->performReconFangHuang(workOrder3DT, buffer3DT, 
                     buffer3DT_partial_fourier_kspaceIter, (int)startRO, (int)endRO, (int)startE1, (int)endE1, (int)startE2, (int)endE2, kernel));
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT_partial_fourier_kspaceIter, "kspace_FengHuang_recon");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT_partial_fourier_kspaceIter, debugFolder_+"kspace_FengHuang_recon"); }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_FengHuang_original");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_FengHuang_original"); }
 
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1E2TransitionBand(kspace, buffer3DT_partial_fourier_kspaceIter, 
                     sRO, eRO, sE1, eE1, sE2, eE2, workOrder3DT.partialFourier_FengHuang_transitBand_, 
@@ -2335,7 +2335,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
             if ( performTiming_ ) { gt_timer1_.stop(); }
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_after_FengHuang");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_FengHuang"); }
     }
     catch(...)
     {

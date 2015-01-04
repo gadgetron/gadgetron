@@ -369,7 +369,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
             hoNDArray< std::complex<float> > res = workflow_.res_;
             res.squeeze();
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+            if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_fullPath_+ostr.str()); }
 
             if ( workflow_.res_second_.get_number_of_elements() > 0 )
             {
@@ -379,7 +379,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
                 std::ostringstream ostr;
                 ostr << "Recon2DT_Second_" << processed_called_times_;
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+                if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_fullPath_+ostr.str()); }
 
                 if ( workflow_.res_time_stamp_second_.get_number_of_elements() > 0 )
                 {
@@ -388,7 +388,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
                     hoNDArray<float> res = workflow_.res_time_stamp_second_;
                     res.squeeze();
-                    GADGET_EXPORT_ARRAY(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+                    if ( debugFolder_fullPath_.empty() ) { gt_exporter_.exportArray(res, debugFolder_fullPath_+ostr.str()); }
                 }
 
                 if ( workflow_.res_physio_time_stamp_second_.get_number_of_elements() > 0 )
@@ -398,7 +398,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
                     hoNDArray<float> res = workflow_.res_physio_time_stamp_second_;
                     res.squeeze();
-                    GADGET_EXPORT_ARRAY(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+                    if ( debugFolder_fullPath_.empty() ) { gt_exporter_.exportArray(res, debugFolder_fullPath_+ostr.str()); }
                 }
             }
         }
@@ -546,7 +546,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
 
                     hoNDArray< std::complex<float> > res = packages_received_[ii].complexIm;
                     res.squeeze();
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                    if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
 
                     if (packages_received_[ii].complexImSecond.get_number_of_elements() > 0 )
                     {
@@ -556,7 +556,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                         std::ostringstream ostr;
                         ostr << "GadgetCloud_Recon2DT_Second_" << ii;
 
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                        if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
 
                         if ( packages_received_[ii].resTimeStampSecond.get_number_of_elements() > 0 )
                         {
@@ -565,7 +565,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
 
                             hoNDArray<float> res = packages_received_[ii].resTimeStampSecond;
                             res.squeeze();
-                            GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                            if ( debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(res, debugFolder2_fullPath_+ostr.str()); }
                         }
 
                         if ( packages_received_[ii].resPhysioTimeStampSecond.get_number_of_elements() > 0 )
@@ -575,7 +575,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
 
                             hoNDArray<float> res = packages_received_[ii].resPhysioTimeStampSecond;
                             res.squeeze();
-                            GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                            if ( debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(res, debugFolder2_fullPath_+ostr.str()); }
                         }
                     }
                 }
@@ -679,7 +679,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
 
                     hoNDArray< std::complex<float> > res = gadget_->packages_received_[jobID].complexIm;
                     res.squeeze();
-                    GADGET_EXPORT_ARRAY_COMPLEX(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                    if ( !gadget_->debugFolder2_fullPath_.empty() ) { gadget_->gt_exporter_.exportArrayComplex(res, gadget_->debugFolder2_fullPath_+ostr.str()); }
 
                     if ( gadget_->packages_received_[jobID].complexImSecond.get_number_of_elements() > 0 )
                     {
@@ -688,7 +688,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
 
                         hoNDArray< std::complex<float> > res = gadget_->packages_received_[jobID].complexImSecond;
                         res.squeeze();
-                        GADGET_EXPORT_ARRAY_COMPLEX(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                        if ( !gadget_->debugFolder2_fullPath_.empty() ) { gadget_->gt_exporter_.exportArrayComplex(res, gadget_->debugFolder2_fullPath_+ostr.str()); }
 
                         if ( gadget_->packages_received_[jobID].resTimeStampSecond.get_number_of_elements() > 0 )
                         {
@@ -697,7 +697,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
 
                             hoNDArray<float> res = gadget_->packages_received_[jobID].resTimeStampSecond;
                             res.squeeze();
-                            GADGET_EXPORT_ARRAY(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                            if ( gadget_->debugFolder2_fullPath_.empty() ) { gadget_->gt_exporter_.exportArray(res, gadget_->debugFolder2_fullPath_+ostr.str()); }
                         }
 
                         if ( gadget_->packages_received_[jobID].resPhysioTimeStampSecond.get_number_of_elements() > 0 )
@@ -707,7 +707,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
 
                             hoNDArray<float> res = gadget_->packages_received_[jobID].resPhysioTimeStampSecond;
                             res.squeeze();
-                            GADGET_EXPORT_ARRAY(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                            if ( gadget_->debugFolder2_fullPath_.empty() ) { gadget_->gt_exporter_.exportArray(res, gadget_->debugFolder2_fullPath_+ostr.str()); }
                         }
                     }
                 }

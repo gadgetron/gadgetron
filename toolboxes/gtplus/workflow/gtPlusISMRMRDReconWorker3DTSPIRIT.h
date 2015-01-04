@@ -236,8 +236,8 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     ho4DArray<T> acsSrc(refRO, refE1, refE2, srcCHA, const_cast<T*>(ref_src.begin()+usedN*refRO*refE1*refE2*srcCHA));
     ho4DArray<T> acsDst(refRO, refE1, refE2, dstCHA, const_cast<T*>(ref_dst.begin()+usedN*refRO*refE1*refE2*dstCHA));
 
-    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
-    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
+    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsSrc, debugFolder_+"acsSrc"); }
+    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsDst, debugFolder_+"acsDst"); }
 
     hoNDArray<T> ker(kRO, kE1, kE2, srcCHA, dstCHA, oRO, oE1, oE2, workOrder3DT->kernel_->begin()+usedN*kRO*kE1*kE2*srcCHA*dstCHA*oRO*oE1*oE2);
 
@@ -247,7 +247,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     GADGET_CHECK_RETURN_FALSE(spirit_.calib3D(acsSrc, acsDst, workOrder3DT->spirit_reg_lamda_, workOrder3DT->spirit_calib_over_determine_ratio_, kRO, kE1, kE2, oRO, oE1, oE2, ker));
     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
+    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ker, debugFolder_+"ker"); }
 
     bool minusI = true;
 
@@ -265,7 +265,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         if ( !debugFolder_.empty() )
         {
             hoNDArray<T> kImACha(E1, E2, RO, srcCHA, kIm.begin());
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImACha, "kImACha");
+            gt_exporter_.exportArrayComplex(kImACha, debugFolder_+"kImACha");
         }
     }
     else
@@ -282,7 +282,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         if ( !debugFolder_.empty() )
         {
             hoNDArray<T> kImROACha(convKE1, convKE2, RO, srcCHA, kIm.begin());
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROACha, "kImROACha");
+            gt_exporter_.exportArrayComplex(kImROACha, debugFolder_+"kImROACha");
         }
     }
 
@@ -378,14 +378,14 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             // hoNDArrayMemoryManaged<T> kspaceIfftRO(RO, E1, E2, srcCHA, N, gtPlus_mem_manager_);
             hoNDArray<T> kspaceIfftRO(RO, E1, E2, srcCHA, N);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(data_dst, kspaceIfftRO));
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftRO, "kspaceIfftRO");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftRO, debugFolder_+"kspaceIfftRO"); }
 
             // hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, N, gtPlus_mem_manager_);
             hoNDArray<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, N);
             if ( performTiming_ ) { gt_timer3_.start("permute kspace RO to 4th dimension ... "); }
             GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
             if ( performTiming_ ) { gt_timer3_.stop(); }
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "kspaceIfftROPermuted");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftROPermuted, debugFolder_+"kspaceIfftROPermuted"); }
 
             hoNDArrayMemoryManaged<T> kerPermuted;
             if ( !spirit_kernelIm_permuted_ )
@@ -412,14 +412,14 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 }
                 if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->kernelIm_, "kernelImBeforePermuted");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->kernelIm_, debugFolder_+"kernelImBeforePermuted"); }
 
                 if ( performTiming_ ) { gt_timer3_.start("permute kernel RO to 5th dimension ... "); }
                 // GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo5thDimensionFor3DRecon( *workOrder3DT->kernelIm_, kerPermuted));
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension( *workOrder3DT->kernelIm_, kerPermuted));
                 if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kerPermuted, "kerPermuted");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kerPermuted, debugFolder_+"kerPermuted"); }
 
                 workOrder3DT->kernelIm_->reshape(kerPermuted.get_dimensions());
                 *workOrder3DT->kernelIm_ = kerPermuted;
@@ -433,7 +433,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 kerPermuted.create(E1, E2, srcCHA, dstCHA, RO, N, workOrder3DT->kernelIm_->begin());
             }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kerPermuted, "kerPermuted_Used");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kerPermuted, debugFolder_+"kerPermuted_Used"); }
 
             gtPlusReconWorkOrder3DT<T> workOrder3DTJobSplit;
             workOrder3DT->duplicate(workOrder3DTJobSplit);
@@ -444,7 +444,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 if ( performTiming_ ) { gt_timer3_.start("permute coil map RO to 4th dimension ... "); }
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(*workOrder3DT->coilMap_, *coilMapPermuted));
                 if ( performTiming_ ) { gt_timer3_.stop(); }
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "coilMapPermuted");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftROPermuted, debugFolder_+"coilMapPermuted"); }
 
                 workOrder3DTJobSplit.coilMap_ = coilMapPermuted;
             }
@@ -568,7 +568,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
                                 std::ostringstream ostr;
                                 ostr << "job_fullkspace" << "_" << j;
-                                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, jobList[j].res, ostr.str());
+                                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(jobList[j].res, debugFolder_+ostr.str()); }
                             }
 
                             // wait the cloud job to complete
@@ -600,7 +600,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
                                     std::ostringstream ostr;
                                     ostr << "job_fullkspace" << "_" << j;
-                                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, jobList[j].res, ostr.str());
+                                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(jobList[j].res, debugFolder_+ostr.str()); }
                                 }
                             }
                         }
@@ -626,7 +626,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
                     std::ostringstream ostr;
                     ostr << "job_fullkspace" << "_" << j;
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, jobList[j].res, ostr.str());
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(jobList[j].res, debugFolder_+ostr.str()); }
                 }
             }
 
@@ -634,7 +634,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             workOrder3DTJobSplit.fullkspace_.create(E1, E2, dstCHA, RO, N);
             GADGET_CHECK_RETURN_FALSE(this->combineReconJob(&workOrder3DTJobSplit, jobList, RO, N));
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DTJobSplit.fullkspace_, "job_combined_fullkspace");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DTJobSplit.fullkspace_, debugFolder_+"job_combined_fullkspace"); }
 
             // clear the memory
             jobList.clear();
@@ -644,11 +644,11 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo1stDimensionFor3DRecon(workOrder3DTJobSplit.fullkspace_, kspaceIfftRO));
             if ( performTiming_ ) { gt_timer3_.stop(); }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftRO, "res_fullkspace_ROinIm");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftRO, debugFolder_+"res_fullkspace_ROinIm"); }
 
             // perform fft along the first dimension
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(kspaceIfftRO, workOrder3DT->fullkspace_));
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->fullkspace_, "res_3DSpirit");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->fullkspace_, debugFolder_+"res_3DSpirit"); }
         }
         else
         {
@@ -667,7 +667,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(workOrder3DT, aliasedKSpace, kIm, unwarppedKSpace, n));
                 if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unwarppedKSpace, debugFolder_+"unwarppedKSpace"); }
             }
         }
 
@@ -680,13 +680,13 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
         {
             hoNDArrayMemoryManaged<T> complexImMultiChannel(RO, E1, E2, dstCHA, N, gtPlus_mem_manager_);
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->fullkspace_, complexImMultiChannel);
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImMultiChannel, "unwarppedComplexIm");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImMultiChannel, debugFolder_+"unwarppedComplexIm"); }
 
             if ( performTiming_ ) { gt_timer3_.start("spirit 3D coil combination ... "); }
             gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(complexImMultiChannel, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
             if ( performTiming_ ) { gt_timer3_.stop(); }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "combined");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"combined"); }
         }
     }
     catch(...)
@@ -777,11 +777,11 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
         hoNDArray<T> ker_Shifted(kerIm);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(*kerIm, ker_Shifted);
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker_Shifted, "ker_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ker_Shifted, debugFolder_+"ker_Shifted"); }
 
         hoNDArray<T> kspace_Shifted(kspace);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(kspace, kspace_Shifted);
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_Shifted, "kspace_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace_Shifted, debugFolder_+"kspace_Shifted"); }
 
         #ifdef GCC_OLD_FLAG
             #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, kspace_Shifted, ker_Shifted, NUM) if ( NUM > 1 ) num_threads( numThreads )
@@ -829,8 +829,8 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                 boost::shared_ptr<hoNDArray<T> > acq(new hoNDArray<T>(E1, E2, srcCHA, kspaceCurr.begin()));
                 spirit.setAcquiredPoints(acq);
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *kerCurr, "spirit3D_ker");
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *acq, "spirit3D_kspace");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*kerCurr, debugFolder_+"spirit3D_ker"); }
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*acq, debugFolder_+"spirit3D_kspace"); }
 
                 cgSolver.x0_ = acq.get();
 
@@ -840,23 +840,23 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                 // solve
                 cgSolver.solve(b, resCurr);
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, resCurr, "unwarppedKSpace_t");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(resCurr, debugFolder_+"unwarppedKSpace_t"); }
 
                 // restore the acquired points
                 spirit.restoreAcquiredKSpace(*acq, resCurr);
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, resCurr, "unwarppedKSpace_t_setAcq");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(resCurr, debugFolder_+"unwarppedKSpace_t_setAcq"); }
             }
 
             delete pCGSolver;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "res_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"res_Shifted"); }
 
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fftshift2D(res, kspace_Shifted);
         res = kspace_Shifted;
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "resPermuted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"resPermuted"); }
     }
     catch(...)
     {
@@ -886,14 +886,14 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         hoNDArrayMemoryManaged<T> kspaceIfftRO(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kspace, kspaceIfftRO));
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftRO, "kspaceIfftRO");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftRO, debugFolder_+"kspaceIfftRO"); }
 
         hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, gtPlus_mem_manager_);
 
         if ( performTiming_ ) { gt_timer3_.start("permtue RO to 4th dimension ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
         if ( performTiming_ ) { gt_timer3_.stop(); }
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "kspaceIfftROPermuted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftROPermuted, debugFolder_+"kspaceIfftROPermuted"); }
 
         T* pKspaceIfftROPermuted = kspaceIfftROPermuted.begin();
 
@@ -959,8 +959,8 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
                 boost::shared_ptr<hoNDArray<T> > acq(new hoNDArray<T>(E1, E2, srcCHA, kspace_DeDecoupled.begin()));
                 spirit.setAcquiredPoints(acq);
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *ker, "spirit3D_ker");
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *acq, "spirit3D_kspace");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*ker, debugFolder_+"spirit3D_ker"); }
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*acq, debugFolder_+"spirit3D_kspace"); }
 
                 cgSolver.x0_ = acq.get();
 
@@ -970,18 +970,18 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
                 // solve
                 cgSolver.solve(b, resCurr);
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, resCurr, "unwarppedKSpace_t");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(resCurr, debugFolder_+"unwarppedKSpace_t"); }
 
                 // restore the acquired points
                 spirit.restoreAcquiredKSpace(*acq, resCurr);
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, resCurr, "unwarppedKSpace_t_setAcq");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(resCurr, debugFolder_+"unwarppedKSpace_t_setAcq"); }
             }
 
             delete pCGSolver;
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, resDecoupled, "resDecoupled");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(resDecoupled, debugFolder_+"resDecoupled"); }
 
         // permute the unwrapped kspace
         if ( performTiming_ ) { gt_timer3_.start("permtue RO to 1st dimension ... "); }
@@ -990,7 +990,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         // perform fft along the first dimension
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(kspaceIfftRO, res));
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "res_3DSpirit");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"res_3DSpirit"); }
     }
     catch(...)
     {

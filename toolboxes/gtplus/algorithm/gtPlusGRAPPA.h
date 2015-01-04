@@ -924,13 +924,13 @@ imageDomainKernelRO3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro)) ), convKer ));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKer, "convKer_scal_RO");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKer, debugFolder_+"convKer_scal_RO"); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - zero padding only for RO ... "); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKer, ro, kConvE1, kConvE2, kImROTemp));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROTemp, "convKer_scal_RO_zeropadded");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROTemp, debugFolder_+"convKer_scal_RO_zeropadded"); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain only for RO ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImROTemp));
@@ -970,13 +970,13 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(e1*e2)) ), kImROScaled ));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROScaled, "kImROScaledE1E2");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROScaled, debugFolder_+"kImROScaledE1E2"); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - zero padding for E1 and E2 ... "); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(kImROScaled, e1, e2, dimR[2], kImE1E2RO));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImE1E2RO, "kImE1E2RO_zeropadded_E1E2");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImE1E2RO, debugFolder_+"kImE1E2RO_zeropadded_E1E2"); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain for E1 and E2 ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kImE1E2RO));

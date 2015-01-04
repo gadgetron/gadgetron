@@ -198,14 +198,14 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         hoNDArrayMemoryManaged<T> kspaceIfftRO(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kspace, kspaceIfftRO));
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftRO, "kspaceIfftRO");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftRO, debugFolder_+"kspaceIfftRO"); }
 
         hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, gtPlus_mem_manager_);
 
         if ( performTiming_ ) { gt_timer3_.start("permtue RO to 4th dimension ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
         if ( performTiming_ ) { gt_timer3_.stop(); }
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceIfftROPermuted, "kspaceIfftROPermuted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftROPermuted, debugFolder_+"kspaceIfftROPermuted"); }
 
         // permute kernel
         hoNDArray<T> kerPermuted(E1, E2, srcCHA, dstCHA, RO);
@@ -219,7 +219,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
         if ( performTiming_ ) { gt_timer3_.start("permtue coil map RO to 4th dimension ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(coilMapN, coilMapPermuted));
         if ( performTiming_ ) { gt_timer3_.stop(); }
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, coilMapPermuted, "coilMapPermuted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(coilMapPermuted, debugFolder_+"coilMapPermuted"); }
 
         hoNDArray<T> resPermuted(E1, E2, dstCHA, RO);
         GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImplROPermuted(workOrder3DT, kspaceIfftROPermuted, kerPermuted, coilMapPermuted, resPermuted));
@@ -231,7 +231,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         // perform fft along the first dimension
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(kspaceIfftRO, res));
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "res_3DSpirit");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"res_3DSpirit"); }
     }
     catch(...)
     {
@@ -282,7 +282,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         hoNDArray<T> kspaceLinear(kspace);
         res = kspace;
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace"); }
 
         bool performLinear = workOrder3DT->spirit_perform_linear_;
         if ( !workOrder3DT->spirit_perform_nonlinear_ ) performLinear = true;
@@ -294,7 +294,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
             if ( performTiming_ ) { gt_timer3_.stop(); }
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceLinear, "kspaceLinear");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceLinear, debugFolder_+"kspaceLinear"); }
 
         if ( workOrder3DT->spirit_perform_nonlinear_ )
         {
@@ -366,11 +366,11 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3DT_res");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_3DT_res"); }
 
                     spirit.restoreAcquiredKSpace(kspace, res);
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3DT_res_restored");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_3DT_res_restored"); }
                 }
                 else
                 {
@@ -405,7 +405,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3DT_res_noNullSpace");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_3DT_res_noNullSpace"); }
                 }
             }
             else
@@ -448,11 +448,11 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3D_res");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_3D_res"); }
 
                     spirit.restoreAcquiredKSpace(kspace, res);
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3D_res_restored");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_3D_res_restored"); }
                 }
                 else
                 {
@@ -482,7 +482,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3D_res_noNullSpace");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_3D_res_noNullSpace"); }
                 }
             }
 
@@ -541,12 +541,12 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
         res = kspace;
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace"); }
 
         bool performLinear = workOrder3DT->spirit_perform_linear_;
         if ( !workOrder3DT->spirit_perform_nonlinear_ ) performLinear = true;
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceLinear, "kspaceLinear");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceLinear, debugFolder_+"kspaceLinear"); }
 
         if ( workOrder3DT->spirit_perform_nonlinear_ )
         {
@@ -618,11 +618,11 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3DT_res");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, "ncg_spirit_3DT_res"); }
 
                     spirit.restoreAcquiredKSpace(kspace, res);
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3DT_res_restored");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, "ncg_spirit_3DT_res_restored"); }
                 }
                 else
                 {
@@ -657,7 +657,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3DT_res_noNullSpace");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, "ncg_spirit_3DT_res_noNullSpace"); }
                 }
             }
             else
@@ -700,11 +700,11 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3D_res");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, "ncg_spirit_3D_res"); }
 
                     spirit.restoreAcquiredKSpace(kspace, res);
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3D_res_restored");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, "ncg_spirit_3D_res_restored"); }
                 }
                 else
                 {
@@ -734,7 +734,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_3D_res_noNullSpace");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, "ncg_spirit_3D_res_noNullSpace"); }
                 }
             }
 

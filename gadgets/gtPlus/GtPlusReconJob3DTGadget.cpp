@@ -150,21 +150,21 @@ int GtPlusReconJob3DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
 
         hoNDArray< std::complex<float> > res = job->res;
         res.squeeze();
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+        if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
 
         std::ostringstream ostr2;
         ostr2 << "Job2DT_kspace_ID" << *jobID;
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, job->kspace, ostr2.str());
+        if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(job->kspace, debugFolder2_fullPath_+ostr2.str()); }
 
         std::ostringstream ostr3;
         ostr3 << "Job2DT_ker_ID" << *jobID;
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, job->ker, ostr3.str());
+        if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(job->ker, debugFolder2_fullPath_+ostr3.str()); }
 
         if ( job->workOrder2DT.coilMap_->get_number_of_elements() > 0 )
         {
             std::ostringstream ostr4;
             ostr4 << "Job2DT_coilmap_ID" << *jobID;
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, *job->workOrder2DT.coilMap_, ostr4.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(*job->workOrder2DT.coilMap_, debugFolder2_fullPath_+ostr4.str()); }
         }
     }
 

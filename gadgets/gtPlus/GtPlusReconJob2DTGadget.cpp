@@ -137,7 +137,7 @@ int GtPlusReconJob2DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
 
         hoNDArray< std::complex<float> > res = job->res;
         res.squeeze();
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+        if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_fullPath_+ostr.str()); }
     }
 
     // clean the kspace and ker and coil map

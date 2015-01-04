@@ -447,7 +447,7 @@ namespace Gadgetron
                                                                 }
                                                                 ostr << cm1->getObjectPtr()->image_index;
 
-                                                                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, *cm2->getObjectPtr(), ostr.str());
+                                                                if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(*cm2->getObjectPtr(), debugFolder_fullPath_+ostr.str()); }
                                                             }
 
                                                             // double check the image type
@@ -633,7 +633,7 @@ namespace Gadgetron
                 std::ostringstream ostr;
                 ostr << prefix << "_" << r;
 
-                GADGET_EXPORT_ARRAY_COMPLEX(this->debugFolder_fullPath_, gt_exporter_, outArray, ostr.str());
+                if ( !this->debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(outArray, this->debugFolder_fullPath_+ostr.str()); }
             }
         }
 
@@ -657,7 +657,7 @@ namespace Gadgetron
                 std::ostringstream ostr;
                 ostr << prefix << "_" << r;
 
-                GADGET_EXPORT_ARRAY(this->debugFolder_fullPath_, gt_exporter_, outArray, ostr.str());
+                if ( !this->debugFolder_fullPath_.empty() ) { gt_exporter_.exportArray(outArray, this->debugFolder_fullPath_+ostr.str()); }
             }
         }
 
@@ -678,7 +678,10 @@ namespace Gadgetron
                     std::ostringstream ostr;
                     ostr << prefix << "_" << r << "_" << c;
 
-                    GADGET_EXPORT_IMAGE_COMPLEX(this->debugFolder_fullPath_, gt_exporter_, input(r, c), ostr.str());
+                    if ( !this->debugFolder_fullPath_.empty() )
+                    {
+                        gt_exporter_.exportImageComplex(input(r, c), this->debugFolder_fullPath_+ostr.str());
+                    }
                 }
             }
         }
@@ -700,7 +703,7 @@ namespace Gadgetron
                     std::ostringstream ostr;
                     ostr << prefix << "_" << r << "_" << c;
 
-                    GADGET_EXPORT_IMAGE(this->debugFolder_fullPath_, gt_exporter_, input(r, c), ostr.str());
+                    gt_exporter_.exportImage(input(r, c), this->debugFolder_fullPath_+ostr.str());
                 }
             }
         }

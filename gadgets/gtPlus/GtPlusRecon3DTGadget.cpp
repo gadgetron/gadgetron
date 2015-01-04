@@ -423,7 +423,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
         hoNDArray< std::complex<float> > res = workflow_.res_;
         res.squeeze();
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+        if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
 
         if ( workflow_.workOrder_->gfactor_needed_ )
         {
@@ -432,7 +432,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
             hoNDArray< std::complex<float> > gfactor = workflow_.gfactor_;
             gfactor.squeeze();
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, gfactor, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(gfactor, debugFolder2_fullPath_+ostr.str()); }
         }
     }
 

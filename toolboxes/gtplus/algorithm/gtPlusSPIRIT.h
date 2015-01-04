@@ -883,7 +883,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - flip along dimensions ... "); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKernMean, "convKernMean");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKernMean, debugFolder_+"convKernMean"); }
 
         // flip the kernel
         if ( ROis3rdDim ) // E1, E2, RO
@@ -910,7 +910,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
             }
             if ( performTiming_ ) { gt_timer3_.stop(); }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip"); }
 
             // minus I
             if ( minusI )
@@ -921,7 +921,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
                     convKerFlip(kE1 -1, kE2 -1, kRO -1, dst, dst) = value - T(1.0);
                 }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_minusI");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip_minusI"); }
             }
         }
         else
@@ -949,7 +949,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
             }
             if ( performTiming_ ) { gt_timer3_.stop(); }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip"); }
 
             // minus I
             if ( minusI )
@@ -960,7 +960,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
                     convKerFlip(kRO -1, kE1 -1, kE2 -1, dst, dst) = value - T(1.0);
                 }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_minusI");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip_minusI"); }
             }
         }
     }
@@ -1000,14 +1000,14 @@ imageDomainKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2,
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1*e2)) ), convKerFlip ));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_scal");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip_scal"); }
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - zero padding ... "); }
         // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3D(convKerFlip, e1, e2, ro, kIm));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKerFlip, e1, e2, ro, kIm));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "convKerFlip_scal_zeropadded");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+"convKerFlip_scal_zeropadded"); }
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - conver to image domain ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm));
@@ -1055,13 +1055,13 @@ imageDomainKernelRO3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro)) ), convKerFlip ));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_scal_RO");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip_scal_RO"); }
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - zero padding only for RO ... "); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKerFlip, ro, kConvE1, kConvE2, kImROTemp));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROTemp, "convKerFlip_scal_RO_zeropadded");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROTemp, debugFolder_+"convKerFlip_scal_RO_zeropadded"); }
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - conver to image domain only for RO ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImROTemp));
@@ -1101,13 +1101,13 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(e1*e2)) ), kImROScaled ));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROScaled, "kImROScaledE1E2");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROScaled, debugFolder_+"kImROScaledE1E2"); }
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - zero padding for E1 and E2 ... "); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(kImROScaled, e1, e2, dimR[2], kImE1E2RO));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImE1E2RO, "kImE1E2RO_zeropadded_E1E2");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImE1E2RO, debugFolder_+"kImE1E2RO_zeropadded_E1E2"); }
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - conver to image domain for E1 and E2 ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kImE1E2RO));

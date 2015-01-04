@@ -534,12 +534,12 @@ namespace Gadgetron
                     std::ostringstream ostr_t;
                     ostr_t << "target_" << ii;
 
-                    GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, target_pyramid_[ii], ostr_t.str());
+                    gt_exporter_.exportImage(target_pyramid_[ii], debugFolder_+ostr_t.str());
 
                     std::ostringstream ostr_s;
                     ostr_s << "source_" << ii;
 
-                    GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, source_pyramid_[ii], ostr_s.str());
+                    gt_exporter_.exportImage(source_pyramid_[ii], debugFolder_+ostr_s.str());
                 }
             }
         }

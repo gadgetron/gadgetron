@@ -166,8 +166,8 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         ho3DArray<T> acsSrc(refRO, refE1, srcCHA, const_cast<T*>(ref_src.begin()+n*refRO*refE1*srcCHA+usedS*refRO*refE1*srcCHA*refN));
         ho3DArray<T> acsDst(refRO, refE1, dstCHA, const_cast<T*>(ref_dst.begin()+n*refRO*refE1*dstCHA+usedS*refRO*refE1*dstCHA*refN));
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsSrc, debugFolder_+"acsSrc"); }
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsDst, debugFolder_+"acsDst"); }
 
         ho6DArray<T> ker(kRO, kE1, srcCHA, dstCHA, oRO, oE1, 
                             workOrder2DT->kernel_->begin()
@@ -181,13 +181,13 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         spirit.calib(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, kRO, kE1, oRO, oE1, ker);
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ker, debugFolder_+"ker"); }
 
         bool minusI = true;
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
         GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, kRO, kE1, oRO, oE1, RO, E1, kIm, minusI));
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+"kIm"); }
     }
     catch(...)
     {
@@ -252,12 +252,12 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
 
         hoNDArray<T> ker_Shifted(adj_forward_G_I);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(adj_forward_G_I, ker_Shifted);
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker_Shifted, "ker_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ker_Shifted, debugFolder_+"ker_Shifted"); }
 
         hoNDArray<T> kspace_Shifted;
         kspace_Shifted = kspace;
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(kspace, kspace_Shifted);
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_Shifted, "kspace_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace_Shifted, debugFolder_+"kspace_Shifted"); }
 
         hoNDArray<T> kspace_initial_Shifted;
         bool hasInitial = false;
@@ -267,7 +267,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(workOrder2DT->kspace_initial_, kspace_initial_Shifted);
             hasInitial = true;
         }
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_initial_Shifted, "kspace_initial_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace_initial_Shifted, debugFolder_+"kspace_initial_Shifted"); }
 
         #ifdef GCC_OLD_FLAG
             #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, refN, N, hasInitial) num_threads(numThreads)
@@ -355,21 +355,21 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     cgSolver.solve(b, unwarppedKSpace);
                 }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace_n");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unwarppedKSpace, debugFolder_+"unwarppedKSpace_n"); }
 
                 // restore the acquired points
                 spirit.restoreAcquiredKSpace(*acq, unwarppedKSpace);
 
                 memcpy(res.begin()+n*RO*E1*dstCHA, unwarppedKSpace.begin(), unwarppedKSpace.get_number_of_bytes());
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace_n_setAcq");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unwarppedKSpace, debugFolder_+"unwarppedKSpace_n_setAcq"); }
             }
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "res_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"res_Shifted"); }
 
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fftshift2D(res, kspace_Shifted);
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_Shifted, "res");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace_Shifted, debugFolder_+"res"); }
         res = kspace_Shifted;
     }
     catch(...)
@@ -583,7 +583,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                                 std::ostringstream ostr;
                                 ostr << "job_fullkspace" << "_" << j;
-                                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, jobList[j].res, ostr.str());
+                                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(jobList[j].res, debugFolder_+ostr.str()); }
                             }
 
                             // wait the cloud job to complete
@@ -615,7 +615,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                                     std::ostringstream ostr;
                                     ostr << "job_fullkspace" << "_" << j;
-                                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, jobList[j].res, ostr.str());
+                                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(jobList[j].res, debugFolder_+ostr.str()); }
                                 }
                             }
 
@@ -644,13 +644,13 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, jobList[j].res, "job_fullkspace");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(jobList[j].res, debugFolder_+"job_fullkspace"); }
                 }
 
                 // combine the job
                 GADGET_CHECK_RETURN_FALSE(this->combineReconJob(workOrder2DT, jobList, N, S));
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->fullkspace_, "fullkspace");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder2DT->fullkspace_, debugFolder_+"fullkspace"); }
 
                 // clear the memory
                 jobList.clear();
@@ -676,7 +676,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                 GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(workOrder2DT, aliasedKSpace, kIm, unwarppedKSpace, usedS));
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unwarppedKSpace, debugFolder_+"unwarppedKSpace"); }
             }
         }
 
@@ -689,7 +689,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(unwarppedKSpace, complexImMultiChannel);
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImMultiChannel, "unwarppedComplexIm");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImMultiChannel, debugFolder_+"unwarppedComplexIm"); }
 
             hoNDArray<T> combined(RO, E1, N, workOrder2DT->complexIm_.begin()+usedS*RO*E1*N);
 
@@ -704,7 +704,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                 gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImMultiChannel, coilMap, combined);
             }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, combined, "combined");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(combined, debugFolder_+"combined"); }
         }
     }
     catch(...)

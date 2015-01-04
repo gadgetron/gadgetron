@@ -93,7 +93,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
         hoNDArray<T> kspaceLinear(kspace);
         res = kspace;
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace"); }
 
         bool performLinear = workOrder2DT->spirit_perform_linear_;
         if ( !workOrder2DT->spirit_perform_nonlinear_ ) performLinear = true;
@@ -117,7 +117,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             }
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceLinear, "kspaceLinear");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceLinear, debugFolder_+"kspaceLinear"); }
 
         if ( workOrder2DT->spirit_perform_nonlinear_ )
         {
@@ -204,11 +204,11 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2DT_res");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_2DT_res"); }
 
                     spirit.restoreAcquiredKSpace(kspace, res);
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2DT_res_restored");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_2DT_res_restored"); }
                 }
                 else
                 {
@@ -241,7 +241,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2DT_res_noNullSpace");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_2DT_res_noNullSpace"); }
                 }
             }
             else
@@ -285,11 +285,11 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2D_res");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_2D_res"); }
 
                     spirit.restoreAcquiredKSpace(kspace, res);
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2D_res_restored");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, "ncg_spirit_2D_res_restored"); }
                 }
                 else
                 {
@@ -319,7 +319,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     ncgsolver.solve(b, res);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2D_res_noNullSpace");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_2D_res_noNullSpace"); }
                 }
             }
 

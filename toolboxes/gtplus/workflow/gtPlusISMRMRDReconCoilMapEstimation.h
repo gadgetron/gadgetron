@@ -64,14 +64,14 @@ bool gtPlusISMRMRDReconCoilMapEstimation<T>::coilMap2DSPIRIT(const hoNDArray<T>&
 
         // std::string debugFolder_ = "D:/gtuser/mrprogs/gadgetron/toolboxes/gtplus/ut/result/";
         // Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
-        // GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
+        // if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ker, debugFolder_+"ker"); }
 
         bool minusI = false;
         hoNDArray<T> kIm(RO, E1, CHA, CHA);
         GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, kRO, kE1, oRO, oE1, RO, E1, kIm, minusI));
         T* pkIm = kIm.begin();
 
-        // GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
+        // if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+"kIm"); }
 
         coilMap.create(RO, E1, CHA, 2);
         eigD.create(RO, E1, 2);

@@ -433,7 +433,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
         hoNDArray< std::complex<float> > res = workflow_.res_;
         res.squeeze();
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+        if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
 
         if ( workflow_.workOrder_->gfactor_needed_ )
         {
@@ -442,7 +442,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
             hoNDArray< std::complex<float> > gfactor = workflow_.gfactor_;
             gfactor.squeeze();
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, gfactor, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(gfactor, debugFolder2_fullPath_+ostr.str()); }
         }
 
         if ( workflow_.workOrder_->wrap_around_map_needed_ )
@@ -452,7 +452,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
             hoNDArray< std::complex<float> > wrap_around_map = workflow_.wrap_around_map_;
             wrap_around_map.squeeze();
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, wrap_around_map, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(wrap_around_map, debugFolder2_fullPath_+ostr.str()); }
         }
 
         if ( workflow_.res_second_.get_number_of_elements() > 0 )
@@ -463,7 +463,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
             std::ostringstream ostr;
             ostr << "Recon2DT_second_" << processed_called_times_;
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
         }
     }
 

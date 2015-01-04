@@ -362,13 +362,6 @@ namespace Gadgetron
                 //#endif // WIN32
             }
 
-            //if ( !debugFolder_.empty() )
-            //{
-            //    GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, v1, "f1_filtered");
-            //    GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, v2, "f2_filtered");
-            //    GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, v12, "f3_filtered");
-            //}
-
             // deriv = f1*i1 + f2*i2 + f3, we don't need to multiply this by 2.0
 
             //if ( typeid(ValueType) == typeid(computing_value_type) )

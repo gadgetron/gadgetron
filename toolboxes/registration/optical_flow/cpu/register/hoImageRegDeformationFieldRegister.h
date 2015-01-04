@@ -366,7 +366,7 @@ namespace Gadgetron
                         std::ostringstream ostr;
                         ostr << "deform_" << jj;
 
-                        GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, transform_->getDeformationField(jj), ostr.str());
+                        gt_exporter_.exportImage(transform_->getDeformationField(jj), debugFolder_+ostr.str());
                     }
                 }
 
@@ -429,7 +429,7 @@ namespace Gadgetron
                             std::ostringstream ostr;
                             ostr << "deformExpanded_" << jj;
 
-                            GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, transform_->getDeformationField(jj), ostr.str());
+                            gt_exporter_.exportImage(transform_->getDeformationField(jj), debugFolder_+ostr.str());
                         }
                     }
                 }
