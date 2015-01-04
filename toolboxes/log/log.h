@@ -3,7 +3,7 @@
 
 #include "log_export.h"
 
-#include <stdint.h>
+#include <vector> //For mask fields
 
 #include <sstream> //For deprecated macros
 
@@ -109,8 +109,8 @@ namespace Gadgetron
   protected:
     GadgetronLogger();
     static GadgetronLogger* instance_;
-    uint64_t level_mask_;
-    uint64_t print_mask_;
+    std::vector<bool> level_mask_;
+    std::vector<bool> print_mask_;
   };
 }
 

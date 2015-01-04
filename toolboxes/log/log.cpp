@@ -17,8 +17,8 @@ namespace Gadgetron
   GadgetronLogger* GadgetronLogger::instance_ = NULL;
   
   GadgetronLogger::GadgetronLogger()
-    : level_mask_(0)
-    , print_mask_(0)
+    : level_mask_(GADGETRON_LOG_LEVEL_MAX,false)
+    , print_mask_(GADGETRON_LOG_PRINT_MAX, false)
   {
     char* log_mask = getenv(GADGETRON_LOG_MASK_ENVIRONMENT);
     if ( log_mask != NULL) {
@@ -144,65 +144,63 @@ namespace Gadgetron
 
   void GadgetronLogger::enableLogLevel(GadgetronLogLevel LEVEL)
   {
-    if (LEVEL < GADGETRON_LOG_LEVEL_MAX) {
-      level_mask_ |= (1<<LEVEL);
+    if (LEVEL < level_mask_.size()) {
+      level_mask_[LEVEL] = true;
     }
   }
 
   void GadgetronLogger::disableLogLevel(GadgetronLogLevel LEVEL)
   {
-    if (LEVEL < GADGETRON_LOG_LEVEL_MAX) {
-      level_mask_ &= ~(1<<LEVEL);
+    if (LEVEL < level_mask_.size()) {
+      level_mask_[LEVEL] = false;
     }
   }
   
   bool GadgetronLogger::isLevelEnabled(GadgetronLogLevel LEVEL)
   {
-    if (LEVEL >= GADGETRON_LOG_LEVEL_MAX) return false;
-
-    return ((1<<LEVEL) & level_mask_)>0;
+    if (LEVEL >= level_mask_.size()) return false;
+    return level_mask_[LEVEL];
   }
   
   void GadgetronLogger::enableAllLogLevels()
   {
-    uint64_t null_mask = 0;
-    level_mask_ |= ~null_mask;
+    level_mask_.assign(GADGETRON_LOG_LEVEL_MAX,true);
   }
 
   void GadgetronLogger::disableAllLogLevels()
   {
-    level_mask_ = 0;
+    level_mask_.assign(GADGETRON_LOG_LEVEL_MAX,false);
   }
 
   void GadgetronLogger::enableOutputOption(GadgetronLogOutput OUTPUT) 
   {
-    if (OUTPUT < GADGETRON_LOG_PRINT_MAX) {
-      print_mask_ |= (1<<OUTPUT);
-    }    
+    if (OUTPUT < print_mask_.size()) {
+      print_mask_[OUTPUT] = true;
+    }
   }
 
   void GadgetronLogger::disableOutputOption(GadgetronLogOutput OUTPUT) 
   {
-    if (OUTPUT < GADGETRON_LOG_PRINT_MAX) {
-      print_mask_ &= ~(1<<OUTPUT);
-    }    
+    if (OUTPUT < print_mask_.size()) {
+      print_mask_[OUTPUT] = false;
+    }
   }
  
   bool GadgetronLogger::isOutputOptionEnabled(GadgetronLogOutput OUTPUT)
   {
-    if (OUTPUT >= GADGETRON_LOG_PRINT_MAX) return false;
-    return ((1<<OUTPUT) & print_mask_)>0;
+    if (OUTPUT < print_mask_.size()) {
+      return print_mask_[OUTPUT];
+    }
+    return false;
   }
   
   void GadgetronLogger::enableAllOutputOptions() 
   {
-    uint64_t null_mask = 0;
-    print_mask_ |= ~null_mask;
+    print_mask_.assign(GADGETRON_LOG_PRINT_MAX, true);
   }
 
   void GadgetronLogger::disableAllOutputOptions() 
   {
-    print_mask_ = 0;
+    print_mask_.assign(GADGETRON_LOG_PRINT_MAX, false);
   }
-
 }
