@@ -113,20 +113,16 @@ int PartialFourierAdjustROGadget
 
         if (this->next()->putq(m1) == -1) 
         {
-            ACE_ERROR_RETURN( (LM_ERROR,
-                    ACE_TEXT("%p\n"),
-                    ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
-                    -1);
+	  GERROR("NoiseAdjustGadget::process, passing data on to next gadget");
+	  return -1;
         }
     }
     else
     {
         if (this->next()->putq(m1) == -1) 
         {
-            ACE_ERROR_RETURN( (LM_ERROR,
-                    ACE_TEXT("%p\n"),
-                    ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
-                    -1);
+	  GERROR("NoiseAdjustGadget::process, passing data on to next gadget");
+	  return -1;
         }
     }
 

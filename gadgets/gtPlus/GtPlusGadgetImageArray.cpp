@@ -254,7 +254,7 @@ GtPlusGadgetImageArray::GtPlusGadgetImageArray(size_t aSize[GT_DIM_NUM])
     }
     catch(...)
     {
-        std::cout << "Failed in allocate imageArray_" << std::endl;
+        GDEBUG_STREAM("Failed in allocate imageArray_" << std::endl);
     }
 }
 
@@ -297,7 +297,7 @@ void GtPlusGadgetImageArray::resize(size_t aSize[GT_DIM_NUM])
     }
     catch(...)
     {
-        std::cout << "Failed in resize GtPlusGadgetImageArray " << std::endl;
+        GDEBUG_STREAM("Failed in resize GtPlusGadgetImageArray " << std::endl);
     }
 }
 
@@ -629,15 +629,15 @@ getSubImageArray(size_t* startInd, size_t* endInd, GtPlusGadgetImageArray& image
 void GtPlusGadgetImageArray::dump()
 {
     size_t ii;
-    std::cout << "GtPlusGadgetImageArray" << std::endl;
-    std::cout << "==========================================================" << std::endl;
-    std::cout << "matrix_size           : ";
+    GDEBUG_STREAM("GtPlusGadgetImageArray" << std::endl);
+    GDEBUG_STREAM("==========================================================" << std::endl);
+    GDEBUG_STREAM("matrix_size           : ");
     for ( ii=0; ii<GT_DIM_NUM; ii++ )
     {
-        std::cout << matrix_size[ii] << " ";
+        GDEBUG_STREAM(matrix_size[ii] << " ");
     }
-    std::cout << std::endl;
-    std::cout << "----------------------------------------------------------" << std::endl;
+    GDEBUG_STREAM(std::endl);
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
     if ( imageArray_ )
     {
         int slc, e2, con, phs, rep, set, seg, ave;
@@ -679,7 +679,7 @@ void GtPlusGadgetImageArray::dump()
             }
         }
     }
-    std::cout << "==========================================================" << std::endl;
+    GDEBUG_STREAM("==========================================================" << std::endl);
 }
 
 }

@@ -616,12 +616,12 @@ sendOutJob(int jobID, GtPlusRecon2DTCloudPackageCPFL* job)
 {
     try
     {
-        ACE_DEBUG( (LM_INFO, ACE_TEXT("GtPlusReconJob2DTGadgetCloud sendOutJob ... ")) );
+      GDEBUG("GtPlusReconJob2DTGadgetCloud sendOutJob ...\n");
 
         if (!this->controller_)
         {
-            ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Cannot return result to controller, no controller set")) );
-            return false;
+	  GERROR("Cannot return result to controller, no controller set\n");
+	  return false;
         }
 
         GadgetContainerMessage<GadgetMessageIdentifier>* mb =

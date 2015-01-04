@@ -184,10 +184,8 @@ int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::Acquisitio
 
     if (this->next()->putq(m1) == -1) 
     {
-        ACE_ERROR_RETURN( (LM_ERROR,
-                ACE_TEXT("%p\n"),
-                ACE_TEXT("WhiteNoiseInjectorGadget::process, passing data on to next gadget")),
-                -1);
+      GERROR("WhiteNoiseInjectorGadget::process, passing data on to next gadget");
+      return -1;
     }
 
     return GADGET_OK;

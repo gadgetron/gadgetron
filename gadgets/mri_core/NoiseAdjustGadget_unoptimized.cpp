@@ -205,10 +205,8 @@ int NoiseAdjustGadget_unoptimized
 		}
 		//It is enough to put the first one, since they are linked
 		if (this->next()->putq(m1) == -1) {
-			ACE_ERROR_RETURN( (LM_ERROR,
-					ACE_TEXT("%p\n"),
-					ACE_TEXT("NoiseAdjustGadget_unoptimized::process, passing data on to next gadget")),
-					-1);
+		  GERROR("NoiseAdjustGadget_unoptimized::process, passing data on to next gadget");
+		  return -1;
 		}
 
 	}

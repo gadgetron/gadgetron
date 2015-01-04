@@ -58,7 +58,7 @@ int EPICorrGadget::process(
       GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
-  //std::cout << "Nav: " << navNumber_ << "    " << "Echo: " << epiEchoNumber_ << std::endl;
+  //GDEBUG_STREAM("Nav: " << navNumber_ << "    " << "Echo: " << epiEchoNumber_ << std::endl);
 
   // Get a reference to the acquisition header
   ISMRMRD::AcquisitionHeader &hdr = *m1->getObjectPtr();
@@ -68,10 +68,8 @@ int EPICorrGadget::process(
     // It is enough to put the first one, since they are linked
     if (this->next()->putq(m1) == -1) {
       m1->release();
-      ACE_ERROR_RETURN( (LM_ERROR,
-             ACE_TEXT("%p\n"),
-             ACE_TEXT("EPICorrGadget::process, passing data on to next gadget")),
-            -1);
+      GERROR("EPICorrGadget::process, passing data on to next gadget");
+      return -1;
     }
     return 0;
   }
@@ -133,8 +131,8 @@ int EPICorrGadget::process(
       float slope = ctemp.n_rows * std::arg(arma::cdot(ctemp.rows(0,ctemp.n_rows-2), ctemp.rows(1,ctemp.n_rows-1)));
       ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(x.n_rows), -slope*x));
       float intercept = std::arg(arma::sum(ctemp));
-      //std::cout << "Slope = " << slope << std::endl;
-      //std::cout << "Intercept = " << intercept << std::endl;
+      //GDEBUG_STREAM("Slope = " << slope << std::endl);
+      //GDEBUG_STREAM("Intercept = " << intercept << std::endl);
       tvec = slope*x + intercept;
       
       // Odd and even phase corrections
@@ -180,10 +178,8 @@ int EPICorrGadget::process(
     // It is enough to put the first one, since they are linked
     if (this->next()->putq(m1) == -1) {
       m1->release();
-      ACE_ERROR_RETURN( (LM_ERROR,
-             ACE_TEXT("%p\n"),
-             ACE_TEXT("EPICorrGadget::process, passing data on to next gadget")),
-            -1);
+      GERROR("EPICorrGadget::process, passing data on to next gadget");
+      return -1;
     }
   }
 

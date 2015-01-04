@@ -35,7 +35,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     }
 
     for (int i = 0; i < num_elements; i++) {
-        //std::cout << i << ": " << raw_data[i].real() << ", " << raw_data[i].imag() << endl;
+        //GDEBUG_STREAM(i << ": " << raw_data[i].real() << ", " << raw_data[i].imag() << endl);
         real_data[i] = raw_data[i].real();
         imag_data[i] = raw_data[i].imag();
     }

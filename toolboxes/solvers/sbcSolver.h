@@ -54,7 +54,7 @@ namespace Gadgetron{
       for( unsigned int outer_iteration=0; outer_iteration<this->outer_iterations_; outer_iteration++ ) {
       
 	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
-	  std::cout << std::endl << "SBC outer loop iteration " << outer_iteration << std::endl << std::endl;
+	  GDEBUG_STREAM(std::endl << "SBC outer loop iteration " << outer_iteration << std::endl << std::endl);
 	
 	// Invoke the core solver
 	//
@@ -73,7 +73,7 @@ namespace Gadgetron{
 	  REAL delta = nrm2(&encoded_image);
 	
 	  if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
-	    std::cout << "Squared residual norm (outer loop): " << delta*delta << std::endl << std::endl;
+	    GDEBUG_STREAM("Squared residual norm (outer loop): " << delta*delta << std::endl << std::endl);
 	  
 	  if( delta < this->tolerance_ )
 	    break;

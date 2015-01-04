@@ -33,7 +33,7 @@ double mcompare(hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<flo
   float comp = 0.0;
   float root_sum = 0.0;
   if (A->get_number_of_elements() != B->get_number_of_elements()) {
-    std::cout << "Wrong number of elements in comparison" << std::endl;
+    GDEBUG_STREAM("Wrong number of elements in comparison" << std::endl);
     return 9e30;
   }
 
@@ -209,7 +209,7 @@ bool fftw_fft2(hoNDArray< std::complex<T> >& a, hoNDArray< std::complex<T> >& r,
   T fftRatio = 1.0/std::sqrt( T(n0*n1) );
 
   size_t num = a.get_number_of_elements()/(n0*n1);
-  std::cout << "Number of FFTs: " << num << std::endl;
+  GDEBUG_STREAM("Number of FFTs: " << num << std::endl);
   long long n;
 
   if ( typeid(T) == typeid(float) )
@@ -309,9 +309,9 @@ bool fftw_fft2(hoNDArray< std::complex<T> >& a, hoNDArray< std::complex<T> >& r,
  */
 int main(int argc, char** argv)
 {
-  std::cout << "Simple test of linear algebra routines" << std::endl;
+  GDEBUG_STREAM("Simple test of linear algebra routines" << std::endl);
   if (argc != 2) {
-    std::cout << "Usage: linalg_test <folder_with_test_data>" << std::endl;
+    GDEBUG_STREAM("Usage: linalg_test <folder_with_test_data>" << std::endl);
     return -1;
   }
 
@@ -348,13 +348,13 @@ int main(int argc, char** argv)
   {
     GadgetronTimer t("GEMM Time (system)", true);
     hoNDArray_gemm( A.get(), B.get(), alpha,  C1.get(), beta);
-    std::cout << C1->get_size(0) << ", " << C1->get_size(1) << ", " << C1->get_number_of_elements() << std::endl;
+    GDEBUG_STREAM(C1->get_size(0) << ", " << C1->get_size(1) << ", " << C1->get_number_of_elements() << std::endl);
   }
 
   {
     GadgetronTimer t("GEMM Time (MKL)", true);
     gemm( *C1.get(), *B.get(), *A.get());
-    std::cout << C1->get_size(0) << ", " << C1->get_size(1) << ", " << C1->get_number_of_elements() << std::endl;
+    GDEBUG_STREAM(C1->get_size(0) << ", " << C1->get_size(1) << ", " << C1->get_number_of_elements() << std::endl);
   }
 
   double diff;
@@ -364,25 +364,25 @@ int main(int argc, char** argv)
   }
 
   if (diff > DIFF_LIMIT) {
-    std::cout << "Complex GEMM FAILED with diff: " << diff << std::endl;
+    GDEBUG_STREAM("Complex GEMM FAILED with diff: " << diff << std::endl);
     return -1;
   } else {
-    std::cout << "Complex GEMM SUCCESS with diff: " << diff << std::endl;
+    GDEBUG_STREAM("Complex GEMM SUCCESS with diff: " << diff << std::endl);
   }
 
   std::vector<size_t> dims;
   dims.push_back(A->get_size(1));
   dims.push_back(B->get_size(0));
   hoNDArray<std::complex<float> > Cres(dims);
-  //std::cout << Cres.get_size(0) << ", " << Cres.get_size(1) << ", " << Cres.get_number_of_elements() << std::endl;
+  //GDEBUG_STREAM(Cres.get_size(0) << ", " << Cres.get_size(1) << ", " << Cres.get_number_of_elements() << std::endl);
   {
     GadgetronTimer t("GEMM Time (Armadillo)", true);
     arma::Mat<arma::cx_float> armaA = as_arma_matrix(A.get());
     arma::Mat<arma::cx_float> armaB = as_arma_matrix(B.get());
     arma::Mat<arma::cx_float> armaCres = as_arma_matrix(&Cres);
-    //std::cout << "A: Nrows: " << armaA.n_rows << ", Ncols: " << armaA.n_cols << ", Nelem: " << armaA.n_elem << std::endl;
-    //std::cout << "B: Nrows: " << armaB.n_rows << ", Ncols: " << armaB.n_cols << ", Nelem: " << armaB.n_elem << std::endl;
-    //std::cout << "C: Nrows: " << armaCres.n_rows << ", Ncols: " << armaCres.n_cols << ", Nelem: " << armaCres.n_elem << std::endl;
+    //GDEBUG_STREAM("A: Nrows: " << armaA.n_rows << ", Ncols: " << armaA.n_cols << ", Nelem: " << armaA.n_elem << std::endl);
+    //GDEBUG_STREAM("B: Nrows: " << armaB.n_rows << ", Ncols: " << armaB.n_cols << ", Nelem: " << armaB.n_elem << std::endl);
+    //GDEBUG_STREAM("C: Nrows: " << armaCres.n_rows << ", Ncols: " << armaCres.n_cols << ", Nelem: " << armaCres.n_elem << std::endl);
     armaCres = armaB * armaA;
   }
 
@@ -392,10 +392,10 @@ int main(int argc, char** argv)
   }
 
   if (diff > DIFF_LIMIT) {
-    std::cout << "Armadillo Complex GEMM FAILED with diff: " << diff << std::endl;
+    GDEBUG_STREAM("Armadillo Complex GEMM FAILED with diff: " << diff << std::endl);
     return -1;
   } else {
-    std::cout << "Armadillo Complex GEMM SUCCESS with diff: " << diff << std::endl;
+    GDEBUG_STREAM("Armadillo Complex GEMM SUCCESS with diff: " << diff << std::endl);
   }
 
   {
@@ -411,10 +411,10 @@ int main(int argc, char** argv)
 
   diff = mcompare(S.get(),S_chol.get());
   if (diff > DIFF_LIMIT) {
-    std::cout << "Complex Cholesky decomposition FAILED with diff: " << diff << std::endl;
+    GDEBUG_STREAM("Complex Cholesky decomposition FAILED with diff: " << diff << std::endl);
     return -1;
   } else {
-    std::cout << "Complex Cholesky decomposition SUCCESS with diff: " << diff << std::endl;
+    GDEBUG_STREAM("Complex Cholesky decomposition SUCCESS with diff: " << diff << std::endl);
   }
 
   hoNDArray_inv_lower_triangular(S.get());
@@ -423,10 +423,10 @@ int main(int argc, char** argv)
 
   diff = mcompare(S.get(),S_chol_inv.get());
   if (diff > DIFF_LIMIT) {
-    std::cout << "Complex Triangular inversion FAILED with diff: " << diff << std::endl;
+    GDEBUG_STREAM("Complex Triangular inversion FAILED with diff: " << diff << std::endl);
     return -1;
   } else {
-    std::cout << "Complex Triangular inversion SUCCESS with diff: " << diff << std::endl;
+    GDEBUG_STREAM("Complex Triangular inversion SUCCESS with diff: " << diff << std::endl);
   }
 
   GDEBUG_STREAM("------------------------------------------------------------------");
@@ -489,25 +489,25 @@ int main(int argc, char** argv)
     GadgetronTimer t("nrm2", true);
     rn = Gadgetron::nrm2(&a);
   }
-  std::cout << "nrm2 = " << rn << std::endl;
+  GDEBUG_STREAM("nrm2 = " << rn << std::endl);
 	
   {
     GadgetronTimer t("Time (MKL)", true);
     Gadgetron::norm2( a, rn);
   }
-  std::cout << "nrm2 = " << rn << std::endl;
+  GDEBUG_STREAM("nrm2 = " << rn << std::endl);
 
   {
     GadgetronTimer t("Time (DIRECT BLAS)", true);
     rn = Gadgetron::hoNDArray_norm2(&a);
   }
-  std::cout << "nrm2 = " << rn << std::endl;
+  GDEBUG_STREAM("nrm2 = " << rn << std::endl);
 
   {
     GadgetronTimer t("Time (vectorized OMP reduction)", true);
     rn = hoNDArray_norm2_2(&a);
   }
-  std::cout << "nrm2 = " << rn << std::endl;
+  GDEBUG_STREAM("nrm2 = " << rn << std::endl);
 
   GDEBUG_STREAM("------------------------------------------------------------------");
   GDEBUG_STREAM("norm1");
@@ -517,26 +517,26 @@ int main(int argc, char** argv)
     GadgetronTimer t("nrm1", true);
     rn = Gadgetron::nrm1(&a);
   }
-  std::cout << "nrm1 = " << rn << std::endl;
+  GDEBUG_STREAM("nrm1 = " << rn << std::endl);
 
   {
     GadgetronTimer t("Time (MKL)", true);
     Gadgetron::norm1( a, rn);
   }
-  std::cout << "nrm1 = " << rn << std::endl;
+  GDEBUG_STREAM("nrm1 = " << rn << std::endl);
 
   {
     GadgetronTimer t("Time (local unthreaded)", true);
     rn = hoNDArray_norm1(&a);
   }
-  std::cout << "nrm1 = " << rn << std::endl;
+  GDEBUG_STREAM("nrm1 = " << rn << std::endl);
 
   {
     GadgetronTimer t("Time (OMP reduction)", true);
     rn = hoNDArray_norm1_2(&a);
   }
 
-  std::cout << "nrm1 = " << rn << std::endl;
+  GDEBUG_STREAM("nrm1 = " << rn << std::endl);
 
   GDEBUG_STREAM("------------------------------------------------------------------");
   GDEBUG_STREAM("axpy");

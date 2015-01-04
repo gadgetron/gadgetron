@@ -24,7 +24,7 @@ template<class T> int write_nd_array(hoNDArray<T> *a, const char* filename)
   std::fstream f(filename,std::ios::out | std::ios::binary);
 
   if( !f.is_open() ){
-    std::cout << "ERROR: Cannot write file " << filename << std::endl;
+    GDEBUG_STREAM("ERROR: Cannot write file " << filename << std::endl);
     return -1;
   }
 
@@ -45,7 +45,7 @@ template <class T> boost::shared_ptr< hoNDArray<T> > read_nd_array(const char* f
   std::fstream f(filename,std::ios::in | std::ios::binary);
 
   if( !f.is_open() ){
-    std::cout << "ERROR: Cannot open file " << filename << std::endl;
+    GDEBUG_STREAM("ERROR: Cannot open file " << filename << std::endl);
     return boost::shared_ptr< hoNDArray<T> >();
   }
 

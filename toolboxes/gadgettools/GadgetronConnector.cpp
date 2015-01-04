@@ -1,7 +1,7 @@
 #include "GadgetronConnector.h"
 
 #include <ace/SOCK_Connector.h>
-#include <iostream>
+#include "log.h"
 
 using namespace Gadgetron;
 
@@ -29,20 +29,16 @@ int GadgetronConnector::openImpl(std::string hostname, std::string port)
     ACE_SOCK_Connector connector;
 
     if (connector.connect(this->peer(),server) == -1) {
-        ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("connect")), -1);
+      GERROR("Failed to connect");
+      return -1;
     }
 
     ACE_TCHAR peer_name[MAXHOSTNAMELENGTH];
     ACE_INET_Addr peer_addr;
     if (peer().get_remote_addr (peer_addr) == 0 && peer_addr.addr_to_string (peer_name, MAXHOSTNAMELENGTH) == 0) {
-        ACE_DEBUG ((LM_DEBUG, ACE_TEXT ("(%P|%t) Connection from %s\n"), peer_name));
+      GDEBUG("Connection from %s\n", peer_name);
     }
 
-    //if (this->reactor ()->register_handler(this, ACE_Event_Handler::READ_MASK) != 0) {
-    //    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Registering read handler")), -2);
-    //}
-
-    //this->msg_queue ()->notification_strategy (0);
     return 0;
 }
 
@@ -50,8 +46,8 @@ int GadgetronConnector::open(std::string hostname, std::string port)
 {
     //Make sure we have a reactor, otherwise assign one from the singleton instance
     if (!this->reactor()) {
-        ACE_DEBUG((LM_INFO, ACE_TEXT("Setting reactor")));
-        this->reactor(ACE_Reactor::instance());
+      GDEBUG("Setting reactor");
+      this->reactor(ACE_Reactor::instance());
     }
 
     this->openImpl(hostname, port);
@@ -59,7 +55,8 @@ int GadgetronConnector::open(std::string hostname, std::string port)
     this->writer_task_.open();
 
     if (this->reactor ()->register_handler(this, ACE_Event_Handler::READ_MASK) != 0) {
-        ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Registering read handler")), -2);
+      GERROR("Failed to register read handler\n");
+      return -2;
     }
 
     return this->activate( THR_NEW_LWP | THR_JOINABLE, 1); //Run single threaded. TODO: Add multithreaded support
@@ -71,123 +68,43 @@ int GadgetronConnector::handle_input(ACE_HANDLE fd)
     GadgetMessageIdentifier mid;
 
     if ((recv_count = peer().recv_n(&mid, sizeof(GadgetMessageIdentifier))) <= 0) {
-        ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetronConnector, failed to read message identifier\n")) );
-        return -1;
+      GWARN("GadgetronConnector, failed to read message identifier\n");
+      return -1;
     }
 
     //Is this a shutdown message?
     if (mid.id == GADGET_MESSAGE_CLOSE) {
-        ACE_DEBUG( (LM_INFO, ACE_TEXT("%P, %l, GadgetronConnector, Close Message received\n")) );
-        return close();
+      GDEBUG("GadgetronConnector, Close Message received\n");
+      return close();
     }
 
     GadgetMessageReader* r = readers_.find(mid.id);
     if (r == 0) {
-        ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetronConnector, Unknown message id %d received\n"), mid.id) );
-        return -1;
+      GERROR("GadgetronConnector, Unknown message id %d received\n", mid.id);
+      return -1;
     }
 
     ACE_Message_Block* mb = r->read(&peer());
 
     if (!mb) {
-        ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetronConnector, Failed to read message\n")) );
-        return -1;
-    }    else {
-        if (process(mid.id, mb) < 0) {
-            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetronConnector, Failed to process message\n")) );
-            return -1;
-        }
+      GERROR("GadgetronConnector, Failed to read message\n");
+      return -1;
+    }  else {
+      if (process(mid.id, mb) < 0) {
+	GERROR("GadgetronConnector, Failed to process message\n");
+	return -1;
+      }
     }
 
     return 0;
 }
-
-/*
-int GadgetronConnector::handle_output(ACE_HANDLE fd)
-{
-    ACE_Message_Block *mb = 0;
-    ACE_Time_Value nowait (ACE_OS::gettimeofday ());
-
-    static int counter = 0;
-    ACE_DEBUG( (LM_INFO, ACE_TEXT("%P, %l, GadgetronConnector, Handle output called, %d\n"), counter++) );
-
-    //Send a package if we have one
-    while (-1 != this->getq (mb, &nowait)) {
-        GadgetContainerMessage<GadgetMessageIdentifier>* mid =
-                AsContainerMessage<GadgetMessageIdentifier>(mb);
-
-
-        if (!mid) {
-            ACE_DEBUG ((LM_ERROR, ACE_TEXT ("Invalid message on output queue\n")));
-            mb->release();
-            return -1;
-        }
-
-        //Is this a shutdown message?
-        if (mid->getObjectPtr()->id == GADGET_MESSAGE_CLOSE) {
-            peer().send_n(mid->getObjectPtr(),sizeof(GadgetMessageIdentifier));
-            return 0;
-        }
-
-
-        GadgetMessageWriter* w = writers_.find(mid->getObjectPtr()->id);
-
-        if (!w) {
-            ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unrecognized Message ID received: %d\n"),mid->getObjectPtr()->id));
-            return -1;
-        }
-
-        if (w->write(&peer(),mb->cont()) < 0) {
-            if (errno == EWOULDBLOCK)
-             {
-            ACE_DEBUG ( (LM_DEBUG, ACE_TEXT ("(%P|%t) Failed to write message to Gadgetron (WOULDBLOCK)\n")) );
-            mb->release ();
-            return 0;
-
-            }
-
-            ACE_DEBUG ( (LM_DEBUG, ACE_TEXT ("(%P|%t) Failed to write message to Gadgetron\n")) );
-            mb->release ();
-            return -1;
-        }
-
-        mb->release();
-    }
-
-    if (this->msg_queue ()->is_empty ()) {
-        ACE_DEBUG( (LM_INFO, ACE_TEXT("%P, %l, GadgetronConnector, Q empty, %d\n"), counter++) );
-        //No point in coming back to handle_ouput until something is put on the queue,
-        //in which case, the msg queue's notification strategy will tell us
-
-        //Stop the WRITE trigger from the socket
-        this->reactor ()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
-
-        //Get a trigger when stuff is on the queue instead
-        this->msg_queue ()->notification_strategy (&this->notifier_);
-    } else {
-        ACE_DEBUG( (LM_INFO, ACE_TEXT("%P, %l, GadgetronConnector, Q has stuff, %d\n"), counter++) );
-        //There is still more on the queue, let's come back when idle
-
-        //Make sure that we get a wake up when it is possible to write
-        //this->reactor ()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
-
-        //Don't wake up from the queue, it may not be possible to write.
-        this->msg_queue ()->notification_strategy (0);
-
-        //this->reactor ()->cancel_wakeup(this->notifier_.event_handler(), ACE_Event_Handler::WRITE_MASK);
-    }
-
-    return 0;
-}
-*/
 
 int GadgetronConnector::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
-    ACE_DEBUG ((LM_INFO, ACE_TEXT ("(%P|%t) Handling close...\n")));
-    this->reactor()->end_reactor_event_loop();
-    return 0;//this->wait();
+  GDEBUG("Handling close...\n");
+  this->reactor()->end_reactor_event_loop();
+  return 0;//this->wait();
 }
-
 
 int GadgetronConnector::svc(void)
 {
@@ -205,8 +122,8 @@ int GadgetronConnector::svc(void)
     this->reactor()->run_reactor_event_loop();
 
     //this->reactor()->owner(&old_owner);
-
-    ACE_DEBUG ((LM_INFO, ACE_TEXT ("(%P|%t) GadgetronConnector svc done...\n")));
+    
+    GDEBUG("GadgetronConnector svc done...\n");
 
     return 0;
 }
@@ -215,14 +132,6 @@ int GadgetronConnector::register_reader(size_t slot, GadgetMessageReader *reader
 {
     return readers_.insert( (unsigned short)slot,reader);
 }
-
-/*
-int GadgetronConnector::register_writer(size_t slot, GadgetMessageWriter *writer)
-{
-    return writers_.insert(slot,writer);
-}
-*/
-
 
 int GadgetronConnector::send_gadgetron_configuration_file(std::string config_xml_name)
 {
@@ -234,13 +143,13 @@ int GadgetronConnector::send_gadgetron_configuration_file(std::string config_xml
 
 
     if (this->peer().send_n(&id, sizeof(GadgetMessageIdentifier)) != sizeof(GadgetMessageIdentifier)) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageIdentifier\n")));
-        return -1;
+      GERROR("Unable to send GadgetMessageIdentifier\n");
+      return -1;
     }
 
     if (this->peer().send_n(&ini, sizeof(GadgetMessageConfigurationFile)) != sizeof(GadgetMessageConfigurationFile)) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageConfigurationFile\n")));
-        return -1;
+      GERROR("Unable to send GadgetMessageConfigurationFile\n");
+      return -1;
     }
 
     return 0;
@@ -255,18 +164,18 @@ int GadgetronConnector::send_gadgetron_configuration_script(std::string config_x
     ini.script_length = (ACE_UINT32)config_xml.size()+1;
 
     if (this->peer().send_n(&id, sizeof(GadgetMessageIdentifier)) != sizeof(GadgetMessageIdentifier)) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageIdentifier\n")));
-        return -1;
+      GERROR("Unable to send GadgetMessageIdentifier\n");
+      return -1;
     }
 
     if (this->peer().send_n(&ini, sizeof(GadgetMessageScript)) != sizeof(GadgetMessageScript)) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageScript\n")));
-        return -1;
+      GERROR("Unable to send GadgetMessageScript\n");
+      return -1;
     }
 
     if (this->peer().send_n(config_xml.c_str(), ini.script_length) != ini.script_length) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send parameter xml\n")));
-        return -1;
+      GERROR("Unable to send parameter xml\n");
+      return -1;
     }
 
     return 0;
@@ -280,18 +189,18 @@ int GadgetronConnector::send_gadgetron_parameters(std::string xml_string)
     GadgetMessageScript conf;
     conf.script_length = (ACE_UINT32)xml_string.size()+1;
     if (this->peer().send_n(&id, sizeof(GadgetMessageIdentifier)) != sizeof(GadgetMessageIdentifier)) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageIdentifier\n")));
-        return -1;
+      GERROR("Unable to send GadgetMessageIdentifier\n");
+      return -1;
     }
 
     if (this->peer().send_n(&conf, sizeof(GadgetMessageScript)) != sizeof(GadgetMessageScript)) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageScript\n")));
-        return -1;
+      GERROR("Unable to send GadgetMessageScript\n");
+      return -1;
     }
 
     if (this->peer().send_n(xml_string.c_str(), conf.script_length) != conf.script_length) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send parameter xml\n")));
-        return -1;
+      GERROR("Unable to send parameter xml\n");
+      return -1;
     }
 
     return 0;

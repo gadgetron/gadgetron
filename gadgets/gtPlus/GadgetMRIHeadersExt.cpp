@@ -79,10 +79,10 @@ void GadgetMessageImageExt::copy(GadgetMessageImageExt& aMessageImage)
 
 void GadgetMessageImageExt::dump()
 {
-    std::cout << "GadgetMessageImageExt" << std::endl;
-    std::cout << "----------------------------------------------------------" << std::endl;
+    GDEBUG_STREAM("GadgetMessageImageExt" << std::endl);
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
     //dumpInfo();
-    std::cout << "----------------------------------------------------------" << std::endl;
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
 }
 
 // --------------------------------------------------------------------
@@ -133,7 +133,7 @@ GadgetMessageImageArray::GadgetMessageImageArray(int aSize[10])
     }
     catch(...)
     {
-        std::cout << "Failed in allocate imageArray_" << std::endl;
+        GDEBUG_STREAM("Failed in allocate imageArray_" << std::endl);
     }
 }
 
@@ -182,7 +182,7 @@ void GadgetMessageImageArray::resize(int aSize[10])
     }
     catch(...)
     {
-        std::cout << "Failed in resize GadgetMessageImageArray " << std::endl;
+        GDEBUG_STREAM("Failed in resize GadgetMessageImageArray " << std::endl);
     }
 }
 
@@ -237,7 +237,7 @@ void GadgetMessageImageArray::extractMessageImageArrayForSLC(int slc, GadgetMess
 {
     if ( slc >= matrix_size[3] )
     {
-        std::cout << "extractMessageImageArrayForSLC error - slc >= matrix_size[3] " << std::endl;
+        GDEBUG_STREAM("extractMessageImageArrayForSLC error - slc >= matrix_size[3] " << std::endl);
         return;
     }
 
@@ -297,7 +297,7 @@ void GadgetMessageImageArray::extractMessageImageArrayForREP(int rep, GadgetMess
 {
     if ( rep >= matrix_size[7] )
     {
-        std::cout << "extractMessageImageArrayForSLC error - rep >= matrix_size[7] " << std::endl;
+        GDEBUG_STREAM("extractMessageImageArrayForSLC error - rep >= matrix_size[7] " << std::endl);
         return;
     }
 
@@ -356,24 +356,24 @@ void GadgetMessageImageArray::extractMessageImageArrayForREP(int rep, GadgetMess
 void GadgetMessageImageArray::dump()
 {
     unsigned int ii;
-    std::cout << "GadgetMessageImageArray" << std::endl;
-    std::cout << "==========================================================" << std::endl;
-    std::cout << "matrix_size           : ";
+    GDEBUG_STREAM("GadgetMessageImageArray" << std::endl);
+    GDEBUG_STREAM("==========================================================" << std::endl);
+    GDEBUG_STREAM("matrix_size           : ");
     for ( ii=0; ii<10; ii++ )
     {
-        std::cout << matrix_size[ii] << " ";
+        GDEBUG_STREAM(matrix_size[ii] << " ");
     }
-    std::cout << std::endl;
-    std::cout << "----------------------------------------------------------" << std::endl;
-    std::cout << "kSpace_centre_col_no             : " << kSpace_centre_col_no << std::endl;
-    std::cout << "kSpace_max_acquired_col_no       : " << kSpace_max_acquired_col_no << std::endl;
-    std::cout << "----------------------------------------------------------" << std::endl;
-    std::cout << "kSpace_centre_line_no            : " << kSpace_centre_line_no << std::endl;
-    std::cout << "kSpace_max_acquired_line_no      : " << kSpace_max_acquired_line_no << std::endl;
-    std::cout << "----------------------------------------------------------" << std::endl;
-    std::cout << "kSpace_centre_partition_no       : " << kSpace_centre_partition_no << std::endl;
-    std::cout << "kSpace_max_acquired_partition_no : " << kSpace_max_acquired_partition_no << std::endl;
-    std::cout << "----------------------------------------------------------" << std::endl;
+    GDEBUG_STREAM(std::endl);
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
+    GDEBUG_STREAM("kSpace_centre_col_no             : " << kSpace_centre_col_no << std::endl);
+    GDEBUG_STREAM("kSpace_max_acquired_col_no       : " << kSpace_max_acquired_col_no << std::endl);
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
+    GDEBUG_STREAM("kSpace_centre_line_no            : " << kSpace_centre_line_no << std::endl);
+    GDEBUG_STREAM("kSpace_max_acquired_line_no      : " << kSpace_max_acquired_line_no << std::endl);
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
+    GDEBUG_STREAM("kSpace_centre_partition_no       : " << kSpace_centre_partition_no << std::endl);
+    GDEBUG_STREAM("kSpace_max_acquired_partition_no : " << kSpace_max_acquired_partition_no << std::endl);
+    GDEBUG_STREAM("----------------------------------------------------------" << std::endl);
     if ( imageArray_ )
     {
         int slc, par, eco, phs, rep, set, seg;
@@ -411,7 +411,7 @@ void GadgetMessageImageArray::dump()
         }
 
     }
-    std::cout << "==========================================================" << std::endl;
+    GDEBUG_STREAM("==========================================================" << std::endl);
 }
 
 // --------------------------------------------------------------------
