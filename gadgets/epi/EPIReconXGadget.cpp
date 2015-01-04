@@ -48,7 +48,7 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
   
   // TODO: we need a flag that says it's a balanced readout.
   for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
-    if (i->name.c_str() == "rampUpTime") {
+    if (i->name == "rampUpTime") {
       reconx.rampUpTime_ = i->value;
     } else if (i->name == "rampDownTime") {
       reconx.rampDownTime_ = i->value;
