@@ -251,19 +251,19 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     {
         for (std::vector<ISMRMRD::UserParameterLong>::const_iterator  i = h.userParameters->userParameterLong.begin (); i != h.userParameters->userParameterLong.end(); ++i)
         {
-            if (std::strcmp(i->name.c_str(),"RetroGatedImages") == 0)
+            if (i->name == "RetroGatedImages")
             {
                 workOrder_.retro_gated_images_ = i->value;
             }
-            else if ( std::strcmp(i->name.c_str(),"RetroGatedSegmentSize") == 0 )
+            else if ( i->name == "RetroGatedSegmentSize")
             {
                 workOrder_.retro_gated_segment_size_ = i->value;
             }
-            else if ( std::strcmp(i->name.c_str(),"EmbeddedRefLinesE1") == 0 )
+            else if ( i->name == "EmbeddedRefLinesE1")
             {
                 embedded_ref_lines_E1_ = i->value;
             }
-            else if ( std::strcmp(i->name.c_str(),"EmbeddedRefLinesE2") == 0 )
+            else if ( i->name == "EmbeddedRefLinesE2")
             {
                 embedded_ref_lines_E2_ = i->value;
             }

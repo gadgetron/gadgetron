@@ -36,13 +36,13 @@ namespace Gadgetron{
             for (std::vector<ISMRMRD::UserParameterDouble>::const_iterator i (h.userParameters->userParameterDouble.begin()); 
                 i != h.userParameters->userParameterDouble.end(); i++)
             {
-                    if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_0") == 0) {
+                    if (i->name == "MaxwellCoefficient_0") {
                         maxwell_coefficients_[0] = i->value;
-                    } else if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_1") == 0) {
+                    } else if (i->name == "MaxwellCoefficient_1") {
                         maxwell_coefficients_[1] = i->value;
-                    } else if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_2") == 0) {
+                    } else if (i->name == "MaxwellCoefficient_2") {
                         maxwell_coefficients_[2] = i->value;
-                    } else if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_3") == 0) {
+                    } else if (i->name == "MaxwellCoefficient_3") {
                         maxwell_coefficients_[3] = i->value;
                     } else {
                         GDEBUG("WARNING: unused user parameter parameter %s found\n", i->name.c_str());

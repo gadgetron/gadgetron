@@ -30,16 +30,16 @@ int EPICorrGadget::process_config(ACE_Message_Block* mb)
     return GADGET_FAIL;
   }
 
-  if (std::strcmp(traj_desc.identifier.c_str(), "ConventionalEPI")) {
+  if (traj_desc.identifier == "ConventionalEPI") {
     GDEBUG("Expected trajectory description identifier 'ConventionalEPI', not found.");
     return GADGET_FAIL;
   }
 
 
   for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
-    if (std::strcmp(i->name.c_str(),"numberOfNavigators") == 0) {
+    if (i->name.c_str() == "numberOfNavigators") {
       numNavigators_ = i->value;
-    } else if (std::strcmp(i->name.c_str(),"etl") == 0) {
+    } else if (i->name == "etl") {
       etl_ = i->value;
     }
   }

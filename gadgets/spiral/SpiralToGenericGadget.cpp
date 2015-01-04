@@ -43,7 +43,7 @@ namespace Gadgetron{
     return GADGET_FAIL;
   }
 
-  if (std::strcmp(traj_desc.identifier.c_str(), "HargreavesVDS2000")) {
+  if (traj_desc.identifier == "HargreavesVDS2000") {
     GDEBUG("Expected trajectory description identifier 'HargreavesVDS2000', not found.");
     return GADGET_FAIL;
   }
@@ -59,29 +59,29 @@ namespace Gadgetron{
 
   
   for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
-    if (std::strcmp(i->name.c_str(),"interleaves") == 0) {
+    if (i->name == "interleaves") {
       interleaves = i->value;
-    } else if (std::strcmp(i->name.c_str(),"fov_coefficients") == 0) {
-	fov_coefficients = i->value;
-      } else if (std::strcmp(i->name.c_str(),"SamplingTime_ns") == 0) {
-	sampling_time_ns = i->value;
+    } else if (i->name == "fov_coefficients") {
+      fov_coefficients = i->value;
+    } else if (i->name == "SamplingTime_ns") {
+      sampling_time_ns = i->value;
     } else {
       GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
     }
   }
 
   for (std::vector<ISMRMRD::UserParameterDouble>::iterator i (traj_desc.userParameterDouble.begin()); i != traj_desc.userParameterDouble.end(); ++i) {
-    if (std::strcmp(i->name.c_str(),"MaxGradient_G_per_cm") == 0) {
-	max_grad = i->value;
-      } else if (std::strcmp(i->name.c_str(),"MaxSlewRate_G_per_cm_per_s") == 0) {
-	max_slew = i->value;
-      } else if (std::strcmp(i->name.c_str(),"FOVCoeff_1_cm") == 0) {
-	fov_coeff = i->value;
-      } else if (std::strcmp(i->name.c_str(),"krmax_per_cm") == 0) {
-	kr_max= i->value;
-      } else {
-	GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
-      }
+    if (i->name == "MaxGradient_G_per_cm") {
+      max_grad = i->value;
+    } else if (i->name == "MaxSlewRate_G_per_cm_per_s") {
+        max_slew = i->value;
+    } else if (i->name == "FOVCoeff_1_cm") {
+      fov_coeff = i->value;
+    } else if (i->name == "krmax_per_cm") {
+      kr_max= i->value;
+    } else {
+      GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+    }
   }
   
   if ((interleaves < 0) || (fov_coefficients < 0) || (sampling_time_ns < 0) || (max_grad < 0) || (max_slew < 0) || (fov_coeff < 0) || (kr_max < 0)) {
