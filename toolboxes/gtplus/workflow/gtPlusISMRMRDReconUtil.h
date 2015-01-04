@@ -65,9 +65,6 @@
 
 #include "GtPlusDefinition.h"
 
-// MACROS for EXPORTING
-#define GADGET_EXPORT_IMAGE_COMPLEX(debugFolder, exporter, a, filename) { if ( !debugFolder.empty() ) { exporter.exportImageComplex(a, debugFolder+filename); } }
-
 namespace Gadgetron {
 
     /**
