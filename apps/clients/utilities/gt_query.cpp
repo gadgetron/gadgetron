@@ -56,11 +56,13 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
             break;
         case ':':
             usage();
-            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("-%c requires an argument.\n"), cmd_opts.opt_opt()),-1);
+            GERROR("-%c requires an argument.\n", cmd_opts.opt_opt());
+	    return -1;
             break;
         default:
             usage();
-            ACE_ERROR_RETURN( (LM_ERROR, ACE_TEXT("Command line parse error\n")), -1);
+            GERROR("Command line parse error\n");
+	    return -1;
             break;
         }
     }

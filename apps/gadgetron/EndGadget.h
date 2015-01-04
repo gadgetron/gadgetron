@@ -34,14 +34,12 @@ class EndGadget : public Gadget
 protected:
 	virtual int process(ACE_Message_Block *m)
 	{
-		ACE_TRACE(( ACE_TEXT("EndGadget::process(ACE_Message_Block* m)") ));
 		m->release();
 		return 0;
 	}
 
 	virtual int next_step(ACE_Message_Block *m)
 	{
-		ACE_TRACE(( ACE_TEXT("EndGadget::next_step(ACE_Message_Block *m)") ));
 		m->release();
 		return 0;
 	}

@@ -1,14 +1,14 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "ImageFinishGadget.h"
 namespace Gadgetron{
+
 template <typename T>
 int ImageFinishGadget<T>
 ::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	  GadgetContainerMessage< hoNDArray< T > >* m2)
 {
   if (!this->controller_) {
-    ACE_DEBUG( (LM_DEBUG, 
-		ACE_TEXT("Cannot return result to controller, no controller set")) );
+    GERROR("Cannot return result to controller, no controller set");
     return -1;
   }
 
@@ -26,7 +26,7 @@ int ImageFinishGadget<T>
 	  mb->getObjectPtr()->id = GADGET_MESSAGE_IMAGE_CPLX_FLOAT;
 	  break;
   default:
-	  GDEBUG("Wrong data size detected: %d\n", sizeof(T));
+	  GERROR("Wrong data size detected: %d\n", sizeof(T));
 	  mb->release();
 	  m1->release();
 	  return GADGET_FAIL;
@@ -37,7 +37,7 @@ int ImageFinishGadget<T>
   int ret =  this->controller_->output_ready(mb);
 
   if ( (ret < 0) ) {
-	  GDEBUG("Failed to return massage to controller\n");
+	  GERROR("Failed to return massage to controller\n");
 	  return GADGET_FAIL;
   }
 

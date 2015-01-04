@@ -50,8 +50,6 @@ namespace Gadgetron{
         {
 	  gadgetron_version_ = std::string(GADGETRON_VERSION_STRING) + std::string(" (") + 
 	    std::string(GADGETRON_GIT_SHA1_HASH) + std::string(")");
-
-	  ACE_TRACE(( ACE_TEXT("Gadget::Gadget") ));
         }
 
         virtual ~Gadget()
@@ -64,13 +62,11 @@ namespace Gadgetron{
 
         virtual int init(void)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::init") ));
             return 0;
         }
 
         virtual int open(void* = 0)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::open") ));
 
             int t = this->get_int_value("threads");
             if (t > 0) {
@@ -84,22 +80,16 @@ namespace Gadgetron{
 
         int put(ACE_Message_Block *m, ACE_Time_Value* timeout = 0)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::put") ));
-
             return this->putq(m, timeout);
         }
 
         virtual unsigned int desired_threads()
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::desired_threads (get)") ));
-
             return desired_threads_;
         }
 
         virtual void desired_threads(unsigned int t)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::desired_threads (set)") ));
-
             desired_threads_ = t;
         }
 
@@ -114,7 +104,6 @@ namespace Gadgetron{
 
         virtual int close(unsigned long flags)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::close") ));
             GDEBUG("Gadget (%s) Close Called with flags = %d\n", this->module()->name(), flags);
             int rval = 0;
             if (flags == 1) {
@@ -135,8 +124,6 @@ namespace Gadgetron{
 
         virtual int svc(void)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::svc") ));
-
             for (ACE_Message_Block *m = 0; ;) {
 
                 //GDEBUG("Waiting for message in Gadget (%s)\n", this->module()->name());
@@ -276,9 +263,8 @@ namespace Gadgetron{
 
             if (!m) {
                 if (!pass_on_undesired_data_) {
-                    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"),
-                        ACE_TEXT("Gadget1::process, conversion of message block")),
-                        -1);
+		  GERROR("Gadget1::process, conversion of message block");
+		  return -1;
                 } else {
                     return (this->next()->putq(mb));
                 }
@@ -308,9 +294,9 @@ namespace Gadgetron{
 
             if (!m1 || !m2) {
                 if (!pass_on_undesired_data_) {
-                    ACE_DEBUG( (LM_ERROR, ACE_TEXT("%s -> %s, (%s, %s, %@, %@), (%s, %s, %@, %@)\n"),
+		  GERROR("%s -> %s, (%s, %s, %p, %p), (%s, %s, %p, %p)\n",
                         this->module()->name(),
-                        ACE_TEXT("Gadget2::process, Conversion of Message Block Failed"),
+                        "Gadget2::process, Conversion of Message Block Failed",
                         typeid(GadgetContainerMessage<P1>*).name(),
                         typeid(m1).name(),
                         mb,
@@ -318,8 +304,7 @@ namespace Gadgetron{
                         typeid(GadgetContainerMessage<P2>*).name(),
                         typeid(m2).name(),
                         mb->cont(),
-                        m2));
-
+                        m2);
                     return -1;
                 } else {
                     return (this->next()->putq(mb));
@@ -355,9 +340,9 @@ namespace Gadgetron{
 
             if (!m1 || !m2 || !m3) {
                 if (!pass_on_undesired_data_) {
-                    ACE_DEBUG( (LM_ERROR, ACE_TEXT("%s -> %s, (%s, %s, %@), (%s, %s, %@), (%s, %s, %@)\n"),
+		  GERROR("%s -> %s, (%s, %s, %p), (%s, %s, %p), (%s, %s, %p)\n",
                         this->module()->name(),
-                        ACE_TEXT("Gadget3::process, Conversion of Message Block Failed"),
+                        "Gadget3::process, Conversion of Message Block Failed",
                         typeid(GadgetContainerMessage<P1>*).name(),
                         typeid(m1).name(),
                         m1,
@@ -366,8 +351,7 @@ namespace Gadgetron{
                         m2,
                         typeid(GadgetContainerMessage<P3>*).name(),
                         typeid(m3).name(),
-                        m3));
-
+                        m3);
                     return -1;
                 } else {
                     return (this->next()->putq(mb));

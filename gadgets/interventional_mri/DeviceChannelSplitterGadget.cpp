@@ -72,10 +72,8 @@ int DeviceChannelSplitterGadget<T>
 
     if (this->next()->putq(im1) == -1) {
       m1->release();
-      ACE_ERROR_RETURN( (LM_ERROR,
-			 ACE_TEXT("%p\n"),
-			 ACE_TEXT("DeviceChannelSplitterGadget::process, passing data on to next gadget")),
-			-1);
+      GERROR("DeviceChannelSplitterGadget::process, passing data on to next gadget\n");
+      return -1;
     }
   }
 

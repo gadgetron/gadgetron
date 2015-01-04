@@ -348,7 +348,8 @@ namespace Gadgetron
             boost::filesystem::path workingPath(workingdirectory);
             if ( !boost::filesystem::create_directory(workingPath) )
             {
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error creating the working directory.\n")), false);
+	      GERROR("Error creating the working directory.\n");
+	      return false;
             }
 
             // set the permission for the folder
@@ -359,7 +360,8 @@ namespace Gadgetron
             }
             catch(...)
             {
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory.\n")), false);
+	      GERROR("Error changing the permission of the working directory.\n");
+	      return false;
             }
 #else
             // in case an older version of boost is used in non-win system
@@ -367,7 +369,8 @@ namespace Gadgetron
             int res = chmod(workingPath.string().c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
             if ( res != 0 )
             {
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory.\n")), false);
+	      GERROR("Error changing the permission of the working directory.\n");
+	      return false;
             }
 #endif // _WIN32
         }

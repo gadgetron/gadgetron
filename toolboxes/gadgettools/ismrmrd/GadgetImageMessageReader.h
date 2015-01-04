@@ -31,9 +31,9 @@ public:
 
         ssize_t recv_count = 0;
         if ((recv_count = stream->recv_n(imgh->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0) {
-            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to read IMAGE Header\n")) );
-            imgh->release();
-            return 0;
+	  GERROR("GadgetImageMessageReader, failed to read IMAGE Header\n");
+	  imgh->release();
+	  return 0;
         }
 
         std::vector<size_t> dims(3);
@@ -58,9 +58,9 @@ public:
         imgh->cont(data);
 
         if ((recv_count = stream->recv_n(data->getObjectPtr()->get_data_ptr(), sizeof(T)*data->getObjectPtr()->get_number_of_elements())) <= 0) {
-            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to read data from socket\n")) );
-            imgh->release();
-            return 0;
+	  GERROR("GadgetImageMessageReader, failed to read data from socket\n");
+	  imgh->release();
+	  return 0;
         }
 
         return imgh;
@@ -86,20 +86,20 @@ public:
         ssize_t recv_count = 0;
         if ((recv_count = stream->recv_n( imgh->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0)
         {
-            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to read IMAGE Header\n")) );
-            imgh->release();
-            imgAttrib->release();
-            return 0;
+	  GERROR("GadgetImageAttribMessageReader, failed to read IMAGE Header\n");
+	  imgh->release();
+	  imgAttrib->release();
+	  return 0;
         }
 
         // read in gadgetron image meta attributes
         size_t_type len(0);
         if ( ( recv_count = stream->recv_n( &len, sizeof(size_t_type)) ) <= 0 )
         {
-            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to read IMAGE Meta Attributes length\n")) );
-            imgh->release();
-            imgAttrib->release();
-            return 0;
+	  GERROR("GadgetImageAttribMessageReader, failed to read IMAGE Meta Attributes length\n");
+	  imgh->release();
+	  imgAttrib->release();
+	  return 0;
         }
 
         char* buf = NULL;
@@ -108,10 +108,10 @@ public:
             buf = new char[len];
             if ( buf == NULL )
             {
-                ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to allocate IMAGE Meta Attributes buffer\n")) );
-                imgh->release();
-                imgAttrib->release();
-                return 0;
+	      GERROR("GadgetImageAttribMessageReader, failed to allocate IMAGE Meta Attributes buffer\n");
+	      imgh->release();
+	      imgAttrib->release();
+	      return 0;
             }
 
             memset(buf, '\0', len);
@@ -127,11 +127,11 @@ public:
 
         if ( ( recv_count = stream->recv_n( buf, len) ) <= 0 )
         {
-            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to read IMAGE Meta Attributes\n")) );
-            imgh->release();
-            imgAttrib->release();
-            delete [] buf;
-            return 0;
+	  GERROR("GadgetImageAttribMessageReader, failed to read IMAGE Meta Attributes\n");
+	  imgh->release();
+	  imgAttrib->release();
+	  delete [] buf;
+	  return 0;
         }
 
         try
@@ -140,11 +140,11 @@ public:
         }
         catch(...)
         {
-            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to deserialize IMAGE Meta Attributes\n")) );
-            imgh->release();
-            imgAttrib->release();
-            delete [] buf;
-            return 0;
+	  GERROR("GadgetImageAttribMessageReader, failed to deserialize IMAGE Meta Attributes\n");
+	  imgh->release();
+	  imgAttrib->release();
+	  delete [] buf;
+	  return 0;
         }
 
         delete [] buf;
@@ -180,11 +180,11 @@ public:
 
         if ((recv_count = stream->recv_n(data->getObjectPtr()->get_data_ptr(), sizeof(T)*data->getObjectPtr()->get_number_of_elements())) <= 0)
         {
-            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to read data from socket\n")) );
-            imgh->release();
-            imgAttrib->release();
-            data->release();
-            return 0;
+	  GERROR("GadgetImageAttribMessageReader, failed to read data from socket\n");
+	  imgh->release();
+	  imgAttrib->release();
+	  data->release();
+	  return 0;
         }
 
         return imgh;

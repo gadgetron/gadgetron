@@ -34,13 +34,11 @@ public:
 
 	virtual int init(void)
 	{
-	  ACE_TRACE(( ACE_TEXT("WriterTask::init") ));
 	  return 0;
 	}
 
 	virtual int open(void* = 0)
 	{
-	  ACE_TRACE(( ACE_TEXT("WriterTask::open") ));
 	  return this->activate( THR_NEW_LWP | THR_JOINABLE, 1 );
 	}
 
@@ -56,10 +54,8 @@ public:
 			hangup->msg_type( ACE_Message_Block::MB_HANGUP );
 			if (this->putq(hangup) == -1) {
 				hangup->release();
-				ACE_ERROR_RETURN( (LM_ERROR,
-						ACE_TEXT("%p\n"),
-						ACE_TEXT("WriterTask::close, putq")),
-						-1);
+				GERROR("WriterTask::close, putq\n");
+				return -1;
 			}
 			rval = this->wait();
 		}
@@ -79,9 +75,9 @@ public:
 
 
 			if (!mid) {
-				ACE_DEBUG ((LM_ERROR, ACE_TEXT ("Invalid message on output queue\n")));
-				mb->release();
-				return -1;
+			  GERROR("Invalid message on output queue\n");
+			  mb->release();
+			  return -1;
 			}
 
 			//Is this a shutdown message?
@@ -93,15 +89,15 @@ public:
 			GadgetMessageWriter* w = writers_.find(mid->getObjectPtr()->id);
 
 			if (!w) {
-				ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unrecognized Message ID received: %d\n"),mid->getObjectPtr()->id));
-				mb->release();
-				return -1;
+			  GERROR("Unrecognized Message ID received: %d\n",mid->getObjectPtr()->id);
+			  mb->release();
+			  return -1;
 			}
 
 			if (w->write(socket_,mb->cont()) < 0) {
-				ACE_DEBUG ( (LM_DEBUG, ACE_TEXT ("(%P|%t) Failed to write message to Gadgetron\n")) );
-				mb->release ();
-				return -1;
+			  GERROR("Failed to write message to Gadgetron\n");
+			  mb->release ();
+			  return -1;
 			}
 
 			mb->release();

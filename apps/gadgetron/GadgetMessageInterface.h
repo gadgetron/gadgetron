@@ -203,8 +203,7 @@ class GadgetMessageScriptReader : public GadgetMessageReader
     ACE_Message_Block* mb = new ACE_Message_Block(ms.script_length);
 
     if ((recv_cnt = stream->recv_n (mb->wr_ptr(), ms.script_length)) <= 0) {
-      ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Unable to read script\n")));
+      GERROR("Unable to read script\n");
       return 0;
     }
     mb->wr_ptr(ms.script_length);

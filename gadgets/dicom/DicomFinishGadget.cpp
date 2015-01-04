@@ -567,9 +567,8 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
 {
     if (!this->controller_)
     {
-        ACE_DEBUG( (LM_DEBUG,
-                    ACE_TEXT("Cannot return result to controller, no controller set")) );
-        return -1;
+      GERROR("Cannot return result to controller, no controller set");
+      return -1;
     }
 
     GadgetContainerMessage<hoNDArray< ACE_INT16 > > *pixels =

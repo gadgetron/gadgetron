@@ -149,10 +149,8 @@ namespace Gadgetron{
 
       if (this->next()->putq(m1) == -1)
       {
-    ACE_ERROR_RETURN( (LM_ERROR,
-                ACE_TEXT("%p\n"),
-                ACE_TEXT("RemoveROOversamplingGadget::process, passing data on to next gadget")),
-                GADGET_FAIL);
+	GERROR("RemoveROOversamplingGadget::process, passing data on to next gadget");
+	return GADGET_FAIL;
       }
 
       return GADGET_OK;

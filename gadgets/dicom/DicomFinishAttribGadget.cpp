@@ -559,9 +559,8 @@ template <typename T>
 int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3)
 {
     if (!this->controller_) {
-        ACE_DEBUG( (LM_DEBUG,
-                    ACE_TEXT("Cannot return result to controller, no controller set")) );
-        return -1;
+      GERROR("Cannot return result to controller, no controller set");
+      return -1;
     }
 
     // --------------------------------------------------
@@ -625,7 +624,7 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
     //{
     //    if ( !m3->getObjectPtr()->serialize(meta_buf, len) )
     //    {
-    //        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to serialize dicom image meta attributes \n")));
+    //        GERROR("Unable to serialize dicom image meta attributes\n");
     //        return -1;
     //    }
     //}

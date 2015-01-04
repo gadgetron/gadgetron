@@ -25,18 +25,14 @@ public:
 };
 
 template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
-	ACE_TRACE(( ACE_TEXT("GrappaWeightsCalculator::svc") ));
-
 	ACE_Message_Block *mb;
 
 	while (this->getq(mb) >= 0) {
 		if (mb->msg_type() == ACE_Message_Block::MB_HANGUP) {
 			GDEBUG("Hanging up in weights calculator\n");
 			if (this->putq(mb) == -1) {
-				ACE_ERROR_RETURN( (LM_ERROR,
-						ACE_TEXT("%p\n"),
-						ACE_TEXT("GrappaWeightsCalculator::svc, putq")),
-						-1);
+			  GERROR("GrappaWeightsCalculator::svc, putq");
+			  return -1;
 			}
 			break;
 		}
@@ -161,18 +157,14 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 }
 
 template <class T> int GrappaWeightsCalculator<T>::close(unsigned long flags) {
-	ACE_TRACE(( ACE_TEXT("GrappaWeightsCalculator::close") ));
-
 	int rval = 0;
 	if (flags == 1) {
 		ACE_Message_Block *hangup = new ACE_Message_Block();
 		hangup->msg_type( ACE_Message_Block::MB_HANGUP );
 		if (this->putq(hangup) == -1) {
 			hangup->release();
-			ACE_ERROR_RETURN( (LM_ERROR,
-					ACE_TEXT("%p\n"),
-					ACE_TEXT("GrappaWeightsCalculator::close, putq")),
-					-1);
+			GERROR("GrappaWeightsCalculator::close, putq");
+			return -1;
 		}
 		//GDEBUG("Waiting for weights calculator to finish\n");
 		rval = this->wait();

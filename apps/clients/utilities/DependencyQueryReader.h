@@ -36,8 +36,8 @@ class DependencyQueryReader : public GadgetMessageReader
             size_t_type len(0);
             if ( ( recv_count = socket->recv_n( &len, sizeof(size_t_type)) ) <= 0 )
             {
-                ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, DependencyQueryReader, failed to read query results length\n")) );
-                return 0;
+	      GERROR("DependencyQueryReader, failed to read query results length\n");
+	      return 0;
             }
 
             char* buf = NULL;
@@ -46,8 +46,8 @@ class DependencyQueryReader : public GadgetMessageReader
                 buf = new char[len];
                 if ( buf == NULL )
                 {
-                    ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, DependencyQueryReader, failed to allocate buffer\n")) );
-                    return 0;
+		  GERROR("DependencyQueryReader, failed to allocate buffer\n");
+		  return 0;
                 }
 
                 memset(buf, '\0', len);
@@ -61,9 +61,9 @@ class DependencyQueryReader : public GadgetMessageReader
 
             if ( ( recv_count = socket->recv_n( buf, len) ) <= 0 )
             {
-                ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, DependencyQueryReader, failed to read query results\n")) );
-                delete [] buf;
-                return 0;
+	      GERROR("DependencyQueryReader, failed to read query results\n");
+	      delete [] buf;
+	      return 0;
             }
 
             std::ofstream outfile;

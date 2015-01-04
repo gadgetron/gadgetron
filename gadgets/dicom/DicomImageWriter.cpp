@@ -29,8 +29,8 @@ int DicomImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     GadgetContainerMessage<DcmFileFormat>* dcm_file_message = AsContainerMessage<DcmFileFormat>(mb);
     if (!dcm_file_message)
     {
-        ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), DicomImageWriter::write, invalid image message objects, 1\n")) );
-        return -1;
+      GERROR("DicomImageWriter::write, invalid image message objects\n");
+      return -1;
     }
 
     DcmFileFormat *dcmFile = dcm_file_message->getObjectPtr();
@@ -66,19 +66,19 @@ int DicomImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     id.id = GADGET_MESSAGE_DICOM;
 
     if ((send_cnt = sock->send_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send DICOM message identifier\n")));
-        return -1;
+      GERROR("Unable to send DICOM message identifier\n");
+      return -1;
     }
 
     uint32_t nbytes = (uint32_t)serialized_length;
     if ((send_cnt = sock->send_n (&nbytes, sizeof(nbytes))) <= 0) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send DICOM bytes length\n")));
-        return -1;
+      GERROR("Unable to send DICOM bytes length\n");
+      return -1;
     }
 
     if ((send_cnt = sock->send_n (serialized, serialized_length)) <= 0) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send DICOM bytes\n")));
-        return -1;
+      GERROR("Unable to send DICOM bytes\n");
+      return -1;
     }
 
     return 0;
@@ -95,8 +95,8 @@ int DicomImageAttribWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     GadgetContainerMessage<DcmFileFormat>* dcm_file_message = AsContainerMessage<DcmFileFormat>(mb);
     if (!dcm_file_message)
     {
-        ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), DicomImageWriter::write, invalid image message objects, 1\n")) );
-        return -1;
+      GERROR("DicomImageWriter::write, invalid image message objects\n");
+      return -1;
     }
 
     DcmFileFormat *dcmFile = dcm_file_message->getObjectPtr();
@@ -115,8 +115,8 @@ int DicomImageAttribWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 
     status = dcmFile->write(out_stream, EXS_LittleEndianExplicit, EET_ExplicitLength, NULL);
     if (!status.good()) {
-        GDEBUG("Failed to write DcmFileFormat to DcmOutputStream(%s)\n", status.text());
-        return GADGET_FAIL;
+      GERROR("Failed to write DcmFileFormat to DcmOutputStream(%s)\n", status.text());
+      return GADGET_FAIL;
     }
 
     void *serialized = NULL;
@@ -133,21 +133,21 @@ int DicomImageAttribWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 
     if ((send_cnt = sock->send_n (&id, sizeof(GadgetMessageIdentifier))) <= 0)
     {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send DICOM message identifier\n")));
-        return -1;
+      GERROR("Unable to send DICOM message identifier\n");
+      return -1;
     }
 
     uint32_t nbytes = (uint32_t)serialized_length;
     if ((send_cnt = sock->send_n (&nbytes, sizeof(nbytes))) <= 0)
     {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send DICOM bytes length\n")));
-        return -1;
+      GERROR("Unable to send DICOM bytes length\n");
+      return -1;
     }
 
     if ((send_cnt = sock->send_n (serialized, serialized_length)) <= 0)
     {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send DICOM bytes\n")));
-        return -1;
+      GERROR("Unable to send DICOM bytes\n");
+      return -1;
     }
 
     // chech whether the image filename is attached
@@ -157,15 +157,15 @@ int DicomImageAttribWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
         unsigned long long len = dcm_filename_message->getObjectPtr()->length();
         if ((send_cnt = sock->send_n (&len, sizeof(unsigned long long))) <= 0)
         {
-            ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send DICOM filename length\n")));
-            return -1;
+	  GERROR("Unable to send DICOM filename length\n");
+	  return -1;
         }
 
         const char* filename = dcm_filename_message->getObjectPtr()->c_str();
         if ((send_cnt = sock->send_n (filename, len)) <= 0)
         {
-            ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send DICOM filename\n")));
-            return -1;
+	  GERROR("Unable to send DICOM filename\n");
+	  return -1;
         }
 
         GadgetContainerMessage<ISMRMRD::MetaContainer>* dcm_meta_message = AsContainerMessage<ISMRMRD::MetaContainer>(dcm_filename_message->cont());
@@ -191,18 +191,15 @@ int DicomImageAttribWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
             }
             catch(...)
             {
-                ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to serialize dicom image meta attributes \n")));
-                return -1;
+	      GERROR("Unable to serialize dicom image meta attributes \n");
+	      return -1;
             }
 
             if ( (send_cnt = sock->send_n (buf, len)) <= 0 )
             {
-                ACE_DEBUG ((LM_ERROR,
-                        ACE_TEXT ("(%P|%t) Unable to send dicom image meta attributes\n")));
-
-                if ( buf != NULL ) delete [] buf;
-
-                return -1;
+	      GERROR("Unable to send dicom image meta attributes\n");
+	      if ( buf != NULL ) delete [] buf;
+	      return -1;
             }
 
             if ( buf != NULL ) delete [] buf;
