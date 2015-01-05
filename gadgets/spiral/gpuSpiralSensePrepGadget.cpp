@@ -131,7 +131,7 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
     
-    if (traj_desc.identifier == "HargreavesVDS2000") {
+    if (traj_desc.identifier != "HargreavesVDS2000") {
       GDEBUG("Expected trajectory description identifier 'HargreavesVDS2000', not found.");
       return GADGET_FAIL;
     }
