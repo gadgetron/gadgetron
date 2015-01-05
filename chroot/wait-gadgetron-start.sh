@@ -11,10 +11,10 @@ while [ -z "$GADGETRON_PID" ]; do
 
     if [ $CURRENT_TRY -eq $MAX_TRY ]; then
         GADGETRON_PID=9999
-        exit 1
     fi
 
     let CURRENT_TRY++
 done
 
 exit 0
+
