@@ -204,7 +204,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         hoMatrix<T> B;
         hoMatrix<T> x( colA, colB );
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 2D calibration - allocate matrix storage ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 2D calibration - allocate matrix storage ... "); }
         hoNDArrayMemoryManaged<T> A_mem(rowA, colA, gtPlus_mem_manager_);
         A.createMatrix( rowA, colA, A_mem.begin() );
         T* pA = A.begin();
@@ -212,7 +212,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         hoNDArrayMemoryManaged<T> B_mem(rowA, colB, gtPlus_mem_manager_);
         B.createMatrix( A.rows(), colB, B_mem.begin() );
         T* pB = B.begin();
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         long long e1;
         for ( e1=(long long)sE1; e1<=(long long)eE1; e1++ )
@@ -261,7 +261,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         //Gadgetron::norm2(B, v);
         //GDEBUG_STREAM("B = " << v);
 
-        //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("SolveLinearSystem_Tikhonov"));
+        //if ( performTiming_ ) { gt_timer2_.start("SolveLinearSystem_Tikhonov"); }
         //#ifdef USE_CUDA
         //    // go to device
         //    try
@@ -319,7 +319,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         //#endif // USE_CUDA
 
         // GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
-        //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+        //if ( performTiming_ ) { gt_timer2_.stop(); }
 
         //Gadgetron::norm2(x, v);
         //GDEBUG_STREAM("x = " << v);
@@ -537,19 +537,19 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
 
         hoMatrix<T> A, B, x( colA, colB );
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - allocate matrix storage ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - allocate matrix storage ... "); }
         hoNDArrayMemoryManaged<T> A_mem(rowA, colA, gtPlus_mem_manager_);
         A.createMatrix( rowA, colA, A_mem.begin() );
         T* pA = A.begin();
 
         hoNDArrayMemoryManaged<T> B_mem(rowA, colB, gtPlus_mem_manager_);
         B.createMatrix( rowA, colB, B_mem.begin() );
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
         T* pB = B.begin();
 
         long long e2;
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - fill calib matrixes ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - fill calib matrixes ... "); }
         #ifdef GCC_OLD_FLAG
             #pragma omp parallel for default(none) private(e2) shared(sE2, eE2, sE1, eE1, kROhalf, sRO, eRO, lenRO, lenE1, srcCHA, kNE2, kNE1, A, rowA, pA, oNE2, oNE1, dstCHA, B, pB)
         #else
@@ -602,7 +602,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
                 }
             }
         }
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         //typename realType<T>::Type v;
 
@@ -612,7 +612,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         //Gadgetron::norm2(B, v);
         //GDEBUG_STREAM("B = " << v);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - solve linear system ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - solve linear system ... "); }
         //#ifdef USE_CUDA
         //    // go to device
         //    try
@@ -681,7 +681,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         //#else
             GADGET_CHECK_EXCEPTION_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
         //#endif // USE_CUDA
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         //Gadgetron::norm2(x, v);
         //GDEBUG_STREAM("x = " << v);
@@ -725,7 +725,7 @@ try
         }
         kRO = 2*kROhalf + 1;
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - convert to conv kernel ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - convert to conv kernel ... "); }
         /// fill the convolution kernels
         long long convKRO = 2*kRO+3;
 
@@ -826,7 +826,7 @@ try
                 }
             }
         }
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)
     {
@@ -860,28 +860,28 @@ imageDomainKernel3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int>&
         kRO = 2*kROhalf + 1;
 
         // allocate image domain kernel
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - create kIm array ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - create kIm array ... "); }
         if ( kIm.get_number_of_elements() < (size_t)ro*e1*e2*srcCHA*dstCHA )
         {
             kIm.create(ro, e1, e2, srcCHA, dstCHA);
         }
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
         ho5DArray<T> convKer;
         bool ROis3rdDim = false;
         GADGET_CHECK_RETURN_FALSE(this->kspaceDomainConvKernel3D(ker, kRO, kE1, kE2, oE1, oE2, convKer, ROis3rdDim));
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - SNR unit scaling ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - SNR unit scaling ... "); }
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1*e2)) ), convKer ));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - zero padding ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - zero padding ... "); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKer, ro, e1, e2, kIm));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - conver to image domain ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)
     {
@@ -920,25 +920,25 @@ imageDomainKernelRO3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int
         hoNDArray<T> kImROTemp(ro, kConvE1, kConvE2, srcCHA, dstCHA);
         Gadgetron::clear(kImROTemp);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - SNR unit scaling ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - SNR unit scaling ... "); }
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro)) ), convKer ));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKer, "convKer_scal_RO");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKer, debugFolder_+"convKer_scal_RO"); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - zero padding only for RO ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - zero padding only for RO ... "); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKer, ro, kConvE1, kConvE2, kImROTemp));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROTemp, "convKer_scal_RO_zeropadded");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROTemp, debugFolder_+"convKer_scal_RO_zeropadded"); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - conver to image domain only for RO ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain only for RO ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImROTemp));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - permute kernel dimensions to be [kE1 kE2 RO ...]  ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - permute kernel dimensions to be [kE1 kE2 RO ...]  ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo3rdDimensionFor3DRecon(kImROTemp, kImRO));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)
     {
@@ -966,21 +966,21 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
 
         hoNDArray<T> kImROScaled(kImRO);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - SNR unit scaling for E1 and E2 ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - SNR unit scaling for E1 and E2 ... "); }
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(e1*e2)) ), kImROScaled ));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROScaled, "kImROScaledE1E2");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROScaled, debugFolder_+"kImROScaledE1E2"); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - zero padding for E1 and E2 ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - zero padding for E1 and E2 ... "); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(kImROScaled, e1, e2, dimR[2], kImE1E2RO));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImE1E2RO, "kImE1E2RO_zeropadded_E1E2");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImE1E2RO, debugFolder_+"kImE1E2RO_zeropadded_E1E2"); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - conver to image domain for E1 and E2 ... "));
+        if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain for E1 and E2 ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kImE1E2RO));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)
     {

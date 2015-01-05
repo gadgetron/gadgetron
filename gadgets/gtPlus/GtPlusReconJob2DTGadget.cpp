@@ -73,9 +73,9 @@ int GtPlusReconJob2DTGadget::process_config(ACE_Message_Block* mb)
         GDEBUG_STREAM("GtPlusRecon, debugFolder is not set ...");
     }
 
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Pre-allocate memory ... "); }
     mem_manager_->increase( (size_t)(4.0*1024*1024*1024) );
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
     worker_noacceleration_.gtPlus_mem_manager_ = mem_manager_;
@@ -123,11 +123,11 @@ int GtPlusReconJob2DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
     }
 
     bool succeed = true;
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT job ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Recon 2DT job ... "); }
 
     succeed = worker_spirit_L1_ncg_.performUnwarppingImpl(*job);
 
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     // export the results
     if ( !debugFolder_fullPath_.empty() )
@@ -137,7 +137,7 @@ int GtPlusReconJob2DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
 
         hoNDArray< std::complex<float> > res = job->res;
         res.squeeze();
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+        if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_fullPath_+ostr.str()); }
     }
 
     // clean the kspace and ker and coil map

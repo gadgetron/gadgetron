@@ -273,7 +273,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     // ---------------------------------------------------------------------------------------------------------
     // encoding limits
 
-    if ( GT_ABS(2*field_of_view_recon_[0]-field_of_view_encoding_[0]) < 1.0 )
+    if ( std::abs(2*field_of_view_recon_[0]-field_of_view_encoding_[0]) < 1.0 )
     {
         meas_max_ro_ = e_space.matrixSize.x/2;
     }
@@ -354,11 +354,11 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
         }
 
         // if partial fourier or asymmetric echo is used, correct the kSpaceCenter
-        if ( GT_ABS(space_size_[1]-max_sampled_E1_) > workOrder_.acceFactorE1_ )
+        if ( std::abs( (long long)(space_size_[1])-(long long)max_sampled_E1_) > workOrder_.acceFactorE1_ )
         {
             GDEBUG_CONDITION_STREAM(verboseMode_, "Partial fourier along E1 ... ");
 
-            // if ( (m1->getObjectPtr()->idx.user[5]>0) && (GT_ABS( (long long)m1->getObjectPtr()->idx.user[5] - (long long)space_size_[1]/2 )<2) )
+            // if ( (m1->getObjectPtr()->idx.user[5]>0) && (std::abs( (long long)m1->getObjectPtr()->idx.user[5] - (long long)space_size_[1]/2 )<2) )
             if ( (m1->getObjectPtr()->idx.user[5]>0) )
             {
                 workOrder_.kSpaceCenterEncode1_ = m1->getObjectPtr()->idx.user[5];
@@ -386,11 +386,11 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
             space_matrix_offset_E1_ = 0;
         }
 
-        if ( GT_ABS(space_size_[2]-max_sampled_E2_) > workOrder_.acceFactorE2_ )
+        if ( std::abs( (long long)space_size_[2] - (long long)max_sampled_E2_) > workOrder_.acceFactorE2_ )
         {
             GDEBUG_CONDITION_STREAM(verboseMode_, "Partial fourier along E2 ... ");
 
-            // if ( (m1->getObjectPtr()->idx.user[6]>0) && (GT_ABS( (long long)m1->getObjectPtr()->idx.user[6] - (long long)space_size_[2]/2 )<2) )
+            // if ( (m1->getObjectPtr()->idx.user[6]>0) && (std::abs( (long long)m1->getObjectPtr()->idx.user[6] - (long long)space_size_[2]/2 )<2) )
             if ( (m1->getObjectPtr()->idx.user[6]>0) )
             {
                 workOrder_.kSpaceCenterEncode2_ = m1->getObjectPtr()->idx.user[6];

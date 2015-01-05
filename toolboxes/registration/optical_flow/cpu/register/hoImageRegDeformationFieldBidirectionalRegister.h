@@ -354,12 +354,12 @@ namespace Gadgetron
                         std::ostringstream ostr;
                         ostr << "deform_" << jj;
 
-                        GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, transform_->getDeformationField(jj), ostr.str());
+                        gt_exporter_.exportImage(transform_->getDeformationField(jj), debugFolder_+ostr.str());
 
                         std::ostringstream ostr2;
                         ostr2 << "deform_inverse_" << jj;
 
-                        GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, transform_inverse_->getDeformationField(jj), ostr2.str());
+                        gt_exporter_.exportImage(transform_inverse_->getDeformationField(jj), debugFolder_+ostr2.str());
                     }
                 }
 
@@ -372,7 +372,7 @@ namespace Gadgetron
                     bool downsampledBy2 = true;
                     for ( jj=0; jj<D; jj++ )
                     {
-                        if ( GT_ABS(ratio[jj]-2.0f) > FLT_EPSILON )
+                        if ( std::abs(ratio[jj]-2.0f) > FLT_EPSILON )
                         {
                             downsampledBy2 = false;
                             break;
@@ -447,12 +447,12 @@ namespace Gadgetron
                         std::ostringstream ostr;
                         ostr << "deformExpanded_" << jj;
 
-                        GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, transform_->getDeformationField(jj), ostr.str());
+                        gt_exporter_.exportImage(transform_->getDeformationField(jj), debugFolder_+ostr.str());
 
                         std::ostringstream ostr2;
                         ostr2 << "deformExpanded_inverse_" << jj;
 
-                        GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, transform_inverse_->getDeformationField(jj), ostr2.str());
+                        gt_exporter_.exportImage(transform_inverse_->getDeformationField(jj), debugFolder_+ostr2.str());
                     }
                 }
             }

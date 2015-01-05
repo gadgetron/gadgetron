@@ -135,10 +135,10 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         std::string suffix = ostr.str();
 
         std::string filename = "acsSrc";
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, filename+suffix);
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsSrc, debugFolder_+filename+suffix); }
 
         filename = "acsDst";
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, filename+suffix);
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsDst, debugFolder_+filename+suffix); }
 
         grappa_local.calib_use_gpu_  = workOrder2DT->grappa_use_gpu_;
 
@@ -147,38 +147,38 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
          Gadgetron::GadgetronTimer gt_timer_local;
          gt_timer_local.set_timing_in_destruction(false);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("grappa_local.calib ... "));
+        if ( performTiming_ ) { gt_timer_local.start("grappa_local.calib ... "); }
         GADGET_CHECK_RETURN_FALSE(grappa_local.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, kRO, kE1, oE1, ker));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
+        if ( performTiming_ ) { gt_timer_local.stop(); }
 
         filename = "ker";
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, filename+suffix);
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ker, debugFolder_+filename+suffix); }
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("grappa_local.imageDomainKernel ... "));
+        if ( performTiming_ ) { gt_timer_local.start("grappa_local.imageDomainKernel ... "); }
         GADGET_CHECK_RETURN_FALSE(grappa_local.imageDomainKernel(ker, kRO, kE1, oE1, RO, E1, kIm));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
+        if ( performTiming_ ) { gt_timer_local.stop(); }
 
         filename = "kIm";
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, filename+suffix);
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+filename+suffix); }
 
         hoNDArray<T> coilMap(RO, E1, dstCHA, workOrder2DT->coilMap_->begin()+n*RO*E1*dstCHA+usedS*RO*E1*dstCHA*refN);
         hoNDArray<T> unmixC(RO, E1, srcCHA, workOrder2DT->unmixingCoeffIm_->begin()+n*RO*E1*srcCHA+usedS*RO*E1*srcCHA*refN);
         hoNDArray<T> gFactor(RO, E1, workOrder2DT->gfactor_.begin()+n*RO*E1+usedS*RO*E1*refN);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("unmixCoeff ... "));
+        if ( performTiming_ ) { gt_timer_local.start("unmixCoeff ... "); }
         GADGET_CHECK_RETURN_FALSE(this->unmixCoeff(kIm, coilMap, unmixC, gFactor));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
+        if ( performTiming_ ) { gt_timer_local.stop(); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.start("scale gfactor ... "));
+        if ( performTiming_ ) { gt_timer_local.start("scale gfactor ... "); }
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder2DT->acceFactorE1_), gFactor));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer_local.stop());
+        if ( performTiming_ ) { gt_timer_local.stop(); }
 
         filename = "unmixC";
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, filename+suffix);
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unmixC, debugFolder_+filename+suffix); }
 
         filename = "gFactor";
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, filename+suffix);
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(gFactor, debugFolder_+filename+suffix); }
 
         if ( workOrder2DT->wrap_around_map_needed_ )
         {
@@ -195,7 +195,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
             GADGET_CHECK_RETURN_FALSE(wrapAroundMap.copyFrom(eigD));
 
             filename = "wrapAroundMap";
-            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, eigD, filename+suffix);
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArray(eigD, debugFolder_+filename+suffix); }
         }
     }
     catch(...)
@@ -266,7 +266,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             }
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_, "buffer2DT_");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_, debugFolder_+"buffer2DT_"); }
 
         bool recon_kspace = false;
 
@@ -314,18 +314,18 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                         {
                             std::ostringstream ostr;
                             ostr << "kIm_" << usedS;
-                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, ostr.str());
+                            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+ostr.str()); }
                         }
 
                         {
                             std::ostringstream ostr;
                             ostr << "aliasedIm_" << usedS;
-                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aliasedIm, ostr.str());
+                            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(aliasedIm, debugFolder_+ostr.str()); }
                         }
 
                         std::ostringstream ostr;
                         ostr << "unwarppedIm_" << usedS;
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedIm, ostr.str());
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unwarppedIm, debugFolder_+ostr.str()); }
                     }
                 }
                 else
@@ -339,15 +339,15 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                         {
                             hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
 
-                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm_n");
+                            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+"kIm_n"); }
 
                             T* pIm2D = buffer2DT_.begin()+n*RO*E1*srcCHA+usedS*RO*E1*srcCHA*N;
                             hoNDArray<T> aliasedIm(RO, E1, srcCHA, pIm2D);
 
-                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aliasedIm, "aliasedIm_n");
+                            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(aliasedIm, debugFolder_+"aliasedIm_n"); }
 
                             this->applyImageDomainKernelImage(aliasedIm, kIm, complexIm);
-                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexIm, "complexIm_n");
+                            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexIm, debugFolder_+"complexIm_n"); }
 
                             memcpy(workOrder2DT->fullkspace_.begin()+n*RO*E1*dstCHA+usedS*RO*E1*dstCHA*N, complexIm.begin(), sizeof(T)*RO*E1*dstCHA);
                         }
@@ -372,7 +372,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                 {
                     std::ostringstream ostr;
                     ostr << "combined_" << usedS;
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, combined, ostr.str());
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(combined, debugFolder_+ostr.str()); }
                 }
             }
 
@@ -382,7 +382,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             {
                 std::ostringstream ostr;
                 ostr << "fullkspace_" << usedS;
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->fullkspace_, ostr.str());
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder2DT->fullkspace_, debugFolder_+ostr.str()); }
             }
         }
         else
@@ -398,7 +398,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                     this->applyUnmixCoeffImage(aliasedIm, unmixCoeff, unwarppedIm);
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedIm, "unwarppedIm");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unwarppedIm, debugFolder_+"unwarppedIm"); }
                 }
                 else
                 {
@@ -411,7 +411,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                         this->applyUnmixCoeffImage(aliasedIm, unmixCoeff, unwarppedIm);
 
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedIm, "unwarppedIm");
+                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unwarppedIm, debugFolder_+"unwarppedIm"); }
                     }
                 }
             }

@@ -192,11 +192,11 @@ bool gtplusBSplineFFD2D<T, CoordType, DOut>::evaluateFFD2D(CoordType px, CoordTy
 
         long long ix = (long long)std::floor(px);
         CoordType deltaX = px-(CoordType)ix;
-        long long lx = GT_MKINT(BSPLINELUTSIZE*deltaX);
+        long long lx = FFD_MKINT(BSPLINELUTSIZE*deltaX);
 
         long long iy = (long long)std::floor(py);
         CoordType deltaY = py-(CoordType)iy;
-        long long ly = GT_MKINT(BSPLINELUTSIZE*deltaY);
+        long long ly = FFD_MKINT(BSPLINELUTSIZE*deltaY);
 
         unsigned int d, jj;
         size_t offset[4];

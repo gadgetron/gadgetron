@@ -1,6 +1,9 @@
 
 #include "gtPlusISMRMRDReconUtil.h"
 #include "hoNDArray_elemwise.h"
+#include <algorithm>
+
+#define GT_IMAGING_GEOMETRY_DELTA 0.001
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -1577,7 +1580,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
 
                     for ( ii=1; ii<=width; ii++ )
                     {
-                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(2*width+1) ) )) );
+                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(2*width+1) ) )) );
                     }
 
                     if ( len%2 == 0 )
@@ -1611,7 +1614,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
                         double halfLen = (double)( (N+1)/2 );
                         for ( ii=1; ii<=halfLen; ii++ )
                         {
-                            filter(ii) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(N+1) ) )) );
+                            filter(ii) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(N+1) ) )) );
                         }
 
                         for ( ii=(size_t)halfLen; ii<N; ii++ )
@@ -1626,7 +1629,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
                         double halfLen = (double)( (len+1)/2 );
                         for ( ii=1; ii<=(size_t)halfLen; ii++ )
                         {
-                            filter(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(len+1) ) )) );
+                            filter(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(len+1) ) )) );
                         }
 
                         for ( ii=(size_t)halfLen; ii<len; ii++ )
@@ -1698,7 +1701,7 @@ generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& fil
                  {
                     for ( ii=1; ii<=width; ii++ )
                     {
-                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(2*width+1) ) )) );
+                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(2*width+1) ) )) );
                     }
                 }
             break;
@@ -1890,7 +1893,7 @@ generateSymmetricFilterForRef(size_t len, size_t start, size_t end,
         }
         else if ( start>0 && end<len-1 )
         {
-            lenFilter = GT_MIN(lenFilterStart, lenFilterEnd);
+            lenFilter = ( (lenFilterStart<lenFilterEnd) ? lenFilterStart : lenFilterEnd );
         }
         else
         {
@@ -2786,14 +2789,6 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
         {
             filter_dst_E1(ii) = T(1.0) - filter_src_E1(ii);
         }
-
-        //std::string debugFolder_ = "D:/software/Gadgetron/20130114/install/gadgetron/DebugOutput/";
-        //Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
-
-        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_src_RO, "filter_src_RO");
-        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_dst_RO, "filter_dst_RO");
-        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_src_E1, "filter_src_E1");
-        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_dst_E1, "filter_dst_E1");
 
         hoNDArray<T> srcFiltered(src), dstFiltered(dst);
         if ( startRO==0 && endRO==RO-1 )
@@ -4869,11 +4864,6 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
 {
     try
     {
-        //std::string debugFolder = "D:/software/Gadgetron/20130114/install_debug/gadgetron/DebugOutput/";
-        //gtPlusIOAnalyze gt_io;
-
-        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, data, "data");
-
         typedef typename realType<T>::Type value_type;
 
         long long RO = data.get_size(0);
@@ -4922,36 +4912,24 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
             prevR = R;
 
             Gadgetron::conjugate(R, R);
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "R");
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, data, coilMap));
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMap, "coilMap");
-
-            //Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(coilMap, coilMapConv);
-            //GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(kerKSpace, coilMapConv, D));
-            //Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(D, coilMapConv);
 
             Gadgetron::conv2(coilMap, ker, coilMapConv);
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMapConv, "coilMapConv");
 
             Gadgetron::multiplyConj(coilMapConv, coilMapConv, D);
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, D, "D");
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R");
 
             Gadgetron::sqrt(R, R);
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R2");
 
             Gadgetron::addEpsilon(R);
             Gadgetron::inv(R, R);
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R_inv");
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMapConv, coilMap));
 
             Gadgetron::multiplyConj(data, coilMap, D);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "R2");
 
             //if ( iter < iterNum - 1 )
             //{
@@ -4976,12 +4954,8 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
                 Gadgetron::axpy( std::conj(vCha), coilMapCHA, imT, imT);
             }
 
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, imT, "imT");
-
             Gadgetron::abs(imT, magT);
             Gadgetron::divide(imT, magT, imT);
-
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, imT, "imT2");
 
             Gadgetron::multiply(R, imT, R);
             Gadgetron::conjugate(imT, imT);
@@ -5263,24 +5237,16 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
                     hoNDArray<T> data2D(RO, E1, CHA);
                     hoNDArray<T> coilMap2D(RO, E1, CHA);
 
-                    Gadgetron::GadgetronTimer gt_timer3_(false);
-                    bool timing = false;
-
                     #pragma omp for
                     for ( e2=0; e2<(int)E2; e2++ )
                     {
                         long long cha;
 
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.start("memcpy 1 ... "));
                         for ( cha=0; cha<(long long)CHA; cha++ )
                         {
                             memcpy(data2D.begin()+cha*RO*E1, dataCurr.begin()+cha*RO*E1*E2+e2*RO*E1, sizeof(T)*RO*E1);
                         }
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.stop());
 
-                        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, data2D, "data2D");
-
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.start("coilMap2DNIHInner"));
                         if ( algo == ISMRMRD_SOUHEIL_ITER )
                         {
                             coilMap2DNIH2Inner(data2D, coilMap2D, ks, iterNum, thres);
@@ -5289,18 +5255,11 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
                         {
                             coilMap2DNIHInner(data2D, coilMap2D, ks, power);
                         }
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.stop());
 
-                        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMap2D, "coilMap2D");
-
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.start("memcpy 2 ... "));
                         for ( cha=0; cha<(long long)CHA; cha++ )
                         {
                             memcpy(coilMapCurr.begin()+cha*RO*E1*E2+e2*RO*E1, coilMap2D.begin()+cha*RO*E1, sizeof(T)*RO*E1);
                         }
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.stop());
-
-                        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMapCurr, "coilMapCurr");
                     }
                 }
             }

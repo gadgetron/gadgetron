@@ -198,13 +198,13 @@ namespace Gadgetron
 
             /// we rewrite these code for gadgetron
 
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("1"));
+            //if ( performTiming_ ) { gt_timer1_.start("1"); }
             BaseClass::evaluate(w);
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            //if ( performTiming_ ) { gt_timer1_.stop(); }
 
             long long N = (long long)target.get_number_of_elements();
 
-            //GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("2"));
+            //if ( performTiming_ ) { gt_timer1_.start("2"); }
             //mu1.copyFrom(target);
             //mu2.copyFrom(warped);
             //Gadgetron::multiply(mu1, mu1, v1);
@@ -361,13 +361,6 @@ namespace Gadgetron
                 //    Gadgetron::filterGaussian(v12, sigmaArg_);
                 //#endif // WIN32
             }
-
-            //if ( !debugFolder_.empty() )
-            //{
-            //    GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, v1, "f1_filtered");
-            //    GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, v2, "f2_filtered");
-            //    GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, v12, "f3_filtered");
-            //}
 
             // deriv = f1*i1 + f2*i2 + f3, we don't need to multiply this by 2.0
 

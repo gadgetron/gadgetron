@@ -194,9 +194,9 @@ int GtPlusRecon3DTGadget::process_config(ACE_Message_Block* mb)
 
     GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon3DTGadget::Pre allocate : " << numOfBytes/1024.0/1024.0 << " Megabytes ... ");
 
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Pre-allocate memory ... "); }
     mem_manager_->increase(numOfBytes);
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
     worker_noacceleration_.gtPlus_mem_manager_ = mem_manager_;
@@ -358,7 +358,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     }
 
     // perform the recon
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 3DT workorder ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Recon 3DT workorder ... "); }
 
     GADGET_CHECK_RETURN(this->generateKSpaceFilter(*workOrder), GADGET_FAIL);
 
@@ -414,7 +414,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     GADGET_CHECK_RETURN(workflow_.recon(), GADGET_FAIL);
     GADGET_CHECK_RETURN(workflow_.postProcessing(), GADGET_FAIL);
 
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     if ( !debugFolder2_fullPath_.empty() )
     {
@@ -423,7 +423,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
         hoNDArray< std::complex<float> > res = workflow_.res_;
         res.squeeze();
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+        if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
 
         if ( workflow_.workOrder_->gfactor_needed_ )
         {
@@ -432,7 +432,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
             hoNDArray< std::complex<float> > gfactor = workflow_.gfactor_;
             gfactor.squeeze();
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, gfactor, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(gfactor, debugFolder2_fullPath_+ostr.str()); }
         }
     }
 

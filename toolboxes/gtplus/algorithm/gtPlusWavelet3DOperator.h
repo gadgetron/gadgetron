@@ -378,7 +378,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
         const T* pCoeffNorm = wavCoeffNorm.begin();
         T* pBuf = wav_coeff_norm_approx_.begin();
 
-        if ( GT_ABS(std::abs(p) - 1.0) < 0.001 )
+        if ( std::abs(std::abs(p) - 1.0) < 0.001 )
         {
             #pragma omp parallel for default(none) private(ii) shared(N, pBuf, pCoeffNorm, mu)
             for ( ii=0; ii<N; ii++ )
@@ -451,17 +451,17 @@ proximity(hoNDArray<T>& wavCoeff, value_type thres)
 
         Gadgetron::fill(mask_, T(thres) );
 
-        if ( GT_ABS(std::abs(scale_factor_first_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_first_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->firstDimensionScale(mask_, scale_factor_first_dimension_));
         }
 
-        if ( GT_ABS(std::abs(scale_factor_second_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_second_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->secondDimensionScale(mask_, scale_factor_second_dimension_));
         }
 
-        if ( GT_ABS(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->thirdDimensionScale(mask_, scale_factor_third_dimension_));
         }
@@ -1161,19 +1161,19 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
 
         // first dimension scaling
         //gt_timer2_.start("9");
-        if ( GT_ABS(std::abs(scale_factor_first_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_first_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->firstDimensionScale(res_after_apply_kernel_sum_over_, scale_factor_first_dimension_));
         }
 
         // second dimension scaling
-        if ( GT_ABS(std::abs(scale_factor_second_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_second_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->secondDimensionScale(res_after_apply_kernel_sum_over_, scale_factor_second_dimension_));
         }
 
         // third dimension scaling
-        if ( GT_ABS(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->thirdDimensionScale(res_after_apply_kernel_sum_over_, scale_factor_third_dimension_));
         }
@@ -1260,7 +1260,7 @@ objTask(const hoNDArray<T>& x, T& obj)
             GADGET_CHECK_RETURN_FALSE(this->forwardOperator(complexIm_, res_after_apply_kernel_sum_over_));
         }
 
-        if ( GT_ABS(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->thirdDimensionScale(res_after_apply_kernel_sum_over_, scale_factor_third_dimension_));
         }

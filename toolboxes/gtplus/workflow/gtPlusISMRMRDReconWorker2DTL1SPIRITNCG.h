@@ -93,16 +93,16 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
         hoNDArray<T> kspaceLinear(kspace);
         res = kspace;
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace"); }
 
         bool performLinear = workOrder2DT->spirit_perform_linear_;
         if ( !workOrder2DT->spirit_perform_nonlinear_ ) performLinear = true;
 
         if ( performLinear )
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit linear solver for 2DT ... "));
+            if ( performTiming_ ) { gt_timer3_.start("NCG spirit linear solver for 2DT ... "); }
             GADGET_CHECK_RETURN_FALSE(BaseClass::performUnwarppingImpl(workOrder2DT, kspace, adj_forward_G_I, kspaceLinear, s));
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+            if ( performTiming_ ) { gt_timer3_.stop(); }
         }
         else
         {
@@ -117,7 +117,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             }
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceLinear, "kspaceLinear");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceLinear, debugFolder_+"kspaceLinear"); }
 
         if ( workOrder2DT->spirit_perform_nonlinear_ )
         {
@@ -200,15 +200,15 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     ncgsolver.add(spirit, T( (value_type)workOrder2DT->spirit_parallel_imaging_lamda_ ) );
                     ncgsolver.add(wavNullSpace3DOperator, T( (value_type)workOrder2DT->spirit_image_reg_lamda_ ) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 2DT ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 2DT ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2DT_res");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_2DT_res"); }
 
                     spirit.restoreAcquiredKSpace(kspace, res);
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2DT_res_restored");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_2DT_res_restored"); }
                 }
                 else
                 {
@@ -237,11 +237,11 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     ncgsolver.add(wavNoNullSpace3DOperator, T( (value_type)workOrder2DT->spirit_image_reg_lamda_ ) );
                     ncgsolver.add(dataOper, T( (value_type)workOrder2DT->spirit_data_fidelity_lamda_ ) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 2DT without null space ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 2DT without null space ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2DT_res_noNullSpace");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_2DT_res_noNullSpace"); }
                 }
             }
             else
@@ -281,15 +281,15 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     ncgsolver.add(spirit, T( (value_type)workOrder2DT->spirit_parallel_imaging_lamda_ ) );
                     ncgsolver.add(wavNullSpace2DOperator, T( (value_type)workOrder2DT->spirit_image_reg_lamda_ ) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 2D ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 2D ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2D_res");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_2D_res"); }
 
                     spirit.restoreAcquiredKSpace(kspace, res);
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2D_res_restored");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, "ncg_spirit_2D_res_restored"); }
                 }
                 else
                 {
@@ -315,11 +315,11 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     ncgsolver.add(wavNoNullSpace2DOperator, T( (value_type)workOrder2DT->spirit_image_reg_lamda_ ) );
                     ncgsolver.add(dataOper, T( (value_type)workOrder2DT->spirit_data_fidelity_lamda_ ) );
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 2D without null space ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("NCG spirit solver for 2D without null space ... "); }
                     ncgsolver.solve(b, res);
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "ncg_spirit_2D_res_noNullSpace");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"ncg_spirit_2D_res_noNullSpace"); }
                 }
             }
 

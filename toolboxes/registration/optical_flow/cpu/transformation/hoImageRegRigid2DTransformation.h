@@ -231,8 +231,8 @@ namespace Gadgetron
         {
             GADGET_CHECK_RETURN_FALSE( matrix.createMatrix(3, 3) );
 
-            ValueType cosrz = std::cos(rz*GT_PI/180.0);
-            ValueType sinrz = std::sin(rz*GT_PI/180.0);
+            ValueType cosrz = std::cos(rz*M_PI/180.0);
+            ValueType sinrz = std::sin(rz*M_PI/180.0);
 
             matrix(0, 0) = cosrz;  matrix(0, 1) = sinrz; matrix(0, 2) = tx;
             matrix(1, 0) = -sinrz; matrix(1, 1) = cosrz; matrix(1, 2) = ty;
@@ -267,7 +267,7 @@ namespace Gadgetron
 
             tx = matrix(0, 2);
             ty = matrix(1, 2);
-            rz *= 180.0/GT_PI;
+            rz *= 180.0/M_PI;
         }
         catch(...)
         {

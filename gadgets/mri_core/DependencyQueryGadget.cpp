@@ -119,7 +119,7 @@ namespace Gadgetron
                                 struct tm* lastWriteTm = std::gmtime(&lastWriteTime);
                                 lastWriteTime = std::mktime(lastWriteTm);
 
-                                if ( GT_ABS( (double)lastWriteTime - (double)curr_time_UTC_ ) > time_limit_in_storage_*3600.0 )
+                                if ( std::abs( (double)lastWriteTime - (double)curr_time_UTC_ ) > time_limit_in_storage_*3600.0 )
                                 {
                                     remove(*it);
                                 }

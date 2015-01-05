@@ -180,9 +180,9 @@ int GtPlusRecon2DTGadget::process_config(ACE_Message_Block* mb)
     size_t numOfBytes = matrix_size_encoding_[0]*kSpaceMaxAcqE1No_*num_acq_channels_*num_acq_channels_*sizeof(ValueType);
     GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadget::Pre allocate : " << numOfBytes/1024.0/1024.0 << " Megabytes ... ");
 
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Pre-allocate memory ... "); }
     mem_manager_->increase(numOfBytes);
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
     worker_noacceleration_.gtPlus_mem_manager_ = mem_manager_;
@@ -230,7 +230,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     dimensions_ = *dims;
 
     // fill in more parameters
-    para_.reconSizeRO_ = GT_MAX(matrix_size_recon_[0], (*dims)[0]);
+    para_.reconSizeRO_ = std::max(matrix_size_recon_[0], (*dims)[0]);
     para_.reconSizeE1_ = reconE1_;
     para_.reconSizeE2_ = reconE2_;
     para_.encodingFOV_RO_ = field_of_view_encoding_[0];
@@ -361,7 +361,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     // ------------------------------------------------------------------
     // perform the recon
     // ------------------------------------------------------------------
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Recon 2DT workorder ..."); }
 
     GADGET_CHECK_RETURN(this->generateKSpaceFilter(*workOrder), GADGET_FAIL);
 
@@ -424,7 +424,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     GADGET_CHECK_RETURN(workflow_.recon(), GADGET_FAIL);
     GADGET_CHECK_RETURN(workflow_.postProcessing(), GADGET_FAIL);
 
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     if ( !debugFolder2_fullPath_.empty() )
     {
@@ -433,7 +433,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
         hoNDArray< std::complex<float> > res = workflow_.res_;
         res.squeeze();
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+        if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
 
         if ( workflow_.workOrder_->gfactor_needed_ )
         {
@@ -442,7 +442,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
             hoNDArray< std::complex<float> > gfactor = workflow_.gfactor_;
             gfactor.squeeze();
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, gfactor, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(gfactor, debugFolder2_fullPath_+ostr.str()); }
         }
 
         if ( workflow_.workOrder_->wrap_around_map_needed_ )
@@ -452,7 +452,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
             hoNDArray< std::complex<float> > wrap_around_map = workflow_.wrap_around_map_;
             wrap_around_map.squeeze();
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, wrap_around_map, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(wrap_around_map, debugFolder2_fullPath_+ostr.str()); }
         }
 
         if ( workflow_.res_second_.get_number_of_elements() > 0 )
@@ -463,7 +463,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
             std::ostringstream ostr;
             ostr << "Recon2DT_second_" << processed_called_times_;
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
         }
     }
 

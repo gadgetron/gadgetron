@@ -324,7 +324,7 @@ bool hoMatrix<T>::setIdentity()
         size_t ROW = this->rows();
         size_t COL = this->cols();
 
-        size_t N = GT_MIN(ROW, COL);
+        size_t N = std::min(ROW, COL);
 
         this->fill(T(0));
 

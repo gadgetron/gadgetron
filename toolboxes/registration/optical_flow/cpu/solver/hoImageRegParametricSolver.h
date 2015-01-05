@@ -183,18 +183,18 @@ namespace Gadgetron
             GADGET_CHECK_RETURN_FALSE(warper_->warp(*target_, *source_, use_world_coordinate_, warpped_));
             curr_dissimilarity_ = dissimilarity_->evaluate(warpped_);
 
-            GADGET_CHECK_PERFORM(verbose_, GDEBUG_STREAM("----> Initial image dissimilarity : " << curr_dissimilarity_) );
+            if ( verbose_ ) { GDEBUG_STREAM("----> Initial image dissimilarity : " << curr_dissimilarity_); }
 
             unsigned int totalIterNum = 0;
 
             unsigned int div;
             for ( div=0; div<div_num_; div++ )
             {
-                GADGET_CHECK_PERFORM(verbose_, GDEBUG_STREAM("----> Parameter division " << div << " [out of " << div_num_ << "] ") );
+                if ( verbose_ ) { GDEBUG_STREAM("----> Parameter division " << div << " [out of " << div_num_ << "] "); }
 
                 for ( iter_num_=0; iter_num_<max_iter_num_; iter_num_++ )
                 {
-                    GADGET_CHECK_PERFORM(verbose_, GDEBUG_STREAM("--> Iteration " << iter_num_ << " [out of " << max_iter_num_ << "] : \t" << curr_dissimilarity_) );
+                    if ( verbose_ ) { GDEBUG_STREAM("--> Iteration " << iter_num_ << " [out of " << max_iter_num_ << "] : \t" << curr_dissimilarity_); }
 
                     prev_dissimilarity_ = curr_dissimilarity_;
 
@@ -206,7 +206,7 @@ namespace Gadgetron
                         break;
                     }
                 }
-                GADGET_CHECK_PERFORM(verbose_, transform_->printTransform(std::cout));
+                if ( verbose_ ) { transform_->printTransform(std::cout); }
 
                 totalIterNum += iter_num_;
 
@@ -218,7 +218,7 @@ namespace Gadgetron
                 }
             }
 
-            GADGET_CHECK_PERFORM(verbose_, GDEBUG_STREAM("----> Total iteration number : " << totalIterNum) );
+            if ( verbose_ ) { GDEBUG_STREAM("----> Total iteration number : " << totalIterNum); }
         }
         catch(...)
         {

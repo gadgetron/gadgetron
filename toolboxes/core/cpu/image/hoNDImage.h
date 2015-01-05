@@ -231,7 +231,7 @@ namespace Gadgetron
             unsigned int ii;
             for ( ii=0; ii<D; ii++ )
             {
-                if ( GT_ABS(this->pixelSize_[ii] - im.pixelSize_[ii]) > FLT_EPSILON ) return false;
+                if ( std::abs(this->pixelSize_[ii] - im.pixelSize_[ii]) > FLT_EPSILON ) return false;
             }
 
             return true;
