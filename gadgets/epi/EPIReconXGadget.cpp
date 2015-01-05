@@ -35,7 +35,7 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
     return GADGET_FAIL;
   }
 
-  if (std::strcmp(traj_desc.identifier.c_str(), "ConventionalEPI")) {
+  if (traj_desc.identifier == "ConventionalEPI") {
     GDEBUG("Expected trajectory description identifier 'ConventionalEPI', not found.");
     return GADGET_FAIL;
   }
@@ -48,15 +48,15 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
   
   // TODO: we need a flag that says it's a balanced readout.
   for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
-    if (std::strcmp(i->name.c_str(),"rampUpTime") == 0) {
+    if (i->name == "rampUpTime") {
       reconx.rampUpTime_ = i->value;
-    } else if (std::strcmp(i->name.c_str(),"rampDownTime") == 0) {
+    } else if (i->name == "rampDownTime") {
       reconx.rampDownTime_ = i->value;
-    } else if (std::strcmp(i->name.c_str(),"flatTopTime") == 0) {
+    } else if (i->name == "flatTopTime") {
       reconx.flatTopTime_ = i->value;
-    } else if (std::strcmp(i->name.c_str(),"acqDelayTime") == 0) {
+    } else if (i->name == "acqDelayTime") {
       reconx.acqDelayTime_ = i->value;
-    } else if (std::strcmp(i->name.c_str(),"numSamples") == 0) {
+    } else if (i->name == "numSamples") {
       reconx.numSamples_ = i->value;
     } else {
       GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
@@ -65,7 +65,7 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
 
 
   for (std::vector<ISMRMRD::UserParameterDouble>::iterator i (traj_desc.userParameterDouble.begin()); i != traj_desc.userParameterDouble.end(); ++i) {
-    if (std::strcmp(i->name.c_str(),"dwellTime") == 0) {
+    if (i->name == "dwellTime") {
       reconx.dwellTime_ = i->value;
     } else {
       GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
