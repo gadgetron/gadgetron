@@ -23,7 +23,7 @@ else
     fi
 
     chroot ${MOUNT_POINT}/chroot-root/gadgetron /siemens_to_ismrmrd.sh $DAT_FILENAME $ISMRMRD_FILENAME $SCAN_NO
-    exit 0
+    exit $?
   else
     echo -e "\nUsage: $0 <mount point> <dat filename> <ismrmrd filename> <scan number> <optional: full path to img file>\n"
     exit 1
