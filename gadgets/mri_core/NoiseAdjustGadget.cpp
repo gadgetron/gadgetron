@@ -433,17 +433,15 @@ namespace Gadgetron{
 
       if (noise_decorrelation_calculated_) {
           //Apply prewhitener
-          bool applyPerwhitenter = true;
-          if ( pass_nonconformant_data_ ) {
-              if ( noise_prewhitener_matrixf_.get_size(0) != m2->getObjectPtr()->get_size(1) ) 
-              {
-                  applyPerwhitenter = false;
-              }
-          }
-
-          if ( applyPerwhitenter ) {
-              hoNDArray<std::complex<float> > tmp(*m2->getObjectPtr());
-              gemm(*m2->getObjectPtr(), tmp, noise_prewhitener_matrixf_);
+          if ( noise_prewhitener_matrixf_.get_size(0) == m2->getObjectPtr()->get_size(1) ) {
+               hoNDArray<std::complex<float> > tmp(*m2->getObjectPtr());
+               gemm(*m2->getObjectPtr(), tmp, noise_prewhitener_matrixf_);
+          } else {
+               if (!pass_nonconformant_data_) {
+                     m1->release();
+                     GERROR("Number of channels in noise prewhitener %d is incompatible with incoming data %d\n", noise_prewhitener_matrixf_.get_size(0), m2->getObjectPtr()->get_size(1));
+                     return GADGET_FAIL;
+               }
           }
       }
     }
