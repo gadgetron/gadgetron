@@ -40,6 +40,7 @@ namespace Gadgetron {
       float receiver_noise_bandwidth_;
       bool noiseCovarianceLoaded_;
       bool perform_noise_adjust_;
+      bool pass_nonconformant_data_;
 
       std::string noise_dependency_folder_;
       std::string noise_dependency_prefix_;

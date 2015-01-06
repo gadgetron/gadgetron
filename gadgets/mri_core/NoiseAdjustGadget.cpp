@@ -33,6 +33,7 @@ namespace Gadgetron{
     measurement_id_of_noise_dependency_.clear();
     noise_dwell_time_us_preset_ = 0.0;
     perform_noise_adjust_ = true;
+    pass_nonconformant_data_ = false;
   }
 
   NoiseAdjustGadget::~NoiseAdjustGadget()
@@ -63,6 +64,10 @@ namespace Gadgetron{
 
     perform_noise_adjust_ = this->get_string_value("perform_noise_adjust")->size() ? this->get_bool_value("perform_noise_adjust") : true;
     GDEBUG("NoiseAdjustGadget::perform_noise_adjust_ is %d\n", perform_noise_adjust_);
+
+    str = this->get_string_value("pass_nonconformant_data");
+    if ( !str->empty() ) pass_nonconformant_data_ = this->get_bool_value("pass_nonconformant_data");;
+    GDEBUG("NoiseAdjustGadget::pass_nonconformant_data_ is %d\n", pass_nonconformant_data_);
 
     noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
 
@@ -428,9 +433,19 @@ namespace Gadgetron{
       }
 
       if (noise_decorrelation_calculated_) {
-	//Apply prewhitener
-	hoNDArray<std::complex<float> > tmp(*m2->getObjectPtr());
-	gemm(*m2->getObjectPtr(), tmp, noise_prewhitener_matrixf_);
+          //Apply prewhitener
+          bool applyPerwhitenter = true;
+          if ( pass_nonconformant_data_ ) {
+              if ( noise_prewhitener_matrixf_.get_size(0) != m2->getObjectPtr()->get_size(1) ) 
+              {
+                  applyPerwhitenter = false;
+              }
+          }
+
+          if ( applyPerwhitenter ) {
+              hoNDArray<std::complex<float> > tmp(*m2->getObjectPtr());
+              gemm(*m2->getObjectPtr(), tmp, noise_prewhitener_matrixf_);
+          }
       }
     }
 
