@@ -65,8 +65,7 @@ namespace Gadgetron{
     perform_noise_adjust_ = this->get_string_value("perform_noise_adjust")->size() ? this->get_bool_value("perform_noise_adjust") : true;
     GDEBUG("NoiseAdjustGadget::perform_noise_adjust_ is %d\n", perform_noise_adjust_);
 
-    str = this->get_string_value("pass_nonconformant_data");
-    if ( !str->empty() ) pass_nonconformant_data_ = this->get_bool_value("pass_nonconformant_data");;
+    pass_nonconformant_data_ = this->get_bool_value("pass_nonconformant_data");
     GDEBUG("NoiseAdjustGadget::pass_nonconformant_data_ is %d\n", pass_nonconformant_data_);
 
     noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
