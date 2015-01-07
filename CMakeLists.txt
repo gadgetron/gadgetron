@@ -1,6 +1,23 @@
 cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
+# check the compiler version
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4)
+        message(FATAL_ERROR "Gadgetron requires GCC version >= 4.4")
+    endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.5)
+        message(FATAL_ERROR "Gadgetron requires Clang version >= 3.5")
+    endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 16.0)
+        message(FATAL_ERROR "Gadgetron requires MSVC 2010 or above ")
+    endif()
+else()
+    message(WARNING "Unsupported compiler!")
+endif()
+
 #VERSIONING AND INSTALL PATHS
 set(GADGETRON_VERSION_MAJOR 3)
 set(GADGETRON_VERSION_MINOR 2)

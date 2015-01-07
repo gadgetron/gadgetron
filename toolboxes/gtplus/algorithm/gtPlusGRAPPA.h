@@ -550,11 +550,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         long long e2;
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - fill calib matrixes ... "); }
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(e2) shared(sE2, eE2, sE1, eE1, kROhalf, sRO, eRO, lenRO, lenE1, srcCHA, kNE2, kNE1, A, rowA, pA, oNE2, oNE1, dstCHA, B, pB)
-        #else
-            #pragma omp parallel for default(none) private(e2) shared(sE2, eE2, sE1, eE1, kROhalf, sRO, eRO, lenRO, lenE1, srcCHA, kNE2, kNE1, A, rowA, pA, acsSrc, kE1, kE2, oNE2, oNE1, dstCHA, B, pB, acsDst, oE1, oE2)
-        #endif
+        #pragma omp parallel for default(none) private(e2) shared(sE2, eE2, sE1, eE1, kROhalf, sRO, eRO, lenRO, lenE1, srcCHA, kNE2, kNE1, A, rowA, pA, acsSrc, kE1, kE2, oNE2, oNE1, dstCHA, B, pB, acsDst, oE1, oE2)
         for ( e2=(long long)sE2; e2<=(long long)eE2; e2++ )
         {
             long long e1;

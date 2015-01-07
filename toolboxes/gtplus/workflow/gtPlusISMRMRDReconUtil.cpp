@@ -172,11 +172,7 @@ namespace Gadgetron {
 
             int d;
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(d) shared(dimX, lastDim, N, pY, pR)
-            #else
-                #pragma omp parallel default(none) private(d) shared(x, dimX, lastDim, N, pY, pR)
-            #endif
+            #pragma omp parallel default(none) private(d) shared(x, dimX, lastDim, N, pY, pR)
             {
                 hoNDArray<T> tmpY, tmpR;
 
@@ -228,11 +224,7 @@ namespace Gadgetron {
 
             int d;
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(d) shared(dimX, lastDim, N, pY, pR)
-            #else
-                #pragma omp parallel default(none) private(d) shared(x, dimX, lastDim, N, pY, pR)
-            #endif
+            #pragma omp parallel default(none) private(d) shared(x, dimX, lastDim, N, pY, pR)
             {
                 hoNDArray<T> tmpY, tmpR;
 
@@ -317,11 +309,7 @@ namespace Gadgetron {
             r.create(&dimAve);
 
             int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, num)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, num, x, r)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(RO, E1, num, x, r)
             for ( n=0; n<(int)num; n++ )
             {
                 hoNDArray<T> xsum(RO, const_cast<T*>(r.begin()+n*RO));
@@ -369,11 +357,7 @@ namespace Gadgetron {
             r.create(&dimAve);
 
             int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, num) if (num>1)
-            #else
-                #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, num, x, r) if (num>1)
-            #endif
+            #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, num, x, r) if (num>1)
             {
                 hoNDArray<T> xsum;
                 hoNDArray<T> x2D;
@@ -427,11 +411,7 @@ namespace Gadgetron {
             r.create(&dimAve);
 
             int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, num)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, num, x, r)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, num, x, r)
             for ( n=0; n<(int)num; n++ )
             {
                 hoNDArray<T> xsum(RO, E1, CHA, const_cast<T*>(r.begin()+n*RO*E1*CHA));
@@ -480,11 +460,7 @@ namespace Gadgetron {
             r.create(&dimAve);
 
             int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, S, num) if (num > 4)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, S, num, x, r) if (num > 4)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, S, num, x, r) if (num > 4)
             for ( n=0; n<(int)num; n++ )
             {
                 hoNDArray<T> xsum(RO, E1, CHA, N, const_cast<T*>(r.begin()+n*RO*E1*CHA*N));
@@ -871,67 +847,6 @@ namespace Gadgetron {
             }
         }
 
-        //if ( typeid(T)==typeid(float) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        const T* pY = y.begin()+n*Nx;
-        //        T* pR = pR + n*Nx;
-
-        //        size_t ii;
-        //        for ( ii=0; ii<Nx; ii++ )
-        //        {
-        //            pR[ii] = pX[ii] + pY[ii];
-        //        }
-        //    }
-        //}
-        //else if ( typeid(T)==typeid(double) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else if ( typeid(T)==typeid( std::complex<float> ) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else if ( typeid(T)==typeid( std::complex<double> ) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else
-        //{
-        //    GERROR_STREAM("multipleAdd : unsupported type " << typeid(T).name());
-        //    return false;
-        //}
-
         return true;
     }
 
@@ -1019,11 +934,7 @@ namespace Gadgetron {
         }
         else if ( typeid(T)==typeid( std::complex<float> ) )
         {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
             for ( n=0; n<N; n++ )
             {
                 multiplyCplx(x.get_number_of_elements(), (const std::complex<float>*)(x.begin()), (const std::complex<float>*)(y.begin()+n*Nx), (std::complex<float>*)(r.begin()+n*Nx));
@@ -1031,11 +942,7 @@ namespace Gadgetron {
         }
         else if ( typeid(T)==typeid( std::complex<double> ) )
         {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
             for ( n=0; n<N; n++ )
             {
                 multiplyCplx(x.get_number_of_elements(), (const std::complex<double>*)(x.begin()), (const std::complex<double>*)(y.begin()+n*Nx), (std::complex<double>*)(r.begin()+n*Nx));
@@ -1519,11 +1426,7 @@ namespace Gadgetron {
 
             long long n;
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(num, RO, E1, CHA, S, S2, S3, v, v1)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(num, RO, E1, CHA, x, std, S, S2, S3, v, v1)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(num, RO, E1, CHA, x, std, S, S2, S3, v, v1)
             for ( n=0; n<num; n++ )
             {
                 hoNDArray<T> xTmp(RO, E1, CHA, const_cast<T*>(x.begin()+n*RO*E1*CHA));

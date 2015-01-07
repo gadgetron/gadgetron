@@ -9,11 +9,6 @@
                      + __GNUC_MINOR__ * 1000    \
                      + __GNUC_PATCHLEVEL__)
 
-#if GCC_VERSION < 42000
-#pragma message ("GCC version is older than 4.2.0")
-#define GCC_OLD_FLAG 1
-#endif
-
 #else
 
     // disable warning 4251, needs to have dll-interface to be used by clients
