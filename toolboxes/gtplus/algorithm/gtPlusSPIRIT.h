@@ -183,11 +183,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
 
         const T* pAcsSrc = acsSrc.begin();
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) shared(RO, E1, sRO, eRO, sE1, eE1, oRO, oE1, lenRO, lenE1, rowA, colA, colB, kRO, kE1, kROhalf, kE1half, oROhalf, oE1half, pAcsSrc, srcCHA, dstCHA, thres, useGPU, std::cout) num_threads( (int)(oRO*oE1) ) if (oRO*oE1>=3)
-        #else
-            #pragma omp parallel default(none) shared(RO, E1, sRO, eRO, sE1, eE1, oRO, oE1, lenRO, lenE1, rowA, colA, colB, kRO, kE1, kROhalf, kE1half, oROhalf, oE1half, pAcsSrc, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, useGPU, std::cout) num_threads( (int)(oRO*oE1) ) if (oRO*oE1>=3)
-        #endif
+        #pragma omp parallel default(none) shared(RO, E1, sRO, eRO, sE1, eE1, oRO, oE1, lenRO, lenE1, rowA, colA, colB, kRO, kE1, kROhalf, kE1half, oROhalf, oE1half, pAcsSrc, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, useGPU, std::cout) num_threads( (int)(oRO*oE1) ) if (oRO*oE1>=3)
         {
             hoMatrix<T> A(rowA, colA);
             T* pA = A.begin();
@@ -586,11 +582,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
             GDEBUG_STREAM("spirit 3D - calling GPU kernel estimation ... ");
         }
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) shared(sRO, eRO, sE1, eE1, sE2, eE2, oRO, oE1, oE2, lenRO, lenE1, lenE2, rowA, colA, colB, kROhalf, kE1half, kE2half, oROhalf, oE1half, oE2half, srcCHA, dstCHA, thres, useGPU, std::cout) num_threads( (int)(oRO*oE1*oE2) ) if (oRO*oE1*oE2>=3 && oRO*oE1*oE2<9)
-        #else
-            #pragma omp parallel default(none) shared(sRO, eRO, sE1, eE1, sE2, eE2, oRO, oE1, oE2, lenRO, lenE1, lenE2, rowA, colA, colB, kROhalf, kE1half, kE2half, oROhalf, oE1half, oE2half, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, useGPU, std::cout) num_threads( (int)(oRO*oE1*oE2) ) if (oRO*oE1*oE2>=3 && oRO*oE1*oE2<9)
-        #endif
+        #pragma omp parallel default(none) shared(sRO, eRO, sE1, eE1, sE2, eE2, oRO, oE1, oE2, lenRO, lenE1, lenE2, rowA, colA, colB, kROhalf, kE1half, kE2half, oROhalf, oE1half, oE2half, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, useGPU, std::cout) num_threads( (int)(oRO*oE1*oE2) ) if (oRO*oE1*oE2>=3 && oRO*oE1*oE2<9)
         {
             hoMatrix<T> A(rowA, colA);
             hoMatrix<T> B(rowA, colB);
@@ -1176,11 +1168,7 @@ bool gtPlusSPIRIT<T>::AdjointForwardKernel(const hoNDArray<T>& kImS2D, const hoN
         size_t N = kImS2D.get_number_of_elements()/srcCHA/dstCHA;
 
         long long d;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA) num_threads( (int)dstCHA ) if (dstCHA > 4)
-        #else
-            #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA, kIm, kImS2D, kImD2S) num_threads( (int)dstCHA ) if (dstCHA > 4)
-        #endif
+        #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA, kIm, kImS2D, kImD2S) num_threads( (int)dstCHA ) if (dstCHA > 4)
         {
             hoNDArray<T> ker(N);
 

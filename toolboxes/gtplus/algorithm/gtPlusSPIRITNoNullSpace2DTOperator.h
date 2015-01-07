@@ -134,11 +134,7 @@ setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace)
 
         long long ii;
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(ii) shared(N)
-        #else
-            #pragma omp parallel for default(none) private(ii) shared(N, kspace)
-        #endif
+        #pragma omp parallel for default(none) private(ii) shared(N, kspace)
         for ( ii=0; ii<(long long)N; ii++ )
         {
             if ( std::abs( (*kspace)(ii) ) < DBL_EPSILON )

@@ -1081,11 +1081,7 @@ performCalib(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& ref_s
                     }
                 #endif // USE_OMP
 
-                #ifdef GCC_OLD_FLAG
-                    #pragma omp parallel for default(none) private(usedS) shared(S, refN, workOrder2DT) if (S>1)
-                #else
-                    #pragma omp parallel for default(none) private(usedS) shared(S, refN, ref_src, ref_dst, workOrder2DT) if (S>1)
-                #endif
+                #pragma omp parallel for default(none) private(usedS) shared(S, refN, ref_src, ref_dst, workOrder2DT) if (S>1)
                 for ( usedS=0; usedS<(int)S; usedS++ )
                 {
                     for ( size_t n=0; n<refN; n++ )
@@ -1284,11 +1280,7 @@ bool gtPlusReconWorker2DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
         }
         else
         {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(n) shared(num, dim3D, RO, E1, srcCHA, dimIm3D, dstCHA)
-            #else            
-                #pragma omp parallel default(none) private(n) shared(kerIm, num, dim3D, aliasedIm, RO, E1, srcCHA, dimIm3D, dstCHA, complexIm) 
-            #endif
+            #pragma omp parallel default(none) private(n) shared(kerIm, num, dim3D, aliasedIm, RO, E1, srcCHA, dimIm3D, dstCHA, complexIm) 
             {
                 hoNDArray<T> buf3D;
                 hoNDArray<T> bufIm3D;
@@ -2578,11 +2570,7 @@ bool gtPlusReconWorker2DT<T>::calibFengHuang(gtPlusReconWorkOrder2DT<T>& workOrd
 
         double thresReg = workOrder2DT.partialFourier_FengHuang_thresReg_;
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, srcCHA, N, S, kx, ky, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, halfKx, halfKy, thresReg)
-        #else
-            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, srcCHA, N, S, kx, ky, src, dst, kernel, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, halfKx, halfKy, thresReg)
-        #endif
+        #pragma omp parallel default(none) private(ii) shared(num, RO, E1, srcCHA, N, S, kx, ky, src, dst, kernel, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, halfKx, halfKy, thresReg)
         {
             hoMatrix<T> A(rowA, colA);
             T* pA = A.begin();
@@ -2708,11 +2696,7 @@ bool gtPlusReconWorker2DT<T>::performReconFangHuang(gtPlusReconWorkOrder2DT<T>& 
         }
 
         long long ii;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, CHA, N, S, kerN, rowD, colD, coeffX, coeffY)
-        #else
-            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, CHA, N, S, kerN, kspaceConj, kspace, kernel, rowD, colD, coeffX, coeffY)
-        #endif
+        #pragma omp parallel default(none) private(ii) shared(num, RO, E1, CHA, N, S, kerN, kspaceConj, kspace, kernel, rowD, colD, coeffX, coeffY)
         {
             hoMatrix<T> D(rowD, colD);
             hoMatrix<T> K(colD, 1);

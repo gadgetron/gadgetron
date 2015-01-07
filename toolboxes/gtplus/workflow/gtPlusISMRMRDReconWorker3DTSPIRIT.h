@@ -783,11 +783,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(kspace, kspace_Shifted);
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace_Shifted, debugFolder_+"kspace_Shifted"); }
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, kspace_Shifted, ker_Shifted, NUM) if ( NUM > 1 ) num_threads( numThreads )
-        #else
-            #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, NUM, kspace_Shifted, ker_Shifted, res) if ( NUM > 1 ) num_threads( numThreads )
-        #endif
+        #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, NUM, kspace_Shifted, ker_Shifted, res) if ( NUM > 1 ) num_threads( numThreads )
         {
             gtPlusSPIRIT2DOperator<T> spirit;
             spirit.setMemoryManager(gtPlus_mem_manager_);

@@ -647,11 +647,7 @@ bool trans(const hoMatrix<T>& A, hoMatrix<T>& AT)
         }
 
         long long r, c;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(r, c)
-        #else
-            #pragma omp parallel for default(none) private(r, c) shared(A, AT)
-        #endif
+        #pragma omp parallel for default(none) private(r, c) shared(A, AT)
         for ( c=0; c<(long long)A.cols(); c++ )
         {
             for ( r=0; r<(long long)A.rows(); r++ )
@@ -681,11 +677,7 @@ bool conjugatetrans(const hoMatrix<T>& A, hoMatrix<T>& AH)
         }
 
         long long r, c;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(r, c)
-        #else
-            #pragma omp parallel for default(none) private(r, c) shared(A, AH)
-        #endif
+        #pragma omp parallel for default(none) private(r, c) shared(A, AH)
         for ( c=0; c<(long long)A.cols(); c++ )
         {
             for ( r=0; r<(long long)A.rows(); r++ )

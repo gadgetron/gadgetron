@@ -420,11 +420,7 @@ namespace Gadgetron {
 
         int l;
 
-#ifdef GCC_OLD_FLAG
-#pragma omp parallel for default(none) private(l) shared(lastDim, secondLastDim, N)
-#else
 #pragma omp parallel for default(none) private(l) shared(lastDim, secondLastDim, x, r, N)
-#endif
         for ( l=0; l<(int)lastDim; l++ )
           {
             for ( size_t sl=0; sl<secondLastDim; sl++ )
@@ -460,11 +456,7 @@ namespace Gadgetron {
         size_t N = x.get_number_of_elements() / lastDim;
 
         long long l;
-#ifdef GCC_OLD_FLAG
-#pragma omp parallel for default(none) private(l) shared(lastDim, offsetIndLastDim, ind, indLastDim, N, NDim)
-#else
 #pragma omp parallel for default(none) private(l) shared(lastDim, offsetIndLastDim, x, ind, indLastDim, N, NDim)
-#endif
         for ( l=0; l<(long long)lastDim; l++ )
         {
             if ( l==indLastDim ) continue;

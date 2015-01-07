@@ -17,10 +17,8 @@ bool prepOpenMP()
         GDEBUG_STREAM("GtPlusRecon, numOpenMPProcs : " << numOpenMPProcs);
 
         #ifndef WIN32
-            #ifndef GCC_OLD_FLAG
-                int maxOpenMPLevels = omp_get_max_active_levels();
-                GDEBUG_STREAM("GtPlusRecon, maxOpenMPLevels : " << maxOpenMPLevels);
-            #endif // GCC_OLD_FLAG
+            int maxOpenMPLevels = omp_get_max_active_levels();
+            GDEBUG_STREAM("GtPlusRecon, maxOpenMPLevels : " << maxOpenMPLevels);
         #endif // WIN32
 
         int maxOpenMPThreads = omp_get_max_threads();
