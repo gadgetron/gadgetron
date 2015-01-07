@@ -3,9 +3,7 @@
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_math.h"
 //Include for Visual studio, 'cos reasons.
-#ifdef _MSC_VAR
 #define _USE_MATH_DEFINES
-#endif
 #include <cmath>
 
 namespace Gadgetron{
