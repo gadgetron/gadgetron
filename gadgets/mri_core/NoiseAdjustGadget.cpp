@@ -27,12 +27,14 @@ namespace Gadgetron{
     , noise_bw_scale_factor_(1.0f)
     , noise_dwell_time_us_(-1.0f)
     , noiseCovarianceLoaded_(false)
+    , saved_(false)
   {
     noise_dependency_prefix_ = "GadgetronNoiseCovarianceMatrix";
     measurement_id_.clear();
     measurement_id_of_noise_dependency_.clear();
     noise_dwell_time_us_preset_ = 0.0;
     perform_noise_adjust_ = true;
+    pass_nonconformant_data_ = false;
   }
 
   NoiseAdjustGadget::~NoiseAdjustGadget()
@@ -63,6 +65,9 @@ namespace Gadgetron{
 
     perform_noise_adjust_ = this->get_string_value("perform_noise_adjust")->size() ? this->get_bool_value("perform_noise_adjust") : true;
     GDEBUG("NoiseAdjustGadget::perform_noise_adjust_ is %d\n", perform_noise_adjust_);
+
+    pass_nonconformant_data_ = this->get_bool_value("pass_nonconformant_data");
+    GDEBUG("NoiseAdjustGadget::pass_nonconformant_data_ is %d\n", pass_nonconformant_data_);
 
     noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
 
@@ -428,9 +433,17 @@ namespace Gadgetron{
       }
 
       if (noise_decorrelation_calculated_) {
-	//Apply prewhitener
-	hoNDArray<std::complex<float> > tmp(*m2->getObjectPtr());
-	gemm(*m2->getObjectPtr(), tmp, noise_prewhitener_matrixf_);
+          //Apply prewhitener
+          if ( noise_prewhitener_matrixf_.get_size(0) == m2->getObjectPtr()->get_size(1) ) {
+               hoNDArray<std::complex<float> > tmp(*m2->getObjectPtr());
+               gemm(*m2->getObjectPtr(), tmp, noise_prewhitener_matrixf_);
+          } else {
+               if (!pass_nonconformant_data_) {
+                     m1->release();
+                     GERROR("Number of channels in noise prewhitener %d is incompatible with incoming data %d\n", noise_prewhitener_matrixf_.get_size(0), m2->getObjectPtr()->get_size(1));
+                     return GADGET_FAIL;
+               }
+          }
       }
     }
 
@@ -447,11 +460,9 @@ namespace Gadgetron{
   {
     if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
 
-    static bool saved = false; //Static variable to make sure we only save it once
-
-    if ( !noiseCovarianceLoaded_  && !saved ){
+    if ( !noiseCovarianceLoaded_  && !saved_ ){
       saveNoiseCovariance();
-      saved = true;
+      saved_ = true;
     }  
 
     return GADGET_OK;

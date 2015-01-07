@@ -79,11 +79,13 @@ else
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-webapp.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root 
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/mount.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
 
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/mount_image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/umount_image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-gadgetron-from-image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/run-gadgetron_ismrmrd_client.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/run-siemens_to_ismrmrd.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/run-gadgetron-dependency-query.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
+  cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/run-gt_alive.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
 
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/copy-cuda-lib.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/copy-cuda-lib.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
@@ -99,6 +101,9 @@ else
 
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/siemens_to_ismrmrd.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/siemens_to_ismrmrd.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
+
+  chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gt_alive.sh
+  cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gt_alive.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
 
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_ismrmrd_client.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_ismrmrd_client.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
@@ -116,8 +121,11 @@ else
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.py ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/bin/gadgetron_web_app.py
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_app.cfg ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/
 
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install python-dev python-twisted python-psutil -y 
-  
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install software-properties-common python-dev python-twisted python-psutil python-numpy -y 
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://us.archive.ubuntu.com/ubuntu/ trusty main restricted multiverse universe"  
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get update  
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install python-h5py -y 
+
   TAR_FILE_NAME=gadgetron-`date '+%Y%m%d-%H%M'`-${CHROOT_GIT_SHA1_HASH:0:8}
   IMAGE_FILE_NAME=${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.img
 

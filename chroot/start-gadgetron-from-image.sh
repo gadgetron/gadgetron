@@ -16,11 +16,31 @@ else
 
     mkdir -p ${MOUNT_POINT}
     mount -o loop ${FULL_PATH_TO_IMG_FILE} ${MOUNT_POINT}
-    ${MOUNT_POINT}/chroot-root/start.sh &
-    start_gadgetron_image_job=($!)
-    wait $!
     sleep 1
-    $BASEDIR/umount_image.sh ${MOUNT_POINT}
+
+    MOUNT_READY=0
+    MOUNT_TRY=0
+    MAX_MOUNT_TRY=100
+    while [ ${MOUNT_READY} -eq 0 ]; do
+      if mountpoint -q ${MOUNT_POINT}; then
+          MOUNT_READY=1
+      else
+          sleep 0.2
+          let MOUNT_TRY++
+          if [ $MOUNT_TRY -eq $MAX_MOUNT_TRY ]; then
+		      MOUNT_READY=1
+	      fi
+      fi
+    done
+
+    if mountpoint -q ${MOUNT_POINT}; then
+	  ${MOUNT_POINT}/chroot-root/start-webapp.sh &
+	  start_gadgetron_image_job=($!)
+	  wait $!
+	  $BASEDIR/umount_image.sh ${MOUNT_POINT}
+    else
+      exit 1
+    fi
     exit 0
   else
     echo -e "\nUsage: $0 <full path to img file> <mount point>\n"
