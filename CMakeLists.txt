@@ -10,7 +10,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # require at least clang 3.2
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.2)
-        message(FATAL_ERROR "Gadgetron requires Clang version >= 4.4")
+        message(FATAL_ERROR "Gadgetron requires Clang version >= 3.2")
     endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     # require at least visual studio 2010
