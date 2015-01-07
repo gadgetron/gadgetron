@@ -677,7 +677,7 @@ inline bool gtPlusWaveletOperator<T>::convertToImage(const hoNDArray<T>& x, hoND
         complexIm_Managed_.create(x.get_dimensions());
     }
 
-    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_Managed_));
+    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_Managed_);
 
     return true;
 }
@@ -690,7 +690,7 @@ inline bool gtPlusWaveletOperator<T>::convertToKSpace(const hoNDArray<T>& im, ho
         kspace_Managed_.create(im.get_dimensions());
     }
 
-    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_Managed_));
+    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_Managed_);
 
     return true;
 }

@@ -973,7 +973,7 @@ estimateCoilMap(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& re
 
                 hoNDArray<T> coilMapS(RO, E1, dstCHA, refN, workOrder2DT->coilMap_->begin()+usedS*RO*E1*dstCHA*refN);
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(refCoilMapS, buffer2DT_));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(refCoilMapS, buffer2DT_);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(buffer2DT_, 
                         coilMapS, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, 
                         workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, (value_type)workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_));
@@ -982,7 +982,7 @@ estimateCoilMap(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& re
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(ref_coil_map_dst, buffer2DT_));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(ref_coil_map_dst, buffer2DT_);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(buffer2DT_, 
                         *workOrder2DT->coilMap_, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, 
                         workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, (value_type)workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_));
@@ -1210,7 +1210,7 @@ bool gtPlusReconWorker2DT<T>::applyImageDomainKernel(const hoNDArray<T>& kspace,
 
         buffer2DT_unwrapping_ = kspace;
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, buffer2DT_unwrapping_));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, buffer2DT_unwrapping_);
 
         GADGET_CHECK_RETURN_FALSE(applyImageDomainKernelImage(buffer2DT_unwrapping_, kerIm, complexIm));
     }
@@ -1326,7 +1326,7 @@ bool gtPlusReconWorker2DT<T>::applyUnmixCoeff(const hoNDArray<T>& kspace, const 
 
         buffer2DT_unwrapping_ = kspace;
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, buffer2DT_unwrapping_));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, buffer2DT_unwrapping_);
         GADGET_CHECK_RETURN_FALSE(applyUnmixCoeffImage(buffer2DT_unwrapping_, unmixCoeff, complexIm));
     }
     catch(...)
@@ -1492,7 +1492,7 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
             hoNDArray<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions());
             if ( performTiming_ ) { gt_timer2_.stop(); }
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->fullkspace_, buffer2DT_, buffer2DT_Two));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->fullkspace_, buffer2DT_, buffer2DT_Two);
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_, debugFolder_+"ComplexIm_afterRefFill"); }
 
             if ( averageallN_coilmap )
@@ -1682,7 +1682,7 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                     if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
                     {
                         hoNDArray<T> buffer2DT_Two(workOrder2DT->data_.get_dimensions());
-                        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_, buffer2DT_Two));
+                        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_, buffer2DT_Two);
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder2DT->complexIm_, debugFolder_+"complexIm_noFullResCoilMap_"); }
                     }
@@ -1691,7 +1691,7 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                         if ( workOrder2DT->fullkspace_.get_size(2) == workOrder2DT->coilMap_->get_size(2) )
                         {
                             hoNDArray<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions());
-                            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->fullkspace_, buffer2DT_, buffer2DT_Two));
+                            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->fullkspace_, buffer2DT_, buffer2DT_Two);
                             GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
                             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder2DT->complexIm_, debugFolder_+"complexIm_noFullResCoilMap_"); }
                         }
@@ -1845,7 +1845,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
         {
             // perform partial fourier handling on the complex images after coil combination
             hoNDArray<T> kspace(workOrder2DT->complexIm_);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(workOrder2DT->complexIm_, kspace));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(workOrder2DT->complexIm_, kspace);
 
             if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
@@ -1872,7 +1872,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
                 GADGET_CHECK_RETURN_FALSE(performPartialFourierFengHuangRecon(*workOrder2DT, kspace));
             }
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, workOrder2DT->complexIm_));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, workOrder2DT->complexIm_);
         }
     }
     catch(...)
@@ -2023,7 +2023,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
 
         // complex images
         hoNDArray<T> complexIm(kspace.get_dimensions());
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, complexIm));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, complexIm);
 
         hoNDArray<T> complexImPrev(complexIm);
 
@@ -2037,7 +2037,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_partial_fourier_, debugFolder_+"homodyne_kspaceIter_afterFiltered"); }
 
             // go to image domain
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(buffer2DT_partial_fourier_));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(buffer2DT_partial_fourier_);
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_partial_fourier_, debugFolder_+"homodyne_complexIm"); }
 
             // get the phase
@@ -2053,7 +2053,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexIm, debugFolder_+"homodyne_complexIm_removePhase"); }
 
             // go back to kspace
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(complexIm, kspaceIter));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(complexIm, kspaceIter);
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"homodyne_complexIm_removePhase_kspace"); }
 
             // compute threshold to stop the iteration
@@ -2283,7 +2283,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_partial_fourier_, debugFolder_+"POCS_afterFiltered"); }
 
         // go to image domain
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(buffer2DT_partial_fourier_));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(buffer2DT_partial_fourier_);
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_partial_fourier_, debugFolder_+"POCS_afterFiltered_complexIm"); }
 
         // get the complex image phase for the filtered kspace
@@ -2295,7 +2295,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
 
         // complex images, initialized as not filtered complex image
         hoNDArray<T> complexIm(kspaceIter);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspaceIter, complexIm));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspaceIter, complexIm);
         hoNDArray<T> complexImPOCS(complexIm);
 
         // the kspace during iteration is buffered here
@@ -2310,7 +2310,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImPOCS, debugFolder_+"POCS_complexImPOCS"); }
 
             // go back to kspace
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(complexImPOCS, kspaceIter));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(complexImPOCS, kspaceIter);
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"POCS_kspaceIter"); }
 
             // buffer kspace during iteration
@@ -2321,7 +2321,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"POCS_kspaceIter_copyOri"); }
 
             // update complex image
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspaceIter, complexImPOCS));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspaceIter, complexImPOCS);
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImPOCS, debugFolder_+"POCS_kspaceIter_copyOri_complexImPOCS"); }
 
             // compute threshold to stop the iteration

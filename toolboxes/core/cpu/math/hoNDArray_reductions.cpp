@@ -604,6 +604,12 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH complext<float> mean(hoNDArray<complext<float> >*);
     template EXPORTCPUCOREMATH complext<float> sum(hoNDArray<complext<float> >*);
 
+    template EXPORTCPUCOREMATH std::complex<double> mean(hoNDArray<std::complex<double> >*);
+    template EXPORTCPUCOREMATH std::complex<double> sum(hoNDArray<std::complex<double> >*);
+
+    template EXPORTCPUCOREMATH std::complex<float> mean(hoNDArray<std::complex<float> >*);
+    template EXPORTCPUCOREMATH std::complex<float> sum(hoNDArray<std::complex<float> >*);
+
 
     template EXPORTCPUCOREMATH float dot<float>( hoNDArray<float>*, hoNDArray<float>*, bool );
     template EXPORTCPUCOREMATH float asum<float>( hoNDArray<float>* );

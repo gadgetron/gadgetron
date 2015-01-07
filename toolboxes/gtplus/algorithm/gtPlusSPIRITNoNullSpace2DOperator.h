@@ -47,7 +47,7 @@ inline bool gtPlusSPIRITNoNullSpace2DOperator<T>::convertToImage(const hoNDArray
         this->complexIm_Managed_.create(x.get_dimensions());
     }
 
-    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, this->complexIm_Managed_));
+    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, this->complexIm_Managed_);
 
     return true;
 }
@@ -60,7 +60,7 @@ inline bool gtPlusSPIRITNoNullSpace2DOperator<T>::convertToKSpace(const hoNDArra
         this->kspace_Managed_.create(im.get_dimensions());
     }
 
-    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, this->kspace_Managed_));
+    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, this->kspace_Managed_);
 
     return true;
 }

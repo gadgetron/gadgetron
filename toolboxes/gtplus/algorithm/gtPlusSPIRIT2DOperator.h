@@ -72,7 +72,7 @@ inline bool gtPlusSPIRIT2DOperator<T>::convertToImage(const hoNDArray<T>& x, hoN
 {
     if ( this->use_non_centered_fft_ )
     {
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2(x, im));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2(x, im);
     }
     else
     {
@@ -81,7 +81,7 @@ inline bool gtPlusSPIRIT2DOperator<T>::convertToImage(const hoNDArray<T>& x, hoN
             complexIm_Managed_.create(x.get_dimensions());
         }
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_Managed_));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_Managed_);
     }
 
     return true;
@@ -92,7 +92,7 @@ inline bool gtPlusSPIRIT2DOperator<T>::convertToKSpace(const hoNDArray<T>& im, h
 {
     if ( this->use_non_centered_fft_ )
     {
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2(im, x));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2(im, x);
     }
     else
     {
@@ -101,7 +101,7 @@ inline bool gtPlusSPIRIT2DOperator<T>::convertToKSpace(const hoNDArray<T>& im, h
             kspace_Managed_.create(im.get_dimensions());
         }
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_Managed_));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_Managed_);
     }
 
     return true;
