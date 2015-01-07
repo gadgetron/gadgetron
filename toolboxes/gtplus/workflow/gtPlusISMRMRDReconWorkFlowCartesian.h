@@ -232,9 +232,9 @@ preProcessing()
         // if needed, remove the readout oversampling
         if ( overSamplingRatioRO_ > 1.0 )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*data_));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*data_);
             GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().cutpad2D(*data_, (size_t)(data_->get_size(0)/overSamplingRatioRO_), data_->get_size(1), dataCurr_));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(dataCurr_));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(dataCurr_);
             *data_ = dataCurr_;
             RO_.second = data_->get_size(0);
 
@@ -242,9 +242,9 @@ preProcessing()
 
             if ( ref_ != NULL && ref_remove_oversampling_RO_ )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*ref_));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*ref_);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().cutpad2D(*ref_, (size_t)(ref_->get_size(0)/overSamplingRatioRO_), ref_->get_size(1), refCurr_));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(refCurr_));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(refCurr_);
                 *ref_ = refCurr_;
                 RO_ref_.second = ref_->get_size(0);
 
@@ -376,11 +376,11 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(buffer2D, RO, encodingE1, *pDst));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst);
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*pDst, "complexIm_zpadResize2D_cut"); }
 
@@ -411,11 +411,11 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(buffer2D, reconSizeRO_, pSrc->get_size(1), *pDst));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst);
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -424,7 +424,7 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             // final cut
             if ( isKSpace )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pSrc, buffer2D));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pSrc, buffer2D);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(buffer2D, reconSizeRO_, reconSizeE1_, *pDst));
             }
             else
@@ -516,11 +516,11 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad3D(buffer3D, RO, encodingE1, E2, *pDst));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst);
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -549,11 +549,11 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad3D(buffer3D, RO, pSrc->get_size(1), encodingE2, *pDst));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst);
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -582,11 +582,11 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad3D(buffer3D, reconSizeRO_, pSrc->get_size(1), pSrc->get_size(2), *pDst));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst);
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -597,7 +597,7 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             // final cut on image
             if ( isKSpace )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pSrc, buffer3D));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pSrc, buffer3D);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad3D(buffer3D, reconSizeRO_, reconSizeE1_, reconSizeE2_, *pDst));
             }
             else
@@ -687,7 +687,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                     && workOrder_->filterROE1E2_.get_size(1)==E1 
                     && workOrder_->filterROE1E2_.get_size(2)==E2 )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterROE1E2(res, workOrder_->filterROE1E2_, dataCurr_));
                 inKSpace = true;
             }
@@ -696,7 +696,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                         && (workOrder_->filterE2_.get_number_of_elements() == E2) )
             {
                 if ( performTiming_ ) { gt_timer1_.start("postProcessing - fft3c ... "); }
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res);
                 if ( performTiming_ ) { gt_timer1_.stop(); }
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"kspace_beforefiltered"); }
@@ -713,7 +713,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 hoNDArray<T>* pSrc = &res;
                 hoNDArray<T>* pDst = &dataCurr_;
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pDst, *pSrc));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pDst, *pSrc);
 
                 bool filterPerformed = false;
 
@@ -758,7 +758,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 if ( !debugFolder_.empty() )
                 {
                     hoNDArray<T> Im(dataCurr_);
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(Im));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(Im);
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(Im, debugFolder_+"complexIm_filtered"); }
                 }
             }
@@ -816,13 +816,13 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
 
             if ( workOrder_->filterROE1_.get_size(0)==RO && workOrder_->filterROE1_.get_size(1)==E1 )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res, workOrder_->filterROE1_, dataCurr_));
                 inKSpace = true;
             }
             else if ( (workOrder_->filterRO_.get_number_of_elements() == RO) && (workOrder_->filterE1_.get_number_of_elements() == E1) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res, workOrder_->filterRO_, workOrder_->filterE1_, dataCurr_));
                 inKSpace = true;
             }
@@ -830,14 +830,14 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
             {
                 if ( (workOrder_->filterRO_.get_number_of_elements() == RO) && (workOrder_->filterE1_.get_number_of_elements() != E1) )
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterRO(res, workOrder_->filterRO_, dataCurr_));
                     inKSpace = true;
                 }
 
                 if ( (workOrder_->filterRO_.get_number_of_elements() != RO) && (workOrder_->filterE1_.get_number_of_elements() == E1) )
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterE1(res, workOrder_->filterE1_, dataCurr_));
                     inKSpace = true;
                 }
@@ -848,7 +848,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 if ( !debugFolder_.empty() )
                 {
                     hoNDArray<T> Im(dataCurr_);
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(Im));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(Im);
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(Im, debugFolder_+"complexIm_after_filtered"); }
                 }
             }

@@ -96,7 +96,7 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
 
                 hoNDArrayMemoryManaged<T> buffer3DT(refCoilMapN.get_dimensions(), gtPlus_mem_manager_);
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(refCoilMapN, buffer3DT));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(refCoilMapN, buffer3DT);
 
                 hoNDArray<T> coilMapN(RO, E1, E2, CHA, workOrder3DT->coilMap_->begin()+usedN*RO*E1*E2*CHA);
 
@@ -109,7 +109,7 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
             {
                 hoNDArrayMemoryManaged<T> buffer3DT(workOrder3DT->ref_coil_map_.get_dimensions(), gtPlus_mem_manager_);
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->ref_coil_map_, buffer3DT));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->ref_coil_map_, buffer3DT);
 
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, 
                         *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));

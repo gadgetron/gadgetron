@@ -408,7 +408,7 @@ imageDomainKernel(const ho5DArray<T>& ker, size_t kRO, const std::vector<int>& k
 
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1)) ), convKer ));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad2D(convKer, ro, e1, kIm));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm);
     }
     catch(...)
     {
@@ -880,7 +880,7 @@ imageDomainKernel3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int>&
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain ... "); }
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm);
         if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)
@@ -933,7 +933,7 @@ imageDomainKernelRO3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROTemp, debugFolder_+"convKer_scal_RO_zeropadded"); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain only for RO ... "); }
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImROTemp));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImROTemp);
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - permute kernel dimensions to be [kE1 kE2 RO ...]  ... "); }
@@ -979,7 +979,7 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImE1E2RO, debugFolder_+"kImE1E2RO_zeropadded_E1E2"); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain for E1 and E2 ... "); }
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kImE1E2RO));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kImE1E2RO);
         if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)
