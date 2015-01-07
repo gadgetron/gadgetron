@@ -2,6 +2,10 @@
 #include "hoMatrix.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_math.h"
+//Include for Visual studio, 'cos reasons.
+#ifdef _MSC_VAR
+#define _USE_MATH_DEFINES
+#endif
 #include <cmath>
 
 namespace Gadgetron{
@@ -14,10 +18,163 @@ template<typename T> hoNDFFT<T>* hoNDFFT<T>::instance()
 
 template<class T> hoNDFFT<T>* hoNDFFT<T>::instance_ = NULL;
 
+
+template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign)
+   {
+       if (sign != -1 && sign != 1) return;
+       if (dim_to_transform >= input->get_number_of_dimensions()) return;
+
+       int stride     = 1;           //Distance between points in transform
+       int dist       = 1;           //Distance between vectors
+       int trafos     = 1;           //Transformations per chunk
+       int chunks     = 1;           //Number of chunks
+       int chunk_size = 1;           //Points per chunk
+       int length     = 1;           //Length of each transform
+       int total_dist = 1;
+
+       T scale = 0.0;
+
+       typename fftw_types<T>::plan * fft_plan        = 0;
+       ComplexType*    fft_storage     = 0;
+
+       ComplexType* fft_buffer = 0;
+       ComplexType* data_ptr = 0;
+
+       //Set sizes
+       length = (int)input->get_size(dim_to_transform);
+
+       if (sign == 1)
+       {
+           scale = (T)(1.0/length);
+       }
+       else
+       {
+           scale = (T)1.0;
+       }
+
+       if (dim_to_transform != 0)
+       {
+           for (size_t i = 0; i < dim_to_transform; i++)
+           {
+               chunk_size *= (int)input->get_size(i);
+           }
+           stride = chunk_size;
+           trafos = chunk_size;
+           chunk_size *= length;
+
+           for (size_t i = dim_to_transform+1; i < input->get_number_of_dimensions(); i++)
+           {
+               chunks *= (int)input->get_size(i);
+           }
+       }
+       else
+       {
+           for (size_t i = 1; i < input->get_number_of_dimensions(); i++)
+           {
+               trafos *= (int)input->get_size(i);
+           }
+           chunk_size = trafos*length;
+
+           dist = length;
+       }
+
+       total_dist = trafos*dist;
+
+
+       //Allocate storage and make plan
+       {
+           mutex_.lock();
+           fft_storage = (ComplexType*)fftw_malloc_(sizeof(T)*length*2);
+           if (fft_storage == 0)
+           {
+               GDEBUG_STREAM("Failed to allocate buffer for FFT" << std::endl);
+               return;
+           }
+           fft_buffer = fft_storage;
+
+           unsigned planner_flags = FFTW_MEASURE | FFTW_DESTROY_INPUT;
+
+           fft_plan = fftw_plan_dft_1d_(length, fft_storage, fft_storage, sign, planner_flags);
+
+           if (fft_plan == 0)
+           {
+               fftw_free_(fft_storage);
+               GDEBUG_STREAM("Failed to create plan for FFT" << std::endl);
+               return;
+           }
+           mutex_.unlock();
+       }
+
+       //Grab address of data
+       data_ptr = input->get_data_ptr();
+
+       register int idx1_max = chunks*chunk_size;
+       register int idx1, idx2;       //Index variables
+       register int idx2_limit;
+       register int middle_point = ((length+1)/2);
+
+       for (idx1 = 0; idx1 < idx1_max; idx1+=chunk_size) //Loop over all chunks
+       {
+           idx2_limit = idx1+total_dist;
+           for (idx2 = idx1; idx2 < idx2_limit; idx2+=dist) //Loop over all transformations
+           {
+               ///Copy data to buffer.
+               {
+                   register int j, idx3 = idx2;
+                   for (j = middle_point; j < length; idx3+=stride)
+                   {
+                       fft_buffer[j++] = data_ptr[idx3  ];
+                   }
+                   for (j = 0; j < middle_point; idx3+=stride)
+                   {
+                       fft_buffer[j++] = data_ptr[idx3  ];
+                   }
+               }
+
+               fftw_execute_(fft_plan);
+
+               {
+                   register int j, idx3 = idx2;
+
+                   for (j = middle_point; j < length; idx3+=stride)
+                   {
+                       data_ptr[idx3  ] = fft_buffer[j++]*scale;
+                   }
+                   for (j = 0; j < middle_point; idx3+=stride)
+                   {
+                       data_ptr[idx3  ] = fft_buffer[j++]*scale;
+                       data_ptr[idx3] = fft_buffer[j++]*scale;
+                   }
+               }
+
+           } //Loop over transformations
+       } //Loop over chunks
+
+       //clean up
+       {
+           mutex_.lock();
+           if (fft_plan != 0)
+           {
+               fftw_destroy_plan_(fft_plan);
+           }
+
+           if (fft_storage != 0)
+           {
+               fftw_free_(fft_storage);
+           }
+           mutex_.unlock();
+       }
+   }
+
 template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign)	{
 	if (sign != -1 && sign != 1) throw std::runtime_error("hoNDFFT::fft_int: illegal sign provided");
 	if (dim_to_transform >= input->get_number_of_dimensions()) throw std::runtime_error("hoNDFFT::fft_int: ransform dimension larger than dimension of input array ");
 
+	//Only works for even dimensions. Fall back to slow version
+	if (input->get_size(dim_to_transform)%2 == 1){
+		fft_int_uneven(input,dim_to_transform,sign);
+		return;
+	}
 	int stride     = 1;           //Distance between points in transform
 	int dist       = 1;           //Distance between vectors
 	int trafos     = 1;           //Transformations per chunk
@@ -94,6 +251,7 @@ template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size
 
 	}
 
+#pragma omp parallel for
 	for (int k = 0; k < chunks; k++)
 		fftw_execute_dft_(fft_plan,data_ptr+k*chunk_size,data_ptr+k*chunk_size);
 
@@ -1151,7 +1309,7 @@ void hoNDFFT<T>::timeswitch(hoNDArray<ComplexType>* inout, int dim_to_transform)
 	ComplexType* data = inout->get_data_ptr();
 	size_t num_elements = inout->get_number_of_elements();
 #pragma omp parallel for
-	for (size_t k = 0; k < num_elements; k++){
+	for (long int k = 0; k < num_elements; k++){
 		size_t index = (k/batchsize)%dimsize;
 		if (index%2 == 1)
 			data[k] *= -1;
@@ -1170,7 +1328,7 @@ void hoNDFFT<T>::phaseshift(hoNDArray<ComplexType>* inout, T phase, int dim_to_t
 	ComplexType* data = inout->get_data_ptr();
 	size_t num_elements = inout->get_number_of_elements();
 #pragma omp parallel for
-	for (size_t k = 0; k < num_elements; k++){
+	for (long int k = 0; k < num_elements; k++){
 		float index = (k/batchsize)%dimsize-dimsize/2.0;
 			data[k] *= ComplexType(0,2.0*M_PI*index*phase);
 

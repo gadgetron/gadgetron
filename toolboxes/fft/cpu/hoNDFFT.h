@@ -191,6 +191,7 @@ template<> struct fftw_types<double>{
 
         void fft_int(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign);
 
+        void fft_int_uneven(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign);
 
         int   fftw_import_wisdom_from_file_(FILE*);
         void  fftw_export_wisdom_to_file_(FILE*);

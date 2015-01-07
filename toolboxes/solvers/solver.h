@@ -7,7 +7,7 @@
 #include <boost/smart_ptr.hpp>
 #include <string>
 #include <iostream>
-
+#include "log.h"
 namespace Gadgetron
 {
 
