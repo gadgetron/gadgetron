@@ -41,6 +41,7 @@ namespace Gadgetron {
       bool noiseCovarianceLoaded_;
       bool perform_noise_adjust_;
       bool pass_nonconformant_data_;
+      bool saved_;
 
       std::string noise_dependency_folder_;
       std::string noise_dependency_prefix_;

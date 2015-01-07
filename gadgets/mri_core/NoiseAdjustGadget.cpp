@@ -27,6 +27,7 @@ namespace Gadgetron{
     , noise_bw_scale_factor_(1.0f)
     , noise_dwell_time_us_(-1.0f)
     , noiseCovarianceLoaded_(false)
+    , saved_(false)
   {
     noise_dependency_prefix_ = "GadgetronNoiseCovarianceMatrix";
     measurement_id_.clear();
@@ -459,11 +460,9 @@ namespace Gadgetron{
   {
     if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
 
-    static bool saved = false; //Static variable to make sure we only save it once
-
-    if ( !noiseCovarianceLoaded_  && !saved ){
+    if ( !noiseCovarianceLoaded_  && !saved_ ){
       saveNoiseCovariance();
-      saved = true;
+      saved_ = true;
     }  
 
     return GADGET_OK;
