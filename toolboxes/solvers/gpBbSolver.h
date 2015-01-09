@@ -141,7 +141,8 @@ public:
 			if (non_negativity_constraint_) clamp_min(x,REAL(0));
 			if (grad_norm < tc_tolerance_)  break;
 		}
-		delete g,g_old;
+		delete g;
+		delete g_old;
 
 		return boost::shared_ptr<ARRAY_TYPE>(x);
     		}

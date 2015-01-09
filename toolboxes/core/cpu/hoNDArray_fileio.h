@@ -25,6 +25,7 @@ template<class T> int write_nd_array(hoNDArray<T> *a, const char* filename)
 
   if( !f.is_open() ){
     GDEBUG_STREAM("ERROR: Cannot write file " << filename << std::endl);
+    delete [] header;
     return -1;
   }
 
