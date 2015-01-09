@@ -30,7 +30,7 @@ int EPICorrGadget::process_config(ACE_Message_Block* mb)
     return GADGET_FAIL;
   }
 
-  if (traj_desc.identifier == "ConventionalEPI") {
+  if (traj_desc.identifier != "ConventionalEPI") {
     GDEBUG("Expected trajectory description identifier 'ConventionalEPI', not found.");
     return GADGET_FAIL;
   }
