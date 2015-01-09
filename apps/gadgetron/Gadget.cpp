@@ -6,7 +6,7 @@ namespace Gadgetron
   boost::shared_ptr<std::string> Gadget::get_string_value(const char* name, unsigned int recursive) {
     const unsigned int recursive_limit = 10;
     if (recursive > recursive_limit) {
-      GADGET_DEBUG2("Recursive level %d exceeds maimum limit (%d) in Gadget::get_string_value(...)\n", recursive, recursive_limit);
+      GDEBUG("Recursive level %d exceeds maimum limit (%d) in Gadget::get_string_value(...)\n", recursive, recursive_limit);
       return boost::shared_ptr<std::string>(new std::string(""));
     }
 

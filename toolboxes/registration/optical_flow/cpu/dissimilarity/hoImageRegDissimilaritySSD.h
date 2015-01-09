@@ -89,7 +89,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDissimilaritySSD<ValueType, D>::evaluate(w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilaritySSD<ValueType, D>::evaluate(w) ... ");
         }
 
         return this->dissimilarity_;

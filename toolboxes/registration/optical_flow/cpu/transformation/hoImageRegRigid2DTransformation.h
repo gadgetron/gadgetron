@@ -231,8 +231,8 @@ namespace Gadgetron
         {
             GADGET_CHECK_RETURN_FALSE( matrix.createMatrix(3, 3) );
 
-            ValueType cosrz = std::cos(rz*GT_PI/180.0);
-            ValueType sinrz = std::sin(rz*GT_PI/180.0);
+            ValueType cosrz = std::cos(rz*M_PI/180.0);
+            ValueType sinrz = std::sin(rz*M_PI/180.0);
 
             matrix(0, 0) = cosrz;  matrix(0, 1) = sinrz; matrix(0, 2) = tx;
             matrix(1, 0) = -sinrz; matrix(1, 1) = cosrz; matrix(1, 2) = ty;
@@ -240,7 +240,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegRigid2DTransformation<ValueType>::updateTransformationMatrix(ValueType tx, ValueType ty, ValueType rz, hoMatrix<T>& matrix) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegRigid2DTransformation<ValueType>::updateTransformationMatrix(ValueType tx, ValueType ty, ValueType rz, hoMatrix<T>& matrix) ... ");
             return false;
         }
 
@@ -267,11 +267,11 @@ namespace Gadgetron
 
             tx = matrix(0, 2);
             ty = matrix(1, 2);
-            rz *= 180.0/GT_PI;
+            rz *= 180.0/M_PI;
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegRigid2DTransformation<ValueType>::extractParametersFromTransformationMatrix(const hoMatrix<T>& matrix, ValueType& tx, ValueType& ty, ValueType& rz) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegRigid2DTransformation<ValueType>::extractParametersFromTransformationMatrix(const hoMatrix<T>& matrix, ValueType& tx, ValueType& ty, ValueType& rz) ... ");
             return false;
         }
 
@@ -299,7 +299,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegRigid2DTransformation<ValueType>::jacobianParameter(const input_point_type& pos, jacobian_parameter_type& jac) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegRigid2DTransformation<ValueType>::jacobianParameter(const input_point_type& pos, jacobian_parameter_type& jac) ... ");
             return false;
         }
 
@@ -324,7 +324,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegRigid2DTransformation<ValueType>::adjustForResolutionPyramid(const hoMatrix<ValueType>& sourceI2W, const hoMatrix<ValueType>& targetI2W) ... ");
+            GERROR_STREAM("Error happened in hoImageRegRigid2DTransformation<ValueType>::adjustForResolutionPyramid(const hoMatrix<ValueType>& sourceI2W, const hoMatrix<ValueType>& targetI2W) ... ");
             return false;
         }
 

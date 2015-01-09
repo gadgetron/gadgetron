@@ -82,7 +82,7 @@ namespace Gadgetron{
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            sum += GT_ABS(x[i]);
+            sum += std::abs(x[i]);
         }
 
         r = sum;
@@ -95,7 +95,7 @@ namespace Gadgetron{
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            sum += GT_ABS(x[i]);
+            sum += std::abs(x[i]);
         }
 
         r = sum;
@@ -111,7 +111,7 @@ namespace Gadgetron{
             const  std::complex<float> & c = x[i];
             const float re = c.real();
             const float im = c.imag();
-            sum += ( GT_ABS(re) + GT_ABS(im) );
+            sum += ( std::abs(re) + std::abs(im) );
         }
 
         r = sum;
@@ -127,7 +127,7 @@ namespace Gadgetron{
             const  std::complex<double> & c = x[i];
             const double re = c.real();
             const double im = c.imag();
-            sum += ( GT_ABS(re) + GT_ABS(im) );
+            sum += ( std::abs(re) + std::abs(im) );
         }
 
         r = sum;
@@ -194,7 +194,7 @@ namespace Gadgetron{
         for (n=0; n<(long long)N; n++)
         {
             const T& c = x[n];
-            norm1Sum += GT_ABS(c);
+            norm1Sum += std::abs(c);
         }
 
         r = norm1Sum;
@@ -603,6 +603,12 @@ namespace Gadgetron{
 
     template EXPORTCPUCOREMATH complext<float> mean(hoNDArray<complext<float> >*);
     template EXPORTCPUCOREMATH complext<float> sum(hoNDArray<complext<float> >*);
+
+    template EXPORTCPUCOREMATH std::complex<double> mean(hoNDArray<std::complex<double> >*);
+    template EXPORTCPUCOREMATH std::complex<double> sum(hoNDArray<std::complex<double> >*);
+
+    template EXPORTCPUCOREMATH std::complex<float> mean(hoNDArray<std::complex<float> >*);
+    template EXPORTCPUCOREMATH std::complex<float> sum(hoNDArray<std::complex<float> >*);
 
 
     template EXPORTCPUCOREMATH float dot<float>( hoNDArray<float>*, hoNDArray<float>*, bool );

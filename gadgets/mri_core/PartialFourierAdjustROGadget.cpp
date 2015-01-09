@@ -15,14 +15,14 @@ int PartialFourierAdjustROGadget::process_config(ACE_Message_Block* mb)
   deserialize(mb->rd_ptr(),h);
 
   if (h.encoding.size() != 1) {
-    GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-    GADGET_DEBUG1("This partial fourier gadget only supports one encoding space\n");
+    GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+    GDEBUG("This partial fourier gadget only supports one encoding space\n");
     return GADGET_FAIL;
   }
 
   ISMRMRD::EncodingSpaceType e_space = h.encoding[0].encodedSpace;
   maxRO_ = e_space.matrixSize.x;
-  GADGET_MSG("max RO : " << maxRO_);
+  GDEBUG_STREAM("max RO : " << maxRO_);
   return GADGET_OK;
 }
 
@@ -80,7 +80,7 @@ int PartialFourierAdjustROGadget
             }
             catch(...)
             {
-                GADGET_DEBUG1("Unable to create new data array for downsampled data\n");
+                GDEBUG("Unable to create new data array for downsampled data\n");
                 return GADGET_FAIL;
             }
             m3->getObjectPtr()->fill(0);
@@ -113,20 +113,16 @@ int PartialFourierAdjustROGadget
 
         if (this->next()->putq(m1) == -1) 
         {
-            ACE_ERROR_RETURN( (LM_ERROR,
-                    ACE_TEXT("%p\n"),
-                    ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
-                    -1);
+	  GERROR("NoiseAdjustGadget::process, passing data on to next gadget");
+	  return -1;
         }
     }
     else
     {
         if (this->next()->putq(m1) == -1) 
         {
-            ACE_ERROR_RETURN( (LM_ERROR,
-                    ACE_TEXT("%p\n"),
-                    ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
-                    -1);
+	  GERROR("NoiseAdjustGadget::process, passing data on to next gadget");
+	  return -1;
         }
     }
 

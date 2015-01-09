@@ -101,7 +101,7 @@ bool GeneralMatrixProduct(hoNDArray<float>& C, const hoNDArray<float>& A, bool t
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB) ...");
+        GERROR_STREAM("Errors in GeneralMatrixProduct(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB) ...");
         return false;
     }
     return true;
@@ -203,7 +203,7 @@ bool GeneralMatrixProduct(hoNDArray<double>& C, const hoNDArray<double>& A, bool
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB) ...");
+        GERROR_STREAM("Errors in GeneralMatrixProduct(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB) ...");
         return false;
     }
     return true;
@@ -305,7 +305,7 @@ bool GeneralMatrixProduct(hoNDArray< std::complex<float> >& C, const hoNDArray< 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
+        GERROR_STREAM("Errors in GeneralMatrixProduct(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, bool transA, const hoNDArray< std::complex<float> >& B, bool transB) ...");
         return false;
     }
     return true;
@@ -407,7 +407,7 @@ bool GeneralMatrixProduct(hoNDArray< std::complex<double> >& C, const hoNDArray<
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, bool transA, const hoNDArray< std::complex<double> >& B, bool transB) ...");
+        GERROR_STREAM("Errors in GeneralMatrixProduct(hoNDArray< std::complex<double> >& C, const hoNDArray< std::complex<double> >& A, bool transA, const hoNDArray< std::complex<double> >& B, bool transB) ...");
         return false;
     }
     return true;

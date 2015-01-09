@@ -4,6 +4,7 @@ configure_file("enter-chroot-env.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/enter-chroot
 configure_file("gadgetron-dependency-query.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron-dependency-query.sh @ONLY)
 configure_file("siemens_to_ismrmrd.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/siemens_to_ismrmrd.sh @ONLY)
 configure_file("gadgetron_ismrmrd_client.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_ismrmrd_client.sh @ONLY)
+configure_file("gt_alive.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/gt_alive.sh @ONLY)
 
 configure_file("${CMAKE_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_web_app.cfg @ONLY)
 configure_file("${CMAKE_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web.conf.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_web.conf @ONLY)
@@ -54,7 +55,7 @@ if (SIEMENS_TO_ISMRMRD_EXE)
     COMMAND sudo bash create_chroot.sh ${CMAKE_INSTALL_PREFIX}
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}
-    ${GADGETRON_GIT_SHA1_HASH}
+    ${GADGETRON_GIT_SHA1}
     ${LIBRARY_PATHS}
     ${CUDA_LIBRARY}
     ${SIEMENS_TO_ISMRMRD_EXE}
@@ -69,7 +70,7 @@ else(SIEMENS_TO_ISMRMRD_EXE)
     COMMAND sudo bash create_chroot.sh ${CMAKE_INSTALL_PREFIX}
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}
-    ${GADGETRON_GIT_SHA1_HASH}
+    ${GADGETRON_GIT_SHA1}
     ${LIBRARY_PATHS}
     ${CUDA_LIBRARY}
     )  

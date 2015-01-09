@@ -68,7 +68,7 @@ bool gtPlusIOAnalyze::readHeader(const std::string& filename, HeaderType& header
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::readHeader(const std::string& filename, dsr& header) ... ");
+        GERROR_STREAM("Errors in gtPlusIOAnalyze::readHeader(const std::string& filename, dsr& header) ... ");
         return false;
     }
 
@@ -90,7 +90,7 @@ bool gtPlusIOAnalyze::writeHeader(const std::string& filename, const HeaderType&
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::writeHeader(const std::string& filename, const dsr& header) ... ");
+        GERROR_STREAM("Errors in gtPlusIOAnalyze::writeHeader(const std::string& filename, const dsr& header) ... ");
         return false;
     }
 

@@ -30,7 +30,7 @@ namespace Gadgetron{
 
     try{cm2->getObjectPtr()->create(&combined_dims);}
     catch (std::runtime_error &err ){
-      GADGET_DEBUG_EXCEPTION(err,"Unable to create combined image array\n");
+      GEXCEPTION(err,"Unable to create combined image array\n");
       return GADGET_FAIL;
     }
 
@@ -45,14 +45,14 @@ namespace Gadgetron{
     */
 
     if (!m1->getObjectPtr()->weights_) {
-      GADGET_DEBUG1("Weights are a NULL\n");
+      GDEBUG("Weights are a NULL\n");
       return GADGET_FAIL;
     }
 
     float scale_factor = 1.0;
     int appl_result = m1->getObjectPtr()->weights_->apply(m3->getObjectPtr(), cm2->getObjectPtr(), scale_factor);
     if (appl_result < 0) {
-      GADGET_DEBUG2("Failed to apply GRAPPA weights: error code %d\n", appl_result);
+      GDEBUG("Failed to apply GRAPPA weights: error code %d\n", appl_result);
       return GADGET_FAIL;
     }
 

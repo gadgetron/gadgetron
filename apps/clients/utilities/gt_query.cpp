@@ -26,7 +26,7 @@ static void usage()
     outs << "                    -o <Query out file>            (default dependency.xml)" << endl;
     outs << std::ends; 
 
-    std::cout << outs.str();
+    GDEBUG_STREAM(outs.str());
 }
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
@@ -56,19 +56,21 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
             break;
         case ':':
             usage();
-            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("-%c requires an argument.\n"), cmd_opts.opt_opt()),-1);
+            GERROR("-%c requires an argument.\n", cmd_opts.opt_opt());
+	    return -1;
             break;
         default:
             usage();
-            ACE_ERROR_RETURN( (LM_ERROR, ACE_TEXT("Command line parse error\n")), -1);
+            GERROR("Command line parse error\n");
+	    return -1;
             break;
         }
     }
 
     if (con.open(host,port) != 0)
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to connect to the Gadgetron host")));
-        return -1;
+      GERROR("Unable to connect to the Gadgetron host\n");
+      return -1;
     }
 
     // need to register a reader
@@ -77,8 +79,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
     //Tell Gadgetron which XML configuration to run.
     if (con.send_gadgetron_configuration_file(std::string("gtquery.xml")) != 0)
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to send XML configuration to the Gadgetron host")));
-        return -1;
+      GERROR("Unable to send XML configuration to the Gadgetron host\n");
+      return -1;
     }
 
     GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
@@ -88,8 +90,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
     if (con.putq(m1) == -1)
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to put CLOSE package on queue")));
-        return -1;
+      GERROR("Unable to put CLOSE package on queue\n");
+      return -1;
     }
 
     con.wait();

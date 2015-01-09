@@ -1,7 +1,6 @@
 #include "CplxDumpGadget.h"
 #include "hoNDArray_fileio.h"
 #include "hoNDArray_utils.h"
-#include "Gadgetron.h"
 
 namespace Gadgetron{
 
@@ -22,8 +21,8 @@ namespace Gadgetron{
 
   int CplxDumpGadget::close(unsigned long flags) {
     
-    GADGET_DEBUG1("CplxDumpGadget::close...\n");
-    GADGET_DEBUG2("Number of items on Q: %d\n", buffer_.message_count());
+    GDEBUG("CplxDumpGadget::close...\n");
+    GDEBUG("Number of items on Q: %d\n", buffer_.message_count());
 
     int ret = Gadget::close(flags);
     unsigned int readouts_buffered = buffer_.message_count();
@@ -36,14 +35,14 @@ namespace Gadgetron{
 
     ACE_Message_Block* mbq;
     if (buffer_.dequeue_head(mbq) < 0) {
-      GADGET_DEBUG1("Message dequeue failed\n");
+      GDEBUG("Message dequeue failed\n");
       return GADGET_FAIL;
     }
 
     GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
     
     if (!daq) {
-      GADGET_DEBUG1("Unable to interpret data on message queue\n");
+      GDEBUG("Unable to interpret data on message queue\n");
       return GADGET_FAIL;
     }
 
@@ -73,14 +72,14 @@ namespace Gadgetron{
     for (unsigned int i = 1; i < readouts_buffered; i++) {
       
       if (buffer_.dequeue_head(mbq) < 0) {
-        GADGET_DEBUG1("Message dequeue failed\n");
+        GDEBUG("Message dequeue failed\n");
         return GADGET_FAIL;
       }
       
       daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
       
       if (!daq) {
-        GADGET_DEBUG1("Unable to interpret data on message queue\n");
+        GDEBUG("Unable to interpret data on message queue\n");
         return GADGET_FAIL;
       }
       
@@ -122,13 +121,13 @@ namespace Gadgetron{
     *copy->getObjectPtr() = *m2->getObjectPtr();
     
     if (buffer_.enqueue_tail(copy) < 0) {
-      GADGET_DEBUG1("Failed to add profile to buffer\n");
+      GDEBUG("Failed to add profile to buffer\n");
       copy->release();
       return GADGET_FAIL;
     }
     
     if (this->next()->putq(m1) < 0) {
-      GADGET_DEBUG1("Unable to put data on queue\n");
+      GDEBUG("Unable to put data on queue\n");
       return GADGET_FAIL;
     }
     

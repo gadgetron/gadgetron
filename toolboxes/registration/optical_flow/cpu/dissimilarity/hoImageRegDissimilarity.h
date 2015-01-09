@@ -81,7 +81,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Unrecognized image dissimilarity type : " << v);
+                GERROR_STREAM("Unrecognized image dissimilarity type : " << v);
         }
 
         return name;
@@ -109,7 +109,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_ERROR_MSG("Unrecognized image dissimilarity name : " << name);
+            GERROR_STREAM("Unrecognized image dissimilarity name : " << name);
         }
 
         return v;

@@ -142,7 +142,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::exportArrayImpl(const hoNDArray<T>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in gtPlusIOAnalyze::exportArrayImpl(const hoNDArray<T>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -164,7 +164,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::importArrayImpl(const hoNDArray<T>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in gtPlusIOAnalyze::importArrayImpl(const hoNDArray<T>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -186,7 +186,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in exportImage(const hoNDImage<T,D>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in exportImage(const hoNDImage<T,D>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -208,7 +208,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in importImage(const hoNDImage<T,D>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in importImage(const hoNDImage<T,D>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -285,7 +285,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in exportImageComplex(const hoNDImage<T,D>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in exportImageComplex(const hoNDImage<T,D>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -322,7 +322,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in importImageComplex(const hoNDImage<T,D>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in importImageComplex(const hoNDImage<T,D>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -354,7 +354,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in importImageComplex(hoNDImage<T,D>& a, const std::string& filename_real, const std::string& filename_imag) ... ");
+            GERROR_STREAM("Errors in importImageComplex(hoNDImage<T,D>& a, const std::string& filename_real, const std::string& filename_imag) ... ");
             return false;
         }
 
@@ -436,7 +436,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in export4DImage(const hoNDImage<T>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in export4DImage(const hoNDImage<T>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -470,7 +470,7 @@ public:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in export4DImageComplex(const hoNDImage<T>& a, const std::string& filename) ... ");
+            GERROR_STREAM("Errors in export4DImageComplex(const hoNDImage<T>& a, const std::string& filename) ... ");
             return false;
         }
 
@@ -619,7 +619,7 @@ bool gtPlusIOAnalyze::array2Header(const hoNDArray<T>& a, HeaderType& header)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::array2Analyze(const hoNDArray<T>& a, dsr& header) ... ");
+        GERROR_STREAM("Errors in gtPlusIOAnalyze::array2Analyze(const hoNDArray<T>& a, dsr& header) ... ");
         return false;
     }
 
@@ -669,7 +669,7 @@ bool gtPlusIOAnalyze::header2Array(hoNDArray<T>& a, const HeaderType& header)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::analyze2Array(hoNDArray<T>& a, const dsr& header) ... ");
+        GERROR_STREAM("Errors in gtPlusIOAnalyze::analyze2Array(hoNDArray<T>& a, const dsr& header) ... ");
         return false;
     }
 
@@ -832,7 +832,7 @@ bool gtPlusIOAnalyze::image2Header(const hoNDImage<T,D>& a, HeaderType& header)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::image2Analyze(const hoNDImage<T>& a, dsr& header) ... ");
+        GERROR_STREAM("Errors in gtPlusIOAnalyze::image2Analyze(const hoNDImage<T>& a, dsr& header) ... ");
         return false;
     }
 
@@ -927,7 +927,7 @@ bool gtPlusIOAnalyze::header2Image(hoNDImage<T,D>& a, const HeaderType& header)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::analyze2Image(hoNDImage<T,D>& a, const dsr& header) ... ");
+        GERROR_STREAM("Errors in gtPlusIOAnalyze::analyze2Image(hoNDImage<T,D>& a, const dsr& header) ... ");
         return false;
     }
 

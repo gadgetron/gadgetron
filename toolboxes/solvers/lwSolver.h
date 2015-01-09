@@ -97,7 +97,7 @@ namespace Gadgetron{
       
 	if( this->output_mode_ >= solver<ARRAY_TYPE, ARRAY_TYPE>::OUTPUT_VERBOSE ){
 	  axpy( ELEMENT_TYPE(-1), x.get(), &x_prev );
-	  std::cout << " iteration: " << iteration << ", delta x: " << solver_asum(&x_prev) << std::endl;
+	  GDEBUG_STREAM(" iteration: " << iteration << ", delta x: " << solver_asum(&x_prev) << std::endl);
 	}      
       }
     

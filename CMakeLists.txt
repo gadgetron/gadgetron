@@ -1,9 +1,26 @@
 cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
+# check the compiler version
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4)
+        message(FATAL_ERROR "Gadgetron requires GCC version >= 4.4")
+    endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.5)
+        message(FATAL_ERROR "Gadgetron requires Clang version >= 3.5")
+    endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 16.0)
+        message(FATAL_ERROR "Gadgetron requires MSVC 2010 or above ")
+    endif()
+else()
+    message(WARNING "Unsupported compiler!")
+endif()
+
 #VERSIONING AND INSTALL PATHS
 set(GADGETRON_VERSION_MAJOR 3)
-set(GADGETRON_VERSION_MINOR 1)
+set(GADGETRON_VERSION_MINOR 2)
 set(GADGETRON_VERSION_PATCH 0) 
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
@@ -90,6 +107,8 @@ else (WIN32)
     endif (UNIX)
 endif (WIN32)
 
+include_directories(${CMAKE_SOURCE_DIR}/toolboxes/log)
+
 # whether to suppress compilation warnings
 OPTION(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
 if (BUILD_SUPPRESS_WARNINGS)
@@ -168,6 +187,7 @@ if (CUDA_FOUND)
 else (CUDA_FOUND)
   MESSAGE("CUDA not found. CUDA components will not be compiled.")
   SET( GADGETRON_CUDA_FOUND_BOOL 0 )
+  SET( CUDA_NVCC_FLAGS "NA")
 endif (CUDA_FOUND)
 
 find_package(GTest)

@@ -192,10 +192,10 @@ namespace Gadgetron
         resolution_pyramid_levels_ = resolution_pyramid_levels;
 
         resolution_pyramid_downsample_ratio_.clear();
-        resolution_pyramid_downsample_ratio_.resize(resolution_pyramid_levels_-1, std::vector<float>(GT_MAX(DIn, DOut), 2.0) );
+        resolution_pyramid_downsample_ratio_.resize(resolution_pyramid_levels_-1, std::vector<float>(std::max(DIn, DOut), 2.0) );
 
         resolution_pyramid_blurring_sigma_.clear();
-        resolution_pyramid_blurring_sigma_.resize(resolution_pyramid_levels_, std::vector<float>(GT_MAX(DIn, DOut), 0.0) );
+        resolution_pyramid_blurring_sigma_.resize(resolution_pyramid_levels_, std::vector<float>(std::max(DIn, DOut), 0.0) );
 
         boundary_handler_type_warper_.clear();
         boundary_handler_type_warper_.resize(resolution_pyramid_levels_, GT_BOUNDARY_CONDITION_FIXEDVALUE);
@@ -287,7 +287,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::initialize() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldRegister<ValueType, CoordType, D>::initialize() ... ");
         }
 
         return true;
@@ -302,7 +302,7 @@ namespace Gadgetron
 
             if ( verbose_ )
             {
-                GADGET_MSG("Initial transformation : ");
+                GDEBUG_STREAM("Initial transformation : ");
                 transform_->print(std::cout);
             }
 
@@ -314,7 +314,7 @@ namespace Gadgetron
 
                 if ( verbose_ )
                 {
-                    GADGET_MSG("Transformation for level " << level << " : ");
+                    GDEBUG_STREAM("Transformation for level " << level << " : ");
                     transform_->printTransform(std::cout);
                 }
 
@@ -334,7 +334,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut>::performRegistration() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegParametricRegister<ValueType, CoordType, DIn, DOut>::performRegistration() ... ");
         }
 
         return true;
@@ -358,7 +358,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Unrecognized parametric solver type : " << v);
+                GERROR_STREAM("Unrecognized parametric solver type : " << v);
         }
 
         res->max_iter_num_ = max_iter_num_pyramid_level_[level];

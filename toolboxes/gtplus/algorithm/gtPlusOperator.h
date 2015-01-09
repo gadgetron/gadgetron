@@ -175,7 +175,7 @@ bool gtPlusOperator<T>::restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoND
         for ( n=0; n<(int)N; n++ )
         {
             // if ( std::abs(pA[n]) > 0 )
-            if ( GT_ABS(pA[n].real()) > 0 )
+            if ( std::abs(pA[n].real()) > 0 )
             {
                 pY[n] = pA[n];
             }
@@ -183,7 +183,7 @@ bool gtPlusOperator<T>::restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoND
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gtPlusOperator<T>::restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoNDArray<T>& y) ... ");
+        GERROR_STREAM("Errors happened in gtPlusOperator<T>::restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoNDArray<T>& y) ... ");
         return false;
     }
 
@@ -208,15 +208,11 @@ setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace)
 
         long long ii;
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(shared) private(ii) shared(N)
-        #else
-            #pragma omp parallel for default(shared) private(ii) shared(N, kspace)
-        #endif
+        #pragma omp parallel for default(shared) private(ii) shared(N, kspace)
         for ( ii=0; ii<(long long)N; ii++ )
         {
             // if ( std::abs( (*kspace)(ii) ) < DBL_EPSILON )
-            if ( GT_ABS((*kspace)(ii).real()) < DBL_EPSILON )
+            if ( std::abs((*kspace)(ii).real()) < DBL_EPSILON )
             {
                 unacquired_points_indicator_(ii) = T(1.0);
             }
@@ -228,7 +224,7 @@ setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusOperator<T>::setAcquiredPoints(...) ... ");
+        GERROR_STREAM("Errors in gtPlusOperator<T>::setAcquiredPoints(...) ... ");
         return false;
     }
 
@@ -245,7 +241,7 @@ setCoilSenMap(boost::shared_ptr< hoNDArray<T> >& senMap)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusOperator<T>::setCoilSenMap(...) ... ");
+        GERROR_STREAM("Errors in gtPlusOperator<T>::setCoilSenMap(...) ... ");
         return false;
     }
 

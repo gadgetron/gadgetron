@@ -15,7 +15,7 @@ namespace Gadgetron
         {
             if (!h.encoding[0].parallelImaging)
             {
-                GADGET_ERROR_MSG("Parallel Imaging section not found in header");
+                GERROR_STREAM("Parallel Imaging section not found in header");
                 return false;
             }
 
@@ -24,12 +24,12 @@ namespace Gadgetron
             acceFactorE1 = (double)(p_imaging.accelerationFactor.kspace_encoding_step_1);
             acceFactorE2 = (double)(p_imaging.accelerationFactor.kspace_encoding_step_2);
 
-            GADGET_CONDITION_MSG(verbose, "acceFactorE1 is " << acceFactorE1);
-            GADGET_CONDITION_MSG(verbose, "acceFactorE2 is " << acceFactorE2);
+            GDEBUG_CONDITION_STREAM(verbose, "acceFactorE1 is " << acceFactorE1);
+            GDEBUG_CONDITION_STREAM(verbose, "acceFactorE2 is " << acceFactorE2);
 
             if ( !p_imaging.calibrationMode.is_present() )
             {
-                GADGET_ERROR_MSG("Parallel calibration mode not found in header");
+                GERROR_STREAM("Parallel calibration mode not found in header");
                 return false;
             }
 
@@ -37,7 +37,7 @@ namespace Gadgetron
             if ( calib.compare("interleaved") == 0 )
             {
                 CalibMode = Gadgetron::gtPlus::ISMRMRD_interleaved;
-                GADGET_CONDITION_MSG(verbose, "Calibration mode is interleaved");
+                GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is interleaved");
 
                 if ( p_imaging.interleavingDimension )
                 {
@@ -63,7 +63,7 @@ namespace Gadgetron
                     }
                     else
                     {
-                        GADGET_ERROR_MSG("Unknown interleaving dimension. Bailing out");
+                        GERROR_STREAM("Unknown interleaving dimension. Bailing out");
                         return false;
                     }
                 }
@@ -71,12 +71,12 @@ namespace Gadgetron
             else if ( calib.compare("embedded") == 0 )
             {
                 CalibMode = Gadgetron::gtPlus::ISMRMRD_embedded;
-                GADGET_CONDITION_MSG(verbose, "Calibration mode is embedded");
+                GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is embedded");
             }
             else if ( calib.compare("separate") == 0 )
             {
                 CalibMode = Gadgetron::gtPlus::ISMRMRD_separate;
-                GADGET_CONDITION_MSG(verbose, "Calibration mode is separate");
+                GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is separate");
             }
             else if ( calib.compare("external") == 0 )
             {
@@ -95,13 +95,13 @@ namespace Gadgetron
             }
             else
             {
-                GADGET_ERROR_MSG("Failed to process parallel imaging calibration mode");
+                GERROR_STREAM("Failed to process parallel imaging calibration mode");
                 return false;
             }
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in findCalibMode(...) ... ");
+            GERROR_STREAM("Error happened in findCalibMode(...) ... ");
             return false;
         }
 
@@ -136,7 +136,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in findEncodingLimits(...) ... ");
+            GERROR_STREAM("Error happened in findEncodingLimits(...) ... ");
             return false;
         }
 
@@ -268,7 +268,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in checkReadoutStatus(...) ... ");
+            GERROR_STREAM("Error happened in checkReadoutStatus(...) ... ");
             return false;
         }
 
@@ -313,7 +313,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in estimateMaxSEGForRetroGating(...) ... ");
+            GERROR_STREAM("Error happened in estimateMaxSEGForRetroGating(...) ... ");
             return false;
         }
 
@@ -338,7 +338,7 @@ namespace Gadgetron
 
         createFolderWithAllPermissions(debugFolderPath);
 
-        GADGET_CONDITION_MSG(verbose, "Debug folder is " << debugFolderPath);
+        GDEBUG_CONDITION_STREAM(verbose, "Debug folder is " << debugFolderPath);
     }
 
     bool createFolderWithAllPermissions(const std::string& workingdirectory)
@@ -348,7 +348,8 @@ namespace Gadgetron
             boost::filesystem::path workingPath(workingdirectory);
             if ( !boost::filesystem::create_directory(workingPath) )
             {
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error creating the working directory.\n")), false);
+	      GERROR("Error creating the working directory.\n");
+	      return false;
             }
 
             // set the permission for the folder
@@ -359,7 +360,8 @@ namespace Gadgetron
             }
             catch(...)
             {
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory.\n")), false);
+	      GERROR("Error changing the permission of the working directory.\n");
+	      return false;
             }
 #else
             // in case an older version of boost is used in non-win system
@@ -367,7 +369,8 @@ namespace Gadgetron
             int res = chmod(workingPath.string().c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
             if ( res != 0 )
             {
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory.\n")), false);
+	      GERROR("Error changing the permission of the working directory.\n");
+	      return false;
             }
 #endif // _WIN32
         }
@@ -383,7 +386,7 @@ namespace Gadgetron
             if ( num == 0 )
             {
                 v.clear();
-                GADGET_WARN_MSG("getISMRMRMetaValues, can not find field : " << name);
+                GWARN_STREAM("getISMRMRMetaValues, can not find field : " << name);
                 return true;
             }
 
@@ -397,7 +400,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<long>& v) ... ");
+            GERROR_STREAM("Error happened in getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<long>& v) ... ");
             return false;
         }
 
@@ -412,7 +415,7 @@ namespace Gadgetron
             if ( num == 0 )
             {
                 v.clear();
-                GADGET_WARN_MSG("getISMRMRMetaValues, can not find field : " << name);
+                GWARN_STREAM("getISMRMRMetaValues, can not find field : " << name);
                 return true;
             }
 
@@ -426,7 +429,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<double>& v) ... ");
+            GERROR_STREAM("Error happened in getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<double>& v) ... ");
             return false;
         }
 
@@ -441,7 +444,7 @@ namespace Gadgetron
             if ( num == 0 )
             {
                 v.clear();
-                GADGET_WARN_MSG("getISMRMRMetaValues, can not find field : " << name);
+                GWARN_STREAM("getISMRMRMetaValues, can not find field : " << name);
                 return true;
             }
 
@@ -455,7 +458,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<std::string>& v) ... ");
+            GERROR_STREAM("Error happened in getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<std::string>& v) ... ");
             return false;
         }
 
@@ -470,7 +473,7 @@ namespace Gadgetron
             size_t num = v.size();
             if ( num == 0 )
             {
-                GADGET_WARN_MSG("setISMRMRMetaValues, input vector is empty ... " << name);
+                GWARN_STREAM("setISMRMRMetaValues, input vector is empty ... " << name);
                 return true;
             }
 
@@ -484,7 +487,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v) ... ");
+            GERROR_STREAM("Error happened in setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v) ... ");
             return false;
         }
 
@@ -501,7 +504,7 @@ namespace Gadgetron
             size_t num = v.size();
             if ( num == 0 )
             {
-                GADGET_WARN_MSG("setISMRMRMetaValues, input vector is empty ... " << name);
+                GWARN_STREAM("setISMRMRMetaValues, input vector is empty ... " << name);
                 return true;
             }
 
@@ -515,7 +518,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v) ... ");
+            GERROR_STREAM("Error happened in setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v) ... ");
             return false;
         }
 
@@ -530,7 +533,7 @@ namespace Gadgetron
             size_t num = v.size();
             if ( num == 0 )
             {
-                GADGET_WARN_MSG("appendISMRMRMetaValues, input vector is empty ... " << name);
+                GWARN_STREAM("appendISMRMRMetaValues, input vector is empty ... " << name);
                 return true;
             }
 
@@ -544,7 +547,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v) ... ");
+            GERROR_STREAM("Error happened in appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v) ... ");
             return false;
         }
 
@@ -561,7 +564,7 @@ namespace Gadgetron
             size_t num = v.size();
             if ( num == 0 )
             {
-                GADGET_WARN_MSG("appendISMRMRMetaValues, input vector is empty ... " << name);
+                GWARN_STREAM("appendISMRMRMetaValues, input vector is empty ... " << name);
                 return true;
             }
 
@@ -575,7 +578,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v) ... ");
+            GERROR_STREAM("Error happened in appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v) ... ");
             return false;
         }
 
@@ -639,7 +642,7 @@ namespace Gadgetron
         }
         else 
         {
-            GADGET_ERROR_MSG("Unknown position string :" << position);
+            GERROR_STREAM("Unknown position string :" << position);
             return false;
         }
 
@@ -701,7 +704,7 @@ namespace Gadgetron
         }
         else 
         {
-            GADGET_ERROR_MSG("Unknown position string :" << position);
+            GERROR_STREAM("Unknown position string :" << position);
             return false;
         }
 

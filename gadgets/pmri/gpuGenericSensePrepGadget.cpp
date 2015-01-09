@@ -1,5 +1,4 @@
 #include "gpuGenericSensePrepGadget.h"
-#include "Gadgetron.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "GenericReconJob.h"
 #include "cuNDArray_elemwise.h"
@@ -59,17 +58,17 @@ namespace Gadgetron{
     sliding_window_rotations_ = get_int_value(std::string("sliding_window_rotations").c_str());
 
     if( sliding_window_readouts_>0 && sliding_window_rotations_>0 ){
-      GADGET_DEBUG1( "Error: Sliding window reconstruction is not yet supported for both readouts and frames simultaneously.\n" );
+      GDEBUG( "Error: Sliding window reconstruction is not yet supported for both readouts and frames simultaneously.\n" );
       return GADGET_FAIL;
     }
 
     if( sliding_window_readouts_>0 && rotations_per_reconstruction_>0 ){
-      GADGET_DEBUG1( "Error: Sliding window reconstruction over readouts is not yet supported for multiframe reconstructions.\n" );
+      GDEBUG( "Error: Sliding window reconstruction over readouts is not yet supported for multiframe reconstructions.\n" );
       return GADGET_FAIL;
     }
     
     if( sliding_window_rotations_ > 0 && sliding_window_rotations_ >= rotations_per_reconstruction_ ){
-      GADGET_DEBUG1( "Error: Illegal sliding window configuration.\n" );
+      GDEBUG( "Error: Illegal sliding window configuration.\n" );
       return GADGET_FAIL;
     }
 
@@ -78,28 +77,28 @@ namespace Gadgetron{
 
     int number_of_devices;
     if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to query number of CUDA devices.\n" );
+      GDEBUG( "Error: unable to query number of CUDA devices.\n" );
       return GADGET_FAIL;
     }
 
     if (number_of_devices == 0) {
-      GADGET_DEBUG1( "Error: No available CUDA devices.\n" );
+      GDEBUG( "Error: No available CUDA devices.\n" );
       return GADGET_FAIL;
     }
 
     if (device_number_ >= number_of_devices) {
-      GADGET_DEBUG2("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
+      GDEBUG("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
       device_number_ = (device_number_%number_of_devices);
     }
 
     if (cudaSetDevice(device_number_)!= cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to set CUDA device.\n" );
+      GDEBUG( "Error: unable to set CUDA device.\n" );
       return GADGET_FAIL;
     }
 
     cudaDeviceProp deviceProp;
     if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to query device properties.\n" );
+      GDEBUG( "Error: unable to query device properties.\n" );
       return GADGET_FAIL;
     }
     
@@ -111,12 +110,12 @@ namespace Gadgetron{
     propagate_csm_from_set_ = get_int_value(std::string("propagate_csm_from_set").c_str());
 
     if( propagate_csm_from_set_ > 0 ){
-      GADGET_DEBUG2("Currently, only set 0 can propagate coil sensitivity maps. Set %d was specified.\n", propagate_csm_from_set_ );
+      GDEBUG("Currently, only set 0 can propagate coil sensitivity maps. Set %d was specified.\n", propagate_csm_from_set_ );
       return GADGET_FAIL;
     }
 
     if( propagate_csm_from_set_ >= 0 ){
-      GADGET_DEBUG2("Propagating csm from set %d to all sets\n", propagate_csm_from_set_ );
+      GDEBUG("Propagating csm from set %d to all sets\n", propagate_csm_from_set_ );
     }
 
     // Convolution kernel width and oversampling ratio (for the buffer)
@@ -132,7 +131,7 @@ namespace Gadgetron{
     
     
     if (h.encoding.size() != 1) {
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+      GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
     
@@ -157,10 +156,10 @@ namespace Gadgetron{
     // In case the warp_size constraint kicked in
     oversampling_factor_ = float(image_dimensions_recon_os_[0])/float(image_dimensions_recon_[0]); 
     
-    GADGET_DEBUG2("matrix_size_x : %d, recon: %d, recon_os: %d\n", 
+    GDEBUG("matrix_size_x : %d, recon: %d, recon_os: %d\n", 
                   image_dimensions_[0], image_dimensions_recon_[0], image_dimensions_recon_os_[0]);
 
-    GADGET_DEBUG2("matrix_size_y : %d, recon: %d, recon_os: %d\n", 
+    GDEBUG("matrix_size_y : %d, recon: %d, recon_os: %d\n", 
                   image_dimensions_[1], image_dimensions_recon_[1], image_dimensions_recon_os_[1]);
     
     fov_.push_back(r_space.fieldOfView_mm.x);
@@ -252,11 +251,11 @@ namespace Gadgetron{
     //
 
     if( buffer_using_solver_ && rotations_per_reconstruction_ < 1 ) {
-      GADGET_DEBUG1("Error: when buffering using a cg solver, 'rotations_per_reconstruction' must be specified (and strictly positive).");
+      GDEBUG("Error: when buffering using a cg solver, 'rotations_per_reconstruction' must be specified (and strictly positive).");
     }
 
     if( buffer_using_solver_ && ( buffer_frames_per_rotation_[0] > 0 || buffer_length_in_rotations_ > 0 ) ){
-      GADGET_DEBUG1("Error: when buffering using a cg solver, we currently do not support specification of 'buffer_frames_per_rotation' or 'buffer_length_in_rotations'. These values are instead automatically set to match the reconstruction settings.\n");
+      GDEBUG("Error: when buffering using a cg solver, we currently do not support specification of 'buffer_frames_per_rotation' or 'buffer_length_in_rotations'. These values are instead automatically set to match the reconstruction settings.\n");
       return GADGET_FAIL;
     }
             
@@ -351,7 +350,7 @@ namespace Gadgetron{
       samples_per_readout_ = m1->getObjectPtr()->number_of_samples;
     
     if( samples_per_readout_ != m1->getObjectPtr()->number_of_samples ){
-      GADGET_DEBUG1("Unexpected change in the readout length\n");
+      GDEBUG("Unexpected change in the readout length\n");
       return GADGET_FAIL;
     }
     
@@ -362,13 +361,13 @@ namespace Gadgetron{
     // - or if the reconfigure_ flag is set
 
     if( num_coils_[idx] != m1->getObjectPtr()->active_channels ){
-      GADGET_DEBUG1("Reconfiguring (the number of coils changed)\n");
+      GDEBUG("Reconfiguring (the number of coils changed)\n");
       num_coils_[idx] = m1->getObjectPtr()->active_channels;
       reconfigure(set, slice);
     }
 
     if( reconfigure_[idx] ){
-      GADGET_DEBUG1("Reconfiguring (due to boolean indicator)\n");
+      GDEBUG("Reconfiguring (due to boolean indicator)\n");
       reconfigure(set, slice);
     }
 
@@ -386,7 +385,7 @@ namespace Gadgetron{
         long tmp_accel = readout - previous_readout_no_[idx];
 
         if( acceleration_factor_[idx] != tmp_accel )
-          GADGET_DEBUG2("Detected an acceleration factor of %d\n", tmp_accel);
+          GDEBUG("Detected an acceleration factor of %d\n", tmp_accel);
 	
         acceleration_factor_[idx] = tmp_accel;
       }
@@ -402,7 +401,7 @@ namespace Gadgetron{
           // A new acceleration factor is detected
           //
 
-          GADGET_DEBUG1("Reconfiguring (acceleration factor changed)\n");
+          GDEBUG("Reconfiguring (acceleration factor changed)\n");
 
           new_frame_detected = true;
           readouts_per_frame_[idx] = readout_counter_frame_[idx];
@@ -553,9 +552,9 @@ namespace Gadgetron{
           csm_ = estimate_b1_map<float,2>( csm_data.get() );
         }
         else{
-          GADGET_DEBUG2("Set %d is reusing the csm from set %d\n", set, propagate_csm_from_set_);
+          GDEBUG("Set %d is reusing the csm from set %d\n", set, propagate_csm_from_set_);
           if( csm_.get() == 0x0 ){
-            GADGET_DEBUG1("Error: csm has not been computed, cannot propagate\n");
+            GDEBUG("Error: csm has not been computed, cannot propagate\n");
             return GADGET_FAIL;
           }	  
         }
@@ -650,7 +649,7 @@ namespace Gadgetron{
       
       if( image_headers_queue_[idx].message_count() != frames_per_reconstruction ){
         sj->release();
-        GADGET_DEBUG2("Unexpected size of image header queue: %d, %d\n", 
+        GDEBUG("Unexpected size of image header queue: %d, %d\n", 
                       image_headers_queue_[idx].message_count(), frames_per_reconstruction);
         return GADGET_FAIL;
       }
@@ -664,7 +663,7 @@ namespace Gadgetron{
 
         if( image_headers_queue_[idx].dequeue_head(mbq) < 0 ) {
           sj->release();
-          GADGET_DEBUG1("Image header dequeue failed\n");
+          GDEBUG("Image header dequeue failed\n");
           return GADGET_FAIL;
         }
 	
@@ -694,7 +693,7 @@ namespace Gadgetron{
       //
       
       if (this->next()->putq(m4) < 0) {
-        GADGET_DEBUG1("Failed to put job on queue.\n");
+        GDEBUG("Failed to put job on queue.\n");
         m4->release();
         return GADGET_FAIL;
       }
@@ -744,14 +743,14 @@ namespace Gadgetron{
       
       ACE_Message_Block* mbq;
       if (queue->dequeue_head(mbq) < 0) {
-        GADGET_DEBUG1("Message dequeue failed\n");
+        GDEBUG("Message dequeue failed\n");
         throw std::runtime_error("gpuGenericSensePrepGadget::extract_samples_from_queue: dequeing failed");	
       }
       
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
 	
       if (!daq) {
-        GADGET_DEBUG1("Unable to interpret data on message queue\n");
+        GDEBUG("Unable to interpret data on message queue\n");
         throw std::runtime_error("gpuGenericSensePrepGadget::extract_samples_from_queue: failed to interpret data");	
       }
 	
@@ -786,17 +785,17 @@ namespace Gadgetron{
                                                              bool sliding_window, unsigned int set, unsigned int slice )
   {    
     if(!queue) {
-      GADGET_DEBUG1("Illegal queue pointer, cannot extract trajectory\n");
+      GDEBUG("Illegal queue pointer, cannot extract trajectory\n");
       throw std::runtime_error("gpuGenericSensePrepGadget::extract_trajectory_from_queue: illegal queue pointer");	
     }
 
     if(queue->message_count()==0) {
-      GADGET_DEBUG1("Empty queue, cannot extract trajectory\n");
+      GDEBUG("Empty queue, cannot extract trajectory\n");
       throw std::runtime_error("gpuGenericSensePrepGadget::extract_trajectory_from_queue: empty queue");	
     }
 
     if(samples_per_readout_ < 1) {
-      GADGET_DEBUG2("Empty queue (%d), cannot extract trajectory\n", samples_per_readout_);
+      GDEBUG("Empty queue (%d), cannot extract trajectory\n", samples_per_readout_);
       throw std::runtime_error("gpuGenericSensePrepGadget::extract_trajectory_from_queue: empty queue");	
     }
     
@@ -812,14 +811,14 @@ namespace Gadgetron{
     for (unsigned int p=0; p<readouts_buffered; p++) {      
       ACE_Message_Block* mbq;
       if (queue->dequeue_head(mbq) < 0) {
-        GADGET_DEBUG1("Message dequeue failed\n");
+        GDEBUG("Message dequeue failed\n");
         throw std::runtime_error("gpuGenericSensePrepGadget::extract_trajectory_from_queue: dequeing failed");	
       }
       
       GadgetContainerMessage< hoNDArray<float> > *daq = AsContainerMessage<hoNDArray<float> >(mbq);
 	
       if (!daq) {
-        GADGET_DEBUG1("Unable to interpret data on message queue\n");
+        GDEBUG("Unable to interpret data on message queue\n");
         throw std::runtime_error("gpuGenericSensePrepGadget::extract_trajectory_from_queue: failed to interpret data");	
       }
 
@@ -910,7 +909,7 @@ namespace Gadgetron{
   {    
     unsigned int idx = set*slices_+slice;
     
-    GADGET_DEBUG2("\nReconfiguring:\n#readouts/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", 
+    GDEBUG("\nReconfiguring:\n#readouts/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", 
                   readouts_per_frame_[idx], frames_per_rotation_[idx], rotations_per_reconstruction_);
     
     buffer_frames_per_rotation_[idx] = get_int_value(std::string("buffer_frames_per_rotation").c_str());

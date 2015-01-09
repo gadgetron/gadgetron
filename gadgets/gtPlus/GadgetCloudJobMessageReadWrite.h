@@ -36,18 +36,18 @@ namespace Gadgetron
 
             if ((recv_count = stream->recv_n(&id, sizeof(int))) <= 0)
             {
-                ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetCloudJobMessageReader, failed to read job id\n")) );
-                job->release();
-                return 0;
+	      GERROR("GadgetCloudJobMessageReader, failed to read job id\n");
+	      job->release();
+	      return 0;
             }
 
             *(jobID->getObjectPtr()) = id;
 
             if ((recv_count = stream->recv_n(&sizeOfJob, sizeof(size_t))) <= 0)
             {
-                ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetCloudJobMessageReader, failed to read job size\n")) );
-                job->release();
-                return 0;
+	      GERROR("GadgetCloudJobMessageReader, failed to read job size\n");
+	      job->release();
+	      return 0;
             }
 
             hoNDArray<char> jobBuf;
@@ -57,9 +57,9 @@ namespace Gadgetron
             }
             catch(...)
             {
-                ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetCloudJobMessageReader, failed to allocate memory\n")) );
-                job->release();
-                return 0;
+	      GERROR("GadgetCloudJobMessageReader, failed to allocate memory\n");
+	      job->release();
+	      return 0;
             }
 
             size_t maxBytesPerSend = (size_t)(512.0*1024*1024);
@@ -73,9 +73,9 @@ namespace Gadgetron
                 {
                     if ((recv_count = stream->recv_n(jobBuf.get_data_ptr()+receivedBytes, receivingBytes)) <= 0)
                     {
-                        ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetCloudJobMessageReader, failed to read data from socket\n")) );
-                        job->release();
-                        return 0;
+		      GERROR("GadgetCloudJobMessageReader, failed to read data from socket\n");
+		      job->release();
+		      return 0;
                     }
 
                     receivedBytes += receivingBytes;
@@ -91,9 +91,9 @@ namespace Gadgetron
             {
                 if ((recv_count = stream->recv_n(jobBuf.get_data_ptr(), sizeOfJob)) <= 0)
                 {
-                    ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetCloudJobMessageReader, failed to read data from socket\n")) );
-                    job->release();
-                    return 0;
+		  GERROR("GadgetCloudJobMessageReader, failed to read data from socket\n");
+		  job->release();
+		  return 0;
                 }
             }
 
@@ -126,8 +126,8 @@ namespace Gadgetron
 
             if (!job )
             {
-                ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), GadgetCloudJobMessageWriter invalid image message objects")) );
-                return -1;
+	      GERROR("GadgetCloudJobMessageWriter invalid image message objects\n");
+	      return -1;
             }
 
             ssize_t send_cnt = 0;
@@ -135,34 +135,33 @@ namespace Gadgetron
             id.id = msg_id_;
 
             if ((send_cnt = sock->send_n (&id, sizeof(GadgetMessageIdentifier))) <= 0)
-            {
-                ACE_DEBUG((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send job message identifier\n")));
-                return -1;
+	    {
+	      GERROR("Unable to send job message identifier\n");
+	      return -1;
             }
 
             if ((send_cnt = sock->send_n (&jobID, sizeof(int))) <= 0)
             {
-                ACE_DEBUG((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send job id\n")));
-                return -1;
+	      GERROR("Unable to send job id\n");
+	      return -1;
             }
 
             size_t sizeOfJob=0;
             char* buf = NULL;
             if ( !job->getObjectPtr()->serialize(buf, sizeOfJob) )
             {
-                ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetCloudJobMessageWriter, failed to serialize the job\n")) );
-                return -1;
+	      GERROR("GadgetCloudJobMessageWriter, failed to serialize the job\n");
+	      return -1;
             }
 
             if ((send_cnt = sock->send_n (&sizeOfJob, sizeof(size_t))) <= 0)
             {
-                ACE_DEBUG ((LM_ERROR,
-                    ACE_TEXT ("(%P|%t) Unable to send job size\n")));
-                delete [] buf;
-                return -1;
+	      GERROR("Unable to send job size\n");
+	      delete [] buf;
+	      return -1;
             }
 
-            GADGET_DEBUG2("--> send job, size of job : %f MBytes ... \n", sizeOfJob/1024.0/1024);
+            GDEBUG("--> send job, size of job : %f MBytes ... \n", sizeOfJob/1024.0/1024);
 
             size_t maxBytesPerSend = (size_t)(512.0*1024*1024);
 
@@ -175,10 +174,9 @@ namespace Gadgetron
                 {
                     if ((send_cnt = sock->send_n (buf+sentBytes, sendingBytes)) <= 0)
                     {
-                        ACE_DEBUG ((LM_ERROR,
-                            ACE_TEXT ("(%P|%t) Unable to send job data\n")));
-                        delete [] buf;
-                        return -1;
+		      GERROR("Unable to send job data\n");
+		      delete [] buf;
+		      return -1;
                     }
 
                     sentBytes += sendingBytes;
@@ -194,10 +192,9 @@ namespace Gadgetron
             {
                 if ((send_cnt = sock->send_n (buf, sizeOfJob)) <= 0)
                 {
-                    ACE_DEBUG ((LM_ERROR,
-                        ACE_TEXT ("(%P|%t) Unable to send job data\n")));
-                    delete [] buf;
-                    return -1;
+		  GERROR("Unable to send job data\n");
+		  delete [] buf;
+		  return -1;
                 }
             }
 

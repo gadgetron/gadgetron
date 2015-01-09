@@ -18,6 +18,7 @@
 #pragma once
 
 #include <typeinfo>
+#include <cmath>
 #include "GadgetronTimer.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusIOAnalyze.h"
@@ -26,6 +27,8 @@
 #ifdef USE_OMP
     #include "omp.h"
 #endif // USE_OMP
+
+#define FFD_MKINT(a) (((a)>=0)?((int)((a)+0.5)):((int)((a)-0.5)))
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -283,7 +286,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFD(const CoordType*
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in evaluateFFD(const CoordType* pt[D], T* r[DOut], size_t N) const ... ");
+        GERROR_STREAM("Error happened in evaluateFFD(const CoordType* pt[D], T* r[DOut], size_t N) const ... ");
         return false;
     }
 
@@ -322,7 +325,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDArray(const Coord
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in evaluateFFDArray(const CoordArrayType& pts, ValueArrayType& r) const ... ");
+        GERROR_STREAM("Error happened in evaluateFFDArray(const CoordArrayType& pts, ValueArrayType& r) const ... ");
         return false;
     }
 
@@ -596,7 +599,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(const CoordArr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in world_to_grid(const CoordArrayType& pt_w, CoordArrayType& pt_g) ... ");
+        GERROR_STREAM("Errors happened in world_to_grid(const CoordArrayType& pt_w, CoordArrayType& pt_g) ... ");
         return false;
     }
 
@@ -612,7 +615,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(const CoordTyp
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) ... ");
+        GERROR_STREAM("Errors happened in world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) ... ");
         return false;
     }
 
@@ -630,7 +633,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType& px_g, CoordType& py_g) ... ");
+        GERROR_STREAM("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType& px_g, CoordType& py_g) ... ");
         return false;
     }
 
@@ -648,7 +651,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g) ... ");
+        GERROR_STREAM("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g) ... ");
         return false;
     }
 
@@ -666,7 +669,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType ps_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g, CoordType& ps_g) ... ");
+        GERROR_STREAM("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType ps_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g, CoordType& ps_g) ... ");
         return false;
     }
 
@@ -700,7 +703,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordArr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in grid_to_world(const CoordArrayType& pt_g, CoordArrayType& pt_w) ... ");
+        GERROR_STREAM("Errors happened in grid_to_world(const CoordArrayType& pt_g, CoordArrayType& pt_w) ... ");
         return false;
     }
 
@@ -716,7 +719,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordTyp
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) ... ");
+        GERROR_STREAM("Errors happened in grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) ... ");
         return false;
     }
 
@@ -734,7 +737,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) ... ");
+        GERROR_STREAM("Errors happened in grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) ... ");
         return false;
     }
 
@@ -752,7 +755,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) ... ");
+        GERROR_STREAM("Errors happened in grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) ... ");
         return false;
     }
 
@@ -794,12 +797,12 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayTy
         {
             GADGET_CHECK_RETURN_FALSE(this->ffdApprox(posg, value, residual, totalResidual, N));
 
-            GADGET_CONDITION_MSG(performTiming_, "BSpline FFD refinement " << num << " has residual of " << totalResidual);
+            GDEBUG_CONDITION_STREAM(performTiming_, "BSpline FFD refinement " << num << " has residual of " << totalResidual);
 
             if ( totalResidual < thresResidual )
             {
-                GADGET_MSG("BSpline FFD residual is too small : " << totalResidual);
-                GADGET_MSG("No further refinement will be computed ... ");
+                GDEBUG_STREAM("BSpline FFD residual is too small : " << totalResidual);
+                GDEBUG_STREAM("No further refinement will be computed ... ");
                 break;
             }
 
@@ -814,7 +817,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayTy
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement) ... ");
         return false;
     }
 
@@ -855,12 +858,12 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxW(const CoordArrayT
         {
             GADGET_CHECK_RETURN_FALSE(this->ffdApprox(posg, value, residual, totalResidual, N));
 
-            GADGET_CONDITION_MSG(performTiming_, "BSpline FFD refinement " << num << " has residual of " << totalResidual);
+            GDEBUG_CONDITION_STREAM(performTiming_, "BSpline FFD refinement " << num << " has residual of " << totalResidual);
 
             if ( totalResidual < thresResidual )
             {
-                GADGET_MSG("BSpline FFD residual is too small : " << totalResidual);
-                GADGET_MSG("No further refinement will be computed ... ");
+                GDEBUG_STREAM("BSpline FFD residual is too small : " << totalResidual);
+                GDEBUG_STREAM("No further refinement will be computed ... ");
                 break;
             }
 
@@ -875,7 +878,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxW(const CoordArrayT
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement) ... ");
         return false;
     }
 
@@ -1064,7 +1067,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnImage(ImageType
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in evaluateFFD(ImageType target[DOut]) const ... ");
+        GERROR_STREAM("Error happened in evaluateFFD(ImageType target[DOut]) const ... ");
         return false;
     }
 
@@ -1246,7 +1249,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnArray(ArrayType target
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in evaluateFFD(ArrayType target[DOut]) const ... ");
+        GERROR_STREAM("Error happened in evaluateFFD(ArrayType target[DOut]) const ... ");
         return false;
     }
 
@@ -1420,7 +1423,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in imageToFFDInputsW(ImageType target[DOut], CoordArrayType& pos, ValueArrayType& value) ... ");
+        GERROR_STREAM("Error happened in imageToFFDInputsW(ImageType target[DOut], CoordArrayType& pos, ValueArrayType& value) ... ");
         return false;
     }
 
@@ -1486,7 +1489,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in imageToFFDInputsW(ImageType target[DOut], const MaskArrayType& mask, CoordArrayType& pos, ValueArrayType& value) ... ");
+        GERROR_STREAM("Error happened in imageToFFDInputsW(ImageType target[DOut], const MaskArrayType& mask, CoordArrayType& pos, ValueArrayType& value) ... ");
         return false;
     }
 
@@ -1648,7 +1651,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in imageToFFDInputsW(ImageType target[DOut], CoordArrayType& pos, ValueArrayType& value) ... ");
+        GERROR_STREAM("Error happened in imageToFFDInputsW(ImageType target[DOut], CoordArrayType& pos, ValueArrayType& value) ... ");
         return false;
     }
 
@@ -1714,7 +1717,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in imageToFFDInputsW(ImageType target[DOut], const MaskArrayType& mask, CoordArrayType& pos, ValueArrayType& value) ... ");
+        GERROR_STREAM("Error happened in imageToFFDInputsW(ImageType target[DOut], const MaskArrayType& mask, CoordArrayType& pos, ValueArrayType& value) ... ");
         return false;
     }
 
@@ -1737,7 +1740,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType tar
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApproxImage(ImageType target[DOut], real_value_type& totalResidual, size_t numOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApproxImage(ImageType target[DOut], real_value_type& totalResidual, size_t numOfRefinement) ... ");
         return false;
     }
 
@@ -1760,7 +1763,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType tar
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApproxImage(ImageType target[DOut], real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApproxImage(ImageType target[DOut], real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement) ... ");
         return false;
     }
 
@@ -1797,7 +1800,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType tar
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApproxImage(ImageType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t numOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApproxImage(ImageType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t numOfRefinement) ... ");
         return false;
     }
 
@@ -1820,7 +1823,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType tar
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApproxImage(ImageType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApproxImage(ImageType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement) ... ");
         return false;
     }
 
@@ -1843,7 +1846,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType tar
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApproxArray(ArrayType target[DOut], real_value_type& totalResidual, size_t numOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApproxArray(ArrayType target[DOut], real_value_type& totalResidual, size_t numOfRefinement) ... ");
         return false;
     }
 
@@ -1866,7 +1869,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType tar
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApproxArray(ArrayType target[DOut], real_value_type& totalResidual, size_t numOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApproxArray(ArrayType target[DOut], real_value_type& totalResidual, size_t numOfRefinement) ... ");
         return false;
     }
 
@@ -1903,7 +1906,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType tar
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApproxArray(ArrayType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t numOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApproxArray(ArrayType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t numOfRefinement) ... ");
         return false;
     }
 
@@ -1925,7 +1928,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType tar
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApproxArray(ArrayType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t numOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApproxArray(ArrayType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t numOfRefinement) ... ");
         return false;
     }
 
@@ -1956,7 +1959,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::clear(T v)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in gtplusFFDBase<T, CoordType, DIn, DOut>::clear(T v) ... ");
+        GERROR_STREAM("Error happened in gtplusFFDBase<T, CoordType, DIn, DOut>::clear(T v) ... ");
         return false;
     }
 

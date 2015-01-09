@@ -25,8 +25,8 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
   ISMRMRD::deserialize(mb->rd_ptr(),h);
 
   if (h.encoding.size() != 1) {
-    GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-    GADGET_DEBUG1("This simple AccumulatorGadget only supports one encoding space\n");
+    GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+    GDEBUG("This simple AccumulatorGadget only supports one encoding space\n");
     return GADGET_FAIL;
   }
 
@@ -35,7 +35,7 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
   ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
   ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
   
-  GADGET_DEBUG2("Matrix size: %d, %d, %d\n", r_space.matrixSize.x, e_space.matrixSize.y, e_space.matrixSize.z);
+  GDEBUG("Matrix size: %d, %d, %d\n", r_space.matrixSize.x, e_space.matrixSize.y, e_space.matrixSize.z);
   dimensions_.push_back(r_space.matrixSize.x);
   dimensions_.push_back(e_space.matrixSize.y);
   dimensions_.push_back(e_space.matrixSize.z);
@@ -43,7 +43,7 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
   field_of_view_.push_back(r_space.fieldOfView_mm.x);
   field_of_view_.push_back(e_space.fieldOfView_mm.y);
   field_of_view_.push_back(e_space.fieldOfView_mm.z);
-  GADGET_DEBUG2("FOV: %f, %f, %f\n", r_space.fieldOfView_mm.x, e_space.fieldOfView_mm.y, e_space.fieldOfView_mm.z);
+  GDEBUG("FOV: %f, %f, %f\n", r_space.fieldOfView_mm.x, e_space.fieldOfView_mm.y, e_space.fieldOfView_mm.z);
   
   slices_ = e_limits.slice? e_limits.slice->maximum+1 : 1;
 
@@ -60,13 +60,13 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	  dimensions_.push_back(slices_);
 
 	  if (!(buffer_ = new hoNDArray< std::complex<float> >())) {
-		  GADGET_DEBUG1("Failed create buffer\n");
+		  GDEBUG("Failed create buffer\n");
 		  return GADGET_FAIL;
 	  }
 
 	  try {buffer_->create(&dimensions_);}
 	  catch (std::runtime_error &err){
-		  GADGET_DEBUG_EXCEPTION(err,"Failed allocate buffer array\n");
+		  GEXCEPTION(err,"Failed allocate buffer array\n");
 		  return GADGET_FAIL;
 	  }
 
@@ -87,7 +87,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
   int slice = m1->getObjectPtr()->idx.slice;
 
   if (samples > static_cast<int>(dimensions_[0])) {
-	  GADGET_DEBUG1("Wrong number of samples received\n");
+	  GDEBUG("Wrong number of samples received\n");
 	  return GADGET_FAIL;
   }
 
@@ -129,7 +129,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     
     try{cm2->getObjectPtr()->create(&img_dims);}
     catch (std::runtime_error &err){
-      GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new image array\n");
+      GEXCEPTION(err,"Unable to allocate new image array\n");
       cm1->release();
       return -1;
     }

@@ -19,7 +19,6 @@
 #include "boost/tuple/tuple_io.hpp"
 
 #include "gadgettools_export.h"
-#include "Gadgetron.h"
 #include "Gadget.h"
 #include "GadgetMessageInterface.h"
 #include "GadgetronCloudConnector.h"
@@ -159,7 +158,7 @@ GadgetCloudController<JobType>::GadgetCloudController() : cloud_msg_id_reader_(G
 template <typename JobType> 
 GadgetCloudController<JobType>::~GadgetCloudController()
 {
-    GADGET_DEBUG1("Into ~GadgetCloudController() ... \n");
+    GDEBUG("Into ~GadgetCloudController() ... \n");
     this->msg_queue()->deactivate();
 
     for ( unsigned int ii=0; ii<cloud_connectors_.size(); ii++ )
@@ -169,7 +168,7 @@ GadgetCloudController<JobType>::~GadgetCloudController()
             cloud_connectors_[ii]->close();
             delete cloud_connectors_[ii];
             cloud_connectors_[ii] = NULL;
-            GADGET_DEBUG1("~GadgetCloudController() : clean connectors done \n");
+            GDEBUG("~GadgetCloudController() : clean connectors done \n");
         }
     }
 }
@@ -177,7 +176,7 @@ GadgetCloudController<JobType>::~GadgetCloudController()
 template <typename JobType> 
 int GadgetCloudController<JobType>::open(void* p)
 {
-    GADGET_DEBUG1("GadgetCloudController::open\n");
+    GDEBUG("GadgetCloudController::open\n");
 
     // set the high water mark of message queue to be 24GB
     this->msg_queue()->high_water_mark( (size_t)(24.0*1024*1024*1024) );
@@ -188,7 +187,7 @@ int GadgetCloudController<JobType>::open(void* p)
 template <typename JobType> 
 int GadgetCloudController<JobType>::close(unsigned long flags)
 {
-    GADGET_DEBUG1("GadgetCloudController::close\n");
+    GDEBUG("GadgetCloudController::close\n");
     int rval = 0;
     if (flags == 1)
     {
@@ -197,10 +196,8 @@ int GadgetCloudController<JobType>::close(unsigned long flags)
         if (this->putq(hangup) == -1)
         {
             hangup->release();
-            ACE_ERROR_RETURN( (LM_ERROR,
-                    ACE_TEXT("%p\n"),
-                    ACE_TEXT("GadgetCloudController::close, putq")),
-                    -1);
+	    GERROR("GadgetCloudController::close, putq\n");
+	    return -1;
         }
         rval = this->wait();
     }
@@ -265,7 +262,7 @@ connectToCloud(const CloudType& cloud)
             ACE_Time_Value tv( (time_t)GADGETRON_TIMEOUT_PERIOD );
             ACE_OS::sleep(tv);
 
-            GADGET_DEBUG2("Open connection to (%s):%s failed ... \n", host.c_str(), port.c_str());
+            GDEBUG("Open connection to (%s):%s failed ... \n", host.c_str(), port.c_str());
         }
         else
         {
@@ -278,7 +275,7 @@ connectToCloud(const CloudType& cloud)
                 ACE_Time_Value tv( (time_t)GADGETRON_TIMEOUT_PERIOD );
                 ACE_OS::sleep(tv);
 
-                GADGET_DEBUG2("Unable to send XML configuration to the Gadgetron cloud host (%s):%s ... \n", host.c_str(), port.c_str());
+                GDEBUG("Unable to send XML configuration to the Gadgetron cloud host (%s):%s ... \n", host.c_str(), port.c_str());
             }
             else
             {
@@ -290,11 +287,11 @@ connectToCloud(const CloudType& cloud)
 
         if ( node_status_[ii] == 0 )
         {
-            GADGET_DEBUG2("--> Node (%s):%s is ready ... \n", host.c_str(), port.c_str());
+            GDEBUG("--> Node (%s):%s is ready ... \n", host.c_str(), port.c_str());
         }
         else
         {
-            GADGET_DEBUG2("--> Node (%s):%s is NOT ready ... \n", host.c_str(), port.c_str());
+            GDEBUG("--> Node (%s):%s is NOT ready ... \n", host.c_str(), port.c_str());
         }
     }
 
@@ -310,8 +307,8 @@ connectToCloud(const CloudType& cloud)
 
     if ( !hasGoodNode )
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to find even one good node ... \n")));
-        return -1;
+      GERROR("Unable to find even one good node ... \n");
+      return -1;
     }
 
     return 0;
@@ -321,30 +318,29 @@ template <typename JobType>
 int GadgetCloudController<JobType>::
 runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed_job_list, const std::vector<int>& node_ids)
 {
-    ACE_DEBUG((LM_INFO, ACE_TEXT("(%t) GadgetCloudController : into runJobsOnCloud(...) ... \n")));
-
-    if ( job_list.empty() )
+  GDEBUG("GadgetCloudController : into runJobsOnCloud(...) ... \n");
+  if ( job_list.empty() )
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("GadgetCloudController : job list is empty ... \n")));
-        return -1;
+      GERROR("GadgetCloudController : job list is empty ... \n");
+      return -1;
     }
 
     if ( completed_job_list.empty() )
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("GadgetCloudController : completed job list is empty ... \n")));
-        return -1;
+      GERROR("GadgetCloudController : completed job list is empty ... \n");
+      return -1;
     }
 
     if ( job_list.size() != completed_job_list.size() )
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("GadgetCloudController : job list size does not match ... \n")));
-        return -1;
+      GERROR("GadgetCloudController : job list size does not match ... \n");
+      return -1;
     }
 
     if ( job_list.size() != node_ids.size() )
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("GadgetCloudController : job list size does not match the node id size ... \n")));
-        return -1;
+      GERROR("GadgetCloudController : job list size does not match the node id size ... \n");
+      return -1;
     }
 
     std::vector<int> node_ids_used(node_ids);
@@ -402,7 +398,7 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
             }
         }
 
-        GADGET_DEBUG2("--> node for job %d is %d ... \n", ii, node_ids_used[ii]);
+        GDEBUG("--> node for job %d is %d ... \n", ii, node_ids_used[ii]);
     }
 
     // append incoming jobs into the list
@@ -410,8 +406,8 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
 
     if ( this->appendJobList(job_list, completed_job_list, node_ids_used, job_status) == -1 )
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to append job list ... \n")));
-        return -1;
+      GERROR("Unable to append job list ... \n");
+      return -1;
     }
 
     for( ii=0; ii<numOfJobs; ii++ )
@@ -419,7 +415,7 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
         int nodeID = node_ids_used[ii];
         if ( nodeID == -1 )
         {
-            GADGET_DEBUG2("--> node for job %d is NOT ready ... \n", ii+startJobID);
+            GDEBUG("--> node for job %d is NOT ready ... \n", ii+startJobID);
             continue;
         }
 
@@ -427,7 +423,7 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
         GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
                 new GadgetContainerMessage<GadgetMessageIdentifier>();
 
-        m1->getObjectPtr()->id = (ACE_UINT16)cloud_msg_id_writer_;
+        m1->getObjectPtr()->id = (ACE_INT16)cloud_msg_id_writer_;
 
         GadgetContainerMessage<int>* m2 =
                 new GadgetContainerMessage<int>();
@@ -445,14 +441,14 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
         {
             if (cloud_connectors_[nodeID]->putq(m1) == -1)
             {
-                ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to send job package %d on queue for node %d \n"), ii+startJobID, nodeID));
-                m1->release();
-                return -1;
+	      GERROR("Unable to send job package %d on queue for node %d \n", ii+startJobID, nodeID);
+	      m1->release();
+	      return -1;
             }
             else
             {
-                GADGET_DEBUG2("Send job %d to node %d ... \n", ii+startJobID, nodeID);
-                number_of_jobs_sent_out_++;
+	      GDEBUG("Send job %d to node %d ... \n", ii+startJobID, nodeID);
+	      number_of_jobs_sent_out_++;
             }
         }
         else
@@ -461,7 +457,7 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
         }
     }
 
-    GADGET_DEBUG1("GadgetCloudController - all jobs sent ... \n");
+    GDEBUG("GadgetCloudController - all jobs sent ... \n");
 
     return 0;
 }
@@ -472,14 +468,14 @@ runJobsOnCloud(std::vector<JobType>& job_list, std::vector<JobType>& completed_j
 {
     if ( job_list.size() != completed_job_list.size() )
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("GadgetCloudController : job list size does not match ... \n")));
-        return -1;
+      GERROR("GadgetCloudController : job list size does not match ... \n");
+      return -1;
     }
 
     if ( job_list.size() != node_ids.size() )
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("GadgetCloudController : job list size does not match the node id size ... \n")));
-        return -1;
+      GERROR("GadgetCloudController : job list size does not match the node id size ... \n");
+      return -1;
     }
 
     std::vector<JobType*> jobPtr(job_list.size(), NULL);
@@ -501,7 +497,7 @@ template <typename JobType>
 int GadgetCloudController<JobType>::
 closeCloudNode()
 {
-    GADGET_DEBUG1("GadgetCloudController : into closeCloudNode(...) ... \n");
+    GDEBUG("GadgetCloudController : into closeCloudNode(...) ... \n");
 
     unsigned int ii;
 
@@ -520,14 +516,14 @@ closeCloudNode()
 
             if (cloud_connectors_[nodeID]->putq(m) == -1)
             {
-                ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to send CLOSE package on queue for node %d \n"), nodeID));
-                m->release();
-                return -1;
+	      GERROR("Unable to send CLOSE package on queue for node %d \n", nodeID);
+	      m->release();
+	      return -1;
             }
         }
     }
 
-    GADGET_DEBUG1("GadgetCloudController - close message sent to all nodes ... \n");
+    GDEBUG("GadgetCloudController - close message sent to all nodes ... \n");
 
     return 0;
 }
@@ -536,7 +532,7 @@ template <typename JobType>
 int GadgetCloudController<JobType>::waitForJobToComplete()
 {
     // block the caller thread
-    GADGET_DEBUG1("GadgetCloudController waitForJobToComplete ... \n");
+    GDEBUG("GadgetCloudController waitForJobToComplete ... \n");
 
     ACE_Message_Block *mb = 0;
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
@@ -549,8 +545,8 @@ int GadgetCloudController<JobType>::waitForJobToComplete()
 
         if ( !m_jobID )
         {
-            ACE_DEBUG ((LM_INFO, ACE_TEXT ("Invalid message id in the GadgetCloudController queue\n")));
-            break;
+	  GDEBUG("Invalid message id in the GadgetCloudController queue\n");
+	  break;
         }
 
         int jobID = *(m_jobID->getObjectPtr());
@@ -562,26 +558,26 @@ int GadgetCloudController<JobType>::waitForJobToComplete()
 
             if ( !job )
             {
-                ACE_DEBUG ((LM_INFO, ACE_TEXT ("Invalid message obj in the GadgetCloudController queue\n")));
-                break;
+	      GDEBUG("Invalid message obj in the GadgetCloudController queue\n");
+	      break;
             }
 
             *(completed_job_list_[jobID]) = *(job->getObjectPtr());
             job_status_[jobID] = 0;
 
-            ACE_DEBUG ((LM_INFO, ACE_TEXT ("--> receive completed job : %d ... \n"), jobID));
+	    GDEBUG("--> receive completed job : %d ... \n", jobID);
 
             if ( job_handler_ != NULL )
             {
                 if ( !job_handler_->processJob( jobID, *(completed_job_list_[jobID]) ) )
                 {
-                    ACE_DEBUG ((LM_INFO, ACE_TEXT ("job_handler_->processJob after receiving failed\n")));
+		  GDEBUG("job_handler_->processJob after receiving failed\n");
                 }
             }
         }
         else
         {
-            ACE_DEBUG ((LM_INFO, ACE_TEXT ("--> receive jobID == -1 ... \n")));
+	  GDEBUG("--> receive jobID == -1 ... \n");
         }
 
         mb->release();
@@ -602,8 +598,8 @@ int GadgetCloudController<JobType>::waitForJobToComplete()
 
         if ( allJobProcessed )
         {
-            ACE_DEBUG ((LM_INFO, ACE_TEXT ("All jobs are completed and returned on GadgetCloudController queue\n")));
-            break;
+	  GDEBUG("All jobs are completed and returned on GadgetCloudController queue\n");
+	  break;
         }
     }
 
@@ -616,14 +612,14 @@ int GadgetCloudController<JobType>::waitForJobToComplete()
         }
     }
 
-    ACE_DEBUG((LM_INFO, ACE_TEXT("(%t) GadgetCloudController waitForJobToComplete done ... \n")));
+    GDEBUG("GadgetCloudController waitForJobToComplete done ... \n");
     return 0;
 }
 
 template <typename JobType> 
 int GadgetCloudController<JobType>::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
-    GADGET_DEBUG1("GadgetCloudController handling close...\n");
+    GDEBUG("GadgetCloudController handling close...\n");
     return this->wait();
 }
 
@@ -660,8 +656,8 @@ int GadgetCloudController<JobType>::setJobsTobeCompleted(unsigned int nodeID, in
     }
     catch(...)
     {
-        ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetCloudController, setJobsTobeCompleted() failed ... \n")) );
-        return -1;
+      GERROR("GadgetCloudController, setJobsTobeCompleted() failed ... \n");
+      return -1;
     }
 
     return 0;
@@ -679,20 +675,20 @@ int GadgetCloudController<JobType>::appendJobList(std::vector<JobType*>& job_lis
 
         if ( completed_job_list.size() != N )
         {
-            ACE_DEBUG((LM_ERROR, ACE_TEXT("GadgetCloudController appendJobList: job list size does not match ... \n")));
-            return -1;
+	  GERROR("GadgetCloudController appendJobList: job list size does not match ... \n");
+	  return -1;
         }
 
         if ( node_id_used.size() != N )
         {
-            ACE_DEBUG((LM_ERROR, ACE_TEXT("GadgetCloudController appendJobList: node_id_used size does not match ... \n")));
-            return -1;
+	  GERROR("GadgetCloudController appendJobList: node_id_used size does not match ... \n");
+	  return -1;
         }
 
         if ( job_status.size() != N )
         {
-            ACE_DEBUG((LM_ERROR, ACE_TEXT("GadgetCloudController appendJobList: job_status size does not match ... \n")));
-            return -1;
+	  GERROR("GadgetCloudController appendJobList: job_status size does not match ... \n");
+	  return -1;
         }
 
         size_t ii;
@@ -706,8 +702,8 @@ int GadgetCloudController<JobType>::appendJobList(std::vector<JobType*>& job_lis
     }
     catch(...)
     {
-        ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetCloudController, appendJobList() failed ... \n")) );
-        return -1;
+      GERROR("GadgetCloudController, appendJobList() failed ... \n");
+      return -1;
     }
 
     return 0;

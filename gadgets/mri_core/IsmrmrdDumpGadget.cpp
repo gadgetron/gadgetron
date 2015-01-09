@@ -1,6 +1,5 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "IsmrmrdDumpGadget.h"
-#include "Gadgetron.h"
 
 namespace Gadgetron
 {
@@ -64,7 +63,7 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GADGET_DEBUG1("Failed to write XML header to HDF file\n");
+            GDEBUG("Failed to write XML header to HDF file\n");
             return GADGET_FAIL;
         }
 
@@ -85,7 +84,7 @@ namespace Gadgetron
             //Write trajectory
             if (ismrmrd_acq.trajectory_dimensions() == 0)
             {
-                GADGET_DEBUG1("Malformed dataset. Trajectory attached but trajectory dimensions == 0\n");
+                GDEBUG("Malformed dataset. Trajectory attached but trajectory dimensions == 0\n");
                 return GADGET_FAIL;
             }
 
@@ -93,7 +92,7 @@ namespace Gadgetron
 
             if (!m3)
             {
-                GADGET_DEBUG1("Error casting trajectory data package");
+                GDEBUG("Error casting trajectory data package");
                 return GADGET_FAIL;
             } 
 
@@ -105,7 +104,7 @@ namespace Gadgetron
         {
             if (ismrmrd_acq.trajectory_dimensions() != 0)
             {
-                GADGET_DEBUG1("Malformed dataset. Trajectory dimensions not zero but no trajectory attached\n");
+                GDEBUG("Malformed dataset. Trajectory dimensions not zero but no trajectory attached\n");
                 return GADGET_FAIL;
             }
         }
@@ -116,7 +115,7 @@ namespace Gadgetron
             }
             catch (...)
             {
-                GADGET_DEBUG1("Error appending ISMRMRD Dataset\n");
+                GDEBUG("Error appending ISMRMRD Dataset\n");
                 return GADGET_FAIL;
             }
         }
@@ -125,10 +124,8 @@ namespace Gadgetron
         if (this->next()->putq(m1) == -1)
         {
             m1->release();
-            ACE_ERROR_RETURN( (LM_ERROR,
-                ACE_TEXT("%p\n"),
-                ACE_TEXT("IsmrmrdDumpGadget::process, passing data on to next gadget")),
-                -1);
+	    GERROR("IsmrmrdDumpGadget::process, passing data on to next gadget");
+	    return -1;
         }
 
         return 0;

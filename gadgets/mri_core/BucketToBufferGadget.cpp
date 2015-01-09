@@ -1,6 +1,5 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "BucketToBufferGadget.h"
-#include "Gadgetron.h"
 #include "mri_core_data.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
@@ -35,11 +34,11 @@ namespace Gadgetron{
     } else if (N_dimension.compare("slice") == 0){
         N_ = SLICE;
     } else {
-        GADGET_DEBUG2("WARNING: Unknown N dimension (%s), N set to NONE", N_dimension.c_str());
+        GDEBUG("WARNING: Unknown N dimension (%s), N set to NONE", N_dimension.c_str());
         N_ = NONE;
     }
 
-    GADGET_DEBUG2("N DIMENSION IS: %s (%d)\n", N_dimension.c_str(), N_);
+    GDEBUG("N DIMENSION IS: %s (%d)\n", N_dimension.c_str(), N_);
 
     if (S_dimension.size() == 0) {
         S_ = NONE;
@@ -58,17 +57,17 @@ namespace Gadgetron{
     } else if (N_dimension.compare("slice") == 0){
         S_ = SLICE;
     } else {
-        GADGET_DEBUG2("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", S_dimension.c_str());
+        GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", S_dimension.c_str());
         S_ = NONE;
     }
 
-    GADGET_DEBUG2("S DIMENSION IS: %s (%d)\n", S_dimension.c_str(), S_);
+    GDEBUG("S DIMENSION IS: %s (%d)\n", S_dimension.c_str(), S_);
 
     split_slices_  = this->get_bool_value("split_slices");
-    GADGET_DEBUG2("SPLIT SLICES IS: %b\n", split_slices_);
+    GDEBUG("SPLIT SLICES IS: %b\n", split_slices_);
 
     ignore_segment_  = this->get_bool_value("ignore_segment");
-    GADGET_DEBUG2("IGNORE SEGMENT IS: %b\n", ignore_segment_);
+    GDEBUG("IGNORE SEGMENT IS: %b\n", ignore_segment_);
 
     // keep a copy of the deserialized ismrmrd xml header for runtime
     ISMRMRD::deserialize(mb->rd_ptr(), hdr_);
@@ -83,23 +82,23 @@ namespace Gadgetron{
     size_t key;
     std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > recon_data_buffers;
 
-    //GADGET_DEBUG1("BucketToBufferGadget::process\n");
+    //GDEBUG("BucketToBufferGadget::process\n");
 
     //Some information about the bucket
-    //std::cout << "The Reference part: " << m1->getObjectPtr()->refstats_.size() << std::endl;
-    //std::cout << "   nslices: " << m1->getObjectPtr()->refstats_[0].slice.size() << std::endl;
+    //GDEBUG_STREAM("The Reference part: " << m1->getObjectPtr()->refstats_.size() << std::endl);
+    //GDEBUG_STREAM("   nslices: " << m1->getObjectPtr()->refstats_[0].slice.size() << std::endl);
     //for (int e=0; e<m1->getObjectPtr()->refstats_.size() ; e++) {
     //    for (std::set<uint16_t>::iterator it = m1->getObjectPtr()->refstats_[e].kspace_encode_step_1.begin();
     //         it != m1->getObjectPtr()->refstats_[e].kspace_encode_step_1.end(); ++it) {
-    //        std::cout << "   K1: " <<  *it << std::endl;
+    //        GDEBUG_STREAM("   K1: " <<  *it << std::endl);
     //    }
     //}
-    //std::cout << "The data part: " << m1->getObjectPtr()->datastats_.size() << std::endl;
-    //std::cout << "   nslices: " << m1->getObjectPtr()->datastats_[0].slice.size() << std::endl;
+    //GDEBUG_STREAM("The data part: " << m1->getObjectPtr()->datastats_.size() << std::endl);
+    //GDEBUG_STREAM("   nslices: " << m1->getObjectPtr()->datastats_[0].slice.size() << std::endl);
     //for (int e=0; e<m1->getObjectPtr()->datastats_.size() ; e++) {
     //    for (std::set<uint16_t>::iterator it = m1->getObjectPtr()->datastats_[e].kspace_encode_step_1.begin();
     //         it != m1->getObjectPtr()->datastats_[e].kspace_encode_step_1.end(); ++it) {
-    //        std::cout << "   K1: " <<  *it << std::endl;
+    //        GDEBUG_STREAM("   K1: " <<  *it << std::endl);
     //    }
     //}
 
@@ -116,13 +115,13 @@ namespace Gadgetron{
         //The storage is based on the encoding space
         uint16_t espace = acqhdr.encoding_space_ref;
 
-        //std::cout << "espace: " << acqhdr.encoding_space_ref << std::endl;
-        //std::cout << "slice: " << acqhdr.idx.slice << std::endl;
-        //std::cout << "rep: " << acqhdr.idx.repetition << std::endl;
-        //std::cout << "k1: " << acqhdr.idx.kspace_encode_step_1 << std::endl;
-        //std::cout << "k2: " << acqhdr.idx.kspace_encode_step_2 << std::endl;
-        //std::cout << "seg: " << acqhdr.idx.segment << std::endl;
-        //std::cout << "key: " << key << std::endl;
+        //GDEBUG_STREAM("espace: " << acqhdr.encoding_space_ref << std::endl);
+        //GDEBUG_STREAM("slice: " << acqhdr.idx.slice << std::endl);
+        //GDEBUG_STREAM("rep: " << acqhdr.idx.repetition << std::endl);
+        //GDEBUG_STREAM("k1: " << acqhdr.idx.kspace_encode_step_1 << std::endl);
+        //GDEBUG_STREAM("k2: " << acqhdr.idx.kspace_encode_step_2 << std::endl);
+        //GDEBUG_STREAM("seg: " << acqhdr.idx.segment << std::endl);
+        //GDEBUG_STREAM("key: " << key << std::endl);
 
         //Get some references to simplify the notation
         //the reconstruction bit corresponding to this ReconDataBuffer and encoding space
@@ -161,13 +160,13 @@ namespace Gadgetron{
         //The storage is based on the encoding space
         uint16_t espace = acqhdr.encoding_space_ref;
 
-        //std::cout << "espace: " << acqhdr.encoding_space_ref << std::endl;
-        //std::cout << "slice: " << acqhdr.idx.slice << std::endl;
-        //std::cout << "rep: " << acqhdr.idx.repetition << std::endl;
-        //std::cout << "k1: " << acqhdr.idx.kspace_encode_step_1 << std::endl;
-        //std::cout << "k2: " << acqhdr.idx.kspace_encode_step_2 << std::endl;
-        //std::cout << "seg: " << acqhdr.idx.segment << std::endl;
-        //std::cout << "key: " << key << std::endl;
+        //GDEBUG_STREAM("espace: " << acqhdr.encoding_space_ref << std::endl);
+        //GDEBUG_STREAM("slice: " << acqhdr.idx.slice << std::endl);
+        //GDEBUG_STREAM("rep: " << acqhdr.idx.repetition << std::endl);
+        //GDEBUG_STREAM("k1: " << acqhdr.idx.kspace_encode_step_1 << std::endl);
+        //GDEBUG_STREAM("k2: " << acqhdr.idx.kspace_encode_step_2 << std::endl);
+        //GDEBUG_STREAM("seg: " << acqhdr.idx.segment << std::endl);
+        //GDEBUG_STREAM("key: " << key << std::endl);
 
         //Get some references to simplify the notation
         //the reconstruction bit corresponding to this ReconDataBuffer and encoding space
@@ -192,10 +191,10 @@ namespace Gadgetron{
 
 
     //Send all the ReconData messages
-    GADGET_DEBUG2("End of bucket reached, sending out %d ReconData buffers\n", recon_data_buffers.size());
+    GDEBUG("End of bucket reached, sending out %d ReconData buffers\n", recon_data_buffers.size());
     for(std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* >::iterator it = recon_data_buffers.begin(); it != recon_data_buffers.end(); it++)
       {
-        //std::cout << "Sending: " << it->first << std::endl;
+        //GDEBUG_STREAM("Sending: " << it->first << std::endl);
         if (it->second) {
             if (this->next()->putq(it->second) == -1) {
                 it->second->release();
@@ -217,7 +216,7 @@ namespace Gadgetron{
   {
 
     int ret = Gadget::close(flags);
-    GADGET_DEBUG1("BucketToBufferGadget::close\n");
+    GDEBUG("BucketToBufferGadget::close\n");
 
     return ret;
   }
@@ -466,14 +465,14 @@ namespace Gadgetron{
           NS = 1;
         }
 
-        //std::cout << "Data dimensions:" << std::endl;
-        //std::cout << "   NRO:  " << NRO  << std::endl;
-        //std::cout << "   NE1:  " << NE1  << std::endl;
-        //std::cout << "   NE2:  " << NE2  << std::endl;
-        //std::cout << "   NSLC: " << NSLC << std::endl;
-        //std::cout << "   NCHA: " << NCHA << std::endl;
-        //std::cout << "   NN:   " << NN   << std::endl;
-        //std::cout << "   NS:   " << NS   << std::endl;
+        //GDEBUG_STREAM("Data dimensions:" << std::endl);
+        //GDEBUG_STREAM("   NRO:  " << NRO  << std::endl);
+        //GDEBUG_STREAM("   NE1:  " << NE1  << std::endl);
+        //GDEBUG_STREAM("   NE2:  " << NE2  << std::endl);
+        //GDEBUG_STREAM("   NSLC: " << NSLC << std::endl);
+        //GDEBUG_STREAM("   NCHA: " << NCHA << std::endl);
+        //GDEBUG_STREAM("   NN:   " << NN   << std::endl);
+        //GDEBUG_STREAM("   NS:   " << NS   << std::endl);
 
         //Allocate the array for the data
         dataBuffer.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
@@ -491,11 +490,11 @@ namespace Gadgetron{
           }
 
         //boost::shared_ptr< std::vector<size_t> > dims =  dataBuffer.data_.get_dimensions();
-        //std::cout << "NDArray dims: ";
+        //GDEBUG_STREAM("NDArray dims: ");
         //for( std::vector<size_t>::const_iterator i = dims->begin(); i != dims->end(); ++i) {
-        //    std::cout << *i << ' ';
+        //    GDEBUG_STREAM(*i << ' ');
         //}
-        //std::cout << std::endl;
+        //GDEBUG_STREAM(std::endl);
       }
 
   }
@@ -581,15 +580,15 @@ namespace Gadgetron{
     }
     long long roffset = (long long) dataBuffer.data_.get_size(0) - npts_to_copy - offset;
 
-    //std::cout << "Num_samp: "<< acqhdr.number_of_samples << ", pre: " << acqhdr.discard_pre << ", post" << acqhdr.discard_post << std::endl;
+    //GDEBUG_STREAM("Num_samp: "<< acqhdr.number_of_samples << ", pre: " << acqhdr.discard_pre << ", post" << acqhdr.discard_post << std::endl);
     //std::cout << "Sampling limits: "
     //    << "  min: " << dataBuffer.sampling_.sampling_limits_[0].min_
     //    << "  max: " << dataBuffer.sampling_.sampling_limits_[0].max_
     //    << "  center: " << dataBuffer.sampling_.sampling_limits_[0].center_
     //    << std::endl;
-    //std::cout << "npts_to_copy = " << npts_to_copy  << std::endl;
-    //std::cout << "offset = " << offset  << std::endl;
-    //std::cout << "loffset = " << roffset << std::endl;
+    //GDEBUG_STREAM("npts_to_copy = " << npts_to_copy  << std::endl);
+    //GDEBUG_STREAM("offset = " << offset  << std::endl);
+    //GDEBUG_STREAM("loffset = " << roffset << std::endl);
 
     if ((offset < 0) | (roffset < 0) )
       {

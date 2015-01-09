@@ -1,5 +1,4 @@
 #include "PhysioInterpolationGadget.h"
-#include "Gadgetron.h"
 #include "GadgetronTimer.h"
 #include "Spline.h"
 #include "GtPlusDefinition.h"
@@ -43,7 +42,7 @@ namespace Gadgetron{
         if ( interp_method_.empty() ) interp_method_ = "Spline";
 
         if (h.encoding.size() == 0) {
-            GADGET_DEBUG1("Missing encoding section");
+            GDEBUG("Missing encoding section");
             return GADGET_FAIL;
         }
 
@@ -69,18 +68,18 @@ namespace Gadgetron{
 
         if ( flags != 0 )
         {
-            GADGET_DEBUG1("PhysioInterpolationGadget::close...\n");
+            GDEBUG("PhysioInterpolationGadget::close...\n");
 
             size_t slc;
             for ( slc=0; slc<slc_limit_; slc ++ )
             {
-                GADGET_DEBUG2("Processing slice: %d ... \n", slc);
-                GADGET_DEBUG2("Number of items on Q: %d\n", buffer_[slc]->message_count());
-                GADGET_DEBUG2("Image with attribute flag : %d\n", image_with_attrib_);
+                GDEBUG("Processing slice: %d ... \n", slc);
+                GDEBUG("Number of items on Q: %d\n", buffer_[slc]->message_count());
+                GDEBUG("Image with attribute flag : %d\n", image_with_attrib_);
 
                 if (time_stamps_[slc].size() != buffer_[slc]->message_count())
                 {
-                    GADGET_DEBUG1("Inconsistent number of messages and time stamps\n");
+                    GDEBUG("Inconsistent number of messages and time stamps\n");
                     buffer_[slc]->flush();
                     return GADGET_FAIL;
                 }
@@ -132,9 +131,9 @@ namespace Gadgetron{
                 float mean_cycle_length = std::accumulate(cycle_lengths.begin(), cycle_lengths.end(), 0.0f)/cycle_lengths.size();
                 float median_cycle_length = cycle_lengths[(cycle_lengths.size()>>1)];
 
-                GADGET_DEBUG2("We have %d full cyles, first one starting at %d\n", cycle_starts.size()-1, cycle_starts[0]);
-                GADGET_DEBUG2("Mean/Median frame width %f/%f\n", mean_interval,median_interval);
-                GADGET_DEBUG2("Mean/Median cycle_length %f/%f\n", mean_cycle_length,median_cycle_length);
+                GDEBUG("We have %d full cyles, first one starting at %d\n", cycle_starts.size()-1, cycle_starts[0]);
+                GDEBUG("Mean/Median frame width %f/%f\n", mean_interval,median_interval);
+                GDEBUG("Mean/Median cycle_length %f/%f\n", mean_cycle_length,median_cycle_length);
 
                 //Correct the first cycle assuming it is of median length:
                 if ( !first_beat_on_trigger_ )
@@ -181,7 +180,7 @@ namespace Gadgetron{
 
                     if (!tmpm1 || !tmpm2 )
                     {
-                        GADGET_DEBUG1("Failed to cast data on Q, bailing out\n");
+                        GDEBUG("Failed to cast data on Q, bailing out\n");
                         buffer_[slc]->flush();
                         return GADGET_FAIL;
                     }
@@ -196,7 +195,7 @@ namespace Gadgetron{
 
                         if ( !tmpm3 )
                         {
-                            GADGET_DEBUG1("Failed to cast data on Q, bailing out\n");
+                            GDEBUG("Failed to cast data on Q, bailing out\n");
                             buffer_[slc]->flush();
                             return GADGET_FAIL;
                         }
@@ -347,7 +346,7 @@ namespace Gadgetron{
                 {
                     if (this->next()->putq(out_heads[i]) < 0)
                     {
-                        GADGET_DEBUG1("Unable to put data on next Gadgets Q\n");
+                        GDEBUG("Unable to put data on next Gadgets Q\n");
                         return GADGET_FAIL;
                     }
                 }
@@ -396,7 +395,7 @@ namespace Gadgetron{
 
         if (buffer_[slc]->enqueue_tail(header) < 0)
         {
-            GADGET_DEBUG1("Failed to add image to buffer\n");
+            GDEBUG("Failed to add image to buffer\n");
             header->release();
             return GADGET_FAIL;
         }
@@ -405,7 +404,7 @@ namespace Gadgetron{
 
         if (this->next()->putq(m1) < 0)
         {
-            GADGET_DEBUG1("Unable to put data on next Gadgets Q\n");
+            GDEBUG("Unable to put data on next Gadgets Q\n");
             return GADGET_FAIL;
         }
 

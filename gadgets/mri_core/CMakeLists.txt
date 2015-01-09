@@ -19,6 +19,7 @@ endif (MKL_FOUND)
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/toolboxes/core
+    ${CMAKE_SOURCE_DIR}/toolboxes/log
     ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
@@ -35,9 +36,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
-    ${HDF5_INCLUDE_DIR}
-    ${HDF5_INCLUDE_DIR}/cpp
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
@@ -141,6 +139,7 @@ set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_S
 
 target_link_libraries(gadgetron_mricore 
     gadgetron_gadgetbase
+    gadgetron_toolbox_log
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpufft
     ${ISMRMRD_LIBRARIES} 

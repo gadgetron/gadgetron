@@ -55,7 +55,7 @@ inline bool gtPlusRandNorm<T>::gen(hoNDArray<T>& randNum)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusRandNorm<T>::gen(hoNDArray<T>& randNum) ... ");
+        GERROR_STREAM("Errors in gtPlusRandNorm<T>::gen(hoNDArray<T>& randNum) ... ");
         return false;
     }
 
@@ -81,7 +81,7 @@ inline bool gtPlusRandNorm<T>::gen(hoNDArray< std::complex<T> >& randNum)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusRandNorm<T>::gen(hoNDArray< std::complex<T> >& randNum) ... ");
+        GERROR_STREAM("Errors in gtPlusRandNorm<T>::gen(hoNDArray< std::complex<T> >& randNum) ... ");
         return false;
     }
 
@@ -113,7 +113,7 @@ bool gtPlusUtil<T>::getCurrentTime(size_t time[6])
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in gtPlusUtil<T>::getCurrentTime(size_t time[6]) ... ");
+        GERROR_STREAM("Error happened in gtPlusUtil<T>::getCurrentTime(size_t time[6]) ... ");
         return false;
     }
 
@@ -139,7 +139,7 @@ bool gtPlusUtil<T>::convertTimeToUTC(size_t time[6], double& tmUTC)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in gtPlusUtil<T>::convertTimeToUTC(size_t time[6], double& tmUTC) ... ");
+        GERROR_STREAM("Error happened in gtPlusUtil<T>::convertTimeToUTC(size_t time[6], double& tmUTC) ... ");
         return false;
     }
 

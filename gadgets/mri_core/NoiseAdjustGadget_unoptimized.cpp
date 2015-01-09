@@ -1,5 +1,4 @@
 #include "NoiseAdjustGadget_unoptimized.h"
-#include "Gadgetron.h"
 #include "hoNDArray_fileio.h"
 #include "ismrmrd/xml.h"
 
@@ -110,7 +109,7 @@ int NoiseAdjustGadget_unoptimized::process_config(ACE_Message_Block* mb)
     receiver_noise_bandwidth_ = (float)(h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth ?
 					*h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth : 1.0f);
     
-    GADGET_MSG("receiver_noise_bandwidth_ is " << receiver_noise_bandwidth_);
+    GDEBUG_STREAM("receiver_noise_bandwidth_ is " << receiver_noise_bandwidth_);
   }
   
   return GADGET_OK;
@@ -132,7 +131,7 @@ int NoiseAdjustGadget_unoptimized
 			std::vector<size_t> dims(2, channels);
 			try{ noise_covariance_matrix_.create(&dims);}
 			catch (std::runtime_error &err){
-				GADGET_DEBUG_EXCEPTION(err,"Unable to allocate storage for noise covariance matrix\n");
+				GEXCEPTION(err,"Unable to allocate storage for noise covariance matrix\n");
 				return GADGET_FAIL;
 			}
 			noise_covariance_matrix_.fill(std::complex<double>(0.0,0.0));
@@ -161,15 +160,15 @@ int NoiseAdjustGadget_unoptimized
 				noise_bw_scale_factor_ = std::sqrt(2*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
 			}
 
-			GADGET_DEBUG2("Noise dwell time: %f\n", noise_dwell_time_us_);
-			GADGET_DEBUG2("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
-			GADGET_DEBUG2("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
-			GADGET_DEBUG2("noise_bw_scale_factor: %f\n", noise_bw_scale_factor_);
+			GDEBUG("Noise dwell time: %f\n", noise_dwell_time_us_);
+			GDEBUG("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
+			GDEBUG("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
+			GDEBUG("noise_bw_scale_factor: %f\n", noise_bw_scale_factor_);
 			is_configured_ = true;
 		}
 		if (number_of_noise_samples_ > 0) {
 			if (!noise_decorrelation_calculated_) {
-				GADGET_DEBUG1("Calculating noise decorrelation\n");
+				GDEBUG("Calculating noise decorrelation\n");
 				//1. scale for number of samples
 				std::complex<double>* cc_ptr = noise_covariance_matrix_.get_data_ptr();
 				for (unsigned int i = 0; i < channels*channels; i++) {
@@ -199,17 +198,15 @@ int NoiseAdjustGadget_unoptimized
 			if (noise_decorrelation_calculated_) {
 				//Noise decorrelate
 				if (!noise_decorrelation(m2->getObjectPtr()->get_data_ptr(), samples, channels, noise_covariance_matrix_.get_data_ptr())) {
-					GADGET_DEBUG1("Noise Decorrelation Failed\n");
+					GDEBUG("Noise Decorrelation Failed\n");
 					return GADGET_FAIL;
 				}
 			}
 		}
 		//It is enough to put the first one, since they are linked
 		if (this->next()->putq(m1) == -1) {
-			ACE_ERROR_RETURN( (LM_ERROR,
-					ACE_TEXT("%p\n"),
-					ACE_TEXT("NoiseAdjustGadget_unoptimized::process, passing data on to next gadget")),
-					-1);
+		  GERROR("NoiseAdjustGadget_unoptimized::process, passing data on to next gadget");
+		  return -1;
 		}
 
 	}

@@ -53,6 +53,7 @@ set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGET
 if (MKL_FOUND)
     target_link_libraries(gadgetron_toolbox_cpucore_math 
         gadgetron_toolbox_cpucore
+	gadgetron_toolbox_log
         ${ARMADILLO_LIBRARIES}
         ${ISMRMRD_LIBRARIES}
         ${FFTW3_LIBRARIES} 
@@ -61,6 +62,7 @@ if (MKL_FOUND)
 else (MKL_FOUND)
     target_link_libraries(gadgetron_toolbox_cpucore_math 
         gadgetron_toolbox_cpucore
+	gadgetron_toolbox_log
         ${ARMADILLO_LIBRARIES}
         ${ISMRMRD_LIBRARIES}
         ${BLAS_LIBRARIES}

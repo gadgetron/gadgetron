@@ -149,7 +149,7 @@ public:
 			//rhobar is a good approximation of the euclidian norm of the residual, so we check for that
 
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-				std::cout << "Iteration " <<it << ". Relative residual: " <<  rhobar/rhobar0 << std::endl;
+				GDEBUG_STREAM("Iteration " <<it << ". Relative residual: " <<  rhobar/rhobar0 << std::endl);
 			}
 
 		}

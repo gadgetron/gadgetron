@@ -168,7 +168,7 @@ namespace Gadgetron
 
                 if ( useWorldCoordinate )
                 {
-                    // #pragma omp parallel private(y) shared(sx, sy, target, source, warped)
+                    // #pragma omp parallel private(y) shared(sx, sy, target, source, warped) num_threads(2)
                     {
                         coord_type px, py, px_source, py_source, ix_source, iy_source;
 
@@ -199,7 +199,7 @@ namespace Gadgetron
                 }
                 else
                 {
-                    // #pragma omp parallel private(y) shared(sx, sy, target, source, warped)
+                    // #pragma omp parallel private(y) shared(sx, sy, target, source, warped) num_threads(2)
                     {
                         coord_type ix_source, iy_source;
 
@@ -358,7 +358,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegWarper<ValueType, CoordType, DIn, DOut>::\
+            GERROR_STREAM("Errors happened in hoImageRegWarper<ValueType, CoordType, DIn, DOut>::\
                                     warp(const TargetType& target, const SourceType& source, bool useWorldCoordinate, TargetType& warped) ... ");
             return false;
         }
@@ -390,7 +390,7 @@ namespace Gadgetron
 
                 long long y;
 
-                // #pragma omp parallel private(y) shared(sx, sy, target, source, warped)
+                // #pragma omp parallel private(y) shared(sx, sy, target, source, warped) num_threads(2)
                 {
                     coord_type px, py, dx, dy, ix_source, iy_source;
 
@@ -504,7 +504,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegWarper<ValueType, CoordType, DIn, DOut>::\
+            GERROR_STREAM("Errors happened in hoImageRegWarper<ValueType, CoordType, DIn, DOut>::\
                                     warpWithDeformationFieldWorldCoordinate(const TargetType& target, const SourceType& source, TargetType& warped) ... ");
             return false;
         }

@@ -73,8 +73,10 @@ add_library(gadgetron_toolbox_cpucore ${LIBTYPE}
 
 set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_toolbox_cpucore 
-                    ${Boost_LIBRARIES})
+target_link_libraries(
+  gadgetron_toolbox_cpucore
+  gadgetron_toolbox_log
+  ${Boost_LIBRARIES})
 
 install(TARGETS gadgetron_toolbox_cpucore DESTINATION lib COMPONENT main)
 

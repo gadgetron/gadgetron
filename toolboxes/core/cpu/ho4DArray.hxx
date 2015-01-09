@@ -256,7 +256,7 @@ bool ho4DArray<T>::init_accesser()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in ho4DArray<T>::init_accesser() ...");
+        GERROR_STREAM("Errors in ho4DArray<T>::init_accesser() ...");
         return false;
     }
 
@@ -278,7 +278,7 @@ bool ho4DArray<T>::release_accesser()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in ho4DArray<T>::release_accesser() ...");
+        GERROR_STREAM("Errors in ho4DArray<T>::release_accesser() ...");
         return false;
     }
 

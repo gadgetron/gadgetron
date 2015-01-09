@@ -9,7 +9,7 @@ int AcquisitionFinishGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
 				 GadgetContainerMessage< NDArray< std::complex<float> > >* m2)
 {
   if (!controller_) {
-    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Cannot return result to controller, no controller set")) );
+    GERROR("Cannot return result to controller, no controller set\n");
     return -1;
   }
 

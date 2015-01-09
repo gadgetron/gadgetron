@@ -275,7 +275,7 @@ namespace Gadgetron
             if ( bufImage != NULL ) delete [] bufImage;
             if ( bufAttrib != NULL ) delete [] bufAttrib;
 
-            GADGET_ERROR_MSG("Errors happened in hoNDImageAttrib<T, D>::serialize(char*& buf, size_t& len) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageAttrib<T, D>::serialize(char*& buf, size_t& len) ... ");
             return false;
         }
 
@@ -305,7 +305,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDImageAttrib<T, D>::deserialize(char* buf, size_t& len) ... ");
+            GERROR_STREAM("Errors happened in hoNDImageAttrib<T, D>::deserialize(char* buf, size_t& len) ... ");
             return false;
         }
 

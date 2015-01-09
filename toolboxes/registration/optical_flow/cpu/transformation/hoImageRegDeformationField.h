@@ -255,7 +255,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::setIdentity() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::setIdentity() ... ");
             return false;
         }
 
@@ -276,7 +276,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::update() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::update() ... ");
             return false;
         }
 
@@ -304,7 +304,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(T* pt_in, T* pt_out) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(T* pt_in, T* pt_out) ... ");
             return false;
         }
 
@@ -321,7 +321,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(const T& xi, const T& yi, T& xo, T& yo) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(const T& xi, const T& yi, T& xo, T& yo) ... ");
             return false;
         }
 
@@ -339,7 +339,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(const T& xi, const T& yi, const T& zi, T& xo, T& yo, T& zo) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(const T& xi, const T& yi, const T& zi, T& xo, T& yo, T& zo) ... ");
             return false;
         }
 
@@ -359,7 +359,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(size_t* pt_in, T* pt_out) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(size_t* pt_in, T* pt_out) ... ");
             return false;
         }
 
@@ -380,7 +380,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(size_t* pt_in, size_t N, T* pt_out) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(size_t* pt_in, size_t N, T* pt_out) ... ");
             return false;
         }
 
@@ -397,7 +397,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(const size_t& xi, const size_t& yi, T& xo, T& yo) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(const size_t& xi, const size_t& yi, T& xo, T& yo) ... ");
             return false;
         }
 
@@ -418,7 +418,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(size_t* xi, size_t* yi, size_t N, T* xo, T* yo) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(size_t* xi, size_t* yi, size_t N, T* xo, T* yo) ... ");
             return false;
         }
 
@@ -436,7 +436,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(const size_t& xi, const size_t& yi, const size_t& zi, T& xo, T& yo, T& zo) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(const size_t& xi, const size_t& yi, const size_t& zi, T& xo, T& yo, T& zo) ... ");
             return false;
         }
 
@@ -457,7 +457,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(size_t* xi, size_t* yi, size_t* zi, size_t N, T* xo, T* yo, T* zo) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::transform(size_t* xi, size_t* yi, size_t* zi, size_t N, T* xo, T* yo, T* zo) ... ");
             return false;
         }
 
@@ -504,7 +504,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::jacobianPosition(const input_point_type& pos, jacobian_position_type& jac) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::jacobianPosition(const input_point_type& pos, jacobian_position_type& jac) ... ");
             return false;
         }
 
@@ -606,7 +606,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::jacobianPosition(hoNDArray<T>& jac, DeformationFieldType* deform_field[D], unsigned int borderWidth) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::jacobianPosition(hoNDArray<T>& jac, DeformationFieldType* deform_field[D], unsigned int borderWidth) ... ");
             return false;
         }
 
@@ -708,7 +708,7 @@ namespace Gadgetron
                                 - jacCurr(0, 0)*jacCurr(2, 1)*jacCurr(1, 2);
                         }
 
-                        if ( GT_ABS(det) < FLT_EPSILON ) det = FLT_EPSILON;
+                        if ( std::abs(det) < FLT_EPSILON ) det = FLT_EPSILON;
                         logJac(n) = std::log(det);
                     }
                 }
@@ -726,7 +726,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in analyzeJacobianAndDeformation(const hoNDArray<T>& jac, DeformationFieldType* deform_field[D], T& meanDeform, T& maxDeform, T& meanLogJac, T& maxLogJac, unsigned int borderWidth) ... ");
+            GERROR_STREAM("Errors happened in analyzeJacobianAndDeformation(const hoNDArray<T>& jac, DeformationFieldType* deform_field[D], T& meanDeform, T& maxDeform, T& meanLogJac, T& maxLogJac, unsigned int borderWidth) ... ");
             return false;
         }
 
@@ -900,7 +900,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::serialize(...) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::serialize(...) ... ");
             return false;
         }
 
@@ -916,7 +916,7 @@ namespace Gadgetron
             memcpy(&NDim, buf, sizeof(unsigned int));
             if ( NDim != D )
             {
-                GADGET_ERROR_MSG("hoImageRegDeformationField<ValueType, D>::deserialize(...) : number of image dimensions does not match ... ");
+                GERROR_STREAM("hoImageRegDeformationField<ValueType, D>::deserialize(...) : number of image dimensions does not match ... ");
                 return false;
             }
 
@@ -938,7 +938,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationField<ValueType, D>::deserialize(...) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationField<ValueType, D>::deserialize(...) ... ");
             return false;
         }
 

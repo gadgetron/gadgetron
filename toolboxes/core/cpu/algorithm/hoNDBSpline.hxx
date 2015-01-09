@@ -188,7 +188,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, const std::vector<size_t>& dimension, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, const std::vector<size_t>& dimension, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
@@ -209,7 +209,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t len, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t len, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
@@ -273,7 +273,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
@@ -375,7 +375,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
@@ -515,7 +515,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
@@ -702,7 +702,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, unsigned int SplineDegree, T* coeff) ... ");
+            GERROR_STREAM("Error happened in hoNDBSpline<T, D>::computeBSplineCoefficients(const T* data, size_t sx, size_t sy, size_t sz, size_t st, size_t sp, unsigned int SplineDegree, T* coeff) ... ");
             return false;
         }
 
@@ -777,7 +777,7 @@ namespace Gadgetron
     {
         if ( D!=dimension.size() )
         {
-            GADGET_ERROR_MSG("D!=dimension.get_number_of_dimensions()");
+            GERROR_STREAM("D!=dimension.get_number_of_dimensions()");
             return T(0);
         }
 
@@ -1492,7 +1492,7 @@ namespace Gadgetron
 
             if ( D!=data.get_number_of_dimensions() )
             {
-                GADGET_ERROR_MSG("computeBSplineDerivative(hoNDArray) : D!=dimension.get_number_of_dimensions() ... ");
+                GERROR_STREAM("computeBSplineDerivative(hoNDArray) : D!=dimension.get_number_of_dimensions() ... ");
                 return T(0);
             }
 
@@ -1598,7 +1598,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoNDBSpline<T, D>::computeBSplineDerivative(const hoNDArray<T>& data, const hoNDArray<T>& coeff, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv) ... ");
+            GERROR_STREAM("Errors happened in hoNDBSpline<T, D>::computeBSplineDerivative(const hoNDArray<T>& data, const hoNDArray<T>& coeff, const std::vector<unsigned int>& derivative, hoNDArray<T>& deriv) ... ");
             return false;
         }
 
@@ -1791,7 +1791,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Only 2 - 9 order BSpline is supported ... ");
+                GERROR_STREAM("Only 2 - 9 order BSpline is supported ... ");
                 return;
         }
     }
@@ -2069,7 +2069,7 @@ namespace Gadgetron
                     - xWeight[4] - xWeight[5] - xWeight[6] - xWeight[7] - xWeight[9];
                 break;
             default:
-                GADGET_ERROR_MSG("Invalid spline degree " << SplineDegree);
+                GERROR_STREAM("Invalid spline degree " << SplineDegree);
         }
     }
 
@@ -2124,7 +2124,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_ERROR_MSG("Derivative order must be 0/1/2 ... ");
+            GERROR_STREAM("Derivative order must be 0/1/2 ... ");
             return;
         }
 

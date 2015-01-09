@@ -66,7 +66,7 @@ public:
 		REAL reg_res,data_res;
 		encoding_space.create(in->get_dimensions().get());
 		if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-			std::cout << "Iterating..." << std::endl;
+			GDEBUG_STREAM("Iterating..." << std::endl);
 		}
 		for (int i = 0; i < iterations_; i++){
 			if ((i==0) && (!this->x0_.get())){
@@ -96,7 +96,7 @@ public:
 			this->add_gradient(x,g); // Adds the gradient from all the regularization operators
 
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-				std::cout << "Data residual: " << data_res << std::endl;
+				GDEBUG_STREAM("Data residual: " << data_res << std::endl);
 			}
 
 			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
@@ -134,14 +134,15 @@ public:
 			REAL grad_norm = nrm2(g_old);
 
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-				std::cout << "Iteration " <<i << ". Gradient norm: " <<  grad_norm << std::endl;
+				GDEBUG_STREAM("Iteration " <<i << ". Gradient norm: " <<  grad_norm << std::endl);
 			}
 			iteration_callback(x,i,data_res,reg_res);
 			axpy(-nabla,g_old,x);
 			if (non_negativity_constraint_) clamp_min(x,REAL(0));
 			if (grad_norm < tc_tolerance_)  break;
 		}
-		delete g,g_old;
+		delete g;
+		delete g_old;
 
 		return boost::shared_ptr<ARRAY_TYPE>(x);
     		}

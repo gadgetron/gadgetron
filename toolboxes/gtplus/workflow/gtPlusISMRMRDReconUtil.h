@@ -57,6 +57,7 @@
 #include "gtPlusIOAnalyze.h"
 #include "hoNDArrayMemoryManaged.h"
 #include "GadgetronTimer.h"
+#include "log.h"
 
 #ifdef USE_OMP
     #include <omp.h>

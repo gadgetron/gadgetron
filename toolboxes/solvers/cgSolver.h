@@ -139,7 +139,7 @@ namespace Gadgetron{
       //
 
       if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-        std::cout << "Iterating..." << std::endl;
+        GDEBUG_STREAM("Iterating..." << std::endl);
       }
     
       for( unsigned int it=0; it<iterations_; it++ ){
@@ -262,7 +262,7 @@ namespace Gadgetron{
         ARRAY_TYPE mhmX( rhs->get_dimensions());
 
         if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
-          std::cout << "Preparing guess..." << std::endl;
+          GDEBUG_STREAM("Preparing guess..." << std::endl);
         }
         
         mult_MH_M( this->get_x0().get(), &mhmX );

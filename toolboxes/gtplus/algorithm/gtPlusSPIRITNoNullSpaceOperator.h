@@ -93,7 +93,7 @@ bool gtPlusSPIRITNoNullSpaceOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITNoNullSpaceOperator<T>::grad(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITNoNullSpaceOperator<T>::grad(...) ... ");
         return false;
     }
 
@@ -120,7 +120,7 @@ bool gtPlusSPIRITNoNullSpaceOperator<T>::obj(const hoNDArray<T>& x, T& obj)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITNoNullSpaceOperator<T>::grad(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITNoNullSpaceOperator<T>::grad(...) ... ");
         return false;
     }
 

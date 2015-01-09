@@ -193,7 +193,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegParametricTransformation<ValueType, DIn, DOut>::serialize(char*& buf, size_t& len) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegParametricTransformation<ValueType, DIn, DOut>::serialize(char*& buf, size_t& len) ... ");
             return false;
         }
 
@@ -218,7 +218,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegParametricTransformation<ValueType, DIn, DOut>::deserialize(char* buf, size_t& len) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegParametricTransformation<ValueType, DIn, DOut>::deserialize(char* buf, size_t& len) ... ");
             return false;
         }
 

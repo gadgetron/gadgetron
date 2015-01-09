@@ -216,7 +216,7 @@ L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm) ... ");
         return false;
     }
     return true;
@@ -236,7 +236,7 @@ L1NormTotal(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm, T& L1Coeff
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::L1NormTotal(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm, T& L1CoeffNorm) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::L1NormTotal(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm, T& L1CoeffNorm) ... ");
         return false;
     }
     return true;
@@ -264,7 +264,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
         const T* pCoeffNorm = wavCoeffNorm.begin();
         T* pBuf = wav_coeff_norm_approx_.begin();
 
-        if ( GT_ABS(std::abs(p) - 1.0) < 0.001 )
+        if ( std::abs(std::abs(p) - 1.0) < 0.001 )
         {
             #pragma omp parallel for default(none) private(ii) shared(N, pBuf, pCoeffNorm, mu)
             for ( ii=0; ii<N; ii++ )
@@ -290,11 +290,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimensionExcept(wav_coeff_norm_approx_, wavCoeff, 0, wavCoeff, true));
             size_t num = wavCoeff.get_number_of_elements()/(RO*E1*W*CHA);
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, num, W, CHA) if ( num > 1 )
-            #else
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
-            #endif
+            #pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
             {
 
                 #pragma omp for
@@ -313,7 +309,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T mu, T p, bool processApproxCoeff) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T mu, T p, bool processApproxCoeff) ... ");
         return false;
     }
     return true;
@@ -332,7 +328,7 @@ proximity(hoNDArray<T>& wavCoeff, value_type thres)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::proximity(hoNDArray<T>& wavCoeff, value_type thres) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::proximity(hoNDArray<T>& wavCoeff, value_type thres) ... ");
         return false;
     }
     return true;
@@ -452,11 +448,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, value_t
             // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimensionExcept(wav_coeff_norm_approx_, complexIm_, 0, wavCoeff, false));
             num = wavCoeff.get_number_of_elements()/(RO*E1*W*CHA);
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, num, W, CHA) if ( num > 1 )
-            #else
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeff, W, CHA) if ( num > 1 )
-            #endif
+            #pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeff, W, CHA) if ( num > 1 )
             {
                 #pragma omp for
                 for ( ii=0; ii<num; ii++ )
@@ -476,7 +468,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, value_t
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff) ... ");
         return false;
     }
     return true;
@@ -507,7 +499,7 @@ grad(const hoNDArray<T>& x, hoNDArray<T>& g)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
         return false;
     }
 
@@ -534,7 +526,7 @@ obj(const hoNDArray<T>& x, T& obj)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::obj(const hoNDArray<T>& x, T& obj) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::obj(const hoNDArray<T>& x, T& obj) ... ");
         return false;
     }
 
@@ -612,7 +604,7 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::gradTask(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::gradTask(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
         return false;
     }
 
@@ -662,7 +654,7 @@ objTask(const hoNDArray<T>& x, T& obj)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::objTask(const hoNDArray<T>& x, T& obj) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletOperator<T>::objTask(const hoNDArray<T>& x, T& obj) ... ");
         return false;
     }
 
@@ -677,7 +669,7 @@ inline bool gtPlusWaveletOperator<T>::convertToImage(const hoNDArray<T>& x, hoND
         complexIm_Managed_.create(x.get_dimensions());
     }
 
-    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_Managed_));
+    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_Managed_);
 
     return true;
 }
@@ -690,7 +682,7 @@ inline bool gtPlusWaveletOperator<T>::convertToKSpace(const hoNDArray<T>& im, ho
         kspace_Managed_.create(im.get_dimensions());
     }
 
-    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_Managed_));
+    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_Managed_);
 
     return true;
 }

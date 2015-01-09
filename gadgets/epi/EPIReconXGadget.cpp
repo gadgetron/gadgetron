@@ -1,5 +1,4 @@
 #include "EPIReconXGadget.h"
-#include "Gadgetron.h"
 #include "ismrmrd/xml.h"
 
 namespace Gadgetron{
@@ -16,12 +15,12 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
   verboseMode_ = this->get_bool_value("verboseMode");
 
   if (h.encoding.size() == 0) {
-    GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-    GADGET_DEBUG1("This Gadget needs an encoding description\n");
+    GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+    GDEBUG("This Gadget needs an encoding description\n");
     return GADGET_FAIL;
   }
 
-  GADGET_DEBUG2("Number of encoding spaces = %d\n", h.encoding.size());
+  GDEBUG("Number of encoding spaces = %d\n", h.encoding.size());
 
   // Get the encoding space and trajectory description
   ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
@@ -32,12 +31,12 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
   if (h.encoding[0].trajectoryDescription) {
     traj_desc = *h.encoding[0].trajectoryDescription;
   } else {
-    GADGET_DEBUG1("Trajectory description missing");
+    GDEBUG("Trajectory description missing");
     return GADGET_FAIL;
   }
 
-  if (std::strcmp(traj_desc.identifier.c_str(), "ConventionalEPI")) {
-    GADGET_DEBUG1("Expected trajectory description identifier 'ConventionalEPI', not found.");
+  if (traj_desc.identifier != "ConventionalEPI") {
+    GDEBUG("Expected trajectory description identifier 'ConventionalEPI', not found.");
     return GADGET_FAIL;
   }
 
@@ -49,27 +48,27 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
   
   // TODO: we need a flag that says it's a balanced readout.
   for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
-    if (std::strcmp(i->name.c_str(),"rampUpTime") == 0) {
+    if (i->name == "rampUpTime") {
       reconx.rampUpTime_ = i->value;
-    } else if (std::strcmp(i->name.c_str(),"rampDownTime") == 0) {
+    } else if (i->name == "rampDownTime") {
       reconx.rampDownTime_ = i->value;
-    } else if (std::strcmp(i->name.c_str(),"flatTopTime") == 0) {
+    } else if (i->name == "flatTopTime") {
       reconx.flatTopTime_ = i->value;
-    } else if (std::strcmp(i->name.c_str(),"acqDelayTime") == 0) {
+    } else if (i->name == "acqDelayTime") {
       reconx.acqDelayTime_ = i->value;
-    } else if (std::strcmp(i->name.c_str(),"numSamples") == 0) {
+    } else if (i->name == "numSamples") {
       reconx.numSamples_ = i->value;
     } else {
-      GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+      GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
     }
   }
 
 
   for (std::vector<ISMRMRD::UserParameterDouble>::iterator i (traj_desc.userParameterDouble.begin()); i != traj_desc.userParameterDouble.end(); ++i) {
-    if (std::strcmp(i->name.c_str(),"dwellTime") == 0) {
+    if (i->name == "dwellTime") {
       reconx.dwellTime_ = i->value;
     } else {
-      GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+      GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
     }
   }
 
@@ -118,10 +117,8 @@ int EPIReconXGadget::process(
   // It is enough to put the first one, since they are linked
   if (this->next()->putq(m1) == -1) {
     m1->release();
-    ACE_ERROR_RETURN( (LM_ERROR,
-               ACE_TEXT("%p\n"),
-               ACE_TEXT("EPIReconXGadget::process, passing data on to next gadget")),
-              -1);
+    GERROR("EPIReconXGadget::process, passing data on to next gadget");
+    return -1;
   }
 
   return 0;

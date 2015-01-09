@@ -19,6 +19,19 @@
 
 namespace Gadgetron{
 
+template<class T> struct fftw_types{};
+
+template<> struct fftw_types<float>{
+	typedef fftwf_complex complex;
+	typedef fftwf_plan_s plan;
+};
+
+template<> struct fftw_types<double>{
+	typedef fftw_complex complex;
+	typedef fftw_plan_s plan;
+};
+
+
     /** 
     Generic class for Fast Fourier Transforms using FFTW on the hoNDArray class.
     This class is a singleton because the planning and memory allocation routines of FFTW are NOT threadsafe.
@@ -86,86 +99,86 @@ namespace Gadgetron{
 
 
         // 1D
-        bool fftshift1D(hoNDArray< ComplexType >& a);
-        bool fftshift1D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void fftshift1D(hoNDArray< ComplexType >& a);
+        void fftshift1D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
-        bool ifftshift1D(hoNDArray< ComplexType >& a);
-        bool ifftshift1D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void ifftshift1D(hoNDArray< ComplexType >& a);
+        void ifftshift1D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
         // 2D
-        bool fftshift2D(hoNDArray< ComplexType >& a);
-        bool fftshift2D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void fftshift2D(hoNDArray< ComplexType >& a);
+        void fftshift2D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
-        bool ifftshift2D(hoNDArray< ComplexType >& a);
-        bool ifftshift2D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void ifftshift2D(hoNDArray< ComplexType >& a);
+        void ifftshift2D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
         // 3D
-        bool fftshift3D(hoNDArray< ComplexType >& a);
-        bool fftshift3D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void fftshift3D(hoNDArray< ComplexType >& a);
+        void fftshift3D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
-        bool ifftshift3D(hoNDArray< ComplexType >& a);
-        bool ifftshift3D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void ifftshift3D(hoNDArray< ComplexType >& a);
+        void ifftshift3D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
         // 1D fft, in-place and out-of-place
         // the first dimension will be transformed
-        bool fft1(hoNDArray< ComplexType >& a);
-        bool ifft1(hoNDArray< ComplexType >& a);
+        void fft1(hoNDArray< ComplexType >& a);
+        void ifft1(hoNDArray< ComplexType >& a);
 
-        bool fft1(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
-        bool ifft1(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void fft1(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void ifft1(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
         // centered 1D fft
-        bool fft1c(hoNDArray< ComplexType >& a);
-        bool ifft1c(hoNDArray< ComplexType >& a);
+        void fft1c(hoNDArray< ComplexType >& a);
+        void ifft1c(hoNDArray< ComplexType >& a);
 
-        bool fft1c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
-        bool ifft1c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void fft1c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void ifft1c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
-        bool fft1c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
-        bool ifft1c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
+        void fft1c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
+        void ifft1c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
 
         // 2D fft, in-place and out-of-place
         // the first and second dimensions will be transformed
-        bool fft2(hoNDArray< ComplexType >& a);
-        bool ifft2(hoNDArray< ComplexType >& a);
+        void fft2(hoNDArray< ComplexType >& a);
+        void ifft2(hoNDArray< ComplexType >& a);
 
-        bool fft2(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
-        bool ifft2(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void fft2(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void ifft2(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
         // centered 2D fft
-        bool fft2c(hoNDArray< ComplexType >& a);
-        bool ifft2c(hoNDArray< ComplexType >& a);
+        void fft2c(hoNDArray< ComplexType >& a);
+        void ifft2c(hoNDArray< ComplexType >& a);
 
-        bool fft2c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
-        bool ifft2c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void fft2c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void ifft2c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
-        bool fft2c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
-        bool ifft2c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
+        void fft2c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
+        void ifft2c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
 
         // 3D fft, in-place and out-of-place
         // the first, second and third dimensions will be transformed
-        bool fft3(hoNDArray< ComplexType >& a);
-        bool ifft3(hoNDArray< ComplexType >& a);
+        void fft3(hoNDArray< ComplexType >& a);
+        void ifft3(hoNDArray< ComplexType >& a);
 
-        bool fft3(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
-        bool ifft3(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void fft3(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void ifft3(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
         // centered 3D fft
-        bool fft3c(hoNDArray< ComplexType >& a);
-        bool ifft3c(hoNDArray< ComplexType >& a);
+        void fft3c(hoNDArray< ComplexType >& a);
+        void ifft3c(hoNDArray< ComplexType >& a);
 
-        bool fft3c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
-        bool ifft3c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void fft3c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
+        void ifft3c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);
 
-        bool fft3c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
-        bool ifft3c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
+        void fft3c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
+        void ifft3c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
 
     protected:
 
         //We are making these protected since this class is a singleton
 
         hoNDFFT() {
-            set_function_pointers();
+
 
 #ifdef USE_OMP
             num_of_max_threads_ = omp_get_num_procs();
@@ -174,20 +187,36 @@ namespace Gadgetron{
 #endif // USE_OMP
         }
 
-        virtual ~hoNDFFT() { fftw_cleanup_ptr_(); }
+        virtual ~hoNDFFT() { fftw_cleanup_(); }
 
         void fft_int(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign);
 
-        void set_function_pointers();
+        void fft_int_uneven(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign);
 
-        int   (*fftw_import_wisdom_from_file_ptr_)(FILE*);
-        void  (*fftw_export_wisdom_to_file_ptr_)(FILE*);
-        void  (*fftw_cleanup_ptr_)(void);
-        void* (*fftw_malloc_ptr_)(size_t);
-        void  (*fftw_free_ptr_)(void* p);
-        void  (*fftw_execute_ptr_)(void*);
-        void* (*fftw_plan_dft_1d_ptr_)(int, void*, void*, int, unsigned);
-        void  (*fftw_destroy_plan_ptr_)(void*);
+        int   fftw_import_wisdom_from_file_(FILE*);
+        void  fftw_export_wisdom_to_file_(FILE*);
+        void  fftw_cleanup_();
+        void* fftw_malloc_(size_t);
+        void  fftw_free_(void* p);
+        void  fftw_execute_dft_(typename fftw_types<T>::plan * p, ComplexType*, ComplexType*);
+        void  fftw_execute_(typename fftw_types<T>::plan * p);
+        void fftw_print_plan_(typename fftw_types<T>::plan *p);
+
+        typename fftw_types<T>::plan * fftw_plan_dft_1d_(int rank, ComplexType*, ComplexType*, int, unsigned);
+        typename fftw_types<T>::plan * fftw_plan_dft_2d_(int dim0,int dim1, ComplexType*, ComplexType*, int, unsigned);
+        typename fftw_types<T>::plan * fftw_plan_dft_3d_(int dim0,int dim1,int dim2, ComplexType*, ComplexType*, int, unsigned);
+
+        typename fftw_types<T>::plan * fftw_plan_many_dft_(int rank, const int *n, int howmany,
+                                          ComplexType *in, const int *inembed,
+                                          int istride, int idist,
+                                          ComplexType *out, const int *onembed,
+                                          int ostride, int odist,
+                                          int sign, unsigned flags);
+        typename fftw_types<T>::plan * fftw_plan_dft_(int rank, ComplexType*, ComplexType*, int, unsigned);
+
+        void  fftw_destroy_plan_(typename fftw_types<T>::plan *);
+
+
 
         static hoNDFFT<T>* instance_;
         boost::mutex mutex_;
@@ -200,45 +229,52 @@ namespace Gadgetron{
         size_t ifftshiftPivot(size_t len);
 
         // 1D
-        bool fftshift1D(const ComplexType* a, ComplexType* r, size_t x, size_t pivot);
-        bool ifftshift1D(const ComplexType* a, ComplexType* r, size_t x, size_t pivot);
+        void fftshift1D(const ComplexType* a, ComplexType* r, size_t x, size_t pivot);
+        void ifftshift1D(const ComplexType* a, ComplexType* r, size_t x, size_t pivot);
 
-        bool fftshiftPivot1D(ComplexType* a, size_t x, size_t n, size_t pivot);
-        bool fftshiftPivot1D(const ComplexType* a, ComplexType* r, size_t x, size_t n, size_t pivot);
+        void fftshiftPivot1D(ComplexType* a, size_t x, size_t n, size_t pivot);
+        void fftshiftPivot1D(const ComplexType* a, ComplexType* r, size_t x, size_t n, size_t pivot);
 
         // 2D
-        bool fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty);
-        bool fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty);
+        void fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty);
+        void fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty);
 
-        bool fftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n);
-        bool ifftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n);
+        void fftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n);
+        void ifftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n);
 
-        bool fftshift2D(ComplexType* a, size_t x, size_t y, size_t n);
-        bool ifftshift2D(ComplexType* a, size_t x, size_t y, size_t n);
+        void fftshift2D(ComplexType* a, size_t x, size_t y, size_t n);
+        void ifftshift2D(ComplexType* a, size_t x, size_t y, size_t n);
 
         // 3D
-        bool fftshiftPivot3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n, size_t pivotx, size_t pivoty, size_t pivotz);
-        bool fftshiftPivot3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n, size_t pivotx, size_t pivoty, size_t pivotz);
+        void fftshiftPivot3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n, size_t pivotx, size_t pivoty, size_t pivotz);
+        void fftshiftPivot3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n, size_t pivotx, size_t pivoty, size_t pivotz);
 
-        bool fftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n);
-        bool ifftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n);
+        void fftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n);
+        void ifftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n);
 
-        bool fftshift3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n);
-        bool ifftshift3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n);
+        void fftshift3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n);
+        void ifftshift3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n);
 
         // forward: true, fft; false, inverse fft
-        bool fft1(hoNDArray< ComplexType >& a, bool forward);
-        bool fft2(hoNDArray< ComplexType >& a, bool forward);
-        bool fft3(hoNDArray< ComplexType >& a, bool forward);
+        void fft1(hoNDArray< ComplexType >& a, bool forward);
+        void fft2(hoNDArray< ComplexType >& a, bool forward);
+        void fft3(hoNDArray< ComplexType >& a, bool forward);
 
-        bool fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
-        bool fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
-        bool fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
+        void fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
+        void fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
+        void fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward);
 
         // get the number of threads used for fft
         int get_num_threads_fft1(size_t n0, size_t num);
         int get_num_threads_fft2(size_t n0, size_t n1, size_t num);
         int get_num_threads_fft3(size_t n0, size_t n1, size_t n2, size_t num);
+
+        /**
+         * Multiplies array k'th element by -1^k, causing the result of an FFT to have the frequencies centered
+         */
+        void timeswitch(hoNDArray<ComplexType>* a, int transform_dim);
+
+        void phaseshift(hoNDArray<ComplexType>* a, T phase, int transform_dim);
     };
 }
 

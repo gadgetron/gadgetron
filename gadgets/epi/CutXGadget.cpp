@@ -15,8 +15,8 @@ namespace Gadgetron{
       
       
       if (h.encoding.size() == 0) {
-	GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-	GADGET_DEBUG1("This Gadget needs an encoding description\n");
+	GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+	GDEBUG("This Gadget needs an encoding description\n");
 	return GADGET_FAIL;
       }
       

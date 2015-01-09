@@ -1,10 +1,11 @@
 #include <iostream>
+#include "log.h"
 
 #include "CloudBus.h"
 
 int main(int argc, char** argv)
 {
-  std::cout << "CloudBus Main Program" << std::endl;
+  GDEBUG_STREAM("CloudBus Main Program" << std::endl);
 
   int port = GADGETRON_DEFAULT_MULTICAST_PORT;
   const char* addr = GADGETRON_DEFAULT_MULTICAST_ADDR;
@@ -12,12 +13,12 @@ int main(int argc, char** argv)
 
   if (argc > 1) {
     addr = argv[1];
-    std::cout << "Setting multicast address to: " << addr << std::endl;
+    GDEBUG_STREAM("Setting multicast address to: " << addr << std::endl);
   }
 
   if (argc > 2) {
     port = std::atoi(argv[2]);
-    std::cout << "Setting multicast port to: " << port << std::endl;
+    GDEBUG_STREAM("Setting multicast port to: " << port << std::endl);
   }
 
   if (argc > 3)

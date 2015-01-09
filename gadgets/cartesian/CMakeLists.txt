@@ -18,6 +18,7 @@ set_target_properties(gadgetron_cartesian PROPERTIES VERSION ${GADGETRON_VERSION
 
 target_link_libraries(gadgetron_cartesian gadgetron_toolbox_cpucore 
   gadgetron_gadgetbase
+  gadgetron_toolbox_log
   ${ISMRMRD_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )

@@ -1,4 +1,3 @@
-#include "Gadgetron.h"
 #include "GrappaGadget.h"
 #include "GrappaUnmixingGadget.h"
 #include "ismrmrd/xml.h"
@@ -34,10 +33,10 @@ namespace Gadgetron{
 
   int GrappaGadget::close(unsigned long flags) {
     int ret = Gadget::close(flags);
-    GADGET_DEBUG1("Shutting down GRAPPA Gadget\n");
+    GDEBUG("Shutting down GRAPPA Gadget\n");
 
     if (weights_calculator_.close(flags) < 0) {
-      GADGET_DEBUG1("Failed to close down weights calculator\n");
+      GDEBUG("Failed to close down weights calculator\n");
       return GADGET_FAIL;
     }
 
@@ -50,8 +49,8 @@ namespace Gadgetron{
     ISMRMRD::deserialize(mb->rd_ptr(),h);
 
     if (h.encoding.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+      GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+      GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
 
@@ -68,7 +67,7 @@ namespace Gadgetron{
     dimensions_.push_back(slices);
 
 
-    GADGET_DEBUG2("Dimensions %d, %d, %d, %d, %d\n", dimensions_[0], dimensions_[1], dimensions_[2], dimensions_[3], dimensions_[4]);
+    GDEBUG("Dimensions %d, %d, %d, %d, %d\n", dimensions_[0], dimensions_[1], dimensions_[2], dimensions_[3], dimensions_[4]);
 
     image_dimensions_.push_back(r_space.matrixSize.x); 
     image_dimensions_.push_back(r_space.matrixSize.y);
@@ -111,14 +110,14 @@ namespace Gadgetron{
       target_coils_ = dimensions_[3];
     }
 
-    GADGET_DEBUG2("Running GRAPPA recon with %d source channels and %d target channels\n", dimensions_[3], target_coils_);
+    GDEBUG("Running GRAPPA recon with %d source channels and %d target channels\n", dimensions_[3], target_coils_);
 
     weights_calculator_.set_number_of_target_coils(target_coils_);
 
 
     int device_channels = this->get_int_value("device_channels");
     if (device_channels) {
-      GADGET_DEBUG2("We got the number of device channels from other gadget: %d\n", device_channels);
+      GDEBUG("We got the number of device channels from other gadget: %d\n", device_channels);
       for (int i = 0; i < device_channels; i++) {
 	weights_calculator_.add_uncombined_channel((unsigned int)i);
       }
@@ -137,14 +136,14 @@ namespace Gadgetron{
       
       uncomb_str = this->get_string_value("uncombined_channels_by_name");
       if (uncomb_str->size()) {
-	GADGET_DEBUG2("uncomb_str: %s\n",  uncomb_str->c_str());
+	GDEBUG("uncomb_str: %s\n",  uncomb_str->c_str());
 	boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
 	for (unsigned int i = 0; i < uncomb.size(); i++) {
 	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
 	map_type_::iterator it = channel_map_.find(ch);
 	if (it != channel_map_.end()) {
 	  unsigned int channel_id = static_cast<unsigned int>(it->second);
-	  GADGET_DEBUG2("Device channel: %s (%d)\n",  uncomb[i].c_str(), channel_id);
+	  GDEBUG("Device channel: %s (%d)\n",  uncomb[i].c_str(), channel_id);
 	  weights_calculator_.add_uncombined_channel(channel_id);
 	}
 	/*
@@ -170,7 +169,7 @@ namespace Gadgetron{
 
         hoNDArray< std::complex<float> > tmp_w;
         if (!tmp_w.create(&wdims)) {
-        GADGET_DEBUG1("Unable to create temporary array with dimensions\n");
+        GDEBUG("Unable to create temporary array with dimensions\n");
         return GADGET_FAIL;
         }
         tmp_w.clear(std::complex<float>(1.0,0));
@@ -184,14 +183,14 @@ namespace Gadgetron{
 
 
     if (weights_calculator_.open() < 0) {
-      GADGET_DEBUG1("Failed to open GrappaWeightsCalculator\n");
+      GDEBUG("Failed to open GrappaWeightsCalculator\n");
       return GADGET_FAIL;
     }
 
     image_data_ = std::vector< GadgetContainerMessage< hoNDArray< std::complex<float> > >* >(dimensions_[4],0);
     for (unsigned int i = 0; i < image_data_.size(); i++) {
       if (create_image_buffer(i) != GADGET_OK) {
-        GADGET_DEBUG1("Unable to create image buffers");
+        GDEBUG("Unable to create image buffers");
         return GADGET_FAIL;
       }
     }
@@ -217,12 +216,12 @@ namespace Gadgetron{
 
     if (first_call_) {
       if (m1->getObjectPtr()->active_channels != dimensions_[3]) {
-        GADGET_DEBUG1("Detected coil number change. Maybe due to upstream channel reduction\n");
+        GDEBUG("Detected coil number change. Maybe due to upstream channel reduction\n");
         dimensions_[3] = m1->getObjectPtr()->active_channels;
       }
 
       if (initial_setup() != GADGET_OK) {
-        GADGET_DEBUG1("Initial Setup Failed\n");
+        GDEBUG("Initial Setup Failed\n");
         m1->release();
         return GADGET_FAIL;
       }
@@ -237,18 +236,18 @@ namespace Gadgetron{
     unsigned int slice = acq_head->idx.slice;
 
     if (samples != image_dimensions_[0]) {
-      GADGET_DEBUG2("GrappaGadget: wrong number of samples received %d, expected %d\n", samples, image_dimensions_[0]);
+      GDEBUG("GrappaGadget: wrong number of samples received %d, expected %d\n", samples, image_dimensions_[0]);
       return GADGET_FAIL;
     }
 
     if (slice >= image_data_.size()) {
-      GADGET_DEBUG1("Invalid slice number received\n");
+      GDEBUG("Invalid slice number received\n");
       return GADGET_FAIL;
     }
 
     if (!image_data_[0]) {
       if (create_image_buffer(slice) != GADGET_OK) {
-        GADGET_DEBUG1("Failed to allocate new slice buffer\n");
+        GDEBUG("Failed to allocate new slice buffer\n");
         return GADGET_FAIL;
       }
     }
@@ -299,7 +298,7 @@ namespace Gadgetron{
         }
 
         if (!cm2->getObjectPtr()->create(&combined_dims)) {
-        GADGET_DEBUG1("Unable to create combined image array\n");
+        GDEBUG("Unable to create combined image array\n");
         return GADGET_FAIL;
         }
 
@@ -342,12 +341,12 @@ namespace Gadgetron{
 
       image_data_[slice] = 0;
       if (create_image_buffer(slice) != GADGET_OK) {
-        GADGET_DEBUG1("Failed to create image buffer");
+        GDEBUG("Failed to create image buffer");
         return GADGET_FAIL;
       }
 
       if (this->next()->putq(cm0) < 0) {
-        GADGET_DEBUG1("Failed to pass image on to next Gadget in chain\n");
+        GDEBUG("Failed to pass image on to next Gadget in chain\n");
         return GADGET_FAIL;
       }
 
@@ -361,12 +360,12 @@ namespace Gadgetron{
 
         int appl_result = weights_[slice]->apply(image_data_[slice]->getObjectPtr(), cm2->getObjectPtr(), scale_factor);
         if (appl_result < 0) {
-        GADGET_DEBUG2("Failed to apply GRAPPA weights: error code %d\n", appl_result);
+        GDEBUG("Failed to apply GRAPPA weights: error code %d\n", appl_result);
         return GADGET_FAIL;
         }
 
         if (this->next()->putq(cm1) < 0) {
-        GADGET_DEBUG1("Failed to pass image on to next Gadget in chain\n");
+        GDEBUG("Failed to pass image on to next Gadget in chain\n");
         return GADGET_FAIL;
         }
         image_data_[slice]->getObjectPtr()->clear(std::complex<float>(0.0f,0.0f));
@@ -374,7 +373,7 @@ namespace Gadgetron{
     }
 
     if (buffers_[slice]->add_data(m1->getObjectPtr(),m2->getObjectPtr(), line_offset_) < 0) {
-      GADGET_DEBUG1("Failed to add incoming data to grappa calibration buffer\n");
+      GDEBUG("Failed to add incoming data to grappa calibration buffer\n");
       return GADGET_FAIL;
     }
 
@@ -397,7 +396,7 @@ namespace Gadgetron{
     image_data_[slice] = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
     try{ image_data_[slice]->getObjectPtr()->create(&image_dimensions_);}
     catch (std::runtime_error &err){
-      GADGET_DEBUG_EXCEPTION(err,"Unable to create image buffers");
+      GEXCEPTION(err,"Unable to create image buffers");
       return GADGET_FAIL;
     }
 

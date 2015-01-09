@@ -1,6 +1,9 @@
 
 #include "gtPlusISMRMRDReconUtil.h"
 #include "hoNDArray_elemwise.h"
+#include <algorithm>
+
+#define GT_IMAGING_GEOMETRY_DELTA 0.001
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -77,7 +80,7 @@ KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::KLT_eigenAnalysis(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::KLT_eigenAnalysis(...) ... ");
         return false;
     }
 
@@ -105,7 +108,7 @@ KLT_applyEigen(const hoMatrix<T>& data, hoMatrix<T>& dataEigen, const hoMatrix<T
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::KLT_applyEigen(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::KLT_applyEigen(...) ... ");
         return false;
     }
 
@@ -135,7 +138,7 @@ KLT_applyEigen(const hoNDArray<T>& data, hoNDArray<T>& dataEigen, const hoMatrix
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::KLT_applyEigen(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::KLT_applyEigen(...) ... ");
         return false;
     }
 
@@ -169,14 +172,14 @@ KLT_numberOfKeptModes(const hoMatrix<T>& eigenValues, double thres, long long& n
 
         if ( numOfModesKept <= 0 )
         {
-            GADGET_WARN_MSG("KLT_numberOfKeptModes(...) - numOfModesKept <= 0 : " << thres);
-            GADGET_WARN_MSG("KLT_numberOfKeptModes(...) - keep all modes : " << M);
+            GWARN_STREAM("KLT_numberOfKeptModes(...) - numOfModesKept <= 0 : " << thres);
+            GWARN_STREAM("KLT_numberOfKeptModes(...) - keep all modes : " << M);
             numOfModesKept = (long long)M;
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::KLT_numberOfKeptModes(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::KLT_numberOfKeptModes(...) ... ");
         return false;
     }
 
@@ -194,7 +197,7 @@ pruneEigenVectorMatrix(const hoMatrix<T>& eigenVectors, long long numOfModesKept
 
         if ( numOfModesKept<=0 || numOfModesKept>(long long)N )
         {
-            GADGET_WARN_MSG("gtPlusISMRMRDReconUtil<T>::pruneEigenVectorMatrix(...) - numOfModesKept<=0 || numOfModesKept>N : " << numOfModesKept);
+            GWARN_STREAM("gtPlusISMRMRDReconUtil<T>::pruneEigenVectorMatrix(...) - numOfModesKept<=0 || numOfModesKept>N : " << numOfModesKept);
             eigenVectorsPruned = eigenVectors;
             return true;
         }
@@ -204,7 +207,7 @@ pruneEigenVectorMatrix(const hoMatrix<T>& eigenVectors, long long numOfModesKept
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::pruneEigenVectorMatrix(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::pruneEigenVectorMatrix(...) ... ");
         return false;
     }
 
@@ -274,7 +277,7 @@ computeKLTCoeff(const hoNDArray<T>& data, hoMatrix<T>& coeff, hoMatrix<T>& eigen
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::computeKLTCoeff(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::computeKLTCoeff(...) ... ");
         return false;
     }
 
@@ -299,7 +302,7 @@ computeKLCoilCompressionCoeff(const hoNDArray<T>& data, double thres, hoMatrix<T
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::computeKLCoilCompressionCoeff(thres) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::computeKLCoilCompressionCoeff(thres) ... ");
         return false;
     }
 
@@ -321,7 +324,7 @@ computeKLCoilCompressionCoeff(const hoNDArray<T>& data, int numOfModesKept, hoMa
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::computeKLCoilCompressionCoeff(numOfModesKept) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::computeKLCoilCompressionCoeff(numOfModesKept) ... ");
         return false;
     }
 
@@ -339,7 +342,7 @@ computeKLCoilCompression(const hoNDArray<T>& data, double thres, hoMatrix<T>& co
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::computeKLCoilCompression(thres) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::computeKLCoilCompression(thres) ... ");
         return false;
     }
 
@@ -357,7 +360,7 @@ computeKLCoilCompression(const hoNDArray<T>& data, int numOfModesKept, hoMatrix<
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::computeKLCoilCompression(numOfModesKept) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::computeKLCoilCompression(numOfModesKept) ... ");
         return false;
     }
 
@@ -458,7 +461,7 @@ appyKLCoilCompressionCoeff(const hoNDArray<T>& data, const hoMatrix<T>& coeff, h
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::appyKLCoilCompressionCoeff(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::appyKLCoilCompressionCoeff(...) ... ");
         return false;
     }
 
@@ -519,7 +522,7 @@ applyKLCoilCompressionCoeff(const hoNDArray<T>& data, const std::vector<hoMatrix
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::applyKLCoilCompressionCoeff(std::vector<hoMatrix<T> >& coeff) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::applyKLCoilCompressionCoeff(std::vector<hoMatrix<T> >& coeff) ... ");
         return false;
     }
 
@@ -569,7 +572,7 @@ bool gtPlusISMRMRDReconUtil<T>::computeKLFilter(const hoNDArray<T>& data, size_t
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::computeKLFilter(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::computeKLFilter(...) ... ");
         return false;
     }
 
@@ -603,7 +606,7 @@ zpadRange(size_t srcSize, size_t dstSize, size_t& start, size_t& end)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::zpadRange(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::zpadRange(...) ... ");
         return false;
     }
 
@@ -656,7 +659,7 @@ zeropad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& da
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::zeropad2D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::zeropad2D(...) ... ");
         return false;
     }
 
@@ -723,7 +726,7 @@ zeropad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, ho
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::zeropad3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::zeropad3D(...) ... ");
         return false;
     }
 
@@ -791,7 +794,7 @@ zeropad3DNoPresetZeros(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, siz
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::zeropad3DNoPresetZeros(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::zeropad3DNoPresetZeros(...) ... ");
         return false;
     }
 
@@ -843,7 +846,7 @@ cutpad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dat
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::cutpad2D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::cutpad2D(...) ... ");
         return false;
     }
 
@@ -902,7 +905,7 @@ cutpad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoN
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::cutpad3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::cutpad3D(...) ... ");
         return false;
     }
 
@@ -936,7 +939,7 @@ compute2DFilterFromTwo1D(const hoNDArray<T>& fx, const hoNDArray<T>& fy, hoNDArr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::compute2DFilterFromTwo1D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::compute2DFilterFromTwo1D(...) ... ");
         return false;
     }
 
@@ -967,7 +970,7 @@ compute2DFilterFromTwo1D(const hoNDArray<float>& fx, const hoNDArray<float>& fy,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::compute2DFilterFromTwo1D(float) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::compute2DFilterFromTwo1D(float) ... ");
         return false;
     }
 
@@ -998,7 +1001,7 @@ compute2DFilterFromTwo1D(const hoNDArray<double>& fx, const hoNDArray<double>& f
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::compute2DFilterFromTwo1D(double) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::compute2DFilterFromTwo1D(double) ... ");
         return false;
     }
 
@@ -1044,7 +1047,7 @@ compute3DFilterFromThree1D(const hoNDArray<T>& fx, const hoNDArray<T>& fy, const
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::compute3DFilterFromThree1D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::compute3DFilterFromThree1D(...) ... ");
         return false;
     }
 
@@ -1079,7 +1082,7 @@ compute3DFilterFromThree1D(const hoNDArray<float>& fx, const hoNDArray<float>& f
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::compute3DFilterFromThree1D(float) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::compute3DFilterFromThree1D(float) ... ");
         return false;
     }
 
@@ -1114,7 +1117,7 @@ compute3DFilterFromThree1D(const hoNDArray<double>& fx, const hoNDArray<double>&
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::compute3DFilterFromThree1D(double) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::compute3DFilterFromThree1D(double) ... ");
         return false;
     }
 
@@ -1132,7 +1135,7 @@ kspacefilterRO(hoNDArray<T>& data, const hoNDArray<T>& fRO)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterRO(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterRO(...) ... ");
         return false;
     }
 
@@ -1150,7 +1153,7 @@ kspacefilterRO(const hoNDArray<T>& data, const hoNDArray<T>& fRO, hoNDArray<T>& 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterRO(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterRO(...) ... ");
         return false;
     }
 
@@ -1168,7 +1171,7 @@ kspacefilterROE1(const hoNDArray<T>& data, const hoNDArray<T>& fROE1, hoNDArray<
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterROE1(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterROE1(...) ... ");
         return false;
     }
 
@@ -1191,7 +1194,7 @@ kspacefilterROE1(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const hoNDAr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterROE1(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterROE1(...) ... ");
         return false;
     }
 
@@ -1216,7 +1219,7 @@ kspacefilterE1(const hoNDArray<T>& data, const hoNDArray<T>& fE1, hoNDArray<T>& 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterE1(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterE1(...) ... ");
         return false;
     }
 
@@ -1244,7 +1247,7 @@ kspacefilterE2(const hoNDArray<T>& data, const hoNDArray<T>& fE2, hoNDArray<T>& 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterE2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterE2(...) ... ");
         return false;
     }
 
@@ -1270,7 +1273,7 @@ kspacefilterROE2(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const hoNDAr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterROE2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterROE2(...) ... ");
         return false;
     }
 
@@ -1296,7 +1299,7 @@ kspacefilterE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fE1, const hoNDAr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterE1E2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterE1E2(...) ... ");
         return false;
     }
 
@@ -1346,7 +1349,7 @@ kspacefilterROE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fROE1E2, hoNDAr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterROE1E2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterROE1E2(...) ... ");
         return false;
     }
 
@@ -1370,7 +1373,7 @@ kspacefilterROE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const hoND
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterROE1E2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspacefilterROE1E2(...) ... ");
         return false;
     }
 
@@ -1398,7 +1401,7 @@ kspace3DfilterE2(const hoNDArray<T>& data, const hoNDArray<T>& fE2, hoNDArray<T>
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspace3DfilterE2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspace3DfilterE2(...) ... ");
         return false;
     }
 
@@ -1424,7 +1427,7 @@ kspace3DfilterROE2(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const hoND
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspace3DfilterROE2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspace3DfilterROE2(...) ... ");
         return false;
     }
 
@@ -1450,7 +1453,7 @@ kspace3DfilterE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fE1, const hoND
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspace3DfilterE1E2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspace3DfilterE1E2(...) ... ");
         return false;
     }
 
@@ -1471,7 +1474,7 @@ kspace3DfilterROE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fROE1E2, hoND
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspace3DfilterROE1E2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspace3DfilterROE1E2(...) ... ");
         return false;
     }
 
@@ -1495,7 +1498,7 @@ kspace3DfilterROE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const ho
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::kspace3DfilterROE1E2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::kspace3DfilterROE1E2(...) ... ");
         return false;
     }
 
@@ -1577,7 +1580,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
 
                     for ( ii=1; ii<=width; ii++ )
                     {
-                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(2*width+1) ) )) );
+                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(2*width+1) ) )) );
                     }
 
                     if ( len%2 == 0 )
@@ -1611,7 +1614,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
                         double halfLen = (double)( (N+1)/2 );
                         for ( ii=1; ii<=halfLen; ii++ )
                         {
-                            filter(ii) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(N+1) ) )) );
+                            filter(ii) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(N+1) ) )) );
                         }
 
                         for ( ii=(size_t)halfLen; ii<N; ii++ )
@@ -1626,7 +1629,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
                         double halfLen = (double)( (len+1)/2 );
                         for ( ii=1; ii<=(size_t)halfLen; ii++ )
                         {
-                            filter(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(len+1) ) )) );
+                            filter(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(len+1) ) )) );
                         }
 
                         for ( ii=(size_t)halfLen; ii<len; ii++ )
@@ -1655,7 +1658,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::generateSymmetricFilter(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::generateSymmetricFilter(...) ... ");
         return false;
     }
 
@@ -1698,7 +1701,7 @@ generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& fil
                  {
                     for ( ii=1; ii<=width; ii++ )
                     {
-                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(2*width+1) ) )) );
+                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(2*width+1) ) )) );
                     }
                 }
             break;
@@ -1850,7 +1853,7 @@ generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& fil
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::generateAsymmetricFilter(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::generateAsymmetricFilter(...) ... ");
         return false;
     }
 
@@ -1890,11 +1893,11 @@ generateSymmetricFilterForRef(size_t len, size_t start, size_t end,
         }
         else if ( start>0 && end<len-1 )
         {
-            lenFilter = GT_MIN(lenFilterStart, lenFilterEnd);
+            lenFilter = ( (lenFilterStart<lenFilterEnd) ? lenFilterStart : lenFilterEnd );
         }
         else
         {
-            GADGET_ERROR_MSG("Invalid inputs : start - end - len : " << start << " " << end << " " << len);
+            GERROR_STREAM("Invalid inputs : start - end - len : " << start << " " << end << " " << len);
         }
 
         GADGET_CHECK_RETURN_FALSE(lenFilter>0);
@@ -1930,12 +1933,12 @@ generateSymmetricFilterForRef(size_t len, size_t start, size_t end,
         }
         else
         {
-            GADGET_ERROR_MSG("Invalid inputs : start - end - len : " << start << " " << end << " " << len);
+            GERROR_STREAM("Invalid inputs : start - end - len : " << start << " " << end << " " << len);
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::generateSymmetricFilterForRef(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::generateSymmetricFilterForRef(...) ... ");
         return false;
     }
 
@@ -2057,7 +2060,7 @@ detectSampledRegion2D(const hoNDArray<T>& data, size_t& startRO, size_t& endRO, 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledRegion2D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledRegion2D(...) ... ");
         return false;
     }
 
@@ -2159,7 +2162,7 @@ detectSampledRegion3D(const hoNDArray<T>& data, size_t& startRO, size_t& endRO, 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledRegion3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledRegion3D(...) ... ");
         return false;
     }
 
@@ -2180,7 +2183,7 @@ averageKSpace4D(const hoNDArray<T>& data, hoNDArray<T>& ave)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::averageKSpace4D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::averageKSpace4D(...) ... ");
         return false;
     }
 
@@ -2238,7 +2241,7 @@ averageKSpace4D(const hoNDArray<T>& data, hoNDArray<T>& ave, std::vector<size_t>
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::averageKSpace4D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::averageKSpace4D(...) ... ");
         return false;
     }
 
@@ -2256,7 +2259,7 @@ averageKSpace5D(const hoNDArray<T>& data, hoNDArray<T>& ave)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::averageKSpace5D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::averageKSpace5D(...) ... ");
         return false;
     }
 
@@ -2310,7 +2313,7 @@ averageKSpace5D(const hoNDArray<T>& data, hoNDArray<T>& ave, hoNDArray<size_t>& 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::averageKSpace5D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::averageKSpace5D(...) ... ");
         return false;
     }
 
@@ -2357,7 +2360,7 @@ detectSampledTimesE1(const hoNDArray<T>& data4D, std::vector<size_t>& sampledTim
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledTimesE1(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledTimesE1(...) ... ");
         return false;
     }
 
@@ -2395,7 +2398,7 @@ detectSampledRegionE1(const hoNDArray<T>& data, size_t& startE1, size_t& endE1)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledRegionE1(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledRegionE1(...) ... ");
         return false;
     }
 
@@ -2451,7 +2454,7 @@ detectSampledTimesE1E2(const hoNDArray<T>& data5D, hoNDArray<size_t>& sampledTim
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledTimesE1E2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledTimesE1E2(...) ... ");
         return false;
     }
 
@@ -2506,7 +2509,7 @@ detectSampledRegionE1E2(const hoNDArray<T>& data, size_t& startE1, size_t& endE1
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledRegionE1E2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledRegionE1E2(...) ... ");
         return false;
     }
 
@@ -2535,7 +2538,7 @@ copyAlongE1(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startE1, size_t e
         if ( (startE1>=E1) || (endE1>=E1) || (startE1>endE1) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongE1(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
+            GWARN_STREAM("copyAlongE1(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
             return true;
         }
 
@@ -2552,7 +2555,7 @@ copyAlongE1(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startE1, size_t e
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::copyAlongE1(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::copyAlongE1(...) ... ");
         return false;
     }
 
@@ -2581,14 +2584,14 @@ copyAlongROE1(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size_t
         if ( (startRO>=RO) || (endRO>=RO) || (startRO>endRO) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongROE1(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
+            GWARN_STREAM("copyAlongROE1(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
             return true;
         }
 
         if ( (startE1>=E1) || (endE1>=E1) || (startE1>endE1) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongROE1(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
+            GWARN_STREAM("copyAlongROE1(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
             return true;
         }
 
@@ -2610,7 +2613,7 @@ copyAlongROE1(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size_t
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::copyAlongROE1(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::copyAlongROE1(...) ... ");
         return false;
     }
 
@@ -2642,21 +2645,21 @@ copyAlongROE1E2(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size
         if ( (startRO>=RO) || (endRO>=RO) || (startRO>endRO) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongROE1E2(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
+            GWARN_STREAM("copyAlongROE1E2(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
             return true;
         }
 
         if ( (startE1>=E1) || (endE1>=E1) || (startE1>endE1) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongROE1E2(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
+            GWARN_STREAM("copyAlongROE1E2(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
             return true;
         }
 
         if ( (startE2>=E2) || (endE2>=E2) || (startE2>endE2) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongROE1E2(...) : (startE2>=E2) || (endE2>=E2) || (startE2>endE2) ... ");
+            GWARN_STREAM("copyAlongROE1E2(...) : (startE2>=E2) || (endE2>=E2) || (startE2>endE2) ... ");
             return true;
         }
 
@@ -2681,7 +2684,7 @@ copyAlongROE1E2(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::copyAlongROE1E2(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::copyAlongROE1E2(...) ... ");
         return false;
     }
 
@@ -2711,14 +2714,14 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
         if ( (startRO>=RO) || (endRO>=RO) || (startRO>endRO) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongROE1TransitionBand(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
+            GWARN_STREAM("copyAlongROE1TransitionBand(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
             return true;
         }
 
         if ( (startE1>=E1) || (endE1>=E1) || (startE1>endE1) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongROE1TransitionBand(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
+            GWARN_STREAM("copyAlongROE1TransitionBand(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
             return true;
         }
 
@@ -2787,14 +2790,6 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
             filter_dst_E1(ii) = T(1.0) - filter_src_E1(ii);
         }
 
-        //std::string debugFolder_ = "D:/software/Gadgetron/20130114/install/gadgetron/DebugOutput/";
-        //Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
-
-        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_src_RO, "filter_src_RO");
-        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_dst_RO, "filter_dst_RO");
-        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_src_E1, "filter_src_E1");
-        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_dst_E1, "filter_dst_E1");
-
         hoNDArray<T> srcFiltered(src), dstFiltered(dst);
         if ( startRO==0 && endRO==RO-1 )
         {
@@ -2826,7 +2821,7 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::copyAlongROE1TransitionBand(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::copyAlongROE1TransitionBand(...) ... ");
         return false;
     }
 
@@ -2860,21 +2855,21 @@ copyAlongROE1E2TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t
         if ( (startRO>=RO) || (endRO>=RO) || (startRO>endRO) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongROE1TransitionBand(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
+            GWARN_STREAM("copyAlongROE1TransitionBand(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
             return true;
         }
 
         if ( (startE1>=E1) || (endE1>=E1) || (startE1>endE1) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongROE1TransitionBand(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
+            GWARN_STREAM("copyAlongROE1TransitionBand(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
             return true;
         }
 
         if ( (startE2>=E2) || (endE2>=E2) || (startE2>endE2) )
         {
             dst = src;
-            GADGET_WARN_MSG("copyAlongROE1E2TransitionBand(...) : (startE2>=E2) || (endE2>=E2) || (startE2>endE2) ... ");
+            GWARN_STREAM("copyAlongROE1E2TransitionBand(...) : (startE2>=E2) || (endE2>=E2) || (startE2>endE2) ... ");
             return true;
         }
 
@@ -3007,7 +3002,7 @@ copyAlongROE1E2TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::copyAlongROE1E2TransitionBand(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::copyAlongROE1E2TransitionBand(...) ... ");
         return false;
     }
 
@@ -3305,7 +3300,7 @@ extractSubArrayForDim(const hoNDArray<T>& x, hoNDArray<T>& r, ISMRMRDDIM& dim, s
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::extractSubArrayForDim(dim, value) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::extractSubArrayForDim(dim, value) ... ");
         return false;
     }
 
@@ -3371,7 +3366,7 @@ extractSubArrayForDim(const hoNDArray<T>& x, hoNDArray<T>& r, ISMRMRDDIM& dim1, 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::extractSubArrayForDim(dim1, value1, dim2, value2) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::extractSubArrayForDim(dim1, value1, dim2, value2) ... ");
         return false;
     }
 
@@ -3428,7 +3423,7 @@ extractSubArrayForDim1LessEqualDim2Equal(const hoNDArray<T>& x, hoNDArray<T>& r,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::extractSubArrayForDim1LessEqualDim2Equal(dim1, value1, dim2, value2) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::extractSubArrayForDim1LessEqualDim2Equal(dim1, value1, dim2, value2) ... ");
         return false;
     }
 
@@ -3474,7 +3469,7 @@ extractSubArrayForMaxEncodingCounters(const hoNDArray<T>& x, hoNDArray<T>& r, co
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::extractSubArrayForMaxEncodingCounters(const hoNDArray<T>& x, hoNDArray<T>& r, const ISMRMRD::EncodingCounters& maxIdx) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::extractSubArrayForMaxEncodingCounters(const hoNDArray<T>& x, hoNDArray<T>& r, const ISMRMRD::EncodingCounters& maxIdx) ... ");
         return false;
     }
 
@@ -3696,7 +3691,7 @@ bool gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const IS
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, ISMRMRD::MetaContainer& attrib) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, ISMRMRD::MetaContainer& attrib) ... ");
         return false;
     }
 
@@ -3807,7 +3802,7 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const IS
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const ISMRMRD::MetaContainer& attrib, ISMRMRD::ImageHeader& imgHeader) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const ISMRMRD::MetaContainer& attrib, ISMRMRD::ImageHeader& imgHeader) ... ");
         return false;
     }
 
@@ -3826,7 +3821,7 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const IS
 //        unsigned int numOfJobs = jobIDs.size();
 //        if ( numOfJobs == 0 )
 //        {
-//            GADGET_WARN_MSG("numOfJobs == 0");
+//            GWARN_STREAM("numOfJobs == 0");
 //            return true;
 //        }
 //
@@ -3836,7 +3831,7 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const IS
 //
 //        if ( numOfDevices == 0 )
 //        {
-//            GADGET_WARN_MSG("numOfDevices == 0");
+//            GWARN_STREAM("numOfDevices == 0");
 //            return true;
 //        }
 //
@@ -3853,7 +3848,7 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const IS
 //
 //        if ( validDevices.empty() )
 //        {
-//            GADGET_ERROR_MSG("No valid device can be found : " << minimalMemoryForValidDevice);
+//            GERROR_STREAM("No valid device can be found : " << minimalMemoryForValidDevice);
 //            return false;
 //        }
 //
@@ -3921,7 +3916,7 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const IS
 //    }
 //    catch(...)
 //    {
-//        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::cudaJobSplitter(...) ... ");
+//        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::cudaJobSplitter(...) ... ");
 //        return false;
 //    }
 //
@@ -3935,7 +3930,7 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const IS
 //{
 //    if ( numOfJobs == 0 )
 //    {
-//        GADGET_WARN_MSG("numOfJobs == 0");
+//        GWARN_STREAM("numOfJobs == 0");
 //        return true;
 //    }
 //
@@ -4037,7 +4032,7 @@ computeNoisePrewhiteningMatrix(const hoNDArray<T>& noise, double noiseBandWidth,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::computeNoisePrewhiteningMatrix(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::computeNoisePrewhiteningMatrix(...) ... ");
         return false;
     }
 
@@ -4060,11 +4055,7 @@ performNoisePrewhitening(hoNDArray<T>& data, const hoMatrix<T>& prewhiteningMatr
         size_t N = data.get_number_of_elements()/(RO*E1*CHA);
 
         long long n;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, N)
-        #else
-            #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, N, data, prewhiteningMatrix)
-        #endif // GCC_OLD_FLAG
+        #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, N, data, prewhiteningMatrix)
         {
             hoMatrix<T> tmp(RO*E1, CHA);
             Gadgetron::clear(tmp);
@@ -4080,7 +4071,7 @@ performNoisePrewhitening(hoNDArray<T>& data, const hoMatrix<T>& prewhiteningMatr
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::performNoisePrewhitening(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::performNoisePrewhitening(...) ... ");
         return false;
     }
 
@@ -4113,12 +4104,12 @@ zpadResize2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>&
         Gadgetron::clear(&dataResized);
 
         hoNDArray<T> kspace(data);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(data, kspace));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(data, kspace);
         GADGET_CHECK_RETURN_FALSE(zpadResize2DOnKSpace(kspace, sizeX, sizeY, dataResized));
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize2D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize2D(...) ... ");
         return false;
     }
 
@@ -4140,7 +4131,7 @@ zpadResize2DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, hoN
         if ( RO==sizeX && E1==sizeY )
         {
             dataResized = kspace;
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized);
             return true;
         }
 
@@ -4152,14 +4143,14 @@ zpadResize2DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, hoN
         Gadgetron::clear(&dataResized);
 
         GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized);
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY)/std::sqrt((double)RO*E1));
         Gadgetron::scal(scaling, dataResized);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize2DOnKSpace(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize2DOnKSpace(...) ... ");
         return false;
     }
 
@@ -4194,12 +4185,12 @@ zpadResize3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ,
         Gadgetron::clear(&dataResized);
 
         hoNDArray<T> kspace(data);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, kspace));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, kspace);
         GADGET_CHECK_RETURN_FALSE(zpadResize3DOnKSpace(kspace, sizeX, sizeY, sizeZ, dataResized));
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize3D(...) ... ");
         return false;
     }
 
@@ -4223,7 +4214,7 @@ zpadResize3DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, siz
         if ( RO==sizeX && E1==sizeY && E2==sizeZ )
         {
             dataResized = kspace;
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized);
             return true;
         }
 
@@ -4235,14 +4226,14 @@ zpadResize3DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, siz
         Gadgetron::clear(&dataResized);
 
         GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized);
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY*sizeZ)/std::sqrt((double)RO*E1*E2));
         Gadgetron::scal(scaling, dataResized);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize3DOnKSpace(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize3DOnKSpace(...) ... ");
         return false;
     }
 
@@ -4278,17 +4269,17 @@ zpadResize2DFilter(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, const h
         Gadgetron::clear(&dataResized);
 
         hoNDArray<T> kspace(data);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(data, kspace));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(data, kspace);
         GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(filter2D, dataResized, dataResized));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized);
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY)/std::sqrt((double)RO*E1));
         Gadgetron::scal(scaling, dataResized);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize2DFilter(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize2DFilter(...) ... ");
         return false;
     }
 
@@ -4327,17 +4318,17 @@ zpadResize3DFilter(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t 
         Gadgetron::clear(&dataResized);
 
         hoNDArray<T> kspace(data);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, kspace));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, kspace);
         GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(filter3D, dataResized, dataResized));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized);
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY*sizeZ)/std::sqrt((double)RO*E1*E2));
         Gadgetron::scal(scaling, dataResized);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize3DFilter(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::zpadResize3DFilter(...) ... ");
         return false;
     }
 
@@ -4351,13 +4342,13 @@ kspacefilterROImage(hoNDArray<T>& data, const hoNDArray<T>& fRO)
     try
     {
         GADGET_CHECK_RETURN_FALSE(data.get_size(0)==fRO.get_number_of_elements());
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(data));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(data);
         GADGET_CHECK_RETURN_FALSE(this->kspacefilterRO(data, fRO));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(data));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(data);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterROImage(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterROImage(...) ... ");
         return false;
     }
 
@@ -4371,13 +4362,13 @@ kspacefilterROImage(const hoNDArray<T>& data, const hoNDArray<T>& fRO, hoNDArray
     try
     {
         GADGET_CHECK_RETURN_FALSE(data.get_size(0)==fRO.get_number_of_elements());
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(data, dataFiltered));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(data, dataFiltered);
         GADGET_CHECK_RETURN_FALSE(this->kspacefilterRO(dataFiltered, fRO));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(dataFiltered));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(dataFiltered);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterROImage(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterROImage(...) ... ");
         return false;
     }
 
@@ -4392,13 +4383,13 @@ kspacefilterE1Image(const hoNDArray<T>& data, const hoNDArray<T>& fE1, hoNDArray
     {
         GADGET_CHECK_RETURN_FALSE(data.get_size(1)==fE1.get_number_of_elements());
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(data, dataFiltered));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(data, dataFiltered);
         GADGET_CHECK_RETURN_FALSE(this->kspacefilterRO(dataFiltered, fE1, dataFiltered));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataFiltered));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataFiltered);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterE1Image(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterE1Image(...) ... ");
         return false;
     }
 
@@ -4413,13 +4404,13 @@ kspacefilterE2Image(const hoNDArray<T>& data, const hoNDArray<T>& fE2, hoNDArray
     {
         GADGET_CHECK_RETURN_FALSE(data.get_size(2)==fE2.get_number_of_elements());
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, dataFiltered));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, dataFiltered);
         GADGET_CHECK_RETURN_FALSE(this->kspacefilterRO(dataFiltered, fE2, dataFiltered));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataFiltered));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataFiltered);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterE2Image(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterE2Image(...) ... ");
         return false;
     }
 
@@ -4435,13 +4426,13 @@ kspacefilterE1E2Image(const hoNDArray<T>& data, const hoNDArray<T>& fE1, const h
         GADGET_CHECK_RETURN_FALSE(data.get_size(1)==fE1.get_number_of_elements());
         GADGET_CHECK_RETURN_FALSE(data.get_size(2)==fE2.get_number_of_elements());
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, dataFiltered));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, dataFiltered);
         GADGET_CHECK_RETURN_FALSE(this->kspacefilterE1E2(dataFiltered, fE1, fE2, dataFiltered));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataFiltered));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataFiltered);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterE1E2Image(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterE1E2Image(...) ... ");
         return false;
     }
 
@@ -4458,13 +4449,13 @@ kspacefilterROE1E2Image(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const
         GADGET_CHECK_RETURN_FALSE(data.get_size(1)==fE1.get_number_of_elements());
         GADGET_CHECK_RETURN_FALSE(data.get_size(2)==fE2.get_number_of_elements());
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, dataFiltered));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, dataFiltered);
         GADGET_CHECK_RETURN_FALSE(this->kspacefilterROE1E2(dataFiltered, fRO, fE1, fE2, dataFiltered));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataFiltered));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataFiltered);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterROE1E2Image(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::kspacefilterROE1E2Image(...) ... ");
         return false;
     }
 
@@ -4690,7 +4681,7 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIHInner(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIHInner(...) ... ");
         return false;
     }
 
@@ -4856,7 +4847,7 @@ coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap3DNIHInner(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap3DNIHInner(...) ... ");
         return false;
     }
 
@@ -4869,11 +4860,6 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
 {
     try
     {
-        //std::string debugFolder = "D:/software/Gadgetron/20130114/install_debug/gadgetron/DebugOutput/";
-        //gtPlusIOAnalyze gt_io;
-
-        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, data, "data");
-
         typedef typename realType<T>::Type value_type;
 
         long long RO = data.get_size(0);
@@ -4922,36 +4908,24 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
             prevR = R;
 
             Gadgetron::conjugate(R, R);
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "R");
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, data, coilMap));
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMap, "coilMap");
-
-            //Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(coilMap, coilMapConv);
-            //GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(kerKSpace, coilMapConv, D));
-            //Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(D, coilMapConv);
 
             Gadgetron::conv2(coilMap, ker, coilMapConv);
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMapConv, "coilMapConv");
 
             Gadgetron::multiplyConj(coilMapConv, coilMapConv, D);
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, D, "D");
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R");
 
             Gadgetron::sqrt(R, R);
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R2");
 
             Gadgetron::addEpsilon(R);
             Gadgetron::inv(R, R);
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R_inv");
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMapConv, coilMap));
 
             Gadgetron::multiplyConj(data, coilMap, D);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "R2");
 
             //if ( iter < iterNum - 1 )
             //{
@@ -4976,12 +4950,8 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
                 Gadgetron::axpy( std::conj(vCha), coilMapCHA, imT, imT);
             }
 
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, imT, "imT");
-
             Gadgetron::abs(imT, magT);
             Gadgetron::divide(imT, magT, imT);
-
-            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, imT, "imT2");
 
             Gadgetron::multiply(R, imT, R);
             Gadgetron::conjugate(imT, imT);
@@ -4991,14 +4961,14 @@ coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
             Gadgetron::norm2(diffR, vDiffR);
             Gadgetron::norm2(R, vR);
 
-            // GADGET_MSG("coilMap2DNIH2Inner - iter : " << iter << " - norm(prevR-R)/norm(R) : " << vDiffR/vR);
+            // GDEBUG_STREAM("coilMap2DNIH2Inner - iter : " << iter << " - norm(prevR-R)/norm(R) : " << vDiffR/vR);
 
             if ( vDiffR/vR < thres ) break;
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIH2Inner(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIH2Inner(...) ... ");
         return false;
     }
 
@@ -5034,11 +5004,7 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
 
         if ( N >= 16 )
         {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, power, iterNum, thres)
-            #else
-                #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, data, coilMap, power, iterNum, thres)
-            #endif 
+            #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, data, coilMap, power, iterNum, thres)
             {
                 #pragma omp for
                 for ( n=0; n<(long long)N; n++ )
@@ -5087,7 +5053,7 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIH(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIH(...) ... ");
         return false;
     }
 
@@ -5197,7 +5163,7 @@ coilMap3DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, s
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap3DNIH2Inner(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap3DNIH2Inner(...) ... ");
         return false;
     }
 
@@ -5245,12 +5211,12 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
         {
             if ( algo == ISMRMRD_SOUHEIL_ITER )
             {
-                GADGET_MSG("calling 3D version of Souhiel iterative coil map estimation ... ");
+                GDEBUG_STREAM("calling 3D version of Souhiel iterative coil map estimation ... ");
                 GADGET_CHECK_RETURN_FALSE(this->coilMap3DNIH2Inner(data, coilMap, ks, ks, iterNum, thres));
             }
             else if ( algo==ISMRMRD_SOUHEIL && E2>5*ks && true3D )
             {
-                GADGET_MSG("calling 3D version of Souhiel coil map estimation ... ");
+                GDEBUG_STREAM("calling 3D version of Souhiel coil map estimation ... ");
                 GADGET_CHECK_RETURN_FALSE(this->coilMap3DNIHInner(data, coilMap, ks, power));
             }
             else
@@ -5263,24 +5229,16 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
                     hoNDArray<T> data2D(RO, E1, CHA);
                     hoNDArray<T> coilMap2D(RO, E1, CHA);
 
-                    Gadgetron::GadgetronTimer gt_timer3_(false);
-                    bool timing = false;
-
                     #pragma omp for
                     for ( e2=0; e2<(int)E2; e2++ )
                     {
                         long long cha;
 
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.start("memcpy 1 ... "));
                         for ( cha=0; cha<(long long)CHA; cha++ )
                         {
                             memcpy(data2D.begin()+cha*RO*E1, dataCurr.begin()+cha*RO*E1*E2+e2*RO*E1, sizeof(T)*RO*E1);
                         }
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.stop());
 
-                        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, data2D, "data2D");
-
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.start("coilMap2DNIHInner"));
                         if ( algo == ISMRMRD_SOUHEIL_ITER )
                         {
                             coilMap2DNIH2Inner(data2D, coilMap2D, ks, iterNum, thres);
@@ -5289,18 +5247,11 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
                         {
                             coilMap2DNIHInner(data2D, coilMap2D, ks, power);
                         }
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.stop());
 
-                        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMap2D, "coilMap2D");
-
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.start("memcpy 2 ... "));
                         for ( cha=0; cha<(long long)CHA; cha++ )
                         {
                             memcpy(coilMapCurr.begin()+cha*RO*E1*E2+e2*RO*E1, coilMap2D.begin()+cha*RO*E1, sizeof(T)*RO*E1);
                         }
-                        GADGET_CHECK_PERFORM(timing, gt_timer3_.stop());
-
-                        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMapCurr, "coilMapCurr");
                     }
                 }
             }
@@ -5308,7 +5259,7 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap3DNIH(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap3DNIH(...) ... ");
         return false;
     }
 
@@ -5344,7 +5295,7 @@ sumOfSquare(const hoNDArray<T>& data, hoNDArray<T>& sos)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::sumOfSquare(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::sumOfSquare(...) ... ");
         return false;
     }
 
@@ -5476,36 +5427,10 @@ coilCombine(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, hoNDArray<T>&
                 memcpy(combined.begin()+offsetCombined, combinedCurr.begin(), sizeof(T)*RO*E1*N);
             }
         }
-
-        //size_t N = coilMap.get_number_of_elements();
-        //size_t num = data.get_number_of_elements()/coilMap.get_number_of_elements();
-        //size_t NCombined = combined.get_number_of_elements()/num;
-
-        //long long nn;
-        ////#ifdef GCC_OLD_FLAG
-        ////    #pragma omp parallel default(none) private(nn) shared(num, dimCoil, dimCombinedCurr, N, NCombined)
-        ////#else
-        ////    #pragma omp parallel default(none) private(nn) shared(data, coilMap, num, dimCoil, dimCombinedCurr, combined, N, NCombined)
-        ////#endif
-        //{
-        //    hoNDArray<T> dataTmp(coilMap);
-        //    hoNDArray<T> dataCurr;
-        //    hoNDArray<T> dataCombinedCurr;
-
-        //    //#pragma omp for
-        //    for ( nn=0; nn<(long long)num; nn++ )
-        //    {
-        //        dataCurr.create(dimCoil.get(), const_cast<T*>(data.begin()+nn*N));
-        //        Gadgetron::multiplyConj(dataCurr, coilMap, dataTmp);
-
-        //        dataCombinedCurr.create(&dimCombinedCurr, const_cast<T*>(combined.begin()+nn*NCombined));
-        //        Gadgetron::sumOver3rdDimension(dataTmp, dataCombinedCurr);
-        //    }
-        //}
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilCombine(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilCombine(...) ... ");
         return false;
     }
 
@@ -5551,11 +5476,7 @@ coilCombine3D(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, hoNDArray<T
         size_t NCombined = combined.get_number_of_elements()/num;
 
         long long nn;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(nn) shared(num, dimCoil, dimCombinedCurr, N, NCombined) if (num>=6)
-        #else
-            #pragma omp parallel default(none) private(nn) shared(data, coilMap, num, dimCoil, dimCombinedCurr, combined, N, NCombined) if (num>=6)
-        #endif
+        #pragma omp parallel default(none) private(nn) shared(data, coilMap, num, dimCoil, dimCombinedCurr, combined, N, NCombined) if (num>=6)
         {
             hoNDArray<T> dataTmp(coilMap);
 
@@ -5572,7 +5493,7 @@ coilCombine3D(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, hoNDArray<T
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilCombine3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilCombine3D(...) ... ");
         return false;
     }
 
@@ -5599,11 +5520,7 @@ conjugateSymmetry2D(const hoNDArray<T>& kspace, hoNDArray<T>& kspaceConj)
 
         long long ii;
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(ii) shared(RO, E1, num, centerRO, centerE1)
-        #else
-            #pragma omp parallel for default(none) private(ii) shared(RO, E1, num, centerRO, centerE1, kspace, kspaceConj)
-        #endif
+        #pragma omp parallel for default(none) private(ii) shared(RO, E1, num, centerRO, centerE1, kspace, kspaceConj)
         for ( ii=0; ii<num; ii++ )
         {
             ho2DArray<T> src(RO, E1, const_cast<T*>(kspace.begin()+ii*RO*E1));
@@ -5635,7 +5552,7 @@ conjugateSymmetry2D(const hoNDArray<T>& kspace, hoNDArray<T>& kspaceConj)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::conjugateSymmetry2D(const hoNDArray<T>& kspace, hoNDArray<T>& kspaceConj) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::conjugateSymmetry2D(const hoNDArray<T>& kspace, hoNDArray<T>& kspaceConj) ... ");
         return false;
     }
 
@@ -5664,11 +5581,7 @@ conjugateSymmetry3D(const hoNDArray<T>& kspace, hoNDArray<T>& kspaceConj)
 
         long long ii;
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(ii) shared(RO, E1, E2, num, centerRO, centerE1, centerE2)
-        #else
-            #pragma omp parallel for default(none) private(ii) shared(RO, E1, E2, num, centerRO, centerE1, centerE2, kspace, kspaceConj)
-        #endif
+        #pragma omp parallel for default(none) private(ii) shared(RO, E1, E2, num, centerRO, centerE1, centerE2, kspace, kspaceConj)
         for ( ii=0; ii<num; ii++ )
         {
             ho3DArray<T> src(RO, E1, E2, const_cast<T*>(kspace.begin()+ii*RO*E1*E2));
@@ -5709,7 +5622,7 @@ conjugateSymmetry3D(const hoNDArray<T>& kspace, hoNDArray<T>& kspaceConj)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::conjugateSymmetry3D(const hoNDArray<T>& kspace, hoNDArray<T>& kspaceConj) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtilComplex<T>::conjugateSymmetry3D(const hoNDArray<T>& kspace, hoNDArray<T>& kspaceConj) ... ");
         return false;
     }
 

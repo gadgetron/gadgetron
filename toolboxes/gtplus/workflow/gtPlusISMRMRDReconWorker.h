@@ -153,7 +153,7 @@ bool gtPlusReconJob2DT<T>::serialize(char*& buf, size_t& len) const
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors happened in gtPlusReconJob2DT<T>::serialize(...) ... ");
+        GERROR_STREAM("Errors happened in gtPlusReconJob2DT<T>::serialize(...) ... ");
 
         if ( bufKSpace != NULL ) delete [] bufKSpace;
         if ( bufKernel != NULL ) delete [] bufKernel;
@@ -229,7 +229,7 @@ bool gtPlusReconJob2DT<T>::deserialize(char* buf, size_t& len)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors happended in gtPlusReconJob2DT<T>::deserialize(...) ...");
+        GERROR_STREAM("Errors happended in gtPlusReconJob2DT<T>::deserialize(...) ...");
         return false;
     }
 
@@ -366,7 +366,7 @@ bool gtPlusReconWorker<T>::createAReconJob(gtPlusReconWorkOrder<T>* workOrder2DT
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker<T>::createAReconJob(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker<T>::createAReconJob(...) ... ");
         return false;
     }
 
@@ -470,7 +470,7 @@ bool gtPlusReconWorker<T>::splitReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker<T>::splitReconJob(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker<T>::splitReconJob(...) ... ");
         return false;
     }
 
@@ -544,7 +544,7 @@ combineReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, std::vector<gtPlusReconJo
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker<T>::combineReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, std::vector<gtPlusReconJob2DT<T> >& jobList, size_t N, size_t S) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker<T>::combineReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, std::vector<gtPlusReconJob2DT<T> >& jobList, size_t N, size_t S) ... ");
         return false;
     }
 
@@ -562,7 +562,7 @@ computeEffectiveNodeNumberBasedOnComputingPowerIndex(gtPlusReconWorkOrder<T>* wo
 
         if ( numOfNodes == 0 )
         {
-            GADGET_WARN_MSG("numOfNodes == 0");
+            GWARN_STREAM("numOfNodes == 0");
             return true;
         }
 
@@ -580,7 +580,7 @@ computeEffectiveNodeNumberBasedOnComputingPowerIndex(gtPlusReconWorkOrder<T>* wo
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker<T>::computeEffectiveNodeNumberBasedOnComputingPowerIndex(gtPlusReconWorkOrder<T>* workOrder, unsigned int& numOfEffectiveNodes) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker<T>::computeEffectiveNodeNumberBasedOnComputingPowerIndex(gtPlusReconWorkOrder<T>* workOrder, unsigned int& numOfEffectiveNodes) ... ");
         return false;
     }
 
@@ -610,7 +610,7 @@ scheduleJobForNodes(gtPlusReconWorkOrder<T>* workOrder, size_t numOfJobs, std::v
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker<T>::scheduleJobForNodes(gtPlusReconWorkOrder<T>* workOrder2DT, size_t numOfJobs, std::vector<int>& nodeIdForJob) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker<T>::scheduleJobForNodes(gtPlusReconWorkOrder<T>* workOrder2DT, size_t numOfJobs, std::vector<int>& nodeIdForJob) ... ");
         return false;
     }
 

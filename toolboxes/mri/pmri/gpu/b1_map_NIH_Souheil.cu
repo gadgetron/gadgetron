@@ -487,7 +487,7 @@ namespace Gadgetron{
 
         if( blockDim.x == 0 )
         {
-            GADGET_ERROR_MSG("blockDim.x == 0");
+            GERROR_STREAM("blockDim.x == 0");
             throw std::runtime_error("computeDH_D: dimension exceeds device capacity.");
         }
 
@@ -558,7 +558,7 @@ namespace Gadgetron{
 
         if( blockDim.x == 0 )
         {
-            // GADGET_ERROR_MSG("blockDim.x == 0");
+            // GERROR_STREAM("blockDim.x == 0");
             blockDim.x = warp_size;
             while ( blockDim.x*kss > max_blockdim && blockDim.x>1 )
             {

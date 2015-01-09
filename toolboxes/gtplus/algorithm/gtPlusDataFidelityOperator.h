@@ -88,7 +88,7 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusDataFidelityOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
+        GERROR_STREAM("Errors in gtPlusDataFidelityOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
         return false;
     }
     return true;
@@ -104,7 +104,7 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusDataFidelityOperator<T>::adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
+        GERROR_STREAM("Errors in gtPlusDataFidelityOperator<T>::adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
         return false;
     }
     return true;
@@ -123,7 +123,7 @@ grad(const hoNDArray<T>& x, hoNDArray<T>& g)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusDataFidelityOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
+        GERROR_STREAM("Errors in gtPlusDataFidelityOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
         return false;
     }
 
@@ -142,7 +142,7 @@ obj(const hoNDArray<T>& x, T& obj)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusDataFidelityOperator<T>::obj(const hoNDArray<T>& x, T& obj) ... ");
+        GERROR_STREAM("Errors in gtPlusDataFidelityOperator<T>::obj(const hoNDArray<T>& x, T& obj) ... ");
         return false;
     }
 

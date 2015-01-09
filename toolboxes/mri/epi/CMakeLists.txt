@@ -3,40 +3,6 @@
         link_directories(${Boost_LIBRARY_DIRS})
     endif (WIN32)
 
-    include_directories(
-        ${ACE_INCLUDE_DIR} 
-        ${Boost_INCLUDE_DIR}
-        ${FFTW3_INCLUDE_DIR}
-        ${ARMADILLO_INCLUDE_DIRS}
-        ${MKL_INCLUDE_DIR}
-        ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/core
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-        ${CMAKE_SOURCE_DIR}/toolboxes/operators
-        ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-        ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-        ${CMAKE_SOURCE_DIR}/gadgets/core
-        ${HDF5_INCLUDE_DIR}
-        ${HDF5_INCLUDE_DIR}/cpp
-        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
-        ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-        ${CMAKE_SOURCE_DIR}/apps/gadgetron
-        ${CMAKE_SOURCE_DIR}/apps/matlab
-        ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
-        ${CMAKE_SOURCE_DIR}/gadgets/gtPlus 
-    )
-
     add_library(gadgetron_toolbox_epi ${LIBTYPE}
      EPIExport.h
      EPIReconXObject.h
@@ -46,7 +12,7 @@
     set_target_properties(gadgetron_toolbox_epi PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
     set_target_properties(gadgetron_toolbox_epi PROPERTIES LINKER_LANGUAGE CXX)
 
-    target_link_libraries(gadgetron_toolbox_epi gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math ${ARMADILLO_LIBRARIES})
+    target_link_libraries(gadgetron_toolbox_epi gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math gadgetron_toolbox_log ${ARMADILLO_LIBRARIES})
 
     install (FILES 
         EPIExport.h 

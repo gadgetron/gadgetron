@@ -29,7 +29,7 @@ add_executable(linalg_test linalg_test.cpp)
 
 target_link_libraries(linalg ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${FFTW3_LIBRARIES})
 target_link_libraries(linalg_test ${FFTW3_LIBRARIES} linalg)
-target_link_libraries(linalg_test gadgetron_toolbox_cpucore_math gadgetron_toolbox_cpufft)
+target_link_libraries(linalg_test gadgetron_toolbox_cpucore_math gadgetron_toolbox_cpufft gadgetron_toolbox_log)
 
 install(TARGETS linalg DESTINATION lib COMPONENT main)
 install(TARGETS linalg_test DESTINATION bin COMPONENT main)

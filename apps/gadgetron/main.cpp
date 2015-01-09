@@ -43,7 +43,8 @@ namespace Gadgetron {
         boost::filesystem::path workingPath(workingdirectory);
         if ( !boost::filesystem::create_directory(workingPath) )
 	  {
-            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error creating the working directory.\n")), false);
+	    GERROR("Error creating the working directory.\n");
+	    return false;
 	  }
 
         // set the permission for the folder
@@ -54,7 +55,8 @@ namespace Gadgetron {
 	  }
 	catch(...)
 	  {
-	    ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory.\n")), false);
+	    GERROR("Error changing the permission of the working directory.\n");
+	    return false;
 	  }
 #else
 	// in case an older version of boost is used in non-win system
@@ -62,7 +64,8 @@ namespace Gadgetron {
 	int res = chmod(workingPath.string().c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
 	if ( res != 0 )
 	  {
-	    ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory.\n")), false);
+	    GERROR("Error changing the permission of the working directory.\n");
+	    return false;
 	  }
 #endif // _WIN32
       }
@@ -74,26 +77,23 @@ namespace Gadgetron {
 
 void print_usage()
 {
-  ACE_DEBUG((LM_INFO, ACE_TEXT("Usage: \n") ));
-  ACE_DEBUG((LM_INFO, ACE_TEXT("gadgetron   -p <PORT>                      (default 9002)       \n") ));
+  GINFO("Usage: \n");
+  GINFO("gadgetron   -p <PORT>                      (default 9002)       \n");
 }
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 {
-  ACE_TRACE(( ACE_TEXT("main") ));
-    
-  ACE_LOG_MSG->priority_mask( LM_INFO | LM_NOTICE | LM_ERROR| LM_DEBUG,
-			      ACE_Log_Msg::PROCESS);
-
   std::string  gadgetron_home = get_gadgetron_home();
 
   if (gadgetron_home.size() == 0) {
-    ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("GADGETRON_HOME variable not set.\n")),-1);
+    GERROR("GADGETRON_HOME variable not set.\n");
+    return -1;
   }
 
   std::string gcfg = gadgetron_home + std::string("/") + std::string(GADGETRON_CONFIG_PATH) + std::string("/gadgetron.xml");
   if (!FileInfo(gcfg).exists()) {
-    ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Gadgetron configuration file %s not found.\n"), gcfg.c_str()),-1);
+    GERROR("Gadgetron configuration file %s not found.\n");
+    return -1;
   }
 
 
@@ -125,8 +125,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 	  if ( key == std::string(GT_WORKING_DIRECTORY) ) workingDirectorySet = true;
         }
     }  catch (std::runtime_error& e) {
-    ACE_DEBUG(( LM_DEBUG, ACE_TEXT("XML Parse Error: %s\n"), e.what() ));
-    ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error parsing configuration file %s.\n"), gcfg.c_str()),-1);
+    GERROR("XML Parse Error: %s\n", e.what());
+    GERROR("Error parsing configuration file %s.\n", gcfg.c_str());
+    return -1;
   }
 
   static const ACE_TCHAR options[] = ACE_TEXT(":p:");
@@ -140,18 +141,20 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
       break;
     case ':':
       print_usage();
-      ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("-%c requires an argument.\n"), cmd_opts.opt_opt()),-1);
+      GERROR("-%c requires an argument.\n", cmd_opts.opt_opt());
+      return -1;
       break;
     default:
       print_usage();
-      ACE_ERROR_RETURN( (LM_ERROR, ACE_TEXT("Command line parse error\n")), -1);
+      GERROR("Command line parse error\n");
+      return -1;
       break;
     }
   }
 
   if (c.cloudBus) {
-    ACE_DEBUG(( LM_DEBUG, ACE_TEXT("Starting cloudBus: %s:%d\n"), 
-		c.cloudBus->multiCastAddress.c_str(), c.cloudBus->port ));
+    GINFO("Starting cloudBus: %s:%d\n", 
+	  c.cloudBus->multiCastAddress.c_str(), c.cloudBus->port);
     Gadgetron::CloudBus::set_mcast_address(c.cloudBus->multiCastAddress.c_str());
     Gadgetron::CloudBus::set_mcast_port(c.cloudBus->port);
     Gadgetron::CloudBus::set_gadgetron_port(std::atoi(port_no));
@@ -174,10 +177,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   std::string workingDirectory = gadget_parameters[std::string(GT_WORKING_DIRECTORY)];
   if ( !Gadgetron::create_folder_with_all_permissions(workingDirectory) )
     {
-      ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Gadgetron creating working directory %s failed ... \n"), workingDirectory.c_str()),-1);
+      GERROR("Gadgetron creating working directory %s failed ... \n", workingDirectory.c_str());
+      return -1;
     }
 
-  ACE_DEBUG(( LM_DEBUG, ACE_TEXT("%IConfiguring services, Running on port %s\n"), port_no ));
+  GINFO("Configuring services, Running on port %s\n", port_no);
 
   ACE_INET_Addr port_to_listen (port_no);
   GadgetServerAcceptor acceptor;

@@ -1,4 +1,3 @@
-#include "Gadgetron.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "DependencyQueryGadget.h"
 #include "gtPlusUtil.h"
@@ -13,7 +12,7 @@ namespace Gadgetron
     {
         processed_in_close_ = false;
 
-        noise_dependency_prefix_ = "GadgetronNoisePreWhitener";
+        noise_dependency_prefix_ = "GadgetronNoiseCovarianceMatrix";
 
         noise_dependency_attrib_name_ = "NoiseDependencies";
 
@@ -60,7 +59,7 @@ namespace Gadgetron
 	      //This is an error, we should not be writing dependencies without having a working directory
 	      return GADGET_FAIL;
             }
-            GADGET_MSG("Folder to store noise dependencies is " << noise_dependency_folder_);
+            GDEBUG_STREAM("Folder to store noise dependencies is " << noise_dependency_folder_);
 
             str = this->get_string_value("noise_dependency_prefix");
 
@@ -77,14 +76,14 @@ namespace Gadgetron
             }
 
             clean_storage_while_query_ = this->get_bool_value("clean_storage_while_query");
-            GADGET_MSG( "clean_storage_while_query_ is " << clean_storage_while_query_);
+            GDEBUG_STREAM( "clean_storage_while_query_ is " << clean_storage_while_query_);
 
             time_limit_in_storage_ = this->get_double_value("time_limit_in_storage");
             if ( time_limit_in_storage_ < 0 )
             {
                 time_limit_in_storage_ = 24.0;
             }
-            GADGET_MSG( "time_limit_in_storage_ is " << time_limit_in_storage_);
+            GDEBUG_STREAM( "time_limit_in_storage_ is " << time_limit_in_storage_);
 
             // list the content in the noise dependency folder
             path p (noise_dependency_folder_);
@@ -102,7 +101,7 @@ namespace Gadgetron
                         copy(directory_iterator(p), directory_iterator(), back_inserter(v));
                         sort(v.begin(), v.end());
 
-                        GADGET_MSG( "A total of " << v.size() << " dependency measurements are found ... ");
+                        GDEBUG_STREAM( "A total of " << v.size() << " dependency measurements are found ... ");
 
                         // if needed, clean the storage first
                         std::string filename;
@@ -120,7 +119,7 @@ namespace Gadgetron
                                 struct tm* lastWriteTm = std::gmtime(&lastWriteTime);
                                 lastWriteTime = std::mktime(lastWriteTm);
 
-                                if ( GT_ABS( (double)lastWriteTime - (double)curr_time_UTC_ ) > time_limit_in_storage_*3600.0 )
+                                if ( std::abs( (double)lastWriteTime - (double)curr_time_UTC_ ) > time_limit_in_storage_*3600.0 )
                                 {
                                     remove(*it);
                                 }
@@ -131,7 +130,7 @@ namespace Gadgetron
                             copy(directory_iterator(p), directory_iterator(), back_inserter(v));
                             sort(v.begin(), v.end());
 
-                            GADGET_MSG( "A total of " << v.size() << " dependency measurements are found after cleaning ... ");
+                            GDEBUG_STREAM( "A total of " << v.size() << " dependency measurements are found after cleaning ... ");
                         }
 
                         // declear the attributes
@@ -156,7 +155,7 @@ namespace Gadgetron
                             }
                         }
 
-                        GADGET_MSG( "A total of " << count << " noise dependency measurements are found ... ");
+                        GDEBUG_STREAM( "A total of " << count << " noise dependency measurements are found ... ");
 
                         if ( count == 0 )
                         {
@@ -172,23 +171,23 @@ namespace Gadgetron
                         int ret =  this->controller_->output_ready(mb);
                         if ( (ret < 0) )
                         {
-                            GADGET_DEBUG1("Failed to return massage to controller\n");
+                            GDEBUG("Failed to return massage to controller\n");
                             return GADGET_FAIL;
                         }
                     }
                     else
                     {
-                        GADGET_ERROR_MSG( noise_dependency_folder_ << " is not a valid folder ... ");
+                        GERROR_STREAM( noise_dependency_folder_ << " is not a valid folder ... ");
                     }
                 }
                 else
                 {
-                    GADGET_ERROR_MSG("Cannot find dependency folder : " << noise_dependency_folder_);
+                    GERROR_STREAM("Cannot find dependency folder : " << noise_dependency_folder_);
                 }
             }
             catch (const filesystem_error& ex)
             {
-                GADGET_ERROR_MSG( ex.what() );
+                GERROR_STREAM( ex.what() );
             }
         }
 

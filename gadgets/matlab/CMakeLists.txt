@@ -4,6 +4,7 @@ include_directories(${MATLAB_INCLUDE_DIR})
 
 if (UNIX)
     if (APPLE)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
         SET(MATLAB_SUFFIX ".mexmaci64")
     else(APPLE)
         SET(MATLAB_SUFFIX ".mexglnxa64")
@@ -17,6 +18,7 @@ set_target_properties(gadgetron_matlab PROPERTIES VERSION ${GADGETRON_VERSION_ST
 
 target_link_libraries(
     gadgetron_matlab
+    gadgetron_toolbox_log
     gadgetron_gadgetbase
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpucore_math

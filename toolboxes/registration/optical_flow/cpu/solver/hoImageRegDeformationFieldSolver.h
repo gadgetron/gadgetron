@@ -225,7 +225,7 @@ namespace Gadgetron
                     std::ostringstream ostr;
                     ostr << "DeformationFieldSolver_deformfield_" << ii;
                     const DeformationFieldType& def = transform->getDeformationField(ii);
-                    GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, def, ostr.str());
+                    gt_exporter_.exportImage(def, debugFolder_+ostr.str());
                 }
             }
 
@@ -240,13 +240,13 @@ namespace Gadgetron
                 GADGET_CHECK_RETURN_FALSE(warper.warp(*target, *source, use_world_coordinate_, warped));
             }
 
-            GADGET_CHECK_PERFORM(!debugFolder_.empty(), GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, warped, "DeformationFieldSolver_warpped"));
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportImage(warped, debugFolder_+"DeformationFieldSolver_warpped"); }
 
             // evaluate the dissimilarity and get the intensity comparison function
             GADGET_CHECK_RETURN_FALSE(dissimilarity.evaluateDeriv(warped));
 
             curr_dissimilarity = dissimilarity.getDissimilarity();
-            GADGET_CHECK_PERFORM(verbose_, GADGET_MSG("--> Iteration " << iter_num << " [out of " << max_iter_num << "] : \t" << curr_dissimilarity) );
+            if ( verbose_ ) { GDEBUG_STREAM("--> Iteration " << iter_num << " [out of " << max_iter_num << "] : \t" << curr_dissimilarity); }
 
             if ( prev_dissimilarity < curr_dissimilarity + dissimilarity_thres_ )
             {
@@ -258,7 +258,7 @@ namespace Gadgetron
 
                 step_size_para_ *= step_size_div_para_;
 
-                GADGET_CHECK_PERFORM(verbose_, GADGET_MSG("----> Parameter division " << divTimes << " [out of " << div_num_ << "] ") );
+                if ( verbose_ ) { GDEBUG_STREAM("----> Parameter division " << divTimes << " [out of " << div_num_ << "] "); }
             }
 
             prev_dissimilarity = curr_dissimilarity;
@@ -275,26 +275,26 @@ namespace Gadgetron
 
             if ( !debugFolder_.empty() )
             {
-                GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, deriv, "DeformationFieldSolver_deriv");
+                gt_exporter_.exportImage(deriv, debugFolder_+"DeformationFieldSolver_deriv");
 
                 for ( ii=0; ii<D; ii++ )
                 {
                     std::ostringstream ostr;
                     ostr << "DeformationFieldSolver_gradient_warpped_" << ii;
 
-                    GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, gradient_warpped[ii], ostr.str());
+                    gt_exporter_.exportImage(gradient_warpped[ii], debugFolder_+ostr.str());
 
                     std::ostringstream ostr2;
                     ostr2 << "DeformationFieldSolver_deform_delta_" << ii;
 
-                    GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, deform_delta[ii], ostr2.str());
+                    gt_exporter_.exportImage(deform_delta[ii], debugFolder_+ostr2.str());
                 }
             }
 
             /// compensate for non-isotropic pixel sizes
             for ( ii=0; ii<D; ii++ )
             {
-                if ( GT_ABS(deform_delta_scale_factor[ii]-1) > FLT_EPSILON )
+                if ( std::abs(deform_delta_scale_factor[ii]-1) > FLT_EPSILON )
                 {
                     Gadgetron::scal(deform_delta_scale_factor[ii], deform_delta[ii]);
                 }
@@ -313,7 +313,7 @@ namespace Gadgetron
                     std::ostringstream ostr;
                     ostr << "DeformationFieldSolver_deform_delta_filtered_" << ii;
 
-                    GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, deform_delta[ii], ostr.str());
+                    gt_exporter_.exportImage(deform_delta[ii], debugFolder_+ostr.str());
                 }
             }
 
@@ -358,7 +358,7 @@ namespace Gadgetron
                     {
                         CoordType ix, iy, wx, wy, pX, pY, deltaWX, deltaWY;
 
-                        // #pragma omp parallel for default(none) private(y, x, ix, iy, wx, wy, pX, pY, deltaWX, deltaWY) shared(sx, sy, target, deform_delta, deform_updated, transform)
+                        // #pragma omp parallel for default(none) private(y, x, ix, iy, wx, wy, pX, pY, deltaWX, deltaWY) shared(sx, sy, target, deform_delta, deform_updated, transform) num_threads(2)
                         for ( y=0; y<sy; y++ )
                         {
                             for ( x=0; x<sx; x++ )
@@ -465,7 +465,7 @@ namespace Gadgetron
                     {
                         CoordType pX, pY;
 
-                        // #pragma omp parallel for default(none) private(y, x, pX, pY) shared(sx, sy, deform_delta, deform_updated, transform)
+                        // #pragma omp parallel for default(none) private(y, x, pX, pY) shared(sx, sy, deform_delta, deform_updated, transform) num_threads(2)
                         for ( y=0; y<sy; y++ )
                         {
                             for ( x=0; x<sx; x++ )
@@ -549,7 +549,7 @@ namespace Gadgetron
                     {
                         std::ostringstream ostr;
                         ostr << "DeformationFieldSolver_deform_updated_" << ii;
-                        GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, deform_updated[ii], ostr.str());
+                        gt_exporter_.exportImage(deform_updated[ii], debugFolder_+ostr.str());
                     }
                 }
 
@@ -562,7 +562,7 @@ namespace Gadgetron
                         {
                             CoordType pX, pY;
 
-                            // #pragma omp parallel for default(none) private(y, x, pX, pY) shared(sx, sy, deform_updated)
+                            // #pragma omp parallel for default(none) private(y, x, pX, pY) shared(sx, sy, deform_updated) num_threads(2)
                             for ( y=0; y<sy; y++ )
                             {
                                 for ( x=0; x<sx; x++ )
@@ -624,13 +624,13 @@ namespace Gadgetron
 
             if ( !debugFolder_.empty() )
             {
-                GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, *target_, "DeformationFieldSolver_target");
-                GADGET_EXPORT_IMAGE(debugFolder_, gt_exporter_, *source_, "DeformationFieldSolver_source");
+                gt_exporter_.exportImage(*target_, debugFolder_+"DeformationFieldSolver_target");
+                gt_exporter_.exportImage(*source_, debugFolder_+"DeformationFieldSolver_source");
             }
 
             bool stopIteration = false;
 
-            GADGET_CHECK_PERFORM(verbose_, GADGET_MSG("--> DeformationFieldSolver ... ") );
+            if ( verbose_ ) { GDEBUG_STREAM("--> DeformationFieldSolver ... "); }
             for ( iter_num_=0; iter_num_<max_iter_num_; iter_num_++ )
             {
                 GADGET_CHECK_RETURN_FALSE( this->solve_once(target_, source_, warpped_, iter_num_, max_iter_num_, 
@@ -643,11 +643,11 @@ namespace Gadgetron
                 if ( stopIteration ) break;
             }
 
-            GADGET_CHECK_PERFORM(verbose_, GADGET_MSG("----> Total iteration number : " << iter_num_) );
+            if ( verbose_ ) { GDEBUG_STREAM("----> Total iteration number : " << iter_num_); }
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationFieldSolver<ValueType, CoordType, D>::solve() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldSolver<ValueType, CoordType, D>::solve() ... ");
             return false;
         }
 

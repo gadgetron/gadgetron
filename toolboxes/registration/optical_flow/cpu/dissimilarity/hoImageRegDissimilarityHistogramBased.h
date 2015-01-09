@@ -138,8 +138,8 @@ namespace Gadgetron
                     ValueType vt = target(n);
                     ValueType vw = warped(n);
 
-                    if ( GT_ABS(vt-bg_value_)<FLT_EPSILON 
-                        && GT_ABS(vw-bg_value_)<FLT_EPSILON )
+                    if ( std::abs(vt-bg_value_)<FLT_EPSILON 
+                        && std::abs(vw-bg_value_)<FLT_EPSILON )
                     {
                         continue;
                     }
@@ -179,8 +179,8 @@ namespace Gadgetron
                     ValueType vt = target(n);
                     ValueType vw = warped(n);
 
-                    if ( GT_ABS(vt-bg_value_)<FLT_EPSILON 
-                        && GT_ABS(vw-bg_value_)<FLT_EPSILON )
+                    if ( std::abs(vt-bg_value_)<FLT_EPSILON 
+                        && std::abs(vw-bg_value_)<FLT_EPSILON )
                     {
                         continue;
                     }
@@ -198,11 +198,11 @@ namespace Gadgetron
                 }
             }
 
-            GADGET_CHECK_PERFORM(!debugFolder_.empty(), GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, hist_, "hist2D"));
+            if ( !debugFolder_.empty() ) {  gt_exporter_.exportArray(hist_, debugFolder_+"hist2D"); }
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDissimilarityHistogramBased<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityHistogramBased<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
         }
 
         return this->dissimilarity_;

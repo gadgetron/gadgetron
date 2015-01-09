@@ -284,7 +284,7 @@ bool ho5DArray<T>::init_accesser()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in ho5DArray<T>::init_accesser() ...");
+        GERROR_STREAM("Errors in ho5DArray<T>::init_accesser() ...");
         return false;
     }
 
@@ -307,7 +307,7 @@ bool ho5DArray<T>::release_accesser()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in ho5DArray<T>::release_accesser() ...");
+        GERROR_STREAM("Errors in ho5DArray<T>::release_accesser() ...");
         return false;
     }
 

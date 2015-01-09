@@ -230,7 +230,7 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
         return false;
     }
     return true;
@@ -314,7 +314,7 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y) ... ");
         return false;
     }
     return true;
@@ -349,7 +349,7 @@ L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm) ... ");
         return false;
     }
     return true;
@@ -378,7 +378,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
         const T* pCoeffNorm = wavCoeffNorm.begin();
         T* pBuf = wav_coeff_norm_approx_.begin();
 
-        if ( GT_ABS(std::abs(p) - 1.0) < 0.001 )
+        if ( std::abs(std::abs(p) - 1.0) < 0.001 )
         {
             #pragma omp parallel for default(none) private(ii) shared(N, pBuf, pCoeffNorm, mu)
             for ( ii=0; ii<N; ii++ )
@@ -404,11 +404,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimensionExcept(wav_coeff_norm_approx_, wavCoeff, 0, wavCoeff, true));
             long long num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, W, CHA) if ( num > 1 )
-            #else
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
-            #endif
+            #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
             {
 
                 #pragma omp for
@@ -427,7 +423,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T mu, T p, bool processApproxCoeff) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T mu, T p, bool processApproxCoeff) ... ");
         return false;
     }
     return true;
@@ -451,17 +447,17 @@ proximity(hoNDArray<T>& wavCoeff, value_type thres)
 
         Gadgetron::fill(mask_, T(thres) );
 
-        if ( GT_ABS(std::abs(scale_factor_first_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_first_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->firstDimensionScale(mask_, scale_factor_first_dimension_));
         }
 
-        if ( GT_ABS(std::abs(scale_factor_second_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_second_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->secondDimensionScale(mask_, scale_factor_second_dimension_));
         }
 
-        if ( GT_ABS(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->thirdDimensionScale(mask_, scale_factor_third_dimension_));
         }
@@ -470,7 +466,7 @@ proximity(hoNDArray<T>& wavCoeff, value_type thres)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::proximity(hoNDArray<T>& wavCoeff, T thres) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::proximity(hoNDArray<T>& wavCoeff, T thres) ... ");
         return false;
     }
     return true;
@@ -738,11 +734,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
 
             if ( wav_coeff_norm_approx_.dimensions_equal(&wavCoeff) )
             {
-                #ifdef GCC_OLD_FLAG
-                    #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, W, CHA) if ( CHA > 1 )
-                #else
-                    #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, wavCoeffNorm, wavCoeff, W, CHA) if ( CHA > 1 )
-                #endif
+                #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, wavCoeffNorm, wavCoeff, W, CHA) if ( CHA > 1 )
                 {
 
                     #pragma omp for
@@ -760,11 +752,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
             {
                 long long num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
 
-                #ifdef GCC_OLD_FLAG
-                    #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, W, CHA) if ( num > 1 )
-                #else
-                    #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
-                #endif
+                #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
                 {
 
                     #pragma omp for
@@ -786,7 +774,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff) ... ");
         return false;
     }
     return true;
@@ -966,7 +954,7 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
         return false;
     }
     return true;
@@ -1106,7 +1094,7 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
         return false;
     }
     return true;
@@ -1161,19 +1149,19 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
 
         // first dimension scaling
         //gt_timer2_.start("9");
-        if ( GT_ABS(std::abs(scale_factor_first_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_first_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->firstDimensionScale(res_after_apply_kernel_sum_over_, scale_factor_first_dimension_));
         }
 
         // second dimension scaling
-        if ( GT_ABS(std::abs(scale_factor_second_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_second_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->secondDimensionScale(res_after_apply_kernel_sum_over_, scale_factor_second_dimension_));
         }
 
         // third dimension scaling
-        if ( GT_ABS(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->thirdDimensionScale(res_after_apply_kernel_sum_over_, scale_factor_third_dimension_));
         }
@@ -1223,7 +1211,7 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::gradTask(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::gradTask(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
         return false;
     }
 
@@ -1260,7 +1248,7 @@ objTask(const hoNDArray<T>& x, T& obj)
             GADGET_CHECK_RETURN_FALSE(this->forwardOperator(complexIm_, res_after_apply_kernel_sum_over_));
         }
 
-        if ( GT_ABS(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
+        if ( std::abs(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->thirdDimensionScale(res_after_apply_kernel_sum_over_, scale_factor_third_dimension_));
         }
@@ -1269,7 +1257,7 @@ objTask(const hoNDArray<T>& x, T& obj)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::objTask(const hoNDArray<T>& x, T& obj) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::objTask(const hoNDArray<T>& x, T& obj) ... ");
         return false;
     }
 
@@ -1308,7 +1296,7 @@ firstDimensionScale(hoNDArray<T>& wavCoeff, T& scaleFactor)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::firstDimensionScale(hoNDArray<T>& wavCoeff, T& scaleFactor) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::firstDimensionScale(hoNDArray<T>& wavCoeff, T& scaleFactor) ... ");
         return false;
     }
 
@@ -1351,7 +1339,7 @@ secondDimensionScale(hoNDArray<T>& wavCoeff, T& scaleFactor)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::secondDimensionScale(hoNDArray<T>& wavCoeff, T& scaleFactor) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::secondDimensionScale(hoNDArray<T>& wavCoeff, T& scaleFactor) ... ");
         return false;
     }
 
@@ -1384,7 +1372,7 @@ thirdDimensionScale(hoNDArray<T>& wavCoeff, T& scaleFactor)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::thirdDimensionScale(hoNDArray<T>& wavCoeff, T& scaleFactor) ... ");
+        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::thirdDimensionScale(hoNDArray<T>& wavCoeff, T& scaleFactor) ... ");
         return false;
     }
 

@@ -30,7 +30,6 @@
         ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-        ${CMAKE_SOURCE_DIR}/gadgets/core
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
         ${Boost_INCLUDE_DIR}
         ${ARMADILLO_INCLUDE_DIR} 
@@ -97,6 +96,7 @@
 
         target_link_libraries(gadgetron_toolbox_cpureg 
                 gadgetron_toolbox_cpucore
+		gadgetron_toolbox_log
                 gadgetron_toolbox_cpucore_math 
                 ${ARMADILLO_LIBRARIES}
                 optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )

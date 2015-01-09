@@ -21,7 +21,7 @@ PythonCommunicator::PythonCommunicator()
 	//Must be done, otherwise subsequent calls to PyGILState_Ensure() will not be guaranteed to acuire lock
 	PyThreadState* tstate = PyEval_SaveThread();
 	if (!tstate) {
-		GADGET_DEBUG1("Error occurred returning lock to Python\n");
+		GDEBUG("Error occurred returning lock to Python\n");
 	}
 
 
@@ -31,7 +31,7 @@ PythonCommunicator::PythonCommunicator()
 
 	if (gadgetron_home.size() != 0) {
 		if (addPath(path_name) == GADGET_FAIL) {
-			GADGET_DEBUG2("PythonCommunicator (constructor) failed to add path %s\n", path_name.c_str());
+			GDEBUG("PythonCommunicator (constructor) failed to add path %s\n", path_name.c_str());
 		}
 	}
 
@@ -55,7 +55,7 @@ int PythonCommunicator::addPath(std::string path)
 		for (unsigned int i = 0; i < paths.size(); i++) {
 			path_cmd = std::string("import sys;\nif (sys.path.count(\"") + paths[i] +
 					std::string("\") == 0):\n\tsys.path.append(\"") + paths[i] + std::string("\")\n");
-			//GADGET_DEBUG2("Executing path command:\n%s\n", path_cmd.c_str());
+			//GDEBUG("Executing path command:\n%s\n", path_cmd.c_str());
 			boost::python::exec(path_cmd.c_str(),boost::python::import("__main__").attr("__dict__"));
 		}
 	}
@@ -72,7 +72,7 @@ int PythonCommunicator::registerGadget(Gadget* g, std::string mod,
 	PyGILState_STATE gstate;
 
 	if (!g) {
-		GADGET_DEBUG1("PythonCommunicator::registerGadget: Received null gadget\n");
+		GDEBUG("PythonCommunicator::registerGadget: Received null gadget\n");
 		return GADGET_FAIL;
 	}
 
@@ -86,12 +86,12 @@ int PythonCommunicator::registerGadget(Gadget* g, std::string mod,
 			boost::python::import("__main__").attr("__dict__")[mod.c_str()] = module_[g];
 			std::string tmp = std::string("reload(") + std::string(mod.c_str()) + std::string(")\n");
 
-			//GADGET_DEBUG2("Reloading with command: %s\n", tmp.c_str());
+			//GDEBUG("Reloading with command: %s\n", tmp.c_str());
 			boost::python::exec(tmp.c_str(),boost::python::import("__main__").attr("__dict__"));
 
 		} else {
 			PyGILState_Release(gstate);
-			GADGET_DEBUG1("PythonCommunicator::registerGadget: Null module received\n");
+			GDEBUG("PythonCommunicator::registerGadget: Null module received\n");
 			return GADGET_FAIL;
 		}
 
@@ -111,7 +111,7 @@ int PythonCommunicator::registerGadget(Gadget* g, std::string mod,
 		}
 
 	} catch(boost::python::error_already_set const &) {
-		GADGET_DEBUG1("Error loading python modules\n");
+		GDEBUG("Error loading python modules\n");
 		PyErr_Print();
 		PyGILState_Release(gstate);
 		return GADGET_FAIL;
@@ -127,7 +127,7 @@ int PythonCommunicator::processConfig(Gadget* g, ACE_Message_Block* mb)
 	std::map< Gadget*, boost::python::object >::iterator it;
 
 	if (!g) {
-		GADGET_DEBUG1("Null Gadget received");
+		GDEBUG("Null Gadget received");
 		return GADGET_FAIL;
 	}
 
@@ -137,14 +137,14 @@ int PythonCommunicator::processConfig(Gadget* g, ACE_Message_Block* mb)
 		try {
 			boost::python::object ignored = it->second(boost::python::object(std::string(mb->rd_ptr())));
 		}  catch(boost::python::error_already_set const &) {
-			GADGET_DEBUG2("Error calling process config function for Gadget %s\n", g->module()->name());
+			GDEBUG("Error calling process config function for Gadget %s\n", g->module()->name());
 			PyErr_Print();
 			PyGILState_Release(gstate);
 			return GADGET_FAIL;
 		}
 		PyGILState_Release(gstate);
 	} else {
-		GADGET_DEBUG2("No registered process function found for Gadget %s\n", g->module()->name());
+		GDEBUG("No registered process function found for Gadget %s\n", g->module()->name());
 		return GADGET_FAIL;
 	}
 
@@ -161,7 +161,7 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 	std::map< Gadget*, boost::python::object >::iterator it;
 
 	if (!g) {
-		GADGET_DEBUG1("Null Gadget received");
+		GDEBUG("Null Gadget received");
 		return GADGET_FAIL;
 	}
 
@@ -185,14 +185,14 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 			T acq = *m1->getObjectPtr();
 
 			if ( boost::python::extract<int>(it->second(acq, obj)) != GADGET_OK) {
-				GADGET_DEBUG2("Gadget (%s) Returned from python call with error\n", g->module()->name());
+				GDEBUG("Gadget (%s) Returned from python call with error\n", g->module()->name());
 				PyGILState_Release(gstate);
 				return GADGET_FAIL;
 			}
 			//Else we are done with this now.
 			m1->release();
 		} catch(boost::python::error_already_set const &) {
-			GADGET_DEBUG1("Passing data on to python module failed\n");
+			GDEBUG("Passing data on to python module failed\n");
 			PyErr_Print();
                         mutex_.unlock();
 			PyGILState_Release(gstate);
@@ -201,7 +201,7 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 		PyGILState_Release(gstate);
                 mutex_.unlock();
 	} else {
-		GADGET_DEBUG2("No registered process function found for Gadget %s\n", g->module()->name());
+		GDEBUG("No registered process function found for Gadget %s\n", g->module()->name());
 		return GADGET_FAIL;
 	}
 	return GADGET_OK;

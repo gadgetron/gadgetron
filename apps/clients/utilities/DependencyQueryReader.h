@@ -36,8 +36,8 @@ class DependencyQueryReader : public GadgetMessageReader
             size_t_type len(0);
             if ( ( recv_count = socket->recv_n( &len, sizeof(size_t_type)) ) <= 0 )
             {
-                ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, DependencyQueryReader, failed to read query results length\n")) );
-                return 0;
+	      GERROR("DependencyQueryReader, failed to read query results length\n");
+	      return 0;
             }
 
             char* buf = NULL;
@@ -46,8 +46,8 @@ class DependencyQueryReader : public GadgetMessageReader
                 buf = new char[len];
                 if ( buf == NULL )
                 {
-                    ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, DependencyQueryReader, failed to allocate buffer\n")) );
-                    return 0;
+		  GERROR("DependencyQueryReader, failed to allocate buffer\n");
+		  return 0;
                 }
 
                 memset(buf, '\0', len);
@@ -55,15 +55,15 @@ class DependencyQueryReader : public GadgetMessageReader
             }
             catch (std::runtime_error &err)
             {
-                GADGET_DEBUG_EXCEPTION(err,"DependencyQueryReader, failed to allocate buffer\n");
+                GEXCEPTION(err,"DependencyQueryReader, failed to allocate buffer\n");
                 return 0;
             }
 
             if ( ( recv_count = socket->recv_n( buf, len) ) <= 0 )
             {
-                ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, DependencyQueryReader, failed to read query results\n")) );
-                delete [] buf;
-                return 0;
+	      GERROR("DependencyQueryReader, failed to read query results\n");
+	      delete [] buf;
+	      return 0;
             }
 
             std::ofstream outfile;
@@ -79,7 +79,7 @@ class DependencyQueryReader : public GadgetMessageReader
             {
                 delete[] buf;
 
-                GADGET_ERROR_MSG("File " << filename_ << " is not good for writing\n");
+                GERROR_STREAM("File " << filename_ << " is not good for writing\n");
                 return 0;
             }
 

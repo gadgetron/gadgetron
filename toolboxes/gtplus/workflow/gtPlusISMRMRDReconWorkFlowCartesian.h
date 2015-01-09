@@ -146,7 +146,7 @@ protected:
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::permuteArrayOrder(hoNDArray<T>& data, const std::vector<int>& order) ... ");
+            GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::permuteArrayOrder(hoNDArray<T>& data, const std::vector<int>& order) ... ");
             return false;
         }
 
@@ -201,7 +201,7 @@ preProcessing()
     {
         GADGET_CHECK_RETURN_FALSE(data_!=NULL);
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *data_, "incomingKSpace");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*data_, debugFolder_+"incomingKSpace"); }
 
         // combine the segment dimension
         if ( SEG_.second > 1 )
@@ -210,39 +210,45 @@ preProcessing()
             *data_ = dataCurr_;
             SEG_.second = 1;
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *data_, "incomingKSpace_SEGCombined");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*data_, debugFolder_+"incomingKSpace_SEGCombined"); }
         }
 
-        if ( (ref_ != NULL) && (ref_->get_number_of_elements()>0) ) { GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *ref_, "incomingRef"); }
+        if ( (ref_ != NULL) && (ref_->get_number_of_elements()>0) )
+        {
+            if ( !debugFolder_.empty() )
+            {
+                gt_exporter_.exportArrayComplex(*ref_, debugFolder_+"incomingRef");
+            }
+        }
 
         if ( ref_!=NULL && SEG_ref_.second>1 )
         {
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(*ref_, refCurr_));
             *ref_ = refCurr_;
             SEG_ref_.second = 1;
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *data_, "incomingRef_SEGCombined");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*data_, debugFolder_+"incomingRef_SEGCombined"); }
         }
 
         // if needed, remove the readout oversampling
         if ( overSamplingRatioRO_ > 1.0 )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*data_));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*data_);
             GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().cutpad2D(*data_, (size_t)(data_->get_size(0)/overSamplingRatioRO_), data_->get_size(1), dataCurr_));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(dataCurr_));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(dataCurr_);
             *data_ = dataCurr_;
             RO_.second = data_->get_size(0);
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *data_, "kspace_oversamplingRORemoved");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*data_, debugFolder_+"kspace_oversamplingRORemoved"); }
 
             if ( ref_ != NULL && ref_remove_oversampling_RO_ )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*ref_));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*ref_);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().cutpad2D(*ref_, (size_t)(ref_->get_size(0)/overSamplingRatioRO_), ref_->get_size(1), refCurr_));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(refCurr_));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(refCurr_);
                 *ref_ = refCurr_;
                 RO_ref_.second = ref_->get_size(0);
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *ref_, "ref_oversamplingRORemoved");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*ref_, debugFolder_+"ref_oversamplingRORemoved"); }
             }
 
             if ( workOrder_->start_RO_>=0 && workOrder_->end_RO_>=0 )
@@ -259,14 +265,12 @@ preProcessing()
             GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().computeNoisePrewhiteningMatrix(*noise_, noiseBW_, receriverBWRatio_, ADCSamplingTimeinSecond_, prewhiteningMatrix));
             GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().performNoisePrewhitening(*data_, prewhiteningMatrix));
 
-            // GADGET_CHECK_PERFORM(!debugFolder_.empty(), prewhiteningMatrix.print(std::cout));
-
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *data_, "kspace_noiseprewhitenned");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*data_, debugFolder_+"kspace_noiseprewhitenned"); }
 
             if ( ref_!=NULL && ref_apply_noisePreWhitening_ )
             {
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().performNoisePrewhitening(*ref_, prewhiteningMatrix));
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *ref_, "ref_noiseprewhitenned");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*ref_, debugFolder_+"ref_noiseprewhitenned"); }
             }
         }
 
@@ -294,12 +298,12 @@ preProcessing()
                 }
             }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *data_, "incomingKSpace_RO_setzeros");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*data_, debugFolder_+"incomingKSpace_RO_setzeros"); }
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::preProcessing() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::preProcessing() ... ");
         return false;
     }
 
@@ -321,7 +325,7 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
         output_ = input_;
 
         // if encoded FOV are the same as recon FOV
-        if ( (GT_ABS(encodingFOV_RO_/2 - reconFOV_RO_)<0.1) && (GT_ABS(encodingFOV_E1_-reconFOV_E1_)<0.1) )
+        if ( (std::abs(encodingFOV_RO_/2 - reconFOV_RO_)<0.1) && (std::abs(encodingFOV_E1_-reconFOV_E1_)<0.1) )
         {
             if ( isKSpace )
             {
@@ -359,7 +363,7 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().zpadResize2D(*pSrc, RO, encodingE1, *pDst));
                 }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *pDst, "complexIm_zpadResize2D_enlarged");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*pDst, debugFolder_+"complexIm_zpadResize2D_enlarged"); }
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -372,13 +376,13 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(buffer2D, RO, encodingE1, *pDst));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst);
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *pDst, "complexIm_zpadResize2D_cut");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*pDst, "complexIm_zpadResize2D_cut"); }
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -407,11 +411,11 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(buffer2D, reconSizeRO_, pSrc->get_size(1), *pDst));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst);
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -420,7 +424,7 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             // final cut
             if ( isKSpace )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pSrc, buffer2D));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pSrc, buffer2D);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(buffer2D, reconSizeRO_, reconSizeE1_, *pDst));
             }
             else
@@ -436,7 +440,7 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::convertToReconSpace2D(const hoNDArray& input_, hoNDArray& output_, bool isKSpace) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::convertToReconSpace2D(const hoNDArray& input_, hoNDArray& output_, bool isKSpace) ... ");
         return false;
     }
 
@@ -456,7 +460,7 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
         output_ = input_;
 
         // if encoded FOV are the same as recon FOV
-        if ( (GT_ABS(encodingFOV_RO_/2 - reconFOV_RO_)<0.1) && (GT_ABS(encodingFOV_E1_-reconFOV_E1_)<0.1) && (GT_ABS(encodingFOV_E2_-reconFOV_E2_)<0.1) )
+        if ( (std::abs(encodingFOV_RO_/2 - reconFOV_RO_)<0.1) && (std::abs(encodingFOV_E1_-reconFOV_E1_)<0.1) && (std::abs(encodingFOV_E2_-reconFOV_E2_)<0.1) )
         {
             if ( isKSpace )
             {
@@ -512,11 +516,11 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad3D(buffer3D, RO, encodingE1, E2, *pDst));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst);
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -545,11 +549,11 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad3D(buffer3D, RO, pSrc->get_size(1), encodingE2, *pDst));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst);
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -578,22 +582,22 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad3D(buffer3D, reconSizeRO_, pSrc->get_size(1), pSrc->get_size(2), *pDst));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst);
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
             }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *pSrc, "res_beforeCut");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*pSrc, "res_beforeCut"); }
 
             // final cut on image
             if ( isKSpace )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pSrc, buffer3D));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pSrc, buffer3D);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad3D(buffer3D, reconSizeRO_, reconSizeE1_, reconSizeE2_, *pDst));
             }
             else
@@ -602,7 +606,7 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             }
             // GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst));
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *pDst, "res_AfterCut");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*pDst, debugFolder_+"res_AfterCut"); }
 
             if ( pDst != &output_ )
             {
@@ -612,7 +616,7 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::convertToReconSpace3D(const hoNDArray& input_, hoNDArray& output_, bool isKSpace) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::convertToReconSpace3D(const hoNDArray& input_, hoNDArray& output_, bool isKSpace) ... ");
         return false;
     }
 
@@ -655,7 +659,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
 
         if ( E2_.second > 1 )
         {
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("postProcessing - permute res array ... "));
+            if ( performTiming_ ) { gt_timer1_.start("postProcessing - permute res array ... "); }
             // boost::shared_ptr< hoNDArray<T> > data_permuted = Gadgetron::permute(const_cast<hoNDArray<T>*>(&dataCurr_), &order);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(res, dataCurr_));
 
@@ -669,9 +673,9 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(wrap_around_map_, wrap_around_mapCurr_));
             }
 
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+            if ( performTiming_ ) { gt_timer1_.stop(); }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dataCurr_, "data_permuted");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(dataCurr_, debugFolder_+"data_permuted"); }
 
             // dataCurr_ = *data_permuted;
 
@@ -683,7 +687,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                     && workOrder_->filterROE1E2_.get_size(1)==E1 
                     && workOrder_->filterROE1E2_.get_size(2)==E2 )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterROE1E2(res, workOrder_->filterROE1E2_, dataCurr_));
                 inKSpace = true;
             }
@@ -691,17 +695,17 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                         && (workOrder_->filterE1_.get_number_of_elements() == E1) 
                         && (workOrder_->filterE2_.get_number_of_elements() == E2) )
             {
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("postProcessing - fft3c ... "));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res));
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+                if ( performTiming_ ) { gt_timer1_.start("postProcessing - fft3c ... "); }
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res);
+                if ( performTiming_ ) { gt_timer1_.stop(); }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "kspace_beforefiltered");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"kspace_beforefiltered"); }
 
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("postProcessing - 3D kspace filter ... "));
+                if ( performTiming_ ) { gt_timer1_.start("postProcessing - 3D kspace filter ... "); }
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterROE1E2(res, workOrder_->filterRO_, workOrder_->filterE1_, workOrder_->filterE2_, dataCurr_));
-                GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
+                if ( performTiming_ ) { gt_timer1_.stop(); }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dataCurr_, "kspace_afterfiltered");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(dataCurr_, debugFolder_+"kspace_afterfiltered"); }
                 inKSpace = true;
             }
             else
@@ -709,7 +713,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 hoNDArray<T>* pSrc = &res;
                 hoNDArray<T>* pDst = &dataCurr_;
 
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pDst, *pSrc));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pDst, *pSrc);
 
                 bool filterPerformed = false;
 
@@ -754,13 +758,13 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 if ( !debugFolder_.empty() )
                 {
                     hoNDArray<T> Im(dataCurr_);
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(Im));
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, Im, "complexIm_filtered");
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(Im);
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(Im, debugFolder_+"complexIm_filtered"); }
                 }
             }
             else
             {
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "complexIm_filtered");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"complexIm_filtered"); }
             }
 
             GADGET_CHECK_RETURN_FALSE(convertToReconSpace3D(dataCurr_, res, inKSpace));
@@ -779,7 +783,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
             res.reshape(dataCurr_.get_dimensions());
             memcpy(res.begin(), dataCurr_.begin(), res.get_number_of_bytes());
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "complexIm_zpadResize3D");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"complexIm_zpadResize3D"); }
 
             if ( has_gfactor )
             {
@@ -789,7 +793,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 gfactor_.reshape(gfactorCurr_.get_dimensions());
                 memcpy(gfactor_.begin(), gfactorCurr_.begin(), gfactor_.get_number_of_bytes());
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gfactor_, "gfactor_zpadResize3D");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(gfactor_, debugFolder_+"gfactor_zpadResize3D"); }
             }
 
             if ( has_wrap_around )
@@ -800,7 +804,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 wrap_around_map_.reshape(wrap_around_mapCurr_.get_dimensions());
                 memcpy(wrap_around_map_.begin(), wrap_around_mapCurr_.begin(), wrap_around_map_.get_number_of_bytes());
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, wrap_around_map_, "wrap_around_map_zpadResize3D");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(wrap_around_map_, debugFolder_+"wrap_around_map_zpadResize3D"); }
             }
         }
         else
@@ -808,17 +812,17 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
             dataCurr_ = res;
             bool inKSpace = false;
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dataCurr_, "complexIm_before_filtered");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(dataCurr_, debugFolder_+"complexIm_before_filtered"); }
 
             if ( workOrder_->filterROE1_.get_size(0)==RO && workOrder_->filterROE1_.get_size(1)==E1 )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res, workOrder_->filterROE1_, dataCurr_));
                 inKSpace = true;
             }
             else if ( (workOrder_->filterRO_.get_number_of_elements() == RO) && (workOrder_->filterE1_.get_number_of_elements() == E1) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res, workOrder_->filterRO_, workOrder_->filterE1_, dataCurr_));
                 inKSpace = true;
             }
@@ -826,14 +830,14 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
             {
                 if ( (workOrder_->filterRO_.get_number_of_elements() == RO) && (workOrder_->filterE1_.get_number_of_elements() != E1) )
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterRO(res, workOrder_->filterRO_, dataCurr_));
                     inKSpace = true;
                 }
 
                 if ( (workOrder_->filterRO_.get_number_of_elements() != RO) && (workOrder_->filterE1_.get_number_of_elements() == E1) )
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterE1(res, workOrder_->filterE1_, dataCurr_));
                     inKSpace = true;
                 }
@@ -844,25 +848,25 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 if ( !debugFolder_.empty() )
                 {
                     hoNDArray<T> Im(dataCurr_);
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(Im));
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, Im, "complexIm_after_filtered");
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(Im);
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(Im, debugFolder_+"complexIm_after_filtered"); }
                 }
             }
             else
             {
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "complexIm_after_filtered");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"complexIm_after_filtered"); }
             }
 
             GADGET_CHECK_RETURN_FALSE(convertToReconSpace2D(dataCurr_, res, inKSpace));
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "complexIm_zpadResize2D");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"complexIm_zpadResize2D"); }
 
             if ( has_gfactor )
             {
                 gfactorCurr_ = gfactor_;
                 GADGET_CHECK_RETURN_FALSE(convertToReconSpace2D(gfactorCurr_, gfactor_, false));
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gfactor_, "gfactor_zpadResize2D");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(gfactor_, debugFolder_+"gfactor_zpadResize2D"); }
             }
 
             if ( has_wrap_around )
@@ -870,13 +874,13 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 wrap_around_mapCurr_ = wrap_around_map_;
                 GADGET_CHECK_RETURN_FALSE(convertToReconSpace2D(wrap_around_mapCurr_, wrap_around_map_, false));
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, wrap_around_map_, "wrap_around_map_zpadResize2D");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(wrap_around_map_, debugFolder_+"wrap_around_map_zpadResize2D"); }
             }
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::postProcessing(res) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::postProcessing(res) ... ");
         return false;
     }
 
@@ -889,18 +893,18 @@ postProcessing()
 {
     try
     {
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "complexIm_afterRecon");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res_, debugFolder_+"complexIm_afterRecon"); }
         GADGET_CHECK_RETURN_FALSE(this->postProcessing(res_, true, true));
 
         if ( this->res_second_.get_number_of_elements() > 0 )
         {
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_second_, "complexImSecond_afterRecon");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res_second_, debugFolder_+"complexImSecond_afterRecon"); }
             GADGET_CHECK_RETURN_FALSE(this->postProcessing(res_second_, false, false));
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::postProcessing() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::postProcessing() ... ");
         return false;
     }
 
@@ -942,9 +946,9 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
             }
         }
 
-        GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon dimensions : " << this->printISMRMRDDimensions(dims));
-        GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon size       : " << this->printISMRMRDDimensionSize(dimSize));
-        GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon ref size   : " << this->printISMRMRDDimensionSize(dimSizeRef));
+        GDEBUG_CONDITION_STREAM(!debugFolder_.empty(), "Recon dimensions : " << this->printISMRMRDDimensions(dims));
+        GDEBUG_CONDITION_STREAM(!debugFolder_.empty(), "Recon size       : " << this->printISMRMRDDimensionSize(dimSize));
+        GDEBUG_CONDITION_STREAM(!debugFolder_.empty(), "Recon ref size   : " << this->printISMRMRDDimensionSize(dimSizeRef));
 
         bool gfactor_needed = workOrder_->gfactor_needed_;
         bool wrap_around_map_needed = workOrder_->wrap_around_map_needed_;
@@ -1026,8 +1030,8 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
 
         std::vector<ISMRMRDDIM> dimsRes(dims);
 
-        GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon res dimensions : " << this->printISMRMRDDimensions(dimsRes));
-        GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon res size       : " << this->printISMRMRDDimensionSize(dimResSize));
+        GDEBUG_CONDITION_STREAM(!debugFolder_.empty(), "Recon res dimensions : " << this->printISMRMRDDimensions(dimsRes));
+        GDEBUG_CONDITION_STREAM(!debugFolder_.empty(), "Recon res size       : " << this->printISMRMRDDimensionSize(dimResSize));
 
         bool shareAcrossWorkOrders = (WorkOrderShareDim_!=DIM_NONE);
 
@@ -1117,7 +1121,7 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
                                     }
                                     else
                                     {
-                                        GADGET_WARN_MSG("dims[2] != DIM_Channel, the time stamps will not be copied ... ");
+                                        GWARN_STREAM("dims[2] != DIM_Channel, the time stamps will not be copied ... ");
 
                                         for ( dim2=0; dim2<dimSize[2]; dim2++ )
                                         {
@@ -1269,21 +1273,24 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
                                 }
                             }
 
-                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->data_, "workOrder_data");
-                            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, workOrder_->time_stamp_, "workOrder_time_stamp");
-                            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, workOrder_->physio_time_stamp_, "workOrder_physio_time_stamp");
-                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->ref_, "workOrder_ref");
+                            if ( !debugFolder_.empty() )
+                            {
+                                gt_exporter_.exportArrayComplex(workOrder_->data_, debugFolder_+"workOrder_data");
+                                gt_exporter_.exportArray(workOrder_->time_stamp_, debugFolder_+"workOrder_time_stamp");
+                                gt_exporter_.exportArray(workOrder_->physio_time_stamp_, debugFolder_+"workOrder_physio_time_stamp");
+                                gt_exporter_.exportArrayComplex(workOrder_->ref_, debugFolder_+"workOrder_ref");
+                            }
 
                             // ---------------------------
                             // perform the recon
                             // ---------------------------
                             GADGET_CHECK_RETURN_FALSE(worker_->performRecon(workOrder_));
 
-                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->complexIm_, "workOrder_complexIm");
+                            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder_->complexIm_, debugFolder_+"workOrder_complexIm"); }
 
                             if ( workOrder_->complexIm_second_.get_number_of_elements()>0 )
                             {
-                                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->complexIm_second_, "workOrder_complexImSecond");
+                                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder_->complexIm_second_, debugFolder_+"workOrder_complexImSecond"); }
                             }
 
                             if ( shareAcrossWorkOrders )
@@ -1378,41 +1385,41 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
             }
         }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "res_afterunwrapping");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res_, debugFolder_+"res_afterunwrapping"); }
 
         if ( has_second_res )
         {
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_second_, "res_second_afterunwrapping");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res_second_, debugFolder_+"res_second_afterunwrapping"); }
         }
 
         if ( has_recon_time_stamp )
         {
-            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_time_stamp_, "res_time_stamp");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArray(res_time_stamp_, debugFolder_+"res_time_stamp"); }
         }
 
         if ( has_recon_physio_time_stamp )
         {
-            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_physio_time_stamp_, "res_physio_time_stamp");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArray(res_physio_time_stamp_, debugFolder_+"res_physio_time_stamp"); }
         }
 
         if ( has_recon_time_stamp_second )
         {
-            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_time_stamp_second_, "res_time_stamp_second");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArray(res_time_stamp_second_, debugFolder_+"res_time_stamp_second"); }
         }
 
         if ( has_recon_physio_time_stamp_second )
         {
-            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_physio_time_stamp_second_, "res_physio_time_stamp_second");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArray(res_physio_time_stamp_second_, debugFolder_+"res_physio_time_stamp_second"); }
         }
 
         if ( gfactor_needed )
         {
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gfactor_, "gfactor_afterunwrapping");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(gfactor_, debugFolder_+"gfactor_afterunwrapping"); }
         }
 
         if ( wrap_around_map_needed )
         {
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, wrap_around_map_, "wrap_around_map_afterunwrapping");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(wrap_around_map_, debugFolder_+"wrap_around_map_afterunwrapping"); }
         }
 
         // permute the res_ to the correct dimension order
@@ -1423,30 +1430,30 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
             GADGET_CHECK_RETURN_FALSE(this->findISMRMRDPermuteOrder(dimsRes, dimsRes_, order));
 
             GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_, order));
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "res_afterPermute");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res_, debugFolder_+"res_afterPermute"); }
 
             if ( has_recon_time_stamp )
             {
                 GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_time_stamp_, order));
-                GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_time_stamp_, "res_time_stamp_afterPermute");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArray(res_time_stamp_, debugFolder_+"res_time_stamp_afterPermute"); }
             }
 
             if ( has_recon_physio_time_stamp )
             {
                 GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_physio_time_stamp_, order));
-                GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_physio_time_stamp_, "res_physio_time_stamp_afterPermute");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArray(res_physio_time_stamp_, debugFolder_+"res_physio_time_stamp_afterPermute"); }
             }
 
             if ( gfactor_needed )
             {
                 GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(gfactor_, order));
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gfactor_, "gfactor_afterPermute");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(gfactor_, debugFolder_+"gfactor_afterPermute"); }
             }
 
             if ( wrap_around_map_needed )
             {
                 GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(wrap_around_map_, order));
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, wrap_around_map_, "wrap_around_map_afterPermute");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(wrap_around_map_, debugFolder_+"wrap_around_map_afterPermute"); }
             }
         }
 
@@ -1459,18 +1466,18 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
                 GADGET_CHECK_RETURN_FALSE(this->findISMRMRDPermuteOrder(dimsRes, dimsRes_, order));
 
                 GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_second_, order));
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_second_, "res_second_afterPermute");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res_second_, debugFolder_+"res_second_afterPermute"); }
 
                 if ( has_recon_time_stamp_second )
                 {
                     GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_time_stamp_second_, order));
-                    GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_time_stamp_, "res_time_stamp_second_afterPermute");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArray(res_time_stamp_, debugFolder_+"res_time_stamp_second_afterPermute"); }
                 }
 
                 if ( has_recon_physio_time_stamp_second )
                 {
                     GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_physio_time_stamp_second_, order));
-                    GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_physio_time_stamp_second_, "res_physio_time_stamp_second_afterPermute");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArray(res_physio_time_stamp_second_, debugFolder_+"res_physio_time_stamp_second_afterPermute"); }
                 }
             }
         }
@@ -1501,7 +1508,7 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::configureWorkOrder(const std::vector<ISMRMRDDIM>& dims) ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::configureWorkOrder(const std::vector<ISMRMRDDIM>& dims) ... ");
         return false;
     }
 
@@ -1595,7 +1602,7 @@ copyReconResultsSecond(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyReconResultsSecond() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyReconResultsSecond() ... ");
         return false;
     }
 
@@ -1685,7 +1692,7 @@ copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, boo
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyGFactor() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyGFactor() ... ");
         return false;
     }
 
@@ -1779,7 +1786,7 @@ copyWrapAroundMap(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyWrapAroundMap() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyWrapAroundMap() ... ");
         return false;
     }
 

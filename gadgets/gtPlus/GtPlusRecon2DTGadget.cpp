@@ -26,91 +26,91 @@ bool GtPlusRecon2DTGadget::readParameters()
     {
         GADGET_CHECK_RETURN_FALSE(BaseClass::readParameters());
 
-        GADGET_CONDITION_MSG(verboseMode_, "------> GtPlusRecon2DTGadget parameters <------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlusRecon2DTGadget parameters <------");
 
         boost::shared_ptr<std::string> str = this->get_string_value("dim_4th");
         para_.dim_4th_ = gtPlus_util_.getISMRMRDDimFromName(*str);
-        GADGET_CONDITION_MSG(verboseMode_, "dim_4th_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "dim_4th_ is " << *str);
 
         str = this->get_string_value("dim_5th");
         para_.dim_5th_ = gtPlus_util_.getISMRMRDDimFromName(*str);
-        GADGET_CONDITION_MSG(verboseMode_, "dim_5th_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "dim_5th_ is " << *str);
 
         str = this->get_string_value("workOrder_ShareDim");
         para_.workOrder_ShareDim_ = gtPlus_util_.getISMRMRDDimFromName(*str);
-        GADGET_CONDITION_MSG(verboseMode_, "workOrder_ShareDim_ is " << *str);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "workOrder_ShareDim_ is " << *str);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
         para_.no_acceleration_averageall_ref_ = this->get_bool_value("no_acceleration_averageall_ref");
-        GADGET_CONDITION_MSG(verboseMode_, "no_acceleration_averageall_ref_ is " << para_.no_acceleration_averageall_ref_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "no_acceleration_averageall_ref_ is " << para_.no_acceleration_averageall_ref_);
 
         para_.no_acceleration_ref_numOfModes_ = this->get_int_value("no_acceleration_ref_numOfModes");
-        GADGET_CONDITION_MSG(verboseMode_, "no_acceleration_ref_numOfModes_ is " << para_.no_acceleration_ref_numOfModes_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "no_acceleration_ref_numOfModes_ is " << para_.no_acceleration_ref_numOfModes_);
 
         para_.no_acceleration_same_combinationcoeff_allS_ = this->get_bool_value("no_acceleration_same_combinationcoeff_allS");
-        GADGET_CONDITION_MSG(verboseMode_, "no_acceleration_same_combinationcoeff_allS_ is " << para_.no_acceleration_same_combinationcoeff_allS_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "no_acceleration_same_combinationcoeff_allS_ is " << para_.no_acceleration_same_combinationcoeff_allS_);
 
         para_.no_acceleration_whichS_combinationcoeff_ = this->get_int_value("no_acceleration_whichS_combinationcoeff");
-        GADGET_CONDITION_MSG(verboseMode_, "no_acceleration_whichS_combinationcoeff_ is " << para_.no_acceleration_whichS_combinationcoeff_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "no_acceleration_whichS_combinationcoeff_ is " << para_.no_acceleration_whichS_combinationcoeff_);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
         para_.interleaved_same_combinationcoeff_allS_ = this->get_bool_value("interleaved_same_combinationcoeff_allS");
-        GADGET_CONDITION_MSG(verboseMode_, "interleaved_same_combinationcoeff_allS_ is " << para_.interleaved_same_combinationcoeff_allS_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "interleaved_same_combinationcoeff_allS_ is " << para_.interleaved_same_combinationcoeff_allS_);
 
         para_.interleaved_ref_numOfModes_ = this->get_int_value("interleaved_ref_numOfModes");
-        GADGET_CONDITION_MSG(verboseMode_, "interleaved_ref_numOfModes_ is " << para_.interleaved_ref_numOfModes_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "interleaved_ref_numOfModes_ is " << para_.interleaved_ref_numOfModes_);
 
         para_.interleaved_whichS_combinationcoeff_ = this->get_int_value("interleaved_whichS_combinationcoeff");
-        GADGET_CONDITION_MSG(verboseMode_, "interleaved_whichS_combinationcoeff_ is " << para_.interleaved_whichS_combinationcoeff_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "interleaved_whichS_combinationcoeff_ is " << para_.interleaved_whichS_combinationcoeff_);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
         para_.embedded_averageall_ref_ = this->get_bool_value("embedded_averageall_ref");
-        GADGET_CONDITION_MSG(verboseMode_, "embedded_averageall_ref_ is " << para_.embedded_averageall_ref_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_averageall_ref_ is " << para_.embedded_averageall_ref_);
 
         para_.embedded_ref_numOfModes_ = this->get_int_value("embedded_ref_numOfModes");
-        GADGET_CONDITION_MSG(verboseMode_, "embedded_ref_numOfModes_ is " << para_.embedded_ref_numOfModes_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_ref_numOfModes_ is " << para_.embedded_ref_numOfModes_);
 
         para_.embedded_fullres_coilmap_ = this->get_bool_value("embedded_fullres_coilmap");
-        GADGET_CONDITION_MSG(verboseMode_, "embedded_fullres_coilmap_ is " << para_.embedded_fullres_coilmap_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_fullres_coilmap_ is " << para_.embedded_fullres_coilmap_);
 
         para_.embedded_fullres_coilmap_useHighestSignal_ = this->get_bool_value("embedded_fullres_coilmap_useHighestSignal");
-        GADGET_CONDITION_MSG(verboseMode_, "embedded_fullres_coilmap_useHighestSignal_ is " << para_.embedded_fullres_coilmap_useHighestSignal_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_fullres_coilmap_useHighestSignal_ is " << para_.embedded_fullres_coilmap_useHighestSignal_);
 
         para_.embedded_same_combinationcoeff_allS_ = this->get_bool_value("embedded_same_combinationcoeff_allS");
-        GADGET_CONDITION_MSG(verboseMode_, "embedded_same_combinationcoeff_allS_ is " << para_.embedded_same_combinationcoeff_allS_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_same_combinationcoeff_allS_ is " << para_.embedded_same_combinationcoeff_allS_);
 
         para_.embedded_whichS_combinationcoeff_ = this->get_int_value("embedded_whichS_combinationcoeff");
-        GADGET_CONDITION_MSG(verboseMode_, "embedded_whichS_combinationcoeff_ is " << para_.embedded_whichS_combinationcoeff_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_whichS_combinationcoeff_ is " << para_.embedded_whichS_combinationcoeff_);
 
         para_.embedded_ref_fillback_ = this->get_bool_value("embedded_ref_fillback");
-        GADGET_CONDITION_MSG(verboseMode_, "embedded_ref_fillback_ is " << para_.embedded_ref_fillback_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_ref_fillback_ is " << para_.embedded_ref_fillback_);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
         para_.separate_averageall_ref_ = this->get_bool_value("separate_averageall_ref");
-        GADGET_CONDITION_MSG(verboseMode_, "separate_averageall_ref_ is " << para_.separate_averageall_ref_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "separate_averageall_ref_ is " << para_.separate_averageall_ref_);
 
         para_.separate_ref_numOfModes_ = this->get_int_value("separate_ref_numOfModes");
-        GADGET_CONDITION_MSG(verboseMode_, "separate_ref_numOfModes_ is " << para_.separate_ref_numOfModes_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "separate_ref_numOfModes_ is " << para_.separate_ref_numOfModes_);
 
         para_.separate_fullres_coilmap_ = this->get_bool_value("separate_fullres_coilmap");
-        GADGET_CONDITION_MSG(verboseMode_, "separate_fullres_coilmap_ is " << para_.separate_fullres_coilmap_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "separate_fullres_coilmap_ is " << para_.separate_fullres_coilmap_);
 
         para_.separate_same_combinationcoeff_allS_ = this->get_bool_value("separate_same_combinationcoeff_allS");
-        GADGET_CONDITION_MSG(verboseMode_, "separate_same_combinationcoeff_allS_ is " << para_.separate_same_combinationcoeff_allS_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "separate_same_combinationcoeff_allS_ is " << para_.separate_same_combinationcoeff_allS_);
 
         para_.separate_whichS_combinationcoeff_ = this->get_int_value("separate_whichS_combinationcoeff");
-        GADGET_CONDITION_MSG(verboseMode_, "separate_whichS_combinationcoeff_ is " << para_.separate_whichS_combinationcoeff_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "separate_whichS_combinationcoeff_ is " << para_.separate_whichS_combinationcoeff_);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
         para_.same_coil_compression_coeff_allS_ = this->get_bool_value("same_coil_compression_coeff_allS");
-        GADGET_CONDITION_MSG(verboseMode_, "same_coil_compression_coeff_allS_ is " << para_.same_coil_compression_coeff_allS_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "same_coil_compression_coeff_allS_ is " << para_.same_coil_compression_coeff_allS_);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
         // get the parameters from base class
         // BaseClass::readParameters();
@@ -118,11 +118,11 @@ bool GtPlusRecon2DTGadget::readParameters()
         para_.recon_kspace_needed_ = recon_kspace_needed_;
         para_.workOrderPara_ = workOrderPara_;
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusRecon2DTGadget::readParameters() ... ");
+        GERROR_STREAM("Errors in GtPlusRecon2DTGadget::readParameters() ... ");
         return false;
     }
 
@@ -178,11 +178,11 @@ int GtPlusRecon2DTGadget::process_config(ACE_Message_Block* mb)
 
     // pre-allocate memory
     size_t numOfBytes = matrix_size_encoding_[0]*kSpaceMaxAcqE1No_*num_acq_channels_*num_acq_channels_*sizeof(ValueType);
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadget::Pre allocate : " << numOfBytes/1024.0/1024.0 << " Megabytes ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadget::Pre allocate : " << numOfBytes/1024.0/1024.0 << " Megabytes ... ");
 
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Pre-allocate memory ... "); }
     mem_manager_->increase(numOfBytes);
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
     worker_noacceleration_.gtPlus_mem_manager_ = mem_manager_;
@@ -208,7 +208,7 @@ int GtPlusRecon2DTGadget::process_config(ACE_Message_Block* mb)
 
 int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadgetImageArray >* m1, Gadgetron::GadgetContainerMessage< WorkOrderType > * m2)
 {
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadget::process(...) starts ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadget::process(...) starts ... ");
 
     processed_called_times_++;
 
@@ -221,7 +221,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
     size_t SEG = (*dims)[9];
 
-    GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
+    GDEBUG_CONDITION_STREAM(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
                                                 << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " 
                                                 << (*dims)[3] << " " << (*dims)[4] << " " << (*dims)[5] << " " 
                                                 << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " 
@@ -230,7 +230,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     dimensions_ = *dims;
 
     // fill in more parameters
-    para_.reconSizeRO_ = GT_MAX(matrix_size_recon_[0], (*dims)[0]);
+    para_.reconSizeRO_ = std::max(matrix_size_recon_[0], (*dims)[0]);
     para_.reconSizeE1_ = reconE1_;
     para_.reconSizeE2_ = reconE2_;
     para_.encodingFOV_RO_ = field_of_view_encoding_[0];
@@ -361,7 +361,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     // ------------------------------------------------------------------
     // perform the recon
     // ------------------------------------------------------------------
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Recon 2DT workorder ..."); }
 
     GADGET_CHECK_RETURN(this->generateKSpaceFilter(*workOrder), GADGET_FAIL);
 
@@ -412,10 +412,10 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
     if ( workflow_.worker_ != &worker_grappa_ )
     {
-        GADGET_WARN_MSG("The gfactor computation is currently only avaialbe for grappa reconstruction ... ");
+        GWARN_STREAM("The gfactor computation is currently only avaialbe for grappa reconstruction ... ");
         workflow_.workOrder_->gfactor_needed_ = false;
 
-        GADGET_WARN_MSG("The wrap-around map computation is currently only avaialbe for grappa reconstruction ... ");
+        GWARN_STREAM("The wrap-around map computation is currently only avaialbe for grappa reconstruction ... ");
         workflow_.workOrder_->wrap_around_map_needed_ = false;
     }
 
@@ -424,7 +424,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     GADGET_CHECK_RETURN(workflow_.recon(), GADGET_FAIL);
     GADGET_CHECK_RETURN(workflow_.postProcessing(), GADGET_FAIL);
 
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     if ( !debugFolder2_fullPath_.empty() )
     {
@@ -433,7 +433,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
         hoNDArray< std::complex<float> > res = workflow_.res_;
         res.squeeze();
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+        if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
 
         if ( workflow_.workOrder_->gfactor_needed_ )
         {
@@ -442,7 +442,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
             hoNDArray< std::complex<float> > gfactor = workflow_.gfactor_;
             gfactor.squeeze();
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, gfactor, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(gfactor, debugFolder2_fullPath_+ostr.str()); }
         }
 
         if ( workflow_.workOrder_->wrap_around_map_needed_ )
@@ -452,7 +452,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
             hoNDArray< std::complex<float> > wrap_around_map = workflow_.wrap_around_map_;
             wrap_around_map.squeeze();
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, wrap_around_map, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(wrap_around_map, debugFolder2_fullPath_+ostr.str()); }
         }
 
         if ( workflow_.res_second_.get_number_of_elements() > 0 )
@@ -463,7 +463,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
             std::ostringstream ostr;
             ostr << "Recon2DT_second_" << processed_called_times_;
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
         }
     }
 
@@ -542,7 +542,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         }
     }
 
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadget::process(...) ends ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadget::process(...) ends ... ");
 
     // reset the status
     workflow_.data_ = NULL;

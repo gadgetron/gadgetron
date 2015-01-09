@@ -230,7 +230,7 @@ bool GtPlusRecon2DTCloudPackage<T>::serialize(char*& buf, size_t& len) const
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors happened in GtPlusRecon2DTCloudPackage<T>::serialize(...) ... ");
+        GERROR_STREAM("Errors happened in GtPlusRecon2DTCloudPackage<T>::serialize(...) ... ");
 
         if ( bufKSpace != NULL ) delete [] bufKSpace;
         if ( bufTimeStamp != NULL ) delete [] bufTimeStamp;
@@ -289,7 +289,7 @@ bool GtPlusRecon2DTCloudPackage<T>::deserialize(char* buf, size_t& len)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors happended in GtPlusRecon2DTCloudPackage<T>::deserialize(...) ...");
+        GERROR_STREAM("Errors happended in GtPlusRecon2DTCloudPackage<T>::deserialize(...) ...");
         return false;
     }
 
