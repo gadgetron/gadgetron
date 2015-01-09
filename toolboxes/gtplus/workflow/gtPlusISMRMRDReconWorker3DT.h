@@ -496,11 +496,7 @@ performCalib(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& ref_s
                     omp_set_nested(1);
                 #endif // USE_OMP
 
-                #ifdef GCC_OLD_FLAG
-                    #pragma omp parallel for default(none) private(usedN) shared(N, workOrder3DT, reconKSpace)
-                #else
-                    #pragma omp parallel for default(none) private(usedN) shared(N, ref_src, ref_dst, workOrder3DT, reconKSpace)
-                #endif
+                #pragma omp parallel for default(none) private(usedN) shared(N, ref_src, ref_dst, workOrder3DT, reconKSpace)
                 for ( usedN=0; usedN<(int)N; usedN++ )
                 {
                     this->performCalibImpl(ref_src, ref_dst, workOrder3DT, usedN);
@@ -1357,11 +1353,7 @@ bool gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
             //    }
             //}
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(n) shared(num, dim4D, RO, E1, E2, srcCHA, dstCHA) num_threads( (int)((num<16) ? num : 16) )
-            #else
-                #pragma omp parallel default(none) private(n) shared(num, dim4D, aliasedIm, RO, E1, E2, srcCHA, dstCHA, kerIm, complexIm) num_threads( (int)((num<16) ? num : 16) )
-            #endif
+            #pragma omp parallel default(none) private(n) shared(num, dim4D, aliasedIm, RO, E1, E2, srcCHA, dstCHA, kerIm, complexIm) num_threads( (int)((num<16) ? num : 16) )
             {
                 hoNDArrayMemoryManaged<T> unwrapped4D(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
 
@@ -2399,11 +2391,7 @@ bool gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const 
             omp_set_nested(1);
         #endif // USE_OMP
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, srcCHA, N, kx, ky, kz, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, startE2, endE2, halfKx, halfKy, halfKz, thresReg) if ( num > 1 ) num_threads( (int)(num<16 ? num : 16) )
-        #else
-            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, srcCHA, N, kx, ky, kz, src, dst, kernel, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, startE2, endE2, halfKx, halfKy, halfKz, thresReg) if ( num > 1 ) num_threads( (int)(num<16 ? num : 16) )
-        #endif
+        #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, srcCHA, N, kx, ky, kz, src, dst, kernel, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, startE2, endE2, halfKx, halfKy, halfKz, thresReg) if ( num > 1 ) num_threads( (int)(num<16 ? num : 16) )
         {
            /* hoNDArrayMemoryManaged<T> A_mem(colA, rowA, gtPlus_mem_manager_);
             hoNDArrayMemoryManaged<T> B_mem(colB, rowB, gtPlus_mem_manager_);
@@ -2677,11 +2665,7 @@ bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT,
 
         long long ii;
         int numOfThreads = (int)((num>4) ? 4 : num);
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, CHA, N, kerN, rowD, colD, coeffX, coeffY, coeffZ, pCx, pCy, pCz) if ( num > 1 ) num_threads( numOfThreads ) 
-        #else
-            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, CHA, N, kerN, kspaceConj, kspace, kernel, rowD, colD, coeffX, coeffY, coeffZ, pCx, pCy, pCz) if ( num > 1 ) num_threads( numOfThreads )
-        #endif
+        #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, CHA, N, kerN, kspaceConj, kspace, kernel, rowD, colD, coeffX, coeffY, coeffZ, pCx, pCy, pCz) if ( num > 1 ) num_threads( numOfThreads )
         {
             hoNDArrayMemoryManaged<T> D_mem(rowD, colD, gtPlus_mem_manager_);
 

@@ -290,11 +290,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimensionExcept(wav_coeff_norm_approx_, wavCoeff, 0, wavCoeff, true));
             size_t num = wavCoeff.get_number_of_elements()/(RO*E1*W*CHA);
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, num, W, CHA) if ( num > 1 )
-            #else
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
-            #endif
+            #pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
             {
 
                 #pragma omp for
@@ -452,11 +448,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, value_t
             // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimensionExcept(wav_coeff_norm_approx_, complexIm_, 0, wavCoeff, false));
             num = wavCoeff.get_number_of_elements()/(RO*E1*W*CHA);
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, num, W, CHA) if ( num > 1 )
-            #else
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeff, W, CHA) if ( num > 1 )
-            #endif
+            #pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeff, W, CHA) if ( num > 1 )
             {
                 #pragma omp for
                 for ( ii=0; ii<num; ii++ )

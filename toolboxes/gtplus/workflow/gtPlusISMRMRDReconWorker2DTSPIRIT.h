@@ -269,11 +269,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
         }
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace_initial_Shifted, debugFolder_+"kspace_initial_Shifted"); }
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, refN, N, hasInitial) num_threads(numThreads)
-        #else
-            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, res, refN, N, hasInitial) num_threads(numThreads)
-        #endif
+        #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, res, refN, N, hasInitial) num_threads(numThreads)
         {
             gtPlusSPIRIT2DOperator<T> spirit;
             // spirit.setMemoryManager(gtPlus_mem_manager_);

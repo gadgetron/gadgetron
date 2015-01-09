@@ -1,10 +1,12 @@
+
+//Include for Visual studio, 'cos reasons.
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include "hoNDFFT.h"
 #include "hoMatrix.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_math.h"
-//Include for Visual studio, 'cos reasons.
-#define _USE_MATH_DEFINES
-#include <cmath>
 
 namespace Gadgetron{
 

@@ -4055,11 +4055,7 @@ performNoisePrewhitening(hoNDArray<T>& data, const hoMatrix<T>& prewhiteningMatr
         size_t N = data.get_number_of_elements()/(RO*E1*CHA);
 
         long long n;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, N)
-        #else
-            #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, N, data, prewhiteningMatrix)
-        #endif // GCC_OLD_FLAG
+        #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, N, data, prewhiteningMatrix)
         {
             hoMatrix<T> tmp(RO*E1, CHA);
             Gadgetron::clear(tmp);
@@ -5008,11 +5004,7 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
 
         if ( N >= 16 )
         {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, power, iterNum, thres)
-            #else
-                #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, data, coilMap, power, iterNum, thres)
-            #endif 
+            #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, data, coilMap, power, iterNum, thres)
             {
                 #pragma omp for
                 for ( n=0; n<(long long)N; n++ )
@@ -5435,32 +5427,6 @@ coilCombine(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, hoNDArray<T>&
                 memcpy(combined.begin()+offsetCombined, combinedCurr.begin(), sizeof(T)*RO*E1*N);
             }
         }
-
-        //size_t N = coilMap.get_number_of_elements();
-        //size_t num = data.get_number_of_elements()/coilMap.get_number_of_elements();
-        //size_t NCombined = combined.get_number_of_elements()/num;
-
-        //long long nn;
-        ////#ifdef GCC_OLD_FLAG
-        ////    #pragma omp parallel default(none) private(nn) shared(num, dimCoil, dimCombinedCurr, N, NCombined)
-        ////#else
-        ////    #pragma omp parallel default(none) private(nn) shared(data, coilMap, num, dimCoil, dimCombinedCurr, combined, N, NCombined)
-        ////#endif
-        //{
-        //    hoNDArray<T> dataTmp(coilMap);
-        //    hoNDArray<T> dataCurr;
-        //    hoNDArray<T> dataCombinedCurr;
-
-        //    //#pragma omp for
-        //    for ( nn=0; nn<(long long)num; nn++ )
-        //    {
-        //        dataCurr.create(dimCoil.get(), const_cast<T*>(data.begin()+nn*N));
-        //        Gadgetron::multiplyConj(dataCurr, coilMap, dataTmp);
-
-        //        dataCombinedCurr.create(&dimCombinedCurr, const_cast<T*>(combined.begin()+nn*NCombined));
-        //        Gadgetron::sumOver3rdDimension(dataTmp, dataCombinedCurr);
-        //    }
-        //}
     }
     catch(...)
     {
@@ -5510,11 +5476,7 @@ coilCombine3D(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, hoNDArray<T
         size_t NCombined = combined.get_number_of_elements()/num;
 
         long long nn;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(nn) shared(num, dimCoil, dimCombinedCurr, N, NCombined) if (num>=6)
-        #else
-            #pragma omp parallel default(none) private(nn) shared(data, coilMap, num, dimCoil, dimCombinedCurr, combined, N, NCombined) if (num>=6)
-        #endif
+        #pragma omp parallel default(none) private(nn) shared(data, coilMap, num, dimCoil, dimCombinedCurr, combined, N, NCombined) if (num>=6)
         {
             hoNDArray<T> dataTmp(coilMap);
 
@@ -5558,11 +5520,7 @@ conjugateSymmetry2D(const hoNDArray<T>& kspace, hoNDArray<T>& kspaceConj)
 
         long long ii;
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(ii) shared(RO, E1, num, centerRO, centerE1)
-        #else
-            #pragma omp parallel for default(none) private(ii) shared(RO, E1, num, centerRO, centerE1, kspace, kspaceConj)
-        #endif
+        #pragma omp parallel for default(none) private(ii) shared(RO, E1, num, centerRO, centerE1, kspace, kspaceConj)
         for ( ii=0; ii<num; ii++ )
         {
             ho2DArray<T> src(RO, E1, const_cast<T*>(kspace.begin()+ii*RO*E1));
@@ -5623,11 +5581,7 @@ conjugateSymmetry3D(const hoNDArray<T>& kspace, hoNDArray<T>& kspaceConj)
 
         long long ii;
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(ii) shared(RO, E1, E2, num, centerRO, centerE1, centerE2)
-        #else
-            #pragma omp parallel for default(none) private(ii) shared(RO, E1, E2, num, centerRO, centerE1, centerE2, kspace, kspaceConj)
-        #endif
+        #pragma omp parallel for default(none) private(ii) shared(RO, E1, E2, num, centerRO, centerE1, centerE2, kspace, kspaceConj)
         for ( ii=0; ii<num; ii++ )
         {
             ho3DArray<T> src(RO, E1, E2, const_cast<T*>(kspace.begin()+ii*RO*E1*E2));
