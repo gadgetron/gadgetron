@@ -32,7 +32,7 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
        int length     = 1;           //Length of each transform
        int total_dist = 1;
 
-       T scale = 0.0;
+
 
        typename fftw_types<T>::plan * fft_plan        = 0;
        ComplexType*    fft_storage     = 0;
@@ -43,14 +43,9 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
        //Set sizes
        length = (int)input->get_size(dim_to_transform);
 
-       if (sign == 1)
-       {
-           scale = (T)(1.0/length);
-       }
-       else
-       {
-           scale = (T)1.0;
-       }
+
+       T scale = std::sqrt((T)length);
+
 
        if (dim_to_transform != 0)
        {
@@ -183,7 +178,6 @@ template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size
 	int length     = 1;           //Length of each transform
 	int total_dist = 1;
 
-	T scale = 0.0;
 
 	typename fftw_types<T>::plan * fft_plan        = 0;
 
@@ -191,16 +185,7 @@ template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size
 	//Set sizes
 	length = (int)input->get_size(dim_to_transform);
 
-	if (sign == 1)
-	{
-		scale = (T)(1.0/length);
-
-	}
-	else
-	{
-		scale = (T)1.0;
-	}
-
+	T scale = 1/std::sqrt((T)length);
 	if (dim_to_transform != 0)
 	{
 		for (size_t i = 0; i < dim_to_transform; i++)
