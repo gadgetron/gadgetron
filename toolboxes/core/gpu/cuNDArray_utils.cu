@@ -2,6 +2,7 @@
 #include "vector_td_utilities.h"
 #include "cudaDeviceManager.h"
 #include "setup_grid.h"
+#include "cuNDArray_math.h"
 
 #include <math_functions.h>
 #include <cmath>
@@ -47,6 +48,7 @@ namespace Gadgetron {
     if( out == 0x0 ){
       throw cuda_error("cuNDArray_permute(internal): 0x0 output");;
     }
+
 
     cudaError_t err;
 
@@ -195,7 +197,20 @@ namespace Gadgetron {
           dim_order_int.push_back(i);
         }
       }
-    }    
+    }
+
+
+    //Check if permute is needed
+    {
+    	bool skip_permute = true;
+    	for (size_t i = 0; i < dim_order_int.size(); i++)
+    		skip_permute &= (i == dim_order_int[i]);
+
+    	if (skip_permute){
+    		*out = *in;
+    		return;
+    	}
+    }
     cuNDArray_permute(in, out, &dim_order_int, shift_mode);
   }
 

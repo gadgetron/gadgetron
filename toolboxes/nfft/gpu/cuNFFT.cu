@@ -708,7 +708,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NF
   vector<size_t> dims_to_transform = to_std_vector( _dims_to_transform );
   
   if( mode == NFFT_FORWARDS ){
-    cuNDFFT<REAL>::instance()->fft( data_int, &dims_to_transform );
+    cuNDFFT<REAL>::instance()->fft( data_int, &dims_to_transform, do_scale );
   }
   else{
     cuNDFFT<REAL>::instance()->ifft( data_int, &dims_to_transform, do_scale );
