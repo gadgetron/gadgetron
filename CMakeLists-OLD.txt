@@ -1,31 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
-# check the compiler version
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    if (NOT CMAKE_CXX_COMPILER_VERSION) #Compiler version is not set on Ubuntu 12.02 (gcc 4.6)
-      execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
-        OUTPUT_VARIABLE CMAKE_CXX_COMPILER_VERSION)
-    endif()
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-        message("CXX COMPILER VERSION: ${CMAKE_CXX_COMPILER_ID} : ${CMAKE_CXX_COMPILER_VERSION}")
-        message(FATAL_ERROR "Gadgetron requires GCC version >= 4.8")
-    endif()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.5)
-        message(FATAL_ERROR "Gadgetron requires Clang version >= 3.5")
-    endif()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0)
-        message(FATAL_ERROR "Gadgetron requires MSVC 2013 or above ")
-    endif()
-else()
-    message(WARNING "Unsupported compiler!")
-endif()
-
 #VERSIONING AND INSTALL PATHS
 set(GADGETRON_VERSION_MAJOR 3)
-set(GADGETRON_VERSION_MINOR 4)
+set(GADGETRON_VERSION_MINOR 2)
 set(GADGETRON_VERSION_PATCH 0) 
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
@@ -88,9 +66,6 @@ if (WIN32)
 #    ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
     ADD_DEFINITIONS(-D_VARIADIC_MAX=10) #to fix compiler limitations in Visual Studio Express
-    ADD_DEFINITIONS("/wd4251") #disable warnings, 4251: needs to have dll-interface to be used by clients
-    ADD_DEFINITIONS("/wd4344") #disable warnings, 4344: behavior change: use of explicit template arguments
-    ADD_DEFINITIONS("/wd4996") #disable warnings, 4996: the POSIX name for this item is deprecated. Instead, use the ISO C++ conformant name
     if ( HAS_64_BIT )
         ADD_DEFINITIONS(-DWIN64 -D_WIN64)
     endif ( HAS_64_BIT )
@@ -108,9 +83,9 @@ if (WIN32)
 else (WIN32)
     if (UNIX)
         if (APPLE)
-            SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
         else (APPLE)
-            SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -std=c++11")
+            SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+            SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libgfortran")
         endif (APPLE)
     endif (UNIX)
 endif (WIN32)
@@ -127,7 +102,20 @@ if (BUILD_SUPPRESS_WARNINGS)
     endif (WIN32)
 endif (BUILD_SUPPRESS_WARNINGS)
 
+# whether to compile toolboxes as static library
+OPTION(BUILD_TOOLBOX_STATIC "Build static library for toolboxes" Off)
 
+if ( BUILD_TOOLBOX_STATIC )
+    message("Building static toolbox libray")
+    ADD_DEFINITIONS(-DBUILD_TOOLBOX_STATIC)
+    set(LIBTYPE STATIC)
+    if ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic")
+    endif ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
+else ( BUILD_TOOLBOX_STATIC )
+    message("Building dynamic toolbox libray")
+    set(LIBTYPE SHARED)
+endif ( BUILD_TOOLBOX_STATIC )
 
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
@@ -163,11 +151,6 @@ if (CUDA_FOUND)
   ADD_DEFINITIONS(-DUSE_CUDA)
   SET( GADGETRON_CUDA_FOUND_BOOL 1 )
   include_directories( ${CUDA_INCLUDE_DIRS} )
-  if (NOT WIN32)
-	set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-  endif (NOT WIN32)
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} )
-  set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
   #set(CUDA_VERBOSE_BUILD ON)
 
   # Compile kernels for compute models 1.0 and 2.0 as default for Cuda 4.1
@@ -244,11 +227,6 @@ else()
 message("ISMRMRD not found")
 endif()
 find_package(MKL)
-if (MKL_FOUND)
-    if ( MKL_VERSION_STRING VERSION_LESS 11.2.0 )
-        message(FATAL_ERROR "Gadgetron requires Intel MKL version >= 11.2.0")
-    endif ()
-endif (MKL_FOUND)
 find_package(BLAS)
 find_package(LAPACK)
 if (LAPACK_FOUND)
@@ -303,83 +281,42 @@ endif (UNIX)
 #  ---   Main Library  (end) ----
 
 # whether to install dependencies
-# OPTION(GADGETRON_PERFORM_PACKAGING "Perform gadgetron packaging" Off)
+OPTION(GADGETRON_PERFORM_PACKAGING "Perform gadgetron packaging" Off)
 
-# if (GADGETRON_PERFORM_PACKAGING)
-#    if (NOT GADGETRON_COMPONENT)
-#        set(GADGETRON_COMPONENT main CACHE STRING "gadgetron component")
-#    endif (NOT GADGETRON_COMPONENT)
-#
-#        if (GADGETRON_COMPONENT STREQUAL main)
-#            message("Packaging gadgetron  ${PROJECT_NAME} ")
-#        else (GADGETRON_COMPONENT STREQUAL main)
-#            set(PROJECT_NAME ${PROJECT_NAME}_${GADGETRON_COMPONENT})
-#            message("Packaging gadgetron component ${GADGETRON_COMPONENT} ... ")
-#        endif (GADGETRON_COMPONENT STREQUAL main)
-#
-#    # Create package
-#    string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
-#
-#        if (GADGETRON_COMPONENT STREQUAL main)
-#        include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
-#        if(CPACK_GENERATOR)
-#          message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
-#          configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
-#          set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
-#        endif(CPACK_GENERATOR)
-#        endif (GADGETRON_COMPONENT STREQUAL main)
-#
-#        if (GADGETRON_COMPONENT STREQUAL web)
-#        include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_web_cpack.cmake)
-#        if(CPACK_GENERATOR)
-#          message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
-#          configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options_web.cmake.in" ${GADGETRON_WEB_CPACK_CFG_FILE} @ONLY)
-#          set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_WEB_CPACK_CFG_FILE})
-#        endif(CPACK_GENERATOR)
-#        endif (GADGETRON_COMPONENT STREQUAL web)
-#
-#        set(CPACK_COMPONENTS_ALL ${GADGETRON_COMPONENT})
-#        include (CPack)    
-# endif (GADGETRON_PERFORM_PACKAGING)
+if (GADGETRON_PERFORM_PACKAGING)
+    if (NOT GADGETRON_COMPONENT)
+        set(GADGETRON_COMPONENT main CACHE STRING "gadgetron component")
+    endif (NOT GADGETRON_COMPONENT)
 
+        if (GADGETRON_COMPONENT STREQUAL main)
+            message("Packaging gadgetron  ${PROJECT_NAME} ")
+        else (GADGETRON_COMPONENT STREQUAL main)
+            set(PROJECT_NAME ${PROJECT_NAME}_${GADGETRON_COMPONENT})
+            message("Packaging gadgetron component ${GADGETRON_COMPONENT} ... ")
+        endif (GADGETRON_COMPONENT STREQUAL main)
 
-# Create package
-string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
+    # Create package
+    string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
-find_program(DPKG_PROGRAM dpkg)
-if(EXISTS ${DPKG_PROGRAM})
-  list(APPEND CPACK_GENERATOR "DEB")
-endif(EXISTS ${DPKG_PROGRAM})
+        if (GADGETRON_COMPONENT STREQUAL main)
+        include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
+        if(CPACK_GENERATOR)
+          message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+          configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
+          set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
+        endif(CPACK_GENERATOR)
+        endif (GADGETRON_COMPONENT STREQUAL main)
 
-# Set dependencies explicitly
-#include(InstallRequiredSystemLibraries)
+        if (GADGETRON_COMPONENT STREQUAL web)
+        include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_web_cpack.cmake)
+        if(CPACK_GENERATOR)
+          message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
+          configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options_web.cmake.in" ${GADGETRON_WEB_CPACK_CFG_FILE} @ONLY)
+          set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_WEB_CPACK_CFG_FILE})
+        endif(CPACK_GENERATOR)
+        endif (GADGETRON_COMPONENT STREQUAL web)
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, ismrmrd")
+        set(CPACK_COMPONENTS_ALL ${GADGETRON_COMPONENT})
+        include (CPack)    
+endif (GADGETRON_PERFORM_PACKAGING)
 
-#set(DEBIAN_PACKAGE_DEPENDS "pandoc")
-
-# Enable/Disable component install for CPack generator DEB
-set(CPACK_DEB_COMPONENT_INSTALL ON)
-set(CPACK_COMPONENTS_IGNORE_GROUPS ON)
-
-
-set(CPACK_DEB_PACKAGE_COMPONENT ON)
-set(CPACK_DEB_testclient_PACKAGE_DEPENDS "matlab-support, gadgetron-main")
-set(CPACK_DEB_main_PACKAGE_DEPENDS "zeitgeist-datahub")
-
-
-# Where the package metadata are
-set(GADGETRON_CPACK_CFG_FILE "${PROJECT_BINARY_DIR}/cpack_options.cmake")
-
-# Where the package to be installed
-# set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CMAKE_INSTALL_PREFIX})
-set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-
-if(CPACK_GENERATOR)
-  message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
-  configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
-  set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})  
-  # A list containing the names of all components that should be installed
-  set(CPACK_COMPONENTS_ALL main testclient)
-  include (CPack)
-endif(CPACK_GENERATOR)
