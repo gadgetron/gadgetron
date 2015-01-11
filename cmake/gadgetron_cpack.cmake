@@ -21,7 +21,17 @@ list(APPEND CPACK_SOURCE_IGNORE_FILES ";.git;.gitignore;todo.txt;_clang-format;b
 
 # set dependencies explictly
 include(InstallRequiredSystemLibraries)
+
+# autogenerate dependency information
+#set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+
 set(DEBIAN_PACKAGE_DEPENDS "libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, ismrmrd")
+
+set(CPACK_COMPONENT_TESTCLIENT_DEPENDS "ismrmrd, libboost-program-options-dev, libboost-thread-dev, libboost-system-dev")
+
+#set(CPACK_COMPONENT_MAIN_DEPENDS "libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, ismrmrd")
+
+#set(CPACK_COMPONENT_TESTCLIENT_DEPENDS "main")
 
 # where the package metadata are
 set(GADGETRON_CPACK_CFG_FILE "${PROJECT_BINARY_DIR}/cpack_options.cmake")
