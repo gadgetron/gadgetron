@@ -3,7 +3,7 @@
         link_directories(${Boost_LIBRARY_DIRS})
     endif (WIN32)
 
-    add_library(gadgetron_toolbox_epi ${LIBTYPE}
+    add_library(gadgetron_toolbox_epi SHARED
      EPIExport.h
      EPIReconXObject.h
      EPIReconXObjectFlat.h

@@ -119,21 +119,6 @@ if (BUILD_SUPPRESS_WARNINGS)
     endif (WIN32)
 endif (BUILD_SUPPRESS_WARNINGS)
 
-# whether to compile toolboxes as static library
-OPTION(BUILD_TOOLBOX_STATIC "Build static library for toolboxes" Off)
-
-if ( BUILD_TOOLBOX_STATIC )
-    message("Building static toolbox libray")
-    ADD_DEFINITIONS(-DBUILD_TOOLBOX_STATIC)
-    set(LIBTYPE STATIC)
-    if ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic")
-    endif ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
-else ( BUILD_TOOLBOX_STATIC )
-    message("Building dynamic toolbox libray")
-    set(LIBTYPE SHARED)
-endif ( BUILD_TOOLBOX_STATIC )
-
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)

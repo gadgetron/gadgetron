@@ -53,10 +53,11 @@ namespace Gadgetron{
     if (sizeX==sizeY) {
         // No Broadcasting
         long long loopsize = sizeX;
+        long long n;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize)>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize>NumElementsUseThreading)
 #endif
-        for (long long n=0; n< loopsize; n++ )
+        for (n=0; n< loopsize; n++ )
           {
             c[n] = a[n]+b[n];
           }
@@ -81,20 +82,22 @@ namespace Gadgetron{
                 size_t offset = outer * innerloopsize;
                 const typename mathInternalType<T>::type * ai= &a[offset];
                 typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
+                long long n;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
+#pragma omp parallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
 #endif
-                for (long long n=0; n< innerloopsize; n++ )
+                for (n=0; n< innerloopsize; n++ )
                   {
                     ci[n] = ai[n]+b[n];
                   }
             }
         } else {
             // OMP in the outer loop
+            long long outer;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(outer) shared(outerloopsize, c, a, b)
+#pragma omp parallel for default(none) private(outer) shared(outerloopsize, c, a, b, innerloopsize)
 #endif
-            for (long long outer=0; outer<outerloopsize; outer++) {
+            for (outer=0; outer<outerloopsize; outer++) {
                 size_t offset = outer * innerloopsize;
                 const typename mathInternalType<T>::type * ai = &a[offset];
                 typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
@@ -173,10 +176,11 @@ namespace Gadgetron{
     if (sizeX==sizeY) {
         // No Broadcasting
         long long loopsize = sizeX;
+        long long n;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize)>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize>NumElementsUseThreading)
 #endif
-        for (long long n=0; n< loopsize; n++ )
+        for (n=0; n< loopsize; n++ )
           {
             c[n] = a[n]-b[n];
           }
@@ -201,20 +205,22 @@ namespace Gadgetron{
                 size_t offset = outer * innerloopsize;
                 const typename mathInternalType<T>::type * ai= &a[offset];
                 typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
+                long long n;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
+#pragma omp parallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
 #endif
-                for (long long n=0; n< innerloopsize; n++ )
+                for (n=0; n< innerloopsize; n++ )
                   {
                     ci[n] = ai[n]-b[n];
                   }
             }
         } else {
             // OMP in the outer loop
+            long long outer;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(outer) shared(outerloopsize, c, a, b)
+#pragma omp parallel for default(none) private(outer) shared(outerloopsize, c, a, b, innerloopsize)
 #endif
-            for (long long outer=0; outer<outerloopsize; outer++) {
+            for (outer=0; outer<outerloopsize; outer++) {
                 size_t offset = outer * innerloopsize;
                 const typename mathInternalType<T>::type * ai = &a[offset];
                 typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
@@ -293,10 +299,11 @@ namespace Gadgetron{
       if (sizeX==sizeY) {
           // No Broadcasting
           long long loopsize = sizeX;
+          long long n;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize)>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize>NumElementsUseThreading)
 #endif
-          for (long long n=0; n< loopsize; n++ )
+          for (n=0; n< loopsize; n++ )
             {
               c[n] = a[n]*b[n];
             }
@@ -321,20 +328,23 @@ namespace Gadgetron{
                   size_t offset = outer * innerloopsize;
                   const typename mathInternalType<T>::type * ai= &a[offset];
                   typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
+
+                  long long n;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
+#pragma omp parallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
 #endif
-                  for (long long n=0; n< innerloopsize; n++ )
+                  for (n=0; n< innerloopsize; n++ )
                     {
                       ci[n] = ai[n]*b[n];
                     }
               }
           } else {
               // OMP in the outer loop
+              long long outer;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(outer) shared(outerloopsize, c, a, b)
+#pragma omp parallel for default(none) private(outer) shared(outerloopsize, c, a, b, innerloopsize)
 #endif
-              for (long long outer=0; outer<outerloopsize; outer++) {
+              for (outer=0; outer<outerloopsize; outer++) {
                   size_t offset = outer * innerloopsize;
                   const typename mathInternalType<T>::type * ai = &a[offset];
                   typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
@@ -412,10 +422,11 @@ namespace Gadgetron{
       if (sizeX==sizeY) {
           // No Broadcasting
           long long loopsize = sizeX;
+          long long n;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize)>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize>NumElementsUseThreading)
 #endif
-          for (long long n=0; n< loopsize; n++ )
+          for (n=0; n< loopsize; n++ )
             {
               c[n] = a[n]/b[n];
             }
@@ -440,20 +451,22 @@ namespace Gadgetron{
                   size_t offset = outer * innerloopsize;
                   const typename mathInternalType<T>::type * ai= &a[offset];
                   typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
+                  long long n;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
+#pragma omp parallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
 #endif
-                  for (long long n=0; n< innerloopsize; n++ )
+                  for (n=0; n< innerloopsize; n++ )
                     {
                       ci[n] = ai[n]/b[n];
                     }
               }
           } else {
               // OMP in the outer loop
+              long long outer;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(outer) shared(outerloopsize, c, a, b)
+#pragma omp parallel for default(none) private(outer) shared(outerloopsize, c, a, b, innerloopsize)
 #endif
-              for (long long outer=0; outer<outerloopsize; outer++) {
+              for (outer=0; outer<outerloopsize; outer++) {
                   size_t offset = outer * innerloopsize;
                   const typename mathInternalType<T>::type * ai = &a[offset];
                   typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
@@ -532,10 +545,11 @@ namespace Gadgetron{
       if (sizeX==sizeY) {
           // No Broadcasting
           long long loopsize = sizeX;
+          long long n;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize)>NumElementsUseThreading)
+#pragma omp parallel for default(none) private(n) shared(loopsize, c, a, b) if (loopsize>NumElementsUseThreading)
 #endif
-          for (long long n=0; n< loopsize; n++ )
+          for (n=0; n< loopsize; n++ )
             {
               c[n] = a[n]*conj(b[n]);
             }
@@ -560,20 +574,22 @@ namespace Gadgetron{
                   size_t offset = outer * innerloopsize;
                   const typename mathInternalType<T>::type * ai= &a[offset];
                   typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];
+                  long long n;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
+#pragma omp parallel for default(none) private(n) shared(innerloopsize, ci, ai, b)
 #endif
-                  for (long long n=0; n< innerloopsize; n++ )
+                  for (n=0; n< innerloopsize; n++ )
                     {
                       ci[n] = ai[n]*conj(b[n]);
                     }
               }
           } else {
               // OMP in the outer loop
+              long long outer;
 #ifdef USE_OMP
-#pragma ompparallel for default(none) private(outer) shared(outerloopsize, c, a, b)
+#pragma omp parallel for default(none) private(outer) shared(outerloopsize, c, a, b, innerloopsize)
 #endif
-              for (long long outer=0; outer<outerloopsize; outer++) {
+              for (outer=0; outer<outerloopsize; outer++) {
                   size_t offset = outer * innerloopsize;
                   const typename mathInternalType<T>::type * ai = &a[offset];
                   typename mathInternalType<typename mathReturnType<T,S>::type >::type * ci = &c[offset];

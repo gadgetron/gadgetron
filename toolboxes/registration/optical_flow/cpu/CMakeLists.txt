@@ -81,7 +81,7 @@
 
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
 
-        add_library(gadgetron_toolbox_cpureg ${LIBTYPE} 
+        add_library(gadgetron_toolbox_cpureg SHARED 
                     cpureg_export.h
                     ${opticalflow_files} 
                     ${transformation_files} 

@@ -6,14 +6,10 @@
 #define CPUCORE_EXPORT_H_
 
 #if defined (WIN32)
-    #ifdef BUILD_TOOLBOX_STATIC
-        #define EXPORTCPUCORE
+    #if defined (__BUILD_GADGETRON_CPUCORE__) || defined (cpucore_EXPORTS)
+        #define EXPORTCPUCORE __declspec(dllexport)
     #else
-        #if defined (__BUILD_GADGETRON_CPUCORE__) || defined (cpucore_EXPORTS)
-            #define EXPORTCPUCORE __declspec(dllexport)
-        #else
-            #define EXPORTCPUCORE __declspec(dllimport)
-        #endif
+        #define EXPORTCPUCORE __declspec(dllimport)
     #endif
 #else
 #define EXPORTCPUCORE

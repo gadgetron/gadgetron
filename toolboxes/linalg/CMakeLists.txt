@@ -19,7 +19,7 @@ include_directories(${ISMRMRD_INCLUDE_DIR})
 include_directories(${FFTW3_INCLUDE_DIR})
 include_directories(${ARMADILLO_INCLUDE_DIRS})
 
-add_library(linalg ${LIBTYPE} linalg_export.h 
+add_library(linalg SHARED linalg_export.h 
                           matrix_vector_op.h 
                           matrix_vector_op.cpp 
                           matrix_decomposition.h 

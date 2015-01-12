@@ -13,7 +13,7 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
   )
 
-add_library(gadgetron_toolbox_cpufft ${LIBTYPE} 
+add_library(gadgetron_toolbox_cpufft SHARED 
   cpufft_export.h 
   hoNDFFT.h
   hoNDFFT.cpp
