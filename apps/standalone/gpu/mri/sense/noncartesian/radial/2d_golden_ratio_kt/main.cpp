@@ -287,7 +287,7 @@ int main(int argc, char** argv)
     }
 
     // Goto from x-f to x-t space
-    cuNDFFT<_real>::instance()->fft( cgresult.get(), 2 );
+    cuNDFFT<_real>::instance()->fft( cgresult.get(), 2 ,true);
     
     // Copy cgresult to result
     cuNDArray<_complext> tmp(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction);    

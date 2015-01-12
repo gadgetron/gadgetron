@@ -9,6 +9,8 @@ endif(WIN32)
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
@@ -26,6 +28,7 @@ endif (CUDA_FOUND)
 link_libraries(
     gadgetron_toolbox_cpucore 
     gadgetron_toolbox_cpucore_math
+    gadgetron_toolbox_cpufft
     ${BOOST_LIBRARIES}
     ${GTEST_LIBRARIES} 
     ${ARMADILLO_LIBRARIES}
@@ -40,6 +43,7 @@ if ( CUDA_FOUND )
       hoNDArray_elemwise_test.cpp 
       hoNDArray_blas_test.cpp 
       hoNDArray_utils_test.cpp
+      hoNDFFT_test.cpp
       vector_td_test.cpp
       cuNDArray_elemwise_test.cpp 
       cuNDArray_operators_test.cpp 
@@ -48,6 +52,7 @@ if ( CUDA_FOUND )
       vector_td_test.cpp
       cuVector_td_test_kernels.h 
       cuVector_td_test_kernels.cu 
+      cuNDFFT_test.cpp
       )
 else ( CUDA_FOUND )
     add_executable(test_all 
@@ -55,12 +60,14 @@ else ( CUDA_FOUND )
       hoNDArray_elemwise_test.cpp 
       hoNDArray_blas_test.cpp 
       hoNDArray_utils_test.cpp
+      hoNDFFT_test.cpp
       )
 endif ( CUDA_FOUND )
 
 if ( CUDA_FOUND )
   target_link_libraries(test_all 
     gadgetron_toolbox_gpucore
+    gadgetron_toolbox_gpufft
     )
 endif( CUDA_FOUND )
 

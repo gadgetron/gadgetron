@@ -24,13 +24,13 @@ namespace Gadgetron{
 
     static cuNDFFT<T>* instance();
 
-    void fft ( cuNDArray<complext<T> > *image, std::vector<size_t> *dims_to_transform );
+    void fft ( cuNDArray<complext<T> > *image, std::vector<size_t> *dims_to_transform, bool do_scale = true );
     void ifft( cuNDArray<complext<T> > *image, std::vector<size_t> *dims_to_transform, bool do_scale = true );
 
-    void fft ( cuNDArray<complext<T> > *image, unsigned int dim_to_transform);
+    void fft ( cuNDArray<complext<T> > *image, unsigned int dim_to_transform, bool do_scale = true);
     void ifft( cuNDArray<complext<T> > *image, unsigned int dim_to_transform, bool do_scale = true );
 
-    void fft ( cuNDArray<complext<T> > *image );
+    void fft ( cuNDArray<complext<T> > *image, bool do_scale = true );
     void ifft( cuNDArray<complext<T> > *image, bool do_scale = true );
 
   protected:   
@@ -38,7 +38,11 @@ namespace Gadgetron{
     virtual ~cuNDFFT() {}
     void fft_int( cuNDArray<complext<T> > *image, std::vector<size_t> *dims_to_transform, int direction, bool do_scale = true );
     static cuNDFFT<T>* __instance;
+
+
   };
+
+  template<class T> void timeswitch(cuNDArray<complext<T> >*, int);
 }
 
 #endif
