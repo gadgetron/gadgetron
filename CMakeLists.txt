@@ -119,9 +119,6 @@ if (BUILD_SUPPRESS_WARNINGS)
     endif (WIN32)
 endif (BUILD_SUPPRESS_WARNINGS)
 
-message("Building dynamic toolbox libray")
-set(LIBTYPE SHARED)
-
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
