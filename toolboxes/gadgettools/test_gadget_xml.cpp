@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv)
 {
-  std::cout << "GadgetXML Test Program" << std::endl;
+  GDEBUG_STREAM("GadgetXML Test Program" << std::endl);
 
   TiXmlDocument doc( "demo.xml" );
   doc.LoadFile();
@@ -13,9 +13,9 @@ int main(int argc, char** argv)
 
   std::vector<long> vals = n.get<long>(std::string("gadgetron.encoding.kspace.matrix_size.value"));
 
-  std::cout << "Number of values: " << vals.size() << std::endl;
+  GDEBUG_STREAM("Number of values: " << vals.size() << std::endl);
   for (unsigned int i = 0; i < vals.size(); i++) {
-    std::cout << "   :" << vals[i] << std::endl;
+    GDEBUG_STREAM("   :" << vals[i] << std::endl);
   }
 
 

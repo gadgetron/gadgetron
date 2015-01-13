@@ -43,7 +43,6 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-        ${CMAKE_SOURCE_DIR}/gadgets/core
         ${HDF5_INCLUDE_DIR}
         ${HDF5_INCLUDE_DIR}/cpp
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
@@ -54,7 +53,6 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm 
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
         ${CMAKE_SOURCE_DIR}/apps/gadgetron
         ${CMAKE_SOURCE_DIR}/apps/matlab
@@ -199,6 +197,7 @@ if ( HAS_64_BIT )
 
     add_library(gadgetron_toolbox_gtplus_io ${LIBTYPE} ${gtplus_io_header_files} ${gtplus_io_src_files} )
     set_target_properties(gadgetron_toolbox_gtplus_io PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+    target_link_libraries(gadgetron_toolbox_gtplus_io gadgetron_toolbox_log)
 
     add_library(gadgetron_toolbox_gtplus ${LIBTYPE} 
                 ${gtplus_files} )
@@ -206,7 +205,8 @@ if ( HAS_64_BIT )
     set_target_properties(gadgetron_toolbox_gtplus PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
     target_link_libraries(gadgetron_toolbox_gtplus 
-                          gadgetron_toolbox_cpucore 
+                          gadgetron_toolbox_cpucore
+			  gadgetron_toolbox_log
                           gadgetron_toolbox_cpucore_math 
                           gadgetron_toolbox_cpufft
                           gadgetron_toolbox_gtplus_io 

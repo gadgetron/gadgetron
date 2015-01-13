@@ -87,7 +87,7 @@ setForwardKernel(boost::shared_ptr< hoNDArray<T> >& forward_kernel, bool compute
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITNoNullSpace2DTOperator<T>::setForwardKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITNoNullSpace2DTOperator<T>::setForwardKernel(...) ... ");
         return false;
     }
 
@@ -104,7 +104,7 @@ setAdjointForwardKernel(boost::shared_ptr< hoNDArray<T> >& adjoint_forward_kerne
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITNoNullSpace2DTOperator<T>::setAdjointForwardKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITNoNullSpace2DTOperator<T>::setAdjointForwardKernel(...) ... ");
         return false;
     }
 
@@ -134,11 +134,7 @@ setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace)
 
         long long ii;
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(ii) shared(N)
-        #else
-            #pragma omp parallel for default(none) private(ii) shared(N, kspace)
-        #endif
+        #pragma omp parallel for default(none) private(ii) shared(N, kspace)
         for ( ii=0; ii<(long long)N; ii++ )
         {
             if ( std::abs( (*kspace)(ii) ) < DBL_EPSILON )
@@ -164,7 +160,7 @@ setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITNoNullSpace2DTOperator<T>::setAcquiredPoints(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITNoNullSpace2DTOperator<T>::setAcquiredPoints(...) ... ");
         return false;
     }
 
@@ -223,7 +219,7 @@ bool gtPlusSPIRITNoNullSpace2DTOperator<T>::grad(const hoNDArray<T>& x, hoNDArra
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITNoNullSpace2DTOperator<T>::grad(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITNoNullSpace2DTOperator<T>::grad(...) ... ");
         return false;
     }
 
@@ -279,7 +275,7 @@ bool gtPlusSPIRITNoNullSpace2DTOperator<T>::obj(const hoNDArray<T>& x, T& obj)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRITNoNullSpace2DTOperator<T>::grad(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRITNoNullSpace2DTOperator<T>::grad(...) ... ");
         return false;
     }
 

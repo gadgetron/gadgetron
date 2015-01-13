@@ -3,7 +3,6 @@ FindACE.cmake
 FindFFTW3.cmake
 FindGLEW.cmake
 FindNumPy.cmake
-FindTinyXML.cmake
 FindGadgetron.cmake
 FindIsmrmrd.cmake
 FindGMatlab.cmake

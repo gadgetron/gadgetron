@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Gadgetron.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetContainerMessage.h"

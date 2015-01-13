@@ -61,7 +61,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Unrecognized image registration solver type : " << v);
+                GERROR_STREAM("Unrecognized image registration solver type : " << v);
         }
 
         return name;
@@ -89,7 +89,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_ERROR_MSG("Unrecognized image registration solver name : " << name);
+            GERROR_STREAM("Unrecognized image registration solver name : " << name);
         }
 
         return v;

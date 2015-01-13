@@ -111,7 +111,7 @@ public:
 		std::list<bfgsPair> subspace;
 
 		if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-			std::cout << "Iterating..." << std::endl;
+			GDEBUG_STREAM("Iterating..." << std::endl);
 		}
 		REAL grad_norm0;
 
@@ -148,7 +148,7 @@ public:
 			REAL grad_norm = nrm2(&g);
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 
-				std::cout << "Iteration " <<i << ". Relative gradient norm: " <<  grad_norm/grad_norm0 << std::endl;
+				GDEBUG_STREAM("Iteration " <<i << ". Relative gradient norm: " <<  grad_norm/grad_norm0 << std::endl);
 			}
 
 			lbfgs_update(&g,&d,subspace);
@@ -198,7 +198,7 @@ public:
 				}
 			}
 
-			std::cout << "Alpha : " << alpha << std::endl;
+			GDEBUG_STREAM("Alpha : " << alpha << std::endl);
 
 
 
@@ -248,7 +248,7 @@ public:
 
 
 			REAL f = functionValue(&encoding_space,regEnc,x);
-			std::cout << "Function value: " << f << std::endl;
+			GDEBUG_STREAM("Function value: " << f << std::endl);
 
 			g = g_linear;
 
@@ -568,7 +568,7 @@ protected:
 			if (abs(dir_deriv) > sigma*abs(gd)) wolfe = false;//Strong Wolfe condition..
 			k++;
 			if (alpha == 0){
-				//std::cout << "Backtracking search failed, switching to slow wolfe-search" << std::endl;
+				//GDEBUG_STREAM("Backtracking search failed, switching to slow wolfe-search" << std::endl);
 				//return wolfesearch(f,alpha0,gd,rho,old_norm);
 				return 0;
 			}
@@ -603,9 +603,9 @@ protected:
 
 
 		REAL alpha1 = -gd*alpha0*alpha0/2.0/(f0-old_norm-gd*alpha0);
-		//std::cout << "F0 " <<f0 << " old " << old_norm << " gd " << gd <<std::endl;
-		std::cout << "Alpha0: "  << alpha0 << std::endl;
-		//std::cout << "Alpha1: "  << alpha1 << std::endl;
+		//GDEBUG_STREAM("F0 " <<f0 << " old " << old_norm << " gd " << gd <<std::endl);
+		GDEBUG_STREAM("Alpha0: "  << alpha0 << std::endl);
+		//GDEBUG_STREAM("Alpha1: "  << alpha1 << std::endl);
 		REAL f1 = f(alpha1);
 
 
@@ -624,9 +624,9 @@ protected:
 
 			double alpha2 = (-b+std::sqrt(std::abs(b*b-3*a*gd)))/(3*a);
 			REAL f2 = f(alpha2);
-			//std::cout << "a " << a << "b " << b << std::endl;
-			std::cout << "Alpha1: "  << alpha1 << std::endl;
-			std::cout << "Alpha2: "  << alpha2 << std::endl;
+			//GDEBUG_STREAM("a " << a << "b " << b << std::endl);
+			GDEBUG_STREAM("Alpha1: "  << alpha1 << std::endl);
+			GDEBUG_STREAM("Alpha2: "  << alpha2 << std::endl);
 			if (f2 < old_norm+alpha2*delta*gd){//Strong Wolfe condition..
 				return alpha2;
 			}
@@ -711,7 +711,7 @@ protected:
 			ak = a;
 			bk = b;
 
-			std::cout << "a: " << a << " b: " << b << std::endl;
+			GDEBUG_STREAM("a: " << a << " b: " << b << std::endl);
 		}
 		return 0;
 		//throw std::runtime_error("CG_linesearch failed");
@@ -775,7 +775,7 @@ protected:
 				a = d;
 			} else 	b = d;
 
-			std::cout << "Interval a: " << a << " b: " << b << std::endl;
+			GDEBUG_STREAM("Interval a: " << a << " b: " << b << std::endl);
 
 		}
 

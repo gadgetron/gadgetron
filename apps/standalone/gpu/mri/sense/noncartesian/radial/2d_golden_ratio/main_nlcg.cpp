@@ -257,7 +257,7 @@ int main(int argc, char** argv)
 		solver.add_regularization_group_operator(Ry);
 		solver.add_regularization_group_operator(Rz);
 		solver.add_group(1);*/
-		std::cout << "Total variation in use " << std::endl;
+		GDEBUG_STREAM("Total variation in use " << std::endl);
 	}
 
 	// Add "PICS" regularization
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
 		solver.add_regularization_group_operator(Ry2);
 		solver.add_regularization_group_operator(Rz2);
 		solver.add_group(reg_image,1);*/
-		std::cout << "PICS in use " << std::endl;
+		GDEBUG_STREAM("PICS in use " << std::endl);
 	}
 
 	sqrt_inplace(dcw.get());

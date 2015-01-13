@@ -1,4 +1,4 @@
-
+#include "log.h"
 #include "hoNDArray_linalg.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
@@ -1681,7 +1681,7 @@ void getrf(hoNDArray<T>& A, hoNDArray<lapack_int>& ipiv)
         T* pA = A.begin();
         lapack_int lda = (lapack_int)A.get_size(0);
 
-        ipiv.create( GT_MIN(m, n) );
+        ipiv.create( std::min(m, n) );
         lapack_int* pIPIV = ipiv.begin();
 
         //if ( typeid(T)==typeid(float) )
@@ -1840,17 +1840,17 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
     // hoNDArray<T> ACopy(A);
     // GADGET_CHECK_THROW(gemm(AHA, ACopy, true, A, false));
 
-    //GADGET_MSG("SolveLinearSystem_Tikhonov - A = " << Gadgetron::norm2(A));
-    //GADGET_MSG("SolveLinearSystem_Tikhonov - b = " << Gadgetron::norm2(b));
+    //GDEBUG_STREAM("SolveLinearSystem_Tikhonov - A = " << Gadgetron::norm2(A));
+    //GDEBUG_STREAM("SolveLinearSystem_Tikhonov - b = " << Gadgetron::norm2(b));
 
     char uplo = 'L';
     bool isAHA = true;
     herk(AHA, A, uplo, isAHA);
-    //GADGET_MSG("SolveLinearSystem_Tikhonov - AHA = " << Gadgetron::norm2(AHA));
+    //GDEBUG_STREAM("SolveLinearSystem_Tikhonov - AHA = " << Gadgetron::norm2(AHA));
 
     x.create(A.get_size(1), b.get_size(1));
     gemm(x, A, true, b, false);
-    //GADGET_MSG("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
+    //GDEBUG_STREAM("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
 
     // apply the Tikhonov regularization
     // Ideally, we shall apply the regularization is lamda*maxEigenValue
@@ -1873,7 +1873,7 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
         // trA += std::sqrt(rv*rv + iv*iv);
         trA += abs( AHA(c, c) );
     }
-    //GADGET_MSG("SolveLinearSystem_Tikhonov - trA = " << trA);
+    //GDEBUG_STREAM("SolveLinearSystem_Tikhonov - trA = " << trA);
 
     double value = trA*lamda/col;
     for ( c=0; c<col; c++ )
@@ -1890,8 +1890,8 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
     if ( trA/col < 4.0 )
     {
         typename realType<T>::Type scalingFactor = (typename realType<T>::Type)(col*4.0/trA);
-        GADGET_MSG("SolveLinearSystem_Tikhonov - trA is too small : " << trA << " for matrix order : " << col);
-        GADGET_MSG("SolveLinearSystem_Tikhonov - scale the AHA and x by " << scalingFactor);
+        GDEBUG_STREAM("SolveLinearSystem_Tikhonov - trA is too small : " << trA << " for matrix order : " << col);
+        GDEBUG_STREAM("SolveLinearSystem_Tikhonov - scale the AHA and x by " << scalingFactor);
         Gadgetron::scal( scalingFactor, AHA);
         Gadgetron::scal( scalingFactor, x);
     }
@@ -1899,19 +1899,19 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
     try
     {
         posv(AHA, x);
-        //GADGET_MSG("SolveLinearSystem_Tikhonov - solution = " << Gadgetron::norm2(x));
+        //GDEBUG_STREAM("SolveLinearSystem_Tikhonov - solution = " << Gadgetron::norm2(x));
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("posv failed in SolveLinearSystem_Tikhonov(... ) ... ");
-        GADGET_MSG("A = " << Gadgetron::norm2(A));
-        GADGET_MSG("b = " << Gadgetron::norm2(b));
-        GADGET_MSG("AHA = " << Gadgetron::norm2(AHA));
-        GADGET_MSG("trA = " << trA);
-        GADGET_MSG("x = " << Gadgetron::norm2(x));
+        GERROR_STREAM("posv failed in SolveLinearSystem_Tikhonov(... ) ... ");
+        GDEBUG_STREAM("A = " << Gadgetron::norm2(A));
+        GDEBUG_STREAM("b = " << Gadgetron::norm2(b));
+        GDEBUG_STREAM("AHA = " << Gadgetron::norm2(AHA));
+        GDEBUG_STREAM("trA = " << trA);
+        GDEBUG_STREAM("x = " << Gadgetron::norm2(x));
 
         gemm(x, A, true, b, false);
-        GADGET_MSG("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
+        GDEBUG_STREAM("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
 
         try
         {
@@ -1919,10 +1919,10 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("hesv failed in SolveLinearSystem_Tikhonov(... ) ... ");
+            GERROR_STREAM("hesv failed in SolveLinearSystem_Tikhonov(... ) ... ");
 
             gemm(x, A, true, b, false);
-            GADGET_MSG("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
+            GDEBUG_STREAM("SolveLinearSystem_Tikhonov - x = " << Gadgetron::norm2(x));
 
             try
             {
@@ -1930,7 +1930,7 @@ void SolveLinearSystem_Tikhonov(hoNDArray<T>& A, hoNDArray<T>& b, hoNDArray<T>& 
             }
             catch(...)
             {
-                GADGET_ERROR_MSG("gesv failed in SolveLinearSystem_Tikhonov(... ) ... ");
+                GERROR_STREAM("gesv failed in SolveLinearSystem_Tikhonov(... ) ... ");
                 throw;
             }
         }

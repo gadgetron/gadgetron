@@ -1,5 +1,4 @@
 #include "RemoveROOversamplingGadget.h"
-#include "Gadgetron.h"
 #include "hoNDFFT.h"
 #include "ismrmrd/xml.h"
 
@@ -25,8 +24,8 @@ namespace Gadgetron{
 	ISMRMRD::deserialize(mb->rd_ptr(),h);
 
 	if (h.encoding.size() == 0) {
-	  GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-	  GADGET_DEBUG1("This Gadget needs an encoding description\n");
+	  GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+	  GDEBUG("This Gadget needs an encoding description\n");
 	  return GADGET_FAIL;
 	}
 
@@ -42,7 +41,7 @@ namespace Gadgetron{
         // limit the number of threads used to be 1
 #ifdef USE_OMP
         omp_set_num_threads(1);
-        GADGET_MSG("RemoveROOversamplingGadget:omp_set_num_threads(1) ... ");
+        GDEBUG_STREAM("RemoveROOversamplingGadget:omp_set_num_threads(1) ... ");
 #endif // USE_OMP
 
     // If the encoding and recon matrix size and FOV are the same
@@ -94,7 +93,7 @@ namespace Gadgetron{
         try{ m3->getObjectPtr()->create(&data_out_dims);}
         catch (std::runtime_error &err)
         {
-            GADGET_DEBUG_EXCEPTION(err,"Unable to create new data array for downsampled data\n");
+            GEXCEPTION(err,"Unable to create new data array for downsampled data\n");
             return GADGET_FAIL;
         }
 
@@ -150,10 +149,8 @@ namespace Gadgetron{
 
       if (this->next()->putq(m1) == -1)
       {
-    ACE_ERROR_RETURN( (LM_ERROR,
-                ACE_TEXT("%p\n"),
-                ACE_TEXT("RemoveROOversamplingGadget::process, passing data on to next gadget")),
-                GADGET_FAIL);
+	GERROR("RemoveROOversamplingGadget::process, passing data on to next gadget");
+	return GADGET_FAIL;
       }
 
       return GADGET_OK;

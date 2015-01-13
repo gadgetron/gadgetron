@@ -2,7 +2,6 @@
 #define GADGETMESSAGEINTERFACE_H
 
 #include "GadgetContainerMessage.h"
-#include "Gadgetron.h"
 #include "GadgetronExport.h"
 #include "Gadget.h"
 
@@ -172,13 +171,13 @@ class GadgetMessageConfigFileReader : public GadgetMessageReader
       new GadgetContainerMessage<GadgetMessageConfigurationFile>();
     
     if (!mb1) {
-      GADGET_DEBUG1("Unable to allocate GadgetMessageConfigurationFile\n");
+      GDEBUG("Unable to allocate GadgetMessageConfigurationFile\n");
       return 0;
     }
 
     ssize_t recv_cnt = 0;
     if ((recv_cnt = stream->recv_n (mb1->getObjectPtr(), sizeof(GadgetMessageConfigurationFile))) <= 0) {
-      GADGET_DEBUG1("Unable to read configuration file information\n");
+      GDEBUG("Unable to read configuration file information\n");
       mb1->release();
       return 0;
     }
@@ -197,15 +196,14 @@ class GadgetMessageScriptReader : public GadgetMessageReader
 
     ssize_t recv_cnt = 0;
     if ((recv_cnt = stream->recv_n (&ms, sizeof(GadgetMessageScript))) <= 0) {
-      GADGET_DEBUG1("Unable to read configuration file information\n");
+      GDEBUG("Unable to read configuration file information\n");
        return 0;
     }
     
     ACE_Message_Block* mb = new ACE_Message_Block(ms.script_length);
 
     if ((recv_cnt = stream->recv_n (mb->wr_ptr(), ms.script_length)) <= 0) {
-      ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Unable to read script\n")));
+      GERROR("Unable to read script\n");
       return 0;
     }
     mb->wr_ptr(ms.script_length);

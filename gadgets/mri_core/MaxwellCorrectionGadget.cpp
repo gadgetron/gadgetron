@@ -1,5 +1,4 @@
 #include "MaxwellCorrectionGadget.h"
-#include "Gadgetron.h"
 #include "GadgetronTimer.h"
 #include "Spline.h"
 #include "ismrmrd/xml.h"
@@ -35,26 +34,26 @@ namespace Gadgetron{
             for (std::vector<ISMRMRD::UserParameterDouble>::const_iterator i (h.userParameters->userParameterDouble.begin()); 
                 i != h.userParameters->userParameterDouble.end(); i++)
             {
-                    if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_0") == 0) {
+                    if (i->name == "MaxwellCoefficient_0") {
                         maxwell_coefficients_[0] = i->value;
-                    } else if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_1") == 0) {
+                    } else if (i->name == "MaxwellCoefficient_1") {
                         maxwell_coefficients_[1] = i->value;
-                    } else if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_2") == 0) {
+                    } else if (i->name == "MaxwellCoefficient_2") {
                         maxwell_coefficients_[2] = i->value;
-                    } else if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_3") == 0) {
+                    } else if (i->name == "MaxwellCoefficient_3") {
                         maxwell_coefficients_[3] = i->value;
                     } else {
-                        GADGET_DEBUG2("WARNING: unused user parameter parameter %s found\n", i->name.c_str());
+                        GDEBUG("WARNING: unused user parameter parameter %s found\n", i->name.c_str());
                     }
             }
         } else {
-            GADGET_DEBUG1("MaxwellCorrection coefficients are supposed to be in the UserParameters. No user parameter section found\n");
+            GDEBUG("MaxwellCorrection coefficients are supposed to be in the UserParameters. No user parameter section found\n");
             return GADGET_OK;
         }
 
         maxwell_coefficients_present_ = true;
 
-        GADGET_DEBUG2("Maxwell Coefficients: %f, %f, %f, %f\n", maxwell_coefficients_[0], maxwell_coefficients_[1], maxwell_coefficients_[2], maxwell_coefficients_[3]);
+        GDEBUG("Maxwell Coefficients: %f, %f, %f, %f\n", maxwell_coefficients_[0], maxwell_coefficients_[1], maxwell_coefficients_[2], maxwell_coefficients_[3]);
 
         return GADGET_OK;
     }
@@ -64,7 +63,7 @@ namespace Gadgetron{
         GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
     {
         if (maxwell_coefficients_present_) {
-            //GADGET_DEBUG1("Got coefficients\n");
+            //GDEBUG("Got coefficients\n");
 
             int Nx = m2->getObjectPtr()->get_size(0);
             int Ny = m2->getObjectPtr()->get_size(1);
@@ -75,9 +74,9 @@ namespace Gadgetron{
             float dz = m1->getObjectPtr()->field_of_view[2] / Nz;
 
             /*
-            GADGET_DEBUG2("Nx = %d, Ny = %d, Nz = %d\n", Nx, Ny, Nz);
-            GADGET_DEBUG2("dx = %f, dy = %f, dz = %f\n", dx, dy, dz);
-            GADGET_DEBUG2("img_pos_x = %f, img_pos_y = %f, img_pos_z = %f\n", m1->getObjectPtr()->position[0], m1->getObjectPtr()->position[1], m1->getObjectPtr()->position[2]);
+            GDEBUG("Nx = %d, Ny = %d, Nz = %d\n", Nx, Ny, Nz);
+            GDEBUG("dx = %f, dy = %f, dz = %f\n", dx, dy, dz);
+            GDEBUG("img_pos_x = %f, img_pos_y = %f, img_pos_z = %f\n", m1->getObjectPtr()->position[0], m1->getObjectPtr()->position[1], m1->getObjectPtr()->position[2]);
             */
 
             std::vector<float> dR(3,0);
@@ -130,7 +129,7 @@ namespace Gadgetron{
         }
 
         if (this->next()->putq(m1) < 0) {
-            GADGET_DEBUG1("Unable to put data on next Gadgets Q\n");
+            GDEBUG("Unable to put data on next Gadgets Q\n");
             return GADGET_FAIL;
         }
         return GADGET_OK;

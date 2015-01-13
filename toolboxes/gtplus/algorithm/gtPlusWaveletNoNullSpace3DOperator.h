@@ -85,7 +85,7 @@ grad(const hoNDArray<T>& x, hoNDArray<T>& g)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletNoNullSpace3DOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletNoNullSpace3DOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g) ... ");
         return false;
     }
 
@@ -102,7 +102,7 @@ obj(const hoNDArray<T>& x, T& obj)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusWaveletNoNullSpace3DOperator<T>::obj(const hoNDArray<T>& x, T& obj) ... ");
+        GERROR_STREAM("Errors in gtPlusWaveletNoNullSpace3DOperator<T>::obj(const hoNDArray<T>& x, T& obj) ... ");
         return false;
     }
 

@@ -17,7 +17,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     // Copy the data
     std::complex<float> *raw_data = m2->getObjectPtr()->get_data_ptr();
     if (!raw_data) {
-        GADGET_DEBUG1("Broken raw_data pointer\n");
+        GDEBUG("Broken raw_data pointer\n");
         return GADGET_FAIL;
     }
 
@@ -25,17 +25,17 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
 
     float *real_data = (float *)mxCalloc(num_elements, sizeof(float));
     if (!real_data) {
-        GADGET_DEBUG1("Failed to allocate float* for real_data\n");
+        GDEBUG("Failed to allocate float* for real_data\n");
         return GADGET_FAIL;
     }
     float *imag_data = (float *)mxCalloc(num_elements, sizeof(float));
     if (!imag_data) {
-        GADGET_DEBUG1("Failed to allocate float* for imag_data\n");
+        GDEBUG("Failed to allocate float* for imag_data\n");
         return GADGET_FAIL;
     }
 
     for (int i = 0; i < num_elements; i++) {
-        //std::cout << i << ": " << raw_data[i].real() << ", " << raw_data[i].imag() << endl;
+        //GDEBUG_STREAM(i << ": " << raw_data[i].real() << ", " << raw_data[i].imag() << endl);
         real_data[i] = raw_data[i].real();
         imag_data[i] = raw_data[i].imag();
     }
@@ -60,14 +60,17 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ();";
     send_matlab_command(cmd);
 
+    GDEBUG("Test1\n");
     // Get the size of the gadget's queue
 
     mxArray *Q = engGetVariable(engine_, "Q");
     if (Q == NULL) {
-        GADGET_DEBUG1("Failed to get the Queue from matgadget\n");
+        GDEBUG("Failed to get the Queue from matgadget\n");
         return GADGET_FAIL;
     }
+
     size_t qlen = mxGetNumberOfElements(Q);
+   
 
     // Loop over the elements of the Q, reading one entry at a time
     // to get a structure with type, headerbytes, and data
@@ -101,7 +104,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
             try {
                 m4->getObjectPtr()->create(&dims);
             } catch (std::bad_alloc& err) {
-                GADGET_DEBUG1("Failed to create new hoNDArray\n");
+                GDEBUG("Failed to create new hoNDArray\n");
                 return GADGET_FAIL;
             }
 
@@ -112,7 +115,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
             }
 
             if (this->next()->putq(m3) < 0) {
-                GADGET_DEBUG1("Failed to put Acquisition message on queue\n");
+                GDEBUG("Failed to put Acquisition message on queue\n");
                 return GADGET_FAIL;
             }
 
@@ -138,10 +141,9 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
             try {
                 m4->getObjectPtr()->create(&dims);
             } catch (std::bad_alloc& err) {
-                GADGET_DEBUG1("Failed to create new hoNDArray\n");
+                GDEBUG("Failed to create new hoNDArray\n");
                 return GADGET_FAIL;
             }
-            GADGET_DEBUG2("Matlab output size: %i %i %i %i\n",dims[0],dims[1],dims[2],dims[3]);
 
             float *real_data = (float *)mxGetData(res_data);
             float *imag_data = (float *)mxGetImagData(res_data);
@@ -150,15 +152,14 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
             }
 
             if (this->next()->putq(m3) < 0) {
-                GADGET_DEBUG1("Failed to put Image message on queue\n");
+                GDEBUG("Failed to put Image message on queue\n");
                 return GADGET_FAIL;
             }
 
-            GADGET_DEBUG2("MatlabGadget has placed Image header and data on queue %i \n",m4->getObjectPtr()->get_data_ptr());
             break;
         }
         default:
-            GADGET_DEBUG1("Matlab gadget returned undefined header type\n");
+            GDEBUG("Matlab gadget returned undefined header type\n");
             return GADGET_FAIL;
         }
     }
@@ -195,7 +196,7 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
     // Create a mxArray for the Image data
     std::complex<float> *raw_data = m2->getObjectPtr()->get_data_ptr();
     if (!raw_data) {
-        GADGET_DEBUG1("Broken raw_data pointer\n");
+        GDEBUG("Broken raw_data pointer\n");
         return GADGET_FAIL;
     }
 
@@ -224,7 +225,7 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
     // Get the size of the gadget's queue
     mxArray *Q = engGetVariable(engine_, "Q");
     if (Q == NULL) {
-        GADGET_DEBUG1("Failed to get the Queue from matgadget\n");
+        GDEBUG("Failed to get the Queue from matgadget\n");
         return GADGET_FAIL;
     }
     size_t qlen = mxGetNumberOfElements(Q);
@@ -261,7 +262,7 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
             try {
                 m4->getObjectPtr()->create(&dims);
             } catch (std::bad_alloc& err) {
-                GADGET_DEBUG1("Failed to create new hoNDArray\n");
+                GDEBUG("Failed to create new hoNDArray\n");
                 return GADGET_FAIL;
             }
 
@@ -272,14 +273,14 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
             }
 
             if (this->next()->putq(m3) < 0) {
-                GADGET_DEBUG1("Failed to put Image message on queue\n");
+                GDEBUG("Failed to put Image message on queue\n");
                 return GADGET_FAIL;
             }
 
             break;
         }
         default:
-            GADGET_DEBUG1("Matlab gadget returned undefined header type\n");
+            GDEBUG("Matlab gadget returned undefined header type\n");
             return GADGET_FAIL;
         }
     }

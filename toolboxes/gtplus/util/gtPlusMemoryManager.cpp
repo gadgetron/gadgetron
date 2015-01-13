@@ -5,6 +5,7 @@
 
 #include <gtPlusMemoryManager.h>
 #include <cstring>
+#include "log.h"
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -18,7 +19,7 @@ gtPlusMemoryManager::gtPlusMemoryManager(size_t aligned_bytes, size_t preallocat
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gtPlusMemoryManager::gtPlusMemoryManager(aligned_bytes, preallocated_bytes) : " << preallocated_bytes/1024/1024 << " MegaBytes ... ");
+        GERROR_STREAM("Errors happened in gtPlusMemoryManager::gtPlusMemoryManager(aligned_bytes, preallocated_bytes) : " << preallocated_bytes/1024/1024 << " MegaBytes ... ");
     }
 }
 
@@ -40,7 +41,7 @@ gtPlusMemoryManager::~gtPlusMemoryManager()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gtPlusMemoryManager::~gtPlusMemoryManager() ... ");
+        GERROR_STREAM("Errors happened in gtPlusMemoryManager::~gtPlusMemoryManager() ... ");
     }
 }
 
@@ -123,7 +124,7 @@ void* gtPlusMemoryManager::allocateImpl(size_t size)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in gtPlusMemoryManager::allocate(size_t size) : " << size);
+        GERROR_STREAM("Error happened in gtPlusMemoryManager::allocate(size_t size) : " << size);
         return NULL;
     }
 
@@ -150,7 +151,7 @@ void gtPlusMemoryManager::freeImpl(void* raw_memory)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in gtPlusMemoryManager::freeImpl(raw_memory) ... ");
+        GERROR_STREAM("Error happened in gtPlusMemoryManager::freeImpl(raw_memory) ... ");
     }
 }
 
@@ -165,7 +166,7 @@ void gtPlusMemoryManager::defragmentImpl()
 {
     try
     {
-        GADGET_MSG("-----> gtPlusMemoryManager::defragmentImpl() ... ");
+        GDEBUG_STREAM("-----> gtPlusMemoryManager::defragmentImpl() ... ");
         size_t N = free_list_.size();
         memObjList_.resize(N);
 
@@ -250,7 +251,7 @@ void gtPlusMemoryManager::defragmentImpl()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in gtPlusMemoryManager::defragmentImpl() ... ");
+        GERROR_STREAM("Error happened in gtPlusMemoryManager::defragmentImpl() ... ");
     }
 }
 
@@ -279,7 +280,7 @@ bool gtPlusMemoryManager::increase(size_t added_bytes)
 {
     try
     {
-        GADGET_MSG("-----> gtPlusMemoryManager::increase() : " << added_bytes/1024/1024 << " MegaBytes ");
+        GDEBUG_STREAM("-----> gtPlusMemoryManager::increase() : " << added_bytes/1024/1024 << " MegaBytes ");
 
         void* ptr;
         _allocate_memory(added_bytes, ptr);
@@ -303,7 +304,7 @@ bool gtPlusMemoryManager::increase(size_t added_bytes)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gtPlusMemoryManager::increase(size_t added_bytes) : " << added_bytes/1024/1024 << " MegaBytes ...");
+        GERROR_STREAM("Errors happened in gtPlusMemoryManager::increase(size_t added_bytes) : " << added_bytes/1024/1024 << " MegaBytes ...");
         return false;
     }
 

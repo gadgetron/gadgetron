@@ -215,9 +215,9 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uint64d<D>::Type ma
   //
   
   if( sum(matrix_size%vec_warp_size) || sum(matrix_size_os%vec_warp_size) ){
-    //std::cout << "Matrix size: " << matrix_size << std::endl;
-    //std::cout << "Matrix size os: " << matrix_size_os << std::endl;
-    //std::cout << "Warp size: " << vec_warp_size << std::endl;
+    //GDEBUG_STREAM("Matrix size: " << matrix_size << std::endl);
+    //GDEBUG_STREAM("Matrix size os: " << matrix_size_os << std::endl);
+    //GDEBUG_STREAM("Warp size: " << vec_warp_size << std::endl);
     throw std::runtime_error("Error: Illegal matrix size for the cuNFFT plan (not a multiple of the warp size)");
   }
 
@@ -711,7 +711,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NF
   vector<size_t> dims_to_transform = to_std_vector( _dims_to_transform );
   
   if( mode == NFFT_FORWARDS ){
-    cuNDFFT<REAL>::instance()->fft( data_int, &dims_to_transform );
+    cuNDFFT<REAL>::instance()->fft( data_int, &dims_to_transform, do_scale );
   }
   else{
     cuNDFFT<REAL>::instance()->ifft( data_int, &dims_to_transform, do_scale );

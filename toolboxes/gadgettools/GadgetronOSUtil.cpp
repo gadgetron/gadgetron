@@ -20,7 +20,7 @@ namespace Gadgetron{
             boost::filesystem::path workingPath(workingdirectory);
             if ( !boost::filesystem::create_directory(workingPath) )
             {
-                GADGET_ERROR_MSG("Error creating the working directory " << workingdirectory);
+                GERROR_STREAM("Error creating the working directory " << workingdirectory);
                 return false;
             }
 
@@ -32,7 +32,7 @@ namespace Gadgetron{
                 }
                 catch(...)
                 {
-                    GADGET_ERROR_MSG("Error changing the permission of the working directory " << workingdirectory);
+                    GERROR_STREAM("Error changing the permission of the working directory " << workingdirectory);
                 }
             #else
                 // in case an older version of boost is used in non-win system
@@ -40,7 +40,7 @@ namespace Gadgetron{
                 int res = chmod(workingPath.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
                 if ( res != 0 )
                 {
-                    GADGET_ERROR_MSG("Error changing the permission of the working directory " << workingdirectory);
+                    GERROR_STREAM("Error changing the permission of the working directory " << workingdirectory);
                 }
             #endif // _WIN32
         }

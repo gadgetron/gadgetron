@@ -4,7 +4,6 @@
 
 #include <ace/Message_Block.h>
 #include <string>
-#include "Gadgetron.h"
 
 namespace Gadgetron{
 /**

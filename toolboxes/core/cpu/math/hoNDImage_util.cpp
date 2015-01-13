@@ -229,7 +229,7 @@ bool gradient(const hoNDImage<T, D>& x, hoNDImage<T, D> gx[])
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gradient(const hoNDImage<T, D>& x, hoNDImage<T, D> gx[D]) ... ");
+        GERROR_STREAM("Errors happened in gradient(const hoNDImage<T, D>& x, hoNDImage<T, D> gx[D]) ... ");
         return false;
     }
 
@@ -263,7 +263,7 @@ bool gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoND
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoNDArray<T>& ker) ... ");
+        GERROR_STREAM("Errors happened in gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoNDArray<T>& ker) ... ");
         return false;
     }
     return true;
@@ -808,7 +808,7 @@ bool filterGaussian(ArrayType& img, T2 sigma[], typename ArrayType::value_type* 
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in filterGaussian(const hoNDImage<T, D>& x, T sigma[], typename ArrayType::value_type* mem) ... ");
+        GERROR_STREAM("Errors happened in filterGaussian(const hoNDImage<T, D>& x, T sigma[], typename ArrayType::value_type* mem) ... ");
         return false;
     }
 

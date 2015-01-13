@@ -111,7 +111,7 @@ namespace Gadgetron{
       //
 
       if( this->output_mode_ >= registrationSolver<ARRAY_TYPE_REAL>::OUTPUT_VERBOSE ) {
-        std::cout << std::endl << "Starting multiresolution registration " <<  std::endl;
+        GDEBUG_STREAM(std::endl << "Starting multiresolution registration " <<  std::endl);
       }
 
       boost::shared_ptr<ARRAY_TYPE_REAL> result =
@@ -185,7 +185,7 @@ namespace Gadgetron{
         //
 
         if( this->output_mode_ >= registrationSolver<ARRAY_TYPE_REAL>::OUTPUT_VERBOSE ) {
-          std::cout << std::endl << "Multiresolution level " << res_level;
+          GDEBUG_STREAM(std::endl << "Multiresolution level " << res_level);
         }
 
         // Use estimated (lowres) motion to compute displacements at the current resolution
@@ -208,7 +208,7 @@ namespace Gadgetron{
         //
 
         if( this->output_mode_ >= registrationSolver<ARRAY_TYPE_REAL>::OUTPUT_VERBOSE ) {
-          std::cout << std::endl << "Multiresolution level " << res_level << " (lowest)";
+          GDEBUG_STREAM(std::endl << "Multiresolution level " << res_level << " (lowest)");
         }
 
         // Compute displacements at the current resolution (no estimate can be provided)

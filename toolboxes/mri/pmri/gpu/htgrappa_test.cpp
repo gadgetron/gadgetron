@@ -10,7 +10,7 @@
 using namespace Gadgetron;
 int main(int argc, char** argv)
 {
-  std::cout << "Simple HTGRAPPA program" << std::endl;
+  GDEBUG_STREAM("Simple HTGRAPPA program" << std::endl);
   {
     GPUTimer init_time("CUDA Initialization");
   }
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 
   cuNDArray<cuFloatComplex> unmixing_dev;
   if (!unmixing_dev.create(b1_dev.get_dimensions())) {
-    std::cout << "Unable to allocate memory for GRAPPA unmixing coefficients" << std::endl;
+    GDEBUG_STREAM("Unable to allocate memory for GRAPPA unmixing coefficients" << std::endl);
     return 0;
   }
 
@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 					    4,
 					    kernel_size,
 					    &unmixing_dev) < 0) {
-      std::cout << "Error calculating unmixing coefficients" << std::endl;
+      GDEBUG_STREAM("Error calculating unmixing coefficients" << std::endl);
     }
   }
 
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
   write_nd_array<cuFloatComplex>(average_image, "average_image.cplx");
   delete timer_ptr;
 
-  std::cout << "Reconstruction done" << std::endl;
+  GDEBUG_STREAM("Reconstruction done" << std::endl);
 
   return 0;
 }

@@ -1,4 +1,44 @@
 #!/bin/bash                                                                                                                                    
+
+function mount_safe {
+  MOUNT_POINT=$1
+  MOUNT_DIR=$2
+  mkdir -p $MOUNT_POINT
+  if find $MOUNT_POINT -maxdepth 0 -empty | read v; then
+    mount --bind $MOUNT_DIR $MOUNT_POINT
+    MOUNT_READY=0
+    MOUNT_TRY=0
+    MAX_MOUNT_TRY=100
+
+    if [ $# -eq 3 ]; then
+      MOUNT_FILE=$3
+      while [ ${MOUNT_READY} -eq 0 ]; do
+        if mountpoint -q ${MOUNT_POINT} && [ -e ${MOUNT_POINT}/${MOUNT_FILE} ]; then
+          MOUNT_READY=1
+        else
+          sleep 0.2
+          let MOUNT_TRY++
+          if [ $MOUNT_TRY -eq $MAX_MOUNT_TRY ]; then
+	          MOUNT_READY=1
+          fi  
+        fi
+      done
+    else
+      while [ ${MOUNT_READY} -eq 0 ]; do
+        if mountpoint -q ${MOUNT_POINT}; then
+          MOUNT_READY=1
+        else
+          sleep 0.2
+          let MOUNT_TRY++
+          if [ $MOUNT_TRY -eq $MAX_MOUNT_TRY ]; then
+	          MOUNT_READY=1
+          fi
+        fi
+      done  
+    fi
+  fi
+}
+
 if [ $(id -u) -ne 0 ]; then
  echo -e "\nPlease start the script as a root or sudo!\n"
  exit 1
@@ -10,20 +50,9 @@ else
 
   CHROOT_DIR=${1}
 
-  mkdir -p "${CHROOT_DIR}/gadgetron/proc"
-  if find "${CHROOT_DIR}/gadgetron/proc" -maxdepth 0 -empty | read v; then
-   mount --bind /proc "${CHROOT_DIR}/gadgetron/proc";
-  fi
-
-  mkdir -p "${CHROOT_DIR}/gadgetron/dev"
-  if find "${CHROOT_DIR}/gadgetron/dev" -maxdepth 0 -empty | read v; then
-   mount --bind /dev "${CHROOT_DIR}/gadgetron/dev";
-  fi
-
-  mkdir -p "${CHROOT_DIR}/gadgetron/sys"
-  if find "${CHROOT_DIR}/gadgetron/sys" -maxdepth 0 -empty | read v; then
-   mount --bind /sys "${CHROOT_DIR}/gadgetron/sys";
-  fi
+  mount_safe "${CHROOT_DIR}/gadgetron/proc" /proc self/exe
+  mount_safe "${CHROOT_DIR}/gadgetron/dev" /dev
+  mount_safe "${CHROOT_DIR}/gadgetron/sys" /sys
 
   exit 0
 

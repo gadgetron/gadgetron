@@ -161,7 +161,7 @@ public:
 
     // compute the kspace filter
     bool generateKSpaceFilter(WorkOrderType& workOrder);
-    //void GADGET_CONDITION_MSG(bool verboseMode_, const char* arg2);
+    //void GDEBUG_CONDITION_STREAM(bool verboseMode_, const char* arg2);
 
 protected:
 

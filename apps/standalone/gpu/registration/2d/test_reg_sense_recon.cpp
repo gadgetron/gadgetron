@@ -349,7 +349,7 @@ int main(int argc, char** argv)
   image_dims = to_std_vector(matrix_size); 
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
   cuNDArray<_complext> *sense_result_cplx = new cuNDArray<_complext>; 
-  std::cout << std::endl << matrix_size[0] << " " << matrix_size[1] << " " << frames_per_reconstruction << " " << num_reconstructions;
+  GDEBUG_STREAM(std::endl << matrix_size[0] << " " << matrix_size[1] << " " << frames_per_reconstruction << " " << num_reconstructions);
 
   sense_result_cplx->create(&image_dims);
   

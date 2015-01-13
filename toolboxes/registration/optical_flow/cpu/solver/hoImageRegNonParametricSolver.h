@@ -135,7 +135,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegNonParametricSolver<ValueType, CoordType, DIn, DOut>::initialize() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegNonParametricSolver<ValueType, CoordType, DIn, DOut>::initialize() ... ");
             return false;
         }
 

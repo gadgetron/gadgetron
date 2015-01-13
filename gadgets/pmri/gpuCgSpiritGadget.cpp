@@ -4,7 +4,6 @@
 #include "cuNDArray_blas.h"
 #include "cuNDArray_utils.h"
 #include "cuNDArray_reductions.h"
-#include "Gadgetron.h"
 #include "GadgetMRIHeaders.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
@@ -30,7 +29,7 @@ namespace Gadgetron{
   int gpuCgSpiritGadget::process_config( ACE_Message_Block* mb )
   {
 	  gpuSenseGadget::process_config(mb);
-    //GADGET_DEBUG1("gpuCgSpiritGadget::process_config\n");
+    //GDEBUG("gpuCgSpiritGadget::process_config\n");
 
 
    number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
@@ -43,7 +42,7 @@ namespace Gadgetron{
     
     
     if (h.encoding.size() != 1) {
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+      GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
     
@@ -98,14 +97,14 @@ namespace Gadgetron{
       return this->next()->putq(m1);
     }
     
-    //GADGET_DEBUG1("gpuCgSpiritGadget::process\n");
+    //GDEBUG("gpuCgSpiritGadget::process\n");
 
     boost::shared_ptr<GPUTimer> process_timer;
     if( output_timing_ )
       process_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuCgSpiritGadget::process()") );
     
     if (!is_configured_) {
-      GADGET_DEBUG1("Data received before configuration was completed\n");
+      GDEBUG("Data received before configuration was completed\n");
       return GADGET_FAIL;
     }
 
@@ -113,7 +112,7 @@ namespace Gadgetron{
 
     // Some basic validation of the incoming Spirit job
     if (!j->csm_host_.get() || !j->dat_host_.get() || !j->tra_host_.get() || !j->dcw_host_.get() || !j->reg_host_.get()) {
-      GADGET_DEBUG1("Received an incomplete Spirit job\n");
+      GDEBUG("Received an incomplete Spirit job\n");
       return GADGET_FAIL;
     }
 
@@ -123,7 +122,7 @@ namespace Gadgetron{
     unsigned int frames = j->tra_host_->get_size(1)*rotations;
 
     if( samples%j->tra_host_->get_number_of_elements() ) {
-      GADGET_DEBUG2("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n", 
+      GDEBUG("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n",
                     samples, j->tra_host_->get_number_of_elements());
       return GADGET_FAIL;
     }
@@ -136,7 +135,7 @@ namespace Gadgetron{
     
     cudaDeviceProp deviceProp;
     if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to query device properties.\n" );
+      GDEBUG( "Error: unable to query device properties.\n" );
       return GADGET_FAIL;
     }
     
@@ -149,8 +148,8 @@ namespace Gadgetron{
                ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
 
     if( !matrix_size_reported_ ) {
-      GADGET_DEBUG2("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);    
-      GADGET_DEBUG2("Matrix size OS : [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
+      GDEBUG("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);
+      GDEBUG("Matrix size OS : [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
       matrix_size_reported_ = true;
     }
 
@@ -158,7 +157,7 @@ namespace Gadgetron{
 
     image_dims.push_back(frames);
     image_dims.push_back(channels);
-    GADGET_DEBUG2("Number of coils: %d %d \n",channels,image_dims.size());
+    GDEBUG("Number of coils: %d %d \n",channels,image_dims.size());
     
     E_->set_domain_dimensions(&image_dims);
     E_->set_codomain_dimensions(device_samples->get_dimensions().get());
@@ -220,7 +219,7 @@ namespace Gadgetron{
     }
     
     if (!cgresult.get()) {
-      GADGET_DEBUG1("Iterative_spirit_compute failed\n");
+      GDEBUG("Iterative_spirit_compute failed\n");
       return GADGET_FAIL;
     }
 

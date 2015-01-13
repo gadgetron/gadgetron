@@ -30,7 +30,7 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 
 	try {cm2->getObjectPtr()->create(dims);}
 	catch (std::runtime_error &err){
-		GADGET_DEBUG_EXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
+		GEXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
 		return GADGET_FAIL;
 	}
 
@@ -57,7 +57,7 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 			if (pix_val > 4095) pix_val = 4095;
 			break;
 		default:
-			GADGET_DEBUG2("Unknown image type %d, bailing out\n",m1->getObjectPtr()->image_type);
+			GDEBUG("Unknown image type %d, bailing out\n",m1->getObjectPtr()->image_type);
 			m1->release();
 			cm2->release();
 			return GADGET_FAIL;
@@ -71,7 +71,7 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 
 	if (this->next()->putq(m1) == -1) {
 		m1->release();
-		GADGET_DEBUG1("Unable to put unsigned short magnitude image on next gadgets queue");
+		GDEBUG("Unable to put unsigned short magnitude image on next gadgets queue");
 		return GADGET_FAIL;
 	}
 

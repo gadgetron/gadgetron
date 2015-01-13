@@ -3,7 +3,7 @@
 
 #include <limits.h>
 #include <string>
-#include <iostream>
+#include "log.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -24,13 +24,14 @@ namespace Gadgetron
   inline std::string get_gadgetron_home()
   {
 #if defined  __APPLE__
-    char path[MAX_GADGETRON_HOME_LENGTH];
+    char path[PATH_MAX];
     uint32_t size = sizeof(path);
-    if (_NSGetExecutablePath(path, &size) == 0) {
-      std::string s1(path);
+    char resolved[PATH_MAX];
+    if ((_NSGetExecutablePath(path, &size) == 0) && (realpath(path, resolved) != NULL)) {
+      std::string s1(resolved);
       return s1.substr(0, s1.find_last_of("\\/")) + std::string("/../");
     } else {
-      std::cout << "Unable to determine GADGETRON_HOME" << std::endl;
+      GDEBUG_STREAM("Unable to determine GADGETRON_HOME" << std::endl);
       return std::string("");
     }
 #elif defined _WIN32 || _WIN64
@@ -54,7 +55,7 @@ namespace Gadgetron
       }
     else
       {
-        std::cout << "The path to the executable is NULL" << std::endl;
+        GDEBUG_STREAM("The path to the executable is NULL" << std::endl);
         return std::string("");
       }
 #else //Probably some NIX where readlink should work
@@ -65,7 +66,7 @@ namespace Gadgetron
       std::string s1(buff);
       return s1.substr(0, s1.find_last_of("\\/")) + std::string("/../");
     } else {
-      std::cout << "Unable to determine GADGETRON_HOME" << std::endl;
+      GDEBUG_STREAM("Unable to determine GADGETRON_HOME" << std::endl);
       return std::string("");
     }
 #endif

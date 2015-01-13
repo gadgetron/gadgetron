@@ -98,7 +98,7 @@ bool hoMatrix<T>::upperTri(const T& v)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrix<T>::upperTri(const T& v) ... ");
+        GERROR_STREAM("Errors in hoMatrix<T>::upperTri(const T& v) ... ");
         return false;
     }
     return true;
@@ -120,7 +120,7 @@ bool hoMatrix<T>::lowerTri(const T& v)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrix<T>::lowerTri(const T& v) ... ");
+        GERROR_STREAM("Errors in hoMatrix<T>::lowerTri(const T& v) ... ");
         return false;
     }
     return true;
@@ -144,7 +144,7 @@ bool hoMatrix<T>::copyUpperTriToLower()
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrix<T>::copyUpperTriToLower() ... ");
+        GERROR_STREAM("Errors in hoMatrix<T>::copyUpperTriToLower() ... ");
         return false;
     }
     return true;
@@ -168,7 +168,7 @@ bool hoMatrix<T>::copyLowerTriToUpper()
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrix<T>::copyUpperTriToLower() ... ");
+        GERROR_STREAM("Errors in hoMatrix<T>::copyUpperTriToLower() ... ");
         return false;
     }
     return true;
@@ -207,7 +207,7 @@ bool hoMatrix<T>::sumOverRow(hoNDArray<T>& res) const
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrix<T>::sumOverRow(hoNDArray<T>& r) ... ");
+        GERROR_STREAM("Errors in hoMatrix<T>::sumOverRow(hoNDArray<T>& r) ... ");
         return false;
     }
 
@@ -274,7 +274,7 @@ bool hoMatrix<T>::sumOverCol(hoNDArray<T>& res) const
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrix<T>::sumOverCol(hoNDArray<T>& r) ... ");
+        GERROR_STREAM("Errors in hoMatrix<T>::sumOverCol(hoNDArray<T>& r) ... ");
         return false;
     }
 
@@ -309,7 +309,7 @@ bool hoMatrix<T>::subMatrix(Self& res, size_t startR, size_t endR, size_t startC
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrix<T>::subMatrix(Self& res, size_t startR, size_t endR, size_t startC, size_t endC) ... ");
+        GERROR_STREAM("Errors in hoMatrix<T>::subMatrix(Self& res, size_t startR, size_t endR, size_t startC, size_t endC) ... ");
         return false;
     }
 
@@ -324,7 +324,7 @@ bool hoMatrix<T>::setIdentity()
         size_t ROW = this->rows();
         size_t COL = this->cols();
 
-        size_t N = GT_MIN(ROW, COL);
+        size_t N = std::min(ROW, COL);
 
         this->fill(T(0));
 
@@ -336,7 +336,7 @@ bool hoMatrix<T>::setIdentity()
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrix<T>::setIdentity() ... ");
+        GERROR_STREAM("Errors in hoMatrix<T>::setIdentity() ... ");
         return false;
     }
 
@@ -369,7 +369,7 @@ bool hoMatrix<T>::normalize()
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrix<T>::normalize() ... ");
+        GERROR_STREAM("Errors in hoMatrix<T>::normalize() ... ");
         return false;
     }
 
@@ -458,7 +458,7 @@ bool hoMatrixReal<T>::sort_ascending_along_row()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrixReal<T>::sort_ascending_along_row() ... ");
+        GERROR_STREAM("Errors in hoMatrixReal<T>::sort_ascending_along_row() ... ");
         return false;
     }
     return true;
@@ -492,7 +492,7 @@ bool hoMatrixReal<T>::sort_ascending_along_column()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in hoMatrixReal<T>::sort_ascending_along_column() ... ");
+        GERROR_STREAM("Errors in hoMatrixReal<T>::sort_ascending_along_column() ... ");
         return false;
     }
     return true;
@@ -521,7 +521,7 @@ bool copyL2U(hoMatrix<T>& A)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in copyL2U(hoMatrix<T>& A) ... ");
+        GERROR_STREAM("Errors in copyL2U(hoMatrix<T>& A) ... ");
         return false;
     }
     return true;
@@ -560,7 +560,7 @@ bool copyL2U(hoMatrix<T>& A, bool conj)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in copyL2U(hoMatrix<T>& A, bool conj) ... ");
+        GERROR_STREAM("Errors in copyL2U(hoMatrix<T>& A, bool conj) ... ");
         return false;
     }
     return true;
@@ -587,7 +587,7 @@ bool copyU2L(hoMatrix<T>& A)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in copyU2L(hoMatrix<T>& A) ... ");
+        GERROR_STREAM("Errors in copyU2L(hoMatrix<T>& A) ... ");
         return false;
     }
     return true;
@@ -628,7 +628,7 @@ bool copyU2L(hoMatrix<T>& A, bool conj)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in copyU2L(hoMatrix<T>& A, bool conj) ... ");
+        GERROR_STREAM("Errors in copyU2L(hoMatrix<T>& A, bool conj) ... ");
         return false;
     }
     return true;
@@ -647,11 +647,7 @@ bool trans(const hoMatrix<T>& A, hoMatrix<T>& AT)
         }
 
         long long r, c;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(r, c)
-        #else
-            #pragma omp parallel for default(none) private(r, c) shared(A, AT)
-        #endif
+        #pragma omp parallel for default(none) private(r, c) shared(A, AT)
         for ( c=0; c<(long long)A.cols(); c++ )
         {
             for ( r=0; r<(long long)A.rows(); r++ )
@@ -662,7 +658,7 @@ bool trans(const hoMatrix<T>& A, hoMatrix<T>& AT)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in trans(const hoMatrix<T>& A, hoMatrix<T>& AT) ... ");
+        GERROR_STREAM("Errors in trans(const hoMatrix<T>& A, hoMatrix<T>& AT) ... ");
         return false;
     }
     return true;
@@ -681,11 +677,7 @@ bool conjugatetrans(const hoMatrix<T>& A, hoMatrix<T>& AH)
         }
 
         long long r, c;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel for default(none) private(r, c)
-        #else
-            #pragma omp parallel for default(none) private(r, c) shared(A, AH)
-        #endif
+        #pragma omp parallel for default(none) private(r, c) shared(A, AH)
         for ( c=0; c<(long long)A.cols(); c++ )
         {
             for ( r=0; r<(long long)A.rows(); r++ )
@@ -696,7 +688,7 @@ bool conjugatetrans(const hoMatrix<T>& A, hoMatrix<T>& AH)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in conjugatetrans(const hoMatrix<T>& A, hoMatrix<T>& AH) ... ");
+        GERROR_STREAM("Errors in conjugatetrans(const hoMatrix<T>& A, hoMatrix<T>& AH) ... ");
         return false;
     }
     return true;
@@ -731,7 +723,7 @@ bool GeneralMatrixProduct(hoMatrix<T>& C, const hoMatrix<T>& A, bool transA, con
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoMatrix<T>& C, const hoMatrix<T>& A, bool transA, const hoMatrix<T>& B, bool transB) ...");
+        GERROR_STREAM("Errors in GeneralMatrixProduct(hoMatrix<T>& C, const hoMatrix<T>& A, bool transA, const hoMatrix<T>& B, bool transB) ...");
         return false;
     }
     return true;

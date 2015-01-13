@@ -33,20 +33,20 @@ bool GtPlusReconJob2DTGadget::readParameters()
 {
     try
     {
-        GADGET_CONDITION_MSG(verboseMode_, "------> GtPlusReconJob2DTGadget parameters <------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlusReconJob2DTGadget parameters <------");
 
         boost::shared_ptr<std::string> str = this->get_string_value("debugFolder");
         debugFolder_ = *str;
-        GADGET_CONDITION_MSG(verboseMode_, "debugFolder_ is " << debugFolder_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder_ is " << debugFolder_);
 
         performTiming_ = this->get_bool_value("performTiming");
-        GADGET_CONDITION_MSG(verboseMode_, "performTiming_ is " << performTiming_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "performTiming_ is " << performTiming_);
 
-        GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusReconJob2DTGadget::readParameters() ... ");
+        GERROR_STREAM("Errors in GtPlusReconJob2DTGadget::readParameters() ... ");
         return false;
     }
 
@@ -70,12 +70,12 @@ int GtPlusReconJob2DTGadget::process_config(ACE_Message_Block* mb)
     }
     else
     {
-        GADGET_MSG("GtPlusRecon, debugFolder is not set ...");
+        GDEBUG_STREAM("GtPlusRecon, debugFolder is not set ...");
     }
 
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Pre-allocate memory ... "); }
     mem_manager_->increase( (size_t)(4.0*1024*1024*1024) );
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
     worker_noacceleration_.gtPlus_mem_manager_ = mem_manager_;
@@ -93,13 +93,13 @@ int GtPlusReconJob2DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
         GADGET_CHECK_RETURN( (this->process_config(m1)==0), GADGET_FAIL);
         process_config_called_ = true;
     }
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusReconJob2DTGadget::process(...) starts ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusReconJob2DTGadget::process(...) starts ... ");
 
     int* jobID = m1->getObjectPtr();
-    GADGET_CONDITION_MSG(verboseMode_, "--> arriving job : " << *jobID << " ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "--> arriving job : " << *jobID << " ... ");
 
     GtPlusReconJobTypeCPFL* job = m2->getObjectPtr();
-    GADGET_CONDITION_MSG(verboseMode_, "    job array size : [ " << job->kspace.get_size(0) << " " 
+    GDEBUG_CONDITION_STREAM(verboseMode_, "    job array size : [ " << job->kspace.get_size(0) << " " 
                                                                  << job->kspace.get_size(1) << " " 
                                                                  << job->kspace.get_size(2) << " " 
                                                                  << job->kspace.get_size(3) << " ] ... ");
@@ -123,11 +123,11 @@ int GtPlusReconJob2DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
     }
 
     bool succeed = true;
-    GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT job ... ", performTiming_);
+    if ( performTiming_ ) { gt_timer1_.start("Recon 2DT job ... "); }
 
     succeed = worker_spirit_L1_ncg_.performUnwarppingImpl(*job);
 
-    GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+    if ( performTiming_ ) { gt_timer1_.stop(); }
 
     // export the results
     if ( !debugFolder_fullPath_.empty() )
@@ -137,7 +137,7 @@ int GtPlusReconJob2DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
 
         hoNDArray< std::complex<float> > res = job->res;
         res.squeeze();
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+        if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_fullPath_+ostr.str()); }
     }
 
     // clean the kspace and ker and coil map
@@ -154,7 +154,7 @@ int GtPlusReconJob2DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
     // send out the results
     GADGET_CHECK_RETURN(this->sendOutJob(*jobID, job), GADGET_FAIL);
 
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusReconJob2DTGadget::process(...) ends ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusReconJob2DTGadget::process(...) ends ... ");
 
     m1->release();
 
@@ -166,12 +166,12 @@ sendOutJob(int jobID, GtPlusReconJobTypeCPFL* job)
 {
     try
     {
-        ACE_DEBUG( (LM_INFO, ACE_TEXT("GtPlusReconJob2DTGadget sendOutJob ... ")) );
+      GDEBUG("GtPlusReconJob2DTGadget sendOutJob ...\n");
 
         if (!this->controller_)
         {
-            ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Cannot return result to controller, no controller set")) );
-            return false;
+	  GERROR("Cannot return result to controller, no controller set\n");
+	  return false;
         }
 
         GadgetContainerMessage<GadgetMessageIdentifier>* mb =
@@ -192,13 +192,13 @@ sendOutJob(int jobID, GtPlusReconJobTypeCPFL* job)
         int ret =  this->controller_->output_ready(mb);
         if (ret < 0)
         {
-            GADGET_DEBUG1("Failed to return GtPlusReconJob2DTGadget job massage to controller\n");
+            GDEBUG("Failed to return GtPlusReconJob2DTGadget job massage to controller\n");
             return false;
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusReconJob2DTGadget::sendOutJob(...) ... ");
+        GERROR_STREAM("Errors in GtPlusReconJob2DTGadget::sendOutJob(...) ... ");
         return false;
     }
 

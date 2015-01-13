@@ -89,8 +89,8 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::computeTrajectory()
   float t;
   int n;
 
-  //std::cout << "Dwell = " << dwellTime_ << "    acqDelayTime = " << acqDelayTime_ << std::endl;
-  //std::cout << "rampUpTime = " << rampUpTime_ << "    flatTopTime = " << flatTopTime_ << "    rampDownTime = " << rampDownTime_ << std::endl;
+  //GDEBUG_STREAM("Dwell = " << dwellTime_ << "    acqDelayTime = " << acqDelayTime_ << std::endl);
+  //GDEBUG_STREAM("rampUpTime = " << rampUpTime_ << "    flatTopTime = " << flatTopTime_ << "    rampDownTime = " << rampDownTime_ << std::endl);
   
   // Some timings
   float totTime = rampUpTime_ + flatTopTime_ + rampDownTime_;
@@ -129,7 +129,7 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::computeTrajectory()
       float v = (rampUpTime_+flatTopTime_+rampDownTime_-t);
       k[n] = 0.5*rampUpTime_ + flatTopTime_ + 0.5*rampDownTime_ - 0.5/rampDownTime_*v*v;
     }
-    //std::cout << n << ":  " << t << "  " << k[n] << " " << std::endl;
+    //GDEBUG_STREAM(n << ":  " << t << "  " << k[n] << " " << std::endl);
   }
 
   // Fill the positive and negative trajectories
@@ -137,7 +137,7 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::computeTrajectory()
   {
     trajectoryPos_[n] = scale * (k[n] - prePhaseArea);
     trajectoryNeg_[n] = scale * (-1.0*k[n] + totArea - prePhaseArea);
-    //std::cout << n << ":  " << trajectoryPos_[n] << "  " << trajectoryNeg_[n] << std::endl;
+    //GDEBUG_STREAM(n << ":  " << trajectoryPos_[n] << "  " << trajectoryNeg_[n] << std::endl);
   }
 
   // reset the operatorComputed_ flag
@@ -183,7 +183,7 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::apply(ISMRMRD::Acquisitio
     arma::mat Qp(numSamples_, Ne);
     arma::mat Qn(numSamples_, Ne);
     for (p=0; p<numSamples_; p++) {
-      //std::cout << trajectoryPos_(p) << "    " << trajectoryNeg_(p) << std::endl;
+      //GDEBUG_STREAM(trajectoryPos_(p) << "    " << trajectoryNeg_(p) << std::endl);
       for (q=0; q<Ne; q++) {
 	Qp(p,q) = sinc(trajectoryPos_(p)-keven(q));
 	Qn(p,q) = sinc(trajectoryNeg_(p)-keven(q));

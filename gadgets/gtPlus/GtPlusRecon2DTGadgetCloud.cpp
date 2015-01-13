@@ -43,7 +43,7 @@ int GtPlusRecon2DTGadgetCloud::process_config(ACE_Message_Block* mb)
             // set up the cloud
             if (controller_.open () == -1)
             {
-                GADGET_ERROR_MSG("Cloud controller cannot open the cloud ...");
+                GERROR_STREAM("Cloud controller cannot open the cloud ...");
                 controller_.handle_close (ACE_INVALID_HANDLE, 0);
                 CloudComputing_ = false;
             }
@@ -61,13 +61,13 @@ int GtPlusRecon2DTGadgetCloud::process_config(ACE_Message_Block* mb)
 
                 if ( controller_.createConnector(gt_cloud_, GADGET_MESSAGE_GADGETCLOUD_JOB, readers_, GADGET_MESSAGE_GADGETCLOUD_JOB, writers_) != 0 )
                 {
-                    GADGET_ERROR_MSG("Cloud controller_ creates connectors failed ...");
+                    GERROR_STREAM("Cloud controller_ creates connectors failed ...");
                     controller_.handle_close (ACE_INVALID_HANDLE, 0);
                     CloudComputing_ = false;
                 }
                 else if ( controller_.connectToCloud(gt_cloud_) != 0 )
                 {
-                    GADGET_ERROR_MSG("Cloud controller_ cannot connect to the cloud ...");
+                    GERROR_STREAM("Cloud controller_ cannot connect to the cloud ...");
                     controller_.handle_close (ACE_INVALID_HANDLE, 0);
                     CloudComputing_ = false;
                 }
@@ -80,14 +80,14 @@ int GtPlusRecon2DTGadgetCloud::process_config(ACE_Message_Block* mb)
 
 int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlusGadgetImageArray >* m1, Gadgetron::GadgetContainerMessage< WorkOrderType > * m2)
 {
-    GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadgetCloud::process(...) starts ... ");
+    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadgetCloud::process(...) starts ... ");
 
     processed_called_times_++;
 
     // start a gadget level timer
     if ( processed_called_times_ == 1 )
     {
-        GADGET_START_TIMING(gt_timer_2DT_cloud_, "GtPlusRecon2DTGadgetCloud::process(...) gadegt level timer ... ");
+        gt_timer_2DT_cloud_.start("GtPlusRecon2DTGadgetCloud::process(...) gadegt level timer ... ");
     }
 
     // send out the package to current node
@@ -99,14 +99,14 @@ int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlus
 
         boost::shared_ptr< std::vector<size_t> > dims = workOrder->data_.get_dimensions();
 
-        GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
+        GDEBUG_CONDITION_STREAM(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
             << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
             << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << " " << (*dims)[10] << "]");
 
         dimensions_ = *dims;
 
         // fill in more parameters
-        para_.reconSizeRO_ = GT_MAX(matrix_size_recon_[0], (*dims)[0]);
+        para_.reconSizeRO_ = std::max(matrix_size_recon_[0], (*dims)[0]);
         para_.reconSizeE1_ = reconE1_;
         para_.reconSizeE2_ = reconE2_;
         para_.encodingFOV_RO_ = field_of_view_encoding_[0];
@@ -196,7 +196,7 @@ int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlus
 
         if ( controller_.runJobsOnCloud(jobListCloud, completedJobListCloud, node_ids) != 0 )
         {
-            GADGET_ERROR_MSG("Cloud controller runs jobs on the cloud failed ...");
+            GERROR_STREAM("Cloud controller runs jobs on the cloud failed ...");
             controller_.handle_close (ACE_INVALID_HANDLE, 0);
 
             // run locally
@@ -227,7 +227,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
         boost::shared_ptr< std::vector<size_t> > dims = job->kspace.get_dimensions();
 
-        GADGET_CONDITION_MSG(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
+        GDEBUG_CONDITION_STREAM(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
             << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
             << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << " " << (*dims)[10] << "]");
 
@@ -303,7 +303,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
         }
 
         // perform the recon
-        GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder on master node ... ", performTiming_);
+        if ( performTiming_ ) { gt_timer1_.start("Recon 2DT workorder on master node ... "); }
 
         GADGET_CHECK_RETURN_FALSE(this->generateKSpaceFilter(workOrder));
 
@@ -360,7 +360,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
             }
         }
 
-        GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+        if ( performTiming_ ) { gt_timer1_.stop(); }
 
         if ( !debugFolder_fullPath_.empty() )
         {
@@ -369,7 +369,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
             hoNDArray< std::complex<float> > res = workflow_.res_;
             res.squeeze();
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+            if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_fullPath_+ostr.str()); }
 
             if ( workflow_.res_second_.get_number_of_elements() > 0 )
             {
@@ -379,7 +379,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
                 std::ostringstream ostr;
                 ostr << "Recon2DT_Second_" << processed_called_times_;
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+                if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_fullPath_+ostr.str()); }
 
                 if ( workflow_.res_time_stamp_second_.get_number_of_elements() > 0 )
                 {
@@ -388,7 +388,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
                     hoNDArray<float> res = workflow_.res_time_stamp_second_;
                     res.squeeze();
-                    GADGET_EXPORT_ARRAY(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+                    if ( debugFolder_fullPath_.empty() ) { gt_exporter_.exportArray(res, debugFolder_fullPath_+ostr.str()); }
                 }
 
                 if ( workflow_.res_physio_time_stamp_second_.get_number_of_elements() > 0 )
@@ -398,7 +398,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
                     hoNDArray<float> res = workflow_.res_physio_time_stamp_second_;
                     res.squeeze();
-                    GADGET_EXPORT_ARRAY(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+                    if ( debugFolder_fullPath_.empty() ) { gt_exporter_.exportArray(res, debugFolder_fullPath_+ostr.str()); }
                 }
             }
         }
@@ -419,7 +419,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
             jobReceived.res.clear();
         }
 
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadgetCloud::process(...) ends ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadgetCloud::process(...) ends ... ");
 
         // reset the status
         workflow_.data_ = NULL;
@@ -431,7 +431,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPackageType& jobReceived) ... ");
+        GERROR_STREAM("Errors happened in GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPackageType& jobReceived) ... ");
         return false;
     }
 
@@ -440,13 +440,13 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
 int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
 {
-    GADGET_CONDITION_MSG(true, "GtPlusRecon2DTGadgetCloud - close(flags) : " << flags);
+    GDEBUG_CONDITION_STREAM(true, "GtPlusRecon2DTGadgetCloud - close(flags) : " << flags);
 
     if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
 
     if ( flags!=0 )
     {
-        GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadgetCloud number of total jobs : " << num_of_jobs_ << " ... ");
+        GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon2DTGadgetCloud number of total jobs : " << num_of_jobs_ << " ... ");
 
         if ( CloudComputing_ )
         {
@@ -472,7 +472,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                 // special check if the second set of recon results is needed
                 if ( recon_res_second_required_ )
                 {
-                    GADGET_MSG("Check received recon results (second set) ... ");
+                    GDEBUG_STREAM("Check received recon results (second set) ... ");
 
                     if (packages_received_[ii].complexImSecond.get_number_of_elements() == 0)
                     {
@@ -484,10 +484,10 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                         real_value_type v(0);
                         Gadgetron::norm2(packages_received_[ii].complexImSecond, v);
 
-                        if ( GT_ABS(v) < FLT_EPSILON )
+                        if ( std::abs(v) < FLT_EPSILON )
                         {
                             recomputeJob = true;
-                            GADGET_WARN_MSG("Received recon results (second set) contain no content ... ");
+                            GWARN_STREAM("Received recon results (second set) contain no content ... ");
                         }
                     }
                 }
@@ -546,7 +546,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
 
                     hoNDArray< std::complex<float> > res = packages_received_[ii].complexIm;
                     res.squeeze();
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                    if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
 
                     if (packages_received_[ii].complexImSecond.get_number_of_elements() > 0 )
                     {
@@ -556,7 +556,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                         std::ostringstream ostr;
                         ostr << "GadgetCloud_Recon2DT_Second_" << ii;
 
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                        if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder2_fullPath_+ostr.str()); }
 
                         if ( packages_received_[ii].resTimeStampSecond.get_number_of_elements() > 0 )
                         {
@@ -565,7 +565,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
 
                             hoNDArray<float> res = packages_received_[ii].resTimeStampSecond;
                             res.squeeze();
-                            GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                            if ( debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(res, debugFolder2_fullPath_+ostr.str()); }
                         }
 
                         if ( packages_received_[ii].resPhysioTimeStampSecond.get_number_of_elements() > 0 )
@@ -575,14 +575,14 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
 
                             hoNDArray<float> res = packages_received_[ii].resPhysioTimeStampSecond;
                             res.squeeze();
-                            GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                            if ( debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(res, debugFolder2_fullPath_+ostr.str()); }
                         }
                     }
                 }
             }
         }
 
-        GADGET_STOP_TIMING(gt_timer_2DT_cloud_);
+        gt_timer_2DT_cloud_.stop();
     }
 
     return GADGET_OK;
@@ -634,17 +634,17 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                 {
                     if ( gadget_->packages_received_[jobID].complexImSecond.get_number_of_elements() > 0 )
                     {
-                        GADGET_MSG("Check received recon results (second set) in cloud sender ... ");
+                        GDEBUG_STREAM("Check received recon results (second set) in cloud sender ... ");
 
                         // check the images are not empty
                         float v(0);
                         Gadgetron::norm2(gadget_->packages_received_[jobID].complexImSecond, v);
 
                         bool reconResSecondValid = true;
-                        if ( GT_ABS(v) < FLT_EPSILON )
+                        if ( std::abs(v) < FLT_EPSILON )
                         {
                             reconResSecondValid = false;
-                            GADGET_WARN_MSG("Received recon results (second set) contain no content ... ");
+                            GWARN_STREAM("Received recon results (second set) contain no content ... ");
                         }
 
                         if ( reconResSecondValid )
@@ -679,7 +679,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
 
                     hoNDArray< std::complex<float> > res = gadget_->packages_received_[jobID].complexIm;
                     res.squeeze();
-                    GADGET_EXPORT_ARRAY_COMPLEX(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                    if ( !gadget_->debugFolder2_fullPath_.empty() ) { gadget_->gt_exporter_.exportArrayComplex(res, gadget_->debugFolder2_fullPath_+ostr.str()); }
 
                     if ( gadget_->packages_received_[jobID].complexImSecond.get_number_of_elements() > 0 )
                     {
@@ -688,7 +688,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
 
                         hoNDArray< std::complex<float> > res = gadget_->packages_received_[jobID].complexImSecond;
                         res.squeeze();
-                        GADGET_EXPORT_ARRAY_COMPLEX(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                        if ( !gadget_->debugFolder2_fullPath_.empty() ) { gadget_->gt_exporter_.exportArrayComplex(res, gadget_->debugFolder2_fullPath_+ostr.str()); }
 
                         if ( gadget_->packages_received_[jobID].resTimeStampSecond.get_number_of_elements() > 0 )
                         {
@@ -697,7 +697,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
 
                             hoNDArray<float> res = gadget_->packages_received_[jobID].resTimeStampSecond;
                             res.squeeze();
-                            GADGET_EXPORT_ARRAY(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                            if ( gadget_->debugFolder2_fullPath_.empty() ) { gadget_->gt_exporter_.exportArray(res, gadget_->debugFolder2_fullPath_+ostr.str()); }
                         }
 
                         if ( gadget_->packages_received_[jobID].resPhysioTimeStampSecond.get_number_of_elements() > 0 )
@@ -707,7 +707,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
 
                             hoNDArray<float> res = gadget_->packages_received_[jobID].resPhysioTimeStampSecond;
                             res.squeeze();
-                            GADGET_EXPORT_ARRAY(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                            if ( gadget_->debugFolder2_fullPath_.empty() ) { gadget_->gt_exporter_.exportArray(res, gadget_->debugFolder2_fullPath_+ostr.str()); }
                         }
                     }
                 }
@@ -716,7 +716,7 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
     }
     catch(...)
     {
-        GADGET_DEBUG1("GtPlusRecon2DTGadgetCloudSender handling close...\n");
+        GDEBUG("GtPlusRecon2DTGadgetCloudSender handling close...\n");
         return false;
     }
 

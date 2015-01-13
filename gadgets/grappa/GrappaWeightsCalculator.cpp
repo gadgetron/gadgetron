@@ -2,7 +2,6 @@
 #include "GrappaWeightsCalculator.h"
 #include "GadgetContainerMessage.h"
 #include "GadgetIsmrmrdReadWrite.h"
-#include "Gadgetron.h"
 #include "b1_map.h"
 #include "hoNDArray_fileio.h"
 #include "htgrappa.h"
@@ -26,18 +25,14 @@ public:
 };
 
 template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
-	ACE_TRACE(( ACE_TEXT("GrappaWeightsCalculator::svc") ));
-
 	ACE_Message_Block *mb;
 
 	while (this->getq(mb) >= 0) {
 		if (mb->msg_type() == ACE_Message_Block::MB_HANGUP) {
-			GADGET_DEBUG1("Hanging up in weights calculator\n");
+			GDEBUG("Hanging up in weights calculator\n");
 			if (this->putq(mb) == -1) {
-				ACE_ERROR_RETURN( (LM_ERROR,
-						ACE_TEXT("%p\n"),
-						ACE_TEXT("GrappaWeightsCalculator::svc, putq")),
-						-1);
+			  GERROR("GrappaWeightsCalculator::svc, putq");
+			  return -1;
 			}
 			break;
 		}
@@ -93,7 +88,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 
             // estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power, D, DH_D, V1, U1 );
 
-			//GADGET_DEBUG2("Coils in csm: %d\n", csm->get_size(2));
+			//GDEBUG("Coils in csm: %d\n", csm->get_size(2));
 		}
 		//Go back to kspace
 		cuNDFFT<float>::instance()->fft(&device_data, &ftdims);
@@ -107,7 +102,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 
 		try{unmixing_dev.create(data_dimensions.get());}
 		catch (std::runtime_error &err){
-			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate device memory for unmixing coeffcients\n");
+			GEXCEPTION(err,"Unable to allocate device memory for unmixing coeffcients\n");
 			return GADGET_FAIL;
 		}
 
@@ -126,7 +121,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 					&unmixing_dev,
 					&(mb1->getObjectPtr()->sampled_region),
 					&uncombined_channels_) < 0) {
-				GADGET_DEBUG1("GRAPPA unmixing coefficients calculation failed\n");
+				GDEBUG("GRAPPA unmixing coefficients calculation failed\n");
 				return GADGET_FAIL;
 			}
 		}
@@ -141,16 +136,16 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 			try {
 				unmixing_host->reshape(tmp_dims.get());
 			} catch (std::runtime_error &err){
-				GADGET_DEBUG_EXCEPTION( err, "Reshaping of GRAPPA weights failed \n" );
+				GEXCEPTION( err, "Reshaping of GRAPPA weights failed \n" );
 
 			}
 
 			if (mb1->getObjectPtr()->destination->update(reinterpret_cast<hoNDArray<std::complex<float> >* >(unmixing_host.get())) < 0) {
-				GADGET_DEBUG1("Update of GRAPPA weights failed\n");
+				GDEBUG("Update of GRAPPA weights failed\n");
 				return GADGET_FAIL;
 			}
 		} else {
-			GADGET_DEBUG1("Undefined GRAPPA weights destination\n");
+			GDEBUG("Undefined GRAPPA weights destination\n");
 			return GADGET_FAIL;
 		}
 
@@ -162,22 +157,18 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 }
 
 template <class T> int GrappaWeightsCalculator<T>::close(unsigned long flags) {
-	ACE_TRACE(( ACE_TEXT("GrappaWeightsCalculator::close") ));
-
 	int rval = 0;
 	if (flags == 1) {
 		ACE_Message_Block *hangup = new ACE_Message_Block();
 		hangup->msg_type( ACE_Message_Block::MB_HANGUP );
 		if (this->putq(hangup) == -1) {
 			hangup->release();
-			ACE_ERROR_RETURN( (LM_ERROR,
-					ACE_TEXT("%p\n"),
-					ACE_TEXT("GrappaWeightsCalculator::close, putq")),
-					-1);
+			GERROR("GrappaWeightsCalculator::close, putq");
+			return -1;
 		}
-		//GADGET_DEBUG1("Waiting for weights calculator to finish\n");
+		//GDEBUG("Waiting for weights calculator to finish\n");
 		rval = this->wait();
-		//GADGET_DEBUG1("Weights calculator to finished\n");
+		//GDEBUG("Weights calculator to finished\n");
 	}
 	return rval;
 }
@@ -201,7 +192,7 @@ add_job( hoNDArray< std::complex<T> >* ref_data,
 
 	/*
   for (unsigned int i = 0; i < sampled_region.size(); i++) {
-	  GADGET_DEBUG2("Sampled region %d: [%d, %d]\n", i, sampled_region[i].first, sampled_region[i].second);
+	  GDEBUG("Sampled region %d: [%d, %d]\n", i, sampled_region[i].first, sampled_region[i].second);
   }
 	 */
 

@@ -40,7 +40,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in corrCoef(const hoNDImage<T, D>& a, const hoNDImage<T, D>& b, T& r) ... ");
+            GERROR_STREAM("Errors happened in corrCoef(const hoNDImage<T, D>& a, const hoNDImage<T, D>& b, T& r) ... ");
             return false;
         }
 
@@ -67,7 +67,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in downsampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, float ratio[]) ... ");
+            GERROR_STREAM("Errors happened in downsampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, float ratio[]) ... ");
             return false;
         }
 
@@ -94,7 +94,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in upsampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, float ratio[]) ... ");
+            GERROR_STREAM("Errors happened in upsampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, float ratio[]) ... ");
             return false;
         }
 
@@ -266,7 +266,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in resampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, size_t size_out[D]) ... ");
+            GERROR_STREAM("Errors happened in resampleImage(const hoNDImage<T, D>& in, InterpolatorType& interp, hoNDImage<T, D>& out, size_t size_out[D]) ... ");
             return false;
         }
 
@@ -455,7 +455,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in downsampleImageBy2WithAveraging(const hoNDImage<T, D>& in, hoNDImage<T, D>& out) ... ");
+            GERROR_STREAM("Errors happened in downsampleImageBy2WithAveraging(const hoNDImage<T, D>& in, hoNDImage<T, D>& out) ... ");
             return false;
         }
 
@@ -654,7 +654,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in expandImageBy2(const hoNDImage<T, D>& in, BoundaryHandlerType& bh, hoNDImage<T, D>& out) ... ");
+            GERROR_STREAM("Errors happened in expandImageBy2(const hoNDImage<T, D>& in, BoundaryHandlerType& bh, hoNDImage<T, D>& out) ... ");
             return false;
         }
 
@@ -932,7 +932,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in filterMedian(const ArrayType& img, size_t w[], ArrayType& img_out) ... ");
+            GERROR_STREAM("Errors happened in filterMedian(const ArrayType& img, size_t w[], ArrayType& img_out) ... ");
             return false;
         }
 
@@ -946,6 +946,8 @@ namespace Gadgetron
         {
             typedef typename ArrayType::value_type T;
             typedef typename realType<T>::Type real_value_type;
+
+            typedef hoNDImage<T, 1> Array1DType;
 
             long long RO = (long long)img.get_size(0);
             long long num = (long long)(img.get_number_of_elements()/RO);
@@ -961,12 +963,12 @@ namespace Gadgetron
 
             #pragma omp parallel default(none) private(ii) shared(bh, num, RO, img, img_out, kerLen, kerHalfLen, pKer)
             {
-                hoNDBoundaryHandler<ArrayType>* pBH = NULL;
+                hoNDBoundaryHandler<Array1DType>* pBH = NULL;
 
-                hoNDBoundaryHandlerFixedValue<ArrayType> bhFixedValue;
-                hoNDBoundaryHandlerBorderValue<ArrayType> bhBorderValue;
-                hoNDBoundaryHandlerPeriodic<ArrayType> bhPeriodic;
-                hoNDBoundaryHandlerMirror<ArrayType> bhMirror;
+                hoNDBoundaryHandlerFixedValue<Array1DType> bhFixedValue;
+                hoNDBoundaryHandlerBorderValue<Array1DType> bhBorderValue;
+                hoNDBoundaryHandlerPeriodic<Array1DType> bhPeriodic;
+                hoNDBoundaryHandlerMirror<Array1DType> bhMirror;
 
                 pBH = &bhBorderValue;
 
@@ -990,10 +992,10 @@ namespace Gadgetron
                 #pragma omp for 
                 for ( ii=0; ii<num; ii++ )
                 {
-                    ArrayType img1D(RO, const_cast<T*>(img.begin()+ii*RO));
+                    Array1DType img1D(RO, const_cast<T*>(img.begin()+ii*RO));
                     pBH->setArray(img1D);
 
-                    ArrayType img_out1D(RO, img_out.begin()+ii*RO);
+                    Array1DType img_out1D(RO, img_out.begin()+ii*RO);
 
                     long long k, j;
                     for ( k=0; k<RO; k++ )
@@ -1011,7 +1013,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in filter1D(const ArrayType& img, const hoNDArray<T>& ker, GT_BOUNDARY_CONDITION bh, ArrayType& img_out) ... ");
+            GERROR_STREAM("Errors happened in filter1D(const ArrayType& img, const hoNDArray<T>& ker, GT_BOUNDARY_CONDITION bh, ArrayType& img_out) ... ");
             return false;
         }
 

@@ -105,7 +105,7 @@ namespace Gadgetron{
 	  ss << std::endl;
 	  ss << "Operator codomain: ";
 	  ico = *get_codomain_dimensions(i);
-	  std::cout << "SIZE: " << ico.size() << std::endl;
+	  GDEBUG_STREAM("SIZE: " << ico.size() << std::endl);
 	  for (size_t k = 0; k < ico.size(); k++) ss << ico[k] << " ";
 	  ss << std::endl;
 	  throw std::runtime_error(ss.str());

@@ -46,14 +46,14 @@ template <typename T> class gtPlus_grappa_Test : public ::testing::Test
 protected:
     virtual void SetUp()
     {
-        GADGET_MSG("=============================================================================================");
+        GDEBUG_STREAM("=============================================================================================");
         gtPluse_ut_folder_ = std::string(::getenv("GTPLUS_UNITTEST_DIRECTORY"));
-        GADGET_MSG("=============================================================================================");
-        GADGET_MSG("Unit Test for GtPlus");
+        GDEBUG_STREAM("=============================================================================================");
+        GDEBUG_STREAM("Unit Test for GtPlus");
         gtPluse_ut_data_folder_ = gtPluse_ut_folder_ + "/data/";
         gtPluse_ut_res_folder_ = gtPluse_ut_folder_ + "/result/";
-        GADGET_MSG("gtPluse_ut_data_folder_ is " << gtPluse_ut_data_folder_);
-        GADGET_MSG("gtPluse_ut_res_folder_ is " << gtPluse_ut_res_folder_);
+        GDEBUG_STREAM("gtPluse_ut_data_folder_ is " << gtPluse_ut_data_folder_);
+        GDEBUG_STREAM("gtPluse_ut_res_folder_ is " << gtPluse_ut_res_folder_);
 
         timer_.set_timing_in_destruction(false);
 
@@ -63,7 +63,7 @@ protected:
         #pragma omp parallel default(shared)
         {
             int tid = omp_get_thread_num();
-            // std::cout << tid << std::endl;
+            // GDEBUG_STREAM(tid << std::endl);
             DWORD_PTR mask = (1 << tid);
             SetThreadAffinityMask( GetCurrentThread(), mask );
         }
@@ -124,7 +124,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
     memcpy(kspace.begin(), data.begin(), data.get_number_of_bytes());
 
     Gadgetron::norm2(kspace, v);
-    GADGET_MSG("kspace = " << v);
+    GDEBUG_STREAM("kspace = " << v);
 
     // ref
     hoNDArray<T> refTmp;
@@ -150,7 +150,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
 
     boost::shared_ptr< std::vector<size_t> > dims = kspace.get_dimensions();
 
-    GADGET_MSG("[Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
+    GDEBUG_STREAM("[Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
         << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
         << " " << (*dims)[5] << " " << (*dims)[6] << " " << 1 << " " << 1 << " " << 1 << "]");
 
@@ -317,7 +317,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     hoNDArray<std::complex<float> > kspace(RO, E1, CHA, SLC, E2, CON, PHS, tmp.begin());
 
     Gadgetron::norm2(kspace, v);
-    GADGET_MSG("kspace = " << v);
+    GDEBUG_STREAM("kspace = " << v);
 
     // ref
     hoNDArray<float> real_ref;
@@ -334,7 +334,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     real_imag_to_complex<std::complex<float> >(real_ref, imag_ref, ref);
 
     Gadgetron::norm2(ref, v);
-    GADGET_MSG("ref = " << v);
+    GDEBUG_STREAM("ref = " << v);
 
     // call the recon
     typedef std::complex<float> ValueType;
@@ -348,7 +348,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
 
     boost::shared_ptr< std::vector<size_t> > dims = workOrder->data_.get_dimensions();
 
-    GADGET_MSG("[Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
+    GDEBUG_STREAM("[Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
         << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
         << " " << (*dims)[5] << " " << (*dims)[6] << " " << 1 << " " << 1 << " " << 1 << "]");
 
@@ -399,8 +399,8 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     workflow_.setDataArray(kspace);
     workflow_.setRefArray(ref);
 
-    Gadgetron::norm2(workOrder->data_, v); GADGET_MSG("workOrder->data_ = " << v);
-    Gadgetron::norm2(workOrder->ref_, v); GADGET_MSG("workOrder->ref_ = " << v);
+    Gadgetron::norm2(workOrder->data_, v); GDEBUG_STREAM("workOrder->data_ = " << v);
+    Gadgetron::norm2(workOrder->ref_, v); GDEBUG_STREAM("workOrder->ref_ = " << v);
 
     workflow_.reconSizeRO_ = RO;
     workflow_.reconSizeE1_ = reconE1;
@@ -508,7 +508,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     real_imag_to_complex<std::complex<float> >(real_ref, imag_ref, ref);
 
     Gadgetron::norm2(ref, v);
-    GADGET_MSG("ref = " << v);
+    GDEBUG_STREAM("ref = " << v);
 
     // recon
     gtPlusISMRMRDReconUtil<std::complex<float> > util;
@@ -562,7 +562,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     ho3DArray<T> acsDst(RO, E1, CHA, const_cast<T*>(ref.begin()));
 
     Gadgetron::norm2(acsSrc, v);
-    GADGET_MSG("acsSrc = " << v);
+    GDEBUG_STREAM("acsSrc = " << v);
 
     std::vector<int> kE1, oE1;
     int accelFactor = 4;
@@ -576,7 +576,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     timer.stop();
 
     Gadgetron::norm2(ker, v);
-    GADGET_MSG("ker = " << v);
+    GDEBUG_STREAM("ker = " << v);
     gt_io.exportArrayComplex(ker, this->gtPluse_ut_res_folder_ + "ker");
 
     ho4DArray<T> kIm(RO, E1, srcCHA, dstCHA);
@@ -586,7 +586,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     gt_io.exportArrayComplex(kIm, this->gtPluse_ut_res_folder_ + "kIm");
 
     Gadgetron::norm2(kIm, v);
-    GADGET_MSG("kIm = " << v);
+    GDEBUG_STREAM("kIm = " << v);
 
     ho3DArray<T> unmixC(RO, E1, srcCHA);
     ho2DArray<T> gFactor(RO, E1);
@@ -594,12 +594,12 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     ho3DArray<T> coilMap2(RO, E1, dstCHA, coilMap.begin());
 
     Gadgetron::norm2(coilMap2, v);
-    GADGET_MSG("coilMap2 = " << v);
+    GDEBUG_STREAM("coilMap2 = " << v);
 
     grappa.unmixCoeff(kIm, coilMap2, unmixC, gFactor);
 
     Gadgetron::norm2(unmixC, v);
-    GADGET_MSG("unmixC = " << v);
+    GDEBUG_STREAM("unmixC = " << v);
 
     gt_io.export3DArrayComplex(unmixC, this->gtPluse_ut_res_folder_ + "unmixC");
     gt_io.export2DArrayComplex(gFactor, this->gtPluse_ut_res_folder_ + "gFactor");

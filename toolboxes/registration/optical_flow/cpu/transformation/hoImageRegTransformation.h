@@ -54,7 +54,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Unrecognized image registration transformation type : " << v);
+                GERROR_STREAM("Unrecognized image registration transformation type : " << v);
         }
 
         return name;
@@ -82,7 +82,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_ERROR_MSG("Unrecognized image registration transformation name : " << name);
+            GERROR_STREAM("Unrecognized image registration transformation name : " << name);
         }
 
         return v;
@@ -233,7 +233,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform( input_point_type* in, size_t N, output_point_type* out ) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform( input_point_type* in, size_t N, output_point_type* out ) ... ");
             return false;
         }
 
@@ -267,7 +267,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* pt_in, size_t N, T* pt_out) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* pt_in, size_t N, T* pt_out) ... ");
             return false;
         }
 
@@ -298,7 +298,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* pt_inout, size_t N) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* pt_inout, size_t N) ... ");
             return false;
         }
 
@@ -321,7 +321,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* xi, T* yi, size_t N, T* xo, T* yo) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* xi, T* yi, size_t N, T* xo, T* yo) ... ");
             return false;
         }
 
@@ -348,7 +348,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* x_inout, T* y_inout, size_t N) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* x_inout, T* y_inout, size_t N) ... ");
             return false;
         }
 
@@ -371,7 +371,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* xi, T* yi, T* zi, size_t N, T* xo, T* yo, T* zo) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* xi, T* yi, T* zi, size_t N, T* xo, T* yo, T* zo) ... ");
             return false;
         }
 
@@ -399,7 +399,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* x_inout, T* y_inout, T* z_inout, size_t N) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegTransformation<ValueType, DIn, DOut>::transform(T* x_inout, T* y_inout, T* z_inout, size_t N) ... ");
             return false;
         }
 

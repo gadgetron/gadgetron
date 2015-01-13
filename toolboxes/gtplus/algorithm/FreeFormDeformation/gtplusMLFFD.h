@@ -388,7 +388,7 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement) ... ");
+        GERROR_STREAM("Error happened in ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement) ... ");
         return false;
     }
 

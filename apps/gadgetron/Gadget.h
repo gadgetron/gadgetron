@@ -17,10 +17,13 @@
 #include "gadgetbase_export.h"
 #include "GadgetContainerMessage.h"
 #include "GadgetronExport.h"
-#include "Gadgetron.h"
 #include "gadgetron_config.h"
+#include "log.h"
 
 #include <stdexcept>
+
+#define GADGET_FAIL -1
+#define GADGET_OK    0
 
 namespace Gadgetron{
 
@@ -47,31 +50,27 @@ namespace Gadgetron{
         {
 	  gadgetron_version_ = std::string(GADGETRON_VERSION_STRING) + std::string(" (") + 
 	    std::string(GADGETRON_GIT_SHA1_HASH) + std::string(")");
-
-	  ACE_TRACE(( ACE_TEXT("Gadget::Gadget") ));
         }
 
         virtual ~Gadget()
         {
 	  if (this->module()) {
-            GADGET_DEBUG2("Shutting down Gadget (%s)\n", this->module()->name());
+            GDEBUG("Shutting down Gadget (%s)\n", this->module()->name());
 	  }
         }
 
 
         virtual int init(void)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::init") ));
             return 0;
         }
 
         virtual int open(void* = 0)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::open") ));
 
             int t = this->get_int_value("threads");
             if (t > 0) {
-                GADGET_DEBUG2("Setting number of threads of gadget %s to %d\n", this->module()->name(), t);
+                GDEBUG("Setting number of threads of gadget %s to %d\n", this->module()->name(), t);
                 this->desired_threads(t);
             }
 
@@ -81,22 +80,16 @@ namespace Gadgetron{
 
         int put(ACE_Message_Block *m, ACE_Time_Value* timeout = 0)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::put") ));
-
             return this->putq(m, timeout);
         }
 
         virtual unsigned int desired_threads()
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::desired_threads (get)") ));
-
             return desired_threads_;
         }
 
         virtual void desired_threads(unsigned int t)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::desired_threads (set)") ));
-
             desired_threads_ = t;
         }
 
@@ -111,20 +104,19 @@ namespace Gadgetron{
 
         virtual int close(unsigned long flags)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::close") ));
-            GADGET_DEBUG2("Gadget (%s) Close Called with flags = %d\n", this->module()->name(), flags);
+            GDEBUG("Gadget (%s) Close Called with flags = %d\n", this->module()->name(), flags);
             int rval = 0;
             if (flags == 1) {
                 ACE_Message_Block *hangup = new ACE_Message_Block();
                 hangup->msg_type( ACE_Message_Block::MB_HANGUP );
                 if (this->putq(hangup) == -1) {
                     hangup->release();
-                    GADGET_DEBUG2("Gadget (%s) failed to put hang up message on queue\n", this->module()->name());
+                    GDEBUG("Gadget (%s) failed to put hang up message on queue\n", this->module()->name());
                     return GADGET_FAIL;
                 }
-                GADGET_DEBUG2("Gadget (%s) waiting for thread to finish\n", this->module()->name());
+                GDEBUG("Gadget (%s) waiting for thread to finish\n", this->module()->name());
                 rval = this->wait();
-                GADGET_DEBUG2("Gadget (%s) thread finished\n", this->module()->name());
+                GDEBUG("Gadget (%s) thread finished\n", this->module()->name());
                 controller_ = 0;
             }
             return rval;
@@ -132,25 +124,23 @@ namespace Gadgetron{
 
         virtual int svc(void)
         {
-            ACE_TRACE(( ACE_TEXT("Gadget::svc") ));
-
             for (ACE_Message_Block *m = 0; ;) {
 
-                //GADGET_DEBUG2("Waiting for message in Gadget (%s)\n", this->module()->name());
+                //GDEBUG("Waiting for message in Gadget (%s)\n", this->module()->name());
                 if (this->getq(m) == -1) {
-                    GADGET_DEBUG2("Gadget (%s) failed to get message from queue\n", this->module()->name());
+                    GDEBUG("Gadget (%s) failed to get message from queue\n", this->module()->name());
                     return GADGET_FAIL;
                 }
-                //GADGET_DEBUG2("Message Received in Gadget (%s)\n", this->module()->name());
+                //GDEBUG("Message Received in Gadget (%s)\n", this->module()->name());
 
                 //If this is a hangup message, we are done, put the message back on the queue before breaking
                 if (m->msg_type() == ACE_Message_Block::MB_HANGUP) {
-                    //GADGET_DEBUG2("Gadget (%s) Hangup message encountered\n", this->module()->name());
+                    //GDEBUG("Gadget (%s) Hangup message encountered\n", this->module()->name());
                     if (this->putq(m) == -1) {
-                        GADGET_DEBUG2("Gadget (%s) failed to put hang up message on queue (for other threads)\n", this->module()->name());
+                        GDEBUG("Gadget (%s) failed to put hang up message on queue (for other threads)\n", this->module()->name());
                         return GADGET_FAIL;
                     }
-                    //GADGET_DEBUG2("Gadget (%s) breaking loop\n", this->module()->name());
+                    //GDEBUG("Gadget (%s) breaking loop\n", this->module()->name());
                     break;
                 }
 
@@ -161,14 +151,14 @@ namespace Gadgetron{
                     int success;
                     try{ success = this->process_config(m); }
                     catch (std::runtime_error& err){
-                        GADGET_DEBUG_EXCEPTION(err,"Gadget::process_config() failed\n");
+                        GEXCEPTION(err,"Gadget::process_config() failed\n");
                         success = -1;
                     }
 
                     if (success == -1) {
                         m->release();
                         this->flush();
-                        GADGET_DEBUG2("Gadget (%s) process config failed\n", this->module()->name());
+                        GDEBUG("Gadget (%s) process config failed\n", this->module()->name());
                         return GADGET_FAIL;
 
                     }
@@ -177,7 +167,7 @@ namespace Gadgetron{
                     if (this->next()) {
                         if (this->next()->putq(m) == -1) {
                             m->release();
-                            GADGET_DEBUG2("Gadget (%s) process config failed to put config on dowstream gadget\n", this->module()->name());
+                            GDEBUG("Gadget (%s) process config failed to put config on dowstream gadget\n", this->module()->name());
                             return GADGET_FAIL;
                         }
                     }
@@ -187,14 +177,14 @@ namespace Gadgetron{
                 int success;
                 try{ success = this->process(m); }
                 catch (std::runtime_error& err){
-                    GADGET_DEBUG_EXCEPTION(err,"Gadget::process() failed\n");
+                    GEXCEPTION(err,"Gadget::process() failed\n");
                     success = -1;
                 }
 
                 if (success == -1) {
                     m->release();
                     this->flush();
-                    GADGET_DEBUG2("Gadget (%s) process failed\n", this->module()->name());
+                    GDEBUG("Gadget (%s) process failed\n", this->module()->name());
                     return GADGET_FAIL;
                 }
             }
@@ -273,9 +263,8 @@ namespace Gadgetron{
 
             if (!m) {
                 if (!pass_on_undesired_data_) {
-                    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"),
-                        ACE_TEXT("Gadget1::process, conversion of message block")),
-                        -1);
+		  GERROR("Gadget1::process, conversion of message block");
+		  return -1;
                 } else {
                     return (this->next()->putq(mb));
                 }
@@ -305,9 +294,9 @@ namespace Gadgetron{
 
             if (!m1 || !m2) {
                 if (!pass_on_undesired_data_) {
-                    ACE_DEBUG( (LM_ERROR, ACE_TEXT("%s -> %s, (%s, %s, %@, %@), (%s, %s, %@, %@)\n"),
+		  GERROR("%s -> %s, (%s, %s, %p, %p), (%s, %s, %p, %p)\n",
                         this->module()->name(),
-                        ACE_TEXT("Gadget2::process, Conversion of Message Block Failed"),
+                        "Gadget2::process, Conversion of Message Block Failed",
                         typeid(GadgetContainerMessage<P1>*).name(),
                         typeid(m1).name(),
                         mb,
@@ -315,8 +304,7 @@ namespace Gadgetron{
                         typeid(GadgetContainerMessage<P2>*).name(),
                         typeid(m2).name(),
                         mb->cont(),
-                        m2));
-
+                        m2);
                     return -1;
                 } else {
                     return (this->next()->putq(mb));
@@ -352,9 +340,9 @@ namespace Gadgetron{
 
             if (!m1 || !m2 || !m3) {
                 if (!pass_on_undesired_data_) {
-                    ACE_DEBUG( (LM_ERROR, ACE_TEXT("%s -> %s, (%s, %s, %@), (%s, %s, %@), (%s, %s, %@)\n"),
+		  GERROR("%s -> %s, (%s, %s, %p), (%s, %s, %p), (%s, %s, %p)\n",
                         this->module()->name(),
-                        ACE_TEXT("Gadget3::process, Conversion of Message Block Failed"),
+                        "Gadget3::process, Conversion of Message Block Failed",
                         typeid(GadgetContainerMessage<P1>*).name(),
                         typeid(m1).name(),
                         m1,
@@ -363,8 +351,7 @@ namespace Gadgetron{
                         m2,
                         typeid(GadgetContainerMessage<P3>*).name(),
                         typeid(m3).name(),
-                        m3));
-
+                        m3);
                     return -1;
                 } else {
                     return (this->next()->putq(mb));

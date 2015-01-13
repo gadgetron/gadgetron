@@ -69,7 +69,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -134,7 +134,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -172,11 +172,7 @@ namespace Gadgetron {
 
             int d;
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(d) shared(dimX, lastDim, N, pY, pR)
-            #else
-                #pragma omp parallel default(none) private(d) shared(x, dimX, lastDim, N, pY, pR)
-            #endif
+            #pragma omp parallel default(none) private(d) shared(x, dimX, lastDim, N, pY, pR)
             {
                 hoNDArray<T> tmpY, tmpR;
 
@@ -191,7 +187,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOverLastDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r) ... ");
+            GERROR_STREAM("Errors in multiplyOverLastDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r) ... ");
             return false;
         }
         return true;
@@ -228,11 +224,7 @@ namespace Gadgetron {
 
             int d;
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(d) shared(dimX, lastDim, N, pY, pR)
-            #else
-                #pragma omp parallel default(none) private(d) shared(x, dimX, lastDim, N, pY, pR)
-            #endif
+            #pragma omp parallel default(none) private(d) shared(x, dimX, lastDim, N, pY, pR)
             {
                 hoNDArray<T> tmpY, tmpR;
 
@@ -247,7 +239,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -285,7 +277,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in sumOver1stDimension(...) ... ");
+            GERROR_STREAM("Errors in sumOver1stDimension(...) ... ");
             return false;
         }
 
@@ -317,11 +309,7 @@ namespace Gadgetron {
             r.create(&dimAve);
 
             int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, num)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, num, x, r)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(RO, E1, num, x, r)
             for ( n=0; n<(int)num; n++ )
             {
                 hoNDArray<T> xsum(RO, const_cast<T*>(r.begin()+n*RO));
@@ -336,7 +324,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in sumOver2ndDimension(...) ... ");
+            GERROR_STREAM("Errors in sumOver2ndDimension(...) ... ");
             return false;
         }
 
@@ -369,11 +357,7 @@ namespace Gadgetron {
             r.create(&dimAve);
 
             int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, num) if (num>1)
-            #else
-                #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, num, x, r) if (num>1)
-            #endif
+            #pragma omp parallel default(none) private(n) shared(RO, E1, CHA, num, x, r) if (num>1)
             {
                 hoNDArray<T> xsum;
                 hoNDArray<T> x2D;
@@ -394,7 +378,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in sumOver3rdDimension(...) ... ");
+            GERROR_STREAM("Errors in sumOver3rdDimension(...) ... ");
             return false;
         }
 
@@ -427,11 +411,7 @@ namespace Gadgetron {
             r.create(&dimAve);
 
             int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, num)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, num, x, r)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, num, x, r)
             for ( n=0; n<(int)num; n++ )
             {
                 hoNDArray<T> xsum(RO, E1, CHA, const_cast<T*>(r.begin()+n*RO*E1*CHA));
@@ -446,7 +426,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in sumOver4thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in sumOver4thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
 
@@ -480,11 +460,7 @@ namespace Gadgetron {
             r.create(&dimAve);
 
             int n;
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, S, num) if (num > 4)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, S, num, x, r) if (num > 4)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(RO, E1, CHA, N, S, num, x, r) if (num > 4)
             for ( n=0; n<(int)num; n++ )
             {
                 hoNDArray<T> xsum(RO, E1, CHA, N, const_cast<T*>(r.begin()+n*RO*E1*CHA*N));
@@ -499,7 +475,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
 
@@ -561,7 +537,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOver3rdDimension(const hoNDArray<float>& x3D, const hoNDArray<float>& y4D, hoNDArray<float>& r) ... ");
+            GERROR_STREAM("Errors in multiplyOver3rdDimension(const hoNDArray<float>& x3D, const hoNDArray<float>& y4D, hoNDArray<float>& r) ... ");
             return false;
         }
         return true;
@@ -621,7 +597,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOver4thDimension(const hoNDArray<float>& x4D, const hoNDArray<float>& y5D, hoNDArray<float>& r) ... ");
+            GERROR_STREAM("Errors in multiplyOver4thDimension(const hoNDArray<float>& x4D, const hoNDArray<float>& y5D, hoNDArray<float>& r) ... ");
             return false;
         }
         return true;
@@ -695,7 +671,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOver4thDimensionExcept(const hoNDArray<float>& x4D, const hoNDArray<float>& y5D, size_t n, hoNDArray<float>& r, bool copyY2R) ... ");
+            GERROR_STREAM("Errors in multiplyOver4thDimensionExcept(const hoNDArray<float>& x4D, const hoNDArray<float>& y5D, size_t n, hoNDArray<float>& r, bool copyY2R) ... ");
             return false;
         }
         return true;
@@ -759,7 +735,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOver5thDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r) ... ");
+            GERROR_STREAM("Errors in multiplyOver5thDimension(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r) ... ");
             return false;
         }
         return true;
@@ -837,7 +813,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R) ... ");
+            GERROR_STREAM("Errors in multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R) ... ");
             return false;
         }
         return true;
@@ -870,67 +846,6 @@ namespace Gadgetron {
                 pR[ii] = pX[ii] + pY[ii];
             }
         }
-
-        //if ( typeid(T)==typeid(float) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        const T* pY = y.begin()+n*Nx;
-        //        T* pR = pR + n*Nx;
-
-        //        size_t ii;
-        //        for ( ii=0; ii<Nx; ii++ )
-        //        {
-        //            pR[ii] = pX[ii] + pY[ii];
-        //        }
-        //    }
-        //}
-        //else if ( typeid(T)==typeid(double) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else if ( typeid(T)==typeid( std::complex<float> ) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else if ( typeid(T)==typeid( std::complex<double> ) )
-        //{
-        //    #ifdef GCC_OLD_FLAG
-        //        #pragma omp parallel for default(none) private(n) shared(Nx, N)
-        //    #else
-        //        #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-        //    #endif
-        //    for ( n=0; n<N; n++ )
-        //    {
-        //        Gadgetron::math::add(x.get_number_of_elements(), x.begin(), y.begin()+n*Nx, r.begin()+n*Nx);
-        //    }
-        //}
-        //else
-        //{
-        //    GADGET_ERROR_MSG("multipleAdd : unsupported type " << typeid(T).name());
-        //    return false;
-        //}
 
         return true;
     }
@@ -1019,11 +934,7 @@ namespace Gadgetron {
         }
         else if ( typeid(T)==typeid( std::complex<float> ) )
         {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
             for ( n=0; n<N; n++ )
             {
                 multiplyCplx(x.get_number_of_elements(), (const std::complex<float>*)(x.begin()), (const std::complex<float>*)(y.begin()+n*Nx), (std::complex<float>*)(r.begin()+n*Nx));
@@ -1031,11 +942,7 @@ namespace Gadgetron {
         }
         else if ( typeid(T)==typeid( std::complex<double> ) )
         {
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(Nx, N)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(x, y, r, Nx, N)
             for ( n=0; n<N; n++ )
             {
                 multiplyCplx(x.get_number_of_elements(), (const std::complex<double>*)(x.begin()), (const std::complex<double>*)(y.begin()+n*Nx), (std::complex<double>*)(r.begin()+n*Nx));
@@ -1043,7 +950,7 @@ namespace Gadgetron {
         }
         else
         {
-            GADGET_ERROR_MSG("multipleMultiply : unsupported type " << typeid(T).name());
+            GERROR_STREAM("multipleMultiply : unsupported type " << typeid(T).name());
             return false;
         }
 
@@ -1359,7 +1266,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in extractSampledLinesUpTo11DArray(...) ... ");
+            GERROR_STREAM("Errors in extractSampledLinesUpTo11DArray(...) ... ");
             return false;
         }
 
@@ -1474,7 +1381,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in fillSampledLinesUpTo11DArray(...) ... ");
+            GERROR_STREAM("Errors in fillSampledLinesUpTo11DArray(...) ... ");
             return false;
         }
 
@@ -1519,11 +1426,7 @@ namespace Gadgetron {
 
             long long n;
 
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel for default(none) private(n) shared(num, RO, E1, CHA, S, S2, S3, v, v1)
-            #else
-                #pragma omp parallel for default(none) private(n) shared(num, RO, E1, CHA, x, std, S, S2, S3, v, v1)
-            #endif
+            #pragma omp parallel for default(none) private(n) shared(num, RO, E1, CHA, x, std, S, S2, S3, v, v1)
             for ( n=0; n<num; n++ )
             {
                 hoNDArray<T> xTmp(RO, E1, CHA, const_cast<T*>(x.begin()+n*RO*E1*CHA));
@@ -1563,7 +1466,7 @@ namespace Gadgetron {
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in stdOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& std, bool NMinusOne) ... ");
+            GERROR_STREAM("Errors in stdOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& std, bool NMinusOne) ... ");
             return false;
         }
 
@@ -1624,7 +1527,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in cropOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end) ... ");
+            GERROR_STREAM("Errors in cropOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end) ... ");
             return false;
         }
         return true;
@@ -1679,7 +1582,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in setSubArrayOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end) ... ");
+            GERROR_STREAM("Errors in setSubArrayOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end) ... ");
             return false;
         }
         return true;
@@ -1740,7 +1643,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -1801,7 +1704,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -1862,7 +1765,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -1929,7 +1832,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -1998,7 +1901,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -2060,7 +1963,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -2134,7 +2037,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -2167,7 +2070,7 @@ namespace Gadgetron {
                 //#ifdef WIN32
                 //    int tid = omp_get_thread_num();
                 //    DWORD_PTR mask = (1 << tid);
-                //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
+                //    // GDEBUG_STREAM("thread id : " << tid << " - mask : " << mask);
                 //    SetThreadAffinityMask( GetCurrentThread(), mask );
                 //#endif // WIN32
 
@@ -2198,7 +2101,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
+            GERROR_STREAM("Errors in imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
             return false;
         }
         return true;
@@ -2230,7 +2133,7 @@ namespace Gadgetron {
                 //#ifdef WIN32
                 //    int tid = omp_get_thread_num();
                 //    DWORD_PTR mask = (1 << tid);
-                //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
+                //    // GDEBUG_STREAM("thread id : " << tid << " - mask : " << mask);
                 //    SetThreadAffinityMask( GetCurrentThread(), mask );
                 //#endif // WIN32
 
@@ -2312,7 +2215,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
+            GERROR_STREAM("Errors in imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
             return false;
         }
         return true;
@@ -2374,7 +2277,7 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_ERROR_MSG("Errors in computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType& start, CoordType& end, hoNDArray<T>& r) ... ");
+            GERROR_STREAM("Errors in computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType& start, CoordType& end, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;

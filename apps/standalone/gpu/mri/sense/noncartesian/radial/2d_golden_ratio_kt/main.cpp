@@ -133,7 +133,7 @@ int main(int argc, char** argv)
   unsigned int num_subcycles = profiles_per_subcycle / profiles_per_frame;
   unsigned int num_cycles = num_profiles / profiles_per_subcycle;
 
-  std::cout << "Buffer cycles/sybcycles: " << num_cycles << " / " << num_subcycles << std::endl;
+  GDEBUG_STREAM("Buffer cycles/sybcycles: " << num_cycles << " / " << num_subcycles << std::endl);
 
   boost::shared_ptr< cuSenseBuffer<_real,2> > rhs_buffer( new cuSenseBuffer<_real,2>() );
 
@@ -206,7 +206,7 @@ int main(int argc, char** argv)
   // Define shutter for training data
   _real shutter_radius = ((_real)matrix_size_os[0]/(_real)matrix_size[0])*(_real)profiles_per_frame/(_real)M_PI;
   shutter_radius /= _real(2);
-  std::cout << "Shutter radius: " << shutter_radius << std::endl;
+  GDEBUG_STREAM("Shutter radius: " << shutter_radius << std::endl);
 
   vector<size_t> image_os_dims = to_std_vector(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
@@ -287,7 +287,7 @@ int main(int argc, char** argv)
     }
 
     // Goto from x-f to x-t space
-    cuNDFFT<_real>::instance()->fft( cgresult.get(), 2 );
+    cuNDFFT<_real>::instance()->fft( cgresult.get(), 2 ,true);
     
     // Copy cgresult to result
     cuNDArray<_complext> tmp(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction);    

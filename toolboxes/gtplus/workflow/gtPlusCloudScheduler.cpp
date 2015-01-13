@@ -82,13 +82,13 @@ bool gtPlusCloudScheduler::schedulerJobs(std::vector<int>& nodeIDforJobs)
 
         if ( num_of_nodes_==0 || num_of_jobs_==0 )
         {
-            GADGET_WARN_MSG("num_of_nodes_==0 || num_of_jobs_==0");
+            GWARN_STREAM("num_of_nodes_==0 || num_of_jobs_==0");
             return true;
         }
 
         if ( node_id_computing_power_indexes_.size() < num_of_nodes_ )
         {
-            GADGET_WARN_MSG("node_computing_power_indexes_.size() < num_of_nodes_ : computing power indexes for all nodes are set to be equal ... ");
+            GWARN_STREAM("node_computing_power_indexes_.size() < num_of_nodes_ : computing power indexes for all nodes are set to be equal ... ");
             node_id_computing_power_indexes_.resize(num_of_nodes_, std::pair<int, double>(0, 1.0) );
             for ( ii=0; ii<num_of_nodes_; ii++ )
             {
@@ -147,7 +147,7 @@ bool gtPlusCloudScheduler::schedulerJobs(std::vector<int>& nodeIDforJobs)
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusCloudScheduler::schedulerJobs(std::vector<int>& nodeIDforJobs) ... ");
+        GERROR_STREAM("Errors in gtPlusCloudScheduler::schedulerJobs(std::vector<int>& nodeIDforJobs) ... ");
         return false;
     }
 

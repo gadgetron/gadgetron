@@ -291,7 +291,7 @@ bool gtPlusReconWorkOrder3DT<T>::reset()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorkOrder3DT<T>::reset() ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorkOrder3DT<T>::reset() ... ");
         return false;
     }
 
@@ -347,25 +347,25 @@ void gtPlusReconWorkOrder3DT<T>::printInfo(std::ostream& os) const
     using namespace std;
     BaseClass::printInfo(os);
 
-    GADGET_OSTREAM_PRINT(os, recon_kspace_needed_);
-    os << std::endl;
-    GADGET_OSTREAM_PRINT(os, coil_compression_);
-    GADGET_OSTREAM_PRINT(os, same_coil_compression_coeff_allN_);
-    os << std::endl;
-    GADGET_OSTREAM_PRINT(os, no_acceleration_averageall_ref_);
-    GADGET_OSTREAM_PRINT(os, no_acceleration_same_combinationcoeff_allN_);
-    GADGET_OSTREAM_PRINT(os, no_acceleration_whichN_combinationcoeff_);
-    os << std::endl;
-    GADGET_OSTREAM_PRINT(os, embedded_averageall_ref_);
-    GADGET_OSTREAM_PRINT(os, embedded_fullres_coilmap_);
-    GADGET_OSTREAM_PRINT(os, embedded_same_combinationcoeff_allN_);
-    GADGET_OSTREAM_PRINT(os, embedded_whichN_combinationcoeff_);
-    GADGET_OSTREAM_PRINT(os, embedded_ref_fillback_);
-    os << std::endl;
-    GADGET_OSTREAM_PRINT(os, separate_averageall_ref_);
-    GADGET_OSTREAM_PRINT(os, separate_fullres_coilmap_);
-    GADGET_OSTREAM_PRINT(os, separate_same_combinationcoeff_allN_);
-    GADGET_OSTREAM_PRINT(os, separate_whichN_combinationcoeff_);
+    GADGET_PARA_PRINT(recon_kspace_needed_);
+    GDEBUG_STREAM("---------------------");
+    GADGET_PARA_PRINT(coil_compression_);
+    GADGET_PARA_PRINT(same_coil_compression_coeff_allN_);
+    GDEBUG_STREAM("---------------------");
+    GADGET_PARA_PRINT(no_acceleration_averageall_ref_);
+    GADGET_PARA_PRINT(no_acceleration_same_combinationcoeff_allN_);
+    GADGET_PARA_PRINT(no_acceleration_whichN_combinationcoeff_);
+    GDEBUG_STREAM("---------------------");
+    GADGET_PARA_PRINT(embedded_averageall_ref_);
+    GADGET_PARA_PRINT(embedded_fullres_coilmap_);
+    GADGET_PARA_PRINT(embedded_same_combinationcoeff_allN_);
+    GADGET_PARA_PRINT(embedded_whichN_combinationcoeff_);
+    GADGET_PARA_PRINT(embedded_ref_fillback_);
+    GDEBUG_STREAM("---------------------");
+    GADGET_PARA_PRINT(separate_averageall_ref_);
+    GADGET_PARA_PRINT(separate_fullres_coilmap_);
+    GADGET_PARA_PRINT(separate_same_combinationcoeff_allN_);
+    GADGET_PARA_PRINT(separate_whichN_combinationcoeff_);
 }
 
 template <typename T> 

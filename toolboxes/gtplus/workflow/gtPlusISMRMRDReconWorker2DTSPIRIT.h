@@ -91,7 +91,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTSPIRIT<T>::performCalibPrep(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTSPIRIT<T>::performCalibPrep(...) ... ");
         return false;
     }
 
@@ -166,8 +166,8 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         ho3DArray<T> acsSrc(refRO, refE1, srcCHA, const_cast<T*>(ref_src.begin()+n*refRO*refE1*srcCHA+usedS*refRO*refE1*srcCHA*refN));
         ho3DArray<T> acsDst(refRO, refE1, dstCHA, const_cast<T*>(ref_dst.begin()+n*refRO*refE1*dstCHA+usedS*refRO*refE1*dstCHA*refN));
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsSrc, debugFolder_+"acsSrc"); }
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsDst, debugFolder_+"acsDst"); }
 
         ho6DArray<T> ker(kRO, kE1, srcCHA, dstCHA, oRO, oE1, 
                             workOrder2DT->kernel_->begin()
@@ -181,17 +181,17 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         spirit.calib(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, kRO, kE1, oRO, oE1, ker);
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ker, debugFolder_+"ker"); }
 
         bool minusI = true;
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
         GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, kRO, kE1, oRO, oE1, RO, E1, kIm, minusI));
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+"kIm"); }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTSPIRIT<T>::performCalibImpl(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTSPIRIT<T>::performCalibImpl(...) ... ");
         return false;
     }
 
@@ -221,12 +221,13 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             int numThreads = (int)( (N<64) ? N : 64 );
 
             int numOpenMPProcs = omp_get_num_procs();
-            GADGET_MSG("gtPlusReconWorker2DTSPIRIT, numOpenMPProcs : " << numOpenMPProcs);
+            GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, numOpenMPProcs : " << numOpenMPProcs);
 
             if ( numThreads > numOpenMPProcs ) numThreads = numOpenMPProcs;
 
             int maxOpenMPThreads = omp_get_max_threads();
-            GADGET_MSG("gtPlusReconWorker2DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
+
+            GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
 
             int allowOpenMPNested = omp_get_nested();
 
@@ -241,20 +242,22 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                 allowOpenMPNested = 0;
             }
 
-            GADGET_MSG("gtPlusReconWorker2DTSPIRIT, allowOpenMPNested : " << allowOpenMPNested);
-            GADGET_MSG("gtPlusReconWorker2DTSPIRIT, numThreads : " << numThreads);
+            GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, allowOpenMPNested : " << allowOpenMPNested);
+            GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, numThreads : " << numThreads);
+            GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
+            GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, numThreads : " << numThreads);
         #endif
 
-        GADGET_MSG("gtPlusReconWorker2DTSPIRIT, processing starts ... ");
+        GDEBUG_STREAM("gtPlusReconWorker2DTSPIRIT, processing starts ... ");
 
         hoNDArray<T> ker_Shifted(adj_forward_G_I);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(adj_forward_G_I, ker_Shifted);
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker_Shifted, "ker_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ker_Shifted, debugFolder_+"ker_Shifted"); }
 
         hoNDArray<T> kspace_Shifted;
         kspace_Shifted = kspace;
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(kspace, kspace_Shifted);
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_Shifted, "kspace_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace_Shifted, debugFolder_+"kspace_Shifted"); }
 
         hoNDArray<T> kspace_initial_Shifted;
         bool hasInitial = false;
@@ -264,13 +267,9 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(workOrder2DT->kspace_initial_, kspace_initial_Shifted);
             hasInitial = true;
         }
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_initial_Shifted, "kspace_initial_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace_initial_Shifted, debugFolder_+"kspace_initial_Shifted"); }
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, refN, N, hasInitial) num_threads(numThreads)
-        #else
-            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, res, refN, N, hasInitial) num_threads(numThreads)
-        #endif
+        #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, res, refN, N, hasInitial) num_threads(numThreads)
         {
             gtPlusSPIRIT2DOperator<T> spirit;
             // spirit.setMemoryManager(gtPlus_mem_manager_);
@@ -352,30 +351,26 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     cgSolver.solve(b, unwarppedKSpace);
                 }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace_n");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unwarppedKSpace, debugFolder_+"unwarppedKSpace_n"); }
 
                 // restore the acquired points
                 spirit.restoreAcquiredKSpace(*acq, unwarppedKSpace);
 
                 memcpy(res.begin()+n*RO*E1*dstCHA, unwarppedKSpace.begin(), unwarppedKSpace.get_number_of_bytes());
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace_n_setAcq");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unwarppedKSpace, debugFolder_+"unwarppedKSpace_n_setAcq"); }
             }
         }
 
-        #ifdef USE_OMP
-            omp_set_nested(0);
-        #endif
-
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "res_Shifted");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"res_Shifted"); }
 
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fftshift2D(res, kspace_Shifted);
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_Shifted, "res");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace_Shifted, debugFolder_+"res"); }
         res = kspace_Shifted;
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTSPIRIT<T>::performUnwarppingImpl(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTSPIRIT<T>::performUnwarppingImpl(...) ... ");
         return false;
     }
 
@@ -421,7 +416,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
         }
         else
         {
-            GADGET_MSG("SPIRIT - 2DT - spirit_ncg_scale_factor_ is preset : " << workOrder2DT->spirit_ncg_scale_factor_ << " ... ");
+            GDEBUG_STREAM("SPIRIT - 2DT - spirit_ncg_scale_factor_ is preset : " << workOrder2DT->spirit_ncg_scale_factor_ << " ... ");
         }
 
         // split the jobs
@@ -443,7 +438,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             {
                 size_t jobN = jobMegaBytes/(RO*E1*srcCHA*dstCHA*sizeof(T)/1024/1024);
                 if ( jobN < N ) splitJobs = true;
-                GADGET_MSG("SPIRIT - 2DT - size of largest job : " << jobN);
+                GDEBUG_STREAM("SPIRIT - 2DT - size of largest job : " << jobN);
             }
         }
 
@@ -466,10 +461,10 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                 GADGET_CHECK_RETURN_FALSE(this->estimateJobSize(workOrder2DT, maxNumOfBytesPerJob, overlapN, cloudSize, jobN));
 
-                //GADGET_MSG("SPIRIT - 2DT - cloudSize is " << cloudSize << " - N is " << N << " ... ");
+                //GDEBUG_STREAM("SPIRIT - 2DT - cloudSize is " << cloudSize << " - N is " << N << " ... ");
                 //unsigned int nodeN = cloudSize;
                 //if ( runJobsOnLocalNode ) nodeN++;
-                //GADGET_MSG("SPIRIT - 2DT - runJobsOnLocalNode is " << runJobsOnLocalNode << " - nodeN is " << nodeN << " - overlapN is " << overlapN << " ... ");
+                //GDEBUG_STREAM("SPIRIT - 2DT - runJobsOnLocalNode is " << runJobsOnLocalNode << " - nodeN is " << nodeN << " - overlapN is " << overlapN << " ... ");
 
                 //// adjust jobN according to cloud size
                 //jobN = std::ceil( (double)(N+overlapN*(nodeN-1))/(double)nodeN );
@@ -483,7 +478,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                 //    numOfBytesPerJob = sizeof(T)*( RO*E1*srcCHA*dstCHA*jobN + 2*RO*E1*srcCHA*jobN );
                 //}
 
-                //GADGET_MSG("SPIRIT - 2DT - jobN is " << jobN << "; every job has " << numOfBytesPerJob/1024.0/1024 << " MBytes ... ");
+                //GDEBUG_STREAM("SPIRIT - 2DT - jobN is " << jobN << "; every job has " << numOfBytesPerJob/1024.0/1024 << " MBytes ... ");
 
                 // split the job
                 GADGET_CHECK_RETURN_FALSE(this->splitReconJob(workOrder2DT, const_cast<hoNDArray<T>&>(data_dst), *(workOrder2DT->kernelIm_), splitByS, jobN, jobMegaBytes, overlapN, jobList));
@@ -508,18 +503,18 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     completedJobList[j].job_index_S_ = jobList[j].job_index_S_;
                 }
 
-                GADGET_MSG("SPIRIT - 2DT - total job : " << jobList.size() << " - job N : " << jobN << " - cloud size : " << cloudSize);
+                GDEBUG_STREAM("SPIRIT - 2DT - total job : " << jobList.size() << " - job N : " << jobN << " - cloud size : " << cloudSize);
 
                 unsigned int numOfJobRunOnCloud = (unsigned int)(jobList.size() - jobList.size()/(cloudSize+1));
                 if ( !runJobsOnLocalNode ) numOfJobRunOnCloud = (unsigned int)jobList.size();
-                GADGET_MSG("SPIRIT - 2DT - numOfJobRunOnCloud : " << numOfJobRunOnCloud << " ... ");
+                GDEBUG_STREAM("SPIRIT - 2DT - numOfJobRunOnCloud : " << numOfJobRunOnCloud << " ... ");
 
                 typedef Gadgetron::GadgetCloudController< gtPlusReconJob2DT<T> > GTCloudControllerType;
                 GTCloudControllerType controller;
 
                 if (controller.open () == -1)
                 {
-                    GADGET_ERROR_MSG("Cloud controller cannot open the cloud ...");
+                    GERROR_STREAM("Cloud controller cannot open the cloud ...");
                     controller.handle_close (ACE_INVALID_HANDLE, 0);
                     runJobsOnCloud = false;
                 }
@@ -536,7 +531,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                         // node_ids[j] = j%cloudSize;
                         jobListCloud[j] = &jobList[j];
                         completedJobListCloud[j] = &completedJobList[j];
-                        GADGET_MSG("--> job " << j << " runs on node " << node_ids[j] << " ... ");
+                        GDEBUG_STREAM("--> job " << j << " runs on node " << node_ids[j] << " ... ");
                     }
 
                     std::vector<GadgetMessageReader*> readers(cloudSize, NULL);
@@ -550,13 +545,13 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                     if ( controller.createConnector(workOrder2DT->gt_cloud_, GADGET_MESSAGE_CLOUD_JOB, readers, GADGET_MESSAGE_CLOUD_JOB, writers) != 0 )
                     {
-                        GADGET_ERROR_MSG("Cloud controller creates connectors failed ...");
+                        GERROR_STREAM("Cloud controller creates connectors failed ...");
                         controller.handle_close (ACE_INVALID_HANDLE, 0);
                         runJobsOnCloud = false;
                     }
                     else if ( controller.connectToCloud(workOrder2DT->gt_cloud_) != 0 )
                     {
-                        GADGET_ERROR_MSG("Cloud controller cannot connect to the cloud ...");
+                        GERROR_STREAM("Cloud controller cannot connect to the cloud ...");
                         controller.handle_close (ACE_INVALID_HANDLE, 0);
                         runJobsOnCloud = false;
                     }
@@ -564,7 +559,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     {
                         if ( controller.runJobsOnCloud(jobListCloud, completedJobListCloud, node_ids) != 0 )
                         {
-                            GADGET_ERROR_MSG("Cloud controller runs jobs on the cloud failed ...");
+                            GERROR_STREAM("Cloud controller runs jobs on the cloud failed ...");
                             controller.closeCloudNode();
                             controller.handle_close (ACE_INVALID_HANDLE, 0);
                             runJobsOnCloud = false;
@@ -576,15 +571,15 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                             // run the left over jobs on the local computer
                             for ( j=numOfJobRunOnCloud; j<jobList.size(); j++ )
                             {
-                                GADGET_MSG("SPIRIT - 2DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
+                                GDEBUG_STREAM("SPIRIT - 2DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 2DT ... "));
+                                if ( performTiming_ ) { gt_timer3_.start("SPIRIT 2DT ... "); }
                                 GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
-                                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                if ( performTiming_ ) { gt_timer3_.stop(); }
 
                                 std::ostringstream ostr;
                                 ostr << "job_fullkspace" << "_" << j;
-                                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, jobList[j].res, ostr.str());
+                                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(jobList[j].res, debugFolder_+ostr.str()); }
                             }
 
                             // wait the cloud job to complete
@@ -608,15 +603,15 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                                     || jobList[j].complexIm.get_size(2)!= jobList[j].kspace.get_size(2) ) 
                                    )
                                 {
-                                    GADGET_MSG("SPIRIT - 2DT - uncompleted cloud job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
+                                    GDEBUG_STREAM("SPIRIT - 2DT - uncompleted cloud job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
-                                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3DT ... "));
+                                    if ( performTiming_ ) { gt_timer3_.start("SPIRIT 3DT ... "); }
                                     GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
-                                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
                                     std::ostringstream ostr;
                                     ostr << "job_fullkspace" << "_" << j;
-                                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, jobList[j].res, ostr.str());
+                                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(jobList[j].res, debugFolder_+ostr.str()); }
                                 }
                             }
 
@@ -634,24 +629,24 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             {
                 GADGET_CHECK_RETURN_FALSE(this->splitReconJob(workOrder2DT, const_cast<hoNDArray<T>&>(data_dst), *(workOrder2DT->kernelIm_), splitByS, jobN, jobMegaBytes, overlapN, jobList));
 
-                GADGET_MSG("SPIRIT - 2DT - total job : " << jobList.size());
+                GDEBUG_STREAM("SPIRIT - 2DT - total job : " << jobList.size());
 
                 size_t j;
                 for ( j=0; j<jobList.size(); j++ )
                 {
-                    GADGET_MSG("SPIRIT - 2DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
+                    GDEBUG_STREAM("SPIRIT - 2DT - job : " << j << " - size :" << jobList[j].job_index_endN_-jobList[j].job_index_startN_+1);
 
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("L1 SPIRIT NCG 2DT ... "));
+                    if ( performTiming_ ) { gt_timer3_.start("L1 SPIRIT NCG 2DT ... "); }
                     GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(jobList[j]));
-                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, jobList[j].res, "job_fullkspace");
+                    if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(jobList[j].res, debugFolder_+"job_fullkspace"); }
                 }
 
                 // combine the job
                 GADGET_CHECK_RETURN_FALSE(this->combineReconJob(workOrder2DT, jobList, N, S));
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->fullkspace_, "fullkspace");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder2DT->fullkspace_, debugFolder_+"fullkspace"); }
 
                 // clear the memory
                 jobList.clear();
@@ -677,7 +672,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                 GADGET_CHECK_RETURN_FALSE(this->performUnwarppingImpl(workOrder2DT, aliasedKSpace, kIm, unwarppedKSpace, usedS));
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unwarppedKSpace, debugFolder_+"unwarppedKSpace"); }
             }
         }
 
@@ -690,7 +685,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(unwarppedKSpace, complexImMultiChannel);
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImMultiChannel, "unwarppedComplexIm");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImMultiChannel, debugFolder_+"unwarppedComplexIm"); }
 
             hoNDArray<T> combined(RO, E1, N, workOrder2DT->complexIm_.begin()+usedS*RO*E1*N);
 
@@ -705,12 +700,12 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                 gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImMultiChannel, coilMap, combined);
             }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, combined, "combined");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(combined, debugFolder_+"combined"); }
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTSPIRIT<T>::performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& data) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTSPIRIT<T>::performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& data) ... ");
         return false;
     }
 
@@ -732,7 +727,7 @@ performUnwarppingImpl(gtPlusReconJob2DT<T>& job)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusReconWorker2DTSPIRIT<T>::performUnwarppingImpl(...) ... ");
+        GERROR_STREAM("Errors in gtPlusReconWorker2DTSPIRIT<T>::performUnwarppingImpl(...) ... ");
         return false;
     }
 

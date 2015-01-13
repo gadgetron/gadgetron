@@ -86,10 +86,10 @@ namespace Gadgetron{
     
       if( cgTC::cg_->get_output_mode() >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_WARNINGS ) {
 	if( cgTC::cg_->get_output_mode() >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
-	  std::cout << "Iteration " << iteration << ". rq/rq_0 = " << *tc_metric << std::endl;
+	  GDEBUG_STREAM("Iteration " << iteration << ". rq/rq_0 = " << *tc_metric << std::endl);
 	}
 	if( (tc_last_-(*tc_metric)) < REAL(0) ){
-	  std::cout << "Warning: conjugate gradient residual increase." << std::endl;
+	  GDEBUG_STREAM("Warning: conjugate gradient residual increase." << std::endl);
 	}
       }
     
@@ -134,10 +134,10 @@ namespace Gadgetron{
       *tc_metric = cgTC::get_rq();
       if( cgTC::cg_->get_output_mode() >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_WARNINGS ) {
         if( cgTC::cg_->get_output_mode() >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
-	  std::cout << "Iteration " << iteration << ". rq/rq_0 = " << *tc_metric << std::endl;
+	  GDEBUG_STREAM("Iteration " << iteration << ". rq/rq_0 = " << *tc_metric << std::endl);
         }
         if( (tc_last_-(*tc_metric)) < REAL(0) ){
-	  std::cout << "----- Warning: CG residual increase. Stability problem! -----" << std::endl;
+	  GDEBUG_STREAM("----- Warning: CG residual increase. Stability problem! -----" << std::endl);
         }
       }
       *tc_terminate = ( *tc_metric < cgTC::cg_->get_tc_tolerance() );
@@ -180,10 +180,10 @@ namespace Gadgetron{
       *tc_metric = cgTC::cg_->solver_dot(cgTC::get_p().get(),cgTC::get_p().get());
       if( cgTC::cg_->get_output_mode() >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_WARNINGS ) {
 	if( cgTC::cg_->get_output_mode() >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
-	  std::cout << "Iteration " << iteration << ". rq/rq_0 = " << *tc_metric << std::endl;
+	  GDEBUG_STREAM("Iteration " << iteration << ". rq/rq_0 = " << *tc_metric << std::endl);
 	}
 	if( (tc_last_-(*tc_metric)) < REAL(0) ){
-	  std::cout << "----- Warning: CG residual increase. Stability problem! -----" << std::endl;
+	  GDEBUG_STREAM("----- Warning: CG residual increase. Stability problem! -----" << std::endl);
 	}
       }
       *tc_terminate = ( *tc_metric < cgTC::cg_->get_tc_tolerance() );

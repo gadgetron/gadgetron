@@ -128,14 +128,14 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         long long kROhalf = kRO/2;
         if ( 2*kROhalf == kRO )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*kROhalf == kRO " << kRO);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib(...) - 2*kROhalf == kRO " << kRO);
         }
         kRO = 2*kROhalf + 1;
 
         long long kE1half = kE1/2;
         if ( 2*kE1half == kE1 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*kE1half == kE1 " << kE1);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib(...) - 2*kE1half == kE1 " << kE1);
         }
         kE1 = 2*kE1half + 1;
 
@@ -145,14 +145,14 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         long long oROhalf = oRO/2;
         if ( 2*oROhalf == oRO )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*oROhalf == oRO " << oRO);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib(...) - 2*oROhalf == oRO " << oRO);
         }
         oRO = 2*oROhalf + 1;
 
         long long oE1half = oE1/2;
         if ( 2*oE1half == oE1 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib(...) - 2*oE1half == oE1 " << oE1);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib(...) - 2*oE1half == oE1 " << oE1);
         }
         oE1 = 2*oE1half + 1;
 
@@ -178,16 +178,12 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         bool useGPU = (typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_);
         //if ( useGPU )
         //{
-        //    GADGET_MSG("spirit 2D - calling GPU kernel estimation ... "); 
+        //    GDEBUG_STREAM("spirit 2D - calling GPU kernel estimation ... "); 
         //}
 
         const T* pAcsSrc = acsSrc.begin();
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) shared(RO, E1, sRO, eRO, sE1, eE1, oRO, oE1, lenRO, lenE1, rowA, colA, colB, kRO, kE1, kROhalf, kE1half, oROhalf, oE1half, pAcsSrc, srcCHA, dstCHA, thres, useGPU, std::cout) num_threads( (int)(oRO*oE1) ) if (oRO*oE1>=3)
-        #else
-            #pragma omp parallel default(none) shared(RO, E1, sRO, eRO, sE1, eE1, oRO, oE1, lenRO, lenE1, rowA, colA, colB, kRO, kE1, kROhalf, kE1half, oROhalf, oE1half, pAcsSrc, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, useGPU, std::cout) num_threads( (int)(oRO*oE1) ) if (oRO*oE1>=3)
-        #endif
+        #pragma omp parallel default(none) shared(RO, E1, sRO, eRO, sE1, eE1, oRO, oE1, lenRO, lenE1, rowA, colA, colB, kRO, kE1, kROhalf, kE1half, oROhalf, oE1half, pAcsSrc, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, useGPU, std::cout) num_threads( (int)(oRO*oE1) ) if (oRO*oE1>=3)
         {
             hoMatrix<T> A(rowA, colA);
             T* pA = A.begin();
@@ -249,7 +245,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
 
                 // GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
 
-                //GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - solve linear system ... "));
+                //if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - solve linear system ... "); }
                 //#ifdef USE_CUDA
                 //    // go to device
                 //    try
@@ -277,7 +273,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
 
                 //            if ( ret != 0 )
                 //            {
-                //                GADGET_ERROR_MSG("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
+                //                GERROR_STREAM("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
                 //                SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //            }
                 //            else
@@ -287,19 +283,19 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
                 //        }
                 //        else
                 //        {
-                //            GADGET_WARN_MSG("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
+                //            GWARN_STREAM("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
                 //            SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //        }
                 //    }
                 //    catch(...)
                 //    {
-                //        GADGET_ERROR_MSG("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
+                //        GERROR_STREAM("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
                 //        SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //    }
                 //#else
                     SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //#endif // USE_CUDA
-                //GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                //if ( performTiming_ ) { gt_timer3_.stop(); }
 
                 //SolveLinearSystem_Tikhonov(A, B, x, thres);
 
@@ -333,7 +329,7 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::calib(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::calib(...) ... ");
         return false;
     }
 
@@ -429,11 +425,11 @@ imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, s
 
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1)) ), convKerFlip ));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad2D(convKerFlip, ro, e1, kIm));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm));
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::imageDomainKernel(...) ... ");
         return false;
     }
 
@@ -461,21 +457,21 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
         long long kROhalf = kRO/2;
         if ( 2*kROhalf == kRO )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*kROhalf == kRO " << kRO);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*kROhalf == kRO " << kRO);
         }
         kRO = 2*kROhalf + 1;
 
         long long kE1half = kE1/2;
         if ( 2*kE1half == kE1 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*kE1half == kE1 " << kE1);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*kE1half == kE1 " << kE1);
         }
         kE1 = 2*kE1half + 1;
 
         long long kE2half = kE2/2;
         if ( 2*kE2half == kE2 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*kE2half == kE2 " << kE2);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*kE2half == kE2 " << kE2);
         }
         kE2 = 2*kE2half + 1;
 
@@ -486,21 +482,21 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
         long long oROhalf = oRO/2;
         if ( 2*oROhalf == oRO )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*oROhalf == oRO " << oRO);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*oROhalf == oRO " << oRO);
         }
         oRO = 2*oROhalf + 1;
 
         long long oE1half = oE1/2;
         if ( 2*oE1half == oE1 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*oE1half == oE1 " << oE1);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*oE1half == oE1 " << oE1);
         }
         oE1 = 2*oE1half + 1;
 
         long long oE2half = oE2/2;
         if ( 2*oE2half == oE2 )
         {
-            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - 2*oE2half == oE2 " << oE2);
+            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - 2*oE2half == oE2 " << oE2);
         }
         oE2 = 2*oE2half + 1;
 
@@ -562,17 +558,17 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                             }
 
                             lenRO = eRO-sRO+1;
-                            GADGET_MSG("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
+                            GDEBUG_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
                         }
                         catch(...)
                         {
-                            GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
                         }
                     }
                 }
                 else
                 {
-                    GADGET_WARN_MSG("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                    GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
                 }
             }
         }
@@ -583,14 +579,10 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
         bool useGPU = (typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_);
         if ( useGPU )
         {
-            GADGET_MSG("spirit 3D - calling GPU kernel estimation ... ");
+            GDEBUG_STREAM("spirit 3D - calling GPU kernel estimation ... ");
         }
 
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) shared(sRO, eRO, sE1, eE1, sE2, eE2, oRO, oE1, oE2, lenRO, lenE1, lenE2, rowA, colA, colB, kROhalf, kE1half, kE2half, oROhalf, oE1half, oE2half, srcCHA, dstCHA, thres, useGPU, std::cout) num_threads( (int)(oRO*oE1*oE2) ) if (oRO*oE1*oE2>=3 && oRO*oE1*oE2<9)
-        #else
-            #pragma omp parallel default(none) shared(sRO, eRO, sE1, eE1, sE2, eE2, oRO, oE1, oE2, lenRO, lenE1, lenE2, rowA, colA, colB, kROhalf, kE1half, kE2half, oROhalf, oE1half, oE2half, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, useGPU, std::cout) num_threads( (int)(oRO*oE1*oE2) ) if (oRO*oE1*oE2>=3 && oRO*oE1*oE2<9)
-        #endif
+        #pragma omp parallel default(none) shared(sRO, eRO, sE1, eE1, sE2, eE2, oRO, oE1, oE2, lenRO, lenE1, lenE2, rowA, colA, colB, kROhalf, kE1half, kE2half, oROhalf, oE1half, oE2half, acsSrc, acsDst, srcCHA, dstCHA, thres, ker, useGPU, std::cout) num_threads( (int)(oRO*oE1*oE2) ) if (oRO*oE1*oE2>=3 && oRO*oE1*oE2<9)
         {
             hoMatrix<T> A(rowA, colA);
             hoMatrix<T> B(rowA, colB);
@@ -669,7 +661,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
 
                 //GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
 
-                //GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - solve linear system ... "));
+                //if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - solve linear system ... "); }
                 //#ifdef USE_CUDA
                 //    // go to device
                 //    try
@@ -696,7 +688,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
 
                 //            if ( ret != 0 )
                 //            {
-                //                GADGET_ERROR_MSG("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
+                //                GERROR_STREAM("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
                 //                SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //            }
                 //            else
@@ -706,19 +698,19 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                 //        }
                 //        else
                 //        {
-                //            GADGET_WARN_MSG("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
+                //            GWARN_STREAM("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
                 //            SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //        }
                 //    }
                 //    catch(...)
                 //    {
-                //        GADGET_ERROR_MSG("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
+                //        GERROR_STREAM("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
                 //        SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //    }
                 //#else
                     SolveLinearSystem_Tikhonov(A, B, x, thres);
                 //#endif // USE_CUDA
-                //GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+                //if ( performTiming_ ) { gt_timer3_.stop(); }
 
                 // SolveLinearSystem_Tikhonov(A, B, x, thres);
 
@@ -770,7 +762,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::calib3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::calib3D(...) ... ");
         return false;
     }
 
@@ -806,7 +798,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
         long long convKE2 = 2*kE2-1;
 
         /// fill in convolution kernel
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - convert to conv kernel ... "));
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - convert to conv kernel ... "); }
 
         hoNDArray<T> convKer(convKRO, convKE1, convKE2, srcCHA, dstCHA, oRO, oE1, oE2);
         Gadgetron::clear(&convKer);
@@ -870,20 +862,20 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
                 }
             }
         }
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - sum over output dimensions ... "));
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - sum over output dimensions ... "); }
         hoNDArray<T> convKer2, convKer3;
         ho5DArray<T> convKernMean(convKRO, convKE1, convKE2, srcCHA, dstCHA);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, convKer3));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer3, convKernMean));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1*oE2)), convKernMean) );
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - flip along dimensions ... "));
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - flip along dimensions ... "); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKernMean, "convKernMean");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKernMean, debugFolder_+"convKernMean"); }
 
         // flip the kernel
         if ( ROis3rdDim ) // E1, E2, RO
@@ -908,9 +900,9 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
                     }
                 }
             }
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+            if ( performTiming_ ) { gt_timer3_.stop(); }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip"); }
 
             // minus I
             if ( minusI )
@@ -921,7 +913,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
                     convKerFlip(kE1 -1, kE2 -1, kRO -1, dst, dst) = value - T(1.0);
                 }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_minusI");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip_minusI"); }
             }
         }
         else
@@ -947,9 +939,9 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
                     }
                 }
             }
-            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+            if ( performTiming_ ) { gt_timer3_.stop(); }
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip");
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip"); }
 
             // minus I
             if ( minusI )
@@ -960,13 +952,13 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
                     convKerFlip(kRO -1, kE1 -1, kE2 -1, dst, dst) = value - T(1.0);
                 }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_minusI");
+                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip_minusI"); }
             }
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::kspaceDomainConvKernel3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::kspaceDomainConvKernel3D(...) ... ");
         return false;
     }
 
@@ -996,26 +988,26 @@ imageDomainKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2,
         ho5DArray<T> convKerFlip;
         GADGET_CHECK_RETURN_FALSE(this->kspaceDomainConvKernel3D(ker, kRO, kE1,  kE2, oRO, oE1, oE2, convKerFlip, minusI, ROat3rdDim));
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - SNR unit scaling ... "));
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - SNR unit scaling ... "); }
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1*e2)) ), convKerFlip ));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_scal");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip_scal"); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - zero padding ... "));
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - zero padding ... "); }
         // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3D(convKerFlip, e1, e2, ro, kIm));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKerFlip, e1, e2, ro, kIm));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "convKerFlip_scal_zeropadded");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+"convKerFlip_scal_zeropadded"); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - conver to image domain ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - conver to image domain ... "); }
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm);
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainKernel3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::imageDomainKernel3D(...) ... ");
         return false;
     }
 
@@ -1051,29 +1043,29 @@ imageDomainKernelRO3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE
         hoNDArray<T> kImROTemp(ro, kConvE1, kConvE2, srcCHA, dstCHA);
         Gadgetron::clear(kImROTemp);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - SNR unit scaling ... "));
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - SNR unit scaling ... "); }
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro)) ), convKerFlip ));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, convKerFlip, "convKerFlip_scal_RO");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip_scal_RO"); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - zero padding only for RO ... "));
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - zero padding only for RO ... "); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKerFlip, ro, kConvE1, kConvE2, kImROTemp));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROTemp, "convKerFlip_scal_RO_zeropadded");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROTemp, debugFolder_+"convKerFlip_scal_RO_zeropadded"); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - conver to image domain only for RO ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImROTemp));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - conver to image domain only for RO ... "); }
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImROTemp);
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - permute kernel dimensions to be [kE1 kE2 RO ...]  ... "));
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - permute kernel dimensions to be [kE1 kE2 RO ...]  ... "); }
         GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo3rdDimensionFor3DRecon(kImROTemp, kImRO));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainKernelRO3D(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::imageDomainKernelRO3D(...) ... ");
         return false;
     }
 
@@ -1097,25 +1089,25 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
 
         hoNDArray<T> kImROScaled(kImRO);
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - SNR unit scaling for E1 and E2 ... "));
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - SNR unit scaling for E1 and E2 ... "); }
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(e1*e2)) ), kImROScaled ));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROScaled, "kImROScaledE1E2");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROScaled, debugFolder_+"kImROScaledE1E2"); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - zero padding for E1 and E2 ... "));
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - zero padding for E1 and E2 ... "); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(kImROScaled, e1, e2, dimR[2], kImE1E2RO));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImE1E2RO, "kImE1E2RO_zeropadded_E1E2");
+        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImE1E2RO, debugFolder_+"kImE1E2RO_zeropadded_E1E2"); }
 
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("spirit 3D calibration - conver to image domain for E1 and E2 ... "));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kImE1E2RO));
-        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - conver to image domain for E1 and E2 ... "); }
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kImE1E2RO);
+        if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainKernelE1E2RO(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::imageDomainKernelE1E2RO(...) ... ");
         return false;
     }
 
@@ -1145,7 +1137,7 @@ imageDomainAdjointKernel(const hoNDArray<T>& kIm, hoNDArray<T>& adjkIm)
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::imageDomainAdjointKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::imageDomainAdjointKernel(...) ... ");
         return false;
     }
 
@@ -1176,11 +1168,7 @@ bool gtPlusSPIRIT<T>::AdjointForwardKernel(const hoNDArray<T>& kImS2D, const hoN
         size_t N = kImS2D.get_number_of_elements()/srcCHA/dstCHA;
 
         long long d;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA) num_threads( (int)dstCHA ) if (dstCHA > 4)
-        #else
-            #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA, kIm, kImS2D, kImD2S) num_threads( (int)dstCHA ) if (dstCHA > 4)
-        #endif
+        #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA, kIm, kImS2D, kImD2S) num_threads( (int)dstCHA ) if (dstCHA > 4)
         {
             hoNDArray<T> ker(N);
 
@@ -1210,7 +1198,7 @@ bool gtPlusSPIRIT<T>::AdjointForwardKernel(const hoNDArray<T>& kImS2D, const hoN
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT<T>::AdjointForwardKernel(...) ... ");
+        GERROR_STREAM("Errors in gtPlusSPIRIT<T>::AdjointForwardKernel(...) ... ");
         return false;
     }
 

@@ -50,7 +50,7 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
                     //TODO do we want an image attribute string?  
                     try{cm2->getObjectPtr()->create(&img_dims);}
                     catch (std::runtime_error &err){
-                        GADGET_DEBUG_EXCEPTION(err,"Unable to allocate new image array\n");
+                        GEXCEPTION(err,"Unable to allocate new image array\n");
                         cm1->release();
                         return GADGET_FAIL;
                     }

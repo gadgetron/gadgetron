@@ -17,20 +17,17 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public AC
     : inherited()
   	, target_coils_(0)
    {
-    ACE_TRACE(( ACE_TEXT("GrappaWeightsCalculator::GrappaWeightsCalculator") ));
   }
 
   virtual ~GrappaWeightsCalculator() { }
 
   virtual int init(void)
   {
-    ACE_TRACE(( ACE_TEXT("GrappaWeightsCalculator::init") ));
     return 0;
   }
 
   virtual int open(void* = 0) 
   {
-    ACE_TRACE(( ACE_TEXT("GrappaWeightsCalculator::open") ));
     return this->activate( THR_NEW_LWP | THR_JOINABLE, 1 );
   }
 

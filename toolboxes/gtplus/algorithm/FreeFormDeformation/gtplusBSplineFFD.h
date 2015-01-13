@@ -336,7 +336,7 @@ bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::loadLookUpTable()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in gtplusBSplineFFD<T, CoordType, DIn, DOut>::loadLookUpTable() ...");
+        GERROR_STREAM("Errors happened in gtplusBSplineFFD<T, CoordType, DIn, DOut>::loadLookUpTable() ...");
         return false;
     }
 
@@ -357,7 +357,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(const Coord
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) const ... ");
+        GERROR_STREAM("Errors happened in world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) const ... ");
         return false;
     }
 
@@ -377,7 +377,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType p
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType& px_g, CoordType& py_g) const ... ");
+        GERROR_STREAM("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType& px_g, CoordType& py_g) const ... ");
         return false;
     }
 
@@ -398,7 +398,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType p
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g) const ... ");
+        GERROR_STREAM("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g) const ... ");
         return false;
     }
 
@@ -420,7 +420,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType p
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType ps_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g, CoordType& ps_g) const ... ");
+        GERROR_STREAM("Errors happened in world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType ps_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g, CoordType& ps_g) const ... ");
         return false;
     }
 
@@ -443,7 +443,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(const Coord
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) const ... ");
+        GERROR_STREAM("Errors happened in grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) const ... ");
         return false;
     }
 
@@ -463,7 +463,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType p
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) const ... ");
+        GERROR_STREAM("Errors happened in grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) const ... ");
         return false;
     }
 
@@ -484,7 +484,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType p
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) const ... ");
+        GERROR_STREAM("Errors happened in grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) const ... ");
         return false;
     }
 
@@ -506,7 +506,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType p
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors happened in grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType ps_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w, CoordType& ps_w) const ... ");
+        GERROR_STREAM("Errors happened in grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType ps_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w, CoordType& ps_w) const ... ");
         return false;
     }
 
@@ -530,7 +530,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
 
         for ( d=0; d<DIn; d++ )
         {
-            dim[d] = GT_MKINT( (end(d)-start(d))/gridCtrlPtSpacing[d] ) + 1;
+            dim[d] = FFD_MKINT( (end(d)-start(d))/gridCtrlPtSpacing[d] ) + 1;
             pixelSize[d] = (end(d)-start(d))/(dim[d]-1);
 
             /// add the padding
@@ -547,7 +547,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in initializeBFFD(const PointType& start, const PointType& end, CoordType gridCtrlPtSpacing[DIn]) ... ");
+        GERROR_STREAM("Error happened in initializeBFFD(const PointType& start, const PointType& end, CoordType gridCtrlPtSpacing[DIn]) ... ");
         return false;
     }
 
@@ -590,7 +590,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in initializeBFFD(const PointType& start, const PointType& end, CoordType gridCtrlPtNum[DIn]) ... ");
+        GERROR_STREAM("Error happened in initializeBFFD(const PointType& start, const PointType& end, CoordType gridCtrlPtNum[DIn]) ... ");
         return false;
     }
 
@@ -616,7 +616,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
 
         for ( d=0; d<DIn; d++ )
         {
-            dim[d] = GT_MKINT( (end(d)-start(d))/gridCtrlPtSpacing[d] ) + 1;
+            dim[d] = FFD_MKINT( (end(d)-start(d))/gridCtrlPtSpacing[d] ) + 1;
             pixelSize[d] = (end(d)-start(d))/(dim[d]-1);
 
             /// add the padding
@@ -634,7 +634,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType gridCtrlPtSpacing[DIn]) ... ");
+        GERROR_STREAM("Error happened in initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType gridCtrlPtSpacing[DIn]) ... ");
         return false;
     }
 
@@ -680,7 +680,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType gridCtrlPtNum[DIn]) ... ");
+        GERROR_STREAM("Error happened in initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType gridCtrlPtNum[DIn]) ... ");
         return false;
     }
 

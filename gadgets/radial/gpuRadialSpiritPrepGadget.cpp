@@ -68,7 +68,7 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<float_complext> > reg_image = acc_buffer->get_combined_coil_image();
     
     if( !reg_image.get() ){
-      GADGET_DEBUG1("Error computing regularization image\n");
+      GDEBUG("Error computing regularization image\n");
       return boost::shared_ptr< hoNDArray<float_complext> >();
     }            
     

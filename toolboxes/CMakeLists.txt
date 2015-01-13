@@ -8,6 +8,7 @@ if (MKL_FOUND)
     link_libraries(${MKL_LIBRARIES})
 endif (MKL_FOUND)
 
+add_subdirectory(log)
 add_subdirectory(core)
 add_subdirectory(mri_core)
 

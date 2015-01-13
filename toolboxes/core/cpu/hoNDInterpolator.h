@@ -42,7 +42,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Unrecognized interpolator type : " << interp);
+                GERROR_STREAM("Unrecognized interpolator type : " << interp);
         }
 
         return name;
@@ -66,7 +66,7 @@ namespace Gadgetron
         }
         else
         {
-            GADGET_ERROR_MSG("Unrecognized interpolator name : " << interp_name);
+            GERROR_STREAM("Unrecognized interpolator name : " << interp_name);
         }
 
         return interp;
@@ -295,7 +295,7 @@ namespace Gadgetron
                 break;
 
             default:
-                GADGET_ERROR_MSG("Unrecognized interpolator type : " << interp);
+                GERROR_STREAM("Unrecognized interpolator type : " << interp);
         }
 
         return res;

@@ -124,8 +124,6 @@ namespace Gadgetron
             if ( betaArg_[0] > 0 )
             {
                 Gadgetron::filterGaussian(hist_, betaArg_);
-
-                GADGET_CHECK_PERFORM(!debugFolder_.empty(), GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, hist_, "hist2D_filtered"));
             }
 
             hist_value_type histSum=0;
@@ -133,10 +131,7 @@ namespace Gadgetron
             Gadgetron::scal( hist_value_type(1.0/histSum), hist_);
 
             hist_.sumOverRow(hist_target_);
-            GADGET_CHECK_PERFORM(!debugFolder_.empty(), GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, hist_target_, "hist2D_target"));
-
             hist_.sumOverCol(hist_warpped_);
-            GADGET_CHECK_PERFORM(!debugFolder_.empty(), GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, hist_warpped_, "hist2D_warpped"));
 
             dissimilarity_ = 0;
 
@@ -162,7 +157,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
         }
 
         return this->dissimilarity_;
@@ -243,7 +238,6 @@ namespace Gadgetron
             if ( betaArg_[0] > 0 )
             {
                 Gadgetron::filterGaussian(Dist, betaArg_);
-                GADGET_CHECK_PERFORM(!debugFolder_.empty(), GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, Dist, "MI_Dist"));
             }
 
             hoNDBoundaryHandlerFixedValue< ho2DArray<hist_value_type> > bh_Dist(Dist, 0);
@@ -269,7 +263,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate() ... ");
             return false;
         }
 

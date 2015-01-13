@@ -147,7 +147,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const T* pt_in, T* pt_out) ... ");
+            GERROR_STREAM("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const T* pt_in, T* pt_out) ... ");
             return false;
         }
 
@@ -164,7 +164,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const T& xi, const T& yi, T& xo, T& yo) ... ");
+            GERROR_STREAM("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const T& xi, const T& yi, T& xo, T& yo) ... ");
             return false;
         }
 
@@ -182,7 +182,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const T& xi, const T& yi, const T& zi, T& xo, T& yo, T& zo) ... ");
+            GERROR_STREAM("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const T& xi, const T& yi, const T& zi, T& xo, T& yo, T& zo) ... ");
             return false;
         }
 
@@ -207,7 +207,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t* pt_in, T* pt_out) ... ");
+            GERROR_STREAM("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t* pt_in, T* pt_out) ... ");
             return false;
         }
 
@@ -229,7 +229,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t* pt_in, size_t N, T* pt_out) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t* pt_in, size_t N, T* pt_out) ... ");
             return false;
         }
 
@@ -246,7 +246,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t& xi, const size_t& yi, T& xo, T& yo) ... ");
+            GERROR_STREAM("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t& xi, const size_t& yi, T& xo, T& yo) ... ");
             return false;
         }
 
@@ -268,7 +268,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t* xi, const size_t* yi, size_t N, T* xo, T* yo) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t* xi, const size_t* yi, size_t N, T* xo, T* yo) ... ");
             return false;
         }
 
@@ -286,7 +286,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t& xi, const size_t& yi, const size_t& zi, T& xo, T& yo, T& zo) ... ");
+            GERROR_STREAM("Error happened in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t& xi, const size_t& yi, const size_t& zi, T& xo, T& yo, T& zo) ... ");
             return false;
         }
 
@@ -308,7 +308,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t* xi, const size_t* yi, const size_t* zi, size_t N, T* xo, T* yo, T* zo) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegHomogenousTransformation<ValueType, D>::transform(const size_t* xi, const size_t* yi, const size_t* zi, size_t N, T* xo, T* yo, T* zo) ... ");
             return false;
         }
 
@@ -366,7 +366,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegHomogenousTransformation<ValueType, D>::jacobianParameter(const input_point_type& pos, jacobian_parameter_type& jac) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegHomogenousTransformation<ValueType, D>::jacobianParameter(const input_point_type& pos, jacobian_parameter_type& jac) ... ");
             return false;
         }
 
@@ -416,7 +416,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happen in hoImageRegHomogenousTransformation<ValueType, D>::jacobianPosition(const input_point_type& pos, jacobian_position_type& jac) ... ");
+            GERROR_STREAM("Errors happen in hoImageRegHomogenousTransformation<ValueType, D>::jacobianPosition(const input_point_type& pos, jacobian_position_type& jac) ... ");
             return false;
         }
 

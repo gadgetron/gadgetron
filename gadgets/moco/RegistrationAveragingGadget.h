@@ -73,7 +73,7 @@ namespace Gadgetron{
       GadgetStreamController *controller = this->get_controller();
     
       if( controller == 0x0 ){
-        GADGET_DEBUG1("Failed to get controller\n");
+        GDEBUG("Failed to get controller\n");
         return GADGET_FAIL;
       }
       
@@ -81,13 +81,13 @@ namespace Gadgetron{
         dynamic_cast<PhysioInterpolationGadget*>( controller->find_gadget(std::string("PhysioInterpolationGadget")) );
       
       if( physio == 0x0 ){
-        GADGET_DEBUG1("Could not find (or cast) PhysioInterpolationGadget in gadget stream\n");
+        GDEBUG("Could not find (or cast) PhysioInterpolationGadget in gadget stream\n");
         return GADGET_FAIL;
       }
       
       this->number_of_phases_ = physio->get_number_of_phases();      
       
-      GADGET_DEBUG2("Configured for %d phases\n", this->number_of_phases_); 
+      GDEBUG("Configured for %d phases\n", this->number_of_phases_); 
       return GADGET_OK;
     }
     
@@ -95,7 +95,7 @@ namespace Gadgetron{
                          GadgetContainerMessage< hoNDArray< typename ARRAY_TYPE::element_type > > *m2 )
     {
 
-      //GADGET_DEBUG2("\nSERIES: %d, PHASE: %d", m1->getObjectPtr()->image_series_index, m1->getObjectPtr()->phase );
+      //GDEBUG("\nSERIES: %d, PHASE: %d", m1->getObjectPtr()->image_series_index, m1->getObjectPtr()->phase );
 
       // If this image header corresponds to series 0, it is not part of the sorted phases.
       // Just pass those images along...
@@ -125,7 +125,7 @@ namespace Gadgetron{
         //
 	
         if( this->setup_solver() != GADGET_OK ){
-          GADGET_DEBUG1("Failed to set up optical flow solver\n");
+          GDEBUG("Failed to set up optical flow solver\n");
           return GADGET_FAIL;
         }
       }
@@ -137,7 +137,7 @@ namespace Gadgetron{
       unsigned int phase = m1->getObjectPtr()->phase;
       
       if( this->phase_images_[phase].enqueue_tail(m1) < 0 ) {
-        GADGET_DEBUG1("Failed to add image to buffer\n");
+        GDEBUG("Failed to add image to buffer\n");
         return GADGET_FAIL;
       }
 
@@ -151,7 +151,7 @@ namespace Gadgetron{
     {
       if( this->phase_images_.get() ){
       
-        GADGET_DEBUG1("RegistrationAveragingGadget::close (performing registration and averaging images)\n");
+        GDEBUG("RegistrationAveragingGadget::close (performing registration and averaging images)\n");
       
         // Make sure we have the same number of images on all phase queues
         // (It doesn't really matter, but if not the case something probably went wrong upstream)
@@ -159,21 +159,21 @@ namespace Gadgetron{
 
         unsigned int num_images = this->phase_images_[0].message_count();
 
-        GADGET_DEBUG2("Number of images for phase 0: %d", num_images );
+        GDEBUG("Number of images for phase 0: %d", num_images );
         
         for( unsigned int phase = 0; phase< this->number_of_phases_; phase++ ){
 
           unsigned int num_images_phase = this->phase_images_[phase].message_count();
-          GADGET_DEBUG2("Number of images for phase %d: %d", phase, num_images_phase );
+          GDEBUG("Number of images for phase %d: %d", phase, num_images_phase );
 
           if( num_images != num_images_phase ){
-            GADGET_DEBUG1("Failed to set up registration, a different number of images received for each phase\n");
+            GDEBUG("Failed to set up registration, a different number of images received for each phase\n");
             return Gadget::close(flags);
           }
         }
       
         if( num_images == 0 ){
-          GADGET_DEBUG1("No images to register\n");
+          GDEBUG("No images to register\n");
           return Gadget::close(flags);
         }
 
@@ -193,14 +193,14 @@ namespace Gadgetron{
             ACE_Message_Block *mbq;
 	  
             if( this->phase_images_[phase].dequeue_head(mbq) < 0 ) {
-              GADGET_DEBUG1("Image header dequeue failed\n");
+              GDEBUG("Image header dequeue failed\n");
               return Gadget::close(flags);
             }
 	  
             GadgetContainerMessage<ISMRMRD::ImageHeader> *m1 = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
 	  
             if( m1 == 0x0 ) {
-              GADGET_DEBUG1("Unexpected image type on queue\n");
+              GDEBUG("Unexpected image type on queue\n");
               return Gadget::close(flags);
             }
 	  
@@ -208,7 +208,7 @@ namespace Gadgetron{
               AsContainerMessage< hoNDArray<typename ARRAY_TYPE::element_type> >(m1->cont());
 	  
             if( m2 == 0x0 ) {
-              GADGET_DEBUG1("Unexpected continuation on queue\n");
+              GDEBUG("Unexpected continuation on queue\n");
               m1->release();
               return Gadget::close(flags);
             }
@@ -289,14 +289,14 @@ namespace Gadgetron{
             //
 	  
             if( set_continuation( header, &fixed_image ) < 0 ) {
-              GADGET_DEBUG1("Failed to set continuation\n");
+              GDEBUG("Failed to set continuation\n");
               header->release();
               return Gadget::close(flags);
             }
           }
 
           if( this->next()->putq(header) < 0 ) {
-            GADGET_DEBUG1("Failed to put registrered image on queue\n");
+            GDEBUG("Failed to put registrered image on queue\n");
             header->release();
             return Gadget::close(flags);
           }

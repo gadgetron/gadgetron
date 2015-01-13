@@ -1,5 +1,4 @@
 #include "EPICorrGadget.h"
-#include "Gadgetron.h"
 #include "ismrmrd/xml.h"
 
 namespace Gadgetron{
@@ -13,8 +12,8 @@ int EPICorrGadget::process_config(ACE_Message_Block* mb)
   ISMRMRD::deserialize(mb->rd_ptr(),h);
 
   if (h.encoding.size() == 0) {
-    GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-    GADGET_DEBUG1("This Gadget needs an encoding description\n");
+    GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+    GDEBUG("This Gadget needs an encoding description\n");
     return GADGET_FAIL;
   }
 
@@ -27,20 +26,20 @@ int EPICorrGadget::process_config(ACE_Message_Block* mb)
   if (h.encoding[0].trajectoryDescription) {
     traj_desc = *h.encoding[0].trajectoryDescription;
   } else {
-    GADGET_DEBUG1("Trajectory description missing");
+    GDEBUG("Trajectory description missing");
     return GADGET_FAIL;
   }
 
-  if (std::strcmp(traj_desc.identifier.c_str(), "ConventionalEPI")) {
-    GADGET_DEBUG1("Expected trajectory description identifier 'ConventionalEPI', not found.");
+  if (traj_desc.identifier != "ConventionalEPI") {
+    GDEBUG("Expected trajectory description identifier 'ConventionalEPI', not found.");
     return GADGET_FAIL;
   }
 
 
   for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
-    if (std::strcmp(i->name.c_str(),"numberOfNavigators") == 0) {
+    if (i->name == "numberOfNavigators") {
       numNavigators_ = i->value;
-    } else if (std::strcmp(i->name.c_str(),"etl") == 0) {
+    } else if (i->name == "etl") {
       etl_ = i->value;
     }
   }
@@ -59,7 +58,7 @@ int EPICorrGadget::process(
       GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
-  //std::cout << "Nav: " << navNumber_ << "    " << "Echo: " << epiEchoNumber_ << std::endl;
+  //GDEBUG_STREAM("Nav: " << navNumber_ << "    " << "Echo: " << epiEchoNumber_ << std::endl);
 
   // Get a reference to the acquisition header
   ISMRMRD::AcquisitionHeader &hdr = *m1->getObjectPtr();
@@ -69,10 +68,8 @@ int EPICorrGadget::process(
     // It is enough to put the first one, since they are linked
     if (this->next()->putq(m1) == -1) {
       m1->release();
-      ACE_ERROR_RETURN( (LM_ERROR,
-             ACE_TEXT("%p\n"),
-             ACE_TEXT("EPICorrGadget::process, passing data on to next gadget")),
-            -1);
+      GERROR("EPICorrGadget::process, passing data on to next gadget");
+      return -1;
     }
     return 0;
   }
@@ -134,8 +131,8 @@ int EPICorrGadget::process(
       float slope = ctemp.n_rows * std::arg(arma::cdot(ctemp.rows(0,ctemp.n_rows-2), ctemp.rows(1,ctemp.n_rows-1)));
       ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(x.n_rows), -slope*x));
       float intercept = std::arg(arma::sum(ctemp));
-      //std::cout << "Slope = " << slope << std::endl;
-      //std::cout << "Intercept = " << intercept << std::endl;
+      //GDEBUG_STREAM("Slope = " << slope << std::endl);
+      //GDEBUG_STREAM("Intercept = " << intercept << std::endl);
       tvec = slope*x + intercept;
       
       // Odd and even phase corrections
@@ -181,10 +178,8 @@ int EPICorrGadget::process(
     // It is enough to put the first one, since they are linked
     if (this->next()->putq(m1) == -1) {
       m1->release();
-      ACE_ERROR_RETURN( (LM_ERROR,
-             ACE_TEXT("%p\n"),
-             ACE_TEXT("EPICorrGadget::process, passing data on to next gadget")),
-            -1);
+      GERROR("EPICorrGadget::process, passing data on to next gadget");
+      return -1;
     }
   }
 

@@ -101,7 +101,7 @@ set(size_t ind, Oper_Type& op, ValueType a)
 {
     if ( ind >= operList_.size() )
     {
-        GADGET_WARN_MSG("ind >= operList_.size()");
+        GWARN_STREAM("ind >= operList_.size()");
     }
 
     operList_[ind].first = &op;

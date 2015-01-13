@@ -6,6 +6,7 @@
 
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
+#include <ctime>
 #include "GadgetMRIHeaders.h"
 #include "ismrmrd/meta.h"
 #include "GadgetStreamController.h"

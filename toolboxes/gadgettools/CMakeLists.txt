@@ -37,6 +37,7 @@ add_library(gadgetron_toolbox_gadgettools SHARED
 set_target_properties(gadgetron_toolbox_gadgettools PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_toolbox_gadgettools
+	              gadgetron_toolbox_log
                       optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
                       ${Boost_LIBRARIES})
 

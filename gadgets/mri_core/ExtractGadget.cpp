@@ -46,7 +46,7 @@ int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, Gad
 
 			try{cm2->getObjectPtr()->create(dims.get());}
 			catch (std::runtime_error &err){
-				GADGET_DEBUG_EXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
+				GEXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
 				return GADGET_FAIL;
 			}
 
@@ -69,7 +69,7 @@ int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, Gad
 					pix_val = arg(src[i]);
 					break;
 				default:
-					GADGET_DEBUG2("Unexpected extract mask %d, bailing out\n", m);
+					GDEBUG("Unexpected extract mask %d, bailing out\n", m);
 					return GADGET_FAIL;
 				}
 				dst[i] = pix_val;
@@ -95,14 +95,14 @@ int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, Gad
 				cm1->getObjectPtr()->image_series_index += 3000; //Ensure that this will go in a different series
 				break;
 			default:
-				GADGET_DEBUG2("Unexpected extract mask %d, bailing out\n", m);
+				GDEBUG("Unexpected extract mask %d, bailing out\n", m);
 				break;
 			}
 
 
 			if (this->next()->putq(cm1) == -1) {
 				m1->release();
-				GADGET_DEBUG1("Unable to put extracted images on next gadgets queue");
+				GDEBUG("Unable to put extracted images on next gadgets queue");
 				return GADGET_FAIL;
 			}
 		}

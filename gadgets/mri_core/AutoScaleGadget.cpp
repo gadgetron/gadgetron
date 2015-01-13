@@ -69,7 +69,7 @@ int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, G
 	}
 
 	if (this->next()->putq(m1) < 0) {
-		GADGET_DEBUG1("Failed to pass on data to next Gadget\n");
+		GDEBUG("Failed to pass on data to next Gadget\n");
 		return GADGET_FAIL;
 	}
 

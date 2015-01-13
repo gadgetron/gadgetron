@@ -11,31 +11,31 @@
 #include <sstream>
 #include <strstream>
 
-#ifdef GADGET_MSG
-    #undef GADGET_MSG
-#endif // GADGET_MSG
+#ifdef GDEBUG_STREAM
+    #undef GDEBUG_STREAM
+#endif // GDEBUG_STREAM
 
-#ifdef GADGET_ERROR_MSG
-    #undef GADGET_ERROR_MSG
-#endif // GADGET_ERROR_MSG
+#ifdef GERROR_STREAM
+    #undef GERROR_STREAM
+#endif // GERROR_STREAM
 
-#ifdef GADGET_WARN_MSG
-    #undef GADGET_WARN_MSG
-#endif // GADGET_WARN_MSG
+#ifdef GWARN_STREAM
+    #undef GWARN_STREAM
+#endif // GWARN_STREAM
 
 #ifdef _DEBUG
-    #define GADGET_MSG(message) { std::ostrstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
+    #define GDEBUG_STREAM(message) { std::ostrstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
 #else
-    #define GADGET_MSG(message) { std::ostrstream outs; outs << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
+    #define GDEBUG_STREAM(message) { std::ostrstream outs; outs << message << std::endl << '\0'; mexPrintf("%s", outs.str()); }
 #endif // _DEBUG
 
 #ifdef _DEBUG
-    #define GADGET_WARN_MSG(message) { std::ostrstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
+    #define GWARN_STREAM(message) { std::ostrstream outs; outs << " (" << __FILE__ << ", " << __LINE__ << "): " << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
 #else
-    #define GADGET_WARN_MSG(message) { std::ostrstream outs; outs << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
+    #define GWARN_STREAM(message) { std::ostrstream outs; outs << message << std::endl << '\0'; mexWarnMsgTxt(outs.str()); }
 #endif // _DEBUG
 
-#define GADGET_ERROR_MSG(message) GADGET_MSG(message) 
+#define GERROR_STREAM(message) GDEBUG_STREAM(message) 
 
 #ifdef GADGET_CHECK_RETURN_FALSE
     #undef GADGET_CHECK_RETURN_FALSE
@@ -58,7 +58,7 @@ template <typename ObjType> void matlab_printInfo(const ObjType& obj)
     obj.print(outs);
     outs << std::ends;
     std::string msg(outs.str());
-    GADGET_MSG(msg.c_str());
+    GDEBUG_STREAM(msg.c_str());
 }
 
 inline void printAuthorInfo(std::stringstream& outs)

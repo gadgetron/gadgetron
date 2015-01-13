@@ -15,7 +15,7 @@ gtPlusIOWorker::~gtPlusIOWorker()
 {
     if ( !close() )
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOWorker::~gtPlusIOWorker() ... ");
+        GERROR_STREAM("Errors in gtPlusIOWorker::~gtPlusIOWorker() ... ");
     }
 }
 
@@ -39,13 +39,13 @@ bool gtPlusIOWorker::open()
 
         if ( !fid_ )
         {
-            GADGET_ERROR_MSG("gtPlusIOWorker::open() cannot open file stream : " << ioTag_);
+            GERROR_STREAM("gtPlusIOWorker::open() cannot open file stream : " << ioTag_);
             return false;
         }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOWorker::open() ... ");
+        GERROR_STREAM("Errors in gtPlusIOWorker::open() ... ");
         return false;
     }
 
@@ -63,7 +63,7 @@ bool gtPlusIOWorker::close()
     }
     catch (...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOWorker::close() ... ");
+        GERROR_STREAM("Errors in gtPlusIOWorker::close() ... ");
         return false;
     }
 
@@ -159,7 +159,7 @@ bool gtPlusIOWorker::write(const char* data, long long len)
 //    }
 //    catch (...)
 //    {
-//        GADGET_ERROR_MSG("Errors in gtPlusIOBase::readFromFile(const std::string& filename, char*& data, long long& length) ... ");
+//        GERROR_STREAM("Errors in gtPlusIOBase::readFromFile(const std::string& filename, char*& data, long long& length) ... ");
 //        return false;
 //    }
 //
@@ -190,7 +190,7 @@ bool gtPlusIOWorker::write(const char* data, long long len)
 //    }
 //    catch (...)
 //    {
-//        GADGET_ERROR_MSG("Errors in gtPlusIOBase::writeToFile(const std::string& filename, char* data, long long length) ... ");
+//        GERROR_STREAM("Errors in gtPlusIOBase::writeToFile(const std::string& filename, char* data, long long length) ... ");
 //        return false;
 //    }
 //

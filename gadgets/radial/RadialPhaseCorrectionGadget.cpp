@@ -1,5 +1,4 @@
 #include "RadialPhaseCorrectionGadget.h"
-#include "Gadgetron.h"
 #include "hoNDArray_elemwise.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_fileio.h"
@@ -34,7 +33,7 @@ namespace Gadgetron{
     
     
     if (h.encoding.size() != 1) {
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+      GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
     
@@ -55,7 +54,7 @@ namespace Gadgetron{
     profiles_ = get_int_value(std::string("profiles").c_str());
 
     if( profiles_ < 1 ) {
-      GADGET_DEBUG1("The number of profiles to estimate polynomial fit is too low.\n");
+      GDEBUG("The number of profiles to estimate polynomial fit is too low.\n");
       return GADGET_FAIL;
     }
 
@@ -84,7 +83,7 @@ namespace Gadgetron{
     bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
     if (is_noise) { 
       if (this->next()->putq(m1) < 0) {
-        GADGET_DEBUG1("Failed to pass on noise samples.\n");
+        GDEBUG("Failed to pass on noise samples.\n");
         return GADGET_FAIL;
       }
       return GADGET_OK;
@@ -94,7 +93,7 @@ namespace Gadgetron{
     //
 
     if( channels_ != m1->getObjectPtr()->active_channels ){
-      GADGET_DEBUG1("Unexpected number of coils encountered. Did you insert the phase correction gadget after a coil reduction gadget? In that case invert the order of these gadgets\n");
+      GDEBUG("Unexpected number of coils encountered. Did you insert the phase correction gadget after a coil reduction gadget? In that case invert the order of these gadgets\n");
       return GADGET_FAIL;
     }
 
@@ -144,7 +143,7 @@ namespace Gadgetron{
           iter.advance();
           
           if(!mbq) {
-            GADGET_DEBUG1("Unable to interpret data on message queue (1)\n");
+            GDEBUG("Unable to interpret data on message queue (1)\n");
             return GADGET_FAIL;
           }
           
@@ -152,7 +151,7 @@ namespace Gadgetron{
             AsContainerMessage< hoNDArray< std::complex<float> > >(mbq->cont());
         
           if(!_profile) {
-            GADGET_DEBUG1("Unable to interpret data on message queue (2)\n");
+            GDEBUG("Unable to interpret data on message queue (2)\n");
             return GADGET_FAIL;
           }
           
@@ -209,7 +208,7 @@ namespace Gadgetron{
 
           ACE_Message_Block *mbq;
           if( profiles_queue_[idx].dequeue_head(mbq) < 0 ){
-            GADGET_DEBUG1("Message dequeue failed\n");
+            GDEBUG("Message dequeue failed\n");
             GADGET_FAIL;
           }
 
@@ -217,14 +216,14 @@ namespace Gadgetron{
             AsContainerMessage<ISMRMRD::AcquisitionHeader>(mbq);
           
           if(!header) {
-            GADGET_DEBUG1("Unable to interpret data on message queue (3)\n");
+            GDEBUG("Unable to interpret data on message queue (3)\n");
             return GADGET_FAIL;
           }
 
           phase_correct(header);
 
           if (this->next()->putq(header) < 0) {
-            GADGET_DEBUG1("Failed to put data on queue\n");
+            GDEBUG("Failed to put data on queue\n");
             return GADGET_FAIL;
           }          
         }
@@ -239,7 +238,7 @@ namespace Gadgetron{
       phase_correct(m1);
       
       if (this->next()->putq(m1) < 0) {
-        GADGET_DEBUG1("Failed to put data on queue\n");
+        GDEBUG("Failed to put data on queue\n");
         return GADGET_FAIL;
       }          
     }
@@ -291,7 +290,7 @@ namespace Gadgetron{
         AsContainerMessage<hoNDArray< std::complex<float> > >(m1->cont());
       
       if(!_profile) {
-        GADGET_DEBUG1("Unable to phase correct profile\n");
+        GDEBUG("Unable to phase correct profile\n");
         return;
       }
 

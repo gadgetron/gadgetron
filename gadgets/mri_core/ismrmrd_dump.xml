@@ -30,7 +30,7 @@
     <dll>gadgetron_mricore</dll>
     <classname>IsmrmrdDumpGadget</classname>
     <property><name>file_prefix</name><value>ISMRMRD_DUMP</value></property>
-    <property><name>append_timestamp</name><value>1</value></property>
+    <property><name>append_timestamp</name><value>true</value></property>
   </gadget>
 
 </gadgetronStreamConfiguration>

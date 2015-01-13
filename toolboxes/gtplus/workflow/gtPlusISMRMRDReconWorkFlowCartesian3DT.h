@@ -170,14 +170,14 @@ bool gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::predictDimensions()
 
     if ( dim5th_==DIM_NONE )
     {
-        GADGET_ERROR_MSG("gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::predictDimensions() : cannot find 5th dimensions ... ");
+        GERROR_STREAM("gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::predictDimensions() : cannot find 5th dimensions ... ");
         return false;
     }
 
     workOrder_->enforceConsistency(dim5th_);
 
-    GADGET_CONDITION_MSG(true, "predictDimensions - dim5th : " << gtPlus_util_.getISMRMRDDimName(dim5th_) );
-    GADGET_CONDITION_MSG(true, "predictDimensions - WorkOrderShareDim : " << gtPlus_util_.getISMRMRDDimName(WorkOrderShareDim_) );
+    GDEBUG_CONDITION_STREAM(true, "predictDimensions - dim5th : " << gtPlus_util_.getISMRMRDDimName(dim5th_) );
+    GDEBUG_CONDITION_STREAM(true, "predictDimensions - WorkOrderShareDim : " << gtPlus_util_.getISMRMRDDimName(WorkOrderShareDim_) );
 
     return true;
 }
@@ -252,7 +252,7 @@ bool gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::recon()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::recon() ... ");
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::recon() ... ");
         return false;
     }
 

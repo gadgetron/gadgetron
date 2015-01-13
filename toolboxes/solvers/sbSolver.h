@@ -721,7 +721,7 @@ protected:
 		for( unsigned int outer_iteration=0; outer_iteration<outer_iterations; outer_iteration++ ) {
 
 			if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
-				std::cout << std::endl << "SB outer loop iteration " << outer_iteration << std::endl << std::endl;
+				GDEBUG_STREAM(std::endl << "SB outer loop iteration " << outer_iteration << std::endl << std::endl);
 
 			//
 			// Inner loop
@@ -730,7 +730,7 @@ protected:
 			for( unsigned int inner_iteration=0; inner_iteration<inner_iterations; inner_iteration++ ) {
 
 				if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
-					std::cout << std::endl << "SB inner loop iteration " << inner_iteration << std::endl << std::endl;
+					GDEBUG_STREAM(std::endl << "SB inner loop iteration " << inner_iteration << std::endl << std::endl);
 
 				{ // Brackets used to free 'data' below as soon as it goes out of scope
 
@@ -768,7 +768,7 @@ protected:
 						// Compute change in u_k
 						if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 							*u_k -= *tmp_u_k;
-							std::cout << "u_k delta l2-norm (inner loop): " << nrm2(u_k.get()) << std::endl;
+							GDEBUG_STREAM("u_k delta l2-norm (inner loop): " << nrm2(u_k.get()) << std::endl);
 						}
 
 						// Update u_k
@@ -795,7 +795,7 @@ protected:
 				REAL delta = nrm2(&u_k_prev);
 
 				if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
-					std::cout << "u_k delta l2-norm (outer loop): " << delta << std::endl << std::endl;
+					GDEBUG_STREAM("u_k delta l2-norm (outer loop): " << delta << std::endl << std::endl);
 
 				if( delta < tolerance )
 					break;

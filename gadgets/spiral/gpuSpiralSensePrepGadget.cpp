@@ -1,6 +1,5 @@
 #include "gpuSpiralSensePrepGadget.h"
 #include "GenericReconJob.h"
-#include "Gadgetron.h"
 #include "cuNDArray_utils.h"
 #include "cuNDArray_reductions.h"
 #include "vector_td_utilities.h"
@@ -26,7 +25,7 @@ namespace Gadgetron{
     , use_multiframe_grouping_(false)
     , acceleration_factor_(0)
   {
-    GADGET_DEBUG1("Initializing Spiral\n");
+    GDEBUG("Initializing Spiral\n");
     set_parameter(std::string("buffer_using_solver").c_str(), "false");
     set_parameter(std::string("propagate_csm_from_set").c_str(), "-1");
     set_parameter(std::string("buffer_convolution_kernel_width").c_str(), "5.5");
@@ -42,30 +41,30 @@ namespace Gadgetron{
 
     int number_of_devices = 0;
     if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to query number of CUDA devices.\n" );
+      GDEBUG( "Error: unable to query number of CUDA devices.\n" );
       return GADGET_FAIL;
     }
 
     if (number_of_devices == 0) {
-      GADGET_DEBUG1( "Error: No available CUDA devices.\n" );
+      GDEBUG( "Error: No available CUDA devices.\n" );
       return GADGET_FAIL;
     }
 
     device_number_ = get_int_value(std::string("deviceno").c_str());
 
     if (device_number_ >= number_of_devices) {
-      GADGET_DEBUG2("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
+      GDEBUG("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
       device_number_ = (device_number_%number_of_devices);
     }
 
     if (cudaSetDevice(device_number_)!= cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to set CUDA device.\n" );
+      GDEBUG( "Error: unable to set CUDA device.\n" );
       return GADGET_FAIL;
     }
 
     cudaDeviceProp deviceProp;
     if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to query device properties.\n" );
+      GDEBUG( "Error: unable to query device properties.\n" );
       return GADGET_FAIL;
     }
     
@@ -74,19 +73,19 @@ namespace Gadgetron{
     propagate_csm_from_set_ = get_int_value(std::string("propagate_csm_from_set").c_str());
 
     if( propagate_csm_from_set_ > 0 ){
-      GADGET_DEBUG2("Currently, only set 0 can propagate coil sensitivity maps. Set %d was specified.\n", propagate_csm_from_set_ );
+      GDEBUG("Currently, only set 0 can propagate coil sensitivity maps. Set %d was specified.\n", propagate_csm_from_set_ );
       return GADGET_FAIL;
     }
 
     if( propagate_csm_from_set_ >= 0 ){
-      GADGET_DEBUG2("Propagating csm from set %d to all sets\n", propagate_csm_from_set_ );
+      GDEBUG("Propagating csm from set %d to all sets\n", propagate_csm_from_set_ );
     }
 
     buffer_using_solver_ = get_bool_value(std::string("buffer_using_solver").c_str());
     use_multiframe_grouping_ = get_bool_value(std::string("use_multiframe_grouping").c_str());
 
     if( buffer_using_solver_ && !use_multiframe_grouping_ ){
-      GADGET_DEBUG1("Enabling 'buffer_using_solver' requires also enabling 'use_multiframe_grouping'.\n" );
+      GDEBUG("Enabling 'buffer_using_solver' requires also enabling 'use_multiframe_grouping'.\n" );
       return GADGET_FAIL;
     }
 
@@ -98,7 +97,7 @@ namespace Gadgetron{
     
     
     if (h.encoding.size() != 1) {
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+      GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
     
@@ -128,12 +127,12 @@ namespace Gadgetron{
     if (h.encoding[0].trajectoryDescription) {
       traj_desc = *h.encoding[0].trajectoryDescription;
     } else {
-      GADGET_DEBUG1("Trajectory description missing");
+      GDEBUG("Trajectory description missing");
       return GADGET_FAIL;
     }
     
-    if (std::strcmp(traj_desc.identifier.c_str(), "HargreavesVDS2000")) {
-      GADGET_DEBUG1("Expected trajectory description identifier 'HargreavesVDS2000', not found.");
+    if (traj_desc.identifier != "HargreavesVDS2000") {
+      GDEBUG("Expected trajectory description identifier 'HargreavesVDS2000', not found.");
       return GADGET_FAIL;
     }
     
@@ -148,33 +147,33 @@ namespace Gadgetron{
     
     
     for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
-      if (std::strcmp(i->name.c_str(),"interleaves") == 0) {
-	interleaves = i->value;
-      } else if (std::strcmp(i->name.c_str(),"fov_coefficients") == 0) {
-	fov_coefficients = i->value;
-      } else if (std::strcmp(i->name.c_str(),"SamplingTime_ns") == 0) {
-	sampling_time_ns = i->value;
+      if (i->name == "interleaves") {
+        interleaves = i->value;
+      } else if (i->name == "fov_coefficients") {
+        fov_coefficients = i->value;
+      } else if (i->name == "SamplingTime_ns") {
+        sampling_time_ns = i->value;
       } else {
-	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+        GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
       }
     }
 
     for (std::vector<ISMRMRD::UserParameterDouble>::iterator i (traj_desc.userParameterDouble.begin()); i != traj_desc.userParameterDouble.end(); ++i) {
-      if (std::strcmp(i->name.c_str(),"MaxGradient_G_per_cm") == 0) {
+      if (i->name == "MaxGradient_G_per_cm") {
 	max_grad = i->value;
-      } else if (std::strcmp(i->name.c_str(),"MaxSlewRate_G_per_cm_per_s") == 0) {
+      } else if (i->name == "MaxSlewRate_G_per_cm_per_s") {
 	max_slew = i->value;
-      } else if (std::strcmp(i->name.c_str(),"FOVCoeff_1_cm") == 0) {
+      } else if (i->name == "FOVCoeff_1_cm") {
 	fov_coeff = i->value;
-      } else if (std::strcmp(i->name.c_str(),"krmax_per_cm") == 0) {
+      } else if (i->name == "krmax_per_cm") {
 	kr_max= i->value;
       } else {
-	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+	GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
       }
     }
     
     if ((interleaves < 0) || (fov_coefficients < 0) || (sampling_time_ns < 0) || (max_grad < 0) || (max_slew < 0) || (fov_coeff < 0) || (kr_max < 0)) {
-      GADGET_DEBUG1("Appropriate parameters for calculating spiral trajectory not found in XML configuration\n");
+      GDEBUG("Appropriate parameters for calculating spiral trajectory not found in XML configuration\n");
       return GADGET_FAIL;
     }
     
@@ -210,16 +209,16 @@ namespace Gadgetron{
       image_headers_queue_[i].low_water_mark(bsize);
     }
 
-    GADGET_DEBUG2("smax:                    %f\n", smax_);
-    GADGET_DEBUG2("gmax:                    %f\n", gmax_);
-    GADGET_DEBUG2("Tsamp_ns:                %d\n", Tsamp_ns_);
-    GADGET_DEBUG2("Nints:                   %d\n", Nints_);
-    GADGET_DEBUG2("fov:                     %f\n", fov_);
-    GADGET_DEBUG2("krmax:                   %f\n", krmax_);
-    GADGET_DEBUG2("samples_to_skip_start_ : %d\n", samples_to_skip_start_);
-    GADGET_DEBUG2("samples_to_skip_end_   : %d\n", samples_to_skip_end_);
-    GADGET_DEBUG2("recon matrix_size_x    : %d\n", image_dimensions_recon_[0]);
-    GADGET_DEBUG2("recon matrix_size_y    : %d\n", image_dimensions_recon_[1]);
+    GDEBUG("smax:                    %f\n", smax_);
+    GDEBUG("gmax:                    %f\n", gmax_);
+    GDEBUG("Tsamp_ns:                %d\n", Tsamp_ns_);
+    GDEBUG("Nints:                   %d\n", Nints_);
+    GDEBUG("fov:                     %f\n", fov_);
+    GDEBUG("krmax:                   %f\n", krmax_);
+    GDEBUG("samples_to_skip_start_ : %d\n", samples_to_skip_start_);
+    GDEBUG("samples_to_skip_end_   : %d\n", samples_to_skip_end_);
+    GDEBUG("recon matrix_size_x    : %d\n", image_dimensions_recon_[0]);
+    GDEBUG("recon matrix_size_y    : %d\n", image_dimensions_recon_[1]);
 
     return GADGET_OK;
   }
@@ -254,7 +253,7 @@ namespace Gadgetron{
       calc_vds(smax_,gmax_,sample_time,sample_time,Nints_,&fov_,nfov,krmax_,ngmax,&xgrad,&ygrad,&ngrad);
       samples_per_interleave_ = std::min(ngrad,static_cast<int>(m1->getObjectPtr()->number_of_samples));
 
-      GADGET_DEBUG2("Using %d samples per interleave\n", samples_per_interleave_);
+      GDEBUG("Using %d samples per interleave\n", samples_per_interleave_);
 
       /* Calcualte the trajectory and weights*/
       calc_traj(xgrad, ygrad, samples_per_interleave_, Nints_, sample_time, krmax_, &x_trajectory, &y_trajectory, &weighting);
@@ -331,7 +330,7 @@ namespace Gadgetron{
 	(new hoNDArray<float_complext>[slices_*sets_]);
       
       if (!host_data_buffer_.get()) {
-	GADGET_DEBUG1("Unable to allocate array for host data buffer\n");
+	GDEBUG("Unable to allocate array for host data buffer\n");
 	return GADGET_FAIL;
       }
 
@@ -390,7 +389,7 @@ namespace Gadgetron{
 
     if (samples_to_skip_end_ == -1) {
       samples_to_skip_end_ = m1->getObjectPtr()->number_of_samples-samples_per_interleave_;
-      GADGET_DEBUG2("Adjusting samples_to_skip_end_ = %d\n", samples_to_skip_end_);
+      GDEBUG("Adjusting samples_to_skip_end_ = %d\n", samples_to_skip_end_);
     }
 
     std::complex<float>* data_ptr = reinterpret_cast< std::complex<float>* >
@@ -414,7 +413,7 @@ namespace Gadgetron{
       //
 
       if( Nints_%interleaves_counter_singleframe_[set*slices_+slice] ){
-	GADGET_DEBUG1("Unexpected number of interleaves encountered in frame\n");
+	GDEBUG("Unexpected number of interleaves encountered in frame\n");
 	return GADGET_FAIL;
       }
 
@@ -423,7 +422,7 @@ namespace Gadgetron{
 
       if( acceleration_factor_ != Nints_/interleaves_counter_singleframe_[set*slices_+slice] ){
 
-	GADGET_DEBUG1("Change of acceleration factor detected\n");
+	GDEBUG("Change of acceleration factor detected\n");
 	acceleration_factor_ =  Nints_/interleaves_counter_singleframe_[set*slices_+slice];
 
 	// The encoding operator needs to have its domain/codomain dimensions set accordingly
@@ -517,9 +516,9 @@ namespace Gadgetron{
 	  csm_ = estimate_b1_map<float,2>( &image ); // Estimates csm
 	}
 	else{
-	  //GADGET_DEBUG2("Set %d is reusing the csm from set %d\n", set, propagate_csm_from_set_);
+	  //GDEBUG("Set %d is reusing the csm from set %d\n", set, propagate_csm_from_set_);
 	  if( csm_.get() == 0x0 ){
-	    GADGET_DEBUG1("Error, csm has not been computed\n");
+	    GDEBUG("Error, csm has not been computed\n");
 	    return GADGET_FAIL;
 	  }	  
 	}
@@ -573,7 +572,7 @@ namespace Gadgetron{
 	for (unsigned int p = 0; p < profiles_buffered; p++) {
 	  ACE_Message_Block* mbq;
 	  if (buffer_[set*slices_+slice].dequeue_head(mbq) < 0) {
-	    GADGET_DEBUG1("Message dequeue failed\n");
+	    GDEBUG("Message dequeue failed\n");
 	    return GADGET_FAIL;
 	  }
 
@@ -584,7 +583,7 @@ namespace Gadgetron{
 	    AsContainerMessage<hoNDArray< std::complex<float> > >(mbq->cont());
 
 	  if (!acq || !daq) {
-	    GADGET_DEBUG1("Unable to interpret data on message Q\n");
+	    GDEBUG("Unable to interpret data on message Q\n");
 	    return GADGET_FAIL;
 	  }
 
@@ -632,7 +631,7 @@ namespace Gadgetron{
       
 	if( image_headers_queue_[set*slices_+slice].message_count() != frames_per_reconstruction ){
 	  m4->release();
-	  GADGET_DEBUG2("Unexpected size of image header queue: %d, %d\n", 
+	  GDEBUG("Unexpected size of image header queue: %d, %d\n", 
 			image_headers_queue_[set*slices_+slice].message_count(), frames_per_reconstruction);
 	  return GADGET_FAIL;
 	}
@@ -646,7 +645,7 @@ namespace Gadgetron{
 	  
 	  if( image_headers_queue_[set*slices_+slice].dequeue_head(mbq) < 0 ) {
 	    m4->release();
-	    GADGET_DEBUG1("Image header dequeue failed\n");
+	    GDEBUG("Image header dequeue failed\n");
 	    return GADGET_FAIL;
 	  }
 	  
@@ -663,7 +662,7 @@ namespace Gadgetron{
 	m3->cont(m4);
 	
 	if (this->next()->putq(m3) < 0) {
-	  GADGET_DEBUG1("Failed to put job on queue.\n");
+	  GDEBUG("Failed to put job on queue.\n");
 	  m3->release();
 	  return GADGET_FAIL;
 	}

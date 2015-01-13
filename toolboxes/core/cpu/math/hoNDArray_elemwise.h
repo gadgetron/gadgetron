@@ -33,64 +33,165 @@
 
 namespace Gadgetron{
 
+  //
+  // Math return types
+  //
+  template <class T, class I> struct mathReturnType {};
+
+  template <class T> struct mathReturnType<T,T> {typedef T type;};
+
+  template <class T> struct mathReturnType<complext<T>,T> {typedef complext<T> type;};
+  template <class T> struct mathReturnType<T,complext<T> > {typedef complext<T> type;};
+  template <class T> struct mathReturnType<complext<T>,complext<T> > {typedef complext<T> type;};
+
+  template <class T> struct mathReturnType<std::complex<T>,T> {typedef std::complex<T> type;};
+  template <class T> struct mathReturnType<T,std::complex<T> > {typedef std::complex<T> type;};
+  template <class T> struct mathReturnType<std::complex<T>,std::complex<T> > {typedef std::complex<T> type;};
+
+  template <class T, class S> struct mathReturnType<T, complext<S> > {typedef complext<typename mathReturnType<T,S>::type> type;};
+  template <class T, class S> struct mathReturnType<complext<T>, S> {typedef complext<typename mathReturnType<T,S>::type> type;};
+  template <class T, class S> struct mathReturnType<complext<T>, complext<S> > {typedef complext<typename mathReturnType<T,S>::type> type;};
+
+  template <class T, class S> struct mathReturnType<T, std::complex<S> > {typedef std::complex<typename mathReturnType<T,S>::type> type;};
+  template <class T, class S> struct mathReturnType<std::complex<T>, S> {typedef std::complex<typename mathReturnType<T,S>::type> type;};
+  template <class T, class S> struct mathReturnType<std::complex<T>, std::complex<S> > {typedef std::complex<typename mathReturnType<T,S>::type> type;};
+
+  template<> struct mathReturnType<unsigned int, int> {typedef int type;};
+  template<> struct mathReturnType<int, unsigned int> {typedef int type;};
+  template<> struct mathReturnType<int, bool> {typedef int type;};
+  template<> struct mathReturnType<bool,int> {typedef int type;};
+  template<> struct mathReturnType<unsigned int, bool> {typedef int type;};
+  template<> struct mathReturnType<bool,unsigned int> {typedef int type;};
+  template<> struct mathReturnType<float, unsigned int> {typedef float type;};
+  template<> struct mathReturnType<unsigned int, float> {typedef float type;};
+  template<> struct mathReturnType<float, int> {typedef float type;};
+  template<> struct mathReturnType<int, float> {typedef float type;};
+  template<> struct mathReturnType<float, bool> {typedef float type;};
+  template<> struct mathReturnType<bool, float> {typedef float type;};
+  template<> struct mathReturnType<double, unsigned int> {typedef double type;};
+  template<> struct mathReturnType<unsigned int, double> {typedef double type;};
+  template<> struct mathReturnType<double, int> {typedef double type;};
+  template<> struct mathReturnType<int, double> {typedef double type;};
+  template<> struct mathReturnType<double, bool> {typedef double type;};
+  template<> struct mathReturnType<bool, double> {typedef double type;};
+  template<> struct mathReturnType<double, float> {typedef double type;};
+  template<> struct mathReturnType<float,double> {typedef double type;};
+
+  // Utility to verify array dimensions for simple broadcasting.
+  // It "replaces" NDArray::dimensions_equal() to support batch mode.
+  // There is an identical function for all array instances (currently hoNDArray, cuNDArray, hoCuNDArray)
+  // !!! Remember to fix any bugs in all versions !!!
+  //
+  template<class T,class S> bool compatible_dimensions( const hoNDArray<T> &x, const hoNDArray<S> &y )
+  {
+      return ((x.get_number_of_elements()%y.get_number_of_elements())==0);
+  }
+
+  // Utility to verify if array dimensions are compatible for a binary operation
+  // that supports simple broadcasting, i.e. for f(x,y,r), there are three cases:
+  // 1) nr = nx = ny
+  // 2) nr = nx > ny, and nx is divisible by ny
+  // 3) nr = ny > nx, and ny is divisible by nx
+  //
+  template<class T,class S, class U> bool compatible_dimensions( const hoNDArray<T> &x, const hoNDArray<S> &y,
+              const hoNDArray<U> &r )
+  {
+      size_t nx = x.get_number_of_elements();
+      size_t ny = y.get_number_of_elements();
+      size_t nr = r.get_number_of_elements();
+      if (nx == ny) {
+          return (nx==nr);
+      }
+      if ((nx%ny)==0) {
+          return (nx==nr);
+      }
+      if ((ny%nx)==0) {
+          return (ny==nr);
+      }
+      return false;
+  }
+
+
 /**
 * @brief add two vectors of values, r = x + y
   support in-place computation, e.g. x==r or y==r
+  support simple broadcasting
 */
-template <typename T> EXPORTCPUCOREMATH 
-void add(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+template <class T, class S> EXPORTCPUCOREMATH
+void add(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
-template <typename T> EXPORTCPUCOREMATH 
-void add(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+// Pointer version calls the reference version
+template <typename T, class S>
+void add(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
+{
+  add(*x, *y, *r);
+}
 
-template <typename T> EXPORTCPUCOREMATH 
-void add(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
 
 /**
 * @brief subtract two vectors of values, r = x - y
   support in-place computation, e.g. x==r
+  support simple broadcasting
 */
-template <typename T> EXPORTCPUCOREMATH 
-void subtract(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+template <class T, class S> EXPORTCPUCOREMATH
+void subtract(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
-template <typename T> EXPORTCPUCOREMATH 
-void subtract(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+// Pointer version calls the reference version
+template <typename T, class S>
+void subtract(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
+{
+  subtract(*x, *y, *r);
+}
 
-template <typename T> EXPORTCPUCOREMATH 
-void subtract(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
 
 /**
 * @brief multiply two vectors of values, r = x * y
   support in-place computation, e.g. x==r or y==r
+  support simple broadcasting
 */
-template <typename T> EXPORTCPUCOREMATH 
-void multiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+template <class T, class S> EXPORTCPUCOREMATH
+void multiply(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
-template <typename T> EXPORTCPUCOREMATH 
-void multiply(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+// Pointer version calls the reference version
+template <class T, class S>
+void multiply(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
+{
+  multiply(*x, *y, *r);
+}
 
-template <typename T> EXPORTCPUCOREMATH 
-void multiply(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
 
 /**
 * @brief divide two vectors of values, r = x / y
   support in-place computation, e.g. x==r
+  support simple broadcasting
   no check for y==0
 */
-template <typename T> EXPORTCPUCOREMATH 
-void divide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+template <class T, class S> EXPORTCPUCOREMATH
+void divide(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
 
-template <typename T> EXPORTCPUCOREMATH 
-void divide(const hoNDArray< std::complex<T> >& x, const hoNDArray<T>& y, hoNDArray< std::complex<T> >& r);
+// Pointer version calls the reference version
+template <class T, class S>
+void divide(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
+{
+  divide(*x, *y, *r);
+}
 
-template <typename T> EXPORTCPUCOREMATH 
-void divide(const hoNDArray< complext<T> >& x, const hoNDArray<T>& y, hoNDArray< complext<T> >& r);
 
 /**
 * @brief r = x * conj(y)
+  support in-place computation, e.g. x==r
+  support simple broadcasting
 */
-template <typename T> EXPORTCPUCOREMATH 
-void multiplyConj(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+template <class T, class S> EXPORTCPUCOREMATH
+void multiplyConj(const hoNDArray<T>& x, const hoNDArray<S>& y, hoNDArray<typename mathReturnType<T,S>::type >& r);
+
+// Pointer version calls the reference version
+template <class T, class S>
+void multiplyConj(const hoNDArray<T>* x, const hoNDArray<S>* y, hoNDArray<typename mathReturnType<T,S>::type >* r)
+{
+  multiplyConj(*x, *y, *r);
+}
+
 
 /**
 * @brief r = conj(x)
@@ -397,7 +498,15 @@ template<class T> EXPORTCPUCOREMATH void pshrinkd ( hoNDArray<T> *x, hoNDArray<t
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<T> &y);
+template<class T, class S> hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<S> &y)
+{
+  if (compatible_dimensions<T,S>(x,y)) {
+      add(x, y, x);
+      return x;
+  } else {
+      throw std::runtime_error("+= incompatible dimensions.");
+  }
+}
 
 /**
  * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
@@ -407,33 +516,11 @@ template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator+= (hoNDArray<T> &x, c
 template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator+= (hoNDArray<T> &x, const T &y);
 
 /**
- * @brief Implementation of element-wise operator+= on two hoNDArrays.
- * @param[in,out] x Input and output array.
- * @param[in] y Input array.
-
- * Let y be an n-dimensional array.
- * Then the sizes of the first n array dimensions must match between x and y.
- * If x contains further dimensions the operator is batched across those dimensions.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y);
-
-/**
  * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
 template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> >&x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator+= on two hoNDArrays.
- * @param[in,out] x Input and output array.
- * @param[in] y Input array.
-
- * Let y be an n-dimensional array.
- * Then the sizes of the first n array dimensions must match between x and y.
- * If x contains further dimensions the operator is batched across those dimensions.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator+= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y);
 
 /**
  * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
@@ -451,7 +538,16 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator+= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<T> &y);
+template<class T, class S> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<S> &y)
+{
+  if (compatible_dimensions<T,S>(x,y)) {
+      subtract(x, y, x);
+      return x;
+  } else {
+      throw std::runtime_error("-= incompatible dimensions.");
+  }
+}
+
 
 /**
  * @brief Implementation of element-wise operator-= on a hoNDArray with a scalar value.
@@ -461,33 +557,11 @@ template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator-= (hoNDArray<T> &x, c
 template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator-= (hoNDArray<T> &x, const T &y);
 
 /**
- * @brief Implementation of element-wise operator-= on two hoNDArrays.
- * @param[in,out] x Input and output array.
- * @param[in] y Input array.
-
- * Let y be an n-dimensional array.
- * Then the sizes of the first n array dimensions must match between x and y.
- * If x contains further dimensions the operator is batched across those dimensions.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T > > &x, const hoNDArray<T> &y);
-
-/**
  * @brief Implementation of element-wise operator-= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
 template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T> >&x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator-= on two hoNDArrays.
- * @param[in,out] x Input and output array.
- * @param[in] y Input array.
-
- * Let y be an n-dimensional array.
- * Then the sizes of the first n array dimensions must match between x and y.
- * If x contains further dimensions the operator is batched across those dimensions.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator-= (hoNDArray< complext<T > > &x, const hoNDArray<T> &y);
 
 /**
  * @brief Implementation of element-wise operator-= on a hoNDArray with a scalar value.
@@ -505,7 +579,15 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator-= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<T> &y);
+template<class T, class S> hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<S> &y)
+{
+  if (compatible_dimensions<T,S>(x,y)) {
+      multiply(x, y, x);
+      return x;
+  } else {
+      throw std::runtime_error("*= incompatible dimensions.");
+  }
+}
 
 /**
  * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
@@ -515,33 +597,11 @@ template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, c
 template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y);
 
 /**
- * @brief Implementation of element-wise operator*= on two hoNDArrays.
- * @param[in,out] x Input and output array.
- * @param[in] y Input array.
-
- * Let y be an n-dimensional array.
- * Then the sizes of the first n array dimensions must match between x and y.
- * If x contains further dimensions the operator is batched across those dimensions.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y);
-
-/**
  * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
 template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator*= on two hoNDArrays.
- * @param[in,out] x Input and output array.
- * @param[in] y Input array.
-
- * Let y be an n-dimensional array.
- * Then the sizes of the first n array dimensions must match between x and y.
- * If x contains further dimensions the operator is batched across those dimensions.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y);
 
 /**
  * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
@@ -559,7 +619,15 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator*= (hoNDAr
  * Then the sizes of the first n array dimensions must match between x and y.
  * If x contains further dimensions the operator is batched across those dimensions.
  */
-template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<T> &y);
+template<class T, class S> hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<S> &y)
+{
+  if (compatible_dimensions<T,S>(x,y)) {
+      divide(x, y, x);
+      return x;
+  } else {
+      throw std::runtime_error("*= incompatible dimensions.");
+  }
+}
 
 /**
  * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
@@ -569,33 +637,11 @@ template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator/= (hoNDArray<T> &x, c
 template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator/= (hoNDArray<T> &x, const T &y);
 
 /**
- * @brief Implementation of element-wise operator/= on two hoNDArrays.
- * @param[in,out] x Input and output array.
- * @param[in] y Input array.
-
- * Let y be an n-dimensional array.
- * Then the sizes of the first n array dimensions must match between x and y.
- * If x contains further dimensions the operator is batched across those dimensions.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y);
-
-/**
  * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
  * @param[in,out] x Input and output array.
  * @param[in] y Input scalar.
  */
 template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const T &y);
-
-/**
- * @brief Implementation of element-wise operator/= on two hoNDArrays.
- * @param[in,out] x Input and output array.
- * @param[in] y Input array.
-
- * Let y be an n-dimensional array.
- * Then the sizes of the first n array dimensions must match between x and y.
- * If x contains further dimensions the operator is batched across those dimensions.
- */
-template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y);
 
 /**
  * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.

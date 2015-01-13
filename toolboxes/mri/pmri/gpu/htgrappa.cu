@@ -18,7 +18,7 @@ namespace Gadgetron {
   {
     int2 ret; ret.x = 0; ret.y = 0;
     if (vec.size() < 2) {
-      std::cout << "vec_to_uint2 dimensions of vector too small" << std::endl;
+      GDEBUG_STREAM("vec_to_uint2 dimensions of vector too small" << std::endl);
       return ret;
     }
 
@@ -303,7 +303,7 @@ namespace Gadgetron {
 
     /*
       for (unsigned int i = 0; i < ros.size(); i++) {
-      std::cout << "ROS[" << i << "] = " << ros[i] << " + " << ros_offset[i] << std::endl;
+      GDEBUG_STREAM("ROS[" << i << "] = " << ros[i] << " + " << ros_offset[i] << std::endl);
       }
     */
 
@@ -363,9 +363,9 @@ namespace Gadgetron {
 
     for (unsigned int set = 0; set < acceleration_factor-1; set++)
       {
-        //std::cout << "Calculating coefficients for set " << set << std::endl;
+        //GDEBUG_STREAM("Calculating coefficients for set " << set << std::endl);
 
-        //std::cout << "dros.x = " << dros.x << ", dros.y = " << dros.y << std::endl;
+        //GDEBUG_STREAM("dros.x = " << dros.x << ", dros.y = " << dros.y << std::endl);
 
         std::ostringstream ostr;
         ostr << "Set_" << set << "_";
@@ -509,7 +509,7 @@ namespace Gadgetron {
 
 
 	  if (s != culaNoError) {
-	    std::cout << "htgrappa_calculate_grappa_unmixing: linear solve failed" << std::endl;
+	    GDEBUG_STREAM("htgrappa_calculate_grappa_unmixing: linear solve failed" << std::endl);
 	    return -1;
 	  }
 	}
@@ -538,7 +538,7 @@ namespace Gadgetron {
 #if 0
         size_t free = 0, total = 0;
         cudaMemGetInfo(&free, &total);
-        std::cout << "CUDA Memory: " << free << " (" << total << ")" << std::endl;
+        GDEBUG_STREAM("CUDA Memory: " << free << " (" << total << ")" << std::endl);
 #endif
         //culaShutdown();
 
@@ -649,7 +649,7 @@ namespace Gadgetron {
 
       }
 
-    //std::cout << "**********cublasDestroy()**************" << std::endl;
+    //GDEBUG_STREAM("**********cublasDestroy()**************" << std::endl);
     //cublasDestroy_v2(handle);
 
     return 0;
@@ -813,7 +813,7 @@ namespace Gadgetron {
     /*
     if (s != culaNoError)
       {
-        std::cout << "inverse_clib_matrix: linear solve failed" << std::endl;
+        GDEBUG_STREAM("inverse_clib_matrix: linear solve failed" << std::endl);
         return -1;
       }
     */

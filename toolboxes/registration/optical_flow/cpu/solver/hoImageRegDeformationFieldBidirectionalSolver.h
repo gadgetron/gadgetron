@@ -278,11 +278,11 @@ namespace Gadgetron
 
             GADGET_CHECK_RETURN_FALSE( this->enforceInverseTransform(transform_inverse_, transform_, deform_delta_, inverse_deform_enforce_iter_) );
 
-            GADGET_CHECK_PERFORM(verbose_, GADGET_MSG("----> Total iteration number : " << iter_num_) );
+            if ( verbose_ ) { GDEBUG_STREAM("----> Total iteration number : " << iter_num_); }
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::solve() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::solve() ... ");
             return false;
         }
 
@@ -315,12 +315,12 @@ namespace Gadgetron
                         long long sy = (long long)dim_inverse[1];
 
                         long long y;
-                        #pragma omp parallel default(none) private(y) shared(sx, sy, transform, transform_inverse, deform_delta, deform, deform_inverse) if(sx*sy>64*1024) num_threads(2)
+                        // #pragma omp parallel default(none) private(y) shared(sx, sy, transform, transform_inverse, deform_delta, deform, deform_inverse) if(sx*sy>64*1024) num_threads(2)
                         {
                             CoordType ix, iy, px, py, px_inverse, py_inverse, dx, dy, dx_inverse, dy_inverse;
                             size_t offset;
 
-                            #pragma omp for 
+                            // #pragma omp for 
                             for ( y=0; y<(long long)sy; y++ )
                             {
                                 for ( size_t x=0; x<sx; x++ )
@@ -421,12 +421,12 @@ namespace Gadgetron
                         long long sy = (long long)dim_inverse[1];
 
                         long long y;
-                        #pragma omp parallel default(none) private(y) shared(sx, sy, transform, transform_inverse, deform_delta) if(sx*sy>64*1024) num_threads(2)
+                        // #pragma omp parallel default(none) private(y) shared(sx, sy, transform, transform_inverse, deform_delta) if(sx*sy>64*1024) num_threads(2)
                         {
                             CoordType px, py, dx, dy, dx_inverse, dy_inverse;
                             size_t offset;
 
-                            #pragma omp for 
+                            // #pragma omp for 
                             for ( y=0; y<(long long)sy; y++ )
                             {
                                 for ( size_t x=0; x<sx; x++ )
@@ -537,7 +537,7 @@ namespace Gadgetron
                             DeformationFieldType& dyInv = transform_inverse->getDeformationField(1);
 
                             long long x, y;
-                            #pragma omp parallel for default(none) private(y, x) shared(sx, sy, dxInv, dyInv) if(sx*sy>64*1024) num_threads(2)
+                            // #pragma omp parallel for default(none) private(y, x) shared(sx, sy, dxInv, dyInv) if(sx*sy>64*1024) num_threads(2)
                             for ( y=0; y<sy; y++ )
                             {
                                 for ( x=0; x<sx; x++ )
@@ -573,7 +573,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::enforceInverseTransform(...) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::enforceInverseTransform(...) ... ");
             return false;
         }
 

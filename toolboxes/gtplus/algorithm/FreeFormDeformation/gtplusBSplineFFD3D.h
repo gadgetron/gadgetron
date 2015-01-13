@@ -202,15 +202,15 @@ bool gtplusBSplineFFD3D<T, CoordType, DOut>::evaluateFFD3D(CoordType px, CoordTy
 
         long long ix = (long long)std::floor(px);
         CoordType deltaX = px-(CoordType)ix;
-        long long lx = GT_MKINT(BSPLINELUTSIZE*deltaX);
+        long long lx = FFD_MKINT(BSPLINELUTSIZE*deltaX);
 
         long long iy = (long long)std::floor(py);
         CoordType deltaY = py-(CoordType)iy;
-        long long ly = GT_MKINT(BSPLINELUTSIZE*deltaY);
+        long long ly = FFD_MKINT(BSPLINELUTSIZE*deltaY);
 
         long long iz = (long long)std::floor(pz);
         CoordType deltaZ = pz-(CoordType)iz;
-        long long lz = GT_MKINT(BSPLINELUTSIZE*deltaZ);
+        long long lz = FFD_MKINT(BSPLINELUTSIZE*deltaZ);
 
         unsigned int d, jj, kk;
         size_t offset[4][4]; // z, y
@@ -291,7 +291,7 @@ bool gtplusBSplineFFD3D<T, CoordType, DOut>::evaluateFFD3D(CoordType px, CoordTy
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in evaluateFFD3D(CoordType px, CoordType py, CoordType pz, size_t ordx, size_t ordy, size_t ordz, T r[DOut]) const ... ");
+        GERROR_STREAM("Error happened in evaluateFFD3D(CoordType px, CoordType py, CoordType pz, size_t ordx, size_t ordy, size_t ordz, T r[DOut]) const ... ");
         return false;
     }
 
@@ -574,7 +574,7 @@ bool gtplusBSplineFFD3D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N) ... ");
+        GERROR_STREAM("Error happened in ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N) ... ");
         return false;
     }
 
@@ -709,7 +709,7 @@ bool gtplusBSplineFFD3D<T, CoordType, DOut>::refine()
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happened in refine() ... ");
+        GERROR_STREAM("Error happened in refine() ... ");
         return false;
     }
 

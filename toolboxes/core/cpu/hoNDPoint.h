@@ -160,7 +160,7 @@ namespace Gadgetron
         unsigned int ii;
         for ( ii=0; ii<D; ii++ )
         {
-            if ( GT_ABS(this->data_[ii] - p.data_[ii]) > minV ) return false;
+            if ( std::abs(this->data_[ii] - p.data_[ii]) > minV ) return false;
         }
 
         return true;
