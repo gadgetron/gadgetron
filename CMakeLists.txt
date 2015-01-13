@@ -351,22 +351,17 @@ if(EXISTS ${DPKG_PROGRAM})
   list(APPEND CPACK_GENERATOR "DEB")
 endif(EXISTS ${DPKG_PROGRAM})
 
-# Set dependencies explicitly
-#include(InstallRequiredSystemLibraries)
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, ismrmrd-main")
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, ismrmrd")
-
-#set(DEBIAN_PACKAGE_DEPENDS "pandoc")
-
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # Enable/Disable component install for CPack generator DEB
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_IGNORE_GROUPS ON)
-
-
 set(CPACK_DEB_PACKAGE_COMPONENT ON)
-set(CPACK_DEB_testclient_PACKAGE_DEPENDS "matlab-support, gadgetron-main")
-set(CPACK_DEB_main_PACKAGE_DEPENDS "zeitgeist-datahub")
+#set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
 
+set(CPACK_DEB_testclient_PACKAGE_DEPENDS "ismrmrd-main, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev")
+set(CPACK_DEB_main_PACKAGE_DEPENDS "ismrmrd-main, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
 
 # Where the package metadata are
 set(GADGETRON_CPACK_CFG_FILE "${PROJECT_BINARY_DIR}/cpack_options.cmake")
@@ -381,5 +376,40 @@ if(CPACK_GENERATOR)
   set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})  
   # A list containing the names of all components that should be installed
   set(CPACK_COMPONENTS_ALL main testclient)
-  include (CPack)
+
+  include(CPack)
+
+  ##############################################################
+  
+  # Installation types (SUPPORTED ONLY BY NSIS)
+  #cpack_add_install_type(Runtime DISPLAY_NAME "User Install")
+  #cpack_add_install_type(Development DISPLAY_NAME "Developer Install")
+  #cpack_add_install_type(Full DISPLAY_NAME "Full Install")
+  #
+  # Component groups
+  #cpack_add_component_group(EndUser)
+  #cpack_add_component_group(Developer)
+  #
+  # Components
+  #cpack_add_component(main
+  #  DISPLAY_NAME "Main"
+  #  DESCRIPTION "Main"
+  #  GROUP EndUser
+  #  #INSTALL_TYPES Runtime
+  #  )
+  #cpack_add_component(testclient
+  #  DISPLAY_NAME "Test Client"
+  #  DESCRIPTION "Test Client"
+  #  GROUP EndUser
+  #  #INSTALL_TYPES Runtime
+  #  )
+  #cpack_add_component(headers
+  #  DISPLAY_NAME "Headers"
+  #  DESCRIPTION "Headers"
+  #  GROUP Developer
+  #  #INSTALL_TYPES Runtime
+  #  )
+
+##############################################################
+
 endif(CPACK_GENERATOR)
