@@ -24,10 +24,6 @@ target_link_libraries(gadgetron_cloudbus
 		     gadgetron_toolbox_log
                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 
-install(TARGETS gadgetron_toolbox_cloudbus DESTINATION lib COMPONENT main)
-install(TARGETS gadgetron_cloudbus DESTINATION bin COMPONENT main)
-
-install(FILES 
-  CloudBus.h
-  cloudbus_export.h
-  DESTINATION include COMPONENT main)
+install(TARGETS gadgetron_toolbox_cloudbus DESTINATION lib COMPONENT cloudbus-lib)
+install(TARGETS gadgetron_cloudbus DESTINATION bin COMPONENT cloudbus-utils)
+install(FILES CloudBus.h cloudbus_export.h DESTINATION include COMPONENT cloudbus-dev)

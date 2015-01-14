@@ -344,6 +344,7 @@ endif (UNIX)
 
 
 # Create package
+
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 
 find_program(DPKG_PROGRAM dpkg)
@@ -354,29 +355,35 @@ endif(EXISTS ${DPKG_PROGRAM})
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, ismrmrd-main")
 
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+
 # Enable/Disable component install for CPack generator DEB
 set(CPACK_DEB_COMPONENT_INSTALL ON)
-set(CPACK_COMPONENTS_IGNORE_GROUPS ON)
 set(CPACK_DEB_PACKAGE_COMPONENT ON)
-#set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
 
-set(CPACK_DEB_testclient_PACKAGE_DEPENDS "ismrmrd-main, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev")
-set(CPACK_DEB_main_PACKAGE_DEPENDS "ismrmrd-main, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
+set(CPACK_DEB_testclient_PACKAGE_DEPENDS "ismrmrd-lib, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev")
+set(CPACK_DEB_main_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
+
+set(CPACK_DEB_cloudbus-lib_PACKAGE_DEPENDS "ismrmrd-lib, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libace-dev")
+set(CPACK_DEB_cloudbus-dev_PACKAGE_DEPENDS "gadgetron-cloudbus-lib")
+set(CPACK_DEB_cloudbus-utils_PACKAGE_DEPENDS "gadgetron-cloudbus-lib")
+
+set(CPACK_DEB_ludoludo_PACKAGE_DEPENDS "gadgetron-cloudbus-lib, gadgetron-testclient")
 
 # Where the package metadata are
 set(GADGETRON_CPACK_CFG_FILE "${PROJECT_BINARY_DIR}/cpack_options.cmake")
 
 # Where the package to be installed
-# set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CMAKE_INSTALL_PREFIX})
+#set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CMAKE_INSTALL_PREFIX})
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 
 if(CPACK_GENERATOR)
   message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
   configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
   set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})  
-  # A list containing the names of all components that should be installed
-  set(CPACK_COMPONENTS_ALL main testclient)
 
+  # A list containing the names of all components that should be installed
+#  set(CPACK_COMPONENTS_ALL main testclient cloudbus-lib cloudbus-dev cloudbus-utils ludoludo)
+  set(CPACK_COMPONENTS_ALL testclient ludoludo)
   include(CPack)
 
   ##############################################################
