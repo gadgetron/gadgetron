@@ -21,6 +21,7 @@ cuda_add_library(gadgetron_toolbox_gpucore SHARED
     cuNDArray_elemwise.h
     cuNDArray_operators.h
     cuNDArray_utils.h
+    cuNDArray_fileio.h
     cuNDArray_reductions.h
     GadgetronCuException.h
     gpucore_export.h
@@ -65,6 +66,7 @@ install(FILES
   cuNDArray_blas.h
   cuNDArray_utils.h
   cuNDArray_math.h
+  cuNDArray_fileio.h
   cuNDArray_reductions.h
   hoCuNDArray.h
   hoCuNDArray_blas.h

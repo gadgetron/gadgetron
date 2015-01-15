@@ -1,5 +1,6 @@
 #include "cuNDArray_reductions.h"
 #include "setup_grid.h"
+#include <thrust/extrema.h>
 
 namespace Gadgetron {
 

@@ -16,10 +16,9 @@ namespace Gadgetron{
     : public generalOperator<cuNDArray<T> > 
   {
 
-  protected:
-    typedef typename realType<T>::Type REAL;
-    
+
   public:
+    typedef typename realType<T>::Type REAL;
 
     cuTvOperator() : generalOperator<cuNDArray<T> >(){
       limit_ = REAL(0);
