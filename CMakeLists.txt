@@ -3,7 +3,12 @@ project(GADGETRON)
 
 # check the compiler version
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if (NOT CMAKE_CXX_COMPILER_VERSION) #Compiler version is not set on Ubuntu 12.02 (gcc 4.6)
+      execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
+        OUTPUT_VARIABLE CMAKE_CXX_COMPILER_VERSION)
+    endif()
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4)
+        message("CXX COMPILER VERSION: ${CMAKE_CXX_COMPILER_ID} : ${CMAKE_CXX_COMPILER_VERSION}")
         message(FATAL_ERROR "Gadgetron requires GCC version >= 4.4")
     endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
