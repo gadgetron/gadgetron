@@ -185,6 +185,15 @@
 #
 # http://wiki.debian.org/HowToPackageForDebian
 
+
+#### This file contains our patch: ####
+# Patch 1: Using CPACK_DEBIAN_PACKAGE_SHLIBDEPS will not break in these cases:
+#  Patch 1.1: If a package doesn't contain any components (but only depends on other components)
+#  Patch 1.2: If a package contain component that doesn't have any binaries (only header files for example) 
+# Patch 2: Different components can have different (independent) dependencies
+
+
+
 if(CMAKE_BINARY_DIR)
   message(FATAL_ERROR "CPackDeb.cmake may only be used by CPack internally.")
 endif()
@@ -227,80 +236,79 @@ if(CPACK_DEBIAN_PACKAGE_SHLIBDEPS)
       COMMAND xargs file
       WORKING_DIRECTORY "${CPACK_TEMPORARY_DIRECTORY}"
       OUTPUT_VARIABLE CPACK_DEB_INSTALL_FILES)
+    
+    # Patch 1.1 ("if" statment added):
+    if(CPACK_DEB_INSTALL_FILES)
+      # Convert to CMake list
+      string(REGEX REPLACE "\n" ";" CPACK_DEB_INSTALL_FILES ${CPACK_DEB_INSTALL_FILES})
 
-    message("!!!***WORKING_DIRECTORY: " ${CPACK_TEMPORARY_DIRECTORY})
-    message("!!!***OUTPUT_VARIABLE: " ${CPACK_DEB_INSTALL_FILES})
+      # Only dynamically linked ELF files are included
+      # Extract only file name infront of ":"
+      foreach ( _FILE ${CPACK_DEB_INSTALL_FILES})
+        if ( ${_FILE} MATCHES "ELF.*dynamically linked")
+           string(REGEX MATCH "(^.*):" _FILE_NAME ${_FILE})
+           list(APPEND CPACK_DEB_BINARY_FILES ${CMAKE_MATCH_1})
+        endif()
+      endforeach()
 
-    # Convert to CMake list
-    string(REGEX REPLACE "\n" ";" CPACK_DEB_INSTALL_FILES ${CPACK_DEB_INSTALL_FILES})
+      message( "CPackDeb: - Generating dependency list")
 
-    # Only dynamically linked ELF files are included
-    # Extract only file name infront of ":"
-    foreach ( _FILE ${CPACK_DEB_INSTALL_FILES})
-      if ( ${_FILE} MATCHES "ELF.*dynamically linked")
-         string(REGEX MATCH "(^.*):" _FILE_NAME ${_FILE})
-         list(APPEND CPACK_DEB_BINARY_FILES ${CMAKE_MATCH_1})
-      endif()
-    endforeach()
+      # Create blank control file for running dpkg-shlibdeps
+      # There might be some other way to invoke dpkg-shlibdeps without creating this file
+      # but standard debian package should not have anything that can collide with this file or directory
+      file(MAKE_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}/debian)
+      file(WRITE ${CPACK_TEMPORARY_DIRECTORY}/debian/control "")
 
-    message( "CPackDeb: - Generating dependency list")
+      # Patch 1.2 ("if" statment added):
+      if(CPACK_DEB_BINARY_FILES)
 
-    # Create blank control file for running dpkg-shlibdeps
-    # There might be some other way to invoke dpkg-shlibdeps without creating this file
-    # but standard debian package should not have anything that can collide with this file or directory
-    file(MAKE_DIRECTORY ${CPACK_TEMPORARY_DIRECTORY}/debian)
-    file(WRITE ${CPACK_TEMPORARY_DIRECTORY}/debian/control "")
+        # Execute dpkg-shlibdeps
+        # --ignore-missing-info : allow dpkg-shlibdeps to run even if some libs do not belong to a package
+        # -O : print to STDOUT
+        execute_process(COMMAND ${SHLIBDEPS_EXECUTABLE} --ignore-missing-info -O ${CPACK_DEB_BINARY_FILES}
+          WORKING_DIRECTORY "${CPACK_TEMPORARY_DIRECTORY}"
+          OUTPUT_VARIABLE SHLIBDEPS_OUTPUT
+          RESULT_VARIABLE SHLIBDEPS_RESULT
+          ERROR_VARIABLE SHLIBDEPS_ERROR
+          OUTPUT_STRIP_TRAILING_WHITESPACE )
 
-    # UGLY UGLY FIX:
-    if(NOT CPACK_DEB_BINARY_FILES) 
-      list(APPEND CPACK_DEB_BINARY_FILES "/lib/x86_64-linux-gnu/libc.so.6")
-    endif(NOT CPACK_DEB_BINARY_FILES)
+        message("***WORKING_DIRECTORY: " ${CPACK_TEMPORARY_DIRECTORY})
+        message("***OUTPUT_VARIABLE: " ${SHLIBDEPS_OUTPUT})
+        message("***RESULT_VARIABLE: " ${SHLIBDEPS_RESULT})
+        message("***ERROR_VARIABLE: " ${SHLIBDEPS_ERROR})
+        message("***CPACK_DEB_BINARY_FILES: " ${CPACK_DEB_BINARY_FILES})
 
-    # Execute dpkg-shlibdeps
-    # --ignore-missing-info : allow dpkg-shlibdeps to run even if some libs do not belong to a package
-    # -O : print to STDOUT
-    execute_process(COMMAND ${SHLIBDEPS_EXECUTABLE} --ignore-missing-info -O ${CPACK_DEB_BINARY_FILES}
-      WORKING_DIRECTORY "${CPACK_TEMPORARY_DIRECTORY}"
-      OUTPUT_VARIABLE SHLIBDEPS_OUTPUT
-      RESULT_VARIABLE SHLIBDEPS_RESULT
-      ERROR_VARIABLE SHLIBDEPS_ERROR
-      OUTPUT_STRIP_TRAILING_WHITESPACE )
+        if(CPACK_DEBIAN_PACKAGE_DEBUG)
+          # dpkg-shlibdeps will throw some warnings if some input files are not binary
+          message( "CPackDeb Debug: dpkg-shlibdeps warnings \n${SHLIBDEPS_ERROR}")
+        endif()
+        if (NOT SHLIBDEPS_RESULT EQUAL 0)
+          message (FATAL_ERROR "CPackDeb: dpkg-shlibdeps: ${SHLIBDEPS_ERROR}")
+        endif ()
 
-    message("***WORKING_DIRECTORY: " ${CPACK_TEMPORARY_DIRECTORY})
-    message("***OUTPUT_VARIABLE: " ${SHLIBDEPS_OUTPUT})
-    message("***RESULT_VARIABLE: " ${SHLIBDEPS_RESULT})
-    message("***ERROR_VARIABLE: " ${SHLIBDEPS_ERROR})
-    message("***CPACK_DEB_BINARY_FILES: " ${CPACK_DEB_BINARY_FILES})
+        #Get rid of prefix generated by dpkg-shlibdeps
+        string (REGEX REPLACE "^.*Depends=" "" CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS ${SHLIBDEPS_OUTPUT})
 
-    if(CPACK_DEBIAN_PACKAGE_DEBUG)
-      # dpkg-shlibdeps will throw some warnings if some input files are not binary
-      message( "CPackDeb Debug: dpkg-shlibdeps warnings \n${SHLIBDEPS_ERROR}")
-    endif()
-    if (NOT SHLIBDEPS_RESULT EQUAL 0)
-      message (FATAL_ERROR "CPackDeb: dpkg-shlibdeps: ${SHLIBDEPS_ERROR}")
-    endif ()
+        if(CPACK_DEBIAN_PACKAGE_DEBUG)
+          message( "CPackDeb Debug: Found dependency: ${CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS}")
+        endif()
 
-    #Get rid of prefix generated by dpkg-shlibdeps
-    string (REGEX REPLACE "^.*Depends=" "" CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS ${SHLIBDEPS_OUTPUT})
+        # Remove blank control file
+        # Might not be safe if package actual contain file or directory named debian
+        file(REMOVE_RECURSE "${CPACK_TEMPORARY_DIRECTORY}/debian")
 
-    if(CPACK_DEBIAN_PACKAGE_DEBUG)
-      message( "CPackDeb Debug: Found dependency: ${CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS}")
-    endif()
+      endif(CPACK_DEB_BINARY_FILES)
+    endif(CPACK_DEB_INSTALL_FILES)
 
-    # Remove blank control file
-    # Might not be safe if package actual contain file or directory named debian
-    file(REMOVE_RECURSE "${CPACK_TEMPORARY_DIRECTORY}/debian")
-
-    # Append user depend if set
-    #if (CPACK_DEBIAN_PACKAGE_DEPENDS)
-    #  set (CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS}, ${CPACK_DEBIAN_PACKAGE_DEPENDS}")
-    #else ()
-    #  set (CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS}")
-    #endif ()
-
+    # Append component dependencies if set
+    # Patch 2 (Whole block modified):
     if(CPACK_DEB_PACKAGE_COMPONENT)
       if(CPACK_DEB_${CPACK_DEB_PACKAGE_COMPONENT}_PACKAGE_DEPENDS)
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS}, ${CPACK_DEB_${CPACK_DEB_PACKAGE_COMPONENT}_PACKAGE_DEPENDS}")
+        if(CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS)
+          set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS}, ${CPACK_DEB_${CPACK_DEB_PACKAGE_COMPONENT}_PACKAGE_DEPENDS}")
+        else(CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS)
+          set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEB_${CPACK_DEB_PACKAGE_COMPONENT}_PACKAGE_DEPENDS}")
+        endif(CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS)
       else(CPACK_DEB_${CPACK_DEB_PACKAGE_COMPONENT}_PACKAGE_DEPENDS)
         set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_AUTO_DEPENDS}")
       endif(CPACK_DEB_${CPACK_DEB_PACKAGE_COMPONENT}_PACKAGE_DEPENDS)

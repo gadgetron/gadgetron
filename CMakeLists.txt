@@ -297,47 +297,6 @@ endif (UNIX)
 
 #  ---   Main Library  (end) ----
 
-# whether to install dependencies
-# OPTION(GADGETRON_PERFORM_PACKAGING "Perform gadgetron packaging" Off)
-
-# if (GADGETRON_PERFORM_PACKAGING)
-#    if (NOT GADGETRON_COMPONENT)
-#        set(GADGETRON_COMPONENT main CACHE STRING "gadgetron component")
-#    endif (NOT GADGETRON_COMPONENT)
-#
-#        if (GADGETRON_COMPONENT STREQUAL main)
-#            message("Packaging gadgetron  ${PROJECT_NAME} ")
-#        else (GADGETRON_COMPONENT STREQUAL main)
-#            set(PROJECT_NAME ${PROJECT_NAME}_${GADGETRON_COMPONENT})
-#            message("Packaging gadgetron component ${GADGETRON_COMPONENT} ... ")
-#        endif (GADGETRON_COMPONENT STREQUAL main)
-#
-#    # Create package
-#    string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
-#
-#        if (GADGETRON_COMPONENT STREQUAL main)
-#        include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
-#        if(CPACK_GENERATOR)
-#          message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
-#          configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
-#          set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})
-#        endif(CPACK_GENERATOR)
-#        endif (GADGETRON_COMPONENT STREQUAL main)
-#
-#        if (GADGETRON_COMPONENT STREQUAL web)
-#        include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_web_cpack.cmake)
-#        if(CPACK_GENERATOR)
-#          message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
-#          configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options_web.cmake.in" ${GADGETRON_WEB_CPACK_CFG_FILE} @ONLY)
-#          set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_WEB_CPACK_CFG_FILE})
-#        endif(CPACK_GENERATOR)
-#        endif (GADGETRON_COMPONENT STREQUAL web)
-#
-#        set(CPACK_COMPONENTS_ALL ${GADGETRON_COMPONENT})
-#        include (CPack)    
-# endif (GADGETRON_PERFORM_PACKAGING)
-
-
 # Create package
 
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
@@ -347,22 +306,26 @@ if(EXISTS ${DPKG_PROGRAM})
   list(APPEND CPACK_GENERATOR "DEB")
 endif(EXISTS ${DPKG_PROGRAM})
 
+# Dependencies if components are not used:
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, ismrmrd-main")
 
+# Enable/Disable automatic search for dependencies:
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 # Enable/Disable component install for CPack generator DEB
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_DEB_PACKAGE_COMPONENT ON)
 
-set(CPACK_DEB_testclient_PACKAGE_DEPENDS "ismrmrd-lib, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev")
+
+# Component dependencies:
+
+set(CPACK_DEB_ismrmrd-client_PACKAGE_DEPENDS "ismrmrd-lib, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev")
 set(CPACK_DEB_main_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
 
 set(CPACK_DEB_cloudbus-lib_PACKAGE_DEPENDS "ismrmrd-lib, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libace-dev")
 set(CPACK_DEB_cloudbus-dev_PACKAGE_DEPENDS "gadgetron-cloudbus-lib")
 set(CPACK_DEB_cloudbus-utils_PACKAGE_DEPENDS "gadgetron-cloudbus-lib")
 
-set(CPACK_DEB_ludoludo_PACKAGE_DEPENDS "gadgetron-cloudbus-lib, gadgetron-testclient")
 
 # Where the package metadata are
 set(GADGETRON_CPACK_CFG_FILE "${PROJECT_BINARY_DIR}/cpack_options.cmake")
@@ -377,41 +340,6 @@ if(CPACK_GENERATOR)
   set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})  
 
   # A list containing the names of all components that should be installed
-#  set(CPACK_COMPONENTS_ALL main testclient cloudbus-lib cloudbus-dev cloudbus-utils ludoludo)
-  set(CPACK_COMPONENTS_ALL testclient ludoludo)
+  set(CPACK_COMPONENTS_ALL ismrmrd-client cloudbus-lib cloudbus-dev cloudbus-utils)
   include(CPack)
-
-  ##############################################################
-  
-  # Installation types (SUPPORTED ONLY BY NSIS)
-  #cpack_add_install_type(Runtime DISPLAY_NAME "User Install")
-  #cpack_add_install_type(Development DISPLAY_NAME "Developer Install")
-  #cpack_add_install_type(Full DISPLAY_NAME "Full Install")
-  #
-  # Component groups
-  #cpack_add_component_group(EndUser)
-  #cpack_add_component_group(Developer)
-  #
-  # Components
-  #cpack_add_component(main
-  #  DISPLAY_NAME "Main"
-  #  DESCRIPTION "Main"
-  #  GROUP EndUser
-  #  #INSTALL_TYPES Runtime
-  #  )
-  #cpack_add_component(testclient
-  #  DISPLAY_NAME "Test Client"
-  #  DESCRIPTION "Test Client"
-  #  GROUP EndUser
-  #  #INSTALL_TYPES Runtime
-  #  )
-  #cpack_add_component(headers
-  #  DISPLAY_NAME "Headers"
-  #  DESCRIPTION "Headers"
-  #  GROUP Developer
-  #  #INSTALL_TYPES Runtime
-  #  )
-
-##############################################################
-
 endif(CPACK_GENERATOR)
