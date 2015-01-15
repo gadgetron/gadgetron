@@ -47,17 +47,6 @@ namespace Gadgetron{
   template <class T> __inline__ __host__ __device__ const T& _vector_td_max (const T& a, const T& b) {
     return (a<b)?b:a;
   }
-
-  //
-  // Get/set operations on vector_td<T,D>
-  //
-
-  template<class T, unsigned int D> __inline__ __host__ __device__ T 
-  get( const vector_td<T,D>& vec, unsigned int dim ) { return vec[dim]; }
-
-  template<class T, unsigned int D> __inline__ __host__ __device__ void 
-  set( vector_td<T,D> &vec, unsigned int dim, T val ) { vec[dim] = val; }
-
   //
   // In-place operations
   //
