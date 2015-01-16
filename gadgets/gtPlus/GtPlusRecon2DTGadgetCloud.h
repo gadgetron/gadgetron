@@ -77,7 +77,7 @@ class GtPlusRecon2DTGadgetCloudSender : public GadgetCloudJobProcessHandler< GtP
 {
 public:
 
-    typedef std::pair<Gadgetron::gtPlus::ISMRMRDDIM, size_t> DimensionRecordType;
+    typedef std::pair<Gadgetron::ISMRMRDDIM, size_t> DimensionRecordType;
 
     GtPlusRecon2DTGadgetCloudSender();
     virtual ~GtPlusRecon2DTGadgetCloudSender();

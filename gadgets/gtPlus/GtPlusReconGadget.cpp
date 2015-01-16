@@ -794,28 +794,28 @@ namespace Gadgetron
         //if ( other_ && acceFactorE1_==1 && acceFactorE2_==1 )
         //{
         //    GDEBUG_CONDITION_STREAM(verboseMode_, "Colibration mode is changed to ISMRMRD_interleaved");
-        //    CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
+        //    CalibMode_ = Gadgetron::ISMRMRD_interleaved;
         //    acceFactorE1_ = 2;
         //}
 
-        CalibMode_ = Gadgetron::gtPlus::ISMRMRD_noacceleration;
+        CalibMode_ = Gadgetron::ISMRMRD_noacceleration;
 
         if ( interleaved )
         {
-            CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
+            CalibMode_ = Gadgetron::ISMRMRD_interleaved;
 
             if ( p_imaging.interleavingDimension )
             {
                 if ( p_imaging.interleavingDimension->compare("phase") == 0 ) {
-                    InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
+                    InterleaveDim_ = Gadgetron::DIM_Phase;
                 } else if ( p_imaging.interleavingDimension->compare("repetition") == 0 ) {
-                    InterleaveDim_ = Gadgetron::gtPlus::DIM_Repetition;
+                    InterleaveDim_ = Gadgetron::DIM_Repetition;
                 } else if ( p_imaging.interleavingDimension->compare("average") == 0 ) {
-                    InterleaveDim_ = Gadgetron::gtPlus::DIM_Average;
+                    InterleaveDim_ = Gadgetron::DIM_Average;
                 } else if ( p_imaging.interleavingDimension->compare("contrast") == 0 ) {
-                    InterleaveDim_ = Gadgetron::gtPlus::DIM_Contrast;
+                    InterleaveDim_ = Gadgetron::DIM_Contrast;
                 } else if ( p_imaging.interleavingDimension->compare("other") == 0 ) {
-                    InterleaveDim_ = Gadgetron::gtPlus::DIM_other1;
+                    InterleaveDim_ = Gadgetron::DIM_other1;
                 } else {
                     GDEBUG("Unknown interleaving dimension. Bailing out");
                     return GADGET_FAIL;
@@ -824,19 +824,19 @@ namespace Gadgetron
         }
         else if ( embedded )
         {
-            CalibMode_ = Gadgetron::gtPlus::ISMRMRD_embedded;
+            CalibMode_ = Gadgetron::ISMRMRD_embedded;
         }
         else if ( separate )
         {
-            CalibMode_ = Gadgetron::gtPlus::ISMRMRD_separate;
+            CalibMode_ = Gadgetron::ISMRMRD_separate;
         }
         else if ( external )
         {
-            CalibMode_ = Gadgetron::gtPlus::ISMRMRD_external;
+            CalibMode_ = Gadgetron::ISMRMRD_external;
         }
         else if ( other )
         {
-            CalibMode_ = Gadgetron::gtPlus::ISMRMRD_other;
+            CalibMode_ = Gadgetron::ISMRMRD_other;
         }
 
         // ---------------------------------------------------------------------------------------------------------
@@ -1031,7 +1031,7 @@ namespace Gadgetron
             size_t E1_ref = workOrder.ref_.get_size(1);
             size_t E2_ref = workOrder.ref_.get_size(4);
 
-            if ( workOrder.CalibMode_ == Gadgetron::gtPlus::ISMRMRD_interleaved )
+            if ( workOrder.CalibMode_ == Gadgetron::ISMRMRD_interleaved )
             {
                 RO_ref = RO;
                 E1_ref = E1;
@@ -1402,54 +1402,54 @@ namespace Gadgetron
 
                                             // ----------------------------------------------------------
                                             // set the image attributes
-                                            cm3->getObjectPtr()->set(GTPLUS_IMAGENUMBER, (long)cm1->getObjectPtr()->image_index);
+                                            cm3->getObjectPtr()->set(GADGETRON_IMAGENUMBER, (long)cm1->getObjectPtr()->image_index);
 
-                                            cm3->getObjectPtr()->set(GTPLUS_CHA,        (long)cha);
-                                            cm3->getObjectPtr()->set(GTPLUS_SLC,        (long)cm1->getObjectPtr()->slice);
-                                            cm3->getObjectPtr()->set(GTPLUS_E2,         (long)e2);
-                                            cm3->getObjectPtr()->set(GTPLUS_CONTRAST,   (long)cm1->getObjectPtr()->contrast);
-                                            cm3->getObjectPtr()->set(GTPLUS_PHASE,      (long)cm1->getObjectPtr()->phase);
-                                            cm3->getObjectPtr()->set(GTPLUS_REP,        (long)cm1->getObjectPtr()->repetition);
-                                            cm3->getObjectPtr()->set(GTPLUS_SET,        (long)cm1->getObjectPtr()->set);
-                                            cm3->getObjectPtr()->set(GTPLUS_AVERAGE,    (long)cm1->getObjectPtr()->average);
+                                            cm3->getObjectPtr()->set(GADGETRON_CHA,        (long)cha);
+                                            cm3->getObjectPtr()->set(GADGETRON_SLC,        (long)cm1->getObjectPtr()->slice);
+                                            cm3->getObjectPtr()->set(GADGETRON_E2,         (long)e2);
+                                            cm3->getObjectPtr()->set(GADGETRON_CONTRAST,   (long)cm1->getObjectPtr()->contrast);
+                                            cm3->getObjectPtr()->set(GADGETRON_PHASE,      (long)cm1->getObjectPtr()->phase);
+                                            cm3->getObjectPtr()->set(GADGETRON_REP,        (long)cm1->getObjectPtr()->repetition);
+                                            cm3->getObjectPtr()->set(GADGETRON_SET,        (long)cm1->getObjectPtr()->set);
+                                            cm3->getObjectPtr()->set(GADGETRON_AVERAGE,    (long)cm1->getObjectPtr()->average);
 
-                                            cm3->getObjectPtr()->set(GTPLUS_IMAGEPROCESSINGHISTORY, "GT");
+                                            cm3->getObjectPtr()->set(GADGETRON_IMAGEPROCESSINGHISTORY, "GT");
 
-                                            if ( dataRole == GTPLUS_IMAGE_REGULAR )
+                                            if ( dataRole == GADGETRON_IMAGE_REGULAR )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, "GT");
-                                                cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, imageInfo.c_str());
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, "GT");
+                                                cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, imageInfo.c_str());
 
-                                                cm3->getObjectPtr()->append(GTPLUS_SEQUENCEDESCRIPTION, "_GT");
-                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
+                                                cm3->getObjectPtr()->append(GADGETRON_SEQUENCEDESCRIPTION, "_GT");
+                                                cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_REGULAR);
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
                                             }
-                                            else if ( dataRole == GTPLUS_IMAGE_RETRO )
+                                            else if ( dataRole == GADGETRON_IMAGE_RETRO )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, "GT");
-                                                cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, "RETRO");
-                                                cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, imageInfo.c_str());
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, "GT");
+                                                cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, "RETRO");
+                                                cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, imageInfo.c_str());
 
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGEPROCESSINGHISTORY, "RETRO");
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGEPROCESSINGHISTORY, "RETRO");
 
-                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_GT_RETRO");
-                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_RETRO);
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
+                                                cm3->getObjectPtr()->set(GADGETRON_SEQUENCEDESCRIPTION, "_GT_RETRO");
+                                                cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_RETRO);
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
                                             }
-                                            else if ( dataRole == GTPLUS_IMAGE_PHASE )
+                                            else if ( dataRole == GADGETRON_IMAGE_PHASE )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_PHASE;
 
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, "PHS_GT");
-                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "PHS_GT");
-                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_PHASE);
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, "PHS_GT");
+                                                cm3->getObjectPtr()->set(GADGETRON_SEQUENCEDESCRIPTION, "PHS_GT");
+                                                cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_PHASE);
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
                                             }
-                                            else if ( dataRole == GTPLUS_IMAGE_GFACTOR )
+                                            else if ( dataRole == GADGETRON_IMAGE_GFACTOR )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
@@ -1457,12 +1457,12 @@ namespace Gadgetron
                                                 comment.append("_");
                                                 comment.append("gfactor_GT");
 
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, comment.c_str());
-                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_gfactor_GT");
-                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_GFACTOR);
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_gfactor_));
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, comment.c_str());
+                                                cm3->getObjectPtr()->set(GADGETRON_SEQUENCEDESCRIPTION, "_gfactor_GT");
+                                                cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_GFACTOR);
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_gfactor_));
                                             }
-                                            else if ( dataRole == GTPLUS_IMAGE_WRAPAROUNDMAP )
+                                            else if ( dataRole == GADGETRON_IMAGE_WRAPAROUNDMAP )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
@@ -1470,12 +1470,12 @@ namespace Gadgetron
                                                 comment.append("_");
                                                 comment.append("WrapAround_Map_GT");
 
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, comment.c_str());
-                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_WrapAround_Map_GT");
-                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_WRAPAROUNDMAP);
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_wrap_around_map_));
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, comment.c_str());
+                                                cm3->getObjectPtr()->set(GADGETRON_SEQUENCEDESCRIPTION, "_WrapAround_Map_GT");
+                                                cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_WRAPAROUNDMAP);
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_wrap_around_map_));
                                             }
-                                            else if ( dataRole == GTPLUS_IMAGE_SNR_MAP )
+                                            else if ( dataRole == GADGETRON_IMAGE_SNR_MAP )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
@@ -1483,12 +1483,12 @@ namespace Gadgetron
                                                 comment.append("_");
                                                 comment.append("SNR_Map_GT");
 
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, comment.c_str());
-                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_SNR_Map_GT");
-                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_SNR_MAP);
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_snr_image_));
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, comment.c_str());
+                                                cm3->getObjectPtr()->set(GADGETRON_SEQUENCEDESCRIPTION, "_SNR_Map_GT");
+                                                cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_SNR_MAP);
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_snr_image_));
                                             }
-                                            else if ( dataRole == GTPLUS_IMAGE_STD_MAP )
+                                            else if ( dataRole == GADGETRON_IMAGE_STD_MAP )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
@@ -1496,22 +1496,22 @@ namespace Gadgetron
                                                 comment.append("_");
                                                 comment.append("Std_Map_GT");
 
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, comment.c_str());
-                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_Std_Map_GT");
-                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_STD_MAP);
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_std_map_));
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, comment.c_str());
+                                                cm3->getObjectPtr()->set(GADGETRON_SEQUENCEDESCRIPTION, "_Std_Map_GT");
+                                                cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_STD_MAP);
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_std_map_));
 
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, (long)(this->scalingFactor_std_map_));
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWWIDTH, (long)(2*this->scalingFactor_std_map_));
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)(this->scalingFactor_std_map_));
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(2*this->scalingFactor_std_map_));
                                             }
-                                            else if ( dataRole == GTPLUS_IMAGE_OTHER )
+                                            else if ( dataRole == GADGETRON_IMAGE_OTHER )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, "GT");
-                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_GT");
-                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_OTHER);
-                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, "GT");
+                                                cm3->getObjectPtr()->set(GADGETRON_SEQUENCEDESCRIPTION, "_GT");
+                                                cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_OTHER);
+                                                cm3->getObjectPtr()->set(GADGETRON_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
                                             }
 
                                             // ----------------------------------------------------------
@@ -1634,21 +1634,21 @@ namespace Gadgetron
             img_dims[1] = res.get_size(1);
 
             // set the image attributes
-            cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, "GT");
-            cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_GT");
-            cm3->getObjectPtr()->set(GTPLUS_IMAGEPROCESSINGHISTORY, "GT");
-            cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
+            cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, "GT");
+            cm3->getObjectPtr()->set(GADGETRON_SEQUENCEDESCRIPTION, "_GT");
+            cm3->getObjectPtr()->set(GADGETRON_IMAGEPROCESSINGHISTORY, "GT");
+            cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_REGULAR);
 
-            cm3->getObjectPtr()->set(GTPLUS_CHA,        (long)0);
-            cm3->getObjectPtr()->set(GTPLUS_SLC,        (long)cm1->getObjectPtr()->slice);
-            cm3->getObjectPtr()->set(GTPLUS_E2,         (long)0);
-            cm3->getObjectPtr()->set(GTPLUS_CONTRAST,   (long)cm1->getObjectPtr()->contrast);
-            cm3->getObjectPtr()->set(GTPLUS_PHASE,      (long)cm1->getObjectPtr()->phase);
-            cm3->getObjectPtr()->set(GTPLUS_REP,        (long)cm1->getObjectPtr()->repetition);
-            cm3->getObjectPtr()->set(GTPLUS_SET,        (long)cm1->getObjectPtr()->set);
-            cm3->getObjectPtr()->set(GTPLUS_AVERAGE,    (long)cm1->getObjectPtr()->average);
+            cm3->getObjectPtr()->set(GADGETRON_CHA,        (long)0);
+            cm3->getObjectPtr()->set(GADGETRON_SLC,        (long)cm1->getObjectPtr()->slice);
+            cm3->getObjectPtr()->set(GADGETRON_E2,         (long)0);
+            cm3->getObjectPtr()->set(GADGETRON_CONTRAST,   (long)cm1->getObjectPtr()->contrast);
+            cm3->getObjectPtr()->set(GADGETRON_PHASE,      (long)cm1->getObjectPtr()->phase);
+            cm3->getObjectPtr()->set(GADGETRON_REP,        (long)cm1->getObjectPtr()->repetition);
+            cm3->getObjectPtr()->set(GADGETRON_SET,        (long)cm1->getObjectPtr()->set);
+            cm3->getObjectPtr()->set(GADGETRON_AVERAGE,    (long)cm1->getObjectPtr()->average);
 
-            cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
+            cm3->getObjectPtr()->set(GADGETRON_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
 
             //Fixing array dimensions (MSH)
             cm1->getObjectPtr()->matrix_size[0] = (uint16_t)res.get_size(0);

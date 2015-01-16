@@ -2,7 +2,7 @@
 #include "ismrmrd/meta.h"
 
  //This is needed for things such as data role, which should NOT be defined in gtPlus
-#include "GtPlusDefinition.h"
+#include "mri_core_def.h"
 
 namespace Gadgetron{
 
@@ -54,18 +54,18 @@ int DeviceChannelSplitterGadget<T>
     
     Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* im3 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
     if (i == 0) {
-      im3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_IRT_IMAGE);
+      im3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_IRT_IMAGE);
     } else {
-      im3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_IRT_DEVICE);
-      im3->getObjectPtr()->set(GTPLUS_IMAGE_CUR_DEVICE_CHA, (long)i);
+      im3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_IRT_DEVICE);
+      im3->getObjectPtr()->set(GADGETRON_IMAGE_CUR_DEVICE_CHA, (long)i);
 
     }
-    im3->getObjectPtr()->append(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_INTENSITY_UNCHANGED);
+    im3->getObjectPtr()->append(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_INTENSITY_UNCHANGED);
 
     if (array_channels > 1) {
-      im3->getObjectPtr()->set(GTPLUS_IMAGE_NUM_DEVICE_CHA, (long)(array_channels-1));
+      im3->getObjectPtr()->set(GADGETRON_IMAGE_NUM_DEVICE_CHA, (long)(array_channels-1));
     } else {
-      im3->getObjectPtr()->set(GTPLUS_IMAGE_NUM_DEVICE_CHA, (long)(-1));
+      im3->getObjectPtr()->set(GADGETRON_IMAGE_NUM_DEVICE_CHA, (long)(-1));
     }
 
     im2->cont(im3);
