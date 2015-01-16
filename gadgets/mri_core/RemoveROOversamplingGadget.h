@@ -25,9 +25,6 @@ namespace Gadgetron{
         virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
             GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
-        // if true, the noise variance is kept unchanged in this process
-        bool constant_noise_variance_;
-
         hoNDArray< std::complex<float> > fft_res_;
         hoNDArray< std::complex<float> > ifft_res_;
 
