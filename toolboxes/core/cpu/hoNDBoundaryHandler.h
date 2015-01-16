@@ -94,21 +94,21 @@ namespace Gadgetron
         virtual ~hoNDBoundaryHandler() { array_ = NULL ; }
 
         /// access the pixel value
-        virtual T operator()( const std::vector<gt_index_type>& ind ) = 0;
-        virtual T operator()( gt_index_type x ) = 0;
-        virtual T operator()( gt_index_type x, gt_index_type y ) = 0;
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z ) = 0;
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s ) = 0;
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p ) = 0;
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r ) = 0;
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a ) = 0;
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q ) = 0;
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q, gt_index_type u ) = 0;
+        virtual T operator()( const std::vector<long long>& ind ) = 0;
+        virtual T operator()( long long x ) = 0;
+        virtual T operator()( long long x, long long y ) = 0;
+        virtual T operator()( long long x, long long y, long long z ) = 0;
+        virtual T operator()( long long x, long long y, long long z, long long s ) = 0;
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p ) = 0;
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r ) = 0;
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a ) = 0;
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q ) = 0;
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q, long long u ) = 0;
 
         void setArray(ArrayType& a) { array_ = &a; };
 
         /// return a%b
-        inline gt_index_type mod(gt_index_type a, gt_index_type b)
+        inline long long mod(long long a, long long b)
         {
             a %= b;
 
@@ -139,16 +139,16 @@ namespace Gadgetron
         virtual ~hoNDBoundaryHandlerFixedValue() {}
 
         /// access the pixel value
-        virtual T operator()( const std::vector<gt_index_type>& ind );
-        virtual T operator()( gt_index_type x );
-        virtual T operator()( gt_index_type x, gt_index_type y );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q, gt_index_type u );
+        virtual T operator()( const std::vector<long long>& ind );
+        virtual T operator()( long long x );
+        virtual T operator()( long long x, long long y );
+        virtual T operator()( long long x, long long y, long long z );
+        virtual T operator()( long long x, long long y, long long z, long long s );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q, long long u );
 
     protected:
         using BaseClass::array_;
@@ -169,16 +169,16 @@ namespace Gadgetron
         virtual ~hoNDBoundaryHandlerBorderValue() {}
 
         /// access the pixel value
-        virtual T operator()( const std::vector<gt_index_type>& ind );
-        virtual T operator()( gt_index_type x );
-        virtual T operator()( gt_index_type x, gt_index_type y );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q, gt_index_type u );
+        virtual T operator()( const std::vector<long long>& ind );
+        virtual T operator()( long long x );
+        virtual T operator()( long long x, long long y );
+        virtual T operator()( long long x, long long y, long long z );
+        virtual T operator()( long long x, long long y, long long z, long long s );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q, long long u );
 
     protected:
         using BaseClass::array_;
@@ -198,16 +198,16 @@ namespace Gadgetron
         virtual ~hoNDBoundaryHandlerPeriodic() {}
 
         /// access the pixel value
-        virtual T operator()( const std::vector<gt_index_type>& ind );
-        virtual T operator()( gt_index_type x );
-        virtual T operator()( gt_index_type x, gt_index_type y );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q, gt_index_type u );
+        virtual T operator()( const std::vector<long long>& ind );
+        virtual T operator()( long long x );
+        virtual T operator()( long long x, long long y );
+        virtual T operator()( long long x, long long y, long long z );
+        virtual T operator()( long long x, long long y, long long z, long long s );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q, long long u );
 
     protected:
         using BaseClass::array_;
@@ -227,16 +227,16 @@ namespace Gadgetron
         virtual ~hoNDBoundaryHandlerMirror() {}
 
         /// access the pixel value
-        virtual T operator()( const std::vector<gt_index_type>& ind );
-        virtual T operator()( gt_index_type x );
-        virtual T operator()( gt_index_type x, gt_index_type y );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q );
-        virtual T operator()( gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q, gt_index_type u );
+        virtual T operator()( const std::vector<long long>& ind );
+        virtual T operator()( long long x );
+        virtual T operator()( long long x, long long y );
+        virtual T operator()( long long x, long long y, long long z );
+        virtual T operator()( long long x, long long y, long long z, long long s );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q );
+        virtual T operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q, long long u );
 
     protected:
         using BaseClass::array_;
