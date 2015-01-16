@@ -60,15 +60,15 @@ struct  EXPORTGTPLUSGADGET GtPlusGadgetImageArray
     GtPlusGadgetImageArray(size_t aSize[GT_DIM_NUM]);
     ~GtPlusGadgetImageArray();
 
-    void findDimIndex(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t& ind);
+    void findDimIndex(Gadgetron::ISMRMRDDIM& dim, size_t& ind);
     bool getSubImageArray(size_t* startInd, size_t* endInd, GtPlusGadgetImageArray& imageArray);
     void resize(size_t aSize[GT_DIM_NUM]);
     bool copy(const GtPlusGadgetImageArray& imageArray);
     size_t get_offset(size_t slc, size_t e2, size_t con, size_t phs, size_t rep, size_t set, size_t seg, size_t ave);
-    bool extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, GtPlusGadgetImageArray& imageArray);
-    bool extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim1, size_t value1, Gadgetron::gtPlus::ISMRMRDDIM& dim2, size_t value2, GtPlusGadgetImageArray& imageArray);
-    bool extractGadgetImageArrayLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, GtPlusGadgetImageArray& imageArray);
-    bool extractGadgetImageArray_Dim1LessEqual_Dim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& dim1, size_t value1, Gadgetron::gtPlus::ISMRMRDDIM& dim2, size_t value2, GtPlusGadgetImageArray& imageArray);
+    bool extractGadgetImageArrayEqual(Gadgetron::ISMRMRDDIM& dim, size_t value, GtPlusGadgetImageArray& imageArray);
+    bool extractGadgetImageArrayEqual(Gadgetron::ISMRMRDDIM& dim1, size_t value1, Gadgetron::ISMRMRDDIM& dim2, size_t value2, GtPlusGadgetImageArray& imageArray);
+    bool extractGadgetImageArrayLessEqual(Gadgetron::ISMRMRDDIM& dim, size_t value, GtPlusGadgetImageArray& imageArray);
+    bool extractGadgetImageArray_Dim1LessEqual_Dim2Equal(Gadgetron::ISMRMRDDIM& dim1, size_t value1, Gadgetron::ISMRMRDDIM& dim2, size_t value2, GtPlusGadgetImageArray& imageArray);
 
     void dump();
 };

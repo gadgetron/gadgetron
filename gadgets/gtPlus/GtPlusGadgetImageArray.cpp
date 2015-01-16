@@ -355,39 +355,39 @@ size_t GtPlusGadgetImageArray::get_offset(size_t slc, size_t e2, size_t con, siz
 }
 
 // Slice E2 Con Phase Rep Set Seg
-void GtPlusGadgetImageArray::findDimIndex(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t& ind)
+void GtPlusGadgetImageArray::findDimIndex(Gadgetron::ISMRMRDDIM& dim, size_t& ind)
 {
     switch (dim)
     {
-        case Gadgetron::gtPlus::DIM_Slice:
+        case Gadgetron::DIM_Slice:
             ind = 3;
         break;
 
-        case Gadgetron::gtPlus::DIM_Encoding2:
+        case Gadgetron::DIM_Encoding2:
             ind = 4;
         break;
 
-        case Gadgetron::gtPlus::DIM_Contrast:
+        case Gadgetron::DIM_Contrast:
             ind = 5;
         break;
 
-        case Gadgetron::gtPlus::DIM_Phase:
+        case Gadgetron::DIM_Phase:
             ind = 6;
         break;
 
-        case Gadgetron::gtPlus::DIM_Repetition:
+        case Gadgetron::DIM_Repetition:
             ind = 7;
         break;
 
-        case Gadgetron::gtPlus::DIM_Set:
+        case Gadgetron::DIM_Set:
             ind = 8;
         break;
 
-        case Gadgetron::gtPlus::DIM_Segment:
+        case Gadgetron::DIM_Segment:
             ind = 9;
         break;
 
-        case Gadgetron::gtPlus::DIM_Average:
+        case Gadgetron::DIM_Average:
             ind = 10;
         break;
 
@@ -399,7 +399,7 @@ void GtPlusGadgetImageArray::findDimIndex(Gadgetron::gtPlus::ISMRMRDDIM& dim, si
 }
 
 bool GtPlusGadgetImageArray::
-extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, GtPlusGadgetImageArray& imageArray)
+extractGadgetImageArrayEqual(Gadgetron::ISMRMRDDIM& dim, size_t value, GtPlusGadgetImageArray& imageArray)
 {
     try
     {
@@ -411,17 +411,17 @@ extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, G
         size_t startInd[GT_DIM_NUM-3];
         size_t endInd[GT_DIM_NUM-3];
 
-        for ( size_t d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Average; d++ )
+        for ( size_t d=Gadgetron::DIM_Slice; d<=Gadgetron::DIM_Average; d++ )
         {
             if ( d == dim )
             {
-                startInd[d-Gadgetron::gtPlus::DIM_Slice] = value;
-                endInd[d-Gadgetron::gtPlus::DIM_Slice] = value+1;
+                startInd[d-Gadgetron::DIM_Slice] = value;
+                endInd[d-Gadgetron::DIM_Slice] = value+1;
             }
             else
             {
-                startInd[d-Gadgetron::gtPlus::DIM_Slice] = 0;
-                endInd[d-Gadgetron::gtPlus::DIM_Slice] = matrix_size[d-Gadgetron::gtPlus::DIM_Slice+3];
+                startInd[d-Gadgetron::DIM_Slice] = 0;
+                endInd[d-Gadgetron::DIM_Slice] = matrix_size[d-Gadgetron::DIM_Slice+3];
             }
         }
 
@@ -437,7 +437,7 @@ extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, G
 }
 
 bool GtPlusGadgetImageArray::
-extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim1, size_t value1, Gadgetron::gtPlus::ISMRMRDDIM& dim2, size_t value2, GtPlusGadgetImageArray& imageArray)
+extractGadgetImageArrayEqual(Gadgetron::ISMRMRDDIM& dim1, size_t value1, Gadgetron::ISMRMRDDIM& dim2, size_t value2, GtPlusGadgetImageArray& imageArray)
 {
     try
     {
@@ -453,22 +453,22 @@ extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim1, size_t value1,
         size_t startInd[GT_DIM_NUM-3];
         size_t endInd[GT_DIM_NUM-3];
 
-        for ( size_t d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Average; d++ )
+        for ( size_t d=Gadgetron::DIM_Slice; d<=Gadgetron::DIM_Average; d++ )
         {
             if ( d == dim1 )
             {
-                startInd[d-Gadgetron::gtPlus::DIM_Slice] = value1;
-                endInd[d-Gadgetron::gtPlus::DIM_Slice] = value1+1;
+                startInd[d-Gadgetron::DIM_Slice] = value1;
+                endInd[d-Gadgetron::DIM_Slice] = value1+1;
             }
             else if ( d == dim2 )
             {
-                startInd[d-Gadgetron::gtPlus::DIM_Slice] = value2;
-                endInd[d-Gadgetron::gtPlus::DIM_Slice] = value2+1;
+                startInd[d-Gadgetron::DIM_Slice] = value2;
+                endInd[d-Gadgetron::DIM_Slice] = value2+1;
             }
             else
             {
-                startInd[d-Gadgetron::gtPlus::DIM_Slice] = 0;
-                endInd[d-Gadgetron::gtPlus::DIM_Slice] = matrix_size[d-Gadgetron::gtPlus::DIM_Slice+3];
+                startInd[d-Gadgetron::DIM_Slice] = 0;
+                endInd[d-Gadgetron::DIM_Slice] = matrix_size[d-Gadgetron::DIM_Slice+3];
             }
         }
 
@@ -484,7 +484,7 @@ extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim1, size_t value1,
 }
 
 bool GtPlusGadgetImageArray::
-extractGadgetImageArrayLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, GtPlusGadgetImageArray& imageArray)
+extractGadgetImageArrayLessEqual(Gadgetron::ISMRMRDDIM& dim, size_t value, GtPlusGadgetImageArray& imageArray)
 {
     try
     {
@@ -495,17 +495,17 @@ extractGadgetImageArrayLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t valu
         size_t startInd[GT_DIM_NUM-3];
         size_t endInd[GT_DIM_NUM-3];
 
-        for ( size_t d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Average; d++ )
+        for ( size_t d=Gadgetron::DIM_Slice; d<=Gadgetron::DIM_Average; d++ )
         {
             if ( d == dim )
             {
-                startInd[d-Gadgetron::gtPlus::DIM_Slice] = 0;
-                endInd[d-Gadgetron::gtPlus::DIM_Slice] = value+1;
+                startInd[d-Gadgetron::DIM_Slice] = 0;
+                endInd[d-Gadgetron::DIM_Slice] = value+1;
             }
             else
             {
-                startInd[d-Gadgetron::gtPlus::DIM_Slice] = 0;
-                endInd[d-Gadgetron::gtPlus::DIM_Slice] = matrix_size[d-Gadgetron::gtPlus::DIM_Slice+3];
+                startInd[d-Gadgetron::DIM_Slice] = 0;
+                endInd[d-Gadgetron::DIM_Slice] = matrix_size[d-Gadgetron::DIM_Slice+3];
             }
         }
 
@@ -521,8 +521,8 @@ extractGadgetImageArrayLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t valu
 }
 
 bool GtPlusGadgetImageArray::
-extractGadgetImageArray_Dim1LessEqual_Dim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& dim1, size_t value1, 
-        Gadgetron::gtPlus::ISMRMRDDIM& dim2, size_t value2, GtPlusGadgetImageArray& imageArray)
+extractGadgetImageArray_Dim1LessEqual_Dim2Equal(Gadgetron::ISMRMRDDIM& dim1, size_t value1, 
+        Gadgetron::ISMRMRDDIM& dim2, size_t value2, GtPlusGadgetImageArray& imageArray)
 {
     try
     {
@@ -538,22 +538,22 @@ extractGadgetImageArray_Dim1LessEqual_Dim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& d
         size_t startInd[GT_DIM_NUM];
         size_t endInd[GT_DIM_NUM];
 
-        for ( size_t d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Average; d++ )
+        for ( size_t d=Gadgetron::DIM_Slice; d<=Gadgetron::DIM_Average; d++ )
         {
             if ( d == dim1 )
             {
-                startInd[d-Gadgetron::gtPlus::DIM_Slice] = 0;
-                endInd[d-Gadgetron::gtPlus::DIM_Slice] = value1+1;
+                startInd[d-Gadgetron::DIM_Slice] = 0;
+                endInd[d-Gadgetron::DIM_Slice] = value1+1;
             }
             else if ( d == dim2 )
             {
-                startInd[d-Gadgetron::gtPlus::DIM_Slice] = value2;
-                endInd[d-Gadgetron::gtPlus::DIM_Slice] = value2+1;
+                startInd[d-Gadgetron::DIM_Slice] = value2;
+                endInd[d-Gadgetron::DIM_Slice] = value2+1;
             }
             else
             {
-                startInd[d-Gadgetron::gtPlus::DIM_Slice] = 0;
-                endInd[d-Gadgetron::gtPlus::DIM_Slice] = matrix_size[d-Gadgetron::gtPlus::DIM_Slice+3];
+                startInd[d-Gadgetron::DIM_Slice] = 0;
+                endInd[d-Gadgetron::DIM_Slice] = matrix_size[d-Gadgetron::DIM_Slice+3];
             }
         }
 

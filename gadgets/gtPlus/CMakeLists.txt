@@ -23,6 +23,7 @@ include_directories(
     ${HDF5_INCLUDE_DIR}/cpp
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
