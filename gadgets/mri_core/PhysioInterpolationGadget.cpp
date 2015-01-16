@@ -261,7 +261,7 @@ namespace Gadgetron{
                         (*tmpm3->getObjectPtr()) = (*attribptrs[0]);
                         out_attrib.push_back(tmpm3);
 
-                        tmpm3->getObjectPtr()->set(GADGETRON_PHASE,      (long)tmpm1->getObjectPtr()->phase);
+                        tmpm3->getObjectPtr()->set("PHS",      (long)tmpm1->getObjectPtr()->phase);
                         tmpm3->getObjectPtr()->set(GADGETRON_IMAGENUMBER, (long)tmpm1->getObjectPtr()->image_index);
 
                         tmpm3->getObjectPtr()->append(GADGETRON_DATA_ROLE, "PhysioInterp");

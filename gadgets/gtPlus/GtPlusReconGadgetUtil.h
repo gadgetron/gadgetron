@@ -10,6 +10,7 @@
 #include "hoNDArray.h"
 #include "mri_core_def.h"
 #include "GadgetIsmrmrdReadWrite.h"
+#include "gtPlusISMRMRDReconUtil.h"
 
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/xml.h"

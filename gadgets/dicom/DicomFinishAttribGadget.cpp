@@ -588,15 +588,13 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
 
     long imageNumber = img_attrib->as_long(GADGETRON_IMAGENUMBER, 0);
 
-    long cha, slc, e2, con, phs, rep, set, ave;
-    cha = img_attrib->as_long(GADGETRON_CHA,        0);
-    slc = img_attrib->as_long(GADGETRON_SLC,        0);
-    e2  = img_attrib->as_long(GADGETRON_E2,         0);
-    con = img_attrib->as_long(GADGETRON_CONTRAST,   0);
-    phs = img_attrib->as_long(GADGETRON_PHASE,      0);
-    rep = img_attrib->as_long(GADGETRON_REP,        0);
-    set = img_attrib->as_long(GADGETRON_SET,        0);
-    ave = img_attrib->as_long(GADGETRON_AVERAGE,    0);
+    long slc, con, phs, rep, set, ave;
+    slc = m1->getObjectPtr()->slice;
+    con = m1->getObjectPtr()->contrast;
+    phs = m1->getObjectPtr()->phase;
+    rep = m1->getObjectPtr()->repetition;
+    set = m1->getObjectPtr()->set;
+    ave = m1->getObjectPtr()->average;
 
     std::ostringstream ostr;
 
@@ -606,12 +604,12 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
     }
 
     ostr << "SLC" << slc << "_"
-         << "E2" << e2 << "_"
          << "CON" << con << "_"
          << "PHS" << phs << "_"
          << "REP" << rep << "_"
          << "SET" << set << "_"
-         << "AVE" << ave << std::ends;
+         << "AVE" << ave << "_" 
+         << imageNumber << std::ends;
 
     std::string filename = ostr.str();
 
