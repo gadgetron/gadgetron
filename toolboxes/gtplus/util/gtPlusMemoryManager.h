@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "GadgetronCommon.h"
 #include <iostream>
 #include <typeinfo>
 

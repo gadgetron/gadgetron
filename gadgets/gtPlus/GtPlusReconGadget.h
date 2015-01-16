@@ -18,7 +18,6 @@
 
 #include "GtPlusGadgetImageArray.h"
 
-#include "GadgetronCommon.h"
 #include "gtPlusIOAnalyze.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconWorkOrder.h"

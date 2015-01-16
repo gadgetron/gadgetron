@@ -7,7 +7,6 @@
 #include "NDArray.h"
 #include "complext.h"
 #include "vector_td.h"
-#include "GadgetronCommon.h"
 
 #include "cpucore_export.h"
 
