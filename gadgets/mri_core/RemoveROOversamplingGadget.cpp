@@ -108,19 +108,6 @@ namespace Gadgetron{
 
         std::complex<float>* data_in, *data_out;
 
-        //hoNDFFT<float>::instance()->ifft1c(*m2->getObjectPtr(), ifft_res_, ifft_buf_);
-
-        //data_in  = ifft_res_.get_data_ptr();
-        //data_out = fft_res_.get_data_ptr();
-
-        //// #pragma omp parallel for default(none) private(c) shared(CHA, sRO, start, dRO, data_in, data_out, numOfBytes)
-        //for ( c=0; c<CHA; c++)
-        //{
-        //    memcpy( data_out+c*dRO, data_in+c*sRO+start, numOfBytes );
-        //}
-
-        //hoNDFFT<float>::instance()->fft1c(fft_res_, *m3->getObjectPtr(), fft_buf_);
-
         hoNDFFT<float>::instance()->ifft(m2->getObjectPtr(), 0);
         data_in  = m2->getObjectPtr()->get_data_ptr();
         data_out = m3->getObjectPtr()->get_data_ptr();
