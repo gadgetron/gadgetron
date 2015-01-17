@@ -76,7 +76,7 @@ struct gtPlusReconWorkOrderPara
     // -------------------------------
     // coil sensitivity estimation
     // -------------------------------
-    Gadgetron::gtPlus::ISMRMRDCOILMAPALGO coil_map_algorithm_;
+    Gadgetron::ISMRMRDCOILMAPALGO coil_map_algorithm_;
 
     // for ISMRMRD_SOUHEIL
     size_t csm_kSize_;
@@ -94,7 +94,7 @@ struct gtPlusReconWorkOrderPara
     // -------------------------------
     // parameters for variant reconstruction algorithms
     // -------------------------------
-    Gadgetron::gtPlus::ISMRMRDALGO recon_algorithm_;
+    Gadgetron::ISMRMRDALGO recon_algorithm_;
     bool recon_auto_parameters_;
 
     bool gfactor_needed_;

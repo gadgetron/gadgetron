@@ -4,12 +4,10 @@
 #include <boost/filesystem.hpp>
 using namespace boost::filesystem;
 
-using namespace Gadgetron::gtPlus;
-
 namespace Gadgetron
 {
 
-    bool findCalibMode(ISMRMRD::IsmrmrdHeader& h, Gadgetron::gtPlus::ISMRMRDCALIBMODE& CalibMode, ISMRMRDDIM& InterleaveDim, double& acceFactorE1, double& acceFactorE2, bool verbose)
+    bool findCalibMode(ISMRMRD::IsmrmrdHeader& h, Gadgetron::ISMRMRDCALIBMODE& CalibMode, ISMRMRDDIM& InterleaveDim, double& acceFactorE1, double& acceFactorE2, bool verbose)
     {
         try
         {
@@ -36,30 +34,30 @@ namespace Gadgetron
             std::string calib = *p_imaging.calibrationMode;
             if ( calib.compare("interleaved") == 0 )
             {
-                CalibMode = Gadgetron::gtPlus::ISMRMRD_interleaved;
+                CalibMode = Gadgetron::ISMRMRD_interleaved;
                 GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is interleaved");
 
                 if ( p_imaging.interleavingDimension )
                 {
                     if ( p_imaging.interleavingDimension->compare("phase") == 0 )
                     {
-                        InterleaveDim = Gadgetron::gtPlus::DIM_Phase;
+                        InterleaveDim = Gadgetron::DIM_Phase;
                     }
                     else if ( p_imaging.interleavingDimension->compare("repetition") == 0 )
                     {
-                        InterleaveDim = Gadgetron::gtPlus::DIM_Repetition;
+                        InterleaveDim = Gadgetron::DIM_Repetition;
                     }
                     else if ( p_imaging.interleavingDimension->compare("average") == 0 )
                     {
-                        InterleaveDim = Gadgetron::gtPlus::DIM_Average;
+                        InterleaveDim = Gadgetron::DIM_Average;
                     }
                     else if ( p_imaging.interleavingDimension->compare("contrast") == 0 )
                     {
-                        InterleaveDim = Gadgetron::gtPlus::DIM_Contrast;
+                        InterleaveDim = Gadgetron::DIM_Contrast;
                     }
                     else if ( p_imaging.interleavingDimension->compare("other") == 0 )
                     {
-                        InterleaveDim = Gadgetron::gtPlus::DIM_other1;
+                        InterleaveDim = Gadgetron::DIM_other1;
                     }
                     else
                     {
@@ -70,28 +68,28 @@ namespace Gadgetron
             }
             else if ( calib.compare("embedded") == 0 )
             {
-                CalibMode = Gadgetron::gtPlus::ISMRMRD_embedded;
+                CalibMode = Gadgetron::ISMRMRD_embedded;
                 GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is embedded");
             }
             else if ( calib.compare("separate") == 0 )
             {
-                CalibMode = Gadgetron::gtPlus::ISMRMRD_separate;
+                CalibMode = Gadgetron::ISMRMRD_separate;
                 GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is separate");
             }
             else if ( calib.compare("external") == 0 )
             {
-                CalibMode = Gadgetron::gtPlus::ISMRMRD_external;
+                CalibMode = Gadgetron::ISMRMRD_external;
             }
             else if ( (calib.compare("other") == 0) && acceFactorE1==1 && acceFactorE2==1 )
             {
-                CalibMode = Gadgetron::gtPlus::ISMRMRD_noacceleration;
+                CalibMode = Gadgetron::ISMRMRD_noacceleration;
                 acceFactorE1=1;
             }
             else if ( (calib.compare("other") == 0) &&  (acceFactorE1>1 || acceFactorE2>1) )
             {
-                CalibMode = Gadgetron::gtPlus::ISMRMRD_interleaved;
+                CalibMode = Gadgetron::ISMRMRD_interleaved;
                 acceFactorE1=2;
-                InterleaveDim = Gadgetron::gtPlus::DIM_Phase;
+                InterleaveDim = Gadgetron::DIM_Phase;
             }
             else
             {
@@ -171,7 +169,7 @@ namespace Gadgetron
         field_of_view_recon[2] = h.encoding[0].reconSpace.fieldOfView_mm.z;
     }
 
-    bool checkReadoutStatus(uint64_t flag, int samples, Gadgetron::gtPlus::ISMRMRDCALIBMODE& CalibMode, int roLen, 
+    bool checkReadoutStatus(uint64_t flag, int samples, Gadgetron::ISMRMRDCALIBMODE& CalibMode, int roLen, 
         bool& bIsKSpace, bool& bIsRef, bool& bIsNoise, 
         bool& bIsPhaseCorr, bool& bIsReflect, bool& bIsOther, 
         bool& bIsNavigator, bool& bIsRTFeedback, bool& bIsHPFeedback, 
@@ -275,7 +273,7 @@ namespace Gadgetron
         return true;
     }
 
-    bool estimateMaxSEGForRetroGating(Gadgetron::gtPlus::ISMRMRDCALIBMODE CalibMode, 
+    bool estimateMaxSEGForRetroGating(Gadgetron::ISMRMRDCALIBMODE CalibMode, 
         double acceFactorE1, double acceFactorE2, 
         size_t retro_gated_segment_size, 
         uint16_t E1, uint16_t embedded_ref_lines_E1, 

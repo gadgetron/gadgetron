@@ -106,20 +106,20 @@ namespace Gadgetron
 
         if ( ori.get_number_of_elements() == 1 )
         {
-            size_t num = (*ori(0)).attrib_.length(GTPLUS_DATA_ROLE);
+            size_t num = (*ori(0)).attrib_.length(GADGETRON_DATA_ROLE);
             GADGET_CHECK_RETURN(num>0, GADGET_FAIL);
 
             dataRole.resize(num);
 
             for ( size_t ii=0; ii<num; ii++ )
             {
-                dataRole[ii] = std::string( (*ori(0)).attrib_.as_str(GTPLUS_DATA_ROLE, ii) );
+                dataRole[ii] = std::string( (*ori(0)).attrib_.as_str(GADGETRON_DATA_ROLE, ii) );
             }
 
-            if ( (dataRole[0] == GTPLUS_IMAGE_GFACTOR) 
-                || (dataRole[0] == GTPLUS_IMAGE_SNR_MAP) 
-                || (dataRole[0] == GTPLUS_IMAGE_STD_MAP) 
-                || (dataRole[0] == GTPLUS_IMAGE_WRAPAROUNDMAP) )
+            if ( (dataRole[0] == GADGETRON_IMAGE_GFACTOR) 
+                || (dataRole[0] == GADGETRON_IMAGE_SNR_MAP) 
+                || (dataRole[0] == GADGETRON_IMAGE_STD_MAP) 
+                || (dataRole[0] == GADGETRON_IMAGE_WRAPAROUNDMAP) )
             {
                 GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_++, processStr, dataRole), GADGET_FAIL);
                 GADGET_CHECK_RETURN(this->releaseImageBuffer(ori), GADGET_FAIL);
@@ -322,14 +322,14 @@ namespace Gadgetron
                                                     GADGET_CHECK_THROW( gtPlus_util_.setImageHeaderISMRMRDFromMetaAttributes(pImage->attrib_, *cm1->getObjectPtr()) );
 
                                                     //long long imageNum(0);
-                                                    //if ( pImage->attrib_.attributeInteger_.get(GTPLUS_IMAGENUMBER, 0, imageNum) )
+                                                    //if ( pImage->attrib_.attributeInteger_.get(GADGETRON_IMAGENUMBER, 0, imageNum) )
                                                     //{
                                                     //    cm1->getObjectPtr()->image_index = (uint16_t)imageNum;
                                                     //}
 
                                                     long long imageNum = this->computeSeriesImageNumber (*cm1->getObjectPtr(), CHA, cha, E2, e2);
                                                     cm1->getObjectPtr()->image_index = (uint16_t)imageNum;
-                                                    pImage->attrib_.set(GTPLUS_IMAGENUMBER, (long)imageNum);
+                                                    pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
 
                                                     cm1->getObjectPtr()->image_series_index = seriesNum;
 
@@ -346,7 +346,7 @@ namespace Gadgetron
                                                     // set the attributes
                                                     *cm3->getObjectPtr() = pImage->attrib_;
 
-                                                    if ( !dataRole.empty() && (dataRole[0]!=GTPLUS_IMAGE_REGULAR) )
+                                                    if ( !dataRole.empty() && (dataRole[0]!=GADGETRON_IMAGE_REGULAR) )
                                                     {
                                                         std::string str;
 
@@ -368,75 +368,75 @@ namespace Gadgetron
                                                             size_t n;
                                                             for ( n=0; n<dataRole.size(); n++ )
                                                             {
-                                                                if ( dataRole[n] == GTPLUS_IMAGE_PSIR )
+                                                                if ( dataRole[n] == GADGETRON_IMAGE_PSIR )
                                                                 {
                                                                     isRealImage = true;
                                                                 }
 
-                                                                if ( (dataRole[n]==GTPLUS_IMAGE_T1MAP) 
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_T1SDMAP)
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_T2MAP)
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_T2SDMAP)
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_T2STARMAP)
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_T2STARMASKMAP)
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_T2STARSDMAP)
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_T2STARAMAP)
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_T2STARTRUNCMAP)
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_FREQMAP)
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_B1MAP)
-                                                                    || (dataRole[n]==GTPLUS_IMAGE_FLIPANGLEMAP) )
+                                                                if ( (dataRole[n]==GADGETRON_IMAGE_T1MAP) 
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_T1SDMAP)
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_T2MAP)
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_T2SDMAP)
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_T2STARMAP)
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_T2STARMASKMAP)
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_T2STARSDMAP)
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_T2STARAMAP)
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_T2STARTRUNCMAP)
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_FREQMAP)
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_B1MAP)
+                                                                    || (dataRole[n]==GADGETRON_IMAGE_FLIPANGLEMAP) )
                                                                 {
                                                                     isParametricMap = true;
                                                                 }
 
-                                                                if ( dataRole[n]==GTPLUS_IMAGE_T1MAP )
+                                                                if ( dataRole[n]==GADGETRON_IMAGE_T1MAP )
                                                                 {
                                                                     isParametricT1Map = true;
                                                                 }
 
-                                                                if ( dataRole[n]==GTPLUS_IMAGE_T1SDMAP )
+                                                                if ( dataRole[n]==GADGETRON_IMAGE_T1SDMAP )
                                                                 {
                                                                     isParametricT1SDMap = true;
                                                                 }
 
-                                                                if ( dataRole[n]==GTPLUS_IMAGE_T2MAP )
+                                                                if ( dataRole[n]==GADGETRON_IMAGE_T2MAP )
                                                                 {
                                                                     isParametricT2Map = true;
                                                                 }
 
-                                                                if ( dataRole[n]==GTPLUS_IMAGE_T2SDMAP )
+                                                                if ( dataRole[n]==GADGETRON_IMAGE_T2SDMAP )
                                                                 {
                                                                     isParametricT2SDMap = true;
                                                                 }
 
-                                                                if ( dataRole[n]==GTPLUS_IMAGE_T2STARMAP )
+                                                                if ( dataRole[n]==GADGETRON_IMAGE_T2STARMAP )
                                                                 {
                                                                     isParametricT2StarMap = true;
                                                                 }
 
-                                                                if ( dataRole[n]==GTPLUS_IMAGE_T2STARSDMAP )
+                                                                if ( dataRole[n]==GADGETRON_IMAGE_T2STARSDMAP )
                                                                 {
                                                                     isParametricT2StarSDMap = true;
                                                                 }
 
-                                                                if ( dataRole[n]==GTPLUS_IMAGE_T2STARAMAP )
+                                                                if ( dataRole[n]==GADGETRON_IMAGE_T2STARAMAP )
                                                                 {
                                                                     isParametricT2StarAMap = true;
                                                                 }
 
-                                                                if ( dataRole[n]==GTPLUS_IMAGE_T2STARTRUNCMAP )
+                                                                if ( dataRole[n]==GADGETRON_IMAGE_T2STARTRUNCMAP )
                                                                 {
                                                                     isParametricT2StarTruncMap = true;
                                                                 }
 
-                                                                if ( dataRole[n]==GTPLUS_IMAGE_T2STARMASKMAP )
+                                                                if ( dataRole[n]==GADGETRON_IMAGE_T2STARMASKMAP )
                                                                 {
                                                                     isParametricT2StarMaskMap = true;
                                                                 }
                                                             }
 
                                                             std::vector<std::string> dataRoleAll;
-                                                            Gadgetron::getISMRMRMetaValues(*cm3->getObjectPtr(), GTPLUS_DATA_ROLE, dataRoleAll);
+                                                            Gadgetron::getISMRMRMetaValues(*cm3->getObjectPtr(), GADGETRON_DATA_ROLE, dataRoleAll);
 
                                                             if ( !debugFolder_fullPath_.empty() )
                                                             {
@@ -469,18 +469,18 @@ namespace Gadgetron
                                                                     commentStr[n+1] = dataRole[n];
                                                                 }
 
-                                                                Gadgetron::setISMRMRMetaValues(*cm3->getObjectPtr(), GTPLUS_IMAGECOMMENT, commentStr);
+                                                                Gadgetron::setISMRMRMetaValues(*cm3->getObjectPtr(), GADGETRON_IMAGECOMMENT, commentStr);
 
                                                                 // get the scaling ratio
                                                                 float scalingRatio = 1;
                                                                 try
                                                                 {
-                                                                    scalingRatio = (float)(cm3->getObjectPtr()->as_double(GTPLUS_IMAGE_SCALE_RATIO, 0));
+                                                                    scalingRatio = (float)(cm3->getObjectPtr()->as_double(GADGETRON_IMAGE_SCALE_RATIO, 0));
 
                                                                     std::ostringstream ostr;
                                                                     ostr << "x" << scalingRatio;
                                                                     std::string scalingStr = ostr.str();
-                                                                    cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, scalingStr.c_str());
+                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, scalingStr.c_str());
 
                                                                     if ( isParametricT1Map || isParametricT1SDMap || isParametricT2Map || isParametricT2SDMap || isParametricT2StarMap || isParametricT2StarSDMap )
                                                                     {
@@ -488,7 +488,7 @@ namespace Gadgetron
                                                                         ostr << std::setprecision(3) << 1.0f/scalingRatio << "ms";
                                                                         std::string unitStr = ostr.str();
 
-                                                                        cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, unitStr.c_str());
+                                                                        cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
                                                                     }
                                                                 }
                                                                 catch(...)
@@ -499,44 +499,44 @@ namespace Gadgetron
 
                                                                 if ( isParametricT1Map || isParametricT2Map || isParametricT2StarMap )
                                                                 {
-                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, (long)((this->get_double_value("window_center"))*scalingRatio) );
-                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWWIDTH, (long)((this->get_double_value("window_width"))*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)((this->get_double_value("window_center"))*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)((this->get_double_value("window_width"))*scalingRatio) );
                                                                 }
 
                                                                 if ( isParametricT1SDMap || isParametricT2SDMap || isParametricT2StarSDMap || isParametricT2StarAMap )
                                                                 {
-                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, (long)((this->get_double_value("sd_window_center"))*scalingRatio) );
-                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWWIDTH, (long)((this->get_double_value("sd_window_width"))*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)((this->get_double_value("sd_window_center"))*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)((this->get_double_value("sd_window_width"))*scalingRatio) );
                                                                 }
 
                                                                 if ( isParametricT2StarTruncMap )
                                                                 {
-                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, (long)(4) );
-                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWWIDTH, (long)(8) );
+                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)(4) );
+                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(8) );
                                                                 }
 
                                                                 /* if ( isParametricT2Map )
                                                                 {
-                                                                cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWCENTER, 0, (long long)(60*scalingRatio) );
-                                                                cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWWIDTH, 0, (long long)(120*scalingRatio) );
+                                                                cm3->getObjectPtr()->attributeInteger_.set(GADGETRON_IMAGE_WINDOWCENTER, 0, (long long)(60*scalingRatio) );
+                                                                cm3->getObjectPtr()->attributeInteger_.set(GADGETRON_IMAGE_WINDOWWIDTH, 0, (long long)(120*scalingRatio) );
                                                                 }
 
                                                                 if ( isParametricT2StarMap )
                                                                 {
-                                                                cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWCENTER, 0, (long long)(25*scalingRatio) );
-                                                                cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWWIDTH, 0, (long long)(50*scalingRatio) );
+                                                                cm3->getObjectPtr()->attributeInteger_.set(GADGETRON_IMAGE_WINDOWCENTER, 0, (long long)(25*scalingRatio) );
+                                                                cm3->getObjectPtr()->attributeInteger_.set(GADGETRON_IMAGE_WINDOWWIDTH, 0, (long long)(50*scalingRatio) );
                                                                 } */
                                                             }
                                                             else
                                                             {
                                                                 for ( n=0; n<dataRole.size(); n++ )
                                                                 {
-                                                                    cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, dataRole[n].c_str());
+                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, dataRole[n].c_str());
                                                                 }
                                                             }
 
                                                             // seq description
-                                                            Gadgetron::appendISMRMRMetaValues(*cm3->getObjectPtr(), GTPLUS_SEQUENCEDESCRIPTION, dataRoleAll);
+                                                            Gadgetron::appendISMRMRMetaValues(*cm3->getObjectPtr(), GADGETRON_SEQUENCEDESCRIPTION, dataRoleAll);
                                                         }
 
                                                         GDEBUG_CONDITION_STREAM(verboseMode_, "--> GtPlusImageReconGadget, sending out 2D image [CHA SLC E2 CON PHS REP SET AVE] = [" 
@@ -556,14 +556,14 @@ namespace Gadgetron
                                                             size_t n;
                                                             for ( n=0; n<processStr.size(); n++ )
                                                             {
-                                                                cm3->getObjectPtr()->append(GTPLUS_IMAGEPROCESSINGHISTORY, processStr[n].c_str());
+                                                                cm3->getObjectPtr()->append(GADGETRON_IMAGEPROCESSINGHISTORY, processStr[n].c_str());
                                                             }
                                                         }
 
                                                         if ( windowCenter.size()==SLC && windowWidth.size()==SLC )
                                                         {
-                                                            cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, (long)windowCenter[slc]);
-                                                            cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWWIDTH, (long)windowWidth[slc]);
+                                                            cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)windowCenter[slc]);
+                                                            cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)windowWidth[slc]);
                                                         }
                                                     }
 
