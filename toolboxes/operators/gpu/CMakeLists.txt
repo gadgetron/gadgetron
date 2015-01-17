@@ -40,7 +40,7 @@ target_link_libraries(gadgetron_toolbox_gpuoperators
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gadgetron_toolbox_gpuoperators DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_gpuoperators DESTINATION lib COMPONENT toolboxes-lib)
 
 install(FILES 
   cuImageOperator.h
@@ -62,4 +62,4 @@ install(FILES
   hoCuEncodingOperatorContainer.h
   gpuoperators_export.h
   hoCuOperator.h
-  DESTINATION include COMPONENT main)
+  DESTINATION include COMPONENT toolboxes-dev)

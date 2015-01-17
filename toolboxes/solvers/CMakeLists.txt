@@ -19,7 +19,7 @@ install(FILES
   lsqrSolver.h
   gpSolver.h
   gpBbSolver.h
-  DESTINATION include COMPONENT main)
+  DESTINATION include COMPONENT toolboxes-dev)
 
 IF(ARMADILLO_FOUND)
   add_subdirectory(cpu)

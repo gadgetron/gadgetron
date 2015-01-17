@@ -320,11 +320,16 @@ if(CPACK_DEBIAN_PACKAGE_SHLIBDEPS)
       endif(CPACK_DEBIAN_PACKAGE_DEPENDS)
     endif(CPACK_DEB_PACKAGE_COMPONENT)
 
+    #Clear the variables for the next iteration:
+    set(CPACK_DEB_BINARY_FILES "")
+    set(CPACK_DEB_INSTALL_FILES "")
+
   else ()
     if(CPACK_DEBIAN_PACKAGE_DEBUG)
       message( "CPackDeb Debug: Using only user-provided depends because dpkg-shlibdeps is not found.")
     endif()
   endif()
+
 
 else ()
   if(CPACK_DEBIAN_PACKAGE_DEBUG)

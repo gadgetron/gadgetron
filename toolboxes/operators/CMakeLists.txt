@@ -21,7 +21,7 @@ install(FILES
   downsampleOperator.h
   upsampleOperator.h
   tvPicsOperator.h
-  DESTINATION include COMPONENT main)
+  DESTINATION include COMPONENT toolboxes-dev)
 
 IF (ARMADILLO_FOUND)
   add_subdirectory(cpu)

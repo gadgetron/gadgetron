@@ -107,7 +107,7 @@
 
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
         source_group(opticalflow FILES ${opticalflow_files})
-        install(FILES ${opticalflow_files} DESTINATION include COMPONENT main)
+        install(FILES ${opticalflow_files} DESTINATION include COMPONENT toolboxes-dev)
     endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
 
     source_group(transformation FILES ${transformation_files})
@@ -118,7 +118,7 @@
     source_group(application FILES ${application_files})
 
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
-        install(TARGETS gadgetron_toolbox_cpureg DESTINATION lib COMPONENT main)
+        install(TARGETS gadgetron_toolbox_cpureg DESTINATION lib COMPONENT toolboxes-lib)
     endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
 
     install(FILES
@@ -128,4 +128,4 @@
         ${similarity_files}
         ${register_files}
         ${application_files}
-        DESTINATION include COMPONENT main)
+        DESTINATION include COMPONENT toolboxes-dev)

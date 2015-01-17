@@ -29,7 +29,7 @@ target_link_libraries(gadgetron_toolbox_gpusolvers
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gadgetron_toolbox_gpusolvers DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_gpusolvers DESTINATION lib COMPONENT toolboxes-lib)
 
 install(FILES 	
   cuSbCgSolver.h
@@ -48,4 +48,4 @@ install(FILES
   hoCuGpBbSolver.h
   cuSolverUtils.h
   gpusolvers_export.h
-  DESTINATION include COMPONENT main)
+  DESTINATION include COMPONENT toolboxes-dev)
