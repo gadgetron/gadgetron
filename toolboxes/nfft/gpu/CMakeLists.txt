@@ -38,10 +38,10 @@ target_link_libraries(gadgetron_toolbox_gpunfft
   ${CUDA_CUSPARSE_LIBRARIES}
   )
 
-install(TARGETS gadgetron_toolbox_gpunfft DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_gpunfft DESTINATION lib COMPONENT toolboxes-lib)
 
 install(FILES 
   cuNFFT.h 
   cuNFFTOperator.h 
   gpunfft_export.h 
-  DESTINATION include COMPONENT main)
+  DESTINATION include COMPONENT toolboxes-dev)

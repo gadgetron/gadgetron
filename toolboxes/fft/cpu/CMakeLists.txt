@@ -39,9 +39,9 @@ target_link_libraries(gadgetron_toolbox_cpufft
   )
 endif (MKL_FOUND)
 
-install(TARGETS gadgetron_toolbox_cpufft DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_cpufft DESTINATION lib COMPONENT toolboxes-lib)
 
 install(FILES
   cpufft_export.h 
   hoNDFFT.h
-  DESTINATION include COMPONENT main)
+  DESTINATION include COMPONENT toolboxes-dev)

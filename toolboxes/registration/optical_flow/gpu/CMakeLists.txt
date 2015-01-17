@@ -25,7 +25,7 @@ target_link_libraries(gadgetron_toolbox_gpureg
   ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}
   )
 
-install(TARGETS gadgetron_toolbox_gpureg DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_toolbox_gpureg DESTINATION lib COMPONENT toolboxes-lib)
 
 install(FILES
   cuOpticalFlowSolver.h
@@ -36,4 +36,4 @@ install(FILES
   cuLinearResampleOperator.h
 #  cuRegistration_utils.h
   cuCGHSOFSolver.h
-  DESTINATION include COMPONENT main)
+  DESTINATION include COMPONENT toolboxes-dev)
