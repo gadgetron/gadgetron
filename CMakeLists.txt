@@ -88,6 +88,9 @@ if (WIN32)
 #    ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
     ADD_DEFINITIONS(-D_VARIADIC_MAX=10) #to fix compiler limitations in Visual Studio Express
+    ADD_DEFINITIONS("/wd4251") #disable warnings, 4251: needs to have dll-interface to be used by clients
+    ADD_DEFINITIONS("/wd4344") #disable warnings, 4344: behavior change: use of explicit template arguments
+    ADD_DEFINITIONS("/wd4996") #disable warnings, 4996: the POSIX name for this item is deprecated. Instead, use the ISO C++ conformant name
     if ( HAS_64_BIT )
         ADD_DEFINITIONS(-DWIN64 -D_WIN64)
     endif ( HAS_64_BIT )

@@ -1,7 +1,6 @@
 #include "GadgetronConnector.h"
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
-#include "GadgetronCommon.h"
 #include "DependencyQueryReader.h"
 
 #include <ace/Log_Msg.h>

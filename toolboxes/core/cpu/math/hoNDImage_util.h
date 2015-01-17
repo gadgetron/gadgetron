@@ -13,7 +13,6 @@
 #include "hoNDImage.h"
 #include "cpucore_math_export.h"
 
-#include "GadgetronCommon.h"
 #include <complex>
 
 #include "hoNDArray_reductions.h"

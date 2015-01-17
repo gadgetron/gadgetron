@@ -26,7 +26,6 @@ endif(WIN32)
 set(header_files ../NDArray.h
                 ../complext.h
                 ../GadgetronException.h
-                ../GadgetronCommon.h
                 ../GadgetronTimer.h
                 cpucore_export.h 
                 hoNDArray.h
