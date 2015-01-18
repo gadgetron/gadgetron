@@ -19,9 +19,6 @@
 
 namespace Gadgetron{
 
-    //TODO: This definition should probably be removed or renamed at least
-    typedef long long gt_index_type;
-  
     template <typename T> class NDArray
     {
     public:
@@ -90,7 +87,6 @@ namespace Gadgetron{
         void delete_data_on_destruct(bool d);
 
         size_t calculate_offset(const std::vector<size_t>& ind) const;
-        size_t calculate_offset(const std::vector<gt_index_type>& ind) const;
         static size_t calculate_offset(const std::vector<size_t>& ind, const std::vector<size_t>& offsetFactors);
 
         size_t calculate_offset(size_t x, size_t y) const;
@@ -120,9 +116,6 @@ namespace Gadgetron{
         T& operator()( const std::vector<size_t>& ind );
         const T& operator()( const std::vector<size_t>& ind ) const;
 
-        T& operator()( const std::vector<gt_index_type>& ind );
-        const T& operator()( const std::vector<gt_index_type>& ind ) const;
-
         T& operator()( size_t x );
         const T& operator()( size_t x ) const;
 
@@ -151,17 +144,17 @@ namespace Gadgetron{
         const T& operator()( size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u ) const;
 
         /// whether a point is within the array range
-        bool point_in_range(const std::vector<gt_index_type>& ind) const;
+        bool point_in_range(const std::vector<long long>& ind) const;
         bool point_in_range(const std::vector<size_t>& ind) const;
-        bool point_in_range(gt_index_type x) const;
-        bool point_in_range(gt_index_type x, gt_index_type y) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q) const;
-        bool point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q, gt_index_type u) const;
+        bool point_in_range(long long x) const;
+        bool point_in_range(long long x, long long y) const;
+        bool point_in_range(long long x, long long y, long long z) const;
+        bool point_in_range(long long x, long long y, long long z, long long s) const;
+        bool point_in_range(long long x, long long y, long long z, long long s, long long p) const;
+        bool point_in_range(long long x, long long y, long long z, long long s, long long p, long long r) const;
+        bool point_in_range(long long x, long long y, long long z, long long s, long long p, long long r, long long a) const;
+        bool point_in_range(long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q) const;
+        bool point_in_range(long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q, long long u) const;
 
     protected:
 
@@ -389,15 +382,6 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline size_t NDArray<T>::calculate_offset(const std::vector<gt_index_type>& ind) const
-    {
-        size_t offset = (size_t)(ind[0]);
-        for( size_t i = 1; i < dimensions_->size(); i++ )
-            offset += (size_t)(ind[i]) * (*offsetFactors_)[i];
-        return offset;
-    }
-
-    template <typename T> 
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y) const
     {
         GADGET_DEBUG_CHECK_THROW(dimensions_->size()==2);
@@ -592,22 +576,6 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline T& NDArray<T>::operator()( const std::vector<gt_index_type>& ind )
-    {
-        size_t idx = this->calculate_offset(ind);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
-    inline const T& NDArray<T>::operator()( const std::vector<gt_index_type>& ind ) const
-    {
-        size_t idx = this->calculate_offset(ind);
-        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-        return this->data_[idx];
-    }
-
-    template <typename T> 
     inline T& NDArray<T>::operator()( size_t x )
     {
         GADGET_DEBUG_CHECK_THROW(x < this->get_number_of_elements());
@@ -750,7 +718,7 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline bool NDArray<T>::point_in_range(const std::vector<gt_index_type>& ind) const
+    inline bool NDArray<T>::point_in_range(const std::vector<long long>& ind) const
     {
         unsigned int D = (*dimensions_).size();
         if ( ind.size() != D ) return false;
@@ -758,7 +726,7 @@ namespace Gadgetron{
         unsigned int ii;
         for ( ii=0; ii<D; ii++ )
         {
-            if ( (ind[ii]>= (gt_index_type)(*dimensions_)[ii]) || (ind[ii]<0) )
+            if ( (ind[ii]>= (long long)(*dimensions_)[ii]) || (ind[ii]<0) )
             {
                 return false;
             }
@@ -786,63 +754,63 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline bool NDArray<T>::point_in_range(gt_index_type x) const
+    inline bool NDArray<T>::point_in_range(long long x) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==1);
         return (x<(*dimensions_)[0] && x>=0);
     }
 
     template <typename T> 
-    inline bool NDArray<T>::point_in_range(gt_index_type x, gt_index_type y) const
+    inline bool NDArray<T>::point_in_range(long long x, long long y) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==2);
         return ((x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && x>=0 && y>=0);
     }
 
     template <typename T> 
-    inline bool NDArray<T>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z) const
+    inline bool NDArray<T>::point_in_range(long long x, long long y, long long z) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==3);
         return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && x>=0 && y>=0 && z>=0);
     }
 
     template <typename T> 
-    inline bool NDArray<T>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s) const
+    inline bool NDArray<T>::point_in_range(long long x, long long y, long long z, long long s) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==4);
         return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && x>=0 && y>=0 && z>=0 && s>=0);
     }
 
     template <typename T> 
-    inline bool NDArray<T>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p) const
+    inline bool NDArray<T>::point_in_range(long long x, long long y, long long z, long long s, long long p) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==5);
         return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0);
     }
 
     template <typename T> 
-    inline bool NDArray<T>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r) const
+    inline bool NDArray<T>::point_in_range(long long x, long long y, long long z, long long s, long long p, long long r) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==6);
         return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0);
     }
 
     template <typename T> 
-    inline bool NDArray<T>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a) const
+    inline bool NDArray<T>::point_in_range(long long x, long long y, long long z, long long s, long long p, long long r, long long a) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==7);
         return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && (a<(*dimensions_)[6]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0 && a>=0);
     }
 
     template <typename T> 
-    inline bool NDArray<T>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q) const
+    inline bool NDArray<T>::point_in_range(long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==8);
         return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && (a<(*dimensions_)[6]) && (q<(*dimensions_)[7]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0 && a>=0 && q>=0);
     }
 
     template <typename T> 
-    inline bool NDArray<T>::point_in_range(gt_index_type x, gt_index_type y, gt_index_type z, gt_index_type s, gt_index_type p, gt_index_type r, gt_index_type a, gt_index_type q, gt_index_type u) const
+    inline bool NDArray<T>::point_in_range(long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q, long long u) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==9);
         return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && (a<(*dimensions_)[6]) && (q<(*dimensions_)[7]) && (u<(*dimensions_)[8]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0 && a>=0 && q>=0 && u>=0);

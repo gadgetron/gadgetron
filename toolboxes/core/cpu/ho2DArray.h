@@ -38,9 +38,6 @@ public:
     T& operator()( const std::vector<size_t>& ind ) { return (*this)(ind[0], ind[1]); }
     const T& operator()( const std::vector<size_t>& ind ) const  { return (*this)(ind[0], ind[1]); }
 
-    T& operator()( const std::vector<gt_index_type>& ind ) { return (*this)( (size_t)ind[0], (size_t)ind[1]); }
-    const T& operator()( const std::vector<gt_index_type>& ind ) const { return (*this)( (size_t)ind[0], (size_t)ind[1]); }
-
     T& operator()( size_t x ) { return (*this)(x, 0); }
     const T& operator()( size_t x ) const { return (*this)(x, 0); }
 

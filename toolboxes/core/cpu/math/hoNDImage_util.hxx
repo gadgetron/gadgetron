@@ -310,21 +310,21 @@ namespace Gadgetron
 
             if ( D == 2 )
             {
-                gt_index_type sx = (gt_index_type)dim_out[0];
-                gt_index_type sy = (gt_index_type)dim_out[1];
+                size_t sx = dim_out[0];
+                size_t sy = dim_out[1];
 
                 T weight = 1.0/5;
 
-                gt_index_type x, y;
+                long long x, y;
 
                 #pragma omp parallel for default(none) private(x, y) shared(sx, sy, bh, out)
-                for ( y=0; y<sy; y++ )
+                for ( y=0; y<(long long)sy; y++ )
                 {
-                    gt_index_type iy = y<<1;
+                    long long iy = y<<1;
 
-                    for ( x=0; x<sx; x++ )
+                    for ( x=0; x<(long long)sx; x++ )
                     {
-                        gt_index_type ix = x<<1;
+                        long long ix = x<<1;
                         out( (size_t)(x+y*sx) ) = bh(ix, iy) + ( bh(ix+1, iy) + bh(ix-1, iy) ) + ( bh(ix, iy+1) + bh(ix, iy-1) );
                     }
                 }
@@ -333,28 +333,28 @@ namespace Gadgetron
             }
             else if ( D == 3 )
             {
-                gt_index_type sx = (gt_index_type)dim_out[0];
-                gt_index_type sy = (gt_index_type)dim_out[1];
-                gt_index_type sz = (gt_index_type)dim_out[2];
+                size_t sx = dim_out[0];
+                size_t sy = dim_out[1];
+                size_t sz = dim_out[2];
 
                 T weight = 1.0/7;
 
-                gt_index_type x, y, z;
+                long long x, y, z;
 
                 #pragma omp parallel for default(none) private(x, y, z) shared(sx, sy, sz, bh, out)
                 for ( z=0; z<sz; z++ )
                 {
-                    gt_index_type iz = z<<1;
+                    long long iz = z<<1;
 
                     for ( y=0; y<sy; y++ )
                     {
-                        gt_index_type iy = y<<1;
+                        long long iy = y<<1;
 
                         size_t offset = y*sx + z*sx*sy;
 
                         for ( x=0; x<sx; x++ )
                         {
-                            gt_index_type ix = x<<1;
+                            long long ix = x<<1;
 
                             out( (size_t)(x+offset) ) = bh(ix, iy, iz) 
                                         + ( bh(ix+1, iy, iz) + bh(ix-1, iy, iz) ) 
@@ -368,33 +368,33 @@ namespace Gadgetron
             }
             else if ( D == 4 )
             {
-                gt_index_type sx = (gt_index_type)dim_out[0];
-                gt_index_type sy = (gt_index_type)dim_out[1];
-                gt_index_type sz = (gt_index_type)dim_out[2];
-                gt_index_type st = (gt_index_type)dim_out[3];
+                size_t sx = dim_out[0];
+                size_t sy = dim_out[1];
+                size_t sz = dim_out[2];
+                size_t st = dim_out[3];
 
                 T weight = 1.0/9;
 
-                gt_index_type x, y, z, t;
+                long long x, y, z, t;
 
                 #pragma omp parallel for default(none) private(x, y, z, t) shared(sx, sy, sz, st, bh, out)
                 for ( t=0; t<st; t++ )
                 {
-                    gt_index_type it = t<<1;
+                    long long it = t<<1;
 
                     for ( z=0; z<sz; z++ )
                     {
-                        gt_index_type iz = z<<1;
+                        long long iz = z<<1;
 
                         for ( y=0; y<sy; y++ )
                         {
-                            gt_index_type iy = y<<1;
+                            long long iy = y<<1;
 
                             size_t offset = y*sx + z*sx*sy + t*sx*sy*sz;
 
                             for ( x=0; x<sx; x++ )
                             {
-                                gt_index_type ix = x<<1;
+                                long long ix = x<<1;
 
                                 out( (size_t)(x+offset) ) = bh(ix, iy, iz, it) 
                                             + ( bh(ix+1, iy, iz, it) + bh(ix-1, iy, iz, it) ) 
@@ -412,14 +412,14 @@ namespace Gadgetron
             {
                 T weight = 1.0/(2*D+1);
 
-                gt_index_type N = out.get_number_of_elements();
+                size_t N = out.get_number_of_elements();
 
-                gt_index_type n;
+                long long n;
 
                 #pragma omp parallel default(none) private(n) shared(N, bh, out, dim_out)
                 {
                     std::vector<size_t> ind_out(D);
-                    std::vector<gt_index_type> ind_in(D);
+                    std::vector<long long> ind_in(D);
 
                     #pragma omp for 
                     for ( n=0; n<N; n++ )
@@ -499,10 +499,10 @@ namespace Gadgetron
 
             if ( D == 2 )
             {
-                gt_index_type sx = (gt_index_type)dim[0];
-                gt_index_type sy = (gt_index_type)dim[1];
+                size_t sx = dim[0];
+                size_t sy = dim[1];
 
-                gt_index_type x, y;
+                long long x, y;
 
                 #pragma omp parallel for default(none) private(x, y) shared(sx, sy, bh, out)
                 for ( y=0; y<sy; y++ )
@@ -526,8 +526,8 @@ namespace Gadgetron
                 }
 
                 // if out has odd sizes
-                gt_index_type sx_out = (gt_index_type)out.get_size(0);
-                gt_index_type sy_out = (gt_index_type)out.get_size(1);
+                size_t sx_out = out.get_size(0);
+                size_t sy_out = out.get_size(1);
 
                 if ( (2*sx) < sx_out )
                 {
@@ -545,11 +545,11 @@ namespace Gadgetron
             }
             else if ( D == 3 )
             {
-                gt_index_type sx = (gt_index_type)dim[0];
-                gt_index_type sy = (gt_index_type)dim[1];
-                gt_index_type sz = (gt_index_type)dim[2];
+                size_t sx = dim[0];
+                size_t sy = dim[1];
+                size_t sz = dim[2];
 
-                gt_index_type x, y, z;
+                long long x, y, z;
 
                 #pragma omp parallel for default(none) private(x, y, z) shared(sx, sy, sz, bh, out)
                 for ( z=0; z<sz; z++ )
@@ -588,9 +588,9 @@ namespace Gadgetron
                 }
 
                 // if out has odd sizes
-                gt_index_type sx_out = (gt_index_type)out.get_size(0);
-                gt_index_type sy_out = (gt_index_type)out.get_size(1);
-                gt_index_type sz_out = (gt_index_type)out.get_size(2);
+                size_t sx_out = out.get_size(0);
+                size_t sy_out = out.get_size(1);
+                size_t sz_out = out.get_size(2);
 
                 if ( (2*sx) < sx_out )
                 {
@@ -627,9 +627,9 @@ namespace Gadgetron
             {
                 hoNDInterpolatorLinear<hoNDImage<T, D> > interp(const_cast< hoNDImage<T, D>& >(in), bh);
 
-                gt_index_type N = (gt_index_type)(out.get_number_of_elements());
+                size_t N = out.get_number_of_elements();
 
-                gt_index_type n;
+                long long n;
 
                 #pragma omp parallel default(none) private(n) shared(N, bh, in, out, interp)
                 {

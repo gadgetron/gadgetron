@@ -1213,7 +1213,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    inline size_t hoNDImage<T, D>::calculate_offset(const std::vector<gt_index_type>& ind) const
+    inline size_t hoNDImage<T, D>::calculate_offset(const std::vector<long long>& ind) const
     {
         size_t offset = (size_t)(ind[0]);
         for( size_t i = 1; i < D; i++ )
@@ -1506,7 +1506,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    inline T& hoNDImage<T, D>::operator()( const std::vector<gt_index_type>& ind )
+    inline T& hoNDImage<T, D>::operator()( const std::vector<long long>& ind )
     {
         size_t idx = this->calculate_offset(ind);
         GADGET_DEBUG_CHECK_THROW(idx < this->elements_);
@@ -1514,7 +1514,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    inline const T& hoNDImage<T, D>::operator()( const std::vector<gt_index_type>& ind ) const
+    inline const T& hoNDImage<T, D>::operator()( const std::vector<long long>& ind ) const
     {
         size_t idx = this->calculate_offset(ind);
         GADGET_DEBUG_CHECK_THROW(idx < this->elements_);
