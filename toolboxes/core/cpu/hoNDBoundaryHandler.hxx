@@ -13,14 +13,26 @@ namespace Gadgetron
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerFixedValue<ArrayType>::T hoNDBoundaryHandlerFixedValue<ArrayType>::operator()( const std::vector<long long>& ind )
     {
-        if (array_->point_in_range(ind))
+        size_t D = ind.size();
+
+        bool inside = true;
+
+        size_t d;
+        for ( d=0; d<D; d++)
+        {
+            if ( (ind[d]<0) || (ind[d]>=array_->get_size(d)) )
+            {
+                inside = false;
+                break;
+            }
+        }
+
+        if (inside)
         {
             size_t offset = ind[0];
-
-            size_t i;
-            for ( i=1; i<ind.size(); i++ )
+            for ( d=1; d<D; d++ )
             {
-                offset += ind[i]*array_->get_offset_factor(i);
+                offset += ind[d]*array_->get_offset_factor(d);
             }
 
             return (*array_)(offset);
@@ -34,55 +46,55 @@ namespace Gadgetron
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerFixedValue<ArrayType>::T hoNDBoundaryHandlerFixedValue<ArrayType>::operator()( long long x )
     {
-        return (array_->point_in_range(x)) ? (*array_)( size_t(x) ) : value_;
+        return ((x >= 0) && array_->point_in_range( size_t(x) )) ? (*array_)( size_t(x) ) : value_;
     }
 
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerFixedValue<ArrayType>::T hoNDBoundaryHandlerFixedValue<ArrayType>::operator()( long long x, long long y )
     {
-        return (array_->point_in_range(x, y)) ? (*array_)( size_t(x), size_t(y) ) : value_;
+        return ((x >=0 ) && (y >= 0) && array_->point_in_range(size_t(x), size_t(y) )) ? (*array_)(size_t(x), size_t(y)) : value_;
     }
 
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerFixedValue<ArrayType>::T hoNDBoundaryHandlerFixedValue<ArrayType>::operator()( long long x, long long y, long long z )
     {
-        return (array_->point_in_range(x, y, z)) ? (*array_)( size_t(x), size_t(y), size_t(z) ) : value_;
+        return ((x >= 0) && (y >= 0) && (z >= 0) && array_->point_in_range(size_t(x), size_t(y), size_t(z))) ? (*array_)(size_t(x), size_t(y), size_t(z)) : value_;
     }
 
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerFixedValue<ArrayType>::T hoNDBoundaryHandlerFixedValue<ArrayType>::operator()( long long x, long long y, long long z, long long s )
     {
-        return (array_->point_in_range(x, y, z, s)) ? (*array_)( size_t(x), size_t(y), size_t(z), size_t(s) ) : value_;
+        return ((x >= 0) && (y >= 0) && (z >= 0) && (s >= 0) && array_->point_in_range(size_t(x), size_t(y), size_t(z), size_t(s))) ? (*array_)(size_t(x), size_t(y), size_t(z), size_t(s)) : value_;
     }
 
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerFixedValue<ArrayType>::T hoNDBoundaryHandlerFixedValue<ArrayType>::operator()( long long x, long long y, long long z, long long s, long long p )
     {
-        return (array_->point_in_range(x, y, z, s, p)) ? (*array_)( size_t(x), size_t(y), size_t(z), size_t(s), size_t(p) ) : value_;
+        return ((x >= 0) && (y >= 0) && (z >= 0) && (s >= 0) && (p >= 0) && array_->point_in_range(size_t(x), size_t(y), size_t(z), size_t(s), size_t(p))) ? (*array_)(size_t(x), size_t(y), size_t(z), size_t(s), size_t(p)) : value_;
     }
 
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerFixedValue<ArrayType>::T hoNDBoundaryHandlerFixedValue<ArrayType>::operator()( long long x, long long y, long long z, long long s, long long p, long long r )
     {
-        return (array_->point_in_range(x, y, z, s, p, r)) ? (*array_)( size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r) ) : value_;
+        return ((x >= 0) && (y >= 0) && (z >= 0) && (s >= 0) && (p >= 0) && (r >= 0) && array_->point_in_range(size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r))) ? (*array_)(size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r)) : value_;
     }
 
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerFixedValue<ArrayType>::T hoNDBoundaryHandlerFixedValue<ArrayType>::operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a )
     {
-        return (array_->point_in_range(x, y, z, s, p, r, a)) ? (*array_)( size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r), size_t(a) ) : value_;
+        return ((x >= 0) && (y >= 0) && (z >= 0) && (s >= 0) && (p >= 0) && (r >= 0) && (a >= 0) && array_->point_in_range(size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r), size_t(a))) ? (*array_)(size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r), size_t(a)) : value_;
     }
 
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerFixedValue<ArrayType>::T hoNDBoundaryHandlerFixedValue<ArrayType>::operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q )
     {
-        return (array_->point_in_range(x, y, z, s, p, r, a, q)) ? (*array_)( size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r), size_t(a), size_t(q) ) : value_;
+        return ((x >= 0) && (y >= 0) && (z >= 0) && (s >= 0) && (p >= 0) && (r >= 0) && (a >= 0) && (q >= 0) && array_->point_in_range(size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r), size_t(a), size_t(q))) ? (*array_)(size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r), size_t(a), size_t(q)) : value_;
     }
 
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerFixedValue<ArrayType>::T hoNDBoundaryHandlerFixedValue<ArrayType>::operator()( long long x, long long y, long long z, long long s, long long p, long long r, long long a, long long q, long long u )
     {
-        return (array_->point_in_range(x, y, z, s, p, r, a, q, u)) ? (*array_)( size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r), size_t(a), size_t(q), size_t(u) ) : value_;
+        return ((x >= 0) && (y >= 0) && (z >= 0) && (s >= 0) && (p >= 0) && (r >= 0) && (a >= 0) && (q >= 0) && (u >= 0) && array_->point_in_range(size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r), size_t(a), size_t(q), size_t(u))) ? (*array_)(size_t(x), size_t(y), size_t(z), size_t(s), size_t(p), size_t(r), size_t(a), size_t(q), size_t(u)) : value_;
     }
 
     /// hoNDBoundaryHandlerBorderValue
