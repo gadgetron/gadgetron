@@ -738,63 +738,63 @@ namespace Gadgetron{
     inline bool NDArray<T>::point_in_range(size_t x) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==1);
-        return (x<(*dimensions_)[0] && x>=0);
+        return (x<(*dimensions_)[0]);
     }
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(size_t x, size_t y) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==2);
-        return ((x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && x>=0 && y>=0);
+        return ((x<(*dimensions_)[0]) && (y<(*dimensions_)[1]));
     }
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==3);
-        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && x>=0 && y>=0 && z>=0);
+        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]));
     }
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==4);
-        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && x>=0 && y>=0 && z>=0 && s>=0);
+        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]));
     }
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s, size_t p) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==5);
-        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0);
+        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]));
     }
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==6);
-        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0);
+        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]));
     }
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==7);
-        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && (a<(*dimensions_)[6]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0 && a>=0);
+        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && (a<(*dimensions_)[6]));
     }
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==8);
-        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && (a<(*dimensions_)[6]) && (q<(*dimensions_)[7]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0 && a>=0 && q>=0);
+        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && (a<(*dimensions_)[6]) && (q<(*dimensions_)[7]));
     }
 
     template <typename T> 
     inline bool NDArray<T>::point_in_range(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u) const
     {
         GADGET_DEBUG_CHECK_THROW((*dimensions_).size()==9);
-        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && (a<(*dimensions_)[6]) && (q<(*dimensions_)[7]) && (u<(*dimensions_)[8]) && x>=0 && y>=0 && z>=0 && s>=0 && p>=0 && r>=0 && a>=0 && q>=0 && u>=0);
+        return ( (x<(*dimensions_)[0]) && (y<(*dimensions_)[1]) && (z<(*dimensions_)[2]) && (s<(*dimensions_)[3]) && (p<(*dimensions_)[4]) && (r<(*dimensions_)[5]) && (a<(*dimensions_)[6]) && (q<(*dimensions_)[7]) && (u<(*dimensions_)[8]));
     }
 }
 
