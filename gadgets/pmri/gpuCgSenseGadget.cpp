@@ -15,8 +15,6 @@ namespace Gadgetron{
 
   gpuCgSenseGadget::gpuCgSenseGadget()
     : is_configured_(false)
-    , channels_(0)
-    , frame_counter_(0)
     , matrix_size_reported_(0)
   {
     set_parameter(std::string("deviceno").c_str(), "0");

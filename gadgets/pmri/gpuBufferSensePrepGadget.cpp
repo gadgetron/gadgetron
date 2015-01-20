@@ -80,7 +80,7 @@ int gpuBufferSensePrepGadget::process(
 
 	//Use reference data if available.
 	if (reconbit.ref_.data_.get_number_of_elements()){
-		GADGET_DEBUG1("Using Reference data for CSM estimation\n");
+		GDEBUG("Using Reference data for CSM estimation\n");
 		buffer = &reconbit.ref_;
 	}
 
@@ -192,7 +192,7 @@ int gpuBufferSensePrepGadget::process(
 	header_message->cont(job_message);
 
 	if (!this->next()->putq(header_message)){
-		GADGET_DEBUG1("Failed to put message on que");
+		GDEBUG("Failed to put message on que");
 		return GADGET_FAIL;
 	} else
 		return GADGET_OK;
@@ -211,14 +211,14 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 		std::vector<size_t> csm_dims = image_dims_recon_;
 		csm_dims.push_back(ncoils);
 		auto result = new cuNDArray<float_complext>(csm_dims);
-		GADGET_DEBUG2("Coils %i \n\n",ncoils);
+		GDEBUG("Coils %i \n\n",ncoils);
 
 		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
 		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
-		GADGET_DEBUG2("traj: %i data %i\n",traj->get_number_of_elements(),data->get_number_of_elements());
-		GADGET_DEBUG1("Preprocessing\n\n");
+		GDEBUG("traj: %i data %i\n",traj->get_number_of_elements(),data->get_number_of_elements());
+		GDEBUG("Preprocessing\n\n");
 		plan.preprocess(&flat_traj,cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
-		GADGET_DEBUG1("Computing\n\n");
+		GDEBUG("Computing\n\n");
 		plan.compute(data,result,dcw,cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C);
 
 		write_nd_array(abs(result).get(),"reg.real");

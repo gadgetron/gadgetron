@@ -33,6 +33,8 @@ add_library(gadgetron_hyper SHARED
   CMRT3DGadget.h CMRT3DGadget.cpp
   CMRTGadget.h CMRTGadget.cpp
   CSIGadget.h CSIGadget.cpp
+  gpuCSICoilEstimationGadget.cpp
+  
   )
 
 set_target_properties(gadgetron_hyper PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})

@@ -19,7 +19,7 @@ namespace Gadgetron{
 
 
     if (h.encoding.size() != 1) {
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+      GDEBUG("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
 
@@ -28,16 +28,16 @@ namespace Gadgetron{
     ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
 
-    GADGET_DEBUG2("Matrix size: %d, %d\n", e_space.matrixSize.x, e_space.matrixSize.y, e_space.matrixSize.z);
+    GDEBUG("Matrix size: %d, %d\n", e_space.matrixSize.x, e_space.matrixSize.y, e_space.matrixSize.z);
     dimensions_.push_back(r_space.matrixSize.x);
     dimensions_.push_back(r_space.matrixSize.y);
 
     field_of_view_.push_back(e_space.fieldOfView_mm.x);
     field_of_view_.push_back(e_space.fieldOfView_mm.y);
-    GADGET_DEBUG2("FOV: %f, %f\n", r_space.fieldOfView_mm.x, r_space.fieldOfView_mm.y);
+    GDEBUG("FOV: %f, %f\n", r_space.fieldOfView_mm.x, r_space.fieldOfView_mm.y);
 
     repetitions_ = e_limits.repetition.is_present() ? e_limits.repetition.get().maximum + 1 : 1;
-    GADGET_DEBUG2("#Repetitions: %d\n", repetitions_);
+    GDEBUG("#Repetitions: %d\n", repetitions_);
 
     // Allocate readout and trajectory/dcw queues
     //
@@ -223,7 +223,7 @@ namespace Gadgetron{
   NFFT2DGadget::extract_samples_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *queue )                                             
   {    
     if(!queue) {
-      GADGET_DEBUG1("Illegal queue pointer, cannot extract samples\n");
+      GDEBUG("Illegal queue pointer, cannot extract samples\n");
       throw std::runtime_error("NFFT2DGadget::extract_samples_from_queue: illegal queue pointer");	
     }
 
@@ -239,14 +239,14 @@ namespace Gadgetron{
       
       ACE_Message_Block* mbq;
       if (queue->dequeue_head(mbq) < 0) {
-        GADGET_DEBUG1("Message dequeue failed\n");
+        GDEBUG("Message dequeue failed\n");
         throw std::runtime_error("NFFT2DGadget::extract_samples_from_queue: dequeing failed");	
       }
       
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
 	
       if (!daq) {
-        GADGET_DEBUG1("Unable to interpret data on message queue\n");
+        GDEBUG("Unable to interpret data on message queue\n");
         throw std::runtime_error("NFFT2DGadget::extract_samples_from_queue: failed to interpret data");	
       }
 	
@@ -271,7 +271,7 @@ namespace Gadgetron{
   NFFT2DGadget::extract_trajectory_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *queue )
   {    
     if(!queue) {
-      GADGET_DEBUG1("Illegal queue pointer, cannot extract trajectory\n");
+      GDEBUG("Illegal queue pointer, cannot extract trajectory\n");
       throw std::runtime_error("NFFT2DGadget::extract_trajectory_from_queue: illegal queue pointer");	
     }
 
@@ -287,14 +287,14 @@ namespace Gadgetron{
     for (unsigned int p=0; p<readouts_buffered; p++) {      
       ACE_Message_Block* mbq;
       if (queue->dequeue_head(mbq) < 0) {
-        GADGET_DEBUG1("Message dequeue failed\n");
+        GDEBUG("Message dequeue failed\n");
         throw std::runtime_error("NFFT2DGadget::extract_trajectory_from_queue: dequeing failed");	
       }
       
       GadgetContainerMessage< hoNDArray<float> > *daq = AsContainerMessage<hoNDArray<float> >(mbq);
 	
       if (!daq) {
-        GADGET_DEBUG1("Unable to interpret data on message queue\n");
+        GDEBUG("Unable to interpret data on message queue\n");
         throw std::runtime_error("NFFT2DGadget::extract_trajectory_from_queue: failed to interpret data");	
       }
 

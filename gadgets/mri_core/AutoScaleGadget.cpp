@@ -59,7 +59,7 @@ int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, G
 			cumsum += (long long)(histogram_[counter++]);
 		}
 		max = (counter+1)*(max/histogram_bins_);
-		GADGET_DEBUG2("Max: %f\n",max);
+		GDEBUG("Max: %f\n",max);
 
 		current_scale_ = max_value_/max;
 

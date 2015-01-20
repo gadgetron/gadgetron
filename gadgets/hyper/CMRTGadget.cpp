@@ -35,7 +35,7 @@ int CMRTGadget::process_config(ACE_Message_Block* mb)
 
 
 	if (h.encoding.size() != 1) {
-		GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+		GDEBUG("This Gadget only supports one encoding space\n");
 		return GADGET_FAIL;
 	}
 
@@ -52,21 +52,21 @@ int CMRTGadget::process_config(ACE_Message_Block* mb)
 	image_space_dimensions_3D_.push_back(e_space.matrixSize.x/*/2*/);
 
 
-	GADGET_DEBUG2("Matrix size: %d, %d, %d\n",
+	GDEBUG("Matrix size: %d, %d, %d\n",
 			image_space_dimensions_3D_[0],
 			image_space_dimensions_3D_[1],
 			image_space_dimensions_3D_[2] );
 
-	GADGET_DEBUG2("Matrix size: %d, %d\n", e_space.matrixSize.x, e_space.matrixSize.y, e_space.matrixSize.z);
+	GDEBUG("Matrix size: %d, %d\n", e_space.matrixSize.x, e_space.matrixSize.y, e_space.matrixSize.z);
 	dimensions_.push_back(r_space.matrixSize.x);
 	dimensions_.push_back(r_space.matrixSize.y);
 
 	field_of_view_.push_back(e_space.fieldOfView_mm.x);
 	field_of_view_.push_back(e_space.fieldOfView_mm.y);
-	GADGET_DEBUG2("FOV: %f, %f\n", r_space.fieldOfView_mm.x, r_space.fieldOfView_mm.y);
+	GDEBUG("FOV: %f, %f\n", r_space.fieldOfView_mm.x, r_space.fieldOfView_mm.y);
 
 	repetitions_ = e_limits.repetition.is_present() ? e_limits.repetition.get().maximum + 1 : 1;
-	GADGET_DEBUG2("#Repetitions: %d\n", repetitions_);
+	GDEBUG("#Repetitions: %d\n", repetitions_);
 
 
 	// Allocate readout and trajectory/dcw queues
@@ -134,26 +134,26 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 
 	if (is_last_scan_in_repetition) {
 		num_frames++;
-		GADGET_DEBUG2("FRAME # %d \n",num_frames);
+		GDEBUG("FRAME # %d \n",num_frames);
 		// Get samples for frame
 		//
-		GADGET_DEBUG1("Extracting samples \n");
+		GDEBUG("Extracting samples \n");
 		frames.push_back(extract_samples_from_queue( frame_readout_queue_.get()));
 		// Get trajectories/dcw for frame - Only for first frame
 		//
 		if (frames.size() == 1 ){
 			extract_trajectory_and_dcw_from_queue( frame_traj_queue_.get(), this->traj, this->dcw);
-			GADGET_DEBUG1("Extracting trajectory \n");
+			GDEBUG("Extracting trajectory \n");
 		}
 
 		bool is_last_scan_in_slice= m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
-		GADGET_DEBUG2("Last scan in slice %i \n",is_last_scan_in_slice);
+		GDEBUG("Last scan in slice %i \n",is_last_scan_in_slice);
 		//If we have enough projections, get the show on the road
 		if (is_last_scan_in_slice ){
-			GADGET_DEBUG2("Framing %i frames \n",num_frames);
+			GDEBUG("Framing %i frames \n",num_frames);
 
 			if (num_frames%projections_per_recon_ != 0) {
-				GADGET_DEBUG1("Number of frames must be divisible by number of projecitons");
+				GDEBUG("Number of frames must be divisible by number of projecitons");
 				return GADGET_FAIL;
 			}
 			boost::shared_ptr<cuNDArray<float_complext> > data = get_combined_frames();
@@ -164,7 +164,7 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 			data->reshape(data_dims);
 			// Initialize plan
 			//
-			GADGET_DEBUG2("Data size: %i %i %i",data->get_size(0),data->get_size(1),data->get_size(2));
+			GDEBUG("Data size: %i %i %i",data->get_size(0),data->get_size(1),data->get_size(2));
 			boost::shared_ptr<cuNDArray<floatd2> >cu_traj(new cuNDArray<floatd2>(*traj));
 
 			std::vector<size_t> projection_dims;
@@ -248,7 +248,7 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 			}
 			//boost::shared_ptr<cuNDArray<float_complext> > result(new cuNDArray<float_complext>(&image_space_dimensions_3D_));
 			//E->mult_MH(data.get(),result.get());
-			GADGET_DEBUG1(" Penguins report mission accomplished \n");
+			GDEBUG(" Penguins report mission accomplished \n");
 
 
 			size_t nelements3d = std::accumulate(image_space_dimensions_3D_.begin(),image_space_dimensions_3D_.end(),1,std::multiplies<size_t>());
@@ -294,7 +294,7 @@ int CMRTGadget::process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1
 				cm1->getObjectPtr()->image_index    = i+1;
 
 				if (this->next()->putq(cm1) < 0) {
-					GADGET_DEBUG1("Failed to put result image on to queue\n");
+					GDEBUG("Failed to put result image on to queue\n");
 					cm1->release();
 					return GADGET_FAIL;
 				}
@@ -321,7 +321,7 @@ boost::shared_ptr< hoNDArray<float_complext> >
 CMRTGadget::extract_samples_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *queue )
 {
 	if(!queue) {
-		GADGET_DEBUG1("Illegal queue pointer, cannot extract samples\n");
+		GDEBUG("Illegal queue pointer, cannot extract samples\n");
 		throw std::runtime_error("CMRTGadget::extract_samples_from_queue: illegal queue pointer");
 	}
 
@@ -338,14 +338,14 @@ CMRTGadget::extract_samples_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *queue 
 
 		ACE_Message_Block* mbq;
 		if (queue->dequeue_head(mbq) < 0) {
-			GADGET_DEBUG1("Message dequeue failed\n");
+			GDEBUG("Message dequeue failed\n");
 			throw std::runtime_error("CMRTGadget::extract_samples_from_queue: dequeing failed");
 		}
 
 		GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
 
 		if (!daq) {
-			GADGET_DEBUG1("Unable to interpret data on message queue\n");
+			GDEBUG("Unable to interpret data on message queue\n");
 			throw std::runtime_error("CMRTGadget::extract_samples_from_queue: failed to interpret data");
 		}
 
@@ -370,7 +370,7 @@ boost::shared_ptr< hoNDArray<float> >
 CMRTGadget::extract_trajectory_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *queue )
 {
 	if(!queue) {
-		GADGET_DEBUG1("Illegal queue pointer, cannot extract trajectory\n");
+		GDEBUG("Illegal queue pointer, cannot extract trajectory\n");
 		throw std::runtime_error("CMRTGadget::extract_trajectory_from_queue: illegal queue pointer");
 	}
 
@@ -386,14 +386,14 @@ CMRTGadget::extract_trajectory_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *que
 	for (unsigned int p=0; p<readouts_buffered; p++) {
 		ACE_Message_Block* mbq;
 		if (queue->dequeue_head(mbq) < 0) {
-			GADGET_DEBUG1("Message dequeue failed\n");
+			GDEBUG("Message dequeue failed\n");
 			throw std::runtime_error("CMRTGadget::extract_trajectory_from_queue: dequeing failed");
 		}
 
 		GadgetContainerMessage< hoNDArray<float> > *daq = AsContainerMessage<hoNDArray<float> >(mbq);
 
 		if (!daq) {
-			GADGET_DEBUG1("Unable to interpret data on message queue\n");
+			GDEBUG("Unable to interpret data on message queue\n");
 			throw std::runtime_error("CMRTGadget::extract_trajectory_from_queue: failed to interpret data");
 		}
 

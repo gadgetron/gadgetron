@@ -33,12 +33,12 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 
 	mxArray *imageQ = engGetVariable(engine_, "imageQ");
 	if (imageQ == NULL) {
-		GADGET_DEBUG1("Failed to get the imageQ from matgadget\n");
+		GERROR("Failed to get the imageQ from matgadget\n");
 		return GADGET_FAIL;
 	}
 
 	size_t qlen = mxGetNumberOfElements(imageQ);
-	GADGET_DEBUG2("Image Queue size: %d \n", qlen);
+	GDEBUG("Image Queue size: %d \n", qlen);
 
 	const mwSize* dims = mxGetDimensions(imageQ);
 	mwSize ndims = mxGetNumberOfDimensions(imageQ);
@@ -62,7 +62,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 		delete image;
 		m3->cont(m4);
 		if (this->next()->putq(m3) < 0) {
-			GADGET_DEBUG1("Failed to put Image message on queue\n");
+			GDEBUG("Failed to put Image message on queue\n");
 			return GADGET_FAIL;
 		}
 
@@ -73,7 +73,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	mxArray* bufferQ = engGetVariable(engine_,"bufferQ");
 
 	qlen = mxGetNumberOfElements(bufferQ);
-	GADGET_DEBUG2("Buffer Queue size: %d \n", qlen);
+	GDEBUG("Buffer Queue size: %d \n", qlen);
 
 	IsmrmrdReconData output_data;
 	for (mwIndex idx = 0; idx <qlen; idx++){
@@ -83,9 +83,9 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 
 		auto ref = mxGetField(bufferQ,idx,"reference");
 		if (ref){
-			GADGET_DEBUG1("Adding reference");
+			GDEBUG("Adding reference");
 			bit.ref_ = MatlabStructToBuffer(ref);
-			GADGET_DEBUG2("Number of elements %i \n",bit.ref_.data_.get_number_of_elements());
+			GDEBUG("Number of elements %i \n",bit.ref_.data_.get_number_of_elements());
 		}
 		output_data.rbit_.push_back(bit);
 	}
@@ -96,7 +96,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	if (!output_data.rbit_.empty()){
 		auto m3 = new GadgetContainerMessage<IsmrmrdReconData>(output_data.rbit_);
 		if (this->next()->putq(m3) < 0){
-			GADGET_DEBUG1("Failed to put Buffer message on queue\n");
+			GDEBUG("Failed to put Buffer message on queue\n");
 			return GADGET_FAIL;
 		}
 	}

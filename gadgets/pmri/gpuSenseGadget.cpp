@@ -33,22 +33,22 @@ int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
 
 	int number_of_devices = 0;
 	if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-		GADGET_DEBUG1( "Error: unable to query number of CUDA devices.\n" );
+		GDEBUG( "Error: unable to query number of CUDA devices.\n" );
 		return GADGET_FAIL;
 	}
 
 	if (number_of_devices == 0) {
-		GADGET_DEBUG1( "Error: No available CUDA devices.\n" );
+		GDEBUG( "Error: No available CUDA devices.\n" );
 		return GADGET_FAIL;
 	}
 
 	if (device_number_ >= number_of_devices) {
-		GADGET_DEBUG2("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
+		GDEBUG("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
 		device_number_ = (device_number_%number_of_devices);
 	}
 
 	if (cudaSetDevice(device_number_)!= cudaSuccess) {
-		GADGET_DEBUG1( "Error: unable to set CUDA device.\n" );
+		GDEBUG( "Error: unable to set CUDA device.\n" );
 		return GADGET_FAIL;
 	}
 	pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
@@ -61,7 +61,7 @@ int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
 	rotations_to_discard_ = get_int_value(std::string("rotations_to_discard").c_str());
 
 	if( (rotations_to_discard_%2) == 1 ){
-		GADGET_DEBUG1("#rotations to discard must be even.\n");
+		GDEBUG("#rotations to discard must be even.\n");
 		return GADGET_FAIL;
 	}
 	save_individual_frames_ = get_bool_value("save_individual_frames");
@@ -110,7 +110,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 
 			cudaError_t err = cudaGetLastError();
 			if( err != cudaSuccess ){
-				GADGET_DEBUG2("Unable to copy result from device to host: %s\n", cudaGetErrorString(err));
+				GDEBUG("Unable to copy result from device to host: %s\n", cudaGetErrorString(err));
 				m->release();
 				return GADGET_FAIL;
 			}
@@ -122,7 +122,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 			m->getObjectPtr()->image_index    = frame_counter_ + frame;
 
 			if (this->next()->putq(m) < 0) {
-				GADGET_DEBUG1("Failed to put result image on to queue\n");
+				GDEBUG("Failed to put result image on to queue\n");
 				m->release();
 				return GADGET_FAIL;
 			}
@@ -149,7 +149,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 		m->getObjectPtr()->image_index    = frame_counter_;
 
 		if (this->next()->putq(m) < 0) {
-			GADGET_DEBUG1("Failed to put result image on to queue\n");
+			GDEBUG("Failed to put result image on to queue\n");
 			m->release();
 			return GADGET_FAIL;
 		}

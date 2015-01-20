@@ -27,41 +27,42 @@ CSIGadget::~CSIGadget() {
 
 
 int CSIGadget::process_config(ACE_Message_Block *mb){
-	//GADGET_DEBUG1("gpuCgSenseGadget::process_config\n");
+	//GDEBUG("gpuCgSenseGadget::process_config\n");
 
-	device_number_ = get_int_value(std::string("deviceno").c_str());
+	device_number_ = get_int_value("deviceno");
 
 	int number_of_devices = 0;
 	if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-		GADGET_DEBUG1( "Error: unable to query number of CUDA devices.\n" );
+		GDEBUG( "Error: unable to query number of CUDA devices.\n" );
 		return GADGET_FAIL;
 	}
 
 	if (number_of_devices == 0) {
-		GADGET_DEBUG1( "Error: No available CUDA devices.\n" );
+		GDEBUG( "Error: No available CUDA devices.\n" );
 		return GADGET_FAIL;
 	}
 
 	if (device_number_ >= number_of_devices) {
-		GADGET_DEBUG2("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
+		GDEBUG("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
 		device_number_ = (device_number_%number_of_devices);
 	}
 
 	if (cudaSetDevice(device_number_)!= cudaSuccess) {
-		GADGET_DEBUG1( "Error: unable to set CUDA device.\n" );
+		GDEBUG( "Error: unable to set CUDA device.\n" );
 		return GADGET_FAIL;
 	}
 
-	pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
-	cg_limit_ = get_double_value(std::string("cg_limit").c_str());
-	oversampling_factor_ = get_double_value(std::string("oversampling_factor").c_str());
-	kernel_width_ = get_double_value(std::string("kernel_width").c_str());
-	kappa_ = get_double_value(std::string("kappa").c_str());
-	output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
-	number_of_sb_iterations_ = get_int_value(std::string("number_of_sb_iterations").c_str());
-	number_of_cg_iterations_ = get_int_value(std::string("number_of_cg_iterations").c_str());
+	pass_on_undesired_data_ = get_bool_value("pass_on_undesired_data");
+	cg_limit_ = get_double_value("cg_limit");
+	oversampling_factor_ = get_double_value("oversampling_factor");
+	kernel_width_ = get_double_value("kernel_width");
+	kappa_ = get_double_value("kappa");
+	output_convergence_ = get_bool_value("output_convergence");
+	number_of_sb_iterations_ = get_int_value("number_of_sb_iterations");
+	number_of_cg_iterations_ = get_int_value("number_of_cg_iterations");
 
-	mu_ = get_double_value(std::string("mu").c_str());
+
+	mu_ = get_double_value("mu");
 
 	// Get the Ismrmrd header
 	//
@@ -71,7 +72,7 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 
 
 	if (h.encoding.size() != 1) {
-		GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+		GDEBUG("This Gadget only supports one encoding space\n");
 		return GADGET_FAIL;
 	}
 
@@ -99,7 +100,7 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 
 
 		/*if (~h.userParameters.is_present()){
-			GADGET_DEBUG1("CSI gadget requires userparameters to be set to obtain timesteps.");
+			GDEBUG("CSI gadget requires userparameters to be set to obtain timesteps.");
 			return GADGET_FAIL;
 		}*/
 
@@ -108,24 +109,39 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 		auto bw = std::find_if(parameters.begin(),parameters.end(), [](ISMRMRD::UserParameterDouble d) { return d.name=="bw";});
 
 		if (bw->name != "bw"){
-			GADGET_DEBUG1("CSI gadget: User parameter bw is missing.");
+			GDEBUG("CSI gadget: User parameter bw is missing.");
 			return GADGET_FAIL;
 		}
 
 
 		auto dte = std::find_if(parameters.begin(),parameters.end(), [](ISMRMRD::UserParameterDouble d) { return d.name=="dte";});
 		if (dte->name != "dte"){
-			GADGET_DEBUG1("CSI gadget: User parameter dte is missing.");
+			GDEBUG("CSI gadget: User parameter dte is missing.");
 			return GADGET_FAIL;
 		}
 
 // Allocate encoding operator for non-Cartesian Sense
 		E_ = boost::make_shared< CSIOperator<float> >(1/bw->value, -dte->value);
 		E_->set_weight(mu_);
+
 		std::vector<float> freqs;
-		for (float f = -600.0f; f <= 160.0f; f+=10.0f)
-			freqs.push_back(f);
-		//std::vector<float> freqs{  -575.1223,-450.1223,-360.1223,  -183.1223,140.8777};
+		auto frequency_string = get_string_value("frequencies");
+
+		if (*frequency_string != ""){
+			std::stringstream stream(*frequency_string);
+			float freq;
+			while(stream >> freq)
+				freqs.push_back(freq);
+		} else {
+			float frequency_max = get_double_value("frequency_max");
+			float frequency_min = get_double_value("frequency_min");
+			float frequency_step = get_double_value("frequency_step");
+			for (float f = frequency_min; f <= frequency_max; f+= frequency_step)
+				freqs.push_back(f);
+		}
+
+		if (freqs.size() == 0)
+			throw std::runtime_error("CSIGadget: Frequencies not set!");
 		E_->set_frequencies(freqs);
 
 		img_dims_[2]=freqs.size();
@@ -190,16 +206,18 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 
 
 	if (!is_configured_) {
-		GADGET_DEBUG1("\nData received before configuration complete\n");
+		GDEBUG("\nData received before configuration complete\n");
 		return GADGET_FAIL;
 	}
 
 
-	GADGET_DEBUG1("CSI is on the job\n");
+	GDEBUG("CSI is on the job\n");
 
 
 
 	auto traj = m1->getObjectPtr()->traj;
+
+
 	auto data = m1->getObjectPtr()->data;
 	auto csm =m1->getObjectPtr()->csm;
 	auto dcw = m1->getObjectPtr()->dcw;
@@ -222,7 +240,7 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 	S_->set_codomain_dimensions(&sense_dims);
 /*
 	{
-		GADGET_DEBUG1("Removing CSM maps");
+		GDEBUG("Removing CSM maps");
 		auto csm_dims = *csm->get_dimensions();
 		csm_dims.pop_back();
 		cuNDArray<float_complext> csm_view(csm_dims,csm->get_data_ptr());
@@ -239,7 +257,7 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 	S_->setup( matrix_size_, matrix_size_os_, kernel_width_ );
 	S_->preprocess(traj.get());
 
-	GADGET_DEBUG1("Setup done, solving....\n");
+	GDEBUG("Setup done, solving....\n");
 	/*
 	eigenTester<cuNDArray<float_complext>> tester;
 	std::vector<float> freqs{  -575.1223,-450.1223,-360.1223,  -183.1223,140.8777};
@@ -255,23 +273,25 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 
 	float_complext eigVal = tester.get_smallest_eigenvalue();
 
-	GADGET_DEBUG2("Smallest eigenvalue: %f %f /n",real(eigVal),imag(eigVal));
+	GDEBUG("Smallest eigenvalue: %f %f /n",real(eigVal),imag(eigVal));
 */
+	/*
 	cuNlcgSolver<float_complext> solv;
 	//cuCgSolver<float_complext> solv;
 	solv.set_output_mode(cuCgSolver<float_complext>::OUTPUT_VERBOSE);
 	solv.set_max_iterations(10);
 	solv.set_encoding_operator(E_);
 	solv.set_tc_tolerance(1e-8f);
+	*/
 	auto result = solver_.solve(data.get());
 	//auto result = solv.solve(data.get());
 
 	//E_->mult_MH(data.get(),result.get(),false);
 
-	GADGET_DEBUG2("Image sum: %f \n",asum(result.get()));
+	GDEBUG("Image sum: %f \n",asum(result.get()));
 	m1->release();
 
-	GADGET_DEBUG1("Solver done, next patient...");
+	GDEBUG("Solver done, next patient...");
 
 	GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm =
 			new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
@@ -286,7 +306,7 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 
 	result->to_host((hoNDArray<float_complext>*)cm->getObjectPtr());
 
-	GADGET_DEBUG2("Result size: %i %i %i \n",result->get_size(0),result->get_size(1),result->get_size(2));
+	GDEBUG("Result size: %i %i %i \n",result->get_size(0),result->get_size(1),result->get_size(2));
 
 	m->getObjectPtr()->matrix_size[0] = img_dims_[0];
 	m->getObjectPtr()->matrix_size[1] = img_dims_[1];
@@ -296,7 +316,7 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 
 
 	if (!this->next()->putq(m)){
-		GADGET_DEBUG1("Failed to put image on que");
+		GDEBUG("Failed to put image on que");
 		return GADGET_FAIL;
 	}
 

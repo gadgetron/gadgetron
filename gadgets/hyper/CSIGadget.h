@@ -14,7 +14,7 @@
 #include "CSIOperator.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuSbcCgSolver.h"
-#include "gpuCoilEstimationGadget.h"
+#include "gpuCSICoilEstimationGadget.h"
 namespace Gadgetron {
 
 class CSIGadget: public Gadgetron::Gadget1<cuSenseData>{

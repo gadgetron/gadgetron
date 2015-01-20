@@ -29,7 +29,7 @@ int CMRT3DGadget::process_config(ACE_Message_Block* mb)
 
 
 	if (h.encoding.size() != 1) {
-		GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+		GDEBUG("This Gadget only supports one encoding space\n");
 		return GADGET_FAIL;
 	}
 
@@ -45,7 +45,7 @@ int CMRT3DGadget::process_config(ACE_Message_Block* mb)
 	image_space_dimensions_3D_.push_back(e_space.matrixSize.y);
 	image_space_dimensions_3D_.push_back(e_space.matrixSize.x/*/2*/);
 
-	GADGET_DEBUG2("Matrix size: %d, %d, %d\n",
+	GDEBUG("Matrix size: %d, %d, %d\n",
 			image_space_dimensions_3D_[0],
 			image_space_dimensions_3D_[1],
 			image_space_dimensions_3D_[2] );
@@ -55,8 +55,8 @@ int CMRT3DGadget::process_config(ACE_Message_Block* mb)
 	num_projections_to_use_ = num_projections_expected_/(100/projections_percentage_);
 
 	golden_ratio_ = get_bool_value("golden_ratio");
-	GADGET_DEBUG2("Number of projections (expected/utilization percentage): %d/%d\n", num_projections_expected_, projections_percentage_ );
-	GADGET_DEBUG2("I.e. using %d projections for the reconstruction\n", num_projections_to_use_ );
+	GDEBUG("Number of projections (expected/utilization percentage): %d/%d\n", num_projections_expected_, projections_percentage_ );
+	GDEBUG("I.e. using %d projections for the reconstruction\n", num_projections_to_use_ );
 
 	std::vector<size_t> dims;
 	dims.push_back(image_space_dimensions_3D_[0]); // number of samples per radial profile
@@ -73,7 +73,7 @@ int CMRT3DGadget::process_config(ACE_Message_Block* mb)
 
 
 	if( !traj.get() || !dcw.get() ){
-		GADGET_DEBUG1("Failed to initialize radial trajecotory/dcw\n");
+		GDEBUG("Failed to initialize radial trajecotory/dcw\n");
 		return GADGET_FAIL;
 	}
 
@@ -113,13 +113,13 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	//
 
 	if( !(host_image->get_number_of_dimensions() == 2 || ( host_image->get_number_of_dimensions()==3 && host_image->get_size(2)==1 ))) {
-		GADGET_DEBUG2("The input image has an unexpected number of dimensions\n", host_image->get_number_of_dimensions());
+		GDEBUG("The input image has an unexpected number of dimensions\n", host_image->get_number_of_dimensions());
 		return GADGET_FAIL;
 	}
 
 	if( host_image->get_size(0) != image_space_dimensions_3D_[0] ||
 			host_image->get_size(1) != image_space_dimensions_3D_[2] ){
-		GADGET_DEBUG2("The input image has unexpected dimensionality: %d %d %d %d\n", host_image->get_size(0), host_image->get_size(1), image_space_dimensions_3D_[0], image_space_dimensions_3D_[1] );
+		GDEBUG("The input image has unexpected dimensionality: %d %d %d %d\n", host_image->get_size(0), host_image->get_size(1), image_space_dimensions_3D_[0], image_space_dimensions_3D_[1] );
 		return GADGET_FAIL;
 	}
 
@@ -133,7 +133,7 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	// Next copy each line into the buffer
 	//
 
-	GADGET_DEBUG2("Received image #%d\n", images_received_);
+	GDEBUG("Received image #%d\n", images_received_);
 
 	for( size_t row=0;row<host_image->get_size(1); row++ ){
 
@@ -148,7 +148,7 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 				host_image->get_data_ptr()+offset_in,
 				host_image->get_size(0)*sizeof(complext<float>),
 				cudaMemcpyHostToDevice ) != cudaSuccess ){
-			GADGET_DEBUG2("Upload to device for line %d failed\n", row);
+			GDEBUG("Upload to device for line %d failed\n", row);
 			return GADGET_FAIL;
 		}
 	}
@@ -166,7 +166,7 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 
 		auto traj = calculate_trajectory(tot_images_);
 		E_->preprocess( traj.get() );
-		GADGET_DEBUG1("\n\nPerforming reconstruction\n");
+		GDEBUG("\n\nPerforming reconstruction\n");
 
 		std::vector<size_t> dims;
 		dims.push_back(image_space_dimensions_3D_[0]);
@@ -207,7 +207,7 @@ int CMRT3DGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 		m->getObjectPtr()->image_index    = 1;
 
 		if (this->next()->putq(m) < 0) {
-			GADGET_DEBUG1("Failed to put result image on to queue\n");
+			GDEBUG("Failed to put result image on to queue\n");
 			m->release();
 			return GADGET_FAIL;
 		}
@@ -233,7 +233,7 @@ CMRT3DGadget::calculate_trajectory(unsigned int offset)
 			( image_space_dimensions_3D_[0], num_projections_to_use_, 1 /*number of frames*/ );
 
 	if (!traj.get()) {
-		GADGET_DEBUG1("Failed to compute radial trajectory");
+		GDEBUG("Failed to compute radial trajectory");
 		return boost::shared_ptr< cuNDArray<floatd2> >();
 	}
 
@@ -254,7 +254,7 @@ CMRT3DGadget::calculate_density_compensation()
 			( image_space_dimensions_3D_[0], num_projections_to_use_, alpha_, 1.0f/readout_oversampling_factor_ );
 
 	if (!dcw.get()) {
-		GADGET_DEBUG1("Failed to compute density compensation weights\n");
+		GDEBUG("Failed to compute density compensation weights\n");
 		return boost::shared_ptr< cuNDArray<float> >();
 	}
 

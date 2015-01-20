@@ -1,11 +1,11 @@
 /*
- * gpuCoilEstimationGadget.cpp
+ * gpuCSICoilEstimationGadget.cpp
  *
  *  Created on: Nov 12, 2014
  *      Author: dch
  */
 
-#include "gpuCoilEstimationGadget.h"
+#include "gpuCSICoilEstimationGadget.h"
 #include <utility>
 #include <ismrmrd/xml.h>
 #include "cuNDArray.h"
@@ -19,30 +19,32 @@
 
 namespace Gadgetron {
 
-gpuCoilEstimationGadget::gpuCoilEstimationGadget() {
+gpuCSICoilEstimationGadget::gpuCSICoilEstimationGadget() {
 	set_parameter("kernel_width","5.5");
+	set_parameter("skip_lines","0");
 
 }
 
-gpuCoilEstimationGadget::~gpuCoilEstimationGadget() {
+gpuCSICoilEstimationGadget::~gpuCSICoilEstimationGadget() {
 	// TODO Auto-generated destructor stub
 }
 
-int gpuCoilEstimationGadget::process_config(ACE_Message_Block* mb) {
+int gpuCSICoilEstimationGadget::process_config(ACE_Message_Block* mb) {
 	ISMRMRD::IsmrmrdHeader h;
 	ISMRMRD::deserialize(mb->rd_ptr(),h);
 
 	if (h.encoding.size() != 1){
-		GADGET_DEBUG1("Coil estimation gadget only supports encoding spaces of size 1\n");
+		GDEBUG("Coil estimation gadget only supports encoding spaces of size 1\n");
 		return GADGET_FAIL;
 	}
 	img_size = {h.encoding[0].reconSpace.matrixSize.x,h.encoding[0].reconSpace.matrixSize.y};
 	kernel_width = get_double_value("kernel_width");
 
 	coils = h.acquisitionSystemInformation->receiverChannels;
+	skip_lines = get_int_value("skip_lines");
 }
 
-int gpuCoilEstimationGadget::process(
+int gpuCSICoilEstimationGadget::process(
 		GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1) {
 	IsmrmrdAcquisitionBucket* bucket = m1->getObjectPtr();
 
@@ -50,7 +52,7 @@ int gpuCoilEstimationGadget::process(
 	auto senseData = cm1->getObjectPtr();
 
 	coils = bucket->data_.front().head_->getObjectPtr()->active_channels;
-	//GADGET_DEBUG2("Active channels %i \n",coils);
+	//GDEBUG("Active channels %i \n",coils);
 
 
 	{
@@ -59,7 +61,23 @@ int gpuCoilEstimationGadget::process(
 		hoNDArray<float>* ho_traj;
 
 		std::tie(ho_data,ho_traj) = combine_data(bucket->data_);
-		senseData->data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
+
+		if (skip_lines > 0){
+			auto cal_dims = *ho_data->get_dimensions();
+			cal_dims.back() = skip_lines;
+			auto data_dims = *ho_data->get_dimensions();
+			data_dims.back() -= skip_lines;
+
+
+			hoNDArray<float_complext> cal_view(cal_dims,(float_complext*) ho_data->get_data_ptr());
+			senseData->freq_calibration = boost::make_shared<cuNDArray<float_complext>>(cal_view);
+			hoNDArray<float_complext> data_view(data_dims,(float_complext*)ho_data->get_data_ptr()+cal_view.get_number_of_elements());
+			senseData->data = boost::make_shared<cuNDArray<float_complext>>(data_view);
+		} else {
+
+			senseData->data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
+		}
+
 
 		if (ho_traj->get_size(0) > 2){ //We have dcw
 			auto traj_dcw = separate_traj_and_dcw(ho_traj);
@@ -77,31 +95,33 @@ int gpuCoilEstimationGadget::process(
 	}
 
 
-	cuNDArray<float_complext> * ref_data;
-	cuNDArray<floatd2>* ref_traj;
-	cuNDArray<float>* ref_dcw;
+	//Remove Initial Spirals
+
+	boost::shared_ptr< cuNDArray<float_complext> >  ref_data;
+	boost::shared_ptr< cuNDArray<floatd2> > ref_traj;
+	boost::shared_ptr<cuNDArray<float> > ref_dcw;
 
 
 	if (bucket->ref_.empty()){
-		ref_data = senseData->data.get();
-		ref_traj = senseData->traj.get();
-		ref_dcw = senseData->dcw.get();
+		ref_data = senseData->data;
+		ref_traj = senseData->traj;
+		ref_dcw = senseData->dcw;
 	} else {
 
 		hoNDArray<std::complex<float>> * ho_data;
 		hoNDArray<float>* ho_traj;
 		std::tie(ho_data,ho_traj) = combine_data(bucket->ref_);
 
-		ref_data = new cuNDArray<float_complext>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
+		ref_data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
 		if (ho_traj->get_size(0) > 2){
 			auto traj_dcw = separate_traj_and_dcw(ho_traj);
-			ref_traj = new cuNDArray<floatd2>(*std::get<0>(traj_dcw));
-			ref_dcw = new cuNDArray<float>(*std::get<1>(traj_dcw));
+			ref_traj =boost::make_shared<cuNDArray<floatd2>>(*std::get<0>(traj_dcw));
+			ref_dcw = boost::make_shared<cuNDArray<float>>(*std::get<1>(traj_dcw));
 		} else {
 			std::vector<size_t> tdims = *ho_traj->get_dimensions();
 			std::vector<size_t> tmp_dim(tdims.begin()+1,tdims.end());
 			hoNDArray<floatd2> tmp(tmp_dim,reinterpret_cast<floatd2*>(ho_traj->get_data_ptr()));
-			ref_traj = new cuNDArray<floatd2>(tmp);
+			ref_traj = boost::make_shared<cuNDArray<floatd2>>(tmp);
 		}
 		delete ho_data;
 		delete ho_traj;
@@ -109,7 +129,7 @@ int gpuCoilEstimationGadget::process(
 
 	}
 
-	senseData->csm = calculate_CSM(ref_data,ref_traj,ref_dcw);
+	senseData->csm = calculate_CSM(ref_data.get(),ref_traj.get(),ref_dcw.get());
 
 	this->next()->putq(cm1);
 	//All important stuff has been taken from the bucket. Free it.
@@ -120,7 +140,7 @@ int gpuCoilEstimationGadget::process(
 
 }
 
-std::tuple<hoNDArray<std::complex<float>>*, hoNDArray<float>*> gpuCoilEstimationGadget::combine_data(
+std::tuple<hoNDArray<std::complex<float>>*, hoNDArray<float>*> gpuCSICoilEstimationGadget::combine_data(
 		std::vector<IsmrmrdAcquisitionData>& acquisitions) {
 
 
@@ -156,7 +176,7 @@ std::tuple<hoNDArray<std::complex<float>>*, hoNDArray<float>*> gpuCoilEstimation
 
 }
 
-boost::shared_ptr<cuNDArray<float_complext> > gpuCoilEstimationGadget::calculate_CSM(
+boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calculate_CSM(
 		cuNDArray<float_complext>* data, cuNDArray<floatd2>* traj, cuNDArray<float>* dcw ) {
 
 
@@ -166,7 +186,7 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCoilEstimationGadget::calculate
 		std::vector<size_t> csm_dims = img_size;
 		csm_dims.push_back(coils);
 		cuNDArray<float_complext> tmp(csm_dims);
-		GADGET_DEBUG2("Coils %i \n\n",tmp.get_size(2));
+		GDEBUG("Coils %i \n\n",tmp.get_size(2));
 		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
 		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
 
@@ -176,9 +196,9 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCoilEstimationGadget::calculate
 		cuNDArray<floatd2> spiral_traj(spiral_traj_dims,traj->get_data_ptr()+spiral_dims[0]*0);
 		cuNDArray<float> spiral_dcw(spiral_traj_dims,dcw->get_data_ptr()+spiral_dims[0]*0);
 
-		GADGET_DEBUG1("Preprocessing\n\n");
+		GDEBUG("Preprocessing\n\n");
 		plan.preprocess(&spiral_traj,cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
-		GADGET_DEBUG1("Computing\n\n");
+		GDEBUG("Computing\n\n");
 		plan.compute(&second_spiral,&tmp,&spiral_dcw,cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C);
 		auto tmp_abs = abs(&tmp);
 		write_nd_array(tmp_abs.get(),"images.real");
@@ -212,7 +232,6 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCoilEstimationGadget::calculate
 
 		auto res = estimate_b1_map<float,2>(tmp.get());
 		//fill(res.get(),float_complext(1,0));
-
 		//auto res= boost::make_shared<cuNDArray<float_complext>>(csm_dims);
 		//fill(res.get(),float_complext(1,0));
 		return res;
@@ -221,7 +240,7 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCoilEstimationGadget::calculate
 
 }
 
-std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<float >>> gpuCoilEstimationGadget::separate_traj_and_dcw(
+std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<float >>> gpuCSICoilEstimationGadget::separate_traj_and_dcw(
 		hoNDArray<float >* traj_dcw) {
 	std::vector<size_t> dims = *traj_dcw->get_dimensions();
 	std::vector<size_t> reduced_dims(dims.begin()+1,dims.end()); //Copy vector, but leave out first dim
@@ -244,6 +263,8 @@ std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<
 
 }
 
-GADGET_FACTORY_DECLARE(gpuCoilEstimationGadget)
+
+
+GADGET_FACTORY_DECLARE(gpuCSICoilEstimationGadget)
 
 } /* namespace Gadgetron */
