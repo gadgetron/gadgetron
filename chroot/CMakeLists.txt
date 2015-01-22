@@ -42,36 +42,17 @@ set (LIBRARY_PATHS ${LIBRARY_PATHS}:${CUDART_LIB_DIR}:${CUDA_LIB_DIR}:${CUDAFFT_
 
 configure_file("copy-cuda-lib.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh @ONLY)
 
-find_program(SIEMENS_TO_ISMRMRD_EXE siemens_to_ismrmrd)
-
 add_custom_target(chroot)
-if (SIEMENS_TO_ISMRMRD_EXE)
-  add_custom_command(
-    TARGET chroot
-    POST_BUILD
-    VERBATIM
-    COMMENT "Creating chroot tar file"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND sudo bash create_chroot.sh ${CMAKE_INSTALL_PREFIX}
-    ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}
-    ${GADGETRON_GIT_SHA1}
-    ${LIBRARY_PATHS}
-    ${CUDA_LIBRARY}
-    ${SIEMENS_TO_ISMRMRD_EXE}
-    )
-else(SIEMENS_TO_ISMRMRD_EXE)
-  add_custom_command(
-    TARGET chroot
-    POST_BUILD
-    VERBATIM
-    COMMENT "Creating chroot tar file"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND sudo bash create_chroot.sh ${CMAKE_INSTALL_PREFIX}
-    ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}
-    ${GADGETRON_GIT_SHA1}
-    ${LIBRARY_PATHS}
-    ${CUDA_LIBRARY}
-    )  
-endif(SIEMENS_TO_ISMRMRD_EXE)
+add_custom_command(
+  TARGET chroot
+  POST_BUILD
+  VERBATIM
+  COMMENT "Creating chroot tar file"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMAND sudo bash create_chroot-deb.sh ${CMAKE_INSTALL_PREFIX}
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}
+  ${GADGETRON_GIT_SHA1}
+  ${LIBRARY_PATHS}
+  ${CUDA_LIBRARY}
+  )  
