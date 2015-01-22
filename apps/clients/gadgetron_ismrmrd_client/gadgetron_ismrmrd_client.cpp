@@ -683,23 +683,23 @@ public:
             ISMRMRD::deserialize(meta_attrib.c_str(), imgAttrib);
 
             size_t n;
-            size_t num = imgAttrib.length("GT_DataRole");
+            size_t num = imgAttrib.length("GADGETRON_DataRole");
 
             std::vector<std::string> dataRole;
             if ( num == 0 )
             {
-                dataRole.push_back("GT_Image");
+                dataRole.push_back("GADGETRON_Image");
             }
             else
             {
                 dataRole.resize(num);
                 for ( n=0; n<num; n++ )
                 {
-                    dataRole[n] = std::string( imgAttrib.as_str("GT_DataRole", n) );
+                    dataRole[n] = std::string( imgAttrib.as_str("GADGETRON_DataRole", n) );
                 }
             }
 
-            long imageNumber = imgAttrib.as_long("GT_ImageNumber", 0);
+            long imageNumber = imgAttrib.as_long("GADGETRON_ImageNumber", 0);
 
             long cha, slc, e2, con, phs, rep, set, ave;
             cha = imgAttrib.as_long("CHA",          0);
