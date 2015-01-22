@@ -31,7 +31,7 @@ target_link_libraries(linalg ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${FFTW3_LIBRA
 target_link_libraries(linalg_test ${FFTW3_LIBRARIES} linalg)
 target_link_libraries(linalg_test gadgetron_toolbox_cpucore_math gadgetron_toolbox_cpufft gadgetron_toolbox_log)
 
-install(TARGETS linalg DESTINATION lib COMPONENT toolboxes-lib)
-install(TARGETS linalg_test DESTINATION bin COMPONENT toolboxes-utils)
+install(TARGETS linalg DESTINATION lib COMPONENT main)
+install(TARGETS linalg_test DESTINATION bin COMPONENT main)
 
-install(FILES matrix_vector_op.h matrix_decomposition.h linalg_export.h DESTINATION include COMPONENT toolboxes-dev)
+install(FILES matrix_vector_op.h matrix_decomposition.h linalg_export.h DESTINATION include COMPONENT main)

@@ -41,7 +41,7 @@ target_link_libraries(gadgetron_toolbox_gadgettools
                       optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
                       ${Boost_LIBRARIES})
 
-install(TARGETS gadgetron_toolbox_gadgettools DESTINATION lib COMPONENT toolboxes-lib)
+install(TARGETS gadgetron_toolbox_gadgettools DESTINATION lib COMPONENT main)
 
 install (FILES 
             GadgetCloudController.h 
@@ -49,7 +49,7 @@ install (FILES
             GadgetronConnector.h
             gadgettools_export.h
             GadgetronSlotContainer.h
-            DESTINATION include COMPONENT toolboxes-dev)
+            DESTINATION include COMPONENT main)
 
 if(ISMRMRD_FOUND)
   add_subdirectory(ismrmrd)

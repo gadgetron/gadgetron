@@ -78,7 +78,7 @@ target_link_libraries(
   gadgetron_toolbox_log
   ${Boost_LIBRARIES})
 
-install(TARGETS gadgetron_toolbox_cpucore DESTINATION lib COMPONENT toolboxes-lib)
+install(TARGETS gadgetron_toolbox_cpucore DESTINATION lib COMPONENT main)
 
 install(FILES
         ${header_files}
@@ -87,7 +87,7 @@ install(FILES
         image/hoNDImageContainer2D.h 
         algorithm/hoNDBSpline.h
         algorithm/hoNDBSpline.hxx 
-        DESTINATION include COMPONENT toolboxes-dev)
+        DESTINATION include COMPONENT main)
 
 add_subdirectory(math)
 add_subdirectory(hostutils)

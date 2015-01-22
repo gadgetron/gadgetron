@@ -1,3 +1,3 @@
 install(FILES
   mri_core_data.h
-  DESTINATION include COMPONENT toolboxes-dev)
+  DESTINATION include COMPONENT main)

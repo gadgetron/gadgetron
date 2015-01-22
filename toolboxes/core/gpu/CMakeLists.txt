@@ -55,7 +55,7 @@ target_link_libraries(gadgetron_toolbox_gpucore
   ${MKL_LIBRARIES}
   )
 
-install(TARGETS gadgetron_toolbox_gpucore DESTINATION lib COMPONENT toolboxes-lib)
+install(TARGETS gadgetron_toolbox_gpucore DESTINATION lib COMPONENT main)
 
 install(FILES
   gpucore_export.h
@@ -79,4 +79,4 @@ install(FILES
   cudaDeviceManager.h
   CUBLASContextProvider.h
   setup_grid.h
-  DESTINATION include COMPONENT toolboxes-dev)
+  DESTINATION include COMPONENT main)

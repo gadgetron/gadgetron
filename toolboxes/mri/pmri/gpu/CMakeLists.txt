@@ -68,7 +68,7 @@ target_link_libraries(gadgetron_toolbox_gpuparallelmri
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
-install(TARGETS gadgetron_toolbox_gpuparallelmri DESTINATION lib COMPONENT toolboxes-lib)
+install(TARGETS gadgetron_toolbox_gpuparallelmri DESTINATION lib COMPONENT main)
 
 install(FILES 
 	b1_map.h
@@ -85,4 +85,4 @@ install(FILES
 	cuSenseBufferCg.h
 	cuSpiritBuffer.h
 	gpupmri_export.h
-DESTINATION include COMPONENT toolboxes-dev)
+DESTINATION include COMPONENT main)

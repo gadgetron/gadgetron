@@ -19,7 +19,7 @@
         EPIReconXObject.h
         EPIReconXObjectFlat.h
         EPIReconXObjectTrapezoid.h
-        DESTINATION include COMPONENT toolboxes-dev)
+        DESTINATION include COMPONENT main)
 
     # install(TARGETS epi DESTINATION lib)
 

@@ -13,4 +13,4 @@ install(FILES
   hoGpBbSolver.h
   hoCgPreconditioner.h
   hoSolverUtils.h
-  DESTINATION include COMPONENT toolboxes-dev)
+  DESTINATION include COMPONENT main)

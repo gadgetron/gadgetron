@@ -1,4 +1,4 @@
 install (FILES 
             GadgetImageMessageReader.h 
             GadgetImageMessageWriter.h
-            DESTINATION include COMPONENT toolboxes-dev)
+            DESTINATION include COMPONENT main)

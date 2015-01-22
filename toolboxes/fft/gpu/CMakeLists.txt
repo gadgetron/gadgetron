@@ -26,9 +26,9 @@ target_link_libraries(gadgetron_toolbox_gpufft
   ${CUDA_CUFFT_LIBRARIES} 
   )
 
-install(TARGETS gadgetron_toolbox_gpufft DESTINATION lib COMPONENT toolboxes-lib)
+install(TARGETS gadgetron_toolbox_gpufft DESTINATION lib COMPONENT main)
 
 install(FILES
   gpufft_export.h
   cuNDFFT.h
-  DESTINATION include COMPONENT toolboxes-dev)
+  DESTINATION include COMPONENT main)

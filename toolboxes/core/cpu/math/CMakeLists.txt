@@ -71,8 +71,8 @@ else (MKL_FOUND)
     )
 endif (MKL_FOUND)
 
-install(TARGETS gadgetron_toolbox_cpucore_math DESTINATION lib COMPONENT toolboxes-lib)
+install(TARGETS gadgetron_toolbox_cpucore_math DESTINATION lib COMPONENT main)
 
 install(FILES 
     ${cpucore_math_header_files}
-    DESTINATION include COMPONENT toolboxes-dev)
+    DESTINATION include COMPONENT main)

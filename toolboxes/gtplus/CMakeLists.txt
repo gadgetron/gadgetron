@@ -212,8 +212,8 @@ if ( HAS_64_BIT )
                           gadgetron_toolbox_gtplus_io 
                           gadgetron_toolbox_cpucore_math )
 
-    install(TARGETS gadgetron_toolbox_gtplus DESTINATION lib COMPONENT toolboxes-lib)
-    install(TARGETS gadgetron_toolbox_gtplus_io DESTINATION lib COMPONENT toolboxes-lib)
+    install(TARGETS gadgetron_toolbox_gtplus DESTINATION lib COMPONENT main)
+    install(TARGETS gadgetron_toolbox_gtplus_io DESTINATION lib COMPONENT main)
 
     # install gtplus files
     install (FILES  
@@ -226,7 +226,7 @@ if ( HAS_64_BIT )
             ${application_header_files} 
             ${gtplus_io_header_files} 
             ${matlab_files}
-            DESTINATION include COMPONENT toolboxes-dev)
+            DESTINATION include COMPONENT main)
 
     # This one depends on the gadgets being compiled
     if (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND)
