@@ -322,28 +322,22 @@ set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_DEB_PACKAGE_COMPONENT ON)
 
 
-
-
 # Component dependencies:
 
 set(CPACK_DEB_ismrmrd-client_PACKAGE_DEPENDS "ismrmrd-lib, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev")
 set(CPACK_DEB_main_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
 
-
 # QUESTION: Do we need ismrmrd-lib as a dependency? 
-set(CPACK_DEB_cloudbus-lib_PACKAGE_DEPENDS "libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libace-dev")
-set(CPACK_DEB_cloudbus-dev_PACKAGE_DEPENDS "gadgetron-cloudbus-lib")
-set(CPACK_DEB_cloudbus-utils_PACKAGE_DEPENDS "gadgetron-cloudbus-lib")
-set(CPACK_DEB_cloudbus-whole_PACKAGE_DEPENDS "gadgetron-cloudbus-dev, gadgetron-cloudbus-utils")
+#set(CPACK_DEB_cloudbus-lib_PACKAGE_DEPENDS "libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libace-dev")
+#set(CPACK_DEB_cloudbus-dev_PACKAGE_DEPENDS "gadgetron-cloudbus-lib")
+#set(CPACK_DEB_cloudbus-utils_PACKAGE_DEPENDS "gadgetron-cloudbus-lib")
+#set(CPACK_DEB_cloudbus-whole_PACKAGE_DEPENDS "gadgetron-cloudbus-dev, gadgetron-cloudbus-utils")
+#set(CPACK_DEB_toolboxes-lib_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
+#set(CPACK_DEB_toolboxes-dev_PACKAGE_DEPENDS "gadgetron-toolboxes-lib")
+#set(CPACK_DEB_toolboxes-utils_PACKAGE_DEPENDS "gadgetron-toolboxes-lib")
+#set(CPACK_DEB_toolboxes-whole_PACKAGE_DEPENDS "gadgetron-toolboxes-dev, gadgetron-toolboxes-utils")
 
-
-set(CPACK_DEB_toolboxes-lib_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
-set(CPACK_DEB_toolboxes-dev_PACKAGE_DEPENDS "gadgetron-toolboxes-lib")
-set(CPACK_DEB_toolboxes-utils_PACKAGE_DEPENDS "gadgetron-toolboxes-lib")
-set(CPACK_DEB_toolboxes-whole_PACKAGE_DEPENDS "gadgetron-toolboxes-dev, gadgetron-toolboxes-utils")
-
-
-set(CPACK_DEB_whole_PACKAGE_DEPENDS "gadgetron-toolboxes-whole, gadgetron-cloudbus-whole, gadgetron-ismrmrd-client, gadgetron-main")
+set(CPACK_DEB_whole_PACKAGE_DEPENDS "gadgetron-ismrmrd-client, gadgetron-main")
 
 
 # Where the package metadata are
@@ -359,7 +353,7 @@ if(CPACK_GENERATOR)
   set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})  
 
   # A list containing the names of all components that should be installed
-  set(CPACK_COMPONENTS_ALL cloudbus-lib cloudbus-dev cloudbus-utils cloudbus-whole toolboxes-lib toolboxes-dev toolboxes-utils toolboxes-whole ismrmrd-client main whole)
+  set(CPACK_COMPONENTS_ALL ismrmrd-client main whole)
 
   include(CPack)
 endif(CPACK_GENERATOR)

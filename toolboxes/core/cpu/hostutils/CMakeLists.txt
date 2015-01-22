@@ -10,11 +10,11 @@ set_target_properties(gadgetron_toolbox_hostutils PROPERTIES VERSION ${GADGETRON
 
 install(TARGETS 
   gadgetron_toolbox_hostutils 
-  DESTINATION lib COMPONENT toolboxes-lib)
+  DESTINATION lib COMPONENT main)
 
 install(FILES 
   hostutils_export.h 
   parameterparser.h 
   url_encode.h 
   FileInfo.h 
-  DESTINATION include COMPONENT toolboxes-dev)
+  DESTINATION include COMPONENT main)

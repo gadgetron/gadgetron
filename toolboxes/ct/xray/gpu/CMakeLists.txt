@@ -38,7 +38,7 @@ target_link_libraries(
   ${CUDA_LIBRARIES}
 )
 
-install(TARGETS gadgetron_toolbox_gpuxray DESTINATION lib COMPONENT toolboxes-lib)
+install(TARGETS gadgetron_toolbox_gpuxray DESTINATION lib COMPONENT main)
 
 install(FILES 
   CBCT_acquisition.h
@@ -46,4 +46,4 @@ install(FILES
   conebeam_projection.h
   hoCuConebeamProjectionOperator.h
   gpuxray_export.h 
-  DESTINATION include COMPONENT toolboxes-dev)
+  DESTINATION include COMPONENT main)

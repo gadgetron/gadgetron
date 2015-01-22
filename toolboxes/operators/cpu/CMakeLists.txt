@@ -21,4 +21,4 @@ install(FILES
   hoPartialDerivativeOperator.h
   hoTvOperator.h
   hoTvPicsOperator.h
-  DESTINATION include COMPONENT toolboxes-dev)
+  DESTINATION include COMPONENT main)
