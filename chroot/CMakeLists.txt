@@ -49,7 +49,7 @@ add_custom_command(
   VERBATIM
   COMMENT "Creating chroot tar file"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND sudo bash create_chroot-deb.sh ${CMAKE_INSTALL_PREFIX}
+  COMMAND sudo bash create_chroot.sh ${CMAKE_INSTALL_PREFIX}
   ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}
   ${GADGETRON_GIT_SHA1}

@@ -58,27 +58,25 @@ else
 
   debootstrap --variant=buildd --arch amd64 trusty ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron http://gb.archive.ubuntu.com/ubuntu/
 
-  cd ${CHROOT_GADGETRON_BINARY_DIR}
-  make install DESTDIR="${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron" -j8
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes install software-properties-common python-dev python-twisted python-psutil python-numpy
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://gadgetronubuntu.s3.amazonaws.com trusty main"
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ trusty restricted main multiverse universe"
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ trusty-updates universe restricted multiverse main"
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://security.ubuntu.com/ubuntu trusty-security main universe"
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://gb.archive.ubuntu.com/ubuntu trusty main"
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get update
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes install sudo
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes install python-h5py
 
-  #This copies the ISMRMRD executable if it is installed
-  if [ $# -ge 7 ]; then
-      CHROOT_SIEMENS_TO_ISMRMRD_EXE=${7} 
-      cp $CHROOT_SIEMENS_TO_ISMRMRD_EXE "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/bin/"
-  else
-      echo "SIEMENS_TO_ISMRMRD_EXE not set"
-  fi
-
-  ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/generate_gadgetron_root ${CHROOT_GADGETRON_INSTALL_PREFIX} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install siemens-to-ismrmrd
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install gadgetron-whole
 
   cp ${6} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/lib  
-
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/stop.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-env.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root 
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-webapp.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root 
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/mount.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
-
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/mount_image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/umount_image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-gadgetron-from-image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
@@ -89,30 +87,21 @@ else
 
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/copy-cuda-lib.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/copy-cuda-lib.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
-
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/start-gadgetron.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/start-gadgetron.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron 
- 
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/enter-chroot-env.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/enter-chroot-env.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/run-webapp.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/run-webapp.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/siemens_to_ismrmrd.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/siemens_to_ismrmrd.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gt_alive.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gt_alive.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_ismrmrd_client.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_ismrmrd_client.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-
   chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron-dependency-query.sh
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron-dependency-query.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-
   cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml
-
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_app.cfg ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web.conf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_ld.conf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
@@ -120,11 +109,6 @@ else
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.py ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
   cp ${CHROOT_GADGETRON_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.py ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/bin/gadgetron_web_app.py
   cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_app.cfg ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/
-
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install software-properties-common python-dev python-twisted python-psutil python-numpy -y 
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://us.archive.ubuntu.com/ubuntu/ trusty main restricted multiverse universe"  
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get update  
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install python-h5py -y 
 
   TAR_FILE_NAME=gadgetron-`date '+%Y%m%d-%H%M'`-${CHROOT_GIT_SHA1_HASH:0:8}
   IMAGE_FILE_NAME=${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.img
@@ -148,7 +132,7 @@ else
   exit 0
 
  else
-  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA_LIBRARY) (SIEMENS_TO_ISMRMRD)\n"
+  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA_LIBRARY)\n"
   exit 1
  fi
 
