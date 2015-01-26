@@ -19,6 +19,7 @@ include_directories(
   ${GTEST_INCLUDE_DIRS}
   ${ACE_INCLUDE_DIR}
   ${ISMRMRD_INCLUDE_DIR}
+  ${FFTW3_INCLUDE_DIR}
   )
 
 if (CUDA_FOUND)

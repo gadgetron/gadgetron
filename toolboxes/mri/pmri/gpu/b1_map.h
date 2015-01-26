@@ -9,7 +9,7 @@
 #include "vector_td.h"
 #include "complext.h"
 
-#include <boost/smart_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace Gadgetron{
 

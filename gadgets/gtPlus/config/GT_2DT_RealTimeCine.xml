@@ -81,11 +81,6 @@
         <name>RemoveROOversampling</name>
         <dll>gadgetron_mricore</dll>
         <classname>RemoveROOversamplingGadget</classname>
-
-        <property>
-            <name>constant_noise_variance</name>
-            <value>true</value>
-        </property>
     </gadget>
 
     <!-- Noise prewhitening -->

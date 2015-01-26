@@ -1,6 +1,28 @@
 cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
+# check the compiler version
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if (NOT CMAKE_CXX_COMPILER_VERSION) #Compiler version is not set on Ubuntu 12.02 (gcc 4.6)
+      execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
+        OUTPUT_VARIABLE CMAKE_CXX_COMPILER_VERSION)
+    endif()
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.4)
+        message("CXX COMPILER VERSION: ${CMAKE_CXX_COMPILER_ID} : ${CMAKE_CXX_COMPILER_VERSION}")
+        message(FATAL_ERROR "Gadgetron requires GCC version >= 4.4")
+    endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.5)
+        message(FATAL_ERROR "Gadgetron requires Clang version >= 3.5")
+    endif()
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 16.0)
+        message(FATAL_ERROR "Gadgetron requires MSVC 2010 or above ")
+    endif()
+else()
+    message(WARNING "Unsupported compiler!")
+endif()
+
 #VERSIONING AND INSTALL PATHS
 set(GADGETRON_VERSION_MAJOR 3)
 set(GADGETRON_VERSION_MINOR 3)
@@ -66,6 +88,9 @@ if (WIN32)
 #    ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
     ADD_DEFINITIONS(-D_VARIADIC_MAX=10) #to fix compiler limitations in Visual Studio Express
+    ADD_DEFINITIONS("/wd4251") #disable warnings, 4251: needs to have dll-interface to be used by clients
+    ADD_DEFINITIONS("/wd4344") #disable warnings, 4344: behavior change: use of explicit template arguments
+    ADD_DEFINITIONS("/wd4996") #disable warnings, 4996: the POSIX name for this item is deprecated. Instead, use the ISO C++ conformant name
     if ( HAS_64_BIT )
         ADD_DEFINITIONS(-DWIN64 -D_WIN64)
     endif ( HAS_64_BIT )
@@ -89,6 +114,7 @@ else (WIN32)
         endif (APPLE)
     endif (UNIX)
 endif (WIN32)
+
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/log)
 
 # whether to suppress compilation warnings
@@ -101,20 +127,7 @@ if (BUILD_SUPPRESS_WARNINGS)
     endif (WIN32)
 endif (BUILD_SUPPRESS_WARNINGS)
 
-# whether to compile toolboxes as static library
-OPTION(BUILD_TOOLBOX_STATIC "Build static library for toolboxes" Off)
 
-if ( BUILD_TOOLBOX_STATIC )
-    message("Building static toolbox libray")
-    ADD_DEFINITIONS(-DBUILD_TOOLBOX_STATIC)
-    set(LIBTYPE STATIC)
-    if ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic")
-    endif ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
-else ( BUILD_TOOLBOX_STATIC )
-    message("Building dynamic toolbox libray")
-    set(LIBTYPE SHARED)
-endif ( BUILD_TOOLBOX_STATIC )
 
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
@@ -229,6 +242,11 @@ else()
 message("ISMRMRD not found")
 endif()
 find_package(MKL)
+if (MKL_FOUND)
+    if ( MKL_VERSION_STRING VERSION_LESS 11.2.0 )
+        message(FATAL_ERROR "Gadgetron requires Intel MKL version >= 11.2.0")
+    endif ()
+endif (MKL_FOUND)
 find_package(BLAS)
 find_package(LAPACK)
 if (LAPACK_FOUND)

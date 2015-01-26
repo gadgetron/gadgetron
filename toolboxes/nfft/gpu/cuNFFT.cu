@@ -12,6 +12,11 @@
   IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985. 
 */
 
+// Includes - Thrust
+#include <thrust/scan.h>
+#include <thrust/sort.h>
+#include <thrust/binary_search.h>
+#include <thrust/extrema.h>
 // Includes - Gadgetron
 #include "cuNFFT.h"
 #include "cuNDFFT.h"
@@ -28,10 +33,6 @@
 #include <math_constants.h>
 #include <cufft.h>
 
-// Includes - Thrust
-#include <thrust/scan.h>
-#include <thrust/sort.h>
-#include <thrust/binary_search.h>
 
 // Includes - stdlibs
 #include <stdio.h>
@@ -1358,24 +1359,24 @@ image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Ty
     
             if( i & (s<<(skipped_dims)) ){
               if( B_r.vec[i-1] ){ // Wrapping required 
-                set( stride, (size_t)(i-1), (int)(-1) );
+              	stride[i-1] = -1;
                 wrap_requests++;
               }
               else
-                set( stride, i-1, (int)0 );
+              	stride[i-1] = 0;
             }
             else{ 
               if( B_l.vec[i-1] ){ // Wrapping required 
-                set( stride, i-1, (int)1 );
+              	stride[i-1] =1 ;
                 wrap_requests++;
               }
               else
-                set( stride, i-1, (int)0 );
+              	stride[i-1] = 0;
             }
           }
           else{
             // Do not test for wrapping in dimension 'i-1' (for this combination)
-            set( stride, i-1, (int)0 );
+          	stride[i-1] = 0;
             skipped_dims++;
           }
         }

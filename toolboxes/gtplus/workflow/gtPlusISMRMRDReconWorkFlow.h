@@ -25,9 +25,9 @@ struct DimensionRecordCompare
 };
 
 // [RO E1 CHA SLC E2 CON PHS REP SET SEG AVE]
-#define GTPLUS_RECON_KSPACE_DIM_NUM 11
+#define GADGETRON_RECON_KSPACE_DIM_NUM 11
 // [RO E1 CHA SLC E2 CON PHS REP SET AVE]
-#define GTPLUS_RECON_IMAGE_DIM_NUM 10
+#define GADGETRON_RECON_IMAGE_DIM_NUM 10
 
 template <typename T> 
 class gtPlusISMRMRDReconWorkFlow
@@ -275,7 +275,7 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow()
     AVE_ref_.first = DIM_Average;
     AVE_ref_.second = 1;
 
-    dimsRes_.resize(GTPLUS_RECON_IMAGE_DIM_NUM);
+    dimsRes_.resize(GADGETRON_RECON_IMAGE_DIM_NUM);
     dimsRes_[0] = DIM_ReadOut;
     dimsRes_[1] = DIM_Encoding1;
     dimsRes_[2] = DIM_Channel;
@@ -287,7 +287,7 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow()
     dimsRes_[8] = DIM_Set;
     dimsRes_[9] = DIM_Average;
 
-    dataDimStartingIndexes_.resize(GTPLUS_RECON_KSPACE_DIM_NUM);
+    dataDimStartingIndexes_.resize(GADGETRON_RECON_KSPACE_DIM_NUM);
     dataDimStartingIndexes_[0] = DimensionRecordType(DIM_ReadOut, 0);
     dataDimStartingIndexes_[1] = DimensionRecordType(DIM_Encoding1, 0);
     dataDimStartingIndexes_[2] = DimensionRecordType(DIM_Channel, 0);
@@ -334,7 +334,7 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow(gtPlusReconWorker<T>& 
     SEG_ref_.second = 1;
     AVE_ref_.second = 1;
 
-    dimsRes_.resize(GTPLUS_RECON_IMAGE_DIM_NUM);
+    dimsRes_.resize(GADGETRON_RECON_IMAGE_DIM_NUM);
     dimsRes_[0] = DIM_ReadOut;
     dimsRes_[1] = DIM_Encoding1;
     dimsRes_[2] = DIM_Channel;
@@ -346,7 +346,7 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow(gtPlusReconWorker<T>& 
     dimsRes_[8] = DIM_Set;
     dimsRes_[9] = DIM_Average;
 
-    dataDimStartingIndexes_.resize(GTPLUS_RECON_KSPACE_DIM_NUM);
+    dataDimStartingIndexes_.resize(GADGETRON_RECON_KSPACE_DIM_NUM);
     dataDimStartingIndexes_[0] = DimensionRecordType(DIM_ReadOut, 0);
     dataDimStartingIndexes_[1] = DimensionRecordType(DIM_Encoding1, 0);
     dataDimStartingIndexes_[2] = DimensionRecordType(DIM_Channel, 0);
