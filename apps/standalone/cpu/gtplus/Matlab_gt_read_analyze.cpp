@@ -8,7 +8,6 @@
 #endif // _WIN32
 
 // Gadgetron includes
-#include "GadgetronCommon.h"
 #include "gtMatlab.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "hoNDArray.h"

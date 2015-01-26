@@ -299,7 +299,6 @@ namespace Gadgetron
 
         size_t calculate_offset(const size_t* ind) const;
         size_t calculate_offset(const std::vector<size_t>& ind) const;
-        size_t calculate_offset(const std::vector<gt_index_type>& ind) const;
 
         size_t calculate_offset(size_t x, size_t y) const;
         size_t calculate_offset(size_t x, size_t y, size_t z) const;
@@ -330,9 +329,6 @@ namespace Gadgetron
 
         T& operator()( const std::vector<size_t>& ind );
         const T& operator()( const std::vector<size_t>& ind ) const;
-
-        T& operator()( const std::vector<gt_index_type>& ind );
-        const T& operator()( const std::vector<gt_index_type>& ind ) const;
 
         T& operator[]( size_t x );
         const T& operator[]( size_t x ) const;

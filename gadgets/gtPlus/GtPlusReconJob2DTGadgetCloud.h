@@ -21,7 +21,6 @@
 
 #include "hoNDArray_utils.h"
 
-#include "GadgetronCommon.h"
 #include "gtPlusIOAnalyze.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconWorkOrder.h"
@@ -57,43 +56,43 @@ public:
     ~GtPlusReconJob2DTGadgetCloud();
 
     // kspace filter
-    Gadgetron::gtPlus::ISMRMRDKSPACEFILTER filterRO_type_;
+    Gadgetron::ISMRMRDKSPACEFILTER filterRO_type_;
     double filterRO_sigma_;
     double filterRO_width_;
 
-    Gadgetron::gtPlus::ISMRMRDKSPACEFILTER filterE1_type_;
+    Gadgetron::ISMRMRDKSPACEFILTER filterE1_type_;
     double filterE1_sigma_;
     double filterE1_width_;
 
-    Gadgetron::gtPlus::ISMRMRDKSPACEFILTER filterE2_type_;
+    Gadgetron::ISMRMRDKSPACEFILTER filterE2_type_;
     double filterE2_sigma_;
     double filterE2_width_;
 
     // ref data filter
-    Gadgetron::gtPlus::ISMRMRDKSPACEFILTER filterRO_ref_type_;
+    Gadgetron::ISMRMRDKSPACEFILTER filterRO_ref_type_;
     double filterRO_ref_sigma_;
     double filterRO_ref_width_;
 
-    Gadgetron::gtPlus::ISMRMRDKSPACEFILTER filterE1_ref_type_;
+    Gadgetron::ISMRMRDKSPACEFILTER filterE1_ref_type_;
     double filterE1_ref_sigma_;
     double filterE1_ref_width_;
 
-    Gadgetron::gtPlus::ISMRMRDKSPACEFILTER filterE2_ref_type_;
+    Gadgetron::ISMRMRDKSPACEFILTER filterE2_ref_type_;
     double filterE2_ref_sigma_;
     double filterE2_ref_width_;
 
     // partial fourier filter
-    Gadgetron::gtPlus::ISMRMRDKSPACEFILTER filterRO_pf_type_;
+    Gadgetron::ISMRMRDKSPACEFILTER filterRO_pf_type_;
     double filterRO_pf_sigma_;
     double filterRO_pf_width_;
     bool filterRO_pf_densityComp_;
 
-    Gadgetron::gtPlus::ISMRMRDKSPACEFILTER filterE1_pf_type_;
+    Gadgetron::ISMRMRDKSPACEFILTER filterE1_pf_type_;
     double filterE1_pf_sigma_;
     double filterE1_pf_width_;
     bool filterE1_pf_densityComp_;
 
-    Gadgetron::gtPlus::ISMRMRDKSPACEFILTER filterE2_pf_type_;
+    Gadgetron::ISMRMRDKSPACEFILTER filterE2_pf_type_;
     double filterE2_pf_sigma_;
     double filterE2_pf_width_;
     bool filterE2_pf_densityComp_;
