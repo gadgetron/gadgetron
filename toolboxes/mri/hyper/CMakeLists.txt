@@ -1,5 +1,5 @@
 if (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_HYPER__)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_TOOLBOX_HYPER__)
 endif (WIN32)
 
 if(WIN32)
@@ -15,11 +15,15 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   ${CUDA_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIR}
   )
 
 cuda_add_library(gadgetron_toolbox_hyper SHARED 
     CSIOperator.cpp
     CSI_utils.cu
+	CSIOperator.h
+	CSI_utils.h
+	gadgetron_toolbox_hyper_export.h
   )
 
 set_target_properties(gadgetron_toolbox_hyper PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})

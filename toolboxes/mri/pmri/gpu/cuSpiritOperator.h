@@ -7,6 +7,7 @@
 #pragma once
 
 #include "cuDiagonalSumOperator.h"
+#include <numeric>
 
 namespace Gadgetron {
 

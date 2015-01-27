@@ -92,6 +92,6 @@ void Gadgetron::CSI_dftH(cuNDArray<complext<T> >* kspace,
 	}
 }
 
-template void Gadgetron::CSI_dft<float>(cuNDArray<float_complext>* kspace,cuNDArray<float_complext>* tspace, thrust::device_vector<float>* frequencies, float dtt, float dte);
-template void Gadgetron::CSI_dftH<float>(cuNDArray<float_complext>* kspace,cuNDArray<float_complext>* tspace, thrust::device_vector<float>* frequencies, float dtt, float dte);
+template EXPORTHYPER void Gadgetron::CSI_dft<float>(cuNDArray<float_complext>* kspace,cuNDArray<float_complext>* tspace, thrust::device_vector<float>* frequencies, float dtt, float dte);
+template EXPORTHYPER void Gadgetron::CSI_dftH<float>(cuNDArray<float_complext>* kspace,cuNDArray<float_complext>* tspace, thrust::device_vector<float>* frequencies, float dtt, float dte);
 

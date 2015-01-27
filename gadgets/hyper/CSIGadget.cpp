@@ -14,6 +14,7 @@
 #include "CSfreqOperator.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuDWTOperator.h"
+#include <boost/make_shared.hpp>
 namespace Gadgetron {
 
 CSIGadget::CSIGadget() {

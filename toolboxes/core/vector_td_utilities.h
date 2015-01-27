@@ -336,6 +336,27 @@ namespace Gadgetron{
     return res;
   }
 
+  template<class REAL, unsigned int D> __inline__ __host__ __device__
+  complext<REAL> dot(const vector_td<complext<REAL>, D>& vec1, const vector_td<REAL, D>& vec2)
+  {
+	  complext<REAL> res = (vec1[0] * vec2[0]);
+	  for (unsigned int i = 1; i<D; i++){
+		  res += (vec1[i] * vec2[i]);
+	  }
+	  return res;
+
+  }
+
+  template<class REAL, unsigned int D> __inline__ __host__ __device__
+  complext<REAL> dot(const vector_td<REAL, D>& vec1, const vector_td<complext<REAL>, D>& vec2)
+  {
+	  complext<REAL> res = (vec1[0] * vec2[0]);
+	  for (unsigned int i = 1; i<D; i++){
+		  res += (vec1[i] * vec2[i]);
+	  }
+	  return res;
+
+  }
   template<class T, unsigned int D> __inline__ __host__ __device__
   T max( const vector_td<T,D>& vec )
   {

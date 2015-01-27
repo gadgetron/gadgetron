@@ -1,3 +1,11 @@
+if (WIN32)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUDWT__)
+endif (WIN32)
+
+if(WIN32)
+  link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
+
 
 include_directories( 
   ${CMAKE_SOURCE_DIR}/toolboxes/core

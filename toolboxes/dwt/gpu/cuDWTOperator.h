@@ -4,6 +4,7 @@
 #include "cuNDDWT.h"
 #include "vector_td.h"
 #include <random>
+#include <numeric>
 namespace Gadgetron {
 
 template<class T, unsigned int D> class cuDWTOperator : public linearOperator<cuNDArray<T> > {
@@ -11,6 +12,7 @@ public:
 	cuDWTOperator() : linearOperator<cuNDArray<T> >::linearOperator() {
 		run_dimensions = std::vector<size_t>(D,0);
 		std::iota(run_dimensions.begin(),run_dimensions.end(),0);
+		daubechies4 = vector_td<typename realType<T>::Type, 4>(0.6830127f, 1.1830127f, 0.3169873f, -0.1830127f);
 	}
 
 	void set_levels(unsigned int levels_) { levels=levels_;}
@@ -94,10 +96,12 @@ public:
 
 	void set_shift(int shift){ shift_ = shift;}
 
-	constexpr static auto daubechies4 = vector_td<typename realType<T>::Type ,4>{0.6830127f,1.1830127f,0.3169873f,-0.1830127f};
-	constexpr static auto haahr = vector_td<typename realType<T>::Type,2>{1.0f,1.0f};
-	constexpr static auto daubechies6= vector_td<typename realType<T>::Type,6>{0.47046721f,1.14111692f,0.650365f,-0.19093442f, -0.12083221f,0.0498175f};
-
+	vector_td<typename realType<T>::Type, 4> daubechies4;
+	/*
+	static auto daubechies4 = vector_td<typename realType<T>::Type ,4>{0.6830127f,1.1830127f,0.3169873f,-0.1830127f};
+	static auto haahr = vector_td<typename realType<T>::Type,2>{1.0f,1.0f};
+	static auto daubechies6= vector_td<typename realType<T>::Type,6>{0.47046721f,1.14111692f,0.650365f,-0.19093442f, -0.12083221f,0.0498175f};
+	*/
 	virtual boost::shared_ptr< linearOperator< cuNDArray<T> > > clone()
     										{
 		return linearOperator<cuNDArray<T>>::clone(this);

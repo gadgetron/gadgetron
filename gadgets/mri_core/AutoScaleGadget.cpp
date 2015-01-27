@@ -24,6 +24,7 @@ AutoScaleGadget::~AutoScaleGadget() {
 
 int AutoScaleGadget::process_config(ACE_Message_Block* mb) {
 	max_value_ = get_double_value("max_value");
+	return GADGET_OK;
 }
 
 

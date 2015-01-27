@@ -39,10 +39,13 @@ add_library(gadgetron_hyper SHARED
 
 set_target_properties(gadgetron_hyper PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_hyper 
+target_link_libraries(gadgetron_hyper
+  gadgetron_gadgetbase
   gadgetron_toolbox_gpunfft
   gadgetron_toolbox_gpucore
   gadgetron_toolbox_cpucore
+  gadgetron_toolbox_cpufft
+  gadgetron_toolbox_gpudwt
   gadgetron_toolbox_cpucore_math
   gadgetron_toolbox_gpusolvers
   gadgetron_toolbox_gpuoperators

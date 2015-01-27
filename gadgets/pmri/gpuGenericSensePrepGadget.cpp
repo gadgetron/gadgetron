@@ -11,6 +11,7 @@
 #include "hoNDArray_fileio.h"
 #include "ismrmrd/xml.h"
 
+#include <boost/make_shared.hpp>
 #include <algorithm>
 #include <vector>
 #include <cmath>

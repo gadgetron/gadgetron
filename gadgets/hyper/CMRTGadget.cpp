@@ -21,6 +21,7 @@
 #include <numeric>
 #include <functional>
 #include "cuNlcgSolver.h"
+#include <boost/make_shared.hpp>
 
 #include <ismrmrd/xml.h>
 #include <cmath>

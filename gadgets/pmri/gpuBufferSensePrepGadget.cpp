@@ -12,6 +12,7 @@
 #include "cuNFFT.h"
 #include "vector_td_utilities.h"
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include "b1_map.h"
 #include "cuCgSolver.h"
 #include "cuNDArray_math.h"
@@ -19,6 +20,8 @@
 #include "hoNDArray_utils.h"
 #include "cuNDArray_fileio.h"
 #include "cudaDeviceManager.h"
+#include <numeric>
+
 namespace Gadgetron {
 
 gpuBufferSensePrepGadget::gpuBufferSensePrepGadget() {
@@ -60,6 +63,7 @@ int gpuBufferSensePrepGadget::process_config(ACE_Message_Block* mb) {
 	// In case the warp_size constraint kicked in
 	oversampling_factor_ = float(image_dims_recon_os_[0])/float(image_dims_recon_[0]);
 
+	return GADGET_OK;
 
 }
 

@@ -12,6 +12,7 @@
 #include "ismrmrd/xml.h"
 
 #include <boost/thread/mutex.hpp>
+#include <boost/make_shared.hpp>
 
 namespace Gadgetron{
 

@@ -14,6 +14,7 @@
 #include "parameterparser.h"
 #include "cuNDDWT.h"
 #include "cuDWTOperator.h"
+#include <boost/make_shared.hpp>
 // Std includes
 #include <iostream>
 

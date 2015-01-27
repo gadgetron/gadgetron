@@ -16,6 +16,7 @@
 #include "cuCgSolver.h"
 #include "cuNDArray_fileio.h"
 #include "trajectory_utils.h"
+#include <boost/make_shared.hpp>
 
 namespace Gadgetron {
 

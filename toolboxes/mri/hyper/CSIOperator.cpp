@@ -55,6 +55,6 @@ template<class T> void CSIOperator<T>::mult_M(cuNDArray<complext<T>> *in , cuNDA
 }
 
 
-template class CSIOperator<float>;
+template class EXPORTHYPER CSIOperator<float>;
 
 } /* namespace Gadgetron */

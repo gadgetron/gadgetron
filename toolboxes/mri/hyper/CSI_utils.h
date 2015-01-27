@@ -9,6 +9,7 @@
 
 #include "cuNDArray.h"
 #include <thrust/device_vector.h>
+#include "gadgetron_toolbox_hyper_export.h"
 namespace Gadgetron {
 
 	/**
@@ -20,7 +21,7 @@ namespace Gadgetron {
 	 * @param dtt Time step between points in the first dimension of the tspace
 	 * @param dte Time step between points in the second dimension of the tspace
 	 */
-	template<class T> void CSI_dft(cuNDArray<complext<T> >* kspace, cuNDArray<complext<T> >* tspace, thrust::device_vector<T>* frequencies, T dtt, T dte);
+	template<class T> EXPORTHYPER void CSI_dft(cuNDArray<complext<T> >* kspace, cuNDArray<complext<T> >* tspace, thrust::device_vector<T>* frequencies, T dtt, T dte);
 	/**
 	 * Performs the adjoint of the non-cartesian discrete fourier transform.
 	 * @param kspace The input kspace
@@ -29,6 +30,6 @@ namespace Gadgetron {
 	 * @param dte Time step between points in the first dimension of the tspace
 	 * @param dtt Time step between points in the second dimension of the tspace
 	 */
-	template<class T> void CSI_dftH(cuNDArray<complext<T> >* kspace, cuNDArray<complext<T> >* tspace, thrust::device_vector<T>* frequencies, T dte, T dtt);
+	template<class T> EXPORTHYPER void CSI_dftH(cuNDArray<complext<T> >* kspace, cuNDArray<complext<T> >* tspace, thrust::device_vector<T>* frequencies, T dte, T dtt);
 
 }

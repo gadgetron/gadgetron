@@ -4,9 +4,10 @@
 #include "vector_td.h"
 #include "cuNDArray.h"
 
+#include "gpuoperators_export.h"
 
 namespace Gadgetron {
-template <class T, unsigned int D> class cuPartialDerivativeOperator2
+template <class T, unsigned int D> class EXPORTGPUOPERATORS cuPartialDerivativeOperator2
 	: public linearOperator<cuNDArray<T> >
 {
 
