@@ -239,7 +239,7 @@ namespace Gadgetron
             dissimilarity_->initialize(*target_);
             dissimilarity_inverse_->initialize(*source_);
 
-            bool computeForwardTransform = true;
+            bool computeForwardTransform = false;
             bool stopIteration = false;
 
             for ( iter_num_=0; iter_num_<max_iter_num_; iter_num_++ )
@@ -256,7 +256,7 @@ namespace Gadgetron
 
                     if ( stopIteration ) break;
 
-                    GADGET_CHECK_RETURN_FALSE( this->enforceInverseTransform(transform_, transform_inverse_, deform_delta_inverse_, 2) );
+                    GADGET_CHECK_RETURN_FALSE(this->enforceInverseTransform(transform_, transform_inverse_, deform_delta_inverse_, 6));
                 }
                 else
                 {
@@ -270,7 +270,7 @@ namespace Gadgetron
 
                     if ( stopIteration ) break;
 
-                    GADGET_CHECK_RETURN_FALSE( this->enforceInverseTransform(transform_inverse_, transform_, deform_delta_, 2) );
+                    GADGET_CHECK_RETURN_FALSE(this->enforceInverseTransform(transform_inverse_, transform_, deform_delta_, 6));
                 }
 
                 computeForwardTransform = !computeForwardTransform;
