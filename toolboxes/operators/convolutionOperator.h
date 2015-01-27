@@ -7,7 +7,7 @@
 #include "linearOperator.h"
 #include "vector_td_utilities.h"
 
-#include <boost/smart_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <vector>
 
 namespace Gadgetron{

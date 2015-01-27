@@ -7,7 +7,7 @@
 #include "linearOperator.h"
 #include "gpupmri_export.h"
 
-#include <boost/smart_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <iostream>
 
 namespace Gadgetron{
