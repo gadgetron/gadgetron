@@ -49,10 +49,8 @@ if (CUDA_FOUND)
     link_libraries(gadgetron_toolbox_gtplus gadgetron_toolbox_gpuparallelmri gadgetron_toolbox_gpucore)
 endif (CUDA_FOUND)
 
-if (CUDA_FOUND)
-    add_executable(gtplus_ut_grappa 
-        gtplus_ut.cpp 
-        grappa_test.cpp )
-endif (CUDA_FOUND)
+add_executable(gtplus_ut_grappa 
+    gtplus_ut.cpp 
+    grappa_test.cpp )
 
 #add_test(gtplus_ut gtplus_ut_util)

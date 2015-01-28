@@ -37,6 +37,7 @@ template<> struct fftw_types<double>{
     This class is a singleton because the planning and memory allocation routines of FFTW are NOT threadsafe.
     The class' template type is a REAL, ie. float or double.
 
+		Note that scaling is 1/sqrt(N) fir both FFT and IFFT, where N is the number of elements along the FFT dimensions
     Access using e.g.
     FFT<float>::instance()
     */

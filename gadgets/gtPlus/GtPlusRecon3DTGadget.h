@@ -30,8 +30,8 @@ struct EXPORTGTPLUSGADGET GtPlusRecon3DTPara
     float reconFOV_E1_;
     float reconFOV_E2_;
 
-    Gadgetron::gtPlus::ISMRMRDDIM dim_5th_;
-    Gadgetron::gtPlus::ISMRMRDDIM workOrder_ShareDim_;
+    Gadgetron::ISMRMRDDIM dim_5th_;
+    Gadgetron::ISMRMRDDIM workOrder_ShareDim_;
 
     bool no_acceleration_averageall_ref_;
     bool no_acceleration_same_combinationcoeff_allN_;

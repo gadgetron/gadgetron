@@ -9,7 +9,6 @@
 #include <typeinfo>
 
 #include "GtPlusIOExport.h"
-#include "GadgetronCommon.h"
 
 #include "NDArray.h"
 #include "complext.h"

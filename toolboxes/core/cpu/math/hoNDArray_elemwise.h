@@ -28,7 +28,6 @@
 #include "hoNDArray.h"
 #include "cpucore_math_export.h"
 
-#include "GadgetronCommon.h"
 #include <complex>
 
 namespace Gadgetron{

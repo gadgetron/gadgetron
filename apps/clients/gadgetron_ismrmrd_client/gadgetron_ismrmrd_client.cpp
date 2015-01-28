@@ -682,35 +682,6 @@ public:
             ISMRMRD::MetaContainer imgAttrib;
             ISMRMRD::deserialize(meta_attrib.c_str(), imgAttrib);
 
-            size_t n;
-            size_t num = imgAttrib.length("GT_DataRole");
-
-            std::vector<std::string> dataRole;
-            if ( num == 0 )
-            {
-                dataRole.push_back("GT_Image");
-            }
-            else
-            {
-                dataRole.resize(num);
-                for ( n=0; n<num; n++ )
-                {
-                    dataRole[n] = std::string( imgAttrib.as_str("GT_DataRole", n) );
-                }
-            }
-
-            long imageNumber = imgAttrib.as_long("GT_ImageNumber", 0);
-
-            long cha, slc, e2, con, phs, rep, set, ave;
-            cha = imgAttrib.as_long("CHA",          0);
-            slc = imgAttrib.as_long("SLC",          0);
-            e2  = imgAttrib.as_long("E2",           0);
-            con = imgAttrib.as_long("CON",          0);
-            phs = imgAttrib.as_long("PHS",          0);
-            rep = imgAttrib.as_long("REP",          0);
-            set = imgAttrib.as_long("SET",          0);
-            ave = imgAttrib.as_long("AVE",          0);
-
             std::ostringstream ostr;
 
             if ( !prefix_.empty() )
@@ -718,20 +689,14 @@ public:
                 ostr << prefix_ << "_";
             }
 
-            for ( n=0; n<dataRole.size(); n++ )
-            {
-                ostr << dataRole[n] << "_";
-            }
-
-            ostr << "SLC" << slc << "_"
-                 << "E2"  << e2  << "_"
-                 << "CON" << con << "_"
-                 << "PHS" << phs << "_"
-                 << "REP" << rep << "_"
-                 << "SET" << set << "_"
-                 << "AVE" << ave << "_"
-                 << "CHA" << cha << "_" 
-                 << "ImageSeries" << h.image_series_index;
+            ostr << "SLC" << h.slice << "_"
+                << "CON" << h.contrast << "_"
+                << "PHS" << h.phase << "_"
+                << "REP" << h.repetition << "_"
+                << "SET" << h.set << "_"
+                << "AVE" << h.average << "_"
+                 << h.image_index 
+                 << "_" << h.image_series_index;
 
             std::string filename = ostr.str();
 

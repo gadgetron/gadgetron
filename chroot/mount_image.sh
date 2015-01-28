@@ -72,8 +72,8 @@ else
 
     if mountpoint -q ${GLOBAL_MOUNT_POINT}; then
         mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/proc" /proc self/exe
-	      mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/dev" /dev
-        mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/sys" /sys
+	      mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/dev" /dev null
+        mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/sys" /sys kernel
     else
       exit 1
     fi

@@ -4,7 +4,7 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
 
-#include <boost/smart_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace Gadgetron{
 

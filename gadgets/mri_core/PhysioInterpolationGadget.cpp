@@ -1,7 +1,7 @@
 #include "PhysioInterpolationGadget.h"
 #include "GadgetronTimer.h"
 #include "Spline.h"
-#include "GtPlusDefinition.h"
+#include "mri_core_def.h"
 #include "ismrmrd/meta.h"
 #include "hoNDBSpline.h"
 #include "ismrmrd/xml.h"
@@ -261,14 +261,14 @@ namespace Gadgetron{
                         (*tmpm3->getObjectPtr()) = (*attribptrs[0]);
                         out_attrib.push_back(tmpm3);
 
-                        tmpm3->getObjectPtr()->set(GTPLUS_PHASE,      (long)tmpm1->getObjectPtr()->phase);
-                        tmpm3->getObjectPtr()->set(GTPLUS_IMAGENUMBER, (long)tmpm1->getObjectPtr()->image_index);
+                        tmpm3->getObjectPtr()->set("PHS",      (long)tmpm1->getObjectPtr()->phase);
+                        tmpm3->getObjectPtr()->set(GADGETRON_IMAGENUMBER, (long)tmpm1->getObjectPtr()->image_index);
 
-                        tmpm3->getObjectPtr()->append(GTPLUS_DATA_ROLE, "PhysioInterp");
-                        tmpm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, "PhysioInterp");
-                        tmpm3->getObjectPtr()->append(GTPLUS_SEQUENCEDESCRIPTION, "_PhysioInterp");
+                        tmpm3->getObjectPtr()->append(GADGETRON_DATA_ROLE, "PhysioInterp");
+                        tmpm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, "PhysioInterp");
+                        tmpm3->getObjectPtr()->append(GADGETRON_SEQUENCEDESCRIPTION, "_PhysioInterp");
 
-                        tmpm3->getObjectPtr()->append(GTPLUS_IMAGEPROCESSINGHISTORY, "Interp");
+                        tmpm3->getObjectPtr()->append(GADGETRON_IMAGEPROCESSINGHISTORY, "Interp");
                     }
                 }
 

@@ -230,7 +230,7 @@ namespace Gadgetron{
     }
 
     // Goto from x-f to x-t space
-    cuNDFFT<float>::instance()->fft( cgresult.get(), 2 );
+    cuNDFFT<float>::instance()->fft( cgresult.get(), 2,true );
 
     /*
     static int counter = 0;
