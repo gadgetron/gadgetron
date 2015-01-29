@@ -50,9 +50,9 @@ else
 
   CHROOT_DIR=${1}
 
-  mount_safe "${CHROOT_DIR}/gadgetron/proc" /proc self/exe
-  mount_safe "${CHROOT_DIR}/gadgetron/dev" /dev
-  mount_safe "${CHROOT_DIR}/gadgetron/sys" /sys
+  mount_safe "${CHROOT_DIR}/proc" /proc self/exe
+  mount_safe "${CHROOT_DIR}/dev" /dev
+  mount_safe "${CHROOT_DIR}/sys" /sys
 
   exit 0
 

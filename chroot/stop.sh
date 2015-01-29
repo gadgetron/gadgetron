@@ -1,4 +1,4 @@
-#!/bin/bash                                                                                                                                                 
+#!/bin/bash
 
 function umount_check {
     MAX_TRY=100
@@ -28,17 +28,17 @@ else
  BASEDIR=$(dirname $0)
 
  if [ $# -eq 0 ]; then
-  if mountpoint -q $BASEDIR/gadgetron/proc; then
-   umount $BASEDIR/gadgetron/proc
-   umount_check $BASEDIR/gadgetron/proc
+  if mountpoint -q $BASEDIR/../proc; then
+   umount $BASEDIR/../proc
+   umount_check $BASEDIR/../proc
   fi
-  if mountpoint -q $BASEDIR/gadgetron/sys; then
-    umount $BASEDIR/gadgetron/sys
-   umount_check $BASEDIR/gadgetron/sys
+  if mountpoint -q $BASEDIR/../sys; then
+    umount $BASEDIR/../sys
+   umount_check $BASEDIR/../sys
   fi
-  if mountpoint -q $BASEDIR/gadgetron/dev; then
-    umount $BASEDIR/gadgetron/dev
-    umount_check $BASEDIR/gadgetron/dev
+  if mountpoint -q $BASEDIR/../dev; then
+    umount $BASEDIR/../dev
+    umount_check $BASEDIR/../dev
   fi
   exit 0
 

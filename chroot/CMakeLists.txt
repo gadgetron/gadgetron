@@ -55,4 +55,39 @@ add_custom_command(
   ${GADGETRON_GIT_SHA1}
   ${LIBRARY_PATHS}
   ${CUDA_LIBRARY}
-  )  
+  )
+
+execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh)
+execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/start-gadgetron.sh)
+execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/enter-chroot-env.sh)
+execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/gadgetron-dependency-query.sh)
+execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_ismrmrd_client.sh)
+execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/gt_alive.sh)
+execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/run-webapp.sh)
+execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/siemens_to_ismrmrd.sh)
+
+install(FILES 
+  ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh 
+  ${CMAKE_CURRENT_BINARY_DIR}/start-gadgetron.sh
+  ${CMAKE_CURRENT_BINARY_DIR}/enter-chroot-env.sh
+  ${CMAKE_CURRENT_BINARY_DIR}/gadgetron-dependency-query.sh
+  ${CMAKE_CURRENT_BINARY_DIR}/siemens_to_ismrmrd.sh
+  ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_ismrmrd_client.sh
+  ${CMAKE_CURRENT_BINARY_DIR}/gt_alive.sh
+  ${CMAKE_CURRENT_BINARY_DIR}/run-webapp.sh
+  ${CMAKE_SOURCE_DIR}/chroot/mount_image.sh
+  ${CMAKE_SOURCE_DIR}/chroot/mount.sh
+  ${CMAKE_SOURCE_DIR}/chroot/run-gadgetron-dependency-query.sh
+  ${CMAKE_SOURCE_DIR}/chroot/run-gadgetron_ismrmrd_client.sh
+  ${CMAKE_SOURCE_DIR}/chroot/run-gt_alive.sh
+  ${CMAKE_SOURCE_DIR}/chroot/run-siemens_to_ismrmrd.sh
+  ${CMAKE_SOURCE_DIR}/chroot/start-env.sh
+  ${CMAKE_SOURCE_DIR}/chroot/start-gadgetron-from-image.sh
+  ${CMAKE_SOURCE_DIR}/chroot/start.sh
+  ${CMAKE_SOURCE_DIR}/chroot/start-webapp.sh
+  ${CMAKE_SOURCE_DIR}/chroot/stop.sh
+  ${CMAKE_SOURCE_DIR}/chroot/umount_image.sh
+  ${CMAKE_SOURCE_DIR}/chroot/install_chroot_image.sh
+  DESTINATION /scripts 
+  COMPONENT scripts
+  )

@@ -331,6 +331,7 @@ set(CPACK_DEB_main_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-nu
 #set(CPACK_DEB_toolboxes-whole_PACKAGE_DEPENDS "gadgetron-toolboxes-dev, gadgetron-toolboxes-utils")
 
 set(CPACK_DEB_whole_PACKAGE_DEPENDS "gadgetron-ismrmrd-client, gadgetron-main")
+set(CPACK_DEB_scripts_PACKAGE_DEPENDS "pandoc")
 
 
 # Where the package metadata are
@@ -346,7 +347,7 @@ if(CPACK_GENERATOR)
   set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})  
 
   # A list containing the names of all components that should be installed
-  set(CPACK_COMPONENTS_ALL ismrmrd-client main whole)
+  set(CPACK_COMPONENTS_ALL ismrmrd-client scripts main whole)
 
   include(CPack)
 endif(CPACK_GENERATOR)
