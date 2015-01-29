@@ -23,7 +23,7 @@ else
  done
 
  # copy it to the right location (overwrite the previous one)
- yes | cp $NEW_CUDA_LIB $SCRIPTPATH/gadgetron@CMAKE_INSTALL_PREFIX@/lib/
+ yes | cp $NEW_CUDA_LIB $SCRIPTPATH/..@CMAKE_INSTALL_PREFIX@/lib/
  exit 0
 
  else

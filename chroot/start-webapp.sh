@@ -9,8 +9,8 @@ if [ $(id -u) -ne 0 ]; then
     echo -e "\nPlease start the script as a root or sudo!\n"
     exit 1
 else
-    $BASEDIR/mount.sh $BASEDIR
-    chroot $BASEDIR/gadgetron /run-webapp.sh &
+    $BASEDIR/mount.sh $BASEDIR/../
+    chroot $BASEDIR/../ /scripts/run-webapp.sh &
     start_gadgetron_job=($!)
     wait $!
     $BASEDIR/stop.sh

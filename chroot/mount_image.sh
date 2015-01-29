@@ -58,7 +58,7 @@ else
     MOUNT_TRY=0
     MAX_MOUNT_TRY=100
     while [ ${MOUNT_READY} -eq 0 ]; do
-      if mountpoint -q ${GLOBAL_MOUNT_POINT} && [ -e ${GLOBAL_MOUNT_POINT}/chroot-root/start.sh ]; then
+      if mountpoint -q ${GLOBAL_MOUNT_POINT} && [ -e ${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/scripts/start.sh ]; then
           MOUNT_READY=1
       else
           sleep 0.2

@@ -7,8 +7,8 @@ else
  BASEDIR=$(dirname $0)
 
  if [ $# -eq 0 ]; then
-  $BASEDIR/mount.sh $BASEDIR
-  chroot $BASEDIR/gadgetron /enter-chroot-env.sh
+  $BASEDIR/mount.sh $BASEDIR/../
+  chroot $BASEDIR/../ /scripts/enter-chroot-env.sh
   exit 0
 
  else

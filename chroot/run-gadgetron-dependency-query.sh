@@ -22,7 +22,7 @@ else
         fi
     fi
 
-    chroot ${MOUNT_POINT}/chroot-root/gadgetron /gadgetron-dependency-query.sh $GT_HOST $GT_PORT $QUERY_OUT
+    chroot ${MOUNT_POINT}/chroot-root/gadgetron /scripts/gadgetron-dependency-query.sh $GT_HOST $GT_PORT $QUERY_OUT
     exit $?
   else
     echo -e "\nUsage: $0 <mount point> <Host> <port> <query out file> <optional: full path to img file>\n"

@@ -23,7 +23,7 @@ else
         fi
     fi
 
-    chroot ${MOUNT_POINT}/chroot-root/gadgetron /gadgetron_ismrmrd_client.sh $ISMRMRD_FILENAME $CONDIG_XML $GT_HOST $GT_PORT
+    chroot ${MOUNT_POINT}/chroot-root/gadgetron /scripts/gadgetron_ismrmrd_client.sh $ISMRMRD_FILENAME $CONDIG_XML $GT_HOST $GT_PORT
     exit $?
   else
     echo -e "\nUsage: $0 <mount point> <ismrmrd filename> <config filename> <host> <port> <optional: full path to img file>\n"

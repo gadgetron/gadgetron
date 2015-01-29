@@ -10,8 +10,8 @@ if [ $(id -u) -ne 0 ]; then
  exit 1
 else
  if [ $# -eq 0 ]; then
-  $BASEDIR/mount.sh $BASEDIR
-  chroot $BASEDIR/gadgetron /start-gadgetron.sh &
+  $BASEDIR/mount.sh $BASEDIR/../
+  chroot $BASEDIR/../ /scripts/start-gadgetron.sh &
   start_gadgetron_job=($!)
   wait $!
   $BASEDIR/stop.sh

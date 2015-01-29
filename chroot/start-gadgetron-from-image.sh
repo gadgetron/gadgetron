@@ -34,7 +34,7 @@ else
     done
 
     if mountpoint -q ${MOUNT_POINT}; then
-	  ${MOUNT_POINT}/chroot-root/start.sh &
+	  ${MOUNT_POINT}/chroot-root/gadgetron/scripts/start.sh &
 	  start_gadgetron_image_job=($!)
 	  wait $!
 	  $BASEDIR/umount_image.sh ${MOUNT_POINT}
