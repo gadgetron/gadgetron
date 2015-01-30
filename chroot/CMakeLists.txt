@@ -49,7 +49,8 @@ add_custom_command(
   VERBATIM
   COMMENT "Creating chroot tar file"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND sudo bash create_chroot.sh ${CMAKE_INSTALL_PREFIX}
+  COMMAND sudo bash create_chroot.sh 
+  ${CMAKE_INSTALL_PREFIX}
   ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}
   ${GADGETRON_GIT_SHA1}
@@ -57,16 +58,16 @@ add_custom_command(
   ${CUDA_LIBRARY}
   )
 
-execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh)
-execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/start-gadgetron.sh)
-execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/enter-chroot-env.sh)
-execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/gadgetron-dependency-query.sh)
-execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_ismrmrd_client.sh)
-execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/gt_alive.sh)
-execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/run-webapp.sh)
-execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/siemens_to_ismrmrd.sh)
+#execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh)
+#execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/start-gadgetron.sh)
+#execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/enter-chroot-env.sh)
+#execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/gadgetron-dependency-query.sh)
+#execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_ismrmrd_client.sh)
+#execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/gt_alive.sh)
+#execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/run-webapp.sh)
+#execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/siemens_to_ismrmrd.sh)
 
-install(FILES 
+install(PROGRAMS 
   ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh 
   ${CMAKE_CURRENT_BINARY_DIR}/start-gadgetron.sh
   ${CMAKE_CURRENT_BINARY_DIR}/enter-chroot-env.sh
@@ -90,4 +91,11 @@ install(FILES
   ${CMAKE_SOURCE_DIR}/chroot/install_chroot_image.sh
   DESTINATION /scripts 
   COMPONENT scripts
+#  USE_SOURCE_PERMISSIONS
   )
+
+#file(COPY
+#    ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh
+#    ${CMAKE_CURRENT_BINARY_DIR}/start-gadgetron.sh
+#    ${CMAKE_CURRENT_BINARY_DIR}/enter-chroot-env.sh
+#    DESTINATION /home/ubuntu)
