@@ -74,45 +74,8 @@ else
   chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install siemens-to-ismrmrd
   chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install gadgetron-whole
   chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install gadgetron-scripts
-
-  #cp ${6} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/lib  
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/stop.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-env.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root 
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-webapp.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root 
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/mount.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/mount_image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/umount_image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/start-gadgetron-from-image.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/run-gadgetron_ismrmrd_client.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/run-siemens_to_ismrmrd.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/run-gadgetron-dependency-query.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/run-gt_alive.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
-
-  #chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/copy-cuda-lib.sh
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/copy-cuda-lib.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
-  #chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/start-gadgetron.sh
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/start-gadgetron.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron 
-  #chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/enter-chroot-env.sh
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/enter-chroot-env.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-  #chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/run-webapp.sh
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/run-webapp.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-  #chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/siemens_to_ismrmrd.sh
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/siemens_to_ismrmrd.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-  #chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gt_alive.sh
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gt_alive.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-  #chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_ismrmrd_client.sh
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_ismrmrd_client.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-  #chmod +x ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron-dependency-query.sh
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron-dependency-query.sh ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
+  
   cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_app.cfg ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web.conf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_ld.conf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/gadgetron_chroot.conf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp/gadgetron_chroot.conf
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.py ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
-  #cp ${CHROOT_GADGETRON_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.py ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/bin/gadgetron_web_app.py
-  #cp ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_web_app.cfg ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/
 
   chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get clean
 
