@@ -92,7 +92,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
   std::string gcfg = gadgetron_home + std::string("/") + std::string(GADGETRON_CONFIG_PATH) + std::string("/gadgetron.xml");
   if (!FileInfo(gcfg).exists()) {
-    GERROR("Gadgetron configuration file %s not found.\n");
+    GERROR("Gadgetron configuration file %s not found.\n", gcfg.c_str());
     return -1;
   }
 
@@ -109,7 +109,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
       std::ifstream t(gcfg.c_str());
       std::string gcfg_text((std::istreambuf_iterator<char>(t)),
 			    std::istreambuf_iterator<char>());
-      
+
       GadgetronXML::deserialize(gcfg_text.c_str(), c);
       ACE_OS_String::strncpy(port_no, c.port.c_str(), 1024);
 
@@ -119,9 +119,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 	{
 	  std::string key = it->name;
 	  std::string value = it->value;
-      
+
 	  gadget_parameters[key] = value;
-	  
+
 	  if ( key == std::string(GT_WORKING_DIRECTORY) ) workingDirectorySet = true;
         }
     }  catch (std::runtime_error& e) {
@@ -153,7 +153,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   }
 
   if (c.cloudBus) {
-    GINFO("Starting cloudBus: %s:%d\n", 
+    GINFO("Starting cloudBus: %s:%d\n",
 	  c.cloudBus->multiCastAddress.c_str(), c.cloudBus->port);
     Gadgetron::CloudBus::set_mcast_address(c.cloudBus->multiCastAddress.c_str());
     Gadgetron::CloudBus::set_mcast_port(c.cloudBus->port);
