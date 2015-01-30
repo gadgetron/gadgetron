@@ -1,6 +1,6 @@
 find_package(Ismrmrd REQUIRED)
 
-include_directories(${MATLAB_INCLUDE_DIR})
+include_directories(${MATLAB_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/toolboxes/mri_core ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math)
 
 if (UNIX)
     if (APPLE)
@@ -13,7 +13,7 @@ else(UNIX)
     SET(MATLAB_SUFFIX ".dll")
 endif(UNIX)
 
-add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp)
+add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp MatlabBufferGadget.h MatlabBufferGadget.cpp MatlabUtils.h MatlabUtils.cpp)
 set_target_properties(gadgetron_matlab PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(
@@ -38,7 +38,7 @@ if (UNIX)
     add_custom_command(
         OUTPUT ${JAVA_MATLAB_SERVER_CLASS}
         DEPENDS ${JAVA_MATLAB_SERVER_SRC}
-        COMMAND javac -d ${CMAKE_CURRENT_BINARY_DIR} -cp "${MATLAB_UNIX_JARS}" ${CMAKE_CURRENT_SOURCE_DIR}/${JAVA_MATLAB_SERVER_SRC}
+        COMMAND javac -source 1.5 -target 1.5 -d ${CMAKE_CURRENT_BINARY_DIR} -cp "${MATLAB_UNIX_JARS}" ${CMAKE_CURRENT_SOURCE_DIR}/${JAVA_MATLAB_SERVER_SRC}
         COMMENT "Generating Matlab Command Server class" VERBATIM
     )
     add_custom_target(matlab_command_server ALL DEPENDS ${JAVA_MATLAB_SERVER_CLASS})
@@ -49,5 +49,5 @@ endif(UNIX)
 
 install(TARGETS gadgetron_matlab DESTINATION lib COMPONENT main)
 install(FILES MatlabGadget.h gadgetron_matlab_export.h DESTINATION include COMPONENT main)
-install(FILES BaseGadget.m scale.m accumulate_and_recon.m mask_image.m DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
-install(FILES matlab.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES BaseGadget.m BaseBufferGadget.m bufferRecon.m scale.m accumulate_and_recon.m mask_image.m recon.m trajectoryScale.m DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
+install(FILES matlab.xml matlabbuffer.xml matlabnoncartesian.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

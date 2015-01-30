@@ -1,5 +1,4 @@
 #pragma once
-
 #include "hoNDArray_fileio.h"
 
 namespace Gadgetron{

@@ -24,6 +24,7 @@ cuda_add_library(gadgetron_toolbox_gpuoperators SHARED
   cuTv1dOperator.h
   cuConvolutionOperator.h
   cuPartialDerivativeOperator.cu
+  cuPartialDerivativeOperator2.cu
   cuLaplaceOperator.cu
   cuTvOperator.cu
   cuTv1dOperator.cu
@@ -47,6 +48,7 @@ install(FILES
   cuDiagonalOperator.h
   cuDiagonalSumOperator.h
   cuPartialDerivativeOperator.h
+  cuPartialDerivativeOperator2.h
   cuConvolutionOperator.h
   cuLaplaceOperator.h
   cuTvOperator.h
