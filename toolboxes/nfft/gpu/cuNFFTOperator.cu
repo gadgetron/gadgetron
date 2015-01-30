@@ -5,8 +5,8 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D> void
-  cuNFFTOperator<REAL,D>::mult_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
+  template<class REAL, unsigned int D, bool ATOMICS> void
+  cuNFFTOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
   {
     if( !in || !out ){
       throw std::runtime_error("cuNFFTOperator::mult_M : 0x0 input/output not accepted");
@@ -21,7 +21,7 @@ namespace Gadgetron{
       tmp_out = out;
     }
   
-    plan_->compute( in, tmp_out, dcw_.get(), cuNFFT_plan<REAL,D>::NFFT_FORWARDS_C2NC );
+    plan_->compute( in, tmp_out, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC );
 
     if( accumulate ){
       *out += *tmp_out;
@@ -29,8 +29,8 @@ namespace Gadgetron{
     }
   }
 
-  template<class REAL, unsigned int D> void
-  cuNFFTOperator<REAL,D>::mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
+  template<class REAL, unsigned int D, bool ATOMICS> void
+  cuNFFTOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
   {
     if( !in || !out ){
       throw std::runtime_error("cuNFFTOperator::mult_MH : 0x0 input/output not accepted");
@@ -45,15 +45,15 @@ namespace Gadgetron{
       tmp_out = out;
     }
 
-    plan_->compute( in, tmp_out, dcw_.get(), cuNFFT_plan<REAL,D>::NFFT_BACKWARDS_NC2C );
+    plan_->compute( in, tmp_out, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS_NC2C );
     if( accumulate ){
       *out += *tmp_out;
       delete tmp_out;
     }
   }
 
-  template<class REAL, unsigned int D> void
-  cuNFFTOperator<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
+  template<class REAL, unsigned int D, bool ATOMICS> void
+  cuNFFTOperator<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
   {
     if( !in || !out ){
       throw std::runtime_error("cuNFFTOperator::mult_MH_M : 0x0 input/output not accepted");
@@ -81,30 +81,35 @@ namespace Gadgetron{
     } 
   }
   
-  template<class REAL, unsigned int D> void
-  cuNFFTOperator<REAL,D>::setup( typename uint64d<D>::Type matrix_size, typename uint64d<D>::Type matrix_size_os, REAL W )
+  template<class REAL, unsigned int D, bool ATOMICS> void
+  cuNFFTOperator<REAL,D,ATOMICS>::setup( typename uint64d<D>::Type matrix_size, typename uint64d<D>::Type matrix_size_os, REAL W )
   {  
     plan_->setup( matrix_size, matrix_size_os, W );  
   }
 
-  template<class REAL, unsigned int D> void
-  cuNFFTOperator<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory ) 
+  template<class REAL, unsigned int D, bool ATOMICS> void
+  cuNFFTOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory )
   {
     if( trajectory == 0x0 ){
       throw std::runtime_error("cuNFFTOperator::preprocess : 0x0 trajectory provided.");
     }
     
-    plan_->preprocess( trajectory, cuNFFT_plan<REAL,D>::NFFT_PREP_ALL );
+    plan_->preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL );
   }
   
   //
   // Instantiations
   //
 
-  template class EXPORTGPUNFFT cuNFFTOperator<float,1>;
-  template class EXPORTGPUNFFT cuNFFTOperator<float,2>;
-  template class EXPORTGPUNFFT cuNFFTOperator<float,3>;
-  template class EXPORTGPUNFFT cuNFFTOperator<float,4>;
+  template class EXPORTGPUNFFT cuNFFTOperator<float,1,false>;
+  template class EXPORTGPUNFFT cuNFFTOperator<float,2,false>;
+  template class EXPORTGPUNFFT cuNFFTOperator<float,3,false>;
+  template class EXPORTGPUNFFT cuNFFTOperator<float,4,false>;
+
+  template class EXPORTGPUNFFT cuNFFTOperator<float,1,true>;
+  template class EXPORTGPUNFFT cuNFFTOperator<float,2,true>;
+  template class EXPORTGPUNFFT cuNFFTOperator<float,3,true>;
+  template class EXPORTGPUNFFT cuNFFTOperator<float,4,true>;
 
   template class EXPORTGPUNFFT cuNFFTOperator<double,1>;
   template class EXPORTGPUNFFT cuNFFTOperator<double,2>;

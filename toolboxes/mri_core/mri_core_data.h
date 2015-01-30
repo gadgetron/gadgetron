@@ -5,7 +5,7 @@
 #include "ismrmrd/ismrmrd.h"
 #include <vector>
 #include <set>
-
+#include "hoNDArray.h"
 namespace Gadgetron 
 {
 
@@ -199,8 +199,8 @@ namespace Gadgetron
   {
   public:
     uint16_t min_;
-    uint16_t max_;
     uint16_t center_;
+    uint16_t max_;
   };
   
   class SamplingDescription
@@ -225,7 +225,7 @@ namespace Gadgetron
     //7D, fixed order [RO, E1, E2, CHA, SLC, N, S]
     hoNDArray< std::complex<float> > data_;
     
-    //11D, fixed order [RO, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
+    //7D, fixed order [TRAJ,RO, E1, E2, SLC, N, S]
     //This element is optional (length is 0 if not present)
     hoNDArray< float > trajectory_;
     

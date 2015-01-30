@@ -4,8 +4,6 @@
 #include "ismrmrd/xml.h"
 
 #include <numeric>
-#include <cstring>
-
 #ifdef USE_OMP
 #include <omp.h>
 #endif 

@@ -4,6 +4,7 @@
 #include "ho2DArray.h"
 #include "complext.h"
 #include <algorithm>
+#include <iomanip>
 
 namespace Gadgetron{
 

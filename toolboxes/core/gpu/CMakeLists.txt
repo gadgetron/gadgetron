@@ -39,7 +39,7 @@ cuda_add_library(gadgetron_toolbox_gpucore SHARED
     cuNDArray_utils.cu
     cuNDArray_reductions.cu
     radial_utilities.cu
-    hoCuNDArray_blas.cu
+    hoCuNDArray_blas.cpp
     CUBLASContextProvider.cpp
     cudaDeviceManager.cpp
   )

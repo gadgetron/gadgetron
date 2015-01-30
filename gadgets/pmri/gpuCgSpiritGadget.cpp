@@ -10,76 +10,32 @@
 #include "vector_td_utilities.h"
 #include "hoNDArray_fileio.h"
 #include "ismrmrd/xml.h"
+#include "gpuSenseGadget.h"
 
 namespace Gadgetron{
 
   gpuCgSpiritGadget::gpuCgSpiritGadget()
     : is_configured_(false)
-    , channels_(0)
-    , frame_counter_(0)
-    , matrix_size_reported_(0)
+    , matrix_size_reported_(0), gpuSenseGadget()
   {
-    set_parameter(std::string("deviceno").c_str(), "0");
-    set_parameter(std::string("setno").c_str(), "0");
-    set_parameter(std::string("sliceno").c_str(), "0");
     set_parameter(std::string("number_of_iterations").c_str(), "5");
     set_parameter(std::string("cg_limit").c_str(), "1e-6");
-    set_parameter(std::string("oversampling_factor").c_str(), "1.25");
-    set_parameter(std::string("kernel_width").c_str(), "5.5");
     set_parameter(std::string("kappa").c_str(), "0.3");
     
-    matrix_size_ = uint64d2(0,0);
-    matrix_size_os_ = uint64d2(0,0);
-    matrix_size_seq_ = uint64d2(0,0);
-  }
+    }
 
   gpuCgSpiritGadget::~gpuCgSpiritGadget() {}
 
   int gpuCgSpiritGadget::process_config( ACE_Message_Block* mb )
   {
+	  gpuSenseGadget::process_config(mb);
     //GDEBUG("gpuCgSpiritGadget::process_config\n");
 
-    device_number_ = get_int_value(std::string("deviceno").c_str());
 
-    int number_of_devices = 0;
-    if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-      GDEBUG( "Error: unable to query number of CUDA devices.\n" );
-      return GADGET_FAIL;
-    }
-
-    if (number_of_devices == 0) {
-      GDEBUG( "Error: No available CUDA devices.\n" );
-      return GADGET_FAIL;
-    }
-
-    if (device_number_ >= number_of_devices) {
-      GDEBUG("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
-      device_number_ = (device_number_%number_of_devices);
-    }
-
-    if (cudaSetDevice(device_number_)!= cudaSuccess) {
-      GDEBUG( "Error: unable to set CUDA device.\n" );
-      return GADGET_FAIL;
-    }
-
-    pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
-    set_number_ = get_int_value(std::string("setno").c_str());
-    slice_number_ = get_int_value(std::string("sliceno").c_str());
-    number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
+   number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
     cg_limit_ = get_double_value(std::string("cg_limit").c_str());
-    oversampling_factor_ = get_double_value(std::string("oversampling_factor").c_str());
-    kernel_width_ = get_double_value(std::string("kernel_width").c_str());
-    kappa_ = get_double_value(std::string("kappa").c_str());
-    output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
-    output_timing_ = get_bool_value(std::string("output_timing").c_str());
-    rotations_to_discard_ = get_int_value(std::string("rotations_to_discard").c_str());
-
-    if( (rotations_to_discard_%2) == 1 ){
-      GDEBUG("#rotations to discard must be even.\n");
-      return GADGET_FAIL;
-    }
-
-    // Get the Ismrmrd header
+    kappa_ = get_double_value("kappa");
+   // Get the Ismrmrd header
     //
     ISMRMRD::IsmrmrdHeader h;
     ISMRMRD::deserialize(mb->rd_ptr(),h);
@@ -123,7 +79,7 @@ namespace Gadgetron{
       //cg_.set_preconditioner( D_ );           // preconditioning matrix
       cg_.set_max_iterations( number_of_iterations_ );
       cg_.set_tc_tolerance( cg_limit_ );
-      cg_.set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT);
+      cg_.set_output_mode( (this->output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT);
 
       is_configured_ = true;
     }
@@ -166,7 +122,7 @@ namespace Gadgetron{
     unsigned int frames = j->tra_host_->get_size(1)*rotations;
 
     if( samples%j->tra_host_->get_number_of_elements() ) {
-      GDEBUG("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n", 
+      GDEBUG("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n",
                     samples, j->tra_host_->get_number_of_elements());
       return GADGET_FAIL;
     }
@@ -192,14 +148,16 @@ namespace Gadgetron{
                ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
 
     if( !matrix_size_reported_ ) {
-      GDEBUG("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);    
+      GDEBUG("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);
       GDEBUG("Matrix size OS : [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
       matrix_size_reported_ = true;
     }
 
     std::vector<size_t> image_dims = to_std_vector(matrix_size_);
+
+    image_dims.push_back(frames);
     image_dims.push_back(channels);
-    //image_dims.push_back(frames);
+    GDEBUG("Number of coils: %d %d \n",channels,image_dims.size());
     
     E_->set_domain_dimensions(&image_dims);
     E_->set_codomain_dimensions(device_samples->get_dimensions().get());
@@ -280,69 +238,14 @@ namespace Gadgetron{
     // Combine coil images
     //
 
-    cgresult = real_to_complex<float_complext>(sqrt(sum(abs_square(cgresult.get()).get(), 2).get()).get()); // RSS
+    cgresult = real_to_complex<float_complext>(sqrt(sum(abs_square(cgresult.get()).get(), 3).get()).get()); // RSS
     //cgresult = sum(cgresult.get(), 2);
 
     // Pass on the reconstructed images
     //
 
-    unsigned int frames_per_rotation = frames/rotations;
-
-    if( rotations == 1 ){ // this is the case for golden ratio
-      rotations = frames;
-      frames_per_rotation = 1;
-    }
-
-    for( unsigned int frame=0; frame<frames; frame++ ){
-      
-      unsigned int rotation_idx = frame/frames_per_rotation;
-
-      // Check if we should discard this frame
-      if( rotation_idx < (rotations_to_discard_>>1) || rotation_idx >= rotations-(rotations_to_discard_>>1) )
-        continue;
-
-      GadgetContainerMessage<ISMRMRD::ImageHeader> *m = 
-        new GadgetContainerMessage<ISMRMRD::ImageHeader>();
-
-      GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = 
-        new GadgetContainerMessage< hoNDArray< std::complex<float> > >();      
-      
-      *m->getObjectPtr() = j->image_headers_[frame];
-      m->cont(cm);
-      
-      std::vector<size_t> img_dims(2);
-      img_dims[0] = matrix_size_seq_[0];
-      img_dims[1] = matrix_size_seq_[1];
-
-      cm->getObjectPtr()->create(&img_dims);
-
-      size_t data_length = prod(matrix_size_seq_);
-
-      cudaMemcpy(cm->getObjectPtr()->get_data_ptr(),
-                 cgresult->get_data_ptr()+frame*data_length,
-                 data_length*sizeof(std::complex<float>),
-                 cudaMemcpyDeviceToHost);
-      
-      cudaError_t err = cudaGetLastError();
-      if( err != cudaSuccess ){
-        GDEBUG("Unable to copy result from device to host: %s\n", cudaGetErrorString(err));
-        m->release();
-        return GADGET_FAIL;
-      }
-
-      m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
-      m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];
-      m->getObjectPtr()->matrix_size[2] = 1;
-      m->getObjectPtr()->channels       = 1;
-      m->getObjectPtr()->image_index    = frame_counter_ + frame;
-            
-      if (this->next()->putq(m) < 0) {
-        GDEBUG("Failed to put result image on to queue\n");
-        m->release();
-        return GADGET_FAIL;
-      }
-    }
     
+	put_frames_on_que(frames,rotations,j,cgresult.get());
     frame_counter_ += frames;
 
     if( output_timing_ )

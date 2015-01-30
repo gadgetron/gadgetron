@@ -51,6 +51,8 @@ cuda_add_library(gadgetron_toolbox_gpuparallelmri SHARED
     cuSpiritBuffer.cpp
     htgrappa.cpp
     htgrappa.cu
+    trajectory_utils.h
+    trajectory_utils.cu
   )
 
 set_target_properties(gadgetron_toolbox_gpuparallelmri PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})

@@ -69,7 +69,7 @@ namespace Gadgetron{
     size_t ndim = dims.size();
     size_t batches = 0;
     size_t elements_in_ft = 1;
-    for (size_t i = 0; i < dims.size(); i++) 
+    for (size_t i = 0; i < dims.size(); i++)
       elements_in_ft *= dims[i];
     batches = input->get_number_of_elements() / elements_in_ft;
     
@@ -87,8 +87,6 @@ namespace Gadgetron{
       throw std::runtime_error(ss.str());;
     }
     
-
-
     bool must_permute = false;
 
     {
@@ -102,7 +100,7 @@ namespace Gadgetron{
     if (direction == CUFFT_INVERSE)
     	for (size_t i =0; i < dims_to_transform->size(); i++)
     	timeswitch(input,dims_to_transform->at(i));
-
+    
     if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
       throw std::runtime_error("cuNDFFT FFT execute failed");;
     }
@@ -113,11 +111,10 @@ namespace Gadgetron{
       ss << "cuNDFFT FFT plan destroy failed: " << ftres;
       throw std::runtime_error(ss.str());;
     }
-
     if (direction == CUFFT_FORWARD)
     	for (size_t i =0; i < dims_to_transform->size(); i++)
     		timeswitch(input,dims_to_transform->at(i));
-
+    
     if (do_scale) {
       *input *= 1/std::sqrt(T(elements_in_ft));
     }

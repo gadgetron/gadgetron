@@ -84,6 +84,59 @@ namespace Gadgetron{
   
     return co;
   }
+  template<class REAL> __global__ static void
+  compute_radial_trajectory_variable_angle_2d_kernel( typename reald<REAL,2>::Type *co,REAL* angles, REAL one_over_num_profiles_per_frame, REAL one_over_num_frames )
+  {
+    const unsigned int index = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
+
+    const REAL samples_per_profile = (REAL) blockDim.x;
+    const REAL bias = samples_per_profile * REAL(0.5);
+    const REAL sample_idx_on_profile = (REAL)threadIdx.x;
+    const int frame = blockIdx.y;
+
+
+    typename reald<REAL,2>::Type sample_pos;
+    sample_pos.vec[0] = (sample_idx_on_profile-bias)*cos(angles[frame])/samples_per_profile;
+    sample_pos.vec[1] = (sample_idx_on_profile-bias)*sin(angles[frame])/samples_per_profile;
+
+    co[index] = sample_pos;
+  }
+
+  template<class REAL> boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > >
+  compute_radial_trajectory_variable_angle_2d(cuNDArray<REAL>* angles, unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames, REAL angular_offset )
+  {
+    typedef typename reald<REAL,2>::Type T;
+
+    // Get device properties
+    int device; cudaGetDevice( &device );
+    cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
+    const unsigned int warp_size = deviceProp.warpSize;
+
+    if( num_samples_per_profile%warp_size ){
+      cout << endl << "Error:: compute_radial_trajectory_fixed_angle_2d: #samples/profile is not a multiple of the device's warp size." << endl;
+      return boost::shared_ptr< cuNDArray<T> >();
+    }
+
+    unsigned int number_of_samples_per_frame = num_samples_per_profile * num_profiles_per_frame;
+
+    // Allocate space for result
+    vector<size_t> dims;
+    dims.push_back( number_of_samples_per_frame );
+    dims.push_back( num_frames );
+
+    boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(&dims) );
+
+    // Set dimensions of grid/blocks.
+    dim3 dimBlock( num_samples_per_profile );
+    dim3 dimGrid( num_profiles_per_frame, num_frames );
+
+    // Invoke kernel
+    compute_radial_trajectory_variable_angle_2d_kernel<REAL><<< dimGrid, dimBlock >>> ( co->get_data_ptr(), angles->get_data_ptr(),REAL(1)/(REAL)num_profiles_per_frame, REAL(1)/(REAL)num_frames);
+
+    CHECK_FOR_CUDA_ERROR();
+
+    return co;
+  }
 
   template<class REAL> __global__ void
   compute_radial_trajectory_fixed_angle_2d_kernel( typename reald<REAL,2>::Type *co, REAL one_over_num_profiles_per_frame, REAL one_over_num_frames, REAL angular_offset )
@@ -99,12 +152,13 @@ namespace Gadgetron{
     REAL cos_angle, sin_angle;
     gad_sincos<REAL>( (lprofile+frame*one_over_num_frames)*one_over_num_profiles_per_frame*get_pi<REAL>()+angular_offset+get_pi<REAL>(), &sin_angle, &cos_angle );
 
-    typename reald<REAL,2>::Type sample_pos; 
+    typename reald<REAL,2>::Type sample_pos;
     sample_pos.vec[0] = (sample_idx_on_profile-bias)*cos_angle/samples_per_profile;
     sample_pos.vec[1] = (sample_idx_on_profile-bias)*sin_angle/samples_per_profile;
-  
+
     co[index] = sample_pos;
   }
+
 
   template<class REAL> boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
   compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames, REAL angular_offset )

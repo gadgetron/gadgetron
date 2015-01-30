@@ -10,6 +10,7 @@ install(FILES
   linearOperatorSolver.h
   cgSolver.h
   nlcgSolver.h
+  lbfgsSolver.h
   sbSolver.h
   sbcSolver.h
   cgCallback.h	
@@ -19,6 +20,7 @@ install(FILES
   lsqrSolver.h
   gpSolver.h
   gpBbSolver.h
+  eigenTester.h
   DESTINATION include COMPONENT main)
 
 IF(ARMADILLO_FOUND)
