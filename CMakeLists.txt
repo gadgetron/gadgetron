@@ -30,18 +30,39 @@ set(GADGETRON_VERSION_PATCH 0)
 set(GADGETRON_VERSION_STRING ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR}.${GADGETRON_VERSION_PATCH})
 set(GADGETRON_SOVERSION ${GADGETRON_VERSION_MAJOR}.${GADGETRON_VERSION_MINOR})
 find_package(Git)
-if (GIT_FOUND)
-  execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD WORKING_DIRECTORY
-      ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE GADGETRON_GIT_SHA1 ERROR_VARIABLE GADGETRON_GIT_STDERR)
-  string(STRIP "${GADGETRON_GIT_SHA1}" GADGETRON_GIT_SHA1)
-  string(LENGTH "${GADGETRON_GIT_SHA1}" GADGETRON_GIT_SHA1_LEN)
-  if(${GADGETRON_GIT_SHA1_LEN} LESS 40)
-    message(WARNING "Could not determine SHA-1 hash: ${GADGETRON_GIT_STDERR}")
+
+# Try to find GIT_SHA1 by calling gadgetron_info
+if(EXISTS "${CMAKE_INSTALL_PREFIX}/gadgetron/bin/gadgetron_info")
+  execute_process(COMMAND gadgetron_info
+                  WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/gadgetron/bin
+                  OUTPUT_VARIABLE GADGETRON_INFO
+                  ERROR_VARIABLE GADGETRON_INFO_STDERR)
+
+  string(REGEX MATCH "[0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z]" GIT_SHA1 ${GADGETRON_INFO})
+
+  if(GIT_SHA1)
+    set(GADGETRON_GIT_SHA1 ${GIT_SHA1})
+  endif(GIT_SHA1)
+
+# Try to find GIT_SHA1 by calling git rev-parse HEAD
+else(EXISTS "${CMAKE_INSTALL_PREFIX}/gadgetron/bin/gadgetron_info")
+  if(GIT_FOUND)
+    execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD 
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
+                    OUTPUT_VARIABLE GADGETRON_GIT_SHA1 
+                    ERROR_VARIABLE GADGETRON_GIT_STDERR)
+  
+    string(STRIP "${GADGETRON_GIT_SHA1}" GADGETRON_GIT_SHA1)
+    string(LENGTH "${GADGETRON_GIT_SHA1}" GADGETRON_GIT_SHA1_LEN)
+    if(${GADGETRON_GIT_SHA1_LEN} LESS 40)
+      message(WARNING "Could not determine SHA-1 hash: ${GADGETRON_GIT_STDERR}")
+      set(GADGETRON_GIT_SHA1 "NA")
+    endif(${GADGETRON_GIT_SHA1_LEN} LESS 40)
+  else(GIT_FOUND)
     set(GADGETRON_GIT_SHA1 "NA")
-  endif(${GADGETRON_GIT_SHA1_LEN} LESS 40)
-else()
-  set(GADGETRON_GIT_SHA1 "NA")
-endif()
+  endif(GIT_FOUND)
+endif(EXISTS "${CMAKE_INSTALL_PREFIX}/gadgetron/bin/gadgetron_info")
+
 set(GADGETRON_INSTALL_CONFIG_PATH config)
 set(GADGETRON_INSTALL_MATLAB_PATH share/gadgetron/matlab)
 set(GADGETRON_INSTALL_PYTHON_MODULE_PATH share/gadgetron/python)
@@ -313,7 +334,7 @@ if(EXISTS ${DPKG_PROGRAM})
 endif(EXISTS ${DPKG_PROGRAM})
 
 # Dependencies if components are not used:
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, ismrmrd-main")
+#set(CPACK_DEBIAN_PACKAGE_DEPENDS "libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, ismrmrd-main")
 
 # Enable/Disable automatic search for dependencies:
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
@@ -325,22 +346,12 @@ set(CPACK_DEB_PACKAGE_COMPONENT ON)
 
 # Component dependencies:
 
+set(CPACK_DEB_scripts_PACKAGE_DEPENDS "")
+
 set(CPACK_DEB_ismrmrd-client_PACKAGE_DEPENDS "ismrmrd-lib, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev")
 set(CPACK_DEB_main_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
 
-# QUESTION: Do we need ismrmrd-lib as a dependency? 
-#set(CPACK_DEB_cloudbus-lib_PACKAGE_DEPENDS "libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libace-dev")
-#set(CPACK_DEB_cloudbus-dev_PACKAGE_DEPENDS "gadgetron-cloudbus-lib")
-#set(CPACK_DEB_cloudbus-utils_PACKAGE_DEPENDS "gadgetron-cloudbus-lib")
-#set(CPACK_DEB_cloudbus-whole_PACKAGE_DEPENDS "gadgetron-cloudbus-dev, gadgetron-cloudbus-utils")
-#set(CPACK_DEB_toolboxes-lib_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
-#set(CPACK_DEB_toolboxes-dev_PACKAGE_DEPENDS "gadgetron-toolboxes-lib")
-#set(CPACK_DEB_toolboxes-utils_PACKAGE_DEPENDS "gadgetron-toolboxes-lib")
-#set(CPACK_DEB_toolboxes-whole_PACKAGE_DEPENDS "gadgetron-toolboxes-dev, gadgetron-toolboxes-utils")
-
 set(CPACK_DEB_whole_PACKAGE_DEPENDS "gadgetron-ismrmrd-client, gadgetron-main")
-set(CPACK_DEB_scripts_PACKAGE_DEPENDS "pandoc")
-
 
 # Where the package metadata are
 set(GADGETRON_CPACK_CFG_FILE "${PROJECT_BINARY_DIR}/cpack_options.cmake")
@@ -355,7 +366,7 @@ if(CPACK_GENERATOR)
   set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})  
 
   # A list containing the names of all components that should be installed
-  set(CPACK_COMPONENTS_ALL ismrmrd-client scripts main whole)
+  set(CPACK_COMPONENTS_ALL scripts ismrmrd-client main whole)
 
   include(CPack)
 endif(CPACK_GENERATOR)

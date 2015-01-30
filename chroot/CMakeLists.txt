@@ -1,17 +1,13 @@
 configure_file("start-gadgetron.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/start-gadgetron.sh @ONLY)
 configure_file("enter-chroot-env.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/enter-chroot-env.sh @ONLY)
-
 configure_file("gadgetron-dependency-query.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron-dependency-query.sh @ONLY)
 configure_file("siemens_to_ismrmrd.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/siemens_to_ismrmrd.sh @ONLY)
 configure_file("gadgetron_ismrmrd_client.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_ismrmrd_client.sh @ONLY)
 configure_file("gt_alive.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/gt_alive.sh @ONLY)
-
 configure_file("${CMAKE_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_web_app.cfg @ONLY)
 configure_file("${CMAKE_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web.conf.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_web.conf @ONLY)
 configure_file("${CMAKE_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_ld.conf.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_web_ld.conf @ONLY)
-
 configure_file("run-webapp.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/run-webapp.sh @ONLY)
-
 configure_file("copy-cuda-lib.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh @ONLY)
 
 set (LIBRARY_PATHS ${ISMRMRD_LIB_DIR})
@@ -43,6 +39,7 @@ set (LIBRARY_PATHS ${LIBRARY_PATHS}:${CUDART_LIB_DIR}:${CUDA_LIB_DIR}:${CUDAFFT_
 configure_file("copy-cuda-lib.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh @ONLY)
 
 add_custom_target(chroot)
+
 add_custom_command(
   TARGET chroot
   POST_BUILD
@@ -91,11 +88,4 @@ install(PROGRAMS
   ${CMAKE_SOURCE_DIR}/chroot/install_chroot_image.sh
   DESTINATION /scripts 
   COMPONENT scripts
-#  USE_SOURCE_PERMISSIONS
   )
-
-#file(COPY
-#    ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh
-#    ${CMAKE_CURRENT_BINARY_DIR}/start-gadgetron.sh
-#    ${CMAKE_CURRENT_BINARY_DIR}/enter-chroot-env.sh
-#    DESTINATION /home/ubuntu)
