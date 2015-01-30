@@ -2,6 +2,8 @@
 #include "complext.h"
 #include "diagonalOperator.h"
 
+#include <boost/make_shared.hpp>
+
 namespace Gadgetron{
 template <class ARRAY_TYPE> class eigenTester {
 

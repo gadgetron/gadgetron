@@ -5,6 +5,7 @@
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
 
+#include <boost/make_shared.hpp>
 
 #if defined (WIN32)
 #if defined (__BUILD_GADGETRON_GPUGADGET__)
@@ -13,7 +14,7 @@
 #define EXPORTGPUGADGET __declspec(dllimport)
 #endif
 #else
-#define EXPORTGPUOGADGET
+#define EXPORTGPUGADGET
 #endif
 
 

@@ -15,6 +15,9 @@
 
 #include "hoNDArray_fileio.h"
 #include "cudaDeviceManager.h"
+
+#include <boost/make_shared.hpp>
+
 namespace Gadgetron {
 
 template<class REAL> class CMRTOperator: public linearOperator<cuNDArray< complext<REAL > > > {
