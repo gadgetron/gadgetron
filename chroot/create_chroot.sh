@@ -59,10 +59,6 @@ else
 
 
 
-
-
-
-
 #-------------------------------------------------------------------------------------------------------
   chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install libopenblas-base
 #  cp /home/ubuntu/blas-good/debsource/libopenblas-base_0.2.8-6ubuntu2_amd64.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
