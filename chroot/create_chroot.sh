@@ -5,16 +5,14 @@ if [ $(id -u) -ne 0 ]; then
  exit 1
 
 else
- if [ $# -ge 6 ]; then
+ if [ $# -ge 4 ]; then
 
 # --ARGUMENTS-- (example)
 
 # CHROOT_GADGETRON_INSTALL_PREFIX:    /usr/local/gadgetron
 # CHROOT_GADGETRON_BINARY_DIR:        /home/ubuntu/gadgetron/build
-# NOT USED !!! # CHROOT_GADGETRON_SOURCE_DIR:        /home/ubuntu/gadgetron
 # CHROOT_GIT_SHA1_HASH:               f4d7a9189fd21b07e482d28ecb8b07e589f81f9e
 # CHROOT_LIBRARY_PATHS:               /usr/local/lib:/usr/lib/x86_64-linux-gnu
-# NOT USED !!! # CHROOT_CUDA_LIBRARY:                /usr/lib/x86_64-linux-gnu/libcuda.so
 
   CHROOT_GADGETRON_INSTALL_PREFIX=${1}
   echo CHROOT_GADGETRON_INSTALL_PREFIX: ${CHROOT_GADGETRON_INSTALL_PREFIX}
@@ -22,17 +20,11 @@ else
   CHROOT_GADGETRON_BINARY_DIR=${2}
   echo CHROOT_GADGETRON_BINARY_DIR: ${CHROOT_GADGETRON_BINARY_DIR}
   
-  CHROOT_GADGETRON_SOURCE_DIR=${3}
-  echo CHROOT_GADGETRON_SOURCE_DIR: ${CHROOT_GADGETRON_SOURCE_DIR}
-  
-  CHROOT_GIT_SHA1_HASH=${4}
+  CHROOT_GIT_SHA1_HASH=${3}
   echo CHROOT_GIT_SHA1_HASH: ${CHROOT_GIT_SHA1_HASH}
   
-  CHROOT_LIBRARY_PATHS=${5}
+  CHROOT_LIBRARY_PATHS=${4}
   echo CHROOT_LIBRARY_PATHS: ${CHROOT_LIBRARY_PATHS}
-  
-  CHROOT_CUDA_LIBRARY=${6}
-  echo CHROOT_CUDA_LIBRARY: ${CHROOT_CUDA_LIBRARY}
 
   # Add LIBRARY_PATHS to LD_LIBRARY_PATH
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CHROOT_LIBRARY_PATHS}
@@ -49,9 +41,6 @@ else
   echo "gadgetron    ${CHROOT_GIT_SHA1_HASH}" > ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/source-manifest.txt
 
   mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
-
-  mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/webapp
-
   mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
 
   apt-get install debootstrap -y
@@ -67,14 +56,57 @@ else
   chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://gadgetronubuntu.s3.amazonaws.com trusty main"
 
   chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get update
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install libopenblas-base
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes install sudo
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes install python-h5py
 
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install siemens-to-ismrmrd
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install gadgetron-whole
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install gadgetron-scripts
-  
+
+
+
+
+
+
+
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install libopenblas-base
+  cp /home/ubuntu/blas-good/debsource/libopenblas-base_0.2.8-6ubuntu2_amd64.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /libopenblas-base_0.2.8-6ubuntu2_amd64.deb
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+
+
+
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install sudo python-h5py
+
+
+
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install siemens-to-ismrmrd gadgetron-whole gadgetron-scripts
+  cp /home/ubuntu/siemens_to_ismrmrd/build/siemens-to-ismrmrd-1.0.0.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-scripts.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-web.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-ismrmrd-client.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-main.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-whole.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /siemens-to-ismrmrd-1.0.0.deb
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-scripts.deb
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-web.deb
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-ismrmrd-client.deb
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-main.deb
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-whole.deb
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+
+
+
+
+
+
+
   cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml
 
   chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get clean
@@ -101,8 +133,7 @@ else
   exit 0
 
  else
-  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (gadgetron source dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CUDA_LIBRARY)\n"
+  echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS)\n"
   exit 1
  fi
-
 fi

@@ -24,7 +24,7 @@ else
         fi
     fi
 
-    chroot ${MOUNT_POINT}/chroot-root/gadgetron /scripts/gt_alive.sh $HOSTNAME $PORT &
+    chroot ${MOUNT_POINT}/chroot-root/gadgetron @CMAKE_INSTALL_PREFIX@/@GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH@/gt_alive.sh $HOSTNAME $PORT &
 	PID=$!
 	(sleep 2 && kill -9 $PID) &
 	waiter=$!

@@ -22,7 +22,7 @@ else
         fi
     fi
 
-    chroot ${MOUNT_POINT}/chroot-root/gadgetron /scripts/siemens_to_ismrmrd.sh $DAT_FILENAME $ISMRMRD_FILENAME $SCAN_NO
+    chroot ${MOUNT_POINT}/chroot-root/gadgetron @CMAKE_INSTALL_PREFIX@/@GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH@/siemens_to_ismrmrd.sh $DAT_FILENAME $ISMRMRD_FILENAME $SCAN_NO
     exit $?
   else
     echo -e "\nUsage: $0 <mount point> <dat filename> <ismrmrd filename> <scan number> <optional: full path to img file>\n"

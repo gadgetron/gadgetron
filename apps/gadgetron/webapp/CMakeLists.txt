@@ -22,6 +22,6 @@ install(FILES
     ${CMAKE_BINARY_DIR}/gadgetron_web_ld.conf
     ${CMAKE_SOURCE_DIR}/chroot/gadgetron_chroot.conf
     gadgetron_web_app.py
-    DESTINATION /scripts
+    DESTINATION ${GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH}
     COMPONENT scripts
     )
