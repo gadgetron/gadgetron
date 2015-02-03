@@ -63,53 +63,52 @@ else
 
 
 
-
-#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install libopenblas-base
-  cp /home/ubuntu/blas-good/debsource/libopenblas-base_0.2.8-6ubuntu2_amd64.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /libopenblas-base_0.2.8-6ubuntu2_amd64.deb
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
-
-
-
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install sudo python-h5py
+#-------------------------------------------------------------------------------------------------------
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install libopenblas-base
+#  cp /home/ubuntu/blas-good/debsource/libopenblas-base_0.2.8-6ubuntu2_amd64.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /libopenblas-base_0.2.8-6ubuntu2_amd64.deb
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
 
 
 
-#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install siemens-to-ismrmrd gadgetron-whole gadgetron-scripts
-  cp /home/ubuntu/siemens_to_ismrmrd/build/siemens-to-ismrmrd-1.0.0.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
-  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-scripts.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
-  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-web.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
-  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-ismrmrd-client.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
-  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-main.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
-  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-whole.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
-
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /siemens-to-ismrmrd-1.0.0.deb
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
-
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-scripts.deb
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
-
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-web.deb
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
-
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-ismrmrd-client.deb
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
-
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-main.deb
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
-
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-whole.deb
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install sudo
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install python-h5py
 
 
 
-
-
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install siemens-to-ismrmrd 
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install gadgetron-whole
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install gadgetron-scripts
+#  cp /home/ubuntu/siemens_to_ismrmrd/build/siemens-to-ismrmrd-1.0.0.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+#  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-scripts.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+#  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-web.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+#  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-ismrmrd-client.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+#  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-main.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+#  cp /home/ubuntu/gadgetron/build/gadgetron-3.4.0-whole.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
+#
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /siemens-to-ismrmrd-1.0.0.deb
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+#
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-scripts.deb
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+#
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-web.deb
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+#
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-ismrmrd-client.deb
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+#
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-main.deb
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+#
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron dpkg -i /gadgetron-3.4.0-whole.deb
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install -f
+#-------------------------------------------------------------------------------------------------------
 
 
   cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml
 
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get clean
+  #chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get clean
 
   TAR_FILE_NAME=gadgetron-`date '+%Y%m%d-%H%M'`-${CHROOT_GIT_SHA1_HASH:0:8}
   IMAGE_FILE_NAME=${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.img
