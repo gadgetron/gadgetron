@@ -27,23 +27,25 @@ if [ $(id -u) -ne 0 ]; then
 else
  BASEDIR=$(dirname $0)
 
- if [ $# -eq 0 ]; then
-  if mountpoint -q $BASEDIR/../proc; then
-   umount $BASEDIR/../proc
-   umount_check $BASEDIR/../proc
+ if [ $# -eq 1 ]; then
+  CHROOT_DIR=${1} 
+
+  if mountpoint -q $CHROOT_DIR/proc; then
+   umount $CHROOT_DIR/proc
+   umount_check $CHROOT_DIR/proc
   fi
-  if mountpoint -q $BASEDIR/../sys; then
-    umount $BASEDIR/../sys
-   umount_check $BASEDIR/../sys
+  if mountpoint -q $CHROOT_DIR/sys; then
+    umount $CHROOT_DIR/sys
+   umount_check $CHROOT_DIR/sys
   fi
-  if mountpoint -q $BASEDIR/../dev; then
-    umount $BASEDIR/../dev
-    umount_check $BASEDIR/../dev
+  if mountpoint -q $CHROOT_DIR/dev; then
+    umount $CHROOT_DIR/dev
+    umount_check $CHROOT_DIR/dev
   fi
   exit 0
 
  else
-  echo -e "\nUsage: $0\n"
+  echo -e "\nUsage: $0 (chroot_dir)\n"
   exit 1
  fi
 fi
