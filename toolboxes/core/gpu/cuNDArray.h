@@ -99,6 +99,8 @@ namespace Gadgetron{
         thrust::device_ptr<T> get_device_ptr();
         thrust::device_ptr<T> begin();
         thrust::device_ptr<T> end();
+        const thrust::device_ptr<T> begin() const;
+        const thrust::device_ptr<T> end() const;
 
         T at( size_t idx );
         T operator[]( size_t idx );
@@ -770,6 +772,18 @@ namespace Gadgetron{
     }
 
     template <typename T> 
+    inline const thrust::device_ptr<T> cuNDArray<T>::begin() const
+    {
+        return thrust::device_ptr<T>(this->data_);
+    }
+
+    template <typename T>
+    inline const thrust::device_ptr<T> cuNDArray<T>::end() const
+    {
+        return thrust::device_ptr<T>(this->data_)+this->get_number_of_elements();
+    }
+
+    template <typename T>
     inline T cuNDArray<T>::at( size_t idx )
     {
         if( idx >= this->get_number_of_elements() ){
