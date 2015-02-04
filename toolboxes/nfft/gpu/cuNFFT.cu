@@ -254,10 +254,6 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uint64d<D>::Type ma
   if( device != device_no_old && cudaSetDevice(device) != cudaSuccess) {
     throw cuda_error("Error: cuNFFT_plan::setup: unable to set device");
   }  
-
-  // Calculate deapodization filter
-  compute_deapodization_filter();
-  
   initialized = true;
 
   if( device != device_no_old && cudaSetDevice(device_no_old) != cudaSuccess) {
@@ -722,7 +718,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NF
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *image )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *image, bool fourier_domain)
 {
   unsigned char components;
   components = _NFFT_FFT;
@@ -739,7 +735,15 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *i
   if( !oversampled_image ){
     throw std::runtime_error( "Error: cuNFFT_plan::deapodize: ERROR: oversampled image not provided as input.");
   }
-  *image_int *= *deapodization_filter;
+  if (fourier_domain){
+  	if (!deapodization_filterFFT)
+  		deapodization_filterFFT = 	compute_deapodization_filter(true);
+  	*image_int *= *deapodization_filterFFT;
+  } else {
+  	if (!deapodization_filter)
+  		deapodization_filter = compute_deapodization_filter(false);
+  	*image_int *= *deapodization_filter;
+  }
     
   restore<complext<REAL> ,dummy,dummy>(old_device, image, image, image_int);
 }
@@ -928,12 +932,12 @@ compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typ
 // Function to calculate the deapodization filter
 //
 
-template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
+template<class REAL, unsigned int D, bool ATOMICS> boost::shared_ptr<cuNDArray<complext<REAL> > >
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter( bool FFTed)
 {
   std::vector<size_t> tmp_vec_os = to_std_vector(matrix_size_os);
-  deapodization_filter = boost::shared_ptr< cuNDArray<complext<REAL> > >( new cuNDArray<complext<REAL> >);
-  deapodization_filter->create(&tmp_vec_os);
+
+ boost::shared_ptr< cuNDArray<complext<REAL> > > filter( new cuNDArray<complext<REAL> >(tmp_vec_os));
   vector_td<REAL,D> matrix_size_os_real = vector_td<REAL,D>(matrix_size_os);
   
   // Find dimensions of grid/blocks.
@@ -942,15 +946,18 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
 
   // Invoke kernel
   compute_deapodization_filter_kernel<REAL,D><<<dimGrid, dimBlock>>> 
-    ( vector_td<unsigned int,D>(matrix_size_os), matrix_size_os_real, W, REAL(0.5)*W, REAL(1)/W, beta, deapodization_filter->get_data_ptr() );
+    ( vector_td<unsigned int,D>(matrix_size_os), matrix_size_os_real, W, REAL(0.5)*W, REAL(1)/W, beta, filter->get_data_ptr() );
 
   CHECK_FOR_CUDA_ERROR();
   
   // FFT
-  fft( deapodization_filter.get(), NFFT_BACKWARDS, false );
-  
+  if (FFTed)
+  	fft( filter.get(), NFFT_FORWARDS, false );
+  else
+  	fft( filter.get(), NFFT_BACKWARDS, false );
   // Reciprocal
-  reciprocal_inplace(deapodization_filter.get());
+  reciprocal_inplace(filter.get());
+  return filter;
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
@@ -989,7 +996,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_C2NC( cuNDArray<complext<R
   // private method - no consistency check. We trust in ourselves.
 
   // Deapodization
-  deapodize( image );
+  deapodize( image, true );
  
   // FFT
   fft( image, NFFT_BACKWARDS );
@@ -1010,7 +1017,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_NFFT_NC2C( cuNDArray<complext<RE
   fft( image, NFFT_FORWARDS );
   
   // Deapodization
-  deapodize( image );
+  deapodize( image, true );
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
