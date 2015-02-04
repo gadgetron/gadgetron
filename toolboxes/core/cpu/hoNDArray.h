@@ -35,6 +35,11 @@ namespace Gadgetron{
     hoNDArray(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
     hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
+#if __cplusplus > 199711L
+    hoNDArray(std::initializer_list<size_t> dimensions);
+    hoNDArray(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct = false);
+#endif
+
     explicit hoNDArray(size_t len);
     hoNDArray(size_t sx, size_t sy);
     hoNDArray(size_t sx, size_t sy, size_t sz);
@@ -63,8 +68,8 @@ namespace Gadgetron{
 #if __cplusplus > 199711L
     //Move constructors
     hoNDArray(hoNDArray<T>&& a);
-
     hoNDArray& operator=(hoNDArray&& rhs);
+
 #endif
 
     // Assignment operator
@@ -73,6 +78,11 @@ namespace Gadgetron{
     virtual void create(std::vector<size_t>& dimensions);
     virtual void create(std::vector<size_t> *dimensions);
     virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
+
+#if __cplusplus > 199711L
+    virtual void create(std::initializer_list<size_t> dimensions);
+    virtual void create(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct = false);
+#endif
 
     virtual void create(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
     virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);

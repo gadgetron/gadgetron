@@ -27,6 +27,14 @@ namespace Gadgetron
         this->create(dimensions);
     }
 
+#if __cplusplus > 199711L
+    template<class T> hoNDArray<T>::hoNDArray(std::initializer_list<size_t> dimensions){
+    	this->create(dimensions);
+    }
+    template<class T> hoNDArray<T>::hoNDArray(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct ){
+    	this->create(dimensions,data,delete_data_on_destruct);
+    }
+#endif
     template <typename T> 
     hoNDArray<T>::hoNDArray(size_t len) : NDArray<T>::NDArray()
     {
@@ -435,6 +443,20 @@ namespace Gadgetron
     {
         this->create(dimensions.get(), data, delete_data_on_destruct);
     }
+
+
+
+#if __cplusplus > 199711L
+    template<class T> void hoNDArray<T>::create(std::initializer_list<size_t> dimensions){
+    	std::vector<size_t> dims(dimensions);
+    	this->create(dims);
+    }
+    template<class T> void hoNDArray<T>::create(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct ){
+    	std::vector<size_t> dims(dimensions);
+    	this->create(dims,data,delete_data_on_destruct);
+    }
+#endif
+
 
     template <typename T> 
     inline void hoNDArray<T>::create(size_t len)

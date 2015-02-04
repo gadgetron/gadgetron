@@ -44,7 +44,8 @@ namespace Gadgetron{
 
         void squeeze();
 
-        void reshape(std::vector<size_t> *dims);
+        void reshape(const std::vector<size_t> *dims);
+        void reshape(const std::vector<size_t> & dims){ this->reshape(&dims);}
         void reshape(boost::shared_ptr< std::vector<size_t> > dims);
 
         bool dimensions_equal(std::vector<size_t> *d) const;
@@ -250,7 +251,7 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline void NDArray<T>::reshape(std::vector<size_t> *dims)
+    inline void NDArray<T>::reshape(const std::vector<size_t> *dims)
     {
         size_t new_elements = 1;
         for (size_t i = 0; i < dims->size(); i++){
