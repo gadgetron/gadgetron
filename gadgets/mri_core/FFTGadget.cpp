@@ -69,7 +69,14 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
                     cm1->getObjectPtr()->field_of_view[1]   = dbuff.sampling_.recon_FOV_[1];
                     cm1->getObjectPtr()->field_of_view[2]   = dbuff.sampling_.recon_FOV_[2];
                     cm1->getObjectPtr()->channels           = CHA;
-                    cm1->getObjectPtr()->slice   = acqhdr.idx.slice;
+                    
+                    cm1->getObjectPtr()->average = acqhdr.idx.average;
+                    cm1->getObjectPtr()->slice = acqhdr.idx.slice;
+                    cm1->getObjectPtr()->contrast = acqhdr.idx.contrast;
+                    cm1->getObjectPtr()->phase = acqhdr.idx.phase;
+                    cm1->getObjectPtr()->repetition = acqhdr.idx.repetition;
+                    cm1->getObjectPtr()->set = acqhdr.idx.set;
+                    cm1->getObjectPtr()->acquisition_time_stamp = acqhdr.acquisition_time_stamp;
 
                     memcpy(cm1->getObjectPtr()->position, acqhdr.position, sizeof(float)*3);
                     memcpy(cm1->getObjectPtr()->read_dir, acqhdr.read_dir, sizeof(float)*3);
