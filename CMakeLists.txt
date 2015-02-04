@@ -329,7 +329,7 @@ set(CPACK_DEB_PACKAGE_COMPONENT ON)
 set(CPACK_DEB_scripts_PACKAGE_DEPENDS "")
 set(CPACK_DEB_web_PACKAGE_DEPENDS "")
 set(CPACK_DEB_ismrmrd-client_PACKAGE_DEPENDS "ismrmrd-lib, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev")
-set(CPACK_DEB_main_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
+set(CPACK_DEB_main_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, python-h5py, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
 
 set(CPACK_DEB_whole_PACKAGE_DEPENDS "gadgetron-ismrmrd-client, gadgetron-web, gadgetron-main")
 
