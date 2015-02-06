@@ -52,7 +52,7 @@
           <value></value>
         </property>
         <property>
-          <name>split_slice</name>
+          <name>split_slices</name>
           <value>true</value>
         </property>
     </gadget>
