@@ -282,7 +282,6 @@ namespace Gadgetron{
 
   size_t BucketToBufferGadget::getKey(ISMRMRD::ISMRMRD_EncodingCounters idx)
   {
-    //[RO, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
     //[SLC, PHS, CON, REP, SET, SEG, AVE]
     //collapse across two of them (N and S)
 
@@ -367,13 +366,13 @@ namespace Gadgetron{
     if (dataBuffer.data_.get_number_of_elements() == 0)
       {
         //Allocate the reference data array
-        //7D,  fixed order [RO, E1, E2, CHA, SLC, N, S]
-        //11D, fixed order [RO, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
-        uint16_t NRO;
+        //7D,  fixed order [E0, E1, E2, CHA, N, S, LOC]
+        //11D, fixed order [E0, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
+        uint16_t NE0;
         if (encoding.trajectory.compare("cartesian") == 0) {
-            NRO = encoding.reconSpace.matrixSize.x;
+            NE0 = encoding.reconSpace.matrixSize.x;
         } else {
-            NRO = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
+            NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
         }
 
         uint16_t NE1;
@@ -400,14 +399,14 @@ namespace Gadgetron{
 
         uint16_t NCHA = acqhdr.active_channels;
 
-        uint16_t NSLC;
+        uint16_t NLOC;
         if (split_slices_) {
-            NSLC = 1;
+            NLOC = 1;
         } else {
             if (encoding.encodingLimits.slice.is_present()) {
-                NSLC = encoding.encodingLimits.slice->maximum - encoding.encodingLimits.slice->minimum + 1;
+                NLOC = encoding.encodingLimits.slice->maximum - encoding.encodingLimits.slice->minimum + 1;
             } else {
-                NSLC = *stats.slice.rbegin() - *stats.slice.begin() + 1;
+                NLOC = *stats.slice.rbegin() - *stats.slice.begin() + 1;
             }
         }
 
@@ -466,26 +465,26 @@ namespace Gadgetron{
         }
 
         //GDEBUG_STREAM("Data dimensions:" << std::endl);
-        //GDEBUG_STREAM("   NRO:  " << NRO  << std::endl);
+        //GDEBUG_STREAM("   NE0:  " << NE0  << std::endl);
         //GDEBUG_STREAM("   NE1:  " << NE1  << std::endl);
         //GDEBUG_STREAM("   NE2:  " << NE2  << std::endl);
-        //GDEBUG_STREAM("   NSLC: " << NSLC << std::endl);
+        //GDEBUG_STREAM("   NLOC: " << NLOC << std::endl);
         //GDEBUG_STREAM("   NCHA: " << NCHA << std::endl);
         //GDEBUG_STREAM("   NN:   " << NN   << std::endl);
         //GDEBUG_STREAM("   NS:   " << NS   << std::endl);
 
         //Allocate the array for the data
-        dataBuffer.data_.create(NRO, NE1, NE2, NCHA, NSLC, NN, NS);
+        dataBuffer.data_.create(NE0, NE1, NE2, NCHA, NN, NS, NLOC);
         clear(&dataBuffer.data_);
 
         //Allocate the array for the headers
-        dataBuffer.headers_.create(NE1, NE2, NSLC, NN, NS);
+        dataBuffer.headers_.create(NE1, NE2, NN, NS, NLOC);
 
         //Allocate the array for the trajectories
         uint16_t TRAJDIM = acqhdr.trajectory_dimensions;
         if (TRAJDIM > 0)
           {
-            dataBuffer.trajectory_.create(TRAJDIM, NRO, NE1, NE2, NSLC, NN, NS);
+            dataBuffer.trajectory_.create(TRAJDIM, NE0, NE1, NE2, NN, NS, NLOC);
             clear(&dataBuffer.trajectory_);
           }
 
@@ -600,7 +599,7 @@ namespace Gadgetron{
     for (uint16_t cha = 0; cha < NCHA; cha++)
       {
         dataptr = & dataBuffer.data_(
-            offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, cha, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
+            offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, cha, getN(acqhdr.idx),  getS(acqhdr.idx), slice_loc);
 
 
         memcpy(dataptr, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
@@ -608,7 +607,7 @@ namespace Gadgetron{
 
     //Stuff the header
     dataBuffer.headers_(acqhdr.idx.kspace_encode_step_1,
-        acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx)) = acqhdr;
+        acqhdr.idx.kspace_encode_step_2, getN(acqhdr.idx),  getS(acqhdr.idx), slice_loc) = acqhdr;
 
     //Stuff the trajectory
     if (acqhdr.trajectory_dimensions > 0) {
@@ -616,7 +615,7 @@ namespace Gadgetron{
 
         float * trajptr;
         trajptr = &dataBuffer.trajectory_(0,
-            offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, slice_loc, getN(acqhdr.idx),  getS(acqhdr.idx));
+            offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, getN(acqhdr.idx),  getS(acqhdr.idx), slice_loc);
         memcpy(trajptr, & acqtraj(0,acqhdr.discard_pre ), sizeof(float)*npts_to_copy*acqhdr.trajectory_dimensions);
 
     }
