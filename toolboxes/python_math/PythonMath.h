@@ -19,7 +19,7 @@ namespace Gadgetron
      */
     void calculate_grappa_unmixing(hoNDArray< std::complex<float> >* source_data, unsigned int acc_factor, hoNDArray< std::complex<float> >* unmix_out,
 				  unsigned int* kernel_size = 0, hoNDArray< unsigned int >* data_mask = 0, hoNDArray< std::complex<float> >* csm = 0,
-				  float regularization_factor = 0.01, hoNDArray< std::complex<float> >* target_data = 0, 
+				  float regularization_factor = 0.001, hoNDArray< std::complex<float> >* target_data = 0, 
 				  hoNDArray< float >* gmap_out = 0);
 
   protected:

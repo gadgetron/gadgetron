@@ -28,11 +28,12 @@ int main(int argc, char** argv)
   dims.push_back(ny);
   dims.push_back(coils);
   
-  
   hoNDArray< std::complex<float> > unmix(dims);
   
   PythonMath::instance()->calculate_grappa_unmixing(source_data.get(), 3, &unmix);
   
+  write_nd_array(&unmix, "unmix.cplx");
+
   return 0;
 
 }
