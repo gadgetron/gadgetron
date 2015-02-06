@@ -3,9 +3,11 @@
 
 #include "GadgetContainerMessage.h"
 #include "ismrmrd/ismrmrd.h"
+#include "ismrmrd/meta.h"
 #include <vector>
 #include <set>
 #include "hoNDArray.h"
+
 namespace Gadgetron 
 {
 
@@ -222,14 +224,14 @@ namespace Gadgetron
   class IsmrmrdDataBuffered
   {
   public:
-    //7D, fixed order [RO, E1, E2, CHA, SLC, N, S]
+    //7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
     hoNDArray< std::complex<float> > data_;
     
-    //7D, fixed order [TRAJ,RO, E1, E2, SLC, N, S]
+    //7D, fixed order [TRAJ, E0, E1, E2, N, S, LOC]
     //This element is optional (length is 0 if not present)
     hoNDArray< float > trajectory_;
     
-    //9D, fixed order [E1, E2, SLC, PHS, CON, REP, SET, SEG, AVE]
+    //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
     
     SamplingDescription sampling_;
@@ -256,6 +258,6 @@ namespace Gadgetron
   public:
     std::vector<IsmrmrdReconBit> rbit_;
   };
-  
+
 }
 #endif //MRI_CORE_DATA_H
