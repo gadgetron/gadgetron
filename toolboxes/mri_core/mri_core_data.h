@@ -259,5 +259,24 @@ namespace Gadgetron
     std::vector<IsmrmrdReconBit> rbit_;
   };
 
+  
+  /**
+     This class is used to store an array of reconstructed data. 
+   */
+  class IsmrmrdImageArray
+  {
+  public:
+    //7D, fixed order [X, Y, Z, CHA, N, S, LOC]
+    hoNDArray< std::complex<float> > data_;
+    
+    //3D, fixed order [N, S, LOC]
+    hoNDArray< ISMRMRD::ImageHeader > headers_;
+    
+    //3D, fixed order [N, S, LOC]
+    //This element is optional (length is 0 if not present)
+    std::vector< ISMRMRD::MetaContainer > meta_;
+    
+  };
+
 }
 #endif //MRI_CORE_DATA_H
