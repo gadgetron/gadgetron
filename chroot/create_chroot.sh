@@ -55,27 +55,28 @@ else
 
   chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get update
   chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install libopenblas-base sudo python-h5py
-  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install siemens-to-ismrmrd gadgetron-whole gadgetron-scripts
+#  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install siemens-to-ismrmrd gadgetron-all gadgetron-scripts
+  chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install ismrmrd siemens-to-ismrmrd gadgetron
 
   cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml
 
   TAR_FILE_NAME=gadgetron-`date '+%Y%m%d-%H%M'`-${CHROOT_GIT_SHA1_HASH:0:8}
-  IMAGE_FILE_NAME=${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.img
+#  IMAGE_FILE_NAME=${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.img
 
   tar -zcf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${CHROOT_GADGETRON_BINARY_DIR}/chroot" --exclude=./chroot-root/gadgetron/dev --exclude=./chroot-root/gadgetron/sys --exclude=./chroot-root/gadgetron/proc --exclude=./chroot-root/gadgetron/root ./chroot-root
 
-  dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=1536k seek=1024 count=0
-  mke2fs -F -t ext3 ${IMAGE_FILE_NAME}
-  mkdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
-  mount -o loop ${IMAGE_FILE_NAME} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
-  tar -xzf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz -C ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root/
-  sleep 3
-  umount ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
-  rmdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
+#  dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=1536k seek=1024 count=0
+#  mke2fs -F -t ext3 ${IMAGE_FILE_NAME}
+#  mkdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
+#  mount -o loop ${IMAGE_FILE_NAME} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
+#  tar -xzf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz -C ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root/
+#  sleep 3
+#  umount ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
+#  rmdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
   rm -rf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root"
 
   chmod 666 "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz"
-  chmod 666 "${IMAGE_FILE_NAME}"
+#  chmod 666 "${IMAGE_FILE_NAME}"
   exit 0
  else
   echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS)\n"
