@@ -20,26 +20,26 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
         //Grab a reference to the buffer containing the imaging data
         IsmrmrdDataBuffered & dbuff = it->data_;
 
-        //7D, fixed order [RO, E1, E2, CHA, LOC, N, S]
-        uint16_t RO = dbuff.data_.get_size(0);
+        //7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
+        uint16_t E0 = dbuff.data_.get_size(0);
         uint16_t E1 = dbuff.data_.get_size(1);
         uint16_t E2 = dbuff.data_.get_size(2);
         uint16_t CHA = dbuff.data_.get_size(3);
-        uint16_t LOC = dbuff.data_.get_size(4);
-        uint16_t N = dbuff.data_.get_size(5);
-        uint16_t S = dbuff.data_.get_size(6);
+        uint16_t N = dbuff.data_.get_size(4);
+        uint16_t S = dbuff.data_.get_size(5);
+        uint16_t LOC = dbuff.data_.get_size(6);
 
-        //Each image will be [RO,E1,E2,CHA] big
+        //Each image will be [E0,E1,E2,CHA] big
         std::vector<size_t> img_dims(4);
-        img_dims[0] = RO;
+        img_dims[0] = E0;
         img_dims[1] = E1;
         img_dims[2] = E2;
         img_dims[3] = CHA;
 
         //Loop over S and N and LOC
-        for (uint16_t s=0; s < S; s++) {                
-            for (uint16_t n=0; n < N; n++) {
-                for (uint16_t loc=0; loc < LOC; loc++) {
+        for (uint16_t loc=0; loc < LOC; loc++) {
+            for (uint16_t s=0; s < S; s++) {                
+                for (uint16_t n=0; n < N; n++) {
                     
                     //Create a new image
                     GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = 
@@ -57,12 +57,12 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
 
                     //Set some information into the image header
                     //Use the middle header for some info
-                    //[E1, E2, LOC, N, S]
+                    //[E1, E2, N, S, LOC]
                     ISMRMRD::AcquisitionHeader & acqhdr = dbuff.headers_(dbuff.sampling_.sampling_limits_[1].center_,
                                                                          dbuff.sampling_.sampling_limits_[2].center_,
-                                                                         loc, n, s);
+                                                                         n, s, loc);
                     
-                    cm1->getObjectPtr()->matrix_size[0]     = RO;
+                    cm1->getObjectPtr()->matrix_size[0]     = E0;
                     cm1->getObjectPtr()->matrix_size[1]     = E1;
                     cm1->getObjectPtr()->matrix_size[2]     = E2;
                     cm1->getObjectPtr()->field_of_view[0]   = dbuff.sampling_.recon_FOV_[0];
@@ -86,8 +86,8 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
                     cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
                     cm1->getObjectPtr()->image_index = ++image_counter_;
 
-                    //Copy the 4D data block [RO,E1,E2,CHA] for this loc, n, and s into the output image
-                    memcpy(cm2->getObjectPtr()->get_data_ptr(), &dbuff.data_(0,0,0,0,loc,n,s), RO*E1*E2*CHA*sizeof(std::complex<float>));
+                    //Copy the 4D data block [E0,E1,E2,CHA] for this loc, n, and s into the output image
+                    memcpy(cm2->getObjectPtr()->get_data_ptr(), &dbuff.data_(0,0,0,0,n,s,loc), E0*E1*E2*CHA*sizeof(std::complex<float>));
 
                     //Do the FFTs in place
                     hoNDFFT<float>::instance()->ifft(cm2->getObjectPtr(),0);
