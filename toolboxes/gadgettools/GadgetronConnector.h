@@ -2,8 +2,10 @@
 #define GADGETRONCONNECTOR_H_
 
 #include "GadgetronSlotContainer.h"
-#include "GadgetMessageInterface.h"
+#include "GadgetMessageReaderWriter.h"
+#include "GadgetContainerMessage.h"
 #include "gadgettools_export.h"
+#include "log.h"
 
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor.h>
@@ -43,7 +45,7 @@ public:
 	}
 
 	int register_writer(size_t slot, GadgetMessageWriter* writer) {
-		return writers_.insert( (unsigned int)slot,writer);
+		return writers_.insert( (unsigned short)slot,writer);
 	}
 
 	virtual int close(unsigned long flags)
@@ -129,7 +131,7 @@ public:
 		return writer_task_.putq(mb,timeout);
 	}
 
-	virtual int process(size_t messageid, ACE_Message_Block* mb) {
+	virtual int process(size_t /*messageid*/, ACE_Message_Block* mb) {
 		mb->release();
 		return 0;
 	}

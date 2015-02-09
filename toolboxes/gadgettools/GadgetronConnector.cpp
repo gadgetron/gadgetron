@@ -62,7 +62,7 @@ int GadgetronConnector::open(std::string hostname, std::string port)
     return this->activate( THR_NEW_LWP | THR_JOINABLE, 1); //Run single threaded. TODO: Add multithreaded support
 }
 
-int GadgetronConnector::handle_input(ACE_HANDLE fd)
+int GadgetronConnector::handle_input(ACE_HANDLE /*fd*/)
 {
     ssize_t recv_count = 0;
     GadgetMessageIdentifier mid;
@@ -99,7 +99,7 @@ int GadgetronConnector::handle_input(ACE_HANDLE fd)
     return 0;
 }
 
-int GadgetronConnector::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
+int GadgetronConnector::handle_close(ACE_HANDLE /*handle*/, ACE_Reactor_Mask /*close_mask*/)
 {
   GDEBUG("Handling close...\n");
   this->reactor()->end_reactor_event_loop();
@@ -173,7 +173,7 @@ int GadgetronConnector::send_gadgetron_configuration_script(std::string config_x
       return -1;
     }
 
-    if (this->peer().send_n(config_xml.c_str(), ini.script_length) != ini.script_length) {
+    if (this->peer().send_n(config_xml.c_str(), ini.script_length) != static_cast<ssize_t>(ini.script_length)) {
       GERROR("Unable to send parameter xml\n");
       return -1;
     }
@@ -198,7 +198,7 @@ int GadgetronConnector::send_gadgetron_parameters(std::string xml_string)
       return -1;
     }
 
-    if (this->peer().send_n(xml_string.c_str(), conf.script_length) != conf.script_length) {
+    if (this->peer().send_n(xml_string.c_str(), conf.script_length) != static_cast<ssize_t>(conf.script_length)) {
       GERROR("Unable to send parameter xml\n");
       return -1;
     }
