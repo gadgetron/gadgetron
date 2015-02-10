@@ -103,7 +103,7 @@ add_custom_command(
   VERBATIM
   COMMENT "Creating chroot tar and img file using local packages"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  COMMAND sudo bash create_chroot-local.sh
+  COMMAND sudo bash create_chroot.sh
   ${CMAKE_INSTALL_PREFIX}
   ${CMAKE_BINARY_DIR}
   ${GADGETRON_GIT_SHA1}
