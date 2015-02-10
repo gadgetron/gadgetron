@@ -345,7 +345,7 @@ L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm)
         // square the coefficients
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiplyConj(wavCoeff, wavCoeff, complexIm_norm_));
         // sum over CHA
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver5thDimension(complexIm_norm_, wavCoeffNorm));
+        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(complexIm_norm_, wavCoeffNorm, 4));
     }
     catch (...)
     {
@@ -490,8 +490,6 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
         {
             wav_coeff_norm_approx_.create(wavCoeffNorm.get_dimensions());
         }
-
-        // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver5thDimension(wavCoeffNorm, wav_coeff_norm_mag_sumCHA_));
 
         long long ii;
         long long N = (long long)wavCoeffNorm.get_number_of_elements();

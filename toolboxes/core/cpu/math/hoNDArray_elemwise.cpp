@@ -2407,6 +2407,106 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
+    template <typename T> 
+    void sum_over_dimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t dim)
+    {
+        try
+        {
+            size_t D = x.get_number_of_dimensions();
+            if (dim >= D)
+            {
+                r = x;
+                return;
+            }
+
+            std::vector<size_t> dimX, dimR;
+            x.get_dimensions(dimX);
+
+            dimR = dimX;
+            dimR[dim] = 1;
+
+            if (!r.dimensions_equal(&dimR))
+            {
+                r.create(dimR);
+            }
+
+            if (dim == 0)
+            {
+                size_t X = x.get_size(0);
+                size_t num = x.get_number_of_elements() / X;
+
+                const T* pX = x.begin();
+                T* pR = r.begin();
+
+                long long n;
+
+                #pragma omp parallel for default(none) private(n) shared(X, num, pX, pR)
+                for (n = 0; n<(long long)num; n++)
+                {
+                    T xsum = pX[n*X];
+                    for (size_t ro = 1; ro<X; ro++)
+                    {
+                        xsum += pX[n*X + ro];
+                    }
+
+                    pR[n] = xsum;
+                }
+            }
+            else
+            {
+                size_t strideX = x.get_size(0);
+                for (size_t d = 1; d <= dim; d++)
+                {
+                    strideX *= x.get_size(d);
+                }
+
+                size_t strideR = strideX / x.get_size(dim);
+                size_t num = x.get_number_of_elements() / strideX;
+                size_t nDim = x.get_size(dim);
+
+                const T* pX = x.begin();
+                T* pR = r.begin();
+
+                if (nDim == 1)
+                {
+                    memcpy(pR, pX, x.get_number_of_bytes());
+                    return;
+                }
+
+                long long n;
+
+                #pragma omp parallel for default(none) private(n) shared(strideX, strideR, num, nDim, pX, pR)
+                for (n = 0; n<(long long)num; n++)
+                {
+                    const T* pX_curr = pX + n*strideX;
+                    T* pR_curr = pR + n*strideR;
+
+                    memcpy(pR_curr, pX_curr, sizeof(T)*strideR);
+
+                    size_t p, c;
+                    for (p = 1; p<nDim; p++)
+                    {
+                        for (c = 0; c < strideR; c++)
+                        {
+                            pR_curr[c] += pX_curr[p*strideR+c];
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Errors happened in sum_over_dimension(const hoNDArray<T>& x, hoNDArray<T>& y, size_t dim) ... ");
+        }
+    }
+
+    template EXPORTCPUCOREMATH void sum_over_dimension(const hoNDArray<float>& x, hoNDArray<float>& y, size_t dim);
+    template EXPORTCPUCOREMATH void sum_over_dimension(const hoNDArray<double>& x, hoNDArray<double>& y, size_t dim);
+    template EXPORTCPUCOREMATH void sum_over_dimension(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& y, size_t dim);
+    template EXPORTCPUCOREMATH void sum_over_dimension(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& y, size_t dim);
+
+    // --------------------------------------------------------------------------------
+
     template<class T> hoNDArray<T>& operator+= (hoNDArray<T> &x, const T &y)
     {
         /*arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);

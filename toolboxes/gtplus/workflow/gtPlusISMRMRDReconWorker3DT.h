@@ -1465,7 +1465,7 @@ bool gtPlusReconWorker3DT<T>::applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm
 
         // GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(unmixCoeff, aliasedIm, buffer3DT));
         Gadgetron::multipleMultiply(aliasedIm, unmixCoeff, buffer3DT);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(buffer3DT, complexIm));
+        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(buffer3DT, complexIm, 3));
     }
     catch(...)
     {

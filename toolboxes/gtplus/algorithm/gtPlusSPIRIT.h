@@ -529,46 +529,48 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                 hoNDArray<T> acsSrc1stCha(RO, E1, E2, const_cast<T*>(acsSrc.begin()));
                 hoNDArray<T> acsSrc1stChaSumE2(RO, E1, 1), acsSrc1stChaSumE2E1(RO, 1, 1);
 
-                if ( Gadgetron::sumOver3rdDimension(acsSrc1stCha, acsSrc1stChaSumE2) )
+                try
                 {
-                    if ( Gadgetron::sumOver2ndDimension(acsSrc1stChaSumE2, acsSrc1stChaSumE2E1) )
+                    Gadgetron::sum_over_dimension(acsSrc1stCha, acsSrc1stChaSumE2, 2);
+                    Gadgetron::sum_over_dimension(acsSrc1stChaSumE2, acsSrc1stChaSumE2E1, 1);
+
+                    T maxSignal;
+                    size_t roInd(0);
+                    try
                     {
-                        T maxSignal;
-                        size_t roInd(0);
-                        try
+                        Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd);
+
+                        if ( roInd > maxROUsed/2+kROhalf )
                         {
-                            Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd);
-
-                            if ( roInd > maxROUsed/2+kROhalf )
-                            {
-                                sRO = roInd - maxROUsed/2;
-                            }
-                            else
-                            {
-                                sRO = kROhalf;
-                            }
-
-                            if( sRO+maxROUsed-1 <= RO-kROhalf-1 )
-                            {
-                                eRO = sRO + maxROUsed - 1;
-                            }
-                            else
-                            {
-                                eRO = RO - kROhalf -1;
-                            }
-
-                            lenRO = eRO-sRO+1;
-                            GDEBUG_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
+                            sRO = roInd - maxROUsed/2;
                         }
-                        catch(...)
+                        else
                         {
-                            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                            sRO = kROhalf;
                         }
+
+                        if( sRO+maxROUsed-1 <= RO-kROhalf-1 )
+                        {
+                            eRO = sRO + maxROUsed - 1;
+                        }
+                        else
+                        {
+                            eRO = RO - kROhalf -1;
+                        }
+
+                        lenRO = eRO-sRO+1;
+                        GDEBUG_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
+                    }
+                    catch(...)
+                    {
+                        GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                        throw;
                     }
                 }
-                else
+                catch (...)
                 {
                     GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                    throw;
                 }
             }
         }
