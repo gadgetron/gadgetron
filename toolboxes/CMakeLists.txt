@@ -36,3 +36,10 @@ ENDIF()
 
 find_package(BLAS)
 find_package(LAPACK)
+
+# Should we compile the python_math toolbox
+find_package(Boost COMPONENTS python system thread REQUIRED)
+if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+    add_subdirectory(python_math)
+endif (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+
