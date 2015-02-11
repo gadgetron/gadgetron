@@ -292,46 +292,6 @@ namespace Gadgetron {
     template<typename T> EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& std, bool NMinusOne);
 
     /**
-    * @brief permute E2 dimension of x : [RO E1 CHA SLC E2 ...] to r: [RO E1 E2 CHA SLC ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute E2 dimension of x : [RO E1 E2 CHA SLC ...] to r: [RO E1 CHA SLC E2 ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 3rd dimension
-             x : [RO E1 E2 ...], r: [E1 E2 RO ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 4th dimension
-             x : [RO E1 E2 CHA ...], r: [E1 E2 CHA RO ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x back to the 1st dimension
-             x : [E1 E2 CHA RO ...], r: [RO E1 E2 CHA ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute the 3rd dimension of x to the 1st dimension
-             x : [RO E1 E2 CHA ...], r: [E2 RO E1 CHA ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 5th dimension
-             x : [RO E1 E2 srcCHA dstCHA ...], r: [E1 E2 srcCHA dstCHA RO ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
     * @brief Image domain unwrapping for 2D
              x : [RO E1 srcCHA], ker [RO E1 srcCHA dstCHA]
              buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA]
