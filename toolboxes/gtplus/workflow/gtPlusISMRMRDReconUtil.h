@@ -212,18 +212,6 @@ namespace Gadgetron {
 namespace Gadgetron {
 
     /**
-    * @brief sum over last dimension of an array
-             e.g. for a 4D array, sum over the 4th dimension and get a 3D array
-    */
-    template<typename T> EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r); // 
-
-    /**
-    * @brief sum over the second last dimension of an array
-             e.g. for a 4D array, sum over the 3rd dimension and get a 3D array
-    */
-    template<typename T> EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
     * @brief multiply over the last dimension of y by x
              e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) .* x
     */

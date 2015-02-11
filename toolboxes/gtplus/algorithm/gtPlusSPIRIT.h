@@ -391,9 +391,13 @@ imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, s
         }
 
         hoNDArray<T> convKer2;
-        ho4DArray<T> conKerMean(convKRO, convKE1, srcCHA, dstCHA);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, conKerMean));
+        hoNDArray<T> conKerMean(convKRO, convKE1, srcCHA, dstCHA, 1, 1);
+
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, conKerMean));
+
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(convKer, convKer2, 5));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(convKer2, conKerMean, 4));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1)), conKerMean) );
 
         // flip the kernel
@@ -407,7 +411,7 @@ imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, s
                 {
                     for ( src=0; src<srcCHA; src++ )
                     {
-                        convKerFlip( kro, ke1, src, dst) = conKerMean(convKRO-1-kro, convKE1-1-ke1, src, dst);
+                        convKerFlip( kro, ke1, src, dst) = conKerMean(convKRO-1-kro, convKE1-1-ke1, src, dst, 0, 0);
                     }
                 }
             }
@@ -868,10 +872,17 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - sum over output dimensions ... "); }
         hoNDArray<T> convKer2, convKer3;
-        ho5DArray<T> convKernMean(convKRO, convKE1, convKE2, srcCHA, dstCHA);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, convKer3));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer3, convKernMean));
+
+        //ho5DArray<T> convKernMean(convKRO, convKE1, convKE2, srcCHA, dstCHA);
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, convKer3));
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer3, convKernMean));
+
+        hoNDArray<T> convKernMean(convKRO, convKE1, convKE2, srcCHA, dstCHA, 1, 1, 1);
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(convKer, convKer2, 7));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(convKer2, convKer3, 6));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(convKer3, convKernMean, 5));
+
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1*oE2)), convKernMean) );
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
@@ -895,7 +906,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
                         {
                             for ( src=0; src<srcCHA; src++ )
                             {
-                                T value = convKernMean(convKRO-1-kro, convKE1-1-ke1, convKE2-1-ke2, src, dst);
+                                T value = convKernMean(convKRO-1-kro, convKE1-1-ke1, convKE2-1-ke2, src, dst, 0, 0, 0);
                                 convKerFlip(ke1, ke2, kro, src, dst) = value;
                             }
                         }

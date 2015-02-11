@@ -384,10 +384,15 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
 
             hoNDArray<typename realType<T>::Type> refMag(refRecon.get_dimensions()), refMagSum;
             GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(refRecon, refMag));
-            GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMag, refMagSum));
+            /*GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMag, refMagSum));
             GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMagSum, refMag));
-            GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMag, refMagSum));
+            GADGET_CHECK_RETURN_FALSE(sumOverLastDimension(refMag, refMagSum));*/
 
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(sum_over_dimension(refMag, refMagSum, refMag.get_number_of_dimensions()-1));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(sum_over_dimension(refMagSum, refMag, refMagSum.get_number_of_dimensions() - 2));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(sum_over_dimension(refMag, refMagSum, refMag.get_number_of_dimensions() - 3));
+
+            refMagSum.squeeze();
             GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<float>().detectSampledRegionE1(refMagSum, startE1_, endE1_));
 
             std::vector<size_t> crop_offset(5);
@@ -1142,9 +1147,6 @@ bool gtPlusReconWorker2DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
         unmixCoeff.create(RO, E1, srcCHA);
         Gadgetron::clear(&unmixCoeff);
 
-        gFactor.create(RO, E1);
-        Gadgetron::clear(&gFactor);
-
         int src;
 
         T* pKerIm = const_cast<T*>(kerIm.begin());
@@ -1178,7 +1180,13 @@ bool gtPlusReconWorker2DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
 
         hoNDArray<T> conjUnmixCoeff(unmixCoeff);
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
+        // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
+
+        gFactor.create(RO, E1, 1);
+        Gadgetron::clear(&gFactor);
+
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(conjUnmixCoeff, gFactor, 2));
+        gFactor.squeeze();
         Gadgetron::sqrt(gFactor, gFactor);
     }
     catch(...)
@@ -1271,11 +1279,13 @@ bool gtPlusReconWorker2DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
             for ( n=0; n<(int)num; n++ )
             {
                 hoNDArray<T> buf3D(&dim3D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*srcCHA));
-                hoNDArray<T> bufIm3D(&dimIm3D, complexIm.begin()+n*RO*E1*dstCHA);
+                // hoNDArray<T> bufIm3D(&dimIm3D, complexIm.begin()+n*RO*E1*dstCHA);
+                hoNDArray<T> bufIm3D(RO, E1, 1, dstCHA, complexIm.begin() + n*RO*E1*dstCHA);
 
                 // Gadgetron::multipleMultiply(buf3D, kerIm, kerImBuffer);
                 Gadgetron::multiply(kerIm, buf3D, kerImBuffer);
-                Gadgetron::sumOverSecondLastDimension(kerImBuffer, bufIm3D);
+                // Gadgetron::sumOverSecondLastDimension(kerImBuffer, bufIm3D);
+                Gadgetron::sum_over_dimension(kerImBuffer, bufIm3D, 2);
             }
             if ( performTiming_ ) { gt_timer3_.stop(); }
         }
@@ -1291,11 +1301,13 @@ bool gtPlusReconWorker2DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
                 for ( n=0; n<(int)num; n++ )
                 {
                     buf3D.create(&dim3D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*srcCHA));
-                    bufIm3D.create(&dimIm3D, complexIm.begin()+n*RO*E1*dstCHA);
+                    // bufIm3D.create(&dimIm3D, complexIm.begin()+n*RO*E1*dstCHA);
+                    bufIm3D.create(RO, E1, 1, dstCHA, complexIm.begin() + n*RO*E1*dstCHA);
 
                     // Gadgetron::multipleMultiply(buf3D, kerIm, buf4D);
                     Gadgetron::multiply(kerIm, buf3D, buf4D);
-                    Gadgetron::sumOverSecondLastDimension(buf4D, bufIm3D);
+                    // Gadgetron::sumOverSecondLastDimension(buf4D, bufIm3D);
+                    Gadgetron::sum_over_dimension(buf4D, bufIm3D, 2);
                 }
             }
         }

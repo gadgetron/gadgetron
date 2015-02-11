@@ -206,7 +206,17 @@ preProcessing()
         // combine the segment dimension
         if ( SEG_.second > 1 )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(*data_, dataCurr_));
+            // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(*data_, dataCurr_));
+
+            std::vector<size_t> dim, dimCurr;
+            data_->get_dimensions(dim);
+
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(*data_, dataCurr_, data_->get_number_of_dimensions()-1));
+
+            dimCurr.resize(dim.size() - 1);
+            memcpy(&dimCurr[0], &dim[0], sizeof(size_t)*dimCurr.size());
+            dataCurr_.reshape(dimCurr);
+
             *data_ = dataCurr_;
             SEG_.second = 1;
 
@@ -223,7 +233,17 @@ preProcessing()
 
         if ( ref_!=NULL && SEG_ref_.second>1 )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(*ref_, refCurr_));
+            // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(*ref_, refCurr_));
+
+            std::vector<size_t> dim, dimCurr;
+            ref_->get_dimensions(dim);
+
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(*ref_, refCurr_, ref_->get_number_of_dimensions() - 1));
+
+            dimCurr.resize(dim.size() - 1);
+            memcpy(&dimCurr[0], &dim[0], sizeof(size_t)*dimCurr.size());
+            refCurr_.reshape(dimCurr);
+
             *ref_ = refCurr_;
             SEG_ref_.second = 1;
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*data_, debugFolder_+"incomingRef_SEGCombined"); }

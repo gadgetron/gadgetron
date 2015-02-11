@@ -2007,9 +2007,18 @@ detectSampledRegion2D(const hoNDArray<T>& data, size_t& startRO, size_t& endRO, 
         if ( NDim > 2 )
         {
             size_t ii;
+            std::vector<size_t> dim;
             for ( ii=0; ii<NDim-2; ii++ )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(mag, magSum));
+                mag.get_dimensions(dim);
+
+                // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(mag, magSum));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(mag, magSum, mag.get_number_of_dimensions() - 1));
+
+                std::vector<size_t> dimSum(dim.size()-1);
+                memcpy(&dimSum[0], &dim[0], sizeof(size_t)*dimSum.size());
+                magSum.reshape(dimSum);
+
                 mag = magSum;
             }
         }
@@ -2080,10 +2089,20 @@ detectSampledRegion3D(const hoNDArray<T>& data, size_t& startRO, size_t& endRO, 
 
         if ( NDim > 5 )
         {
+            std::vector<size_t> dim;
+
             size_t ii;
             for ( ii=0; ii<NDim-5; ii++ )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(mag, magSum));
+                mag.get_dimensions(dim);
+
+                // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(mag, magSum));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(mag, magSum, mag.get_number_of_dimensions() - 1));
+
+                std::vector<size_t> dimSum(dim.size() - 1);
+                memcpy(&dimSum[0], &dim[0], sizeof(size_t)*dimSum.size());
+                magSum.reshape(dimSum);
+
                 mag = magSum;
             }
         }
@@ -5278,15 +5297,31 @@ sumOfSquare(const hoNDArray<T>& data, hoNDArray<T>& sos)
 
         if ( NDim == 3 )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(tmp, sos));
+            // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(tmp, sos));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(tmp, sos, 2));
+
+            std::vector<size_t> dim(2);
+            dim[0] = sos.get_size(0);
+            dim[1] = sos.get_size(1);
+
+            sos.reshape(dim);
         }
         else if ( NDim == 4 )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(tmp, sos));
+            // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(tmp, sos));
+
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(tmp, sos, 2));
+
+            std::vector<size_t> dim(3);
+            dim[0] = sos.get_size(0);
+            dim[1] = sos.get_size(1);
+            dim[2] = sos.get_size(3);
+
+            sos.reshape(dim);
         }
         else
         {
-            GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(tmp, sos, 2));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(tmp, sos, 2));
         }
 
         Gadgetron::sqrt(sos, sos);

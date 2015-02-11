@@ -1169,8 +1169,6 @@ bool gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
 
         unmixCoeff.create(RO, E1, E2, srcCHA);
         Gadgetron::clear(&unmixCoeff);
-        gFactor.create(RO, E1, E2);
-        Gadgetron::clear(&gFactor);
 
         int src;
 
@@ -1206,7 +1204,14 @@ bool gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
 
         hoNDArray<T> conjUnmixCoeff(unmixCoeff);
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
+
+        gFactor.create(RO, E1, E2, 1);
+        Gadgetron::clear(&gFactor);
+
+        // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
+
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(conjUnmixCoeff, gFactor, 3));
+        gFactor.squeeze();
         Gadgetron::sqrt(gFactor, gFactor);
     }
     catch(...)
@@ -1371,10 +1376,11 @@ bool gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
                     for ( dCha=0; dCha<(int)dstCHA; dCha++ )
                     {
                         hoNDArray<T> kerIm4D(RO, E1, E2, srcCHA, const_cast<T*>(kerIm.begin()+dCha*RO*E1*E2*srcCHA));
-                        hoNDArray<T> complexIm3D(RO, E1, E2, complexIm.begin()+n*RO*E1*E2*dstCHA+dCha*RO*E1*E2);
+                        hoNDArray<T> complexIm3D(RO, E1, E2, 1, complexIm.begin()+n*RO*E1*E2*dstCHA+dCha*RO*E1*E2);
                         // Gadgetron::multipleMultiply(buf4D, kerIm4D, unwrapped4D);
                         Gadgetron::multiply(kerIm4D, buf4D, unwrapped4D);
-                        Gadgetron::sumOverLastDimension(unwrapped4D, complexIm3D);
+                        // Gadgetron::sumOverLastDimension(unwrapped4D, complexIm3D);
+                        Gadgetron::sum_over_dimension(unwrapped4D, complexIm3D, 3);
                     }
                 }
             }

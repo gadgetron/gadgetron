@@ -255,8 +255,11 @@ bool gtPlusSPIRIT2DTOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(currComplexIm, curr_adjoint_forward_kernel, this->res_after_apply_kernel_));
 
-            hoNDArray<T> sumResCurr(RO, E1, dstCHA, this->res_after_apply_kernel_sum_over_.begin()+n*RO*E1*dstCHA);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(this->res_after_apply_kernel_, sumResCurr));
+            /*hoNDArray<T> sumResCurr(RO, E1, dstCHA, this->res_after_apply_kernel_sum_over_.begin()+n*RO*E1*dstCHA);
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(this->res_after_apply_kernel_, sumResCurr));*/
+
+            hoNDArray<T> sumResCurr(RO, E1, 1, dstCHA, this->res_after_apply_kernel_sum_over_.begin() + n*RO*E1*dstCHA);
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(this->res_after_apply_kernel_, sumResCurr, 2));
         }
 
         //gt_timer1_.stop();
@@ -334,8 +337,11 @@ bool gtPlusSPIRIT2DTOperator<T>::obj(const hoNDArray<T>& x, T& obj)
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(currComplexIm, curr_forward_kernel, this->res_after_apply_kernel_));
 
-            hoNDArray<T> sumResCurr(RO, E1, dstCHA, this->res_after_apply_kernel_sum_over_.begin()+n*RO*E1*dstCHA);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(this->res_after_apply_kernel_, sumResCurr));
+            /*hoNDArray<T> sumResCurr(RO, E1, dstCHA, this->res_after_apply_kernel_sum_over_.begin()+n*RO*E1*dstCHA);
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(this->res_after_apply_kernel_, sumResCurr));*/
+
+            hoNDArray<T> sumResCurr(RO, E1, 1, dstCHA, this->res_after_apply_kernel_sum_over_.begin() + n*RO*E1*dstCHA);
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(this->res_after_apply_kernel_, sumResCurr, 2));
         }
 
         // L2 norm
