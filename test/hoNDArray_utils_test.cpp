@@ -126,6 +126,18 @@ TYPED_TEST(hoNDArray_utils_TestCplx,permuteTest){
 
   EXPECT_FLOAT_EQ(2, real(permute(&this->Array,&order)->at(851)));
   EXPECT_FLOAT_EQ(3, imag(permute(&this->Array,&order)->at(851)));
+
+  order.clear();
+  order.push_back(0); order.push_back(1); order.push_back(3); order.push_back(2);
+
+  EXPECT_FLOAT_EQ(2, real(permute(&this->Array, &order)->at(37)));
+  EXPECT_FLOAT_EQ(3, imag(permute(&this->Array, &order)->at(37)));
+
+  order.clear();
+  order.push_back(0); order.push_back(2); order.push_back(3); order.push_back(1);
+
+  EXPECT_FLOAT_EQ(2, real(permute(&this->Array, &order)->at(37*23*19)));
+  EXPECT_FLOAT_EQ(3, imag(permute(&this->Array, &order)->at(37*23*19)));
 }
 
 TYPED_TEST(hoNDArray_utils_TestCplx,shiftDimTest){
