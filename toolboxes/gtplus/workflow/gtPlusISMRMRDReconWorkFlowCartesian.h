@@ -1645,6 +1645,8 @@ copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, boo
             size_t gfactor_N = workOrder_->gfactor_.get_size(2);
             size_t gfactor_S = workOrder_->gfactor_.get_size(3);
 
+            if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(workOrder_->gfactor_, debugFolder_ + "workOrder_gfactor_afterunwrapping"); }
+
             std::vector<size_t> indRes(10);
             indRes[0] = 0;
             indRes[1] = 0;
@@ -1708,6 +1710,8 @@ copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, boo
                     }
                 }
             }
+
+            if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(gfactor_, debugFolder_ + "gfactor_after_copyGFactor"); }
         }
     }
     catch(...)

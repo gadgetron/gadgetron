@@ -1074,6 +1074,11 @@ performCalib(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& ref_s
                     if ( workOrder2DT->gfactor_needed_ ) { GADGET_CHECK_RETURN_FALSE(repmatLastDimension(workOrder2DT->gfactor_, usedS)); }
                     if ( workOrder2DT->wrap_around_map_needed_ ) { GADGET_CHECK_RETURN_FALSE(repmatLastDimension(workOrder2DT->wrap_around_map_, usedS)); }
                 }
+
+                if (!debugFolder_.empty())
+                {
+                    gt_exporter_.exportArrayComplex(workOrder2DT->gfactor_, debugFolder_ + "gfactor_after_calib");
+                }
             }
             else
             {
@@ -1098,6 +1103,11 @@ performCalib(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& ref_s
                 #ifdef USE_OMP
                     omp_set_nested(0);
                 #endif // USE_OMP
+
+                if (!debugFolder_.empty())
+                {
+                    gt_exporter_.exportArrayComplex(workOrder2DT->gfactor_, debugFolder_ + "gfactor_after_calib");
+                }
             }
         }
     }
@@ -1147,6 +1157,9 @@ bool gtPlusReconWorker2DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
         unmixCoeff.create(RO, E1, srcCHA);
         Gadgetron::clear(&unmixCoeff);
 
+        gFactor.create(RO, E1);
+        Gadgetron::clear(&gFactor);
+
         int src;
 
         T* pKerIm = const_cast<T*>(kerIm.begin());
@@ -1182,11 +1195,10 @@ bool gtPlusReconWorker2DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
         // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
 
-        gFactor.create(RO, E1, 1);
-        Gadgetron::clear(&gFactor);
+        hoNDArray<T> gFactorBuf(RO, E1, 1, gFactor.begin());
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(conjUnmixCoeff, gFactorBuf, 2));
 
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(conjUnmixCoeff, gFactor, 2));
-        gFactor.squeeze();
+        // memcpy(gFactor.begin(), gFactorBuf.begin(), sizeof(T)*RO*E1);
         Gadgetron::sqrt(gFactor, gFactor);
     }
     catch(...)

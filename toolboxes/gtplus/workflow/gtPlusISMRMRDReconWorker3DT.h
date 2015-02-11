@@ -1205,13 +1205,11 @@ bool gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
         hoNDArray<T> conjUnmixCoeff(unmixCoeff);
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
 
-        gFactor.create(RO, E1, E2, 1);
+        gFactor.create(RO, E1, E2);
         Gadgetron::clear(&gFactor);
 
-        // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
-
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(conjUnmixCoeff, gFactor, 3));
-        gFactor.squeeze();
+        hoNDArray<T> gFactorBuf(RO, E1, E2, 1, gFactor.begin());
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(conjUnmixCoeff, gFactorBuf, 3));
         Gadgetron::sqrt(gFactor, gFactor);
     }
     catch(...)
