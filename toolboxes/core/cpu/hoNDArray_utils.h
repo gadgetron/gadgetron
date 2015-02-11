@@ -212,7 +212,7 @@ namespace Gadgetron {
 
 #ifdef USE_OMP
 #pragma omp parallel default(none) shared(stride, num_permute_task, num_dim_task, dim_permute, dim_order_int, nDim, in, out, o) private(n)
-#endif USE_OMP
+#endif // USE_OMP
             {
                 hoNDArray<T> permuteArray(dim_permute, in->begin(), false);
 
@@ -221,7 +221,7 @@ namespace Gadgetron {
 
 #ifdef USE_OMP
 #pragma omp for
-#endif USE_OMP
+#endif // USE_OMP
                 for (n = 0; n < num_permute_task; n++) {
                     permuteArray.calculate_index(n, ind_permute_in);
                     memcpy(&ind_in[0] + num_dim_task, &ind_permute_in[0], sizeof(size_t)*ind_permute_in.size());
@@ -265,7 +265,7 @@ namespace Gadgetron {
 
 #ifdef USE_OMP
 #pragma omp parallel default(none) shared(stride, num_dim_memcpy, num_memcpy, dim_permute, dim_order_int, nDim, in, out, o) private(n)
-#endif USE_OMP
+#endif // USE_OMP
         {
             hoNDArray<T> permuteArray(dim_permute, in->begin(), false);
 
@@ -274,7 +274,7 @@ namespace Gadgetron {
 
 #ifdef USE_OMP
 #pragma omp for
-#endif USE_OMP
+#endif // USE_OMP
             for (n = 0; n < num_memcpy; n++) {
                 permuteArray.calculate_index(n, ind_permute_in);
                 memcpy(&ind_in[0] + num_dim_memcpy + 1, &ind_permute_in[0], sizeof(size_t)*ind_permute_in.size());
