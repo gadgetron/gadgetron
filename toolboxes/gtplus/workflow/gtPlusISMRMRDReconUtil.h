@@ -212,18 +212,6 @@ namespace Gadgetron {
 namespace Gadgetron {
 
     /**
-    * @brief sum over last dimension of an array
-             e.g. for a 4D array, sum over the 4th dimension and get a 3D array
-    */
-    template<typename T> EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r); // 
-
-    /**
-    * @brief sum over the second last dimension of an array
-             e.g. for a 4D array, sum over the 3rd dimension and get a 3D array
-    */
-    template<typename T> EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
     * @brief multiply over the last dimension of y by x
              e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) .* x
     */
@@ -234,36 +222,6 @@ namespace Gadgetron {
              e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) ./ x
     */
     template<typename T> EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-
-    /**
-    * @brief sum over the 1st dimension of an array
-             e.g. for a 2D array, sum over the 1st dimension and get an array of [1 E1]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief sum over the 2nd dimension of an array
-             e.g. for a 3D array, sum over the 2nd dimension and get an array of [RO 1 CHA]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief sum over the 3rd dimension of an array
-             e.g. for a 4D array, sum over the 3rd dimension and get an array of [RO E1 1 N]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief sum over the 4th dimension of an array
-             e.g. for a 5D array [RO E1 CHA N S], sum over the 4th dimension and get an array of [RO E1 CHA 1 S]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief sum over the 5th dimension of an array
-             e.g. for a 6D array, sum over the 5th dimension and get an array [RO E1 CHA N 1 P]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
 
     /**
     * @brief multiply over the 3rd/4th/5th dimension of y by x

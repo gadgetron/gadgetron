@@ -391,9 +391,13 @@ imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, s
         }
 
         hoNDArray<T> convKer2;
-        ho4DArray<T> conKerMean(convKRO, convKE1, srcCHA, dstCHA);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, conKerMean));
+        hoNDArray<T> conKerMean(convKRO, convKE1, srcCHA, dstCHA, 1, 1);
+
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, conKerMean));
+
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(convKer, convKer2, 5));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(convKer2, conKerMean, 4));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1)), conKerMean) );
 
         // flip the kernel
@@ -407,7 +411,7 @@ imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, s
                 {
                     for ( src=0; src<srcCHA; src++ )
                     {
-                        convKerFlip( kro, ke1, src, dst) = conKerMean(convKRO-1-kro, convKE1-1-ke1, src, dst);
+                        convKerFlip( kro, ke1, src, dst) = conKerMean(convKRO-1-kro, convKE1-1-ke1, src, dst, 0, 0);
                     }
                 }
             }
@@ -529,46 +533,48 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                 hoNDArray<T> acsSrc1stCha(RO, E1, E2, const_cast<T*>(acsSrc.begin()));
                 hoNDArray<T> acsSrc1stChaSumE2(RO, E1, 1), acsSrc1stChaSumE2E1(RO, 1, 1);
 
-                if ( Gadgetron::sumOver3rdDimension(acsSrc1stCha, acsSrc1stChaSumE2) )
+                try
                 {
-                    if ( Gadgetron::sumOver2ndDimension(acsSrc1stChaSumE2, acsSrc1stChaSumE2E1) )
+                    Gadgetron::sum_over_dimension(acsSrc1stCha, acsSrc1stChaSumE2, 2);
+                    Gadgetron::sum_over_dimension(acsSrc1stChaSumE2, acsSrc1stChaSumE2E1, 1);
+
+                    T maxSignal;
+                    size_t roInd(0);
+                    try
                     {
-                        T maxSignal;
-                        size_t roInd(0);
-                        try
+                        Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd);
+
+                        if ( roInd > maxROUsed/2+kROhalf )
                         {
-                            Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd);
-
-                            if ( roInd > maxROUsed/2+kROhalf )
-                            {
-                                sRO = roInd - maxROUsed/2;
-                            }
-                            else
-                            {
-                                sRO = kROhalf;
-                            }
-
-                            if( sRO+maxROUsed-1 <= RO-kROhalf-1 )
-                            {
-                                eRO = sRO + maxROUsed - 1;
-                            }
-                            else
-                            {
-                                eRO = RO - kROhalf -1;
-                            }
-
-                            lenRO = eRO-sRO+1;
-                            GDEBUG_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
+                            sRO = roInd - maxROUsed/2;
                         }
-                        catch(...)
+                        else
                         {
-                            GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                            sRO = kROhalf;
                         }
+
+                        if( sRO+maxROUsed-1 <= RO-kROhalf-1 )
+                        {
+                            eRO = sRO + maxROUsed - 1;
+                        }
+                        else
+                        {
+                            eRO = RO - kROhalf -1;
+                        }
+
+                        lenRO = eRO-sRO+1;
+                        GDEBUG_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
+                    }
+                    catch(...)
+                    {
+                        GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                        throw;
                     }
                 }
-                else
+                catch (...)
                 {
                     GWARN_STREAM("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                    throw;
                 }
             }
         }
@@ -866,10 +872,17 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - sum over output dimensions ... "); }
         hoNDArray<T> convKer2, convKer3;
-        ho5DArray<T> convKernMean(convKRO, convKE1, convKE2, srcCHA, dstCHA);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, convKer3));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer3, convKernMean));
+
+        //ho5DArray<T> convKernMean(convKRO, convKE1, convKE2, srcCHA, dstCHA);
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer, convKer2));
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer2, convKer3));
+        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(convKer3, convKernMean));
+
+        hoNDArray<T> convKernMean(convKRO, convKE1, convKE2, srcCHA, dstCHA, 1, 1, 1);
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(convKer, convKer2, 7));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(convKer2, convKer3, 6));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(convKer3, convKernMean, 5));
+
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)(1.0/(oRO*oE1*oE2)), convKernMean) );
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
@@ -893,7 +906,7 @@ kspaceDomainConvKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t
                         {
                             for ( src=0; src<srcCHA; src++ )
                             {
-                                T value = convKernMean(convKRO-1-kro, convKE1-1-ke1, convKE2-1-ke2, src, dst);
+                                T value = convKernMean(convKRO-1-kro, convKE1-1-ke1, convKE2-1-ke2, src, dst, 0, 0, 0);
                                 convKerFlip(ke1, ke2, kro, src, dst) = value;
                             }
                         }

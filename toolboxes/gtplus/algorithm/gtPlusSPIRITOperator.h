@@ -253,7 +253,7 @@ bool gtPlusSPIRITOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T
             Gadgetron::multipleMultiply(complexIm_, *forward_kernel_, res_after_apply_kernel_);
         }
 
-        Gadgetron::sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
+        this->sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
 
         // go back to kspace 
         this->convertToKSpace(res_after_apply_kernel_sum_over_, y);
@@ -292,7 +292,7 @@ bool gtPlusSPIRITOperator<T>::adjointOperator(const hoNDArray<T>& x, hoNDArray<T
 
             // apply kernel and sum
             Gadgetron::multipleMultiply(complexIm_, *adjoint_kernel_, res_after_apply_kernel_);
-            Gadgetron::sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
+            this->sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
 
             // go back to kspace 
             this->convertToKSpace(res_after_apply_kernel_sum_over_, y);
@@ -332,7 +332,7 @@ bool gtPlusSPIRITOperator<T>::computeRighHandSide(const hoNDArray<T>& x, hoNDArr
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_, *forward_kernel_, res_after_apply_kernel_));
         }
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
+        GADGET_CHECK_RETURN_FALSE(this->sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
 
         // go back to kspace 
         GADGET_CHECK_RETURN_FALSE(this->convertToKSpace(res_after_apply_kernel_sum_over_, b));
@@ -372,7 +372,7 @@ bool gtPlusSPIRITOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
 
         // apply kernel and sum
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_, *adjoint_forward_kernel_, res_after_apply_kernel_));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
+        GADGET_CHECK_RETURN_FALSE(this->sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
 
         // go back to kspace 
         GADGET_CHECK_RETURN_FALSE(this->convertToKSpace(res_after_apply_kernel_sum_over_, g));
@@ -409,7 +409,7 @@ bool gtPlusSPIRITOperator<T>::obj(const hoNDArray<T>& x, T& obj)
 
         // apply kernel and sum
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_, *forward_kernel_, res_after_apply_kernel_));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
+        GADGET_CHECK_RETURN_FALSE(this->sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
 
         // L2 norm
         Gadgetron::dotc(res_after_apply_kernel_sum_over_, res_after_apply_kernel_sum_over_, obj);

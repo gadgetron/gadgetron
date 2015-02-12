@@ -106,6 +106,8 @@ public:
     hoNDArrayMemoryManaged<T> complexIm_Managed_;
     hoNDArrayMemoryManaged<T> res_after_apply_kernel_Managed_;
     hoNDArrayMemoryManaged<T> res_after_apply_kernel_sum_over_Managed_;
+
+    bool sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
 };
 
 template <typename T> 
@@ -252,6 +254,72 @@ template <typename T>
 bool gtPlusOperator<T>::
 proximity(hoNDArray<T>& /*x*/, value_type /*thres*/)
 {
+    return true;
+}
+
+template<typename T>
+bool gtPlusOperator<T>::
+sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
+{
+    try
+    {
+        boost::shared_ptr< std::vector<size_t> > dim = x.get_dimensions();
+        size_t NDim = dim->size();
+
+        if (NDim < 2) return true;
+
+        std::vector<size_t> dimR(NDim - 1);
+        std::vector<size_t> dimRInternal(NDim - 2);
+
+        size_t d;
+        for (d = 0; d<NDim - 2; d++)
+        {
+            dimR[d] = (*dim)[d];
+            dimRInternal[d] = (*dim)[d];
+        }
+        dimR[NDim - 2] = (*dim)[NDim - 1];
+
+        if (!r.dimensions_equal(&dimR))
+        {
+            r.create(&dimR);
+        }
+
+        if (x.get_size(NDim - 2) <= 1)
+        {
+            memcpy(r.begin(), x.begin(), x.get_number_of_bytes());
+            return true;
+        }
+
+        size_t lastDim = x.get_size(NDim - 1);
+        size_t secondLastDim = x.get_size(NDim - 2);
+        size_t NS = x.get_number_of_elements() / lastDim;
+        size_t NR = r.get_number_of_elements() / lastDim;
+        T* pA = const_cast<T*>(x.begin());
+        T* pR = r.begin();
+
+        int l;
+#pragma omp parallel default(none) private(l) shared(lastDim, secondLastDim, NS, NR, pA, pR, dimRInternal)
+        {
+            hoNDArray<T> tmp, tmp2;
+
+#pragma omp for
+            for (l = 0; l<(int)lastDim; l++)
+            {
+                memcpy(pR + l*NR, pA + l*NS, sizeof(T)*NR);
+                tmp.create(&dimRInternal, pR + l*NR);
+                for (size_t s = 1; s<secondLastDim; s++)
+                {
+                    tmp2.create(&dimRInternal, pA + l*NS + s*NR);
+                    add(tmp, tmp2, tmp);
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GERROR_STREAM("Errors in sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        return false;
+    }
     return true;
 }
 
