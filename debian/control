@@ -49,7 +49,7 @@ Description: The Gadgetron is an open source framework for medical image reconst
 
 Package: libgadgetron-dev
 Architecture: any
-Depends: gadgteron-schema,
+Depends: gadgetron-schema,
 	 gadgetron-config,
 	 libgadgetron3.1 (= ${binary:Version}),
 	 ${misc:Depends},
@@ -84,6 +84,16 @@ Description: The Gadgetron is an open source framework for medical image reconst
  It is made freely available to the medical image reconstruction community.
  .
  This package provides gadgetron chroot scripts.
+
+Package: gadgetron-python-scripts
+Architecture: any
+Depends: ${misc:Depends}
+Description: The Gadgetron is an open source framework for medical image reconstruction.
+ It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
+ and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
+ It is made freely available to the medical image reconstruction community.
+ .
+ This package provides gadgetron python scripts.
 
 Package: gadgetron-config
 Architecture: any
@@ -124,6 +134,7 @@ Depends: gadgetron-ismrmrd-client,
 	 gadgetron-schema,
 	 gadgetron-config,
 	 gadgetron-chroot-scripts,
+	 gadgetron-python-scripts,
 	 gadgetron-tools,
 	 libgadgetron-dev,
 	 ${misc:Depends},
