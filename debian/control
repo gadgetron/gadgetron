@@ -45,7 +45,7 @@ Description: The Gadgetron is an open source framework for medical image reconst
  and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
  It is made freely available to the medical image reconstruction community.
  .
- This package provides gadgetron shared library
+ This package provides gadgetron shared library.
 
 Package: libgadgetron-dev
 Architecture: any
@@ -59,7 +59,7 @@ Description: The Gadgetron is an open source framework for medical image reconst
  and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
  It is made freely available to the medical image reconstruction community.
  .
- This package provides gadgetron development files
+ This package provides gadgetron development files.
 
 Package: gadgetron-tools
 Architecture: any
@@ -73,18 +73,17 @@ Description: The Gadgetron is an open source framework for medical image reconst
  and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
  It is made freely available to the medical image reconstruction community.
  .
- This package provides gadgetron binaries
-
+ This package provides gadgetron binaries.
 
 Package: gadgetron-chroot-scripts
 Architecture: any
-Depends: ${misc:Depends},
+Depends: ${misc:Depends}
 Description: The Gadgetron is an open source framework for medical image reconstruction.
  It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
  and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
  It is made freely available to the medical image reconstruction community.
  .
- This package provides gadgetron chroot scripts
+ This package provides gadgetron chroot scripts.
 
 Package: gadgetron-config
 Architecture: any
@@ -95,18 +94,17 @@ Description: The Gadgetron is an open source framework for medical image reconst
  and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
  It is made freely available to the medical image reconstruction community.
  .
- This package provides gadgetron config files
+ This package provides gadgetron config files.
 
 Package: gadgetron-schema
 Architecture: any
-Depends: ${misc:Depends},
-         ${shlibs:Depends}
+Depends: ${misc:Depends}
 Description: The Gadgetron is an open source framework for medical image reconstruction.
  It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
  and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
  It is made freely available to the medical image reconstruction community.
  .
- This package provides gadgetron development files
+ This package provides gadgetron.xml file.
 
 Package: gadgetron-ismrmrd-client
 Architecture: any
@@ -117,4 +115,22 @@ Description: The Gadgetron is an open source framework for medical image reconst
  and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
  It is made freely available to the medical image reconstruction community.
  .
- This package provides gadgetron ismrmrd-client
+ This package provides gadgetron-ismrmrd-client.
+
+Package: gadgetron-all
+Architecture: any
+Depends: gadgetron-ismrmrd-client,
+	 gadgetron-web,
+	 gadgetron-schema,
+	 gadgetron-config,
+	 gadgetron-chroot-scripts,
+	 gadgetron-tools,
+	 libgadgetron-dev,
+	 ${misc:Depends},
+         ${shlibs:Depends}
+Description: The Gadgetron is an open source framework for medical image reconstruction.
+ It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
+ and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
+ It is made freely available to the medical image reconstruction community.
+ .
+ This package provides whole gadgetron package.
