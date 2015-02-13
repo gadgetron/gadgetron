@@ -1,3 +1,3 @@
-usr/config/gadgetron_web_app.cfg
-usr/bin/gadgetron_web_info
-usr/bin/gadgetron_web_app.py
+usr/gadgetron/config/gadgetron_web_app.cfg
+usr/gadgetron/bin/gadgetron_web_info
+usr/gadgetron/bin/gadgetron_web_app.py
