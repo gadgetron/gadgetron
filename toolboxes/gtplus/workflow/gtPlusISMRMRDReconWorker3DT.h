@@ -173,6 +173,12 @@ public:
 
 protected:
 
+    bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+    bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    // x : [E1 E2 CHA RO ...], r: [RO E1 E2 CHA ...]
+    bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+
     // helper memory for computation
     hoNDArray<T> ref_src_;
     hoNDArray<T> ref_dst_;
@@ -1169,8 +1175,6 @@ bool gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
 
         unmixCoeff.create(RO, E1, E2, srcCHA);
         Gadgetron::clear(&unmixCoeff);
-        gFactor.create(RO, E1, E2);
-        Gadgetron::clear(&gFactor);
 
         int src;
 
@@ -1206,7 +1210,12 @@ bool gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
 
         hoNDArray<T> conjUnmixCoeff(unmixCoeff);
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
+
+        gFactor.create(RO, E1, E2);
+        Gadgetron::clear(&gFactor);
+
+        hoNDArray<T> gFactorBuf(RO, E1, E2, 1, gFactor.begin());
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(conjUnmixCoeff, gFactorBuf, 3));
         Gadgetron::sqrt(gFactor, gFactor);
     }
     catch(...)
@@ -1371,10 +1380,11 @@ bool gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
                     for ( dCha=0; dCha<(int)dstCHA; dCha++ )
                     {
                         hoNDArray<T> kerIm4D(RO, E1, E2, srcCHA, const_cast<T*>(kerIm.begin()+dCha*RO*E1*E2*srcCHA));
-                        hoNDArray<T> complexIm3D(RO, E1, E2, complexIm.begin()+n*RO*E1*E2*dstCHA+dCha*RO*E1*E2);
+                        hoNDArray<T> complexIm3D(RO, E1, E2, 1, complexIm.begin()+n*RO*E1*E2*dstCHA+dCha*RO*E1*E2);
                         // Gadgetron::multipleMultiply(buf4D, kerIm4D, unwrapped4D);
                         Gadgetron::multiply(kerIm4D, buf4D, unwrapped4D);
-                        Gadgetron::sumOverLastDimension(unwrapped4D, complexIm3D);
+                        // Gadgetron::sumOverLastDimension(unwrapped4D, complexIm3D);
+                        Gadgetron::sum_over_dimension(unwrapped4D, complexIm3D, 3);
                     }
                 }
             }
@@ -1465,7 +1475,7 @@ bool gtPlusReconWorker3DT<T>::applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm
 
         // GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(unmixCoeff, aliasedIm, buffer3DT));
         Gadgetron::multipleMultiply(aliasedIm, unmixCoeff, buffer3DT);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(buffer3DT, complexIm));
+        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(buffer3DT, complexIm, 3));
     }
     catch(...)
     {
@@ -2783,6 +2793,206 @@ estimateJobSize(gtPlusReconWorkOrder<T>* workOrder3DT, size_t maxNumOfBytesPerJo
         return false;
     }
 
+    return true;
+}
+
+template<typename T>
+bool gtPlusReconWorker3DT<T>::
+permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+{
+    try
+    {
+        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+        size_t NDim = dimX->size();
+
+        if (NDim < 3)
+        {
+            r = x;
+            return true;
+        }
+
+        size_t RO = x.get_size(0);
+        size_t E1 = x.get_size(1);
+        size_t E2 = x.get_size(2);
+
+        std::vector<size_t> dimR(*dimX);
+        dimR[0] = E1;
+        dimR[1] = E2;
+        dimR[2] = RO;
+
+        r.create(&dimR);
+
+        size_t N3D = RO*E1*E2;
+
+        size_t N = x.get_number_of_elements() / N3D;
+
+        const T* pX = x.begin();
+        T* pR = r.begin();
+
+        long long n;
+
+#pragma omp parallel for default(none) private(n) shared(RO, E1, E2, N, pR, N3D, pX)
+        for (n = 0; n<(long long)N; n++)
+        {
+            T* pRn = pR + n*N3D;
+            T* pXn = const_cast<T*>(pX)+n*N3D;
+
+            for (size_t e2 = 0; e2<E2; e2++)
+            {
+                for (size_t e1 = 0; e1<E1; e1++)
+                {
+                    for (size_t ro = 0; ro<RO; ro++)
+                    {
+                        pRn[e1 + e2*E1 + ro*E1*E2] = pXn[ro + e1*RO + e2*RO*E1];
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        return false;
+    }
+    return true;
+}
+
+template<typename T>
+bool gtPlusReconWorker3DT<T>::
+permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+{
+    try
+    {
+        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+        size_t NDim = dimX->size();
+
+        if (NDim < 4)
+        {
+            r = x;
+            return true;
+        }
+
+        size_t RO = x.get_size(0);
+        size_t E1 = x.get_size(1);
+        size_t E2 = x.get_size(2);
+        size_t CHA = x.get_size(3);
+
+        std::vector<size_t> dimR(*dimX);
+        dimR[0] = E1;
+        dimR[1] = E2;
+        dimR[2] = CHA;
+        dimR[3] = RO;
+
+        r.create(&dimR);
+
+        size_t N4D = RO*E1*E2*CHA;
+
+        size_t N = x.get_number_of_elements() / N4D;
+
+        const T* pX = x.begin();
+        T* pR = r.begin();
+
+        long long n;
+        for (n = 0; n<(long long)N; n++)
+        {
+            T* pRn = pR + n*N4D;
+            T* pXn = const_cast<T*>(pX)+n*N4D;
+
+            long long cha;
+
+#pragma omp parallel for default(none) private(cha) shared(RO, E1, E2, CHA, pXn, pRn)
+            for (cha = 0; cha<(long long)CHA; cha++)
+            {
+                for (size_t e2 = 0; e2<E2; e2++)
+                {
+                    for (size_t e1 = 0; e1<E1; e1++)
+                    {
+                        for (size_t ro = 0; ro<RO; ro++)
+                        {
+                            pRn[e1 + e2*E1 + cha*E1*E2 + ro*E1*E2*CHA] = pXn[ro + e1*RO + e2*RO*E1 + cha*RO*E1*E2];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        return false;
+    }
+    return true;
+}
+
+template<typename T>
+bool gtPlusReconWorker3DT<T>::
+permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
+{
+    try
+    {
+        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+        size_t NDim = dimX->size();
+
+        if (NDim < 4)
+        {
+            r = x;
+            return true;
+        }
+
+        size_t E1 = x.get_size(0);
+        size_t E2 = x.get_size(1);
+        size_t CHA = x.get_size(2);
+        size_t RO = x.get_size(3);
+
+        std::vector<size_t> dimR(*dimX);
+        dimR[0] = RO;
+        dimR[1] = E1;
+        dimR[2] = E2;
+        dimR[3] = CHA;
+
+        r.create(&dimR);
+
+        size_t N4D = RO*E1*E2*CHA;
+
+        size_t N = x.get_number_of_elements() / N4D;
+
+        const T* pX = x.begin();
+        T* pR = r.begin();
+
+        long long n;
+        for (n = 0; n<(long long)N; n++)
+        {
+            T* pRn = pR + n*N4D;
+            T* pXn = const_cast<T*>(pX)+n*N4D;
+
+            long long cha;
+
+#pragma omp parallel for default(none) private(cha) shared(RO, E1, E2, CHA, pXn, pRn)
+            for (cha = 0; cha<(long long)CHA; cha++)
+            {
+                for (size_t e2 = 0; e2<E2; e2++)
+                {
+                    for (size_t e1 = 0; e1<E1; e1++)
+                    {
+                        size_t indRn = e1*RO + e2*RO*E1 + cha*RO*E1*E2;
+                        size_t indXn = e1 + e2*E1 + cha*E1*E2;
+                        for (size_t ro = 0; ro<RO; ro++)
+                        {
+                            pRn[ro + indRn] = pXn[indXn + ro*E1*E2*CHA];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        return false;
+    }
     return true;
 }
 

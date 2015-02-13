@@ -683,4 +683,12 @@ void conv2(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
 template <typename T> EXPORTCPUCOREMATH 
 void conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
 
+/**
+* @brief sum over a specific dimension
+            x: input array, y: output array, dim: dimension to perform sum
+            resulting y.get_size(d) == 1
+*/
+template <typename T> EXPORTCPUCOREMATH
+void sum_over_dimension(const hoNDArray<T>& x, hoNDArray<T>& y, size_t dim);
+
 }

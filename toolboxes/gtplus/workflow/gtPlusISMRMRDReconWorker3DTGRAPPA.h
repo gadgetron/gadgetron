@@ -427,7 +427,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     if ( performTiming_ ) { gt_timer3_.start("permuteROTo3rdDimensionFor3DRecon for aliased images ... "); }
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo3rdDimensionFor3DRecon(aliasedIm, aliasedImPermuted));
+                    GADGET_CHECK_RETURN_FALSE(this->permuteROTo3rdDimensionFor3DRecon(aliasedIm, aliasedImPermuted));
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     // unwrapped images
@@ -512,8 +512,35 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                         ro += jobN;
                     }
 
-                    if ( performTiming_ ) { gt_timer3_.start("permuteROTo3rdDimensionFor3DRecon for unwrapped images ... "); }
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::permute3rdDimensionTo1stDimension(unwrappedImPermuted, workOrder3DT->fullkspace_));
+                    if ( performTiming_ ) { gt_timer3_.start("permute RO to 1st dimension for unwrapped images ... "); }
+                    {
+                        size_t N3D = RO*E1*E2;
+                        size_t Num = dstCHA*N;
+
+                        T* pX = unwrappedImPermuted.begin();
+                        T* pR = workOrder3DT->fullkspace_.begin();
+
+                        long long n, e2;
+                        for (n = 0; n < (long long)Num; n++)
+                        {
+                            T* pXn = pX + n*N3D;
+                            T* pRn = pR + n*N3D;
+
+#pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, pXn, pRn)
+                            for (e2 = 0; e2 < (long long)E2; e2++)
+                            {
+                                for (size_t e1 = 0; e1 < E1; e1++)
+                                {
+                                    size_t indXn = e1 + e2*E1;
+                                    size_t indRn = e1*RO + e2*RO*E1;
+                                    for (size_t ro = 0; ro < RO; ro++)
+                                    {
+                                        pRn[ro + indRn] = pXn[ro*E1*E2 + indXn];
+                                    }
+                                }
+                            }
+                        }
+                    }
                     if ( performTiming_ ) { gt_timer3_.stop(); }
                 }
                 else

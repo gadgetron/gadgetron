@@ -489,46 +489,48 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
                 hoNDArray<T> acsSrc1stCha(RO, E1, E2, const_cast<T*>(acsSrc.begin()));
                 hoNDArray<T> acsSrc1stChaSumE2(RO, E1, 1), acsSrc1stChaSumE2E1(RO, 1, 1);
 
-                if ( Gadgetron::sumOver3rdDimension(acsSrc1stCha, acsSrc1stChaSumE2) )
+                try
                 {
-                    if ( Gadgetron::sumOver2ndDimension(acsSrc1stChaSumE2, acsSrc1stChaSumE2E1) )
+                    Gadgetron::sum_over_dimension(acsSrc1stCha, acsSrc1stChaSumE2, 2);
+                    Gadgetron::sum_over_dimension(acsSrc1stChaSumE2, acsSrc1stChaSumE2E1, 1);
+
+                    T maxSignal;
+                    size_t roInd(0);
+                    try
                     {
-                        T maxSignal;
-                        size_t roInd(0);
-                        try
+                        Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd);
+
+                        if ( roInd > maxROUsed/2+kROhalf )
                         {
-                            Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd);
-
-                            if ( roInd > maxROUsed/2+kROhalf )
-                            {
-                                sRO = roInd - maxROUsed/2;
-                            }
-                            else
-                            {
-                                sRO = kROhalf;
-                            }
-
-                            if( sRO+maxROUsed-1 <= RO-kROhalf-1 )
-                            {
-                                eRO = sRO + maxROUsed - 1;
-                            }
-                            else
-                            {
-                                eRO = RO - kROhalf -1;
-                            }
-
-                            lenRO = eRO-sRO+1;
-                            GDEBUG_STREAM("gtPlusGRAPPA<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
+                            sRO = roInd - maxROUsed/2;
                         }
-                        catch(...)
+                        else
                         {
-                            GWARN_STREAM("gtPlusGRAPPA<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                            sRO = kROhalf;
                         }
+
+                        if( sRO+maxROUsed-1 <= RO-kROhalf-1 )
+                        {
+                            eRO = sRO + maxROUsed - 1;
+                        }
+                        else
+                        {
+                            eRO = RO - kROhalf -1;
+                        }
+
+                        lenRO = eRO-sRO+1;
+                        GDEBUG_STREAM("gtPlusGRAPPA<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
+                    }
+                    catch(...)
+                    {
+                        GWARN_STREAM("gtPlusGRAPPA<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                        throw;
                     }
                 }
-                else
+                catch (...)
                 {
                     GWARN_STREAM("gtPlusGRAPPA<T>::calib3D(...) - overDetermineRatio is ignored ... ");
+                    throw;
                 }
             }
         }
@@ -933,7 +935,33 @@ imageDomainKernelRO3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - permute kernel dimensions to be [kE1 kE2 RO ...]  ... "); }
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo3rdDimensionFor3DRecon(kImROTemp, kImRO));
+
+        size_t N3D = ro*kConvE1*kConvE2;
+        size_t N = srcCHA*dstCHA;
+
+        const T* pX = kImROTemp.begin();
+        T* pR = kImRO.begin();
+
+        long long n;
+
+#pragma omp parallel for default(none) private(n) shared(ro, kConvE1, kConvE2, N, pR, N3D, pX)
+        for ( n=0; n<(long long)N; n++ )
+        {
+            T* pRn = pR + n*N3D;
+            T* pXn = const_cast<T*>(pX) + n*N3D;
+
+            for (size_t e2 = 0; e2<kConvE2; e2++)
+            {
+                for (size_t e1 = 0; e1<kConvE1; e1++)
+                {
+                    for ( size_t r=0; r<ro; r++ )
+                    {
+                        pRn[e1 + e2*kConvE1 + r*kConvE1*kConvE2] = pXn[r + e1*ro + e2*ro*kConvE1];
+                    }
+                }
+            }
+        }
+
         if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)

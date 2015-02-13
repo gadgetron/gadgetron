@@ -212,7 +212,7 @@ L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm)
         // square the coefficients
         Gadgetron::multiplyConj(wavCoeff, wavCoeff, complexIm_norm_);
         // sum over CHA
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(complexIm_norm_, wavCoeffNorm));
+        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(complexIm_norm_, wavCoeffNorm, 3));
     }
     catch (...)
     {
