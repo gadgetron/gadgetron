@@ -1,0 +1,4 @@
+usr/include
+usr/lib/*.so
+usr/share/cmake/FindIsmrmrd.cmake
+usr/share/cmake/FindGadgetron.cmake
