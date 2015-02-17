@@ -7,7 +7,6 @@ using namespace Gadgetron;
 
 int main(int argc, char** argv)
 {
-
   GINFO("This is the PythonMath test application\n");
 
   if (argc < 2) {
@@ -17,23 +16,22 @@ int main(int argc, char** argv)
 
   boost::shared_ptr< hoNDArray< std::complex<float> > > source_data = read_nd_array< std::complex<float> >(argv[1]);
 
+  // Initialize the PythonMath toolbox
+  PythonMath::initialize();
+
   size_t coils = source_data->get_size(2);
   size_t ny = source_data->get_size(1);
   size_t nx = source_data->get_size(0);
-  
   GINFO("Array dimensions [%d, %d, %d]\n", nx, ny, coils);
 
-  std::vector<size_t> dims;
-  dims.push_back(nx);
-  dims.push_back(ny);
-  dims.push_back(coils);
-  
-  hoNDArray< std::complex<float> > unmix(dims);
-  
-  PythonMath::instance()->calculate_grappa_unmixing(source_data.get(), 3, &unmix);
-  
+  hoNDArray< std::complex<float> > unmix;
+  hoNDArray<float> gmap;
+
+  PythonFunction<hoNDArray<std::complex<float> >, hoNDArray<float> > calculate_grappa_unmixing("ismrmrdtools.grappa", "calculate_grappa_unmixing");
+
+  std::tie(unmix, gmap) = calculate_grappa_unmixing(*source_data.get(), 3);
+
   write_nd_array(&unmix, "unmix.cplx");
 
   return 0;
-
 }
