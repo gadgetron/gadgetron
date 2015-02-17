@@ -203,7 +203,15 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
         hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, gtPlus_mem_manager_);
 
         if ( performTiming_ ) { gt_timer3_.start("permtue RO to 4th dimension ... "); }
-        GADGET_CHECK_RETURN_FALSE(this->permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
+
+        std::vector<size_t> dim_order(4);
+        dim_order[0] = 1;
+        dim_order[1] = 2;
+        dim_order[2] = 3;
+        dim_order[3] = 0;
+
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&kspaceIfftRO, &kspaceIfftROPermuted, &dim_order));
+
         if ( performTiming_ ) { gt_timer3_.stop(); }
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftROPermuted, debugFolder_+"kspaceIfftROPermuted"); }
 
@@ -211,14 +219,16 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
         hoNDArray<T> kerPermuted(E1, E2, srcCHA, dstCHA, RO);
         if ( performTiming_ ) { gt_timer3_.start("permute kernel RO to 5th dimension ... "); }
 
-        std::vector<size_t> dim_order(5);
-        dim_order[0] = 0;
-        dim_order[1] = 1;
-        dim_order[2] = 3;
-        dim_order[3] = 4;
-        dim_order[4] = 2;
+        {
+            std::vector<size_t> dim_order(5);
+            dim_order[0] = 0;
+            dim_order[1] = 1;
+            dim_order[2] = 3;
+            dim_order[3] = 4;
+            dim_order[4] = 2;
 
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&adj_forward_G_I, &kerPermuted, &dim_order));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&adj_forward_G_I, &kerPermuted, &dim_order));
+        }
 
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
@@ -226,7 +236,17 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
         hoNDArray<T> coilMapN(RO, E1, E2, dstCHA, workOrder3DT->coilMap_->begin()+n*RO*E1*E2*dstCHA);
         hoNDArray<T> coilMapPermuted(E1, E2, dstCHA, RO);
         if ( performTiming_ ) { gt_timer3_.start("permtue coil map RO to 4th dimension ... "); }
-        GADGET_CHECK_RETURN_FALSE(this->permuteROTo4thDimensionFor3DRecon(coilMapN, coilMapPermuted));
+
+        {
+            std::vector<size_t> dim_order(4);
+            dim_order[0] = 1;
+            dim_order[1] = 2;
+            dim_order[2] = 3;
+            dim_order[3] = 0;
+
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&coilMapN, &coilMapPermuted, &dim_order));
+        }
+
         if ( performTiming_ ) { gt_timer3_.stop(); }
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(coilMapPermuted, debugFolder_+"coilMapPermuted"); }
 
@@ -235,7 +255,17 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         // permute the unwrapped kspace
         if ( performTiming_ ) { gt_timer3_.start("permtue RO to 1st dimension ... "); }
-        GADGET_CHECK_RETURN_FALSE(this->permuteROTo1stDimensionFor3DRecon(resPermuted, kspaceIfftRO));
+
+        {
+            std::vector<size_t> dim_order(4);
+            dim_order[0] = 3;
+            dim_order[1] = 0;
+            dim_order[2] = 1;
+            dim_order[3] = 2;
+
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&resPermuted, &kspaceIfftRO, &dim_order));
+        }
+
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         // perform fft along the first dimension

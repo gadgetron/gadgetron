@@ -427,7 +427,14 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     if ( performTiming_ ) { gt_timer3_.start("permuteROTo3rdDimensionFor3DRecon for aliased images ... "); }
-                    GADGET_CHECK_RETURN_FALSE(this->permuteROTo3rdDimensionFor3DRecon(aliasedIm, aliasedImPermuted));
+
+                    std::vector<size_t> dim_order(3);
+                    dim_order[0] = 1;
+                    dim_order[1] = 2;
+                    dim_order[2] = 0;
+
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&aliasedIm, &aliasedImPermuted, &dim_order));
+
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
                     // unwrapped images
