@@ -10,6 +10,9 @@ namespace bp = boost::python;
 namespace Gadgetron
 {
 
+/// Initializes Python and NumPy. Called by each PythonFunction constructor
+void initialize_python_math(void);
+
 /// Extracts the exception/traceback to build and return a std::string
 std::string pyerr_to_string(void);
 
@@ -36,6 +39,7 @@ class PythonFunctionBase
 protected:
     PythonFunctionBase(const std::string& module, const std::string& funcname)
     {
+        initialize_python_math(); // ensure Python and NumPy are initialized
         GILLock lg; // Lock the GIL, releasing at the end of constructor
         try {
             // import the module and load the function
@@ -125,22 +129,6 @@ public:
             throw std::runtime_error(pyerr_to_string());
         }
     }
-};
-
-/// Singleton for loading Python and NumPy C-API
-class EXPORTPYTHONMATH PythonMath
-{
-public:
-    /// Initialize Python and NumPy. Must be called before using any
-    /// PythonFunction instances.
-    static void initialize();
-
-private:
-    PythonMath();                               // private constructor
-    PythonMath(const PythonMath&);              // non-copyable
-    PythonMath& operator=(const PythonMath&);   // non-assignable
-
-    static PythonMath* instance_;
 };
 
 }

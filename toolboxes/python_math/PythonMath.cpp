@@ -8,28 +8,24 @@
 namespace Gadgetron
 {
 
-PythonMath* PythonMath::instance_ = nullptr;
+static bool initialized = false;
 
-void PythonMath::initialize()
+void initialize_python_math(void)
 {
-    if (!instance_) {
-        instance_ = new PythonMath();
-    }
-}
+    if (!initialized) {
+        Py_Initialize();
+        _import_array();    // import NumPy
 
-PythonMath::PythonMath()
-{
-    Py_Initialize();
-    _import_array();    // import NumPy
+        PyEval_InitThreads();
 
-    PyEval_InitThreads();
-
-    //Swap out and return current thread state and release the GIL
-    //Must be done, otherwise subsequent calls to PyGILState_Ensure()
-    //will not be guaranteed to acquire lock
-    PyThreadState* tstate = PyEval_SaveThread();
-    if (!tstate) {
-        GDEBUG("Error occurred returning lock to Python\n");
+        //Swap out and return current thread state and release the GIL
+        //Must be done, otherwise subsequent calls to PyGILState_Ensure()
+        //will not be guaranteed to acquire lock
+        PyThreadState* tstate = PyEval_SaveThread();
+        if (!tstate) {
+            GDEBUG("Error occurred returning lock to Python\n");
+        }
+        initialized = true;
     }
 }
 

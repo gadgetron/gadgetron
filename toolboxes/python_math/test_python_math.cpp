@@ -16,9 +16,6 @@ int main(int argc, char** argv)
 
   boost::shared_ptr< hoNDArray< std::complex<float> > > source_data = read_nd_array< std::complex<float> >(argv[1]);
 
-  // Initialize the PythonMath toolbox
-  PythonMath::initialize();
-
   size_t coils = source_data->get_size(2);
   size_t ny = source_data->get_size(1);
   size_t nx = source_data->get_size(0);
