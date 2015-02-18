@@ -588,7 +588,7 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         {
             // apply coil sensivity
             //gt_timer2_.start("10");
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_wav_, *coil_senMap_, kspace_wav_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(*coil_senMap_, complexIm_wav_, kspace_wav_));
             //gt_timer2_.stop();
 
             // go to kspace

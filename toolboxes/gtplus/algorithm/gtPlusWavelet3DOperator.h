@@ -1187,11 +1187,11 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
                 if ( coil_senMap_->get_size(3) == E2 )
                 {
                     hoNDArray<T> coilMapE2(RO, E1, CHA, coil_senMap_->begin()+e2*RO*E1*CHA);
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexImE2, coilMapE2, kspace_wavE2));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(coilMapE2, complexImE2, kspace_wavE2));
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexImE2, *coil_senMap_, kspace_wavE2));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(*coil_senMap_, complexImE2, kspace_wavE2));
                 }
             }
             //gt_timer2_.stop();

@@ -1287,16 +1287,13 @@ bool gtPlusReconWorker2DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
 
         if ( num <= 8 )
         {
-            if ( performTiming_ ) { gt_timer3_.start("applyImageDomainKernelImage - multipleMultiply - sumOverSecondLastDimension ... "); }
+            if ( performTiming_ ) { gt_timer3_.start("apply image domain kernel image ... "); }
             for ( n=0; n<(int)num; n++ )
             {
                 hoNDArray<T> buf3D(&dim3D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*srcCHA));
-                // hoNDArray<T> bufIm3D(&dimIm3D, complexIm.begin()+n*RO*E1*dstCHA);
                 hoNDArray<T> bufIm3D(RO, E1, 1, dstCHA, complexIm.begin() + n*RO*E1*dstCHA);
 
-                // Gadgetron::multipleMultiply(buf3D, kerIm, kerImBuffer);
                 Gadgetron::multiply(kerIm, buf3D, kerImBuffer);
-                // Gadgetron::sumOverSecondLastDimension(kerImBuffer, bufIm3D);
                 Gadgetron::sum_over_dimension(kerImBuffer, bufIm3D, 2);
             }
             if ( performTiming_ ) { gt_timer3_.stop(); }
@@ -1313,12 +1310,9 @@ bool gtPlusReconWorker2DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
                 for ( n=0; n<(int)num; n++ )
                 {
                     buf3D.create(&dim3D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*srcCHA));
-                    // bufIm3D.create(&dimIm3D, complexIm.begin()+n*RO*E1*dstCHA);
                     bufIm3D.create(RO, E1, 1, dstCHA, complexIm.begin() + n*RO*E1*dstCHA);
 
-                    // Gadgetron::multipleMultiply(buf3D, kerIm, buf4D);
                     Gadgetron::multiply(kerIm, buf3D, buf4D);
-                    // Gadgetron::sumOverSecondLastDimension(buf4D, bufIm3D);
                     Gadgetron::sum_over_dimension(buf4D, bufIm3D, 2);
                 }
             }
@@ -1376,10 +1370,8 @@ bool gtPlusReconWorker2DT<T>::applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm
         }
         Gadgetron::clear(&complexIm);
 
-        // hoNDArray<T> tmp(aliasedIm);
         buffer2DT_unwrapping_ = aliasedIm;
 
-        // GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(unmixCoeff, aliasedIm, buffer2DT_unwrapping_));
         Gadgetron::multiply(aliasedIm, unmixCoeff, buffer2DT_unwrapping_);
         GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(buffer2DT_unwrapping_, complexIm, 2));
     }

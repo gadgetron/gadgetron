@@ -82,7 +82,7 @@ bool gtPlusSPIRITNoNullSpaceOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(x, this->complexIm_));
 
         // apply kernel and sum
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(this->complexIm_, *this->adjoint_forward_kernel_, this->res_after_apply_kernel_));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(*this->adjoint_forward_kernel_, this->complexIm_, this->res_after_apply_kernel_));
         GADGET_CHECK_RETURN_FALSE(this->performSumOverSrcChannel(this->res_after_apply_kernel_, this->res_after_apply_kernel_sum_over_));
 
         // go back to kspace 
@@ -112,7 +112,7 @@ bool gtPlusSPIRITNoNullSpaceOperator<T>::obj(const hoNDArray<T>& x, T& obj)
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(x, this->complexIm_));
 
         // apply kernel and sum
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(this->complexIm_, *this->forward_kernel_, this->res_after_apply_kernel_));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(*this->forward_kernel_, this->complexIm_, this->res_after_apply_kernel_));
         GADGET_CHECK_RETURN_FALSE(this->performSumOverSrcChannel(this->res_after_apply_kernel_, this->res_after_apply_kernel_sum_over_));
 
         // L2 norm

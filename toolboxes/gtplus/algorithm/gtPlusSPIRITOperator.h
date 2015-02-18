@@ -209,35 +209,6 @@ bool gtPlusSPIRITOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T
     {
         // Dc(G-I)'(G-I)Dc'x
 
-        // Dc'x
-        //gt_timer1_.start("1");
-        //GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, x, y));
-        //gt_timer1_.stop();
-
-        //// x to image domain
-        //gt_timer1_.start("2");
-        //GADGET_CHECK_RETURN_FALSE(this->convertToImage(y, complexIm_));
-        //gt_timer1_.stop();
-
-        //// apply kernel and sum
-        //gt_timer1_.start("3");
-        //GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_, *adjoint_forward_kernel_, res_after_apply_kernel_));
-        //gt_timer1_.stop();
-
-        //gt_timer1_.start("4");
-        //GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
-        //gt_timer1_.stop();
-
-        //// go back to kspace 
-        //gt_timer1_.start("5");
-        //GADGET_CHECK_RETURN_FALSE(this->convertToKSpace(res_after_apply_kernel_sum_over_, y));
-        //gt_timer1_.stop();
-
-        //// apply Dc
-        //gt_timer1_.start("6");
-        //GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, y, y));
-        //gt_timer1_.stop();
-
         Gadgetron::multiply(unacquired_points_indicator_, x, y);
 
         // x to image domain
@@ -246,11 +217,11 @@ bool gtPlusSPIRITOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T
         // apply kernel and sum
         if ( use_symmetric_spirit_ )
         {
-            Gadgetron::multipleMultiply(complexIm_, *adjoint_forward_kernel_, res_after_apply_kernel_);
+            Gadgetron::multiply(*adjoint_forward_kernel_, complexIm_, res_after_apply_kernel_);
         }
         else
         {
-            Gadgetron::multipleMultiply(complexIm_, *forward_kernel_, res_after_apply_kernel_);
+            Gadgetron::multiply(*forward_kernel_, complexIm_, res_after_apply_kernel_);
         }
 
         this->performSumOverSrcChannel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
@@ -291,7 +262,7 @@ bool gtPlusSPIRITOperator<T>::adjointOperator(const hoNDArray<T>& x, hoNDArray<T
             this->convertToImage(x, complexIm_);
 
             // apply kernel and sum
-            Gadgetron::multipleMultiply(complexIm_, *adjoint_kernel_, res_after_apply_kernel_);
+            Gadgetron::multiply(*adjoint_kernel_, complexIm_, res_after_apply_kernel_);
             this->performSumOverSrcChannel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
 
             // go back to kspace 
@@ -325,11 +296,11 @@ bool gtPlusSPIRITOperator<T>::computeRighHandSide(const hoNDArray<T>& x, hoNDArr
         // apply kernel and sum
         if ( use_symmetric_spirit_ )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_, *adjoint_forward_kernel_, res_after_apply_kernel_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(*adjoint_forward_kernel_, complexIm_, res_after_apply_kernel_));
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_, *forward_kernel_, res_after_apply_kernel_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(*forward_kernel_, complexIm_, res_after_apply_kernel_));
         }
 
         GADGET_CHECK_RETURN_FALSE(this->performSumOverSrcChannel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
@@ -371,7 +342,7 @@ bool gtPlusSPIRITOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(kspace_, complexIm_));
 
         // apply kernel and sum
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_, *adjoint_forward_kernel_, res_after_apply_kernel_));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(*adjoint_forward_kernel_, complexIm_, res_after_apply_kernel_));
         GADGET_CHECK_RETURN_FALSE(this->performSumOverSrcChannel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
 
         // go back to kspace 
@@ -408,7 +379,7 @@ bool gtPlusSPIRITOperator<T>::obj(const hoNDArray<T>& x, T& obj)
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(kspace_, complexIm_));
 
         // apply kernel and sum
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_, *forward_kernel_, res_after_apply_kernel_));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(*forward_kernel_, complexIm_, res_after_apply_kernel_));
         GADGET_CHECK_RETURN_FALSE(this->performSumOverSrcChannel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
 
         // L2 norm

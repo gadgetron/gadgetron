@@ -229,11 +229,6 @@ namespace Gadgetron {
     template<typename T> EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R=true);
 
     /**
-    * @brief r = x multiply y for every part of y
-    */
-    template<typename T> EXPORTGTPLUS bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-
-    /**
     * @brief copy the sub-array of x to r
              the sub-array is defined by its starting index and array size
     */

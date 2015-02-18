@@ -300,20 +300,6 @@ namespace Gadgetron {
     }
 
     template <typename T> 
-    bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
-    {
-        GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()<=y.get_number_of_elements());
-        if ( r.get_number_of_elements()!=y.get_number_of_elements())
-        {
-            r = y;
-        }
-
-        Gadgetron::multiply(y, x, r);
-
-        return true;
-    }
-
-    template <typename T> 
     bool cropUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size)
     {
         GADGET_CHECK_RETURN_FALSE( startND.size() == size.size() );
@@ -1111,11 +1097,6 @@ namespace Gadgetron {
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<double>& x, const hoNDArray<double>& y, size_t n, hoNDArray<double>& r, bool copyY2R);
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, size_t n, hoNDArray< std::complex<float> >& r, bool copyY2R);
     template EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, size_t n, hoNDArray< std::complex<double> >& r, bool copyY2R);
-
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTGTPLUS bool multipleMultiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
     template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
