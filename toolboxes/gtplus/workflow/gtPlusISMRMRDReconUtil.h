@@ -212,24 +212,11 @@ namespace Gadgetron {
 namespace Gadgetron {
 
     /**
-    * @brief multiply over the last dimension of y by x
-             e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) .* x
-    */
-    template<typename T> EXPORTGTPLUS bool multiplyOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-
-    /**
-    * @brief divide the last dimension of y by x
-             e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) ./ x
-    */
-    template<typename T> EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-
-    /**
-    * @brief multiply over the 3rd/4th/5th dimension of y by x
+    * @brief multiply over the 4th/5th dimension of y by x
              e.g. x is 3D and y is 4D array, r(:,:,n,:) = y(:,:,n,:) .* x
              e.g. x is 4D and y is 5D array, r(:,:,:,n,:) = y(:,:,:,n,:) .* x
              e.g. x is 5D and y is 6D array, r(:,:,:,:, n,:) = y(:,:,:,:,n,:) .* x
     */
-    template<typename T> EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray<T>& x3D, const hoNDArray<T>& y4D, hoNDArray<T>& r);
     template<typename T> EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, hoNDArray<T>& r);
     template<typename T> EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
 
@@ -242,11 +229,9 @@ namespace Gadgetron {
     template<typename T> EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R=true);
 
     /**
-    * @brief r = x add/multiply/divide y for every part of y
+    * @brief r = x multiply y for every part of y
     */
-    template<typename T> EXPORTGTPLUS bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
     template<typename T> EXPORTGTPLUS bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multipleDivide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
 
     /**
     * @brief copy the sub-array of x to r
@@ -298,14 +283,6 @@ namespace Gadgetron {
              for the sake of speed, no check is made in this function
     */
     template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
-
-    /**
-    * @brief Image domain unwrapping for 2D
-             x : [RO E1 srcCHA N], ker [RO E1 srcCHA dstCHA 1 or N], 
-             buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA N]
-             for the sake of speed, no check is made in this function
-    */
-    template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
 
     /**
     * @brief compute periodic boundary values for an array
