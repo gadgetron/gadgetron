@@ -11,10 +11,10 @@ namespace Gadgetron
 {
 
 /// Initializes Python and NumPy. Called by each PythonFunction constructor
-void initialize_python_math(void);
+EXPORTPYTHONMATH void initialize_python_math(void);
 
 /// Extracts the exception/traceback to build and return a std::string
-std::string pyerr_to_string(void);
+EXPORTPYTHONMATH std::string pyerr_to_string(void);
 
 /// Utility class for RAII handling of the Python GIL. Usage:
 ///
@@ -55,7 +55,7 @@ protected:
 
 /// PythonFunction for multiple return types (std::tuple)
 template <typename... ReturnTypes>
-class EXPORTPYTHONMATH PythonFunction : public PythonFunctionBase
+class PythonFunction : public PythonFunctionBase
 {
 public:
     typedef std::tuple<ReturnTypes...> TupleType;
@@ -84,7 +84,7 @@ public:
 
 /// PythonFunction for a single return type
 template <typename RetType>
-class EXPORTPYTHONMATH PythonFunction<RetType> : public PythonFunctionBase
+class PythonFunction<RetType> : public PythonFunctionBase
 {
 public:
     PythonFunction(const std::string& module, const std::string& funcname)
@@ -111,7 +111,7 @@ public:
 
 /// PythonFunction returning nothing
 template <>
-class EXPORTPYTHONMATH PythonFunction<>  : public PythonFunctionBase
+class PythonFunction<>  : public PythonFunctionBase
 {
 public:
     PythonFunction(const std::string& module, const std::string& funcname)

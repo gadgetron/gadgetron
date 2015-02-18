@@ -11,14 +11,29 @@ namespace bp = boost::python;
 
 namespace Gadgetron {
 
+/// return the enumerated numpy type for a given C++ type
+template <typename T> int get_numpy_type();
+template <> inline int get_numpy_type< char >() { return NPY_INT8; }
+template <> inline int get_numpy_type< unsigned char >() { return NPY_UINT8; }
+template <> inline int get_numpy_type< short >() { return NPY_INT16; }
+template <> inline int get_numpy_type< unsigned short >() { return NPY_UINT16; }
+template <> inline int get_numpy_type< int >() { return NPY_INT32; }
+template <> inline int get_numpy_type< unsigned int >() { return NPY_UINT32; }
+template <> inline int get_numpy_type< long >() { return NPY_INT64; }
+template <> inline int get_numpy_type< unsigned long >() { return NPY_UINT64; }
+template <> inline int get_numpy_type< float >() { return NPY_FLOAT32; }
+template <> inline int get_numpy_type< double >() { return NPY_FLOAT64; }
+template <> inline int get_numpy_type< std::complex<float> >() { return NPY_COMPLEX64; }
+template <> inline int get_numpy_type< std::complex<double> >() { return NPY_COMPLEX128; }
+
 /// Used for making a NumPy array from and hoNDArray
 template <typename T>
 struct hoNDArray_to_numpy_array {
     static PyObject* convert(const hoNDArray<T>& arr) {
         size_t ndim = arr.get_number_of_dimensions();
-        std::vector<long> dims2(ndim);
+        std::vector<npy_intp> dims2(ndim);
         for (size_t i = 0; i < ndim; i++) {
-            dims2[ndim-i-1] = static_cast<long>(arr.get_size(i));
+            dims2[ndim-i-1] = static_cast<npy_intp>(arr.get_size(i));
         }
         PyObject *obj = NumPyArray_SimpleNew(dims2.size(), &dims2[0], get_numpy_type<T>());
         if (sizeof(T) != NumPyArray_ITEMSIZE(obj)) {
