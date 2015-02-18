@@ -397,11 +397,26 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
 
         if ( processApproxCoeff )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(wav_coeff_norm_approx_, wavCoeff, wavCoeff));
+            long long num = wavCoeff.get_number_of_elements() / (RO*E1*E2*W*CHA);
+
+            #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
+            {
+
+                #pragma omp for
+                for (ii = 0; ii<num; ii++)
+                {
+                    hoNDArray<T> wavCoeffNormCurr(RO, E1, E2, W, wav_coeff_norm_approx_.begin() + ii*RO*E1*E2*W);
+
+                    for (long long cha = 0; cha<CHA; cha++)
+                    {
+                        hoNDArray<T> wavCoeffCurr(RO, E1, E2, W, wavCoeff.begin() + ii*RO*E1*E2*W*CHA + cha*RO*E1*E2*W);
+                        Gadgetron::multiply(wavCoeffNormCurr, wavCoeffCurr, wavCoeffCurr);
+                    }
+                }
+            }
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimensionExcept(wav_coeff_norm_approx_, wavCoeff, 0, wavCoeff, true));
             long long num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
 
             #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
@@ -535,7 +550,25 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(res_after_apply_kernel_, wavCoeff, complexIm_));
+                long long num = wavCoeff.get_number_of_elements() / (RO*E1*E2*W*CHA);
+
+                #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, wavCoeff, W, CHA) if ( num > 1 )
+                {
+
+                    #pragma omp for
+                    for (ii = 0; ii<num; ii++)
+                    {
+                        hoNDArray<T> magInvCurr(RO, E1, E2, W, res_after_apply_kernel_.begin() + ii*RO*E1*E2*W);
+
+                        for (long long cha = 0; cha<CHA; cha++)
+                        {
+                            hoNDArray<T> wavCoeffCurr(RO, E1, E2, W, wavCoeff.begin() + ii*RO*E1*E2*W*CHA + cha*RO*E1*E2*W);
+                            hoNDArray<T> resCurr(RO, E1, E2, W, complexIm_.begin() + ii*RO*E1*E2*W*CHA + cha*RO*E1*E2*W);
+
+                            Gadgetron::multiply(magInvCurr, wavCoeffCurr, resCurr);
+                        }
+                    }
+                }
             }
         }
 
@@ -723,13 +756,29 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(wav_coeff_norm_approx_, complexIm_, wavCoeff));
+                long long num = wavCoeff.get_number_of_elements() / (RO*E1*E2*W*CHA);
+
+                #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
+                {
+
+                    #pragma omp for
+                    for (ii = 0; ii<num; ii++)
+                    {
+                        hoNDArray<T> magCurr(RO, E1, E2, W, wav_coeff_norm_approx_.begin() + ii*RO*E1*E2*W);
+
+                        for (long long cha = 0; cha<CHA; cha++)
+                        {
+                            hoNDArray<T> phaseCurr(RO, E1, E2, W, complexIm_.begin() + ii*RO*E1*E2*W*CHA + cha*RO*E1*E2*W);
+                            hoNDArray<T> wavCoeffCurr(RO, E1, E2, W, wavCoeff.begin() + ii*RO*E1*E2*W*CHA + cha*RO*E1*E2*W);
+
+                            Gadgetron::multiply(magCurr, phaseCurr, wavCoeffCurr);
+                        }
+                    }
+                }
             }
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimensionExcept(wav_coeff_norm_approx_, complexIm_, 0, wavCoeff, false));
-
             if ( wav_coeff_norm_approx_.dimensions_equal(&wavCoeff) )
             {
                 #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, wavCoeffNorm, wavCoeff, W, CHA) if ( CHA > 1 )

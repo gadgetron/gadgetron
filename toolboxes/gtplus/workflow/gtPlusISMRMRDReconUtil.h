@@ -212,23 +212,6 @@ namespace Gadgetron {
 namespace Gadgetron {
 
     /**
-    * @brief multiply over the 4th/5th dimension of y by x
-             e.g. x is 3D and y is 4D array, r(:,:,n,:) = y(:,:,n,:) .* x
-             e.g. x is 4D and y is 5D array, r(:,:,:,n,:) = y(:,:,:,n,:) .* x
-             e.g. x is 5D and y is 6D array, r(:,:,:,:, n,:) = y(:,:,:,:,n,:) .* x
-    */
-    template<typename T> EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-
-    /**
-    * @brief multiply over the 4th/5th dimension of y by x except for dimension index n
-             e.g. x is 4D and y is 5D array, r(:,:,:,t,:) = y(:,:,:,t,:) .* x, except for r(:,:,:,n,:) = y(:,:,:,n,:)
-             e.g. x is 5D and y is 6D array, r(:,:,:,:,t,:) = y(:,:,:,:,t,:) .* x, except for r(:,:,:,:,n,:) = y(:,:,:,:,n,:)
-    */
-    template<typename T> EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, size_t n, hoNDArray<T>& r, bool copyY2R=true);
-    template<typename T> EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R=true);
-
-    /**
     * @brief copy the sub-array of x to r
              the sub-array is defined by its starting index and array size
     */
