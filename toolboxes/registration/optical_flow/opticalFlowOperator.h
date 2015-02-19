@@ -62,10 +62,6 @@ namespace Gadgetron {
       }
     }
 
-    virtual boost::shared_ptr< linearOperator<ARRAY_TYPE > > clone()
-      {
-	return linearOperator< ARRAY_TYPE >::clone(this);
-      }
   protected:
     std::vector< boost::shared_ptr<ARRAY_TYPE> > Ix; //Gradient along different directions
   };

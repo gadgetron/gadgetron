@@ -14,6 +14,7 @@
 #include "vector_td_operators.h"
 #include "real_utilities.h"
 #include "core_defines.h"
+#include "complext.h"
 
 #include <float.h>
 #include <vector>
@@ -48,17 +49,7 @@ namespace Gadgetron{
     return (a<b)?b:a;
   }
 
-  //
-  // Get/set operations on vector_td<T,D>
-  //
-
-  template<class T, unsigned int D> __inline__ __host__ __device__ T 
-  get( const vector_td<T,D>& vec, unsigned int dim ) { return vec[dim]; }
-
-  template<class T, unsigned int D> __inline__ __host__ __device__ void 
-  set( vector_td<T,D> &vec, unsigned int dim, T val ) { vec[dim] = val; }
-
-  //
+    //
   // In-place operations
   //
 
@@ -79,7 +70,7 @@ namespace Gadgetron{
   {
     vector_td<T,D> res;
     for (unsigned int i=0; i<D; i++) {
-      res[i] = std::abs(vec[i]);
+      res[i] = ::abs(vec[i]);
     }
     return res;
   }
@@ -345,6 +336,27 @@ namespace Gadgetron{
     return res;
   }
 
+  template<class REAL, unsigned int D> __inline__ __host__ __device__
+  complext<REAL> dot(const vector_td<complext<REAL>, D>& vec1, const vector_td<REAL, D>& vec2)
+  {
+	  complext<REAL> res = (vec1[0] * vec2[0]);
+	  for (unsigned int i = 1; i<D; i++){
+		  res += (vec1[i] * vec2[i]);
+	  }
+	  return res;
+
+  }
+
+  template<class REAL, unsigned int D> __inline__ __host__ __device__
+  complext<REAL> dot(const vector_td<REAL, D>& vec1, const vector_td<complext<REAL>, D>& vec2)
+  {
+	  complext<REAL> res = (vec1[0] * vec2[0]);
+	  for (unsigned int i = 1; i<D; i++){
+		  res += (vec1[i] * vec2[i]);
+	  }
+	  return res;
+
+  }
   template<class T, unsigned int D> __inline__ __host__ __device__
   T max( const vector_td<T,D>& vec )
   {

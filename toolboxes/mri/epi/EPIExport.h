@@ -6,14 +6,10 @@
 #pragma once
 
 #if defined (WIN32)
-    #ifdef BUILD_TOOLBOX_STATIC
-        #define EXPORTEPI
+    #if defined (__BUILD_GADGETRON_EPI__)
+        #define EXPORTEPI __declspec(dllexport)
     #else
-        #if defined (__BUILD_GADGETRON_EPI__)
-            #define EXPORTEPI __declspec(dllexport)
-        #else
-            #define EXPORTEPI __declspec(dllimport)
-        #endif
+        #define EXPORTEPI __declspec(dllimport)
     #endif
 #else
     #define EXPORTEPI

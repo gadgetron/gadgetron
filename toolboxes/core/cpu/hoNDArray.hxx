@@ -27,6 +27,14 @@ namespace Gadgetron
         this->create(dimensions);
     }
 
+#if __cplusplus > 199711L
+    template<class T> hoNDArray<T>::hoNDArray(std::initializer_list<size_t> dimensions){
+    	this->create(dimensions);
+    }
+    template<class T> hoNDArray<T>::hoNDArray(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct ){
+    	this->create(dimensions,data,delete_data_on_destruct);
+    }
+#endif
     template <typename T> 
     hoNDArray<T>::hoNDArray(size_t len) : NDArray<T>::NDArray()
     {
@@ -286,6 +294,18 @@ namespace Gadgetron
         }
     }
 
+#if __cplusplus > 199711L
+    template <typename T>
+    hoNDArray<T>::hoNDArray(hoNDArray<T>&& a) : NDArray<T>::NDArray(){
+    	data_ = a.data_;
+    	*this->dimensions_ = *a.dimensions_;
+    	this->elements_ = a.elements_;
+    	a.dimensions_.reset();
+    	a.data_ = nullptr;
+    	this->offsetFactors_ = a.offsetFactors_;
+    	a.offsetFactors_.reset();
+    }
+#endif
     template <typename T> 
     hoNDArray<T>& hoNDArray<T>::operator=(const hoNDArray<T>& rhs)
     {
@@ -310,6 +330,24 @@ namespace Gadgetron
         }
         return *this;
     }
+
+#if __cplusplus > 199711L
+    template <typename T>
+    hoNDArray<T>& hoNDArray<T>::operator=(hoNDArray<T>&& rhs)
+    {
+        if ( &rhs == this ) return *this;
+
+        this->clear();
+        *this->dimensions_ = *rhs.dimensions_;
+        *this->offsetFactors_ = *rhs.offsetFactors_;
+        this->elements_ = rhs.elements_;
+        rhs.dimensions_.reset();
+        rhs.offsetFactors_.reset();
+        data_ = rhs.data_;
+        rhs.data_ = nullptr;
+        return *this;
+    }
+#endif
 
     template <typename T> 
     void hoNDArray<T>::create(std::vector<size_t>& dimensions)
@@ -405,6 +443,20 @@ namespace Gadgetron
     {
         this->create(dimensions.get(), data, delete_data_on_destruct);
     }
+
+
+
+#if __cplusplus > 199711L
+    template<class T> void hoNDArray<T>::create(std::initializer_list<size_t> dimensions){
+    	std::vector<size_t> dims(dimensions);
+    	this->create(dims);
+    }
+    template<class T> void hoNDArray<T>::create(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct ){
+    	std::vector<size_t> dims(dimensions);
+    	this->create(dims,data,delete_data_on_destruct);
+    }
+#endif
+
 
     template <typename T> 
     inline void hoNDArray<T>::create(size_t len)

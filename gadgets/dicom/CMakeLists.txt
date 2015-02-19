@@ -57,6 +57,7 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/gadgets/core
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
+        ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow

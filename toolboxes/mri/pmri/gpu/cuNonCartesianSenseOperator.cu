@@ -9,6 +9,9 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray< complext<REAL> >
   if( !in || !out ){
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_M : 0x0 input/output not accepted");
   }
+  if ( !in->dimensions_equal(&this->domain_dims_) || !out->dimensions_equal(&this->codomain_dims_)){
+	  throw std::runtime_error("cuNonCartesianSenseOperator::mult_H: input/output arrays do not match specified domain/codomains");
+  }
 
   std::vector<size_t> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
@@ -33,11 +36,14 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray< complext<REAL> 
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH : 0x0 input/output not accepted");
   }
 
+  if ( !in->dimensions_equal(&this->codomain_dims_) || !out->dimensions_equal(&this->domain_dims_)){
+	  throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: input/output arrays do not match specified domain/codomains");
+  }
   std::vector<size_t> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
   cuNDArray< complext<REAL> > tmp(&tmp_dimensions);
-  
-  // Do the NFFT
+
+ // Do the NFFT
   plan_->compute( in, &tmp, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS_NC2C );
 
   if( !accumulate ){

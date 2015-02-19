@@ -21,7 +21,7 @@ public:
 	{
 		filename_ = filename;
 		std::ifstream ifile(filename_.c_str());
-		file_exists_ = ifile;
+        file_exists_ = ifile.good();
 	}
 
 	virtual ~FileInfo() {}

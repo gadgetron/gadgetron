@@ -327,7 +327,7 @@ template<class T> void
 Gadgetron::fill( cuNDArray<T> *x, T val )
 { 
   if( x == 0x0 )
-    throw std::runtime_error("Gadgetron::fill_inplace(): Invalid input array");
+    throw std::runtime_error("Gadgetron::fill(): Invalid input array");
   
   thrust::device_ptr<T> devPtr = x->get_device_ptr();
   thrust::fill(devPtr,devPtr+x->get_number_of_elements(),val);

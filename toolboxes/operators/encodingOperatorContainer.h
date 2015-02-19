@@ -8,7 +8,7 @@
 
 #include <iostream>
 #include <vector>
-#include <boost/smart_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <sstream>
 #include <stdexcept>
 
@@ -113,7 +113,8 @@ namespace Gadgetron{
 
 	ARRAY_TYPE slice;
 	slice.create(codoms[i]->get_dimensions().get(),codomain->get_data_ptr()+offset);
-	slice = *codoms[i];
+	if (codoms[i])
+		slice = *codoms[i];
 	offset += slice.get_number_of_elements();
       }
 
@@ -222,11 +223,6 @@ namespace Gadgetron{
       }
     }
 
-    virtual boost::shared_ptr< linearOperator< ARRAY_TYPE> > clone()
-    {
-      return linearOperator< ARRAY_TYPE >::clone(this);
-    }
-  
   protected:
     std::vector< boost::shared_ptr< linearOperator<ARRAY_TYPE> > > operators_;
     std::vector<size_t> offsets_;

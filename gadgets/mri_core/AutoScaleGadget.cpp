@@ -15,11 +15,18 @@ AutoScaleGadget::AutoScaleGadget()
 	, current_scale_(1.0)
 	, max_value_(2048)
 {
+	set_parameter("max_value","2048");
 }
 
 AutoScaleGadget::~AutoScaleGadget() {
 	// TODO Auto-generated destructor stub
 }
+
+int AutoScaleGadget::process_config(ACE_Message_Block* mb) {
+	max_value_ = get_double_value("max_value");
+	return GADGET_OK;
+}
+
 
 int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<hoNDArray<float> > *m2)
 {
@@ -53,6 +60,7 @@ int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, G
 			cumsum += (long long)(histogram_[counter++]);
 		}
 		max = (counter+1)*(max/histogram_bins_);
+		GDEBUG("Max: %f\n",max);
 
 		current_scale_ = max_value_/max;
 

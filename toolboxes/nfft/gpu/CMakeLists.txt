@@ -35,6 +35,7 @@ target_link_libraries(gadgetron_toolbox_gpunfft
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
   ${CUDA_CUBLAS_LIBRARIES}
+  ${CUDA_CUSPARSE_LIBRARIES}
   )
 
 install(TARGETS gadgetron_toolbox_gpunfft DESTINATION lib COMPONENT main)

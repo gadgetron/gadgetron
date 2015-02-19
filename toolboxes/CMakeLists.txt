@@ -18,6 +18,8 @@ add_subdirectory(solvers)
 add_subdirectory(fft)
 add_subdirectory(nfft)
 
+add_subdirectory(dwt)
+
 add_subdirectory(mri)
 add_subdirectory(ct)
 
@@ -35,9 +37,9 @@ ENDIF()
 find_package(BLAS)
 find_package(LAPACK)
 
-#if (NOT WIN32)
-  if (BLAS_FOUND AND LAPACK_FOUND AND MKL_FOUND)
-    add_subdirectory(linalg)
-  endif()
-#endif()
+# Should we compile the python_math toolbox
+find_package(Boost COMPONENTS python system thread REQUIRED)
+if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+    add_subdirectory(python_math)
+endif (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
 

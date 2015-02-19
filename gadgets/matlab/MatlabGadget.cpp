@@ -57,7 +57,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     engPutVariable(engine_, "hdr_bytes", acq_hdr_bytes);
 
     engPutVariable(engine_, "data", acq_data);
-    cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ(); whos()";
+    cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ();";
     send_matlab_command(cmd);
 
     GDEBUG("Test1\n");
@@ -68,9 +68,9 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
         GDEBUG("Failed to get the Queue from matgadget\n");
         return GADGET_FAIL;
     }
-    GDEBUG("Test2\n");
+
     size_t qlen = mxGetNumberOfElements(Q);
-    GDEBUG("Queue size: %ld", qlen);
+   
 
     // Loop over the elements of the Q, reading one entry at a time
     // to get a structure with type, headerbytes, and data

@@ -6,7 +6,6 @@
 #pragma once
 
 #include "GadgetronException.h"
-#include "GadgetronCommon.h"
 
 #include <new>
 #include <vector>

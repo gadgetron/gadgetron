@@ -3,8 +3,10 @@
 
 #include "GadgetContainerMessage.h"
 #include "ismrmrd/ismrmrd.h"
+#include "ismrmrd/meta.h"
 #include <vector>
 #include <set>
+#include "hoNDArray.h"
 
 namespace Gadgetron 
 {
@@ -199,8 +201,8 @@ namespace Gadgetron
   {
   public:
     uint16_t min_;
-    uint16_t max_;
     uint16_t center_;
+    uint16_t max_;
   };
   
   class SamplingDescription
@@ -222,14 +224,14 @@ namespace Gadgetron
   class IsmrmrdDataBuffered
   {
   public:
-    //7D, fixed order [RO, E1, E2, CHA, SLC, N, S]
+    //7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
     hoNDArray< std::complex<float> > data_;
     
-    //11D, fixed order [RO, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
+    //7D, fixed order [TRAJ, E0, E1, E2, N, S, LOC]
     //This element is optional (length is 0 if not present)
     hoNDArray< float > trajectory_;
     
-    //9D, fixed order [E1, E2, SLC, PHS, CON, REP, SET, SEG, AVE]
+    //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
     
     SamplingDescription sampling_;
@@ -256,6 +258,25 @@ namespace Gadgetron
   public:
     std::vector<IsmrmrdReconBit> rbit_;
   };
+
   
+  /**
+     This class is used to store an array of reconstructed data. 
+   */
+  class IsmrmrdImageArray
+  {
+  public:
+    //7D, fixed order [X, Y, Z, CHA, N, S, LOC]
+    hoNDArray< std::complex<float> > data_;
+    
+    //3D, fixed order [N, S, LOC]
+    hoNDArray< ISMRMRD::ImageHeader > headers_;
+    
+    //3D, fixed order [N, S, LOC]
+    //This element is optional (length is 0 if not present)
+    std::vector< ISMRMRD::MetaContainer > meta_;
+    
+  };
+
 }
 #endif //MRI_CORE_DATA_H

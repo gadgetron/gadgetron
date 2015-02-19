@@ -27,6 +27,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
@@ -81,7 +82,9 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     DependencyQueryWriter.h 
                                     ComplexToFloatAttribGadget.h
                                     AcquisitionAccumulateTriggerGadget.h
-                                    BucketToBufferGadget.h )
+                                    BucketToBufferGadget.h 
+				    ImageArraySplitGadget.h
+                                    SimpleReconGadget.h)
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -112,7 +115,9 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 DependencyQueryWriter.cpp 
                                 ComplexToFloatAttribGadget.cpp 
                                 AcquisitionAccumulateTriggerGadget.cpp
-                                BucketToBufferGadget.cpp )
+                                BucketToBufferGadget.cpp
+				ImageArraySplitGadget.cpp
+                                SimpleReconGadget.cpp  )
 
 if (WIN32)
     set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )
@@ -135,7 +140,7 @@ add_library(gadgetron_mricore SHARED
     ${OPTIMIZED_GADGET_HEADERS}
 )
 
-set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                      
+set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_mricore 
     gadgetron_gadgetbase

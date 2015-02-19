@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <cublas_v2.h>
+#include "cuSparseMatrix.h"
 
 namespace Gadgetron{
 
@@ -56,6 +57,13 @@ namespace Gadgetron{
     void unlockHandle();
     void unlockHandle(int device);
 
+    cusparseHandle_t lockSparseHandle();
+    cusparseHandle_t lockSparseHandle(int device);
+
+    void unlockSparseHandle();
+    void unlockSparseHandle(int device);
+
+
   private:
 
     // Use the Instance() method to access the singleton
@@ -75,6 +83,7 @@ namespace Gadgetron{
     std::vector<int> _major;
     std::vector<int> _minor;
     std::vector<cublasHandle_t> _handle;
+    std::vector<cusparseHandle_t> _sparse_handle;
     static cudaDeviceManager * _instance;
   };
 }

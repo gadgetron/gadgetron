@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <boost/smart_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <string>
 #include <iostream>
 #include "log.h"

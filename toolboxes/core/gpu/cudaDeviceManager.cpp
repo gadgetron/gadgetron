@@ -11,6 +11,8 @@
 namespace Gadgetron{
 
   static boost::shared_array<boost::mutex> _mutex;
+  static boost::shared_array<boost::mutex> _sparseMutex;
+
   cudaDeviceManager* cudaDeviceManager::_instance = 0;
 
   cudaDeviceManager::cudaDeviceManager() {
@@ -26,6 +28,7 @@ namespace Gadgetron{
     }
 
     _mutex = boost::shared_array<boost::mutex>(new boost::mutex[_num_devices]);
+    _sparseMutex = boost::shared_array<boost::mutex>(new boost::mutex[_num_devices]);
 
     int old_device;
     if( cudaGetDevice(&old_device) != cudaSuccess ) {
@@ -40,6 +43,7 @@ namespace Gadgetron{
     _major = std::vector<int>(_num_devices,0);
     _minor = std::vector<int>(_num_devices,0);
     _handle = std::vector<cublasHandle_t>(_num_devices, (cublasContext*)0x0);
+    _sparse_handle = std::vector<cusparseHandle_t>(_num_devices, (cusparseHandle_t)0x0);
 
     for( int device=0; device<_num_devices; device++ ){
 
@@ -70,11 +74,11 @@ namespace Gadgetron{
   cudaDeviceManager::~cudaDeviceManager() 
   {
 
-    // TODO Auto-generated destructor stub
-
     for (int device = 0; device < _num_devices; device++){
       if (_handle[device] != NULL)
         cublasDestroy(_handle[device]);
+      if (_sparse_handle[device] != NULL)
+      	cusparseDestroy(_sparse_handle[device]);
     }
   }
 
@@ -201,6 +205,43 @@ namespace Gadgetron{
   {
     _mutex[device].unlock();
   }
+
+  cusparseHandle_t cudaDeviceManager::lockSparseHandle()
+  {
+    int device;
+    CUDA_CALL(cudaGetDevice(&device));
+    return lockSparseHandle(device);
+  }
+
+  cusparseHandle_t cudaDeviceManager::lockSparseHandle(int device)
+  {
+    _sparseMutex[device].lock();
+    if (_sparse_handle[device] == NULL){
+      cusparseStatus_t ret = cusparseCreate(&_sparse_handle[device]);
+      if (ret != CUSPARSE_STATUS_SUCCESS) {
+      	std::stringstream ss;
+      	ss << "Error: unable to create cusparse handle for device " << device << " : ";
+        ss << gadgetron_getCusparseErrorString(ret) << std::endl;
+      	throw cuda_error(ss.str());
+      }
+      cusparseSetPointerMode(_sparse_handle[device],CUSPARSE_POINTER_MODE_HOST);
+      //cublasSetPointerMode( _handle[device], CUBLAS_POINTER_MODE_HOST );
+    }
+    return _sparse_handle[device];
+  }
+
+  void cudaDeviceManager::unlockSparseHandle()
+  {
+    int device;
+    CUDA_CALL(cudaGetDevice(&device));
+    return unlockSparseHandle(device);
+  }
+
+  void cudaDeviceManager::unlockSparseHandle(int device)
+  {
+    _sparseMutex[device].unlock();
+  }
+
 
   int cudaDeviceManager::getCurrentDevice()
   {

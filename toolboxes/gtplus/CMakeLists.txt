@@ -46,6 +46,7 @@ if ( HAS_64_BIT )
         ${HDF5_INCLUDE_DIR}
         ${HDF5_INCLUDE_DIR}/cpp
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
+        ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
@@ -167,7 +168,6 @@ if ( HAS_64_BIT )
     endif(MATLAB_FOUND)
 
     set(gtplus_files GtPlusExport.h 
-                GtPlusDefinition.h 
                 ${util_header_files} 
                 ${util_src_files} )
 
@@ -195,18 +195,18 @@ if ( HAS_64_BIT )
         endif(MATLAB_FOUND)
     endif (MKL_FOUND OR ARMADILLO_FOUND)
 
-    add_library(gadgetron_toolbox_gtplus_io ${LIBTYPE} ${gtplus_io_header_files} ${gtplus_io_src_files} )
+    add_library(gadgetron_toolbox_gtplus_io SHARED ${gtplus_io_header_files} ${gtplus_io_src_files} )
     set_target_properties(gadgetron_toolbox_gtplus_io PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
     target_link_libraries(gadgetron_toolbox_gtplus_io gadgetron_toolbox_log)
 
-    add_library(gadgetron_toolbox_gtplus ${LIBTYPE} 
+    add_library(gadgetron_toolbox_gtplus SHARED 
                 ${gtplus_files} )
 
     set_target_properties(gadgetron_toolbox_gtplus PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
     target_link_libraries(gadgetron_toolbox_gtplus 
                           gadgetron_toolbox_cpucore
-			  gadgetron_toolbox_log
+                          gadgetron_toolbox_log
                           gadgetron_toolbox_cpucore_math 
                           gadgetron_toolbox_cpufft
                           gadgetron_toolbox_gtplus_io 
@@ -218,7 +218,6 @@ if ( HAS_64_BIT )
     # install gtplus files
     install (FILES  
             GtPlusExport.h 
-            GtPlusDefinition.h 
             ${util_header_files} 
             ${workflow_header_files} 
             ${algorithm_header_files} 

@@ -1,4 +1,5 @@
 #pragma once
+#include "hoNDArray_fileio.h"
 
 namespace Gadgetron{
 template<class T> void write_nd_array(cuNDArray<T>* array, std::string s){
