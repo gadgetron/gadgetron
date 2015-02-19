@@ -72,6 +72,7 @@ target_link_libraries(gadgetron_gadgetbase
   gadgetron_toolbox_log
 )
 
+set_target_properties(gadgetron_gadgetbase PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 set_target_properties (gadgetron_gadgetbase PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_GADGETBASE__")
 
 install(TARGETS gadgetron gadgetron_info DESTINATION bin COMPONENT main)

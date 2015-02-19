@@ -23,10 +23,6 @@ namespace Gadgetron{
       linearOperator<hoCuNDArray<T> >(),dev(dimension),hoDev(dimension), _dimension(dimension){ }
 
     virtual ~hoCuPartialDerivativeOperator() {}
-      
-    virtual boost::shared_ptr< linearOperator<hoCuNDArray<T> > > clone() {
-      return linearOperator<hoCuNDArray<T> >::clone(this);
-    }
 
     //TODO: Generalize to work if we can fit just the 1 single dimension on the gpu
     virtual void mult_M(hoCuNDArray<T>* in, hoCuNDArray<T>* out, bool accumulate)

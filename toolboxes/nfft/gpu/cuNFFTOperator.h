@@ -28,9 +28,6 @@ namespace Gadgetron{
     virtual void mult_MH( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false );
     virtual void mult_MH_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false );
 
-    virtual boost::shared_ptr< linearOperator< cuNDArray< complext<REAL>  > > > clone(){
-      return linearOperator< cuNDArray<complext<REAL> > >::clone(this);
-    }
 
   protected:
     boost::shared_ptr< cuNFFT_plan<REAL, D,ATOMICS> > plan_;

@@ -29,10 +29,6 @@ namespace Gadgetron{
       }
     }
     
-    virtual boost::shared_ptr< linearOperator<  cuNDArray< complext<REAL>  > > > clone(){
-      return linearOperator< cuNDArray<complext<REAL> > >::clone(this);
-    }
-    
   protected:
     boost::shared_ptr< cuNDArray<unsigned int> > idx_;
   };

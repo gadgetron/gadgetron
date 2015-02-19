@@ -87,9 +87,6 @@ namespace Gadgetron {
         *out += tmp;
       }
     }
-    
-    virtual boost::shared_ptr< linearOperator<ARRAY_TYPE> > clone() {
-      return linearOperator<ARRAY_TYPE>::clone(this);
-    }
+
   };
 }

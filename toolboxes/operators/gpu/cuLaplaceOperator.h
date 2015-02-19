@@ -17,10 +17,7 @@ namespace Gadgetron{
     cuLaplaceOperator() : laplaceOperator< D, cuNDArray<T> >() {}
     virtual ~cuLaplaceOperator() {}
     
-    virtual boost::shared_ptr< linearOperator< cuNDArray<T> > > clone(){
-      return linearOperator<cuNDArray<T> >::clone(this);
-    }
-    
+
   protected:
     virtual void compute_laplace( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate );    
   };
