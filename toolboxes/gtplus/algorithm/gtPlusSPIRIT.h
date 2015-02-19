@@ -1074,31 +1074,12 @@ imageDomainKernelRO3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - permute kernel dimensions to be [kE1 kE2 RO ...]  ... "); }
 
-        size_t N3D = ro*kConvE1*kConvE2;
-        size_t N = srcCHA*dstCHA;
+        std::vector<size_t> dim_order(3);
+        dim_order[0] = 1;
+        dim_order[1] = 2;
+        dim_order[2] = 0;
 
-        const T* pX = kImROTemp.begin();
-        T* pR = kImRO.begin();
-
-        long long n;
-
-#pragma omp parallel for default(none) private(n) shared(ro, kConvE1, kConvE2, N, pR, N3D, pX)
-        for (n = 0; n<(long long)N; n++)
-        {
-            T* pRn = pR + n*N3D;
-            T* pXn = const_cast<T*>(pX)+n*N3D;
-
-            for (size_t e2 = 0; e2<kConvE2; e2++)
-            {
-                for (size_t e1 = 0; e1<kConvE1; e1++)
-                {
-                    for (size_t r = 0; r<ro; r++)
-                    {
-                        pRn[e1 + e2*kConvE1 + r*kConvE1*kConvE2] = pXn[r + e1*ro + e2*ro*kConvE1];
-                    }
-                }
-            }
-        }
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&kImROTemp, &kImRO, &dim_order));
 
         if ( performTiming_ ) { gt_timer3_.stop(); }
     }
