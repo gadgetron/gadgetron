@@ -24,9 +24,5 @@ namespace Gadgetron{
     virtual void operator_fft( bool forwards_transform, cuNDArray< complext<REAL> > *image );
     virtual void origin_mirror( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out );
     
-    virtual boost::shared_ptr< linearOperator<cuNDArray< complext<REAL> > > > clone()
-    {
-      return linearOperator< cuNDArray< complext<REAL> > >::clone(this);
-    }
   };
 }

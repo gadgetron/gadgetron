@@ -35,9 +35,7 @@ namespace Gadgetron{
     virtual void preprocess( cuNDArray<_reald> *trajectory );
     virtual void set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw );
 
-    virtual boost::shared_ptr< linearOperator<cuNDArray< complext<REAL>  > > > clone(){
-      return linearOperator< cuNDArray<complext<REAL> > >::clone(this);
-    }
+
   
   protected:
     boost::shared_ptr< cuNFFT_plan<REAL, D, ATOMICS> > plan_;

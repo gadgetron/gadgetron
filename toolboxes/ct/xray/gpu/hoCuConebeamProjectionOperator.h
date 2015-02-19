@@ -125,10 +125,7 @@ namespace Gadgetron{
       return binning_;
     }
     
-    virtual boost::shared_ptr< linearOperator< hoCuNDArray<float> > > clone() {
-      return linearOperator< hoCuNDArray<float> >::clone(this);
-    }
-    
+
   protected:
     virtual void compute_default_frequency_filter();
     virtual void compute_cosine_weights();

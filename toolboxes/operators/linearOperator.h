@@ -87,21 +87,6 @@ namespace Gadgetron{
       mult_MH( &tmp, out, accumulate );
     }
 
-    virtual boost::shared_ptr< linearOperator<ARRAY_TYPE > > clone() = 0;
-
-  protected:
-
-    // The template below is useful for implementing the pure virtual 'clone' method
-    //
-
-    template <class T> static
-      boost::shared_ptr<T> clone( T *orig )
-      {
-	boost::shared_ptr<T> copy( new T() );
-	*copy = *orig;
-	return copy;
-      }
-
   protected:
     std::vector<size_t> codomain_dims_;
   };

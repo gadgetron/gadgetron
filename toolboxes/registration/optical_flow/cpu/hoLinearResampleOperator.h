@@ -20,10 +20,6 @@ namespace Gadgetron{
     virtual void mult_MH( hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate = false);
     virtual void set_displacement_field( boost::shared_ptr< hoNDArray<typename realType<T>::Type> > offsets );
     virtual void reset();
-
-    virtual boost::shared_ptr< linearOperator< hoNDArray<T> > > clone() {
-      return linearOperator< hoNDArray<T> >::clone(this);
-    }
   
   private:
     inline bool is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uint64d<D>::Type dims );

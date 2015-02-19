@@ -43,9 +43,6 @@ public:
 	}
 
 
-	virtual boost::shared_ptr<linearOperator<cuNDArray<complext<float>>>> clone(){
-		return linearOperator<cuNDArray<complext<float>>>::clone(this);
-	}
 	thrust::device_vector<float> freqs;
 	float dtt,dte;
 };

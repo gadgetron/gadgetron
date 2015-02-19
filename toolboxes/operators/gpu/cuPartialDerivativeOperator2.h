@@ -22,10 +22,6 @@ public:
   virtual void mult_MH(cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false );
 
   virtual void mult_MH_M( cuNDArray<T> *in, cuNDArray<T>*out, bool accumulate = false );
-  virtual boost::shared_ptr< linearOperator<  cuNDArray< T > > > clone()
-    {
-      return linearOperator< cuNDArray<T> >::clone(this);
-    }
 
 };
 }
