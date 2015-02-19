@@ -102,10 +102,6 @@ public:
 	static auto haahr = vector_td<typename realType<T>::Type,2>{1.0f,1.0f};
 	static auto daubechies6= vector_td<typename realType<T>::Type,6>{0.47046721f,1.14111692f,0.650365f,-0.19093442f, -0.12083221f,0.0498175f};
 	*/
-	virtual boost::shared_ptr< linearOperator< cuNDArray<T> > > clone()
-    										{
-		return linearOperator<cuNDArray<T>>::clone(this);
-    										}
 
 
 private:

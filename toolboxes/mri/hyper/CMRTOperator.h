@@ -130,9 +130,7 @@ public:
 
 	}
 
-	virtual boost::shared_ptr< linearOperator< cuNDArray<complext<REAL> > > > clone(){
-		return linearOperator<cuNDArray<complext<REAL> > >::clone(this);
-	}
+
 protected:
 
 	cuNFFTOperator<REAL,2> E_; //cuNFFTOperator reconstructing the 2d projections

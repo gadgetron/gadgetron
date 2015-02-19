@@ -132,9 +132,7 @@ const unsigned int num_coils_squared = kernels_->get_size(2);
 		*out -= *in;
 	}
 
-	virtual boost::shared_ptr< linearOperator< cuNDArray< complext<REAL> > > > clone() {
-		return linearOperator< cuNDArray< complext<REAL> > >::clone(this);
-	}
+
 
 protected:
 	boost::shared_ptr< cuNDArray< complext<REAL> > > kernels_;

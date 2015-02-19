@@ -29,9 +29,7 @@ public:
 
 	T get_echotime(){ return dte_;}
 	T get_pointtime(){return dtt_;}
-	virtual boost::shared_ptr<linearOperator<cuNDArray<complext<T>>>> clone(){
-		return linearOperator<cuNDArray<complext<T>>>::clone(this);
-	}
+
 protected:
 	boost::shared_ptr<linearOperator<cuNDArray<complext<T>>>> senseOp;
 	T dte_; //Time between echoes
