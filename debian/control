@@ -28,18 +28,6 @@ Build-Depends: cmake,
 	       hdf5-tools
 Homepage: http://gadgetron.github.io
 
-Package: gadgetron-web
-Architecture: amd64
-Depends: ${misc:Depends},
-	 ${python:Depends}, 
-	 ${shlibs:Depends}
-Description: The Gadgetron is an open source framework for medical image reconstruction. 
- It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA 
- and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark. 
- It is made freely available to the medical image reconstruction community.
- .
- This package provides gadgetron web app.
-
 Package: libgadgetron3.1
 Architecture: amd64
 Depends: python-h5py,
@@ -128,23 +116,9 @@ Description: The Gadgetron is an open source framework for medical image reconst
  .
  This package provides gadgetron.xml file.
 
-Package: gadgetron-ismrmrd-client
-Architecture: amd64
-Depends: ${misc:Depends},
-	 ${python:Depends},
-         ${shlibs:Depends}
-Description: The Gadgetron is an open source framework for medical image reconstruction.
- It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
- and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
- It is made freely available to the medical image reconstruction community.
- .
- This package provides gadgetron-ismrmrd-client.
-
 Package: gadgetron-all
 Architecture: amd64
-Depends: gadgetron-ismrmrd-client,
-	 gadgetron-web,
-	 gadgetron-schema,
+Depends: gadgetron-schema,
 	 gadgetron-config,
 	 gadgetron-chroot-scripts,
 	 gadgetron-python-scripts,
