@@ -1169,8 +1169,6 @@ bool gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
 
         unmixCoeff.create(RO, E1, E2, srcCHA);
         Gadgetron::clear(&unmixCoeff);
-        gFactor.create(RO, E1, E2);
-        Gadgetron::clear(&gFactor);
 
         int src;
 
@@ -1206,7 +1204,12 @@ bool gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
 
         hoNDArray<T> conjUnmixCoeff(unmixCoeff);
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
+
+        gFactor.create(RO, E1, E2);
+        Gadgetron::clear(&gFactor);
+
+        hoNDArray<T> gFactorBuf(RO, E1, E2, 1, gFactor.begin());
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(conjUnmixCoeff, gFactorBuf, 3));
         Gadgetron::sqrt(gFactor, gFactor);
     }
     catch(...)
@@ -1300,109 +1303,26 @@ bool gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
 
         int n;
 
-        //if ( num <= 16 )
-        //{
-            //#ifdef USE_OMP
-            //    omp_set_nested(1);
-            //#endif // USE_OMP
+        #pragma omp parallel default(none) private(n) shared(num, dim4D, aliasedIm, RO, E1, E2, srcCHA, dstCHA, kerIm, complexIm) num_threads( (int)((num<16) ? num : 16) )
+        {
+            hoNDArrayMemoryManaged<T> unwrapped4D(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
 
-            //// #pragma omp parallel default(none) private(n) shared(kerIm, num, dim4D, aliasedIm, RO, E1, E2, srcCHA, dimIm4D, dstCHA, complexIm) if ( num >= 16 )
-            //for ( n=0; n<(int)num; n++ )
-            //{
-            //    hoNDArray<T> buf4D(&dim4D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*E2*srcCHA));
-            //    // hoNDArray<T> bufIm4D(&dimIm4D, complexIm.begin()+n*RO*E1*E2*dstCHA);
-
-            //    int dCha;
-
-            //    #pragma omp parallel default(none) private(dCha) shared(n, buf4D, kerIm, kerImBuffer, num, dim4D, aliasedIm, RO, E1, E2, srcCHA, dimIm4D, dstCHA, complexIm)
-            //    {
-            //        // hoNDArrayMemoryManaged<T> unwarpped4D(RO, E1, E1, srcCHA, gtPlus_mem_manager_);
-
-            //        #pragma omp for
-            //        for ( dCha=0; dCha<(int)dstCHA; dCha++ )
-            //        {
-            //            hoNDArray<T> kerIm4D(RO, E1, E2, srcCHA, const_cast<T*>(kerIm.begin()+dCha*RO*E1*E2*srcCHA));
-            //            hoNDArray<T> complexIm3D(RO, E1, E2, complexIm.begin()+n*RO*E1*E2*dstCHA+dCha*RO*E1*E2);
-            //            hoNDArray<T> unwrapped4D(RO, E1, E2, srcCHA, kerImBuffer.begin()+dCha*RO*E1*E2*srcCHA);
-            //            Gadgetron::multipleMultiply(buf4D, kerIm4D, unwrapped4D);
-            //            Gadgetron::sumOverLastDimension(unwrapped4D, complexIm3D);
-            //        }
-            //    }
-            //}
-
-            #ifdef USE_OMP
-                omp_set_nested(1);
-            #endif // USE_OMP
-
-            //for ( n=0; n<(int)num; n++ )
-            //{
-            //    hoNDArray<T> buf4D(&dim4D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*E2*srcCHA));
-
-            //    int dCha;
-
-            //    //hoNDArrayMemoryManaged<T> unwarpped4D(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
-
-            //    hoNDArray<T> unwrapped4D(RO, E1, E2, srcCHA, kerImBuffer.begin());
-
-            //    for ( dCha=0; dCha<(int)dstCHA; dCha++ )
-            //    {
-            //        hoNDArray<T> kerIm4D(RO, E1, E2, srcCHA, const_cast<T*>(kerIm.begin()+dCha*RO*E1*E2*srcCHA));
-            //        hoNDArray<T> complexIm3D(RO, E1, E2, complexIm.begin()+n*RO*E1*E2*dstCHA+dCha*RO*E1*E2);
-            //        Gadgetron::multipleMultiply(buf4D, kerIm4D, unwrapped4D);
-            //        Gadgetron::sumOverLastDimension(unwrapped4D, complexIm3D);
-            //    }
-            //}
-
-            #pragma omp parallel default(none) private(n) shared(num, dim4D, aliasedIm, RO, E1, E2, srcCHA, dstCHA, kerIm, complexIm) num_threads( (int)((num<16) ? num : 16) )
+            #pragma omp for
+            for ( n=0; n<(int)num; n++ )
             {
-                hoNDArrayMemoryManaged<T> unwrapped4D(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
+                hoNDArray<T> buf4D(&dim4D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*E2*srcCHA));
 
-                #pragma omp for
-                for ( n=0; n<(int)num; n++ )
+                int dCha;
+
+                for ( dCha=0; dCha<(int)dstCHA; dCha++ )
                 {
-                    hoNDArray<T> buf4D(&dim4D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*E2*srcCHA));
-
-                    int dCha;
-
-                    //hoNDArrayMemoryManaged<T> unwarpped4D(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
-
-                    //hoNDArray<T> unwrapped4D(RO, E1, E2, srcCHA, kerImBuffer.begin());
-
-                    for ( dCha=0; dCha<(int)dstCHA; dCha++ )
-                    {
-                        hoNDArray<T> kerIm4D(RO, E1, E2, srcCHA, const_cast<T*>(kerIm.begin()+dCha*RO*E1*E2*srcCHA));
-                        hoNDArray<T> complexIm3D(RO, E1, E2, complexIm.begin()+n*RO*E1*E2*dstCHA+dCha*RO*E1*E2);
-                        // Gadgetron::multipleMultiply(buf4D, kerIm4D, unwrapped4D);
-                        Gadgetron::multiply(kerIm4D, buf4D, unwrapped4D);
-                        Gadgetron::sumOverLastDimension(unwrapped4D, complexIm3D);
-                    }
+                    hoNDArray<T> kerIm4D(RO, E1, E2, srcCHA, const_cast<T*>(kerIm.begin()+dCha*RO*E1*E2*srcCHA));
+                    hoNDArray<T> complexIm3D(RO, E1, E2, 1, complexIm.begin()+n*RO*E1*E2*dstCHA+dCha*RO*E1*E2);
+                    Gadgetron::multiply(kerIm4D, buf4D, unwrapped4D);
+                    Gadgetron::sum_over_dimension(unwrapped4D, complexIm3D, 3);
                 }
             }
-
-        #ifdef USE_OMP
-            omp_set_nested(0);
-        #endif
-
-        //}
-        //else
-        //{
-        //    #pragma omp parallel default(none) private(n) shared(kerIm, num, dim4D, aliasedIm, RO, E1, E2, srcCHA, dimIm4D, dstCHA, complexIm) 
-        //    {
-        //        hoNDArray<T> buf4D;
-        //        hoNDArray<T> bufIm4D;
-        //        hoNDArray<T> buf5D(kerIm.get_dimensions());
-
-        //        #pragma omp for
-        //        for ( n=0; n<(int)num; n++ )
-        //        {
-        //            buf4D.create(&dim4D, const_cast<T*>(aliasedIm.begin()+n*RO*E1*E2*srcCHA));
-        //            bufIm4D.create(&dimIm4D, complexIm.begin()+n*RO*E1*E2*dstCHA);
-
-        //            Gadgetron::multipleMultiply(buf4D, kerIm, buf5D);
-        //            Gadgetron::sumOverSecondLastDimension(buf5D, bufIm4D);
-        //        }
-        //    }
-        //}
+        }
     }
     catch(...)
     {
@@ -1458,14 +1378,10 @@ bool gtPlusReconWorker3DT<T>::applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm
         }
         Gadgetron::clear(&complexIm);
 
-        // hoNDArray<T> tmp(aliasedIm);
-        // buffer3DT_unwrapping_ = aliasedIm;
-
         hoNDArrayMemoryManaged<T> buffer3DT(aliasedIm.get_dimensions(), gtPlus_mem_manager_);
 
-        // GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(unmixCoeff, aliasedIm, buffer3DT));
-        Gadgetron::multipleMultiply(aliasedIm, unmixCoeff, buffer3DT);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(buffer3DT, complexIm));
+        Gadgetron::multiply(aliasedIm, unmixCoeff, buffer3DT);
+        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(buffer3DT, complexIm, 3));
     }
     catch(...)
     {

@@ -383,7 +383,15 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             // hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, N, gtPlus_mem_manager_);
             hoNDArray<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, N);
             if ( performTiming_ ) { gt_timer3_.start("permute kspace RO to 4th dimension ... "); }
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
+
+            std::vector<size_t> dim_order(4);
+            dim_order[0] = 1;
+            dim_order[1] = 2;
+            dim_order[2] = 3;
+            dim_order[3] = 0;
+
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&kspaceIfftRO, &kspaceIfftROPermuted, &dim_order));
+
             if ( performTiming_ ) { gt_timer3_.stop(); }
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftROPermuted, debugFolder_+"kspaceIfftROPermuted"); }
 
@@ -415,8 +423,16 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->kernelIm_, debugFolder_+"kernelImBeforePermuted"); }
 
                 if ( performTiming_ ) { gt_timer3_.start("permute kernel RO to 5th dimension ... "); }
-                // GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo5thDimensionFor3DRecon( *workOrder3DT->kernelIm_, kerPermuted));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension( *workOrder3DT->kernelIm_, kerPermuted));
+
+                std::vector<size_t> dim_order(5);
+                dim_order[0] = 0;
+                dim_order[1] = 1;
+                dim_order[2] = 3;
+                dim_order[3] = 4;
+                dim_order[4] = 2;
+
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(workOrder3DT->kernelIm_.get(), &kerPermuted, &dim_order));
+
                 if ( performTiming_ ) { gt_timer3_.stop(); }
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kerPermuted, debugFolder_+"kerPermuted"); }
@@ -442,9 +458,23 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             if ( workOrder3DT->coilMap_->get_number_of_elements() > 0 )
             {
                 if ( performTiming_ ) { gt_timer3_.start("permute coil map RO to 4th dimension ... "); }
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(*workOrder3DT->coilMap_, *coilMapPermuted));
+
+                coilMapPermuted->create(workOrder3DT->coilMap_->get_size(1), 
+                                        workOrder3DT->coilMap_->get_size(2), 
+                                        workOrder3DT->coilMap_->get_size(3), 
+                                        workOrder3DT->coilMap_->get_size(0), 
+                                        workOrder3DT->coilMap_->get_size(4) );
+
+                std::vector<size_t> dim_order(4);
+                dim_order[0] = 1;
+                dim_order[1] = 2;
+                dim_order[2] = 3;
+                dim_order[3] = 0;
+
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(workOrder3DT->coilMap_.get(), coilMapPermuted.get(), &dim_order));
+
                 if ( performTiming_ ) { gt_timer3_.stop(); }
-                if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftROPermuted, debugFolder_+"coilMapPermuted"); }
+                if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(*coilMapPermuted, debugFolder_ + "coilMapPermuted"); }
 
                 workOrder3DTJobSplit.coilMap_ = coilMapPermuted;
             }
@@ -641,7 +671,17 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
             // permute the unwrapped kspace
             if ( performTiming_ ) { gt_timer3_.start("permtue RO to 1st dimension ... "); }
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo1stDimensionFor3DRecon(workOrder3DTJobSplit.fullkspace_, kspaceIfftRO));
+
+            {
+                std::vector<size_t> dim_order(4);
+                dim_order[0] = 3;
+                dim_order[1] = 0;
+                dim_order[2] = 1;
+                dim_order[3] = 2;
+
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&workOrder3DTJobSplit.fullkspace_, &kspaceIfftRO, &dim_order));
+            }
+
             if ( performTiming_ ) { gt_timer3_.stop(); }
 
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftRO, debugFolder_+"res_fullkspace_ROinIm"); }
@@ -887,7 +927,15 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
         hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, gtPlus_mem_manager_);
 
         if ( performTiming_ ) { gt_timer3_.start("permtue RO to 4th dimension ... "); }
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo4thDimensionFor3DRecon(kspaceIfftRO, kspaceIfftROPermuted));
+
+        std::vector<size_t> dim_order(4);
+        dim_order[0] = 1;
+        dim_order[1] = 2;
+        dim_order[2] = 3;
+        dim_order[3] = 0;
+
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&kspaceIfftRO, &kspaceIfftROPermuted, &dim_order));
+
         if ( performTiming_ ) { gt_timer3_.stop(); }
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftROPermuted, debugFolder_+"kspaceIfftROPermuted"); }
 
@@ -981,7 +1029,17 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         // permute the unwrapped kspace
         if ( performTiming_ ) { gt_timer3_.start("permtue RO to 1st dimension ... "); }
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteROTo1stDimensionFor3DRecon(resDecoupled, kspaceIfftRO));
+
+        {
+            std::vector<size_t> dim_order(4);
+            dim_order[0] = 3;
+            dim_order[1] = 0;
+            dim_order[2] = 1;
+            dim_order[3] = 2;
+
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&resDecoupled, &kspaceIfftRO, &dim_order));
+        }
+
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         // perform fft along the first dimension

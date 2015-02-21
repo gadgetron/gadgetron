@@ -212,85 +212,6 @@ namespace Gadgetron {
 namespace Gadgetron {
 
     /**
-    * @brief sum over last dimension of an array
-             e.g. for a 4D array, sum over the 4th dimension and get a 3D array
-    */
-    template<typename T> EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r); // 
-
-    /**
-    * @brief sum over the second last dimension of an array
-             e.g. for a 4D array, sum over the 3rd dimension and get a 3D array
-    */
-    template<typename T> EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief multiply over the last dimension of y by x
-             e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) .* x
-    */
-    template<typename T> EXPORTGTPLUS bool multiplyOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-
-    /**
-    * @brief divide the last dimension of y by x
-             e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) ./ x
-    */
-    template<typename T> EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-
-    /**
-    * @brief sum over the 1st dimension of an array
-             e.g. for a 2D array, sum over the 1st dimension and get an array of [1 E1]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief sum over the 2nd dimension of an array
-             e.g. for a 3D array, sum over the 2nd dimension and get an array of [RO 1 CHA]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief sum over the 3rd dimension of an array
-             e.g. for a 4D array, sum over the 3rd dimension and get an array of [RO E1 1 N]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief sum over the 4th dimension of an array
-             e.g. for a 5D array [RO E1 CHA N S], sum over the 4th dimension and get an array of [RO E1 CHA 1 S]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief sum over the 5th dimension of an array
-             e.g. for a 6D array, sum over the 5th dimension and get an array [RO E1 CHA N 1 P]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief multiply over the 3rd/4th/5th dimension of y by x
-             e.g. x is 3D and y is 4D array, r(:,:,n,:) = y(:,:,n,:) .* x
-             e.g. x is 4D and y is 5D array, r(:,:,:,n,:) = y(:,:,:,n,:) .* x
-             e.g. x is 5D and y is 6D array, r(:,:,:,:, n,:) = y(:,:,:,:,n,:) .* x
-    */
-    template<typename T> EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray<T>& x3D, const hoNDArray<T>& y4D, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-
-    /**
-    * @brief multiply over the 4th/5th dimension of y by x except for dimension index n
-             e.g. x is 4D and y is 5D array, r(:,:,:,t,:) = y(:,:,:,t,:) .* x, except for r(:,:,:,n,:) = y(:,:,:,n,:)
-             e.g. x is 5D and y is 6D array, r(:,:,:,:,t,:) = y(:,:,:,:,t,:) .* x, except for r(:,:,:,:,n,:) = y(:,:,:,:,n,:)
-    */
-    template<typename T> EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, size_t n, hoNDArray<T>& r, bool copyY2R=true);
-    template<typename T> EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R=true);
-
-    /**
-    * @brief r = x add/multiply/divide y for every part of y
-    */
-    template<typename T> EXPORTGTPLUS bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multipleDivide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-
-    /**
     * @brief copy the sub-array of x to r
              the sub-array is defined by its starting index and array size
     */
@@ -334,60 +255,12 @@ namespace Gadgetron {
     template<typename T> EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& std, bool NMinusOne);
 
     /**
-    * @brief permute E2 dimension of x : [RO E1 CHA SLC E2 ...] to r: [RO E1 E2 CHA SLC ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute E2 dimension of x : [RO E1 E2 CHA SLC ...] to r: [RO E1 CHA SLC E2 ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 3rd dimension
-             x : [RO E1 E2 ...], r: [E1 E2 RO ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 4th dimension
-             x : [RO E1 E2 CHA ...], r: [E1 E2 CHA RO ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x back to the 1st dimension
-             x : [E1 E2 CHA RO ...], r: [RO E1 E2 CHA ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute the 3rd dimension of x to the 1st dimension
-             x : [RO E1 E2 CHA ...], r: [E2 RO E1 CHA ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 5th dimension
-             x : [RO E1 E2 srcCHA dstCHA ...], r: [E1 E2 srcCHA dstCHA RO ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
     * @brief Image domain unwrapping for 2D
              x : [RO E1 srcCHA], ker [RO E1 srcCHA dstCHA]
              buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA]
              for the sake of speed, no check is made in this function
     */
     template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
-
-    /**
-    * @brief Image domain unwrapping for 2D
-             x : [RO E1 srcCHA N], ker [RO E1 srcCHA dstCHA 1 or N], 
-             buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA N]
-             for the sake of speed, no check is made in this function
-    */
-    template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
 
     /**
     * @brief compute periodic boundary values for an array

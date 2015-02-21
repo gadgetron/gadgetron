@@ -205,10 +205,10 @@ bool gtPlusSPIRITNoNullSpace2DTOperator<T>::grad(const hoNDArray<T>& x, hoNDArra
                 curr_adjoint_forward_kernel.create(RO, E1, CHA, dstCHA, this->adjoint_forward_kernel_->begin()+(kernelN-1)*RO*E1*CHA*dstCHA);
             }
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(currComplexIm, curr_adjoint_forward_kernel, this->res_after_apply_kernel_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(curr_adjoint_forward_kernel, currComplexIm, this->res_after_apply_kernel_));
 
-            hoNDArray<T> sumResCurr(RO, E1, dstCHA, this->res_after_apply_kernel_sum_over_.begin()+n*RO*E1*dstCHA);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(this->res_after_apply_kernel_, sumResCurr));
+            hoNDArray<T> sumResCurr(RO, E1, 1, dstCHA, this->res_after_apply_kernel_sum_over_.begin() + n*RO*E1*dstCHA);
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(this->res_after_apply_kernel_, sumResCurr, 2));
         }
 
         // go back to kspace 
@@ -264,10 +264,10 @@ bool gtPlusSPIRITNoNullSpace2DTOperator<T>::obj(const hoNDArray<T>& x, T& obj)
                 curr_forward_kernel.create(RO, E1, CHA, dstCHA, this->forward_kernel_->begin()+(kernelN-1)*RO*E1*CHA*dstCHA);
             }
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(currComplexIm, curr_forward_kernel, this->res_after_apply_kernel_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(curr_forward_kernel, currComplexIm, this->res_after_apply_kernel_));
 
-            hoNDArray<T> sumResCurr(RO, E1, dstCHA, this->res_after_apply_kernel_sum_over_.begin()+n*RO*E1*dstCHA);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(this->res_after_apply_kernel_, sumResCurr));
+            hoNDArray<T> sumResCurr(RO, E1, 1, dstCHA, this->res_after_apply_kernel_sum_over_.begin() + n*RO*E1*dstCHA);
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(this->res_after_apply_kernel_, sumResCurr, 2));
         }
 
         // L2 norm
