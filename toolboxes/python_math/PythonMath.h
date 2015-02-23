@@ -2,35 +2,135 @@
 #define GADGETRON_PYTHON_MATH_H
 
 #include "python_math_export.h"
-#include <boost/thread/mutex.hpp>
-#include "hoNDArray.h"
+#include "converters.h"
+
+#include <boost/python.hpp>
+namespace bp = boost::python;
 
 namespace Gadgetron
 {
 
-  class EXPORTPYTHONMATH PythonMath
-  {
+/// Initializes Python and NumPy. Called by each PythonFunction constructor
+EXPORTPYTHONMATH void initialize_python_math(void);
 
-  public:
-    static PythonMath* instance();
+/// Extracts the exception/traceback to build and return a std::string
+EXPORTPYTHONMATH std::string pyerr_to_string(void);
 
-    /**
-       Wrapper for ismrmrdtools.grappa.calculate_grappa_unmixing(source_data, acc_factor, kernel_size=(4,5), data_mask=None, csm=None, regularization_factor=0.001, target_data=None):
-     */
-    void calculate_grappa_unmixing(hoNDArray< std::complex<float> >* source_data, unsigned int acc_factor, hoNDArray< std::complex<float> >* unmix_out,
-				  unsigned int* kernel_size = 0, hoNDArray< unsigned int >* data_mask = 0, hoNDArray< std::complex<float> >* csm = 0,
-				  float regularization_factor = 0.001, hoNDArray< std::complex<float> >* target_data = 0, 
-				  hoNDArray< float >* gmap_out = 0);
+/// Utility class for RAII handling of the Python GIL. Usage:
+///
+///    GILLock lg;  // at the top of a block
+///
+class GILLock
+{
+public:
+    GILLock() { gstate_ = PyGILState_Ensure(); }
+    ~GILLock() { PyGILState_Release(gstate_); }
+private:
+    // noncopyable
+    GILLock(const GILLock&);
+    GILLock& operator=(const GILLock&);
 
-  protected:
-    ///Protected constructor. 
-    PythonMath();
+    PyGILState_STATE gstate_;
+};
 
-    static PythonMath* instance_;
-    boost::mutex mtx_;
-  };
+/// Base class for templated PythonFunction class. Do not use directly.
+class PythonFunctionBase
+{
+protected:
+    PythonFunctionBase(const std::string& module, const std::string& funcname)
+    {
+        initialize_python_math(); // ensure Python and NumPy are initialized
+        GILLock lg; // Lock the GIL, releasing at the end of constructor
+        try {
+            // import the module and load the function
+            bp::object mod(bp::import(module.c_str()));
+            fn_ = mod.attr(funcname.c_str());
+        } catch (const bp::error_already_set&) {
+            throw std::runtime_error(pyerr_to_string());
+        }
+    }
 
+    bp::object fn_;
+};
+
+/// PythonFunction for multiple return types (std::tuple)
+template <typename... ReturnTypes>
+class PythonFunction : public PythonFunctionBase
+{
+public:
+    typedef std::tuple<ReturnTypes...> TupleType;
+
+    PythonFunction(const std::string& module, const std::string& funcname)
+      : PythonFunctionBase(module, funcname)
+    {
+        // register the tuple return type converter
+        register_converter<TupleType>();
+    }
+
+    template <typename... TS>
+    TupleType operator()(const TS&... args)
+    {
+        // register type converter for each parameter type
+        register_converter<TS...>();
+        GILLock lg; // lock GIL and release at function exit
+        try {
+            bp::object res = fn_(args...);
+            return bp::extract<TupleType>(res);
+        } catch (bp::error_already_set const &) {
+            throw std::runtime_error(pyerr_to_string());
+        }
+    }
+};
+
+/// PythonFunction for a single return type
+template <typename RetType>
+class PythonFunction<RetType> : public PythonFunctionBase
+{
+public:
+    PythonFunction(const std::string& module, const std::string& funcname)
+      : PythonFunctionBase(module, funcname)
+    {
+        // register the return type converter
+        register_converter<RetType>();
+    }
+
+    template <typename... TS>
+    RetType operator()(const TS&... args)
+    {
+        // register type converter for each parameter type
+        register_converter<TS...>();
+        GILLock lg; // lock GIL and release at function exit
+        try {
+            bp::object res = fn_(args...);
+            return bp::extract<RetType>(res);
+        } catch (bp::error_already_set const &) {
+            throw std::runtime_error(pyerr_to_string());
+        }
+    }
+};
+
+/// PythonFunction returning nothing
+template <>
+class PythonFunction<>  : public PythonFunctionBase
+{
+public:
+    PythonFunction(const std::string& module, const std::string& funcname)
+      : PythonFunctionBase(module, funcname) {}
+
+    template <typename... TS>
+    void operator()(const TS&... args)
+    {
+        // register type converter for each parameter type
+        register_converter<TS...>();
+        GILLock lg; // lock GIL and release at function exit
+        try {
+            bp::object res = fn_(args...);
+        } catch (bp::error_already_set const &) {
+            throw std::runtime_error(pyerr_to_string());
+        }
+    }
+};
 
 }
 
-#endif
+#endif // GADGETRON_PYTHON_MATH_H

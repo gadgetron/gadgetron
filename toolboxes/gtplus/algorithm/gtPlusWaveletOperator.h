@@ -212,7 +212,7 @@ L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm)
         // square the coefficients
         Gadgetron::multiplyConj(wavCoeff, wavCoeff, complexIm_norm_);
         // sum over CHA
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(complexIm_norm_, wavCoeffNorm));
+        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(complexIm_norm_, wavCoeffNorm, 3));
     }
     catch (...)
     {
@@ -283,11 +283,26 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
 
         if ( processApproxCoeff )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimension(wav_coeff_norm_approx_, wavCoeff, wavCoeff));
+            size_t num = wavCoeff.get_number_of_elements() / (RO*E1*W*CHA);
+
+#pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
+            {
+
+#pragma omp for
+                for (ii = 0; ii<(long long)num; ii++)
+                {
+                    hoNDArray<T> wavCoeffNormCurr(RO, E1, W, wav_coeff_norm_approx_.begin() + ii*RO*E1*W);
+
+                    for (size_t cha = 0; cha<CHA; cha++)
+                    {
+                        hoNDArray<T> wavCoeffCurr(RO, E1, W, wavCoeff.begin() + ii*RO*E1*W*CHA + cha*RO*E1*W);
+                        Gadgetron::multiply(wavCoeffNormCurr, wavCoeffCurr, wavCoeffCurr);
+                    }
+                }
+            }
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimensionExcept(wav_coeff_norm_approx_, wavCoeff, 0, wavCoeff, true));
             size_t num = wavCoeff.get_number_of_elements()/(RO*E1*W*CHA);
 
             #pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
@@ -373,7 +388,22 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, value_t
         }
 
         // phase does not change
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimension(res_after_apply_kernel_, wavCoeff, complexIm_));
+#pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeff, W, CHA) if ( num > 1 )
+        {
+#pragma omp for
+            for (ii = 0; ii<num; ii++)
+            {
+                hoNDArray<T> MagInvCurr(RO, E1, W, res_after_apply_kernel_.begin() + ii*RO*E1*W);
+
+                for (size_t cha = 0; cha<CHA; cha++)
+                {
+                    hoNDArray<T> wavCoeffCurr(RO, E1, W, wavCoeff.begin() + ii*RO*E1*W*CHA + cha*RO*E1*W);
+                    hoNDArray<T> resCurr(RO, E1, W, complexIm_.begin() + ii*RO*E1*W*CHA + cha*RO*E1*W);
+
+                    Gadgetron::multiply(MagInvCurr, wavCoeffCurr, resCurr);
+                }
+            }
+        }
 
         // shrink the magnitude
         if ( mask.dimensions_equal(&wavCoeffNorm) )
@@ -439,13 +469,30 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, value_t
             }
         }
 
+        size_t W_Start = W;
         if ( processApproxCoeff )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimension(wav_coeff_norm_approx_, complexIm_, wavCoeff));
+            num = wavCoeff.get_number_of_elements() / (RO*E1*W*CHA);
+
+#pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeff, W, CHA) if ( num > 1 )
+            {
+#pragma omp for
+                for (ii = 0; ii<num; ii++)
+                {
+                    hoNDArray<T> MagCurr(RO, E1, W, wav_coeff_norm_approx_.begin() + ii*RO*E1*W);
+
+                    for (size_t cha = 0; cha<CHA; cha++)
+                    {
+                        hoNDArray<T> phaseCurr(RO, E1, W, complexIm_.begin() + ii*RO*E1*W*CHA + cha*RO*E1*W);
+                        hoNDArray<T> wavCoeffCurr(RO, E1, W, wavCoeff.begin() + ii*RO*E1*W*CHA + cha*RO*E1*W);
+
+                        Gadgetron::multiply(MagCurr, phaseCurr, wavCoeffCurr);
+                    }
+                }
+            }
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimensionExcept(wav_coeff_norm_approx_, complexIm_, 0, wavCoeff, false));
             num = wavCoeff.get_number_of_elements()/(RO*E1*W*CHA);
 
             #pragma omp parallel default(none) private(ii) shared(RO, E1, num, wavCoeff, W, CHA) if ( num > 1 )
@@ -588,7 +635,7 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         {
             // apply coil sensivity
             //gt_timer2_.start("10");
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_wav_, *coil_senMap_, kspace_wav_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(*coil_senMap_, complexIm_wav_, kspace_wav_));
             //gt_timer2_.stop();
 
             // go to kspace

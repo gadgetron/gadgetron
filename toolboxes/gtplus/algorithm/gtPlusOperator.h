@@ -106,6 +106,8 @@ public:
     hoNDArrayMemoryManaged<T> complexIm_Managed_;
     hoNDArrayMemoryManaged<T> res_after_apply_kernel_Managed_;
     hoNDArrayMemoryManaged<T> res_after_apply_kernel_sum_over_Managed_;
+
+    bool performSumOverSrcChannel(const hoNDArray<T>& x, hoNDArray<T>& r);
 };
 
 template <typename T> 
@@ -252,6 +254,51 @@ template <typename T>
 bool gtPlusOperator<T>::
 proximity(hoNDArray<T>& /*x*/, value_type /*thres*/)
 {
+    return true;
+}
+
+template<typename T>
+bool gtPlusOperator<T>::
+performSumOverSrcChannel(const hoNDArray<T>& x, hoNDArray<T>& r)
+{
+    try
+    {
+        boost::shared_ptr< std::vector<size_t> > dim = x.get_dimensions();
+        size_t NDim = dim->size();
+
+        if (NDim < 2) return true;
+
+        std::vector<size_t> dimR(NDim - 1);
+        std::vector<size_t> dimRInternal = *dim;
+        dimRInternal[NDim - 2] = 1;
+
+        size_t d;
+        for (d = 0; d<NDim - 2; d++)
+        {
+            dimR[d] = (*dim)[d];
+        }
+        dimR[NDim - 2] = (*dim)[NDim - 1];
+
+        if (!r.dimensions_equal(&dimR))
+        {
+            r.create(&dimR);
+        }
+
+        if (x.get_size(NDim - 2) <= 1)
+        {
+            memcpy(r.begin(), x.begin(), x.get_number_of_bytes());
+            return true;
+        }
+
+        hoNDArray<T> rSum(dimRInternal, r.begin());
+
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(x, rSum, NDim - 2));
+    }
+    catch (...)
+    {
+        GERROR_STREAM("Errors in performSumOverSrcChannel(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        return false;
+    }
     return true;
 }
 
