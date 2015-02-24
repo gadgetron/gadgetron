@@ -1,8 +1,8 @@
-#ifndef GADGETRON_PYTHON_MATH_H
-#define GADGETRON_PYTHON_MATH_H
+#ifndef GADGETRON_PYTHON_H
+#define GADGETRON_PYTHON_H
 
-#include "python_math_export.h"
-#include "converters.h"
+#include "python_export.h"
+#include "python_converters.h"
 
 #include <boost/python.hpp>
 namespace bp = boost::python;
@@ -11,10 +11,10 @@ namespace Gadgetron
 {
 
 /// Initializes Python and NumPy. Called by each PythonFunction constructor
-EXPORTPYTHONMATH void initialize_python_math(void);
+EXPORTPYTHON void initialize_python(void);
 
 /// Extracts the exception/traceback to build and return a std::string
-EXPORTPYTHONMATH std::string pyerr_to_string(void);
+EXPORTPYTHON std::string pyerr_to_string(void);
 
 /// Utility class for RAII handling of the Python GIL. Usage:
 ///
@@ -39,7 +39,7 @@ class PythonFunctionBase
 protected:
     PythonFunctionBase(const std::string& module, const std::string& funcname)
     {
-        initialize_python_math(); // ensure Python and NumPy are initialized
+        initialize_python(); // ensure Python and NumPy are initialized
         GILLock lg; // Lock the GIL, releasing at the end of constructor
         try {
             // import the module and load the function
@@ -133,4 +133,4 @@ public:
 
 }
 
-#endif // GADGETRON_PYTHON_MATH_H
+#endif // GADGETRON_PYTHON_H

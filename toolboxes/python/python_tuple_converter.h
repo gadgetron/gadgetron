@@ -1,6 +1,6 @@
 // Source: https://gist.github.com/niwibe/3729459
-#ifndef GADGETRON_PYTHON_MATH_TUPLE_CONVERTER_H
-#define GADGETRON_PYTHON_MATH_TUPLE_CONVERTER_H
+#ifndef GADGETRON_PYTHON_TUPLE_CONVERTER_H
+#define GADGETRON_PYTHON_TUPLE_CONVERTER_H
 
 #include <boost/python.hpp>
 namespace bp = boost::python;
@@ -117,4 +117,4 @@ struct python_converter<std::tuple<TS...> > {
 
 }
 
-#endif // GADGETRON_PYTHON_MATH_TUPLE_CONVERTER_H
+#endif // GADGETRON_PYTHON_TUPLE_CONVERTER_H

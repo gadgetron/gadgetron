@@ -1,9 +1,0 @@
-include_directories(${CMAKE_SOURCE_DIR}/toolboxes/python_math)
-
-add_executable(gadgetron_test_python_math test_python_math.cpp)
-target_link_libraries(gadgetron_test_python_math gadgetron_toolbox_python_math)
-
-add_executable(python_math_demo demo.cpp)
-target_link_libraries(python_math_demo gadgetron_toolbox_python_math)
-
-install(TARGETS gadgetron_test_python_math DESTINATION bin COMPONENT main)

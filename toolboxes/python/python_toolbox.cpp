@@ -1,4 +1,4 @@
-#include "PythonMath.h"
+#include "python_toolbox.h"
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/numpyconfig.h>
@@ -10,7 +10,7 @@ namespace Gadgetron
 
 static bool initialized = false;
 
-void initialize_python_math(void)
+void initialize_python(void)
 {
     if (!initialized) {
         Py_Initialize();
