@@ -95,7 +95,7 @@ add_custom_command(
   ${LIBRARY_PATHS}
   )
 
-set(PACKAGES_PATH "/home/ubuntu/packages/no_components")
+set(PACKAGES_PATH "/home/ubuntu/gadgetron-deb-bucket/yes-components")
 
 add_custom_command(
   TARGET chroot-local

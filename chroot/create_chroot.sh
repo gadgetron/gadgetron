@@ -36,15 +36,16 @@ else
     if [ $# -eq 5 ]; then
       PACKAGES_PATH=${5}
       echo PACKAGES_PATH: ${PACKAGES_PATH}
-      cp ${PACKAGES_PATH}/*.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/
-      OPENBLAS_PACKAGE=$(basename ${PACKAGES_PATH}/*openblas*.deb)
-      echo "OPENBLAS_PACKAGE: ${OPENBLAS_PACKAGE}"
-      ISMRMRD_PACKAGE=$(basename ${PACKAGES_PATH}/ismrmrd*.deb)
-      echo "ISMRMRD_PACKAGE: ${ISMRMRD_PACKAGE}"
-      CONVERTER_PACKAGE=$(basename ${PACKAGES_PATH}/*siemens*.deb)
-      echo "CONVERTER_PACKAGE: ${CONVERTER_PACKAGE}"
-      GADGETRON_PACKAGE=$(basename ${PACKAGES_PATH}/*gadgetron*.deb)
-      echo "GADGETRON_PACKAGE: ${GADGETRON_PACKAGE}"
+      mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/debian/
+      cp ${PACKAGES_PATH}/*.deb ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/debian
+#      OPENBLAS_PACKAGE=$(basename ${PACKAGES_PATH}/*openblas*.deb)
+#      echo "OPENBLAS_PACKAGE: ${OPENBLAS_PACKAGE}"
+#      ISMRMRD_PACKAGE=$(basename ${PACKAGES_PATH}/ismrmrd*.deb)
+#      echo "ISMRMRD_PACKAGE: ${ISMRMRD_PACKAGE}"
+#      CONVERTER_PACKAGE=$(basename ${PACKAGES_PATH}/*siemens*.deb)
+#      echo "CONVERTER_PACKAGE: ${CONVERTER_PACKAGE}"
+#      GADGETRON_PACKAGE=$(basename ${PACKAGES_PATH}/*gadgetron*.deb)
+#      echo "GADGETRON_PACKAGE: ${GADGETRON_PACKAGE}"
     fi
 
     mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
@@ -55,27 +56,52 @@ else
 
     chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes install software-properties-common
 
-    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ trusty restricted main multiverse universe"
-    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ trusty-updates universe restricted multiverse main"
-    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://security.ubuntu.com/ubuntu trusty-security main universe"
-    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://gb.archive.ubuntu.com/ubuntu trusty main"
+    if [ $# -eq 5 ]; then
+      cd ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/debian
+      dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+      sed -i '1s;^;deb file:/debian ./\n;' ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/etc/apt/sources.list
+    fi
 
     if [ $# -eq 4 ]; then
       chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://gadgetronubuntu.s3.amazonaws.com trusty main"
     fi
 
+    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ trusty restricted main multiverse universe"
+    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ trusty-updates universe restricted multiverse main"
+    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://security.ubuntu.com/ubuntu trusty-security main universe"
+    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://gb.archive.ubuntu.com/ubuntu trusty main"
+
     chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get update
-    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes install sudo python-dev python-twisted python-psutil python-numpy python-h5py gdebi-core
+    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes install sudo build-essential python-dev python-twisted python-psutil python-numpy python-h5py gdebi-core libxml2-dev
 
     if [ $# -eq 4 ]; then
       chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install libopenblas-base ismrmrd siemens-to-ismrmrd gadgetron
     fi
 
     if [ $# -eq 5 ]; then
-      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi $OPENBLAS_PACKAGE
-      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi $ISMRMRD_PACKAGE
-      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi $CONVERTER_PACKAGE
-      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi $GADGETRON_PACKAGE
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi $OPENBLAS_PACKAGE
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi $ISMRMRD_PACKAGE
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi $CONVERTER_PACKAGE
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi $GADGETRON_PACKAGE
+
+
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi libopenblas-base_0.2.8-6ubuntu2_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi libismrmrd1.2_1.2.1-3_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi ismrmrd-schema_1.2.1-3_all.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi libismrmrd-dev_1.2.1-3_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi ismrmrd-tools_1.2.1-3_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi libgadgetron3.1_3.1.1-1_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi gadgetron-config_3.1.1-1_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi gadgetron-schema_3.1.1-1_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi gadgetron-chroot-scripts_3.1.1-1_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi gadgetron-python-scripts_3.1.1-1_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi libgadgetron-dev_3.1.1-1_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi gadgetron-tools_3.1.1-1_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi gadgetron-all_3.1.1-1_amd64.deb
+#      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi siemens-to-ismrmrd_1.0.0-8_amd64.deb
+      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi /debian/libopenblas-base_0.2.8-6ubuntu2_amd64.deb
+      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi /debian/gadgetron-all_3.1.1-1_amd64.deb
+      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi /debian/siemens-to-ismrmrd_1.0.0-8_amd64.deb
     fi
 
     cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml
@@ -85,7 +111,7 @@ else
 
     tar -zcf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${CHROOT_GADGETRON_BINARY_DIR}/chroot" --exclude=./chroot-root/gadgetron/dev --exclude=./chroot-root/gadgetron/sys --exclude=./chroot-root/gadgetron/proc --exclude=./chroot-root/gadgetron/root ./chroot-root
 
-    dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=2048k seek=1024 count=0
+    dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=3072k seek=1024 count=0
     mke2fs -F -t ext3 ${IMAGE_FILE_NAME}
     mkdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
     mount -o loop ${IMAGE_FILE_NAME} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
