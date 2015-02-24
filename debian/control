@@ -25,12 +25,14 @@ Build-Depends: cmake,
 	       libboost-all-dev, 
 	       libhdf5-serial-dev, 
 	       h5utils, 
-	       hdf5-tools
+	       hdf5-tools,
+	       nvidia-cuda-toolkit,
 Homepage: http://gadgetron.github.io
 
 Package: libgadgetron3.1
 Architecture: amd64
 Depends: python-h5py,
+	 python-libxml2,
 	 ${python:Depends},
 	 ${misc:Depends},
          ${shlibs:Depends}
