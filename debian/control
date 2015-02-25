@@ -26,7 +26,7 @@ Build-Depends: cmake,
 	       libhdf5-serial-dev, 
 	       h5utils, 
 	       hdf5-tools,
-	       nvidia-cuda-toolkit,
+	       nvidia-cuda-toolkit
 Homepage: http://gadgetron.github.io
 
 Package: libgadgetron3.1
