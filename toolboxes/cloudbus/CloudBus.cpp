@@ -36,10 +36,37 @@ namespace Gadgetron
 
   int CloudBusReceiverTask::open(void*)
   {
-    if (mcast_dgram_.join(mcast_addr_) == -1) {
-      GDEBUG_STREAM("Error doing dgram join");
+
+#if defined(__linux) || defined(__linux__) || defined(linux)
+    //On linux we will loop through all names interfaces and join as many as we can
+    struct if_nameindex *intf;
+    intf = ACE_OS::if_nameindex ();
+    if (intf == 0) {
+      GERROR("Unable to get names of network interfaces\n");
       return -1;
     }
+    
+    int ifs_joined = 0;
+    int index = 0;
+    while (intf[index].if_index != 0 || intf[index].if_name != 0) {
+      if (mcast_dgram_.join(mcast_addr_,1,intf[index].if_name) != -1) {
+	++ifs_joined;
+      }
+      ++index;
+    }      
+    ACE_OS::if_freenameindex (intf);
+
+    if (!ifs_joined) {
+      GERROR_STREAM("Error doing dgram join");
+      return -1;
+    }
+#else
+    if (mcast_dgram_.join(mcast_addr_) == -1) {
+      GERROR_STREAM("Error doing dgram join");
+      return -1;
+    }
+#endif
+
     return CloudBusTask::open();      
   }
 
