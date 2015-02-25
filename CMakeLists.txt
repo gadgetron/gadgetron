@@ -305,44 +305,11 @@ endif (UNIX)
 #  ---   Main Library  (end) ----
 
 # Create package
-
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
-
-find_program(DPKG_PROGRAM dpkg)
-if(EXISTS ${DPKG_PROGRAM})
-  list(APPEND CPACK_GENERATOR "DEB")
-endif(EXISTS ${DPKG_PROGRAM})
-
-# Enable/Disable automatic search for dependencies:
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-
-# Enable/Disable component install for CPack generator DEB
-set(CPACK_DEB_COMPONENT_INSTALL OFF)
-set(CPACK_DEB_PACKAGE_COMPONENT OFF)
-
-# Dependencies if there are no components
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "build-essential, ismrmrd, libfftw3-dev, python-dev, python-numpy, python-psutil, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, python-h5py, libboost-all-dev, libhdf5-serial-dev, h5utils, hdf5-tools, libgtest-dev")
-
-# Dependencies if there are components:
-set(CPACK_DEB_scripts_PACKAGE_DEPENDS "")
-set(CPACK_DEB_web_PACKAGE_DEPENDS "")
-set(CPACK_DEB_ismrmrd-client_PACKAGE_DEPENDS "ismrmrd-lib, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev")
-set(CPACK_DEB_main_PACKAGE_DEPENDS "ismrmrd-lib, libfftw3-dev, python, python-numpy, liblapack-dev, libxml2-dev, libxslt-dev, libarmadillo-dev, libace-dev, python-matplotlib, python-libxml2, python-h5py, libboost-system-dev, libboost-thread-dev, libboost-program-options-dev, libboost-chrono-dev, libboost-filesystem-dev, libhdf5-serial-dev")
-set(CPACK_DEB_all_PACKAGE_DEPENDS "gadgetron-ismrmrd-client, gadgetron-web, gadgetron-main")
-
-# Where the package metadata are
-set(GADGETRON_CPACK_CFG_FILE "${PROJECT_BINARY_DIR}/cpack_options.cmake")
-
-# Where the package to be installed
-set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-
+include(${CMAKE_SOURCE_DIR}/cmake/gadgetron_cpack.cmake)
 if(CPACK_GENERATOR)
   message(STATUS "Found CPack generators: ${CPACK_GENERATOR}")
   configure_file("${CMAKE_SOURCE_DIR}/cmake/cpack_options.cmake.in" ${GADGETRON_CPACK_CFG_FILE} @ONLY)
   set(CPACK_PROJECT_CONFIG_FILE ${GADGETRON_CPACK_CFG_FILE})  
-
-  # A list containing the names of all components that should be installed
-  set(CPACK_COMPONENTS_ALL scripts web ismrmrd-client main all)
-
   include(CPack)
 endif(CPACK_GENERATOR)

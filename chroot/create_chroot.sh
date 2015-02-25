@@ -70,22 +70,22 @@ else
 
     if [ $# -eq 4 ]; then
       chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get --yes --force-yes install libopenblas-base ismrmrd siemens-to-ismrmrd gadgetron
-      cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml
     fi
 
     if [ $# -eq 5 ]; then
       for package in ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/debian/*.deb;
 	do chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron gdebi "/debian/$(basename ${package})";
       done
-      cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/usr/gadgetron/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/usr/gadgetron/config/gadgetron.xml
     fi
+
+    cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml
 
     TAR_FILE_NAME=gadgetron-`date '+%Y%m%d-%H%M'`-${CHROOT_GIT_SHA1_HASH:0:8}
     IMAGE_FILE_NAME=${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.img
 
     tar -zcf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${CHROOT_GADGETRON_BINARY_DIR}/chroot" --exclude=./chroot-root/gadgetron/dev --exclude=./chroot-root/gadgetron/sys --exclude=./chroot-root/gadgetron/proc --exclude=./chroot-root/gadgetron/root ./chroot-root
 
-    dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=3072k seek=1024 count=0
+    dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=1536k seek=1024 count=0
     mke2fs -F -t ext3 ${IMAGE_FILE_NAME}
     mkdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
     mount -o loop ${IMAGE_FILE_NAME} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
