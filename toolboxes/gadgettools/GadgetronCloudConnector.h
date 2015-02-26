@@ -254,8 +254,8 @@ public:
     GadgetronCloudConnector();
     virtual ~GadgetronCloudConnector();
 
-    int openImpl (std::string hostname, std::string port);
-    int open (std::string hostname, std::string port);
+    int openImpl (const std::string &hostname, const std::string & port);
+    int open (const std::string & hostname, const std::string & port);
 
     virtual int process(size_t messageid, ACE_Message_Block* mb);
 
@@ -323,9 +323,9 @@ public:
         mtx_.release();
     }
 
-    int send_gadgetron_configuration_file(std::string config_xml_name);
-    int send_gadgetron_configuration_script(std::string config_xml_name);
-    int send_gadgetron_parameters(std::string xml_string);
+    int send_gadgetron_configuration_file(const std::string & config_xml_name);
+    int send_gadgetron_configuration_script(const std::string & config_xml_name);
+    int send_gadgetron_parameters(const std::string & xml_string);
 
     ACE_SOCK_Stream& peer()
     {
@@ -370,7 +370,7 @@ GadgetronCloudConnector<JobType>::~GadgetronCloudConnector()
 }
 
 template<typename JobType> 
-int GadgetronCloudConnector<JobType>::openImpl(std::string hostname, std::string port)
+int GadgetronCloudConnector<JobType>::openImpl(const std::string & hostname, const std::string & port)
 {
     hostname_= hostname;
     port_ = port;
@@ -395,7 +395,7 @@ int GadgetronCloudConnector<JobType>::openImpl(std::string hostname, std::string
 }
 
 template<typename JobType> 
-int GadgetronCloudConnector<JobType>::open(std::string hostname, std::string port)
+int GadgetronCloudConnector<JobType>::open(const std::string &hostname, const std::string &port)
 {
     this->cloud_writer_task_.set_cloud_connector(this);
     this->cloud_reader_task_.set_cloud_connector(this);
@@ -495,7 +495,7 @@ int GadgetronCloudConnector<JobType>::setJobTobeCompletedAndNoticeController(int
 }
 
 template<typename JobType> 
-int GadgetronCloudConnector<JobType>::send_gadgetron_configuration_file(std::string config_xml_name)
+int GadgetronCloudConnector<JobType>::send_gadgetron_configuration_file(const std::string & config_xml_name)
 {
     GadgetMessageIdentifier id;
     id.id = GADGET_MESSAGE_CONFIG_FILE;
@@ -519,7 +519,7 @@ int GadgetronCloudConnector<JobType>::send_gadgetron_configuration_file(std::str
 }
 
 template<typename JobType> 
-int GadgetronCloudConnector<JobType>::send_gadgetron_configuration_script(std::string config_xml)
+int GadgetronCloudConnector<JobType>::send_gadgetron_configuration_script(const std::string & config_xml)
 {
     GadgetMessageIdentifier id;
     id.id = GADGET_MESSAGE_CONFIG_SCRIPT;
@@ -549,7 +549,7 @@ int GadgetronCloudConnector<JobType>::send_gadgetron_configuration_script(std::s
 }
 
 template<typename JobType> 
-int GadgetronCloudConnector<JobType>::send_gadgetron_parameters(std::string xml_string)
+int GadgetronCloudConnector<JobType>::send_gadgetron_parameters(const std::string & xml_string)
 {
     GadgetMessageIdentifier id;
     id.id = GADGET_MESSAGE_PARAMETER_SCRIPT;

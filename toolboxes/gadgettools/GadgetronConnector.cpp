@@ -16,7 +16,7 @@ GadgetronConnector::~GadgetronConnector() {
     //writers_.clear();
 }
 
-int GadgetronConnector::openImpl(std::string hostname, std::string port)
+int GadgetronConnector::openImpl(const std::string & hostname, const std::string & port)
 {
     hostname_= hostname;
     port_ = port;
@@ -42,7 +42,7 @@ int GadgetronConnector::openImpl(std::string hostname, std::string port)
     return 0;
 }
 
-int GadgetronConnector::open(std::string hostname, std::string port)
+int GadgetronConnector::open(const std::string & hostname, const std::string & port)
 {
     //Make sure we have a reactor, otherwise assign one from the singleton instance
     if (!this->reactor()) {
@@ -133,7 +133,7 @@ int GadgetronConnector::register_reader(size_t slot, GadgetMessageReader *reader
     return readers_.insert( (unsigned short)slot,reader);
 }
 
-int GadgetronConnector::send_gadgetron_configuration_file(std::string config_xml_name)
+int GadgetronConnector::send_gadgetron_configuration_file(const std::string & config_xml_name)
 {
     GadgetMessageIdentifier id;
     id.id = GADGET_MESSAGE_CONFIG_FILE;
@@ -155,7 +155,7 @@ int GadgetronConnector::send_gadgetron_configuration_file(std::string config_xml
     return 0;
 }
 
-int GadgetronConnector::send_gadgetron_configuration_script(std::string config_xml)
+int GadgetronConnector::send_gadgetron_configuration_script(const std::string & config_xml)
 {
     GadgetMessageIdentifier id;
     id.id = GADGET_MESSAGE_CONFIG_SCRIPT;
@@ -181,7 +181,7 @@ int GadgetronConnector::send_gadgetron_configuration_script(std::string config_x
     return 0;
 }
 
-int GadgetronConnector::send_gadgetron_parameters(std::string xml_string)
+int GadgetronConnector::send_gadgetron_parameters(const std::string & xml_string)
 {
     GadgetMessageIdentifier id;
     id.id = GADGET_MESSAGE_PARAMETER_SCRIPT;
