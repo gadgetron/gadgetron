@@ -4,7 +4,7 @@ if [ $(id -u) -ne 0 ]; then
   echo -e "\nPlease start the script as a root or sudo!\n"
   exit 1
 else
-  if [ $# -ge 4 ]; then
+  if [ $# -ge 6 ]; then
 
 # --ARGUMENTS-- (example)
 
@@ -13,7 +13,7 @@ else
 # CHROOT_GIT_SHA1_HASH:               f4d7a9189fd21b07e482d28ecb8b07e589f81f9e
 # CHROOT_LIBRARY_PATHS:               /usr/local/lib:/usr/lib/x86_64-linux-gnu
 # CHROOT_CUDA_LIBRARY:                
-
+# CHROOT_GADGETRON_SOURCE_DIR:        /home/ubuntu/gadgetron
     CHROOT_GADGETRON_INSTALL_PREFIX=${1}
     echo CHROOT_GADGETRON_INSTALL_PREFIX: ${CHROOT_GADGETRON_INSTALL_PREFIX}
     CHROOT_GADGETRON_BINARY_DIR=${2}
@@ -24,6 +24,9 @@ else
     echo CHROOT_LIBRARY_PATHS: ${CHROOT_LIBRARY_PATHS}
     CHROOT_CUDA_LIBRARY=${5}
     echo CHROOT_CUDA_LIBRARY: ${CHROOT_CUDA_LIBRARY}
+    CHROOT_GADGETRON_SOURCE_DIR=${6}
+    echo CHROOT_GADGETRON_SOURCE_DIR: ${CHROOT_GADGETRON_SOURCE_DIR}
+
 
     # Add LIBRARY_PATHS to LD_LIBRARY_PATH
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CHROOT_LIBRARY_PATHS}
@@ -45,14 +48,14 @@ else
     make install DESTDIR="${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron" -j8
 
     #This copies the ISMRMRD executable if it is installed
-    if [ $# -ge 6 ]; then
-      CHROOT_SIEMENS_TO_ISMRMRD_EXE=${6} 
+    if [ $# -ge 7 ]; then
+      CHROOT_SIEMENS_TO_ISMRMRD_EXE=${7} 
       cp ${CHROOT_SIEMENS_TO_ISMRMRD_EXE} "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/bin/"
     else
       echo "SIEMENS_TO_ISMRMRD_EXE not set"
     fi
 
-    /home/ubuntu/gadgetron/chroot/generate_gadgetron_root ${CHROOT_GADGETRON_INSTALL_PREFIX} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
+    ${CHROOT_GADGETRON_SOURCE_DIR}/chroot/generate_gadgetron_root ${CHROOT_GADGETRON_INSTALL_PREFIX} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
 
     cp ${CHROOT_CUDA_LIBRARY} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/lib  
     cp -n ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml.example ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron${CHROOT_GADGETRON_INSTALL_PREFIX}/config/gadgetron.xml
@@ -67,7 +70,7 @@ else
 
     tar -zcf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${CHROOT_GADGETRON_BINARY_DIR}/chroot" --exclude=./chroot-root/gadgetron/etc --exclude=./chroot-root/gadgetron/var --exclude=./chroot-root/gadgetron/dev --exclude=./chroot-root/gadgetron/sys --exclude=./chroot-root/gadgetron/proc --exclude=./chroot-root/gadgetron/root ./chroot-root
 
-    dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=512k seek=1024 count=0
+    dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=1024k seek=1024 count=0
     mke2fs -F -t ext3 ${IMAGE_FILE_NAME}
     mkdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
     mount -o loop ${IMAGE_FILE_NAME} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root

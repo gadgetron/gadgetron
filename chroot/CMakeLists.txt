@@ -98,6 +98,7 @@ if (SIEMENS_TO_ISMRMRD_EXE)
     ${GADGETRON_GIT_SHA1}
     ${LIBRARY_PATHS}
     ${CUDA_LIBRARY}
+    ${CMAKE_SOURCE_DIR}
     ${SIEMENS_TO_ISMRMRD_EXE}
     )
 else(SIEMENS_TO_ISMRMRD_EXE)
@@ -113,37 +114,9 @@ else(SIEMENS_TO_ISMRMRD_EXE)
     ${GADGETRON_GIT_SHA1}
     ${LIBRARY_PATHS}
     ${CUDA_LIBRARY}
+    ${CMAKE_SOURCE_DIR}
     )
 endif(SIEMENS_TO_ISMRMRD_EXE)
-
-#add_custom_command(
-#  TARGET chroot
-#  POST_BUILD
-#  VERBATIM
-#  COMMENT "Creating chroot tar and img file"
-#  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#  COMMAND sudo bash create_chroot.sh 
-#  ${CMAKE_INSTALL_PREFIX}
-#  ${CMAKE_BINARY_DIR}
-#  ${GADGETRON_GIT_SHA1}
-#  ${LIBRARY_PATHS}
-#  )
-#
-#set(PACKAGES_PATH "/home/ubuntu/gadgetron-deb-bucket/no-components-cpack")
-#
-#add_custom_command(
-#  TARGET chroot-local
-#  POST_BUILD
-#  VERBATIM
-#  COMMENT "Creating chroot tar and img file using local packages"
-#  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#  COMMAND sudo bash create_chroot.sh
-#  ${CMAKE_INSTALL_PREFIX}
-#  ${CMAKE_BINARY_DIR}
-#  ${GADGETRON_GIT_SHA1}
-#  ${LIBRARY_PATHS}
-#  ${PACKAGES_PATH}
-#  )
 
 install(PROGRAMS 
   ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh 
