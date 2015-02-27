@@ -2,8 +2,10 @@
 #define GADGETRONCONNECTOR_H_
 
 #include "GadgetronSlotContainer.h"
-#include "GadgetMessageInterface.h"
+#include "GadgetMessageReaderWriter.h"
+#include "GadgetContainerMessage.h"
 #include "gadgettools_export.h"
+#include "log.h"
 
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor.h>
@@ -43,7 +45,7 @@ public:
 	}
 
 	int register_writer(size_t slot, GadgetMessageWriter* writer) {
-		return writers_.insert( (unsigned int)slot,writer);
+		return writers_.insert( (unsigned short)slot,writer);
 	}
 
 	virtual int close(unsigned long flags)
@@ -118,8 +120,8 @@ public:
 	GadgetronConnector();
 	virtual ~GadgetronConnector();
 
-    int openImpl (std::string hostname, std::string port);
-	int open (std::string hostname, std::string port);
+    int openImpl (const std::string & hostname, const std::string & port);
+	int open (const std::string & hostname, const std::string & port);
 	virtual int handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE);
 	//virtual int handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE);
 	virtual int handle_close (ACE_HANDLE handle, ACE_Reactor_Mask close_mask);
@@ -129,7 +131,7 @@ public:
 		return writer_task_.putq(mb,timeout);
 	}
 
-	virtual int process(size_t messageid, ACE_Message_Block* mb) {
+	virtual int process(size_t /*messageid*/, ACE_Message_Block* mb) {
 		mb->release();
 		return 0;
 	}
@@ -139,9 +141,9 @@ public:
 		return writer_task_.register_writer(slot,writer);
 	}
 
-	int send_gadgetron_configuration_file(std::string config_xml_name);
-	int send_gadgetron_configuration_script(std::string config_xml_name);
-	int send_gadgetron_parameters(std::string xml_string);
+	int send_gadgetron_configuration_file(const std::string & config_xml_name);
+	int send_gadgetron_configuration_script(const std::string & config_xml_name);
+	int send_gadgetron_parameters(const std::string & xml_string);
 
 protected:
 	//ACE_Reactor_Notification_Strategy notifier_;

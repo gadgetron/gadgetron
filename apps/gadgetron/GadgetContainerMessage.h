@@ -4,6 +4,7 @@
 
 #include <ace/Message_Block.h>
 #include <string>
+#include <typeinfo>
 
 namespace Gadgetron{
 /**
@@ -35,7 +36,7 @@ class GadgetContainerMessageBase : public ACE_Message_Block
 
 #ifdef WIN32
   std::string getTypeID() { return type_magic_id_; }
-  template <class T> static std::string magic_number_for_type() { return std::string(typeid(T).name()); } 
+  template <class T> static std::string magic_number_for_type(T* = NULL) { return std::string(typeid(T).name()); } 
 
 protected:
   std::string type_magic_id_;
@@ -44,7 +45,7 @@ protected:
 
   int getTypeID() { return type_magic_id_; }
 
-  template <class T> static int magic_number_for_type(){
+  template <class T> static int magic_number_for_type(T* = NULL){
     //Will only get set once for each instanciation of this function
     static int result(next_magic_type_number()); 
     return result;
@@ -72,17 +73,25 @@ public:
    *  Constructor, passing on input arguments to the contained class.
    * @param xs Variadic arguments to the contained class
    */
+#ifdef NO_VARIADIC_TEMPLATE
+  GadgetContainerMessage()
+#else
   template<typename... X> GadgetContainerMessage(X... xs)
+#endif
   :base(sizeof(T)), content_(0)
    {
 	 //Using placement new to put the new object at the ACE_Message_Block location
+#ifdef NO_VARIADIC_TEMPLATE
+    content_ = new (this->wr_ptr()) T;
+#else
     content_ = new (this->wr_ptr()) T{xs...};
+#endif
 
     //Advance the write pointer appropriately.
     this->wr_ptr(sizeof(T));
 
     //Assign type ID that will allow us to safely cast this message.
-    type_magic_id_ = magic_number_for_type<T>();
+    type_magic_id_ = magic_number_for_type(reinterpret_cast<T *>(NULL));
 
 
    }
@@ -91,7 +100,7 @@ public:
   GadgetContainerMessage(ACE_Data_Block* d)
     : base(d)
   {
-    type_magic_id_ = magic_number_for_type<T>();
+    type_magic_id_ = magic_number_for_type(reinterpret_cast<T *>(NULL));
     content_ = reinterpret_cast<T*>(this->rd_ptr());
   }
 
@@ -150,7 +159,7 @@ template <class T> GadgetContainerMessage<T>* AsContainerMessage(ACE_Message_Blo
   }
 
   GadgetContainerMessageBase* mbb = reinterpret_cast<GadgetContainerMessageBase*>(mb);
-  if (mbb->getTypeID() != GadgetContainerMessageBase::magic_number_for_type<T>()) {
+  if (mbb->getTypeID() != GadgetContainerMessageBase::magic_number_for_type(reinterpret_cast<T *>(NULL))) {
     return 0;
   }
 

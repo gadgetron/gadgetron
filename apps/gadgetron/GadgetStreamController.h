@@ -15,6 +15,7 @@
 #include "gadgetbase_export.h"
 #include "gadgetron_paths.h"
 #include "GadgetronConnector.h"
+#include "GadgetMessageInterface.h"
 
 typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
 
