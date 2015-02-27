@@ -7,4 +7,3 @@ set_target_properties(gadgetron_toolbox_log PROPERTIES VERSION ${GADGETRON_VERSI
 
 install(TARGETS gadgetron_toolbox_log DESTINATION lib COMPONENT main)
 install(FILES log.h log_export.h DESTINATION include COMPONENT main)
-

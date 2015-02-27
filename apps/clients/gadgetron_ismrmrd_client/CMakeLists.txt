@@ -21,4 +21,4 @@ add_executable(gadgetron_ismrmrd_client gadgetron_ismrmrd_client.cpp)
 
 target_link_libraries(gadgetron_ismrmrd_client ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
 
-install(TARGETS gadgetron_ismrmrd_client DESTINATION bin COMPONENT main)
+install(TARGETS gadgetron_ismrmrd_client DESTINATION bin COMPONENT ismrmrd-client)

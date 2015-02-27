@@ -1,0 +1,137 @@
+Source: gadgetron
+Maintainer: Dusan Puletic <dusan.puletic@nih.gov>
+Uploaders: Dusan Puletic <dusan.puletic@nih.gov>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.6
+Build-Depends: cmake,
+	       git,
+	       libgtest-dev,
+	       debhelper (>= 9),
+	       libismrmrd-dev, 
+	       libopenblas-base, 
+	       libfftw3-dev, 
+	       python, 
+	       python-numpy, 
+	       python-psutil, 
+	       python-h5py, 
+	       liblapack-dev, 
+	       libxml2-dev, 
+	       libxslt-dev, 
+	       libarmadillo-dev, 
+	       libace-dev, 
+	       python-matplotlib, 
+	       python-libxml2, 
+	       libboost-all-dev, 
+	       libhdf5-serial-dev, 
+	       h5utils, 
+	       hdf5-tools,
+	       nvidia-cuda-toolkit
+Homepage: http://gadgetron.github.io
+
+Package: libgadgetron3.1
+Architecture: amd64
+Depends: python-h5py,
+	 python-libxml2,
+	 ${python:Depends},
+	 ${misc:Depends},
+         ${shlibs:Depends}
+Description: The Gadgetron is an open source framework for medical image reconstruction.
+ It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
+ and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
+ It is made freely available to the medical image reconstruction community.
+ .
+ This package provides gadgetron shared library.
+
+Package: libgadgetron-dev
+Architecture: amd64
+Depends: gadgetron-schema,
+	 gadgetron-config,
+	 libgadgetron3.1 (= ${binary:Version}),
+	 ${misc:Depends},
+	 ${python:Depends},
+         ${shlibs:Depends}
+Description: The Gadgetron is an open source framework for medical image reconstruction.
+ It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
+ and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
+ It is made freely available to the medical image reconstruction community.
+ .
+ This package provides gadgetron development files.
+
+Package: gadgetron-tools
+Architecture: amd64
+Depends: gadgetron-schema,
+	 gadgetron-config,
+	 libgadgetron3.1 (= ${binary:Version}),
+	 ${misc:Depends},
+	 ${python:Depends},
+         ${shlibs:Depends}
+Description: The Gadgetron is an open source framework for medical image reconstruction.
+ It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
+ and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
+ It is made freely available to the medical image reconstruction community.
+ .
+ This package provides gadgetron binaries.
+
+Package: gadgetron-chroot-scripts
+Architecture: amd64
+Depends: ${misc:Depends},
+	 ${python:Depends}
+Description: The Gadgetron is an open source framework for medical image reconstruction.
+ It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
+ and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
+ It is made freely available to the medical image reconstruction community.
+ .
+ This package provides gadgetron chroot scripts.
+
+Package: gadgetron-python-scripts
+Architecture: amd64
+Depends: ${python:Depends},
+	 ${misc:Depends}
+Description: The Gadgetron is an open source framework for medical image reconstruction.
+ It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
+ and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
+ It is made freely available to the medical image reconstruction community.
+ .
+ This package provides gadgetron python scripts.
+
+Package: gadgetron-config
+Architecture: amd64
+Depends: ${misc:Depends},
+	 ${python:Depends},
+         ${shlibs:Depends}
+Description: The Gadgetron is an open source framework for medical image reconstruction.
+ It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
+ and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
+ It is made freely available to the medical image reconstruction community.
+ .
+ This package provides gadgetron config files.
+
+Package: gadgetron-schema
+Architecture: amd64
+Depends: ${python:Depends},
+	 ${misc:Depends}
+Description: The Gadgetron is an open source framework for medical image reconstruction.
+ It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
+ and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
+ It is made freely available to the medical image reconstruction community.
+ .
+ This package provides gadgetron.xml file.
+
+Package: gadgetron-all
+Architecture: amd64
+Depends: gadgetron-schema,
+	 gadgetron-config,
+	 gadgetron-chroot-scripts,
+	 gadgetron-python-scripts,
+	 gadgetron-tools,
+	 libgadgetron-dev,
+	 ${misc:Depends},
+	 ${python:Depends},
+         ${shlibs:Depends}
+Description: The Gadgetron is an open source framework for medical image reconstruction.
+ It has been developed at the National Heart, Lung, and Blood Institute, NIH, Bethesda, MD, USA
+ and at the Department of Computer Science and Department of Clinical Medicine, Aarhus University, Denmark.
+ It is made freely available to the medical image reconstruction community.
+ .
+ This package provides whole gadgetron package.

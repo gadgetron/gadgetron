@@ -6,13 +6,16 @@ if [ $(id -u) -ne 0 ]; then
 else
  BASEDIR=$(dirname $0)
 
- if [ $# -eq 0 ]; then
-  $BASEDIR/mount.sh $BASEDIR
-  chroot $BASEDIR/gadgetron /enter-chroot-env.sh
+ if [ $# -eq 1 ]; then
+
+  CHROOT_DIR=${1}
+  
+  $BASEDIR/mount.sh $CHROOT_DIR
+  chroot $CHROOT_DIR/ @CMAKE_INSTALL_PREFIX@/@GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH@/enter-chroot-env.sh
   exit 0
 
  else
-  echo -e "\nUsage: $0\n"
+  echo -e "\nUsage: $0 (chroot dir)\n"
   exit 1
  fi
 fi

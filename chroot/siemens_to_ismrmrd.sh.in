@@ -6,7 +6,7 @@ if [ $# -eq 3 ]; then
     ISMRMRD_FILENAME=${2}
     SCAN_NO=${3}
 
-    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:@CMAKE_INSTALL_PREFIX@/bin LD_LIBRARY_PATH=@CMAKE_INSTALL_PREFIX@/lib:/usr/local/lib:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64 @CMAKE_INSTALL_PREFIX@/bin/siemens_to_ismrmrd -f $DAT_FILENAME -o $ISMRMRD_FILENAME -z $SCAN_NO
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:@CMAKE_INSTALL_PREFIX@/bin LD_LIBRARY_PATH=@CMAKE_INSTALL_PREFIX@/lib:/usr/local/lib:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64 /usr/local/bin/siemens_to_ismrmrd -f $DAT_FILENAME -o $ISMRMRD_FILENAME -z $SCAN_NO
     exit $?
 else
     echo -e "\nUsage: $0 <dat filename> <ismrmrd filename> <scan number>\n"

@@ -1,0 +1,3 @@
+usr/gadgetron/include
+usr/gadgetron/lib/*.so
+usr/gadgetron/cmake

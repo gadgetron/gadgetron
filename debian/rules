@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+BUILDDIR = $(CURDIR)/debian/build
+
+%:
+	dh $@ --buildsystem=cmake --builddirectory=$(BUILDDIR) --parallel
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DCMAKE_INSTALL_PREFIX=/usr
+
+override_dh_shlibdeps:
+	dh_shlibdeps -l/usr/gadgetron/lib
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf $(BUILDDIR)
