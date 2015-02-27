@@ -12,6 +12,11 @@
   IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985. 
 */
 
+// Includes - Thrust
+#include <thrust/scan.h>
+#include <thrust/sort.h>
+#include <thrust/binary_search.h>
+#include <thrust/extrema.h>
 // Includes - Gadgetron
 #include "cuNFFT.h"
 #include "cuNDFFT.h"
@@ -28,10 +33,6 @@
 #include <math_constants.h>
 #include <cufft.h>
 
-// Includes - Thrust
-#include <thrust/scan.h>
-#include <thrust/sort.h>
-#include <thrust/binary_search.h>
 
 // Includes - stdlibs
 #include <stdio.h>
@@ -42,7 +43,8 @@
 #include <sstream>
 #include <stdexcept>
 
-using namespace std;
+//using namespace std;
+using std::vector;
 using namespace thrust;
 using namespace Gadgetron;
 
@@ -235,7 +237,7 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uint64d<D>::Type ma
   
   alpha = vector_td<REAL,D>(matrix_size_os) / vector_td<REAL,D>(matrix_size);
   
-  typename reald<REAL,D>::Type ones(1);
+  typename reald<REAL,D>::Type ones(REAL(1));
   if( weak_less( alpha, ones ) ){
     throw std::runtime_error("Error: cuNFFT : Illegal oversampling ratio suggested");
   }
@@ -252,10 +254,6 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uint64d<D>::Type ma
   if( device != device_no_old && cudaSetDevice(device) != cudaSuccess) {
     throw cuda_error("Error: cuNFFT_plan::setup: unable to set device");
   }  
-
-  // Calculate deapodization filter
-  compute_deapodization_filter();
-  
   initialized = true;
 
   if( device != device_no_old && cudaSetDevice(device_no_old) != cudaSuccess) {
@@ -292,7 +290,9 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename real
                             device_pointer_cast<REAL>(((REAL*)trajectory_int->get_data_ptr())+trajectory_int->get_number_of_elements()*D ));
   
   if( *mm_pair.first < REAL(-0.5) || *mm_pair.second > REAL(0.5) ){
-    throw std::runtime_error("Error: cuNFFT::preprocess : trajectory out of range [-1/2;1/2]");
+	  std::stringstream ss;
+	  ss << "Error: cuNFFT::preprocess : trajectory [" << *mm_pair.first << "; " << *mm_pair.second << "] out of range [-1/2;1/2]";
+    throw std::runtime_error(ss.str());
   }
   
   // Make Thrust device vector of trajectory and samples
@@ -708,7 +708,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NF
   vector<size_t> dims_to_transform = to_std_vector( _dims_to_transform );
   
   if( mode == NFFT_FORWARDS ){
-    cuNDFFT<REAL>::instance()->fft( data_int, &dims_to_transform );
+    cuNDFFT<REAL>::instance()->fft( data_int, &dims_to_transform, do_scale );
   }
   else{
     cuNDFFT<REAL>::instance()->ifft( data_int, &dims_to_transform, do_scale );
@@ -718,7 +718,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NF
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *image )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *image, bool fourier_domain)
 {
   unsigned char components;
   components = _NFFT_FFT;
@@ -735,7 +735,15 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *i
   if( !oversampled_image ){
     throw std::runtime_error( "Error: cuNFFT_plan::deapodize: ERROR: oversampled image not provided as input.");
   }
-  *image_int *= *deapodization_filter;
+  if (fourier_domain){
+  	if (!deapodization_filterFFT)
+  		deapodization_filterFFT = 	compute_deapodization_filter(true);
+  	*image_int *= *deapodization_filterFFT;
+  } else {
+  	if (!deapodization_filter)
+  		deapodization_filter = compute_deapodization_filter(false);
+  	*image_int *= *deapodization_filter;
+  }
     
   restore<complext<REAL> ,dummy,dummy>(old_device, image, image, image_int);
 }
@@ -924,12 +932,12 @@ compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typ
 // Function to calculate the deapodization filter
 //
 
-template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
+template<class REAL, unsigned int D, bool ATOMICS> boost::shared_ptr<cuNDArray<complext<REAL> > >
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter( bool FFTed)
 {
   std::vector<size_t> tmp_vec_os = to_std_vector(matrix_size_os);
-  deapodization_filter = boost::shared_ptr< cuNDArray<complext<REAL> > >( new cuNDArray<complext<REAL> >);
-  deapodization_filter->create(&tmp_vec_os);
+
+ boost::shared_ptr< cuNDArray<complext<REAL> > > filter( new cuNDArray<complext<REAL> >(tmp_vec_os));
   vector_td<REAL,D> matrix_size_os_real = vector_td<REAL,D>(matrix_size_os);
   
   // Find dimensions of grid/blocks.
@@ -938,15 +946,18 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
 
   // Invoke kernel
   compute_deapodization_filter_kernel<REAL,D><<<dimGrid, dimBlock>>> 
-    ( vector_td<unsigned int,D>(matrix_size_os), matrix_size_os_real, W, REAL(0.5)*W, REAL(1)/W, beta, deapodization_filter->get_data_ptr() );
+    ( vector_td<unsigned int,D>(matrix_size_os), matrix_size_os_real, W, REAL(0.5)*W, REAL(1)/W, beta, filter->get_data_ptr() );
 
   CHECK_FOR_CUDA_ERROR();
   
   // FFT
-  fft( deapodization_filter.get(), NFFT_BACKWARDS, false );
-  
+  if (FFTed)
+  	fft( filter.get(), NFFT_FORWARDS, false );
+  else
+  	fft( filter.get(), NFFT_BACKWARDS, false );
   // Reciprocal
-  reciprocal_inplace(deapodization_filter.get());
+  reciprocal_inplace(filter.get());
+  return filter;
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
@@ -985,7 +996,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_C2NC( cuNDArray<complext<R
   // private method - no consistency check. We trust in ourselves.
 
   // Deapodization
-  deapodize( image );
+  deapodize( image, true );
  
   // FFT
   fft( image, NFFT_BACKWARDS );
@@ -1006,7 +1017,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_NFFT_NC2C( cuNDArray<complext<RE
   fft( image, NFFT_FORWARDS );
   
   // Deapodization
-  deapodize( image );
+  deapodize( image, true );
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
@@ -1355,24 +1366,24 @@ image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Ty
     
             if( i & (s<<(skipped_dims)) ){
               if( B_r.vec[i-1] ){ // Wrapping required 
-                set( stride, (size_t)(i-1), (int)(-1) );
+              	stride[i-1] = -1;
                 wrap_requests++;
               }
               else
-                set( stride, i-1, (int)0 );
+              	stride[i-1] = 0;
             }
             else{ 
               if( B_l.vec[i-1] ){ // Wrapping required 
-                set( stride, i-1, (int)1 );
+              	stride[i-1] =1 ;
                 wrap_requests++;
               }
               else
-                set( stride, i-1, (int)0 );
+              	stride[i-1] = 0;
             }
           }
           else{
             // Do not test for wrapping in dimension 'i-1' (for this combination)
-            set( stride, i-1, (int)0 );
+          	stride[i-1] = 0;
             skipped_dims++;
           }
         }

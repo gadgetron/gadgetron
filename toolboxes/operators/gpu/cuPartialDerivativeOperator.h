@@ -30,8 +30,6 @@ namespace Gadgetron{
                                                           typename int64d<D>::Type adjoint_stride, 
                                                           cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate );  
     
-    virtual boost::shared_ptr< linearOperator< cuNDArray<T> > > clone() {
-      return linearOperator< cuNDArray<T> >::clone(this);
-    }    
+
   };
 }

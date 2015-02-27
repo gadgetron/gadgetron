@@ -177,9 +177,6 @@ inline bool gtPlusSPIRIT2DOperator<T>::adjointOperator(const hoNDArray<T>& x, ho
             this->convertToImage(x, complexIm_);
 
             // apply kernel and sum
-            //Gadgetron::multipleMultiply(complexIm_, *adjoint_kernel_, res_after_apply_kernel_);
-            //Gadgetron::sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
-
             size_t ro = x.get_size(0);
             size_t e1 = x.get_size(1);
             size_t CHA = x.get_size(2);

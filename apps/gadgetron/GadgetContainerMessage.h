@@ -66,20 +66,27 @@ template <class T> class GadgetContainerMessage : public GadgetContainerMessageB
 {
   typedef GadgetContainerMessageBase base;
 
+
 public:
-  GadgetContainerMessage()
-    : base(sizeof(T))
-    , content_(0)
-  {
-    //Using placement new to put the new object at the ACE_Message_Block location
-    content_ = new (this->wr_ptr()) T; 
+  /**
+   *  Constructor, passing on input arguments to the contained class.
+   * @param xs Variadic arguments to the contained class
+   */
+  template<typename... X> GadgetContainerMessage(X... xs)
+  :base(sizeof(T)), content_(0)
+   {
+	 //Using placement new to put the new object at the ACE_Message_Block location
+    content_ = new (this->wr_ptr()) T{xs...};
 
     //Advance the write pointer appropriately.
     this->wr_ptr(sizeof(T));
 
     //Assign type ID that will allow us to safely cast this message.
-    type_magic_id_ = magic_number_for_type<T>(); 
-  }
+    type_magic_id_ = magic_number_for_type<T>();
+
+
+   }
+
 
   GadgetContainerMessage(ACE_Data_Block* d)
     : base(d)

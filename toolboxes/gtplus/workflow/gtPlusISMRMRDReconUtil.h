@@ -63,88 +63,153 @@
     #include <omp.h>
 #endif // USE_OMP
 
-#include "GtPlusDefinition.h"
+#include "mri_core_def.h"
 
 namespace Gadgetron {
 
-    /**
-    * @brief sum over last dimension of an array
-             e.g. for a 4D array, sum over the 4th dimension and get a 3D array
-    */
-    template<typename T> EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r); // 
+    // define the dimensions of ISMRMRD
+    enum ISMRMRDDIM
+    {
+        DIM_ReadOut = 32,
+        DIM_Encoding1,
+        DIM_Channel,
+        DIM_Slice,
+        DIM_Encoding2,
+        DIM_Contrast,
+        DIM_Phase,
+        DIM_Repetition,
+        DIM_Set,
+        DIM_Segment,
+        DIM_Average,
+        DIM_other1,
+        DIM_other2,
+        DIM_other3,
+        DIM_NONE
+    };
 
-    /**
-    * @brief sum over the second last dimension of an array
-             e.g. for a 4D array, sum over the 3rd dimension and get a 3D array
-    */
-    template<typename T> EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+    // define the reconstruction algorithms
+    enum ISMRMRDALGO
+    {
+        ISMRMRD_GRAPPA = 64,
+        ISMRMRD_SENSE,
+        ISMRMRD_SPIRIT,
+        ISMRMRD_L1SPIRIT,
+        ISMRMRD_SOFTSENSE,
+        ISMRMRD_L1SOFTSENSE,
+        ISMRMRD_2DTBINNING,
+        ISMRMRD_2DTBINNING_FLOW,
+        ISMRMRD_L1SPIRIT_SLEP,
+        ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP,
+        ISMRMRD_NONE
+    };
 
-    /**
-    * @brief multiply over the last dimension of y by x
-             e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) .* x
-    */
-    template<typename T> EXPORTGTPLUS bool multiplyOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+    // define the coil sensitivity map estimation algorithms
+    enum ISMRMRDCOILMAPALGO
+    {
+        ISMRMRD_SOUHEIL = 96,
+        ISMRMRD_SOUHEIL_ITER
+    };
 
-    /**
-    * @brief divide the last dimension of y by x
-             e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) ./ x
-    */
-    template<typename T> EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+    // define the partial fourier/asymmetric echo handling algorithms
+    enum ISMRMRDPFALGO
+    {
+        ISMRMRD_PF_HOMODYNE = 128,          // iterative homodyne
+        ISMRMRD_PF_POCS,                    // POCS
+        ISMRMRD_PF_FENGHUANG,               // convolution based method
+        ISMRMRD_PF_ZEROFILLING_FILTER,      // zero-filling with partial fourier filter
+        ISMRMRD_PF_ZEROFILLING,             // zero-filling without partial fourier filter
+        ISMRMRD_PF_NONE
+    };
 
-    /**
-    * @brief sum over the 1st dimension of an array
-             e.g. for a 2D array, sum over the 1st dimension and get an array of [1 E1]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+    // define the kspace filter type
+    enum ISMRMRDKSPACEFILTER
+    {
+        ISMRMRD_FILTER_GAUSSIAN = 160,
+        ISMRMRD_FILTER_HANNING,
+        ISMRMRD_FILTER_TUKEY,
+        ISMRMRD_FILTER_TAPERED_HANNING,
+        ISMRMRD_FILTER_NONE
+    };
 
-    /**
-    * @brief sum over the 2nd dimension of an array
-             e.g. for a 3D array, sum over the 2nd dimension and get an array of [RO 1 CHA]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+    // define the calibration mode of ISMRMRD
+    enum ISMRMRDCALIBMODE
+    {
+        ISMRMRD_embedded = 256,
+        ISMRMRD_interleaved,
+        ISMRMRD_separate,
+        ISMRMRD_external,
+        ISMRMRD_other,
+        ISMRMRD_noacceleration
+    };
 
-    /**
-    * @brief sum over the 3rd dimension of an array
-             e.g. for a 4D array, sum over the 3rd dimension and get an array of [RO E1 1 N]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+    // define the interpolation method
+    enum ISMRMRDINTERP
+    {
+        ISMRMRD_INTERP_LINEAR = 512,
+        ISMRMRD_INTERP_SPLINE,
+        ISMRMRD_INTERP_BSPLINE
+    };
 
-    /**
-    * @brief sum over the 4th dimension of an array
-             e.g. for a 5D array [RO E1 CHA N S], sum over the 4th dimension and get an array of [RO E1 CHA 1 S]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+    // define the interpolation method for retro-gating
+    enum ISMRMRDINTERPRETROGATING
+    {
+        ISMRMRD_INTERP_RETRO_GATING_LINEAR = 600,
+        ISMRMRD_INTERP_RETRO_GATING_CUBIC, 
+        ISMRMRD_INTERP_RETRO_GATING_BSPLINE
+    };
 
-    /**
-    * @brief sum over the 5th dimension of an array
-             e.g. for a 6D array, sum over the 5th dimension and get an array [RO E1 CHA N 1 P]
-    */
-    template<typename T> EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+    /// data flow tag
+    /// if this flag is set to be 1 for a image, the image is immediately passed to the next gadget
+    /// if this flag is 0, this image is a stored image by the accummulator
+    /// whether to pass a stored image to the next gadget is determined by the processing gadget itself
+    #define GADGETRON_PASS_IMMEDIATE                       "GT_PASSIMAGE_IMMEDIATE"
 
-    /**
-    * @brief multiply over the 3rd/4th/5th dimension of y by x
-             e.g. x is 3D and y is 4D array, r(:,:,n,:) = y(:,:,n,:) .* x
-             e.g. x is 4D and y is 5D array, r(:,:,:,n,:) = y(:,:,:,n,:) .* x
-             e.g. x is 5D and y is 6D array, r(:,:,:,:, n,:) = y(:,:,:,:,n,:) .* x
-    */
-    template<typename T> EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray<T>& x3D, const hoNDArray<T>& y4D, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+    /// ISMRMRD Image fields
+    #define ISMRMRD_IMAGE_version                       "ISMRMRD_IMAGE_version"
+    #define ISMRMRD_IMAGE_flags                         "ISMRMRD_IMAGE_flags"
+    #define ISMRMRD_IMAGE_measurement_uid               "ISMRMRD_IMAGE_measurement_uid"
+    #define ISMRMRD_IMAGE_matrix_size                   "ISMRMRD_IMAGE_matrix_size"
+    #define ISMRMRD_IMAGE_field_of_view                 "ISMRMRD_IMAGE_field_of_view"
+    #define ISMRMRD_IMAGE_channels                      "ISMRMRD_IMAGE_channels"
+    #define ISMRMRD_IMAGE_position                      "ISMRMRD_IMAGE_position"
+    #define ISMRMRD_IMAGE_read_dir                      "ISMRMRD_IMAGE_read_dir"
+    #define ISMRMRD_IMAGE_phase_dir                     "ISMRMRD_IMAGE_phase_dir"
+    #define ISMRMRD_IMAGE_slice_dir                     "ISMRMRD_IMAGE_slice_dir"
+    #define ISMRMRD_IMAGE_patient_table_position        "ISMRMRD_IMAGE_patient_table_position"
+    #define ISMRMRD_IMAGE_average                       "ISMRMRD_IMAGE_average"
+    #define ISMRMRD_IMAGE_slice                         "ISMRMRD_IMAGE_slice"
+    #define ISMRMRD_IMAGE_contrast                      "ISMRMRD_IMAGE_contrast"
+    #define ISMRMRD_IMAGE_phase                         "ISMRMRD_IMAGE_phase"
+    #define ISMRMRD_IMAGE_repetition                    "ISMRMRD_IMAGE_repetition"
+    #define ISMRMRD_IMAGE_set                           "ISMRMRD_IMAGE_set"
+    #define ISMRMRD_IMAGE_acquisition_time_stamp        "ISMRMRD_IMAGE_acquisition_time_stamp"
+    #define ISMRMRD_IMAGE_physiology_time_stamp         "ISMRMRD_IMAGE_physiology_time_stamp"
+    #define ISMRMRD_IMAGE_image_data_type               "ISMRMRD_IMAGE_image_data_type"
+    #define ISMRMRD_IMAGE_image_type                    "ISMRMRD_IMAGE_image_type"
+    #define ISMRMRD_IMAGE_image_index                   "ISMRMRD_IMAGE_image_index"
+    #define ISMRMRD_IMAGE_image_series_index            "ISMRMRD_IMAGE_image_series_index"
+    #define ISMRMRD_IMAGE_user_int                      "ISMRMRD_IMAGE_user_int"
+    #define ISMRMRD_IMAGE_user_float                    "ISMRMRD_IMAGE_user_float"
 
-    /**
-    * @brief multiply over the 4th/5th dimension of y by x except for dimension index n
-             e.g. x is 4D and y is 5D array, r(:,:,:,t,:) = y(:,:,:,t,:) .* x, except for r(:,:,:,n,:) = y(:,:,:,n,:)
-             e.g. x is 5D and y is 6D array, r(:,:,:,:,t,:) = y(:,:,:,:,t,:) .* x, except for r(:,:,:,:,n,:) = y(:,:,:,:,n,:)
-    */
-    template<typename T> EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, size_t n, hoNDArray<T>& r, bool copyY2R=true);
-    template<typename T> EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R=true);
+    /// dimension string
+    #define GADGETRON_RO                                    "RO"
+    #define GADGETRON_E1                                    "E1"
+    #define GADGETRON_CHA                                   "CHA"
+    #define GADGETRON_SLC                                   "SLC"
+    #define GADGETRON_E2                                    "E2"
+    #define GADGETRON_CONTRAST                              "CON"
+    #define GADGETRON_PHASE                                 "PHS"
+    #define GADGETRON_REP                                   "REP"
+    #define GADGETRON_SET                                   "SET"
+    #define GADGETRON_SEGMENT                               "SEG"
+    #define GADGETRON_AVERAGE                               "AVE"
+    #define GADGETRON_OTHER1                                "OTH1"
+    #define GADGETRON_OTHER2                                "OTH2"
+    #define GADGETRON_OTHER3                                "OTH3"
+    #define GADGETRON_NONE                                  "NONE"
+}
 
-    /**
-    * @brief r = x add/multiply/divide y for every part of y
-    */
-    template<typename T> EXPORTGTPLUS bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-    template<typename T> EXPORTGTPLUS bool multipleDivide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+namespace Gadgetron {
 
     /**
     * @brief copy the sub-array of x to r
@@ -190,60 +255,12 @@ namespace Gadgetron {
     template<typename T> EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& std, bool NMinusOne);
 
     /**
-    * @brief permute E2 dimension of x : [RO E1 CHA SLC E2 ...] to r: [RO E1 E2 CHA SLC ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute E2 dimension of x : [RO E1 E2 CHA SLC ...] to r: [RO E1 CHA SLC E2 ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 3rd dimension
-             x : [RO E1 E2 ...], r: [E1 E2 RO ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 4th dimension
-             x : [RO E1 E2 CHA ...], r: [E1 E2 CHA RO ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x back to the 1st dimension
-             x : [E1 E2 CHA RO ...], r: [RO E1 E2 CHA ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute the 3rd dimension of x to the 1st dimension
-             x : [RO E1 E2 CHA ...], r: [E2 RO E1 CHA ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
-    * @brief permute RO dimension of x to the 5th dimension
-             x : [RO E1 E2 srcCHA dstCHA ...], r: [E1 E2 srcCHA dstCHA RO ...]
-    */
-    template<typename T> EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
-
-    /**
     * @brief Image domain unwrapping for 2D
              x : [RO E1 srcCHA], ker [RO E1 srcCHA dstCHA]
              buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA]
              for the sake of speed, no check is made in this function
     */
     template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
-
-    /**
-    * @brief Image domain unwrapping for 2D
-             x : [RO E1 srcCHA N], ker [RO E1 srcCHA dstCHA 1 or N], 
-             buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA N]
-             for the sake of speed, no check is made in this function
-    */
-    template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
 
     /**
     * @brief compute periodic boundary values for an array

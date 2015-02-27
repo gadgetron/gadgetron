@@ -36,3 +36,5 @@ namespace Gadgetron {
  *  Call "res", checks for CUDA errors and throws an exception if an error was detected.
  */
 #define CUDA_CALL(res) {cudaError_t errorCode = res; if (errorCode != cudaSuccess) { throw cuda_error(errorCode); }}
+
+#define CUSPARSE_CALL(res) {cusparseStatus_t errorCode = res; if (errorCode != CUSPARSE_STATUS_SUCCESS){ std::stringstream ss; ss << "CUSPARSE failed with error: " <<  gadgetron_getCusparseErrorString(errorCode); throw cuda_error(ss.str());}}

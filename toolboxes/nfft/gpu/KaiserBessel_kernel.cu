@@ -90,7 +90,7 @@ KaiserBessel( float u, float matrix_size_os, float one_over_W, float beta )
 
 template<class REAL> __inline__ __device__ REAL
 KaiserBessel( const Gadgetron::vector_td<REAL,1> &u, const Gadgetron::vector_td<REAL,1> &matrix_size_os, 
-	      REAL one_over_W, typename reald<REAL,1>::Type beta )
+	      REAL one_over_W, const vector_td<REAL,1> &beta )
 {
   REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta[0] );
   return phi_x;
@@ -98,7 +98,7 @@ KaiserBessel( const Gadgetron::vector_td<REAL,1> &u, const Gadgetron::vector_td<
 
 template<class REAL> __inline__ __device__ REAL
 KaiserBessel( const Gadgetron::vector_td<REAL,2> &u, const Gadgetron::vector_td<REAL,2> &matrix_size_os, 
-	      REAL one_over_W, typename reald<REAL,2>::Type beta )
+	      REAL one_over_W, const vector_td<REAL,2> &beta )
 {
   REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta[0] );
   REAL phi_y = KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta[1] );
@@ -107,7 +107,7 @@ KaiserBessel( const Gadgetron::vector_td<REAL,2> &u, const Gadgetron::vector_td<
 
 template<class REAL> __inline__ __device__ REAL
 KaiserBessel( const Gadgetron::vector_td<REAL,3> &u, const Gadgetron::vector_td<REAL,3> &matrix_size_os, 
-	      REAL one_over_W, typename reald<REAL,3>::Type beta )
+	      REAL one_over_W, const vector_td<REAL,3> &beta )
 {
   REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta[0] );
   REAL phi_y = KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta[1] );
@@ -116,8 +116,8 @@ KaiserBessel( const Gadgetron::vector_td<REAL,3> &u, const Gadgetron::vector_td<
 }
 
 template<class REAL> __inline__ __device__ REAL
-KaiserBessel( const Gadgetron::vector_td<REAL,4> &u, Gadgetron::vector_td<REAL,4> &matrix_size_os, 
-	      REAL one_over_W, typename reald<REAL,4>::Type beta )
+KaiserBessel( const Gadgetron::vector_td<REAL,4> &u, const Gadgetron::vector_td<REAL,4> &matrix_size_os,
+	      REAL one_over_W, const vector_td<REAL,4> &beta )
 {
   REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta[0] );
   REAL phi_y = KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta[1] );

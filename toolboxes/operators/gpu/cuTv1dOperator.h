@@ -14,11 +14,10 @@ namespace Gadgetron{
   template<class T, unsigned int D> class EXPORTGPUOPERATORS cuTv1DOperator : public generalOperator< cuNDArray<T> >
   {    
 
-  protected:
-    typedef typename realType<T>::Type REAL;   
     
   public:
     
+    typedef typename realType<T>::Type REAL;
     cuTv1DOperator() : generalOperator< cuNDArray<T> >(){
       limit_ = REAL(1e-8);      
     }

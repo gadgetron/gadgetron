@@ -47,4 +47,5 @@ namespace Gadgetron{
   template<class T> EXPORTGPUCORE typename realType<T>::Type asum( cuNDArray<T> *x );
   
   EXPORTGPUCORE std::string gadgetron_getCublasErrorString(cublasStatus_t err);
+
 }

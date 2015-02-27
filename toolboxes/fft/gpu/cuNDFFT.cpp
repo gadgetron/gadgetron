@@ -69,7 +69,7 @@ namespace Gadgetron{
     size_t ndim = dims.size();
     size_t batches = 0;
     size_t elements_in_ft = 1;
-    for (size_t i = 0; i < dims.size(); i++) 
+    for (size_t i = 0; i < dims.size(); i++)
       elements_in_ft *= dims[i];
     batches = input->get_number_of_elements() / elements_in_ft;
     
@@ -87,8 +87,19 @@ namespace Gadgetron{
       throw std::runtime_error(ss.str());;
     }
     
-    //IFFTSHIFT
-    *input = *permute(input,&new_dim_order,-1);
+    bool must_permute = false;
+
+    {
+    	for (size_t i = 0; i < new_dim_order.size(); i++)
+    		must_permute |= (i != new_dim_order[i]);
+    }
+
+    if (must_permute)
+    	*input = *permute(input,&new_dim_order);
+
+    if (direction == CUFFT_INVERSE)
+    	for (size_t i =0; i < dims_to_transform->size(); i++)
+    	timeswitch(input,dims_to_transform->at(i));
     
     if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
       throw std::runtime_error("cuNDFFT FFT execute failed");;
@@ -100,19 +111,22 @@ namespace Gadgetron{
       ss << "cuNDFFT FFT plan destroy failed: " << ftres;
       throw std::runtime_error(ss.str());;
     }
+    if (direction == CUFFT_FORWARD)
+    	for (size_t i =0; i < dims_to_transform->size(); i++)
+    		timeswitch(input,dims_to_transform->at(i));
     
     if (do_scale) {
-      *input /= T(elements_in_ft);
+      *input *= 1/std::sqrt(T(elements_in_ft));
     }
     
-    //FFTSHIFT 
-    *input = *permute(input,&reverse_dim_order,1);
+    if (must_permute)
+    	*input = *permute(input,&reverse_dim_order);
   }
   
   template<class T> void
-  cuNDFFT<T>::fft( cuNDArray< complext<T> > *input, std::vector<size_t> *dims_to_transform )
+  cuNDFFT<T>::fft( cuNDArray< complext<T> > *input, std::vector<size_t> *dims_to_transform, bool do_scale )
   {
-    fft_int(input, dims_to_transform, CUFFT_FORWARD, false);
+    fft_int(input, dims_to_transform, CUFFT_FORWARD, do_scale);
   }
   
   template<class T> void
@@ -122,10 +136,10 @@ namespace Gadgetron{
   }
   
   template<class T> void
-  cuNDFFT<T>::fft( cuNDArray< complext<T> > *input, unsigned int dim_to_transform )
+  cuNDFFT<T>::fft( cuNDArray< complext<T> > *input, unsigned int dim_to_transform, bool do_scale )
   {
     std::vector<size_t> dims(1,dim_to_transform);
-    fft_int(input, &dims, CUFFT_FORWARD, false);
+    fft_int(input, &dims, CUFFT_FORWARD, do_scale);
   }
   
   template<class T> void
@@ -136,11 +150,11 @@ namespace Gadgetron{
   }
   
   template<class T> void
-  cuNDFFT<T>::fft( cuNDArray< complext<T> > *input )
+  cuNDFFT<T>::fft( cuNDArray< complext<T> > *input, bool do_scale )
   {
     std::vector<size_t> dims(input->get_number_of_dimensions(),0);
     for (size_t i = 0; i < dims.size(); i++) dims[i] = i;
-    fft_int(input, &dims, CUFFT_FORWARD, false);
+    fft_int(input, &dims, CUFFT_FORWARD, do_scale);
   }
   
   template<class T> void

@@ -46,10 +46,6 @@ namespace Gadgetron{
     {
       return mult_M(in, out, accumulate);
     }
-    
-    virtual boost::shared_ptr< linearOperator< ARRAY_TYPE > > clone()
-    {
-      return linearOperator<ARRAY_TYPE>::clone(this);
-    }
+
   };
 }

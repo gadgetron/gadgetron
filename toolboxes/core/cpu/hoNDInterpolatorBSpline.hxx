@@ -48,12 +48,12 @@ namespace Gadgetron
     template <typename ArrayType, unsigned int D> 
     inline typename hoNDInterpolatorBSpline<ArrayType, D>::T hoNDInterpolatorBSpline<ArrayType, D>::operator()( const coord_type* pos )
     {
-        std::vector<gt_index_type> anchor(D);
+        std::vector<long long> anchor(D);
 
         unsigned int ii;
         for ( ii=0; ii<D; ii++ )
         {
-            anchor[ii] = static_cast<gt_index_type>(std::floor(pos[ii]));
+            anchor[ii] = static_cast<long long>(std::floor(pos[ii]));
         }
 
         bool inRange = true;
@@ -85,9 +85,9 @@ namespace Gadgetron
     template <typename ArrayType, unsigned int D> 
     inline typename hoNDInterpolatorBSpline<ArrayType, D>::T hoNDInterpolatorBSpline<ArrayType, D>::operator()( coord_type x )
     {
-        gt_index_type ix = static_cast<gt_index_type>(std::floor(x));
+        long long ix = static_cast<long long>(std::floor(x));
 
-        if ( ix>=0 && ix<(gt_index_type)array_->get_size(0)-1 )
+        if ( ix>=0 && ix<(long long)array_->get_size(0)-1 )
         {
             return bspline_.evaluateBSpline(coeff_.begin(), dimension_[0], order_, derivative_[0], x);
         }
@@ -100,8 +100,8 @@ namespace Gadgetron
     template <typename ArrayType, unsigned int D> 
     inline typename hoNDInterpolatorBSpline<ArrayType, D>::T hoNDInterpolatorBSpline<ArrayType, D>::operator()( coord_type x, coord_type y )
     {
-        gt_index_type ix = static_cast<gt_index_type>(std::floor(x));
-        gt_index_type iy = static_cast<gt_index_type>(std::floor(y));
+        long long ix = static_cast<long long>(std::floor(x));
+        long long iy = static_cast<long long>(std::floor(y));
 
         /*x = (x<0) ? 0 : x;
         x = (x>array_->get_size(0)-1) ? array_->get_size(0)-1 : x;
@@ -109,7 +109,7 @@ namespace Gadgetron
         y = (y<0) ? 0 : y;
         y = (y>array_->get_size(1)-1) ? array_->get_size(1)-1 : y;*/
 
-        /*if ( ix>=0 && ix<(gt_index_type)array_->get_size(0)-1 && iy>=0 && iy<(gt_index_type)array_->get_size(1)-1 )
+        /*if ( ix>=0 && ix<(long long)array_->get_size(0)-1 && iy>=0 && iy<(long long)array_->get_size(1)-1 )
         {
             return bspline_.evaluateBSpline(coeff_.begin(), dimension_[0], dimension_[1], order_, derivative_[0], derivative_[1], x, y);
         }
@@ -131,13 +131,13 @@ namespace Gadgetron
     template <typename ArrayType, unsigned int D> 
     inline typename hoNDInterpolatorBSpline<ArrayType, D>::T hoNDInterpolatorBSpline<ArrayType, D>::operator()( coord_type x, coord_type y, coord_type z )
     {
-        gt_index_type ix = static_cast<gt_index_type>(std::floor(x));
-        gt_index_type iy = static_cast<gt_index_type>(std::floor(y));
-        gt_index_type iz = static_cast<gt_index_type>(std::floor(z));
+        long long ix = static_cast<long long>(std::floor(x));
+        long long iy = static_cast<long long>(std::floor(y));
+        long long iz = static_cast<long long>(std::floor(z));
 
-        if ( ix>=0 && ix<(gt_index_type)array_->get_size(0)-1 
-            && iy>=0 && iy<(gt_index_type)array_->get_size(1)-1 
-            && iz>=0 && iz<(gt_index_type)array_->get_size(2)-1 )
+        if ( ix>=0 && ix<(long long)array_->get_size(0)-1 
+            && iy>=0 && iy<(long long)array_->get_size(1)-1 
+            && iz>=0 && iz<(long long)array_->get_size(2)-1 )
         {
             return bspline_.evaluateBSpline(coeff_.begin(), 
                 dimension_[0], dimension_[1], dimension_[2], 
@@ -154,15 +154,15 @@ namespace Gadgetron
     template <typename ArrayType, unsigned int D> 
     inline typename hoNDInterpolatorBSpline<ArrayType, D>::T hoNDInterpolatorBSpline<ArrayType, D>::operator()( coord_type x, coord_type y, coord_type z, coord_type s )
     {
-        gt_index_type ix = static_cast<gt_index_type>(std::floor(x));
-        gt_index_type iy = static_cast<gt_index_type>(std::floor(y));
-        gt_index_type iz = static_cast<gt_index_type>(std::floor(z));
-        gt_index_type is = static_cast<gt_index_type>(std::floor(s));
+        long long ix = static_cast<long long>(std::floor(x));
+        long long iy = static_cast<long long>(std::floor(y));
+        long long iz = static_cast<long long>(std::floor(z));
+        long long is = static_cast<long long>(std::floor(s));
 
-        if ( ix>=0 && ix<(gt_index_type)array_->get_size(0)-1 
-            && iy>=0 && iy<(gt_index_type)array_->get_size(1)-1 
-            && iz>=0 && iz<(gt_index_type)array_->get_size(2)-1 
-            && is>=0 && is<(gt_index_type)array_->get_size(3)-1 )
+        if ( ix>=0 && ix<(long long)array_->get_size(0)-1 
+            && iy>=0 && iy<(long long)array_->get_size(1)-1 
+            && iz>=0 && iz<(long long)array_->get_size(2)-1 
+            && is>=0 && is<(long long)array_->get_size(3)-1 )
         {
             return bspline_.evaluateBSpline(coeff_.begin(), 
                 dimension_[0], dimension_[1], dimension_[2], dimension_[3], 
@@ -179,17 +179,17 @@ namespace Gadgetron
     template <typename ArrayType, unsigned int D> 
     inline typename hoNDInterpolatorBSpline<ArrayType, D>::T hoNDInterpolatorBSpline<ArrayType, D>::operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p )
     {
-        gt_index_type ix = static_cast<gt_index_type>(std::floor(x));
-        gt_index_type iy = static_cast<gt_index_type>(std::floor(y));
-        gt_index_type iz = static_cast<gt_index_type>(std::floor(z));
-        gt_index_type is = static_cast<gt_index_type>(std::floor(s));
-        gt_index_type ip = static_cast<gt_index_type>(std::floor(p));
+        long long ix = static_cast<long long>(std::floor(x));
+        long long iy = static_cast<long long>(std::floor(y));
+        long long iz = static_cast<long long>(std::floor(z));
+        long long is = static_cast<long long>(std::floor(s));
+        long long ip = static_cast<long long>(std::floor(p));
 
-        if ( ix>=0 && ix<(gt_index_type)array_->get_size(0)-1 
-            && iy>=0 && iy<(gt_index_type)array_->get_size(1)-1 
-            && iz>=0 && iz<(gt_index_type)array_->get_size(2)-1 
-            && is>=0 && is<(gt_index_type)array_->get_size(3)-1 
-            && ip>=0 && ip<(gt_index_type)array_->get_size(4)-1 )
+        if ( ix>=0 && ix<(long long)array_->get_size(0)-1 
+            && iy>=0 && iy<(long long)array_->get_size(1)-1 
+            && iz>=0 && iz<(long long)array_->get_size(2)-1 
+            && is>=0 && is<(long long)array_->get_size(3)-1 
+            && ip>=0 && ip<(long long)array_->get_size(4)-1 )
         {
             return bspline_.evaluateBSpline(coeff_.begin(), 
                 dimension_[0], dimension_[1], dimension_[2], dimension_[3], dimension_[4], 
@@ -206,19 +206,19 @@ namespace Gadgetron
     template <typename ArrayType, unsigned int D> 
     inline typename hoNDInterpolatorBSpline<ArrayType, D>::T hoNDInterpolatorBSpline<ArrayType, D>::operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r )
     {
-        gt_index_type ix = static_cast<gt_index_type>(std::floor(x));
-        gt_index_type iy = static_cast<gt_index_type>(std::floor(y));
-        gt_index_type iz = static_cast<gt_index_type>(std::floor(z));
-        gt_index_type is = static_cast<gt_index_type>(std::floor(s));
-        gt_index_type ip = static_cast<gt_index_type>(std::floor(p));
-        gt_index_type ir = static_cast<gt_index_type>(std::floor(r));
+        long long ix = static_cast<long long>(std::floor(x));
+        long long iy = static_cast<long long>(std::floor(y));
+        long long iz = static_cast<long long>(std::floor(z));
+        long long is = static_cast<long long>(std::floor(s));
+        long long ip = static_cast<long long>(std::floor(p));
+        long long ir = static_cast<long long>(std::floor(r));
 
-        if ( ix>=0 && ix<(gt_index_type)array_->get_size(0)-1 
-            && iy>=0 && iy<(gt_index_type)array_->get_size(1)-1 
-            && iz>=0 && iz<(gt_index_type)array_->get_size(2)-1 
-            && is>=0 && is<(gt_index_type)array_->get_size(3)-1 
-            && ip>=0 && ip<(gt_index_type)array_->get_size(4)-1 
-            && ir>=0 && ir<(gt_index_type)array_->get_size(5)-1 )
+        if ( ix>=0 && ix<(long long)array_->get_size(0)-1 
+            && iy>=0 && iy<(long long)array_->get_size(1)-1 
+            && iz>=0 && iz<(long long)array_->get_size(2)-1 
+            && is>=0 && is<(long long)array_->get_size(3)-1 
+            && ip>=0 && ip<(long long)array_->get_size(4)-1 
+            && ir>=0 && ir<(long long)array_->get_size(5)-1 )
         {
             return bspline_.evaluateBSpline(coeff_.begin(), 
                 dimension_[0], dimension_[1], dimension_[2], dimension_[3], dimension_[4], dimension_[5], 
@@ -235,23 +235,23 @@ namespace Gadgetron
     template <typename ArrayType, unsigned int D> 
     inline typename hoNDInterpolatorBSpline<ArrayType, D>::T hoNDInterpolatorBSpline<ArrayType, D>::operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a )
     {
-        gt_index_type anchor[7];
+        long long anchor[7];
 
-        anchor[0] = static_cast<gt_index_type>(std::floor(x));
-        anchor[1] = static_cast<gt_index_type>(std::floor(y));
-        anchor[2] = static_cast<gt_index_type>(std::floor(z));
-        anchor[3] = static_cast<gt_index_type>(std::floor(s));
-        anchor[4] = static_cast<gt_index_type>(std::floor(p));
-        anchor[5] = static_cast<gt_index_type>(std::floor(r));
-        anchor[6] = static_cast<gt_index_type>(std::floor(a));
+        anchor[0] = static_cast<long long>(std::floor(x));
+        anchor[1] = static_cast<long long>(std::floor(y));
+        anchor[2] = static_cast<long long>(std::floor(z));
+        anchor[3] = static_cast<long long>(std::floor(s));
+        anchor[4] = static_cast<long long>(std::floor(p));
+        anchor[5] = static_cast<long long>(std::floor(r));
+        anchor[6] = static_cast<long long>(std::floor(a));
 
-        if ( anchor[0]>=0 && anchor[0]<(gt_index_type)array_->get_size(0)-1 
-            && anchor[1]>=0 && anchor[1]<(gt_index_type)array_->get_size(1)-1 
-            && anchor[2]>=0 && anchor[2]<(gt_index_type)array_->get_size(2)-1 
-            && anchor[3]>=0 && anchor[3]<(gt_index_type)array_->get_size(3)-1 
-            && anchor[4]>=0 && anchor[4]<(gt_index_type)array_->get_size(4)-1 
-            && anchor[5]>=0 && anchor[5]<(gt_index_type)array_->get_size(5)-1
-            && anchor[6]>=0 && anchor[6]<(gt_index_type)array_->get_size(6)-1 )
+        if ( anchor[0]>=0 && anchor[0]<(long long)array_->get_size(0)-1 
+            && anchor[1]>=0 && anchor[1]<(long long)array_->get_size(1)-1 
+            && anchor[2]>=0 && anchor[2]<(long long)array_->get_size(2)-1 
+            && anchor[3]>=0 && anchor[3]<(long long)array_->get_size(3)-1 
+            && anchor[4]>=0 && anchor[4]<(long long)array_->get_size(4)-1 
+            && anchor[5]>=0 && anchor[5]<(long long)array_->get_size(5)-1
+            && anchor[6]>=0 && anchor[6]<(long long)array_->get_size(6)-1 )
         {
             return bspline_.evaluateBSpline(coeff_.begin(), 
                 dimension_[0], dimension_[1], dimension_[2], dimension_[3], dimension_[4], dimension_[5], dimension_[6], 
@@ -268,25 +268,25 @@ namespace Gadgetron
     template <typename ArrayType, unsigned int D> 
     inline typename hoNDInterpolatorBSpline<ArrayType, D>::T hoNDInterpolatorBSpline<ArrayType, D>::operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a, coord_type q )
     {
-        gt_index_type anchor[8];
+        long long anchor[8];
 
-        anchor[0] = static_cast<gt_index_type>(std::floor(x));
-        anchor[1] = static_cast<gt_index_type>(std::floor(y));
-        anchor[2] = static_cast<gt_index_type>(std::floor(z));
-        anchor[3] = static_cast<gt_index_type>(std::floor(s));
-        anchor[4] = static_cast<gt_index_type>(std::floor(p));
-        anchor[5] = static_cast<gt_index_type>(std::floor(r));
-        anchor[6] = static_cast<gt_index_type>(std::floor(a));
-        anchor[7] = static_cast<gt_index_type>(std::floor(q));
+        anchor[0] = static_cast<long long>(std::floor(x));
+        anchor[1] = static_cast<long long>(std::floor(y));
+        anchor[2] = static_cast<long long>(std::floor(z));
+        anchor[3] = static_cast<long long>(std::floor(s));
+        anchor[4] = static_cast<long long>(std::floor(p));
+        anchor[5] = static_cast<long long>(std::floor(r));
+        anchor[6] = static_cast<long long>(std::floor(a));
+        anchor[7] = static_cast<long long>(std::floor(q));
 
-        if ( anchor[0]>=0 && anchor[0]<(gt_index_type)array_->get_size(0)-1 
-            && anchor[1]>=0 && anchor[1]<(gt_index_type)array_->get_size(1)-1 
-            && anchor[2]>=0 && anchor[2]<(gt_index_type)array_->get_size(2)-1 
-            && anchor[3]>=0 && anchor[3]<(gt_index_type)array_->get_size(3)-1 
-            && anchor[4]>=0 && anchor[4]<(gt_index_type)array_->get_size(4)-1 
-            && anchor[5]>=0 && anchor[5]<(gt_index_type)array_->get_size(5)-1 
-            && anchor[6]>=0 && anchor[6]<(gt_index_type)array_->get_size(6)-1 
-            && anchor[7]>=0 && anchor[7]<(gt_index_type)array_->get_size(7)-1 )
+        if ( anchor[0]>=0 && anchor[0]<(long long)array_->get_size(0)-1 
+            && anchor[1]>=0 && anchor[1]<(long long)array_->get_size(1)-1 
+            && anchor[2]>=0 && anchor[2]<(long long)array_->get_size(2)-1 
+            && anchor[3]>=0 && anchor[3]<(long long)array_->get_size(3)-1 
+            && anchor[4]>=0 && anchor[4]<(long long)array_->get_size(4)-1 
+            && anchor[5]>=0 && anchor[5]<(long long)array_->get_size(5)-1 
+            && anchor[6]>=0 && anchor[6]<(long long)array_->get_size(6)-1 
+            && anchor[7]>=0 && anchor[7]<(long long)array_->get_size(7)-1 )
         {
             return bspline_.evaluateBSpline(coeff_.begin(), 
                 dimension_[0], dimension_[1], dimension_[2], dimension_[3], dimension_[4], dimension_[5], dimension_[6], dimension_[7], 
@@ -303,27 +303,27 @@ namespace Gadgetron
     template <typename ArrayType, unsigned int D> 
     inline typename hoNDInterpolatorBSpline<ArrayType, D>::T hoNDInterpolatorBSpline<ArrayType, D>::operator()( coord_type x, coord_type y, coord_type z, coord_type s, coord_type p, coord_type r, coord_type a, coord_type q, coord_type u )
     {
-        gt_index_type anchor[9];
+        long long anchor[9];
 
-        anchor[0] = static_cast<gt_index_type>(std::floor(x));
-        anchor[1] = static_cast<gt_index_type>(std::floor(y));
-        anchor[2] = static_cast<gt_index_type>(std::floor(z));
-        anchor[3] = static_cast<gt_index_type>(std::floor(s));
-        anchor[4] = static_cast<gt_index_type>(std::floor(p));
-        anchor[5] = static_cast<gt_index_type>(std::floor(r));
-        anchor[6] = static_cast<gt_index_type>(std::floor(a));
-        anchor[7] = static_cast<gt_index_type>(std::floor(q));
-        anchor[8] = static_cast<gt_index_type>(std::floor(u));
+        anchor[0] = static_cast<long long>(std::floor(x));
+        anchor[1] = static_cast<long long>(std::floor(y));
+        anchor[2] = static_cast<long long>(std::floor(z));
+        anchor[3] = static_cast<long long>(std::floor(s));
+        anchor[4] = static_cast<long long>(std::floor(p));
+        anchor[5] = static_cast<long long>(std::floor(r));
+        anchor[6] = static_cast<long long>(std::floor(a));
+        anchor[7] = static_cast<long long>(std::floor(q));
+        anchor[8] = static_cast<long long>(std::floor(u));
 
-        if ( anchor[0]>=0 && anchor[0]<(gt_index_type)array_->get_size(0)-1 
-            && anchor[1]>=0 && anchor[1]<(gt_index_type)array_->get_size(1)-1 
-            && anchor[2]>=0 && anchor[2]<(gt_index_type)array_->get_size(2)-1 
-            && anchor[3]>=0 && anchor[3]<(gt_index_type)array_->get_size(3)-1 
-            && anchor[4]>=0 && anchor[4]<(gt_index_type)array_->get_size(4)-1 
-            && anchor[5]>=0 && anchor[5]<(gt_index_type)array_->get_size(5)-1 
-            && anchor[6]>=0 && anchor[6]<(gt_index_type)array_->get_size(6)-1 
-            && anchor[7]>=0 && anchor[7]<(gt_index_type)array_->get_size(7)-1 
-            && anchor[8]>=0 && anchor[8]<(gt_index_type)array_->get_size(8)-1 )
+        if ( anchor[0]>=0 && anchor[0]<(long long)array_->get_size(0)-1 
+            && anchor[1]>=0 && anchor[1]<(long long)array_->get_size(1)-1 
+            && anchor[2]>=0 && anchor[2]<(long long)array_->get_size(2)-1 
+            && anchor[3]>=0 && anchor[3]<(long long)array_->get_size(3)-1 
+            && anchor[4]>=0 && anchor[4]<(long long)array_->get_size(4)-1 
+            && anchor[5]>=0 && anchor[5]<(long long)array_->get_size(5)-1 
+            && anchor[6]>=0 && anchor[6]<(long long)array_->get_size(6)-1 
+            && anchor[7]>=0 && anchor[7]<(long long)array_->get_size(7)-1 
+            && anchor[8]>=0 && anchor[8]<(long long)array_->get_size(8)-1 )
         {
             return bspline_.evaluateBSpline(coeff_.begin(), 
                 dimension_[0], dimension_[1], dimension_[2], dimension_[3], dimension_[4], dimension_[5], dimension_[6], dimension_[7], dimension_[8], 

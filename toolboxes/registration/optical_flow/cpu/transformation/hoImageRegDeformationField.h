@@ -849,6 +849,7 @@ namespace Gadgetron
     {
         GADGET_DEBUG_CHECK_THROW(outDim<=D);
         this->deform_field_[outDim] = deform;
+        this->update();
     }
 
     template <typename ValueType, unsigned int D> 

@@ -16,13 +16,13 @@ classdef accumulate_and_recon < handle & BaseGadget
             fprintf('The resonance frequency is %d\n', g.xml.experimentalConditions.H1resonanceFrequency_Hz);
             nx = g.xml.encoding.encodedSpace.matrixSize.x;
             ny = g.xml.encoding.encodedSpace.matrixSize.y;
+            nz = g.xml.encoding.encodedSpace.matrixSize.z;
             % for 2D sequences the number of getZ breaks
-            try
-              nz = g.xml.encoding.encodedSpace.maxtrixSize.z;
-            catch
+            %try
+            %catch
             
-	      nz =1;
-            end
+	     % nz =1
+            %end
             % the number of receiver channels is optional
             try
                 % this is the only cast from java.lang.Integer that works in Matlab
@@ -44,14 +44,16 @@ classdef accumulate_and_recon < handle & BaseGadget
         end
 
         function g = process(g, head, data)
-            disp('Processing')
+            %disp('Processing')
             % stuff the line
             line_offset = floor(size(g.accumulation,2)/2) - g.center_line;
             kyind = head.idx.kspace_encode_step_1 + line_offset + 1;
             kzind = head.idx.kspace_encode_step_2 + 1;
             slind = head.idx.slice + 1;
             %fprintf('  offset = %d, center = %d, index = %d\n', line_offset, g.center_line, kyind);
-
+            if (kyind == 1)
+		    disp(kzind)
+	    end
             g.accumulation(:, kyind, kzind, slind, :) = data;
 
             % At the end of the acquisition, reconstruct the slice

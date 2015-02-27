@@ -92,7 +92,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
   std::string gcfg = gadgetron_home + std::string("/") + std::string(GADGETRON_CONFIG_PATH) + std::string("/gadgetron.xml");
   if (!FileInfo(gcfg).exists()) {
-    GERROR("Gadgetron configuration file %s not found.\n");
+    GERROR("Gadgetron configuration file %s not found.\n", gcfg.c_str());
     return -1;
   }
 

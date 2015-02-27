@@ -103,8 +103,5 @@ namespace Gadgetron{
               }
           }
 
-          virtual boost::shared_ptr< linearOperator< hoNDArray<T> > > clone() {
-              return linearOperator< hoNDArray<T> >::clone(this);
-          }    
     };
 }

@@ -1,7 +1,6 @@
 #include "NoiseAdjustGadget.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_elemwise.h"
-#include "GadgetronCommon.h"
 #include "hoMatrix.h"
 #include "hoNDArray_linalg.h"
 #include "hoNDArray_elemwise.h"

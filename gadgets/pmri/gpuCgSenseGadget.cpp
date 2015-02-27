@@ -15,8 +15,6 @@ namespace Gadgetron{
 
   gpuCgSenseGadget::gpuCgSenseGadget()
     : is_configured_(false)
-    , channels_(0)
-    , frame_counter_(0)
     , matrix_size_reported_(0)
   {
     set_parameter(std::string("deviceno").c_str(), "0");
@@ -164,7 +162,7 @@ namespace Gadgetron{
     unsigned int frames = j->tra_host_->get_size(1)*rotations;
 
     if( samples%j->tra_host_->get_number_of_elements() ) {
-      GDEBUG("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n", 
+      GDEBUG("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n",
                     samples, j->tra_host_->get_number_of_elements());
       return GADGET_FAIL;
     }
@@ -190,7 +188,7 @@ namespace Gadgetron{
                ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
 
     if( !matrix_size_reported_ ) {
-      GDEBUG("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);    
+      GDEBUG("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);
       GDEBUG("Matrix size OS : [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
       matrix_size_reported_ = true;
     }

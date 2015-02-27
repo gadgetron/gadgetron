@@ -181,7 +181,7 @@ namespace Gadgetron{
        NFFT deapodization.
        \param[in,out] image the image to be deapodized (inplace).
     */
-    void deapodize( cuNDArray<complext<REAL> > *image );
+    void deapodize( cuNDArray<complext<REAL> > *image, bool fourier_domain=false);
 
   public: // Setup queries
     
@@ -236,7 +236,7 @@ namespace Gadgetron{
     void compute_beta();
 
     // Compute deapodization filter
-    void compute_deapodization_filter();
+    boost::shared_ptr<cuNDArray<complext<REAL> > > compute_deapodization_filter(bool FFTed = false);
 
     // Dedicated computes
     void compute_NFFT_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
@@ -271,7 +271,9 @@ namespace Gadgetron{
     // Internal data structures for convolution and deapodization
     //
 
-    boost::shared_ptr< cuNDArray<complext<REAL> > > deapodization_filter;
+    boost::shared_ptr< cuNDArray<complext<REAL> > > deapodization_filter; //Inverse fourier transformed deapodization filter
+
+    boost::shared_ptr< cuNDArray<complext<REAL> > > deapodization_filterFFT; //Fourier transformed deapodization filter
    
     thrust::device_vector< typename reald<REAL,D>::Type > *trajectory_positions;
     thrust::device_vector<unsigned int> *tuples_last;

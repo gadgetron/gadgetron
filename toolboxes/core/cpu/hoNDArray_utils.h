@@ -112,6 +112,10 @@ namespace Gadgetron {
       throw std::runtime_error("permute(): invalid pointer provided");;
     }    
 
+    if( in == out ){
+      throw std::runtime_error("permute(): in-place permutation not supported");;
+    }   
+
     // Check ordering array
     if (dim_order->size() > in->get_number_of_dimensions()) {
       throw std::runtime_error("hoNDArray::permute - Invalid length of dimension ordering array");;
@@ -154,13 +158,68 @@ namespace Gadgetron {
 
     T* o = out->get_data_ptr();
 
-    ArrayIterator it(in->get_dimensions().get(),&dim_order_int);
-    for (size_t i = 0; i < in->get_number_of_elements(); i++) {
-      o[i] = in->get_data_ptr()[it.get_current_idx()];
-      it.advance();
+    // if memcpy can be used during permute
+    size_t stride = 1;
+    size_t num_dim_memcpy = 0;
+    for (size_t i = 0; i < dim_order_int.size(); i++) {
+        if (dim_order_int[i]==i){
+            stride *= in->get_size(i);
+            num_dim_memcpy = i;
+        }
+        else{
+            break;
+        }
+    }
+
+    if (stride == 1) {
+        // point by point assignment is needed
+        ArrayIterator it(in->get_dimensions().get(), &dim_order_int);
+        for (size_t i = 0; i < in->get_number_of_elements(); i++) {
+            o[i] = in->get_data_ptr()[it.get_current_idx()];
+            it.advance();
+        }
+    }
+    else {
+        // memcpy can be used
+
+        size_t nDim = in->get_number_of_dimensions();
+        size_t num_memcpy = in->get_number_of_elements() / stride;
+
+        if (num_dim_memcpy == nDim - 1){
+            memcpy(out->begin(), in->begin(), in->get_number_of_bytes());
+            return;
+        }
+
+        // for the array index calculation
+        std::vector<size_t> dim_permute(nDim-num_dim_memcpy-1);
+        for (size_t i = num_dim_memcpy+1; i < dim_order_int.size(); i++) {
+            dim_permute[i - num_dim_memcpy - 1] = in->get_size(i);
+        }
+
+        long long n;
+
+        hoNDArray<T> permuteArray(dim_permute, in->begin(), false);
+
+        // starting index for in and out array for every permute memcpy operation
+        std::vector<size_t> ind_permute_in(dim_permute.size(), 0), ind_in(nDim, 0), ind_out(nDim, 0);
+
+        for (n = 0; n < num_memcpy; n++) {
+            permuteArray.calculate_index(n, ind_permute_in);
+            memcpy(&ind_in[0] + num_dim_memcpy + 1, &ind_permute_in[0], sizeof(size_t)*ind_permute_in.size());
+
+            // permute the indexes
+            for (size_t i = 0; i < nDim; i++) {
+                ind_out[i] = ind_in[dim_order_int[i]];
+            }
+
+            size_t offset_in = in->calculate_offset(ind_in);
+            size_t offset_out = out->calculate_offset(ind_out);
+
+            memcpy(o + offset_out, in->begin() + offset_in, sizeof(T)*stride);
+        }
     }
   }
-   
+
   // Expand array to new dimension
   template<class T> boost::shared_ptr<hoNDArray<T> > 
   expand(hoNDArray<T> *in, size_t new_dim_size )
@@ -168,14 +227,14 @@ namespace Gadgetron {
     if( in == 0x0 ){
       throw std::runtime_error("expand(): illegal input pointer.");;
     }
-      
+
     const size_t number_of_elements_in = in->get_number_of_elements();    
 
     std::vector<size_t> dims = *in->get_dimensions(); 
     dims.push_back(new_dim_size);
 
     boost::shared_ptr< hoNDArray<T> > out(new hoNDArray<T>(&dims));
-      
+
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif

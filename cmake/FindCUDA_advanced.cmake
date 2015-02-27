@@ -1,4 +1,4 @@
-find_package(CUDA 4.1)
+find_package(CUDA 5.5)
 
 # Check for GPUs present and their compute capability
 # based on http://stackoverflow.com/questions/2285185/easiest-way-to-test-for-existence-of-cuda-capable-gpu-from-cmake/2297877#2297877 (Christopher Bruns)
@@ -26,6 +26,8 @@ if(CUDA_FOUND)
     set(CUDA_COMPUTE_CAPABILITY ALL CACHE STRING "Compute capability of CUDA-capable GPU present. Seperate multiple by ;. For all known, use ALL")
   endif()
 
+find_cuda_helper_libs(cusparse)
+set(CUDA_CUSPARSE_LIBRARIES ${CUDA_cusparse_LIBRARY})
 if( "${CUDA_COMPUTE_CAPABILITY}" MATCHES ALL)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3} ${CUDA_NVCC_FLAGS4} ${CUDA_NVCC_FLAGS5})
 else()

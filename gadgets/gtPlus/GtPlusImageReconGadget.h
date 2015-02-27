@@ -17,7 +17,6 @@
 #include "hoNDArray_utils.h"
 #include "hoNDImage.h"
 
-#include "GadgetronCommon.h"
 #include "GtPlusGadgetImageArray.h"
 
 #include "gtPlusIOAnalyze.h"

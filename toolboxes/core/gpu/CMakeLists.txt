@@ -21,6 +21,7 @@ cuda_add_library(gadgetron_toolbox_gpucore SHARED
     cuNDArray_elemwise.h
     cuNDArray_operators.h
     cuNDArray_utils.h
+    cuNDArray_fileio.h
     cuNDArray_reductions.h
     GadgetronCuException.h
     gpucore_export.h
@@ -38,9 +39,10 @@ cuda_add_library(gadgetron_toolbox_gpucore SHARED
     cuNDArray_utils.cu
     cuNDArray_reductions.cu
     radial_utilities.cu
-    hoCuNDArray_blas.cu
+    hoCuNDArray_blas.cpp
     CUBLASContextProvider.cpp
     cudaDeviceManager.cpp
+    cuSparseMatrix.cu
   )
 
 set_target_properties(gadgetron_toolbox_gpucore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -52,6 +54,7 @@ target_link_libraries(gadgetron_toolbox_gpucore
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
   ${CUDA_CUBLAS_LIBRARIES} 
+  ${CUDA_CUSPARSE_LIBRARIES}
   ${MKL_LIBRARIES}
   )
 
@@ -65,6 +68,7 @@ install(FILES
   cuNDArray_blas.h
   cuNDArray_utils.h
   cuNDArray_math.h
+  cuNDArray_fileio.h
   cuNDArray_reductions.h
   hoCuNDArray.h
   hoCuNDArray_blas.h
@@ -79,4 +83,5 @@ install(FILES
   cudaDeviceManager.h
   CUBLASContextProvider.h
   setup_grid.h
+  cuSparseMatrix.h
   DESTINATION include COMPONENT main)

@@ -48,10 +48,6 @@
     <name>RemoveROOversampling</name>
     <dll>gadgetron_mricore</dll>
     <classname>RemoveROOversamplingGadget</classname>
-    <property>
-      <name>constant_noise_variance</name>
-      <value>false</value>
-    </property>
   </gadget>
 
     <gadget>
@@ -87,9 +83,15 @@
     </gadget>
 
      <gadget>
-      <name>FFT</name>
+      <name>SimpleRecon</name>
       <dll>gadgetron_mricore</dll>
-      <classname>FFTGadget</classname>
+      <classname>SimpleReconGadget</classname>
+     </gadget>
+
+     <gadget>
+      <name>ImageArraySplit</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageArraySplitGadget</classname>
      </gadget>
 
   <!--
@@ -100,12 +102,6 @@
       </gadget>
   -->
   
-  <gadget>
-    <name>Combine</name>
-    <dll>gadgetron_mricore</dll>
-    <classname>CombineGadget</classname>
-  </gadget>
-
   <gadget>
     <name>Extract</name>
     <dll>gadgetron_mricore</dll>

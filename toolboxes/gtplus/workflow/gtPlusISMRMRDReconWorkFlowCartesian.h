@@ -206,7 +206,17 @@ preProcessing()
         // combine the segment dimension
         if ( SEG_.second > 1 )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(*data_, dataCurr_));
+            // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(*data_, dataCurr_));
+
+            std::vector<size_t> dim, dimCurr;
+            data_->get_dimensions(dim);
+
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(*data_, dataCurr_, data_->get_number_of_dimensions()-1));
+
+            dimCurr.resize(dim.size() - 1);
+            memcpy(&dimCurr[0], &dim[0], sizeof(size_t)*dimCurr.size());
+            dataCurr_.reshape(dimCurr);
+
             *data_ = dataCurr_;
             SEG_.second = 1;
 
@@ -223,7 +233,17 @@ preProcessing()
 
         if ( ref_!=NULL && SEG_ref_.second>1 )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(*ref_, refCurr_));
+            // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(*ref_, refCurr_));
+
+            std::vector<size_t> dim, dimCurr;
+            ref_->get_dimensions(dim);
+
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::sum_over_dimension(*ref_, refCurr_, ref_->get_number_of_dimensions() - 1));
+
+            dimCurr.resize(dim.size() - 1);
+            memcpy(&dimCurr[0], &dim[0], sizeof(size_t)*dimCurr.size());
+            refCurr_.reshape(dimCurr);
+
             *ref_ = refCurr_;
             SEG_ref_.second = 1;
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*data_, debugFolder_+"incomingRef_SEGCombined"); }
@@ -660,17 +680,48 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
         if ( E2_.second > 1 )
         {
             if ( performTiming_ ) { gt_timer1_.start("postProcessing - permute res array ... "); }
-            // boost::shared_ptr< hoNDArray<T> > data_permuted = Gadgetron::permute(const_cast<hoNDArray<T>*>(&dataCurr_), &order);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(res, dataCurr_));
+
+            // permute E2 dimension from [RO E1 CHA SLC E2 ...] to [RO E1 E2 CHA SLC ...]
+
+            std::vector<size_t> dim_order(5);
+            dim_order[0] = 0;
+            dim_order[1] = 1;
+            dim_order[2] = 4;
+            dim_order[3] = 2;
+            dim_order[4] = 3;
+
+            std::vector<size_t> dim, dimPermuted;
+            res.get_dimensions(dim);
+            dimPermuted = dim;
+            dimPermuted[2] = dim[4];
+            dimPermuted[3] = dim[2];
+            dimPermuted[4] = dim[3];
+
+            dataCurr_.create(dimPermuted);
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&res, &dataCurr_, &dim_order));
 
             if ( has_gfactor )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(gfactor_, gfactorCurr_));
+                gfactor_.get_dimensions(dim);
+                dimPermuted = dim;
+                dimPermuted[2] = dim[4];
+                dimPermuted[3] = dim[2];
+                dimPermuted[4] = dim[3];
+
+                gfactorCurr_.create(dimPermuted);
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&gfactor_, &gfactorCurr_, &dim_order));
             }
 
             if ( has_wrap_around )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(wrap_around_map_, wrap_around_mapCurr_));
+                wrap_around_map_.get_dimensions(dim);
+                dimPermuted = dim;
+                dimPermuted[2] = dim[4];
+                dimPermuted[3] = dim[2];
+                dimPermuted[4] = dim[3];
+
+                wrap_around_mapCurr_.create(dimPermuted);
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&wrap_around_map_, &wrap_around_mapCurr_, &dim_order));
             }
 
             if ( performTiming_ ) { gt_timer1_.stop(); }
@@ -769,16 +820,24 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
 
             GADGET_CHECK_RETURN_FALSE(convertToReconSpace3D(dataCurr_, res, inKSpace));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension(res, dataCurr_));
+            {
+                std::vector<size_t> dim_order(5);
+                dim_order[0] = 0;
+                dim_order[1] = 1;
+                dim_order[2] = 3;
+                dim_order[3] = 4;
+                dim_order[4] = 2;
 
-            //order[0] = 0;
-            //order[1] = 1;
-            //order[2] = 3;
-            //order[3] = 4;
-            //order[4] = 2;
+                std::vector<size_t> dim, dimPermuted;
+                res.get_dimensions(dim);
+                dimPermuted = dim;
+                dimPermuted[2] = dim[3];
+                dimPermuted[3] = dim[4];
+                dimPermuted[4] = dim[2];
 
-            //data_permuted = Gadgetron::permute(const_cast<hoNDArray<T>*>(&res), &order);
-            //res = *data_permuted;
+                dataCurr_.create(dimPermuted);
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&res, &dataCurr_, &dim_order));
+            }
 
             res.reshape(dataCurr_.get_dimensions());
             memcpy(res.begin(), dataCurr_.begin(), res.get_number_of_bytes());
@@ -788,7 +847,23 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
             if ( has_gfactor )
             {
                 GADGET_CHECK_RETURN_FALSE(convertToReconSpace3D(gfactorCurr_, gfactor_, false));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension(gfactor_, gfactorCurr_));
+
+                std::vector<size_t> dim_order(5);
+                dim_order[0] = 0;
+                dim_order[1] = 1;
+                dim_order[2] = 3;
+                dim_order[3] = 4;
+                dim_order[4] = 2;
+
+                std::vector<size_t> dim, dimPermuted;
+                gfactor_.get_dimensions(dim);
+                dimPermuted = dim;
+                dimPermuted[2] = dim[3];
+                dimPermuted[3] = dim[4];
+                dimPermuted[4] = dim[2];
+
+                gfactorCurr_.create(dimPermuted);
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&gfactor_, &gfactorCurr_, &dim_order));
 
                 gfactor_.reshape(gfactorCurr_.get_dimensions());
                 memcpy(gfactor_.begin(), gfactorCurr_.begin(), gfactor_.get_number_of_bytes());
@@ -799,7 +874,23 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
             if ( has_wrap_around )
             {
                 GADGET_CHECK_RETURN_FALSE(convertToReconSpace3D(wrap_around_mapCurr_, wrap_around_map_, false));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension(wrap_around_map_, wrap_around_mapCurr_));
+
+                std::vector<size_t> dim_order(5);
+                dim_order[0] = 0;
+                dim_order[1] = 1;
+                dim_order[2] = 3;
+                dim_order[3] = 4;
+                dim_order[4] = 2;
+
+                std::vector<size_t> dim, dimPermuted;
+                wrap_around_map_.get_dimensions(dim);
+                dimPermuted = dim;
+                dimPermuted[2] = dim[3];
+                dimPermuted[3] = dim[4];
+                dimPermuted[4] = dim[2];
+
+                wrap_around_mapCurr_.create(dimPermuted);
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&wrap_around_map_, &wrap_around_mapCurr_, &dim_order));
 
                 wrap_around_map_.reshape(wrap_around_mapCurr_.get_dimensions());
                 memcpy(wrap_around_map_.begin(), wrap_around_mapCurr_.begin(), wrap_around_map_.get_number_of_bytes());
@@ -1625,6 +1716,8 @@ copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, boo
             size_t gfactor_N = workOrder_->gfactor_.get_size(2);
             size_t gfactor_S = workOrder_->gfactor_.get_size(3);
 
+            if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(workOrder_->gfactor_, debugFolder_ + "workOrder_gfactor_afterunwrapping"); }
+
             std::vector<size_t> indRes(10);
             indRes[0] = 0;
             indRes[1] = 0;
@@ -1688,6 +1781,8 @@ copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, boo
                     }
                 }
             }
+
+            if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(gfactor_, debugFolder_ + "gfactor_after_copyGFactor"); }
         }
     }
     catch(...)
