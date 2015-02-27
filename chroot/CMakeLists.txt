@@ -50,12 +50,11 @@ configure_file("copy-cuda-lib.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.s
 find_program(SIEMENS_TO_ISMRMRD_EXE siemens_to_ismrmrd)
 
 add_custom_target(chroot)
-#add_custom_target(chroot-local)
 
 # Try to find GIT_SHA1 by calling gadgetron_info                                                                                           
-if(EXISTS "${CMAKE_INSTALL_PREFIX}/gadgetron/bin/gadgetron_info")
+if(EXISTS "${CMAKE_INSTALL_PREFIX}/bin/gadgetron_info")
   execute_process(COMMAND gadgetron_info
-                  WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/gadgetron/bin
+                  WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin
                   OUTPUT_VARIABLE GADGETRON_INFO
                   ERROR_VARIABLE GADGETRON_INFO_STDERR)
 
@@ -66,7 +65,7 @@ if(EXISTS "${CMAKE_INSTALL_PREFIX}/gadgetron/bin/gadgetron_info")
   endif(GIT_SHA1)
 
 # Try to find GIT_SHA1 by calling git rev-parse HEAD
-else(EXISTS "${CMAKE_INSTALL_PREFIX}/gadgetron/bin/gadgetron_info")
+else(EXISTS "${CMAKE_INSTALL_PREFIX}/bin/gadgetron_info")
   if(GIT_FOUND)
     execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -82,7 +81,7 @@ else(EXISTS "${CMAKE_INSTALL_PREFIX}/gadgetron/bin/gadgetron_info")
   else(GIT_FOUND)
     set(GADGETRON_GIT_SHA1 "NA")
   endif(GIT_FOUND)
-endif(EXISTS "${CMAKE_INSTALL_PREFIX}/gadgetron/bin/gadgetron_info")
+endif(EXISTS "${CMAKE_INSTALL_PREFIX}/bin/gadgetron_info")
 
 
 if (SIEMENS_TO_ISMRMRD_EXE)
