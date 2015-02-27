@@ -27,7 +27,6 @@ else
     CHROOT_GADGETRON_SOURCE_DIR=${6}
     echo CHROOT_GADGETRON_SOURCE_DIR: ${CHROOT_GADGETRON_SOURCE_DIR}
 
-
     # Add LIBRARY_PATHS to LD_LIBRARY_PATH
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CHROOT_LIBRARY_PATHS}
     export LC_ALL=C
@@ -41,7 +40,6 @@ else
     mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
 
     apt-get install debootstrap -y
-
     debootstrap --variant=buildd --arch amd64 trusty ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron http://gb.archive.ubuntu.com/ubuntu/
 
     cd ${CHROOT_GADGETRON_BINARY_DIR}
@@ -50,6 +48,7 @@ else
     #This copies the ISMRMRD executable if it is installed
     if [ $# -ge 7 ]; then
       CHROOT_SIEMENS_TO_ISMRMRD_EXE=${7} 
+      echo CHROOT_SIEMENS_TO_ISMRMRD_EXE: ${CHROOT_SIEMENS_TO_ISMRMRD_EXE}
       cp ${CHROOT_SIEMENS_TO_ISMRMRD_EXE} "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/bin/"
     else
       echo "SIEMENS_TO_ISMRMRD_EXE not set"
@@ -84,7 +83,7 @@ else
     chmod 666 "${IMAGE_FILE_NAME}"
     exit 0
   else
-    echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CHROOT_CUDA_LIBRARY) (SIEMENS_TO_ISMRMRD_EXE)\n"
+    echo -e "\nUsage:  $0 (gadgetron install prefix) (gadgetron binary dir) (GADGETRON_GIT_SHA1_HASH) (LIBRARY_PATHS) (CHROOT_CUDA_LIBRARY) (gadgetron source dir) (SIEMENS_TO_ISMRMRD_EXE)\n"
     exit 1
   fi
 fi
