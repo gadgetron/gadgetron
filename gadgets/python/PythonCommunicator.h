@@ -27,9 +27,7 @@ class EXPORTGADGETSPYTHON PythonCommunicator
 
   int addPath(std::string path);
 
-  int registerGadget(Gadget* g, std::string mod, 
-		     std::string ref, std::string conf,
-		     std::string process);
+  int registerGadget(Gadget* g, std::string mod, std::string klass);
 
   int processConfig(Gadget* g, ACE_Message_Block* mb);
 
@@ -41,9 +39,7 @@ class EXPORTGADGETSPYTHON PythonCommunicator
 
  private:
   std::map<Gadget*, boost::python::object> module_;
-  std::map<Gadget*, boost::python::object> gadget_ref_fnc_;
-  std::map<Gadget*, boost::python::object> config_fnc_;
-  std::map<Gadget*, boost::python::object> process_fnc_;
+  std::map<Gadget*, boost::python::object> class_;
   std::map<Gadget*, boost::shared_ptr<GadgetReference> > gadget_ref_;
 
 };

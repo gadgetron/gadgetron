@@ -65,6 +65,8 @@ install(TARGETS GadgetronPythonMRI DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE
 install(FILES 
 	rms_coil_combine.py
 	kspaceandimage.py
+        joe.py
+        gadgetron.py
 	remove_2x_oversampling.py
 	accumulate_and_recon.py
 	GadgetronXML.py
@@ -72,5 +74,5 @@ install(FILES
     DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
 install(FILES
-	python.xml python_short.xml
+	python.xml python_short.xml python_joe.xml
     DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

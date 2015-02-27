@@ -26,23 +26,17 @@ namespace Gadgetron{
 
 	boost::shared_ptr<std::string> pypath        = this->get_string_value("python_path");
 	boost::shared_ptr<std::string> pymod         = this->get_string_value("python_module");
-	boost::shared_ptr<std::string> pyreffunc     = this->get_string_value("gadget_reference_function");
-	boost::shared_ptr<std::string> pydatafunc    = this->get_string_value("input_function");
-	boost::shared_ptr<std::string> pyconfigfunc  = this->get_string_value("config_function");
+        boost::shared_ptr<std::string> pyclass       = this->get_string_value("python_class");
 
 	GDEBUG("Python Module          : %s\n", pymod.get()->c_str());
-	GDEBUG("Python Ref Function    : %s\n", pyreffunc.get()->c_str());
-	GDEBUG("Python Data Function   : %s\n", pydatafunc.get()->c_str());
-	GDEBUG("Python Config Function : %s\n", pyconfigfunc.get()->c_str());
+	GDEBUG("Python Class           : %s\n", pyclass.get()->c_str());
 
 	if (communicator_->addPath(*pypath.get()) != GADGET_OK) {
 	  GDEBUG("Failed to add paths in Gadget %s\n", this->module()->name());
 	  return GADGET_FAIL;
 	}
 
-	if (communicator_->registerGadget(this, *pymod.get(),
-					  *pyreffunc.get(), *pyconfigfunc.get(),
-					  *pydatafunc.get()) != GADGET_OK) {
+	if (communicator_->registerGadget(this, *pymod.get(), *pyclass.get()) != GADGET_OK) {
 	  GDEBUG("Failed to register Gadget (%s) with PythonCommunicator\n", this->module()->name());
 	  return GADGET_FAIL;
 	}

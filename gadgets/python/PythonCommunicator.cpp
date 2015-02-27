@@ -64,11 +64,8 @@ int PythonCommunicator::addPath(std::string path)
 	return GADGET_OK;
 }
 
-int PythonCommunicator::registerGadget(Gadget* g, std::string mod, 
-		std::string ref, std::string conf,
-		std::string process)
+int PythonCommunicator::registerGadget(Gadget* g, std::string mod, std::string klass)
 {
-
 	PyGILState_STATE gstate;
 
 	if (!g) {
@@ -95,20 +92,9 @@ int PythonCommunicator::registerGadget(Gadget* g, std::string mod,
 			return GADGET_FAIL;
 		}
 
-		if (ref.size() != 0) {
-			gadget_ref_fnc_[g]  = module_[g].attr(ref.c_str());
-			gadget_ref_[g] = boost::shared_ptr<GadgetReference>(new GadgetReference());
-			gadget_ref_[g]->set_gadget(g);
-			gadget_ref_fnc_[g](*gadget_ref_[g].get());
-		}
-
-		if (conf.size() != 0) {
-			config_fnc_[g] =  module_[g].attr(conf.c_str());
-		}
-
-		if (process.size() != 0) {
-			process_fnc_[g] = module_[g].attr(process.c_str());
-		}
+                gadget_ref_[g] = boost::shared_ptr<GadgetReference>(new GadgetReference());
+                gadget_ref_[g]->set_gadget(g);
+                class_[g] = module_[g].attr(klass.c_str())(*gadget_ref_[g].get());
 
 	} catch(boost::python::error_already_set const &) {
 		GDEBUG("Error loading python modules\n");
@@ -131,11 +117,13 @@ int PythonCommunicator::processConfig(Gadget* g, ACE_Message_Block* mb)
 		return GADGET_FAIL;
 	}
 
-	it = config_fnc_.find(g);
-	if (it != config_fnc_.end()) {
+	it = class_.find(g);
+	if (it != class_.end()) {
 		gstate = PyGILState_Ensure();
 		try {
-			boost::python::object ignored = it->second(boost::python::object(std::string(mb->rd_ptr())));
+                        boost::python::object process_config_fn = it->second.attr("process_config");
+			boost::python::object ignored = process_config_fn(
+                                boost::python::object(std::string(mb->rd_ptr())));
 		}  catch(boost::python::error_already_set const &) {
 			GDEBUG("Error calling process config function for Gadget %s\n", g->module()->name());
 			PyErr_Print();
@@ -166,8 +154,8 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 	}
 
 
-	it = process_fnc_.find(g);
-	if (it != process_fnc_.end()) {
+	it = class_.find(g);
+	if (it != class_.end()) {
                 mutex_.lock();
 		gstate = PyGILState_Ensure();
 		try {
@@ -184,7 +172,8 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 			//Get Header
 			T acq = *m1->getObjectPtr();
 
-			if ( boost::python::extract<int>(it->second(acq, obj)) != GADGET_OK) {
+                        boost::python::object process_fn = it->second.attr("process");
+			if (boost::python::extract<int>(process_fn(acq, obj)) != GADGET_OK) {
 				GDEBUG("Gadget (%s) Returned from python call with error\n", g->module()->name());
 				PyGILState_Release(gstate);
 				return GADGET_FAIL;
