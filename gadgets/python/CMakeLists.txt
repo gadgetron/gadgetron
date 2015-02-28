@@ -15,6 +15,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_BINARY_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
+  ${CMAKE_SOURCE_DIR}/toolboxes/python
   ${PYTHON_INCLUDE_PATH}
   ${NUMPY_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
@@ -25,31 +26,31 @@ add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp
 #We should probably not set soversion on the python module. Causes problems with clang
 #set_target_properties(GadgetronPythonMRI PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-add_library(gadgetron_python SHARED       		
+add_library(gadgetron_python SHARED
 	PythonGadget.cpp
 	GadgetReference.cpp
-	GadgetronPythonMRI.cpp
-	PythonCommunicator.cpp)
+	GadgetronPythonMRI.cpp)
 
 set_target_properties(gadgetron_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_python
-        gadgetron_gadgetbase
-	gadgetron_toolbox_log
-	${ISMRMRD_LIBRARIES} 
-	optimized ${ACE_LIBRARIES}  
-	debug ${ACE_DEBUG_LIBRARY} 
-	${PYTHON_LIBRARIES}
-	${Boost_LIBRARIES}
+    gadgetron_gadgetbase
+    gadgetron_toolbox_python
+    gadgetron_toolbox_log
+    ${ISMRMRD_LIBRARIES}
+    optimized ${ACE_LIBRARIES}
+    debug ${ACE_DEBUG_LIBRARY}
+    ${PYTHON_LIBRARIES}
+    ${Boost_LIBRARIES}
     ${MKL_LIBRARIES})
-	
+
 target_link_libraries(GadgetronPythonMRI
     gadgetron_toolbox_log
     ${ISMRMRD_LIBRARIES}
-	optimized ${ACE_LIBRARIES}  
-	debug ${ACE_DEBUG_LIBRARY} 
-	${PYTHON_LIBRARIES} 
-	${Boost_LIBRARIES}
+    optimized ${ACE_LIBRARIES}
+    debug ${ACE_DEBUG_LIBRARY}
+    ${PYTHON_LIBRARIES}
+    ${Boost_LIBRARIES}
     ${MKL_LIBRARIES})
 
 IF (WIN32)
@@ -62,17 +63,15 @@ set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 install(TARGETS gadgetron_python DESTINATION lib COMPONENT main)
 install(TARGETS GadgetronPythonMRI DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
-install(FILES 
-	rms_coil_combine.py
-	kspaceandimage.py
-        joe.py
-        gadgetron.py
-	remove_2x_oversampling.py
-	accumulate_and_recon.py
-	GadgetronXML.py
-	image_viewer.py 
+install(FILES
+    gadgetron.py
+    GadgetronXML.py
+    rms_coil_combine.py
+    kspaceandimage.py
+    remove_2x_oversampling.py
+    accumulate_and_recon.py
+    image_viewer.py
     DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
-install(FILES
-	python.xml python_short.xml python_joe.xml
+install(FILES python.xml python_short.xml
     DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

@@ -1,9 +1,12 @@
-include_directories(${ACE_INCLUDE_DIR}
+include_directories(
+    ${CMAKE_SOURCE_DIR}/apps/gadgetron
+    ${CMAKE_BINARY_DIR}/apps/gadgetron
+    ${CMAKE_SOURCE_DIR}/toolboxes/core
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
     ${Boost_INCLUDE_DIR}
     ${PYTHON_INCLUDE_PATH}
     ${NUMPY_INCLUDE_DIRS}
-    ${CMAKE_SOURCE_DIR}/toolboxes/core
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu)
+    ${ACE_INCLUDE_DIR})
 
 add_library(gadgetron_toolbox_python SHARED
     python_toolbox.cpp

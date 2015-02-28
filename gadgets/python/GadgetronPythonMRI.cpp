@@ -1,6 +1,5 @@
 #include "GadgetReference.h"
 #include <boost/python.hpp>
-//#include <numpy/arrayobject.h>
 
 #include "../mri_core/GadgetMRIHeaders.h"
 

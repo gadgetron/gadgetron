@@ -42,7 +42,6 @@ class Gadget(object):
         self.results = []
         return results
 
-
 class FunctionGadget(Gadget):
     """A Gadget with a configurable `process` function.
 
