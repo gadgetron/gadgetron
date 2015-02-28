@@ -23,7 +23,7 @@ void register_converter(void) {
 
 }
 
-#include "tuple_converter.h"
-#include "hoNDArray_converter.h"
+#include "python_tuple_converter.h"
+#include "python_hoNDArray_converter.h"
 
 #endif // GADGETRON_PYTHON_MATH_CONVERSIONS_H

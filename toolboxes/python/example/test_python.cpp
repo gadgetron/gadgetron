@@ -1,13 +1,12 @@
 #include "log.h"
-#include "PythonMath.h"
+#include "python_toolbox.h"
 #include "hoNDArray_fileio.h"
-
 
 using namespace Gadgetron;
 
 int main(int argc, char** argv)
 {
-  GINFO("This is the PythonMath test application\n");
+  GINFO("This is the Python test application\n");
 
   if (argc < 2) {
     GERROR("You must supply an input file\n");

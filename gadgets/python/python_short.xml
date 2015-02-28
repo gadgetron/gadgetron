@@ -31,9 +31,7 @@
       <classname>AcquisitionPythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>remove_2x_oversampling</value></property>
-      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
-      <property><name>input_function</name>               <value>recon_function</value></property>
-      <property><name>config_function</name>              <value>config_function</value></property>
+      <property><name>python_class</name>                <value>Remove2xOversampling</value></property>
     </gadget>
 
     <gadget>
@@ -42,9 +40,7 @@
       <classname>AcquisitionPythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>accumulate_and_recon</value></property>
-      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
-      <property><name>input_function</name>               <value>recon_function</value></property>
-      <property><name>config_function</name>              <value>config_function</value></property>
+      <property><name>python_class</name>                <value>AccumulateAndRecon</value></property>
     </gadget>
 
     <gadget>
@@ -53,23 +49,8 @@
       <classname>ImagePythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>rms_coil_combine</value></property>
-      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
-      <property><name>input_function</name>               <value>recon_function</value></property>
-      <property><name>config_function</name>              <value>config_function</value></property>
+      <property><name>python_class</name>                <value>RMSCoilCombine</value></property>
     </gadget>
-
-    <!--
-    <gadget>
-      <name>ImageViewPython</name>
-      <dll>gadgetron_python</dll>
-      <classname>ImagePythonGadget</classname>
-      <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
-      <property><name>python_module</name>                <value>image_viewer</value></property>
-      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
-      <property><name>input_function</name>               <value>recon_function</value></property>
-      <property><name>config_function</name>              <value>config_function</value></property>
-    </gadget>
-    -->
 
      <gadget>
       <name>Extract</name>

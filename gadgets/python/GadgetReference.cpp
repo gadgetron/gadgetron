@@ -3,51 +3,32 @@
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
-#include <boost/preprocessor/stringize.hpp>
+/* #include <boost/preprocessor/stringize.hpp> */
 #include <boost/python.hpp>
-#include <numpy/numpyconfig.h>
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#include <numpy/ndarrayobject.h>
-
-#include <complex>
 
 namespace Gadgetron{
 
   GadgetReference::GadgetReference()
-    : gadget_(0)
+    : gadget_(nullptr)
   {
-    //_import_array();
   }
 
   GadgetReference::~GadgetReference()
   {
-
   }
 
   template<class T>
   int GadgetReference::return_data(T header, boost::python::object arr)
   {
-
-    PyArrayObject* arrPtr = PyArray_GETCONTIGUOUS((PyArrayObject*)arr.ptr());//PyArray_FromObject(arr.ptr(),NPY_COMPLEX64,1,5); //So.... this is probably really really really bad.
-    int ndims = PyArray_NDIM(arrPtr);
-    npy_intp* dims = PyArray_DIMS(arrPtr);
-    std::vector<size_t> dimensions(ndims);
-    for (int i = 0; i < ndims; i++) dimensions[ndims-i-1] = static_cast<unsigned int>(dims[i]);
-
-    GadgetContainerMessage< T >*         m1 = new GadgetContainerMessage< T >;
+    GadgetContainerMessage< T >* m1 = new GadgetContainerMessage< T >;
     memcpy(m1->getObjectPtr(), &header, sizeof(T));
 
-    GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >;
+    // this works because the python converter for hoNDArray<std::complex<float>>
+    // is registered in the python_toolbox
+    GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2;
+    m2 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >(
+            boost::python::extract<hoNDArray <std::complex<float> > >(arr)());
     m1->cont(m2);
-
-    try{m2->getObjectPtr()->create(&dimensions);}
-    catch (std::runtime_error &err){
-      GEXCEPTION(err,"Failed to create data storage for data returning from Python");
-      return GADGET_FAIL;
-    
-    }
-
-    memcpy(m2->getObjectPtr()->get_data_ptr(), PyArray_DATA(arrPtr), m2->getObjectPtr()->get_number_of_elements()*sizeof(std::complex<float>));
 
     if (gadget_) {
       //ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,1000); //1ms from now
@@ -77,7 +58,6 @@ namespace Gadgetron{
     }
 
     return GADGET_OK;
-
   }
 
   int GadgetReference::return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::object arr)

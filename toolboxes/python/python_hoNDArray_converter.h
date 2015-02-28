@@ -1,7 +1,7 @@
-#ifndef GADGETRON_PYTHON_MATH_HONDARRAY_CONVERTER_H
-#define GADGETRON_PYTHON_MATH_HONDARRAY_CONVERTER_H
+#ifndef GADGETRON_PYTHON_HONDARRAY_CONVERTER_H
+#define GADGETRON_PYTHON_HONDARRAY_CONVERTER_H
 
-#include "numpy_wrappers.h"
+#include "python_numpy_wrappers.h"
 
 #include "hoNDArray.h"
 #include "log.h"
@@ -111,4 +111,4 @@ struct python_converter<hoNDArray<T> > {
 
 }
 
-#endif // GADGETRON_PYTHON_MATH_HONDARRAY_CONVERTER_H
+#endif // GADGETRON_PYTHON_HONDARRAY_CONVERTER_H
