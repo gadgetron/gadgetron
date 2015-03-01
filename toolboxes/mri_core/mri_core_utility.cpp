@@ -109,7 +109,7 @@ void zeropad(const hoNDArray<T>& data, const std::vector<size_t>& paddedSize, ho
         const T* pData = data.begin();
         T* pPaddedData = dataPadded.begin();
 
-        #pragma omp parallel default(none) private(k) shared(n, pData, pPaddedData, num, NDimPadding, len, data, start, dataPadded)
+        #pragma omp parallel default(none) private(k, n) shared(pData, pPaddedData, num, NDimPadding, len, data, start, dataPadded)
         {
             std::vector<size_t> ind;
 
@@ -225,7 +225,7 @@ void cutpad(const hoNDArray<T>& data, const std::vector<size_t>& cutSize, hoNDAr
         std::vector<size_t> start(NDimCut), end(NDimCut);
         for (n = 0; n < NDimCut; n++)
         {
-            GADGET_CATCH_THROW(zpadRange(dims[n], dimsCut[n], start[n], end[n]));
+            GADGET_CATCH_THROW(zpadRange(dimsCut[n], dims[n], start[n], end[n]));
         }
 
         size_t len = dimsCut[0];
@@ -236,11 +236,11 @@ void cutpad(const hoNDArray<T>& data, const std::vector<size_t>& cutSize, hoNDAr
         const T* pData = data.begin();
         T* pCutData = dataCut.begin();
 
-#pragma omp parallel default(none) private(k) shared(n, pData, pCutData, num, NDimCut, len, data, start, dataCut)
+        #pragma omp parallel default(none) private(k, n) shared(pData, pCutData, num, NDimCut, len, data, start, dataCut)
         {
             std::vector<size_t> ind;
 
-#pragma omp for 
+            #pragma omp for 
             for (k = 0; k < (long long)num; k++)
             {
                 T* pCutDataCur = pCutData + k*len;
@@ -266,7 +266,7 @@ void cutpad(const hoNDArray<T>& data, const std::vector<size_t>& cutSize, hoNDAr
 
 // ------------------------------------------------------------------------
 
-template <typename T> 
+template <typename T>
 void cutpad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataCut)
 {
     std::vector<size_t> cutSize(2);
@@ -283,7 +283,7 @@ template EXPORTMRICORE void cutpad2D(const hoNDArray< std::complex<double> >& da
 
 // ------------------------------------------------------------------------
 
-template <typename T> 
+template <typename T>
 void cutpad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataCut)
 {
     std::vector<size_t> cutSize(3);
