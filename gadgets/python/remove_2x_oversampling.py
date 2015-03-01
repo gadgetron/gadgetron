@@ -19,5 +19,5 @@ class Remove2xOversampling(Gadget):
         data2.reshape(tuple(orig_size))
         acq.samples = new_length
 
-        self.put_next(acq,data2.astype('complex64'))
+        self.put_next(acq,data2)
         return 0

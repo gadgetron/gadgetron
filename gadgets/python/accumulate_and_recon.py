@@ -65,7 +65,7 @@ class AccumulateAndRecon(Gadget):
                     self.myCounter = 1
 
             #Return image to Gadgetron
-            self.put_next(img_head,image.astype('complex64'))
+            self.put_next(img_head,image)
             
         #print "Returning to Gadgetron"
         return 0 #Everything OK

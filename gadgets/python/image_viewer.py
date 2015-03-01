@@ -66,5 +66,5 @@ class ImageViewer(Gadget):
         myWindow = ImageViewWindow(im)
         myWindow.main()
 
-        self.put_next(h,im.astype('complex64'))
+        self.put_next(h,im)
         return 0
