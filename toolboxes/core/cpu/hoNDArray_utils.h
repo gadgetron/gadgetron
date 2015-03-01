@@ -338,115 +338,75 @@ namespace Gadgetron {
    * @param[in] val Value to use for padding
    * @returns New array of the specified size, containing the original input array in the center and val outside.
    */
-  template<class T, unsigned int D> boost::shared_ptr< hoNDArray<T> >
-  pad( const typename uint64d<D>::Type& size, hoNDArray<T> *in, T val = T(0) )
+  template<class T, unsigned int D> void
+  pad(const typename uint64d<D>::Type& size, hoNDArray<T> *in, hoNDArray<T>* out, T val = T(0))
   {
-    if( in == 0x0 ){
-      throw std::runtime_error("pad: 0x0 array provided");;
-    }
+      if (in == 0x0){
+          throw std::runtime_error("pad: 0x0 array provided");;
+      }
 
-    if( in->get_number_of_dimensions() < D ){
-      std::stringstream ss;
-      ss << "pad: number of image dimensions should be at least " << D;
-      throw std::runtime_error(ss.str());;
-    }
+      if (out == 0x0){
+          throw std::runtime_error("pad: 0x0 array provided");;
+      }
 
-    std::vector<size_t> dims = to_std_vector(size);
-    for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
-      dims.push_back(in->get_size(d));
-    }
-    boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>(&dims) );
+      if (in->get_number_of_dimensions() < D){
+          std::stringstream ss;
+          ss << "pad: number of image dimensions should be at least " << D;
+          throw std::runtime_error(ss.str());;
+      }
 
-    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in->get_dimensions() );
-    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out->get_dimensions() );
+      std::vector<size_t> dims = to_std_vector(size);
+      for (unsigned int d = D; d<in->get_number_of_dimensions(); d++){
+          dims.push_back(in->get_size(d));
+      }
 
-    size_t num_batches = 1;
-    for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
-      num_batches *= in->get_size(d);
-    }
+      out->create(dims);
 
-    if( weak_greater(matrix_size_in,matrix_size_out) ){
-      throw std::runtime_error("pad: size mismatch, cannot expand");
-    }
+      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(*in->get_dimensions());
+      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(*out->get_dimensions());
 
-    const size_t num_elements_in = prod(matrix_size_in);
-    const size_t num_elements_out = prod(matrix_size_out);
-    const typename uint64d<D>::Type offset = (matrix_size_out-matrix_size_in)>>1;
+      size_t num_batches = 1;
+      for (unsigned int d = D; d<in->get_number_of_dimensions(); d++){
+          num_batches *= in->get_size(d);
+      }
 
-    T *in_ptr = in->get_data_ptr();
-    T *out_ptr = out->get_data_ptr();
+      if (weak_greater(matrix_size_in, matrix_size_out)){
+          throw std::runtime_error("pad: size mismatch, cannot expand");
+      }
 
-    for( size_t frame_offset=0; frame_offset<num_batches; frame_offset++ ){
+      const size_t num_elements_in = prod(matrix_size_in);
+      const size_t num_elements_out = prod(matrix_size_out);
+      const typename uint64d<D>::Type offset = (matrix_size_out - matrix_size_in) >> 1;
+
+      T *in_ptr = in->get_data_ptr();
+      T *out_ptr = out->get_data_ptr();
+
+      for (size_t frame_offset = 0; frame_offset<num_batches; frame_offset++){
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-      for( long long idx=0; idx<(long long)num_elements_out; idx++ ){
-        const typename uint64d<D>::Type co_out = idx_to_co<D>( idx, matrix_size_out );
-        T _out;
-        bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
+          for (long long idx = 0; idx<(long long)num_elements_out; idx++){
+              const typename uint64d<D>::Type co_out = idx_to_co<D>(idx, matrix_size_out);
+              T _out;
+              bool inside = (co_out >= offset) && (co_out<(matrix_size_in + offset));
 
-        if( inside )
-          _out = in_ptr[co_to_idx<D>( co_out-offset, matrix_size_in)+frame_offset*num_elements_in];
-        else{
-          _out = val;
-        }
-        out_ptr[idx+frame_offset*num_elements_out] = _out;
+              if (inside)
+                  _out = in_ptr[co_to_idx<D>(co_out - offset, matrix_size_in) + frame_offset*num_elements_in];
+              else{
+                  _out = val;
+              }
+              out_ptr[idx + frame_offset*num_elements_out] = _out;
+          }
       }
-    }
-    return out;
   }
 
-  template<typename T> 
-  bool permuteFirstTwoDimensions(const hoNDArray<T>& x, hoNDArray<T>& r)
+  template<class T, unsigned int D> boost::shared_ptr< hoNDArray<T> >
+  pad(const typename uint64d<D>::Type& size, hoNDArray<T> *in, T val = T(0))
   {
-    try
-      {
-        size_t NDim = x.get_number_of_dimensions();
-        if ( NDim == 1 )
-          {
-            r = x;
-            return true;
-          }
-
-        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-        size_t RO = x.get_size(0);
-        size_t E1 = x.get_size(1);
-        size_t numOfPermute =  x.get_number_of_elements()/(RO*E1);
-
-        std::vector<size_t> dimR(NDim);
-        dimR = *dimX;
-        dimR[0] = E1;
-        dimR[1] = RO;
-
-        if ( r.dimensions_equal(&dimR) )
-          {
-            r.create(dimR);
-          }
-
-        int n;
-
-#pragma omp parallel for default(none) private(n) shared(RO, E1, numOfPermute, x, r)
-        for ( n=0; n<(int)numOfPermute; n++ )
-          {
-            const T* pX = x.begin() + n*RO*E1;
-            T* pR = r.begin() + n*RO*E1;
-
-            for ( size_t e=0; e<E1; e++ )
-              {
-                for ( size_t r=0; r<RO; r++ )
-                  {
-                    pR[e+r*E1] = pX[r+e*RO];
-                  }
-              }
-          }
-      }
-    catch (...)
-      {
-        GERROR_STREAM("Errors in permuteFirstTwoDimensions(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-        return false;
-      }
-    return true;
+    std::vector<size_t> dims = to_std_vector(size);
+    boost::shared_ptr< hoNDArray<T> > out(new hoNDArray<T>(&dims));
+    pad<T,D>(size, in, out.get(), val);
+    return out;
   }
 
   template<typename T> 

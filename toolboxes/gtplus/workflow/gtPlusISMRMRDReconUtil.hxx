@@ -4161,7 +4161,8 @@ zpadResize2DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, hoN
 
         Gadgetron::clear(&dataResized);
 
-        GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
+        // GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(kspace, sizeX, sizeY, dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized);
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY)/std::sqrt((double)RO*E1));
@@ -4244,7 +4245,8 @@ zpadResize3DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, siz
 
         Gadgetron::clear(&dataResized);
 
-        GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        // GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized);
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY*sizeZ)/std::sqrt((double)RO*E1*E2));
@@ -4289,7 +4291,8 @@ zpadResize2DFilter(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, const h
 
         hoNDArray<T> kspace(data);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(data, kspace);
-        GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
+        // GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(kspace, sizeX, sizeY, dataResized));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(dataResized, filter2D, dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized);
 
@@ -4338,7 +4341,8 @@ zpadResize3DFilter(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t 
 
         hoNDArray<T> kspace(data);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, kspace);
-        GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        // GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(dataResized, filter3D, dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized);
 

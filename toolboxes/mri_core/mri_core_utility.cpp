@@ -46,62 +46,111 @@ void zpadRange(size_t srcSize, size_t dstSize, size_t& start, size_t& end)
 
 // ------------------------------------------------------------------------
 
-template <typename T> 
-void zeropad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataPadded, bool presetZeros)
+template<typename T> 
+void zeropad(const hoNDArray<T>& data, const std::vector<size_t>& paddedSize, hoNDArray<T>& dataPadded, bool presetZeros)
 {
     try
     {
-        size_t RO = data.get_size(0);
-        size_t E1 = data.get_size(1);
+        size_t NDim = data.get_number_of_dimensions();
+        size_t NDimPadding = paddedSize.size();
 
-        GADGET_CHECK_THROW(sizeX>=RO);
-        GADGET_CHECK_THROW(sizeY>=E1);
+        GADGET_CHECK_THROW(NDim >= NDimPadding);
 
-        if ( RO==sizeX && E1==sizeY )
+        bool needToPad = false;
+
+        size_t n;
+        for (n = 0; n < NDimPadding; n++)
+        {
+            GADGET_CHECK_THROW(paddedSize[n] >= data.get_size(n));
+
+            if (paddedSize[n]>data.get_size(n))
+            {
+                needToPad = true;
+            }
+        }
+
+        if (!needToPad)
         {
             dataPadded = data;
             return;
         }
 
-        size_t sRO, eRO, sE1, eE1;
-        zpadRange(RO, sizeX, sRO, eRO);
-        zpadRange(E1, sizeY, sE1, eE1);
+        std::vector<size_t> dims;
+        data.get_dimensions(dims);
 
-        std::vector<size_t> dimPadded;
-        data.get_dimensions(dimPadded);
-        dimPadded[0] = sizeX;
-        dimPadded[1] = sizeY;
+        std::vector<size_t> dimsPadding;
+        dimsPadding = dims;
 
-        if ( !dataPadded.dimensions_equal(&dimPadded) )
+        for (n = 0; n < NDimPadding; n++)
         {
-            dataPadded.create(dimPadded);
+            dimsPadding[n] = paddedSize[n];
         }
 
-        if ( presetZeros )
+        if (!dataPadded.dimensions_equal(&dimsPadding))
         {
-            Gadgetron::clear(&dataPadded);
+            dataPadded.create(dimsPadding);
+            if (presetZeros)
+            {
+                GADGET_CATCH_THROW(Gadgetron::clear(dataPadded));
+            }
         }
 
-        size_t num = data.get_number_of_elements()/(RO*E1);
+        std::vector<size_t> start(NDimPadding), end(NDimPadding);
+        for (n = 0; n < NDimPadding; n++)
+        {
+            GADGET_CATCH_THROW(zpadRange(dims[n], dimsPadding[n], start[n], end[n]));
+        }
 
-        long long n;
+        size_t len = dims[0];
+        size_t num = data.get_number_of_elements() / len;
+
+        long long k;
 
         const T* pData = data.begin();
-        T* pDataPadded = dataPadded.begin();
+        T* pPaddedData = dataPadded.begin();
 
-        #pragma omp parallel for default(none) private(n) shared(num, sE1, eE1, sRO, RO, E1, pData, pDataPadded, sizeX, sizeY)
-        for ( n=0; n<(long long)num; n++ )
+        #pragma omp parallel default(none) private(k) shared(n, pData, pPaddedData, num, NDimPadding, len, data, start, dataPadded)
         {
-            for ( size_t y=sE1; y<=eE1; y++ )
+            std::vector<size_t> ind;
+
+            #pragma omp for 
+            for (k = 0; k < (long long)num; k++)
             {
-                memcpy(pDataPadded+n*sizeX*sizeY+y*sizeX+sRO, pData+n*RO*E1+(y-sE1)*RO, sizeof(T)*RO);
+                const T* pDataCur = pData + k*len;
+                ind = data.calculate_index(k*len);
+
+                for (n = 0; n < NDimPadding; n++)
+                {
+                    ind[n] += start[n];
+                }
+
+                size_t offset = dataPadded.calculate_offset(ind);
+                T* pPaddedDataCur = pPaddedData + offset;
+
+                memcpy(pPaddedDataCur, pDataCur, sizeof(T)*len);
             }
         }
     }
-    catch(...)
+    catch (...)
     {
-        GADGET_THROW("Errors in zeropad2D(...) ... ");
+        GADGET_THROW("Errors in zeropad(...) ... ");
     }
+}
+
+template EXPORTMRICORE void zeropad(const hoNDArray<float>& data, const std::vector<size_t>& paddedSize, hoNDArray<float>& dataPadded, bool presetZeros);
+template EXPORTMRICORE void zeropad(const hoNDArray<double>& data, const std::vector<size_t>& paddedSize, hoNDArray<double>& dataPadded, bool presetZeros);
+template EXPORTMRICORE void zeropad(const hoNDArray< std::complex<float> >& data, const std::vector<size_t>& paddedSize, hoNDArray< std::complex<float> >& dataPadded, bool presetZeros);
+template EXPORTMRICORE void zeropad(const hoNDArray< std::complex<double> >& data, const std::vector<size_t>& paddedSize, hoNDArray< std::complex<double> >& dataPadded, bool presetZeros);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void zeropad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataPadded, bool presetZeros)
+{
+    std::vector<size_t> dimPadded(2);
+    dimPadded[0] = sizeX;
+    dimPadded[1] = sizeY;
+    return zeropad(data, dimPadded, dataPadded, presetZeros);
 }
 
 template EXPORTMRICORE void zeropad2D(const hoNDArray<float>& data, size_t sizeX, size_t sizeY, hoNDArray<float>& dataPadded, bool presetZeros);
@@ -114,73 +163,11 @@ template EXPORTMRICORE void zeropad2D(const hoNDArray< std::complex<double> >& d
 template <typename T> 
 void zeropad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataPadded, bool presetZeros)
 {
-    try
-    {
-        size_t RO = data.get_size(0);
-        size_t E1 = data.get_size(1);
-        size_t E2 = data.get_size(2);
-
-        GADGET_CHECK_THROW(sizeX>=RO);
-        GADGET_CHECK_THROW(sizeY>=E1);
-        GADGET_CHECK_THROW(sizeZ>=E2);
-
-        if ( RO==sizeX && E1==sizeY && E2==sizeZ )
-        {
-            dataPadded = data;
-            return;
-        }
-
-        size_t sRO, eRO, sE1, eE1, sE2, eE2;
-        zpadRange(RO, sizeX, sRO, eRO);
-        zpadRange(E1, sizeY, sE1, eE1);
-        zpadRange(E2, sizeZ, sE2, eE2);
-
-        std::vector<size_t> dimPadded;
-        data.get_dimensions(dimPadded);
-        dimPadded[0] = sizeX;
-        dimPadded[1] = sizeY;
-        dimPadded[2] = sizeZ;
-
-        if ( !dataPadded.dimensions_equal(&dimPadded) )
-        {
-            dataPadded.create(dimPadded);
-        }
-
-        if ( presetZeros )
-        {
-            Gadgetron::clear(&dataPadded);
-        }
-
-        size_t num = data.get_number_of_elements()/(RO*E1*E2);
-
-        long long n;
-
-        const T* pData = data.begin();
-        T* pDataPadded = dataPadded.begin();
-
-        #pragma omp parallel for default(none) private(n) shared(num, sE2, eE2, sE1, eE1, sRO, RO, E1, E2, pData, pDataPadded, sizeX, sizeY, sizeZ)
-        for ( n=0; n<(long long)num; n++ )
-        {
-            T* pDst = pDataPadded+n*sizeX*sizeY*sizeZ;
-            T* pSrc = const_cast<T*>(pData)+n*RO*E1*E2;
-
-            long long z;
-            // #pragma omp parallel for default(none) private(z) shared(pDst, pSrc, sE2, eE2, sE1, eE1, sRO, RO, E1, E2, sizeX, sizeY, sizeZ) num_threads(2)
-            for ( z=(long long)sE2; z<=(long long)eE2; z++ )
-            {
-                long long o1 = z*sizeX*sizeY + sRO;
-                long long o2 = (z-sE2)*RO*E1;
-                for ( size_t y=sE1; y<=eE1; y++ )
-                {
-                    memcpy(pDst+o1+y*sizeX, pSrc+o2+(y-sE1)*RO, sizeof(T)*RO);
-                }
-            }
-        }
-    }
-    catch(...)
-    {
-        GADGET_THROW("Errors in zeropad3D(...) ... ");
-    }
+    std::vector<size_t> dimPadded(3);
+    dimPadded[0] = sizeX;
+    dimPadded[1] = sizeY;
+    dimPadded[2] = sizeZ;
+    return zeropad(data, dimPadded, dataPadded, presetZeros);
 }
 
 template EXPORTMRICORE void zeropad3D(const hoNDArray<float>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<float>& dataPadded, bool presetZeros);
@@ -190,52 +177,103 @@ template EXPORTMRICORE void zeropad3D(const hoNDArray< std::complex<double> >& d
 
 // ------------------------------------------------------------------------
 
-template <typename T> 
-void cutpad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataCut)
+template<typename T> 
+void cutpad(const hoNDArray<T>& data, const std::vector<size_t>& cutSize, hoNDArray<T>& dataCut)
 {
     try
     {
-        size_t RO = data.get_size(0);
-        size_t E1 = data.get_size(1);
+        size_t NDim = data.get_number_of_dimensions();
+        size_t NDimCut = cutSize.size();
 
-        GADGET_CHECK_THROW(sizeX<=RO);
-        GADGET_CHECK_THROW(sizeY<=E1);
+        GADGET_CHECK_THROW(NDim >= NDimCut);
 
-        if ( RO==sizeX && E1==sizeY )
+        bool needToCut = false;
+
+        size_t n;
+        for (n = 0; n < NDimCut; n++)
+        {
+            GADGET_CHECK_THROW(cutSize[n] <= data.get_size(n));
+
+            if (cutSize[n]<data.get_size(n))
+            {
+                needToCut = true;
+            }
+        }
+
+        if (!needToCut)
         {
             dataCut = data;
             return;
         }
 
-        size_t sRO, eRO, sE1, eE1;
-        zpadRange(sizeX, RO, sRO, eRO);
-        zpadRange(sizeY, E1, sE1, eE1);
+        std::vector<size_t> dims;
+        data.get_dimensions(dims);
 
-        boost::shared_ptr< std::vector<size_t> > dim = data.get_dimensions();
-        (*dim)[0] = sizeX;
-        (*dim)[1] = sizeY;
-        dataCut.create(dim);
+        std::vector<size_t> dimsCut;
+        dimsCut = dims;
 
-        size_t num = data.get_number_of_elements()/(RO*E1);
+        for (n = 0; n < NDimCut; n++)
+        {
+            dimsCut[n] = cutSize[n];
+        }
 
-        long long n;
+        if (!dataCut.dimensions_equal(&dimsCut))
+        {
+            dataCut.create(dimsCut);
+        }
+
+        std::vector<size_t> start(NDimCut), end(NDimCut);
+        for (n = 0; n < NDimCut; n++)
+        {
+            GADGET_CATCH_THROW(zpadRange(dims[n], dimsCut[n], start[n], end[n]));
+        }
+
+        size_t len = dimsCut[0];
+        size_t num = dataCut.get_number_of_elements() / len;
+
+        long long k;
 
         const T* pData = data.begin();
-        T* pDataCut = dataCut.begin();
+        T* pCutData = dataCut.begin();
 
-        #pragma omp parallel for default(none) private(n) shared(num, sE1, eE1, sRO, RO, E1, pData, pDataCut, sizeX, sizeY)
-        for ( n=0; n<(long long)num; n++ )
+#pragma omp parallel default(none) private(k) shared(n, pData, pCutData, num, NDimCut, len, data, start, dataCut)
         {
-            for ( size_t y=sE1; y<=eE1; y++ )
+            std::vector<size_t> ind;
+
+#pragma omp for 
+            for (k = 0; k < (long long)num; k++)
             {
-                memcpy(pDataCut+n*sizeX*sizeY+(y-sE1)*sizeX, pData+n*RO*E1+y*RO+sRO, sizeof(T)*sizeX);
+                T* pCutDataCur = pCutData + k*len;
+                ind = dataCut.calculate_index(k*len);
+
+                for (n = 0; n < NDimCut; n++)
+                {
+                    ind[n] += start[n];
+                }
+
+                size_t offset = data.calculate_offset(ind);
+                const T* pDataCur = pData + offset;
+
+                memcpy(pCutDataCur, pDataCur, sizeof(T)*len);
             }
         }
     }
-    catch(...)
+    catch (...)
     {
-        GADGET_THROW("Errors in cutpad2D(...) ... ");
+        GADGET_THROW("Errors in cutpad(...) ... ");
     }
+}
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void cutpad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataCut)
+{
+    std::vector<size_t> cutSize(2);
+    cutSize[0] = sizeX;
+    cutSize[1] = sizeY;
+
+    return cutpad(data, cutSize, dataCut);
 }
 
 template EXPORTMRICORE void cutpad2D(const hoNDArray<float>& data, size_t sizeX, size_t sizeY, hoNDArray<float>& dataCut);
@@ -248,56 +286,12 @@ template EXPORTMRICORE void cutpad2D(const hoNDArray< std::complex<double> >& da
 template <typename T> 
 void cutpad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataCut)
 {
-    try
-    {
-        size_t RO = data.get_size(0);
-        size_t E1 = data.get_size(1);
-        size_t E2 = data.get_size(2);
+    std::vector<size_t> cutSize(3);
+    cutSize[0] = sizeX;
+    cutSize[1] = sizeY;
+    cutSize[2] = sizeZ;
 
-        GADGET_CHECK_THROW(sizeX<=RO);
-        GADGET_CHECK_THROW(sizeY<=E1);
-        GADGET_CHECK_THROW(sizeZ<=E2);
-
-        if ( RO==sizeX && E1==sizeY && E2==sizeZ )
-        {
-            dataCut = data;
-            return;
-        }
-
-        size_t sRO, eRO, sE1, eE1, sE2, eE2;
-        zpadRange(sizeX, RO, sRO, eRO);
-        zpadRange(sizeY, E1, sE1, eE1);
-        zpadRange(sizeZ, E2, sE2, eE2);
-
-        boost::shared_ptr< std::vector<size_t> > dim = data.get_dimensions();
-        (*dim)[0] = sizeX;
-        (*dim)[1] = sizeY;
-        (*dim)[2] = sizeZ;
-        dataCut.create(dim);
-
-        size_t num = data.get_number_of_elements()/(RO*E1*E2);
-
-        long long n;
-
-        const T* pData = data.begin();
-        T* pDataCut = dataCut.begin();
-
-        #pragma omp parallel for default(none) private(n) shared(num, sE2, eE2, sE1, eE1, sRO, RO, E1, E2, pData, pDataCut, sizeX, sizeY, sizeZ)
-        for ( n=0; n<(long long)num; n++ )
-        {
-            for ( size_t z=sE2; z<=eE2; z++ )
-            {
-                for ( size_t y=sE1; y<=eE1; y++ )
-                {
-                    memcpy(pDataCut+n*sizeX*sizeY*sizeZ+(z-sE2)*sizeX*sizeY+(y-sE1)*sizeX, pData+n*RO*E1*E2+z*RO*E1+y*RO+sRO, sizeof(T)*sizeX);
-                }
-            }
-        }
-    }
-    catch(...)
-    {
-        GADGET_THROW("Errors in cutpad3D(...) ... ");
-    }
+    return cutpad(data, cutSize, dataCut);
 }
 
 template EXPORTMRICORE void cutpad3D(const hoNDArray<float>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<float>& dataCut);

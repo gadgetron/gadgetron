@@ -209,6 +209,7 @@ if ( HAS_64_BIT )
                           gadgetron_toolbox_log
                           gadgetron_toolbox_cpucore_math 
                           gadgetron_toolbox_cpufft
+                          gadgetron_toolbox_mri_core
                           gadgetron_toolbox_gtplus_io 
                           gadgetron_toolbox_cpucore_math )
 

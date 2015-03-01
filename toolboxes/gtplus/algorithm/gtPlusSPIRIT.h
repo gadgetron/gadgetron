@@ -428,7 +428,8 @@ imageDomainKernel(const ho6DArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, s
         }
 
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1)) ), convKerFlip ));
-        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad2D(convKerFlip, ro, e1, kIm));
+        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad2D(convKerFlip, ro, e1, kIm));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(convKerFlip, ro, e1, kIm));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm);
     }
     catch(...)
@@ -1009,7 +1010,8 @@ imageDomainKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2,
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - zero padding ... "); }
         // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3D(convKerFlip, e1, e2, ro, kIm));
-        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKerFlip, e1, e2, ro, kIm));
+        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKerFlip, e1, e2, ro, kIm));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(convKerFlip, e1, e2, ro, kIm, false));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+"convKerFlip_scal_zeropadded"); }
@@ -1063,7 +1065,8 @@ imageDomainKernelRO3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKerFlip, debugFolder_+"convKerFlip_scal_RO"); }
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - zero padding only for RO ... "); }
-        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKerFlip, ro, kConvE1, kConvE2, kImROTemp));
+        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKerFlip, ro, kConvE1, kConvE2, kImROTemp));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(convKerFlip, ro, kConvE1, kConvE2, kImROTemp, false));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROTemp, debugFolder_+"convKerFlip_scal_RO_zeropadded"); }
@@ -1116,7 +1119,8 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROScaled, debugFolder_+"kImROScaledE1E2"); }
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - zero padding for E1 and E2 ... "); }
-        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(kImROScaled, e1, e2, dimR[2], kImE1E2RO));
+        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(kImROScaled, e1, e2, dimR[2], kImE1E2RO));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(kImROScaled, e1, e2, dimR[2], kImE1E2RO, false));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImE1E2RO, debugFolder_+"kImE1E2RO_zeropadded_E1E2"); }
