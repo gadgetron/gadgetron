@@ -518,7 +518,7 @@ void apply_unmix_coeff_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDAr
 
         hoNDArray<T> buffer2DT(aliasedIm);
 
-        Gadgetron::multipleMultiply(aliasedIm, unmixCoeff, buffer2DT);
+        Gadgetron::multiply(aliasedIm, unmixCoeff, buffer2DT);
         Gadgetron::sum_over_dimension(buffer2DT, complexIm, 2);
     }
     catch (...)
