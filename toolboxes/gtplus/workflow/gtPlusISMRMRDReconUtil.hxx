@@ -249,7 +249,15 @@ computeKLTCoeff(const hoNDArray<T>& data, hoMatrix<T>& coeff, hoMatrix<T>& eigen
             {
                 size_t N = data.get_size(3);
                 hoNDArray<T> dataP(RO, E1, N, CHA);
-                GADGET_CHECK_RETURN_FALSE(permuteLastTwoDimensions(data, dataP));
+
+                std::vector<size_t> dimOrder(4);
+                dimOrder[0] = 0;
+                dimOrder[1] = 1;
+                dimOrder[2] = 3;
+                dimOrder[3] = 2;
+
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(const_cast< hoNDArray<T>* >(&data), &dataP, &dimOrder));
+
                 GADGET_CHECK_RETURN_FALSE(A.createMatrix(RO*E1*N, CHA, dataP.begin()));
 
                 GADGET_CHECK_RETURN_FALSE(KLT_eigenAnalysis(A, coeff, eigenValues));
@@ -420,7 +428,15 @@ appyKLCoilCompressionCoeff(const hoNDArray<T>& data, const hoMatrix<T>& coeff, h
             {
                 size_t N = data.get_size(3);
                 hoNDArray<T> dataP(RO, E1, N, CHA);
-                GADGET_CHECK_RETURN_FALSE(permuteLastTwoDimensions(data, dataP));
+
+                std::vector<size_t> dimOrder(4);
+                dimOrder[0] = 0;
+                dimOrder[1] = 1;
+                dimOrder[2] = 3;
+                dimOrder[3] = 2;
+
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(const_cast< hoNDArray<T>* >(&data), &dataP, &dimOrder));
+
                 GADGET_CHECK_RETURN_FALSE(A.createMatrix(RO*E1*N, CHA, dataP.begin()));
 
                 hoNDArray<T> dataEigenP(RO, E1, N, dstCHA);
@@ -428,7 +444,8 @@ appyKLCoilCompressionCoeff(const hoNDArray<T>& data, const hoMatrix<T>& coeff, h
 
                 GADGET_CHECK_RETURN_FALSE(KLT_applyEigen(A, D, coeff));
 
-                GADGET_CHECK_RETURN_FALSE(permuteLastTwoDimensions(dataEigenP, dataEigen));
+                dataEigen.create(RO, E1, dstCHA, N);
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&dataEigenP, &dataEigen, &dimOrder));
             }
             else if ( NDim >= 5 )
             {

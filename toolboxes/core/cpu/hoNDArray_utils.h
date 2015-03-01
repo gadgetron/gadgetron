@@ -409,55 +409,6 @@ namespace Gadgetron {
     return out;
   }
 
-  template<typename T> 
-  bool permuteLastTwoDimensions(const hoNDArray<T>& x, hoNDArray<T>& r)
-  {
-    try
-      {
-        size_t NDim = x.get_number_of_dimensions();
-        if ( NDim == 1 )
-          {
-            r = x;
-            return true;
-          }
-
-        boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-        size_t lastDim = x.get_size(NDim-1);
-        size_t secondLastDim = x.get_size(NDim-2);
-        size_t N =  x.get_number_of_elements()/(lastDim*secondLastDim);
-
-        std::vector<size_t> dimR(NDim);
-        dimR = *dimX;
-        dimR[NDim-2] = lastDim;
-        dimR[NDim-1] = secondLastDim;
-
-        if ( !r.dimensions_equal(&dimR) )
-          {
-            r.create(dimR);
-          }
-
-        int l;
-
-#pragma omp parallel for default(none) private(l) shared(lastDim, secondLastDim, x, r, N)
-        for ( l=0; l<(int)lastDim; l++ )
-          {
-            for ( size_t sl=0; sl<secondLastDim; sl++ )
-              {
-                const T* pX = x.begin() + sl*N + l*N*secondLastDim;
-                T* pR = r.begin() + l*N + sl*N*lastDim;
-                memcpy(pR, pX, sizeof(T)*N);
-              }
-          }
-      }
-    catch (...)
-      {
-        GERROR_STREAM("Errors in permuteLastTwoDimensions(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-        return false;
-      }
-    return true;
-  }
-
   /// copy the sub array x(:, indLastDim) to all other places of the last dimensions
   template<typename T> 
   bool repmatLastDimension(hoNDArray<T>& x, size_t indLastDim)

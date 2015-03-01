@@ -1144,18 +1144,30 @@ imageDomainAdjointKernel(const hoNDArray<T>& kIm, hoNDArray<T>& adjkIm)
 {
     try
     {
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteLastTwoDimensions(kIm, adjkIm));
+        std::vector<size_t> dim, dimAdj, dimOrder;
+        kIm.get_dimensions(dim);
 
-        //size_t N = adjkIm.get_number_of_elements();
+        size_t NDim = dim.size();
 
-        //T* pAdjKim = adjkIm.begin();
+        dimAdj = dim;
+        dimAdj[NDim - 1] = dim[NDim - 2];
+        dimAdj[NDim - 2] = dim[NDim - 1];
 
-        //long long n;
-        //#pragma omp parallel for default(none) private(n) shared(N, pAdjKim)
-        //for ( n=0; n<(long long)N; n++ )
-        //{
-        //    pAdjKim[n] = std::conj(pAdjKim[n]);
-        //}
+        if (!adjkIm.dimensions_equal(&dimAdj))
+        {
+            adjkIm.create(dimAdj);
+        }
+
+        dimOrder.resize(NDim);
+
+        for (size_t d = 0; d < NDim; d++)
+        {
+            dimOrder[d] = d;
+        }
+        dimOrder[NDim - 2] = NDim - 1;
+        dimOrder[NDim - 1] = NDim - 2;
+
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(const_cast< hoNDArray<T>* >(&kIm), &adjkIm, &dimOrder));
 
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::conjugate(adjkIm, adjkIm));
     }
