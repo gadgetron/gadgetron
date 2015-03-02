@@ -69,14 +69,19 @@ void zeropad(const hoNDArray<T>& data, const std::vector<size_t>& paddedSize, ho
             }
         }
 
-        if (!needToPad)
-        {
-            dataPadded = data;
-            return;
-        }
-
         std::vector<size_t> dims;
         data.get_dimensions(dims);
+
+        if (!needToPad)
+        {
+            if (!dataPadded.dimensions_equal(&dims))
+            {
+                dataPadded.create(dims);
+            }
+
+            memcpy(dataPadded.begin(), data.begin(), data.get_number_of_bytes());
+            return;
+        }
 
         std::vector<size_t> dimsPadding;
         dimsPadding = dims;
@@ -88,11 +93,12 @@ void zeropad(const hoNDArray<T>& data, const std::vector<size_t>& paddedSize, ho
 
         if (!dataPadded.dimensions_equal(&dimsPadding))
         {
-            dataPadded.create(dimsPadding);
-            if (presetZeros)
-            {
-                GADGET_CATCH_THROW(Gadgetron::clear(dataPadded));
-            }
+            dataPadded.create(dimsPadding);            
+        }
+
+        if (presetZeros)
+        {
+            GADGET_CATCH_THROW(Gadgetron::clear(dataPadded));
         }
 
         std::vector<size_t> start(NDimPadding), end(NDimPadding);
