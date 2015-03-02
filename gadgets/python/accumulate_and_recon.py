@@ -1,7 +1,7 @@
 import numpy as np
-import GadgetronPythonMRI as g
 import kspaceandimage as ki
 import libxml2
+import ismrmrd
 from gadgetron import Gadget
 
 class AccumulateAndRecon(Gadget):
@@ -34,27 +34,17 @@ class AccumulateAndRecon(Gadget):
             image = ki.ktoi(self.myBuffer,(2,3,4))
             image = image * np.product(image.shape)*100 #Scaling for the scanner
             #Create a new image header and transfer value
-            img_head = g.ImageHeader()
+            img_head = ismrmrd.ImageHeader()
             img_head.channels = acq.active_channels
             img_head.slice = acq.idx.slice
-            g.img_set_matrix_size(img_head, 0, self.myBuffer.shape[4])
-            g.img_set_matrix_size(img_head, 1, self.myBuffer.shape[3])
-            g.img_set_matrix_size(img_head, 2, self.myBuffer.shape[2])
-            g.img_set_position(img_head, 0,g.acq_get_position(acq,0))
-            g.img_set_position(img_head, 1,g.acq_get_position(acq,1))
-            g.img_set_position(img_head, 2,g.acq_get_position(acq,2))
-            g.img_set_read_dir(img_head, 0, g.acq_get_read_dir(acq, 0))
-            g.img_set_read_dir(img_head, 1, g.acq_get_read_dir(acq, 1))
-            g.img_set_read_dir(img_head, 2, g.acq_get_read_dir(acq, 2))
-            g.img_set_phase_dir(img_head, 0, g.acq_get_phase_dir(acq, 0))
-            g.img_set_phase_dir(img_head, 1, g.acq_get_phase_dir(acq, 1))
-            g.img_set_phase_dir(img_head, 2, g.acq_get_phase_dir(acq, 2))
-            g.img_set_slice_dir(img_head, 0, g.acq_get_slice_dir(acq, 0))
-            g.img_set_slice_dir(img_head, 1, g.acq_get_slice_dir(acq, 1))
-            g.img_set_slice_dir(img_head, 2, g.acq_get_slice_dir(acq, 2))
-            g.img_set_patient_table_position(img_head, 0, g.acq_get_patient_table_position(acq,0))
-            g.img_set_patient_table_position(img_head, 1, g.acq_get_patient_table_position(acq,1))
-            g.img_set_patient_table_position(img_head, 2, g.acq_get_patient_table_position(acq,2))
+            img_head.matrix_size[0] = self.myBuffer.shape[4]
+            img_head.matrix_size[1] = self.myBuffer.shape[3]
+            img_head.matrix_size[2] = self.myBuffer.shape[2]
+            img_head.position = acq.position
+            img_head.read_dir = acq.read_dir
+            img_head.phase_dir = acq.phase_dir
+            img_head.slice_dir = acq.slice_dir
+            img_head.patient_table_position = acq.patient_table_position
             img_head.acquisition_time_stamp = acq.acquisition_time_stamp
             img_head.image_index = self.myCounter;
             img_head.image_series_index = self.mySeries;

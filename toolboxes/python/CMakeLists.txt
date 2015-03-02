@@ -3,6 +3,7 @@ include_directories(
     ${CMAKE_BINARY_DIR}/apps/gadgetron
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+    ${ISMRMRD_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
     ${PYTHON_INCLUDE_PATH}
     ${NUMPY_INCLUDE_DIRS}
@@ -15,6 +16,7 @@ add_library(gadgetron_toolbox_python SHARED
 
 target_link_libraries(gadgetron_toolbox_python
     gadgetron_toolbox_cpucore
+    ${ISMRMRD_LIBRARIES}
     ${PYTHON_LIBRARIES}
     ${Boost_LIBRARIES}
     ${ACE_LIBRARIES}
@@ -33,6 +35,7 @@ install(FILES
     python_converters.h
     python_tuple_converter.h
     python_hoNDArray_converter.h
+    python_ismrmrd_converter.h
     python_numpy_wrappers.h
     python_export.h
     DESTINATION include COMPONENT main)
