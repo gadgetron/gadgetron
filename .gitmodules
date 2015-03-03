@@ -1,0 +1,4 @@
+[submodule "apps/clients/gadgetron_ismrmrd_client"]
+	path = apps/clients/gadgetron_ismrmrd_client
+	url = https://github.com/gadgetron/gadgetron-ismrmrd-client
+	branch = master
