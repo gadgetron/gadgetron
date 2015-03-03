@@ -343,17 +343,6 @@ public:
     bool computeKLFilter(const hoNDArray<T>& data, size_t numOfModesKept, hoNDArray<T>& dataKLF);
 
     // ------------------------------------------------------------------------
-    // zero-padding resize
-    // ------------------------------------------------------------------------
-    // compute the start and end index for zero padding
-    // dstSize >= srcSize
-    bool zpadRange(size_t srcSize, size_t dstSize, size_t& start, size_t& end);
-
-    // cut the center part
-    bool cutpad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataCut);
-    bool cutpad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataCut);
-
-    // ------------------------------------------------------------------------
     // kspace filter
     // ------------------------------------------------------------------------
     bool compute2DFilterFromTwo1D(const hoNDArray<T>& fx, const hoNDArray<T>& fy, hoNDArray<T>& fxy);
