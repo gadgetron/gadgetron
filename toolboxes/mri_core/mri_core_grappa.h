@@ -56,13 +56,16 @@ namespace Gadgetron {
     /// get the kernel pattern, given the acceleration factor and kernel size
     /// kE1: kernel pattern along E1
     /// oE1: output pattern along E1
+    /// convKRO: convolution kernel size along RO
+    /// convKE1: convolution kernel size along E1
     /// e.g. for R=4 and kNE1=4, the kernel pattern kE1 will be [-4 0 4 8] and the output pattern oE1 will be [0 1 2 3] if fitItself==true
     /// if fitItself==false, the output pattern oE1 will be [1 2 3]
     /// if the acsSrc and acsDst are generated in different ways, often fitItself needs to be true; e.g. acsSrc is in the origin acquired channels
     /// and acsDst is in eigen channel
     /// accelFactor: acceleration factor
+    /// kRO: kernel size along RO
     /// kNE1: kernel size along E1
-    EXPORTMRICORE void grappa2d_kerPattern(std::vector<int>& kE1, std::vector<int>& oE1, size_t accelFactor, size_t kNE1, bool fitItself);
+    EXPORTMRICORE void grappa2d_kerPattern(std::vector<int>& kE1, std::vector<int>& oE1, size_t& convKRO, size_t& convKE1, size_t accelFactor, size_t kRO, size_t kNE1, bool fitItself);
 
     /// grappa calibration for 2D case
     /// kE1: the kernel pattern along E1

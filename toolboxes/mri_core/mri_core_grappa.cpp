@@ -34,7 +34,7 @@
 namespace Gadgetron
 {
 
-void grappa2d_kerPattern(std::vector<int>& kE1, std::vector<int>& oE1, size_t accelFactor, size_t kNE1, bool fitItself)
+void grappa2d_kerPattern(std::vector<int>& kE1, std::vector<int>& oE1, size_t& convKRO, size_t& convKE1, size_t accelFactor, size_t kRO, size_t kNE1, bool fitItself)
 {
     if ( accelFactor == 1 )
     {
@@ -77,6 +77,15 @@ void grappa2d_kerPattern(std::vector<int>& kE1, std::vector<int>& oE1, size_t ac
             oE1[a-1] = (int)a;
         }
     }
+
+    convKRO = 2 * kRO + 3;
+
+    long long maxKE1 = std::abs(kE1[0]);
+    if (std::abs(kE1[kNE1 - 1]) > maxKE1)
+    {
+        maxKE1 = std::abs(kE1[kNE1 - 1]);
+    }
+    convKE1 = 2 * maxKE1 + 1;
 
     return;
 }
@@ -275,7 +284,9 @@ void grappa2d_calib_convolution_kernel(const ho3DArray<T>& acsSrc, const ho3DArr
         bool fitItself = false;
         if (&acsSrc != &acsDst) fitItself = true;
 
-        grappa2d_kerPattern(kE1, oE1, accelFactor, kNE1, fitItself);
+        size_t convkRO, convkE1;
+
+        grappa2d_kerPattern(kE1, oE1, convkRO, convkE1, accelFactor, kRO, kNE1, fitItself);
 
         ho5DArray<T> ker;
         grappa2d_calib(acsSrc, acsDst, thres, kRO, kE1, oE1, ker);
@@ -484,15 +495,28 @@ void apply_unmix_coeff_kspace(const hoNDArray<T>& kspace, const hoNDArray<T>& un
         GADGET_CHECK_THROW(kspace.get_size(2) == unmixCoeff.get_size(2));
 
         hoNDArray<T> buffer2DT(kspace);
+        GADGET_CATCH_THROW(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, buffer2DT));
 
-        GADGET_CHECK_THROW(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, buffer2DT));
-        Gadgetron::apply_unmix_coeff_aliased_image(buffer2DT, unmixCoeff, complexIm);
+        std::vector<size_t> dim;
+        kspace.get_dimensions(dim);
+        dim[2] = 1;
+
+        if (!complexIm.dimensions_equal(&dim))
+        {
+            complexIm.create(&dim);
+        }
+
+        Gadgetron::multiply(buffer2DT, unmixCoeff, buffer2DT);
+        Gadgetron::sum_over_dimension(buffer2DT, complexIm, 2);
     }
     catch (...)
     {
         GADGET_THROW("Errors in apply_unmix_coeff_kspace(const hoNDArray<T>& kspace, const hoNDArray<T>& unmixCoeff, hoNDArray<T>& complexIm) ... ");
     }
 }
+
+template EXPORTMRICORE void apply_unmix_coeff_kspace(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< std::complex<float> >& complexIm);
+template EXPORTMRICORE void apply_unmix_coeff_kspace(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< std::complex<double> >& complexIm);
 
 // ------------------------------------------------------------------------
 
@@ -505,16 +529,14 @@ void apply_unmix_coeff_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDAr
         GADGET_CHECK_THROW(aliasedIm.get_size(1) == unmixCoeff.get_size(1));
         GADGET_CHECK_THROW(aliasedIm.get_size(2) == unmixCoeff.get_size(2));
 
-        boost::shared_ptr< std::vector<size_t> > dim = aliasedIm.get_dimensions();
+        std::vector<size_t> dim;
+        aliasedIm.get_dimensions(dim);
+        dim[2] = 1;
 
-        std::vector<size_t> dimIm(*dim);
-        dimIm[2] = 1;
-
-        if (!complexIm.dimensions_equal(&dimIm))
+        if (!complexIm.dimensions_equal(&dim))
         {
-            complexIm.create(&dimIm);
+            complexIm.create(&dim);
         }
-        Gadgetron::clear(&complexIm);
 
         hoNDArray<T> buffer2DT(aliasedIm);
 
@@ -526,4 +548,8 @@ void apply_unmix_coeff_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDAr
         GADGET_THROW("Errors in apply_unmix_coeff_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDArray<T>& unmixCoeff, hoNDArray<T>& complexIm) ... ");
     }
 }
+
+template EXPORTMRICORE void apply_unmix_coeff_aliased_image(const hoNDArray< std::complex<float> >& aliasedIm, const hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< std::complex<float> >& complexIm);
+template EXPORTMRICORE void apply_unmix_coeff_aliased_image(const hoNDArray< std::complex<double> >& aliasedIm, const hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< std::complex<double> >& complexIm);
+
 }
