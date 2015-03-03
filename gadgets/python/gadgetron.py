@@ -34,7 +34,7 @@ class Gadget(object):
     def put_next(self, *args):
         if self.next_gadget is not None:
             if isinstance(self.next_gadget, Gadget):
-                self.next_gadget.process(args)
+                self.next_gadget.process(*args)
             elif isinstance(self.next_gadget, GadgetronPythonMRI.GadgetReference):
                 if len(args) != 2:
                     raise("Only two return arguments are currently supported when returning to Gadgetron framework")
