@@ -1,17 +1,28 @@
-#include "PythonMath.h"
+#include "python_toolbox.h"
+
+#include "Gadget.h"             // for GADGET_OK/FAIL
+#include "gadgetron_paths.h"    // for get_gadgetron_home()
+#include "gadgetron_config.h"   // for GADGETRON_PYTHON_PATH
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/numpyconfig.h>
 #include <numpy/arrayobject.h>
+
+#include <boost/thread/mutex.hpp>
+#include <boost/algorithm/string.hpp>
 
 
 namespace Gadgetron
 {
 
 static bool initialized = false;
+static boost::mutex mtx;
 
-void initialize_python_math(void)
+int initialize_python(void)
 {
+    // lock here so only one thread can initialize Python
+    boost::mutex::scoped_lock lock(mtx);
+
     if (!initialized) {
         Py_Initialize();
         _import_array();    // import NumPy
@@ -24,9 +35,44 @@ void initialize_python_math(void)
         PyThreadState* tstate = PyEval_SaveThread();
         if (!tstate) {
             GDEBUG("Error occurred returning lock to Python\n");
+            return GADGET_FAIL;
         }
-        initialized = true;
+
+        initialized = true; // interpreter successfully initialized
+
+        //Let's first get the path set for the library folder
+        std::string gadgetron_home = get_gadgetron_home();
+        std::string path_name = gadgetron_home + std::string("/") + std::string(GADGETRON_PYTHON_PATH);
+
+        if (gadgetron_home.size() != 0) {
+            if (add_python_path(path_name) == GADGET_FAIL) {
+                GDEBUG("python_toolbox failed to add path %s\n", path_name.c_str());
+                return GADGET_FAIL;
+            }
+        }
     }
+    return GADGET_OK;
+}
+
+int add_python_path(const std::string& path)
+{
+    GILLock lock;   // Lock the GIL
+
+    std::string add_path_cmd;
+    if (path.size() > 0) {
+        std::vector<std::string> paths;
+        boost::split(paths, path, boost::is_any_of(";"));
+        for (unsigned int i = 0; i < paths.size(); i++) {
+            add_path_cmd = std::string("import sys;\nif sys.path.count(\"") +
+                    paths[i] + std::string("\") == 0:\n\tsys.path.insert(0, \"") +
+                    paths[i] + std::string("\")\n");
+            //GDEBUG("Executing path command:\n%s\n", path_cmd.c_str());
+            boost::python::exec(add_path_cmd.c_str(),
+                    boost::python::import("__main__").attr("__dict__"));
+        }
+    }
+
+    return GADGET_OK;
 }
 
 /// Adapted from http://stackoverflow.com/a/6576177/1689220

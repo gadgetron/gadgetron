@@ -1,4 +1,4 @@
-import GadgetronPythonMRI as g
+from gadgetron import Gadget
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure   
@@ -17,9 +17,7 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 
-gadget_ref = g.GadgetReference()
-
-class ImageViewer:
+class ImageViewWindow:
     def __init__(self, img_data):
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.connect("delete_event", self.delete_event)
@@ -58,22 +56,15 @@ class ImageViewer:
         gtk.main()
 
 
-def set_gadget_reference(ref):
-    global gadget_ref
-    gadget_ref = ref
+class ImageViewer(Gadget):
+    def process_config(self, cfg):
+        print "Attempting to open window"
+        print "Window running"
+        #Configuration Ignored
 
-def config_function(cfg):
-    global myWindow
-    print "Attempting to open window"
-    print "Window running"
-    #Configuration Ignored
+    def process(self, h,im):
+        myWindow = ImageViewWindow(im)
+        myWindow.main()
 
-def recon_function(h,im):
-    global gadget_ref
-
-    myWindow = ImageViewer(im) 
-    myWindow.main()
-
-    return gadget_ref.return_image(h,im.astype('complex64'))
-
-
+        self.put_next(h,im)
+        return 0

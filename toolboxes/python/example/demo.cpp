@@ -1,4 +1,5 @@
-#include "PythonMath.h"
+#include "python_toolbox.h"
+#include "ismrmrd/ismrmrd.h"
 
 using namespace Gadgetron;
 
@@ -43,6 +44,18 @@ int main(int argc, char** argv)
     PythonFunction<hoNDArray<float>> arange("numpy", "arange");
     hoNDArray<float> evens = arange(0, 100, 2, "f64");
     std::cout << evens.get_number_of_elements() << std::endl;
+
+    ISMRMRD::ImageHeader img_head, img_head2;
+    img_head.version = 42;
+    PythonFunction<ISMRMRD::ImageHeader> print_img_header("joe", "print_and_return");
+    img_head2 = print_img_header(img_head);
+    std::cout << img_head2.version << std::endl;
+
+    ISMRMRD::AcquisitionHeader acq_head, acq_head2;
+    acq_head.version = 42;
+    PythonFunction<ISMRMRD::AcquisitionHeader> print_acq_header("joe", "print_and_return");
+    acq_head2 = print_acq_header(acq_head);
+    std::cout << acq_head2.version << std::endl;
 
     return 0;
 }

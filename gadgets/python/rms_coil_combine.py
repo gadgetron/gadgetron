@@ -1,19 +1,13 @@
-import GadgetronPythonMRI as g
 import numpy as np
+from gadgetron import Gadget
 
-gadget_ref = g.GadgetReference()
+class RMSCoilCombine(Gadget):
 
-def set_gadget_reference(ref):
-    global gadget_ref
-    gadget_ref = ref
+    def process_config(self, cfg):
+        print "RMS Coil Combine, Config ignored"
 
-def config_function(cfg):
-    print "RMS Coil Combine, Config ignored"
-
-def recon_function(h,im):
-    global gadget_ref
-    combined_image = np.sqrt(np.sum(np.square(np.abs(im)),axis=0))
-    h.channels = 1
-    return gadget_ref.return_image(h,combined_image.astype('complex64'))
-
-
+    def process(self, h, im):
+        combined_image = np.sqrt(np.sum(np.square(np.abs(im)),axis=0))
+        h.channels = 1
+        self.put_next(h,combined_image)
+        return 0
