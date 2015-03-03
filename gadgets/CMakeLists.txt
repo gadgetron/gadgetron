@@ -58,6 +58,7 @@ endif(MATLAB_FOUND)
 # nest the find_package checks to provide more useful error messages
 find_package(Boost COMPONENTS python system thread REQUIRED)
 
+if (UNIX)
 if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     MESSAGE("PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
     MESSAGE("PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
@@ -75,6 +76,7 @@ else (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
         MESSAGE("Boost Python NOT found, NOT compiling Python Gadgets")
     endif(NOT Boost_PYTHON_FOUND)
 endif (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+endif(UNIX)
 
 find_package(DCMTK)
 if(DCMTK_FOUND)
