@@ -24,9 +24,10 @@ namespace Gadgetron{
           }
 
           // ensure boost can convert between hoNDArrays and NumPy arrays automatically
-          // NOTE: this could move inside `initialize_python` in the python toolbox
-          // since it's the most common C++ type passed to/from Python
           register_converter<hoNDArray<std::complex<float> > >();
+          // ensure boost can convert ISMRMRD headers automatically
+          register_converter<ISMRMRD::ImageHeader>();
+          register_converter<ISMRMRD::AcquisitionHeader>();
 
           boost::shared_ptr<std::string> pypath        = this->get_string_value("python_path");
           boost::shared_ptr<std::string> pymod         = this->get_string_value("python_module");

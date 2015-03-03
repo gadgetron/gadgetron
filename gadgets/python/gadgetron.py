@@ -1,5 +1,6 @@
 try:
     import GadgetronPythonMRI
+    import ismrmrd
 except ImportError:
     pass
 
@@ -33,13 +34,13 @@ class Gadget(object):
     def put_next(self, *args):
         if self.next_gadget is not None:
             if isinstance(self.next_gadget, Gadget):
-                self.next_gadget.process(args)                
+                self.next_gadget.process(args)
             elif isinstance(self.next_gadget, GadgetronPythonMRI.GadgetReference):
                 if len(args) != 2:
                     raise("Only two return arguments are currently supported when returning to Gadgetron framework")
-                if isinstance(args[0],GadgetronPythonMRI.AcquisitionHeader):
+                if isinstance(args[0], ismrmrd.AcquisitionHeader):
                     self.next_gadget.return_acquisition(args[0],args[1].astype('complex64'))
-                elif isinstance(args[0],GadgetronPythonMRI.ImageHeader):
+                elif isinstance(args[0], ismrmrd.ImageHeader):
                     self.next_gadget.return_image(args[0],args[1].astype('complex64'))
                 else:
                     raise("Unsupported types when returning to Gadgetron framework")
@@ -59,6 +60,6 @@ class FunctionGadget(Gadget):
     Params:
         fn: `process` function
     """
-    def __init__(self, fn, gadget_reference, next_gadget=None):
-        super(FunctionGadget, self).__init__(gadget_reference, next_gadget)
+    def __init__(self, fn, next_gadget=None):
+        super(FunctionGadget, self).__init__(next_gadget)
         self.process = fn

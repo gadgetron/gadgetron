@@ -1,6 +1,8 @@
 #ifndef GADGETRON_PYTHON_MATH_CONVERSIONS_H
 #define GADGETRON_PYTHON_MATH_CONVERSIONS_H
 
+#include "ismrmrd/ismrmrd.h"
+
 namespace Gadgetron {
 
 /// Interface for registering C++ <-> NumPy type converters.
@@ -25,5 +27,6 @@ void register_converter(void) {
 
 #include "python_tuple_converter.h"
 #include "python_hoNDArray_converter.h"
+#include "python_ismrmrd_converter.h"
 
 #endif // GADGETRON_PYTHON_MATH_CONVERSIONS_H

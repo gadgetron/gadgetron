@@ -64,7 +64,7 @@ int add_python_path(const std::string& path)
         boost::split(paths, path, boost::is_any_of(";"));
         for (unsigned int i = 0; i < paths.size(); i++) {
             add_path_cmd = std::string("import sys;\nif sys.path.count(\"") +
-                    paths[i] + std::string("\") == 0:\n\tsys.path.append(\"") +
+                    paths[i] + std::string("\") == 0:\n\tsys.path.insert(0, \"") +
                     paths[i] + std::string("\")\n");
             //GDEBUG("Executing path command:\n%s\n", path_cmd.c_str());
             boost::python::exec(add_path_cmd.c_str(),
