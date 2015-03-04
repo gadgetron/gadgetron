@@ -58,31 +58,12 @@ if(EXISTS "${CMAKE_INSTALL_PREFIX}/bin/gadgetron_info")
                   OUTPUT_VARIABLE GADGETRON_INFO
                   ERROR_VARIABLE GADGETRON_INFO_STDERR)
 
-  string(REGEX MATCH "[0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z][0-9a-z]" GIT_SHA1 ${GADGETRON_INFO})
-
-  if(GIT_SHA1)
-    set(GADGETRON_GIT_SHA1 ${GIT_SHA1})
-  endif(GIT_SHA1)
-
-# Try to find GIT_SHA1 by calling git rev-parse HEAD
-else(EXISTS "${CMAKE_INSTALL_PREFIX}/bin/gadgetron_info")
-  if(GIT_FOUND)
-    execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
-                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                    OUTPUT_VARIABLE GADGETRON_GIT_SHA1
-                    ERROR_VARIABLE GADGETRON_GIT_STDERR)
-
-    string(STRIP "${GADGETRON_GIT_SHA1}" GADGETRON_GIT_SHA1)
-    string(LENGTH "${GADGETRON_GIT_SHA1}" GADGETRON_GIT_SHA1_LEN)
-    if(${GADGETRON_GIT_SHA1_LEN} LESS 40)
-      message(WARNING "Could not determine SHA-1 hash: ${GADGETRON_GIT_STDERR}")
-      set(GADGETRON_GIT_SHA1 "NA")
-    endif(${GADGETRON_GIT_SHA1_LEN} LESS 40)
-  else(GIT_FOUND)
-    set(GADGETRON_GIT_SHA1 "NA")
-  endif(GIT_FOUND)
+  string(REGEX REPLACE ".*-- Git SHA1           : ([0-9a-z]+).*" "\\1" GIT_SHA1 ${GADGETRON_INFO})
+  string(LENGTH ${GIT_SHA1} SHA1_LEN)
+  if(${SHA1_LEN} EQUAL 40)
+    set(GADGETRON_GIT_SHA1 ${GIT_SHA1}) 
+  endif(${SHA1_LEN} EQUAL 40)
 endif(EXISTS "${CMAKE_INSTALL_PREFIX}/bin/gadgetron_info")
-
 
 if (SIEMENS_TO_ISMRMRD_EXE)
   add_custom_command(
