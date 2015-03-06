@@ -45,7 +45,7 @@ endif()
 set(GADGETRON_INSTALL_CONFIG_PATH config)
 set(GADGETRON_INSTALL_MATLAB_PATH share/gadgetron/matlab)
 set(GADGETRON_INSTALL_PYTHON_MODULE_PATH share/gadgetron/python)
-set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
+#set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 #Set the build type to Release if not specified
