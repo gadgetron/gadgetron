@@ -4,13 +4,7 @@
     \author Hui Xue
 */
 
-#include "mri_core_utility.h"
-
-#include "hoNDFFT.h"
-#include "hoNDArray_linalg.h"
-#include "hoNDArray_utils.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_reductions.h"
+#include "mri_core_coil_map_estimation.h"
 
 namespace Gadgetron
 {
