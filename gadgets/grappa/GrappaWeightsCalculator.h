@@ -15,8 +15,13 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public AC
  public:
   GrappaWeightsCalculator() 
     : inherited()
-  	, target_coils_(0)
-   {
+    , target_coils_(0)
+  {
+    #ifdef USE_CUDA
+      use_gpu_ = true;
+    #else
+      use_gpu_ = false;
+    #endif // USE_CUDA
   }
 
   virtual ~GrappaWeightsCalculator() { }
@@ -55,8 +60,28 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public AC
 	  target_coils_ = n;
   }
 
+  bool get_use_gpu() {
+    return use_gpu_;
+  }
+
+  void set_use_gpu(bool v) {
+      use_gpu_ = v;
+  }
+
  private:
   std::list<unsigned int> uncombined_channels_;
   int target_coils_;
+  bool use_gpu_;
+
+  hoNDArray< std::complex<T> > src_acs_;
+  hoNDArray< std::complex<T> > target_acs_;
+
+  hoNDArray< std::complex<T> > conv_ker_;
+  hoNDArray< std::complex<T> > kIm_;
+  hoNDArray< std::complex<T> > coil_map_;
+  hoNDArray< std::complex<T> > unmixing_;
+  hoNDArray< T > gFactor_;
+
+  hoNDArray< std::complex<T> > unmixing_excluding_uncombined_;
 };
 }

@@ -34,11 +34,13 @@ set( mri_core_header_files
         mri_core_def.h
         mri_core_data.h
         mri_core_utility.h
-        mri_core_grappa.h )
+        mri_core_grappa.h 
+        mri_core_coil_map_estimation.h )
 
 set( mri_core_source_files
         mri_core_utility.cpp 
-        mri_core_grappa.cpp )
+        mri_core_grappa.cpp 
+        mri_core_coil_map_estimation.cpp )
 
 add_library(gadgetron_toolbox_mri_core SHARED 
      ${mri_core_header_files} ${mri_core_source_files} )

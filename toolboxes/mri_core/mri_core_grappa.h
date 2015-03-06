@@ -25,14 +25,14 @@ namespace Gadgetron {
     /// kRO: kernel size along RO
     /// kNE1: kernel size along E1
     /// convKer: computed grappa convolution kernel
-    template <typename T> EXPORTMRICORE void grappa2d_calib_convolution_kernel(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, ho4DArray<T>& convKer);
+    template <typename T> EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray<T>& convKer);
     /// dataMask : [RO E1] array, marking fully rectangular sampled region with 1
     template <typename T> EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDArray<T>& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, ho4DArray<T>& convKer);
 
     /// compute image domain kernel from 2d grappd convolution kernel
     /// RO, E1: the size of image domain kernel
     /// kIm: image domain kernel [RO E1 srcCHA dstCHA]
-    template <typename T> EXPORTMRICORE void grappa2d_image_domain_kernel(const ho4DArray<T>& convKer, size_t RO, size_t E1, hoNDArray<T>& kIm);
+    template <typename T> EXPORTMRICORE void grappa2d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t E1, hoNDArray<T>& kIm);
 
     /// compute unmixing coefficient from image domain kernel and coil sensitivity
     /// kerIm: [RO E1 srcCHA dstCHA], image domain kernel

@@ -14,6 +14,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
     ${ARMADILLO_INCLUDE_DIRS}
 )
 
@@ -33,17 +34,31 @@ add_library(gadgetron_grappa SHARED
 
 set_target_properties(gadgetron_grappa PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_grappa 
-  gadgetron_gadgetbase
-  gadgetron_toolbox_log
-  gadgetron_toolbox_gpuparallelmri
-  gadgetron_toolbox_cpucore
-  gadgetron_toolbox_cpufft
-  gadgetron_toolbox_gpufft
-  ${Boost_LIBRARIES}
-  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-  )
+if(CUDA_FOUND)
+    target_link_libraries(gadgetron_grappa 
+      gadgetron_gadgetbase
+      gadgetron_toolbox_log
+      gadgetron_toolbox_gpuparallelmri
+      gadgetron_toolbox_cpucore
+      gadgetron_toolbox_cpufft
+      gadgetron_toolbox_gpufft
+      ${Boost_LIBRARIES}
+      ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
+      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+      )
+else (CUDA_FOUND)
+    target_link_libraries(gadgetron_grappa 
+      gadgetron_gadgetbase
+      gadgetron_toolbox_log
+      gadgetron_toolbox_cpucore
+      gadgetron_toolbox_cpucore_math
+      gadgetron_toolbox_cpufft
+      gadgetron_toolbox_mri_core
+      ${Boost_LIBRARIES}
+      ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
+      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+      )
+endif (CUDA_FOUND)
 
 install (FILES  gadgetron_grappa_export.h
                 GrappaCalibrationBuffer.h

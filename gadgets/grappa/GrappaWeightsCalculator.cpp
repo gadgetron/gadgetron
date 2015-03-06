@@ -1,15 +1,22 @@
-#include "cuNDFFT.h"
 #include "GrappaWeightsCalculator.h"
 #include "GadgetContainerMessage.h"
 #include "GadgetIsmrmrdReadWrite.h"
-#include "b1_map.h"
 #include "hoNDArray_fileio.h"
-#include "htgrappa.h"
 #include "GadgetronTimer.h"
-#include "GPUTimer.h"
+
+#ifdef USE_CUDA
+    #include "GPUTimer.h"
+    #include "cuNDFFT.h"
+    #include "b1_map.h"
+    #include "htgrappa.h"
+    #include <cuComplex.h>
+#endif // USE_CUDA
+
 #include "complext.h"
 
-#include <cuComplex.h>
+#include "hoNDFFT.h"
+#include "mri_core_grappa.h"
+#include "mri_core_coil_map_estimation.h"
 
 namespace Gadgetron{
 
@@ -56,99 +63,271 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		hoNDArray<float_complext>* host_data =
 				reinterpret_cast< hoNDArray<float_complext>* >(mb2->getObjectPtr());
 
-		// Copy the image data to the device
-		cuNDArray<float_complext> device_data(host_data);
-		device_data.squeeze();
-
-		std::vector<size_t> ftdims(2,0); ftdims[1] = 1;
-
-		//Go to image space
-		 cuNDFFT<float>::instance()->ifft( &device_data, &ftdims);
-
-        size_t RO = device_data.get_size(0);
-        size_t E1 = device_data.get_size(1);
-        size_t CHA = device_data.get_size(2);
-
         size_t ks = 5;
         size_t power = 3;
 
-        /*cuNDArray<complext<float> > D(RO*E1, ks*ks, CHA);
-        cuNDArray<complext<float> > DH_D(RO*E1, CHA, CHA); 
-        cuNDArray<complext<float> > V1(RO*E1, CHA);
-        cuNDArray<complext<float> > U1(RO*E1, ks*ks);*/
+        if (use_gpu_)
+        {
+		    // Copy the image data to the device
+		    cuNDArray<float_complext> device_data(host_data);
+		    device_data.squeeze();
 
-		// Compute CSM
-		/*cuNDArray<float_complext> csm;
-        csm.create(device_data.get_dimensions());*/
+		    std::vector<size_t> ftdims(2,0); ftdims[1] = 1;
 
-        boost::shared_ptr< cuNDArray<float_complext> > csm;
-		{
-        	//GPUTimer timer("GRAPPA CSM");
-			csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
+		    //Go to image space
+		     cuNDFFT<float>::instance()->ifft( &device_data, &ftdims);
 
-            // estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power, D, DH_D, V1, U1 );
+            size_t RO = device_data.get_size(0);
+            size_t E1 = device_data.get_size(1);
+            size_t CHA = device_data.get_size(2);
 
-			//GDEBUG("Coils in csm: %d\n", csm->get_size(2));
-		}
-		//Go back to kspace
-		cuNDFFT<float>::instance()->fft(&device_data, &ftdims);
+            boost::shared_ptr< cuNDArray<float_complext> > csm;
+		    {
+        	    //GPUTimer timer("GRAPPA CSM");
+			    csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
 
-		cuNDArray<complext<float> > unmixing_dev;
-		boost::shared_ptr< std::vector<size_t> > data_dimensions = device_data.get_dimensions();
+                // estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power, D, DH_D, V1, U1 );
 
-		if (uncombined_channels_.size() > 0) {
-			data_dimensions->push_back(uncombined_channels_.size()+1);
-		}
+			    //GDEBUG("Coils in csm: %d\n", csm->get_size(2));
+		    }
+		    //Go back to kspace
+		    cuNDFFT<float>::instance()->fft(&device_data, &ftdims);
 
-		try{unmixing_dev.create(data_dimensions.get());}
-		catch (std::runtime_error &err){
-			GEXCEPTION(err,"Unable to allocate device memory for unmixing coeffcients\n");
-			return GADGET_FAIL;
-		}
+		    cuNDArray<complext<float> > unmixing_dev;
+		    boost::shared_ptr< std::vector<size_t> > data_dimensions = device_data.get_dimensions();
 
-		{
-			//GPUTimer unmix_timer("GRAPPA Unmixing");
-            //GadgetronTimer timer("GRAPPA unmixing", true);
-			std::vector<unsigned int> kernel_size;
+		    if (uncombined_channels_.size() > 0) {
+			    data_dimensions->push_back(uncombined_channels_.size()+1);
+		    }
 
-			//TODO: Add parameters for kernel size
-			kernel_size.push_back(5);
-			kernel_size.push_back(4);
-			if ( htgrappa_calculate_grappa_unmixing(reinterpret_cast< cuNDArray<complext<float> >* >(&device_data),
-					csm.get(),
-					(unsigned int)(mb1->getObjectPtr()->acceleration_factor),
-					&kernel_size,
-					&unmixing_dev,
-					&(mb1->getObjectPtr()->sampled_region),
-					&uncombined_channels_) < 0) {
-				GDEBUG("GRAPPA unmixing coefficients calculation failed\n");
-				return GADGET_FAIL;
-			}
-		}
+		    try{unmixing_dev.create(data_dimensions.get());}
+		    catch (std::runtime_error &err){
+			    GEXCEPTION(err,"Unable to allocate device memory for unmixing coeffcients\n");
+			    return GADGET_FAIL;
+		    }
 
-		if (mb1->getObjectPtr()->destination) {
-			boost::shared_ptr< hoNDArray<complext<float> > > unmixing_host = unmixing_dev.to_host();
+		    {
+			    //GPUTimer unmix_timer("GRAPPA Unmixing");
+                //GadgetronTimer timer("GRAPPA unmixing", true);
+			    std::vector<unsigned int> kernel_size;
 
-			//TODO: This reshaping needs to take uncombined channels into account
-			boost::shared_ptr< std::vector<size_t> > tmp_dims = mb2->getObjectPtr()->get_dimensions();
-			if (uncombined_channels_.size()) tmp_dims->push_back( (size_t) (uncombined_channels_.size()+1) );
+			    //TODO: Add parameters for kernel size
+			    kernel_size.push_back(5);
+			    kernel_size.push_back(4);
+			    if ( htgrappa_calculate_grappa_unmixing(reinterpret_cast< cuNDArray<complext<float> >* >(&device_data),
+					    csm.get(),
+					    (unsigned int)(mb1->getObjectPtr()->acceleration_factor),
+					    &kernel_size,
+					    &unmixing_dev,
+					    &(mb1->getObjectPtr()->sampled_region),
+					    &uncombined_channels_) < 0) {
+				    GDEBUG("GRAPPA unmixing coefficients calculation failed\n");
+				    return GADGET_FAIL;
+			    }
+		    }
 
-			try {
-				unmixing_host->reshape(tmp_dims.get());
-			} catch (std::runtime_error &err){
-				GEXCEPTION( err, "Reshaping of GRAPPA weights failed \n" );
+            if (mb1->getObjectPtr()->destination) {
+                boost::shared_ptr< hoNDArray<complext<float> > > unmixing_host = unmixing_dev.to_host();
 
-			}
+                //TODO: This reshaping needs to take uncombined channels into account
+                boost::shared_ptr< std::vector<size_t> > tmp_dims = mb2->getObjectPtr()->get_dimensions();
+                if (uncombined_channels_.size()) tmp_dims->push_back((size_t)(uncombined_channels_.size() + 1));
 
-			if (mb1->getObjectPtr()->destination->update(reinterpret_cast<hoNDArray<std::complex<float> >* >(unmixing_host.get())) < 0) {
-				GDEBUG("Update of GRAPPA weights failed\n");
-				return GADGET_FAIL;
-			}
-		} else {
-			GDEBUG("Undefined GRAPPA weights destination\n");
-			return GADGET_FAIL;
-		}
+                try {
+                    unmixing_host->reshape(tmp_dims.get());
+                }
+                catch (std::runtime_error &err){
+                    GEXCEPTION(err, "Reshaping of GRAPPA weights failed \n");
 
+                }
+
+                if (mb1->getObjectPtr()->destination->update(reinterpret_cast<hoNDArray<std::complex<float> >* >(unmixing_host.get())) < 0) {
+                    GDEBUG("Update of GRAPPA weights failed\n");
+                    return GADGET_FAIL;
+                }
+            }
+            else {
+                GDEBUG("Undefined GRAPPA weights destination\n");
+                return GADGET_FAIL;
+            }
+        }
+        else
+        {
+            hoNDFFT<float>::instance()->ifft(host_data, 1);
+
+            size_t RO = host_data->get_size(0);
+            size_t E1 = host_data->get_size(1);
+            size_t CHA = host_data->get_size(2);
+
+            std::vector<size_t> data_dimensions;
+            host_data->get_dimensions(data_dimensions);
+
+            if (uncombined_channels_.size() > 0) {
+                data_dimensions.push_back(uncombined_channels_.size() + 1);
+            }
+
+            try{ unmixing_.create(data_dimensions); }
+            catch (std::runtime_error &err){
+                GEXCEPTION(err, "Unable to allocate host memory for unmixing coeffcients\n");
+                return GADGET_FAIL;
+            }
+
+            // compute the unmixing coefficients
+            size_t numUnCombined = uncombined_channels_.size();
+
+            double thres = 0.0005;
+            size_t kRO = 5;
+            size_t kNE1 = 4;
+
+            if (numUnCombined==0)
+            {
+                hoNDArray< std::complex<float> > acs(RO, E1, CHA, reinterpret_cast< std::complex<float>* >(host_data->begin()) );
+                hoNDArray< std::complex<float> > target_acs(RO, E1, target_coils_, acs.begin());
+
+                // estimate coil map
+                Gadgetron::coil_map_2d_Souheil(target_acs, coil_map_, ks, power);
+
+                // compute unmixing coefficients
+                if (mb1->getObjectPtr()->acceleration_factor == 1)
+                {
+                    Gadgetron::conjugate(coil_map_, coil_map_);
+                    Gadgetron::clear(unmixing_);
+                    memcpy(unmixing_.begin(), coil_map_.begin(), coil_map_.get_number_of_bytes());
+                }
+                else
+                {
+                    Gadgetron::grappa2d_calib_convolution_kernel(acs, target_acs,
+                        (size_t)(mb1->getObjectPtr()->acceleration_factor), 
+                        thres, kRO, kNE1, conv_ker_);
+
+                    Gadgetron::grappa2d_image_domain_kernel(conv_ker_, RO, E1, kIm_);
+
+                    Gadgetron::grappa2d_unmixing_coeff(kIm_, coil_map_, (size_t)(mb1->getObjectPtr()->acceleration_factor), unmixing_, gFactor_);
+                }
+            }
+            else
+            {
+                hoNDArray< std::complex<float> > acs(RO, E1, CHA, reinterpret_cast< std::complex<float>* >(host_data->begin()));
+
+                std::vector<size_t> dimTarget(3);
+                dimTarget[0] = RO;
+                dimTarget[1] = E1;
+                dimTarget[2] = target_coils_ + numUnCombined;
+
+                if (!target_acs_.dimensions_equal(&dimTarget))
+                {
+                    target_acs_.create(RO, E1, target_coils_ + numUnCombined);
+                }
+
+                // copy first target_coils_ channels and all uncombined channels to target_acs_
+                size_t sCha, ind(0), ind_uncombined(0);
+                std::list<unsigned int>::iterator it;
+
+                // record from which src channel a target channel is selected
+                std::vector<size_t> srcChaLoc(target_coils_ + numUnCombined);
+                for (sCha = 0; sCha<CHA; sCha++)
+                {
+                    bool uncombined = false;
+                    for (it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++)
+                    {
+                        if (sCha == *it)
+                        {
+                            uncombined = true;
+                            break;
+                        }
+                    }
+
+                    if (!uncombined)
+                    {
+                        if (ind<target_coils_)
+                        {
+                            memcpy(target_acs_.begin() + ind * RO*E1, acs.begin() + sCha * RO*E1, sizeof(std::complex<float>)*RO*E1);
+                            srcChaLoc[ind] = sCha;
+                            ind++;
+                        }
+                    }
+                    else
+                    {
+                        memcpy(target_acs_.begin() + (target_coils_ + ind_uncombined) * RO*E1, acs.begin() + sCha * RO*E1, sizeof(std::complex<float>)*RO*E1);
+                        srcChaLoc[target_coils_ + ind_uncombined] = sCha;
+                        ind_uncombined++;
+                    }
+                }
+
+                // estimate coil map
+                Gadgetron::coil_map_2d_Souheil(target_acs_, coil_map_, ks, power);
+
+                // compute unmixing coefficients
+                if (mb1->getObjectPtr()->acceleration_factor == 1)
+                {
+                    Gadgetron::conjugate(coil_map_, coil_map_);
+
+                    Gadgetron::clear(unmixing_);
+
+                    // copy back to unmixing
+                    size_t t;
+                    for (t = 0; t<target_coils_ + numUnCombined; t++)
+                    {
+                        memcpy(unmixing_.begin() + srcChaLoc[t] * RO*E1, coil_map_.begin() + t*RO*E1, sizeof(std::complex<float>)*RO*E1);
+                    }
+
+                    // set uncombined channels
+                    ind = 1;
+                    for (it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++)
+                    {
+                        std::complex<float>* pUnmixing = unmixing_.begin() + ind*RO*E1*CHA + (*it)*RO*E1;
+                        for (size_t p = 0; p<RO*E1; p++)
+                        {
+                            pUnmixing[p] = 1;
+                        }
+
+                        ind++;
+                    }
+                }
+                else
+                {
+                    Gadgetron::grappa2d_calib_convolution_kernel(acs, target_acs_,
+                        (size_t)(mb1->getObjectPtr()->acceleration_factor),
+                        thres, kRO, kNE1, conv_ker_);
+
+                    Gadgetron::grappa2d_image_domain_kernel(conv_ker_, RO, E1, kIm_);
+
+                    hoNDArray< std::complex<float> > unmixing_all_channels(RO, E1, CHA, unmixing_.begin());
+                    Gadgetron::grappa2d_unmixing_coeff(kIm_, coil_map_, (size_t)(mb1->getObjectPtr()->acceleration_factor), unmixing_all_channels, gFactor_);
+
+                    // set unmixing coefficients for uncombined channels
+                    size_t ind = 1;
+                    for (it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++)
+                    {
+                        memcpy(unmixing_.begin() + ind*RO*E1*CHA, kIm_.begin() + (target_coils_ + ind - 1)*RO*E1*CHA, sizeof(std::complex<float>)*RO*E1*CHA);
+                    }
+                }
+            }
+
+            // pass the unmixing coefficients
+            if (mb1->getObjectPtr()->destination)
+            {
+                if (numUnCombined == 0)
+                {
+                    std::vector<size_t> dim(4);
+                    dim[0] = RO;
+                    dim[1] = E1;
+                    dim[2] = CHA;
+                    dim[3] = 1;
+
+                    unmixing_.reshape(&dim);
+                }
+
+                if (mb1->getObjectPtr()->destination->update(&unmixing_) < 0) {
+                    GDEBUG("Update of GRAPPA weights failed\n");
+                    return GADGET_FAIL;
+                }
+            }
+            else {
+                GDEBUG("Undefined GRAPPA weights destination\n");
+                return GADGET_FAIL;
+            }
+        }
 
 		mb->release();
 	}

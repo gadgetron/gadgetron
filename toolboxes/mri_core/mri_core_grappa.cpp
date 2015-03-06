@@ -91,7 +91,7 @@ void grappa2d_kerPattern(std::vector<int>& kE1, std::vector<int>& oE1, size_t& c
 }
 
 template <typename T> 
-void grappa2d_calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, ho5DArray<T>& ker)
+void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray<T>& ker)
 {
     try
     {
@@ -118,7 +118,7 @@ void grappa2d_calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, doub
         size_t oNE1 = oE1.size();
 
         /// allocate kernel
-        GADGET_CHECK_THROW(ker.createArray(kRO, kNE1, srcCHA, dstCHA, oNE1));
+        ker.create(kRO, kNE1, srcCHA, dstCHA, oNE1);
 
         /// loop over the calibration region and assemble the equation
         /// Ax = b
@@ -195,13 +195,13 @@ void grappa2d_calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, doub
     return;
 }
 
-template EXPORTMRICORE void grappa2d_calib(const ho3DArray< std::complex<float> >& acsSrc, const ho3DArray< std::complex<float> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, ho5DArray< std::complex<float> >& ker);
-template EXPORTMRICORE void grappa2d_calib(const ho3DArray< std::complex<double> >& acsSrc, const ho3DArray< std::complex<double> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, ho5DArray< std::complex<double> >& ker);
+template EXPORTMRICORE void grappa2d_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray< std::complex<float> >& ker);
+template EXPORTMRICORE void grappa2d_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray< std::complex<double> >& ker);
 
 // ------------------------------------------------------------------------
 
 template <typename T>
-void grappa2d_convert_to_convolution_kernel(const ho5DArray<T>& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, ho4DArray<T>& convKer)
+void grappa2d_convert_to_convolution_kernel(const hoNDArray<T>& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray<T>& convKer)
 {
     try
     {
@@ -228,7 +228,7 @@ void grappa2d_convert_to_convolution_kernel(const ho5DArray<T>& ker, size_t kRO,
         long long convKE1 = 2 * maxKE1 + 1;
 
         //// allocate the convolution kernel
-        convKer.createArray(convKRO, convKE1, srcCHA, dstCHA);
+        convKer.create(convKRO, convKE1, srcCHA, dstCHA);
         Gadgetron::clear(&convKer);
 
         //// index
@@ -269,13 +269,13 @@ void grappa2d_convert_to_convolution_kernel(const ho5DArray<T>& ker, size_t kRO,
     return;
 }
 
-template EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const ho5DArray< std::complex<float> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, ho4DArray< std::complex<float> >& convKer);
-template EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const ho5DArray< std::complex<double> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, ho4DArray< std::complex<double> >& convKer);
+template EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const hoNDArray< std::complex<float> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray< std::complex<float> >& convKer);
+template EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const hoNDArray< std::complex<double> >& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray< std::complex<double> >& convKer);
 
 // ------------------------------------------------------------------------
 
 template <typename T>
-void grappa2d_calib_convolution_kernel(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, ho4DArray<T>& convKer)
+void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray<T>& convKer)
 {
     try
     {
@@ -288,7 +288,7 @@ void grappa2d_calib_convolution_kernel(const ho3DArray<T>& acsSrc, const ho3DArr
 
         grappa2d_kerPattern(kE1, oE1, convkRO, convkE1, accelFactor, kRO, kNE1, fitItself);
 
-        ho5DArray<T> ker;
+        hoNDArray<T> ker;
         grappa2d_calib(acsSrc, acsDst, thres, kRO, kE1, oE1, ker);
 
         grappa2d_convert_to_convolution_kernel(ker, kRO, kE1, oE1, convKer);
@@ -302,13 +302,13 @@ void grappa2d_calib_convolution_kernel(const ho3DArray<T>& acsSrc, const ho3DArr
     return;
 }
 
-template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const ho3DArray< std::complex<float> >& acsSrc, const ho3DArray< std::complex<float> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, ho4DArray< std::complex<float> >& convKer);
-template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const ho3DArray< std::complex<double> >& acsSrc, const ho3DArray< std::complex<double> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, ho4DArray< std::complex<double> >& convKer);
+template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<float> >& convKer);
+template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<double> >& convKer);
 
 // ------------------------------------------------------------------------
 
 template <typename T> 
-void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDArray<T>& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, ho4DArray<T>& convKer)
+void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDArray<T>& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray<T>& convKer)
 {
     try
     {
@@ -349,7 +349,7 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
         size_t acsRO = endRO - startRO + 1;
         size_t acsE1 = endE1 - startE1 + 1;
 
-        ho3DArray<T> acsSrc(acsRO, acsE1, srcCHA), acsDst(acsRO, acsE1, dstCHA);
+        hoNDArray<T> acsSrc(acsRO, acsE1, srcCHA), acsDst(acsRO, acsE1, dstCHA);
 
         for (scha = 0; scha < srcCHA; scha++)
         {
@@ -381,16 +381,17 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
     }
 }
 
-template <typename T> EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDArray<T>& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, ho4DArray<T>& convKer);
+template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& dataSrc, const hoNDArray< std::complex<float> >& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<float> >& convKer);
+template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& dataSrc, const hoNDArray< std::complex<double> >& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<double> >& convKer);
 
 // ------------------------------------------------------------------------
 
 template <typename T> 
-void grappa2d_image_domain_kernel(const ho4DArray<T>& convKer, size_t RO, size_t E1, hoNDArray<T>& kIm)
+void grappa2d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t E1, hoNDArray<T>& kIm)
 {
     try
     {
-        ho4DArray<T> convKerScaled(convKer);
+        hoNDArray<T> convKerScaled(convKer);
         Gadgetron::scal((typename realType<T>::Type)(std::sqrt((double)(RO*E1))), convKerScaled);
         Gadgetron::zeropad2D(convKerScaled, RO, E1, kIm);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm);
@@ -403,8 +404,8 @@ void grappa2d_image_domain_kernel(const ho4DArray<T>& convKer, size_t RO, size_t
     return;
 }
 
-template EXPORTMRICORE void grappa2d_image_domain_kernel(const ho4DArray< std::complex<float> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<float> >& kIm);
-template EXPORTMRICORE void grappa2d_image_domain_kernel(const ho4DArray< std::complex<double> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<double> >& kIm);
+template EXPORTMRICORE void grappa2d_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<float> >& kIm);
+template EXPORTMRICORE void grappa2d_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, size_t E1, hoNDArray< std::complex<double> >& kIm);
 
 // ------------------------------------------------------------------------
 
@@ -426,10 +427,20 @@ void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coil
         GADGET_CHECK_THROW(coilMap.get_size(1) == E1);
         GADGET_CHECK_THROW(coilMap.get_size(2) == dstCHA);
 
-        unmixCoeff.create(RO, E1, srcCHA);
+        std::vector<size_t> dimUnmixing(3);
+        dimUnmixing[0] = RO; dimUnmixing[1] = E1; dimUnmixing[2] = srcCHA;
+        if (!unmixCoeff.dimensions_equal(&dimUnmixing))
+        {
+            unmixCoeff.create(RO, E1, srcCHA);
+        }
         Gadgetron::clear(&unmixCoeff);
 
-        gFactor.create(RO, E1);
+        std::vector<size_t> dimGFactor(2);
+        dimGFactor[0] = RO; dimGFactor[1] = E1;
+        if (!gFactor.dimensions_equal(&dimGFactor))
+        {
+            gFactor.create(RO, E1);
+        }
         Gadgetron::clear(&gFactor);
 
         int src;
