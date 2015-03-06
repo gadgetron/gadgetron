@@ -6,7 +6,7 @@
 #include "hoNDArray.h"
 #include "complext.h"
 #include "PhysioInterpolationGadget.h"
-#include "GadgetStreamController.h"
+#include "GadgetStreamInterface.h"
 #include "GadgetronTimer.h"
 #include "gadgetron_moco_export.h"
 #include "hoNDArray_fileio.h"
@@ -70,7 +70,7 @@ namespace Gadgetron{
       // to determine the number of incoming phases.
       //
       
-      GadgetStreamController *controller = this->get_controller();
+      GadgetStreamInterface *controller = this->get_controller();
     
       if( controller == 0x0 ){
         GDEBUG("Failed to get controller\n");

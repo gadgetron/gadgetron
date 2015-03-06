@@ -28,7 +28,7 @@
 namespace Gadgetron{
 
     //Forward declarations
-    class GadgetStreamController;
+    class GadgetStreamInterface;
 
     class EXPORTGADGETBASE Gadget : public ACE_Task<ACE_MT_SYNCH>
     {
@@ -93,11 +93,11 @@ namespace Gadgetron{
             desired_threads_ = t;
         }
 
-        virtual void set_controller(GadgetStreamController* controller) {
+        virtual void set_controller(GadgetStreamInterface* controller) {
             controller_ = controller;
         }
 
-        virtual GadgetStreamController* get_controller()
+        virtual GadgetStreamInterface* get_controller()
         {
             return controller_;
         }
@@ -245,7 +245,7 @@ namespace Gadgetron{
 
         unsigned int desired_threads_;
         bool pass_on_undesired_data_;
-        GadgetStreamController* controller_;
+        GadgetStreamInterface* controller_;
 	ACE_Thread_Mutex parameter_mutex_;
     private:
         std::map<std::string, std::string> parameters_;
