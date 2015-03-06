@@ -66,8 +66,13 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
         size_t ks = 5;
         size_t power = 3;
 
+#ifndef USE_CUDA
+        use_gpu_ = false;
+#endif // USE_CUDA
+
         if (use_gpu_)
         {
+#ifdef USE_CUDA
 		    // Copy the image data to the device
 		    cuNDArray<float_complext> device_data(host_data);
 		    device_data.squeeze();
@@ -150,10 +155,11 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                 GDEBUG("Undefined GRAPPA weights destination\n");
                 return GADGET_FAIL;
             }
+#endif // USE_CUDA
         }
         else
         {
-            hoNDFFT<float>::instance()->ifft(host_data, 1);
+            host_data->squeeze();
 
             size_t RO = host_data->get_size(0);
             size_t E1 = host_data->get_size(1);
@@ -185,7 +191,13 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                 hoNDArray< std::complex<float> > target_acs(RO, E1, target_coils_, acs.begin());
 
                 // estimate coil map
-                Gadgetron::coil_map_2d_Souheil(target_acs, coil_map_, ks, power);
+                if (!complex_im_.dimensions_equal(&target_acs))
+                {
+                    complex_im_.create(RO, E1, target_coils_);
+                }
+
+                hoNDFFT<float>::instance()->ifft2c(target_acs, complex_im_);
+                Gadgetron::coil_map_2d_Souheil(complex_im_, coil_map_, ks, power);
 
                 // compute unmixing coefficients
                 if (mb1->getObjectPtr()->acceleration_factor == 1)
@@ -255,7 +267,14 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                 }
 
                 // estimate coil map
-                Gadgetron::coil_map_2d_Souheil(target_acs_, coil_map_, ks, power);
+                if (!complex_im_.dimensions_equal(&target_acs_))
+                {
+                    complex_im_.create(RO, E1, target_acs_.get_size(2));
+                }
+
+                hoNDFFT<float>::instance()->ifft2c(target_acs_, complex_im_);
+
+                Gadgetron::coil_map_2d_Souheil(complex_im_, coil_map_, ks, power);
 
                 // compute unmixing coefficients
                 if (mb1->getObjectPtr()->acceleration_factor == 1)

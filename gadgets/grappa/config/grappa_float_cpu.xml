@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
         xmlns="http://gadgetron.sf.net/gadgetron"
@@ -55,7 +56,7 @@
       <dll>gadgetron_grappa</dll>
       <classname>GrappaGadget</classname>
       <property><name>target_coils</name><value>8</value></property>
-      <property><name>use_gpu</name><value>true</value></property>
+      <property><name>use_gpu</name><value>false</value></property>
     </gadget>
 
     <gadget>

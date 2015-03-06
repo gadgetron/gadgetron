@@ -14,6 +14,7 @@ namespace Gadgetron{
     , image_series_(0)
     , first_call_(true)
     , target_coils_(0)
+    , use_gpu_(false)
   {
   }
 
@@ -91,6 +92,8 @@ namespace Gadgetron{
       }
     }
 
+    bool use_gpu_ = this->get_bool_value("use_gpu");
+
     return GADGET_OK;
   }
 
@@ -113,7 +116,7 @@ namespace Gadgetron{
     GDEBUG("Running GRAPPA recon with %d source channels and %d target channels\n", dimensions_[3], target_coils_);
 
     weights_calculator_.set_number_of_target_coils(target_coils_);
-
+    weights_calculator_.set_use_gpu(use_gpu_);
 
     int device_channels = this->get_int_value("device_channels");
     if (device_channels) {
