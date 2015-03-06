@@ -158,7 +158,7 @@ install(FILES
     gadgetron_mricore_export.h
     ${gadgetron_mricore_header_files}
     ${OPTIMIZED_GADGET_HEADERS}
-    DESTINATION include COMPONENT main)
+    DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 if (ARMADILLO_FOUND)
     install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

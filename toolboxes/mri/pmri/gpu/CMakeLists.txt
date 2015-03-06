@@ -87,4 +87,4 @@ install(FILES
 	cuSenseBufferCg.h
 	cuSpiritBuffer.h
 	gpupmri_export.h
-DESTINATION include COMPONENT main)
+DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

@@ -46,4 +46,4 @@ install(FILES
   conebeam_projection.h
   hoCuConebeamProjectionOperator.h
   gpuxray_export.h 
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

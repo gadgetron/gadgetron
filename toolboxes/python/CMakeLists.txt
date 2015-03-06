@@ -38,6 +38,6 @@ install(FILES
     python_ismrmrd_converter.h
     python_numpy_wrappers.h
     python_export.h
-    DESTINATION include COMPONENT main)
+    DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_subdirectory(example)

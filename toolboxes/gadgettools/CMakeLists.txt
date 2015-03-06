@@ -49,7 +49,7 @@ install (FILES
             GadgetronConnector.h
             gadgettools_export.h
             GadgetronSlotContainer.h
-            DESTINATION include COMPONENT main)
+            DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 if(ISMRMRD_FOUND)
   add_subdirectory(ismrmrd)

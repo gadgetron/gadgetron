@@ -13,12 +13,12 @@
 set(_check_list)
 
 # Search for the header file.
-find_path(GADGETRON_HOME include/Gadget.h 
-  HINTS $ENV{GADGETRON_HOME} /usr/local/gadgetron /usr/gadgetron)
+find_path(GADGETRON_HOME include/gadgetron/Gadget.h
+    HINTS $ENV{GADGETRON_HOME} /usr/local/gadgetron /usr/gadgetron)
 mark_as_advanced(GADGETRON_HOME)
 list(APPEND _check_list GADGETRON_HOME)
 
-SET(GADGETRON_INCLUDE_DIR ${GADGETRON_HOME}/include)
+SET(GADGETRON_INCLUDE_DIR ${GADGETRON_HOME}/include/gadgetron)
 mark_as_advanced(GADGETRON_INCLUDE_DIR)
 list(APPEND _check_list GADGETRON_INCLUDE_DIR)
 

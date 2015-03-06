@@ -48,7 +48,7 @@ target_link_libraries(gadgetron_interventional_mri
 install(FILES 
     gadgetron_interventional_mri_export.h
     DeviceChannelSplitterGadget.h
-    DESTINATION include COMPONENT main)
+    DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES grappa_device.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 

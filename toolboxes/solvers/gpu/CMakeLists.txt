@@ -48,4 +48,4 @@ install(FILES
   hoCuGpBbSolver.h
   cuSolverUtils.h
   gpusolvers_export.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

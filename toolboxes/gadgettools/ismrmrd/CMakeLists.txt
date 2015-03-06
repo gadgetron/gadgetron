@@ -1,4 +1,4 @@
 install (FILES 
             GadgetImageMessageReader.h 
             GadgetImageMessageWriter.h
-            DESTINATION include COMPONENT main)
+            DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

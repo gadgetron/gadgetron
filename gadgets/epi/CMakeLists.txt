@@ -40,7 +40,7 @@ install(FILES
   EPICorrGadget.h
   FFTXGadget.h
   gadgetron_epi_export.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_epi DESTINATION lib COMPONENT main)
 

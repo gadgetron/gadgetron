@@ -21,4 +21,4 @@ install(FILES
   hoPartialDerivativeOperator.h
   hoTvOperator.h
   hoTvPicsOperator.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

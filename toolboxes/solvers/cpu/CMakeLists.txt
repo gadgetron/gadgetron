@@ -13,4 +13,4 @@ install(FILES
   hoGpBbSolver.h
   hoCgPreconditioner.h
   hoSolverUtils.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
