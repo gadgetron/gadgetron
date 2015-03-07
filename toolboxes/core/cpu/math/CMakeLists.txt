@@ -75,4 +75,4 @@ install(TARGETS gadgetron_toolbox_cpucore_math DESTINATION lib COMPONENT main)
 
 install(FILES 
     ${cpucore_math_header_files}
-    DESTINATION include COMPONENT main)
+    DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

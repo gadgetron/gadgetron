@@ -26,4 +26,8 @@ target_link_libraries(gadgetron_cloudbus
 
 install(TARGETS gadgetron_toolbox_cloudbus DESTINATION lib COMPONENT main)
 install(TARGETS gadgetron_cloudbus DESTINATION bin COMPONENT main)
-install(FILES CloudBus.h cloudbus_export.h DESTINATION include COMPONENT main)
+
+install(FILES 
+  CloudBus.h
+  cloudbus_export.h
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

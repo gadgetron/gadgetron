@@ -34,4 +34,4 @@ install(TARGETS gadgetron_toolbox_gpudwt DESTINATION lib COMPONENT main)
 
 install(FILES
   cuNDDWT.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

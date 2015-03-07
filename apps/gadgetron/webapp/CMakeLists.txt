@@ -4,12 +4,12 @@ configure_file("gadgetron_web_ld.conf.in" ${CMAKE_BINARY_DIR}/gadgetron_web_ld.c
 
 if (WIN32)
     install(FILES gadgetron_web_app.py DESTINATION bin)
-    install(FILES ${CMAKE_BINARY_DIR}/gadgetron_web_app.cfg DESTINATION config)
+    install(FILES ${CMAKE_BINARY_DIR}/gadgetron_web_app.cfg DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
 else (WIN32)
     #install(FILES ${CMAKE_BINARY_DIR}/gadgetron_web.conf DESTINATION /etc/init COMPONENT web)
     #install(FILES ${CMAKE_BINARY_DIR}/gadgetron_web_ld.conf DESTINATION /etc/ld.so.conf.d COMPONENT web)
     install(FILES gadgetron_web_app.py DESTINATION bin COMPONENT web)
-    install(FILES ${CMAKE_BINARY_DIR}/gadgetron_web_app.cfg DESTINATION config COMPONENT web)
+    install(FILES ${CMAKE_BINARY_DIR}/gadgetron_web_app.cfg DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT web)
 endif (WIN32)
 
 message("Add gadgetron_web_info ...")

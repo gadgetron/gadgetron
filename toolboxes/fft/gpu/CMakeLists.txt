@@ -32,4 +32,4 @@ install(TARGETS gadgetron_toolbox_gpufft DESTINATION lib COMPONENT main)
 install(FILES
   gpufft_export.h
   cuNDFFT.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

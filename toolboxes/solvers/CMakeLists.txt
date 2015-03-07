@@ -21,7 +21,7 @@ install(FILES
   gpSolver.h
   gpBbSolver.h
   eigenTester.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 IF(ARMADILLO_FOUND)
   add_subdirectory(cpu)

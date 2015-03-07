@@ -12,7 +12,7 @@ install(FILES
   opticalFlowSolver.h 
   resampleOperator.h
   opticalFlowOperator.h 
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 if(ARMADILLO_FOUND)
   if(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.819" )
