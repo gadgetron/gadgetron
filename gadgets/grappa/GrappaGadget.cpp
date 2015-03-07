@@ -14,6 +14,7 @@ namespace Gadgetron{
     , image_series_(0)
     , first_call_(true)
     , target_coils_(0)
+    , use_gpu_(true)
   {
   }
 
@@ -114,6 +115,10 @@ namespace Gadgetron{
 
     weights_calculator_.set_number_of_target_coils(target_coils_);
 
+    bool use_gpu_ = this->get_bool_value("use_gpu");
+    GDEBUG_STREAM("use_gpu_ is " << use_gpu_);
+
+    weights_calculator_.set_use_gpu(use_gpu_);
 
     int device_channels = this->get_int_value("device_channels");
     if (device_channels) {

@@ -64,6 +64,7 @@
 #endif // USE_OMP
 
 #include "mri_core_def.h"
+#include "mri_core_utility.h"
 
 namespace Gadgetron {
 
