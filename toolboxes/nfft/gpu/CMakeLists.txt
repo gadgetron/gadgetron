@@ -44,4 +44,4 @@ install(FILES
   cuNFFT.h 
   cuNFFTOperator.h 
   gpunfft_export.h 
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

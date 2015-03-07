@@ -16,7 +16,7 @@ install(FILES
   GadgetronException.h
   GadgetronTimer.h
   Gadgetron_enable_types.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_subdirectory(cpu)
 

@@ -90,7 +90,7 @@ install(FILES
   GadgetServerAcceptor.h
   GadgetStreamController.h
   ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_config.h
-  DESTINATION include COMPONENT main) 
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main) 
 
 install(FILES 
   gadgetron.xml.example
@@ -98,6 +98,6 @@ install(FILES
 
 install(FILES 
   schema/gadgetron.xsd
-  DESTINATION schema COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_SCHEMA_PATH} COMPONENT main)
 
 add_subdirectory(webapp)

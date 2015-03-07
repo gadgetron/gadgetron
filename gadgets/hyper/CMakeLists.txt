@@ -63,8 +63,8 @@ install(FILES
   CMRT3DGadget.h
   CSIGadget.h
   gadgetron_hyper_export.h
-  DESTINATION include)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH})
 
-install(FILES NFFT2D.xml CMRT3D.xml CMRT.xml DESTINATION config)
+install(FILES NFFT2D.xml CMRT3D.xml CMRT.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH})
 
 install(TARGETS gadgetron_hyper DESTINATION lib COMPONENT main)

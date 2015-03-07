@@ -84,4 +84,4 @@ install(FILES
   CUBLASContextProvider.h
   setup_grid.h
   cuSparseMatrix.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

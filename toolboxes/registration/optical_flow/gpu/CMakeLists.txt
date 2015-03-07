@@ -36,4 +36,4 @@ install(FILES
   cuLinearResampleOperator.h
 #  cuRegistration_utils.h
   cuCGHSOFSolver.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

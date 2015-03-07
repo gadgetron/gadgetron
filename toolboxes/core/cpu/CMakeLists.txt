@@ -86,7 +86,7 @@ install(FILES
         image/hoNDImageContainer2D.h 
         algorithm/hoNDBSpline.h
         algorithm/hoNDBSpline.hxx 
-        DESTINATION include COMPONENT main)
+        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_subdirectory(math)
 add_subdirectory(hostutils)

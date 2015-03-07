@@ -40,6 +40,6 @@ install (TARGETS gadgetron_spiral DESTINATION lib COMPONENT main)
 install (FILES vds.h gadgetron_spiral_export.h 
                      gpuSpiralSensePrepGadget.h 
                      SpiralToGenericGadget.h 
-                     DESTINATION include COMPONENT main)
+                     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_subdirectory(config)

@@ -99,7 +99,7 @@ endif(MKL_FOUND)
 
 install(
     FILES DicomFinishGadget.h DicomImageWriter.h gadgetron_dicom_export.h
-    DESTINATION include COMPONENT main)
+    DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_dicom DESTINATION lib COMPONENT main)
 

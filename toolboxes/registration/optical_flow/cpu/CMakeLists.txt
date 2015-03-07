@@ -107,7 +107,7 @@
 
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
         source_group(opticalflow FILES ${opticalflow_files})
-        install(FILES ${opticalflow_files} DESTINATION include COMPONENT main)
+        install(FILES ${opticalflow_files} DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
     endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
 
     source_group(transformation FILES ${transformation_files})
@@ -128,4 +128,4 @@
         ${similarity_files}
         ${register_files}
         ${application_files}
-        DESTINATION include COMPONENT main)
+        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

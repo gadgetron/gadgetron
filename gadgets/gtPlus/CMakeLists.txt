@@ -165,7 +165,7 @@ endif(CUDA_FOUND)
 install (FILES 
         GtPlusGadgetExport.h 
         ${gadgetronPlus_header_files} 
-        DESTINATION include COMPONENT main)
+        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install (FILES  ${config_files} 
         DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

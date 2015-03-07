@@ -8,15 +8,15 @@ FindIsmrmrd.cmake
 FindGMatlab.cmake
 FindDCMTK.cmake
 FindMKL.cmake
-DESTINATION cmake COMPONENT main)
+DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
 
 if (WIN32)
-    install(FILES InstallWinGadgetron.bat DESTINATION cmake COMPONENT main)
+    install(FILES InstallWinGadgetron.bat DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
 endif (WIN32)
 
 #if (UNIX)
 #    if (NOT APPLE)
-#        install(FILES ./debian/postinst DESTINATION cmake COMPONENT main)
-#        install(FILES ./debian/postinst_web DESTINATION cmake COMPONENT web)
+#        install(FILES ./debian/postinst DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
+#        install(FILES ./debian/postinst_web DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT web)
 #    endif (NOT APPLE)
 #endif (UNIX)
