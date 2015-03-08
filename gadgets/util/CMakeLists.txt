@@ -23,6 +23,6 @@ target_link_libraries(gadgetron_util
 install(FILES 
     gadgetron_util_gadgets_export.h
     ParameterRelayGadget.h
-    DESTINATION include COMPONENT main)
+    DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_util DESTINATION lib COMPONENT main)

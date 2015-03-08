@@ -17,4 +17,4 @@ install(FILES
   parameterparser.h 
   url_encode.h 
   FileInfo.h 
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

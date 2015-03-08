@@ -44,4 +44,4 @@ install(TARGETS gadgetron_toolbox_cpufft DESTINATION lib COMPONENT main)
 install(FILES
   cpufft_export.h 
   hoNDFFT.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

@@ -30,4 +30,4 @@ install(TARGETS gadgetron_cloudbus DESTINATION bin COMPONENT main)
 install(FILES 
   CloudBus.h
   cloudbus_export.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

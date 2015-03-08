@@ -19,7 +19,7 @@
         EPIReconXObject.h
         EPIReconXObjectFlat.h
         EPIReconXObjectTrapezoid.h
-        DESTINATION include COMPONENT main)
+        DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
     # install(TARGETS epi DESTINATION lib)
 

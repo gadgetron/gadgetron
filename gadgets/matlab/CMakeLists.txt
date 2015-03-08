@@ -52,6 +52,6 @@ else(UNIX)
 endif(UNIX)
 
 install(TARGETS gadgetron_matlab DESTINATION lib COMPONENT main)
-install(FILES MatlabGadget.h gadgetron_matlab_export.h DESTINATION include COMPONENT main)
+install(FILES MatlabGadget.h gadgetron_matlab_export.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 install(FILES BaseGadget.m BaseBufferGadget.m bufferRecon.m scale.m accumulate_and_recon.m mask_image.m recon.m trajectoryScale.m DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 install(FILES matlab.xml matlabbuffer.xml matlabnoncartesian.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

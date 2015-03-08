@@ -68,7 +68,7 @@ install (FILES  gadgetron_grappa_export.h
                 GrappaUnmixingGadget.h
                 GrappaWeights.h
                 GrappaWeightsCalculator.h 
-                DESTINATION include COMPONENT main)
+                DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install (TARGETS gadgetron_grappa DESTINATION lib COMPONENT main)
 

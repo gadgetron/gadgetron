@@ -41,4 +41,4 @@ install(TARGETS gadgetron_toolbox_hyper DESTINATION lib COMPONENT main)
 install(FILES 
     CSIOperator.h
     CSI_utils.h
-  DESTINATION include COMPONENT main)
+  DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

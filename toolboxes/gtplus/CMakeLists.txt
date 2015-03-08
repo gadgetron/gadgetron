@@ -228,7 +228,7 @@ if ( HAS_64_BIT )
             ${application_header_files} 
             ${gtplus_io_header_files} 
             ${matlab_files}
-            DESTINATION include COMPONENT main)
+            DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
     # This one depends on the gadgets being compiled
     if (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND)

@@ -36,7 +36,7 @@ target_link_libraries(gadgetron_gpugadget
 
 
 install (FILES  cuFFTGadget.h
-                DESTINATION include COMPONENT main)
+                DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install (TARGETS gadgetron_gpugadget DESTINATION lib COMPONENT main)
 
