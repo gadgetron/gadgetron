@@ -197,7 +197,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                 }
 
                 hoNDFFT<float>::instance()->ifft2c(target_acs, complex_im_);
-                Gadgetron::coil_map_2d_Souheil(complex_im_, coil_map_, ks, power);
+                Gadgetron::coil_map_2d_Inati(complex_im_, coil_map_, ks, power);
 
                 // compute unmixing coefficients
                 if (mb1->getObjectPtr()->acceleration_factor == 1)
@@ -274,7 +274,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 
                 hoNDFFT<float>::instance()->ifft2c(target_acs_, complex_im_);
 
-                Gadgetron::coil_map_2d_Souheil(complex_im_, coil_map_, ks, power);
+                Gadgetron::coil_map_2d_Inati(complex_im_, coil_map_, ks, power);
 
                 // compute unmixing coefficients
                 if (mb1->getObjectPtr()->acceleration_factor == 1)

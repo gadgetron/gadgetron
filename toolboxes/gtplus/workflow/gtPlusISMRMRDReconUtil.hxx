@@ -5054,11 +5054,11 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
 
                     if ( algo == ISMRMRD_SOUHEIL_ITER )
                     {
-                        coilMap2DNIH2Inner(dataCurr, coilMapCurr, ks, iterNum, thres);
+                        Gadgetron::coil_map_2d_Inati_Iter(dataCurr, coilMapCurr, ks, iterNum, thres);
                     }
                     else
                     {
-                        coilMap2DNIHInner(dataCurr, coilMapCurr, ks, power);
+                        Gadgetron::coil_map_2d_Inati(dataCurr, coilMapCurr, ks, power);
                     }
                 }
             }
@@ -5067,11 +5067,11 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
         {
             if ( algo == ISMRMRD_SOUHEIL_ITER )
             {
-                GADGET_CHECK_RETURN_FALSE(coilMap2DNIH2Inner(data, coilMap, ks, iterNum, thres));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati_Iter(data, coilMap, ks, iterNum, thres));
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner(data, coilMap, ks, power));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati(data, coilMap, ks, power));
             }
         }
         else
@@ -5082,11 +5082,11 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
                 hoNDArray<T> coilMapCurr(RO, E1, CHA, coilMap.begin()+n*num);
                 if ( algo == ISMRMRD_SOUHEIL_ITER )
                 {
-                    GADGET_CHECK_RETURN_FALSE(coilMap2DNIH2Inner(dataCurr, coilMapCurr, ks, iterNum, thres));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati_Iter(dataCurr, coilMapCurr, ks, iterNum, thres));
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner(dataCurr, coilMapCurr, ks, power));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati(dataCurr, coilMapCurr, ks, power));
                 }
             }
         }

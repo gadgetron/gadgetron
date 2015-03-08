@@ -10,7 +10,7 @@ namespace Gadgetron
 {
 
 template<typename T> 
-void coil_map_2d_Souheil(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power)
+void coil_map_2d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power)
 {
     try
     {
@@ -206,18 +206,18 @@ void coil_map_2d_Souheil(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t
     }
     catch (...)
     {
-        GERROR_STREAM("Errors in coil_map_2d_Souheil(...) ... ");
+        GERROR_STREAM("Errors in coil_map_2d_Inati(...) ... ");
         throw;
     }
 }
 
-template EXPORTMRICORE void coil_map_2d_Souheil(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t power);
-template EXPORTMRICORE void coil_map_2d_Souheil(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t power);
+template EXPORTMRICORE void coil_map_2d_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t power);
+template EXPORTMRICORE void coil_map_2d_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t power);
 
 // ------------------------------------------------------------------------
 
 template<typename T> 
-void coil_map_3d_Souheil(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power)
+void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power)
 {
     try
     {
@@ -374,18 +374,18 @@ void coil_map_3d_Souheil(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t
     }
     catch (...)
     {
-        GERROR_STREAM("Errors in coil_map_3d_Souheil(...) ... ");
+        GERROR_STREAM("Errors in coil_map_3d_Inati(...) ... ");
         throw;
     }
 }
 
-template EXPORTMRICORE void coil_map_3d_Souheil(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t power);
-template EXPORTMRICORE void coil_map_3d_Souheil(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t power);
+template EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t power);
+template EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t power);
 
 // ------------------------------------------------------------------------
 
 template<typename T> 
-void coil_map_2d_Souheil_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t iterNum, typename realType<T>::Type thres)
+void coil_map_2d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t iterNum, typename realType<T>::Type thres)
 {
     try
     {
@@ -488,18 +488,18 @@ void coil_map_2d_Souheil_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, s
     }
     catch (...)
     {
-        GERROR_STREAM("Errors in coil_map_2d_Souheil_Iter(...) ... ");
+        GERROR_STREAM("Errors in coil_map_2d_Inati_Iter(...) ... ");
         throw;
     }
 }
 
-template EXPORTMRICORE void coil_map_2d_Souheil_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t iterNum, float thres);
-template EXPORTMRICORE void coil_map_2d_Souheil_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t iterNum, double thres);
+template EXPORTMRICORE void coil_map_2d_Inati_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t iterNum, float thres);
+template EXPORTMRICORE void coil_map_2d_Inati_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t iterNum, double thres);
 
 // ------------------------------------------------------------------------
 
 template<typename T> 
-void coil_map_3d_Souheil_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t iterNum, typename realType<T>::Type thres)
+void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t iterNum, typename realType<T>::Type thres)
 {
     try
     {
@@ -593,13 +593,13 @@ void coil_map_3d_Souheil_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, s
     }
     catch (...)
     {
-        GERROR_STREAM("Errors in coil_map_3d_Souheil_Iter(...) ... ");
+        GERROR_STREAM("Errors in coil_map_3d_Inati_Iter(...) ... ");
         throw;
     }
 }
 
-template EXPORTMRICORE void coil_map_3d_Souheil_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t iterNum, float thres);
-template EXPORTMRICORE void coil_map_3d_Souheil_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t iterNum, double thres);
+template EXPORTMRICORE void coil_map_3d_Inati_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t iterNum, float thres);
+template EXPORTMRICORE void coil_map_3d_Inati_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t iterNum, double thres);
 
 // ------------------------------------------------------------------------
 
