@@ -43,6 +43,7 @@ link_libraries(optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
                 gadgetron_toolbox_cpufft
                 gadgetron_toolbox_gtplus 
                 gadgetron_toolbox_gadgettools 
+                gadgetron_toolbox_mri_core 
                 gadgetronPlus)
 
 if (CUDA_FOUND)

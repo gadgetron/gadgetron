@@ -208,11 +208,17 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
                 // hoNDArray<T> inPermute(RO, E1, E2, CHA);
                 forward_buf_.create(RO, E1, E2, CHA);
 
+                std::vector<size_t> dimOrder(4);
+                dimOrder[0] = 0;
+                dimOrder[1] = 1;
+                dimOrder[2] = 3;
+                dimOrder[3] = 2;
+
                 // #pragma omp for
                 for ( t=0; t<num; t++ )
                 {
                     hoNDArray<T> in(RO, E1, CHA, E2, pX+t*RO*E1*CHA*E2);
-                    Gadgetron::permuteLastTwoDimensions(in, forward_buf_);
+                    Gadgetron::permute(&in, &forward_buf_, &dimOrder);
 
                     long long cha;
 
@@ -292,6 +298,12 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
                 // hoNDArray<T> outPermute(RO, E1, E2, CHA);
                 adjoint_buf_.create(RO, E1, E2, CHA);
 
+                std::vector<size_t> dimOrder(4);
+                dimOrder[0] = 0;
+                dimOrder[1] = 1;
+                dimOrder[2] = 3;
+                dimOrder[3] = 2;
+
                 // #pragma omp for
                 for ( t=0; t<num; t++ )
                 {
@@ -307,7 +319,7 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
                         this->idwtRedundantHaar(in, out_idwt, numOfWavLevels_);
                     }
 
-                    Gadgetron::permuteLastTwoDimensions(adjoint_buf_, out);
+                    Gadgetron::permute(&adjoint_buf_, &out, &dimOrder);
                 }
             }
         }

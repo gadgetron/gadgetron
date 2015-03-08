@@ -61,8 +61,8 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   int target_coils_;
   float phase_encoding_resolution_;
   unsigned int line_offset_;
-  
   map_type_ channel_map_;
+  bool use_gpu_;
 };
 }
 #endif //GRAPPAGADGET_H

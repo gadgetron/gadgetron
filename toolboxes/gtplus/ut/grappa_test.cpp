@@ -564,24 +564,21 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     Gadgetron::norm2(acsSrc, v);
     GDEBUG_STREAM("acsSrc = " << v);
 
-    std::vector<int> kE1, oE1;
     int accelFactor = 4;
     bool fitItself = true;
 
-    grappa.grappa_.kerPattern(kE1, oE1, accelFactor, kNE1, fitItself);
-
-    ho5DArray<T> ker(kRO, kNE1, srcCHA, dstCHA, oE1.size());
-    timer.start("grappa.calib");
-    grappa.grappa_.calib(acsSrc, acsDst, grappa_reg_lamda_, (int)kRO, kE1, oE1, ker);
+    ho4DArray<T> convKer;
+    timer.start("grappa2d_calib_convolution_kernel");
+    Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, accelFactor, grappa_reg_lamda_, kRO, kNE1, convKer);
     timer.stop();
 
-    Gadgetron::norm2(ker, v);
-    GDEBUG_STREAM("ker = " << v);
-    gt_io.exportArrayComplex(ker, this->gtPluse_ut_res_folder_ + "ker");
+    Gadgetron::norm2(convKer, v);
+    GDEBUG_STREAM("convKer = " << v);
+    gt_io.exportArrayComplex(convKer, this->gtPluse_ut_res_folder_ + "convKer");
 
     ho4DArray<T> kIm(RO, E1, srcCHA, dstCHA);
-    timer.start("grappa.imageDomainKernel");
-    grappa.grappa_.imageDomainKernel(ker, (int)kRO, kE1, oE1, (int)RO, (int)E1, kIm);
+    timer.start("grappa2d_image_domain_kernel");
+    Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
     timer.stop();
     gt_io.exportArrayComplex(kIm, this->gtPluse_ut_res_folder_ + "kIm");
 
@@ -589,26 +586,26 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     GDEBUG_STREAM("kIm = " << v);
 
     ho3DArray<T> unmixC(RO, E1, srcCHA);
-    ho2DArray<T> gFactor(RO, E1);
+    ho2DArray<float> gFactor(RO, E1);
 
     ho3DArray<T> coilMap2(RO, E1, dstCHA, coilMap.begin());
 
     Gadgetron::norm2(coilMap2, v);
     GDEBUG_STREAM("coilMap2 = " << v);
 
-    grappa.unmixCoeff(kIm, coilMap2, unmixC, gFactor);
+    Gadgetron::grappa2d_unmixing_coeff(kIm, coilMap2, accelFactor, unmixC, gFactor);
 
     Gadgetron::norm2(unmixC, v);
     GDEBUG_STREAM("unmixC = " << v);
 
     gt_io.export3DArrayComplex(unmixC, this->gtPluse_ut_res_folder_ + "unmixC");
-    gt_io.export2DArrayComplex(gFactor, this->gtPluse_ut_res_folder_ + "gFactor");
+    gt_io.export2DArray(gFactor, this->gtPluse_ut_res_folder_ + "gFactor");
 
     // unwarpping
     hoNDArray<T> res;
     grappa.applyImageDomainKernel(kspace, kIm, res);
     gt_io.export3DArrayComplex(res, this->gtPluse_ut_res_folder_ + "grappa2D_res");
 
-    grappa.applyUnmixCoeff(kspace, unmixC, res);
+    Gadgetron::apply_unmix_coeff_kspace(kspace, unmixC, res);
     gt_io.export2DArrayComplex(res, this->gtPluse_ut_res_folder_ + "res_unmixC");
 }

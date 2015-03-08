@@ -10,7 +10,7 @@
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconCoilMapEstimation.h"
 #include "gtPlusISMRMRDReconWorker2DT.h"
-#include "gtPlusGRAPPA.h"
+#include "mri_core_grappa.h"
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -51,7 +51,7 @@ public:
     using BaseClass::startE1_;
     using BaseClass::endE1_;
 
-    gtPlusGRAPPA<T> grappa_;
+    // gtPlusGRAPPA<T> grappa_;
 };
 
 template <typename T> 
@@ -73,14 +73,15 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         size_t dstCHA = ref_dst.get_size(2);
 
         std::vector<int> kE1, oE1;
+        size_t convkRO, convkE1;
         bool fitItself = true;
-        GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, (int)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
+
+        grappa2d_kerPattern(kE1, oE1, convkRO, convkE1, workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_RO_, workOrder2DT->grappa_kSize_E1_, fitItself);
 
         size_t kRO = workOrder2DT->grappa_kSize_RO_;
         size_t kNE1 = workOrder2DT->grappa_kSize_E1_;
-        size_t oNE1 = oE1.size();
 
-        workOrder2DT->kernel_->create(kRO, kNE1, srcCHA, dstCHA, oNE1, refN, S);
+        workOrder2DT->kernel_->create(convkRO, convkE1, srcCHA, dstCHA, refN, S);
         workOrder2DT->kernelIm_->create(RO, E1, srcCHA, dstCHA, refN, S);
         workOrder2DT->unmixingCoeffIm_->create(RO, E1, srcCHA, refN, S);
         workOrder2DT->gfactor_.create(RO, E1, refN, S);
@@ -117,15 +118,11 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         size_t refN = ref_dst.get_size(3);
         size_t dstCHA = ref_dst.get_size(2);
 
-        gtPlusGRAPPA<T> grappa_local;
-
-        std::vector<int> kE1, oE1;
         bool fitItself = true;
-        GADGET_CHECK_RETURN_FALSE(grappa_local.kerPattern(kE1, oE1, (size_t)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
-
         size_t kRO = workOrder2DT->grappa_kSize_RO_;
         size_t kNE1 = workOrder2DT->grappa_kSize_E1_;
-        size_t oNE1 = oE1.size();
+        size_t convkRO = workOrder2DT->kernel_->get_size(0);
+        size_t convkE1 = workOrder2DT->kernel_->get_size(1);
 
         ho3DArray<T> acsSrc(refRO, refE1, srcCHA, const_cast<T*>(ref_src.begin()+n*refRO*refE1*srcCHA+usedS*refRO*refE1*srcCHA*refN));
         ho3DArray<T> acsDst(refRO, refE1, dstCHA, const_cast<T*>(ref_dst.begin()+n*refRO*refE1*dstCHA+usedS*refRO*refE1*dstCHA*refN));
@@ -140,23 +137,21 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         filename = "acsDst";
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsDst, debugFolder_+filename+suffix); }
 
-        grappa_local.calib_use_gpu_  = workOrder2DT->grappa_use_gpu_;
+        ho4DArray<T> convKer(convkRO, convkE1, srcCHA, dstCHA, workOrder2DT->kernel_->begin() + n*convkRO*convkE1*srcCHA*dstCHA + usedS*refN*convkRO*convkE1*srcCHA*dstCHA);
 
-        ho5DArray<T> ker(kRO, kNE1, srcCHA, dstCHA, oNE1, workOrder2DT->kernel_->begin()+n*kRO*kNE1*srcCHA*dstCHA*oNE1+usedS*kRO*kNE1*srcCHA*dstCHA*oNE1*refN);
+        Gadgetron::GadgetronTimer gt_timer_local;
+        gt_timer_local.set_timing_in_destruction(false);
 
-         Gadgetron::GadgetronTimer gt_timer_local;
-         gt_timer_local.set_timing_in_destruction(false);
-
-        if ( performTiming_ ) { gt_timer_local.start("grappa_local.calib ... "); }
-        GADGET_CHECK_RETURN_FALSE(grappa_local.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, kRO, kE1, oE1, ker));
+        if ( performTiming_ ) { gt_timer_local.start("grappa2d_calib_convolution_kernel ... "); }
+        Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_reg_lamda_, kRO, kNE1, convKer);
         if ( performTiming_ ) { gt_timer_local.stop(); }
 
-        filename = "ker";
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ker, debugFolder_+filename+suffix); }
+        filename = "convKer";
+        if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(convKer, debugFolder_ + filename + suffix); }
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
-        if ( performTiming_ ) { gt_timer_local.start("grappa_local.imageDomainKernel ... "); }
-        GADGET_CHECK_RETURN_FALSE(grappa_local.imageDomainKernel(ker, kRO, kE1, oE1, RO, E1, kIm));
+        if ( performTiming_ ) { gt_timer_local.start("grappa2d_image_domain_kernel ... "); }
+        Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
         if ( performTiming_ ) { gt_timer_local.stop(); }
 
         filename = "kIm";
@@ -164,15 +159,14 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         hoNDArray<T> coilMap(RO, E1, dstCHA, workOrder2DT->coilMap_->begin()+n*RO*E1*dstCHA+usedS*RO*E1*dstCHA*refN);
         hoNDArray<T> unmixC(RO, E1, srcCHA, workOrder2DT->unmixingCoeffIm_->begin()+n*RO*E1*srcCHA+usedS*RO*E1*srcCHA*refN);
-        hoNDArray<T> gFactor(RO, E1, workOrder2DT->gfactor_.begin()+n*RO*E1+usedS*RO*E1*refN);
+        hoNDArray<T> gFactor(RO, E1, 1, workOrder2DT->gfactor_.begin()+n*RO*E1+usedS*RO*E1*refN);
 
-        if ( performTiming_ ) { gt_timer_local.start("unmixCoeff ... "); }
-        GADGET_CHECK_RETURN_FALSE(this->unmixCoeff(kIm, coilMap, unmixC, gFactor));
+        hoNDArray< typename realType<T>::Type > gFactorMap(RO, E1);
+        if ( performTiming_ ) { gt_timer_local.start("grappa2d_unmixing_coeff ... "); }
+        Gadgetron::grappa2d_unmixing_coeff(kIm, coilMap, (size_t)workOrder2DT->acceFactorE1_, unmixC, gFactorMap);
         if ( performTiming_ ) { gt_timer_local.stop(); }
 
-        if ( performTiming_ ) { gt_timer_local.start("scale gfactor ... "); }
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder2DT->acceFactorE1_), gFactor));
-        if ( performTiming_ ) { gt_timer_local.stop(); }
+        Gadgetron::real_to_complex(gFactorMap, gFactor);
 
         filename = "unmixC";
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(unmixC, debugFolder_+filename+suffix); }

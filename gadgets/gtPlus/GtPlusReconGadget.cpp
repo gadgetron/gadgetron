@@ -1774,11 +1774,11 @@ namespace Gadgetron
                                             if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(repBuf, debugFolder2_fullPath_+"repBuf"); }
 
                                             Gadgetron::abs(repBuf, repBufMag);
-                                            if ( debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(repBufMag, debugFolder2_fullPath_+"repBufMag"); }
+                                            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(repBufMag, debugFolder2_fullPath_+"repBufMag"); }
 
                                             // compute std
                                             GADGET_CHECK_RETURN_FALSE(Gadgetron::stdOver3rdDimension(repBufMag, stdMap2D, true));
-                                            if ( debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(stdMap2D, debugFolder2_fullPath_+"stdMap2D"); }
+                                            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(stdMap2D, debugFolder2_fullPath_+"stdMap2D"); }
 
                                             // copy it to the std map
                                             ind[2] = cha;
@@ -1849,11 +1849,11 @@ namespace Gadgetron
                                             if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(phsBuf, debugFolder2_fullPath_+"phsBuf"); }
 
                                             Gadgetron::abs(phsBuf, phsBufMag);
-                                            if ( debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(phsBufMag, debugFolder2_fullPath_+"phsBufMag"); }
+                                            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(phsBufMag, debugFolder2_fullPath_+"phsBufMag"); }
 
                                             // compute std
                                             GADGET_CHECK_RETURN_FALSE(Gadgetron::stdOver3rdDimension(phsBufMag, stdMap2D, true));
-                                            if ( debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(stdMap2D, debugFolder2_fullPath_+"stdMap2D"); }
+                                            if ( !debugFolder2_fullPath_.empty() ) { gt_exporter_.exportArray(stdMap2D, debugFolder2_fullPath_+"stdMap2D"); }
 
                                             // copy it to the std map
                                             ind[2] = cha;

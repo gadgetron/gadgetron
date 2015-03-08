@@ -32,7 +32,7 @@ namespace Gadgetron {
     write_nd_array<complext<float> >(host.get(), filename);
     return 0;
   }
-  
+
   template <class T> __global__ void form_grappa_system_matrix_kernel_2d(const T* __restrict__ ref_data,
                                                                          int2 dims,
                                                                          int source_coils,
@@ -226,6 +226,8 @@ namespace Gadgetron {
       }
     }
 
+    unsigned int RO = ref_data->get_size(0);
+    unsigned int E1 = ref_data->get_size(1);
     unsigned int source_coils = ref_data->get_size(ref_data->get_number_of_dimensions()-1);
     unsigned int target_coils = b1->get_size(b1->get_number_of_dimensions()-1);
     unsigned int elements_per_coil = b1->get_number_of_elements()/target_coils;
@@ -389,12 +391,12 @@ namespace Gadgetron {
 
         //  {
         //      std::string filename = debugFolder+appendix+"A.cplx";
-		    //write_cuNDArray_to_disk(&system_matrix, filename.c_str());
+            //write_cuNDArray_to_disk(&system_matrix, filename.c_str());
         //  }
 
         //  {
         //      std::string filename = debugFolder+appendix+"b.cplx";
-		    //write_cuNDArray_to_disk(&b, filename.c_str());
+            //write_cuNDArray_to_disk(&b, filename.c_str());
         //  }
 
         complext<float>  alpha = complext<float>(1);
@@ -411,14 +413,14 @@ namespace Gadgetron {
                                  (float2*) system_matrix.get_data_ptr(), m,
                                  (float2*) system_matrix.get_data_ptr(), m,
                                  (float2*) &beta, (float2*) AHA.get_data_ptr(), n);
-                
+
               if (stat != CUBLAS_STATUS_SUCCESS) {
                 std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHA product using cublas gemm" << std::endl;
                 std::cerr << "---- cublas error code " << stat << std::endl;
                 return -1;
               }
             }
-            
+
             {
               //timer.start("copy AHA to host");
               if (cudaMemcpy(pAHA, AHA.get_data_ptr(), AHA_host.get_number_of_bytes(), cudaMemcpyDeviceToHost) != cudaSuccess)
@@ -498,42 +500,42 @@ namespace Gadgetron {
         }
 
 
-	/*
-	{
-	  //This is the OLD GPU code using CULA
-	  GPUTimer gpu_invert_time("GPU Inversion time"); 
-	  culaStatus s;
-	  s = culaDeviceCgels( 'N', n, n, target_coils,
+    /*
+    {
+      //This is the OLD GPU code using CULA
+      GPUTimer gpu_invert_time("GPU Inversion time");
+      culaStatus s;
+      s = culaDeviceCgels( 'N', n, n, target_coils,
                              (culaDeviceFloatComplex*)AHA.get_data_ptr(), n,
                              (culaDeviceFloatComplex*)AHrhs.get_data_ptr(), n);
 
 
-	  if (s != culaNoError) {
-	    GDEBUG_STREAM("htgrappa_calculate_grappa_unmixing: linear solve failed" << std::endl);
-	    return -1;
-	  }
-	}
-	*/
-      
+      if (s != culaNoError) {
+        GDEBUG_STREAM("htgrappa_calculate_grappa_unmixing: linear solve failed" << std::endl);
+        return -1;
+      }
+    }
+    */
 
-	{
-	  //It actually turns out to be faster to do this inversion on the CPU. Problem is probably too small for GPU to make sense
-	  //GPUTimer cpu_invert_time("CPU Inversion time");
-	  boost::shared_ptr< hoNDArray<T> > AHA_h = AHA.to_host();
-	  boost::shared_ptr< hoNDArray<T> > AHrhs_h = AHrhs.to_host();
-	  
-	  std::vector<size_t> perm_dim;
-	  perm_dim.push_back(1);
-	  perm_dim.push_back(0);
-	  
-	  permute(AHA_h.get(),&perm_dim);
-	  permute(AHrhs_h.get(),&perm_dim);
 
-	  ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());	  
+    {
+      //It actually turns out to be faster to do this inversion on the CPU. Problem is probably too small for GPU to make sense
+      //GPUTimer cpu_invert_time("CPU Inversion time");
+      boost::shared_ptr< hoNDArray<T> > AHA_h = AHA.to_host();
+      boost::shared_ptr< hoNDArray<T> > AHrhs_h = AHrhs.to_host();
 
-	  permute(AHrhs_h.get(),&perm_dim);
-	  AHrhs = cuNDArray<T>(*AHrhs_h);
-	}
+      std::vector<size_t> perm_dim;
+      perm_dim.push_back(1);
+      perm_dim.push_back(0);
+
+      permute(AHA_h.get(),&perm_dim);
+      permute(AHrhs_h.get(),&perm_dim);
+
+      ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());
+
+      permute(AHrhs_h.get(),&perm_dim);
+      AHrhs = cuNDArray<T>(*AHrhs_h);
+    }
 
 #if 0
         size_t free = 0, total = 0;
@@ -551,7 +553,7 @@ namespace Gadgetron {
 
         //  {
         //      std::string filename = debugFolder+appendix+"AHrhs_solution.cplx";
-		    //write_cuNDArray_to_disk(&AHrhs, filename.c_str());
+            //write_cuNDArray_to_disk(&AHrhs, filename.c_str());
         //  }
 
         gridDim = dim3((unsigned int) std::ceil((1.0f*n*source_coils)/blockDim.x), 1, 1 );
@@ -567,7 +569,7 @@ namespace Gadgetron {
 
         //  {
         //      std::string filename = debugFolder+appendix+"kernel.cplx";
-		    //write_cuNDArray_to_disk(&gkernel, filename.c_str());
+            //write_cuNDArray_to_disk(&gkernel, filename.c_str());
         //  }
 
         err = cudaGetLastError();
@@ -619,7 +621,7 @@ namespace Gadgetron {
 
         cuNDFFT<typename realType<T>::Type>::instance()->ifft(&tmp_mixing, &ft_dims);
 
-        float scale_factor = total_elements;
+        float scale_factor = (float)std::sqrt((double)(RO*E1));
 
         gridDim = dim3((unsigned int) std::ceil(1.0f*total_elements/blockDim.x), 1, 1 );
         scale_and_add_unmixing_coeffs<<< gridDim, blockDim >>>(tmp_mixing.get_data_ptr(),
@@ -790,15 +792,15 @@ namespace Gadgetron {
       //GPUTimer cpu_invert_time("CPU Inversion time");
       boost::shared_ptr< hoNDArray<T> > AHA_h = AHA.to_host();
       boost::shared_ptr< hoNDArray<T> > AHrhs_h = coeff->to_host();
-      
+
       std::vector<size_t> perm_dim;
       perm_dim.push_back(1);
       perm_dim.push_back(0);
-      
+
       permute(AHA_h.get(),&perm_dim);
       permute(AHrhs_h.get(),&perm_dim);
-      
-      ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());	  
+
+      ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());
 
       permute(AHrhs_h.get(),&perm_dim);
       *coeff = cuNDArray<T>(*AHrhs_h);
@@ -828,7 +830,7 @@ namespace Gadgetron {
                                                                 cuNDArray<complext<float> >* out_mixing_coeff,
                                                                 std::vector< std::pair<unsigned int, unsigned int> >* sampled_region,
                                                                 std::list< unsigned int >* uncombined_channels);
-  
+
   template EXPORTGPUPMRI int inverse_clib_matrix(cuNDArray<complext<float> >* A,
                                                  cuNDArray<complext<float> >* b,
                                                  cuNDArray<complext<float> >* coeff,
