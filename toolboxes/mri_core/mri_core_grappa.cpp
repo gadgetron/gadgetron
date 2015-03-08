@@ -23,9 +23,12 @@
 */
 
 #include "mri_core_grappa.h"
-#include "ismrmrd/ismrmrd.h"
-#include "GadgetronTimer.h"
 #include "mri_core_utility.h"
+#include "hoMatrix.h"
+#include "hoNDArray_linalg.h"
+#include "hoNDFFT.h"
+#include "hoNDArray_utils.h"
+#include "hoNDArray_elemwise.h"
 
 #ifdef USE_OMP
     #include "omp.h"

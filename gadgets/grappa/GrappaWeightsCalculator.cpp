@@ -15,6 +15,7 @@
 #include "complext.h"
 
 #include "hoNDFFT.h"
+#include "hoNDArray_elemwise.h"
 #include "mri_core_grappa.h"
 #include "mri_core_coil_map_estimation.h"
 

@@ -7,10 +7,7 @@
 #pragma once
 
 #include "mri_core_export.h"
-#include "ho2DArray.h"
-#include "ho3DArray.h"
-#include "ho4DArray.h"
-#include "ho5DArray.h"
+#include "hoNDArray.h"
 
 namespace Gadgetron {
     /// ---------------------------------------------------------------------
@@ -27,7 +24,7 @@ namespace Gadgetron {
     /// convKer: computed grappa convolution kernel
     template <typename T> EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray<T>& convKer);
     /// dataMask : [RO E1] array, marking fully rectangular sampled region with 1
-    template <typename T> EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDArray<T>& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, ho4DArray<T>& convKer);
+    template <typename T> EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDArray<T>& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray<T>& convKer);
 
     /// compute image domain kernel from 2d grappd convolution kernel
     /// RO, E1: the size of image domain kernel
@@ -71,10 +68,10 @@ namespace Gadgetron {
     /// kE1: the kernel pattern along E1
     /// oE1: the output kernel pattern along E1
     /// ker : kernel array [kRO kE1 srcCHA dstCHA oE1]
-    template <typename T> EXPORTMRICORE void grappa2d_calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, ho5DArray<T>& ker);
+    template <typename T> EXPORTMRICORE void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray<T>& ker);
 
     /// convert the grappa multiplication kernel computed from grappa2d_calib to convolution kernel
     /// convKer : [convRO convE1 srcCHA dstCHA]
-    template <typename T> EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const ho5DArray<T>& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, ho4DArray<T>& convKer);
+    template <typename T> EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const hoNDArray<T>& ker, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray<T>& convKer);
 
 }

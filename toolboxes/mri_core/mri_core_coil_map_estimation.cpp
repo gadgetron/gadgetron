@@ -5,6 +5,10 @@
 */
 
 #include "mri_core_coil_map_estimation.h"
+#include "hoMatrix.h"
+#include "hoNDArray_linalg.h"
+#include "hoNDArray_elemwise.h"
+#include "hoNDArray_reductions.h"
 
 namespace Gadgetron
 {
