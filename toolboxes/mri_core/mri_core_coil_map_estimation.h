@@ -6,7 +6,7 @@
 
         Inati SJ, Hansen MS, Kellman P.
         A solution to the phase problem in adaptive coil combination.
-        In: ISMRM proceeding; april; salt lake city, utah, USA. ; 2013. 2672.
+        In: ISMRM proceeding; April; Salt Lake City, Utah, USA; 2013. 2672.
 
         Kellman P, McVeigh ER.
         Image reconstruction in SNR units: A general method for SNR measurement.
@@ -14,7 +14,9 @@
 
     ISMRMRD_SOUHEIL_ITER coil map estimation is based on:
 
-        Inati SJ, Hansen MS, Kellman P. Unpublished algorithm.
+        Inati SJ, Hansen MS, Kellman P. 
+        A Fast Optimal Method for Coil Sensitivity Estimation and Adaptive Coil Combination for Complex Images.
+        In: ISMRM proceeding; May; Milan, Italy; 2014. 4407.
 
     \author Hui Xue
 */

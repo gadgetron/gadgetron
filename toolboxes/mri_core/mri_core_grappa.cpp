@@ -94,7 +94,7 @@ void grappa2d_kerPattern(std::vector<int>& kE1, std::vector<int>& oE1, size_t& c
 }
 
 template <typename T> 
-void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray<T>& ker)
+void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& ker)
 {
     try
     {
@@ -126,11 +126,12 @@ void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, doub
         /// loop over the calibration region and assemble the equation
         /// Ax = b
 
-        size_t eRO = RO - kROhalf -1;
-        size_t sE1 = std::abs(kE1[0]);
-        size_t eE1 = E1 -1 - kE1[kNE1-1];
+        size_t sRO = startRO + kROhalf;
+        size_t eRO = endRO - kROhalf;
+        size_t sE1 = std::abs(kE1[0]) + startE1;
+        size_t eE1 = endE1 - kE1[kNE1-1];
 
-        size_t lenRO = eRO-kROhalf+1;
+        size_t lenRO = eRO - sRO + 1;
 
         size_t rowA = (eE1-sE1+1)*lenRO;
         size_t colA = kRO*kNE1*srcCHA;
@@ -151,7 +152,7 @@ void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, doub
         long long e1;
         for ( e1=(long long)sE1; e1<=(long long)eE1; e1++ )
         {
-            for ( long long ro=kROhalf; ro<=(long long)eRO; ro++ )
+            for ( long long ro=sRO; ro<=(long long)eRO; ro++ )
             {
                 long long rInd = (e1-sE1)*lenRO+ro-kROhalf;
 
@@ -198,8 +199,8 @@ void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, doub
     return;
 }
 
-template EXPORTMRICORE void grappa2d_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray< std::complex<float> >& ker);
-template EXPORTMRICORE void grappa2d_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, hoNDArray< std::complex<double> >& ker);
+template EXPORTMRICORE void grappa2d_calib(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& ker);
+template EXPORTMRICORE void grappa2d_calib(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, double thres, size_t kRO, const std::vector<int>& kE1, const std::vector<int>& oE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& ker);
 
 // ------------------------------------------------------------------------
 
@@ -278,7 +279,7 @@ template EXPORTMRICORE void grappa2d_convert_to_convolution_kernel(const hoNDArr
 // ------------------------------------------------------------------------
 
 template <typename T>
-void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray<T>& convKer)
+void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& convKer)
 {
     try
     {
@@ -292,7 +293,7 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
         grappa2d_kerPattern(kE1, oE1, convkRO, convkE1, accelFactor, kRO, kNE1, fitItself);
 
         hoNDArray<T> ker;
-        grappa2d_calib(acsSrc, acsDst, thres, kRO, kE1, oE1, ker);
+        grappa2d_calib(acsSrc, acsDst, thres, kRO, kE1, oE1, startRO, endRO, startE1, endE1, ker);
 
         grappa2d_convert_to_convolution_kernel(ker, kRO, kE1, oE1, convKer);
 
@@ -303,6 +304,23 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
     }
 
     return;
+}
+
+template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<float> >& convKer);
+template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<double> >& acsSrc, const hoNDArray< std::complex<double> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray< std::complex<double> >& convKer);
+
+
+// ------------------------------------------------------------------------
+
+template <typename T>
+void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray<T>& convKer)
+{
+    size_t startRO = 0;
+    size_t endRO = acsSrc.get_size(0) - 1;
+    size_t startE1 = 0;
+    size_t endE1 = acsSrc.get_size(1) - 1;
+
+    grappa2d_calib_convolution_kernel(acsSrc, acsDst, accelFactor, thres, kRO, kNE1, startRO, endRO, startE1, endE1, convKer);
 }
 
 template EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray< std::complex<float> >& acsSrc, const hoNDArray< std::complex<float> >& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray< std::complex<float> >& convKer);
@@ -349,34 +367,7 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
         GADGET_CHECK_THROW(endRO>startRO);
         GADGET_CHECK_THROW(endE1>startE1 + accelFactor);
 
-        size_t acsRO = endRO - startRO + 1;
-        size_t acsE1 = endE1 - startE1 + 1;
-
-        hoNDArray<T> acsSrc(acsRO, acsE1, srcCHA), acsDst(acsRO, acsE1, dstCHA);
-
-        for (scha = 0; scha < srcCHA; scha++)
-        {
-            for (e1 = startE1; e1 <= endE1; e1++)
-            {
-                for (ro = startRO; ro <= endRO; ro++)
-                {
-                    acsSrc(ro, e1, scha) = dataSrc(ro, e1, scha);
-                }
-            }
-        }
-
-        for (dcha = 0; dcha < dstCHA; dcha++)
-        {
-            for (e1 = startE1; e1 <= endE1; e1++)
-            {
-                for (ro = startRO; ro <= endRO; ro++)
-                {
-                    acsDst(ro, e1, dcha) = dataDst(ro, e1, dcha);
-                }
-            }
-        }
-
-        GADGET_CATCH_THROW(grappa2d_calib_convolution_kernel(acsSrc, acsDst, accelFactor, thres, kRO, kNE1, convKer));
+        GADGET_CATCH_THROW(grappa2d_calib_convolution_kernel(dataSrc, dataDst, accelFactor, thres, kRO, kNE1, startRO, endRO, startE1, endE1, convKer));
     }
     catch (...)
     {

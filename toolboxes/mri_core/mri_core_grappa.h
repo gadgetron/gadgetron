@@ -17,11 +17,14 @@ namespace Gadgetron {
     /// grappa 2d calibration function to compute convolution kernel
     /// acsSrc : calibration data for source channel [RO E1 srcCHA], full kspace
     /// acsDst : calibration data for destination channel [RO E1 dstCHA], full kspace
+    /// startRO, endRO, startE1, endE1: define the data region [startRO endRO], [startE1 endE1] which is used for calibration
     /// accelFactor: acceleration factor
     /// thres: the threshold for regularization during kernel estimation
     /// kRO: kernel size along RO
     /// kNE1: kernel size along E1
     /// convKer: computed grappa convolution kernel
+    template <typename T> EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, size_t startRO, size_t endRO, size_t startE1, size_t endE1, hoNDArray<T>& convKer);
+    /// entire data in acsSrc and acsDst is used
     template <typename T> EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray<T>& convKer);
     /// dataMask : [RO E1] array, marking fully rectangular sampled region with 1
     template <typename T> EXPORTMRICORE void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDArray<T>& dataDst, hoNDArray<unsigned short>& dataMask, size_t accelFactor, double thres, size_t kRO, size_t kNE1, hoNDArray<T>& convKer);
