@@ -51,20 +51,6 @@ find_program(SIEMENS_TO_ISMRMRD_EXE siemens_to_ismrmrd)
 
 add_custom_target(chroot)
 
-# Try to find GIT_SHA1 by calling gadgetron_info                                                                                           
-if(EXISTS "${CMAKE_INSTALL_PREFIX}/bin/gadgetron_info")
-  execute_process(COMMAND gadgetron_info
-                  WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin
-                  OUTPUT_VARIABLE GADGETRON_INFO
-                  ERROR_VARIABLE GADGETRON_INFO_STDERR)
-
-  string(REGEX REPLACE ".*-- Git SHA1           : ([0-9a-z]+).*" "\\1" GIT_SHA1 ${GADGETRON_INFO})
-  string(LENGTH ${GIT_SHA1} SHA1_LEN)
-  if(${SHA1_LEN} EQUAL 40)
-    set(GADGETRON_GIT_SHA1 ${GIT_SHA1}) 
-  endif(${SHA1_LEN} EQUAL 40)
-endif(EXISTS "${CMAKE_INSTALL_PREFIX}/bin/gadgetron_info")
-
 if (SIEMENS_TO_ISMRMRD_EXE)
   add_custom_command(
     TARGET chroot

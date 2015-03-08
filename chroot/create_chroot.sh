@@ -35,6 +35,16 @@ else
     rm -rf ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
     mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root
     touch ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/source-manifest.txt
+
+    GADGETRON_INFO=${CHROOT_GADGETRON_INSTALL_PREFIX}/bin/gadgetron_info
+    if [ -f ${GADGETRON_INFO} ]; then
+      res=$(${GADGETRON_INFO})
+      re=".*-- Git SHA1           : ([0-9a-z]+).*"
+      if [[ $res =~ $re ]]; then 
+        CHROOT_GIT_SHA1_HASH=${BASH_REMATCH[1]}
+      fi
+    fi
+
     echo "gadgetron    ${CHROOT_GIT_SHA1_HASH}" > ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/source-manifest.txt
     mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron
     mkdir -p ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups
