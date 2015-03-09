@@ -47,7 +47,9 @@ protected:
             bp::object mod(bp::import(module.c_str()));
             fn_ = mod.attr(funcname.c_str());
         } catch (const bp::error_already_set&) {
-            throw std::runtime_error(pyerr_to_string());
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
         }
     }
 
@@ -78,7 +80,9 @@ public:
             bp::object res = fn_(args...);
             return bp::extract<TupleType>(res);
         } catch (bp::error_already_set const &) {
-            throw std::runtime_error(pyerr_to_string());
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
         }
     }
 };
@@ -105,7 +109,9 @@ public:
             bp::object res = fn_(args...);
             return bp::extract<RetType>(res);
         } catch (bp::error_already_set const &) {
-            throw std::runtime_error(pyerr_to_string());
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
         }
     }
 };
@@ -127,7 +133,9 @@ public:
         try {
             bp::object res = fn_(args...);
         } catch (bp::error_already_set const &) {
-            throw std::runtime_error(pyerr_to_string());
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
         }
     }
 };
