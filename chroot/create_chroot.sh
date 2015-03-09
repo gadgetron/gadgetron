@@ -55,7 +55,7 @@ else
     cd ${CHROOT_GADGETRON_BINARY_DIR}
     make install DESTDIR="${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron" -j8
 
-    #This copies the ISMRMRD executable if it is installed
+    #This copies the SIEMENS_TO_ISMRMRD executable if it is installed
     if [ $# -ge 7 ]; then
       CHROOT_SIEMENS_TO_ISMRMRD_EXE=${7} 
       echo CHROOT_SIEMENS_TO_ISMRMRD_EXE: ${CHROOT_SIEMENS_TO_ISMRMRD_EXE}
@@ -73,18 +73,20 @@ else
     chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://us.archive.ubuntu.com/ubuntu/ trusty main restricted multiverse universe"  
     chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get update  
     chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install python-h5py libhdf5-serial-dev hdf5-tools python-pip -y 
-    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron pip install cython h5py pyxb
-    chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron pip install --upgrade h5py
 
-    cp -rf /usr/local/share/gadgetron/python/ismrmrd "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/share/gadgetron/python"
-    cp /usr/local/share/gadgetron/python/ismrmrd-1.2.2.egg-info "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/share/gadgetron/python"
+    ISMRMRD_PYTHON_FOLDER=${CHROOT_GADGETRON_INSTALL_PREFIX}/share/gadgetron/python/ismrmrd
+    if [ -d ${ISMRMRD_PYTHON_FOLDER} ]; then
+      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron pip install cython h5py pyxb
+      chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron pip install --upgrade h5py
+      cp -rf ${ISMRMRD_PYTHON_FOLDER} "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron/${CHROOT_GADGETRON_INSTALL_PREFIX}/share/gadgetron/python"
+    fi
 
     TAR_FILE_NAME=gadgetron-`date '+%Y%m%d-%H%M'`-${CHROOT_GIT_SHA1_HASH:0:8}
     IMAGE_FILE_NAME=${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.img
 
-    tar -zcf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${CHROOT_GADGETRON_BINARY_DIR}/chroot" --exclude=./chroot-root/gadgetron/dev --exclude=./chroot-root/gadgetron/sys --exclude=./chroot-root/gadgetron/proc --exclude=./chroot-root/gadgetron/root ./chroot-root
+    tar -zcf "${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-backups/${TAR_FILE_NAME}.tar.gz" --directory "${CHROOT_GADGETRON_BINARY_DIR}/chroot" --exclude=./chroot-root/gadgetron/var --exclude=./chroot-root/gadgetron/dev --exclude=./chroot-root/gadgetron/sys --exclude=./chroot-root/gadgetron/proc --exclude=./chroot-root/gadgetron/root ./chroot-root
 
-    dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=2048k seek=1024 count=0
+    dd if=/dev/zero of=${IMAGE_FILE_NAME} bs=1024k seek=1024 count=0
     mke2fs -F -t ext3 ${IMAGE_FILE_NAME}
     mkdir ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
     mount -o loop ${IMAGE_FILE_NAME} ${CHROOT_GADGETRON_BINARY_DIR}/chroot/gadgetron_root
