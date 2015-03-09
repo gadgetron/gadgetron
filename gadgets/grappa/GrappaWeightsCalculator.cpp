@@ -25,44 +25,44 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsDescription
 {
 
 public:
-	std::vector< std::pair<unsigned int, unsigned int> > sampled_region;
-	unsigned int acceleration_factor;
-	boost::shared_ptr<GrappaWeights<T> > destination;
-	std::vector<unsigned int> uncombined_channel_weights;
-	bool include_uncombined_channels_in_combined_weights;
+    std::vector< std::pair<unsigned int, unsigned int> > sampled_region;
+    unsigned int acceleration_factor;
+    boost::shared_ptr<GrappaWeights<T> > destination;
+    std::vector<unsigned int> uncombined_channel_weights;
+    bool include_uncombined_channels_in_combined_weights;
 };
 
 template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
-	ACE_Message_Block *mb;
+    ACE_Message_Block *mb;
 
-	while (this->getq(mb) >= 0) {
-		if (mb->msg_type() == ACE_Message_Block::MB_HANGUP) {
-			GDEBUG("Hanging up in weights calculator\n");
-			if (this->putq(mb) == -1) {
-			  GERROR("GrappaWeightsCalculator::svc, putq");
-			  return -1;
-			}
-			break;
-		}
+    while (this->getq(mb) >= 0) {
+        if (mb->msg_type() == ACE_Message_Block::MB_HANGUP) {
+            GDEBUG("Hanging up in weights calculator\n");
+            if (this->putq(mb) == -1) {
+              GERROR("GrappaWeightsCalculator::svc, putq");
+              return -1;
+            }
+            break;
+        }
 
-		GadgetContainerMessage< GrappaWeightsDescription<T> >* mb1
-		= AsContainerMessage< GrappaWeightsDescription<T> >(mb);
+        GadgetContainerMessage< GrappaWeightsDescription<T> >* mb1
+        = AsContainerMessage< GrappaWeightsDescription<T> >(mb);
 
-		if (!mb1) {
-			mb->release();
-			return -2;
-		}
+        if (!mb1) {
+            mb->release();
+            return -2;
+        }
 
-		GadgetContainerMessage< hoNDArray< std::complex<T> > >* mb2
-		= AsContainerMessage< hoNDArray< std::complex<T> > >(mb1->cont());
+        GadgetContainerMessage< hoNDArray< std::complex<T> > >* mb2
+        = AsContainerMessage< hoNDArray< std::complex<T> > >(mb1->cont());
 
-		if (!mb2) {
-			mb->release();
-			return -3;
-		}
+        if (!mb2) {
+            mb->release();
+            return -3;
+        }
 
-		hoNDArray<float_complext>* host_data =
-				reinterpret_cast< hoNDArray<float_complext>* >(mb2->getObjectPtr());
+        hoNDArray<float_complext>* host_data =
+                reinterpret_cast< hoNDArray<float_complext>* >(mb2->getObjectPtr());
 
         size_t ks = 5;
         size_t power = 3;
@@ -74,63 +74,63 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
         if (use_gpu_)
         {
 #ifdef USE_CUDA
-		    // Copy the image data to the device
-		    cuNDArray<float_complext> device_data(host_data);
-		    device_data.squeeze();
+            // Copy the image data to the device
+            cuNDArray<float_complext> device_data(host_data);
+            device_data.squeeze();
 
-		    std::vector<size_t> ftdims(2,0); ftdims[1] = 1;
+            std::vector<size_t> ftdims(2,0); ftdims[1] = 1;
 
-		    //Go to image space
-		     cuNDFFT<float>::instance()->ifft( &device_data, &ftdims);
+            //Go to image space
+             cuNDFFT<float>::instance()->ifft( &device_data, &ftdims);
 
             size_t RO = device_data.get_size(0);
             size_t E1 = device_data.get_size(1);
             size_t CHA = device_data.get_size(2);
 
             boost::shared_ptr< cuNDArray<float_complext> > csm;
-		    {
-        	    //GPUTimer timer("GRAPPA CSM");
-			    csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
+            {
+                //GPUTimer timer("GRAPPA CSM");
+                csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
 
                 // estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power, D, DH_D, V1, U1 );
 
-			    //GDEBUG("Coils in csm: %d\n", csm->get_size(2));
-		    }
-		    //Go back to kspace
-		    cuNDFFT<float>::instance()->fft(&device_data, &ftdims);
+                //GDEBUG("Coils in csm: %d\n", csm->get_size(2));
+            }
+            //Go back to kspace
+            cuNDFFT<float>::instance()->fft(&device_data, &ftdims);
 
-		    cuNDArray<complext<float> > unmixing_dev;
-		    boost::shared_ptr< std::vector<size_t> > data_dimensions = device_data.get_dimensions();
+            cuNDArray<complext<float> > unmixing_dev;
+            boost::shared_ptr< std::vector<size_t> > data_dimensions = device_data.get_dimensions();
 
-		    if (uncombined_channels_.size() > 0) {
-			    data_dimensions->push_back(uncombined_channels_.size()+1);
-		    }
+            if (uncombined_channels_.size() > 0) {
+                data_dimensions->push_back(uncombined_channels_.size()+1);
+            }
 
-		    try{unmixing_dev.create(data_dimensions.get());}
-		    catch (std::runtime_error &err){
-			    GEXCEPTION(err,"Unable to allocate device memory for unmixing coeffcients\n");
-			    return GADGET_FAIL;
-		    }
+            try{unmixing_dev.create(data_dimensions.get());}
+            catch (std::runtime_error &err){
+                GEXCEPTION(err,"Unable to allocate device memory for unmixing coeffcients\n");
+                return GADGET_FAIL;
+            }
 
-		    {
-			    //GPUTimer unmix_timer("GRAPPA Unmixing");
+            {
+                //GPUTimer unmix_timer("GRAPPA Unmixing");
                 //GadgetronTimer timer("GRAPPA unmixing", true);
-			    std::vector<unsigned int> kernel_size;
+                std::vector<unsigned int> kernel_size;
 
-			    //TODO: Add parameters for kernel size
-			    kernel_size.push_back(5);
-			    kernel_size.push_back(4);
-			    if ( htgrappa_calculate_grappa_unmixing(reinterpret_cast< cuNDArray<complext<float> >* >(&device_data),
-					    csm.get(),
-					    (unsigned int)(mb1->getObjectPtr()->acceleration_factor),
-					    &kernel_size,
-					    &unmixing_dev,
-					    &(mb1->getObjectPtr()->sampled_region),
-					    &uncombined_channels_) < 0) {
-				    GDEBUG("GRAPPA unmixing coefficients calculation failed\n");
-				    return GADGET_FAIL;
-			    }
-		    }
+                //TODO: Add parameters for kernel size
+                kernel_size.push_back(5);
+                kernel_size.push_back(4);
+                if ( htgrappa_calculate_grappa_unmixing(reinterpret_cast< cuNDArray<complext<float> >* >(&device_data),
+                        csm.get(),
+                        (unsigned int)(mb1->getObjectPtr()->acceleration_factor),
+                        &kernel_size,
+                        &unmixing_dev,
+                        &(mb1->getObjectPtr()->sampled_region),
+                        &uncombined_channels_) < 0) {
+                    GDEBUG("GRAPPA unmixing coefficients calculation failed\n");
+                    return GADGET_FAIL;
+                }
+            }
 
             if (mb1->getObjectPtr()->destination) {
                 boost::shared_ptr< hoNDArray<complext<float> > > unmixing_host = unmixing_dev.to_host();
@@ -209,9 +209,15 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                 }
                 else
                 {
+                    size_t startRO = mb1->getObjectPtr()->sampled_region[0].first;
+                    size_t endRO = mb1->getObjectPtr()->sampled_region[0].second;
+
+                    size_t startE1 = mb1->getObjectPtr()->sampled_region[1].first;
+                    size_t endE1 = mb1->getObjectPtr()->sampled_region[1].second;
+
                     Gadgetron::grappa2d_calib_convolution_kernel(acs, target_acs,
-                        (size_t)(mb1->getObjectPtr()->acceleration_factor), 
-                        thres, kRO, kNE1, conv_ker_);
+                        (size_t)(mb1->getObjectPtr()->acceleration_factor),
+                        thres, kRO, kNE1, startRO, endRO, startE1, endE1, conv_ker_);
 
                     Gadgetron::grappa2d_image_domain_kernel(conv_ker_, RO, E1, kIm_);
 
@@ -349,96 +355,96 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
             }
         }
 
-		mb->release();
-	}
+        mb->release();
+    }
 
-	return 0;
+    return 0;
 }
 
 template <class T> int GrappaWeightsCalculator<T>::close(unsigned long flags) {
-	int rval = 0;
-	if (flags == 1) {
-		ACE_Message_Block *hangup = new ACE_Message_Block();
-		hangup->msg_type( ACE_Message_Block::MB_HANGUP );
-		if (this->putq(hangup) == -1) {
-			hangup->release();
-			GERROR("GrappaWeightsCalculator::close, putq");
-			return -1;
-		}
-		//GDEBUG("Waiting for weights calculator to finish\n");
-		rval = this->wait();
-		//GDEBUG("Weights calculator to finished\n");
-	}
-	return rval;
+    int rval = 0;
+    if (flags == 1) {
+        ACE_Message_Block *hangup = new ACE_Message_Block();
+        hangup->msg_type( ACE_Message_Block::MB_HANGUP );
+        if (this->putq(hangup) == -1) {
+            hangup->release();
+            GERROR("GrappaWeightsCalculator::close, putq");
+            return -1;
+        }
+        //GDEBUG("Waiting for weights calculator to finish\n");
+        rval = this->wait();
+        //GDEBUG("Weights calculator to finished\n");
+    }
+    return rval;
 }
 
 
 template <class T> int GrappaWeightsCalculator<T>::
 add_job( hoNDArray< std::complex<T> >* ref_data,
-		std::vector< std::pair<unsigned int, unsigned int> > sampled_region,
-		unsigned int acceleration_factor,
-		boost::shared_ptr< GrappaWeights<T> > destination,
-		std::vector<unsigned int> uncombined_channel_weights,
-		bool include_uncombined_channels_in_combined_weights)
-		{
+        std::vector< std::pair<unsigned int, unsigned int> > sampled_region,
+        unsigned int acceleration_factor,
+        boost::shared_ptr< GrappaWeights<T> > destination,
+        std::vector<unsigned int> uncombined_channel_weights,
+        bool include_uncombined_channels_in_combined_weights)
+        {
 
-	GadgetContainerMessage< GrappaWeightsDescription<T> >* mb1 =
-			new GadgetContainerMessage< GrappaWeightsDescription<T> >();
+    GadgetContainerMessage< GrappaWeightsDescription<T> >* mb1 =
+            new GadgetContainerMessage< GrappaWeightsDescription<T> >();
 
-	if (!mb1) {
-		return -1;
-	}
+    if (!mb1) {
+        return -1;
+    }
 
-	/*
+    /*
   for (unsigned int i = 0; i < sampled_region.size(); i++) {
-	  GDEBUG("Sampled region %d: [%d, %d]\n", i, sampled_region[i].first, sampled_region[i].second);
+      GDEBUG("Sampled region %d: [%d, %d]\n", i, sampled_region[i].first, sampled_region[i].second);
   }
-	 */
+     */
 
-	mb1->getObjectPtr()->sampled_region = sampled_region;
-	mb1->getObjectPtr()->acceleration_factor = acceleration_factor;
-	mb1->getObjectPtr()->destination = destination;
-	mb1->getObjectPtr()->uncombined_channel_weights = uncombined_channel_weights;
-	mb1->getObjectPtr()->include_uncombined_channels_in_combined_weights =
-			include_uncombined_channels_in_combined_weights;
+    mb1->getObjectPtr()->sampled_region = sampled_region;
+    mb1->getObjectPtr()->acceleration_factor = acceleration_factor;
+    mb1->getObjectPtr()->destination = destination;
+    mb1->getObjectPtr()->uncombined_channel_weights = uncombined_channel_weights;
+    mb1->getObjectPtr()->include_uncombined_channels_in_combined_weights =
+            include_uncombined_channels_in_combined_weights;
 
 
-	GadgetContainerMessage< hoNDArray< std::complex<T> > >* mb2 =
-			new GadgetContainerMessage< hoNDArray< std::complex<T> > >();
+    GadgetContainerMessage< hoNDArray< std::complex<T> > >* mb2 =
+            new GadgetContainerMessage< hoNDArray< std::complex<T> > >();
 
-	if (!mb2) {
-		mb1->release();
-		return -2;
-	}
+    if (!mb2) {
+        mb1->release();
+        return -2;
+    }
 
-	mb1->cont(mb2);
+    mb1->cont(mb2);
 
-	try{mb2->getObjectPtr()->create(ref_data->get_dimensions().get());}
-	catch (std::runtime_error &err ){
-		mb1->release();
-		return -3;
-	}
+    try{mb2->getObjectPtr()->create(ref_data->get_dimensions().get());}
+    catch (std::runtime_error &err ){
+        mb1->release();
+        return -3;
+    }
 
-	memcpy(mb2->getObjectPtr()->get_data_ptr(), ref_data->get_data_ptr(),
-			ref_data->get_number_of_elements()*sizeof(T)*2);
+    memcpy(mb2->getObjectPtr()->get_data_ptr(), ref_data->get_data_ptr(),
+            ref_data->get_number_of_elements()*sizeof(T)*2);
 
-	this->putq(mb1);
+    this->putq(mb1);
 
-	return 0;
-		}
+    return 0;
+        }
 
 template <class T> int GrappaWeightsCalculator<T>::add_uncombined_channel(unsigned int channel_id)
-		{
-	remove_uncombined_channel(channel_id);
-	uncombined_channels_.push_back(channel_id);
-	return 0;
-		}
+        {
+    remove_uncombined_channel(channel_id);
+    uncombined_channels_.push_back(channel_id);
+    return 0;
+        }
 
 template <class T> int GrappaWeightsCalculator<T>::remove_uncombined_channel(unsigned int channel_id)
-		{
-	uncombined_channels_.remove(channel_id);
-	return 0;
-		}
+        {
+    uncombined_channels_.remove(channel_id);
+    return 0;
+        }
 
 
 
