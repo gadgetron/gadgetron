@@ -31,6 +31,9 @@ class Gadget(object):
         # do work here
         self.put_next(results)
 
+    def wait(self):
+        pass
+    
     def put_next(self, *args):
         if self.next_gadget is not None:
             if isinstance(self.next_gadget, Gadget):
@@ -53,7 +56,29 @@ class Gadget(object):
         results = self.results
         self.results = []
         return results
+        
+class WrapperGadget(Gadget):
+    
+    def __init__(self, dllname, classname, next_gadget=None):
+        Gadget.__init__(self, next_gadget)
+        self.controller_ = GadgetronPythonMRI.GadgetInstrumentationStreamController()
+        self.controller_.append_gadget(classname,dllname,classname)
+        self.controller_.set_python_gadget(self)
+        
+    def wait(self):
+        self.controller_.close()
+        self.controller_ = None        
 
+    def process(self, header, *args):
+        if len(args) != 1:
+            raise("Only two arguments are currently supported when sending data to Gadgetron framework")
+        if isinstance(header, ismrmrd.AcquisitionHeader):
+            self.controller_.put_acquisition(header,args[0].astype('complex64'))
+        elif isinstance(header, ismrmrd.ImageHeader):
+            self.controller_.put_image(header,args[0].astype('complex64'))
+        else:
+            raise("Unsupported types when sending data to Gadgetron framework")
+  
 class FunctionGadget(Gadget):
     """A Gadget with a configurable `process` function.
 

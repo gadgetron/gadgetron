@@ -3,6 +3,7 @@
 #include "ace/DLL_Manager.h"
 
 #include "gadgetron_paths.h"
+#include "Gadget.h"
 
 typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
 

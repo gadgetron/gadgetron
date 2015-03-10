@@ -21,7 +21,9 @@ include_directories(
   ${Boost_INCLUDE_DIR}
   )
 
-add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp)
+add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp 
+  GadgetReference.cpp 
+  GadgetInstrumentationStreamController.cpp)
 
 #We should probably not set soversion on the python module. Causes problems with clang
 #set_target_properties(GadgetronPythonMRI PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -45,7 +47,9 @@ target_link_libraries(gadgetron_python
     ${MKL_LIBRARIES})
 
 target_link_libraries(GadgetronPythonMRI
+    gadgetron_gadgetbase
     gadgetron_toolbox_log
+    gadgetron_toolbox_python
     ${ISMRMRD_LIBRARIES}
     optimized ${ACE_LIBRARIES}
     debug ${ACE_DEBUG_LIBRARY}
