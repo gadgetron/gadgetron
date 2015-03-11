@@ -89,6 +89,7 @@ install(FILES
   gadgetron_xml.h
   GadgetServerAcceptor.h
   GadgetStreamController.h
+  GadgetStreamInterface.h
   ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_config.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main) 
 
