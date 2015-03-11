@@ -43,10 +43,11 @@ namespace Gadgetron
     }
 
     //Adding some gadgets to "capture data and return to the stream"
-    this->prepend_gadget("ImageFinishFloat","gadgetron_mricore","ImageFinishGadgetFLOAT");
-    this->set_parameter("ImageFinishFloat","pass_on_undesired_data","true");
-    this->prepend_gadget("AcquisitionFinish","gadgetron_mricore","AcquisitionFinishGadget");
-    this->set_parameter("AcquisitionFinish","pass_on_undesired_data","true");
+    if (this->prepend_gadget("ImageFinishFloat","gadgetron_mricore","ImageFinishGadgetFLOAT") != GADGET_OK) return GADGET_FAIL;
+    this->find_gadget("ImageFinishFloat")->pass_on_undesired_data(true);
+    if (this->prepend_gadget("AcquisitionFinish","gadgetron_mricore","AcquisitionFinishGadget") != GADGET_OK) return GADGET_FAIL;
+    this->find_gadget("AcquisitionFinish")->pass_on_undesired_data(true);
+
 
     return GADGET_OK;
   }
@@ -144,6 +145,8 @@ namespace Gadgetron
 	    m0->release();
 	    return GADGET_FAIL;
 	  }
+	break;
+      case (GADGET_MESSAGE_CLOSE):
 	break;
       default:
 	GERROR("Unsupported message ID (%d) encountered\n", m0->getObjectPtr()->id);

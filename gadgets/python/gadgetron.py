@@ -4,7 +4,6 @@ try:
 except ImportError:
     pass
 
-
 class Gadget(object):
     def __init__(self, next_gadget=None):
         self.next_gadget = next_gadget
@@ -29,7 +28,7 @@ class Gadget(object):
 
     def process(self, header, *args):
         # do work here
-        self.put_next(results)
+        self.put_next(header,*args)
 
     def wait(self):
         pass
@@ -67,12 +66,12 @@ class WrapperGadget(Gadget):
         self.controller_.prepend_gadget(gadgetname,dllname,classname)
         self.controller_.set_python_gadget(self)
     
-    def prepend_gadget(dllname, classname, gadgetname=None):
+    def prepend_gadget(self,dllname, classname, gadgetname=None):
         self.controller_.prepend_gadget(gadgetname,dllname,classname)
 
-    def wait(self):
-        self.controller_.close()
-        self.controller_ = None        
+    def wait(self):   
+       self.controller_.close()
+       self.controller_ = None        
 
     def process(self, header, *args):
         if len(args) != 1:

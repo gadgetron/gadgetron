@@ -50,6 +50,7 @@ class GadgetInstrumentationStreamControllerWrapper
     {
       // ensure boost can convert between hoNDArrays and NumPy arrays automatically
       register_converter<hoNDArray<std::complex<float> > >();
+      register_converter<hoNDArray< float > >();
       // ensure boost can convert ISMRMRD headers automatically
       register_converter<ISMRMRD::ImageHeader>();
       register_converter<ISMRMRD::AcquisitionHeader>();

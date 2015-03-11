@@ -48,8 +48,12 @@ namespace Gadgetron{
             , controller_(0)
 	    , parameter_mutex_("GadgetParameterMutex")
         {
+
 	  gadgetron_version_ = std::string(GADGETRON_VERSION_STRING) + std::string(" (") + 
 	    std::string(GADGETRON_GIT_SHA1_HASH) + std::string(")");
+	  
+	  //We will set this very high to prevent race conditions in "mixed environments" such as when using Python or Matlab in Gadgets
+	  this->msg_queue()->high_water_mark(ACE_Message_Queue_Base::DEFAULT_HWM*10000);
         }
 
         virtual ~Gadget()
@@ -74,6 +78,8 @@ namespace Gadgetron{
                 this->desired_threads(t);
             }
 
+	    this->pass_on_undesired_data(this->get_bool_value("pass_on_undesired_data"));
+
             return this->activate( THR_NEW_LWP | THR_JOINABLE,
                 this->desired_threads() );
         }
@@ -92,6 +98,16 @@ namespace Gadgetron{
         {
             desired_threads_ = t;
         }
+
+	virtual bool pass_on_undesired_data()
+	{
+	  return pass_on_undesired_data_;
+	}
+
+	virtual void pass_on_undesired_data(bool d)
+	{
+	  pass_on_undesired_data_ = d;
+	}
 
         virtual void set_controller(GadgetStreamInterface* controller) {
             controller_ = controller;

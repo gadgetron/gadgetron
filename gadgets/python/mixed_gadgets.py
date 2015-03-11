@@ -21,17 +21,23 @@ from accumulate_and_recon import AccumulateAndRecon
 from rms_coil_combine import RMSCoilCombine
 from gadgetron import WrapperGadget
 import GadgetronPythonMRI as g
-
+import threading
+import time
 
 #%% Setup gadgets
-#g5 = WrapperGadget("gadgetron_mricore","ImageFinishGadgetFLOAT")
-#g4 = WrapperGadget("gadgetron_mricore","ExtractGadget", next_gadget=g5)
-g3 = RMSCoilCombine()
+g4 = WrapperGadget("gadgetron_mricore","ExtractGadget", next_gadget=None)
+g3 = RMSCoilCombine(g4)
 g2 = AccumulateAndRecon(g3)
 g1 = Remove2xOversampling(g2)
 g0 = WrapperGadget("gadgetron_mricore","NoiseAdjustGadget",next_gadget=g1)
 
 
+def gadget_wait_function(first_gadget):
+    g = first_gadget;
+    while (g):
+        g.wait()
+        g = g.next_gadget
+    
 
 #%% Load file
 filename = 'testdata.h5'
@@ -48,16 +54,12 @@ g3.process_config(dset.read_xml_header())
 
 # Loop through the rest of the acquisitions and stuff
 for acqnum in range(0,dset.number_of_acquisitions()):
+    print "Sending in acquisition " + str(acqnum) + " of " + str(dset.number_of_acquisitions())
     acq = dset.read_acquisition(acqnum)
     g0.process(acq.getHead(),acq.data.astype('complex64'))
 
-g = g0;
-while (g):
-    g.wait()
-    g = g.next_gadget
-
-print g3.get_results()
 #%%
-#Get result and display    
-#res = g3.get_results()
-#show.imshow(np.squeeze(abs(res[0][1])))
+time.sleep(1) #This sleep is needed to avoid a hang
+gadget_wait_function(g0)
+
+print g4.get_results()
