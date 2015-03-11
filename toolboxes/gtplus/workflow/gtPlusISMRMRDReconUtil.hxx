@@ -249,7 +249,15 @@ computeKLTCoeff(const hoNDArray<T>& data, hoMatrix<T>& coeff, hoMatrix<T>& eigen
             {
                 size_t N = data.get_size(3);
                 hoNDArray<T> dataP(RO, E1, N, CHA);
-                GADGET_CHECK_RETURN_FALSE(permuteLastTwoDimensions(data, dataP));
+
+                std::vector<size_t> dimOrder(4);
+                dimOrder[0] = 0;
+                dimOrder[1] = 1;
+                dimOrder[2] = 3;
+                dimOrder[3] = 2;
+
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(const_cast< hoNDArray<T>* >(&data), &dataP, &dimOrder));
+
                 GADGET_CHECK_RETURN_FALSE(A.createMatrix(RO*E1*N, CHA, dataP.begin()));
 
                 GADGET_CHECK_RETURN_FALSE(KLT_eigenAnalysis(A, coeff, eigenValues));
@@ -420,7 +428,15 @@ appyKLCoilCompressionCoeff(const hoNDArray<T>& data, const hoMatrix<T>& coeff, h
             {
                 size_t N = data.get_size(3);
                 hoNDArray<T> dataP(RO, E1, N, CHA);
-                GADGET_CHECK_RETURN_FALSE(permuteLastTwoDimensions(data, dataP));
+
+                std::vector<size_t> dimOrder(4);
+                dimOrder[0] = 0;
+                dimOrder[1] = 1;
+                dimOrder[2] = 3;
+                dimOrder[3] = 2;
+
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(const_cast< hoNDArray<T>* >(&data), &dataP, &dimOrder));
+
                 GADGET_CHECK_RETURN_FALSE(A.createMatrix(RO*E1*N, CHA, dataP.begin()));
 
                 hoNDArray<T> dataEigenP(RO, E1, N, dstCHA);
@@ -428,7 +444,8 @@ appyKLCoilCompressionCoeff(const hoNDArray<T>& data, const hoMatrix<T>& coeff, h
 
                 GADGET_CHECK_RETURN_FALSE(KLT_applyEigen(A, D, coeff));
 
-                GADGET_CHECK_RETURN_FALSE(permuteLastTwoDimensions(dataEigenP, dataEigen));
+                dataEigen.create(RO, E1, dstCHA, N);
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&dataEigenP, &dataEigen, &dimOrder));
             }
             else if ( NDim >= 5 )
             {
@@ -4161,7 +4178,8 @@ zpadResize2DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, hoN
 
         Gadgetron::clear(&dataResized);
 
-        GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
+        // GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(kspace, sizeX, sizeY, dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized);
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY)/std::sqrt((double)RO*E1));
@@ -4244,7 +4262,8 @@ zpadResize3DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, siz
 
         Gadgetron::clear(&dataResized);
 
-        GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        // GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized);
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY*sizeZ)/std::sqrt((double)RO*E1*E2));
@@ -4289,7 +4308,8 @@ zpadResize2DFilter(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, const h
 
         hoNDArray<T> kspace(data);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(data, kspace);
-        GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
+        // GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(kspace, sizeX, sizeY, dataResized));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(dataResized, filter2D, dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized);
 
@@ -4338,7 +4358,8 @@ zpadResize3DFilter(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t 
 
         hoNDArray<T> kspace(data);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, kspace);
-        GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        // GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(dataResized, filter3D, dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized);
 
@@ -5033,11 +5054,11 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
 
                     if ( algo == ISMRMRD_SOUHEIL_ITER )
                     {
-                        coilMap2DNIH2Inner(dataCurr, coilMapCurr, ks, iterNum, thres);
+                        Gadgetron::coil_map_2d_Inati_Iter(dataCurr, coilMapCurr, ks, iterNum, thres);
                     }
                     else
                     {
-                        coilMap2DNIHInner(dataCurr, coilMapCurr, ks, power);
+                        Gadgetron::coil_map_2d_Inati(dataCurr, coilMapCurr, ks, power);
                     }
                 }
             }
@@ -5046,11 +5067,11 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
         {
             if ( algo == ISMRMRD_SOUHEIL_ITER )
             {
-                GADGET_CHECK_RETURN_FALSE(coilMap2DNIH2Inner(data, coilMap, ks, iterNum, thres));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati_Iter(data, coilMap, ks, iterNum, thres));
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner(data, coilMap, ks, power));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati(data, coilMap, ks, power));
             }
         }
         else
@@ -5061,11 +5082,11 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
                 hoNDArray<T> coilMapCurr(RO, E1, CHA, coilMap.begin()+n*num);
                 if ( algo == ISMRMRD_SOUHEIL_ITER )
                 {
-                    GADGET_CHECK_RETURN_FALSE(coilMap2DNIH2Inner(dataCurr, coilMapCurr, ks, iterNum, thres));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati_Iter(dataCurr, coilMapCurr, ks, iterNum, thres));
                 }
                 else
                 {
-                    GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner(dataCurr, coilMapCurr, ks, power));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati(dataCurr, coilMapCurr, ks, power));
                 }
             }
         }

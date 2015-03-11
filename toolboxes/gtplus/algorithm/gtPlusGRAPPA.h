@@ -373,7 +373,7 @@ imageDomainKernel(const ho5DArray<T>& ker, size_t kRO, const std::vector<int>& k
         long long convKE1 = 2*maxKE1+1;
 
         /// allocate the convolution kernel
-        ho4DArray<T> convKer(convKRO, convKE1, srcCHA, dstCHA);
+        hoNDArray<T> convKer(convKRO, convKE1, srcCHA, dstCHA);
         Gadgetron::clear(&convKer);
 
         /// index
@@ -407,7 +407,14 @@ imageDomainKernel(const ho5DArray<T>& ker, size_t kRO, const std::vector<int>& k
         }
 
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal( (typename realType<T>::Type)( std::sqrt((double)(ro*e1)) ), convKer ));
-        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad2D(convKer, ro, e1, kIm));
+        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad2D(convKer, ro, e1, kIm));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(convKer, ro, e1, kIm));
+
+        //uint64d<2>::Type sizeArray;
+        //sizeArray[0] = ro;
+        //sizeArray[1] = e1;
+        //Gadgetron::pad<T, 2>(sizeArray, &convKer, &kIm);
+
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm);
     }
     catch(...)
@@ -874,7 +881,8 @@ imageDomainKernel3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int>&
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - zero padding ... "); }
-        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKer, ro, e1, e2, kIm));
+        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKer, ro, e1, e2, kIm));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(convKer, ro, e1, e2, kIm, false));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain ... "); }
@@ -925,7 +933,8 @@ imageDomainKernelRO3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(convKer, debugFolder_+"convKer_scal_RO"); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - zero padding only for RO ... "); }
-        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKer, ro, kConvE1, kConvE2, kImROTemp));
+        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(convKer, ro, kConvE1, kConvE2, kImROTemp));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(convKer, ro, kConvE1, kConvE2, kImROTemp, false));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROTemp, debugFolder_+"convKer_scal_RO_zeropadded"); }
@@ -978,7 +987,8 @@ imageDomainKernelE1E2RO(const hoNDArray<T>& kImRO, size_t e1, size_t e2, hoNDArr
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImROScaled, debugFolder_+"kImROScaledE1E2"); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - zero padding for E1 and E2 ... "); }
-        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(kImROScaled, e1, e2, dimR[2], kImE1E2RO));
+        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().zeropad3DNoPresetZeros(kImROScaled, e1, e2, dimR[2], kImE1E2RO));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(kImROScaled, e1, e2, dimR[2], kImE1E2RO, false));
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kImE1E2RO, debugFolder_+"kImE1E2RO_zeropadded_E1E2"); }

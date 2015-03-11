@@ -64,6 +64,8 @@
 #endif // USE_OMP
 
 #include "mri_core_def.h"
+#include "mri_core_utility.h"
+#include "mri_core_coil_map_estimation.h"
 
 namespace Gadgetron {
 

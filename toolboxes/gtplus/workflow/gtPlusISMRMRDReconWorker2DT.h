@@ -467,7 +467,8 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
 
                 refRecon = croppedRef;
 
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.zeropad2D(refCoilMap, dataRO, dataE1, croppedRef));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.zeropad2D(refCoilMap, dataRO, dataE1, croppedRef));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(refCoilMap, dataRO, dataE1, croppedRef));
                 refCoilMap = croppedRef;
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refCoilMap, debugFolder_+"refCoilMap"); }
 
