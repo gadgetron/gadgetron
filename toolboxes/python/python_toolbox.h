@@ -2,7 +2,6 @@
 #define GADGETRON_PYTHON_H
 
 #include "python_export.h"
-#include "python_converters.h"
 
 #include <boost/python.hpp>
 namespace bp = boost::python;
@@ -10,13 +9,23 @@ namespace bp = boost::python;
 namespace Gadgetron
 {
 
-/// Initializes Python and NumPy. Called by each PythonFunction constructor
+/// Initialize Python and NumPy. Called by each PythonFunction constructor
 EXPORTPYTHON int initialize_python(void);
+/// Initialize NumPy
+EXPORTPYTHON int initialize_numpy(void);
+/// Add a path to the PYTHONPATH
 EXPORTPYTHON int add_python_path(const std::string& path);
 
 /// Extracts the exception/traceback to build and return a std::string
 EXPORTPYTHON std::string pyerr_to_string(void);
 
+}
+
+// Include converters after declaring above functions
+#include "python_converters.h"
+
+namespace Gadgetron
+{
 /// Utility class for RAII handling of the Python GIL. Usage:
 ///
 ///    GILLock lg;  // at the top of a block

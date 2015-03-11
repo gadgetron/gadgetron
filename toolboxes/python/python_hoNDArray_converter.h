@@ -1,6 +1,7 @@
 #ifndef GADGETRON_PYTHON_HONDARRAY_CONVERTER_H
 #define GADGETRON_PYTHON_HONDARRAY_CONVERTER_H
 
+#include "python_toolbox.h"
 #include "python_numpy_wrappers.h"
 
 #include "hoNDArray.h"
@@ -104,6 +105,8 @@ template <typename T>
 struct python_converter<hoNDArray<T> > {
     static void create()
     {
+        // ensure NumPy C-API is initialized
+        initialize_numpy();
         // register hoNDArray converter
         create_hoNDArray_converter<T>();
     }

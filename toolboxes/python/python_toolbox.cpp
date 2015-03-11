@@ -15,17 +15,19 @@
 namespace Gadgetron
 {
 
-static bool initialized = false;
-static boost::mutex mtx;
+static bool python_initialized = false;
+static bool numpy_initialized = false;
+static boost::mutex python_initialize_mtx;
+static boost::mutex numpy_initialize_mtx;
 
 int initialize_python(void)
 {
     // lock here so only one thread can initialize Python
-    boost::mutex::scoped_lock lock(mtx);
+    boost::mutex::scoped_lock lock(python_initialize_mtx);
 
-    if (!initialized) {
+    if (!python_initialized) {
         Py_Initialize();
-        _import_array();    // import NumPy
+        initialize_numpy();
 
         PyEval_InitThreads();
 
@@ -38,7 +40,7 @@ int initialize_python(void)
             return GADGET_FAIL;
         }
 
-        initialized = true; // interpreter successfully initialized
+        python_initialized = true; // interpreter successfully initialized
 
         //Let's first get the path set for the library folder
         std::string gadgetron_home = get_gadgetron_home();
@@ -50,6 +52,18 @@ int initialize_python(void)
                 return GADGET_FAIL;
             }
         }
+    }
+    return GADGET_OK;
+}
+
+int initialize_numpy(void)
+{
+    // lock here so only one thread can initialize NumPy
+    boost::mutex::scoped_lock lock(numpy_initialize_mtx);
+
+    if (!numpy_initialized) {
+        _import_array();    // import NumPy
+        numpy_initialized = true; // numpy successfully initialized
     }
     return GADGET_OK;
 }

@@ -2,7 +2,6 @@
 #define GADGETRON_PYTHON_ISMRMRD_CONVERTER_H
 
 #include "python_toolbox.h" // for pyerr_to_string()
-
 #include "ismrmrd/ismrmrd.h"
 
 #include <boost/python.hpp>
@@ -78,8 +77,9 @@ struct AcquisitionHeader_to_PythonAcquisitionHeader {
             // increment the reference count so it exists after `return`
             return bp::incref(pyhead.ptr());
         } catch (const bp::error_already_set&) {
-            PyErr_Print();
-            throw;
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
         }
     }
 };
@@ -165,8 +165,9 @@ struct AcquisitionHeader_from_PythonAcquisitionHeader {
                 head->user_float[i] = bp::extract<float>(pyhead.attr("user_float")[i]);
             }
         } catch (const bp::error_already_set&) {
-            PyErr_Print();
-            throw;
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
         }
     }
 };
@@ -228,8 +229,9 @@ struct ImageHeader_to_PythonImageHeader {
             // increment the reference count so it exists after `return`
             return bp::incref(pyhead.ptr());
         } catch (const bp::error_already_set&) {
-            PyErr_Print();
-            throw;
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
         }
     }
 };
@@ -306,14 +308,15 @@ struct ImageHeader_from_PythonImageHeader {
             }
             head->attribute_string_len = bp::extract<uint32_t>(pyhead.attr("attribute_string_len"));
         } catch (const bp::error_already_set&) {
-            PyErr_Print();
-            throw;
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
         }
     }
 };
 
 /// Create and register AcquisitionHeader converter as necessary
-void create_ismrmrd_AcquisitionHeader_converter() {
+inline void create_ismrmrd_AcquisitionHeader_converter() {
     bp::type_info info = bp::type_id<ISMRMRD::AcquisitionHeader>();
     const bp::converter::registration* reg = bp::converter::registry::query(info);
     // only register if not already registered!
@@ -324,7 +327,7 @@ void create_ismrmrd_AcquisitionHeader_converter() {
 }
 
 /// Create and register ImageHeader converter as necessary
-void create_ismrmrd_ImageHeader_converter() {
+inline void create_ismrmrd_ImageHeader_converter() {
     bp::type_info info = bp::type_id<ISMRMRD::ImageHeader>();
     const bp::converter::registration* reg = bp::converter::registry::query(info);
     // only register if not already registered!
