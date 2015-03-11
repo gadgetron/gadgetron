@@ -31,6 +31,7 @@ add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp
 add_library(gadgetron_python SHARED
 	PythonGadget.cpp
 	GadgetReference.cpp
+	GadgetInstrumentationStreamController.cpp
 	GadgetronPythonMRI.cpp)
 
 set_target_properties(gadgetron_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})

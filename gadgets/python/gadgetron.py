@@ -78,6 +78,7 @@ class WrapperGadget(Gadget):
             self.controller_.put_image(header,args[0].astype('complex64'))
         else:
             raise("Unsupported types when sending data to Gadgetron framework")
+        return 0
   
 class FunctionGadget(Gadget):
     """A Gadget with a configurable `process` function.

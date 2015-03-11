@@ -81,15 +81,32 @@ namespace Gadgetron
       return GADGET_FAIL;
     }
     
+    T1 head = *m1->getObjectPtr();
+    T2 *data = m2->getObjectPtr();
+
+    GILLock lock;
     GDEBUG("ABOUT TO RETURN TO PYTHON\n");
-    {
-      GILLock gl;
-      try {
-	this->python_gadget_.attr("put_next")(*m1->getObjectPtr(),m2->getObjectPtr());
-	//boost::python::exec("print 'This is a journey into sound\n"); 
-      } catch(...) {
-	PyErr_Print();
+    try {
+      boost::python::object process_fn = python_gadget_.attr("put_next");
+      GDEBUG("Making data boost object\n");
+      boost::python::object datao(*data);
+      GDEBUG("Making header boost object\n");
+      boost::python::object headero(head);
+      GDEBUG("Done making object\n");
+      process_fn(headero,datao);
+      //GDEBUG("RETURN VALUE: %d\n", ret);
+
+      /*
+      if (boost::python::extract<int>(process_fn(head, data)) != GADGET_OK) {
+	GDEBUG("GadgetInstrumentationStreamControllerReturned from python call with error\n");
+	return GADGET_FAIL;
       }
+      */
+      
+    } catch(boost::python::error_already_set const &) {
+      GDEBUG("Passing data on to python wrapper gadget failed\n");
+      PyErr_Print();
+      return GADGET_FAIL;
     }
     GDEBUG("RETURNED TO PYTHON\n");
 

@@ -10,7 +10,7 @@ Created on Tue Mar 10 11:11:39 2015
 import os
 import sys
 
-sys.path.append('/home/hansenms/local/share/gadgetron/python')
+sys.path.append(os.environ['GADGETRON_HOME'] + '/share/gadgetron/python')
 
 import ismrmrd
 import ismrmrd.xsd
@@ -29,9 +29,9 @@ g0 = WrapperGadget("gadgetron_mricore","AcquisitionFinishGadget")
 
 
 #%% Setup gadgets
-g3 = RMSCoilCombine()
-g2 = AccumulateAndRecon(g3)
-g1 = Remove2xOversampling(g2)
+#g3 = RMSCoilCombine()
+#g2 = AccumulateAndRecon(g3)
+#g1 = Remove2xOversampling(g2)
 
 
 #%% Load file
@@ -41,10 +41,6 @@ if not os.path.isfile(filename):
     raise SystemExit
 dset = ismrmrd.Dataset(filename, 'dataset', create_if_needed=False)
 
-#%%
-acq = dset.read_acquisition(0)
-g0.process(acq.getHead(),acq.data.astype('complex64'))
- 
 #%% Send in data
 #First ISMRMRD XML header
 #g1.process_config(dset.read_xml_header())
@@ -58,5 +54,5 @@ for acqnum in range(0,dset.number_of_acquisitions()):
     
 #%%
 #Get result and display    
-res = g3.get_results()
-show.imshow(np.squeeze(abs(res[0][1])))
+#res = g3.get_results()
+#show.imshow(np.squeeze(abs(res[0][1])))

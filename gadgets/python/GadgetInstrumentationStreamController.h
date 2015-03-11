@@ -29,9 +29,9 @@ public:
   int put_image(ISMRMRD::ImageHeader img, boost::python::object arr);
   int set_python_gadget(boost::python::object g)
   {
-    GDEBUG("Setting python gadget\n");
     python_gadget_ = g;
     boost::python::incref(python_gadget_.ptr());
+    return GADGET_OK;
   }
 
   virtual int output_ready(ACE_Message_Block* mb);
