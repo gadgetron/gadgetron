@@ -1,3 +1,6 @@
+#ifndef GADGETSTREAMINTERFACE_H
+#define GADGETSTREAMINTERFACE_H
+
 #include "ace/Stream.h"
 #include "ace/DLL.h"
 #include "ace/DLL_Manager.h"
@@ -122,3 +125,5 @@ namespace Gadgetron {
     }
   };
 }
+
+#endif //GADGETSTREAMINTERFACE_H

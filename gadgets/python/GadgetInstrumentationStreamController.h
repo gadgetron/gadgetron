@@ -18,7 +18,7 @@ public:
   GadgetInstrumentationStreamController();
   int open();
   int close();
-  int append_gadget(const char* gadgetname, 
+  int prepend_gadget(const char* gadgetname, 
 		    const char* dllname, 
 		    const char* classname);
 
@@ -35,6 +35,8 @@ public:
   }
 
   virtual int output_ready(ACE_Message_Block* mb);
+  void set_parameter(const char* gadgetname, const char* parameter, const char* value);
+
  protected:
   boost::python::object python_gadget_;
   template <class T1, class T2> int return_data(ACE_Message_Block* mb);
@@ -60,11 +62,11 @@ class GadgetInstrumentationStreamControllerWrapper
       delete cntrl_;
     }
 
-  int append_gadget(const char* gadgetname, 
+  int prepend_gadget(const char* gadgetname, 
 		    const char* dllname, 
 		    const char* classname)
   {
-    return cntrl_->append_gadget(gadgetname,dllname,classname);
+    return cntrl_->prepend_gadget(gadgetname,dllname,classname);
   }
 
   int put_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::object arr)
@@ -86,6 +88,11 @@ class GadgetInstrumentationStreamControllerWrapper
   int set_python_gadget(boost::python::object g)
   {
     return cntrl_->set_python_gadget(g);
+  }
+
+  void set_parameter(const char* gadgetname, const char* parameter, const char* value)
+  {
+    cntrl_->set_parameter(gadgetname, parameter, value);
   }
 
  protected:

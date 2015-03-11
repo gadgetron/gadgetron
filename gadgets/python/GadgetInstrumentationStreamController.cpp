@@ -1,5 +1,7 @@
 #include "GadgetInstrumentationStreamController.h"
 #include "EndGadget.h"
+#include "AcquisitionFinishGadget.h"
+#include "ImageFinishGadget.h"
 #include "log.h"
 #include "hoNDArray.h"
 #include "GadgetMessageInterface.h"
@@ -39,6 +41,13 @@ namespace Gadgetron
       
       stream_.open(0,head,tail);
     }
+
+    //Adding some gadgets to "capture data and return to the stream"
+    this->prepend_gadget("ImageFinishFloat","gadgetron_mricore","ImageFinishGadgetFLOAT");
+    this->set_parameter("ImageFinishFloat","pass_on_undesired_data","true");
+    this->prepend_gadget("AcquisitionFinish","gadgetron_mricore","AcquisitionFinishGadget");
+    this->set_parameter("AcquisitionFinish","pass_on_undesired_data","true");
+
     return GADGET_OK;
   }
 
@@ -48,7 +57,7 @@ namespace Gadgetron
     return GADGET_OK;
   }
 
-  int GadgetInstrumentationStreamController::append_gadget(const char* gadgetname,
+  int GadgetInstrumentationStreamController::prepend_gadget(const char* gadgetname,
 							   const char* dllname, 
 							   const char* classname)
   {
@@ -81,42 +90,20 @@ namespace Gadgetron
       return GADGET_FAIL;
     }
     
-    T1 head = *m1->getObjectPtr();
-    T2 *data = m2->getObjectPtr();
-
     GILLock lock;
-    GDEBUG("ABOUT TO RETURN TO PYTHON\n");
     try {
-      boost::python::object process_fn = python_gadget_.attr("put_next");
-      GDEBUG("Making data boost object\n");
-      boost::python::object datao(*data);
-      GDEBUG("Making header boost object\n");
-      boost::python::object headero(head);
-      GDEBUG("Done making object\n");
-      process_fn(headero,datao);
-      //GDEBUG("RETURN VALUE: %d\n", ret);
-
-      /*
-      if (boost::python::extract<int>(process_fn(head, data)) != GADGET_OK) {
-	GDEBUG("GadgetInstrumentationStreamControllerReturned from python call with error\n");
-	return GADGET_FAIL;
-      }
-      */
-      
+      python_gadget_.attr("put_next")(*m1->getObjectPtr(),m2->getObjectPtr());
     } catch(boost::python::error_already_set const &) {
-      GDEBUG("Passing data on to python wrapper gadget failed\n");
+      GERROR("Passing data on to python wrapper gadget failed\n");
       PyErr_Print();
       return GADGET_FAIL;
     }
-    GDEBUG("RETURNED TO PYTHON\n");
 
     return GADGET_OK;
   }
 
   int GadgetInstrumentationStreamController::output_ready(ACE_Message_Block* mb)
   {
-    GDEBUG("output received\n");
-    
     GadgetContainerMessage<GadgetMessageIdentifier>* m0 = AsContainerMessage<GadgetMessageIdentifier>(mb);
     if (!m0) {
       GERROR("Unable to extract GadgetMessageIdentifier\n");
@@ -129,12 +116,35 @@ namespace Gadgetron
       case (GADGET_MESSAGE_ACQUISITION):
 	if (0 != this->return_data<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >(m0->cont()) )
 	  {
-	    GERROR("Unable to convert and return GADGET_MESSAGE_ACQUISITON");
+	    GERROR("Unable to convert and return GADGET_MESSAGE_ACQUISITON\n");
 	    m0->release();
 	    return GADGET_FAIL;
 	  }
 	break;
-	
+      case (GADGET_MESSAGE_IMAGE_REAL_USHORT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< ACE_UINT16 > >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_IMAGE_REAL_SHORT\n");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
+      case (GADGET_MESSAGE_IMAGE_REAL_FLOAT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< float > >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_IMAGE_REAL_FLOAT");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
+      case (GADGET_MESSAGE_IMAGE_CPLX_FLOAT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_IMAGE_CPLX_FLOAT\n");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
       default:
 	GERROR("Unsupported message ID (%d) encountered\n", m0->getObjectPtr()->id);
 	mb->release();
@@ -144,6 +154,16 @@ namespace Gadgetron
     mb->release();
     return GADGET_OK;
   }
+
+  void GadgetInstrumentationStreamController::set_parameter(const char* gadgetname, const char* parameter, const char* value)
+  {
+    Gadget* g = this->find_gadget(gadgetname);
+    if (!g) {
+      throw std::runtime_error("Unable to find Gadget for setting parameter");
+    }
+    g->set_parameter(parameter,value,false);
+  }
+
 
   template<class T>
   int GadgetInstrumentationStreamController::put_data(T header, boost::python::object arr)

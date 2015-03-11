@@ -59,12 +59,17 @@ class Gadget(object):
         
 class WrapperGadget(Gadget):
     
-    def __init__(self, dllname, classname, next_gadget=None):
+    def __init__(self, dllname, classname, gadgetname=None, next_gadget=None):
+        if gadgetname == None:
+            gadgetname = classname
         Gadget.__init__(self, next_gadget)
         self.controller_ = GadgetronPythonMRI.GadgetInstrumentationStreamController()
-        self.controller_.append_gadget(classname,dllname,classname)
+        self.controller_.prepend_gadget(gadgetname,dllname,classname)
         self.controller_.set_python_gadget(self)
-        
+    
+    def prepend_gadget(dllname, classname, gadgetname=None):
+        self.controller_.prepend_gadget(gadgetname,dllname,classname)
+
     def wait(self):
         self.controller_.close()
         self.controller_ = None        

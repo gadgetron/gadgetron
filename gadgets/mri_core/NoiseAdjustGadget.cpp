@@ -346,7 +346,6 @@ namespace Gadgetron{
 
   int NoiseAdjustGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
-    GDEBUG("Receiving data in NoiseAdjust::process\n");
     bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
     unsigned int channels = m1->getObjectPtr()->active_channels;
     unsigned int samples = m1->getObjectPtr()->number_of_samples;

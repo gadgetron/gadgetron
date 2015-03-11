@@ -11,6 +11,7 @@ class Remove2xOversampling(Gadget):
         return
 
     def process(self, acq, data):
+        print "process called in remove oversamplign"
         orig_size = list(data.shape);
         data2 = data.reshape([(data.size/data.shape[data.ndim-1]), data.shape[data.ndim-1]])
         new_length = data2.shape[1]>>1
