@@ -73,9 +73,6 @@ class WrapperGadget(Gadget):
 
     def wait(self):
        self.controller_.close()
-       #We hava to make this semi-busy wait until the stream controller is closed.
-       while not self.controller_.is_closed():
-           time.sleep(0.250) #250 us
 
     def process_config(self, conf):
         self.controller_.put_config(conf)

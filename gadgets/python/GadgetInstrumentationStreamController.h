@@ -44,57 +44,10 @@ public:
 
 };
 
-
- class StreamClosingTask : public ACE_Task<ACE_MT_SYNCH>
- {
-   typedef ACE_Task<ACE_MT_SYNCH> inherited;
-
- public:
-   StreamClosingTask(GadgetInstrumentationStreamController* cntrl)
-     : inherited()
-     , mtx_("StreamControllerMTX")
-     , cntrl_(0)
-     , closed_(false)
-     {
-       cntrl_ = cntrl;
-     }
-
-   virtual int open(void* = 0)
-   {
-     return this->activate( THR_NEW_LWP | THR_JOINABLE, 1);
-   }
-	
-   virtual int svc(void)
-   {
-     if (cntrl_) {
-       cntrl_->close();
-     }
-     mtx_.acquire();
-     closed_ = true;
-     mtx_.release();
-   }
-
-   bool is_closed()
-   {
-     bool ret;
-     mtx_.acquire();
-     ret = closed_;
-     mtx_.release();
-     return ret;
-   }
-     
-
- protected:
-   ACE_Thread_Mutex mtx_;
-   GadgetInstrumentationStreamController* cntrl_;
-   bool closed_;
- };
-
 class GadgetInstrumentationStreamControllerWrapper
 {
  public:
   GadgetInstrumentationStreamControllerWrapper() 
-    : closer_(0)
     {
       // ensure boost can convert between hoNDArrays and NumPy arrays automatically
       register_converter<hoNDArray<std::complex<float> > >();
@@ -109,7 +62,6 @@ class GadgetInstrumentationStreamControllerWrapper
   ~GadgetInstrumentationStreamControllerWrapper()
     {
       delete cntrl_;
-      if (closer_) delete closer_;
     }
 
   int prepend_gadget(const char* gadgetname, 
@@ -137,21 +89,13 @@ class GadgetInstrumentationStreamControllerWrapper
 
   int close()
   {
-    //We will spawn a seperate thread task to close the stream to avoid blocking Python while closing
-    if (!closer_) {
-      closer_ = new StreamClosingTask(cntrl_);
-      closer_->open();
-    }
+    // allow other threads to finish returning data to Python
+    Py_BEGIN_ALLOW_THREADS;
+    cntrl_->close();
+    Py_END_ALLOW_THREADS;
     return 0;
   }
 
-  bool is_closed()
-  {
-    if (!closer_) {
-      return false;
-    }
-    return closer_->is_closed();
-  }
   int set_python_gadget(boost::python::object g)
   {
     return cntrl_->set_python_gadget(g);
@@ -164,7 +108,6 @@ class GadgetInstrumentationStreamControllerWrapper
 
  protected:
   GadgetInstrumentationStreamController* cntrl_;
-  StreamClosingTask* closer_;
   
 
 };

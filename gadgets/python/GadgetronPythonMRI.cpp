@@ -21,7 +21,6 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
       .def("put_image", &Gadgetron::GadgetInstrumentationStreamControllerWrapper::put_image)
       .def("prepend_gadget", &Gadgetron::GadgetInstrumentationStreamControllerWrapper::prepend_gadget)
       .def("close", &Gadgetron::GadgetInstrumentationStreamControllerWrapper::close)
-      .def("is_closed", &Gadgetron::GadgetInstrumentationStreamControllerWrapper::is_closed)
       .def("set_python_gadget", &Gadgetron::GadgetInstrumentationStreamControllerWrapper::set_python_gadget)
       ;
     
