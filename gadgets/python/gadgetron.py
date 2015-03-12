@@ -4,6 +4,7 @@ try:
 except ImportError:
     pass
 
+import time
 
 class Gadget(object):
     def __init__(self, next_gadget=None):
@@ -29,8 +30,11 @@ class Gadget(object):
 
     def process(self, header, *args):
         # do work here
-        self.put_next(results)
+        self.put_next(header,*args)
 
+    def wait(self):
+        pass
+    
     def put_next(self, *args):
         if self.next_gadget is not None:
             if isinstance(self.next_gadget, Gadget):
@@ -53,7 +57,38 @@ class Gadget(object):
         results = self.results
         self.results = []
         return results
+        
+class WrapperGadget(Gadget):
+    
+    def __init__(self, dllname, classname, gadgetname=None, next_gadget=None):
+        if gadgetname == None:
+            gadgetname = classname
+        Gadget.__init__(self, next_gadget)
+        self.controller_ = GadgetronPythonMRI.GadgetInstrumentationStreamController()
+        self.controller_.prepend_gadget(gadgetname,dllname,classname)
+        self.controller_.set_python_gadget(self)
+    
+    def prepend_gadget(self,dllname, classname, gadgetname=None):
+        self.controller_.prepend_gadget(gadgetname,dllname,classname)
 
+    def wait(self):
+       self.controller_.close()
+
+    def process_config(self, conf):
+        self.controller_.put_config(conf)
+        return 0
+
+    def process(self, header, *args):
+        if len(args) != 1:
+            raise("Only two arguments are currently supported when sending data to Gadgetron framework")
+        if isinstance(header, ismrmrd.AcquisitionHeader):
+            self.controller_.put_acquisition(header,args[0].astype('complex64'))
+        elif isinstance(header, ismrmrd.ImageHeader):
+            self.controller_.put_image(header,args[0].astype('complex64'))
+        else:
+            raise("Unsupported types when sending data to Gadgetron framework")
+        return 0
+  
 class FunctionGadget(Gadget):
     """A Gadget with a configurable `process` function.
 

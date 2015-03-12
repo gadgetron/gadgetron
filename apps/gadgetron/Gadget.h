@@ -28,7 +28,7 @@
 namespace Gadgetron{
 
     //Forward declarations
-    class GadgetStreamController;
+    class GadgetStreamInterface;
 
     class EXPORTGADGETBASE Gadget : public ACE_Task<ACE_MT_SYNCH>
     {
@@ -48,8 +48,10 @@ namespace Gadgetron{
             , controller_(0)
 	    , parameter_mutex_("GadgetParameterMutex")
         {
+
 	  gadgetron_version_ = std::string(GADGETRON_VERSION_STRING) + std::string(" (") + 
 	    std::string(GADGETRON_GIT_SHA1_HASH) + std::string(")");
+	  
         }
 
         virtual ~Gadget()
@@ -74,6 +76,8 @@ namespace Gadgetron{
                 this->desired_threads(t);
             }
 
+	    this->pass_on_undesired_data(this->get_bool_value("pass_on_undesired_data"));
+
             return this->activate( THR_NEW_LWP | THR_JOINABLE,
                 this->desired_threads() );
         }
@@ -93,11 +97,21 @@ namespace Gadgetron{
             desired_threads_ = t;
         }
 
-        virtual void set_controller(GadgetStreamController* controller) {
+	virtual bool pass_on_undesired_data()
+	{
+	  return pass_on_undesired_data_;
+	}
+
+	virtual void pass_on_undesired_data(bool d)
+	{
+	  pass_on_undesired_data_ = d;
+	}
+
+        virtual void set_controller(GadgetStreamInterface* controller) {
             controller_ = controller;
         }
 
-        virtual GadgetStreamController* get_controller()
+        virtual GadgetStreamInterface* get_controller()
         {
             return controller_;
         }
@@ -135,7 +149,7 @@ namespace Gadgetron{
 
                 //If this is a hangup message, we are done, put the message back on the queue before breaking
                 if (m->msg_type() == ACE_Message_Block::MB_HANGUP) {
-                    //GDEBUG("Gadget (%s) Hangup message encountered\n", this->module()->name());
+		  //GDEBUG("Gadget (%s) Hangup message encountered\n", this->module()->name());
                     if (this->putq(m) == -1) {
                         GDEBUG("Gadget (%s) failed to put hang up message on queue (for other threads)\n", this->module()->name());
                         return GADGET_FAIL;
@@ -245,7 +259,7 @@ namespace Gadgetron{
 
         unsigned int desired_threads_;
         bool pass_on_undesired_data_;
-        GadgetStreamController* controller_;
+        GadgetStreamInterface* controller_;
 	ACE_Thread_Mutex parameter_mutex_;
     private:
         std::map<std::string, std::string> parameters_;

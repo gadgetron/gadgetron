@@ -6,7 +6,7 @@
 using namespace Gadgetron;
 
 int AcquisitionFinishGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-				 GadgetContainerMessage< NDArray< std::complex<float> > >* m2)
+				 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   if (!controller_) {
     GERROR("Cannot return result to controller, no controller set\n");
@@ -19,9 +19,7 @@ int AcquisitionFinishGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
   mb->getObjectPtr()->id = GADGET_MESSAGE_ACQUISITION;
 
   mb->cont(m1);
-
   return controller_->output_ready(mb);
-
 }
 
 GADGET_FACTORY_DECLARE(AcquisitionFinishGadget)

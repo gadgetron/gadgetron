@@ -2,7 +2,7 @@
 #define ACQUISITIONFINISHGADGET_H
 
 #include "Gadget.h"
-#include "NDArray.h"
+#include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
 #include "gadgetron_mricore_export.h"
 
@@ -12,14 +12,14 @@
 namespace Gadgetron{
 
   class EXPORTGADGETSMRICORE AcquisitionFinishGadget : 
-  public Gadget2<ISMRMRD::AcquisitionHeader, NDArray< std::complex<float> > >
+  public Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
     {
     public:
       GADGET_DECLARE(AcquisitionFinishGadget);
       
     protected:
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			  GadgetContainerMessage< NDArray< std::complex<float> > >* m2);
+			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
     };
 }
 
