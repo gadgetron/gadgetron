@@ -52,8 +52,6 @@ namespace Gadgetron{
 	  gadgetron_version_ = std::string(GADGETRON_VERSION_STRING) + std::string(" (") + 
 	    std::string(GADGETRON_GIT_SHA1_HASH) + std::string(")");
 	  
-	  //We will set this very high to prevent race conditions in "mixed environments" such as when using Python or Matlab in Gadgets
-	  this->msg_queue()->high_water_mark(ACE_Message_Queue_Base::DEFAULT_HWM*10000);
         }
 
         virtual ~Gadget()
@@ -151,7 +149,7 @@ namespace Gadgetron{
 
                 //If this is a hangup message, we are done, put the message back on the queue before breaking
                 if (m->msg_type() == ACE_Message_Block::MB_HANGUP) {
-                    //GDEBUG("Gadget (%s) Hangup message encountered\n", this->module()->name());
+		  //GDEBUG("Gadget (%s) Hangup message encountered\n", this->module()->name());
                     if (this->putq(m) == -1) {
                         GDEBUG("Gadget (%s) failed to put hang up message on queue (for other threads)\n", this->module()->name());
                         return GADGET_FAIL;

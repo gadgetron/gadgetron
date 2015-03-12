@@ -4,6 +4,8 @@ try:
 except ImportError:
     pass
 
+import time
+
 class Gadget(object):
     def __init__(self, next_gadget=None):
         self.next_gadget = next_gadget
@@ -69,9 +71,15 @@ class WrapperGadget(Gadget):
     def prepend_gadget(self,dllname, classname, gadgetname=None):
         self.controller_.prepend_gadget(gadgetname,dllname,classname)
 
-    def wait(self):   
+    def wait(self):
        self.controller_.close()
-       self.controller_ = None        
+       #We hava to make this semi-busy wait until the stream controller is closed.
+       while not self.controller_.is_closed():
+           time.sleep(0.250) #250 us
+
+    def process_config(self, conf):
+        self.controller_.put_config(conf)
+        return 0
 
     def process(self, header, *args):
         if len(args) != 1:

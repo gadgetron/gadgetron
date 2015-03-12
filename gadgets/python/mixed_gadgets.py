@@ -37,6 +37,12 @@ def gadget_wait_function(first_gadget):
     while (g):
         g.wait()
         g = g.next_gadget
+
+def gadget_config(first_gadget, conf):
+    g = first_gadget;
+    while (g):
+        g.process_config(conf)
+        g = g.next_gadget
     
 
 #%% Load file
@@ -48,9 +54,7 @@ dset = ismrmrd.Dataset(filename, 'dataset', create_if_needed=False)
 
 #%% Send in data
 #First ISMRMRD XML header
-g1.process_config(dset.read_xml_header())
-g2.process_config(dset.read_xml_header())
-g3.process_config(dset.read_xml_header())
+gadget_config(g0,dset.read_xml_header())
 
 # Loop through the rest of the acquisitions and stuff
 for acqnum in range(0,dset.number_of_acquisitions()):
@@ -59,7 +63,6 @@ for acqnum in range(0,dset.number_of_acquisitions()):
     g0.process(acq.getHead(),acq.data.astype('complex64'))
 
 #%%
-time.sleep(1) #This sleep is needed to avoid a hang
 gadget_wait_function(g0)
 
 print g4.get_results()

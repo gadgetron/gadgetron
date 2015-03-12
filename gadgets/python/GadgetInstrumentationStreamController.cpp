@@ -6,6 +6,7 @@
 #include "hoNDArray.h"
 #include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
+#include <string.h>
 
 namespace Gadgetron
 {
@@ -45,6 +46,13 @@ namespace Gadgetron
     //Adding some gadgets to "capture data and return to the stream"
     if (this->prepend_gadget("ImageFinishFloat","gadgetron_mricore","ImageFinishGadgetFLOAT") != GADGET_OK) return GADGET_FAIL;
     this->find_gadget("ImageFinishFloat")->pass_on_undesired_data(true);
+
+    if (this->prepend_gadget("ImageFinishCplx","gadgetron_mricore","ImageFinishGadgetCPLX") != GADGET_OK) return GADGET_FAIL;
+    this->find_gadget("ImageFinishCplx")->pass_on_undesired_data(true);
+
+    if (this->prepend_gadget("ImageFinishUShort","gadgetron_mricore","ImageFinishGadgetUSHORT") != GADGET_OK) return GADGET_FAIL;
+    this->find_gadget("ImageFinishUShort")->pass_on_undesired_data(true);
+
     if (this->prepend_gadget("AcquisitionFinish","gadgetron_mricore","AcquisitionFinishGadget") != GADGET_OK) return GADGET_FAIL;
     this->find_gadget("AcquisitionFinish")->pass_on_undesired_data(true);
 
@@ -65,7 +73,12 @@ namespace Gadgetron
     GadgetModule* m = create_gadget_module(dllname,
 					   classname,
 					   gadgetname);
-      
+    
+    Gadget* g = dynamic_cast<Gadget*>(m->writer());//Get the gadget out of the module
+
+    //We will set this very high to prevent race conditions in "mixed environments" such as when using Python or Matlab in Gadgets
+    g->msg_queue()->high_water_mark(ACE_Message_Queue_Base::DEFAULT_HWM*100000);
+    
     if (!m) {
       GERROR("Failed to create GadgetModule from %s:%s\n",
 	     classname,
@@ -83,6 +96,7 @@ namespace Gadgetron
 
   template <class T1, class T2> int GadgetInstrumentationStreamController::return_data(ACE_Message_Block* mb)
   {
+    static int counter = 0;
     GadgetContainerMessage<T1>* m1 = AsContainerMessage<T1>(mb);
     GadgetContainerMessage<T2>* m2 = AsContainerMessage<T2>(mb->cont());
 
@@ -91,15 +105,16 @@ namespace Gadgetron
       return GADGET_FAIL;
     }
     
-    GILLock lock;
-    try {
-      python_gadget_.attr("put_next")(*m1->getObjectPtr(),m2->getObjectPtr());
-    } catch(boost::python::error_already_set const &) {
-      GERROR("Passing data on to python wrapper gadget failed\n");
-      PyErr_Print();
-      return GADGET_FAIL;
+    {
+      GILLock lock;
+      try {
+	python_gadget_.attr("put_next")(*m1->getObjectPtr(),m2->getObjectPtr());
+      } catch(boost::python::error_already_set const &) {
+	GERROR("Passing data on to python wrapper gadget failed\n");
+	PyErr_Print();
+	return GADGET_FAIL;
+      }
     }
-
     return GADGET_OK;
   }
 
@@ -167,6 +182,21 @@ namespace Gadgetron
     g->set_parameter(parameter,value,false);
   }
 
+
+  int GadgetInstrumentationStreamController::put_config(const char* config)
+  {
+    size_t l = std::strlen(config);
+    ACE_Message_Block* mb = new ACE_Message_Block(l+1);
+    memcpy(mb->wr_ptr(),config,l+1);
+    mb->wr_ptr(l+1);
+    mb->set_flags(Gadget::GADGET_MESSAGE_CONFIG);
+    if (stream_.put(mb) == -1) {
+      GERROR("Failed to put configuration on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
+      mb->release();
+      return GADGET_FAIL;
+    }
+    return GADGET_OK;
+  }
 
   template<class T>
   int GadgetInstrumentationStreamController::put_data(T header, boost::python::object arr)

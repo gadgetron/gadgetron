@@ -19,9 +19,7 @@ int AcquisitionFinishGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
   mb->getObjectPtr()->id = GADGET_MESSAGE_ACQUISITION;
 
   mb->cont(m1);
-
   return controller_->output_ready(mb);
-
 }
 
 GADGET_FACTORY_DECLARE(AcquisitionFinishGadget)

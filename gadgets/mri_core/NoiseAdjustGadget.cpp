@@ -43,7 +43,6 @@ namespace Gadgetron{
 
   int NoiseAdjustGadget::process_config(ACE_Message_Block* mb)
   {
-
     boost::shared_ptr<std::string> str = this->get_string_value("workingDirectory");
 
     if ( !str->empty() ) {
