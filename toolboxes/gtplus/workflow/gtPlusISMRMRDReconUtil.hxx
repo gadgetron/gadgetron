@@ -632,194 +632,6 @@ zpadRange(size_t srcSize, size_t dstSize, size_t& start, size_t& end)
 
 template <typename T> 
 bool gtPlusISMRMRDReconUtil<T>::
-zeropad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataPadded)
-{
-    try
-    {
-        size_t RO = data.get_size(0);
-        size_t E1 = data.get_size(1);
-
-        GADGET_CHECK_RETURN_FALSE(sizeX>=RO);
-        GADGET_CHECK_RETURN_FALSE(sizeY>=E1);
-
-        if ( RO==sizeX && E1==sizeY )
-        {
-            dataPadded = data;
-            return true;
-        }
-
-        size_t sRO, eRO, sE1, eE1;
-        GADGET_CHECK_RETURN_FALSE(zpadRange(RO, sizeX, sRO, eRO));
-        GADGET_CHECK_RETURN_FALSE(zpadRange(E1, sizeY, sE1, eE1));
-
-        boost::shared_ptr< std::vector<size_t> > dimPadded = data.get_dimensions();
-        (*dimPadded)[0] = sizeX;
-        (*dimPadded)[1] = sizeY;
-        dataPadded.create(dimPadded);
-        Gadgetron::clear(&dataPadded);
-
-        size_t num = data.get_number_of_elements()/(RO*E1);
-
-        long long n;
-
-        const T* pData = data.begin();
-        T* pDataPadded = dataPadded.begin();
-
-        #pragma omp parallel for default(none) private(n) shared(num, sE1, eE1, sRO, RO, E1, pData, pDataPadded, sizeX, sizeY)
-        for ( n=0; n<(long long)num; n++ )
-        {
-            for ( size_t y=sE1; y<=eE1; y++ )
-            {
-                memcpy(pDataPadded+n*sizeX*sizeY+y*sizeX+sRO, pData+n*RO*E1+(y-sE1)*RO, sizeof(T)*RO);
-            }
-        }
-    }
-    catch(...)
-    {
-        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::zeropad2D(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::
-zeropad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataPadded)
-{
-    try
-    {
-        size_t RO = data.get_size(0);
-        size_t E1 = data.get_size(1);
-        size_t E2 = data.get_size(2);
-
-        GADGET_CHECK_RETURN_FALSE(sizeX>=RO);
-        GADGET_CHECK_RETURN_FALSE(sizeY>=E1);
-        GADGET_CHECK_RETURN_FALSE(sizeZ>=E2);
-
-        if ( RO==sizeX && E1==sizeY && E2==sizeZ )
-        {
-            dataPadded = data;
-            return true;
-        }
-
-        size_t sRO, eRO, sE1, eE1, sE2, eE2;
-        GADGET_CHECK_RETURN_FALSE(zpadRange(RO, sizeX, sRO, eRO));
-        GADGET_CHECK_RETURN_FALSE(zpadRange(E1, sizeY, sE1, eE1));
-        GADGET_CHECK_RETURN_FALSE(zpadRange(E2, sizeZ, sE2, eE2));
-
-        boost::shared_ptr< std::vector<size_t> > dimPadded = data.get_dimensions();
-        (*dimPadded)[0] = sizeX;
-        (*dimPadded)[1] = sizeY;
-        (*dimPadded)[2] = sizeZ;
-        dataPadded.create(dimPadded);
-        Gadgetron::clear(&dataPadded);
-
-        size_t num = data.get_number_of_elements()/(RO*E1*E2);
-
-        long long n;
-
-        const T* pData = data.begin();
-        T* pDataPadded = dataPadded.begin();
-
-        #pragma omp parallel for default(none) private(n) shared(num, sE2, eE2, sE1, eE1, sRO, RO, E1, E2, pData, pDataPadded, sizeX, sizeY, sizeZ)
-        for ( n=0; n<(long long)num; n++ )
-        {
-            T* pDst = pDataPadded+n*sizeX*sizeY*sizeZ;
-            T* pSrc = const_cast<T*>(pData)+n*RO*E1*E2;
-
-            long long z;
-            // #pragma omp parallel for default(none) private(z) shared(pDst, pSrc, sE2, eE2, sE1, eE1, sRO, RO, E1, E2, sizeX, sizeY, sizeZ) num_threads(2)
-            for ( z=(long long)sE2; z<=(long long)eE2; z++ )
-            {
-                long long o1 = z*sizeX*sizeY + sRO;
-                long long o2 = (z-sE2)*RO*E1;
-                for ( size_t y=sE1; y<=eE1; y++ )
-                {
-                    memcpy(pDst+o1+y*sizeX, pSrc+o2+(y-sE1)*RO, sizeof(T)*RO);
-                }
-            }
-        }
-    }
-    catch(...)
-    {
-        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::zeropad3D(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::
-zeropad3DNoPresetZeros(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, hoNDArray<T>& dataPadded)
-{
-    try
-    {
-        size_t RO = data.get_size(0);
-        size_t E1 = data.get_size(1);
-        size_t E2 = data.get_size(2);
-        size_t srcCHA = data.get_size(3);
-        size_t dstCHA = data.get_size(4);
-
-        GADGET_CHECK_RETURN_FALSE(sizeX>=RO);
-        GADGET_CHECK_RETURN_FALSE(sizeY>=E1);
-        GADGET_CHECK_RETURN_FALSE(sizeZ>=E2);
-
-        if ( RO==sizeX && E1==sizeY && E2==sizeZ )
-        {
-            dataPadded = data;
-            return true;
-        }
-
-        size_t sRO, eRO, sE1, eE1, sE2, eE2;
-        GADGET_CHECK_RETURN_FALSE(zpadRange(RO, sizeX, sRO, eRO));
-        GADGET_CHECK_RETURN_FALSE(zpadRange(E1, sizeY, sE1, eE1));
-        GADGET_CHECK_RETURN_FALSE(zpadRange(E2, sizeZ, sE2, eE2));
-
-        GADGET_CHECK_RETURN_FALSE(dataPadded.get_size(0)==sizeX);
-        GADGET_CHECK_RETURN_FALSE(dataPadded.get_size(1)==sizeY);
-        GADGET_CHECK_RETURN_FALSE(dataPadded.get_size(2)==sizeZ);
-        GADGET_CHECK_RETURN_FALSE(dataPadded.get_size(3)==srcCHA);
-        GADGET_CHECK_RETURN_FALSE(dataPadded.get_size(4)==dstCHA);
-
-        size_t num = data.get_number_of_elements()/(RO*E1*E2);
-
-        long long n;
-
-        const T* pData = data.begin();
-        T* pDataPadded = dataPadded.begin();
-
-        #pragma omp parallel for default(none) private(n) shared(num, sE2, eE2, sE1, eE1, sRO, RO, E1, E2, pData, pDataPadded, sizeX, sizeY, sizeZ)
-        for ( n=0; n<(long long)num; n++ )
-        {
-            T* pDst = pDataPadded+n*sizeX*sizeY*sizeZ;
-            T* pSrc = const_cast<T*>(pData)+n*RO*E1*E2;
-
-            long long z;
-            //#pragma omp parallel for default(none) private(z) shared(pDst, pSrc, sE2, eE2, sE1, eE1, sRO, RO, E1, E2, sizeX, sizeY, sizeZ) num_threads(2)
-            for ( z=(long long)sE2; z<=(long long)eE2; z++ )
-            {
-                long long o1 = z*sizeX*sizeY + sRO;
-                long long o2 = (z-sE2)*RO*E1;
-                for ( size_t y=sE1; y<=eE1; y++ )
-                {
-                    memcpy(pDst+o1+y*sizeX, pSrc+o2+(y-sE1)*RO, sizeof(T)*RO);
-                }
-            }
-        }
-    }
-    catch(...)
-    {
-        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::zeropad3DNoPresetZeros(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::
 cutpad2D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, hoNDArray<T>& dataCut)
 {
     try
@@ -4179,7 +3991,8 @@ zpadResize2DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, hoN
         Gadgetron::clear(&dataResized);
 
         // GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(kspace, sizeX, sizeY, dataResized));
+        // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(kspace, sizeX, sizeY, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::pad(sizeX, sizeY, const_cast<hoNDArray<T>*>(&kspace), &dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized);
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY)/std::sqrt((double)RO*E1));
@@ -4263,7 +4076,8 @@ zpadResize3DOnKSpace(const hoNDArray<T>& kspace, size_t sizeX, size_t sizeY, siz
         Gadgetron::clear(&dataResized);
 
         // GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::pad(sizeX, sizeY, sizeZ, const_cast<hoNDArray<T>*>(&kspace), &dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized);
 
         typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeX*sizeY*sizeZ)/std::sqrt((double)RO*E1*E2));
@@ -4309,7 +4123,8 @@ zpadResize2DFilter(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, const h
         hoNDArray<T> kspace(data);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(data, kspace);
         // GADGET_CHECK_RETURN_FALSE(this->zeropad2D(kspace, sizeX, sizeY, dataResized));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(kspace, sizeX, sizeY, dataResized));
+        // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad2D(kspace, sizeX, sizeY, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::pad(sizeX, sizeY, const_cast<hoNDArray<T>*>(&kspace), &dataResized));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(dataResized, filter2D, dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(dataResized);
 
@@ -4359,7 +4174,8 @@ zpadResize3DFilter(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t 
         hoNDArray<T> kspace(data);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(data, kspace);
         // GADGET_CHECK_RETURN_FALSE(this->zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(kspace, sizeX, sizeY, sizeZ, dataResized));
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::pad(sizeX, sizeY, sizeZ, &kspace, &dataResized));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(dataResized, filter3D, dataResized));
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(dataResized);
 
