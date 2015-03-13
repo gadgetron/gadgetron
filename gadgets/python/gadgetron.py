@@ -88,7 +88,10 @@ class WrapperGadget(Gadget):
         else:
             raise("Unsupported types when sending data to Gadgetron framework")
         return 0
-  
+
+    def set_parameter(self,gadgetname,parameter,value):
+        self.controller_.set_parameter(gadgetname,parameter,value)
+
 class FunctionGadget(Gadget):
     """A Gadget with a configurable `process` function.
 

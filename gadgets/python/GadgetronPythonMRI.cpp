@@ -22,6 +22,7 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
       .def("prepend_gadget", &Gadgetron::GadgetInstrumentationStreamControllerWrapper::prepend_gadget)
       .def("close", &Gadgetron::GadgetInstrumentationStreamControllerWrapper::close)
       .def("set_python_gadget", &Gadgetron::GadgetInstrumentationStreamControllerWrapper::set_python_gadget)
+      .def("set_parameter", &Gadgetron::GadgetInstrumentationStreamControllerWrapper::set_parameter)
       ;
     
     enum_<Gadgetron::GadgetMessageID>("GadgetMessageID")
