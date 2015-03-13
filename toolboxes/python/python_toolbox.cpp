@@ -134,6 +134,11 @@ int NumPyArray_ITEMSIZE(PyObject* obj)
     return PyArray_ITEMSIZE((PyArrayObject*)obj);
 }
 
+npy_intp NumPyArray_SIZE(PyObject* obj)
+{
+    return PyArray_SIZE((PyArrayObject*)obj);
+}
+
 /// Wraps PyArray_SimpleNew
 PyObject* NumPyArray_SimpleNew(int nd, npy_intp* dims, int typenum)
 {
