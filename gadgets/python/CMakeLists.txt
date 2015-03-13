@@ -36,6 +36,12 @@ add_library(gadgetron_python SHARED
 
 set_target_properties(gadgetron_python PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
+add_executable(gadgetron_xml_to_python
+  gadgetron_xml_to_python.cpp)
+
+target_link_libraries(gadgetron_xml_to_python
+  gadgetron_gadgetbase)
+
 target_link_libraries(gadgetron_python
     gadgetron_gadgetbase
     gadgetron_toolbox_python
@@ -67,6 +73,7 @@ set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 
 install(TARGETS gadgetron_python DESTINATION lib COMPONENT main)
 install(TARGETS GadgetronPythonMRI DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
+install(TARGETS gadgetron_xml_to_python DESTINATION bin COMPONENT main)
 
 install(FILES
     gadgetron.py
