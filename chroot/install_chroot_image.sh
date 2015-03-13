@@ -78,7 +78,7 @@ else
 
 	ln -s ${CHROOT_INSTALL_PATH}/${FILENAME} ${CHROOT_INSTALL_PATH}/current
 
-	cp -f ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/webapp/gadgetron_chroot.conf /etc/init/
+	cp -f ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/usr/local/share/gadgetron/chroot/gadgetron_chroot.conf /etc/init/
 
 	if [ ${install_img} -eq 1 ]; then
                 echo "copy image file : ${CHROOT_IMAGE_IMG_FILENAME} ... "		
