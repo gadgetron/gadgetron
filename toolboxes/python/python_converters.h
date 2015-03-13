@@ -28,5 +28,6 @@ void register_converter(void) {
 #include "python_tuple_converter.h"
 #include "python_hoNDArray_converter.h"
 #include "python_ismrmrd_converter.h"
+#include "python_vector_converter.h"
 
 #endif // GADGETRON_PYTHON_MATH_CONVERSIONS_H

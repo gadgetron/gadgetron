@@ -12,21 +12,6 @@ namespace bp = boost::python;
 
 namespace Gadgetron {
 
-/// return the enumerated numpy type for a given C++ type
-template <typename T> int get_numpy_type();
-template <> inline int get_numpy_type< char >() { return NPY_INT8; }
-template <> inline int get_numpy_type< unsigned char >() { return NPY_UINT8; }
-template <> inline int get_numpy_type< short >() { return NPY_INT16; }
-template <> inline int get_numpy_type< unsigned short >() { return NPY_UINT16; }
-template <> inline int get_numpy_type< int >() { return NPY_INT32; }
-template <> inline int get_numpy_type< unsigned int >() { return NPY_UINT32; }
-template <> inline int get_numpy_type< long >() { return NPY_INT64; }
-template <> inline int get_numpy_type< unsigned long >() { return NPY_UINT64; }
-template <> inline int get_numpy_type< float >() { return NPY_FLOAT32; }
-template <> inline int get_numpy_type< double >() { return NPY_FLOAT64; }
-template <> inline int get_numpy_type< std::complex<float> >() { return NPY_COMPLEX64; }
-template <> inline int get_numpy_type< std::complex<double> >() { return NPY_COMPLEX128; }
-
 /// Used for making a NumPy array from and hoNDArray
 template <typename T>
 struct hoNDArray_to_numpy_array {
@@ -39,7 +24,7 @@ struct hoNDArray_to_numpy_array {
         PyObject *obj = NumPyArray_SimpleNew(dims2.size(), &dims2[0], get_numpy_type<T>());
         if (sizeof(T) != NumPyArray_ITEMSIZE(obj)) {
             GERROR("sizeof(T): %d, ITEMSIZE: %d\n", sizeof(T), NumPyArray_ITEMSIZE(obj));
-            throw std::runtime_error("hondarray_to_bp_object: "
+            throw std::runtime_error("hondarray_to_numpy_array: "
                     "python object and array data type sizes do not match");
         }
 
@@ -75,6 +60,8 @@ struct hoNDArray_from_numpy_array {
     /// Construct an hoNDArray in-place
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data* data) {
         void* storage = ((bp::converter::rvalue_from_python_storage<hoNDArray<T> >*)data)->storage.bytes;
+        data->convertible = storage;
+
         size_t ndim = NumPyArray_NDIM(obj);
         std::vector<size_t> dims(ndim);
         for (size_t i = 0; i < ndim; i++) {
@@ -85,7 +72,6 @@ struct hoNDArray_from_numpy_array {
         hoNDArray<T>* arr = new (storage) hoNDArray<T>(dims);
         memcpy(arr->get_data_ptr(), NumPyArray_DATA(obj),
                 sizeof(T) * arr->get_number_of_elements());
-        data->convertible = storage;
     }
 };
 

@@ -43,19 +43,45 @@ int main(int argc, char** argv)
     // Generate an hoNDArray of even #s using numpy
     PythonFunction<hoNDArray<float>> arange("numpy", "arange");
     hoNDArray<float> evens = arange(0, 100, 2, "f64");
-    std::cout << evens.get_number_of_elements() << std::endl;
+    std::cout << "number of even numbers between 0 and 100: " <<
+            evens.get_number_of_elements() << std::endl;
+
+    {
+        GILLock gl;     // this is needed
+        boost::python::object main(boost::python::import("__main__"));
+        boost::python::object global(main.attr("__dict__"));
+        boost::python::exec("def modify(head): head.version = 42; return head",
+                global, global);
+    }
 
     ISMRMRD::ImageHeader img_head, img_head2;
-    img_head.version = 42;
-    PythonFunction<ISMRMRD::ImageHeader> print_img_header("joe", "print_and_return");
-    img_head2 = print_img_header(img_head);
-    std::cout << img_head2.version << std::endl;
+    img_head.version = 0;
+    std::cout << "version before: " << img_head.version << std::endl;
+    PythonFunction<ISMRMRD::ImageHeader> modify_img_header("__main__", "modify");
+    img_head2 = modify_img_header(img_head);
+    std::cout << "version after: " << img_head2.version << std::endl;
 
     ISMRMRD::AcquisitionHeader acq_head, acq_head2;
-    acq_head.version = 42;
-    PythonFunction<ISMRMRD::AcquisitionHeader> print_acq_header("joe", "print_and_return");
-    acq_head2 = print_acq_header(acq_head);
-    std::cout << acq_head2.version << std::endl;
+    acq_head.version = 0;
+    std::cout << "version before: " << img_head.version << std::endl;
+    PythonFunction<ISMRMRD::AcquisitionHeader> modify_acq_header("__main__", "modify");
+    acq_head2 = modify_acq_header(acq_head);
+    std::cout << "version after: " << acq_head2.version << std::endl;
+
+    {
+        GILLock gl;     // this is needed
+        boost::python::object main(boost::python::import("__main__"));
+        boost::python::object global(main.attr("__dict__"));
+        boost::python::exec("from numpy.random import random\n"
+                "def rand_cplx_array(length): \n"
+                "    return random(length) + 1j * random(length)\n",
+                global, global);
+    }
+
+    std::vector<std::complex<double> > vec;
+    PythonFunction<std::vector<std::complex<double> > > make_vec("__main__", "rand_cplx_array");
+    vec = make_vec(32);
+    std::cout << vec[16] << std::endl;
 
     return 0;
 }
