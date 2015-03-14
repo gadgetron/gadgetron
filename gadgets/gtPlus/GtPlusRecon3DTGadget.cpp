@@ -332,6 +332,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         workflow_.workOrder_ = &workOrder_recon_other_;
 
         // perform a simple FFT recon
+        workOrder_recon_other_.CalibMode_ = ISMRMRD_noacceleration;
         workOrder_recon_other_.acceFactorE1_ = 1;
         workOrder_recon_other_.acceFactorE2_ = 1;
 
