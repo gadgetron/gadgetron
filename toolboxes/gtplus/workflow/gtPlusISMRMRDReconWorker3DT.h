@@ -1039,7 +1039,7 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
 
         size_t n;
 
-        if ( workOrder3DT->acceFactorE1_==1 && workOrder3DT->acceFactorE2_==1 ) return true;
+        if (workOrder3DT->CalibMode_ == ISMRMRD_noacceleration) return true;
 
         // compute coil compression coeff
         if ( workOrder3DT->coil_compression_ 
@@ -1603,7 +1603,7 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                     if ( performTiming_ ) { gt_timer2_.stop(); }
 
                     // if the partial fourier handling is performed on the fullkspace, an extra coil combination is needed
-                    if ( workOrder3DT->acceFactorE1_==1 && workOrder3DT->acceFactorE2_==1 )
+                    if (workOrder3DT->CalibMode_ == ISMRMRD_noacceleration)
                     {
                         hoNDArray<T> buffer3DT_Two(workOrder3DT->data_.get_dimensions());
                         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->data_, buffer3DT, buffer3DT_Two);
@@ -1704,7 +1704,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
 
         // if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING ) return true;
 
-        if ( workOrder3DT->acceFactorE1_==1 && workOrder3DT->acceFactorE2_==1 )
+        if (workOrder3DT->CalibMode_ == ISMRMRD_noacceleration)
         {
             if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {

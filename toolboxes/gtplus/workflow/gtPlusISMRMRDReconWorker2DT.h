@@ -318,7 +318,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref, debugFolder_+"ref"); }
 
-        if ( workOrder2DT->acceFactorE1_ == 1 )
+        if (workOrder2DT->CalibMode_ == ISMRMRD_noacceleration)
         {
             if ( workOrder2DT->no_acceleration_averageall_ref_ )
             {
@@ -709,7 +709,7 @@ bool gtPlusReconWorker2DT<T>::coilCompression(gtPlusReconWorkOrder2DT<T>* workOr
 
         size_t dataS = workOrder2DT->data_.get_size(4);
 
-        if ( workOrder2DT->acceFactorE1_ == 1 ) return true;
+        // if ( workOrder2DT->acceFactorE1_ == 1 ) return true;
 
         // compute coil compression coeff
         if ( workOrder2DT->coil_compression_ )
@@ -862,7 +862,7 @@ bool gtPlusReconWorker2DT<T>::performRecon(gtPlusReconWorkOrder2DT<T>* workOrder
         }
         else
         {
-            if ( workOrder2DT->coil_compression_ && workOrder2DT->acceFactorE1_>1 )
+            if ( workOrder2DT->coil_compression_ )
             {
                 ref_src_ = workOrder2DT->ref_recon_;
 
@@ -899,12 +899,9 @@ bool gtPlusReconWorker2DT<T>::performRecon(gtPlusReconWorkOrder2DT<T>* workOrder
             GADGET_CHECK_RETURN_FALSE(this->estimateCoilMap(workOrder2DT, ref_src_, ref_dst_, ref_coil_map_dst_));
             if ( performTiming_ ) { gt_timer1_.stop(); }
 
-            if ( workOrder2DT->acceFactorE1_>1 )
-            {
-                if ( performTiming_ ) { gt_timer1_.start("performCalib"); }
-                GADGET_CHECK_RETURN_FALSE(this->performCalib(workOrder2DT, ref_src_, ref_dst_, ref_coil_map_dst_));
-                if ( performTiming_ ) { gt_timer1_.stop(); }
-            }
+            if ( performTiming_ ) { gt_timer1_.start("performCalib"); }
+            GADGET_CHECK_RETURN_FALSE(this->performCalib(workOrder2DT, ref_src_, ref_dst_, ref_coil_map_dst_));
+            if ( performTiming_ ) { gt_timer1_.stop(); }
         }
 
         if ( performTiming_ ) { gt_timer1_.start("performUnwrapping"); }
@@ -1691,7 +1688,7 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder2DT->complexIm_, debugFolder_+"complexIm_origin_noFullResCoilMap_"); }
 
                     // if the partial fourier handling is performed on the fullkspace, an extra coil combination is needed
-                    if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
+                    if ( workOrder2DT->CalibMode_ == ISMRMRD_noacceleration )
                     {
                         hoNDArray<T> buffer2DT_Two(workOrder2DT->data_.get_dimensions());
                         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_, buffer2DT_Two);
@@ -1799,7 +1796,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
 
         if ( performTiming_ ) { GDEBUG_STREAM("Partial fourier algorithm : " << gtPlus_util_.getNameFromISMRMRDPartialFourierReconAlgo(workOrder2DT->partialFourier_algo_)); }
 
-        if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
+        if ( workOrder2DT->CalibMode_ == ISMRMRD_noacceleration )
         {
             if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
