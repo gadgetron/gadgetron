@@ -374,30 +374,21 @@ namespace Gadgetron {
   template<class T> void
   crop(size_t x, hoNDArray<T> *in, hoNDArray<T> *out)
   {
-      vector_td<size_t, 1> crop_size(2);
-      crop_size[0] = x;
-
+      vector_td<size_t, 1> crop_size(x);
       crop(crop_size, in, out);
   }
 
   template<class T> void
   crop(size_t x, size_t y, hoNDArray<T> *in, hoNDArray<T> *out)
   {
-      vector_td<size_t, 2> crop_size(2);
-      crop_size[0] = x;
-      crop_size[1] = y;
-
+      vector_td<size_t, 2> crop_size(x, y);
       crop(crop_size, in, out);
   }
 
   template<class T> void
   crop(size_t x, size_t y, size_t z, hoNDArray<T> *in, hoNDArray<T> *out)
   {
-      vector_td<size_t, 3> crop_size(3);
-      crop_size[0] = x;
-      crop_size[1] = y;
-      crop_size[2] = z;
-
+      vector_td<size_t, 3> crop_size(x, y, z);
       crop(crop_size, in, out);
   }
 
@@ -506,27 +497,21 @@ namespace Gadgetron {
   template<class T> void
   pad(size_t x, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
   {
-      typename uint64d<1>::Type padSize(1);
-      padSize[0] = x;
+      typename uint64d<1>::Type padSize(x);
       pad<T, 1>(padSize, in, out, preset_out_with_val, val);
   }
 
   template<class T> void
   pad(size_t x, size_t y, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
   {
-      typename uint64d<2>::Type padSize(2);
-      padSize[0] = x;
-      padSize[1] = y;
+      typename uint64d<2>::Type padSize(x, y);
       pad<T, 2>(padSize, in, out, preset_out_with_val, val);
   }
 
   template<class T> void
   pad(size_t x, size_t y, size_t z, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
   {
-      typename uint64d<3>::Type padSize(3);
-      padSize[0] = x;
-      padSize[1] = y;
-      padSize[2] = z;
+      typename uint64d<3>::Type padSize(x, y, z);
       pad<T, 3>(padSize, in, out, preset_out_with_val, val);
   }
 
