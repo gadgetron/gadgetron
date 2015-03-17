@@ -138,6 +138,7 @@ struct gtPlusReconWorkOrderPara
     // L1 SPIRiT
     /// --------------
     bool spirit_perform_linear_;
+    bool spirit_perform_grappa_linear_;
     bool spirit_perform_nonlinear_;
 
     double spirit_parallel_imaging_lamda_;
@@ -402,6 +403,7 @@ struct gtPlusReconWorkOrderPara
         // ----------------------------------------------
 
         spirit_perform_linear_ = true;
+        spirit_perform_grappa_linear_ = false;
         spirit_perform_nonlinear_ = true;
 
         spirit_parallel_imaging_lamda_ = 1.0;
@@ -792,6 +794,7 @@ void gtPlusReconWorkOrder<T>::duplicatePara(gtPlusReconWorkOrderPara& worder) co
     worder.spirit_print_iter_                          = spirit_print_iter_;
 
     worder.spirit_perform_linear_                      = spirit_perform_linear_;
+    worder.spirit_perform_grappa_linear_               = spirit_perform_grappa_linear_;
     worder.spirit_perform_nonlinear_                   = spirit_perform_nonlinear_;
     worder.spirit_parallel_imaging_lamda_              = spirit_parallel_imaging_lamda_;
     worder.spirit_image_reg_lamda_                     = spirit_image_reg_lamda_;
@@ -983,6 +986,7 @@ void gtPlusReconWorkOrder<T>::copyFromPara(const gtPlusReconWorkOrderPara& worde
     spirit_print_iter_                          = worder.spirit_print_iter_;
 
     spirit_perform_linear_                      = worder.spirit_perform_linear_;
+    spirit_perform_grappa_linear_               = worder.spirit_perform_grappa_linear_;
     spirit_perform_nonlinear_                   = worder.spirit_perform_nonlinear_;
     spirit_parallel_imaging_lamda_              = worder.spirit_parallel_imaging_lamda_;
     spirit_image_reg_lamda_                     = worder.spirit_image_reg_lamda_;
@@ -1140,6 +1144,7 @@ void gtPlusReconWorkOrder<T>::printInfo(std::ostream& os) const
     GADGET_PARA_PRINT(spirit_print_iter_);
     GDEBUG_STREAM("---------------------");
     GADGET_PARA_PRINT(spirit_perform_linear_);
+    GADGET_PARA_PRINT(spirit_perform_grappa_linear_);
     GADGET_PARA_PRINT(spirit_perform_nonlinear_);
     GADGET_PARA_PRINT(spirit_parallel_imaging_lamda_);
     GADGET_PARA_PRINT(spirit_image_reg_lamda_);
