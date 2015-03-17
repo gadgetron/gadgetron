@@ -276,123 +276,256 @@ namespace Gadgetron {
         size_t in_idx = j*number_of_elements+idx;
         val += in->get_data_ptr()[in_idx];      
       }
-      out->get_data_ptr()[idx] = val;       
+      out->get_data_ptr()[idx] = val;
     }
     return out;
   } 
 
+  /**
+  * @param[in] crop_offset starting position to crop
+  * @param[in] crop_size Size of cropped array
+  * @param[in] in input array
+  * @param[out] out Output array after cropping
+  */
+  template<class T, unsigned int D> void
+  crop(const vector_td<size_t, D>& crop_offset, const vector_td<size_t, D>& crop_size, hoNDArray<T> *in, hoNDArray<T> *out)
+  {
+      if (in == 0x0){
+          throw std::runtime_error("crop: 0x0 array provided");;
+      }
+
+      if (in->get_number_of_dimensions() < D){
+          std::stringstream ss;
+          ss << "crop: number of image dimensions should be at least " << D;
+          throw std::runtime_error(ss.str());;
+      }
+
+      if (out == 0x0){
+          throw std::runtime_error("crop: 0x0 array provided");;
+      }
+
+      std::vector<size_t> dims = to_std_vector(crop_size);
+      for (unsigned int d = D; d<in->get_number_of_dimensions(); d++){
+          dims.push_back(in->get_size(d));
+      }
+
+      if (!out->dimensions_equal(&dims)){
+          out->create(dims);
+      }
+
+      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(*in->get_dimensions());
+      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(*out->get_dimensions());
+
+      if (weak_greater(crop_offset + matrix_size_out, matrix_size_in)){
+          throw std::runtime_error("crop: cropping size mismatch");;
+      }
+
+      size_t len = out->get_size(0);
+      size_t num = out->get_number_of_elements() / len;
+
+      long long k;
+
+      T *in_ptr = in->get_data_ptr();
+      T *out_ptr = out->get_data_ptr();
+
+      #pragma omp parallel default(none) private(k) shared(in_ptr, out_ptr, num, len, in, out, crop_offset)
+      {
+          std::vector<size_t> ind;
+
+      #pragma omp for 
+          for (k = 0; k < (long long)num; k++){
+              ind = out->calculate_index(k*len);
+              for (unsigned int d = 0; d < D; d++){
+                  ind[d] += crop_offset[d];
+              }
+
+              T* in_ptr_curr = in_ptr + in->calculate_offset(ind);
+              memcpy(out_ptr + k*len, in_ptr_curr, sizeof(T)*len);
+          }
+      }
+  }
+
+  /**
+  * @param[in] crop_size Size of cropped array
+  * @param[in] in input array
+  * @param[out] out Output array after cropping
+
+  * Crop the input array around its center N/2; that is, the center pixel of in array is the center pixel of out array
+  */
+  template<class T, unsigned int D> void
+  crop(const vector_td<size_t, D>& crop_size, hoNDArray<T> *in, hoNDArray<T> *out)
+  {
+    // compute crop offset, perserving the center
+    if (in == 0x0){
+        throw std::runtime_error("crop: 0x0 array provided");;
+    }
+
+    vector_td<size_t, D> crop_offset;
+
+    unsigned int d;
+    for (d = 0; d < D; d++)
+    {
+        crop_offset[d] = in->get_size(d) / 2 - crop_size[d] / 2;
+    }
+
+    crop(crop_offset, crop_size, in, out);
+  }
+
+  template<class T> void
+  crop(size_t x, hoNDArray<T> *in, hoNDArray<T> *out)
+  {
+      vector_td<size_t, 1> crop_size(x);
+      crop(crop_size, in, out);
+  }
+
+  template<class T> void
+  crop(size_t x, size_t y, hoNDArray<T> *in, hoNDArray<T> *out)
+  {
+      vector_td<size_t, 2> crop_size(x, y);
+      crop(crop_size, in, out);
+  }
+
+  template<class T> void
+  crop(size_t x, size_t y, size_t z, hoNDArray<T> *in, hoNDArray<T> *out)
+  {
+      vector_td<size_t, 3> crop_size(x, y, z);
+      crop(crop_size, in, out);
+  }
+
   template<class T, unsigned int D> boost::shared_ptr< hoNDArray<T> >
   crop( const vector_td<size_t, D>& crop_offset, const vector_td<size_t, D>& crop_size, hoNDArray<T> *in )
   {
-    if( in == 0x0 ){
-      throw std::runtime_error("crop: 0x0 array provided");;
-    }
-
-    if( in->get_number_of_dimensions() < D ){
-      std::stringstream ss;
-      ss << "crop: number of image dimensions should be at least " << D;
-      throw std::runtime_error(ss.str());;
-    }
-
-    std::vector<size_t> dims = to_std_vector(crop_size);
-    for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
-      dims.push_back(in->get_size(d));
-    }
-    boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>(&dims) );
-
-    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in->get_dimensions() );
-    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out->get_dimensions() );
-
-    size_t num_batches = 1;
-    for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
-      num_batches *= in->get_size(d);
-    }
-
-    if( weak_greater(crop_offset+matrix_size_out, matrix_size_in) ){
-      throw std::runtime_error( "crop: cropping size mismatch");;
-    }
-
-    const size_t num_elements_in = prod(matrix_size_in);
-    const size_t num_elements_out = prod(matrix_size_out);
-
-    T *in_ptr = in->get_data_ptr();
-    T *out_ptr = out->get_data_ptr();
-
-    for( size_t frame_offset=0; frame_offset<num_batches; frame_offset++ ){
-#ifdef USE_OMP
-#pragma omp parallel for
-#endif
-      for( long long idx=0; idx<(long long) num_elements_out; idx++ ){
-        const typename uint64d<D>::Type co = idx_to_co<D>( idx, matrix_size_out );
-        const typename uint64d<D>::Type co_os = crop_offset + co;
-        const size_t in_idx = co_to_idx<D>(co_os, matrix_size_in)+frame_offset*num_elements_in;
-        out_ptr[idx+frame_offset*num_elements_out] = in_ptr[in_idx];
-      }
-    }
+    boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>() );
+    crop(crop_offset, crop_size, in, out.get());
     return out;
-  }    
+  }
 
   /**
-   * @param[in] size Size of the output array
-   * @param[in] in Input array
-   * @param[in] val Value to use for padding
-   * @returns New array of the specified size, containing the original input array in the center and val outside.
+   * @param[in]     size    Size of the output array
+   * @param[in]     in      Input array
+   * @param[out]    out     Output array after padding
+   * @param[in]     preset_out_with_val if true, out array will be filled with val before padding
+   * @param[in]     val     Value to use for padding
+
+   * The padding operations keep the center of array unchanged, e.g. the center is always N/2
    */
-  template<class T, unsigned int D> boost::shared_ptr< hoNDArray<T> >
-  pad( const typename uint64d<D>::Type& size, hoNDArray<T> *in, T val = T(0) )
+  template<class T, unsigned int D> void
+  pad(const typename uint64d<D>::Type& size, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
   {
-    if( in == 0x0 ){
-      throw std::runtime_error("pad: 0x0 array provided");;
-    }
-
-    if( in->get_number_of_dimensions() < D ){
-      std::stringstream ss;
-      ss << "pad: number of image dimensions should be at least " << D;
-      throw std::runtime_error(ss.str());;
-    }
-
-    std::vector<size_t> dims = to_std_vector(size);
-    for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
-      dims.push_back(in->get_size(d));
-    }
-    boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>(&dims) );
-
-    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in->get_dimensions() );
-    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out->get_dimensions() );
-
-    size_t num_batches = 1;
-    for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
-      num_batches *= in->get_size(d);
-    }
-
-    if( weak_greater(matrix_size_in,matrix_size_out) ){
-      throw std::runtime_error("pad: size mismatch, cannot expand");
-    }
-
-    const size_t num_elements_in = prod(matrix_size_in);
-    const size_t num_elements_out = prod(matrix_size_out);
-    const typename uint64d<D>::Type offset = (matrix_size_out-matrix_size_in)>>1;
-
-    T *in_ptr = in->get_data_ptr();
-    T *out_ptr = out->get_data_ptr();
-
-    for( size_t frame_offset=0; frame_offset<num_batches; frame_offset++ ){
-#ifdef USE_OMP
-#pragma omp parallel for
-#endif
-      for( long long idx=0; idx<(long long)num_elements_out; idx++ ){
-        const typename uint64d<D>::Type co_out = idx_to_co<D>( idx, matrix_size_out );
-        T _out;
-        bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
-
-        if( inside )
-          _out = in_ptr[co_to_idx<D>( co_out-offset, matrix_size_in)+frame_offset*num_elements_in];
-        else{
-          _out = val;
-        }
-        out_ptr[idx+frame_offset*num_elements_out] = _out;
+      if (in == 0x0){
+          throw std::runtime_error("pad: 0x0 array provided");;
       }
-    }
+
+      if (out == 0x0){
+          throw std::runtime_error("pad: 0x0 array provided");;
+      }
+
+      if (in->get_number_of_dimensions() < D){
+          std::stringstream ss;
+          ss << "pad: number of image dimensions should be at least " << D;
+          throw std::runtime_error(ss.str());;
+      }
+
+      unsigned int d;
+
+      std::vector<size_t> dims = to_std_vector(size);
+      for (d = D; d<in->get_number_of_dimensions(); d++){
+          dims.push_back(in->get_size(d));
+      }
+
+      if (!out->dimensions_equal(&dims)){
+          out->create(dims);
+      }
+
+      if (in->dimensions_equal(&dims)){
+          memcpy(out->begin(), in->begin(), in->get_number_of_bytes());
+          return;
+      }
+
+      T *in_ptr = in->get_data_ptr();
+      T *out_ptr = out->get_data_ptr();
+
+      if (preset_out_with_val){
+          if (val == T(0)){
+              memset(out_ptr, 0, out->get_number_of_bytes());
+          }
+          else{
+                size_t N = out->get_number_of_elements();
+                long long n;
+                #pragma omp parallel for default(none) private(n) shared(N, out_ptr, val)
+                for (n = 0; n<(long long)N; n++)
+                {
+                    out_ptr[n] = val;
+                }
+          }
+      }
+
+      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(*in->get_dimensions());
+      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(*out->get_dimensions());
+
+      if (weak_greater(matrix_size_in, matrix_size_out)){
+          throw std::runtime_error("pad: size mismatch, cannot expand");
+      }
+
+      typename uint64d<D>::Type offset(D);
+      for (d = 0; d<D; d++){
+          offset[d] = matrix_size_out[d]/2 - matrix_size_in[d]/2;
+      }
+
+      size_t len = in->get_size(0);
+      size_t num = in->get_number_of_elements() / len;
+
+      long long k;
+
+#pragma omp parallel default(none) private(k, d) shared(in_ptr, out_ptr, num, len, in, out, offset)
+      {
+          std::vector<size_t> ind;
+
+#pragma omp for 
+          for (k = 0; k < (long long)num; k++){
+              ind = in->calculate_index(k*len);
+              for (d = 0; d < D; d++){
+                  ind[d] += offset[d];
+              }
+
+              T* out_ptr_curr = out_ptr + out->calculate_offset(ind);
+              memcpy(out_ptr_curr, in_ptr + k*len, sizeof(T)*len);
+          }
+      }
+  }
+
+  template<class T> void
+  pad(size_t x, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
+  {
+      typename uint64d<1>::Type padSize(x);
+      pad<T, 1>(padSize, in, out, preset_out_with_val, val);
+  }
+
+  template<class T> void
+  pad(size_t x, size_t y, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
+  {
+      typename uint64d<2>::Type padSize(x, y);
+      pad<T, 2>(padSize, in, out, preset_out_with_val, val);
+  }
+
+  template<class T> void
+  pad(size_t x, size_t y, size_t z, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
+  {
+      typename uint64d<3>::Type padSize(x, y, z);
+      pad<T, 3>(padSize, in, out, preset_out_with_val, val);
+  }
+
+  /**
+  * @param[in] size Size of the output array
+  * @param[in] in Input array
+  * @param[in] val Value to use for padding
+  * @returns New array of the specified size, containing the original input array in the center and val outside.
+  */
+  template<class T, unsigned int D> boost::shared_ptr< hoNDArray<T> >
+  pad(const typename uint64d<D>::Type& size, hoNDArray<T> *in, T val = T(0))
+  {
+    boost::shared_ptr< hoNDArray<T> > out(new hoNDArray<T>());
+    pad<T,D>(size, in, out.get(), true, val);
     return out;
   }
 

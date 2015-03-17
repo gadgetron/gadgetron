@@ -254,7 +254,7 @@ preProcessing()
         {
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*data_);
             // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().cutpad2D(*data_, (size_t)(data_->get_size(0)/overSamplingRatioRO_), data_->get_size(1), dataCurr_));
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad2D(*data_, (size_t)(data_->get_size(0) / overSamplingRatioRO_), data_->get_size(1), dataCurr_));
+            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop((size_t)(data_->get_size(0) / overSamplingRatioRO_), data_->get_size(1), data_, &dataCurr_));
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(dataCurr_);
             *data_ = dataCurr_;
             RO_.second = data_->get_size(0);
@@ -264,7 +264,7 @@ preProcessing()
             if ( ref_ != NULL && ref_remove_oversampling_RO_ )
             {
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*ref_);
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().cutpad2D(*ref_, (size_t)(ref_->get_size(0)/overSamplingRatioRO_), ref_->get_size(1), refCurr_));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop((size_t)(ref_->get_size(0) / overSamplingRatioRO_), ref_->get_size(1), ref_, &refCurr_));
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(refCurr_);
                 *ref_ = refCurr_;
                 RO_ref_.second = ref_->get_size(0);
@@ -393,12 +393,12 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             {
                 if ( isKSpace )
                 {
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad2D(*pSrc, RO, encodingE1, *pDst));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(RO, encodingE1, pSrc, pDst));
                 }
                 else
                 {
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D);
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad2D(buffer2D, RO, encodingE1, *pDst));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(RO, encodingE1, &buffer2D, pDst));
                 }
 
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst);
@@ -428,12 +428,12 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             {
                 if ( isKSpace )
                 {
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad2D(*pSrc, reconSizeRO_, pSrc->get_size(1), *pDst));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, pSrc->get_size(1), pSrc, pDst));
                 }
                 else
                 {
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D);
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad2D(buffer2D, reconSizeRO_, pSrc->get_size(1), *pDst));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, pSrc->get_size(1), &buffer2D, pDst));
                 }
 
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst);
@@ -446,11 +446,11 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             if ( isKSpace )
             {
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pSrc, buffer2D);
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad2D(buffer2D, reconSizeRO_, reconSizeE1_, *pDst));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, reconSizeE1_, &buffer2D, pDst));
             }
             else
             {
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad2D(*pSrc, reconSizeRO_, reconSizeE1_, *pDst));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, reconSizeE1_, pSrc, pDst));
             }
 
             if ( pDst != &output_ )
@@ -533,12 +533,12 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             {
                 if ( isKSpace )
                 {
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad3D(*pSrc, RO, encodingE1, E2, *pDst));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(RO, encodingE1, E2, pSrc, pDst));
                 }
                 else
                 {
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D);
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad3D(buffer3D, RO, encodingE1, E2, *pDst));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(RO, encodingE1, E2, &buffer3D, pDst));
                 }
 
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst);
@@ -566,12 +566,12 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             {
                 if ( isKSpace )
                 {
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad3D(*pSrc, RO, pSrc->get_size(1), encodingE2, *pDst));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(RO, pSrc->get_size(1), encodingE2, pSrc, pDst));
                 }
                 else
                 {
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D);
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad3D(buffer3D, RO, pSrc->get_size(1), encodingE2, *pDst));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(RO, pSrc->get_size(1), encodingE2, &buffer3D, pDst));
                 }
 
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst);
@@ -599,12 +599,12 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             {
                 if ( isKSpace )
                 {
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad3D(*pSrc, reconSizeRO_, pSrc->get_size(1), pSrc->get_size(2), *pDst));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, pSrc->get_size(1), pSrc->get_size(2), pSrc, pDst));
                 }
                 else
                 {
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pSrc, buffer3D);
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad3D(buffer3D, reconSizeRO_, pSrc->get_size(1), pSrc->get_size(2), *pDst));
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, pSrc->get_size(1), pSrc->get_size(2), &buffer3D, pDst));
                 }
 
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst);
@@ -619,11 +619,11 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             if ( isKSpace )
             {
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pSrc, buffer3D);
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad3D(buffer3D, reconSizeRO_, reconSizeE1_, reconSizeE2_, *pDst));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, reconSizeE1_, reconSizeE2_, &buffer3D, pDst));
             }
             else
             {
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::cutpad3D(*pSrc, reconSizeRO_, reconSizeE1_, reconSizeE2_, *pDst));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, reconSizeE1_, reconSizeE2_, pSrc, pDst));
             }
             // GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(*pDst));
 

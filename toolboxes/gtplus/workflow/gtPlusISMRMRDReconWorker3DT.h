@@ -850,7 +850,8 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 refRecon = croppedRef;
 
                 // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.zeropad3D(refCoilMap, dataRO, dataE1, dataE2, croppedRef));
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(refCoilMap, dataRO, dataE1, dataE2, croppedRef));
+                // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::zeropad3D(refCoilMap, dataRO, dataE1, dataE2, croppedRef));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::pad(dataRO, dataE1, dataE2, &refCoilMap, &croppedRef));
                 refCoilMap = croppedRef;
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refCoilMap, debugFolder_+"refCoilMap"); }
 

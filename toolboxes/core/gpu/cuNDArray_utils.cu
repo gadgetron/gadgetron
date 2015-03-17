@@ -372,7 +372,12 @@ namespace Gadgetron {
     if( idx < num_elements*number_of_batches ){
 
       const typename uintd<D>::Type co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
-      const typename uintd<D>::Type offset = (matrix_size_out-matrix_size_in)>>1;
+      typename uintd<D>::Type offset;
+      for(unsigned int d=0; d<D; d++)
+      {
+          offset[d] = matrix_size_out[d]/2 - matrix_size_in[d]/2;
+      }
+
       T _out;
       bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
 
