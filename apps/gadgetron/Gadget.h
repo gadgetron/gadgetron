@@ -252,15 +252,22 @@ namespace Gadgetron{
         int set_parameter(const char* name, const char* val, bool trigger = true) {
 	  boost::shared_ptr<std::string> old_value = get_string_value(name);
 
+	  if (using_properties_) {
+	    GadgetPropertyBase* p = this->find_property(name);
+	    if (!p) {
+	      throw std::runtime_error("Attempting to set non-registered property while operaying in forced using_properties mode");
+	    }
+	    p->string_value(val);
+	  } else {
 	    parameter_mutex_.acquire();
             parameters_[std::string(name)] = std::string(val);
 	    parameter_mutex_.release();
+	  }
+	  if (trigger) {
+	    return parameter_changed(std::string(name), std::string(val), *old_value);
+	  }
 
-            if (trigger) {
-	      return parameter_changed(std::string(name), std::string(val), *old_value);
-            }
-
-            return 0;
+	  return 0;
         }
 
         int get_bool_value(const char* name) {
@@ -293,17 +300,30 @@ namespace Gadgetron{
 	    }
 	}
 
-	void register_property(GadgetPropertyBase* p)
+	GadgetPropertyBase* find_property(const char* name)
+	{
+	  GadgetPropertyBase* p = 0;
+	  parameter_mutex_.acquire();
+	  for (std::vector<GadgetPropertyBase*>::iterator it = properties_.begin(); it != properties_.end(); it++) {
+	    if (std::string(name) == std::string((*it)->name())) {
+	      p = *it;
+	      break;
+	    }
+	  }
+	  parameter_mutex_.release();
+	  return p;
+	}
+	void register_property(GadgetPropertyBase* p, bool using_properties = true)
 	{
 	  parameter_mutex_.acquire();
 	  properties_.push_back(p);
+	  using_properties_ = using_properties;
 	  parameter_mutex_.release();
 	}
 
 	const char* get_gadgetron_version() {
 	  return gadgetron_version_.c_str();
 	}
-
 
     protected:
 	std::vector<GadgetPropertyBase*> properties_;
@@ -333,16 +353,20 @@ namespace Gadgetron{
       : public GadgetPropertyBase
       {
       public:
-      GadgetProperty(const char* name, Gadget* g, T default_value)
+      GadgetProperty(const char* name, Gadget* g, T default_value, bool force_using_properties = true)
 	: GadgetPropertyBase(name)
 	  , g_(g)
 	{
-	  g_->register_property(this);
+	  g_->register_property(this, force_using_properties);
 	  this->value(default_value);
 	}
 	
 	T value()
 	{
+	  if (is_reference_) {
+	    boost::shared_ptr<std::string> val = this->g_->get_string_value(this->name());
+	    std::stringstream(*val) >> std::boolalpha >> value_;
+	  }
 	  return value_;
 	}
 	
@@ -350,7 +374,7 @@ namespace Gadgetron{
 	{
 	  value_ = v;
 	  std::stringstream strstream;
-	  strstream << v;
+	  strstream << std::boolalpha << v;
 	  strstream >> str_value_;
 	  is_reference_ = false;
 	}
@@ -361,14 +385,14 @@ namespace Gadgetron{
 
 	  if (!is_reference_)
 	  {
-	    std::istringstream(val) >> value_;
+	    std::stringstream(val) >> std::boolalpha >> value_;
 	  }
 	}
 
 
 	bool operator==(const T &v) const
 	{
-	  return value_ == v;
+	  return this->value() == v;
 	}
 	
 	
@@ -378,8 +402,23 @@ namespace Gadgetron{
       };
     
 #define GADGET_PROPERTY(varname, vartype, defaultvalue) GadgetProperty<vartype> varname{#varname,this, defaultvalue}
+#define GADGET_PROPERTY_NO_FORCE(varname, vartype, defaultvalue) GadgetProperty<vartype> varname{#varname,this, defaultvalue,false}
+ 
+    class BasicPropertyGadget : public Gadget
+    {
 
-    template <class P1> class Gadget1 : public Gadget
+    protected:
+      GADGET_PROPERTY_NO_FORCE(using_cloudbus,bool,false);
+      GADGET_PROPERTY_NO_FORCE(pass_on_undesired_data,bool,false);
+      GADGET_PROPERTY_NO_FORCE(threads,int,1);
+#ifdef _WIN32
+      GADGET_PROPERTY_NO_FORCE(workingDirectory, std::string, "c:\\temp\\gadgetron\\");
+#else
+      GADGET_PROPERTY_NO_FORCE(workingDirectory, std::string, "/tmp/gadgetron/");
+#endif // _WIN32
+    }; 
+
+    template <class P1> class Gadget1 : public BasicPropertyGadget
     {
 
     protected:
@@ -404,7 +443,7 @@ namespace Gadgetron{
 
     };
 
-    template <class P1, class P2> class Gadget2 : public Gadget
+    template <class P1, class P2> class Gadget2 : public BasicPropertyGadget
     {
 
     protected:
@@ -445,7 +484,7 @@ namespace Gadgetron{
     };
 
 
-    template <class P1, class P2, class P3> class Gadget3 : public Gadget
+    template <class P1, class P2, class P3> class Gadget3 : public BasicPropertyGadget
     {
 
     protected:
