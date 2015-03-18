@@ -215,9 +215,22 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                     size_t startE1 = mb1->getObjectPtr()->sampled_region[1].first;
                     size_t endE1 = mb1->getObjectPtr()->sampled_region[1].second;
 
+                    /*
+                        We are swithcing off OpenMP threading before this call.There seems to be a bad interaction between openmp, cuda, and BLAS.
+                        This is a temporary fix that we should keep an eye on.
+                    */
+#ifdef USE_OMP
+                    int num_threads = omp_get_num_threads();
+                    omp_set_num_threads(1);
+#endif //USE_OMP
+
                     Gadgetron::grappa2d_calib_convolution_kernel(acs, target_acs,
                         (size_t)(mb1->getObjectPtr()->acceleration_factor),
                         thres, kRO, kNE1, startRO, endRO, startE1, endE1, conv_ker_);
+
+#ifdef USE_OMP
+                    omp_set_num_threads(num_threads);
+#endif //USE_OMP
 
                     Gadgetron::grappa2d_image_domain_kernel(conv_ker_, RO, E1, kIm_);
 
@@ -312,9 +325,22 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                 }
                 else
                 {
+                    /*
+                    We are swithcing off OpenMP threading before this call.There seems to be a bad interaction between openmp, cuda, and BLAS.
+                    This is a temporary fix that we should keep an eye on.
+                    */
+#ifdef USE_OMP
+                    int num_threads = omp_get_num_threads();
+                    omp_set_num_threads(1);
+#endif //USE_OMP
+
                     Gadgetron::grappa2d_calib_convolution_kernel(acs, target_acs_,
                         (size_t)(mb1->getObjectPtr()->acceleration_factor),
                         thres, kRO, kNE1, conv_ker_);
+
+#ifdef USE_OMP
+                    omp_set_num_threads(num_threads);
+#endif //USE_OMP
 
                     Gadgetron::grappa2d_image_domain_kernel(conv_ker_, RO, E1, kIm_);
 
