@@ -27,9 +27,52 @@
 
 namespace Gadgetron{
 
+  class GadgetPropertyBase
+  {
+  public:
+  GadgetPropertyBase(const char* name)
+    : name_(name)
+    , str_value_("")
+    , is_reference_(false)
+    , reference_gadget_("") 
+    , reference_property_("") 
+    {
+      
+    }
+    
+    const char* name()
+    {
+      return name_.c_str();
+    }
+
+    const char* string_value()
+    {
+      return str_value_.c_str();
+    }
+
+    virtual void string_value(const char* value)
+    {
+      str_value_ = value;
+      size_t at_pos = str_value_.find('@');
+      if (at_pos != std::string::npos) {
+	//There was an add sign, which means look for that parameter on another gadget
+	std::string reference_property_ = str_value_.substr(0,at_pos);
+	std::string reference_gadget_   = str_value_.substr(at_pos+1);
+	is_reference_ = true;
+      }
+    }
+
+  protected:
+    std::string name_;
+    std::string str_value_;
+    bool is_reference_;
+    std::string reference_gadget_;
+    std::string reference_property_;
+  };
+  
     //Forward declarations
     class GadgetStreamInterface;
-
+  
     class EXPORTGADGETBASE Gadget : public ACE_Task<ACE_MT_SYNCH>
     {
 
@@ -43,6 +86,7 @@ namespace Gadgetron{
 
         Gadget()
             : inherited()
+	    , using_properties_(false)
             , desired_threads_(1)
             , pass_on_undesired_data_(false)
             , controller_(0)
@@ -241,11 +285,30 @@ namespace Gadgetron{
             return GADGET_OK;
         }
 
+	void print_properties()
+	{
+	  for (std::vector<GadgetPropertyBase*>::iterator it = properties_.begin(); it != properties_.end(); it++)
+	    {
+	      GDEBUG("Parameter with name: %s\n", (*it)->name());
+	    }
+	}
+
+	void register_property(GadgetPropertyBase* p)
+	{
+	  parameter_mutex_.acquire();
+	  properties_.push_back(p);
+	  parameter_mutex_.release();
+	}
+
 	const char* get_gadgetron_version() {
 	  return gadgetron_version_.c_str();
 	}
 
+
     protected:
+	std::vector<GadgetPropertyBase*> properties_;
+	bool using_properties_;
+
         virtual int next_step(ACE_Message_Block *m)
         {
             return this->put_next(m);//next()->putq(m);
@@ -266,6 +329,55 @@ namespace Gadgetron{
 	std::string gadgetron_version_;
     };
 
+    template <typename T> class GadgetProperty
+      : public GadgetPropertyBase
+      {
+      public:
+      GadgetProperty(const char* name, Gadget* g, T default_value)
+	: GadgetPropertyBase(name)
+	  , g_(g)
+	{
+	  g_->register_property(this);
+	  this->value(default_value);
+	}
+	
+	T value()
+	{
+	  return value_;
+	}
+	
+	void value(T v)
+	{
+	  value_ = v;
+	  std::stringstream strstream;
+	  strstream << v;
+	  strstream >> str_value_;
+	  is_reference_ = false;
+	}
+
+	virtual void string_value(const char* val)
+	{
+	  GadgetPropertyBase::string_value(val);
+
+	  if (!is_reference_)
+	  {
+	    std::istringstream(val) >> value_;
+	  }
+	}
+
+
+	bool operator==(const T &v) const
+	{
+	  return value_ == v;
+	}
+	
+	
+      protected:
+	T value_;
+	Gadget* g_;
+      };
+    
+#define GADGET_PROPERTY(varname, vartype, defaultvalue) GadgetProperty<vartype> varname{#varname,this, defaultvalue}
 
     template <class P1> class Gadget1 : public Gadget
     {

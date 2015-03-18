@@ -43,8 +43,15 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   virtual int close(unsigned long flags);
 
   virtual int initial_setup();
-
   bool first_call_;
+
+  GADGET_PROPERTY(target_coils,int,0);
+  GADGET_PROPERTY(use_gpu,bool,true);
+  GADGET_PROPERTY(device_channels,int,0);
+  GADGET_PROPERTY(uncombined_channels,std::string,"");
+  GADGET_PROPERTY(uncombined_channels_by_name,std::string,"");
+  GADGET_PROPERTY(image_series,int,0);
+
  private:
   typedef std::map< std::string, int > map_type_;
 
