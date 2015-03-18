@@ -176,7 +176,14 @@ int main(int argc, char** argv)
   }
 
   std::cout << "  -- Gadget compiled against Gadgetron version " << g->get_gadgetron_version() << std::endl;
-
+  std::cout << "    -- Properties:" << std::endl;
+  int number_of_properties = g->get_number_of_properties();
+  for (int i = 0; i < number_of_properties; i++) {
+    GadgetPropertyBase* p = g->get_property_by_index(i);
+    if (p) {
+      std::cout << "      * " << p->name() << " (" << p->type_string() << "): " << p->description() << std::endl;
+    }
+  }
   delete g;
 
   return 0;

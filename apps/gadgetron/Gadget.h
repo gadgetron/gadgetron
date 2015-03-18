@@ -30,8 +30,10 @@ namespace Gadgetron{
   class GadgetPropertyBase
   {
   public:
-  GadgetPropertyBase(const char* name)
+  GadgetPropertyBase(const char* name, const char* type_string, const char* description)
     : name_(name)
+    , type_str_(type_string)
+    , description_(description)
     , str_value_("")
     , is_reference_(false)
     , reference_gadget_("") 
@@ -62,8 +64,20 @@ namespace Gadgetron{
       }
     }
 
+    const char* type_string()
+    {
+      return type_str_.c_str();
+    }
+
+    const char* description()
+    {
+      return description_.c_str();
+    }
+
   protected:
     std::string name_;
+    std::string type_str_;
+    std::string description_;
     std::string str_value_;
     bool is_reference_;
     std::string reference_gadget_;
@@ -300,6 +314,19 @@ namespace Gadgetron{
 	    }
 	}
 
+	int get_number_of_properties()
+	{
+	  return properties_.size();
+	}
+
+	GadgetPropertyBase* get_property_by_index(size_t i)
+	{
+	  if (i >= properties_.size()) {
+	    return 0;
+	  }
+	  return properties_[i];
+	}
+
 	GadgetPropertyBase* find_property(const char* name)
 	{
 	  GadgetPropertyBase* p = 0;
@@ -353,8 +380,9 @@ namespace Gadgetron{
       : public GadgetPropertyBase
       {
       public:
-      GadgetProperty(const char* name, Gadget* g, T default_value, bool force_using_properties = true)
-	: GadgetPropertyBase(name)
+      GadgetProperty(const char* name, const char* type_string, const char* description,
+		     Gadget* g, T default_value, bool force_using_properties = true)
+	: GadgetPropertyBase(name,type_string,description)
 	  , g_(g)
 	{
 	  g_->register_property(this, force_using_properties);
@@ -401,20 +429,20 @@ namespace Gadgetron{
 	Gadget* g_;
       };
     
-#define GADGET_PROPERTY(varname, vartype, defaultvalue) GadgetProperty<vartype> varname{#varname,this, defaultvalue}
-#define GADGET_PROPERTY_NO_FORCE(varname, vartype, defaultvalue) GadgetProperty<vartype> varname{#varname,this, defaultvalue,false}
+#define GADGET_PROPERTY(varname, vartype, description, defaultvalue) GadgetProperty<vartype> varname{#varname,#vartype, description, this, defaultvalue}
+#define GADGET_PROPERTY_NO_FORCE(varname, vartype, description, defaultvalue) GadgetProperty<vartype> varname{#varname,#vartype, description, this, defaultvalue,false}
  
     class BasicPropertyGadget : public Gadget
     {
 
     protected:
-      GADGET_PROPERTY_NO_FORCE(using_cloudbus,bool,false);
-      GADGET_PROPERTY_NO_FORCE(pass_on_undesired_data,bool,false);
-      GADGET_PROPERTY_NO_FORCE(threads,int,1);
+      GADGET_PROPERTY_NO_FORCE(using_cloudbus,bool,"Indicates whether the cloudbus is in use and available", false);
+      GADGET_PROPERTY_NO_FORCE(pass_on_undesired_data,bool, "If true, data not matching the process function will be passed to next Gadget", false);
+      GADGET_PROPERTY_NO_FORCE(threads,int, "Number of threads to run in this Gadget", 1);
 #ifdef _WIN32
-      GADGET_PROPERTY_NO_FORCE(workingDirectory, std::string, "c:\\temp\\gadgetron\\");
+      GADGET_PROPERTY_NO_FORCE(workingDirectory, std::string, "Where to store temporary files", "c:\\temp\\gadgetron\\");
 #else
-      GADGET_PROPERTY_NO_FORCE(workingDirectory, std::string, "/tmp/gadgetron/");
+      GADGET_PROPERTY_NO_FORCE(workingDirectory, std::string, "Where to store temporary files", "/tmp/gadgetron/");
 #endif // _WIN32
     }; 
 
