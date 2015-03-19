@@ -27,6 +27,8 @@ namespace Gadgetron{
 
 
     protected:
+      GADGET_PROPERTY(trigger_dimension, std::string, "", "");
+      GADGET_PROPERTY(sorting_dimention, std::string, "", "");
       IsmrmrdCONDITION trigger_;
       IsmrmrdCONDITION sort_;
       map_type_  buckets_;
