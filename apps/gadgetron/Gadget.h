@@ -402,8 +402,6 @@ namespace Gadgetron{
       }
     };
 
-    /*
-
     template <typename T> class GadgetPropertyLimitsEnumeration
       : public GadgetPropertyLimits<T>
     {
@@ -414,25 +412,30 @@ namespace Gadgetron{
       
       virtual bool within_limits(T& v) 
       {
-	std::vector<T>::iterator it = find(valid_vals_.begin(), valid_vals_.end(), v);
+	typename std::vector<T>::iterator it;
+	it = find(valid_vals_.begin(), valid_vals_.end(), v);
 	if (it != valid_vals_.end()) return true;
 	return false;
       }
 
       virtual const char* limits_description() 
       {
-	std::stringstream strstream;
-	std::vector<T>::iterator it = valid_vals_.begin();
-	if (it != valid_vals_.end()) {
-	  strstream << "[";	
-	  strstream << *it;
-	  it++;
-	  while (it != valid_vals_.end()) {
-	    strstream << ", " << *it;
+	if (!limits_desc_.size()) {
+	  std::stringstream strstream;
+	  typename std::vector<T>::iterator it;
+	  it = valid_vals_.begin();
+	  if (it != valid_vals_.end()) {
+	    strstream << "[";	
+	    strstream << *it;
+	    it++;
+	    while (it != valid_vals_.end()) {
+	      strstream << ", " << *it;
+	      it++;
+	    }
+	    strstream << "]";
 	  }
-	  strstream << "]";
+	  limits_desc_ = strstream.str();
 	}
-	limits_desc_ = strstream.str().c_str();
 	return limits_desc_.c_str();
       }
 
@@ -440,8 +443,37 @@ namespace Gadgetron{
       std::vector<T> valid_vals_;
       std::string limits_desc_;
     };
-    */
 
+    template <typename T> class GadgetPropertyLimitsRange
+      : public GadgetPropertyLimits<T>
+    {
+    public:
+      GadgetPropertyLimitsRange(T min_val, T max_val) 
+	: min_(min_val)
+	, max_(max_val)
+      {
+      }
+
+      virtual bool within_limits(T& v) 
+      {
+	return ( (v >= min_) && (v <= max_) ); 
+      }
+
+      virtual const char* limits_description() 
+      {
+	if (!limits_desc_.size()) {
+	  std::stringstream strstream;
+	  strstream << "[" << min_ << ":" << max_ << "]" << std::endl;
+	  limits_desc_ = strstream.str();
+	}
+	return limits_desc_.c_str();
+      }
+            
+    protected:
+      T min_;
+      T max_;
+      std::string limits_desc_;
+    };
     template <typename T, typename L> class GadgetProperty
       : public GadgetPropertyBase
       {
@@ -449,7 +481,8 @@ namespace Gadgetron{
       GadgetProperty(const char* name, const char* type_string, const char* description,
 		     Gadget* g, T default_value, L limits, bool force_using_properties = true)
 	: GadgetPropertyBase(name,type_string,description)
-	  , g_(g)
+	, g_(g)
+	, limits_(limits)
 	{
 	  g_->register_property(this, force_using_properties);
 	  this->value(default_value);
@@ -471,8 +504,8 @@ namespace Gadgetron{
 	  strstream << std::boolalpha << v;
 	  strstream >> str_value_;
 	  is_reference_ = false;
-	  if (!limits.within_limits(v)) {
-	    GERROR("Property: %s, value: %s, limits:%s\n", this->name(), str_value_.c_str(), this->limits.limits_description());
+	  if (!limits_.within_limits(v)) {
+	    GERROR("Property: %s, value: %s, limits:%s\n", this->name(), str_value_.c_str(), this->limits_.limits_description());
 	    throw std::runtime_error("Value assigned outside limit range");
 	  }
 	}
@@ -483,7 +516,9 @@ namespace Gadgetron{
 
 	  if (!is_reference_)
 	  {
-	    std::stringstream(val) >> std::boolalpha >> value_;
+	    T tmp;
+	    std::stringstream(val) >> std::boolalpha >> tmp;
+	    this->value(tmp);
 	  }
 	}
 
@@ -495,18 +530,18 @@ namespace Gadgetron{
 	
 	virtual const char* limits_description()
 	{
-	  return limits.limits_description();
+	  return limits_.limits_description();
 	}
 
       protected:
 	T value_;
-	L limits;
+	L limits_;
 	Gadget* g_;
       };
     
 #define GADGET_PROPERTY(varname, vartype, description, defaultvalue) GadgetProperty<vartype, GadgetPropertyLimitsNoLimits<vartype> > varname{#varname,#vartype, description, this, defaultvalue, GadgetPropertyLimitsNoLimits<vartype>()}
 #define GADGET_PROPERTY_NO_FORCE(varname, vartype, description, defaultvalue) GadgetProperty<vartype, GadgetPropertyLimitsNoLimits<vartype> > varname{#varname,#vartype, description, this, defaultvalue, GadgetPropertyLimitsNoLimits<vartype>(), false}
-    //#define GADGET_PROPERTY_LIMITS(varname, vartype, description, defaultvalue, limitstype, ...) GadgetProperty<vartype, GadgetPropertyLimitsNoLimits<vartype> > varname{#varname,#vartype, description, this, defaultvalue, limitstype<vartype>{##__VA_ARGS__}}
+#define GADGET_PROPERTY_LIMITS(varname, vartype, description, defaultvalue, limitstype, ...) GadgetProperty<vartype, limitstype<vartype> > varname{#varname,#vartype, description, this, defaultvalue, limitstype<vartype>{ __VA_ARGS__ }}
  
     class BasicPropertyGadget : public Gadget
     {

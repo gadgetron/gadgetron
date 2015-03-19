@@ -27,8 +27,47 @@ namespace Gadgetron{
 
 
     protected:
-      GADGET_PROPERTY(trigger_dimension, std::string, "", "");
-      GADGET_PROPERTY(sorting_dimention, std::string, "", "");
+      GADGET_PROPERTY_LIMITS(trigger_dimension, std::string, "Dimension to trigger on", "",
+			     GadgetPropertyLimitsEnumeration, 
+			     "kspace_encode_step_1",
+			     "kspace_encode_step_2",
+			     "average",
+			     "slice",
+			     "contrast",
+			     "phase",
+			     "repetition",
+			     "set",
+			     "segment",
+			     "user_0",
+			     "user_1",
+			     "user_2",
+			     "user_3",
+			     "user_4",
+			     "user_5",
+			     "user_6",
+			     "user_7",
+			     "");
+
+      GADGET_PROPERTY_LIMITS(sorting_dimension, std::string, "Dimension to sort by", "", 
+			     GadgetPropertyLimitsEnumeration, 
+			     "kspace_encode_step_1",
+			     "kspace_encode_step_2",
+			     "average",
+			     "slice",
+			     "contrast",
+			     "phase",
+			     "repetition",
+			     "set",
+			     "segment",
+			     "user_0",
+			     "user_1",
+			     "user_2",
+			     "user_3",
+			     "user_4",
+			     "user_5",
+			     "user_6",
+			     "user_7",
+			     "");
       IsmrmrdCONDITION trigger_;
       IsmrmrdCONDITION sort_;
       map_type_  buckets_;

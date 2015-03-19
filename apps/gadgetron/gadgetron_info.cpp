@@ -182,6 +182,9 @@ int main(int argc, char** argv)
     GadgetPropertyBase* p = g->get_property_by_index(i);
     if (p) {
       std::cout << "      * " << p->name() << " (" << p->type_string() << "): " << p->description() << std::endl;
+      if (std::string(p->limits_description()) != std::string("")) {
+	std::cout << "        LIMITS: " << p->limits_description() << std::endl;
+      } 
     }
   }
   delete g;
