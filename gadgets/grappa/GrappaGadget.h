@@ -43,8 +43,15 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   virtual int close(unsigned long flags);
 
   virtual int initial_setup();
-
   bool first_call_;
+
+  GADGET_PROPERTY(target_coils,int, "Number of target coils for GRAPPA recon", 0);
+  GADGET_PROPERTY(use_gpu,bool,"If true, recon will try to use GPU resources (when available)", true);
+  GADGET_PROPERTY(device_channels,int,"Number of device channels", 0);
+  GADGET_PROPERTY(uncombined_channels,std::string,"Uncombined channels (as a comma separated list of channel indices", "");
+  GADGET_PROPERTY(uncombined_channels_by_name,std::string,"Uncombined channels (as a comma separated list of channel names", "");
+  GADGET_PROPERTY(image_series,int,"Image series number for output images", 0);
+
  private:
   typedef std::map< std::string, int > map_type_;
 

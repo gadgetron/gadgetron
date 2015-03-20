@@ -27,9 +27,71 @@
 
 namespace Gadgetron{
 
+  class GadgetPropertyBase
+  {
+  public:
+  GadgetPropertyBase(const char* name, const char* type_string, const char* description)
+    : name_(name)
+    , type_str_(type_string)
+    , description_(description)
+    , str_value_("")
+    , is_reference_(false)
+    , reference_gadget_("") 
+    , reference_property_("") 
+    {
+      
+    }
+    
+    virtual const char* name()
+    {
+      return name_.c_str();
+    }
+
+    virtual const char* string_value()
+    {
+      return str_value_.c_str();
+    }
+
+    virtual void string_value(const char* value)
+    {
+      str_value_ = value;
+      size_t at_pos = str_value_.find('@');
+      if (at_pos != std::string::npos) {
+	//There was an add sign, which means look for that parameter on another gadget
+	std::string reference_property_ = str_value_.substr(0,at_pos);
+	std::string reference_gadget_   = str_value_.substr(at_pos+1);
+	is_reference_ = true;
+      }
+    }
+
+    virtual const char* type_string()
+    {
+      return type_str_.c_str();
+    }
+
+    virtual const char* description()
+    {
+      return description_.c_str();
+    }
+
+    virtual const char* limits_description()
+    {
+      return "";
+    }
+
+  protected:
+    std::string name_;
+    std::string type_str_;
+    std::string description_;
+    std::string str_value_;
+    bool is_reference_;
+    std::string reference_gadget_;
+    std::string reference_property_;
+  };
+  
     //Forward declarations
     class GadgetStreamInterface;
-
+  
     class EXPORTGADGETBASE Gadget : public ACE_Task<ACE_MT_SYNCH>
     {
 
@@ -43,6 +105,7 @@ namespace Gadgetron{
 
         Gadget()
             : inherited()
+	    , using_properties_(false)
             , desired_threads_(1)
             , pass_on_undesired_data_(false)
             , controller_(0)
@@ -208,15 +271,22 @@ namespace Gadgetron{
         int set_parameter(const char* name, const char* val, bool trigger = true) {
 	  boost::shared_ptr<std::string> old_value = get_string_value(name);
 
+	  if (using_properties_) {
+	    GadgetPropertyBase* p = this->find_property(name);
+	    if (!p) {
+	      throw std::runtime_error("Attempting to set non-registered property while operaying in forced using_properties mode");
+	    }
+	    p->string_value(val);
+	  } else {
 	    parameter_mutex_.acquire();
             parameters_[std::string(name)] = std::string(val);
 	    parameter_mutex_.release();
+	  }
+	  if (trigger) {
+	    return parameter_changed(std::string(name), std::string(val), *old_value);
+	  }
 
-            if (trigger) {
-	      return parameter_changed(std::string(name), std::string(val), *old_value);
-            }
-
-            return 0;
+	  return 0;
         }
 
         int get_bool_value(const char* name) {
@@ -241,11 +311,56 @@ namespace Gadgetron{
             return GADGET_OK;
         }
 
+	void print_properties()
+	{
+	  for (std::vector<GadgetPropertyBase*>::iterator it = properties_.begin(); it != properties_.end(); it++)
+	    {
+	      GDEBUG("Parameter with name: %s\n", (*it)->name());
+	    }
+	}
+
+	int get_number_of_properties()
+	{
+	  return properties_.size();
+	}
+
+	GadgetPropertyBase* get_property_by_index(size_t i)
+	{
+	  if (i >= properties_.size()) {
+	    return 0;
+	  }
+	  return properties_[i];
+	}
+
+	GadgetPropertyBase* find_property(const char* name)
+	{
+	  GadgetPropertyBase* p = 0;
+	  parameter_mutex_.acquire();
+	  for (std::vector<GadgetPropertyBase*>::iterator it = properties_.begin(); it != properties_.end(); it++) {
+	    if (std::string(name) == std::string((*it)->name())) {
+	      p = *it;
+	      break;
+	    }
+	  }
+	  parameter_mutex_.release();
+	  return p;
+	}
+	void register_property(GadgetPropertyBase* p, bool using_properties = true)
+	{
+	  parameter_mutex_.acquire();
+	  properties_.push_back(p);
+	  using_properties_ = using_properties;
+	  parameter_mutex_.release();
+	}
+
 	const char* get_gadgetron_version() {
 	  return gadgetron_version_.c_str();
 	}
 
     protected:
+	std::vector<GadgetPropertyBase*> properties_;
+	bool using_properties_;
+
         virtual int next_step(ACE_Message_Block *m)
         {
             return this->put_next(m);//next()->putq(m);
@@ -267,7 +382,182 @@ namespace Gadgetron{
     };
 
 
-    template <class P1> class Gadget1 : public Gadget
+    template <typename T> class GadgetPropertyLimits
+    {
+    public:
+      virtual bool within_limits(T& v) = 0;
+      virtual const char* limits_description() = 0;
+    };
+
+    template <typename T> class GadgetPropertyLimitsNoLimits
+      : public GadgetPropertyLimits<T>
+    {
+    public:
+      virtual bool within_limits(T& v) {
+	return true;
+      }
+
+      virtual const char* limits_description() {
+	return "";
+      }
+    };
+
+    template <typename T> class GadgetPropertyLimitsEnumeration
+      : public GadgetPropertyLimits<T>
+    {
+    public:
+      GadgetPropertyLimitsEnumeration(std::initializer_list<T> valid_vals) {
+	valid_vals_.insert(valid_vals_.end(), valid_vals.begin(), valid_vals.end());
+      }
+      
+      virtual bool within_limits(T& v) 
+      {
+	typename std::vector<T>::iterator it;
+	it = find(valid_vals_.begin(), valid_vals_.end(), v);
+	if (it != valid_vals_.end()) return true;
+	return false;
+      }
+
+      virtual const char* limits_description() 
+      {
+	if (!limits_desc_.size()) {
+	  std::stringstream strstream;
+	  typename std::vector<T>::iterator it;
+	  it = valid_vals_.begin();
+	  if (it != valid_vals_.end()) {
+	    strstream << "[";	
+	    strstream << *it;
+	    it++;
+	    while (it != valid_vals_.end()) {
+	      strstream << ", " << *it;
+	      it++;
+	    }
+	    strstream << "]";
+	  }
+	  limits_desc_ = strstream.str();
+	}
+	return limits_desc_.c_str();
+      }
+
+    protected:
+      std::vector<T> valid_vals_;
+      std::string limits_desc_;
+    };
+
+    template <typename T> class GadgetPropertyLimitsRange
+      : public GadgetPropertyLimits<T>
+    {
+    public:
+      GadgetPropertyLimitsRange(T min_val, T max_val) 
+	: min_(min_val)
+	, max_(max_val)
+      {
+      }
+
+      virtual bool within_limits(T& v) 
+      {
+	return ( (v >= min_) && (v <= max_) ); 
+      }
+
+      virtual const char* limits_description() 
+      {
+	if (!limits_desc_.size()) {
+	  std::stringstream strstream;
+	  strstream << "[" << min_ << ":" << max_ << "]" << std::endl;
+	  limits_desc_ = strstream.str();
+	}
+	return limits_desc_.c_str();
+      }
+            
+    protected:
+      T min_;
+      T max_;
+      std::string limits_desc_;
+    };
+    template <typename T, typename L> class GadgetProperty
+      : public GadgetPropertyBase
+      {
+      public:
+      GadgetProperty(const char* name, const char* type_string, const char* description,
+		     Gadget* g, T default_value, L limits, bool force_using_properties = true)
+	: GadgetPropertyBase(name,type_string,description)
+	, g_(g)
+	, limits_(limits)
+	{
+	  g_->register_property(this, force_using_properties);
+	  this->value(default_value);
+	}
+	
+	T value()
+	{
+	  if (is_reference_) {
+	    boost::shared_ptr<std::string> val = this->g_->get_string_value(this->name());
+	    std::stringstream(*val) >> std::boolalpha >> value_;
+	  }
+	  return value_;
+	}
+	
+	void value(T v)
+	{
+	  value_ = v;
+	  std::stringstream strstream;
+	  strstream << std::boolalpha << v;
+	  strstream >> str_value_;
+	  is_reference_ = false;
+	  if (!limits_.within_limits(v)) {
+	    GERROR("Property: %s, value: %s, limits:%s\n", this->name(), str_value_.c_str(), this->limits_.limits_description());
+	    throw std::runtime_error("Value assigned outside limit range");
+	  }
+	}
+
+	virtual void string_value(const char* val)
+	{
+	  GadgetPropertyBase::string_value(val);
+
+	  if (!is_reference_)
+	  {
+	    T tmp;
+	    std::stringstream(val) >> std::boolalpha >> tmp;
+	    this->value(tmp);
+	  }
+	}
+
+
+	bool operator==(const T &v) const
+	{
+	  return this->value() == v;
+	}
+	
+	virtual const char* limits_description()
+	{
+	  return limits_.limits_description();
+	}
+
+      protected:
+	T value_;
+	L limits_;
+	Gadget* g_;
+      };
+    
+#define GADGET_PROPERTY(varname, vartype, description, defaultvalue) GadgetProperty<vartype, GadgetPropertyLimitsNoLimits<vartype> > varname{#varname,#vartype, description, this, defaultvalue, GadgetPropertyLimitsNoLimits<vartype>()}
+#define GADGET_PROPERTY_NO_FORCE(varname, vartype, description, defaultvalue) GadgetProperty<vartype, GadgetPropertyLimitsNoLimits<vartype> > varname{#varname,#vartype, description, this, defaultvalue, GadgetPropertyLimitsNoLimits<vartype>(), false}
+#define GADGET_PROPERTY_LIMITS(varname, vartype, description, defaultvalue, limitstype, ...) GadgetProperty<vartype, limitstype<vartype> > varname{#varname,#vartype, description, this, defaultvalue, limitstype<vartype>{ __VA_ARGS__ }}
+ 
+    class BasicPropertyGadget : public Gadget
+    {
+
+    protected:
+      GADGET_PROPERTY_NO_FORCE(using_cloudbus,bool,"Indicates whether the cloudbus is in use and available", false);
+      GADGET_PROPERTY_NO_FORCE(pass_on_undesired_data,bool, "If true, data not matching the process function will be passed to next Gadget", false);
+      GADGET_PROPERTY_NO_FORCE(threads,int, "Number of threads to run in this Gadget", 1);
+#ifdef _WIN32
+      GADGET_PROPERTY_NO_FORCE(workingDirectory, std::string, "Where to store temporary files", "c:\\temp\\gadgetron\\");
+#else
+      GADGET_PROPERTY_NO_FORCE(workingDirectory, std::string, "Where to store temporary files", "/tmp/gadgetron/");
+#endif // _WIN32
+    }; 
+
+    template <class P1> class Gadget1 : public BasicPropertyGadget
     {
 
     protected:
@@ -292,7 +582,7 @@ namespace Gadgetron{
 
     };
 
-    template <class P1, class P2> class Gadget2 : public Gadget
+    template <class P1, class P2> class Gadget2 : public BasicPropertyGadget
     {
 
     protected:
@@ -333,7 +623,7 @@ namespace Gadgetron{
     };
 
 
-    template <class P1, class P2, class P3> class Gadget3 : public Gadget
+    template <class P1, class P2, class P3> class Gadget3 : public BasicPropertyGadget
     {
 
     protected:

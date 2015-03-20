@@ -106,7 +106,7 @@ namespace Gadgetron{
     time_stamps_ = std::vector<ACE_UINT32>(dimensions_[4],0);
 
     //Let's figure out the number of target coils
-    target_coils_ = this->get_int_value("target_coils");
+    target_coils_ = target_coils.value(); //this->get_int_value("target_coils");
     if ((target_coils_ <= 0) || (target_coils_ > dimensions_[3])) {
       target_coils_ = dimensions_[3];
     }
@@ -115,22 +115,21 @@ namespace Gadgetron{
 
     weights_calculator_.set_number_of_target_coils(target_coils_);
 
-    bool use_gpu_ = this->get_bool_value("use_gpu");
+    bool use_gpu_ = use_gpu.value(); //this->get_bool_value("use_gpu");
     GDEBUG_STREAM("use_gpu_ is " << use_gpu_);
 
     weights_calculator_.set_use_gpu(use_gpu_);
 
-    int device_channels = this->get_int_value("device_channels");
-    if (device_channels) {
-      GDEBUG("We got the number of device channels from other gadget: %d\n", device_channels);
-      for (int i = 0; i < device_channels; i++) {
+    if (device_channels.value()) {
+      GDEBUG("We got the number of device channels from other gadget: %d\n", device_channels.value());
+      for (int i = 0; i < device_channels.value(); i++) {
 	weights_calculator_.add_uncombined_channel((unsigned int)i);
       }
     } else {
       //Let's figure out if we have channels that are supposed to be uncombined
-      boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels");
+      std::string uncomb_str = uncombined_channels.value();
       std::vector<std::string> uncomb;
-      boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
+      boost::split(uncomb, uncomb_str, boost::is_any_of(","));
       for (unsigned int i = 0; i < uncomb.size(); i++) {
 	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
 	if (ch.size() > 0) {
@@ -139,10 +138,10 @@ namespace Gadgetron{
 	}
       }
       
-      uncomb_str = this->get_string_value("uncombined_channels_by_name");
-      if (uncomb_str->size()) {
-	GDEBUG("uncomb_str: %s\n",  uncomb_str->c_str());
-	boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
+      uncomb_str = uncombined_channels_by_name.value();
+      if (uncomb_str.size()) {
+	GDEBUG("uncomb_str: %s\n",  uncomb_str.c_str());
+	boost::split(uncomb, uncomb_str, boost::is_any_of(","));
 	for (unsigned int i = 0; i < uncomb.size(); i++) {
 	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
 	map_type_::iterator it = channel_map_.find(ch);
@@ -200,7 +199,7 @@ namespace Gadgetron{
       }
     }
 
-    image_series_ = this->get_int_value("image_series");
+    image_series_ = image_series.value(); //this->get_int_value("image_series");
 
     return GADGET_OK;
   }

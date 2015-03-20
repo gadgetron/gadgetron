@@ -19,94 +19,94 @@ namespace Gadgetron{
   ::process_config(ACE_Message_Block* mb)
   {
 
-    std::string trigger_dimension = *this->get_string_value("trigger_dimension");
-    std::string sorting_dimension = *this->get_string_value("sorting_dimension");
+    std::string trigger_dimension_local = trigger_dimension.value();//*this->get_string_value("trigger_dimension");
+    std::string sorting_dimension_local = sorting_dimension.value();//*this->get_string_value("sorting_dimension");
     
-    if (trigger_dimension.size() == 0) {
+    if (trigger_dimension_local.size() == 0) {
       trigger_ = NONE;
-    } else if (trigger_dimension.compare("kspace_encode_step_1") == 0) {
+    } else if (trigger_dimension_local.compare("kspace_encode_step_1") == 0) {
       trigger_ = KSPACE_ENCODE_STEP_1;
-    } else if (trigger_dimension.compare("kspace_encode_step_2") == 0) {
+    } else if (trigger_dimension_local.compare("kspace_encode_step_2") == 0) {
       trigger_ = KSPACE_ENCODE_STEP_2;
-    } else if (trigger_dimension.compare("average") == 0) {
+    } else if (trigger_dimension_local.compare("average") == 0) {
       trigger_ = AVERAGE;
-    } else if (trigger_dimension.compare("slice") == 0) {
+    } else if (trigger_dimension_local.compare("slice") == 0) {
       trigger_ = SLICE;
-    } else if (trigger_dimension.compare("contrast") == 0) {
+    } else if (trigger_dimension_local.compare("contrast") == 0) {
       trigger_ = CONTRAST;
-    } else if (trigger_dimension.compare("phase") == 0) {
+    } else if (trigger_dimension_local.compare("phase") == 0) {
       trigger_ = PHASE;
-    } else if (trigger_dimension.compare("repetition") == 0) {
+    } else if (trigger_dimension_local.compare("repetition") == 0) {
       trigger_ = REPETITION;
-    } else if (trigger_dimension.compare("set") == 0) {
+    } else if (trigger_dimension_local.compare("set") == 0) {
       trigger_ = SET;
-    } else if (trigger_dimension.compare("segment") == 0) {
+    } else if (trigger_dimension_local.compare("segment") == 0) {
       trigger_ = SEGMENT;
-    } else if (trigger_dimension.compare("user_0") == 0) {
+    } else if (trigger_dimension_local.compare("user_0") == 0) {
       trigger_ = USER_0;
-    } else if (trigger_dimension.compare("user_1") == 0) {
+    } else if (trigger_dimension_local.compare("user_1") == 0) {
       trigger_ = USER_1;
-    } else if (trigger_dimension.compare("user_2") == 0) {
+    } else if (trigger_dimension_local.compare("user_2") == 0) {
       trigger_ = USER_2;
-    } else if (trigger_dimension.compare("user_3") == 0) {
+    } else if (trigger_dimension_local.compare("user_3") == 0) {
       trigger_ = USER_3;
-    } else if (trigger_dimension.compare("user_4") == 0) {
+    } else if (trigger_dimension_local.compare("user_4") == 0) {
       trigger_ = USER_4;
-    } else if (trigger_dimension.compare("user_5") == 0) {
+    } else if (trigger_dimension_local.compare("user_5") == 0) {
       trigger_ = USER_5;
-    } else if (trigger_dimension.compare("user_6") == 0) {
+    } else if (trigger_dimension_local.compare("user_6") == 0) {
       trigger_ = USER_6;
-    } else if (trigger_dimension.compare("user_7") == 0) {
+    } else if (trigger_dimension_local.compare("user_7") == 0) {
       trigger_ = USER_7;
     } else {
-      GDEBUG("WARNING: Unknown trigger dimension (%s), trigger condition set to NONE (end of scan)", trigger_dimension.c_str());
+      GDEBUG("WARNING: Unknown trigger dimension (%s), trigger condition set to NONE (end of scan)", trigger_dimension_local.c_str());
       trigger_ = NONE;
     }
   
-    GDEBUG("TRIGGER DIMENSION IS: %s (%d)\n", trigger_dimension.c_str(), trigger_);
+    GDEBUG("TRIGGER DIMENSION IS: %s (%d)\n", trigger_dimension_local.c_str(), trigger_);
 
-    if (sorting_dimension.size() == 0) {
+    if (sorting_dimension_local.size() == 0) {
       sort_ = NONE;
-    } else if (sorting_dimension.compare("kspace_encode_step_1") == 0) {
+    } else if (sorting_dimension_local.compare("kspace_encode_step_1") == 0) {
       sort_ = KSPACE_ENCODE_STEP_1;
-    } else if (sorting_dimension.compare("kspace_encode_step_2") == 0) {
+    } else if (sorting_dimension_local.compare("kspace_encode_step_2") == 0) {
       sort_ = KSPACE_ENCODE_STEP_2;
-    } else if (sorting_dimension.compare("average") == 0) {
+    } else if (sorting_dimension_local.compare("average") == 0) {
       sort_ = AVERAGE;
-    } else if (sorting_dimension.compare("slice") == 0) {
+    } else if (sorting_dimension_local.compare("slice") == 0) {
       sort_ = SLICE;
-    } else if (sorting_dimension.compare("contrast") == 0) {
+    } else if (sorting_dimension_local.compare("contrast") == 0) {
       sort_ = CONTRAST;
-    } else if (sorting_dimension.compare("phase") == 0) {
+    } else if (sorting_dimension_local.compare("phase") == 0) {
       sort_ = PHASE;
-    } else if (sorting_dimension.compare("repetition") == 0) {
+    } else if (sorting_dimension_local.compare("repetition") == 0) {
       sort_ = REPETITION;
-    } else if (sorting_dimension.compare("set") == 0) {
+    } else if (sorting_dimension_local.compare("set") == 0) {
       sort_ = SET;
-    } else if (sorting_dimension.compare("segment") == 0) {
+    } else if (sorting_dimension_local.compare("segment") == 0) {
       sort_ = SEGMENT;
-    } else if (sorting_dimension.compare("user_0") == 0) {
+    } else if (sorting_dimension_local.compare("user_0") == 0) {
       sort_ = USER_0;
-    } else if (sorting_dimension.compare("user_1") == 0) {
+    } else if (sorting_dimension_local.compare("user_1") == 0) {
       sort_ = USER_1;
-    } else if (sorting_dimension.compare("user_2") == 0) {
+    } else if (sorting_dimension_local.compare("user_2") == 0) {
       sort_ = USER_2;
-    } else if (sorting_dimension.compare("user_3") == 0) {
+    } else if (sorting_dimension_local.compare("user_3") == 0) {
       sort_ = USER_3;
-    } else if (sorting_dimension.compare("user_4") == 0) {
+    } else if (sorting_dimension_local.compare("user_4") == 0) {
       sort_ = USER_4;
-    } else if (sorting_dimension.compare("user_5") == 0) {
+    } else if (sorting_dimension_local.compare("user_5") == 0) {
       sort_ = USER_5;
-    } else if (sorting_dimension.compare("user_6") == 0) {
+    } else if (sorting_dimension_local.compare("user_6") == 0) {
       sort_ = USER_6;
-    } else if (sorting_dimension.compare("user_7") == 0) {
+    } else if (sorting_dimension_local.compare("user_7") == 0) {
       sort_ = USER_7;
     } else {
-      GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", sorting_dimension.c_str());
+      GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", sorting_dimension_local.c_str());
       sort_ = NONE;
     }
   
-    GDEBUG("SORTING DIMENSION IS: %s (%d)\n", sorting_dimension.c_str(), sort_);
+    GDEBUG("SORTING DIMENSION IS: %s (%d)\n", sorting_dimension_local.c_str(), sort_);
 
     trigger_events_ = 0;
 
