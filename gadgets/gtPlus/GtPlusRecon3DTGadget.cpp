@@ -152,57 +152,6 @@ int GtPlusRecon3DTGadget::process_config(ACE_Message_Block* mb)
     //   0  1  2   3    4   5    6     7  8   9
     GADGET_CHECK_RETURN(BaseClass::process_config(mb)==GADGET_OK, GADGET_FAIL);
 
-    // pre-allocate memory
-    size_t numOfBytes;
-    if ( para_.workOrderPara_.coil_compression_num_modesKept_ > 0 )
-    {
-        if ( num_acq_channels_ > 2*para_.workOrderPara_.coil_compression_num_modesKept_ )
-        {
-            numOfBytes = (size_t)( (double)matrix_size_encoding_[0]*kSpaceMaxAcqE1No_*kSpaceMaxAcqE2No_*num_acq_channels_*para_.workOrderPara_.coil_compression_num_modesKept_*sizeof(ValueType));
-        }
-        else
-        {
-            numOfBytes = (size_t)( (double)matrix_size_encoding_[0]*kSpaceMaxAcqE1No_*kSpaceMaxAcqE2No_*num_acq_channels_*para_.workOrderPara_.coil_compression_num_modesKept_*sizeof(ValueType) );
-        }
-
-        if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_GRAPPA && para_.workOrderPara_.job_num_of_N_>0 )
-        {
-            numOfBytes = (size_t)( (double)para_.workOrderPara_.job_num_of_N_*kSpaceMaxAcqE1No_*kSpaceMaxAcqE2No_*num_acq_channels_*para_.workOrderPara_.coil_compression_num_modesKept_*sizeof(ValueType)*1.5 );
-        }
-    }
-    else
-    {
-        if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_SPIRIT || para_.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_L1SPIRIT )
-        {
-            numOfBytes = (size_t)((double)matrix_size_encoding_[0]*kSpaceMaxAcqE1No_*kSpaceMaxAcqE2No_*num_acq_channels_*num_acq_channels_*sizeof(ValueType)*0.8);
-        }
-        else
-        {
-            numOfBytes = (size_t)((double)matrix_size_encoding_[0]*kSpaceMaxAcqE1No_*kSpaceMaxAcqE2No_*num_acq_channels_*num_acq_channels_*sizeof(ValueType)*0.6);
-        }
-    }
-
-    if ( (num_acq_channels_<=12) || (para_.workOrderPara_.coil_compression_num_modesKept_>0 && 2*para_.workOrderPara_.coil_compression_num_modesKept_>num_acq_channels_) )
-    {
-        numOfBytes *= 2;
-    }
-
-    if ( numOfBytes > 1024*1024*1024*128.0 )
-    {
-        numOfBytes = (size_t)(1024*1024*1024*4.0);
-    }
-
-    GDEBUG_CONDITION_STREAM(verboseMode_, "GtPlusRecon3DTGadget::Pre allocate : " << numOfBytes/1024.0/1024.0 << " Megabytes ... ");
-
-    if ( performTiming_ ) { gt_timer1_.start("Pre-allocate memory ... "); }
-    mem_manager_->increase(numOfBytes);
-    if ( performTiming_ ) { gt_timer1_.stop(); }
-
-    worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
-    worker_noacceleration_.gtPlus_mem_manager_ = mem_manager_;
-    worker_spirit_.gtPlus_mem_manager_ = mem_manager_;
-    worker_spirit_L1_ncg_.gtPlus_mem_manager_ = mem_manager_;
-
     if ( CloudComputing_ )
     {
         bool parseSuccess = this->parseGTCloudNodeFile(cloud_node_file_, gt_cloud_);

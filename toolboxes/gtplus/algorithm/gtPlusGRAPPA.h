@@ -873,7 +873,21 @@ imageDomainKernel3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int>&
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain ... "); }
-        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm);
+        // Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm);
+
+        hoNDArray<T> kImTmp(ro, e1, e2, srcCHA);
+        hoNDArray<T> kImRes(ro, e1, e2, srcCHA);
+
+        long long d;
+        for (d = 0; d < dstCHA; d++)
+        {
+            T* pkImCha = kIm.begin() + d*ro*e1*e2*srcCHA;
+
+            hoNDArray<T> kImCha(ro, e1, e2, srcCHA, pkImCha);
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kImCha, kImRes, kImTmp);
+            memcpy(pkImCha, kImRes.begin(), kImRes.get_number_of_bytes());
+        }
+
         if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)

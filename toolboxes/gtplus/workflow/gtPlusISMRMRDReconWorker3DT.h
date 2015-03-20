@@ -952,67 +952,70 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 upstreamCoilCoeffData[n] = coeff;
             }
 
-            // apply the coil compression
-            #ifdef USE_OMP
-                omp_set_nested(1);
-            #endif // USE_OMP
-
-            if ( performTiming_ ) { gt_timer2_.start("apply upstream coil compression ... "); }
-            #pragma omp parallel sections default(shared)
+            if (coeff.cols()<srcCHA)
             {
+                // apply the coil compression
+                #ifdef USE_OMP
+                    omp_set_nested(1);
+                #endif // USE_OMP
 
-                #pragma omp section
+                if ( performTiming_ ) { gt_timer2_.start("apply upstream coil compression ... "); }
+                #pragma omp parallel sections default(shared)
                 {
-                    //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on data ... "); }
-                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_, true));
-                    if ( performTiming_ ) { gt_timer3_.start("applyKLCoilCompressionCoeff ... "); }
-                    gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_, true);
-                    if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    if ( performTiming_ ) { gt_timer3_.start("copy data ... "); }
-                    workOrder3DT->data_ = data_dst_;
-                    if ( performTiming_ ) { gt_timer3_.stop(); }
+                    #pragma omp section
+                    {
+                        //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on data ... "); }
+                        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_, true));
+                        if ( performTiming_ ) { gt_timer3_.start("applyKLCoilCompressionCoeff ... "); }
+                        gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_, true);
+                        if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    //if ( performTiming_ ) { gt_timer2_.stop(); }
+                        if ( performTiming_ ) { gt_timer3_.start("copy data ... "); }
+                        workOrder3DT->data_ = data_dst_;
+                        if ( performTiming_ ) { gt_timer3_.stop(); }
+
+                        //if ( performTiming_ ) { gt_timer2_.stop(); }
+                    }
+
+                    #pragma omp section
+                    {
+                        //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on ref ... "); }
+                        //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeff, ref_dst_, true));
+                        gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeffRef, ref_dst_, true);
+                        workOrder3DT->ref_ = ref_dst_;
+                        //if ( performTiming_ ) { gt_timer2_.stop(); }
+                    }
+
+                    #pragma omp section
+                    {
+                        //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on refRecon ... "); }
+                        hoNDArray<T> refRecon_upstream;
+                        //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refRecon, upstreamCoilCoeff, refRecon_upstream, true));
+                        gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refRecon, upstreamCoilCoeffRefRecon, refRecon_upstream, true);
+                        refRecon = refRecon_upstream;
+                        refRecon_upstream.clear();
+                        //if ( performTiming_ ) { gt_timer2_.stop(); }
+                    }
+
+                    #pragma omp section
+                    {
+                        //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on ref for coil map ... "); }
+                        hoNDArray<T> refCoilMap_upstream;
+                        //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refCoilMap, upstreamCoilCoeff, refCoilMap_upstream, true));
+                        gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refCoilMap, upstreamCoilCoeffRefRecon, refCoilMap_upstream, true);
+                        refCoilMap = refCoilMap_upstream;
+                        refCoilMap_upstream.clear();
+                        //if ( performTiming_ ) { gt_timer2_.stop(); }
+                    }
                 }
 
-                #pragma omp section
-                {
-                    //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on ref ... "); }
-                    //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeff, ref_dst_, true));
-                    gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeffRef, ref_dst_, true);
-                    workOrder3DT->ref_ = ref_dst_;
-                    //if ( performTiming_ ) { gt_timer2_.stop(); }
-                }
+                if ( performTiming_ ) { gt_timer2_.stop(); }
 
-                #pragma omp section
-                {
-                    //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on refRecon ... "); }
-                    hoNDArray<T> refRecon_upstream;
-                    //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refRecon, upstreamCoilCoeff, refRecon_upstream, true));
-                    gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refRecon, upstreamCoilCoeffRefRecon, refRecon_upstream, true);
-                    refRecon = refRecon_upstream;
-                    refRecon_upstream.clear();
-                    //if ( performTiming_ ) { gt_timer2_.stop(); }
-                }
-
-                #pragma omp section
-                {
-                    //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on ref for coil map ... "); }
-                    hoNDArray<T> refCoilMap_upstream;
-                    //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refCoilMap, upstreamCoilCoeff, refCoilMap_upstream, true));
-                    gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refCoilMap, upstreamCoilCoeffRefRecon, refCoilMap_upstream, true);
-                    refCoilMap = refCoilMap_upstream;
-                    refCoilMap_upstream.clear();
-                    //if ( performTiming_ ) { gt_timer2_.stop(); }
-                }
+                #ifdef USE_OMP
+                    omp_set_nested(0);
+                #endif // USE_OMP 
             }
-
-            if ( performTiming_ ) { gt_timer2_.stop(); }
-
-            #ifdef USE_OMP
-                omp_set_nested(0);
-            #endif // USE_OMP
         }
     }
     catch(...)

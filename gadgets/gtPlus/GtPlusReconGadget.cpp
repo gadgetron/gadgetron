@@ -10,7 +10,7 @@ using namespace Gadgetron::gtPlus;
 namespace Gadgetron
 {
 
-    GtPlusReconGadget::GtPlusReconGadget() : mem_manager_(new Gadgetron::gtPlus::gtPlusMemoryManager(4, 640*1024*1024))
+    GtPlusReconGadget::GtPlusReconGadget()
     {
         image_series_ = 100;
 
@@ -110,7 +110,6 @@ namespace Gadgetron
 
     GtPlusReconGadget::~GtPlusReconGadget()
     {
-
     }
 
     bool GtPlusReconGadget::readParameters()

@@ -617,7 +617,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
         {
             if ( (refN<N) || (refN==1) )
             {
-                if ( performTiming_ ) { gt_timer3_.start("grappa 3D test ... "); }
+                if ( performTiming_ ) { gt_timer3_.start("grappa 3D unmixCoeff ... "); }
                 hoNDArray<T> unmixCoeff(RO, E1, E2, srcCHA, workOrder3DT->unmixingCoeffIm_->begin());
                 if ( performTiming_ ) { gt_timer3_.stop(); }
 
