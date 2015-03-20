@@ -110,13 +110,6 @@ template <typename T>
 bool gtPlusGRAPPA<T>::
 kerPattern(std::vector<int>& kE1, std::vector<int>& oE1, size_t accelFactor, size_t kNE1, bool fitItself)
 {
-    if ( accelFactor == 1 )
-    {
-        kE1.resize(1, 0);
-        oE1.resize(1, 0);
-        return true;
-    }
-
     kE1.resize(kNE1, 0);
     if ( kNE1%2 == 0 )
     {
