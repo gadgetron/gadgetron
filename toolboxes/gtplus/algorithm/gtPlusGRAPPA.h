@@ -875,17 +875,25 @@ imageDomainKernel3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int>&
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain ... "); }
         // Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm);
 
-        hoNDArray<T> kImTmp(ro, e1, e2, srcCHA);
-        hoNDArray<T> kImRes(ro, e1, e2, srcCHA);
+        long long n;
 
-        long long d;
-        for (d = 0; d < dstCHA; d++)
+        #pragma omp parallel default(none) private(n) shared(ro, e1, e2, srcCHA, dstCHA, kIm)
         {
-            T* pkImCha = kIm.begin() + d*ro*e1*e2*srcCHA;
+            hoNDArray<T> kImTmp(ro, e1, e2);
+            hoNDArray<T> kImRes(ro, e1, e2);
 
-            hoNDArray<T> kImCha(ro, e1, e2, srcCHA, pkImCha);
-            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kImCha, kImRes, kImTmp);
-            memcpy(pkImCha, kImRes.begin(), kImRes.get_number_of_bytes());
+            #pragma omp for 
+            for (n = 0; n < srcCHA*dstCHA; n++)
+            {
+                long long d = n / srcCHA;
+                long long s = n - d*srcCHA;
+
+                T* pkImCha = kIm.begin() + d*ro*e1*e2*srcCHA + s*ro*e1*e2;
+
+                hoNDArray<T> kImCha(ro, e1, e2, pkImCha);
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kImCha, kImRes, kImTmp);
+                memcpy(pkImCha, kImRes.begin(), kImRes.get_number_of_bytes());
+            }
         }
 
         if ( performTiming_ ) { gt_timer3_.stop(); }
