@@ -1069,7 +1069,7 @@ performCalib(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& ref_s
                 {
                     GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->kernel_, usedS));
                     GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->kernelIm_, usedS));
-                    GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->unmixingCoeffIm_, usedS));
+                    if (workOrder2DT->unmixingCoeffIm_ && workOrder2DT->unmixingCoeffIm_->get_size(4) == S) GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->unmixingCoeffIm_, usedS));
                     if ( workOrder2DT->gfactor_needed_ ) { GADGET_CHECK_RETURN_FALSE(repmatLastDimension(workOrder2DT->gfactor_, usedS)); }
                     if ( workOrder2DT->wrap_around_map_needed_ ) { GADGET_CHECK_RETURN_FALSE(repmatLastDimension(workOrder2DT->wrap_around_map_, usedS)); }
                 }

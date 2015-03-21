@@ -286,7 +286,7 @@
 
         <property>
             <name>coil_compression_num_modesKept</name>
-            <value>8</value>
+            <value>-1</value>
         </property>
 
         <!-- parameters for coil map estimation 

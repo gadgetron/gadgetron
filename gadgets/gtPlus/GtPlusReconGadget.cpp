@@ -334,14 +334,14 @@ namespace Gadgetron
 
             workOrderPara_.coil_compression_thres_ = this->get_double_value("coil_compression_thres");
 
-            if ( workOrderPara_.upstream_coil_compression_ && (workOrderPara_.coil_compression_thres_ > workOrderPara_.upstream_coil_compression_thres_) )
+            if (workOrderPara_.upstream_coil_compression_ && (workOrderPara_.upstream_coil_compression_thres_>0) && (workOrderPara_.coil_compression_thres_ > workOrderPara_.upstream_coil_compression_thres_))
                 workOrderPara_.coil_compression_thres_ = workOrderPara_.upstream_coil_compression_thres_;
 
             GDEBUG_CONDITION_STREAM(verboseMode_, "coil_compression_thres_ is " << workOrderPara_.coil_compression_thres_);
 
             workOrderPara_.coil_compression_num_modesKept_ = this->get_int_value("coil_compression_num_modesKept");
 
-            if ( workOrderPara_.upstream_coil_compression_ && (workOrderPara_.coil_compression_num_modesKept_ > workOrderPara_.upstream_coil_compression_num_modesKept_) )
+            if (workOrderPara_.upstream_coil_compression_ && (workOrderPara_.upstream_coil_compression_num_modesKept_>0) && (workOrderPara_.coil_compression_num_modesKept_ > workOrderPara_.upstream_coil_compression_num_modesKept_))
                 workOrderPara_.coil_compression_num_modesKept_ = workOrderPara_.upstream_coil_compression_num_modesKept_;
 
             GDEBUG_CONDITION_STREAM(verboseMode_, "coil_compression_num_modesKept_ is " << workOrderPara_.coil_compression_num_modesKept_);
