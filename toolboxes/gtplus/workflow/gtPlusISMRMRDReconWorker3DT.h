@@ -169,7 +169,6 @@ public:
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
-    using BaseClass::gtPlus_mem_manager_;
 
 protected:
 
@@ -1262,7 +1261,6 @@ bool gtPlusReconWorker3DT<T>::applyImageDomainKernel(const hoNDArray<T>& kspace,
 template <typename T> 
 bool gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& aliasedIm, const hoNDArray<T>& kerIm, hoNDArray<T>& complexIm)
 {
-    hoNDArrayMemoryManaged<T> buf5D(kerIm.get_dimensions(), gtPlus_mem_manager_);
     return applyImageDomainKernelImage(aliasedIm, kerIm, this->buf4D, complexIm);
 }
 
@@ -1310,7 +1308,7 @@ bool gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
 
         #pragma omp parallel default(none) private(n) shared(num, dim4D, aliasedIm, RO, E1, E2, srcCHA, dstCHA, kerIm, complexIm) num_threads( (int)((num<16) ? num : 16) )
         {
-            hoNDArrayMemoryManaged<T> unwrapped4D(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
+            hoNDArray<T> unwrapped4D(RO, E1, E2, srcCHA);
 
             #pragma omp for
             for ( n=0; n<(int)num; n++ )
@@ -1349,7 +1347,7 @@ bool gtPlusReconWorker3DT<T>::applyUnmixCoeff(const hoNDArray<T>& kspace, const 
         GADGET_CHECK_RETURN_FALSE(kspace.get_size(3)==unmixCoeff.get_size(3));
 
         // buffer3DT_unwrapping_ = kspace;
-        hoNDArrayMemoryManaged<T> buffer3DT(kspace.get_dimensions(), gtPlus_mem_manager_);
+        hoNDArray<T> buffer3DT(kspace.get_dimensions());
 
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kspace, buffer3DT));
         GADGET_CHECK_RETURN_FALSE(applyUnmixCoeffImage(buffer3DT, unmixCoeff, complexIm));
@@ -1383,7 +1381,7 @@ bool gtPlusReconWorker3DT<T>::applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm
         }
         Gadgetron::clear(&complexIm);
 
-        hoNDArrayMemoryManaged<T> buffer3DT(aliasedIm.get_dimensions(), gtPlus_mem_manager_);
+        hoNDArray<T> buffer3DT(aliasedIm.get_dimensions());
 
         Gadgetron::multiply(aliasedIm, unmixCoeff, buffer3DT);
         GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(buffer3DT, complexIm, 3));
@@ -1501,8 +1499,8 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
         if ( this->computeKSpace(workOrder3DT) || fullres_coilmap )
         {
             if ( performTiming_ ) { gt_timer2_.start("full res coil map : allocate buffer 3DT ...  "); }
-            hoNDArrayMemoryManaged<T> buffer3DT(workOrder3DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
-            hoNDArrayMemoryManaged<T> buffer3DT_Two(workOrder3DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
+            hoNDArray<T> buffer3DT(workOrder3DT->fullkspace_.get_dimensions());
+            hoNDArray<T> buffer3DT_Two(workOrder3DT->fullkspace_.get_dimensions());
             if ( performTiming_ ) { gt_timer2_.stop(); }
 
             if ( performTiming_ ) { gt_timer2_.start("full res coil map : go to image domain ...  "); }
@@ -1602,8 +1600,8 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_origin_noFullResCoilMap_"); }
 
                     if ( performTiming_ ) { gt_timer2_.start("after partial fourier handling, allocate buffer 3DT ...  "); }
-                    hoNDArrayMemoryManaged<T> buffer3DT(workOrder3DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
-                    hoNDArrayMemoryManaged<T> buffer3DT_Two(workOrder3DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
+                    hoNDArray<T> buffer3DT(workOrder3DT->fullkspace_.get_dimensions());
+                    hoNDArray<T> buffer3DT_Two(workOrder3DT->fullkspace_.get_dimensions());
                     if ( performTiming_ ) { gt_timer2_.stop(); }
 
                     // if the partial fourier handling is performed on the fullkspace, an extra coil combination is needed
@@ -1633,7 +1631,7 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
         size_t imE2 = workOrder3DT->complexIm_.get_size(2);
         size_t imCHA = workOrder3DT->complexIm_.get_size(3);
 
-        hoNDArrayMemoryManaged<T> complexIm(workOrder3DT->complexIm_, gtPlus_mem_manager_);
+        hoNDArray<T> complexIm(workOrder3DT->complexIm_);
 
         T* pSrc = workOrder3DT->complexIm_.begin();
         T* pDst = complexIm.begin();
@@ -1755,7 +1753,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
         else
         {
             // perform partial fourier handling on the complex images after coil combination
-            hoNDArrayMemoryManaged<T> kspace(workOrder3DT->complexIm_.get_dimensions(), gtPlus_mem_manager_);
+            hoNDArray<T> kspace(workOrder3DT->complexIm_.get_dimensions());
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(workOrder3DT->complexIm_, kspace);
 
             if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
@@ -1811,7 +1809,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder3D
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_before_PF_Filter"); }
 
-        hoNDArrayMemoryManaged<T> buffer3DT_partial_fourier(kspace.get_dimensions(), gtPlus_mem_manager_);
+        hoNDArray<T> buffer3DT_partial_fourier(kspace.get_dimensions());
 
         if ( workOrder3DT.filterROE1E2_partialfourier_.get_size(0)==RO 
                 && workOrder3DT.filterROE1E2_partialfourier_.get_size(1)==E1
@@ -1958,15 +1956,15 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterE2, debugFolder_+"filterE2_POCS"); }
 
-        hoNDArrayMemoryManaged<T> kspaceIter(kspace.get_dimensions(), gtPlus_mem_manager_);
+        hoNDArray<T> kspaceIter(kspace.get_dimensions());
         kspaceIter = kspace;
 
         // magnitude of complex images
-        hoNDArrayMemoryManaged<typename realType<T>::Type> mag(kspace.get_dimensions(), gtPlus_mem_manager_);
-        hoNDArrayMemoryManaged<T> magComplex(kspace.get_dimensions(), gtPlus_mem_manager_);
+        hoNDArray<typename realType<T>::Type> mag(kspace.get_dimensions());
+        hoNDArray<T> magComplex(kspace.get_dimensions());
 
-        hoNDArrayMemoryManaged<T> buffer3DT(kspace.get_dimensions(), gtPlus_mem_manager_);
-        hoNDArrayMemoryManaged<T> buffer3DT_partial_fourier(kspace.get_dimensions(), gtPlus_mem_manager_);
+        hoNDArray<T> buffer3DT(kspace.get_dimensions());
+        hoNDArray<T> buffer3DT_partial_fourier(kspace.get_dimensions());
 
         // kspace filter
         GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspace3DfilterROE1E2(kspaceIter, filterRO, filterE1, filterE2, buffer3DT_partial_fourier));
@@ -1984,12 +1982,12 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT, debugFolder_+"POCS_afterFiltered_complexIm_phase"); }
 
         // complex images, initialized as not filtered complex image
-        hoNDArrayMemoryManaged<T> complexIm(kspaceIter, gtPlus_mem_manager_);
+        hoNDArray<T> complexIm(kspaceIter);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kspaceIter, complexIm);
-        hoNDArrayMemoryManaged<T> complexImPOCS(complexIm, gtPlus_mem_manager_);
+        hoNDArray<T> complexImPOCS(complexIm);
 
         // the kspace during iteration is buffered here
-        hoNDArrayMemoryManaged<T> buffer3DT_partial_fourierkspaceIter(kspaceIter, gtPlus_mem_manager_);
+        hoNDArray<T> buffer3DT_partial_fourierkspaceIter(kspaceIter);
 
         size_t ii;
         for ( ii=0; ii<workOrder3DT.partialFourier_POCS_iters_; ii++ )
@@ -2105,7 +2103,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
         }
 
         // compute the conjugate symmetric kspace
-        hoNDArrayMemoryManaged<T> buffer3DT(kspace.get_dimensions(), gtPlus_mem_manager_);
+        hoNDArray<T> buffer3DT(kspace.get_dimensions());
 
         if ( performTiming_ ) { gt_timer1_.start("conjugateSymmetry3D"); }
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().conjugateSymmetry3D(kspace, buffer3DT));
@@ -2233,7 +2231,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
                 endE2 = E2-1;
             }
 
-            hoNDArrayMemoryManaged<T> buffer3DT_partial_fourier_kspaceIter(kspace.get_dimensions(), gtPlus_mem_manager_);
+            hoNDArray<T> buffer3DT_partial_fourier_kspaceIter(kspace.get_dimensions());
             GADGET_CHECK_RETURN_FALSE(this->performReconFangHuang(workOrder3DT, buffer3DT, 
                     buffer3DT_partial_fourier_kspaceIter, (int)startRO, (int)endRO, (int)startE1, (int)endE1, (int)startE2, (int)endE2, kernel));
 
@@ -2316,10 +2314,6 @@ bool gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const 
 
         #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, srcCHA, N, kx, ky, kz, src, dst, kernel, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, startE2, endE2, halfKx, halfKy, halfKz, thresReg) if ( num > 1 ) num_threads( (int)(num<16 ? num : 16) )
         {
-           /* hoNDArrayMemoryManaged<T> A_mem(colA, rowA, gtPlus_mem_manager_);
-            hoNDArrayMemoryManaged<T> B_mem(colB, rowB, gtPlus_mem_manager_);
-            hoNDArrayMemoryManaged<T> K_mem(colB, colA, gtPlus_mem_manager_);*/
-
             hoNDArray<T> A_mem(rowA, colA);
             hoNDArray<T> B_mem(rowB, colB);
             hoNDArray<T> K_mem(colA, colB);
@@ -2590,7 +2584,7 @@ bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT,
         int numOfThreads = (int)((num>4) ? 4 : num);
         #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, CHA, N, kerN, kspaceConj, kspace, kernel, rowD, colD, coeffX, coeffY, coeffZ, pCx, pCy, pCz) if ( num > 1 ) num_threads( numOfThreads )
         {
-            hoNDArrayMemoryManaged<T> D_mem(rowD, colD, gtPlus_mem_manager_);
+            hoNDArray<T> D_mem(rowD, colD);
 
             hoMatrix<T> D(rowD, colD, D_mem.begin());
             T* pD = D.begin();

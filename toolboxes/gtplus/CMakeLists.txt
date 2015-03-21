@@ -72,14 +72,10 @@ if ( HAS_64_BIT )
         util/gtPlusIOAnalyze.cpp)
 
     set( util_header_files 
-        util/gtPlusMemoryManager.h
-        util/hoNDArrayMemoryManaged.h 
-        util/hoNDArrayMemoryManaged.hxx 
         util/gtPlusUtil.h 
         util/gtPlusUtil.hxx )
 
-    set( util_src_files 
-        util/gtPlusMemoryManager.cpp )
+    set( util_src_files )
 
     if (MKL_FOUND OR ARMADILLO_FOUND)
         set( workflow_header_files 

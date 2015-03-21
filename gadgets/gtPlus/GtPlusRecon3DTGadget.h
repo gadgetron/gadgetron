@@ -11,7 +11,6 @@
 #include "gtPlusISMRMRDReconWorker3DTNoAcceleration.h"
 #include "gtPlusISMRMRDReconWorker3DTSPIRIT.h"
 #include "gtPlusISMRMRDReconWorker3DTL1SPIRITNCG.h"
-#include "gtPlusMemoryManager.h"
 
 namespace Gadgetron
 {

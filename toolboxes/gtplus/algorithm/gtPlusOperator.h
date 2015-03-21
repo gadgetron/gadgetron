@@ -9,7 +9,6 @@
 #include "GadgetronTimer.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusIOAnalyze.h"
-#include "gtPlusMemoryManager.h"
 
 #ifdef USE_OMP
     #include "omp.h"
@@ -55,9 +54,6 @@ public:
     virtual bool restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoNDArray<T>& y);
     virtual bool restoreAcquiredKSpace(hoNDArray<T>& y);
 
-    // set the memory manager
-    void setMemoryManager(boost::shared_ptr<gtPlusMemoryManager>& memManager);
-
     // set the acquired kspace, unacquired points are set to be zero
     virtual bool setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace);
 
@@ -93,19 +89,16 @@ public:
     // coil map
     boost::shared_ptr< hoNDArray<T> > coil_senMap_;
 
-    // memory manager
-    boost::shared_ptr<gtPlusMemoryManager> gtPlus_mem_manager_;
-
     // helper memory
     hoNDArray<T> kspace_;
     hoNDArray<T> complexIm_;
     hoNDArray<T> res_after_apply_kernel_;
     hoNDArray<T> res_after_apply_kernel_sum_over_;
 
-    hoNDArrayMemoryManaged<T> kspace_Managed_;
-    hoNDArrayMemoryManaged<T> complexIm_Managed_;
-    hoNDArrayMemoryManaged<T> res_after_apply_kernel_Managed_;
-    hoNDArrayMemoryManaged<T> res_after_apply_kernel_sum_over_Managed_;
+    hoNDArray<T> kspace_Managed_;
+    hoNDArray<T> complexIm_Managed_;
+    hoNDArray<T> res_after_apply_kernel_Managed_;
+    hoNDArray<T> res_after_apply_kernel_sum_over_Managed_;
 
     bool performSumOverSrcChannel(const hoNDArray<T>& x, hoNDArray<T>& r);
 };
@@ -121,18 +114,6 @@ gtPlusOperator<T>::gtPlusOperator() : performTiming_(false)
 template <typename T> 
 gtPlusOperator<T>::~gtPlusOperator()
 {
-}
-
-template <typename T> 
-void gtPlusOperator<T>::setMemoryManager(boost::shared_ptr<gtPlusMemoryManager>& memManager)
-{
-    if ( gtPlus_mem_manager_ )
-    {
-        kspace_Managed_.setMemoryManager(gtPlus_mem_manager_);
-        complexIm_Managed_.setMemoryManager(gtPlus_mem_manager_);
-        res_after_apply_kernel_Managed_.setMemoryManager(gtPlus_mem_manager_);
-        res_after_apply_kernel_sum_over_Managed_.setMemoryManager(gtPlus_mem_manager_);
-    }
 }
 
 template <typename T> 

@@ -93,7 +93,6 @@ public:
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
     using BaseClass::gtPlus_util_complex_;
-    using BaseClass::gtPlus_mem_manager_;
 };
 
 template <typename T> 
@@ -593,14 +592,6 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
             hoMatrix<T> A(rowA, colA);
             hoMatrix<T> B(rowA, colB);
             hoMatrix<T> x( A.cols(), B.cols() );
-
-            // hoNDArrayMemoryManaged<T> A_mem(colA, rowA, gtPlus_mem_manager_);
-            //hoNDArray<T> A_mem(colA, rowA);
-            //A.createMatrix( rowA, colA, A_mem.begin() );
-
-            // hoNDArrayMemoryManaged<T> B_mem(colB, rowA, gtPlus_mem_manager_);
-            // hoNDArray<T> B_mem(colB, rowA);
-            // B.createMatrix( A.rows(), colB, B_mem.begin() );
 
             T* pA = A.begin();
             T* pB = B.begin();

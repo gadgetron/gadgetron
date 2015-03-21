@@ -38,7 +38,6 @@ public:
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
     using BaseClass::gtPlus_util_cplx_;
-    using BaseClass::gtPlus_mem_manager_;
 
     using BaseClass::ref_src_;
     using BaseClass::ref_dst_;
@@ -94,7 +93,7 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
 
                 hoNDArray<T> refCoilMapN(RO, E1, E2, CHA, workOrder3DT->ref_coil_map_.begin()+usedN*RO*E1*E2*CHA);
 
-                hoNDArrayMemoryManaged<T> buffer3DT(refCoilMapN.get_dimensions(), gtPlus_mem_manager_);
+                hoNDArray<T> buffer3DT(refCoilMapN.get_dimensions());
 
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(refCoilMapN, buffer3DT);
 
@@ -107,7 +106,7 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
             }
             else
             {
-                hoNDArrayMemoryManaged<T> buffer3DT(workOrder3DT->ref_coil_map_.get_dimensions(), gtPlus_mem_manager_);
+                hoNDArray<T> buffer3DT(workOrder3DT->ref_coil_map_.get_dimensions());
 
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->ref_coil_map_, buffer3DT);
 
@@ -125,7 +124,7 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
 
         if ( performTiming_ ) { gt_timer1_.start("perform coil combination"); }
 
-        hoNDArrayMemoryManaged<T> buffer3DT(workOrder3DT->data_.get_dimensions(), gtPlus_mem_manager_);
+        hoNDArray<T> buffer3DT(workOrder3DT->data_.get_dimensions());
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->data_, buffer3DT);
         gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
 

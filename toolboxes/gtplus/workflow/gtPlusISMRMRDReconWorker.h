@@ -11,8 +11,6 @@
 #include "gtPlusIOAnalyze.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconWorkOrder.h"
-#include "gtPlusMemoryManager.h"
-#include "hoNDArrayMemoryManaged.h"
 #include "gtPlusCloudScheduler.h"
 
 #ifdef USE_OMP
@@ -284,9 +282,6 @@ public:
     // util
     gtPlusISMRMRDReconUtil<T> gtPlus_util_;
     gtPlusISMRMRDReconUtilComplex<T> gtPlus_util_cplx_;
-
-    // memory manager
-    boost::shared_ptr<gtPlusMemoryManager> gtPlus_mem_manager_;
 
     // ----------------------------------------------------
     // recon job splitter and combiner

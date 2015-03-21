@@ -54,7 +54,6 @@ public:
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
-    using BaseClass::gtPlus_mem_manager_;
 
 //protected::
 
@@ -167,19 +166,9 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     if ( !splitJobs )
     {
         if ( performTiming_ ) { gt_timer3_.start("allocate image domain kernel ... "); }
-        if ( gtPlus_mem_manager_ )
-        {
-            if ( workOrder3DT->kernelIm_->get_number_of_elements() != (size_t)RO*E1*E2*srcCHA*dstCHA*refN )
-            {
-                workOrder3DT->kernelIm_->create(E1, E2, RO, srcCHA, dstCHA, refN, (T*)(gtPlus_mem_manager_->allocate(sizeof(T)*(size_t)RO*E1*E2*srcCHA*dstCHA*refN)));
-            }
-        }
-        else
-        {
-            workOrder3DT->kernelIm_->create(E1, E2, RO, srcCHA, dstCHA, refN);
-            // pre-set to zero is needed here
-            memset(workOrder3DT->kernelIm_->begin(), 0, workOrder3DT->kernelIm_->get_number_of_bytes());
-        }
+        workOrder3DT->kernelIm_->create(E1, E2, RO, srcCHA, dstCHA, refN);
+        // pre-set to zero is needed here
+        memset(workOrder3DT->kernelIm_->begin(), 0, workOrder3DT->kernelIm_->get_number_of_bytes());
         if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     else
@@ -188,19 +177,9 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         size_t convKE2 = 2*kE2-1;
 
         if ( performTiming_ ) { gt_timer3_.start("allocate image domain kernel only along RO ... "); }
-        if ( gtPlus_mem_manager_ )
-        {
-            if ( workOrder3DT->kernelIm_->get_number_of_elements() != (size_t)RO*convKE1*convKE2*srcCHA*dstCHA*refN )
-            {
-                workOrder3DT->kernelIm_->create(convKE1, convKE2, RO, srcCHA, dstCHA, refN, (T*)(gtPlus_mem_manager_->allocate(sizeof(T)*(size_t)RO*convKE1*convKE2*srcCHA*dstCHA*refN)));
-            }
-        }
-        else
-        {
-            workOrder3DT->kernelIm_->create(convKE1, convKE2, RO, srcCHA, dstCHA, refN);
-            // pre-set to zero is needed here
-            memset(workOrder3DT->kernelIm_->begin(), 0, workOrder3DT->kernelIm_->get_number_of_bytes());
-        }
+        workOrder3DT->kernelIm_->create(convKE1, convKE2, RO, srcCHA, dstCHA, refN);
+        // pre-set to zero is needed here
+        memset(workOrder3DT->kernelIm_->begin(), 0, workOrder3DT->kernelIm_->get_number_of_bytes());
         if ( performTiming_ ) { gt_timer3_.stop(); }
     }
 
@@ -375,12 +354,10 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
         if ( splitJobs )
         {
-            // hoNDArrayMemoryManaged<T> kspaceIfftRO(RO, E1, E2, srcCHA, N, gtPlus_mem_manager_);
             hoNDArray<T> kspaceIfftRO(RO, E1, E2, srcCHA, N);
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(data_dst, kspaceIfftRO);
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftRO, debugFolder_+"kspaceIfftRO"); }
 
-            // hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, N, gtPlus_mem_manager_);
             hoNDArray<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, N);
             if ( performTiming_ ) { gt_timer3_.start("permute kspace RO to 4th dimension ... "); }
 
@@ -395,7 +372,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             if ( performTiming_ ) { gt_timer3_.stop(); }
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftROPermuted, debugFolder_+"kspaceIfftROPermuted"); }
 
-            hoNDArrayMemoryManaged<T> kerPermuted;
+            hoNDArray<T> kerPermuted;
             if ( !spirit_kernelIm_permuted_ )
             {
                 spirit_kernelIm_permuted_ = true;
@@ -403,21 +380,9 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 size_t kerN = kImE1*kImE2*srcCHA*dstCHA*kImRO*N;
                 size_t kerImSize = sizeof(T)*kerN;
                 GDEBUG_STREAM("SPIRIT - 3DT - image domain kernel size : " << kerImSize/1024.0/1024 << " MBytes ... ");
-                size_t maxFreeChunk = gtPlus_mem_manager_->maxFreeMemoryChunkSize();
-                GDEBUG_STREAM("SPIRIT - 3DT - maximal free chunk of managed memory : " << maxFreeChunk/1024.0/1024 << " MBytes ... ");
 
                 if ( performTiming_ ) { gt_timer3_.start("allocate permuted kernel ... "); }
-                if ( maxFreeChunk >= kerImSize )
-                {
-                    kerPermuted.setMemoryManager(gtPlus_mem_manager_);
-                    kerPermuted.create(kImE1, kImE2, srcCHA, dstCHA, kImRO, N);
-                }
-                else
-                {
-                    GDEBUG_STREAM("use unmanaged memory ... ");
-                    T* pData = new T[kerN];
-                    kerPermuted.create(kImE1, kImE2, srcCHA, dstCHA, kImRO, N, pData, true);
-                }
+                kerPermuted.create(kImE1, kImE2, srcCHA, dstCHA, kImRO, N);
                 if ( performTiming_ ) { gt_timer3_.stop(); }
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->kernelIm_, debugFolder_+"kernelImBeforePermuted"); }
@@ -711,14 +676,14 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             }
         }
 
-        hoNDArrayMemoryManaged<T> complexImMultiChannel(RO, E1, E2, dstCHA, N, gtPlus_mem_manager_);
+        hoNDArray<T> complexImMultiChannel(RO, E1, E2, dstCHA, N);
 
         if ( (workOrder3DT->coilMap_->get_size(0)==RO) 
             && (workOrder3DT->coilMap_->get_size(1)==E1) 
             && (workOrder3DT->coilMap_->get_size(2)==E2) 
             && (workOrder3DT->coilMap_->get_size(3)==dstCHA) )
         {
-            hoNDArrayMemoryManaged<T> complexImMultiChannel(RO, E1, E2, dstCHA, N, gtPlus_mem_manager_);
+            hoNDArray<T> complexImMultiChannel(RO, E1, E2, dstCHA, N);
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->fullkspace_, complexImMultiChannel);
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImMultiChannel, debugFolder_+"unwarppedComplexIm"); }
 
@@ -762,16 +727,8 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
             if ( performTiming_ ) { gt_timer3_.start("kernel conversion along E1 and E2 ... "); }
 
-            if ( gtPlus_mem_manager_ )
-            {
-                // kerImE1E2RO will be cleared as all '0' 
-                kerImE1E2RO.create(E1, E2, srcCHA, dstCHA, RO, kerN, (T*)(gtPlus_mem_manager_->allocate(sizeof(T)*(size_t)RO*E1*E2*srcCHA*dstCHA)));
-            }
-            else
-            {
-                kerImE1E2RO.create(E1, E2, srcCHA, dstCHA, RO, kerN);
-                Gadgetron::clear(kerImE1E2RO);
-            }
+            kerImE1E2RO.create(E1, E2, srcCHA, dstCHA, RO, kerN);
+            Gadgetron::clear(kerImE1E2RO);
 
             GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelE1E2RO(ker, (int)E1, (int)E2, kerImE1E2RO));
             kerIm = &kerImE1E2RO;
@@ -826,7 +783,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, NUM, kspace_Shifted, ker_Shifted, res) if ( NUM > 1 ) num_threads( numThreads )
         {
             gtPlusSPIRIT2DOperator<T> spirit;
-            spirit.setMemoryManager(gtPlus_mem_manager_);
             spirit.use_symmetric_spirit_ = false;
             spirit.use_non_centered_fft_ = true;
 
@@ -918,13 +874,13 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
         size_t dstCHA = adj_forward_G_I.get_size(4);
 
         // perform the 3D recon by read-out decoupling
-        hoNDArrayMemoryManaged<T> resDecoupled(E1, E2, dstCHA, RO, gtPlus_mem_manager_);
+        hoNDArray<T> resDecoupled(E1, E2, dstCHA, RO);
 
-        hoNDArrayMemoryManaged<T> kspaceIfftRO(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
+        hoNDArray<T> kspaceIfftRO(RO, E1, E2, srcCHA);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kspace, kspaceIfftRO);
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftRO, debugFolder_+"kspaceIfftRO"); }
 
-        hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, gtPlus_mem_manager_);
+        hoNDArray<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO);
 
         if ( performTiming_ ) { gt_timer3_.start("permtue RO to 4th dimension ... "); }
 
@@ -949,11 +905,10 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, NUM, resDecoupled, pKspaceIfftROPermuted, pG_I) if ( NUM > 6 ) num_threads( (int)((NUM<16) ? NUM : 16) )
         {
-            hoNDArrayMemoryManaged<T> adjForG_I_Decoupled(E1, E2, srcCHA, dstCHA, gtPlus_mem_manager_);
+            hoNDArray<T> adjForG_I_Decoupled(E1, E2, srcCHA, dstCHA);
             T* pDecoupledG_I = adjForG_I_Decoupled.begin();
 
             gtPlusSPIRIT2DOperator<T> spirit;
-            spirit.setMemoryManager(gtPlus_mem_manager_);
             spirit.use_symmetric_spirit_ = false;
 
             hoNDArray<T> x0(E1, E2, srcCHA);
@@ -1085,8 +1040,6 @@ bool gtPlusReconWorker3DTSPIRIT<T>::performRecon(gtPlusReconWorkOrder3DT<T>* wor
     try
     {
         GADGET_CHECK_RETURN_FALSE(workOrder3DT!=NULL);
-
-        spirit_.gtPlus_mem_manager_ = this->gtPlus_mem_manager_;
 
         // call the BaseClass
         GADGET_CHECK_RETURN_FALSE(BaseClass::performRecon(workOrder3DT));

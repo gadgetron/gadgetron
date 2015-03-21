@@ -48,7 +48,6 @@ public:
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
     using BaseClass::gtPlus_util_cplx_;
-    using BaseClass::gtPlus_mem_manager_;
 
 //protected::
 
@@ -196,11 +195,11 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         // perform the 3D recon by read-out decoupling
 
-        hoNDArrayMemoryManaged<T> kspaceIfftRO(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
+        hoNDArray<T> kspaceIfftRO(RO, E1, E2, srcCHA);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kspace, kspaceIfftRO);
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIfftRO, debugFolder_+"kspaceIfftRO"); }
 
-        hoNDArrayMemoryManaged<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO, gtPlus_mem_manager_);
+        hoNDArray<T> kspaceIfftROPermuted(E1, E2, srcCHA, RO);
 
         if ( performTiming_ ) { gt_timer3_.start("permtue RO to 4th dimension ... "); }
 
@@ -303,16 +302,8 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         {
             GDEBUG_STREAM("gtPlusReconWorker3DTL1SPIRITNCG, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
 
-            if ( gtPlus_mem_manager_ )
-            {
-                // kerImE1E2RO will be cleared as all '0' 
-                kerImE1E2RO.create(E1, E2, srcCHA, dstCHA, RO, kerN, (T*)(gtPlus_mem_manager_->allocate(sizeof(T)*(size_t)RO*E1*E2*srcCHA*dstCHA)));
-            }
-            else
-            {
-                kerImE1E2RO.create(E1, E2, srcCHA, dstCHA, RO, kerN);
-                Gadgetron::clear(kerImE1E2RO);
-            }
+            kerImE1E2RO.create(E1, E2, srcCHA, dstCHA, RO, kerN);
+            Gadgetron::clear(kerImE1E2RO);
 
             GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelE1E2RO(kernel, (int)E1, (int)E2, kerImE1E2RO));
             kerIm = &kerImE1E2RO;
@@ -378,14 +369,12 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     // parallel imaging term
                     gtPlusSPIRIT2DTOperator<T> spirit;
                     spirit.use_symmetric_spirit_ = false;
-                    spirit.setMemoryManager(gtPlus_mem_manager_);
 
                     spirit.setForwardKernel(ker, true);
                     spirit.setAcquiredPoints(acq);
 
                     // L1 term
                     gtPlusWavelet3DOperator<T> wavNullSpace3DOperator;
-                    wavNullSpace3DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNullSpace3DOperator.setAcquiredPoints(acq);
 
                     wavNullSpace3DOperator.scale_factor_first_dimension_ = (value_type)workOrder3DT->spirit_E1_enhancement_ratio_;
@@ -415,7 +404,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                 {
                     gtPlusSPIRITNoNullSpace2DTOperator<T> spirit_noNullSpace;
                     spirit_noNullSpace.use_symmetric_spirit_ = false;
-                    spirit_noNullSpace.setMemoryManager(gtPlus_mem_manager_);
 
                     spirit_noNullSpace.setForwardKernel(ker, true);
                     spirit_noNullSpace.setAcquiredPoints(acq);
@@ -424,7 +412,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     dataOper.setAcquiredPoints(acq);
 
                     gtPlusWaveletNoNullSpace3DOperator<T> wavNoNullSpace3DOperator;
-                    wavNoNullSpace3DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNoNullSpace3DOperator.setAcquiredPoints(acq);
 
                     wavNoNullSpace3DOperator.scale_factor_first_dimension_ = (value_type)workOrder3DT->spirit_E1_enhancement_ratio_;
@@ -465,13 +452,11 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     // parallel imaging term
                     gtPlusSPIRIT2DOperator<T> spirit;
                     spirit.use_symmetric_spirit_ = false;
-                    spirit.setMemoryManager(gtPlus_mem_manager_);
                     spirit.setForwardKernel(ker, true);
                     spirit.setAcquiredPoints(acq);
 
                     // L1 term
                     gtPlusWavelet2DOperator<T> wavNullSpace2DOperator;
-                    wavNullSpace2DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNullSpace2DOperator.setAcquiredPoints(acq);
 
                     if ( workOrder3DT->spirit_use_coil_sen_map_ && coilMapN )
@@ -497,7 +482,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                 {
                     gtPlusSPIRITNoNullSpace2DOperator<T> spirit_noNullSpace;
                     spirit_noNullSpace.use_symmetric_spirit_ = false;
-                    spirit_noNullSpace.setMemoryManager(gtPlus_mem_manager_);
                     spirit_noNullSpace.setForwardKernel(ker, true);
                     spirit_noNullSpace.setAcquiredPoints(acq);
 
@@ -505,7 +489,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     dataOper.setAcquiredPoints(acq);
 
                     gtPlusWaveletNoNullSpace2DOperator<T> wavNoNullSpace2DOperator;
-                    wavNoNullSpace2DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNoNullSpace2DOperator.setAcquiredPoints(acq);
 
                     if ( workOrder3DT->spirit_use_coil_sen_map_ && coilMapN )
@@ -563,16 +546,8 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         {
             GDEBUG_STREAM("gtPlusReconWorker3DTL1SPIRITNCG, kerE1!=E1 || kerE2!=E2, kernel needs to be converted along E1 and E2 ... ");
 
-            if ( gtPlus_mem_manager_ )
-            {
-                // kerImE1E2RO will be cleared as all '0' 
-                kerImE1E2RO.create(E1, E2, srcCHA, dstCHA, RO, kerN, (T*)(gtPlus_mem_manager_->allocate(sizeof(T)*(size_t)RO*E1*E2*srcCHA*dstCHA)));
-            }
-            else
-            {
-                kerImE1E2RO.create(E1, E2, srcCHA, dstCHA, RO, kerN);
-                Gadgetron::clear(kerImE1E2RO);
-            }
+            kerImE1E2RO.create(E1, E2, srcCHA, dstCHA, RO, kerN);
+            Gadgetron::clear(kerImE1E2RO);
 
             GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelE1E2RO(kernel, (int)E1, (int)E2, kerImE1E2RO));
             kerIm = &kerImE1E2RO;
@@ -630,14 +605,12 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     // parallel imaging term
                     gtPlusSPIRIT2DTOperator<T> spirit;
                     spirit.use_symmetric_spirit_ = false;
-                    spirit.setMemoryManager(gtPlus_mem_manager_);
 
                     spirit.setForwardKernel(ker, true);
                     spirit.setAcquiredPoints(acq);
 
                     // L1 term
                     gtPlusWavelet3DOperator<T> wavNullSpace3DOperator;
-                    wavNullSpace3DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNullSpace3DOperator.setAcquiredPoints(acq);
 
                     wavNullSpace3DOperator.scale_factor_first_dimension_ = (value_type)workOrder3DT->spirit_E1_enhancement_ratio_;
@@ -667,7 +640,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                 {
                     gtPlusSPIRITNoNullSpace2DTOperator<T> spirit_noNullSpace;
                     spirit_noNullSpace.use_symmetric_spirit_ = false;
-                    spirit_noNullSpace.setMemoryManager(gtPlus_mem_manager_);
 
                     spirit_noNullSpace.setForwardKernel(ker, true);
                     spirit_noNullSpace.setAcquiredPoints(acq);
@@ -676,7 +648,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     dataOper.setAcquiredPoints(acq);
 
                     gtPlusWaveletNoNullSpace3DOperator<T> wavNoNullSpace3DOperator;
-                    wavNoNullSpace3DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNoNullSpace3DOperator.setAcquiredPoints(acq);
 
                     wavNoNullSpace3DOperator.scale_factor_first_dimension_ = (value_type)workOrder3DT->spirit_E1_enhancement_ratio_;
@@ -717,13 +688,11 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     // parallel imaging term
                     gtPlusSPIRIT2DOperator<T> spirit;
                     spirit.use_symmetric_spirit_ = false;
-                    spirit.setMemoryManager(gtPlus_mem_manager_);
                     spirit.setForwardKernel(ker, true);
                     spirit.setAcquiredPoints(acq);
 
                     // L1 term
                     gtPlusWavelet2DOperator<T> wavNullSpace2DOperator;
-                    wavNullSpace2DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNullSpace2DOperator.setAcquiredPoints(acq);
 
                     if ( workOrder3DT->spirit_use_coil_sen_map_ && coilMapN )
@@ -749,7 +718,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                 {
                     gtPlusSPIRITNoNullSpace2DOperator<T> spirit_noNullSpace;
                     spirit_noNullSpace.use_symmetric_spirit_ = false;
-                    spirit_noNullSpace.setMemoryManager(gtPlus_mem_manager_);
                     spirit_noNullSpace.setForwardKernel(ker, true);
                     spirit_noNullSpace.setAcquiredPoints(acq);
 
@@ -757,7 +725,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                     dataOper.setAcquiredPoints(acq);
 
                     gtPlusWaveletNoNullSpace2DOperator<T> wavNoNullSpace2DOperator;
-                    wavNoNullSpace2DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNoNullSpace2DOperator.setAcquiredPoints(acq);
 
                     if ( workOrder3DT->spirit_use_coil_sen_map_ && coilMapN )

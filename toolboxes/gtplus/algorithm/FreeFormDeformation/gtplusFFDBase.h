@@ -22,7 +22,6 @@
 #include "GadgetronTimer.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusIOAnalyze.h"
-#include "gtPlusMemoryManager.h"
 
 #ifdef USE_OMP
     #include "omp.h"
