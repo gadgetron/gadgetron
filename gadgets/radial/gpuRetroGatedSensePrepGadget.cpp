@@ -24,21 +24,7 @@ namespace Gadgetron{
     , samples_per_profile_(-1)
     , phys_time_index_(0)
   {
-    // Set some default values in case the config does not contain a specification
-    //
 
-    set_parameter(std::string("mode").c_str(), "-1");
-    set_parameter(std::string("deviceno").c_str(), "0");
-    set_parameter(std::string("profiles_per_frame").c_str(), "16");
-    set_parameter(std::string("frames_per_cardiac_cycle").c_str(), "30");
-    set_parameter(std::string("profiles_per_buffer_frame").c_str(), "32");
-    set_parameter(std::string("number_of_buffer_frames_inner").c_str(), "8");
-    set_parameter(std::string("number_of_buffer_frames_outer").c_str(), "1");
-    set_parameter(std::string("buffer_using_solver").c_str(), "false");
-    set_parameter(std::string("buffer_convolution_kernel_width").c_str(), "5.5");
-    set_parameter(std::string("buffer_convolution_oversampling_factor").c_str(), "1.25");
-    set_parameter(std::string("reconstruction_os_factor_x").c_str(), "1.0");
-    set_parameter(std::string("reconstruction_os_factor_y").c_str(), "1.0");
   }
   
   gpuRetroGatedSensePrepGadget::~gpuRetroGatedSensePrepGadget() {}
@@ -48,24 +34,19 @@ namespace Gadgetron{
     // Get configuration values from config file
     //
 
-    mode_ = get_int_value(std::string("mode").c_str());
-    device_number_ = get_int_value(std::string("deviceno").c_str());
-    profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
-    frames_per_cardiac_cycle_ = get_int_value(std::string("frames_per_cardiac_cycle").c_str());
-    profiles_per_buffer_frame_ = get_int_value(std::string("profiles_per_buffer_frame").c_str());
-    num_buffer_frames_inner_ = get_int_value(std::string("number_of_buffer_frames_inner").c_str());
-    num_buffer_frames_outer_ = get_int_value(std::string("number_of_buffer_frames_outer").c_str());
-    buffer_using_solver_ = get_bool_value(std::string("buffer_using_solver").c_str());
-    output_timing_ = get_bool_value(std::string("output_timing").c_str());
-    phys_time_index_ = get_int_value("physiology_time_index");
+    mode_ = mode.value();
+    device_number_ = deviceno.value();
+    profiles_per_frame_ = profiles_per_frame.value();
+    frames_per_cardiac_cycle_ = frames_per_cardiac_cycle.value();
+    profiles_per_buffer_frame_ = profiles_per_buffer_frame.value();
+    num_buffer_frames_inner_ = number_of_buffer_frames_inner.value();
+    num_buffer_frames_outer_ = number_of_buffer_frames_outer.value();
+    buffer_using_solver_ = buffer_using_solver.value();
+    output_timing_ = output_timing.value();
+    phys_time_index_ = physiology_time_index.value();
 
     // Check that a golden ratio based reconstruction mode was specified
     //
-
-    if( mode_ == -1 ){
-      GDEBUG( "Radial reconstruction mode not specified.\n" );
-      return GADGET_FAIL;
-    }
 
     if( !(mode_ == 2 || mode_ == 3) ){
       GDEBUG( "Only radial reconstruction modes {2,3} (golden ratio based) are supported.\n" );
@@ -105,8 +86,8 @@ namespace Gadgetron{
     // Convolution kernel width and oversampling ratio (for the buffer)
     //
 
-    kernel_width_ = get_double_value(std::string("buffer_convolution_kernel_width").c_str());
-    oversampling_factor_ = get_double_value(std::string("buffer_convolution_oversampling_factor").c_str());
+    kernel_width_ = buffer_convolution_kernel_width.value();
+    oversampling_factor_ = buffer_convolution_oversampling_factor.value();
 
     // Get the Ismrmrd header
     //
@@ -134,8 +115,8 @@ namespace Gadgetron{
     image_dimensions_.push_back(((e_space.matrixSize.x+warp_size-1)/warp_size)*warp_size);
     image_dimensions_.push_back(((e_space.matrixSize.y+warp_size-1)/warp_size)*warp_size);
 
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*reconstruction_os_factor_x.value()))+warp_size-1)/warp_size)*warp_size);  
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*reconstruction_os_factor_y.value()))+warp_size-1)/warp_size)*warp_size);
     
     image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
