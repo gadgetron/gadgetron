@@ -157,8 +157,7 @@ bool gtPlusOperator<T>::restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoND
         #pragma omp parallel for default(none) private(n) shared(N, pA, pY)
         for ( n=0; n<(int)N; n++ )
         {
-            // if ( std::abs(pA[n]) > 0 )
-            if ( std::abs(pA[n].real()) > 0 )
+            if ( std::abs(pA[n]) > 0 )
             {
                 pY[n] = pA[n];
             }
@@ -194,8 +193,7 @@ setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace)
         #pragma omp parallel for default(shared) private(ii) shared(N, kspace)
         for ( ii=0; ii<(long long)N; ii++ )
         {
-            // if ( std::abs( (*kspace)(ii) ) < DBL_EPSILON )
-            if ( std::abs((*kspace)(ii).real()) < DBL_EPSILON )
+            if ( std::abs( (*kspace)(ii) ) < DBL_EPSILON )
             {
                 unacquired_points_indicator_(ii) = T(1.0);
             }
