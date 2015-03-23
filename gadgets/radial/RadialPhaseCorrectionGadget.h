@@ -20,6 +20,9 @@ namespace Gadgetron {
     ~RadialPhaseCorrectionGadget() {};
     
   protected:
+    GADGET_PROPERTY_LIMITS(mode,int, "Radial mode", 3, GadgetPropertyLimitsEnumeration, 2,3);
+    GADGET_PROPERTY(order,int,"Order of polynomial fit", 6);
+    GADGET_PROPERTY(profiles, int, "Number of profiles to estimate fit", 500);
     
     virtual int process_config( ACE_Message_Block *mb );
     

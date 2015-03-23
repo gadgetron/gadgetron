@@ -25,18 +25,6 @@ namespace Gadgetron{
     , device_number_(-1)
     , samples_per_readout_(-1)
   {
-    // Set some default values in case the config does not contain a specification
-    //
-
-    set_parameter(std::string("deviceno").c_str(), "0");
-    set_parameter(std::string("rotations_per_reconstruction").c_str(), "0");
-    set_parameter(std::string("propagate_csm_from_set").c_str(), "-1");
-    set_parameter(std::string("buffer_length_in_rotations").c_str(), "0");
-    set_parameter(std::string("buffer_using_solver").c_str(), "false");
-    set_parameter(std::string("buffer_convolution_kernel_width").c_str(), "5.5");
-    set_parameter(std::string("buffer_convolution_oversampling_factor").c_str(), "1.25");
-    set_parameter(std::string("reconstruction_os_factor_x").c_str(), "1.0");
-    set_parameter(std::string("reconstruction_os_factor_y").c_str(), "1.0");
   }
   
   gpuGenericSensePrepGadget::~gpuGenericSensePrepGadget() {}
@@ -46,17 +34,17 @@ namespace Gadgetron{
     // Get configuration values from config file
     //
 
-    device_number_ = get_int_value(std::string("deviceno").c_str());
-    rotations_per_reconstruction_ = get_int_value(std::string("rotations_per_reconstruction").c_str());
-    buffer_length_in_rotations_ = get_int_value(std::string("buffer_length_in_rotations").c_str());
-    buffer_using_solver_ = get_bool_value(std::string("buffer_using_solver").c_str());
-    output_timing_ = get_bool_value(std::string("output_timing").c_str());
+    device_number_ = deviceno.value();
+    rotations_per_reconstruction_ = rotations_per_reconstruction.value();
+    buffer_length_in_rotations_ = buffer_length_in_rotations.value();
+    buffer_using_solver_ = buffer_using_solver.value();
+    output_timing_ = output_timing.value();
 
     // Currently there are some restrictions on the allowed sliding window configurations
     //
     
-    sliding_window_readouts_ = get_int_value(std::string("sliding_window_readouts").c_str());
-    sliding_window_rotations_ = get_int_value(std::string("sliding_window_rotations").c_str());
+    sliding_window_readouts_ = sliding_window_readouts.value();
+    sliding_window_rotations_ = sliding_window_rotations.value();
 
     if( sliding_window_readouts_>0 && sliding_window_rotations_>0 ){
       GDEBUG( "Error: Sliding window reconstruction is not yet supported for both readouts and frames simultaneously.\n" );
@@ -108,7 +96,7 @@ namespace Gadgetron{
     // It is possible to specify one set to use for csm propagation, and then propagate this to all sets
     //
 
-    propagate_csm_from_set_ = get_int_value(std::string("propagate_csm_from_set").c_str());
+    propagate_csm_from_set_ = propagate_csm_from_set.value();
 
     if( propagate_csm_from_set_ > 0 ){
       GDEBUG("Currently, only set 0 can propagate coil sensitivity maps. Set %d was specified.\n", propagate_csm_from_set_ );
@@ -122,8 +110,8 @@ namespace Gadgetron{
     // Convolution kernel width and oversampling ratio (for the buffer)
     //
 
-    kernel_width_ = get_double_value(std::string("buffer_convolution_kernel_width").c_str());
-    oversampling_factor_ = get_double_value(std::string("buffer_convolution_oversampling_factor").c_str());
+    kernel_width_ = buffer_convolution_kernel_width.value();
+    oversampling_factor_ = buffer_convolution_oversampling_factor.value();
 
     // Get the Ismrmrd header
     //
@@ -147,8 +135,8 @@ namespace Gadgetron{
     image_dimensions_.push_back(((e_space.matrixSize.x+warp_size-1)/warp_size)*warp_size);
     image_dimensions_.push_back(((e_space.matrixSize.y+warp_size-1)/warp_size)*warp_size);
 
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*reconstruction_os_factor_x.value()))+warp_size-1)/warp_size)*warp_size);  
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*reconstruction_os_factor_y.value()))+warp_size-1)/warp_size)*warp_size);
     
     image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
@@ -220,9 +208,9 @@ namespace Gadgetron{
       image_counter_[i] = 0;
       readout_counter_frame_[i] = 0;
       readout_counter_global_[i] = 0;
-      readouts_per_frame_[i] = get_int_value(std::string("readouts_per_frame").c_str());
-      frames_per_rotation_[i] = get_int_value(std::string("frames_per_rotation").c_str());
-      buffer_frames_per_rotation_[i] = get_int_value(std::string("buffer_frames_per_rotation").c_str());
+      readouts_per_frame_[i] = readouts_per_frame.value();
+      frames_per_rotation_[i] = frames_per_rotation.value();
+      buffer_frames_per_rotation_[i] = buffer_frames_per_rotation.value();
       num_coils_[i] = 0;
       buffer_update_needed_[i] = true;
       reconfigure_[i] = true;
@@ -395,7 +383,7 @@ namespace Gadgetron{
         // This is the first readout in a new frame
         //
 
-        if( get_int_value(std::string("readouts_per_frame").c_str()) == 0 &&
+        if( readouts_per_frame.value() == 0 &&
             readout_counter_frame_[idx] > 0 &&
             readout_counter_frame_[idx] != readouts_per_frame_[idx] ){ 
 
@@ -412,7 +400,7 @@ namespace Gadgetron{
           // of two subsequent readout ids, then 'frames_per_rotation' have to be specified in the config...
           //
 	    
-          if( get_int_value(std::string("frames_per_rotation").c_str()) == 0 ) {
+          if( frames_per_rotation.value() == 0 ) {
             frames_per_rotation_[idx] = acceleration_factor_[idx];
           }
           reconfigure(set, slice);
@@ -917,13 +905,13 @@ namespace Gadgetron{
     GDEBUG("\nReconfiguring:\n#readouts/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", 
                   readouts_per_frame_[idx], frames_per_rotation_[idx], rotations_per_reconstruction_);
     
-    buffer_frames_per_rotation_[idx] = get_int_value(std::string("buffer_frames_per_rotation").c_str());
+    buffer_frames_per_rotation_[idx] = buffer_frames_per_rotation.value();
     
     if( buffer_frames_per_rotation_[idx] == 0 ){
       buffer_frames_per_rotation_[idx] = frames_per_rotation_[idx];
     }
     
-    if( get_int_value(std::string("buffer_length_in_rotations").c_str()) == 0 ){
+    if( buffer_length_in_rotations.value() == 0 ){
       buffer_length_in_rotations_ = std::max(1L, rotations_per_reconstruction_);
     }
 

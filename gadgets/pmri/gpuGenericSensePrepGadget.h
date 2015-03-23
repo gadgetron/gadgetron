@@ -27,7 +27,23 @@ namespace Gadgetron{
     virtual ~gpuGenericSensePrepGadget();
 
   protected:
-    
+    GADGET_PROPERTY(deviceno, int, "GPU device number", 0);
+    GADGET_PROPERTY(buffer_length_in_rotations, int, "Number of rotations in a buffer", 1);
+    GADGET_PROPERTY(buffer_using_solver, bool, "Use solver for buffer", false);
+    GADGET_PROPERTY(buffer_convolution_kernel_width, float, "Convolution kernel width for buffer", 5.5);
+    GADGET_PROPERTY(buffer_convolution_oversampling_factor, float, "Oversampling used in buffer convolution", 1.25);
+    GADGET_PROPERTY(reconstruction_os_factor_x, float, "Oversampling for reconstruction in x-direction", 1.0);
+    GADGET_PROPERTY(reconstruction_os_factor_y, float, "Oversampling for reconstruction in y-direction", 1.0);
+    GADGET_PROPERTY(rotations_per_reconstruction, int, "Number of rotations per reconstruction", 0);
+    GADGET_PROPERTY(propagate_csm_from_set, int, "Which set to use for CSM", -1);
+    GADGET_PROPERTY(output_timing, bool, "Output timing information", false);
+    GADGET_PROPERTY(sliding_window_readouts, int, "Number of readouts in sliding window", 0);
+    GADGET_PROPERTY(sliding_window_rotations, int, "Number of rotations in sliding window", 0);
+    GADGET_PROPERTY(readouts_per_frame, int, "Readouts per frame", 0);
+    GADGET_PROPERTY(frames_per_rotation, int, "Frames per rotation", 0);
+    GADGET_PROPERTY(buffer_frames_per_rotation, int, "Frames per rotation in buffer", 1);
+
+
     virtual int process_config(ACE_Message_Block *mb);
 
     virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1,        // header

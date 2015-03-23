@@ -25,13 +25,6 @@ namespace Gadgetron{
     , use_multiframe_grouping_(false)
     , acceleration_factor_(0)
   {
-    GDEBUG("Initializing Spiral\n");
-    set_parameter(std::string("buffer_using_solver").c_str(), "false");
-    set_parameter(std::string("propagate_csm_from_set").c_str(), "-1");
-    set_parameter(std::string("buffer_convolution_kernel_width").c_str(), "5.5");
-    set_parameter(std::string("buffer_convolution_oversampling_factor").c_str(), "1.25");
-    set_parameter(std::string("reconstruction_os_factor_x").c_str(), "1.0");
-    set_parameter(std::string("reconstruction_os_factor_y").c_str(), "1.0");
   }
 
   gpuSpiralSensePrepGadget::~gpuSpiralSensePrepGadget() {}
@@ -50,7 +43,7 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    device_number_ = get_int_value(std::string("deviceno").c_str());
+    device_number_ = deviceno.value();
 
     if (device_number_ >= number_of_devices) {
       GDEBUG("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
@@ -70,7 +63,7 @@ namespace Gadgetron{
     
     unsigned int warp_size = deviceProp.warpSize;
 
-    propagate_csm_from_set_ = get_int_value(std::string("propagate_csm_from_set").c_str());
+    propagate_csm_from_set_ = propagate_csm_from_set.value();
 
     if( propagate_csm_from_set_ > 0 ){
       GDEBUG("Currently, only set 0 can propagate coil sensitivity maps. Set %d was specified.\n", propagate_csm_from_set_ );
@@ -81,8 +74,8 @@ namespace Gadgetron{
       GDEBUG("Propagating csm from set %d to all sets\n", propagate_csm_from_set_ );
     }
 
-    buffer_using_solver_ = get_bool_value(std::string("buffer_using_solver").c_str());
-    use_multiframe_grouping_ = get_bool_value(std::string("use_multiframe_grouping").c_str());
+    buffer_using_solver_ = buffer_using_solver.value();
+    use_multiframe_grouping_ = use_multiframe_grouping.value();
 
     if( buffer_using_solver_ && !use_multiframe_grouping_ ){
       GDEBUG("Enabling 'buffer_using_solver' requires also enabling 'use_multiframe_grouping'.\n" );
@@ -110,11 +103,11 @@ namespace Gadgetron{
     // Determine reconstruction matrix sizes
     //
 
-    kernel_width_ = get_double_value(std::string("buffer_convolution_kernel_width").c_str());
-    oversampling_factor_ = get_double_value(std::string("buffer_convolution_oversampling_factor").c_str());
+    kernel_width_ = buffer_convolution_kernel_width.value();
+    oversampling_factor_ = buffer_convolution_oversampling_factor.value();
     
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*reconstruction_os_factor_x.value()))+warp_size-1)/warp_size)*warp_size);  
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*reconstruction_os_factor_y.value()))+warp_size-1)/warp_size)*warp_size);
       
     image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,

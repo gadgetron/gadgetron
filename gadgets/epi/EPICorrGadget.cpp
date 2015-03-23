@@ -44,7 +44,7 @@ int EPICorrGadget::process_config(ACE_Message_Block* mb)
     }
   }
 
-  verboseMode_ = this->get_bool_value("verboseMode");
+  verboseMode_ = verboseMode.value();
 
   corrComputed_ = false;
   navNumber_ = -1;

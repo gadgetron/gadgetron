@@ -12,7 +12,7 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
   ISMRMRD::deserialize(mb->rd_ptr(),h);
   
   
-  verboseMode_ = this->get_bool_value("verboseMode");
+  verboseMode_ = verboseMode.value();
 
   if (h.encoding.size() == 0) {
     GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
