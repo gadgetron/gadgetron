@@ -24,18 +24,6 @@ namespace Gadgetron{
     , mode_(-1)
     , samples_per_profile_(-1)
   {
-    // Set some default values in case the config does not contain a specification
-    //
-
-    set_parameter(std::string("mode").c_str(), "0");
-    set_parameter(std::string("deviceno").c_str(), "0");
-    set_parameter(std::string("buffer_length_in_rotations").c_str(), "1");
-    set_parameter(std::string("buffer_using_solver").c_str(), "false");
-    set_parameter(std::string("buffer_convolution_kernel_width").c_str(), "5.5");
-    set_parameter(std::string("buffer_convolution_oversampling_factor").c_str(), "1.25");
-    set_parameter(std::string("rotations_per_reconstruction").c_str(), "0");
-    set_parameter(std::string("reconstruction_os_factor_x").c_str(), "1.0");
-    set_parameter(std::string("reconstruction_os_factor_y").c_str(), "1.0");
   }
   
   gpuRadialPrepGadget::~gpuRadialPrepGadget() {}
@@ -47,18 +35,18 @@ namespace Gadgetron{
     // Get configuration values from config file
     //
 
-    mode_ = get_int_value(std::string("mode").c_str());
-    device_number_ = get_int_value(std::string("deviceno").c_str());
-    rotations_per_reconstruction_ = get_int_value(std::string("rotations_per_reconstruction").c_str());
-    buffer_length_in_rotations_ = get_int_value(std::string("buffer_length_in_rotations").c_str());
-    buffer_using_solver_ = get_bool_value(std::string("buffer_using_solver").c_str());
-    output_timing_ = get_bool_value(std::string("output_timing").c_str());
+    mode_ = mode.value();
+    device_number_ = deviceno.value();
+    rotations_per_reconstruction_ = rotations_per_reconstruction.value();
+    buffer_length_in_rotations_ = buffer_length_in_rotations.value();
+    buffer_using_solver_ = buffer_using_solver.value();
+    output_timing_ = output_timing.value();
 
     // Currently there are some restrictions on the allowed sliding window configurations
     //
     
-    sliding_window_profiles_ = get_int_value(std::string("sliding_window_profiles").c_str());
-    sliding_window_rotations_ = get_int_value(std::string("sliding_window_rotations").c_str());
+    sliding_window_profiles_ = sliding_window_profiles.value();
+    sliding_window_rotations_ = sliding_window_rotations.value();
 
     if( sliding_window_profiles_>0 && sliding_window_rotations_>0 ){
       GDEBUG( "Error: Sliding window reconstruction is not yet supported for both profiles and frames simultaneously.\n" );
@@ -110,8 +98,8 @@ namespace Gadgetron{
     // Convolution kernel width and oversampling ratio (for the buffer)
     //
 
-    kernel_width_ = get_double_value(std::string("buffer_convolution_kernel_width").c_str());
-    oversampling_factor_ = get_double_value(std::string("buffer_convolution_oversampling_factor").c_str());
+    kernel_width_ = buffer_convolution_kernel_width.value();
+    oversampling_factor_ = buffer_convolution_oversampling_factor.value();
 
     // Get the Ismrmrd header
     //
@@ -135,8 +123,8 @@ namespace Gadgetron{
     image_dimensions_.push_back(((e_space.matrixSize.x+warp_size-1)/warp_size)*warp_size);
     image_dimensions_.push_back(((e_space.matrixSize.y+warp_size-1)/warp_size)*warp_size);
 
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*reconstruction_os_factor_x.value()))+warp_size-1)/warp_size)*warp_size);  
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*reconstruction_os_factor_y.value()))+warp_size-1)/warp_size)*warp_size);
     
     image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
@@ -214,9 +202,9 @@ namespace Gadgetron{
       image_counter_[i] = 0;
       profiles_counter_frame_[i] = 0;
       profiles_counter_global_[i] = 0;
-      profiles_per_frame_[i] = get_int_value(std::string("profiles_per_frame").c_str());
-      frames_per_rotation_[i] = get_int_value(std::string("frames_per_rotation").c_str());
-      buffer_frames_per_rotation_[i] = get_int_value(std::string("buffer_frames_per_rotation").c_str());
+      profiles_per_frame_[i] = profiles_per_frame.value();
+      frames_per_rotation_[i] = frames_per_rotation.value();
+      buffer_frames_per_rotation_[i] = buffer_frames_per_rotation.value();
       num_coils_[i] = 0;
       buffer_update_needed_[i] = true;
       reconfigure_[i] = true;
@@ -363,7 +351,7 @@ namespace Gadgetron{
     if (previous_profile_[set*slices_+slice] >= 0) {
 
       if ( profile > previous_profile_[set*slices_+slice]) { // this is not the last profile in the frame
-        if( mode_ == 0 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 ){
+        if( mode_ == 0 && frames_per_rotation.value() == 0 ){
           unsigned int acceleration_factor = profile - previous_profile_[set*slices_+slice];
           if( acceleration_factor != frames_per_rotation_[set*slices_+slice] ){
             GDEBUG("Reconfiguring due to change in acceleration factor\n");
@@ -373,13 +361,13 @@ namespace Gadgetron{
         }
       }
       else{ // This is the first profile in a new frame
-        if( get_int_value(std::string("profiles_per_frame").c_str()) == 0 && // make sure the user did not specify a desired value for this variable
+        if( profiles_per_frame.value() == 0 && // make sure the user did not specify a desired value for this variable
             profiles_counter_frame_[set*slices_+slice] > 0 &&
             profiles_counter_frame_[set*slices_+slice] != profiles_per_frame_[set*slices_+slice] ){ // a new acceleration factor is detected
           GDEBUG("Reconfiguring due to new slice detection\n");
           new_frame_detected = true;
           profiles_per_frame_[set*slices_+slice] = profiles_counter_frame_[set*slices_+slice];
-          if( mode_ == 1 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 )
+          if( mode_ == 1 && frames_per_rotation.value() == 0 )
             frames_per_rotation_[set*slices_+slice] = image_dimensions_[0]/profiles_per_frame_[set*slices_+slice];
           reconfigure(set, slice);
         }
@@ -925,7 +913,7 @@ namespace Gadgetron{
     calculate_trajectory_for_reconstruction(0, set, slice);
     calculate_density_compensation_for_reconstruction(set, slice);
     
-    buffer_frames_per_rotation_[set*slices_+slice] = get_int_value(std::string("buffer_frames_per_rotation").c_str());
+    buffer_frames_per_rotation_[set*slices_+slice] = buffer_frames_per_rotation.value();
 
     if( buffer_frames_per_rotation_[set*slices_+slice] == 0 ){
       if( mode_ == 2 || mode_ == 3 )

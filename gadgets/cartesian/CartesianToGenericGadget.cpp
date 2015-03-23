@@ -5,7 +5,6 @@ namespace Gadgetron{
 
   CartesianToGenericGadget::CartesianToGenericGadget() 
   {
-    set_parameter(std::string("matrix_size_as_a_multipluple_of").c_str(), "1");
   }
 
   CartesianToGenericGadget::~CartesianToGenericGadget() {}
@@ -29,7 +28,7 @@ namespace Gadgetron{
     ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
     // Enforcement of the matrix size being a multiple of the "warp size"
-    warp_size_ = get_int_value(std::string("matrix_size_as_a_multipluple_of").c_str());
+    warp_size_ = matrix_size_as_multiple_of.value();
 
     matrix_size_.push_back( (e_space.matrixSize.x+warp_size_-1)/warp_size_*warp_size_);
     matrix_size_.push_back( (e_space.matrixSize.y+warp_size_-1)/warp_size_*warp_size_);
