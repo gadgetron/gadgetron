@@ -7,7 +7,7 @@ using namespace Gadgetron::gtPlus;
 namespace Gadgetron
 {
 
-GtPlusReconJob3DTGadget::GtPlusReconJob3DTGadget() : mem_manager_(new Gadgetron::gtPlus::gtPlusMemoryManager(4, 640*1024*1024))
+GtPlusReconJob3DTGadget::GtPlusReconJob3DTGadget()
 {
     debugFolder_ = "DebugOutput";
 
@@ -85,15 +85,6 @@ int GtPlusReconJob3DTGadget::process_config(ACE_Message_Block* mb)
     {
         GDEBUG_STREAM("GtPlusRecon, debugFolder2 is not set ...");
     }
-
-    if ( performTiming_ ) { gt_timer1_.start("Pre-allocate memory ... "); }
-    mem_manager_->increase( (size_t)(6.0*1024*1024*1024) );
-    if ( performTiming_ ) { gt_timer1_.stop(); }
-
-    worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
-    worker_noacceleration_.gtPlus_mem_manager_ = mem_manager_;
-    worker_spirit_.gtPlus_mem_manager_ = mem_manager_;
-    worker_spirit_L1_ncg_.gtPlus_mem_manager_ = mem_manager_;
 
     return GADGET_OK;
 }

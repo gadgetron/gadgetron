@@ -38,7 +38,6 @@ public:
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
-    using BaseClass::gtPlus_mem_manager_;
 
     using BaseClass::buffer2DT_;
     using BaseClass::buffer2DT_unwrapping_;

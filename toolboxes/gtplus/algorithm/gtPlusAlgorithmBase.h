@@ -9,7 +9,6 @@
 #include "GadgetronTimer.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusIOAnalyze.h"
-#include "gtPlusMemoryManager.h"
 
 #ifdef USE_OMP
     #include "omp.h"
@@ -43,9 +42,6 @@ public:
     // util
     gtPlusISMRMRDReconUtil<T> gtPlus_util_;
     gtPlusISMRMRDReconUtilComplex<T> gtPlus_util_complex_;
-
-    // memory manager
-    boost::shared_ptr<gtPlusMemoryManager> gtPlus_mem_manager_;
 };
 
 template <typename T> 

@@ -20,7 +20,6 @@
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
 #include "gtPlusIOAnalyze.h"
-#include "hoNDArrayMemoryManaged.h"
 #include "GadgetronTimer.h"
 
 #ifdef _WIN32

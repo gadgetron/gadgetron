@@ -95,7 +95,6 @@ public:
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
     using BaseClass::gtPlus_util_complex_;
-    using BaseClass::gtPlus_mem_manager_;
 
 public:
 

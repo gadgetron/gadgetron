@@ -30,7 +30,6 @@
 #include "gtPlusISMRMRDReconWorker2DTNoAcceleration.h"
 #include "gtPlusISMRMRDReconWorker2DTSPIRIT.h"
 #include "gtPlusISMRMRDReconWorker2DTL1SPIRITNCG.h"
-#include "gtPlusMemoryManager.h"
 #include "GtPlusReconGadgetUtil.h"
 
 #ifdef USE_OMP
@@ -99,9 +98,6 @@ protected:
 
     // in verbose mode, more info is printed out
     bool verboseMode_;
-
-    // memory manager
-    boost::shared_ptr<Gadgetron::gtPlus::gtPlusMemoryManager> mem_manager_;
 };
 
 }

@@ -300,9 +300,6 @@ public:
 
     // in verbose mode, more info is printed out
     bool verboseMode_;
-
-    // memory manager
-    boost::shared_ptr<Gadgetron::gtPlus::gtPlusMemoryManager> mem_manager_;
 };
 
 }

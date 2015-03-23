@@ -89,7 +89,6 @@ public:
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
     using BaseClass::gtPlus_util_complex_;
-    using BaseClass::gtPlus_mem_manager_;
 };
 
 template <typename T> 
@@ -198,12 +197,10 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         hoMatrix<T> x( colA, colB );
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 2D calibration - allocate matrix storage ... "); }
-        hoNDArrayMemoryManaged<T> A_mem(rowA, colA, gtPlus_mem_manager_);
-        A.createMatrix( rowA, colA, A_mem.begin() );
+        A.createMatrix( rowA, colA);
         T* pA = A.begin();
 
-        hoNDArrayMemoryManaged<T> B_mem(rowA, colB, gtPlus_mem_manager_);
-        B.createMatrix( A.rows(), colB, B_mem.begin() );
+        B.createMatrix( A.rows(), colB);
         T* pB = B.begin();
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
@@ -533,11 +530,11 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         hoMatrix<T> A, B, x( colA, colB );
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - allocate matrix storage ... "); }
-        hoNDArrayMemoryManaged<T> A_mem(rowA, colA, gtPlus_mem_manager_);
+        hoNDArray<T> A_mem(rowA, colA);
         A.createMatrix( rowA, colA, A_mem.begin() );
         T* pA = A.begin();
 
-        hoNDArrayMemoryManaged<T> B_mem(rowA, colB, gtPlus_mem_manager_);
+        hoNDArray<T> B_mem(rowA, colB);
         B.createMatrix( rowA, colB, B_mem.begin() );
         if ( performTiming_ ) { gt_timer3_.stop(); }
         T* pB = B.begin();
@@ -873,7 +870,28 @@ imageDomainKernel3D(const ho7DArray<T>& ker, size_t kRO, const std::vector<int>&
         if ( performTiming_ ) { gt_timer3_.stop(); }
 
         if ( performTiming_ ) { gt_timer3_.start("grappa 3D calibration - conver to image domain ... "); }
-        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm);
+
+        long long n;
+
+        #pragma omp parallel default(none) private(n) shared(ro, e1, e2, srcCHA, dstCHA, kIm)
+        {
+            hoNDArray<T> kImTmp(ro, e1, e2);
+            hoNDArray<T> kImRes(ro, e1, e2);
+
+            #pragma omp for 
+            for (n = 0; n < srcCHA*dstCHA; n++)
+            {
+                long long d = n / srcCHA;
+                long long s = n - d*srcCHA;
+
+                T* pkImCha = kIm.begin() + d*ro*e1*e2*srcCHA + s*ro*e1*e2;
+
+                hoNDArray<T> kImCha(ro, e1, e2, pkImCha);
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kImCha, kImRes, kImTmp);
+                memcpy(pkImCha, kImRes.begin(), kImRes.get_number_of_bytes());
+            }
+        }
+
         if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)

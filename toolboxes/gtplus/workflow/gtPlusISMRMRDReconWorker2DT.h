@@ -172,7 +172,6 @@ public:
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
     using BaseClass::gtPlus_util_cplx_;
-    using BaseClass::gtPlus_mem_manager_;
 
 protected:
 
@@ -1498,7 +1497,6 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
         if ( fullres_coilmap )
         {
             if ( performTiming_ ) { gt_timer2_.start("full res coil map : allocate buffer 2DT ...  "); }
-            //hoNDArrayMemoryManaged<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
             hoNDArray<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions());
             if ( performTiming_ ) { gt_timer2_.stop(); }
 

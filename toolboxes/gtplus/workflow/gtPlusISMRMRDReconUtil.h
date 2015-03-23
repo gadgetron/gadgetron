@@ -55,7 +55,6 @@
 #include "hoNDArray_reductions.h"
 #include "hoNDArray_linalg.h"
 #include "gtPlusIOAnalyze.h"
-#include "hoNDArrayMemoryManaged.h"
 #include "GadgetronTimer.h"
 #include "log.h"
 

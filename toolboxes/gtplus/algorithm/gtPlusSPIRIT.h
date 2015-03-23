@@ -93,7 +93,6 @@ public:
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
     using BaseClass::gtPlus_util_complex_;
-    using BaseClass::gtPlus_mem_manager_;
 };
 
 template <typename T> 
@@ -594,14 +593,6 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
             hoMatrix<T> B(rowA, colB);
             hoMatrix<T> x( A.cols(), B.cols() );
 
-            // hoNDArrayMemoryManaged<T> A_mem(colA, rowA, gtPlus_mem_manager_);
-            //hoNDArray<T> A_mem(colA, rowA);
-            //A.createMatrix( rowA, colA, A_mem.begin() );
-
-            // hoNDArrayMemoryManaged<T> B_mem(colB, rowA, gtPlus_mem_manager_);
-            // hoNDArray<T> B_mem(colB, rowA);
-            // B.createMatrix( A.rows(), colB, B_mem.begin() );
-
             T* pA = A.begin();
             T* pB = B.begin();
 
@@ -1017,7 +1008,28 @@ imageDomainKernel3D(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t kE2,
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+"convKerFlip_scal_zeropadded"); }
 
         if ( performTiming_ ) { gt_timer3_.start("spirit 3D calibration - conver to image domain ... "); }
-        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kIm);
+
+        long long n;
+
+        #pragma omp parallel default(none) private(n) shared(ro, e1, e2, srcCHA, dstCHA, kIm)
+        {
+            hoNDArray<T> kImTmp(ro, e1, e2);
+            hoNDArray<T> kImRes(ro, e1, e2);
+
+            #pragma omp for 
+            for (n = 0; n < srcCHA*dstCHA; n++)
+            {
+                long long d = n / srcCHA;
+                long long s = n - d*srcCHA;
+
+                T* pkImCha = kIm.begin() + d*ro*e1*e2*srcCHA + s*ro*e1*e2;
+
+                hoNDArray<T> kImCha(ro, e1, e2, pkImCha);
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kImCha, kImRes, kImTmp);
+                memcpy(pkImCha, kImRes.begin(), kImRes.get_number_of_bytes());
+            }
+        }
+
         if ( performTiming_ ) { gt_timer3_.stop(); }
     }
     catch(...)

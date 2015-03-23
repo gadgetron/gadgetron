@@ -47,7 +47,6 @@ public:
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
     using BaseClass::gtPlus_util_cplx_;
-    using BaseClass::gtPlus_mem_manager_;
 
     using BaseClass::buffer2DT_;
     using BaseClass::buffer2DT_unwrapping_;
@@ -175,8 +174,6 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
                             +usedS*kRO*kE1*srcCHA*dstCHA*oRO*oE1*refN);
 
         gtPlusSPIRIT2DOperator<T> spirit;
-        spirit.setMemoryManager(gtPlus_mem_manager_);
-
         spirit.calib_use_gpu_ = workOrder2DT->spirit_use_gpu_;
 
         spirit.calib(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, kRO, kE1, oRO, oE1, ker);
@@ -676,7 +673,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             }
         }
 
-        hoNDArrayMemoryManaged<T> complexImMultiChannel(RO, E1, dstCHA, N, gtPlus_mem_manager_);
+        hoNDArray<T> complexImMultiChannel(RO, E1, dstCHA, N);
 
         // perform coil combination
         for ( usedS=0; usedS<S; usedS++ )

@@ -43,7 +43,6 @@ public:
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
-    using BaseClass::gtPlus_mem_manager_;
 
     using BaseClass::buffer2DT_;
     using BaseClass::buffer2DT_unwrapping_;
@@ -179,13 +178,11 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     // parallel imaging term
                     gtPlusSPIRIT2DTOperator<T> spirit;
                     spirit.use_symmetric_spirit_ = false;
-                    spirit.setMemoryManager(gtPlus_mem_manager_);
                     spirit.setForwardKernel(ker, true);
                     spirit.setAcquiredPoints(acq);
 
                     // L1 term
                     gtPlusWavelet3DOperator<T> wavNullSpace3DOperator;
-                    wavNullSpace3DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNullSpace3DOperator.setAcquiredPoints(acq);
                     wavNullSpace3DOperator.scale_factor_first_dimension_ = (value_type)workOrder2DT->spirit_RO_enhancement_ratio_;
                     wavNullSpace3DOperator.scale_factor_second_dimension_ = (value_type)workOrder2DT->spirit_E1_enhancement_ratio_;
@@ -214,7 +211,6 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                 {
                     gtPlusSPIRITNoNullSpace2DTOperator<T> spirit_noNullSpace;
                     spirit_noNullSpace.use_symmetric_spirit_ = false;
-                    spirit_noNullSpace.setMemoryManager(gtPlus_mem_manager_);
                     spirit_noNullSpace.setForwardKernel(ker, true);
                     spirit_noNullSpace.setAcquiredPoints(acq);
 
@@ -222,7 +218,6 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     dataOper.setAcquiredPoints(acq);
 
                     gtPlusWaveletNoNullSpace3DOperator<T> wavNoNullSpace3DOperator;
-                    wavNoNullSpace3DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNoNullSpace3DOperator.setAcquiredPoints(acq);
                     wavNoNullSpace3DOperator.scale_factor_first_dimension_ = (value_type)workOrder2DT->spirit_RO_enhancement_ratio_;
                     wavNoNullSpace3DOperator.scale_factor_second_dimension_ = (value_type)workOrder2DT->spirit_E1_enhancement_ratio_;
@@ -263,13 +258,11 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     // parallel imaging term
                     gtPlusSPIRIT2DOperator<T> spirit;
                     spirit.use_symmetric_spirit_ = false;
-                    spirit.setMemoryManager(gtPlus_mem_manager_);
                     spirit.setForwardKernel(ker, true);
                     spirit.setAcquiredPoints(acq);
 
                     // L1 term
                     gtPlusWavelet2DOperator<T> wavNullSpace2DOperator;
-                    wavNullSpace2DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNullSpace2DOperator.setAcquiredPoints(acq);
 
                     if ( workOrder2DT->spirit_use_coil_sen_map_ && workOrder2DT->coilMap_ )
@@ -295,7 +288,6 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                 {
                     gtPlusSPIRITNoNullSpace2DOperator<T> spirit_noNullSpace;
                     spirit_noNullSpace.use_symmetric_spirit_ = false;
-                    spirit_noNullSpace.setMemoryManager(gtPlus_mem_manager_);
                     spirit_noNullSpace.setForwardKernel(ker, true);
                     spirit_noNullSpace.setAcquiredPoints(acq);
 
@@ -303,7 +295,6 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     dataOper.setAcquiredPoints(acq);
 
                     gtPlusWaveletNoNullSpace2DOperator<T> wavNoNullSpace2DOperator;
-                    wavNoNullSpace2DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNoNullSpace2DOperator.setAcquiredPoints(acq);
 
                     if ( workOrder2DT->spirit_use_coil_sen_map_ && workOrder2DT->coilMap_ )

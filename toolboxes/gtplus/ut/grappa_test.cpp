@@ -19,8 +19,6 @@
 #include "gtPlusISMRMRDReconWorker3DTSPIRIT.h"
 #include "gtPlusISMRMRDReconWorkFlowCartesian2DT.h"
 #include "gtPlusISMRMRDReconWorkFlowCartesian3DT.h"
-#include "gtPlusMemoryManager.h"
-#include "hoNDArrayMemoryManaged.h"
 #include "gtPlusSPIRIT2DOperator.h"
 #include "gtPlusSPIRIT2DTOperator.h"
 #include "gtPlusSPIRIT3DOperator.h"
