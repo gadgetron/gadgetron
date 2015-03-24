@@ -25,8 +25,13 @@ public:
 
 	virtual int process(GadgetContainerMessage<IsmrmrdReconData>* data);
 protected:
+	GADGET_PROPERTY(profiles_per_frame,int,"Number of profiles per frame", 0);
+	GADGET_PROPERTY(kernel_width,float,"Kernel width for NFFT", 5.5);
+	GADGET_PROPERTY(buffer_convolution_oversampling_factor,float,"Oversampling used in buffer NFFT", 1.5);
+	GADGET_PROPERTY(reconstruction_os_factor,float,"Oversampling for recon NFFT", 1.5);
+
 	size_t profiles_per_frame_;
-	float kernel_width;
+	float kernel_width_;
 	float oversampling_factor_;
 	int ncoils_;
 	std::vector<size_t> image_dims_;

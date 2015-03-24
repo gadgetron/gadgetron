@@ -25,16 +25,11 @@
 namespace Gadgetron {
 
 gpuBufferSensePrepGadget::gpuBufferSensePrepGadget() {
-	// TODO Auto-generated constructor stub
-	set_parameter("profiles_per_frame","0");
-	set_parameter("kernel_width","5.5");
-	set_parameter("buffer_convolution_oversampling_factor","1.5");
-	set_parameter("reconstruction_os_factor","1.5");
 
 }
 
 gpuBufferSensePrepGadget::~gpuBufferSensePrepGadget() {
-	// TODO Auto-generated destructor stub
+
 }
 
 int gpuBufferSensePrepGadget::process_config(ACE_Message_Block* mb) {
@@ -44,17 +39,16 @@ int gpuBufferSensePrepGadget::process_config(ACE_Message_Block* mb) {
 	auto matrixsize = h.encoding.front().encodedSpace.matrixSize;
 
 
-	profiles_per_frame_ = get_int_value("profiles_per_frame");
-	kernel_width = get_double_value("kernel_width");
-
-	oversampling_factor_ = get_double_value("buffer_convolution_oversampling_factor");
+	profiles_per_frame_ = profiles_per_frame.value();
+	kernel_width_ = kernel_width.value();
+	oversampling_factor_ = buffer_convolution_oversampling_factor.value();
 
 	unsigned int warp_size = cudaDeviceManager::Instance()->warp_size();
 	image_dims_.push_back(((matrixsize.x+warp_size-1)/warp_size)*warp_size);
 	image_dims_.push_back(((matrixsize.y+warp_size-1)/warp_size)*warp_size);
 
-	image_dims_recon_.push_back(((static_cast<size_t>(std::ceil(matrixsize.x*get_double_value("reconstruction_os_factor")))+warp_size-1)/warp_size)*warp_size);
-	image_dims_recon_.push_back(((static_cast<size_t>(std::ceil(matrixsize.y*get_double_value("reconstruction_os_factor")))+warp_size-1)/warp_size)*warp_size);
+	image_dims_recon_.push_back(((static_cast<size_t>(std::ceil(matrixsize.x*reconstruction_os_factor.value()))+warp_size-1)/warp_size)*warp_size);
+	image_dims_recon_.push_back(((static_cast<size_t>(std::ceil(matrixsize.y*reconstruction_os_factor.value()))+warp_size-1)/warp_size)*warp_size);
 
 	image_dims_recon_os_ = uint64d2
 			(((static_cast<size_t>(std::ceil(image_dims_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
@@ -211,7 +205,7 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 
 	if (dcw) { //We have density compensation, so we can get away with gridding
 
-		cuNFFT_plan<float,2> plan(from_std_vector<size_t,2>(image_dims_recon_),image_dims_recon_os_,kernel_width);
+		cuNFFT_plan<float,2> plan(from_std_vector<size_t,2>(image_dims_recon_),image_dims_recon_os_,kernel_width_);
 		std::vector<size_t> csm_dims = image_dims_recon_;
 		csm_dims.push_back(ncoils);
 		auto result = new cuNDArray<float_complext>(csm_dims);
@@ -234,7 +228,7 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 
 		auto E = boost::make_shared<cuNFFTOperator<float,2>>();
 
-		E->setup(from_std_vector<size_t,2>(image_dims_recon_),image_dims_recon_os_,kernel_width);
+		E->setup(from_std_vector<size_t,2>(image_dims_recon_),image_dims_recon_os_,kernel_width_);
 		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
 		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
 
