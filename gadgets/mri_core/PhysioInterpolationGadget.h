@@ -22,6 +22,11 @@ namespace Gadgetron{
         inline unsigned short get_number_of_phases() { return phases_to_reconstruct_; }
 
     protected:
+	GADGET_PROPERTY(physiology_time_index, int, "Physiology time index", 0);
+	GADGET_PROPERTY_LIMITS(mode, int, "Mode, 0=seperate series for each RR, 1=First complete RR only", 0, GadgetPropertyLimitsEnumeration, 0, 1);
+	GADGET_PROPERTY(phases, int, "Number of cardiac phases", 30);
+	GADGET_PROPERTY(first_beat_on_trigger, bool, "Indicates that acquisition was started on trigger", false);
+	GADGET_PROPERTY_LIMITS(interp_method, std::string, "Interpolation method", "Spline", GadgetPropertyLimitsEnumeration, "Spline", "BSpline", "");
         virtual int process_config(ACE_Message_Block* mb);
 
         virtual int process(GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);

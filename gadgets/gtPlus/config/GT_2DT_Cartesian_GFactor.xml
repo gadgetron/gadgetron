@@ -99,12 +99,6 @@
             <value>5.0</value>
         </property>
 	-->
-
-        <!-- Whether to perform timing -->
-        <property>
-            <name>performTiming</name>
-            <value>true</value>
-        </property>
     </gadget>
 
     <!-- RO asymmetric echo handling -->

@@ -27,6 +27,9 @@ public:
     virtual ~WhiteNoiseInjectorGadget();
 
 protected:
+    GADGET_PROPERTY(noise_mean, float, "Noise mean", 0.0);
+    GADGET_PROPERTY(noise_std, float, "Noise standard deviation", 0.0);
+    GADGET_PROPERTY(add_noise_ref, bool, "Add noise to reference scans", false);
 
     virtual int process_config(ACE_Message_Block* mb);
 

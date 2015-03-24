@@ -19,8 +19,8 @@ namespace Gadgetron{
   ::process_config(ACE_Message_Block* mb)
   {
 
-    std::string trigger_dimension_local = trigger_dimension.value();//*this->get_string_value("trigger_dimension");
-    std::string sorting_dimension_local = sorting_dimension.value();//*this->get_string_value("sorting_dimension");
+    std::string trigger_dimension_local = trigger_dimension.value();
+    std::string sorting_dimension_local = sorting_dimension.value();
     
     if (trigger_dimension_local.size() == 0) {
       trigger_ = NONE;

@@ -13,60 +13,56 @@ namespace Gadgetron{
   int BucketToBufferGadget
   ::process_config(ACE_Message_Block* mb)
   {
-
-    std::string N_dimension = *this->get_string_value("N_dimension");
-    std::string S_dimension = *this->get_string_value("S_dimension");
-
-    if (N_dimension.size() == 0) {
-        N_ = NONE;
-    } else if (N_dimension.compare("average") == 0) {
-        N_ = AVERAGE;
-    } else if (N_dimension.compare("contrast") == 0) {
-        N_ = CONTRAST;
-    } else if (N_dimension.compare("phase") == 0) {
-        N_ = PHASE;
-    } else if (N_dimension.compare("repetition") == 0) {
-        N_ = REPETITION;
-    } else if (N_dimension.compare("set") == 0) {
-        N_ = SET;
-    } else if (N_dimension.compare("segment") == 0) {
-        N_ = SEGMENT;
-    } else if (N_dimension.compare("slice") == 0){
-        N_ = SLICE;
+    if (N_dimension.value().size() == 0) {
+      N_ = NONE;
+    } else if (N_dimension.value().compare("average") == 0) {
+      N_ = AVERAGE;
+    } else if (N_dimension.value().compare("contrast") == 0) {
+      N_ = CONTRAST;
+    } else if (N_dimension.value().compare("phase") == 0) {
+      N_ = PHASE;
+    } else if (N_dimension.value().compare("repetition") == 0) {
+      N_ = REPETITION;
+    } else if (N_dimension.value().compare("set") == 0) {
+      N_ = SET;
+    } else if (N_dimension.value().compare("segment") == 0) {
+      N_ = SEGMENT;
+    } else if (N_dimension.value().compare("slice") == 0){
+      N_ = SLICE;
     } else {
-        GDEBUG("WARNING: Unknown N dimension (%s), N set to NONE", N_dimension.c_str());
-        N_ = NONE;
+      GDEBUG("WARNING: Unknown N dimension (%s), N set to NONE", N_dimension.value().c_str());
+      N_ = NONE;
     }
 
-    GDEBUG("N DIMENSION IS: %s (%d)\n", N_dimension.c_str(), N_);
+    GDEBUG("N DIMENSION IS: %s (%d)\n", N_dimension.value().c_str(), N_);
 
-    if (S_dimension.size() == 0) {
+    if (S_dimension.value().size() == 0) {
         S_ = NONE;
-    } else if (S_dimension.compare("average") == 0) {
+    } else if (S_dimension.value().compare("average") == 0) {
         S_ = AVERAGE;
-    } else if (S_dimension.compare("contrast") == 0) {
+    } else if (S_dimension.value().compare("contrast") == 0) {
         S_ = CONTRAST;
-    } else if (S_dimension.compare("phase") == 0) {
+    } else if (S_dimension.value().compare("phase") == 0) {
         S_ = PHASE;
-    } else if (S_dimension.compare("repetition") == 0) {
+    } else if (S_dimension.value().compare("repetition") == 0) {
         S_ = REPETITION;
-    } else if (S_dimension.compare("set") == 0) {
+    } else if (S_dimension.value().compare("set") == 0) {
         S_ = SET;
-    } else if (S_dimension.compare("segment") == 0) {
+    } else if (S_dimension.value().compare("segment") == 0) {
         S_ = SEGMENT;
-    } else if (N_dimension.compare("slice") == 0){
+    } else if (N_dimension.value().compare("slice") == 0){
         S_ = SLICE;
     } else {
-        GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", S_dimension.c_str());
+        GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", S_dimension.value().c_str());
         S_ = NONE;
     }
 
-    GDEBUG("S DIMENSION IS: %s (%d)\n", S_dimension.c_str(), S_);
+    GDEBUG("S DIMENSION IS: %s (%d)\n", S_dimension.value().c_str(), S_);
 
-    split_slices_  = this->get_bool_value("split_slices");
+    split_slices_  = split_slices.value();
     GDEBUG("SPLIT SLICES IS: %b\n", split_slices_);
 
-    ignore_segment_  = this->get_bool_value("ignore_segment");
+    ignore_segment_  = ignore_segment.value();
     GDEBUG("IGNORE SEGMENT IS: %b\n", ignore_segment_);
 
     // keep a copy of the deserialized ismrmrd xml header for runtime
