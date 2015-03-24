@@ -24,32 +24,23 @@ namespace Gadgetron{
     , prepared_(false)
     , gpuSenseGadget()
   {
-    set_parameter(std::string("number_of_sb_iterations").c_str(), "20");
-    set_parameter(std::string("number_of_cg_iterations").c_str(), "10");
-    set_parameter(std::string("cg_limit").c_str(), "1e-6");
-    set_parameter(std::string("mu").c_str(), "1.0");
-    set_parameter(std::string("lambda").c_str(), "2.0");
-    set_parameter("gamma","0.0");
-    set_parameter(std::string("alpha").c_str(), "0.5");
-    set_parameter(std::string("is_cyclic").c_str(), "true");
-    set_parameter(std::string("exclusive_access").c_str(), "false");
   }
 
   gpuSbSenseGadget::~gpuSbSenseGadget() {}
 
   int gpuSbSenseGadget::process_config( ACE_Message_Block* mb )
   {
-	  gpuSenseGadget::process_config(mb);
-
-    number_of_sb_iterations_ = get_int_value(std::string("number_of_sb_iterations").c_str());
-    number_of_cg_iterations_ = get_int_value(std::string("number_of_cg_iterations").c_str());
-    cg_limit_ = get_double_value(std::string("cg_limit").c_str());
-    mu_ = get_double_value(std::string("mu").c_str());
-    lambda_ = get_double_value(std::string("lambda").c_str());
-    alpha_ = get_double_value(std::string("alpha").c_str());
-    gamma_ = get_double_value("gamma");
-    exclusive_access_ = get_bool_value(std::string("exclusive_access").c_str());
-    is_cyclic_= get_bool_value(std::string("is_cyclic").c_str());
+    gpuSenseGadget::process_config(mb);
+    
+    number_of_sb_iterations_ = number_of_sb_iterations.value();
+    number_of_cg_iterations_ = number_of_cg_iterations.value();
+    cg_limit_ = cg_limit.value();
+    mu_ = mu.value();
+    lambda_ = lambda.value();
+    alpha_ = alpha.value();
+    gamma_ = gamma.value();
+    exclusive_access_ = exclusive_access.value();
+    is_cyclic_= is_cyclic.value();
 
     // Get the Ismrmrd header
     //

@@ -93,7 +93,7 @@ namespace Gadgetron{
     GADGET_PROPERTY(sliding_window_rotations, int, "Number of rotations in sliding window", 0);
     GADGET_PROPERTY(profiles_per_frame, int, "Profiles per frame", 0);
     GADGET_PROPERTY(frames_per_rotation, int, "Frames per rotation", 0);
-    GADGET_PROPERTY(buffer_frames_per_rotation, int, "Frames per rotation in buffer", 1);
+    GADGET_PROPERTY(buffer_frames_per_rotation, int, "Frames per rotation in buffer", 0);
 
     virtual int process_config(ACE_Message_Block *mb);
 
