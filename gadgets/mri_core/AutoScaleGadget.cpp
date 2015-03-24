@@ -15,7 +15,6 @@ AutoScaleGadget::AutoScaleGadget()
 	, current_scale_(1.0)
 	, max_value_(2048)
 {
-	set_parameter("max_value","2048");
 }
 
 AutoScaleGadget::~AutoScaleGadget() {
@@ -23,7 +22,7 @@ AutoScaleGadget::~AutoScaleGadget() {
 }
 
 int AutoScaleGadget::process_config(ACE_Message_Block* mb) {
-	max_value_ = get_double_value("max_value");
+        max_value_ = max_value.value();
 	return GADGET_OK;
 }
 

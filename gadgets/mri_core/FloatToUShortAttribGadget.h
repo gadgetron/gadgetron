@@ -31,7 +31,9 @@ namespace Gadgetron
         virtual ~FloatToUShortAttribGadget();
 
     protected:
-
+	GADGET_PROPERTY(max_intensity, int, "Maximum intensity value", 4095);
+	GADGET_PROPERTY(intensity_offset, int, "Intensity offset", 0);
+	
         ACE_UINT16 max_intensity_value_;
         ACE_UINT16 intensity_offset_value_;
 

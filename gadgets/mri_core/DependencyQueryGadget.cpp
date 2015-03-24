@@ -49,10 +49,9 @@ namespace Gadgetron
         {
             processed_in_close_ = true;
 
-            boost::shared_ptr<std::string> str = this->get_string_value("workingDirectory");
-            if ( !str->empty() )
+            if ( !workingDirectory.value().empty() )
             {
-                noise_dependency_folder_ = *str;
+	      noise_dependency_folder_ = workingDirectory.value();
             }
             else
             {
@@ -61,24 +60,20 @@ namespace Gadgetron
             }
             GDEBUG_STREAM("Folder to store noise dependencies is " << noise_dependency_folder_);
 
-            str = this->get_string_value("noise_dependency_prefix");
-
-            if ( !str->empty() )
+            if ( !noise_dependency_prefix.value().empty() )
             {
-                noise_dependency_prefix_ = *str;
+	      noise_dependency_prefix_ = noise_dependency_prefix.value();
             }
 
-            str = this->get_string_value("noise_dependency_attrib_name");
-
-            if ( !str->empty() )
+            if ( !noise_dependency_attrib_name.value().empty() )
             {
-                noise_dependency_attrib_name_ = *str;
+	      noise_dependency_attrib_name_ = noise_dependency_attrib_name.value();
             }
 
-            clean_storage_while_query_ = this->get_bool_value("clean_storage_while_query");
+            clean_storage_while_query_ = clean_storage_while_query.value();
             GDEBUG_STREAM( "clean_storage_while_query_ is " << clean_storage_while_query_);
 
-            time_limit_in_storage_ = this->get_double_value("time_limit_in_storage");
+            time_limit_in_storage_ = time_limit_in_storage.value();
             if ( time_limit_in_storage_ < 0 )
             {
                 time_limit_in_storage_ = 24.0;
