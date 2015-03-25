@@ -40,7 +40,7 @@ namespace Gadgetron
 #if defined(__linux) || defined(__linux__) || defined(linux)
     //On linux we will loop through all names interfaces and join as many as we can
     struct if_nameindex *intf;
-    intf = ACE_OS::if_nameindex ();
+    intf = if_nameindex ();
     if (intf == 0) {
       GERROR("Unable to get names of network interfaces\n");
       return -1;
@@ -54,7 +54,7 @@ namespace Gadgetron
       }
       ++index;
     }      
-    ACE_OS::if_freenameindex (intf);
+    if_freenameindex (intf);
 
     if (!ifs_joined) {
       GERROR_STREAM("Error doing dgram join");
