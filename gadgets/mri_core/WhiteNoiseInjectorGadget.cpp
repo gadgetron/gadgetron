@@ -29,9 +29,9 @@ WhiteNoiseInjectorGadget::~WhiteNoiseInjectorGadget()
 
 int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
 {
-    noise_mean_ = (float)this->get_double_value("noise_mean");
-    noise_std_ = (float)this->get_double_value("noise_std");
-    add_noise_ref_ = this->get_bool_value("add_noise_ref");
+    noise_mean_ = noise_mean.value();
+    noise_std_ = noise_std.value();
+    add_noise_ref_ = add_noise_ref.value();
 
     GDEBUG_STREAM("noise mean is " << noise_mean_);
     GDEBUG_STREAM("noise std is " << noise_std_);

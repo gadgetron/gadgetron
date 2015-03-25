@@ -27,6 +27,9 @@ namespace Gadgetron {
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
   private:
+    GADGET_PROPERTY(uncombined_channels_by_name, std::string, "List of comma separated channels by name", "");
+    GADGET_PROPERTY(present_uncombined_channels, int, "Number of uncombined channels found", 0);
+
     std::vector<unsigned int> uncombined_channels_;
     
     //Map containing buffers, one for each location

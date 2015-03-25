@@ -29,12 +29,6 @@
             <name>pass_nonconformant_data</name>
             <value>true</value>
         </property>
-
-        <!-- Whether to perform timing -->
-        <property>
-            <name>performTiming</name>
-            <value>true</value>
-        </property>
     </gadget>
 
 </gadgetronStreamConfiguration>

@@ -21,6 +21,9 @@ namespace Gadgetron{
       IsmrmrdDumpGadget();
 
     protected:
+      GADGET_PROPERTY(file_prefix, std::string, "Prefix for dump file", "ISMRMRD_DUMP");
+      GADGET_PROPERTY(append_timestamp, bool, "Append timestamp to file name prefix", true);
+
       virtual int process_config(ACE_Message_Block* mb);
 
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,

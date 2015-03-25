@@ -25,18 +25,17 @@ namespace Gadgetron{
       
       coils_in_ = h.acquisitionSystemInformation->receiverChannels ? *h.acquisitionSystemInformation->receiverChannels : 128;
 
-      boost::shared_ptr<std::string> coil_mask = this->get_string_value("coil_mask");
+      std::string coil_mask_int = coil_mask.value();
 
-      if (coil_mask->compare(std::string("")) == 0) {
-	int coils_out = this->get_int_value("coils_out");
-	if (coils_out <= 0) {
-	  GDEBUG("Invalid number of output coils %d\n", coils_out);
+      if (coil_mask_int.compare(std::string("")) == 0) {
+	if (coils_out.value() <= 0) {
+	  GDEBUG("Invalid number of output coils %d\n", coils_out.value());
 	  return GADGET_FAIL;
 	}
-	coil_mask_ = std::vector<unsigned short>(coils_out,1);
+	coil_mask_ = std::vector<unsigned short>(coils_out.value(),1);
       } else {
 	std::vector<std::string> chm;
-	boost::split(chm, *coil_mask, boost::is_any_of(" "));
+	boost::split(chm, coil_mask_int, boost::is_any_of(" "));
 	for (size_t i = 0; i < chm.size(); i++) {
 	  std::string ch = boost::algorithm::trim_copy(chm[i]);
 	  if (ch.size() > 0) {

@@ -70,7 +70,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		  return GADGET_FAIL;
 	  }
 
-	  image_series_ = this->get_int_value("image_series");
+	  image_series_ = image_series.value();
 
   }
 

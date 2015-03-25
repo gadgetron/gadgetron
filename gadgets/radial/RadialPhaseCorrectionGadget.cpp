@@ -20,9 +20,6 @@ namespace Gadgetron{
     , channels_(-1)
     , profiles_counter_(0)
   {
-    set_parameter(std::string("mode").c_str(), "3");
-    set_parameter(std::string("order").c_str(), "6");
-    set_parameter(std::string("profiles").c_str(), "500");
   }
   
   int RadialPhaseCorrectionGadget::
@@ -49,9 +46,9 @@ namespace Gadgetron{
       channels_ = h.acquisitionSystemInformation->receiverChannels ? *h.acquisitionSystemInformation->receiverChannels : 128;
     }
 
-    mode_ = get_int_value(std::string("mode").c_str());
-    order_ = get_int_value(std::string("order").c_str());
-    profiles_ = get_int_value(std::string("profiles").c_str());
+    mode_ = mode.value();
+    order_ = order.value();
+    profiles_ = profiles.value();
 
     if( profiles_ < 1 ) {
       GDEBUG("The number of profiles to estimate polynomial fit is too low.\n");

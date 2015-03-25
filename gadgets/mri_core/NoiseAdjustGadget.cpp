@@ -43,10 +43,8 @@ namespace Gadgetron{
 
   int NoiseAdjustGadget::process_config(ACE_Message_Block* mb)
   {
-    boost::shared_ptr<std::string> str = this->get_string_value("workingDirectory");
-
-    if ( !str->empty() ) {
-      noise_dependency_folder_ = *str;
+    if ( !workingDirectory.value().empty() ) {
+      noise_dependency_folder_ = workingDirectory.value();
     }
     else {
 #ifdef _WIN32
@@ -58,16 +56,15 @@ namespace Gadgetron{
 
     GDEBUG("Folder to store noise dependencies is %s\n", noise_dependency_folder_.c_str());
 
-    str = this->get_string_value("noise_dependency_prefix");
-    if ( !str->empty() ) noise_dependency_prefix_ = *str;
+    if ( !noise_dependency_prefix.value().empty() ) noise_dependency_prefix_ = noise_dependency_prefix.value();
 
-    perform_noise_adjust_ = this->get_string_value("perform_noise_adjust")->size() ? this->get_bool_value("perform_noise_adjust") : true;
+    perform_noise_adjust_ = perform_noise_adjust.value();
     GDEBUG("NoiseAdjustGadget::perform_noise_adjust_ is %d\n", perform_noise_adjust_);
 
-    pass_nonconformant_data_ = this->get_bool_value("pass_nonconformant_data");
+    pass_nonconformant_data_ = pass_nonconformant_data.value();
     GDEBUG("NoiseAdjustGadget::pass_nonconformant_data_ is %d\n", pass_nonconformant_data_);
 
-    noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
+    noise_dwell_time_us_preset_ = noise_dwell_time_us_preset.value();
 
     ISMRMRD::deserialize(mb->rd_ptr(),current_ismrmrd_header_);
     
@@ -158,11 +155,11 @@ namespace Gadgetron{
 
 
     //Let's figure out if some channels are "scale_only"
-    boost::shared_ptr<std::string> uncomb_str = this->get_string_value("scale_only_channels_by_name");
+    std::string uncomb_str = scale_only_channels_by_name.value();
     std::vector<std::string> uncomb;
-    if (uncomb_str->size()) {
-      GDEBUG("SCALE ONLY: %s\n",  uncomb_str->c_str());
-      boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
+    if (uncomb_str.size()) {
+      GDEBUG("SCALE ONLY: %s\n",  uncomb_str.c_str());
+      boost::split(uncomb, uncomb_str, boost::is_any_of(","));
       for (unsigned int i = 0; i < uncomb.size(); i++) {
 	std::string ch = boost::algorithm::trim_copy(uncomb[i]);
 	if (current_ismrmrd_header_.acquisitionSystemInformation) {

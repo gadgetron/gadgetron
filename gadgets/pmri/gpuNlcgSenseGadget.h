@@ -32,7 +32,19 @@ namespace Gadgetron{
     virtual ~gpuNlcgSenseGadget();
 
   protected:
-
+    GADGET_PROPERTY(deviceno, int, "GPU device number", 0);
+    GADGET_PROPERTY(setno, int, "Which set to process", 0);
+    GADGET_PROPERTY(sliceno, int, "Which slice to process", 0);
+    GADGET_PROPERTY(cg_limit, float, "Convervence limit for CG", 1e-6);
+    GADGET_PROPERTY(oversampling_factor, float, "Oversampling factor for NFFT", 1.5);
+    GADGET_PROPERTY(kernel_width, float, "Kernel width for NFFT", 5.5);
+    GADGET_PROPERTY(lambda, float, "Lambda regularization factor", 1e-6);
+    GADGET_PROPERTY(alpha, float, "Alpha regularization factor", 0.5);
+    GADGET_PROPERTY(exclusive_access, bool, "Exclusive access to solver", false);
+    GADGET_PROPERTY(number_of_cg_iterations, int, "Number of CG iterations", 0);
+    GADGET_PROPERTY(rotations_to_discard, int, "Rotations to discard", 0);
+    GADGET_PROPERTY(output_convergence, bool, "Output convergence information", false);
+    
     virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< GenericReconJob > * m2 );
     virtual int process_config( ACE_Message_Block* mb );
 

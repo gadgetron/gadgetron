@@ -29,7 +29,8 @@ namespace Gadgetron{
     gpuCgSpiritGadget();
     virtual ~gpuCgSpiritGadget();
   protected:
-
+    GADGET_PROPERTY(number_of_iterations, int, "Number of iterations", 5);
+    GADGET_PROPERTY(kappa, float, "Kappa regularization factor", 0.3);
 
     virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader > *m1, GadgetContainerMessage< GenericReconJob > *m2 );
     virtual int process_config( ACE_Message_Block* mb );

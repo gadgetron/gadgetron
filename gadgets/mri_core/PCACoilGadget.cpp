@@ -42,11 +42,11 @@ namespace Gadgetron {
       ISMRMRD::IsmrmrdHeader h;
       ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-      boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels_by_name");
+      std::string uncomb_str = uncombined_channels_by_name.value();
       std::vector<std::string> uncomb;
-      if (uncomb_str->size()) {
-	GDEBUG("uncomb_str: %s\n",  uncomb_str->c_str());
-	boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
+      if (uncomb_str.size()) {
+	GDEBUG("uncomb_str: %s\n",  uncomb_str.c_str());
+	boost::split(uncomb, uncomb_str, boost::is_any_of(","));
 	for (unsigned int i = 0; i < uncomb.size(); i++) {
 	  std::string ch = boost::algorithm::trim_copy(uncomb[i]);
 	  if (h.acquisitionSystemInformation) {
@@ -60,9 +60,7 @@ namespace Gadgetron {
 	}
       }
 
-      char val[32];
-      sprintf(val,"%d",(int)uncombined_channels_.size());
-      this->set_parameter("present_uncombined_channels",val);
+      present_uncombined_channels.value((int)uncombined_channels_.size());
       GDEBUG("Number of uncombined channels (present_uncombined_channels) set to %d\n", uncombined_channels_.size());
 
       return GADGET_OK;

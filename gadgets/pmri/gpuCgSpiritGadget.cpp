@@ -18,28 +18,24 @@ namespace Gadgetron{
     : is_configured_(false)
     , matrix_size_reported_(0), gpuSenseGadget()
   {
-    set_parameter(std::string("number_of_iterations").c_str(), "5");
-    set_parameter(std::string("cg_limit").c_str(), "1e-6");
-    set_parameter(std::string("kappa").c_str(), "0.3");
     
-    }
+  }
 
   gpuCgSpiritGadget::~gpuCgSpiritGadget() {}
 
   int gpuCgSpiritGadget::process_config( ACE_Message_Block* mb )
   {
-	  gpuSenseGadget::process_config(mb);
-    //GDEBUG("gpuCgSpiritGadget::process_config\n");
+    gpuSenseGadget::process_config(mb);
 
 
-   number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
-    cg_limit_ = get_double_value(std::string("cg_limit").c_str());
-    kappa_ = get_double_value("kappa");
-   // Get the Ismrmrd header
+    number_of_iterations_ = number_of_iterations.value();
+    cg_limit_ = cg_limit.value();
+    kappa_ = kappa.value();
+    
+    // Get the Ismrmrd header
     //
     ISMRMRD::IsmrmrdHeader h;
     ISMRMRD::deserialize(mb->rd_ptr(),h);
-    
     
     if (h.encoding.size() != 1) {
       GDEBUG("This Gadget only supports one encoding space\n");

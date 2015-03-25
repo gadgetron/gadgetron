@@ -52,6 +52,8 @@ namespace Gadgetron{
       }
 
     protected:
+      GADGET_PROPERTY(extract_mask, int, "Extract mask, bitmask MAG=1, REAL=2, IMAG=4, PHASE=8", 1);
+
       virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 

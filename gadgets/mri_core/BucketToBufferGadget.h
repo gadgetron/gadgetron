@@ -27,6 +27,31 @@ namespace Gadgetron{
       int close(unsigned long flags);
       
     protected:
+      GADGET_PROPERTY_LIMITS(N_dimension, std::string, "N-Dimensions", "", 
+			     GadgetPropertyLimitsEnumeration,
+			     "average",
+			     "contrast",
+			     "phase",
+			     "repetition",
+			     "set",
+			     "segment",
+			     "slice",
+			     "");
+
+      GADGET_PROPERTY_LIMITS(S_dimension, std::string, "S-Dimensions", "", 
+			     GadgetPropertyLimitsEnumeration,
+			     "average",
+			     "contrast",
+			     "phase",
+			     "repetition",
+			     "set",
+			     "segment",
+			     "slice",
+			     "");
+
+      GADGET_PROPERTY(split_slices, bool, "Split slices", false);
+      GADGET_PROPERTY(ignore_segment, bool, "Ignore segment", false);
+
       IsmrmrdCONDITION N_;
       IsmrmrdCONDITION S_;
       bool split_slices_;

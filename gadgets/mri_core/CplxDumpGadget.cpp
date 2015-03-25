@@ -8,14 +8,13 @@ namespace Gadgetron{
     : Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >()
     , buffer_(ACE_Message_Queue_Base::DEFAULT_HWM * 10000, ACE_Message_Queue_Base::DEFAULT_LWM * 10000)
   {
-    set_parameter(std::string("filename").c_str(), "profiles.cplx");
   }
 
   CplxDumpGadget::~CplxDumpGadget() {}
 
   int CplxDumpGadget::process_config(ACE_Message_Block* mb)
   {
-    filename_ = *get_string_value("filename");
+    filename_ = filename.value();
     return GADGET_OK;
   }
 

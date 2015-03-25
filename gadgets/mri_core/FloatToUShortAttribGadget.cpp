@@ -22,10 +22,10 @@ namespace Gadgetron
     int FloatToUShortAttribGadget::process_config(ACE_Message_Block* mb)
     {
         // gadget parameters
-        max_intensity_value_ = this->get_int_value("max_intensity");
+         max_intensity_value_ = max_intensity.value();
         if ( max_intensity_value_ == 0 ) max_intensity_value_ = 4095;
 
-        intensity_offset_value_ = this->get_int_value("intensity_offset");
+        intensity_offset_value_ = intensity_offset.value();
 
         return GADGET_OK;
     }

@@ -19,6 +19,8 @@ namespace Gadgetron{
     virtual ~AutoScaleGadget();
 
   protected:
+    GADGET_PROPERTY(max_value, float, "Maximum value (after scaling)", 2048);
+
     virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 			GadgetContainerMessage< hoNDArray< float > >* m2);
     virtual int process_config(ACE_Message_Block *mb);

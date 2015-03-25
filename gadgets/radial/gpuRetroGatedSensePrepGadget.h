@@ -31,7 +31,22 @@ namespace Gadgetron{
     virtual ~gpuRetroGatedSensePrepGadget();
 
   protected:
-    
+    GADGET_PROPERTY_LIMITS(mode,int,"Radial mode", 2, GadgetPropertyLimitsEnumeration, 2, 3);
+    GADGET_PROPERTY(deviceno,int,"GPU Device Number", 0);
+    GADGET_PROPERTY(profiles_per_frame, int, "Profiles per frame", 16);
+    GADGET_PROPERTY(frames_per_cardiac_cycle, int, "Frames in a cardiac cycle", 30);
+    GADGET_PROPERTY(profiles_per_buffer_frame, int, "Profiles in each buffer frame", 32);
+    GADGET_PROPERTY(number_of_buffer_frames_inner, int, "Number of inner buffer frames", 8);
+    GADGET_PROPERTY(number_of_buffer_frames_outer, int, "Number of outer buffer frames", 1);
+    GADGET_PROPERTY(buffer_using_solver, bool, "Use solver for buffer", false);
+    GADGET_PROPERTY(output_timing, bool, "Output timing information", false);
+    GADGET_PROPERTY(physiology_time_index, int, "Physiology time index", 0);
+    GADGET_PROPERTY(buffer_convolution_kernel_width, float, "Convolution kernel width for buffer", 5.5);
+    GADGET_PROPERTY(buffer_convolution_oversampling_factor, float, "Oversampling used in buffer convolution", 1.25);
+    GADGET_PROPERTY(reconstruction_os_factor_x, float, "Oversampling for reconstruction in x-direction", 1.0);
+    GADGET_PROPERTY(reconstruction_os_factor_y, float, "Oversampling for reconstruction in y-direction", 1.0);
+
+
     virtual int process_config(ACE_Message_Block *mb);
 
     virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1,

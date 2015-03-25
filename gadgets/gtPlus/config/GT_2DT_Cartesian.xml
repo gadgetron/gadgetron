@@ -85,11 +85,6 @@
         <name>NoiseAdjust</name>
         <dll>gadgetron_mricore</dll>
         <classname>NoiseAdjustGadget</classname>
-
-        <property>
-            <name>performTiming</name>
-            <value>false</value>
-        </property>
     </gadget>
 
     <!-- Data accumulation and trigger gadget -->

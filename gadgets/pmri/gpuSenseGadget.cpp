@@ -11,14 +11,6 @@
 namespace Gadgetron {
 
 gpuSenseGadget::gpuSenseGadget() {
-	set_parameter(std::string("deviceno").c_str(), "0");
-	set_parameter(std::string("setno").c_str(), "0");
-	set_parameter(std::string("sliceno").c_str(), "0");
-	set_parameter(std::string("cg_limit").c_str(), "1e-6");
-	set_parameter(std::string("oversampling_factor").c_str(), "1.5");
-	set_parameter(std::string("kernel_width").c_str(), "5.5");
-	set_parameter(std::string("save_individual_frames").c_str(),"true");
-
 	matrix_size_ = uint64d2(0u,0u);
 	matrix_size_os_ = uint64d2(0u,0u);
 	matrix_size_seq_ = uint64d2(0u,0u);
@@ -29,42 +21,43 @@ gpuSenseGadget::~gpuSenseGadget() {
 }
 
 int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
-	device_number_ = get_int_value(std::string("deviceno").c_str());
+  device_number_ = deviceno.value();
 
-	int number_of_devices = 0;
-	if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-		GDEBUG( "Error: unable to query number of CUDA devices.\n" );
-		return GADGET_FAIL;
-	}
+  int number_of_devices = 0;
+  if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
+    GDEBUG( "Error: unable to query number of CUDA devices.\n" );
+    return GADGET_FAIL;
+  }
 
-	if (number_of_devices == 0) {
-		GDEBUG( "Error: No available CUDA devices.\n" );
-		return GADGET_FAIL;
-	}
+  if (number_of_devices == 0) {
+    GDEBUG( "Error: No available CUDA devices.\n" );
+    return GADGET_FAIL;
+  }
 
-	if (device_number_ >= number_of_devices) {
-		GDEBUG("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
-		device_number_ = (device_number_%number_of_devices);
-	}
+  if (device_number_ >= number_of_devices) {
+    GDEBUG("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
+    device_number_ = (device_number_%number_of_devices);
+  }
+  
+  if (cudaSetDevice(device_number_)!= cudaSuccess) {
+    GDEBUG( "Error: unable to set CUDA device.\n" );
+    return GADGET_FAIL;
+  }
 
-	if (cudaSetDevice(device_number_)!= cudaSuccess) {
-		GDEBUG( "Error: unable to set CUDA device.\n" );
-		return GADGET_FAIL;
-	}
-	pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
-	set_number_ = get_int_value(std::string("setno").c_str());
-	slice_number_ = get_int_value(std::string("sliceno").c_str());
-	oversampling_factor_ = get_double_value(std::string("oversampling_factor").c_str());
-	kernel_width_ = get_double_value(std::string("kernel_width").c_str());
-	output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
-	output_timing_ = get_bool_value(std::string("output_timing").c_str());
-	rotations_to_discard_ = get_int_value(std::string("rotations_to_discard").c_str());
-
-	if( (rotations_to_discard_%2) == 1 ){
-		GDEBUG("#rotations to discard must be even.\n");
-		return GADGET_FAIL;
-	}
-	save_individual_frames_ = get_bool_value("save_individual_frames");
+  pass_on_undesired_data_ = pass_on_undesired_data.value();
+  set_number_ = setno.value();
+  slice_number_ = sliceno.value();
+  oversampling_factor_ = oversampling_factor.value();
+  kernel_width_ = kernel_width.value();
+  output_convergence_ = output_convergence.value();
+  output_timing_ = output_timing.value();
+  rotations_to_discard_ = rotations_to_discard.value();
+  
+  if( (rotations_to_discard_%2) == 1 ){
+    GDEBUG("#rotations to discard must be even.\n");
+    return GADGET_FAIL;
+  }
+  save_individual_frames_ = save_individual_frames.value();
 
 
 }

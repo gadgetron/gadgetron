@@ -31,6 +31,14 @@ namespace Gadgetron{
     virtual ~gpuSpiralSensePrepGadget();
 
   protected:
+    GADGET_PROPERTY(deviceno, int, "GPU device number", 0);
+    GADGET_PROPERTY(propagate_csm_from_set, int, "Which set to use for CSM", -1);
+    GADGET_PROPERTY(buffer_using_solver, bool, "Use solver for buffer", false);
+    GADGET_PROPERTY(use_multiframe_grouping, bool, "Use multiframe grouping", false);
+    GADGET_PROPERTY(buffer_convolution_kernel_width, float, "Convolution kernel width for buffer", 5.5);
+    GADGET_PROPERTY(buffer_convolution_oversampling_factor, float, "Oversampling used in buffer convolution", 1.25);
+    GADGET_PROPERTY(reconstruction_os_factor_x, float, "Oversampling for reconstruction in x-direction", 1.0);
+    GADGET_PROPERTY(reconstruction_os_factor_y, float, "Oversampling for reconstruction in y-direction", 1.0);
 
     virtual int process_config(ACE_Message_Block* mb);
     

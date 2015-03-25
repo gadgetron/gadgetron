@@ -28,6 +28,10 @@ namespace Gadgetron
         virtual int close(unsigned long flags);
 
     protected:
+	GADGET_PROPERTY(noise_dependency_prefix, std::string, "Prefix on noise dependency file", "");
+	GADGET_PROPERTY(noise_dependency_attrib_name, std::string, "Noise dependeny attribute name", "");
+	GADGET_PROPERTY(clean_storage_while_query, bool, "Clean storage while querying", false);
+	GADGET_PROPERTY(time_limit_in_storage, float, "Time limit for storing noise dependency", 0);
 
         // if true, the old stored file will be deleted while querying
         bool clean_storage_while_query_;

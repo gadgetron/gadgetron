@@ -22,6 +22,8 @@ namespace Gadgetron{
       virtual ~EPIReconXGadget();
       
     protected:
+      GADGET_PROPERTY(verboseMode, bool, "Verbose output", false);
+
       virtual int process_config(ACE_Message_Block* mb);
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);

@@ -20,25 +20,21 @@ namespace Gadgetron{
         , first_beat_on_trigger_(false)
         , interp_method_("Spline")
     {
-        set_parameter(std::string("physiology_time_index").c_str(), "0");
-        set_parameter(std::string("mode").c_str(), "0");
-        set_parameter(std::string("phases").c_str(), "30");
     }
 
     PhysioInterpolationGadget::~PhysioInterpolationGadget() {}
 
     int PhysioInterpolationGadget::process_config(ACE_Message_Block* mb)
     {
-        phys_time_index_ = get_int_value("physiology_time_index");
-        phases_to_reconstruct_ = get_int_value("phases");
-        mode_ = get_int_value("mode");
-        first_beat_on_trigger_ = get_bool_value("first_beat_on_trigger");
+        phys_time_index_ = physiology_time_index.value();
+        phases_to_reconstruct_ = phases.value();
+        mode_ = mode.value();
+        first_beat_on_trigger_ = first_beat_on_trigger.value();
 
         ISMRMRD::IsmrmrdHeader h;
         ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-        boost::shared_ptr<std::string> str = get_string_value("interp_method");
-        interp_method_ = *str;
+        interp_method_ = interp_method.value();
         if ( interp_method_.empty() ) interp_method_ = "Spline";
 
         if (h.encoding.size() == 0) {

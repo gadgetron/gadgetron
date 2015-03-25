@@ -33,6 +33,14 @@ namespace Gadgetron{
     virtual ~gpuSbSenseGadget();
 
   protected:
+    GADGET_PROPERTY(number_of_sb_iterations, int, "Number of split Bregman iterations", 20);
+    GADGET_PROPERTY(number_of_cg_iterations, int, "Number of conjugate gradient iterations", 10);
+    GADGET_PROPERTY(mu, float, "Mu regularization parameter", 1.0);
+    GADGET_PROPERTY(lambda, float, "Lambda regularization parameter", 2.0);
+    GADGET_PROPERTY(gamma, float, "Gamma regularization parameter", 0.0);
+    GADGET_PROPERTY(alpha, float, "Alpha regularization parameter", 0.5);
+    GADGET_PROPERTY(is_cyclic, bool, "Is cyclic", true);
+    GADGET_PROPERTY(exclusive_access, bool, "Exclusive access to solver", false);
 
     virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< GenericReconJob > * m2 );
     virtual int process_config( ACE_Message_Block* mb );

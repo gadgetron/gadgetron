@@ -106,7 +106,7 @@ namespace Gadgetron{
     time_stamps_ = std::vector<ACE_UINT32>(dimensions_[4],0);
 
     //Let's figure out the number of target coils
-    target_coils_ = target_coils.value(); //this->get_int_value("target_coils");
+    target_coils_ = target_coils.value();
     if ((target_coils_ <= 0) || (target_coils_ > dimensions_[3])) {
       target_coils_ = dimensions_[3];
     }
@@ -115,7 +115,7 @@ namespace Gadgetron{
 
     weights_calculator_.set_number_of_target_coils(target_coils_);
 
-    bool use_gpu_ = use_gpu.value(); //this->get_bool_value("use_gpu");
+    bool use_gpu_ = use_gpu.value();
     GDEBUG_STREAM("use_gpu_ is " << use_gpu_);
 
     weights_calculator_.set_use_gpu(use_gpu_);
@@ -199,7 +199,7 @@ namespace Gadgetron{
       }
     }
 
-    image_series_ = image_series.value(); //this->get_int_value("image_series");
+    image_series_ = image_series.value();
 
     return GADGET_OK;
   }

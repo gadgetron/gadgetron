@@ -25,6 +25,12 @@ namespace Gadgetron {
       virtual int close(unsigned long flags);
 
     protected:
+      GADGET_PROPERTY(noise_dependency_prefix, std::string, "Prefix of noise depencency file", "GadgetronNoiseCovarianceMatrix");
+      GADGET_PROPERTY(perform_noise_adjust, bool, "Whether to actually perform the noise adjust", true);
+      GADGET_PROPERTY(pass_nonconformant_data, bool, "Whether to pass data that does not conform", false);
+      GADGET_PROPERTY(noise_dwell_time_us_preset, float, "Preset dwell time for noise measurement", 0.0);
+      GADGET_PROPERTY(scale_only_channels_by_name, std::string, "List of named channels that should only be scaled", "");
+
       bool noise_decorrelation_calculated_;
       hoNDArray< std::complex<float> > noise_covariance_matrixf_;
       hoNDArray< std::complex<float> > noise_prewhitener_matrixf_;

@@ -37,13 +37,13 @@ namespace Gadgetron
 
     int IsmrmrdDumpGadget::process_config(ACE_Message_Block* mb)
     {
-        file_prefix_ = *(get_string_value("file_prefix").get());
+        file_prefix_ = file_prefix.value();
         if ( file_prefix_.empty() )
         {
             file_prefix_ = "ISMRMRD_DUMP";
         }
 
-        append_timestamp_ = get_bool_value("append_timestamp");
+        append_timestamp_ = append_timestamp.value();
 
         //Generate filename
         if (append_timestamp_)

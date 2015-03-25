@@ -23,7 +23,7 @@ ExtractGadget::~ExtractGadget()
 
 int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
 {
-	int em = this->get_int_value("extract_mask");
+        int em = extract_mask.value();
 	if (em > 0) {
 		if (em < GADGET_EXTRACT_MAX ) {
 			extract_mask_ = static_cast<unsigned short>(em);

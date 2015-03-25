@@ -24,17 +24,6 @@ namespace Gadgetron{
     , channels_(0)
     , frame_counter_(0)
   {
-    set_parameter(std::string("deviceno").c_str(), "0");
-    set_parameter(std::string("setno").c_str(), "0");
-    set_parameter(std::string("sliceno").c_str(), "0");
-    set_parameter(std::string("number_of_cg_iterations").c_str(), "10");
-    set_parameter(std::string("cg_limit").c_str(), "1e-6");
-    set_parameter(std::string("oversampling_factor").c_str(), "1.5");
-    set_parameter(std::string("kernel_width").c_str(), "5.5");
-    set_parameter(std::string("lambda").c_str(), "1e-6");
-    set_parameter(std::string("alpha").c_str(), "0.5");
-    set_parameter(std::string("exclusive_access").c_str(), "false");
-
     matrix_size_ = uint64d2(0,0);
     matrix_size_os_ = uint64d2(0,0);
     matrix_size_seq_ = uint64d2(0,0);
@@ -46,7 +35,7 @@ namespace Gadgetron{
   {
     GDEBUG("gpuNlcgSenseGadget::process_config\n");
 
-    device_number_ = get_int_value(std::string("deviceno").c_str());
+    device_number_ = deviceno.value();
 
     int number_of_devices = 0;
     if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
@@ -69,20 +58,20 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
-    set_number_ = get_int_value(std::string("setno").c_str());
-    slice_number_ = get_int_value(std::string("sliceno").c_str());
+    pass_on_undesired_data_ = pass_on_undesired_data.value();
+    set_number_ = setno.value();
+    slice_number_ = sliceno.value();
 
-    number_of_cg_iterations_ = get_int_value(std::string("number_of_cg_iterations").c_str());
-    cg_limit_ = get_double_value(std::string("cg_limit").c_str());
-    oversampling_factor_ = get_double_value(std::string("oversampling_factor").c_str());
-    kernel_width_ = get_double_value(std::string("kernel_width").c_str());
+    number_of_cg_iterations_ = number_of_cg_iterations.value();
+    cg_limit_ = cg_limit.value();
+    oversampling_factor_ = oversampling_factor.value();
+    kernel_width_ = kernel_width.value();
 
-    lambda_ = get_double_value(std::string("lambda").c_str());
-    alpha_ = get_double_value(std::string("alpha").c_str());
-    rotations_to_discard_ = get_int_value(std::string("rotations_to_discard").c_str());
-    output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
-    exclusive_access_ = get_bool_value(std::string("exclusive_access").c_str());
+    lambda_ = lambda.value();
+    alpha_ = alpha.value();
+    rotations_to_discard_ = rotations_to_discard.value();
+    output_convergence_ = output_convergence.value();
+    exclusive_access_ = exclusive_access.value();
 
     if( (rotations_to_discard_%2) == 1 ){
       GDEBUG("#rotations to discard must be even.\n");
@@ -210,7 +199,6 @@ namespace Gadgetron{
 
       std::vector<size_t> image_dims = to_std_vector(matrix_size_);
       image_dims.push_back(frames);
-
 
       E_->set_domain_dimensions(&image_dims);
       E_->set_codomain_dimensions(device_samples->get_dimensions().get());
