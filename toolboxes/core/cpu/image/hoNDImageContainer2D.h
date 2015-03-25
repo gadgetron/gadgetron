@@ -134,7 +134,7 @@ namespace Gadgetron
 
         /// convert one row to a hoNDArray
         /// all images in this row should have the same dimensions; if not, return false
-        bool to_NDArray(size_t row, hoNDArray<value_type>& a);
+        bool to_NDArray(size_t row, hoNDArray<value_type>& a) const;
 
         /// whether to delete the memory on destruction
         bool delete_data_on_destruct() const;
@@ -864,7 +864,7 @@ namespace Gadgetron
     }
 
     template <typename ImageType> 
-    inline bool hoNDImageContainer2D<ImageType>::to_NDArray(size_t row, hoNDArray<value_type>& a)
+    inline bool hoNDImageContainer2D<ImageType>::to_NDArray(size_t row, hoNDArray<value_type>& a) const
     {
         try
         {
