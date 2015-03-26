@@ -57,10 +57,21 @@ dset = ismrmrd.Dataset(filename, 'dataset', create_if_needed=False)
 gadget_config(g0,dset.read_xml_header())
 
 # Loop through the rest of the acquisitions and stuff
-for acqnum in range(0,dset.number_of_acquisitions()):
-    print "Sending in acquisition " + str(acqnum) + " of " + str(dset.number_of_acquisitions())
-    acq = dset.read_acquisition(acqnum)
-    g0.process(acq.getHead(),acq.data.astype('complex64'))
+buffered_read = True
+import time
+if buffered_read:
+    tmp_data = list()
+
+    for acqnum in range(0,dset.number_of_acquisitions()):
+        acq = dset.read_acquisition(acqnum)
+        tmp_data.append((acq.getHead(),acq.data.astype('complex64')))
+
+    for p in tmp_data:
+        g0.process(p[0],p[1])
+else:
+    for acqnum in range(0,dset.number_of_acquisitions()):
+        acq = dset.read_acquisition(acqnum)
+        g0.process(acq.getHead(),acq.data.astype('complex64'))
 
 #%%
 gadget_wait_function(g0)
