@@ -37,6 +37,9 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_PHASE                          "GADGETRON_Phase"
     #define GADGETRON_IMAGE_INTENSITY_UNCHANGED            "GADGETRON_Image_Intensity_Unchanged"
     #define GADGETRON_IMAGE_AIF                            "GADGETRON_AIF"
+    #define GADGETRON_IMAGE_AIF_LV_MASK                    "GADGETRON_AIFLVMASK"
+    #define GADGETRON_IMAGE_PERF_FLOW_MAP                  "GADGETRON_Perf_Flow_Map"
+
     // other images than the regular reconstruction results
     #define GADGETRON_IMAGE_OTHER                          "GADGETRON_Image_Other"
     // other data roles
@@ -60,6 +63,7 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_FREQMAP                        "FREQMAP"
     #define GADGETRON_IMAGE_B1MAP                          "B1MAP"
     #define GADGETRON_IMAGE_FLIPANGLEMAP                   "FLIPANGLEMAP"
+    #define GADGETRON_IMAGE_FLOWMAP                        "FLOWMAP"
 
     //MSH: Interventional MRI (Interactive Real Time, IRT)
     #define GADGETRON_IMAGE_IRT_IMAGE                      "IRT_IMAGE"
