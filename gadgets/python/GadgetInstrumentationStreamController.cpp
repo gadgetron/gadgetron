@@ -7,6 +7,8 @@
 #include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
 #include <string.h>
+#include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/meta.h>
 
 namespace Gadgetron
 {
@@ -94,11 +96,12 @@ namespace Gadgetron
     return GADGET_OK;
   }
 
-  template <class T1, class T2> int GadgetInstrumentationStreamController::return_data(ACE_Message_Block* mb)
+  template <class T1, class T2, class T3> int GadgetInstrumentationStreamController::return_data(ACE_Message_Block* mb)
   {
     static int counter = 0;
     GadgetContainerMessage<T1>* m1 = AsContainerMessage<T1>(mb);
     GadgetContainerMessage<T2>* m2 = AsContainerMessage<T2>(mb->cont());
+    GadgetContainerMessage<T3>* m3 = AsContainerMessage<T3>(m2->cont());
 
     if (!m1 || !m2) {
       GERROR("Unable to convert input container messages");
@@ -108,7 +111,13 @@ namespace Gadgetron
     {
       GILLock lock;
       try {
-	python_gadget_.attr("put_next")(*m1->getObjectPtr(),m2->getObjectPtr());
+	if (m3) {
+	  std::stringstream str;
+	  ISMRMRD::serialize(*m3->getObjectPtr(), str);
+	  python_gadget_.attr("put_next")(*m1->getObjectPtr(),m2->getObjectPtr(),str.str());
+	} else {
+	  python_gadget_.attr("put_next")(*m1->getObjectPtr(),m2->getObjectPtr());
+	}
       } catch(boost::python::error_already_set const &) {
 	GERROR("Passing data on to python wrapper gadget failed\n");
 	PyErr_Print();
@@ -130,7 +139,7 @@ namespace Gadgetron
     switch (m0->getObjectPtr()->id)
       {
       case (GADGET_MESSAGE_ACQUISITION):
-	if (0 != this->return_data<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >(m0->cont()) )
+	if (0 != this->return_data<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> >, ISMRMRD::MetaContainer >(m0->cont()) )
 	  {
 	    GERROR("Unable to convert and return GADGET_MESSAGE_ACQUISITON\n");
 	    m0->release();
@@ -138,7 +147,8 @@ namespace Gadgetron
 	  }
 	break;
       case (GADGET_MESSAGE_IMAGE_REAL_USHORT):
-	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< ACE_UINT16 > >(m0->cont()) )
+      case (GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< ACE_UINT16 >, ISMRMRD::MetaContainer >(m0->cont()) )
 	  {
 	    GERROR("Unable to convert and return GADGET_MESSAGE_IMAGE_REAL_SHORT\n");
 	    m0->release();
@@ -146,7 +156,8 @@ namespace Gadgetron
 	  }
 	break;
       case (GADGET_MESSAGE_IMAGE_REAL_FLOAT):
-	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< float > >(m0->cont()) )
+      case (GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< float >, ISMRMRD::MetaContainer >(m0->cont()) )
 	  {
 	    GERROR("Unable to convert and return GADGET_MESSAGE_IMAGE_REAL_FLOAT");
 	    m0->release();
@@ -154,7 +165,8 @@ namespace Gadgetron
 	  }
 	break;
       case (GADGET_MESSAGE_IMAGE_CPLX_FLOAT):
-	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >(m0->cont()) )
+      case (GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> >, ISMRMRD::MetaContainer >(m0->cont()) )
 	  {
 	    GERROR("Unable to convert and return GADGET_MESSAGE_IMAGE_CPLX_FLOAT\n");
 	    m0->release();
@@ -198,18 +210,27 @@ namespace Gadgetron
     return GADGET_OK;
   }
 
-  template<class T>
-  int GadgetInstrumentationStreamController::put_data(T header, boost::python::object arr)
+  template<class TH, class TD>
+  int GadgetInstrumentationStreamController::put_data(TH header, boost::python::object arr, const char* meta)
   {
-    GadgetContainerMessage< T >* m1 = new GadgetContainerMessage< T >;
-    memcpy(m1->getObjectPtr(), &header, sizeof(T));
+    GadgetContainerMessage< TH >* m1 = new GadgetContainerMessage< TH >;
+    memcpy(m1->getObjectPtr(), &header, sizeof(TH));
 
     // this works because the python converter for hoNDArray<std::complex<float>>
     // is registered in the python_toolbox
-    GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2;
-    m2 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >(
-            boost::python::extract<hoNDArray <std::complex<float> > >(arr)());
+    GadgetContainerMessage< hoNDArray< TD > >* m2;
+    m2 = new GadgetContainerMessage< hoNDArray< TD > >(
+            boost::python::extract<hoNDArray < TD > >(arr)());
     m1->cont(m2);
+
+    if (meta) {
+      GadgetContainerMessage< ISMRMRD::MetaContainer >* m3 = 
+	new GadgetContainerMessage< ISMRMRD::MetaContainer >;
+      
+      ISMRMRD::deserialize(meta, *m3->getObjectPtr());
+      m2->cont(m3);
+    }
+
 
     ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,10000); //10ms from now
     if (stream_.put(m1) == -1) {
@@ -221,19 +242,32 @@ namespace Gadgetron
   }
 
   int GadgetInstrumentationStreamController::put_acquisition(ISMRMRD::AcquisitionHeader acq, 
-								boost::python::object arr)
+							     boost::python::object arr, const char* meta)
   {
-    return put_data<ISMRMRD::AcquisitionHeader>(acq, arr);
+    return put_data<ISMRMRD::AcquisitionHeader, std::complex<float> >(acq, arr);
   }
 
-  int GadgetInstrumentationStreamController::put_image(ISMRMRD::ImageHeader img, 
-							 boost::python::object arr)
+  int GadgetInstrumentationStreamController::put_image_cplx(ISMRMRD::ImageHeader img, 
+							    boost::python::object arr, const char* meta)
   {
-    return put_data<ISMRMRD::ImageHeader>(img, arr);
+    return put_data<ISMRMRD::ImageHeader, std::complex<float> >(img, arr, meta);
   }
 
-  template int GadgetInstrumentationStreamController::put_data<ISMRMRD::AcquisitionHeader>(ISMRMRD::AcquisitionHeader, boost::python::object);
+  int GadgetInstrumentationStreamController::put_image_float(ISMRMRD::ImageHeader img, 
+							    boost::python::object arr, const char* meta)
+  {
+    return put_data<ISMRMRD::ImageHeader, float >(img, arr, meta);
+  }
 
-  template int GadgetInstrumentationStreamController::put_data<ISMRMRD::ImageHeader>(ISMRMRD::ImageHeader, boost::python::object);
+  int GadgetInstrumentationStreamController::put_image_ushort(ISMRMRD::ImageHeader img, 
+							    boost::python::object arr, const char* meta)
+  {
+    return put_data<ISMRMRD::ImageHeader, unsigned short >(img, arr, meta);
+  }
+
+  template int GadgetInstrumentationStreamController::put_data<ISMRMRD::AcquisitionHeader, std::complex<float> >(ISMRMRD::AcquisitionHeader, boost::python::object, const char* meta);
+  template int GadgetInstrumentationStreamController::put_data<ISMRMRD::ImageHeader, std::complex<float> >(ISMRMRD::ImageHeader, boost::python::object, const char* meta);
+  template int GadgetInstrumentationStreamController::put_data<ISMRMRD::ImageHeader, float >(ISMRMRD::ImageHeader, boost::python::object, const char* meta);
+  template int GadgetInstrumentationStreamController::put_data<ISMRMRD::ImageHeader, unsigned short >(ISMRMRD::ImageHeader, boost::python::object, const char* meta);
 
 }

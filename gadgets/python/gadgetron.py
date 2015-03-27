@@ -5,6 +5,7 @@ except ImportError:
     pass
 
 import time
+import numpy as np
 
 class Gadget(object):
     def __init__(self, next_gadget=None):
@@ -38,14 +39,30 @@ class Gadget(object):
     def put_next(self, *args):
         if self.next_gadget is not None:
             if isinstance(self.next_gadget, Gadget):
-                self.next_gadget.process(*args)
+                if len(args) == 3 and not isinstance(args[2],ismrmrd.Meta): #Data with meta data we assume
+                    meta = ismrmrd.Meta()
+                    meta = ismrmrd.Meta.deserialize(args[2])
+                    new_args = (args[0], args[1], meta)
+                    self.next_gadget.process(*new_args)
+                else:
+                    self.next_gadget.process(*args)
             elif isinstance(self.next_gadget, GadgetronPythonMRI.GadgetReference):
-                if len(args) != 2:
-                    raise("Only two return arguments are currently supported when returning to Gadgetron framework")
+                if len(args) > 3:
+                    raise Exception("Only two or 3 return arguments are currently supported when returning to Gadgetron framework")
                 if isinstance(args[0], ismrmrd.AcquisitionHeader):
                     self.next_gadget.return_acquisition(args[0],args[1].astype('complex64'))
                 elif isinstance(args[0], ismrmrd.ImageHeader):
-                    self.next_gadget.return_image(args[0],args[1].astype('complex64'))
+                    if np.all(np.isreal(args[1][:])):
+                        print "Real data"
+                        ret_data = args[1].astype('float32')
+                    else:
+                        print "Complex data"
+                        ret_data = args[1].astype('complex64')
+
+                    if (len(args) == 3):
+                        self.next_gadget.return_image_attr(args[0],ret_data, args[2].serialize())
+                    else:
+                        self.next_gadget.return_image(args[0],ret_data)
                 else:
                     raise("Unsupported types when returning to Gadgetron framework")
             else:
@@ -79,12 +96,26 @@ class WrapperGadget(Gadget):
         return 0
 
     def process(self, header, *args):
-        if len(args) != 1:
-            raise("Only two arguments are currently supported when sending data to Gadgetron framework")
+        if len(args) > 2:
+            raise("Only two or three arguments are currently supported when sending data to Gadgetron framework")
         if isinstance(header, ismrmrd.AcquisitionHeader):
             self.controller_.put_acquisition(header,args[0].astype('complex64'))
         elif isinstance(header, ismrmrd.ImageHeader):
-            self.controller_.put_image(header,args[0].astype('complex64'))
+            if (args[0].dtype == np.uint16):
+                if len(args) == 2:
+                    self.controller_.put_image_ushort_attr(header,args[0], args[1].serialize())
+                else:
+                    self.controller_.put_image_ushort(header,args[0])
+            elif (args[0].dtype == np.float32):
+                if len(args) == 2:
+                    self.controller_.put_image_float_attr(header, args[0], args[1].serialize())
+                else:
+                    self.controller_.put_image_float(header,args[0])
+            else:   
+                if len(args) == 2:
+                    self.controller_.put_image_cplx_attr(header, args[0].astype('complex64'), args[1].serialize())
+                else:
+                    self.controller_.put_image_cplx(header,args[0].astype('complex64'))
         else:
             raise("Unsupported types when sending data to Gadgetron framework")
         return 0

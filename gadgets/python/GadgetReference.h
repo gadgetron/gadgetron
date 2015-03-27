@@ -21,9 +21,10 @@ namespace Gadgetron{
       return 0;
     }
 
-    template<class T> int return_data(T header, boost::python::object arr);
+    template<class T> int return_data(T header, boost::python::object arr, const char* meta = 0);
     int return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::object arr);
     int return_image(ISMRMRD::ImageHeader img, boost::python::object arr);
+    int return_image_attr(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta);
 
   protected:
     Gadget* gadget_;

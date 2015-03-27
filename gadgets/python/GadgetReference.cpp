@@ -2,7 +2,9 @@
 #include "GadgetReference.h"
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
-#include "ismrmrd/ismrmrd.h"
+#include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/meta.h>
+
 /* #include <boost/preprocessor/stringize.hpp> */
 #include <boost/python.hpp>
 
@@ -18,7 +20,7 @@ namespace Gadgetron{
   }
 
   template<class T>
-  int GadgetReference::return_data(T header, boost::python::object arr)
+  int GadgetReference::return_data(T header, boost::python::object arr, const char* meta)
   {
     GadgetContainerMessage< T >* m1 = new GadgetContainerMessage< T >;
     memcpy(m1->getObjectPtr(), &header, sizeof(T));
@@ -29,6 +31,14 @@ namespace Gadgetron{
     m2 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >(
             boost::python::extract<hoNDArray <std::complex<float> > >(arr)());
     m1->cont(m2);
+
+    if (meta) {
+      GadgetContainerMessage< ISMRMRD::MetaContainer >* m3 = 
+	new GadgetContainerMessage< ISMRMRD::MetaContainer >;
+      
+      ISMRMRD::deserialize(meta, *m3->getObjectPtr());
+      m2->cont(m3);
+    }
 
     if (gadget_) {
       //ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,1000); //1ms from now
@@ -62,14 +72,19 @@ namespace Gadgetron{
 
   int GadgetReference::return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::object arr)
   {
-    return return_data<ISMRMRD::AcquisitionHeader>(acq, arr);
+    return return_data<ISMRMRD::AcquisitionHeader>(acq, arr, 0);
   }
 
   int GadgetReference::return_image(ISMRMRD::ImageHeader img, boost::python::object arr)
   {
-    return return_data<ISMRMRD::ImageHeader>(img, arr);
+    return return_data<ISMRMRD::ImageHeader>(img, arr, 0);
   }
 
-  template int GadgetReference::return_data<ISMRMRD::AcquisitionHeader>(ISMRMRD::AcquisitionHeader, boost::python::object);
-  template int GadgetReference::return_data<ISMRMRD::ImageHeader>(ISMRMRD::ImageHeader, boost::python::object);
+  int GadgetReference::return_image_attr(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta)
+  {
+    return return_data<ISMRMRD::ImageHeader>(img, arr, meta);
+  }
+
+  template int GadgetReference::return_data<ISMRMRD::AcquisitionHeader>(ISMRMRD::AcquisitionHeader, boost::python::object, const char*);
+  template int GadgetReference::return_data<ISMRMRD::ImageHeader>(ISMRMRD::ImageHeader, boost::python::object, const char*);
 }
