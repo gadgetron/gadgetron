@@ -9,20 +9,20 @@ if (MKL_FOUND)
 endif (MKL_FOUND)
 
 add_subdirectory(log)
-add_subdirectory(core)
-add_subdirectory(mri_core)
 
 add_subdirectory(operators)
 add_subdirectory(solvers)
 
-add_subdirectory(fft)
+if (FFTW_FOUND)
+  add_subdirectory(fft)
+  add_subdirectory(core)
+  add_subdirectory(mri_core)
+  add_subdirectory(mri)
+  add_subdirectory(ct)
+endif()
+
 add_subdirectory(nfft)
-
 add_subdirectory(dwt)
-
-add_subdirectory(mri)
-add_subdirectory(ct)
-
 add_subdirectory(registration)
 
 IF (ACE_FOUND)
