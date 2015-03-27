@@ -13,7 +13,7 @@ add_subdirectory(log)
 add_subdirectory(operators)
 add_subdirectory(solvers)
 
-if (FFTW_FOUND)
+if (FFTW3_FOUND)
   add_subdirectory(fft)
   add_subdirectory(core)
   add_subdirectory(mri_core)
