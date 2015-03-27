@@ -137,3 +137,25 @@ class FunctionGadget(Gadget):
     def __init__(self, fn, next_gadget=None):
         super(FunctionGadget, self).__init__(next_gadget)
         self.process = fn
+
+
+def gadget_chain_wait(first_gadget):
+    g = first_gadget;
+    while (g):
+        g.wait()
+        g = g.next_gadget
+
+def gadget_chain_config(first_gadget, conf):
+    g = first_gadget;
+    while (g):
+        g.process_config(conf)
+        g = g.next_gadget
+        
+def get_last_gadget(first_gadget):
+    g = first_gadget;
+    while (True):
+        if g.next_gadget:
+            g = g.next_gadget
+        else:
+            break
+    return g
