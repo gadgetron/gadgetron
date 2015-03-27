@@ -52,17 +52,22 @@ class Gadget(object):
                 if isinstance(args[0], ismrmrd.AcquisitionHeader):
                     self.next_gadget.return_acquisition(args[0],args[1].astype('complex64'))
                 elif isinstance(args[0], ismrmrd.ImageHeader):
-                    if np.all(np.isreal(args[1][:])):
-                        print "Real data"
-                        ret_data = args[1].astype('float32')
+                    header = args[0]
+                    if (args[1].dtype == np.uint16):
+                        if len(args) == 3:
+                            self.next_gadget.return_image_ushort_attr(header,args[1], args[2].serialize())
+                        else:
+                            self.next_gadget.return_image_ushort(header,args[1])
+                    elif (args[1].dtype == np.float32):
+                        if len(args) == 3:
+                            self.next_gadget.return_image_float_attr(header, args[1], args[2].serialize())
+                        else:
+                            self.next_gadget.return_image_float(header,args[1])
                     else:
-                        print "Complex data"
-                        ret_data = args[1].astype('complex64')
-
-                    if (len(args) == 3):
-                        self.next_gadget.return_image_attr(args[0],ret_data, args[2].serialize())
-                    else:
-                        self.next_gadget.return_image(args[0],ret_data)
+                        if len(args) == 3:
+                            self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), args[2].serialize())
+                        else:
+                            self.next_gadget.return_image_cplx(header,args[1].astype('complex64'))
                 else:
                     raise("Unsupported types when returning to Gadgetron framework")
             else:

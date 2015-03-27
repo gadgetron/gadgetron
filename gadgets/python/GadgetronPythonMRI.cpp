@@ -11,9 +11,13 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
     boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
 
     class_<Gadgetron::GadgetReference>("GadgetReference")
-      .def("return_acquisition", &Gadgetron::GadgetReference::return_data<ISMRMRD::AcquisitionHeader>)
-      .def("return_image", &Gadgetron::GadgetReference::return_image)
-      .def("return_image_attr", &Gadgetron::GadgetReference::return_image_attr)
+      .def("return_acquisition", &Gadgetron::GadgetReference::return_acquisition)
+      .def("return_image_cplx", &Gadgetron::GadgetReference::return_image_cplx)
+      .def("return_image_cplx_attr", &Gadgetron::GadgetReference::return_image_cplx_attr)
+      .def("return_image_float", &Gadgetron::GadgetReference::return_image_float)
+      .def("return_image_float_attr", &Gadgetron::GadgetReference::return_image_float_attr)
+      .def("return_image_ushort", &Gadgetron::GadgetReference::return_image_ushort)
+      .def("return_image_ushort_attr", &Gadgetron::GadgetReference::return_image_ushort_attr)
       ;
 
     class_<Gadgetron::GadgetInstrumentationStreamControllerWrapper>("GadgetInstrumentationStreamController")

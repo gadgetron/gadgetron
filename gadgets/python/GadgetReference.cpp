@@ -19,17 +19,17 @@ namespace Gadgetron{
   {
   }
 
-  template<class T>
-  int GadgetReference::return_data(T header, boost::python::object arr, const char* meta)
+  template<class TH, class TD>
+  int GadgetReference::return_data(TH header, boost::python::object arr, const char* meta)
   {
-    GadgetContainerMessage< T >* m1 = new GadgetContainerMessage< T >;
-    memcpy(m1->getObjectPtr(), &header, sizeof(T));
+    GadgetContainerMessage< TH >* m1 = new GadgetContainerMessage< TH >;
+    memcpy(m1->getObjectPtr(), &header, sizeof(TH));
 
     // this works because the python converter for hoNDArray<std::complex<float>>
     // is registered in the python_toolbox
-    GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2;
-    m2 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >(
-            boost::python::extract<hoNDArray <std::complex<float> > >(arr)());
+    GadgetContainerMessage< hoNDArray< TD > >* m2;
+    m2 = new GadgetContainerMessage< hoNDArray< TD > >(
+	    boost::python::extract<hoNDArray < TD > >(arr)());
     m1->cont(m2);
 
     if (meta) {
@@ -72,19 +72,38 @@ namespace Gadgetron{
 
   int GadgetReference::return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::object arr)
   {
-    return return_data<ISMRMRD::AcquisitionHeader>(acq, arr, 0);
+    return return_data<ISMRMRD::AcquisitionHeader, std::complex<float> >(acq, arr, 0);
   }
 
-  int GadgetReference::return_image(ISMRMRD::ImageHeader img, boost::python::object arr)
+  int GadgetReference::return_image_cplx(ISMRMRD::ImageHeader img, boost::python::object arr)
   {
-    return return_data<ISMRMRD::ImageHeader>(img, arr, 0);
+    return return_data<ISMRMRD::ImageHeader, std::complex<float> >(img, arr, 0);
   }
 
-  int GadgetReference::return_image_attr(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta)
+  int GadgetReference::return_image_cplx_attr(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta)
   {
-    return return_data<ISMRMRD::ImageHeader>(img, arr, meta);
+    return return_data<ISMRMRD::ImageHeader, std::complex<float> >(img, arr, meta);
   }
 
-  template int GadgetReference::return_data<ISMRMRD::AcquisitionHeader>(ISMRMRD::AcquisitionHeader, boost::python::object, const char*);
-  template int GadgetReference::return_data<ISMRMRD::ImageHeader>(ISMRMRD::ImageHeader, boost::python::object, const char*);
+
+  int GadgetReference::return_image_float(ISMRMRD::ImageHeader img, boost::python::object arr)
+  {
+    return return_data<ISMRMRD::ImageHeader, float>(img, arr, 0);
+  }
+
+  int GadgetReference::return_image_float_attr(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta)
+  {
+    return return_data<ISMRMRD::ImageHeader, float>(img, arr, meta);
+  }
+
+  int GadgetReference::return_image_ushort(ISMRMRD::ImageHeader img, boost::python::object arr)
+  {
+    return return_data<ISMRMRD::ImageHeader, unsigned short>(img, arr, 0);
+  }
+
+  int GadgetReference::return_image_ushort_attr(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta)
+  {
+    return return_data<ISMRMRD::ImageHeader, unsigned short>(img, arr, meta);
+  }
+
 }

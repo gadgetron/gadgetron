@@ -265,9 +265,4 @@ namespace Gadgetron
     return put_data<ISMRMRD::ImageHeader, unsigned short >(img, arr, meta);
   }
 
-  template int GadgetInstrumentationStreamController::put_data<ISMRMRD::AcquisitionHeader, std::complex<float> >(ISMRMRD::AcquisitionHeader, boost::python::object, const char* meta);
-  template int GadgetInstrumentationStreamController::put_data<ISMRMRD::ImageHeader, std::complex<float> >(ISMRMRD::ImageHeader, boost::python::object, const char* meta);
-  template int GadgetInstrumentationStreamController::put_data<ISMRMRD::ImageHeader, float >(ISMRMRD::ImageHeader, boost::python::object, const char* meta);
-  template int GadgetInstrumentationStreamController::put_data<ISMRMRD::ImageHeader, unsigned short >(ISMRMRD::ImageHeader, boost::python::object, const char* meta);
-
 }

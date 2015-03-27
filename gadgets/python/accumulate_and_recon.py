@@ -1,33 +1,37 @@
 import numpy as np
 import kspaceandimage as ki
-import libxml2
-import ismrmrd
 from gadgetron import Gadget
+import ismrmrd
+import ismrmrd.xsd
 
 class AccumulateAndRecon(Gadget):
-    myBuffer = []
-    myParameters = {}
-    myCounter = 1
-    mySeries = 1
+    def __init__(self, next_gadget=None):
+        Gadget.__init__(self,next_gadget)
+        self.myBuffer = None
+        self.myCounter = 1
+        self.mySeries = 1
+        self.header = None
+        self.enc = None
 
     def process_config(self, conf):
-        doc = libxml2.parseDoc(str(conf))
-        context = doc.xpathNewContext()
-        context.xpathRegisterNs("ismrm", "http://www.ismrm.org/ISMRMRD")
-        self.myParameters["matrix_x"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodedSpace/ismrm:matrixSize/ismrm:x")[0]).content)
-        self.myParameters["matrix_y"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodedSpace/ismrm:matrixSize/ismrm:y")[0]).content)
-        self.myParameters["matrix_z"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodedSpace/ismrm:matrixSize/ismrm:z")[0]).content)
-        self.myParameters["channels"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:acquisitionSystemInformation/ismrm:receiverChannels")[0]).content)
-        try:
-            self.myParameters["slices"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodingLimits/ismrm:slice/ismrm:maximum")[0]).content)+1
-        except:
-            self.myParameters["slices"] = 1
-        self.myParameters["center_line"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodingLimits/ismrm:kspace_encoding_step_1/ismrm:center")[0]).content)
+        self.header = ismrmrd.xsd.CreateFromDocument(conf)
+        self.enc = self.header.encoding[0]
 
-        self.myBuffer = (np.zeros((self.myParameters["channels"],self.myParameters["slices"],self.myParameters["matrix_z"],self.myParameters["matrix_y"],(self.myParameters["matrix_x"]>>1)))).astype('complex64')
+    def process(self, acq, data,*args):
 
-    def process(self, acq, data):
-        line_offset = (self.myParameters["matrix_y"]>>1)-self.myParameters["center_line"];
+        if self.myBuffer is None:
+            channels = acq.active_channels
+            if self.enc.encodingLimits.slice != None:
+                nslices = self.enc.encodingLimits.slice.maximum + 1
+            else:
+                nslices = 1
+            eNz = self.enc.encodedSpace.matrixSize.z
+            eNy = self.enc.encodedSpace.matrixSize.y
+            eNx = self.enc.encodedSpace.matrixSize.x
+        
+            self.myBuffer = np.zeros((channels,nslices,eNz,eNy,eNx>>1),dtype=np.complex64)
+
+        line_offset = self.enc.encodedSpace.matrixSize.y/2 - self.enc.encodingLimits.kspace_encoding_step_1.center             
         self.myBuffer[:,acq.idx.slice,acq.idx.kspace_encode_step_2,acq.idx.kspace_encode_step_1+line_offset,:] = data
 
         if (acq.flags & (1<<7)): #Is this the last scan in slice
@@ -55,7 +59,7 @@ class AccumulateAndRecon(Gadget):
                     self.myCounter = 1
 
             #Return image to Gadgetron
-            self.put_next(img_head,image)
+            self.put_next(img_head,image,*args)
             
         #print "Returning to Gadgetron"
         return 0 #Everything OK
