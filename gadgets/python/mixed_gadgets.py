@@ -58,7 +58,6 @@ gadget_config(g0,dset.read_xml_header())
 
 # Loop through the rest of the acquisitions and stuff
 for acqnum in range(0,dset.number_of_acquisitions()):
-    print "Sending in acquisition " + str(acqnum) + " of " + str(dset.number_of_acquisitions())
     acq = dset.read_acquisition(acqnum)
     g0.process(acq.getHead(),acq.data.astype('complex64'))
 

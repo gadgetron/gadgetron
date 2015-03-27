@@ -24,10 +24,12 @@ public:
 
   virtual ~GadgetInstrumentationStreamController();
 
-  template<class T> int put_data(T header, boost::python::object arr);
+  template<class TH, class TD> int put_data(TH header, boost::python::object arr, const char* meta = 0);
   int put_config(const char* config);
-  int put_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::object arr);
-  int put_image(ISMRMRD::ImageHeader img, boost::python::object arr);
+  int put_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::object arr, const char* meta = 0);
+  int put_image_cplx(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta = 0);
+  int put_image_float(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta = 0);
+  int put_image_ushort(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta = 0);
   int set_python_gadget(boost::python::object g)
   {
     python_gadget_ = g;
@@ -40,8 +42,7 @@ public:
 
  protected:
   boost::python::object python_gadget_;
-  template <class T1, class T2> int return_data(ACE_Message_Block* mb);
-
+  template <class T1, class T2, class T3> int return_data(ACE_Message_Block* mb);
 };
 
 class GadgetInstrumentationStreamControllerWrapper
@@ -52,6 +53,7 @@ class GadgetInstrumentationStreamControllerWrapper
       // ensure boost can convert between hoNDArrays and NumPy arrays automatically
       register_converter<hoNDArray<std::complex<float> > >();
       register_converter<hoNDArray< float > >();
+      register_converter<hoNDArray< unsigned short > >();
       // ensure boost can convert ISMRMRD headers automatically
       register_converter<ISMRMRD::ImageHeader>();
       register_converter<ISMRMRD::AcquisitionHeader>();
@@ -82,10 +84,36 @@ class GadgetInstrumentationStreamControllerWrapper
   }
 
 
-  int put_image(ISMRMRD::ImageHeader img, boost::python::object arr)
+  int put_image_cplx(ISMRMRD::ImageHeader img, boost::python::object arr)
   {
-    return cntrl_->put_image(img,arr);
+    return cntrl_->put_image_cplx(img,arr);
   }
+
+  int put_image_cplx_attr(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta = 0)
+  {
+    return cntrl_->put_image_cplx(img,arr, meta);
+  }
+
+  int put_image_float(ISMRMRD::ImageHeader img, boost::python::object arr)
+  {
+    return cntrl_->put_image_float(img,arr);
+  }
+
+  int put_image_float_attr(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta = 0)
+  {
+    return cntrl_->put_image_float(img,arr, meta);
+  }
+
+  int put_image_ushort(ISMRMRD::ImageHeader img, boost::python::object arr)
+  {
+    return cntrl_->put_image_ushort(img,arr);
+  }
+
+  int put_image_ushort_attr(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta = 0)
+  {
+    return cntrl_->put_image_ushort(img,arr, meta);
+  }
+
 
   int close()
   {

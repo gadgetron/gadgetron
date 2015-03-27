@@ -107,7 +107,7 @@ struct AcquisitionHeader_from_PythonAcquisitionHeader {
         data->convertible = storage;
 
         try {
-            bp::object pyhead((bp::handle<>(obj)));
+            bp::object pyhead((bp::handle<>(bp::borrowed(obj))));
 
             head->version = bp::extract<uint16_t>(pyhead.attr("version"));
             head->flags = bp::extract<uint64_t>(pyhead.attr("flags"));
@@ -259,7 +259,7 @@ struct ImageHeader_from_PythonImageHeader {
         data->convertible = storage;
 
         try {
-            bp::object pyhead((bp::handle<>(obj)));
+            bp::object pyhead((bp::handle<>(bp::borrowed(obj))));
 
             head->version = bp::extract<uint16_t>(pyhead.attr("version"));
             head->data_type = bp::extract<uint16_t>(pyhead.attr("data_type"));

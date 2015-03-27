@@ -24,7 +24,10 @@ namespace Gadgetron{
           }
 
           // ensure boost can convert between hoNDArrays and NumPy arrays automatically
-          register_converter<hoNDArray<std::complex<float> > >();
+          register_converter<hoNDArray< std::complex<float> > >();
+          register_converter<hoNDArray< float > >();
+          register_converter<hoNDArray< unsigned short > >();
+
           // ensure boost can convert ISMRMRD headers automatically
           register_converter<ISMRMRD::ImageHeader>();
           register_converter<ISMRMRD::AcquisitionHeader>();
