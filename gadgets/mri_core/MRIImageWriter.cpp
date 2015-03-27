@@ -31,7 +31,12 @@ namespace Gadgetron{
     GadgetMessageIdentifier id;
     switch (sizeof(T)) {
     case 2: //Unsigned short
-      id.id = GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT;
+    {
+        if (typeid(T) == typeid(unsigned short))
+            id.id = GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT; 
+        else
+            id.id = GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT;
+    }
       break;
     case 4: //Float
       id.id = GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT;
@@ -79,5 +84,6 @@ namespace Gadgetron{
 
   GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriterFLOAT);
   GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriterUSHORT);
+  GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriterSHORT);
   GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriterCPLX);
 }

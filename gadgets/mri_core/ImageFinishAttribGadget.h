@@ -31,6 +31,13 @@ namespace Gadgetron{
         GADGET_DECLARE(ImageFinishAttribGadgetUSHORT);
     };
 
+    class EXPORTGADGETSMRICORE ImageFinishAttribGadgetSHORT :
+        public ImageFinishAttribGadget<ACE_INT16>
+    {
+    public:
+        GADGET_DECLARE(ImageFinishAttribGadgetSHORT);
+    };
+
     class EXPORTGADGETSMRICORE ImageFinishAttribGadgetFLOAT :
         public ImageFinishAttribGadget<float>
     {

@@ -17,7 +17,12 @@ int ImageFinishGadget<T>
 
   switch (sizeof(T)) {
   case 2: //Unsigned short
-	  mb->getObjectPtr()->id = GADGET_MESSAGE_IMAGE_REAL_USHORT;
+  {
+      if (typeid(T) == typeid(unsigned short))
+          mb->getObjectPtr()->id = GADGET_MESSAGE_IMAGE_REAL_USHORT;
+      else
+          mb->getObjectPtr()->id = GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT;
+  }
 	  break;
   case 4: //Float
 	  mb->getObjectPtr()->id = GADGET_MESSAGE_IMAGE_REAL_FLOAT;
@@ -47,5 +52,6 @@ int ImageFinishGadget<T>
 //Declare factories for the various template instances
 GADGET_FACTORY_DECLARE(ImageFinishGadgetFLOAT);
 GADGET_FACTORY_DECLARE(ImageFinishGadgetUSHORT);
+GADGET_FACTORY_DECLARE(ImageFinishGadgetSHORT);
 GADGET_FACTORY_DECLARE(ImageFinishGadgetCPLX);
 }
