@@ -28,6 +28,12 @@ namespace Gadgetron{
         GADGETRON_WRITER_DECLARE(MRIImageAttribWriterUSHORT);
     };
 
+    class EXPORTGADGETSMRICORE MRIImageAttribWriterSHORT : public MRIImageAttribWriter<ACE_INT16>
+    {
+    public:
+        GADGETRON_WRITER_DECLARE(MRIImageAttribWriterSHORT);
+    };
+
     class EXPORTGADGETSMRICORE MRIImageAttribWriterFLOAT : public MRIImageAttribWriter<float>
     {
     public:
