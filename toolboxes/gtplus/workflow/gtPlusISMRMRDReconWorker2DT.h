@@ -1703,6 +1703,13 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                             GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
                             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder2DT->complexIm_, debugFolder_+"complexIm_noFullResCoilMap_"); }
                         }
+                        else if (workOrder2DT->fullkspace_.get_size(2) == 1) // if recon kspace is not required
+                        {
+                            hoNDArray<T> buffer2DT_ComplexIm(workOrder2DT->fullkspace_.get_dimensions());
+                            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->fullkspace_, buffer2DT_ComplexIm);
+                            memcpy(workOrder2DT->complexIm_.begin(), buffer2DT_ComplexIm.begin(), workOrder2DT->complexIm_.get_number_of_bytes());
+                            if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(workOrder2DT->complexIm_, debugFolder_ + "complexIm_noFullResCoilMap_noReconKSpace_"); }
+                        }
                     }
                 }
             }

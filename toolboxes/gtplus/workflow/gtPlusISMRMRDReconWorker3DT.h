@@ -1614,10 +1614,22 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                     }
                     else if ( workOrder3DT->fullkspace_.get_number_of_elements() > 0 )
                     {
-                        hoNDArray<T> buffer3DT_Two(workOrder3DT->fullkspace_.get_dimensions());
-                        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->fullkspace_, buffer3DT, buffer3DT_Two);
-                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
-                        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_noFullResCoilMap_"); }
+                        if (workOrder3DT->fullkspace_.get_size(3) == workOrder3DT->coilMap_->get_size(3))
+                        {
+                            hoNDArray<T> buffer3DT_Two(workOrder3DT->fullkspace_.get_dimensions());
+                            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->fullkspace_, buffer3DT, buffer3DT_Two);
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_noFullResCoilMap_"); }
+                        }
+                        else
+                        {
+                            if (workOrder3DT->fullkspace_.get_size(3) == 1)
+                            {
+                                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->fullkspace_, buffer3DT);
+                                memcpy(workOrder3DT->complexIm_.begin(), buffer3DT.begin(), workOrder3DT->complexIm_.get_number_of_bytes());
+                                if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_ + "complexIm_noFullResCoilMap__noReconKSpace_"); }
+                            }
+                        }
                     }
                 }
             }
