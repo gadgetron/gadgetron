@@ -68,15 +68,8 @@ set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 install(TARGETS gadgetron_python DESTINATION lib COMPONENT main)
 install(TARGETS GadgetronPythonMRI DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
-install(FILES
-    gadgetron.py
-    GadgetronXML.py
-    rms_coil_combine.py
-    kspaceandimage.py
-    remove_2x_oversampling.py
-    accumulate_and_recon.py
-    image_viewer.py
-    DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
+add_subdirectory(config)
+add_subdirectory(gadgets)
+add_subdirectory(utils)
+#add_subdirectory(examples)
 
-install(FILES python.xml python_short.xml
-    DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
