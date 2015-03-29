@@ -88,6 +88,8 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT    = 1017,
     GADGET_MESSAGE_DICOM_WITHNAME                         = 1018,
     GADGET_MESSAGE_DEPENDENCY_QUERY                       = 1019,
+    GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT               = 1020,
+    GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT     = 1021,
     GADGET_MESSAGE_EXT_ID_MAX                             = 4096
 };
 
@@ -1183,22 +1185,26 @@ int main(int argc, char **argv)
     if ( out_fileformat == "hdr" )
     {
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader<uint16_t>(hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader<int16_t>(hdf5_out_group)));
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader<float>(hdf5_out_group)));
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader< std::complex<float> >(hdf5_out_group)));
 
         //Image with attributes 
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribAnalyzeImageMessageReader<uint16_t>(hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribAnalyzeImageMessageReader<int16_t>(hdf5_out_group)));
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribAnalyzeImageMessageReader<float>(hdf5_out_group)));
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribAnalyzeImageMessageReader< std::complex<float> >(hdf5_out_group)));
     }
     else
     {
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader<uint16_t>(out_filename, hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader<int16_t>(out_filename, hdf5_out_group)));
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader<float>(out_filename, hdf5_out_group)));
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader< std::complex<float> >(out_filename, hdf5_out_group)));
 
         //Image with attributes 
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader<uint16_t>(out_filename, hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader<int16_t>(out_filename, hdf5_out_group)));
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader<float>(out_filename, hdf5_out_group)));
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader< std::complex<float> >(out_filename, hdf5_out_group)));
     }

@@ -67,7 +67,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     NoiseAdjustGadget_unoptimized.h 
                                     ExtractGadget.h 
                                     FloatToUShortGadget.h 
-                                    FloatToUShortAttribGadget.h 
+                                    # FloatToUShortAttribGadget.h 
+                                    FloatToFixPointAttribGadget.h 
                                     RemoveROOversamplingGadget.h 
                                     CoilReductionGadget.h 
                                     AutoScaleGadget.h 
@@ -83,7 +84,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     ComplexToFloatAttribGadget.h
                                     AcquisitionAccumulateTriggerGadget.h
                                     BucketToBufferGadget.h 
-				    ImageArraySplitGadget.h
+                                    ImageArraySplitGadget.h
                                     SimpleReconGadget.h)
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
@@ -100,7 +101,8 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 NoiseAdjustGadget_unoptimized.cpp 
                                 ExtractGadget.cpp 
                                 FloatToUShortGadget.cpp 
-                                FloatToUShortAttribGadget.cpp 
+                                # FloatToUShortAttribGadget.cpp 
+                                FloatToFixPointAttribGadget.cpp 
                                 RemoveROOversamplingGadget.cpp
                                 CoilReductionGadget.cpp
                                 AutoScaleGadget.cpp
@@ -116,7 +118,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 ComplexToFloatAttribGadget.cpp 
                                 AcquisitionAccumulateTriggerGadget.cpp
                                 BucketToBufferGadget.cpp
-				ImageArraySplitGadget.cpp
+                                ImageArraySplitGadget.cpp
                                 SimpleReconGadget.cpp  )
 
 if (WIN32)
