@@ -1,5 +1,5 @@
 import numpy as np
-import kspaceandimage as ki
+from ismrmrdtools import transform
 import libxml2
 from gadgetron import Gadget
 
@@ -14,7 +14,7 @@ class Remove2xOversampling(Gadget):
         orig_size = list(data.shape);
         data2 = data.reshape([(data.size/data.shape[data.ndim-1]), data.shape[data.ndim-1]])
         new_length = data2.shape[1]>>1
-        data2 = ki.itok(ki.ktoi(data2,[1])[:,(0+(new_length>>1)):(new_length+(new_length>>1))],[1])
+        data2 = transform.transform_image_to_kspace(transform.transform_kspace_to_image(data2,dim=(1,))[:,(0+(new_length>>1)):(new_length+(new_length>>1))],dim=(1,))
         orig_size[data.ndim-1] = new_length
         data2.reshape(tuple(orig_size))
         acq.samples = new_length
