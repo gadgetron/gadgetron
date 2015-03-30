@@ -10,21 +10,11 @@
     </reader>
   
     <writer>
-      <slot>1004</slot>
+      <slot>1022</slot>
       <dll>gadgetron_mricore</dll>
-      <classname>MRIImageWriterCPLX</classname>
+      <classname>MRIImageWriter</classname>
     </writer>
-    <writer>
-      <slot>1005</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>MRIImageWriterFLOAT</classname>
-    </writer>
-    <writer>
-      <slot>1006</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>MRIImageWriterUSHORT</classname>
-    </writer>
-  
+
     <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetron_mricore</dll>
@@ -63,7 +53,7 @@
     <gadget>
         <name>AccTrig</name>
         <dll>gadgetron_mricore</dll>
-	<classname>AcquisitionAccumulateTriggerGadget</classname>
+        <classname>AcquisitionAccumulateTriggerGadget</classname>
         <property>
             <name>trigger_dimension</name>
             <value>repetition</value>
@@ -77,7 +67,7 @@
     <gadget>
         <name>Buff</name>
         <dll>gadgetron_mricore</dll>
-	<classname>BucketToBufferGadget</classname>
+        <classname>BucketToBufferGadget</classname>
         <property>
             <name>N_dimension</name>
             <value></value>
@@ -116,14 +106,6 @@
       <classname>AutoScaleGadget</classname>
     </gadget>
 
-<!--
-     <gadget>
-      <name>ImageFinishFLOAT</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadgetFLOAT</classname>
-    </gadget>
--->
-
     <gadget>
       <name>FloatToShort</name>
       <dll>gadgetron_mricore</dll>
@@ -131,8 +113,8 @@
     </gadget>
  
      <gadget>
-      <name>ImageFinishUSHORT</name>
+      <name>ImageFinish</name>
       <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadgetUSHORT</classname>
+      <classname>ImageFinishGadget</classname>
     </gadget>
 </gadgetronStreamConfiguration>

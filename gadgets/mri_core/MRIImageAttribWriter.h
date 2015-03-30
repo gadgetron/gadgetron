@@ -16,34 +16,107 @@
 
 namespace Gadgetron{
 
-    template<typename T> class MRIImageAttribWriter : public GadgetMessageWriter
-    {
-    public:
-        virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);
-    };
+class MRIImageAttribWriter : public GadgetMessageWriter
+{
+public:
+    virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);
 
-    class EXPORTGADGETSMRICORE MRIImageAttribWriterUSHORT : public MRIImageAttribWriter<ACE_UINT16>
+    template <typename T> 
+    int write_data_attrib(ACE_SOCK_Stream* sock, GadgetContainerMessage<ISMRMRD::ImageHeader>* header, GadgetContainerMessage< hoNDArray<T> >* data)
     {
-    public:
-        GADGETRON_WRITER_DECLARE(MRIImageAttribWriterUSHORT);
-    };
+        typedef unsigned long long size_t_type;
 
-    class EXPORTGADGETSMRICORE MRIImageAttribWriterSHORT : public MRIImageAttribWriter<ACE_INT16>
-    {
-    public:
-        GADGETRON_WRITER_DECLARE(MRIImageAttribWriterSHORT);
-    };
+        uint16_t RO = header->getObjectPtr()->matrix_size[0];
+        uint16_t E1 = header->getObjectPtr()->matrix_size[1];
+        uint16_t E2 = header->getObjectPtr()->matrix_size[2];
 
-    class EXPORTGADGETSMRICORE MRIImageAttribWriterFLOAT : public MRIImageAttribWriter<float>
-    {
-    public:
-        GADGETRON_WRITER_DECLARE(MRIImageAttribWriterFLOAT);
-    };
+        unsigned long expected_elements = RO*E1*E2;
 
-    class EXPORTGADGETSMRICORE MRIImageAttribWriterCPLX : public MRIImageAttribWriter< std::complex<float> >
-    {
-    public:
-        GADGETRON_WRITER_DECLARE(MRIImageAttribWriterCPLX);
-    };
+        if (expected_elements != data->getObjectPtr()->get_number_of_elements())
+        {
+            GDEBUG("Number of header elements %d is inconsistent with number of elements in NDArray %d\n", expected_elements, data->getObjectPtr()->get_number_of_elements());
+            GDEBUG("Header dimensions: %d, %d, %d\n", RO, E1, E2);
+            GDEBUG("Number of array dimensions: %d:\n", data->getObjectPtr()->get_number_of_dimensions());
+            for (size_t i = 0; i < data->getObjectPtr()->get_number_of_dimensions(); i++)
+            {
+                GDEBUG("Dimensions %d: %d\n", i, data->getObjectPtr()->get_size(i));
+            }
+            return -1;
+        }
+
+        ssize_t send_cnt = 0;
+        GadgetMessageIdentifier id;
+        id.id = GADGET_MESSAGE_ISMRMRD_IMAGE;
+
+        if ((send_cnt = sock->send_n(&id, sizeof(GadgetMessageIdentifier))) <= 0)
+        {
+            GERROR("Unable to send image message identifier\n");
+            return -1;
+        }
+
+        GadgetContainerMessage<ISMRMRD::MetaContainer>* attribmb = AsContainerMessage<ISMRMRD::MetaContainer>(data->cont());
+
+        char* buf = NULL;
+        size_t_type len(0);
+
+        if (!attribmb)
+        {
+            try
+            {
+                std::stringstream str;
+                ISMRMRD::serialize(*attribmb->getObjectPtr(), str);
+                std::string attribContent = str.str();
+                len = attribContent.length() + 1;
+
+                buf = new char[len];
+                GADGET_CHECK_THROW(buf != NULL);
+
+                memset(buf, '\0', sizeof(char)*len);
+                memcpy(buf, attribContent.c_str(), len - 1);
+            }
+            catch (...)
+            {
+                GERROR("Unable to serialize image meta attributes \n");
+                return -1;
+            }
+        }
+
+        header->getObjectPtr()->attribute_string_len = (uint32_t)len;
+
+        if ((send_cnt = sock->send_n(header->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0)
+        {
+            GERROR("Unable to send image header\n");
+            return -1;
+        }
+
+        if ((send_cnt = sock->send_n(&len, sizeof(size_t_type))) <= 0)
+        {
+            GERROR("Unable to send image meta attributes length\n");
+            if (buf != NULL) delete[] buf;
+            return -1;
+        }
+
+        if (len>0)
+        {
+            if ((send_cnt = sock->send_n(buf, len)) <= 0)
+            {
+                GERROR("Unable to send image meta attributes\n");
+                if (buf != NULL) delete[] buf;
+                return -1;
+            }
+        }
+
+        if (buf != NULL) delete[] buf;
+
+        if ((send_cnt = sock->send_n(data->getObjectPtr()->get_data_ptr(), sizeof(T)*data->getObjectPtr()->get_number_of_elements())) <= 0)
+        {
+            GERROR("Unable to send image data\n");
+            return -1;
+        }
+
+        return 0;
+    }
+};
+
 }
 #endif

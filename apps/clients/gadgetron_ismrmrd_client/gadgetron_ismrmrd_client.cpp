@@ -77,19 +77,20 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_IMAGE_REAL_USHORT                      = 1006, /**< DEPRECATED */
     GADGET_MESSAGE_EMPTY                                  = 1007, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_ACQUISITION                    = 1008,
-    GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT               = 1009,
-    GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT               = 1010,
-    GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT              = 1011,
-    GADGET_MESSAGE_DICOM                                  = 1012,
+    GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT               = 1009, /**< DEPRECATED */
+    GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT               = 1010, /**< DEPRECATED */
+    GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT              = 1011, /**< DEPRECATED */
+    GADGET_MESSAGE_DICOM                                  = 1012, /**< DEPRECATED */
     GADGET_MESSAGE_CLOUD_JOB                              = 1013,
     GADGET_MESSAGE_GADGETCLOUD_JOB                        = 1014,
-    GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT     = 1015,
-    GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT     = 1016,
-    GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT    = 1017,
+    GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT     = 1015, /**< DEPRECATED */
+    GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT     = 1016, /**< DEPRECATED */
+    GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT    = 1017, /**< DEPRECATED */
     GADGET_MESSAGE_DICOM_WITHNAME                         = 1018,
     GADGET_MESSAGE_DEPENDENCY_QUERY                       = 1019,
-    GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT               = 1020,
-    GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT     = 1021,
+    GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT               = 1020, /**< DEPRECATED */
+    GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT     = 1021, /**< DEPRECATED */
+    GADGET_MESSAGE_ISMRMRD_IMAGE                          = 1022,
     GADGET_MESSAGE_EXT_ID_MAX                             = 4096
 };
 
@@ -143,9 +144,7 @@ public:
 
 };
 
-
-template <typename T> class GadgetronClientImageMessageReader 
-    : public GadgetronClientMessageReader
+class GadgetronClientImageMessageReader : public GadgetronClientMessageReader
 {
 
 public:
@@ -159,69 +158,9 @@ public:
     ~GadgetronClientImageMessageReader() {
     } 
 
-    virtual void read(tcp::socket* stream) 
+    template <typename T> 
+    void read_data_attrib(tcp::socket* stream, const ISMRMRD::ImageHeader& h, ISMRMRD::Image<T>& im)
     {
-        //std::cout << "Receiving image." << std::endl;
-        //Read the image from the socket
-        ISMRMRD::ImageHeader h;
-        boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
-
-        // TODO check the datatype!
-        ISMRMRD::Image<T> im; 
-        im.setHead(h);
-        boost::asio::read(*stream, boost::asio::buffer(im.getDataPtr(), im.getDataSize()));
-        {
-            if (!dataset_) {
-
-                {
-                    mtx.lock();
-                    dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str(), true)); // create if necessary 
-                    mtx.unlock();
-                }
-            }
-
-            std::stringstream st1;
-            st1 << "image_" << h.image_series_index;
-            std::string image_varname = st1.str();
-
-            {
-                mtx.lock();
-                // TODO should this be wrapped in a try/catch?
-                dataset_->appendImage(image_varname, im);
-                mtx.unlock();
-            }
-
-        }
-    }
-
-protected:
-    std::string group_name_;
-    std::string file_name_;
-    boost::shared_ptr<ISMRMRD::Dataset> dataset_;
-};
-
-template <typename T> class GadgetronClientAttribImageMessageReader 
-    : public GadgetronClientMessageReader
-{
-
-public:
-    GadgetronClientAttribImageMessageReader(std::string filename, std::string groupname)
-        : file_name_(filename)
-        , group_name_(groupname)
-    {
-
-    }
-
-    ~GadgetronClientAttribImageMessageReader() {
-    } 
-
-    virtual void read(tcp::socket* stream) 
-    {
-        //std::cout << "Receiving image with attributes." << std::endl;
-        //Read the image headerfrom the socket
-        ISMRMRD::ImageHeader h;
-        boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
-        ISMRMRD::Image<T> im;
         im.setHead(h);
 
         typedef unsigned long long size_t_type;
@@ -230,9 +169,12 @@ public:
         size_t_type meta_attrib_length;
         boost::asio::read(*stream, boost::asio::buffer(&meta_attrib_length, sizeof(size_t_type)));
 
-        std::string meta_attrib(meta_attrib_length,0);
-        boost::asio::read(*stream, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()), meta_attrib_length));
-        im.setAttributeString(meta_attrib);
+        if (meta_attrib_length>0)
+        {
+            std::string meta_attrib(meta_attrib_length, 0);
+            boost::asio::read(*stream, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()), meta_attrib_length));
+            im.setAttributeString(meta_attrib);
+        }
 
         //Read image data
         boost::asio::read(*stream, boost::asio::buffer(im.getDataPtr(), im.getDataSize()));
@@ -256,6 +198,58 @@ public:
                 dataset_->appendImage(image_varname, im);
                 mtx.unlock();
             }
+        }
+    }
+
+    virtual void read(tcp::socket* stream) 
+    {
+        //Read the image headerfrom the socket
+        ISMRMRD::ImageHeader h;
+        boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
+
+        if (h.data_type == ISMRMRD::ISMRMRD_USHORT)
+        {
+            ISMRMRD::Image<unsigned short> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_SHORT)
+        {
+            ISMRMRD::Image<short> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_UINT)
+        {
+            ISMRMRD::Image<unsigned int> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_INT)
+        {
+            ISMRMRD::Image<int> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_FLOAT)
+        {
+            ISMRMRD::Image<float> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_DOUBLE)
+        {
+            ISMRMRD::Image<double> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_CXFLOAT)
+        {
+            ISMRMRD::Image< std::complex<float> > im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_CXDOUBLE)
+        {
+            ISMRMRD::Image< std::complex<double> > im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else
+        {
+            throw GadgetronClientException("Invalide image data type ... ");
         }
     }
 
@@ -578,12 +572,12 @@ public:
     }
 };
 
-template <typename T> class GadgetronClientAnalyzeImageMessageReader 
-    : public GadgetronClientMessageReader
+class GadgetronClientAnalyzeImageMessageReader : public GadgetronClientMessageReader
 {
 
 public:
-    GadgetronClientAnalyzeImageMessageReader(const std::string& prefix=std::string("Image")) : prefix_(prefix)
+
+    GadgetronClientAnalyzeImageMessageReader(const std::string& prefix = std::string("Image")) : prefix_(prefix)
     {
 
     }
@@ -591,160 +585,143 @@ public:
     ~GadgetronClientAnalyzeImageMessageReader() {
     } 
 
-    virtual void read(tcp::socket* stream) 
+    template <typename T>
+    void read_data_attrib(tcp::socket* stream, const ISMRMRD::ImageHeader& h, ISMRMRD::Image<T>& im)
     {
-        using namespace ISMRMRD;
-
-        //Read the image from the socket
-        ISMRMRD::ImageHeader h;
-        boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
-        ISMRMRD::Image<T> im; 
         im.setHead(h);
-        boost::asio::read(*stream, boost::asio::buffer(im.getDataPtr(), im.getDataSize()));
 
         std::cout << "Receiving image : " << h.image_series_index << " - " << h.image_index << std::endl;
+
+        typedef unsigned long long size_t_type;
+
+        std::ostringstream ostr;
+
+        if (!prefix_.empty())
         {
-            // analyze header
-            std::stringstream st1;
-            st1 << prefix_ << "_" << h.image_series_index << "_" << h.image_index << ".hdr";
-            std::string head_varname = st1.str();
-
-            std::vector<size_t> dim(3);
-            dim[0] = h.matrix_size[0];
-            dim[1] = h.matrix_size[1];
-            dim[2] = h.matrix_size[2];
-
-            std::vector<float> pixelSize(3);
-            pixelSize[0] = h.field_of_view[0]/h.matrix_size[0];
-            pixelSize[1] = h.field_of_view[1]/h.matrix_size[1];
-            pixelSize[2] = h.field_of_view[2]/h.matrix_size[2];
-
-            IOAnalyze hdr;
-            dsr header;
-            hdr.array2Header<T>(dim, pixelSize, header);
-
-            std::ofstream outfileHeader;
-            outfileHeader.open (head_varname.c_str(), std::ios::out|std::ios::binary);
-            outfileHeader.write(reinterpret_cast<const char*>(&header), sizeof(dsr));
-            outfileHeader.close();
-
-            // data
-            std::stringstream st2;
-            st2 << prefix_ << "_" << h.image_series_index << "_" << h.image_index << ".img";
-            std::string img_varname = st2.str();
-
-            std::ofstream outfileData;
-            outfileData.open (img_varname.c_str(), std::ios::out|std::ios::binary);
-            outfileData.write(reinterpret_cast<const char*>(im.getDataPtr()), sizeof(T)*dim[0]*dim[1]*dim[2]);
-            outfileData.close();
+            ostr << prefix_ << "_";
         }
+
+        ostr << "SLC" << h.slice << "_"
+            << "CON" << h.contrast << "_"
+            << "PHS" << h.phase << "_"
+            << "REP" << h.repetition << "_"
+            << "SET" << h.set << "_"
+            << "AVE" << h.average << "_"
+            << h.image_index
+            << "_" << h.image_series_index;
+
+        std::string filename = ostr.str();
+
+        //Read meta attributes
+        size_t_type meta_attrib_length;
+        boost::asio::read(*stream, boost::asio::buffer(&meta_attrib_length, sizeof(size_t_type)));
+
+        if (meta_attrib_length > 0)
+        {
+            std::string meta_attrib(meta_attrib_length, 0);
+            boost::asio::read(*stream, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()), meta_attrib_length));
+
+            // deserialize the meta attribute
+            ISMRMRD::MetaContainer imgAttrib;
+            ISMRMRD::deserialize(meta_attrib.c_str(), imgAttrib);
+
+            std::stringstream st3;
+            st3 << filename << ".attrib";
+            std::string meta_varname = st3.str();
+
+            std::ofstream outfile;
+            outfile.open(meta_varname.c_str(), std::ios::out | std::ios::binary);
+            outfile.write(meta_attrib.c_str(), meta_attrib_length);
+            outfile.close();
+        }
+
+        //Read data
+        boost::asio::read(*stream, boost::asio::buffer(im.getDataPtr(), im.getDataSize()));
+
+        // analyze header
+        std::stringstream st1;
+        st1 << filename << ".hdr";
+        std::string head_varname = st1.str();
+
+        std::vector<size_t> dim(3);
+        dim[0] = h.matrix_size[0];
+        dim[1] = h.matrix_size[1];
+        dim[2] = h.matrix_size[2];
+
+        std::vector<float> pixelSize(3);
+        pixelSize[0] = h.field_of_view[0] / h.matrix_size[0];
+        pixelSize[1] = h.field_of_view[1] / h.matrix_size[1];
+        pixelSize[2] = h.field_of_view[2] / h.matrix_size[2];
+
+        IOAnalyze hdr;
+        dsr header;
+        hdr.array2Header<T>(dim, pixelSize, header);
+
+        std::ofstream outfileHeader;
+        outfileHeader.open(head_varname.c_str(), std::ios::out | std::ios::binary);
+        outfileHeader.write(reinterpret_cast<const char*>(&header), sizeof(dsr));
+        outfileHeader.close();
+
+        // data
+        std::stringstream st2;
+        st2 << filename << ".img";
+        std::string img_varname = st2.str();
+
+        std::ofstream outfileData;
+        outfileData.open(img_varname.c_str(), std::ios::out | std::ios::binary);
+        outfileData.write(reinterpret_cast<const char*>(im.getDataPtr()), sizeof(T)*dim[0] * dim[1] * dim[2]);
+        outfileData.close();
     }
-
-protected:
-
-    std::string prefix_;
-};
-
-template <typename T> class GadgetronClientAttribAnalyzeImageMessageReader 
-    : public GadgetronClientMessageReader
-{
-
-public:
-    GadgetronClientAttribAnalyzeImageMessageReader(const std::string& prefix=std::string("Image")) : prefix_(prefix)
-    {
-
-    }
-
-    ~GadgetronClientAttribAnalyzeImageMessageReader() {
-    } 
 
     virtual void read(tcp::socket* stream) 
     {
         //Read the image headerfrom the socket
         ISMRMRD::ImageHeader h;
         boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
-        ISMRMRD::Image<T> im; 
-        im.setHead(h);
 
-        std::cout << "Receiving image with attributes : " << h.image_series_index << " - " << h.image_index << std::endl;
-
-        typedef unsigned long long size_t_type;
-
-        //Read meta attributes
-        size_t_type meta_attrib_length;
-        boost::asio::read(*stream, boost::asio::buffer(&meta_attrib_length, sizeof(size_t_type)));
-
-        std::string meta_attrib(meta_attrib_length,0);
-        boost::asio::read(*stream, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()), meta_attrib_length));
-
-        //Read image data
-        boost::asio::read(*stream, boost::asio::buffer(im.getDataPtr(), im.getDataSize()));
+        if (h.data_type == ISMRMRD::ISMRMRD_USHORT)
         {
-            // deserialize the meta attribute
-            ISMRMRD::MetaContainer imgAttrib;
-            ISMRMRD::deserialize(meta_attrib.c_str(), imgAttrib);
-
-            std::ostringstream ostr;
-
-            if ( !prefix_.empty() )
-            {
-                ostr << prefix_ << "_";
-            }
-
-            ostr << "SLC" << h.slice << "_"
-                << "CON" << h.contrast << "_"
-                << "PHS" << h.phase << "_"
-                << "REP" << h.repetition << "_"
-                << "SET" << h.set << "_"
-                << "AVE" << h.average << "_"
-                 << h.image_index 
-                 << "_" << h.image_series_index;
-
-            std::string filename = ostr.str();
-
-            // analyze header
-            std::stringstream st1;
-            st1 << filename << ".hdr";
-            std::string head_varname = st1.str();
-
-            std::vector<size_t> dim(3);
-            dim[0] = h.matrix_size[0];
-            dim[1] = h.matrix_size[1];
-            dim[2] = h.matrix_size[2];
-
-            std::vector<float> pixelSize(3);
-            pixelSize[0] = h.field_of_view[0]/h.matrix_size[0];
-            pixelSize[1] = h.field_of_view[1]/h.matrix_size[1];
-            pixelSize[2] = h.field_of_view[2]/h.matrix_size[2];
-
-            IOAnalyze hdr;
-            dsr header;
-            hdr.array2Header<T>(dim, pixelSize, header);
-
-            std::ofstream outfileHeader;
-            outfileHeader.open (head_varname.c_str(), std::ios::out|std::ios::binary);
-            outfileHeader.write(reinterpret_cast<const char*>(&header), sizeof(dsr));
-            outfileHeader.close();
-
-            // data
-            std::stringstream st2;
-            st2 << filename << ".img";
-            std::string img_varname = st2.str();
-
-            std::ofstream outfileData;
-            outfileData.open (img_varname.c_str(), std::ios::out|std::ios::binary);
-            outfileData.write(reinterpret_cast<const char*>(im.getDataPtr()), sizeof(T)*dim[0]*dim[1]*dim[2]);
-            outfileData.close();
-
-            // attribute
-            std::stringstream st3;
-            st3 << filename << ".attrib";
-            std::string meta_varname = st3.str();
-
-            std::ofstream outfile;
-            outfile.open (meta_varname.c_str(), std::ios::out|std::ios::binary);
-            outfile.write(meta_attrib.c_str(), meta_attrib_length);
-            outfile.close();
+            ISMRMRD::Image<unsigned short> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_SHORT)
+        {
+            ISMRMRD::Image<short> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_UINT)
+        {
+            ISMRMRD::Image<unsigned int> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_INT)
+        {
+            ISMRMRD::Image<int> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_FLOAT)
+        {
+            ISMRMRD::Image<float> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_DOUBLE)
+        {
+            ISMRMRD::Image<double> im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_CXFLOAT)
+        {
+            ISMRMRD::Image< std::complex<float> > im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else if (h.data_type == ISMRMRD::ISMRMRD_CXDOUBLE)
+        {
+            ISMRMRD::Image< std::complex<double> > im;
+            this->read_data_attrib(stream, h, im);
+        }
+        else
+        {
+            throw GadgetronClientException("Invalide image data type ... ");
         }
     }
 
@@ -783,62 +760,6 @@ public:
         std::vector<char> data(nbytes,0);
         boost::asio::read(*socket, boost::asio::buffer(&data[0],nbytes));
 
-        std::stringstream filename;
-
-        // Create the filename: (prefix_%06.suffix)
-        filename << file_prefix << "_";
-        filename << std::setfill('0') << std::setw(MAX_BLOBS_LOG_10) << number_of_calls_;
-        filename << "." << file_suffix;
-
-        std::ofstream outfile;
-        outfile.open (filename.str().c_str(), std::ios::out|std::ios::binary);
-
-        std::cout << "Writing image " << filename.str() << std::endl;
-
-        if (outfile.good()) {
-            /* write 'size' bytes starting at 'data's pointer */
-            outfile.write(&data[0], nbytes);
-            outfile.close();
-            number_of_calls_++;
-        } else {
-            throw GadgetronClientException("Unable to write blob to output file\n");
-        }
-    }
-
-protected:
-    size_t number_of_calls_;
-    std::string file_prefix;
-    std::string file_suffix;
-
-};
-
-class GadgetronClientBlobAttribMessageReader 
-    : public GadgetronClientMessageReader
-{
-
-public:
-    GadgetronClientBlobAttribMessageReader(std::string fileprefix, std::string filesuffix)
-        : number_of_calls_(0)
-        , file_prefix(fileprefix)
-        , file_suffix(filesuffix)
-
-    {
-
-    }
-
-    virtual ~GadgetronClientBlobAttribMessageReader() {}
-
-    virtual void read(tcp::socket* socket) 
-    {
-
-        // MUST READ 32-bits
-        uint32_t nbytes;
-        boost::asio::read(*socket, boost::asio::buffer(&nbytes,sizeof(uint32_t)));
-
-        std::vector<char> data(nbytes,0);
-        boost::asio::read(*socket, boost::asio::buffer(&data[0],nbytes));
-
-
         unsigned long long fileNameLen;
         boost::asio::read(*socket, boost::asio::buffer(&fileNameLen,sizeof(unsigned long long)));
 
@@ -850,9 +771,13 @@ public:
         size_t_type meta_attrib_length;
         boost::asio::read(*socket, boost::asio::buffer(&meta_attrib_length, sizeof(size_t_type)));
 
-        std::string meta_attrib(meta_attrib_length-sizeof(size_t_type),0);
-        boost::asio::read(*socket, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()), meta_attrib_length-sizeof(size_t_type)));
-
+        std::string meta_attrib;
+        if (meta_attrib_length > 0)
+        {
+            std::string meta_attrib_socket(meta_attrib_length, 0);
+            boost::asio::read(*socket, boost::asio::buffer(const_cast<char*>(meta_attrib_socket.c_str()), meta_attrib_length));
+            meta_attrib = meta_attrib_socket;
+        }
 
         std::string filename_image, filename_attrib;
 
@@ -874,7 +799,10 @@ public:
         outfile.open (filename_image.c_str(), std::ios::out|std::ios::binary);
 
         std::ofstream outfile_attrib;
-        outfile_attrib.open (filename_attrib.c_str(), std::ios::out|std::ios::binary);
+        if (meta_attrib_length > 0)
+        {
+            outfile_attrib.open(filename_attrib.c_str(), std::ios::out | std::ios::binary);
+        }
 
         if (outfile.good())
         {
@@ -882,8 +810,11 @@ public:
             outfile.write(&data[0], nbytes);
             outfile.close();
 
-            outfile_attrib.write(meta_attrib.c_str(), meta_attrib.length());
-            outfile_attrib.close();
+            if (meta_attrib_length > 0)
+            {
+                outfile_attrib.write(meta_attrib.c_str(), meta_attrib.length());
+                outfile_attrib.close();
+            }
 
             number_of_calls_++;
         }
@@ -1184,33 +1115,14 @@ int main(int argc, char **argv)
 
     if ( out_fileformat == "hdr" )
     {
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader<uint16_t>(hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader<int16_t>(hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader<float>(hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader< std::complex<float> >(hdf5_out_group)));
-
-        //Image with attributes 
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribAnalyzeImageMessageReader<uint16_t>(hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribAnalyzeImageMessageReader<int16_t>(hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribAnalyzeImageMessageReader<float>(hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribAnalyzeImageMessageReader< std::complex<float> >(hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader(hdf5_out_group)));
     }
     else
     {
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader<uint16_t>(out_filename, hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader<int16_t>(out_filename, hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader<float>(out_filename, hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader< std::complex<float> >(out_filename, hdf5_out_group)));
-
-        //Image with attributes 
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader<uint16_t>(out_filename, hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader<int16_t>(out_filename, hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader<float>(out_filename, hdf5_out_group)));
-        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader< std::complex<float> >(out_filename, hdf5_out_group)));
+        con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader(out_filename, hdf5_out_group)));
     }
 
-    con.register_reader(GADGET_MESSAGE_DICOM, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
-    con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobAttribMessageReader(std::string(), std::string("dcm"))));
+    con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(), std::string("dcm"))));
 
     try {
         con.connect(host_name,port);

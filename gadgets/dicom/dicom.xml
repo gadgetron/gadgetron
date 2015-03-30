@@ -10,7 +10,7 @@
     </reader>
 
     <writer>
-        <slot>1012</slot>
+        <slot>1018</slot>
         <dll>gadgetron_dicom</dll>
         <classname>DicomImageWriter</classname>
     </writer>
@@ -28,7 +28,7 @@
     <gadget>
         <name>AccTrig</name>
         <dll>gadgetron_mricore</dll>
-	<classname>AcquisitionAccumulateTriggerGadget</classname>
+        <classname>AcquisitionAccumulateTriggerGadget</classname>
         <property>
             <name>trigger_dimension</name>
             <value>repetition</value>
@@ -42,7 +42,7 @@
     <gadget>
         <name>Buff</name>
         <dll>gadgetron_mricore</dll>
-	<classname>BucketToBufferGadget</classname>
+        <classname>BucketToBufferGadget</classname>
         <property>
             <name>N_dimension</name>
             <value></value>
@@ -82,9 +82,9 @@
     </gadget>
 
     <gadget>
-        <name>DicomFinishFLOAT</name>
+        <name>DicomFinish</name>
         <dll>gadgetron_dicom</dll>
-        <classname>DicomFinishGadgetFLOAT</classname>
+        <classname>DicomFinishGadget</classname>
     </gadget>
 
 </gadgetronStreamConfiguration>
