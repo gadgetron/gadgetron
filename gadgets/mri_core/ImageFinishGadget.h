@@ -12,41 +12,11 @@
 
 namespace Gadgetron{
 
-  template <typename T> class EXPORTGADGETSMRICORE ImageFinishGadget : 
-  public Gadget2<ISMRMRD::ImageHeader,hoNDArray< T > >
-  {
-  protected:
-    virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, 
-			GadgetContainerMessage< hoNDArray< T > >* m2);
-  };
-  
-  class EXPORTGADGETSMRICORE ImageFinishGadgetUSHORT :
-  public ImageFinishGadget<ACE_UINT16>
-  {
-  public:
-    GADGET_DECLARE(ImageFinishGadgetUSHORT);
-  };
-
-  class EXPORTGADGETSMRICORE ImageFinishGadgetSHORT :
-      public ImageFinishGadget<ACE_INT16>
-  {
-  public:
-      GADGET_DECLARE(ImageFinishGadgetSHORT);
-  };
-
-  class EXPORTGADGETSMRICORE ImageFinishGadgetFLOAT :
-  public ImageFinishGadget<float>
-  {
-  public:
-    GADGET_DECLARE(ImageFinishGadgetFLOAT);
-  };
-
-  class EXPORTGADGETSMRICORE ImageFinishGadgetCPLX :
-  public ImageFinishGadget< std::complex<float> >
-  {
-  public:
-    GADGET_DECLARE(ImageFinishGadgetCPLX);
-  };
+    class EXPORTGADGETSMRICORE ImageFinishGadget : public Gadget1 < ISMRMRD::ImageHeader >
+    {
+    protected:
+        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1);
+    };
 }
 
 #endif //IMAGEFINISHGADGET_H

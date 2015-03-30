@@ -17,14 +17,6 @@ class EXPORTGADGETSDICOM DicomImageWriter : public GadgetMessageWriter
   GADGETRON_WRITER_DECLARE(DicomImageWriter);
 };
 
-class EXPORTGADGETSDICOM DicomImageAttribWriter : public GadgetMessageWriter
-{
- public:
-  virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);
-
-  GADGETRON_WRITER_DECLARE(DicomImageAttribWriter);
-};
-
 } /* namespace Gadgetron */
 
 #endif

@@ -38,35 +38,9 @@
 
     <!-- writer -->
     <writer>
-        <slot>1004</slot>
+        <slot>1022</slot>
         <dll>gadgetron_mricore</dll>
-        <classname>MRIImageWriterCPLX</classname>
-    </writer>
-    <writer>
-        <slot>1005</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>MRIImageWriterFLOAT</classname>
-    </writer>
-    <writer>
-        <slot>1006</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>MRIImageWriterUSHORT</classname>
-    </writer>
-
-    <writer>
-        <slot>1015</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>MRIImageAttribWriterCPLX</classname>
-    </writer>
-    <writer>
-        <slot>1016</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>MRIImageAttribWriterFLOAT</classname>
-    </writer>
-    <writer>
-        <slot>1017</slot>
-        <dll>gadgetron_mricore</dll>
-        <classname>MRIImageAttribWriterUSHORT</classname>
+        <classname>MRIImageWriter</classname>
     </writer>
 
     <!-- RO asymmetric echo handling -->
@@ -720,14 +694,14 @@
     <gadget>
         <name>ComplexToFloatAttrib</name>
         <dll>gadgetron_mricore</dll>
-        <classname>ComplexToFloatAttribGadget</classname>
+        <classname>ComplexToFloatGadget</classname>
     </gadget>
     -->
 
     <gadget>
         <name>FloatToShortAttrib</name>
         <dll>gadgetron_mricore</dll>
-        <classname>FloatToUShortAttribGadget</classname>
+        <classname>FloatToUShortGadget</classname>
 
         <property>
             <name>intensity_offset</name>
@@ -735,26 +709,10 @@
         </property>
     </gadget>
 
-    <!--
     <gadget>
-      <name>ImageFinishAttribCPLX</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishAttribGadgetCPLX</classname>
-    </gadget>
-    -->
-
-    <!--
-    <gadget>
-      <name>ImageFinishAttribFLOAT</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishAttribGadgetFLOAT</classname>
-    </gadget>
-    -->
-
-    <gadget>
-        <name>ImageFinishAttribUSHORT</name>
+        <name>ImageFinish</name>
         <dll>gadgetron_mricore</dll>
-        <classname>ImageFinishAttribGadgetUSHORT</classname>
+        <classname>ImageFinishGadget</classname>
     </gadget>
 
 </gadgetronStreamConfiguration>

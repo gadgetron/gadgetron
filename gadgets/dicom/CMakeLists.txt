@@ -73,15 +73,14 @@ include_directories(
 
 add_library(gadgetron_dicom SHARED
     DicomFinishGadget.h DicomFinishGadget.cpp
-    DicomFinishAttribGadget.h DicomFinishAttribGadget.cpp
     DicomImageWriter.h DicomImageWriter.cpp)
 
 set_target_properties(gadgetron_dicom PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(
-  gadgetron_dicom
-  gadgetron_gadgetbase
-  gadgetron_toolbox_log
+    gadgetron_dicom
+    gadgetron_gadgetbase
+    gadgetron_toolbox_log
     gadgetron_toolbox_cpucore 
     ${ISMRMRD_LIBRARIES}
     optimized ${ACE_LIBRARIES}

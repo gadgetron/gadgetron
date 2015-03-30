@@ -1,18 +1,18 @@
 /*
-*       FloatToFixPointAttribGadget.cpp
+*       FloatToFixPointGadget.cpp
 *
 *       Created on: March 10, 2014
 *       Author: Hui Xue
 */
 
 #include "GadgetIsmrmrdReadWrite.h"
-#include "FloatToFixPointAttribGadget.h"
+#include "FloatToFixPointGadget.h"
 #include "mri_core_def.h"
 
 namespace Gadgetron
 {
     template <typename T> 
-    FloatToFixPointAttribGadget<T>::FloatToFixPointAttribGadget() 
+    FloatToFixPointGadget<T>::FloatToFixPointGadget() 
         : max_intensity_value_(std::numeric_limits<T>::max()), 
           min_intensity_value_(std::numeric_limits<T>::min()), 
           intensity_offset_value_(0)
@@ -20,12 +20,12 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    FloatToFixPointAttribGadget<T>::~FloatToFixPointAttribGadget()
+    FloatToFixPointGadget<T>::~FloatToFixPointGadget()
     {
     }
 
     template <typename T> 
-    int FloatToFixPointAttribGadget<T>::process_config(ACE_Message_Block* mb)
+    int FloatToFixPointGadget<T>::process_config(ACE_Message_Block* mb)
     {
         // gadget parameters
         max_intensity_value_ = max_intensity.value();
@@ -36,7 +36,7 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    int FloatToFixPointAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< float > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3)
+    int FloatToFixPointGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< float > >* m2)
     {
         GadgetContainerMessage<hoNDArray< T > > *cm2 =
             new GadgetContainerMessage<hoNDArray< T > >();
@@ -45,7 +45,7 @@ namespace Gadgetron
 
         try {cm2->getObjectPtr()->create(dims);}
         catch (std::runtime_error &err){
-            GEXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
+            GEXCEPTION(err,"Unable to create unsigned fix point storage in Extract Magnitude Gadget");
             return GADGET_FAIL;
         }
 
@@ -54,6 +54,8 @@ namespace Gadgetron
 
         long long i;
         long long numOfPixels = (long long)cm2->getObjectPtr()->get_number_of_elements();
+
+        GadgetContainerMessage<ISMRMRD::MetaContainer>* m3 = AsContainerMessage<ISMRMRD::MetaContainer>(m2->cont());
 
         switch (m1->getObjectPtr()->image_type)
         {
@@ -84,11 +86,14 @@ namespace Gadgetron
                     dst[i] = static_cast<T>(pix_val+0.5);
                 }
 
-                if ( m3->getObjectPtr()->length(GADGETRON_IMAGE_WINDOWCENTER) > 0 )
+                if (m3)
                 {
-                    long windowCenter;
-                    windowCenter = m3->getObjectPtr()->as_long(GADGETRON_IMAGE_WINDOWCENTER, 0);
-                    m3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, windowCenter+(long)intensity_offset_value_);
+                    if (m3->getObjectPtr()->length(GADGETRON_IMAGE_WINDOWCENTER) > 0)
+                    {
+                        long windowCenter;
+                        windowCenter = m3->getObjectPtr()->as_long(GADGETRON_IMAGE_WINDOWCENTER, 0);
+                        m3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, windowCenter + (long)intensity_offset_value_);
+                    }
                 }
             }
             break;
@@ -116,7 +121,7 @@ namespace Gadgetron
         }
 
         m1->cont(cm2);
-        cm2->cont(m3);
+        if(m3) cm2->cont(m3);
 
         m2->cont(NULL);
         m2->release();
@@ -148,14 +153,14 @@ namespace Gadgetron
         if (this->next()->putq(m1) == -1)
         {
             m1->release();
-            GDEBUG("Unable to put unsigned short magnitude image on next gadgets queue");
+            GDEBUG("Unable to put unsigned fix point image on next gadgets queue");
             return GADGET_FAIL;
         }
 
         return GADGET_OK;
     }
 
-    FloatToUShortAttribGadget::FloatToUShortAttribGadget()
+    FloatToUShortGadget::FloatToUShortGadget()
     {
         max_intensity.value(4095);
         min_intensity.value(0);
@@ -166,36 +171,36 @@ namespace Gadgetron
         intensity_offset_value_ = 2048;
     }
 
-    FloatToUShortAttribGadget::~FloatToUShortAttribGadget()
+    FloatToUShortGadget::~FloatToUShortGadget()
     {
     }
 
-    FloatToShortAttribGadget::FloatToShortAttribGadget()
+    FloatToShortGadget::FloatToShortGadget()
     {
     }
 
-    FloatToShortAttribGadget::~FloatToShortAttribGadget()
+    FloatToShortGadget::~FloatToShortGadget()
     {
     }
 
-    FloatToUIntAttribGadget::FloatToUIntAttribGadget()
+    FloatToUIntGadget::FloatToUIntGadget()
     {
     }
 
-    FloatToUIntAttribGadget::~FloatToUIntAttribGadget()
+    FloatToUIntGadget::~FloatToUIntGadget()
     {
     }
 
-    FloatToIntAttribGadget::FloatToIntAttribGadget()
+    FloatToIntGadget::FloatToIntGadget()
     {
     }
 
-    FloatToIntAttribGadget::~FloatToIntAttribGadget()
+    FloatToIntGadget::~FloatToIntGadget()
     {
     }
 
-    GADGET_FACTORY_DECLARE(FloatToUShortAttribGadget)
-    GADGET_FACTORY_DECLARE(FloatToShortAttribGadget)
-    GADGET_FACTORY_DECLARE(FloatToIntAttribGadget)
-    GADGET_FACTORY_DECLARE(FloatToUIntAttribGadget)
+    GADGET_FACTORY_DECLARE(FloatToUShortGadget)
+    GADGET_FACTORY_DECLARE(FloatToShortGadget)
+    GADGET_FACTORY_DECLARE(FloatToIntGadget)
+    GADGET_FACTORY_DECLARE(FloatToUIntGadget)
 }
