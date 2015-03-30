@@ -22,7 +22,7 @@ class RemOS(Gadget):
     
             data2=transform.transform_kspace_to_image(data2,dim=(1,))
             data2=data2[:,(padded_ro_length>>2):(padded_ro_length>>2)+(padded_ro_length>>1)]
-            data2=transform.transform_image_to_kspace(data2,dim=(1,)) #* np.sqrt(float(padded_ro_length)/ro_length)
+            data2=transform.transform_image_to_kspace(data2,dim=(1,)) * np.sqrt(float(padded_ro_length)/ro_length)
             acq.center_sample = padded_ro_length>>2
             acq.number_of_samples = data2.shape[1]
             self.put_next(acq,data2,*args)
@@ -132,6 +132,7 @@ class CoilReduce(Gadget):
         self.put_next(acq,data2,*args)
         return 0
 
+
 class Recon(Gadget):    
     def __init__(self, next_gadget=None):
         Gadget.__init__(self, next_gadget) 
@@ -144,6 +145,7 @@ class Recon(Gadget):
         self.calib_buffer = list()
         self.unmix = None
         self.gmap = None
+        self.calib_frames = 0
     
     def process_config(self, cfg):
         self.header = ismrmrd.xsd.CreateFromDocument(cfg)
@@ -151,6 +153,19 @@ class Recon(Gadget):
 
         #Parallel imaging factor
         self.acc_factor = self.enc.parallelImaging.accelerationFactor.kspace_encoding_step_1
+        
+        reps = self.enc.encodingLimits.repetition.maximum+1
+        phs = self.enc.encodingLimits.phase.maximum+1
+        if reps > phs:
+            self.calib_frames = reps
+        else:
+            self.calib_frames = phs
+            
+        if self.calib_frames < self.acc_factor:
+            self.calib_frames = self.acc_factor
+        
+        #Frames should be a multiple of the acceleration factor
+        self.frames = floor(self.calib_frames/self.acc_factor)*self.acc_factor
         
     def process(self, acq, data,*args):
 
@@ -214,7 +229,7 @@ class Recon(Gadget):
                 self.buffer[:] = 0
                 self.samp_mask[:] = 0
                 
-                if len(self.calib_buffer) >= self.acc_factor:
+                if len(self.calib_buffer) >= self.calib_frames:
                     cal_data = np.zeros(self.calib_buffer[0][1].shape, dtype=np.complex64)
                     for c in self.calib_buffer:
                         cal_data = cal_data + c[1]
@@ -240,4 +255,3 @@ class Recon(Gadget):
             self.samp_mask[:] = 0
             self.put_next(img_head,recon,*args)
         return 0
-

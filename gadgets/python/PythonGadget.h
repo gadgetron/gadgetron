@@ -32,21 +32,21 @@ namespace Gadgetron{
           register_converter<ISMRMRD::ImageHeader>();
           register_converter<ISMRMRD::AcquisitionHeader>();
 
-          boost::shared_ptr<std::string> pypath        = this->get_string_value("python_path");
-          boost::shared_ptr<std::string> pymod         = this->get_string_value("python_module");
-          boost::shared_ptr<std::string> pyclass       = this->get_string_value("python_class");
+	  std::string pypath        = python_path.value();
+	  std::string pymod         = python_module.value();
+	  std::string pyclass       = python_class.value();
 
-          GDEBUG("Python Path            : %s\n", pypath.get()->c_str());
-          GDEBUG("Python Module          : %s\n", pymod.get()->c_str());
-          GDEBUG("Python Class           : %s\n", pyclass.get()->c_str());
+          GDEBUG("Python Path            : %s\n", pypath.c_str());
+          GDEBUG("Python Module          : %s\n", pymod.c_str());
+          GDEBUG("Python Class           : %s\n", pyclass.c_str());
 
-        if (add_python_path(*pypath.get()) != GADGET_OK) {
+        if (add_python_path(pypath) != GADGET_OK) {
             GDEBUG("Failed to add paths in Gadget %s\n", this->module()->name());
             return GADGET_FAIL;
         }
 
-        std::string module_name = *pymod.get();
-        std::string class_name = *pyclass.get();
+        std::string module_name = pymod;
+        std::string class_name = pyclass;
 
         if (module_name.size() == 0) {
             GDEBUG("Null module name received in Gadget %s\n", this->module()->name());
@@ -136,6 +136,11 @@ namespace Gadgetron{
           //GDEBUG("Process done in Gadget (%s)\n", this->module()->name());
           return GADGET_OK;
       }
+
+    protected:
+      GADGET_PROPERTY(python_module, std::string, "Python module containing the Python Gadget class to be loaded", "");
+      GADGET_PROPERTY(python_class, std::string, "Python class to load from python module", "");
+      GADGET_PROPERTY(python_path, std::string, "Path(s) to add to the to the Python search path", "");
 
     private:
       boost::python::object module_;
