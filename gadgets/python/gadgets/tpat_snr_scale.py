@@ -4,6 +4,7 @@ import numpy as np
 from ismrmrdtools import transform, coils, grappa
 from gadgetron import Gadget
 import copy 
+import math
 
 class RemOS(Gadget):
     def process_config(self, conf):
@@ -165,7 +166,7 @@ class Recon(Gadget):
             self.calib_frames = self.acc_factor
         
         #Frames should be a multiple of the acceleration factor
-        self.frames = floor(self.calib_frames/self.acc_factor)*self.acc_factor
+        self.frames = math.floor(self.calib_frames/self.acc_factor)*self.acc_factor
         
     def process(self, acq, data,*args):
 
