@@ -46,14 +46,16 @@ namespace Gadgetron
     }
 
     //Adding some gadgets to "capture data and return to the stream"
-    if (this->prepend_gadget("ImageFinishFloat","gadgetron_mricore","ImageFinishGadgetFLOAT") != GADGET_OK) return GADGET_FAIL;
+    if (this->prepend_gadget("ImageFinishFloat","gadgetron_mricore","ImageFinishGadget") != GADGET_OK) return GADGET_FAIL;
     this->find_gadget("ImageFinishFloat")->pass_on_undesired_data(true);
 
+    /*
     if (this->prepend_gadget("ImageFinishCplx","gadgetron_mricore","ImageFinishGadgetCPLX") != GADGET_OK) return GADGET_FAIL;
     this->find_gadget("ImageFinishCplx")->pass_on_undesired_data(true);
 
     if (this->prepend_gadget("ImageFinishUShort","gadgetron_mricore","ImageFinishGadgetUSHORT") != GADGET_OK) return GADGET_FAIL;
     this->find_gadget("ImageFinishUShort")->pass_on_undesired_data(true);
+    */
 
     if (this->prepend_gadget("AcquisitionFinish","gadgetron_mricore","AcquisitionFinishGadget") != GADGET_OK) return GADGET_FAIL;
     this->find_gadget("AcquisitionFinish")->pass_on_undesired_data(true);
@@ -136,51 +138,102 @@ namespace Gadgetron
       return GADGET_FAIL;
     }
 
-    switch (m0->getObjectPtr()->id)
-      {
-      case (GADGET_MESSAGE_ACQUISITION):
-	if (0 != this->return_data<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> >, ISMRMRD::MetaContainer >(m0->cont()) )
-	  {
-	    GERROR("Unable to convert and return GADGET_MESSAGE_ACQUISITON\n");
-	    m0->release();
-	    return GADGET_FAIL;
-	  }
-	break;
-      case (GADGET_MESSAGE_IMAGE_REAL_USHORT):
-      case (GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT):
-	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< ACE_UINT16 >, ISMRMRD::MetaContainer >(m0->cont()) )
-	  {
-	    GERROR("Unable to convert and return GADGET_MESSAGE_IMAGE_REAL_SHORT\n");
-	    m0->release();
-	    return GADGET_FAIL;
-	  }
-	break;
-      case (GADGET_MESSAGE_IMAGE_REAL_FLOAT):
-      case (GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT):
-	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< float >, ISMRMRD::MetaContainer >(m0->cont()) )
-	  {
-	    GERROR("Unable to convert and return GADGET_MESSAGE_IMAGE_REAL_FLOAT");
-	    m0->release();
-	    return GADGET_FAIL;
-	  }
-	break;
-      case (GADGET_MESSAGE_IMAGE_CPLX_FLOAT):
-      case (GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT):
-	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> >, ISMRMRD::MetaContainer >(m0->cont()) )
-	  {
-	    GERROR("Unable to convert and return GADGET_MESSAGE_IMAGE_CPLX_FLOAT\n");
-	    m0->release();
-	    return GADGET_FAIL;
-	  }
-	break;
-      case (GADGET_MESSAGE_CLOSE):
-	break;
-      default:
-	GERROR("Unsupported message ID (%d) encountered\n", m0->getObjectPtr()->id);
+    GadgetContainerMessage<ISMRMRD::ImageHeader>* m_tmp = 0;
+
+    switch (m0->getObjectPtr()->id) {
+    case (GADGET_MESSAGE_ACQUISITION):
+      if (0 != this->return_data<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> >, ISMRMRD::MetaContainer >(m0->cont()) )
+	{
+	  GERROR("Unable to convert and return GADGET_MESSAGE_ACQUISITON\n");
+	  m0->release();
+	  return GADGET_FAIL;
+	}
+      break;
+
+    case (GADGET_MESSAGE_ISMRMRD_IMAGE):
+      m_tmp = AsContainerMessage<ISMRMRD::ImageHeader>(m0->cont());
+      if (!m_tmp) {
+	GERROR("Error converting header of GADGET_MESSAGE_ISMRMRD_IMAG\n");
 	mb->release();
 	return GADGET_FAIL;
       }
-
+      switch (m_tmp->getObjectPtr()->data_type) {
+	
+      case (ISMRMRD::ISMRMRD_USHORT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< uint16_t >, ISMRMRD::MetaContainer >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_ISMRMRD_IMAGE\n");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
+      case (ISMRMRD::ISMRMRD_SHORT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< int16_t >, ISMRMRD::MetaContainer >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_ISMRMRD_IMAGE\n");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
+      case (ISMRMRD::ISMRMRD_UINT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< uint32_t >, ISMRMRD::MetaContainer >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_ISMRMRD_IMAGE\n");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
+      case (ISMRMRD::ISMRMRD_INT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< int32_t >, ISMRMRD::MetaContainer >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_ISMRMRD_IMAGE\n");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
+      case (ISMRMRD::ISMRMRD_FLOAT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< float >, ISMRMRD::MetaContainer >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_ISMRMRD_IMAGE\n");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
+      case (ISMRMRD::ISMRMRD_DOUBLE):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< double >, ISMRMRD::MetaContainer >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_ISMRMRD_IMAGE\n");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
+      case (ISMRMRD::ISMRMRD_CXFLOAT):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> >, ISMRMRD::MetaContainer >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_ISMRMRD_IMAGE\n");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
+	
+      case (ISMRMRD::ISMRMRD_CXDOUBLE):
+	if (0 != this->return_data<ISMRMRD::ImageHeader, hoNDArray< std::complex<double> >, ISMRMRD::MetaContainer >(m0->cont()) )
+	  {
+	    GERROR("Unable to convert and return GADGET_MESSAGE_ISMRMRD_IMAGE\n");
+	    m0->release();
+	    return GADGET_FAIL;
+	  }
+	break;
+      }
+      break;
+    case (GADGET_MESSAGE_CLOSE):
+      break;
+    default:
+      GERROR("Unsupported message ID (%d) encountered\n", m0->getObjectPtr()->id);
+      mb->release();
+      return GADGET_FAIL;
+    }
+    
     mb->release();
     return GADGET_OK;
   }
