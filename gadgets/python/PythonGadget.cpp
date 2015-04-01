@@ -57,6 +57,9 @@ namespace Gadgetron{
       case (ISMRMRD::ISMRMRD_CXDOUBLE):
 	return this->process(hmi, AsContainerMessage< hoNDArray< std::complex<double> > >(hmi->cont()), mmb);
 	break;
+      default:
+	GERROR("Unknown image data_type %d received\n", h->data_type);
+	break;
       }
     }
   }
