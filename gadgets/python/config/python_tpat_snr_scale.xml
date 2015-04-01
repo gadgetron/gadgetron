@@ -18,7 +18,7 @@
     <gadget>
       <name>NoiseAdj</name>
       <dll>gadgetron_python</dll>
-      <classname>AcquisitionPythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_module</name>                <value>tpat_snr_scale</value></property>
       <property><name>python_class</name>                <value>NoiseAdj</value></property>
     </gadget>
@@ -26,7 +26,7 @@
     <gadget>
       <name>RemOS</name>
       <dll>gadgetron_python</dll>
-      <classname>AcquisitionPythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_module</name>                <value>tpat_snr_scale</value></property>
       <property><name>python_class</name>                <value>RemOS</value></property>
     </gadget>
@@ -34,7 +34,7 @@
     <gadget>
       <name>PCA</name>
       <dll>gadgetron_python</dll>
-      <classname>AcquisitionPythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_module</name>                <value>tpat_snr_scale</value></property>
       <property><name>python_class</name>                <value>PCA</value></property>
     </gadget>
@@ -42,7 +42,7 @@
     <gadget>
       <name>CoilReduce</name>
       <dll>gadgetron_python</dll>
-      <classname>AcquisitionPythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_module</name>                <value>tpat_snr_scale</value></property>
       <property><name>python_class</name>                <value>CoilReduce</value></property>
     </gadget>
@@ -50,7 +50,7 @@
     <gadget>
       <name>Recon</name>
       <dll>gadgetron_python</dll>
-      <classname>AcquisitionPythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_module</name>                <value>tpat_snr_scale</value></property>
       <property><name>python_class</name>                <value>Recon</value></property>
     </gadget>

@@ -18,7 +18,7 @@
     <gadget>
       <name>RemoveOversamplingPython</name>
       <dll>gadgetron_python</dll>
-      <classname>AcquisitionPythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>remove_2x_oversampling</value></property>
       <property><name>python_class</name>                <value>Remove2xOversampling</value></property>
@@ -27,7 +27,7 @@
     <gadget>
       <name>AccReconPython</name>
       <dll>gadgetron_python</dll>
-      <classname>AcquisitionPythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>accumulate_and_recon</value></property>
       <property><name>python_class</name>                <value>AccumulateAndRecon</value></property>
@@ -36,7 +36,7 @@
     <gadget>
       <name>CoilCombinePython</name>
       <dll>gadgetron_python</dll>
-      <classname>ImagePythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>rms_coil_combine</value></property>
       <property><name>python_class</name>                <value>RMSCoilCombine</value></property>

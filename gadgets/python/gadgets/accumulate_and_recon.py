@@ -18,7 +18,6 @@ class AccumulateAndRecon(Gadget):
         self.enc = self.header.encoding[0]
 
     def process(self, acq, data,*args):
-
         if self.myBuffer is None:
             channels = acq.active_channels
             if self.enc.encodingLimits.slice != None:
@@ -50,16 +49,16 @@ class AccumulateAndRecon(Gadget):
             img_head.slice_dir = acq.slice_dir
             img_head.patient_table_position = acq.patient_table_position
             img_head.acquisition_time_stamp = acq.acquisition_time_stamp
-            img_head.image_index = self.myCounter;
-            img_head.image_series_index = self.mySeries;
-
+            img_head.image_index = self.myCounter
+            img_head.image_series_index = self.mySeries
+            img_head.data_type = ismrmrd.DATATYPE_CXFLOAT
             self.myCounter += 1
             if self.myCounter > 5:
                     self.mySeries += 1
                     self.myCounter = 1
 
             #Return image to Gadgetron
-            self.put_next(img_head,image,*args)
+            self.put_next(img_head,image.astype('complex64'),*args)
             
         #print "Returning to Gadgetron"
         return 0 #Everything OK
