@@ -43,15 +43,6 @@
             <name>noise_dependency_prefix</name>
             <value>GadgetronNoiseCovarianceMatrix</value>
         </property>
-
-        <!-- Preset noise dwell time; for noise dependency measurements -->
-	<!--
-        <property>
-            <name>noise_dwell_time_us_preset</name>
-            <value>5.0</value>
-        </property>
-	-->
-
     </gadget>
 
     <!-- Dump the noise scaled data to an ismrmd dataset 

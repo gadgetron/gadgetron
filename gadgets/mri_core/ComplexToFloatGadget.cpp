@@ -1,23 +1,23 @@
 /*
-*       ComplexToFloatAttribGadget.cpp
+*       ComplexToFloatGadget.cpp
 *       Author: Hui Xue
 */
 
 #include "GadgetIsmrmrdReadWrite.h"
-#include "ComplexToFloatAttribGadget.h"
+#include "ComplexToFloatGadget.h"
 #include "hoNDArray_elemwise.h"
 
 namespace Gadgetron
 {
-    ComplexToFloatAttribGadget::ComplexToFloatAttribGadget()
+    ComplexToFloatGadget::ComplexToFloatGadget()
     {
     }
 
-    ComplexToFloatAttribGadget::~ComplexToFloatAttribGadget()
+    ComplexToFloatGadget::~ComplexToFloatGadget()
     {
     }
 
-    int ComplexToFloatAttribGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3)
+    int ComplexToFloatGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2)
     {
         GadgetContainerMessage<hoNDArray< float > > *cm2 = new GadgetContainerMessage<hoNDArray< float > >();
 
@@ -29,7 +29,7 @@ namespace Gadgetron
         }
         catch (std::runtime_error &err)
         {
-            GEXCEPTION(err,"Unable to create float storage in ComplexToFloatAttribGadget");
+            GEXCEPTION(err,"Unable to create float storage in ComplexToFloatGadget");
             return GADGET_FAIL;
         }
 
@@ -66,8 +66,10 @@ namespace Gadgetron
                 return GADGET_FAIL;
         }
 
+        GadgetContainerMessage<ISMRMRD::MetaContainer>* m3 = AsContainerMessage<ISMRMRD::MetaContainer>(m2->cont());
+
         m1->cont(cm2);
-        cm2->cont(m3);
+        if(m3) cm2->cont(m3);
 
         m2->cont(NULL);
         m2->release();
@@ -84,5 +86,5 @@ namespace Gadgetron
         return GADGET_OK;
     }
 
-    GADGET_FACTORY_DECLARE(ComplexToFloatAttribGadget)
+    GADGET_FACTORY_DECLARE(ComplexToFloatGadget)
 }

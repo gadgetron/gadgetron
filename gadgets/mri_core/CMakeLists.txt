@@ -58,16 +58,13 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     AccumulatorGadget.h 
                                     FFTGadget.h 
                                     ImageFinishGadget.h 
-                                    ImageFinishAttribGadget.h 
                                     CombineGadget.h
                                     CropAndCombineGadget.h  
                                     ImageWriterGadget.h 
                                     MRIImageWriter.h 
-                                    MRIImageAttribWriter.h 
                                     NoiseAdjustGadget_unoptimized.h 
                                     ExtractGadget.h 
-                                    FloatToUShortGadget.h 
-                                    FloatToUShortAttribGadget.h 
+                                    FloatToFixPointGadget.h 
                                     RemoveROOversamplingGadget.h 
                                     CoilReductionGadget.h 
                                     AutoScaleGadget.h 
@@ -80,10 +77,10 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     CplxDumpGadget.h 
                                     DependencyQueryGadget.h 
                                     DependencyQueryWriter.h 
-                                    ComplexToFloatAttribGadget.h
+                                    ComplexToFloatGadget.h
                                     AcquisitionAccumulateTriggerGadget.h
                                     BucketToBufferGadget.h 
-				    ImageArraySplitGadget.h
+                                    ImageArraySplitGadget.h
                                     SimpleReconGadget.h)
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
@@ -91,16 +88,13 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 AccumulatorGadget.cpp 
                                 FFTGadget.cpp 
                                 ImageFinishGadget.cpp 
-                                ImageFinishAttribGadget.cpp 
                                 CombineGadget.cpp 
                                 CropAndCombineGadget.cpp 
                                 ImageWriterGadget.cpp 
                                 MRIImageWriter.cpp 
-                                MRIImageAttribWriter.cpp 
                                 NoiseAdjustGadget_unoptimized.cpp 
                                 ExtractGadget.cpp 
-                                FloatToUShortGadget.cpp 
-                                FloatToUShortAttribGadget.cpp 
+                                FloatToFixPointGadget.cpp 
                                 RemoveROOversamplingGadget.cpp
                                 CoilReductionGadget.cpp
                                 AutoScaleGadget.cpp
@@ -113,10 +107,10 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 CplxDumpGadget.cpp 
                                 DependencyQueryGadget.cpp 
                                 DependencyQueryWriter.cpp 
-                                ComplexToFloatAttribGadget.cpp 
+                                ComplexToFloatGadget.cpp 
                                 AcquisitionAccumulateTriggerGadget.cpp
                                 BucketToBufferGadget.cpp
-				ImageArraySplitGadget.cpp
+                                ImageArraySplitGadget.cpp
                                 SimpleReconGadget.cpp  )
 
 if (WIN32)
