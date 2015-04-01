@@ -7,6 +7,7 @@ class RMSCoilCombine(Gadget):
         print "RMS Coil Combine, Config ignored"
 
     def process(self, h, im):
+        print "process called in coil combine"
         combined_image = np.sqrt(np.sum(np.square(np.abs(im)),axis=0))
         h.channels = 1
         self.put_next(h,combined_image.astype('complex64'))
