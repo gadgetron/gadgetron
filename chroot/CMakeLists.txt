@@ -49,7 +49,18 @@ configure_file("copy-cuda-lib.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.s
 
 find_program(SIEMENS_TO_ISMRMRD_EXE siemens_to_ismrmrd)
 
+add_custom_target(chroot_base)
 add_custom_target(chroot)
+
+add_custom_command(
+    TARGET chroot_base
+    POST_BUILD
+    VERBATIM
+    COMMENT "Creating chroot base tar file"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND sudo bash create_chroot_base.sh 
+    ${CMAKE_BINARY_DIR}
+    )
 
 if (SIEMENS_TO_ISMRMRD_EXE)
   add_custom_command(
