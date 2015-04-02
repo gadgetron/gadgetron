@@ -79,7 +79,15 @@ class Gadget(object):
         results = self.results
         self.results = []
         return results
-        
+
+
+class WrappedGadget(object):
+    def __init__(self, dllname, classname, gadgetname):
+        self.gadgetname = gadgetname
+        self.classname = classname
+        self.dllname = dllname
+        self.parameters = dict()
+    
 class WrapperGadget(Gadget):
     
     def __init__(self, dllname, classname, gadgetname=None, next_gadget=None):
@@ -89,9 +97,12 @@ class WrapperGadget(Gadget):
         self.controller_ = GadgetronPythonMRI.GadgetInstrumentationStreamController()
         self.controller_.prepend_gadget(gadgetname,dllname,classname)
         self.controller_.set_python_gadget(self)
-    
+        self.wrapped_gadgets = list()
+        self.wrapped_gadgets.append(WrappedGadget(dllname,classname,gadgetname))
+
     def prepend_gadget(self,dllname, classname, gadgetname=None):
         self.controller_.prepend_gadget(gadgetname,dllname,classname)
+        self.wrapped_gadgets.insert(0,WrappedGadget(dllname,classname,gadgetname))
 
     def wait(self):
        self.controller_.close()
@@ -126,6 +137,11 @@ class WrapperGadget(Gadget):
         return 0
 
     def set_parameter(self,gadgetname,parameter,value):
+        for g in self.wrapped_gadgets:
+            if g.gadgetname == gadgetname:
+                g.parameters[parameter] = value
+                break
+
         self.controller_.set_parameter(gadgetname,parameter,value)
 
 class FunctionGadget(Gadget):

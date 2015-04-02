@@ -268,20 +268,22 @@ namespace Gadgetron{
             return 0;
         }
 
-        int set_parameter(const char* name, const char* val, bool trigger = true) {
+        virtual int set_parameter(const char* name, const char* val, bool trigger = true) {
 	  boost::shared_ptr<std::string> old_value = get_string_value(name);
+	  GadgetPropertyBase* p = this->find_property(name);
 
-	  if (using_properties_) {
-	    GadgetPropertyBase* p = this->find_property(name);
-	    if (!p) {
-	      throw std::runtime_error("Attempting to set non-registered property while operaying in forced using_properties mode");
-	    }
+	  if (p) {
 	    p->string_value(val);
 	  } else {
-	    parameter_mutex_.acquire();
-            parameters_[std::string(name)] = std::string(val);
-	    parameter_mutex_.release();
+	    if (using_properties_) {
+	      throw std::runtime_error("Attempting to set non-registered property while operaying in forced using_properties mode");
+	    }
 	  }
+
+	  parameter_mutex_.acquire();
+	  parameters_[std::string(name)] = std::string(val);
+	  parameter_mutex_.release();
+
 	  if (trigger) {
 	    return parameter_changed(std::string(name), std::string(val), *old_value);
 	  }
@@ -289,15 +291,15 @@ namespace Gadgetron{
 	  return 0;
         }
 
-        int get_bool_value(const char* name) {
+        virtual int get_bool_value(const char* name) {
             return (0 == ACE_OS::strcmp(get_string_value(name)->c_str(), "true"));
         }
 
-        int get_int_value(const char* name) {
+        virtual int get_int_value(const char* name) {
             return ACE_OS::atoi(get_string_value(name)->c_str());
         }
 
-        double get_double_value(const char* name) {
+        virtual double get_double_value(const char* name) {
             return ACE_OS::atof(get_string_value(name)->c_str());
         }
 

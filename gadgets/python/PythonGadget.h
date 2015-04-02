@@ -17,8 +17,22 @@ namespace Gadgetron{
     public:
       GADGET_DECLARE(PythonGadget);
 
-    protected:
+      /*
+	We are overloading this function from the base class to be able to capture a copy
+	of the properties that should be passed on to the Python class itself.
+       */
+      virtual int set_parameter(const char* name, const char* val, bool trigger = true) {
+	GadgetPropertyBase* p = this->find_property(name);
+	if (p) {
+	  //This is a property, pass it on to the Gadget base class
+	  Gadget::set_parameter(name,val,trigger);
+	} else {
+	  //This is probably information for the Python class itself
+	  this->parameters_python_[std::string(name)] = std::string(val);
+	}
+      }
 
+    protected:
       int process_config(ACE_Message_Block* mb)
       {
           if (initialize_python() != GADGET_OK) {
@@ -86,13 +100,30 @@ namespace Gadgetron{
             return GADGET_FAIL;
         }
 
+	//Transfer all properties/parameters to Python gadget
+	std::map<std::string,std::string>::iterator it;
+	it = parameters_python_.begin();
+	while (it != parameters_python_.end()) {
+	  std::string var_name = it->first;
+	  std::string var_val  = it->second;
+	  try {
+	    boost::python::object set_parameter_fn = class_.attr("set_parameter");
+	    boost::python::object ignored = set_parameter_fn(var_name,var_val);
+	  } catch (boost::python::error_already_set const &) {
+            GERROR("Error setting PythonGadget parameters in Gadget %s\n", this->module()->name());
+            PyErr_Print();
+            return GADGET_FAIL;
+	  }
+	  it++;
+	}
+
         try {
             // retrieve and call python gadget's process_config method
             boost::python::object process_config_fn = class_.attr("process_config");
             boost::python::object ignored = process_config_fn(
                     boost::python::object(std::string(mb->rd_ptr())));
         } catch (boost::python::error_already_set const &) {
-            GDEBUG("Error calling process_config in Gadget %s\n", this->module()->name());
+            GERROR("Error calling process_config in Gadget %s\n", this->module()->name());
             PyErr_Print();
             return GADGET_FAIL;
         }
@@ -167,5 +198,11 @@ namespace Gadgetron{
       boost::python::object module_;
       boost::python::object class_;
       boost::shared_ptr<GadgetReference> gadget_ref_;
+
+      /*
+	We are going to keep a copy of the parameters in this gadget that are not properties.
+	They should be passed on to the Python class. 
+      */
+      std::map< std::string, std::string> parameters_python_; 
     };
 }

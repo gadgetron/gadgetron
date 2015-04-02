@@ -52,7 +52,8 @@
       <dll>gadgetron_python</dll>
       <classname>PythonGadget</classname>
       <property><name>python_module</name>                <value>tpat_snr_scale</value></property>
-      <property><name>python_class</name>                <value>Recon</value></property>
+      <property><name>python_class</name>                 <value>Recon</value></property>
+      <property><name>pmri_method</name>                   <value>grappa</value></property>
     </gadget>
 
      <gadget>

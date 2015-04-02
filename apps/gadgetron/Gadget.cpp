@@ -11,8 +11,8 @@ namespace Gadgetron
     }
 
     std::string str_val;
+    GadgetPropertyBase* p = find_property(name);
     if (using_properties_) {
-      GadgetPropertyBase* p = find_property(name);
       if (!p) {
 	GERROR("Property %s\n", name);
 	throw std::runtime_error("Attempting to access non existent property on Gadget");
