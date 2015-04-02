@@ -100,6 +100,8 @@ namespace Gadgetron
     static int mcast_port_;
     static bool query_mode_; //Listen only
     static int gadgetron_port_;
+    static int num_tries_;
+    static int waiting_period_;
 
     GadgetronNodeInfo node_info_;
     map_type_ nodes_;

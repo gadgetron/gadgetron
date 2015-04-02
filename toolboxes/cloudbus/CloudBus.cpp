@@ -8,6 +8,8 @@ namespace Gadgetron
   int CloudBus::mcast_port_ = GADGETRON_DEFAULT_MULTICAST_PORT;
   bool CloudBus::query_mode_ = false; //Listen only is disabled default
   int CloudBus::gadgetron_port_ = 9002; //Default port
+  int CloudBus::num_tries_ = 3;
+  int CloudBus::waiting_period_ = 3;
 
   CloudBusTask::CloudBusTask(int port, const char* addr)
     : inherited()
@@ -137,9 +139,33 @@ namespace Gadgetron
   {
     if (!instance_)
       {
-	instance_ = new CloudBus(mcast_port_, mcast_inet_addr_);
-	instance_->receiver_.open();
-	instance_->sender_.open();
+        instance_ = new CloudBus(mcast_port_, mcast_inet_addr_);
+
+        int num = 0;
+        while (num<num_tries_ && (instance_->receiver_.open() != 0))
+        {
+            ACE_OS::sleep(waiting_period_);
+            num++;
+        }
+
+        if (num == num_tries_)
+        {
+            GERROR_STREAM("Failed to open receiver");
+            throw std::runtime_error("CloudBus, Failed to open receiver");
+        }
+
+        num = 0;
+        while (num<num_tries_ && (instance_->sender_.open() != 0))
+        {
+            ACE_OS::sleep(waiting_period_);
+            num++;
+        }
+
+        if (num == num_tries_)
+        {
+            GERROR_STREAM("Failed to open sender");
+            throw std::runtime_error("CloudBus, Failed to open sender");
+        }
       }
     return instance_;
   }
