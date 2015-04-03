@@ -61,10 +61,10 @@ def convert_xml(xmlfilename):
     function_code = header_string
     function_code += '\n'
     function_code += function_string
-    print function_code
+    return function_code
  
 if __name__ == "__main__":
     if len(argv) != 2:
         print "Usage: " + argv[0] + " <configuration.xml>"
         raise "Invalid number of arguments. Please provide the name of a gadgetron configuration file"
-    convert_xml(argv[1])
+    print convert_xml(argv[1])
