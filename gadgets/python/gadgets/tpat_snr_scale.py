@@ -123,6 +123,11 @@ class CoilReduce(Gadget):
         Gadget.__init__(self, next_gadget)
         self.coils_out = 16
         
+    def process_config(self, conf):
+        coils_out = self.get_parameter("coils_out")
+        if (coils_out is not None):
+            self.coils_out = int(coils_out)
+
     def process(self, acq, data, *args):
         if acq.active_channels > self.coils_out:
             data2 = data[0:self.coils_out,:]
@@ -134,7 +139,7 @@ class CoilReduce(Gadget):
         return 0
 
 
-class Recon(Gadget):    
+class Recon(Gadget):
     def __init__(self, next_gadget=None):
         Gadget.__init__(self, next_gadget) 
         self.header = None
@@ -147,6 +152,7 @@ class Recon(Gadget):
         self.unmix = None
         self.gmap = None
         self.calib_frames = 0
+        self.method = 'grappa'
     
     def process_config(self, cfg):
         self.header = ismrmrd.xsd.CreateFromDocument(cfg)
@@ -167,7 +173,11 @@ class Recon(Gadget):
         
         #Frames should be a multiple of the acceleration factor
         self.frames = math.floor(self.calib_frames/self.acc_factor)*self.acc_factor
-        
+
+        pmri_method =  self.get_parameter('pmri_method')
+        if pmri_method == 'grappa' or pmri_method == 'sense':
+            self.method = pmri_method
+
     def process(self, acq, data,*args):
 
         if self.buffer is None:
@@ -238,8 +248,21 @@ class Recon(Gadget):
                     mask = np.squeeze(np.sum(np.abs(cal_data),0))
                     mask = np.ones(mask.shape)*(np.abs(mask)>0.0)
                     target = None #cal_data[0:8,:,:]
-                    self.unmix, self.gmap = grappa.calculate_grappa_unmixing(cal_data, self.acc_factor, data_mask=mask, kernel_size=(4,5), target_data=target)
-
+                    
+                    coil_images = transform.transform_kspace_to_image(cal_data,dim=(1,2))
+                    (csm,rho) = coils.calculate_csm_walsh(coil_images)
+                    
+                    if self.method == 'grappa':
+                        self.unmix, self.gmap = grappa.calculate_grappa_unmixing(cal_data, 
+                                                                                 self.acc_factor, 
+                                                                                 data_mask=mask, 
+                                                                                 kernel_size=(4,5), 
+                                                                                 csm=csm)
+                    elif self.method == 'sense':
+                        self.unmix, self.gmap = sense.calculate_sense_unmixing(self.acc_factor, csm)
+                    else:
+                        raise Exception('Unknown parallel imaging method: ' + str(self.method))
+                        
                     for c in self.calib_buffer:
                         recon = transform.transform_kspace_to_image(c[1],dim=(1,2))*np.sqrt(scale)
                         recon = np.squeeze(np.sum(recon * self.unmix,0))

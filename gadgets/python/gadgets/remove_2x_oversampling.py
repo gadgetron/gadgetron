@@ -1,6 +1,5 @@
 import numpy as np
 from ismrmrdtools import transform
-import libxml2
 from gadgetron import Gadget
 
 class Remove2xOversampling(Gadget):
