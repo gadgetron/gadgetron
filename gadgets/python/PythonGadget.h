@@ -25,11 +25,12 @@ namespace Gadgetron{
 	GadgetPropertyBase* p = this->find_property(name);
 	if (p) {
 	  //This is a property, pass it on to the Gadget base class
-	  Gadget::set_parameter(name,val,trigger);
+	  return Gadget::set_parameter(name,val,trigger);
 	} else {
 	  //This is probably information for the Python class itself
 	  this->parameters_python_[std::string(name)] = std::string(val);
 	}
+	return GADGET_OK;
       }
 
     protected:
