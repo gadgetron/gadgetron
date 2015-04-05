@@ -59,9 +59,12 @@ namespace Gadgetron{
 	break;
       default:
 	GERROR("Unknown image data_type %d received\n", h->data_type);
+	hmi->release();
+	return GADGET_FAIL;
 	break;
       }
     }
+    return GADGET_OK;
   }
   
   GADGET_FACTORY_DECLARE(PythonGadget)
