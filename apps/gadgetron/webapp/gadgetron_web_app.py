@@ -68,6 +68,7 @@ class GadgetronResource(resource.Resource):
         ismrmrd_home = config.get('GADGETRON', 'ISMRMRD_HOME')
         self.gadgetron_log_filename = config.get('GADGETRON','logfile')
         self.gadgetron_port = config.get('GADGETRON','port')
+        self.gadgetron_cpulist = config.get('RUNTIME','cpulist')
         gf = open(self.gadgetron_log_filename,"w")
         
         self.environment = dict()
@@ -80,7 +81,10 @@ class GadgetronResource(resource.Resource):
             self.environment["DYLD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib:/opt/local/lib"  
 
         #self.process_lock.acquire()
-        self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
+        if (platform.system() == 'Windows'):
+            self.gadgetron_process = subprocess.Popen(["start", "/AFFINITY", self.gadgetron_cpulist, "gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
+        else:
+            self.gadgetron_process = subprocess.Popen(["taskset","-c",self.gadgetron_cpulist,"gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
         #self.process_lock.release()
         resource.Resource.__init__(self)
         
@@ -99,7 +103,10 @@ class GadgetronResource(resource.Resource):
             self.gadgetron_process.kill()
             time.sleep(2)
         gf = open(self.gadgetron_log_filename,"w")
-        self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
+        if (platform.system() == 'Windows'):
+            self.gadgetron_process = subprocess.Popen(["start", "/AFFINITY", self.gadgetron_cpulist, "gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
+        else:
+            self.gadgetron_process = subprocess.Popen(["taskset","-c",self.gadgetron_cpulist,"gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
         time.sleep(2)
         self.process_lock.release()
 
