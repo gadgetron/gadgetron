@@ -72,7 +72,6 @@ if (SIEMENS_TO_ISMRMRD_EXE)
     COMMAND sudo bash create_chroot.sh 
     ${CMAKE_INSTALL_PREFIX}
     ${CMAKE_BINARY_DIR}
-    ${GADGETRON_GIT_SHA1}
     ${LIBRARY_PATHS}
     ${CUDA_LIBRARY}
     ${CMAKE_SOURCE_DIR}
@@ -88,7 +87,6 @@ else(SIEMENS_TO_ISMRMRD_EXE)
     COMMAND sudo bash create_chroot.sh
     ${CMAKE_INSTALL_PREFIX}
     ${CMAKE_BINARY_DIR}
-    ${GADGETRON_GIT_SHA1}
     ${LIBRARY_PATHS}
     ${CUDA_LIBRARY}
     ${CMAKE_SOURCE_DIR}
