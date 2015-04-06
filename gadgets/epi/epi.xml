@@ -80,6 +80,10 @@
           <name>split_slices</name>
           <value>true</value>
         </property>
+        <property>
+          <name>ignore_segment</name>
+          <value>true</value>
+        </property>
     </gadget>
 
     <gadget>
