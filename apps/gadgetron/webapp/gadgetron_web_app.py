@@ -73,7 +73,7 @@ class GadgetronResource(resource.Resource):
         
         self.environment = dict()
         self.environment["GADGETRON_HOME"]=gadgetron_home
-        self.environment["PATH"]=self.environment["GADGETRON_HOME"] + "/bin"
+        self.environment["PATH"]="/usr/bin:/usr/local/bin:" + self.environment["GADGETRON_HOME"] + "/bin"
 
         if (platform.system() == 'Linux'):
             self.environment["LD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib"  
