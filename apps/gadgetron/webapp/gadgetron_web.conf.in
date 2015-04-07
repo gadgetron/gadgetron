@@ -9,7 +9,15 @@ stop on starting shutdown
 console output
 kill signal INT
 
-exec su -c "python @CMAKE_INSTALL_PREFIX@/bin/gadgetron_web_app.py @CMAKE_INSTALL_PREFIX@/config/gadgetron_web_app.cfg" gadgetron
+pre-start script
+    for cpunum in $(
+        cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | 
+        cut -s -d, -f2- | tr ',' '\n' | sort -un); do
+            echo 0 > /sys/devices/system/cpu/cpu$cpunum/online
+    done
+end script
+
+exec su -c "python @CMAKE_INSTALL_PREFIX@/bin/gadgetron_web_app.py @CMAKE_INSTALL_PREFIX@/share/gadgetron/config/gadgetron_web_app.cfg" gadgetron
 
 respawn
 
