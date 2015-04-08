@@ -58,18 +58,19 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
       reconx.acqDelayTime_ = i->value;
     } else if (i->name == "numSamples") {
       reconx.numSamples_ = i->value;
-    } else {
-      GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
     }
   }
-
 
   for (std::vector<ISMRMRD::UserParameterDouble>::iterator i (traj_desc.userParameterDouble.begin()); i != traj_desc.userParameterDouble.end(); ++i) {
     if (i->name == "dwellTime") {
       reconx.dwellTime_ = i->value;
-    } else {
-      GDEBUG("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
     }
+  }
+
+  // If the flat top time is not set in the header, then we assume that rampSampling is off
+  // and we set the flat top time from the number of samples and the dwell time.
+  if (reconx.flatTopTime_ == 0) {
+      reconx.flatTopTime_ = reconx.dwellTime_ * reconx.numSamples_;
   }
 
   // Compute the trajectory

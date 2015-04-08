@@ -103,10 +103,14 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::computeTrajectory()
 
   // Some Areas
   float totArea = 0.5*rampUpTime_ + flatTopTime_ + 0.5*rampDownTime_;
-  float readArea =  0.5*rampUpTime_ + flatTopTime_ + 0.5*rampDownTime_
-                  - 0.5*(acqDelayTime_)*(acqDelayTime_)/rampUpTime_
-                  - 0.5*(totTime - (acqDelayTime_+readTime))*(totTime - (acqDelayTime_+readTime))/rampDownTime_;
-
+  float readArea =  0.5*rampUpTime_ + flatTopTime_ + 0.5*rampDownTime_;
+  if (rampUpTime_ > 0.0) {
+      readArea -= 0.5*(acqDelayTime_)*(acqDelayTime_)/rampUpTime_;
+  }
+  if (rampDownTime_ > 0.0) {
+      readArea -= 0.5*(totTime - (acqDelayTime_+readTime))*(totTime - (acqDelayTime_+readTime))/rampDownTime_;
+  }
+  
   // Prephase is set so that k=0 is halfway through the readout time
   float prePhaseArea = 0.5 * totArea;
 
