@@ -304,7 +304,9 @@ namespace Gadgetron {
         // Patient Birthdate
         key.set(0x0010, 0x0030);
         if (patient_info.patientBirthdate) {
-            WRITE_DCM_STRING(key, patient_info.patientBirthdate->c_str());
+            std::string d(patient_info.patientBirthdate.get());
+            d.erase(std::remove(d.begin(), d.end(), '-'), d.end());
+            WRITE_DCM_STRING(key, d.c_str());
         }
         else {
             status = dataset->insertEmptyElement(key);
