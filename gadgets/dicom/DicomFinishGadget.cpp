@@ -134,42 +134,48 @@ namespace Gadgetron {
         WRITE_DCM_STRING(key, UID_MRImageStorage);
 
         // Study Date
-        key.set(0x0008, 0x0020);
-        // ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", study_info.studyDate().year(), study_info.studyDate().month(), study_info.studyDate().day());
-        ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", 2014, 3, 21);
-        WRITE_DCM_STRING(key, buf);
+        if (study_info.studyDate) {
+            key.set(0x0008, 0x0020);
+            std::string d(study_info.studyDate.get());
+            d.erase(std::remove(d.begin(), d.end(), '-'), d.end());     // erase all occurrences of '-'
+            WRITE_DCM_STRING(key, d.c_str());
+        }
 
-        // Series Date
-        key.set(0x0008, 0x0021);
-        // ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", meas_info.seriesDate().year(), meas_info.seriesDate().month(), meas_info.seriesDate().day());
-        ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", 2014, 3, 21);
-        WRITE_DCM_STRING(key, buf);
-        // Acquisition Date
-        key.set(0x0008, 0x0022);
-        WRITE_DCM_STRING(key, buf);
-        // Content Date
-        key.set(0x0008, 0x0023);
-        WRITE_DCM_STRING(key, buf);
+        // Series, Acquisition, Content Date
+        if (meas_info.seriesDate) {
+            key.set(0x0008, 0x0021);
+            std::string d(meas_info.seriesDate.get());
+            d.erase(std::remove(d.begin(), d.end(), '-'), d.end());
+            WRITE_DCM_STRING(key, d.c_str());
+
+            key.set(0x0008, 0x0022);
+            WRITE_DCM_STRING(key, d.c_str());
+
+            key.set(0x0008, 0x0023);
+            WRITE_DCM_STRING(key, d.c_str());
+        }
 
         // Study Time
-        key.set(0x0008, 0x0030);
-        //ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", study_info.studyTime().hours(), study_info.studyTime().minutes(), (int)study_info.studyTime().seconds());
-        ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", 12, 12, 12);
-        WRITE_DCM_STRING(key, buf);
+        if (study_info.studyTime) {
+            key.set(0x0008, 0x0030);
+            std::string t(study_info.studyTime.get());
+            t.erase(std::remove(t.begin(), t.end(), ':'), t.end());
+            WRITE_DCM_STRING(key, t.c_str());
+        }
 
-        // Series Time
-        key.set(0x0008, 0x0031);
-        // ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", meas_info.seriesTime().hours(), meas_info.seriesTime().minutes(), (int)meas_info.seriesTime().seconds());
-        ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", 12, 12, 12);
-        WRITE_DCM_STRING(key, buf);
+        // Series, Acquisition, Content Time
+        if (meas_info.seriesTime) {
+            key.set(0x0008, 0x0031);
+            std::string t(meas_info.seriesTime.get());
+            t.erase(std::remove(t.begin(), t.end(), ':'), t.end());
+            WRITE_DCM_STRING(key, t.c_str());
 
-        // Acquisition Time
-        key.set(0x0008, 0x0032);
-        WRITE_DCM_STRING(key, buf);
+            key.set(0x0008, 0x0032);
+            WRITE_DCM_STRING(key, t.c_str());
 
-        // Content Time
-        key.set(0x0008, 0x0033);
-        WRITE_DCM_STRING(key, buf);
+            key.set(0x0008, 0x0033);
+            WRITE_DCM_STRING(key, t.c_str());
+        }
 
         // Accession Number
         key.set(0x0008, 0x0050);
@@ -398,8 +404,9 @@ namespace Gadgetron {
         // This will need updated if the "reconSpace.fieldOfView_mm.z" field
         // is changed in the ISMRMRD populating code (client)
         key.set(0x0018, 0x0050);
-        ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z);
+        ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z / std::max(r_space.matrixSize.z, (unsigned short)1));
         WRITE_DCM_STRING(key, buf);
+
 
         // Repetition Time
         key.set(0x0018, 0x0080);
@@ -412,14 +419,20 @@ namespace Gadgetron {
         WRITE_DCM_STRING(key, buf);
 
         // Inversion Time
-        key.set(0x0018, 0x0082);
-        ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.front());
-        WRITE_DCM_STRING(key, buf);
+        if (seq_info.TI.size()>0)
+        {
+            key.set(0x0018, 0x0082);
+            ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.front());
+            WRITE_DCM_STRING(key, buf);
+        }
 
         // Flip Angle
-        key.set(0x0018, 0x1314);
-        ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)seq_info.flipAngle_deg.front());
-        WRITE_DCM_STRING(key, buf);
+        if (seq_info.flipAngle_deg.size()>0)
+        {
+            key.set(0x0018, 0x1314);
+            ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)seq_info.flipAngle_deg.front());
+            WRITE_DCM_STRING(key, buf);
+        }
 
         // Imaging Frequency in tenths of MHz ???
         key.set(0x0018, 0x0084);
@@ -436,10 +449,6 @@ namespace Gadgetron {
             WRITE_DCM_STRING(key, "3.0");
         }
 
-        // Spacing Between Slices
-        key.set(0x0018, 0x0088);
-        ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z);
-        WRITE_DCM_STRING(key, buf);
 
         // Echo Train Length
         if (h.encoding[0].echoTrainLength) {
