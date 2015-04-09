@@ -407,6 +407,10 @@ namespace Gadgetron {
         ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z / std::max(r_space.matrixSize.z, (unsigned short)1));
         WRITE_DCM_STRING(key, buf);
 
+        // Spacing Between Slices
+        key.set(0x0018, 0x0088);
+        ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z);
+        WRITE_DCM_STRING(key, buf);
 
         // Repetition Time
         key.set(0x0018, 0x0080);
