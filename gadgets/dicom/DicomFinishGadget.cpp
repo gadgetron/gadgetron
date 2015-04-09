@@ -304,9 +304,7 @@ namespace Gadgetron {
         // Patient Birthdate
         key.set(0x0010, 0x0030);
         if (patient_info.patientBirthdate) {
-            //ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", patient_info.patientBirthdate().get().year(),
-            //        patient_info.patientBirthdate().get().month(), patient_info.patientBirthdate().get().day());
-            //WRITE_DCM_STRING(key, buf);
+            WRITE_DCM_STRING(key, patient_info.patientBirthdate->c_str());
         }
         else {
             status = dataset->insertEmptyElement(key);
