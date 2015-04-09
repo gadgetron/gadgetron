@@ -189,8 +189,9 @@ namespace Gadgetron
         virtual bool registerTwoImagesDeformationField(const TargetType& target, const SourceType& source, bool initial, TargetType* warped, DeformationFieldType** deform);
         virtual bool registerTwoImagesDeformationFieldBidirectional(const TargetType& target, const SourceType& source, bool initial, TargetType* warped, DeformationFieldType** deform, DeformationFieldType** deformInv);
 
-        virtual bool registerOverContainer2DPairWise(TargetContinerType& targetContainer, SourceContinerType& sourceContainer, bool warped);
-        virtual bool registerOverContainer2DFixedReference(TargetContinerType& targetContainer, const std::vector<unsigned int>& referenceFrame, bool warped);
+        /// if warped is true, the warped images will be computed; if initial is true, the registration will be initialized by deformation_field_ and deformation_field_inverse_
+        virtual bool registerOverContainer2DPairWise(TargetContinerType& targetContainer, SourceContinerType& sourceContainer, bool warped, bool initial = false);
+        virtual bool registerOverContainer2DFixedReference(TargetContinerType& targetContainer, const std::vector<unsigned int>& referenceFrame, bool warped, bool initial = false);
         virtual bool registerOverContainer2DProgressive(TargetContinerType& targetContainer, const std::vector<unsigned int>& referenceFrame);
 
         /// warp image containers
@@ -796,7 +797,7 @@ namespace Gadgetron
 
     template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
     bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
-    registerOverContainer2DPairWise(TargetContinerType& targetContainer, SourceContinerType& sourceContainer, bool warped)
+    registerOverContainer2DPairWise(TargetContinerType& targetContainer, SourceContinerType& sourceContainer, bool warped, bool initial)
     {
         try
         {
@@ -847,8 +848,6 @@ namespace Gadgetron
                     deformation_field_[ii].get_all_images(deform[ii]);
                 }
 
-                bool initial = false;
-
                 #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, warpedImages)
                 {
                     DeformationFieldType* deformCurr[DIn];
@@ -889,8 +888,6 @@ namespace Gadgetron
                     deformation_field_[ii].get_all_images(deform[ii]);
                     deformation_field_inverse_[ii].get_all_images(deformInv[ii]);
                 }
-
-                bool initial = false;
 
                 #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, deformInv, warpedImages)
                 {
@@ -944,7 +941,7 @@ namespace Gadgetron
 
     template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
     bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
-    registerOverContainer2DFixedReference(TargetContinerType& imageContainer, const std::vector<unsigned int>& referenceFrame, bool warped)
+    registerOverContainer2DFixedReference(TargetContinerType& imageContainer, const std::vector<unsigned int>& referenceFrame, bool warped, bool initial)
     {
         try
         {
@@ -1012,8 +1009,6 @@ namespace Gadgetron
                     deformation_field_[ii].get_all_images(deform[ii]);
                 }
 
-                bool initial = false;
-
                 #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, warpedImages)
                 {
                     DeformationFieldType* deformCurr[DIn];
@@ -1059,8 +1054,6 @@ namespace Gadgetron
                     deformation_field_[ii].get_all_images(deform[ii]);
                     deformation_field_inverse_[ii].get_all_images(deformInv[ii]);
                 }
-
-                bool initial = false;
 
                 #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, deformInv, warpedImages)
                 {

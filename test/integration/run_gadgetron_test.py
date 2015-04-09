@@ -395,7 +395,7 @@ def main():
             myenv[libpath] += "/opt/intel/lib/intel64:"
         if os.environ.get(libpath, None) is not None:
             myenv[libpath] += os.environ[libpath]
-        myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin" + ":" + myenv["GADGETRON_HOME"] + "/bin"
+        myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin" + ":" + myenv["GADGETRON_HOME"] + "/bin:/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
 
     myenv["ACE_DEBUG"] = "1"
     #myenv["GADGETRON_LOG_MASK"] = "ALL"

@@ -582,7 +582,7 @@ namespace Gadgetron
         }
 
         std::string nodeFileName = get_gadgetron_home();
-        nodeFileName.append("/config/gtCloud/");
+        nodeFileName.append("/share/gadgetron/config/gtCloud/");
         nodeFileName.append(filename);
         GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud node file name is " << nodeFileName);
 

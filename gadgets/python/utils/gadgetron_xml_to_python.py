@@ -24,6 +24,7 @@ def convert_xml(xmlfilename):
             object_name = 'g' + str(counter)
             python_module = None
             python_class = None
+            prop_set_string = ''
             for p in gadget.findall(add_ns('property')):
                 pname = p.findall(add_ns('name'))[0].text
                 pvalue = p.findall(add_ns('value'))[0].text
@@ -32,11 +33,12 @@ def convert_xml(xmlfilename):
                     python_module = pvalue
                 elif (pname == 'python_class'):
                     python_class = pvalue
+                else:
+                    prop_set_string += '    ' + object_name + '.set_parameter(\"' + pname + '\", \"' + pvalue + '\")\n'
 
-                if (python_module and python_class):
-                    break
             header_string += 'from ' + python_module + ' import ' + python_class + '\n'
             function_string += '    ' + object_name + ' = ' + python_class + '(next_gadget=' + next_gadget + ')\n'
+            function_string += prop_set_string
             last_gadget_was_wrapper = False
         else:
             if not last_gadget_was_wrapper:
@@ -59,10 +61,10 @@ def convert_xml(xmlfilename):
     function_code = header_string
     function_code += '\n'
     function_code += function_string
-    print function_code
+    return function_code
  
 if __name__ == "__main__":
     if len(argv) != 2:
         print "Usage: " + argv[0] + " <configuration.xml>"
         raise "Invalid number of arguments. Please provide the name of a gadgetron configuration file"
-    convert_xml(argv[1])
+    print convert_xml(argv[1])

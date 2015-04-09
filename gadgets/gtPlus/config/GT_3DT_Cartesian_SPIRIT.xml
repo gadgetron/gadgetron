@@ -43,9 +43,9 @@
 
     <!-- writer -->
     <writer>
-        <slot>1004</slot>
+        <slot>1022</slot>
         <dll>gadgetron_mricore</dll>
-        <classname>MRIImageWriterCPLX</classname>
+        <classname>MRIImageWriter</classname>
     </writer>
     <writer>
         <slot>1005</slot>
@@ -819,26 +819,10 @@
         <classname>FloatToUShortAttribGadget</classname>
     </gadget>
 
-    <!--
     <gadget>
-      <name>ImageFinishAttribCPLX</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishAttribGadgetCPLX</classname>
-    </gadget>
-    -->
-
-    <!--
-    <gadget>
-      <name>ImageFinishAttribFLOAT</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishAttribGadgetFLOAT</classname>
-    </gadget>
-    -->
-
-    <gadget>
-        <name>ImageFinishAttribUSHORT</name>
+        <name>ImageFinish</name>
         <dll>gadgetron_mricore</dll>
-        <classname>ImageFinishAttribGadgetUSHORT</classname>
+        <classname>ImageFinishGadget</classname>
     </gadget>
 
 </gadgetronStreamConfiguration>

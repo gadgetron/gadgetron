@@ -30,7 +30,7 @@ def get_last_gadget(first_gadget):
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         print "Usage: " + sys.argv[0] + " <gadgetron_python_chain.py> <ismrmrd_out.h5> <ismrmrd_out.h5>"
-        raise "Invalid number of arguments."
+        raise Exception("Invalid number of arguments.")
 
     python_function_file = sys.argv[1]
     filename = sys.argv[2]

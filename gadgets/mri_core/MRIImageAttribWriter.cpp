@@ -7,137 +7,143 @@
 
 namespace Gadgetron{
 
-  template <typename T>
-  int MRIImageAttribWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
-  {
-    typedef unsigned long long size_t_type;
-
+int MRIImageAttribWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
+{
     GadgetContainerMessage<ISMRMRD::ImageHeader>* imagemb =
-      AsContainerMessage<ISMRMRD::ImageHeader>(mb);
+        AsContainerMessage<ISMRMRD::ImageHeader>(mb);
 
     if (!imagemb)
-      {
-	GERROR("MRIImageAttribWriter::write, invalid image message objects, 1\n");
-	return -1;
-      }
-
-    GadgetContainerMessage< hoNDArray< T > >* datamb =
-      AsContainerMessage< hoNDArray< T > >(imagemb->cont());
-
-    if (!datamb)
-      {
-	GERROR("MRIImageAttribWriter::write, invalid image message objects\n");
-	return -1;
-      }
-
-    GadgetContainerMessage<ISMRMRD::MetaContainer>* attribmb =
-      AsContainerMessage<ISMRMRD::MetaContainer>(datamb->cont());
-
-    if (!attribmb)
-      {
-	GERROR("MRIImageAttribWriter::write, invalid image attribute message objects\n");
-	return -1;
-      }
-
-    ssize_t send_cnt = 0;
-    GadgetMessageIdentifier id;
-    switch (sizeof(T))
-      {
-      case 2: //Unsigned short
-        id.id = GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT;
-        break;
-      case 4: //Float
-        id.id = GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT;
-        break;
-      case 8: //Complex float
-        id.id = GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT;
-        break;
-      default:
-	GERROR("MRIImageAttribWriter Wrong data size detected\n");
-	return GADGET_FAIL;
-      }
-
-    //Let's check if the image header is consistent with the data array size before sending:
-    uint16_t RO = imagemb->getObjectPtr()->matrix_size[0];
-    uint16_t E1 = imagemb->getObjectPtr()->matrix_size[1];
-    uint16_t E2 = imagemb->getObjectPtr()->matrix_size[2];
-
-    unsigned long expected_elements = RO*E1*E2;
-
-    if (expected_elements !=  datamb->getObjectPtr()->get_number_of_elements())
-      {
-        GDEBUG("Number of header elements %d is inconsistent with number of elements in NDArray %d\n",expected_elements, datamb->getObjectPtr()->get_number_of_elements());
-        GDEBUG("Header dimensions: %d, %d, %d\n",RO,E1,E2);
-        GDEBUG("Number of array dimensions: %d:\n", datamb->getObjectPtr()->get_number_of_dimensions());
-        for (size_t i = 0; i < datamb->getObjectPtr()->get_number_of_dimensions(); i++)
-	  {
-            GDEBUG("Dimensions %d: %d\n", i, datamb->getObjectPtr()->get_size(i));
-	  }
+    {
+        GERROR("MRIImageAttribWriter::write, invalid image message objects, 1\n");
         return -1;
-      }
+    }
 
-    if ((send_cnt = sock->send_n (&id, sizeof(GadgetMessageIdentifier))) <= 0)
-      {
-	GERROR("Unable to send image message identifier\n");
-	return -1;
-      }
+    uint16_t data_type = imagemb->getObjectPtr()->data_type;
 
-    char* buf = NULL;
-    size_t_type len(0);
+    if (data_type == ISMRMRD::ISMRMRD_USHORT)
+    {
+        GadgetContainerMessage< hoNDArray< unsigned short > >* datamb = AsContainerMessage< hoNDArray< unsigned short > >(imagemb->cont());
+        if (!datamb)
+        {
+            GERROR("MRIImageAttribWriter::write, invalid image message objects\n");
+            return -1;
+        }
 
-    try
-      {
-        std::stringstream str;
-        ISMRMRD::serialize( *attribmb->getObjectPtr(), str);
-        std::string attribContent = str.str();
-        len = attribContent.length()+1;
+        if (this->write_data_attrib(sock, imagemb, datamb) != 0)
+        {
+            GERROR("MRIImageAttribWriter::write_data_attrib failed for unsigned short ... \n");
+            return -1;
+        }
+    }
+    else if (data_type == ISMRMRD::ISMRMRD_SHORT)
+    {
+        GadgetContainerMessage< hoNDArray< short > >* datamb = AsContainerMessage< hoNDArray< short > >(imagemb->cont());
+        if (!datamb)
+        {
+            GERROR("MRIImageAttribWriter::write, invalid image message objects\n");
+            return -1;
+        }
 
-        buf = new char[len];
-        GADGET_CHECK_THROW(buf != NULL);
+        if (this->write_data_attrib(sock, imagemb, datamb) != 0)
+        {
+            GERROR("MRIImageAttribWriter::write_data_attrib failed for short ... \n");
+            return -1;
+        }
+    }
+    else if (data_type == ISMRMRD::ISMRMRD_UINT)
+    {
+        GadgetContainerMessage< hoNDArray< unsigned int > >* datamb = AsContainerMessage< hoNDArray< unsigned int > >(imagemb->cont());
+        if (!datamb)
+        {
+            GERROR("MRIImageAttribWriter::write, invalid image message objects\n");
+            return -1;
+        }
 
-        memset(buf, '\0', sizeof(char)*len);
-        memcpy(buf, attribContent.c_str(), len-1);
-      }
-    catch(...)
-      {
-	GERROR("Unable to serialize image meta attributes \n");
-	return -1;
-      }
+        if (this->write_data_attrib(sock, imagemb, datamb) != 0)
+        {
+            GERROR("MRIImageAttribWriter::write_data_attrib failed for unsigned int ... \n");
+            return -1;
+        }
+    }
+    else if (data_type == ISMRMRD::ISMRMRD_INT)
+    {
+        GadgetContainerMessage< hoNDArray< int > >* datamb = AsContainerMessage< hoNDArray< int > >(imagemb->cont());
+        if (!datamb)
+        {
+            GERROR("MRIImageAttribWriter::write, invalid image message objects\n");
+            return -1;
+        }
 
-    imagemb->getObjectPtr()->attribute_string_len = len;
+        if (this->write_data_attrib(sock, imagemb, datamb) != 0)
+        {
+            GERROR("MRIImageAttribWriter::write_data_attrib failed for int ... \n");
+            return -1;
+        }
+    }
+    else if (data_type == ISMRMRD::ISMRMRD_FLOAT)
+    {
+        GadgetContainerMessage< hoNDArray< float > >* datamb = AsContainerMessage< hoNDArray< float > >(imagemb->cont());
+        if (!datamb)
+        {
+            GERROR("MRIImageAttribWriter::write, invalid image message objects\n");
+            return -1;
+        }
 
-    if ((send_cnt = sock->send_n ( imagemb->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0)
-      {
-	GERROR("Unable to send image header\n");
-	return -1;
-      }
+        if (this->write_data_attrib(sock, imagemb, datamb) != 0)
+        {
+            GERROR("MRIImageAttribWriter::write_data_attrib failed for float ... \n");
+            return -1;
+        }
+    }
+    else if (data_type == ISMRMRD::ISMRMRD_DOUBLE)
+    {
+        GadgetContainerMessage< hoNDArray< double > >* datamb = AsContainerMessage< hoNDArray< double > >(imagemb->cont());
+        if (!datamb)
+        {
+            GERROR("MRIImageAttribWriter::write, invalid image message objects\n");
+            return -1;
+        }
 
-    if ( (send_cnt = sock->send_n (&len, sizeof(size_t_type))) <= 0 )
-      {
-	GERROR("Unable to send image meta attributes length\n");
-	if ( buf != NULL ) delete [] buf;
-	return -1;
-      }
+        if (this->write_data_attrib(sock, imagemb, datamb) != 0)
+        {
+            GERROR("MRIImageAttribWriter::write_data_attrib failed for double ... \n");
+            return -1;
+        }
+    }
+    else if (data_type == ISMRMRD::ISMRMRD_CXFLOAT)
+    {
+        GadgetContainerMessage< hoNDArray< std::complex<float> > >* datamb = AsContainerMessage< hoNDArray< std::complex<float> > >(imagemb->cont());
+        if (!datamb)
+        {
+            GERROR("MRIImageAttribWriter::write, invalid image message objects\n");
+            return -1;
+        }
 
-    if ( (send_cnt = sock->send_n (buf, len)) <= 0 )
-      {
-	GERROR("Unable to send image meta attributes\n");
-	if ( buf != NULL ) delete [] buf;
-	return -1;
-      }
+        if (this->write_data_attrib(sock, imagemb, datamb) != 0)
+        {
+            GERROR("MRIImageAttribWriter::write_data_attrib failed for std::complex<float> ... \n");
+            return -1;
+        }
+    }
+    else if (data_type == ISMRMRD::ISMRMRD_CXDOUBLE)
+    {
+        GadgetContainerMessage< hoNDArray< std::complex<double> > >* datamb = AsContainerMessage< hoNDArray< std::complex<double> > >(imagemb->cont());
+        if (!datamb)
+        {
+            GERROR("MRIImageAttribWriter::write, invalid image message objects\n");
+            return -1;
+        }
 
-    if ( buf != NULL ) delete [] buf;
-
-    if ((send_cnt = sock->send_n (datamb->getObjectPtr()->get_data_ptr(), sizeof(T)*datamb->getObjectPtr()->get_number_of_elements())) <= 0)
-      {
-	GERROR("Unable to send image data\n");
-	return -1;
-      }
+        if (this->write_data_attrib(sock, imagemb, datamb) != 0)
+        {
+            GERROR("MRIImageAttribWriter::write_data_attrib failed for std::complex<double> ... \n");
+            return -1;
+        }
+    }
 
     return 0;
-  }
+}
 
-  GADGETRON_WRITER_FACTORY_DECLARE(MRIImageAttribWriterFLOAT)
-  GADGETRON_WRITER_FACTORY_DECLARE(MRIImageAttribWriterUSHORT)
-  GADGETRON_WRITER_FACTORY_DECLARE(MRIImageAttribWriterCPLX)
+GADGETRON_WRITER_FACTORY_DECLARE(MRIImageAttribWriter)
+
 }

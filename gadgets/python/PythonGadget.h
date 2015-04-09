@@ -7,15 +7,33 @@
 #include "python_toolbox.h"
 
 #include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/meta.h>
 #include <boost/python.hpp>
 
 namespace Gadgetron{
 
-  template <class T> class PythonGadget : 
-  public Gadget2<T, hoNDArray< std::complex<float> > >
+  class EXPORTGADGETSPYTHON PythonGadget : public BasicPropertyGadget
     {
-    protected:
+    public:
+      GADGET_DECLARE(PythonGadget);
 
+      /*
+	We are overloading this function from the base class to be able to capture a copy
+	of the properties that should be passed on to the Python class itself.
+       */
+      virtual int set_parameter(const char* name, const char* val, bool trigger = true) {
+	GadgetPropertyBase* p = this->find_property(name);
+	if (p) {
+	  //This is a property, pass it on to the Gadget base class
+	  return Gadget::set_parameter(name,val,trigger);
+	} else {
+	  //This is probably information for the Python class itself
+	  this->parameters_python_[std::string(name)] = std::string(val);
+	}
+	return GADGET_OK;
+      }
+
+    protected:
       int process_config(ACE_Message_Block* mb)
       {
           if (initialize_python() != GADGET_OK) {
@@ -83,13 +101,30 @@ namespace Gadgetron{
             return GADGET_FAIL;
         }
 
+	//Transfer all properties/parameters to Python gadget
+	std::map<std::string,std::string>::iterator it;
+	it = parameters_python_.begin();
+	while (it != parameters_python_.end()) {
+	  std::string var_name = it->first;
+	  std::string var_val  = it->second;
+	  try {
+	    boost::python::object set_parameter_fn = class_.attr("set_parameter");
+	    boost::python::object ignored = set_parameter_fn(var_name,var_val);
+	  } catch (boost::python::error_already_set const &) {
+            GERROR("Error setting PythonGadget parameters in Gadget %s\n", this->module()->name());
+            PyErr_Print();
+            return GADGET_FAIL;
+	  }
+	  it++;
+	}
+
         try {
             // retrieve and call python gadget's process_config method
             boost::python::object process_config_fn = class_.attr("process_config");
             boost::python::object ignored = process_config_fn(
                     boost::python::object(std::string(mb->rd_ptr())));
         } catch (boost::python::error_already_set const &) {
-            GDEBUG("Error calling process_config in Gadget %s\n", this->module()->name());
+            GERROR("Error calling process_config in Gadget %s\n", this->module()->name());
             PyErr_Print();
             return GADGET_FAIL;
         }
@@ -97,45 +132,63 @@ namespace Gadgetron{
         return GADGET_OK;
       }
 
-      int process(GadgetContainerMessage<T>* m1,
-            GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+      template <typename H, typename D> int process(GadgetContainerMessage<H>* hmb,
+						    GadgetContainerMessage< hoNDArray< D > >* dmb,
+						    GadgetContainerMessage< ISMRMRD::MetaContainer>* mmb)
       {
-          // We want to avoid a deadlock for the Python GIL if this python call
-          // results in an output that the GadgetReference will not be able to
-          // get rid of.
-          // This is kind of a nasty busy wait, maybe we should add an event
-          // handler to the NotificationStrategy of the Q or something, but
-          // for now, this will do it.
-          while (this->next()->msg_queue()->is_full()) {
-              // GDEBUG("Gadget (%s) sleeping while downstream Gadget (%s) does some work\n",
-              //        this->module()->name(), this->next()->module()->name());
-              // Sleep for 10ms while the downstream Gadget does some work
-              ACE_Time_Value tv(0,10000);
-              ACE_OS::sleep(tv);
-          }
-
-          T head = *m1->getObjectPtr();
-          hoNDArray<std::complex<float> > *data = m2->getObjectPtr();
-
-          GILLock lock;
-          try {
-              boost::python::object process_fn = class_.attr("process");
-              if (boost::python::extract<int>(process_fn(head, data)) != GADGET_OK) {
-                  GDEBUG("Gadget (%s) Returned from python call with error\n",
-                          this->module()->name());
-                  return GADGET_FAIL;
-              }
-              //Else we are done with this now.
-              m1->release();
-          } catch(boost::python::error_already_set const &) {
-              GDEBUG("Passing data on to python module failed\n");
-              PyErr_Print();
-              return GADGET_FAIL;
-          }
-
-          //GDEBUG("Process done in Gadget (%s)\n", this->module()->name());
-          return GADGET_OK;
+	if (!dmb) {
+	  GERROR("Received null pointer to data block");
+	  return GADGET_FAIL;
+	}
+	
+	// We want to avoid a deadlock for the Python GIL if this python call
+	// results in an output that the GadgetReference will not be able to
+	// get rid of.
+	// This is kind of a nasty busy wait, maybe we should add an event
+	// handler to the NotificationStrategy of the Q or something, but
+	// for now, this will do it.
+	while (this->next()->msg_queue()->is_full()) {
+	  // GDEBUG("Gadget (%s) sleeping while downstream Gadget (%s) does some work\n",
+	  //        this->module()->name(), this->next()->module()->name());
+	  // Sleep for 10ms while the downstream Gadget does some work
+	  ACE_Time_Value tv(0,10000);
+	  ACE_OS::sleep(tv);
+	}
+	
+	H head = *hmb->getObjectPtr();
+	hoNDArray< D > *data = dmb->getObjectPtr();
+	ISMRMRD::MetaContainer* meta = 0;
+	if (mmb) {
+	  meta = mmb->getObjectPtr();
+	}
+	
+	GILLock lock;
+	try {
+	  boost::python::object process_fn = class_.attr("process");
+	  int res;
+	  if (meta) {
+	    std::stringstream str;
+	    ISMRMRD::serialize(*meta, str);
+	    res = boost::python::extract<int>(process_fn(head, data, str.str()));
+	  } else {
+	    res = boost::python::extract<int>(process_fn(head, data));
+	  }
+	  if (res != GADGET_OK) {
+	    GDEBUG("Gadget (%s) Returned from python call with error\n",
+		   this->module()->name());
+	    return GADGET_FAIL;
+	  }
+	  //Else we are done with this now.
+	  hmb->release();
+	} catch(boost::python::error_already_set const &) {
+	  GDEBUG("Passing data on to python module failed\n");
+	  PyErr_Print();
+	  return GADGET_FAIL;
+	}
+	return GADGET_OK;
       }
+
+      virtual int process(ACE_Message_Block* mb); 
 
     protected:
       GADGET_PROPERTY(python_module, std::string, "Python module containing the Python Gadget class to be loaded", "");
@@ -146,11 +199,11 @@ namespace Gadgetron{
       boost::python::object module_;
       boost::python::object class_;
       boost::shared_ptr<GadgetReference> gadget_ref_;
+
+      /*
+	We are going to keep a copy of the parameters in this gadget that are not properties.
+	They should be passed on to the Python class. 
+      */
+      std::map< std::string, std::string> parameters_python_; 
     };
-
-  class EXPORTGADGETSPYTHON AcquisitionPythonGadget :
-  public PythonGadget<ISMRMRD::AcquisitionHeader> {};
-
-  class EXPORTGADGETSPYTHON ImagePythonGadget :
-  public PythonGadget<ISMRMRD::ImageHeader> {};
 }

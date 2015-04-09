@@ -10,25 +10,15 @@
     </reader>
 
     <writer>
-      <slot>1004</slot>
+      <slot>1022</slot>
       <dll>gadgetron_mricore</dll>
-      <classname>MRIImageWriterCPLX</classname>
-    </writer>
-    <writer>
-      <slot>1005</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>MRIImageWriterFLOAT</classname>
-    </writer>
-    <writer>
-      <slot>1006</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>MRIImageWriterUSHORT</classname>
+      <classname>MRIImageWriter</classname>
     </writer>
 
     <gadget>
       <name>RemoveOversamplingPython</name>
       <dll>gadgetron_python</dll>
-      <classname>AcquisitionPythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>remove_2x_oversampling</value></property>
       <property><name>python_class</name>                <value>Remove2xOversampling</value></property>
@@ -37,7 +27,7 @@
     <gadget>
       <name>AccReconPython</name>
       <dll>gadgetron_python</dll>
-      <classname>AcquisitionPythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>accumulate_and_recon</value></property>
       <property><name>python_class</name>                <value>AccumulateAndRecon</value></property>
@@ -46,7 +36,7 @@
     <gadget>
       <name>CoilCombinePython</name>
       <dll>gadgetron_python</dll>
-      <classname>ImagePythonGadget</classname>
+      <classname>PythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>rms_coil_combine</value></property>
       <property><name>python_class</name>                <value>RMSCoilCombine</value></property>
@@ -71,9 +61,9 @@
     </gadget>
   
     <gadget>
-      <name>ImageFinishUSHORT</name>
+      <name>ImageFinish</name>
       <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadgetUSHORT</classname>
+      <classname>ImageFinishGadget</classname>
     </gadget>
 
 </gadgetronStreamConfiguration>
