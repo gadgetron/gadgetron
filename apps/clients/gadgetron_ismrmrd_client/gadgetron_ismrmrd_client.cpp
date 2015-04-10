@@ -779,24 +779,20 @@ public:
             meta_attrib = meta_attrib_socket;
         }
 
-        std::string filename_image, filename_attrib;
+        std::stringstream filename;
+        std::string filename_attrib;
 
         // Create the filename: (prefix_%06.suffix)
-        if ( file_prefix.empty() )
-        {
-            filename_image =  filenameBuf + "." + file_suffix;
-            filename_attrib =  filenameBuf + "_attrib.xml";
-        }
-        else
-        {
-            filename_image = file_prefix + "_" + filenameBuf + "." + file_suffix;
-            filename_attrib = file_prefix + "_" + filenameBuf + "_attrib.xml";
-        }
+        filename << file_prefix << "_";
+        filename << std::setfill('0') << std::setw(MAX_BLOBS_LOG_10) << number_of_calls_;
+        filename_attrib = filename.str();
+        filename << "." << file_suffix;
+        filename_attrib.append("_attrib.xml");
 
-        std::cout << "Writing image " << filename_image.c_str() << std::endl;
+        std::cout << "Writing image " << filename.str() << std::endl;
 
         std::ofstream outfile;
-        outfile.open (filename_image.c_str(), std::ios::out|std::ios::binary);
+        outfile.open(filename.str().c_str(), std::ios::out | std::ios::binary);
 
         std::ofstream outfile_attrib;
         if (meta_attrib_length > 0)
@@ -1122,7 +1118,7 @@ int main(int argc, char **argv)
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader(out_filename, hdf5_out_group)));
     }
 
-    con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(), std::string("dcm"))));
+    con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
 
     try {
         con.connect(host_name,port);
