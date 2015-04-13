@@ -30,14 +30,29 @@ namespace Gadgetron
 
       This is a temporary fix that we should keep an eye on.
      */
+
+    hoNDArray<T> A_ori;
+    A_ori = *A;
+
 #ifdef USE_OMP
     int num_threads = omp_get_num_threads();
     omp_set_num_threads(1);
 #endif //USE_OMP
 
-    // it is found that if signal is very very high, the posv can throw exceptions due to ill-conditioned matrix of A
-    // hesv does not require A to be a positive-definite matrix, but an n-by-n symmetric matrix
-    hesv(*A, *B);
+    try
+    {
+        posv(*A, *B);
+    }
+    catch(...)
+    {
+        // it is found that if signal is very very high, the posv can throw exceptions due to ill-conditioned matrix of A
+        // hesv does not require A to be a positive-definite matrix, but an n-by-n symmetric matrix
+
+        GERROR_STREAM("ht_grappa_solve_spd_system : posv(*A, *B) throws exceptions ... ");
+        *A = A_ori;
+        hesv(*A, *B);
+        GERROR_STREAM("ht_grappa_solve_spd_system : hesv(*A, *B) is called ");
+    }
 
 #ifdef USE_OMP
     omp_set_num_threads(num_threads);
