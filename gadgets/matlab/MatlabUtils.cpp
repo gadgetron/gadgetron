@@ -308,8 +308,14 @@ IsmrmrdDataBuffered Gadgetron::MatlabStructToBuffer(mxArray* mxstruct){
 	}
 	auto headers = mxGetField(mxstruct,0,"headers");
 
-	std::vector<size_t> header_dim = {mxGetM(headers)};
+	auto nmat_headers = mxGetN(headers);
+	std::vector<size_t> header_dim = {buffer.data_.get_size(1),buffer.data_.get_size(2),buffer.data_.get_size(4),buffer.data_.get_size(5),buffer.data_.get_size(6)};
+
 	buffer.headers_ = hoNDArray<ISMRMRD::AcquisitionHeader>(header_dim);
+
+	std::cout << "Number of headers: " << nmat_headers << " Expected: " << buffer.headers_.get_number_of_elements() << std::endl;
+	if (nmat_headers != buffer.headers_.get_number_of_elements())
+		throw std::runtime_error("Number of headers does not match number of kspace acquisitions");
 
 	memcpy(buffer.headers_.get_data_ptr(),mxGetData(headers),sizeof(ISMRMRD::AcquisitionHeader)*buffer.headers_.get_number_of_elements());
 

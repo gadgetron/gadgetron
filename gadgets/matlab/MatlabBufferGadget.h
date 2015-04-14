@@ -130,8 +130,8 @@ protected:
     {
 
         if (debug_mode_) {
-            char matlab_buffer_[2049] = "\0";
-            engOutputBuffer(engine_, matlab_buffer_, 2048);
+            char matlab_buffer_[8193] = "\0";
+            engOutputBuffer(engine_, matlab_buffer_, 8192);
             engEvalString(engine_, command.c_str());
             GDEBUG("%s\n", matlab_buffer_);
             return GADGET_OK;
