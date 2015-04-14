@@ -117,6 +117,8 @@ namespace Gadgetron{
 
         std::vector<unsigned int> uncombined_channel_weights;
 
+        //GDEBUG_STREAM("==========================================================================");
+        //GDEBUG_STREAM("compute weights on scan : " << m1->scan_counter);
         //GDEBUG("sampled_region[0] = %d,%d\n", sampled_region[0].first, sampled_region[0].second);
         //GDEBUG("sampled_region[1] = %d,%d\n", sampled_region[1].first, sampled_region[1].second);
 
