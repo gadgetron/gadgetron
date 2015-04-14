@@ -55,6 +55,7 @@
       <property><name>uncombined_channels</name><value>0</value></property>
       -->
       <property><name>device_channels</name><value>present_uncombined_channels@PCA</value></property>
+      <property><name>use_gpu</name><value>true</value></property>
     </gadget>
 
     <gadget>

@@ -2,6 +2,7 @@
 #include "GadgetContainerMessage.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "hoNDArray_fileio.h"
+#include "hoNDArray_reductions.h"
 #include "GadgetronTimer.h"
 
 #ifdef USE_CUDA
@@ -188,7 +189,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 
             if (numUnCombined==0)
             {
-                hoNDArray< std::complex<float> > acs(RO, E1, CHA, reinterpret_cast< std::complex<float>* >(host_data->begin()) );
+                hoNDArray< std::complex<float> > acs(RO, E1, target_coils_, reinterpret_cast< std::complex<float>* >(host_data->begin()));
                 hoNDArray< std::complex<float> > target_acs(RO, E1, target_coils_, acs.begin());
 
                 // estimate coil map
@@ -215,26 +216,17 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                     size_t startE1 = mb1->getObjectPtr()->sampled_region[1].first;
                     size_t endE1 = mb1->getObjectPtr()->sampled_region[1].second;
 
-                    /*
-                        We are swithcing off OpenMP threading before this call.There seems to be a bad interaction between openmp, cuda, and BLAS.
-                        This is a temporary fix that we should keep an eye on.
-                    */
-#ifdef USE_OMP
-                    int num_threads = omp_get_num_threads();
-                    omp_set_num_threads(1);
-#endif //USE_OMP
-
                     Gadgetron::grappa2d_calib_convolution_kernel(acs, target_acs,
                         (size_t)(mb1->getObjectPtr()->acceleration_factor),
                         thres, kRO, kNE1, startRO, endRO, startE1, endE1, conv_ker_);
 
-#ifdef USE_OMP
-                    omp_set_num_threads(num_threads);
-#endif //USE_OMP
-
                     Gadgetron::grappa2d_image_domain_kernel(conv_ker_, RO, E1, kIm_);
 
+                    Gadgetron::clear(unmixing_);
+
                     Gadgetron::grappa2d_unmixing_coeff(kIm_, coil_map_, (size_t)(mb1->getObjectPtr()->acceleration_factor), unmixing_, gFactor_);
+
+                    // GDEBUG_STREAM("cpu triggered - unmixing_ : " << Gadgetron::norm2(unmixing_));
                 }
             }
             else
@@ -325,24 +317,13 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                 }
                 else
                 {
-                    /*
-                    We are swithcing off OpenMP threading before this call.There seems to be a bad interaction between openmp, cuda, and BLAS.
-                    This is a temporary fix that we should keep an eye on.
-                    */
-#ifdef USE_OMP
-                    int num_threads = omp_get_num_threads();
-                    omp_set_num_threads(1);
-#endif //USE_OMP
-
                     Gadgetron::grappa2d_calib_convolution_kernel(acs, target_acs_,
                         (size_t)(mb1->getObjectPtr()->acceleration_factor),
                         thres, kRO, kNE1, conv_ker_);
 
-#ifdef USE_OMP
-                    omp_set_num_threads(num_threads);
-#endif //USE_OMP
-
                     Gadgetron::grappa2d_image_domain_kernel(conv_ker_, RO, E1, kIm_);
+
+                    Gadgetron::clear(unmixing_);
 
                     hoNDArray< std::complex<float> > unmixing_all_channels(RO, E1, CHA, unmixing_.begin());
                     Gadgetron::grappa2d_unmixing_coeff(kIm_, coil_map_, (size_t)(mb1->getObjectPtr()->acceleration_factor), unmixing_all_channels, gFactor_);
@@ -352,6 +333,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                     for (it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++)
                     {
                         memcpy(unmixing_.begin() + ind*RO*E1*CHA, kIm_.begin() + (target_coils_ + ind - 1)*RO*E1*CHA, sizeof(std::complex<float>)*RO*E1*CHA);
+                        ind++;
                     }
                 }
             }
@@ -359,18 +341,24 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
             // pass the unmixing coefficients
             if (mb1->getObjectPtr()->destination)
             {
-                if (numUnCombined == 0)
-                {
-                    std::vector<size_t> dim(4);
-                    dim[0] = RO;
-                    dim[1] = E1;
-                    dim[2] = CHA;
-                    dim[3] = 1;
+                boost::shared_ptr< hoNDArray< std::complex<float> > > unmixing_host(new hoNDArray< std::complex<float> >());
+                boost::shared_ptr< std::vector<size_t> > tmp_dims = mb2->getObjectPtr()->get_dimensions();
+                if (uncombined_channels_.size()) tmp_dims->push_back((size_t)(uncombined_channels_.size() + 1));
 
-                    unmixing_.reshape(&dim);
+                try {
+                    unmixing_host->create(tmp_dims.get());
+                    Gadgetron::clear(*unmixing_host);
+                }
+                catch (std::runtime_error &err){
+                    GEXCEPTION(err, "Reshaping of GRAPPA weights failed \n");
+
                 }
 
-                if (mb1->getObjectPtr()->destination->update(&unmixing_) < 0) {
+                memcpy(unmixing_host->begin(), unmixing_.begin(), unmixing_.get_number_of_bytes());
+
+                // GDEBUG_STREAM("cpu triggered ... : " << Gadgetron::norm2(*unmixing_host));
+
+                if (mb1->getObjectPtr()->destination->update(unmixing_host.get()) < 0) {
                     GDEBUG("Update of GRAPPA weights failed\n");
                     return GADGET_FAIL;
                 }
