@@ -3,6 +3,10 @@
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
 
+#ifdef USE_OMP
+    #include "omp.h"
+#endif // USE_OMP
+
 #ifndef lapack_complex_float
     #define lapack_complex_float  std::complex<float> 
 #endif // lapack_complex_float
@@ -1290,6 +1294,15 @@ void posv(hoNDArray<T>& A, hoNDArray<T>& b)
         This is a temporary fix that we should keep an eye on.
         */
 
+#ifdef USE_OMP
+        int num_threads = omp_get_num_threads();
+#pragma omp single
+        {
+            if (!omp_in_parallel() && num_threads>1) omp_set_num_threads(1);
+        }
+
+#endif //USE_OMP
+
         if ( typeid(T)==typeid(float) )
         {
             sposv_(&uplo, &n, &nrhs, reinterpret_cast<float*>(pA), &lda, reinterpret_cast<float*>(pB), &ldb, &info);
@@ -1308,8 +1321,15 @@ void posv(hoNDArray<T>& A, hoNDArray<T>& b)
         }
         else
         {
+#ifdef USE_OMP
+            if (!omp_in_parallel() && num_threads>1) omp_set_num_threads(num_threads);
+#endif //USE_OM
             GADGET_THROW("posv : unsupported type ... ");
         }
+
+#ifdef USE_OMP
+        if (!omp_in_parallel() && num_threads>1) omp_set_num_threads(num_threads);
+#endif //USE_OMP
 
         GADGET_CHECK_THROW(info==0);
     }
