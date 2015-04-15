@@ -1296,11 +1296,7 @@ void posv(hoNDArray<T>& A, hoNDArray<T>& b)
 
 #ifdef USE_OMP
         int num_threads = omp_get_num_threads();
-#pragma omp single
-        {
-            if (!omp_in_parallel() && num_threads>1) omp_set_num_threads(1);
-        }
-
+        if (!omp_in_parallel() && num_threads>1) omp_set_num_threads(1);
 #endif //USE_OMP
 
         if ( typeid(T)==typeid(float) )
