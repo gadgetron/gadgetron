@@ -739,7 +739,7 @@ protected:
 	}
 
 	REAL functionValue(ARRAY_TYPE* encoding_space,std::vector<ARRAY_TYPE>& regEnc, ARRAY_TYPE * x){
-		REAL res= std::sqrt(this->encoding_operator_->get_weight())*abs(dot(encoding_space,encoding_space));
+		REAL res= this->encoding_operator_->get_weight()*abs(dot(encoding_space,encoding_space));
 
 		for (int i = 0; i  < this->operators.size(); i++){
 			res += this->operators[i]->magnitude(x);

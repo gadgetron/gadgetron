@@ -8,6 +8,8 @@
 #include "gpuSenseGadget.h"
 #include "cuNDArray.h"
 #include "vector_td_utilities.h"
+#include "hoNDArray_math.h"
+#include "cuNDArray_math.h"
 namespace Gadgetron {
 
 gpuSenseGadget::gpuSenseGadget() {
@@ -59,7 +61,6 @@ int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
   }
   save_individual_frames_ = save_individual_frames.value();
 
-
 }
 
 int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob* j, cuNDArray<float_complext>* cgresult,int channels) {
@@ -88,17 +89,15 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 			*m->getObjectPtr() = j->image_headers_[frame];
 			m->cont(cm);
 
-			std::vector<size_t> img_dims(2);
-			img_dims[0] = matrix_size_seq_[0];
-			img_dims[1] = matrix_size_seq_[1];
+			std::vector<size_t> img_dims {cgresult->get_size(0),cgresult->get_size(1)};
 
 			cm->getObjectPtr()->create(&img_dims);
 
-			size_t data_length = prod(matrix_size_seq_);
+			size_t data_length = cm->getObjectPtr()->get_number_of_bytes();
 
 			cudaMemcpy(cm->getObjectPtr()->get_data_ptr(),
-					cgresult->get_data_ptr()+frame*data_length,
-					data_length*sizeof(std::complex<float>),
+					cgresult->get_data_ptr()+frame*cm->getObjectPtr()->get_number_of_elements(),
+					data_length,
 					cudaMemcpyDeviceToHost);
 
 			cudaError_t err = cudaGetLastError();
@@ -108,8 +107,8 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 				return GADGET_FAIL;
 			}
 
-			m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
-			m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];
+			m->getObjectPtr()->matrix_size[0] = img_dims[0];
+			m->getObjectPtr()->matrix_size[1] = img_dims[1];
 			m->getObjectPtr()->matrix_size[2] = 1;
 			m->getObjectPtr()->channels       = 1;
 			m->getObjectPtr()->image_index    = frame_counter_ + frame;
@@ -121,10 +120,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 			}
 		}
 	} else{
-		std::vector<size_t> img_dims(3);
-		img_dims[0] = matrix_size_seq_[0];
-		img_dims[1] = matrix_size_seq_[1];
-		img_dims[2] = frames;
+		std::vector<size_t> img_dims { cgresult->get_size(0),cgresult->get_size(1),(size_t)frames};
 
 		auto cm =
 				new GadgetContainerMessage< hoNDArray< std::complex<float> > >(img_dims);
@@ -135,9 +131,9 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 		*m->getObjectPtr() = j->image_headers_[0]; //Just use the first header
 		m->cont(cm);
 
-		m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
-		m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];
-		m->getObjectPtr()->matrix_size[2] = frames;
+		m->getObjectPtr()->matrix_size[0] = img_dims[0];
+		m->getObjectPtr()->matrix_size[1] = img_dims[1];
+		m->getObjectPtr()->matrix_size[2] = img_dims[2];
 		m->getObjectPtr()->channels       = channels;
 		m->getObjectPtr()->image_index    = frame_counter_;
 

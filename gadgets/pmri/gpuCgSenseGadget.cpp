@@ -15,7 +15,8 @@ namespace Gadgetron{
 
   gpuCgSenseGadget::gpuCgSenseGadget()
     : is_configured_(false)
-    , matrix_size_reported_(0)
+    , matrix_size_reported_(0),
+      gpuSenseGadget()
   {
     matrix_size_ = uint64d2(0,0);
     matrix_size_os_ = uint64d2(0,0);
@@ -26,47 +27,12 @@ namespace Gadgetron{
 
   int gpuCgSenseGadget::process_config( ACE_Message_Block* mb )
   {
+  	gpuSenseGadget::process_config(mb);
     //GDEBUG("gpuCgSenseGadget::process_config\n");
-
-    device_number_ = deviceno.value();
-
-    int number_of_devices = 0;
-    if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
-      GDEBUG( "Error: unable to query number of CUDA devices.\n" );
-      return GADGET_FAIL;
-    }
-
-    if (number_of_devices == 0) {
-      GDEBUG( "Error: No available CUDA devices.\n" );
-      return GADGET_FAIL;
-    }
-
-    if (device_number_ >= number_of_devices) {
-      GDEBUG("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
-      device_number_ = (device_number_%number_of_devices);
-    }
-
-    if (cudaSetDevice(device_number_)!= cudaSuccess) {
-      GDEBUG( "Error: unable to set CUDA device.\n" );
-      return GADGET_FAIL;
-    }
-
-    pass_on_undesired_data_ = pass_on_undesired_data.value();
-    set_number_ = setno.value();
-    slice_number_ = sliceno.value();
     number_of_iterations_ = number_of_iterations.value();
-    cg_limit_ = cg_limit.value();
-    oversampling_factor_ = oversampling_factor.value();
-    kernel_width_ = kernel_width.value();
     kappa_ = kappa.value();
-    output_convergence_ = output_convergence.value();
-    output_timing_ = output_timing.value();
-    rotations_to_discard_ = rotations_to_discard.value();
 
-    if( (rotations_to_discard_%2) == 1 ){
-      GDEBUG("#rotations to discard must be even.\n");
-      return GADGET_FAIL;
-    }
+
 
     // Get the Ismrmrd header
     //
@@ -264,63 +230,7 @@ namespace Gadgetron{
     
     // Now pass on the reconstructed images
     //
-
-    unsigned int frames_per_rotation = frames/rotations;
-
-    if( rotations == 1 ){ // this is the case for golden ratio
-      rotations = frames;
-      frames_per_rotation = 1;
-    }
-
-    for( unsigned int frame=0; frame<frames; frame++ ){
-      
-      unsigned int rotation_idx = frame/frames_per_rotation;
-
-      // Check if we should discard this frame
-      if( rotation_idx < (rotations_to_discard_>>1) || rotation_idx >= rotations-(rotations_to_discard_>>1) )
-        continue;
-
-      GadgetContainerMessage<ISMRMRD::ImageHeader> *m = 
-        new GadgetContainerMessage<ISMRMRD::ImageHeader>();
-
-      GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = 
-        new GadgetContainerMessage< hoNDArray< std::complex<float> > >();      
-      
-      *m->getObjectPtr() = j->image_headers_[frame];
-      m->cont(cm);
-      
-      std::vector<size_t> img_dims(2);
-      img_dims[0] = matrix_size_seq_[0];
-      img_dims[1] = matrix_size_seq_[1];
-
-      cm->getObjectPtr()->create(&img_dims);
-
-      size_t data_length = prod(matrix_size_seq_);
-
-      cudaMemcpy(cm->getObjectPtr()->get_data_ptr(),
-                 cgresult->get_data_ptr()+frame*data_length,
-                 data_length*sizeof(std::complex<float>),
-                 cudaMemcpyDeviceToHost);
-      
-      cudaError_t err = cudaGetLastError();
-      if( err != cudaSuccess ){
-        GDEBUG("Unable to copy result from device to host: %s\n", cudaGetErrorString(err));
-        m->release();
-        return GADGET_FAIL;
-      }
-
-      m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
-      m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];
-      m->getObjectPtr()->matrix_size[2] = 1;
-      m->getObjectPtr()->channels       = 1;
-      m->getObjectPtr()->image_index    = frame_counter_ + frame;
-            
-      if (this->next()->putq(m) < 0) {
-        GDEBUG("Failed to put result image on to queue\n");
-        m->release();
-        return GADGET_FAIL;
-      }
-    }
+    put_frames_on_que(frames,rotations,j,cgresult.get(),channels);
     
     frame_counter_ += frames;
 
