@@ -60,9 +60,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ();";
     send_matlab_command(cmd);
 
-    GDEBUG("Test1\n");
     // Get the size of the gadget's queue
-
     mxArray *Q = engGetVariable(engine_, "Q");
     if (Q == NULL) {
         GDEBUG("Failed to get the Queue from matgadget\n");
