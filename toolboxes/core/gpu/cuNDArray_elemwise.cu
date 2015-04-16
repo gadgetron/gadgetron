@@ -630,6 +630,7 @@ template EXPORTGPUCORE void Gadgetron::shrink1< std::complex<double> >( cuNDArra
 template EXPORTGPUCORE void Gadgetron::shrinkd< std::complex<double> > ( cuNDArray< std::complex<double> >*, cuNDArray<double>*, double );
 */
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::abs< complext<float> >( cuNDArray< complext<float> >* );
+template EXPORTGPUCORE void Gadgetron::abs_inplace<complext<float> >(cuNDArray<complext<float> >*);
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< complext<float> > > Gadgetron::sqrt< complext<float> >( cuNDArray< complext<float> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::abs_square< complext<float> >( cuNDArray< complext<float> >* );
 template EXPORTGPUCORE void Gadgetron::sqrt_inplace< complext<float> >( cuNDArray< complext<float> >* );

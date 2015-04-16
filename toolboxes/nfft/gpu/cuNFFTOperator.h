@@ -6,7 +6,7 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D, bool ATOMICS=false> class EXPORTGPUNFFT cuNFFTOperator : public linearOperator<cuNDArray< complext<REAL> > >
+  template<class REAL, unsigned int D, bool ATOMICS=false> class EXPORTGPUNFFT cuNFFTOperator : public virtual linearOperator<cuNDArray< complext<REAL> > >
   {  
   public:
   
