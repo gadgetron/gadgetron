@@ -19,7 +19,7 @@
     <name>MatlabAcquisition</name>
     <dll>gadgetron_matlab</dll>
     <classname>AcquisitionMatlabGadget</classname>
-    <property><name>debug_mode</name><value>0</value></property>
+    <property><name>debug_mode</name><value>false</value></property>
     <property><name>matlab_path</name><value></value></property>
     <property><name>matlab_classname</name><value>scale</value></property>
     <property><name>matlab_port</name><value>3000</value></property>

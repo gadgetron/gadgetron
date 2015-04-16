@@ -2,6 +2,7 @@
 
 #include "gadgetron_matlab_export.h"
 #include "Gadget.h"
+#include "gadgetron_paths.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
 #include "engine.h"     // Matlab Engine header
@@ -47,12 +48,14 @@ public:
 
 	    // Add the necessary paths to the matlab environment
 	    // Java matlab command server
-            engEvalString(engine_, "javaaddpath(fullfile(getenv('GADGETRON_HOME'), 'matlab'));");
+	    std::string gadgetron_matlab_path = get_gadgetron_home() + "/share/gadgetron/matlab";
+	    std::string java_add_path_cmd = std::string("javaaddpath('") + gadgetron_matlab_path + std::string("');");
+	    std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
             // Gadgetron matlab scripts
-            engEvalString(engine_, "addpath(fullfile(getenv('GADGETRON_HOME'), 'matlab'));");
+	    engEvalString(engine_, java_add_path_cmd.c_str());
+	    engEvalString(engine_, add_path_cmd.c_str());
             // ISMRMRD matlab library
-            engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), 'matlab'));");
-
+            engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), '/share/ismrmrd/matlab'));");
 
 	    GDEBUG("%s", matlab_buffer_);
         }
@@ -77,17 +80,25 @@ public:
     virtual int process(GadgetContainerMessage<IsmrmrdReconData> *);
 
 protected:
+    GADGET_PROPERTY(debug_mode, bool, "Debug mode", false);
+    GADGET_PROPERTY(matlab_path, std::string, "Path to Matlab code", "");
+    GADGET_PROPERTY(matlab_classname, std::string, "Name of Matlab gadget class", "");
+    GADGET_PROPERTY(matlab_port, int, "Port on which to run Matlab command server", 3000);
 
     int process_config(ACE_Message_Block* mb)
     {
         std::string cmd;
 
-        debug_mode_  = this->get_int_value("debug_mode");
-        path_        = this->get_string_value("matlab_path");
-        classname_   = this->get_string_value("matlab_classname");
-        command_server_port_ = this->get_int_value("matlab_port");
+        debug_mode_  = debug_mode.value();
+        path_        = matlab_path.value();
+        classname_   = matlab_classname.value();
+        if (classname_.empty()) {
+            GERROR("Missing Matlab Gadget classname in config!");
+            return GADGET_FAIL;
+        }
+        command_server_port_ = matlab_port.value();
 
-        GDEBUG("MATLAB Class Name : %s\n", classname_.get()->c_str());
+        GDEBUG("MATLAB Class Name : %s\n", classname_.c_str());
 
         //char matlab_buffer_[2049] = "\0";
         char matlab_buffer_[20481] = "\0";
@@ -101,8 +112,8 @@ protected:
         GDEBUG("%s", matlab_buffer_);
 
         // add user specified path for this gadget
-        if (!path_->empty()) {
-            cmd = "addpath('" + *path_ + "');";
+        if (!path_.empty()) {
+            cmd = "addpath('" + path_ + "');";
             send_matlab_command(cmd);
         }
 
@@ -114,7 +125,7 @@ protected:
         // Instantiate the Matlab gadget object from the user specified class
         // Call matlab gadget's init method with the XML Header
         // and the user defined config method
-        cmd = "matgadget = " + *classname_ + "();";
+        cmd = "matgadget = " + classname_ + "();";
         cmd += "matgadget.init(xmlstring); matgadget.config();";
         if (send_matlab_command(cmd) != GADGET_OK) {
             GDEBUG("Failed to send matlab command.\n");
@@ -162,8 +173,8 @@ protected:
     }
 
 
-    boost::shared_ptr<std::string> path_;
-    boost::shared_ptr<std::string> classname_;
+    std::string path_;
+    std::string classname_;
     int command_server_port_;
     int debug_mode_;
 

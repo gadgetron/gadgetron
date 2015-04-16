@@ -77,6 +77,7 @@ foreach(lib mat ut mex mx eng)
         ${lib}
         HINTS ${MATLAB_ROOT} ${MATLAB_LIB_ROOT}
         PATH_SUFFIXES lib bin bin/maci64 bin/glnxa64 bin/glnxa86
+        NO_CMAKE_SYSTEM_PATH    # don't pick up libmx on OS X > 10.9
     )
     if(MATLAB_${LIB}_LIBRARY)
         list(APPEND MATLAB_LIBRARIES "${MATLAB_${LIB}_LIBRARY}")

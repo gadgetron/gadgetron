@@ -48,7 +48,7 @@
     <name>MatlabBuffer</name>
     <dll>gadgetron_matlab</dll>
     <classname>MatlabBufferGadget</classname>
-    <property><name>debug_mode</name><value>1</value></property>
+    <property><name>debug_mode</name><value>true</value></property>
     <property><name>matlab_path</name><value></value></property>
     <property><name>matlab_classname</name><value>trajectoryScale</value></property>
     <property><name>matlab_port</name><value>3000</value></property>
