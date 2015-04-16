@@ -261,8 +261,17 @@ namespace Gadgetron{
                         tmpm3->getObjectPtr()->set(GADGETRON_IMAGENUMBER, (long)tmpm1->getObjectPtr()->image_index);
 
                         tmpm3->getObjectPtr()->append(GADGETRON_DATA_ROLE, "PhysioInterp");
-                        tmpm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, "PhysioInterp");
-                        tmpm3->getObjectPtr()->append(GADGETRON_SEQUENCEDESCRIPTION, "_PhysioInterp");
+
+                        double cycle_length_in_ms = time_stamp_resolution_.value()*cycle_lengths[current_cycle];
+
+                        std::ostringstream ostr;
+                        ostr << "_RR" << cycle_length_in_ms << "ms";
+
+                        std::string imageComment = "PhysioInterp" + ostr.str();
+                        tmpm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, imageComment.c_str());
+
+                        std::string seqDescription = "_PhysioInterp" + ostr.str();
+                        tmpm3->getObjectPtr()->append(GADGETRON_SEQUENCEDESCRIPTION, seqDescription.c_str());
 
                         tmpm3->getObjectPtr()->append(GADGETRON_IMAGEPROCESSINGHISTORY, "Interp");
                     }
