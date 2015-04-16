@@ -21,6 +21,9 @@ install(FILES
   gpSolver.h
   gpBbSolver.h
   eigenTester.h
+  osMOMSolver.h
+  osSPSSolver.h
+  osLALMSolver.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 IF(ARMADILLO_FOUND)

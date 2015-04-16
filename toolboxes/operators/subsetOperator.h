@@ -10,7 +10,7 @@
 namespace Gadgetron{
 
 
-template<class ARRAY_TYPE> class subsetOperator : public linearOperator<ARRAY_TYPE>{
+template<class ARRAY_TYPE> class subsetOperator : public virtual linearOperator<ARRAY_TYPE>{
 private:
   typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
   typedef typename realType<ELEMENT_TYPE>::Type REAL;
@@ -22,7 +22,12 @@ public:
 	virtual ~subsetOperator(){};
 	virtual void mult_M(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate)=0;
 	virtual void mult_MH(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate)=0;
-	virtual void mult_MH_M(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate)=0;
+	virtual void mult_MH_M(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate){
+		auto codim = this->get_codomain_dimensions(subset);
+		ARRAY_TYPE tmp(codim);
+		this->mult_M(in,&tmp,subset,false);
+		this->mult_MH(&tmp,out,subset,accumulate);
+	}
 
 	virtual void mult_M(ARRAY_TYPE* in, ARRAY_TYPE* out,bool accumulate){
 		if (!accumulate) clear(out);

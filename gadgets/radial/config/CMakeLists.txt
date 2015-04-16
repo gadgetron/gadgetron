@@ -15,6 +15,7 @@ if (ARMADILLO_FOUND)
     fixed_radial_mode0_gpu_ktsense.xml 
     fixed_radial_mode1_gpu_ktsense.xml 
     golden_radial_mode2_gpu_ktsense.xml 
+    golden_radial_mode3_os_realtime.xml
     spirit.xml
     DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 elseif (ARMADILLO_FOUND)

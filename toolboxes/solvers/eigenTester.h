@@ -1,6 +1,7 @@
 #pragma once
 #include "complext.h"
 #include "diagonalOperator.h"
+#include "identityOperator.h"
 
 #include <boost/make_shared.hpp>
 
@@ -128,16 +129,17 @@ public:
 		  while (abs(norm-norm_old)/abs(norm)> tolerance){
 			  norm_old=norm;
 			  mult_MH_M(in,out);
+			  std::cout << dot(in,out) << std::endl;
+
 			  norm = nrm2(out);
 
 			  *out /= norm;
 			  ARRAY_TYPE* tmp = in;
 			  in = out;
 			  out = tmp;
-			  //std::cout << "Relative change in eigenvalue: " << abs(norm-norm_old)/abs(norm) << std::endl;
-
 
 			  }
+		  std::cout << "Done" << std::endl;
 		  delete in;
 		  return boost::shared_ptr<ARRAY_TYPE>(out);
 		}
