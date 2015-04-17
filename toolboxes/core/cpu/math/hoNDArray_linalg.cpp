@@ -1296,7 +1296,7 @@ void posv(hoNDArray<T>& A, hoNDArray<T>& b)
 
 #ifdef USE_OMP
         int num_threads = omp_get_num_threads();
-        omp_set_num_threads(1);
+        if (!omp_in_parallel() && num_threads>1) omp_set_num_threads(1);
 #endif //USE_OMP
 
         if ( typeid(T)==typeid(float) )
@@ -1318,13 +1318,13 @@ void posv(hoNDArray<T>& A, hoNDArray<T>& b)
         else
         {
 #ifdef USE_OMP
-            omp_set_num_threads(num_threads);
+            if (!omp_in_parallel() && num_threads>1) omp_set_num_threads(num_threads);
 #endif //USE_OM
             GADGET_THROW("posv : unsupported type ... ");
         }
 
 #ifdef USE_OMP
-        omp_set_num_threads(num_threads);
+        if (!omp_in_parallel() && num_threads>1) omp_set_num_threads(num_threads);
 #endif //USE_OMP
 
         GADGET_CHECK_THROW(info==0);

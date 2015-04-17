@@ -34,11 +34,6 @@ namespace Gadgetron
     hoNDArray<T> A_ori;
     A_ori = *A;
 
-#ifdef USE_OMP
-    int num_threads = omp_get_num_threads();
-    omp_set_num_threads(1);
-#endif //USE_OMP
-
     try
     {
         posv(*A, *B);
@@ -53,11 +48,6 @@ namespace Gadgetron
         hesv(*A, *B);
         GERROR_STREAM("ht_grappa_solve_spd_system : hesv(*A, *B) is called ");
     }
-
-#ifdef USE_OMP
-    omp_set_num_threads(num_threads);
-#endif //USE_OMP
-
   }
 
   template void ht_grappa_solve_spd_system< float_complext >(hoNDArray< float_complext > *A, hoNDArray< float_complext > *B);
