@@ -281,6 +281,13 @@ namespace Gadgetron
             ACE_OS::snprintf(buf, BUFSIZE, "%d", m1->getObjectPtr()->matrix_size[0]);
             WRITE_DCM_STRING(key, buf);
 
+            //Number of frames
+            if (m1->getObjectPtr()->matrix_size[2] > 1){ //Only write if we have more than 1 frame
+            	key.set(0x0028,0x0008);
+            	ACE_OS::snprintf(buf,BUFSIZE,"%d",m1->getObjectPtr()->matrix_size[2]);
+            	WRITE_DCM_STRING(key,buf);
+            }
+
             // Simple windowing using pixel values calculated earlier...
             int mid_pix_val = (int)(max_pix_val + min_pix_val) / 2;
             int window_center = (int)(mid_pix_val + mean_pix_val) / 2;
@@ -308,7 +315,7 @@ namespace Gadgetron
             }
 
             // Pixel Data
-            if ((unsigned long)m1->getObjectPtr()->matrix_size[0] * (unsigned long)m1->getObjectPtr()->matrix_size[1] !=
+            if ((unsigned long)m1->getObjectPtr()->matrix_size[0] * (unsigned long)m1->getObjectPtr()->matrix_size[1]*(unsigned long)m1->getObjectPtr()->matrix_size[2] !=
                 data->get_number_of_elements()) {
                 GDEBUG("Mismatch in image dimensions and available data\n");
                 return GADGET_FAIL;
