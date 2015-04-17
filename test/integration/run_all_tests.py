@@ -1,4 +1,3 @@
-import ConfigParser
 import os
 import sys
 import glob
@@ -30,10 +29,8 @@ def main():
     for t in content:
         print("Grabbing test case: " + t)
 
-        # We need to figure out where this test dumps log files
-        config = ConfigParser.RawConfigParser()
-        config.read(t)
-        out_folder = config.get('FILES', 'out_folder')
+        # save this test's log files
+        out_folder = 'test'
         gadgetron_log_filename = os.path.join(pwd, out_folder, "gadgetron.log")
         client_log_filename = os.path.join(pwd, out_folder, "client.log")
 
