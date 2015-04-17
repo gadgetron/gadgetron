@@ -53,17 +53,15 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 		return GADGET_FAIL;
 	}
 
-	pass_on_undesired_data_ = get_bool_value("pass_on_undesired_data");
-	cg_limit_ = get_double_value("cg_limit");
-	oversampling_factor_ = get_double_value("oversampling_factor");
-	kernel_width_ = get_double_value("kernel_width");
-	kappa_ = get_double_value("kappa");
-	output_convergence_ = get_bool_value("output_convergence");
-	number_of_sb_iterations_ = get_int_value("number_of_sb_iterations");
-	number_of_cg_iterations_ = get_int_value("number_of_cg_iterations");
+	cg_limit_ = cg_limit.value();
+	oversampling_factor_ = oversampling_factor.value();
+	kernel_width_ = kernel_width.value();
+	output_convergence_ = output_convergence.value();
+	number_of_sb_iterations_ = number_of_sb_iterations.value();
+	number_of_cg_iterations_ = number_of_cg_iterations.value();
 
 
-	mu_ = get_double_value("mu");
+	mu_ = mu.value();
 
 	// Get the Ismrmrd header
 	//
@@ -126,18 +124,15 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 		E_->set_weight(mu_);
 
 		std::vector<float> freqs;
-		auto frequency_string = get_string_value("frequencies");
+		auto frequency_string_ = frequency_string.value();
 
-		if (*frequency_string != ""){
-			std::stringstream stream(*frequency_string);
+		if (frequency_string_ != ""){
+			std::stringstream stream(frequency_string_);
 			float freq;
 			while(stream >> freq)
 				freqs.push_back(freq);
 		} else {
-			float frequency_max = get_double_value("frequency_max");
-			float frequency_min = get_double_value("frequency_min");
-			float frequency_step = get_double_value("frequency_step");
-			for (float f = frequency_min; f <= frequency_max; f+= frequency_step)
+		for (float f = frequency_min.value(); f <= frequency_max.value(); f+= frequency_step.value())
 				freqs.push_back(f);
 		}
 

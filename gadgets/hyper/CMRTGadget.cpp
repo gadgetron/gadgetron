@@ -73,10 +73,10 @@ int CMRTGadget::process_config(ACE_Message_Block* mb)
 	// Allocate readout and trajectory/dcw queues
 	//
 
-	golden_ratio_ = get_bool_value("golden_ratio");
-	use_TV_ = get_bool_value("use_TV");
-	projections_per_recon_ = get_int_value("projections_per_recon");
-	iterations_ = get_int_value("iterations");
+	golden_ratio_ =golden_ratio.value();
+	use_TV_ = use_TV.value();
+	projections_per_recon_ = projections_per_recon.value();
+	iterations_ = iterations.value();
 	frame_readout_queue_ = boost::shared_ptr< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>());
 	frame_traj_queue_ = boost::shared_ptr< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>());
 

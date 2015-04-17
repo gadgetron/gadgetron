@@ -50,11 +50,11 @@ int CMRT3DGadget::process_config(ACE_Message_Block* mb)
 			image_space_dimensions_3D_[1],
 			image_space_dimensions_3D_[2] );
 
-	num_projections_expected_ = get_int_value(std::string("projections_per_recon").c_str());
-	projections_percentage_ = get_int_value(std::string("projections_percentage").c_str());
+	num_projections_expected_ = projections_per_recon.value();
+	projections_percentage_ =projections_percentage.value();
 	num_projections_to_use_ = num_projections_expected_/(100/projections_percentage_);
 
-	golden_ratio_ = get_bool_value("golden_ratio");
+	golden_ratio_ = golden_ratio.value();
 	GDEBUG("Number of projections (expected/utilization percentage): %d/%d\n", num_projections_expected_, projections_percentage_ );
 	GDEBUG("I.e. using %d projections for the reconstruction\n", num_projections_to_use_ );
 

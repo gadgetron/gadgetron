@@ -18,15 +18,15 @@ namespace Gadgetron{
   public:
     
     CMRTGadget(): num_frames(0) {
-    	set_parameter("golden_ratio","false");
-    	set_parameter("use_TV","false");
-    	set_parameter("projections_per_recon","0");
-    	set_parameter("iterations","30");
     }
     ~CMRTGadget() {}
     
   protected:
     
+    GADGET_PROPERTY(golden_ratio,bool,"Use golden ratio trajectories",false);
+    GADGET_PROPERTY(use_TV,bool,"Use total variation",false);
+    GADGET_PROPERTY(projections_per_recon,int,"Number of projections per reconstruction",0);
+    GADGET_PROPERTY(iterations,int,"Number of iterations",30);
     virtual int process_config(ACE_Message_Block* mb);
 
     virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1,        // header

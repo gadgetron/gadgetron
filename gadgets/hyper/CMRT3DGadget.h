@@ -22,6 +22,10 @@ namespace Gadgetron {
 
   protected:
 
+    GADGET_PROPERTY(golden_ratio,bool,"Use golden ratio",false);
+    GADGET_PROPERTY(projections_per_recon,int,"Number of projections for each recon",16);
+    GADGET_PROPERTY(projections_percentage,float,"Percentage of projections to use",100);
+
     virtual int process_config(ACE_Message_Block* mb);
     virtual int process(GadgetContainerMessage< ISMRMRD::ImageHeader > *m1,
                         GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2);
