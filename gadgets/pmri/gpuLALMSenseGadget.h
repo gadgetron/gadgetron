@@ -43,6 +43,8 @@ namespace Gadgetron{
     GADGET_PROPERTY(exclusive_access, bool,"Forces 1 gadget per GPU",false);
     GADGET_PROPERTY(coils_per_subset, int,"Number of coils to use for each subset",1);
     GADGET_PROPERTY(huber_value,float,"Value of the huber regularization (should be small)",0);
+    GADGET_PROPERTY(damping,float,"Relative step size. Reduce if solver fails to converge",1);
+    GADGET_PROPERTY(use_preconditioner,bool,"Sets the use of a preconditioner",false);
     
     virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< GenericReconJob > * m2 );
     virtual int process_config( ACE_Message_Block* mb );
@@ -59,6 +61,8 @@ namespace Gadgetron{
     bool exclusive_access_;
     double lambda_;
     double huber_value_;
+    double damping_;
+    bool use_preconditioner_;
     //double alpha_;
     //double kappa_;
 

@@ -21,6 +21,7 @@ public:
 		non_negativity_=false;
 		inner_iterations=1;
 		alpha = 0;
+		t = 1;
 	}
 	virtual ~osLALMSolver(){};
 
@@ -33,6 +34,9 @@ public:
 	}
 
 
+	void set_damping(REAL damp){
+		t = damp;
+	}
 	void set_alpha(REAL a){
 		alpha = a;
 	}
@@ -98,7 +102,6 @@ public:
 		REAL rho = 1;
 		const REAL rho_min = 1e-3;
 		const REAL pi = boost::math::constants::pi<REAL>();
-		REAL t = 1;
 		unsigned int L = 1;
 		REAL avg_lambda = calc_avg_lambda();
 		std::vector<int> isubsets(boost::counting_iterator<int>(0), boost::counting_iterator<int>(this->encoding_operator_->get_number_of_subsets()));
@@ -269,7 +272,7 @@ protected:
 	int inner_iterations;
 	bool non_negativity_;
 	unsigned int reg_steps_;
-	REAL alpha;
+	REAL alpha,t;
 	boost::shared_ptr<subsetOperator<ARRAY_TYPE> > encoding_operator_;
 	boost::shared_ptr<ARRAY_TYPE> preconditioning_image_;
 	std::vector<std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE>>>> regularization_groups;
