@@ -19,6 +19,7 @@
 #include "GadgetronExport.h"
 #include "gadgetron_config.h"
 #include "log.h"
+#include <initializer_list>
 
 #include <stdexcept>
 
@@ -537,6 +538,79 @@ namespace Gadgetron{
 
       protected:
 	T value_;
+	L limits_;
+	Gadget* g_;
+      };
+ template <typename T, typename L> class GadgetProperty<std::vector<T>,L >
+      : public GadgetPropertyBase
+      {
+      public:
+      GadgetProperty(const char* name, const char* type_string, const char* description,
+		     Gadget* g, std::initializer_list<T> default_value, L limits, bool force_using_properties = true)
+	: GadgetPropertyBase(name,type_string,description)
+	, g_(g)
+	, limits_(limits)
+	{
+	  g_->register_property(this, force_using_properties);
+	  this->value(default_value);
+	}
+
+	std::vector<T> value()
+	{
+	  if (is_reference_) {
+	    boost::shared_ptr<std::string> val = this->g_->get_string_value(this->name());
+	    std::stringstream ss(*val);
+	    T chunk;
+	    values_ = std::vector<T>();
+	    while (ss >> std::boolalpha >> chunk)
+	    	values_.push_back(chunk);
+	  }
+	  return values_;
+	}
+
+	void value(std::vector<T> v)
+	{
+	  values_ = v;
+	  std::stringstream strstream;
+	  for (T val : values_)
+	  	strstream << std::boolalpha << val << " ";
+	  strstream >> str_value_;
+	  is_reference_ = false;
+	  if (!limits_.within_limits(v)) {
+	    GERROR("Property: %s, value: %s, limits:%s\n", this->name(), str_value_.c_str(), this->limits_.limits_description());
+	    throw std::runtime_error("Value assigned outside limit range");
+	  }
+	}
+
+	virtual void string_value(const char* val)
+	{
+	  GadgetPropertyBase::string_value(val);
+
+	  if (!is_reference_)
+	  {
+	    std::vector<T> tmp;
+	    T chunk;
+	    std::stringstream ss(val);
+	    while (ss >> std::boolalpha >> chunk )
+	    	tmp.push_back(chunk);
+	    this->value(tmp);
+	  }
+	}
+
+
+	bool operator==(const std::vector<T> &v) const
+	{
+	  return this->value() == v;
+
+	}
+
+	virtual const char* limits_description()
+	{
+	  return limits_.limits_description();
+	}
+
+      protected:
+	std::vector<T> values_;
 	L limits_;
 	Gadget* g_;
       };

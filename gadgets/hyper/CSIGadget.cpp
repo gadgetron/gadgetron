@@ -123,21 +123,23 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 		E_ = boost::make_shared< CSIOperator<float> >(1/bw->value, -dte->value);
 		E_->set_weight(mu_);
 
-		std::vector<float> freqs;
-		auto frequency_string_ = frequency_string.value();
+		std::vector<float> freqs = frequencies.value();
 
-		if (frequency_string_ != ""){
-			std::stringstream stream(frequency_string_);
-			float freq;
-			while(stream >> freq)
-				freqs.push_back(freq);
-		} else {
-		for (float f = frequency_min.value(); f <= frequency_max.value(); f+= frequency_step.value())
+		if (freqs.empty()){
+			for (float f = frequency_min.value(); f <= frequency_max.value(); f+= frequency_step.value())
 				freqs.push_back(f);
 		}
 
+
 		if (freqs.size() == 0)
 			throw std::runtime_error("CSIGadget: Frequencies not set!");
+
+		std::stringstream ss;
+		ss << "Frequencies set: ";
+		for (auto f : freqs)
+				ss << f << " ";
+		GDEBUG(ss.str().c_str());
+
 		E_->set_frequencies(freqs);
 
 		img_dims_[2]=freqs.size();

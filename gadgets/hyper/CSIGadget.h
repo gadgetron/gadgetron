@@ -34,7 +34,7 @@ protected:
     GADGET_PROPERTY(kernel_width,float,"Kernel width",5.5);
     GADGET_PROPERTY(mu,float,"Mu",1.0);
     GADGET_PROPERTY(output_convergence,bool,"Output convergence",false);
-    GADGET_PROPERTY(frequency_string,std::string,"Frequencies","");
+    GADGET_PROPERTY(frequencies,std::vector<float>,"Frequencies",{});
     GADGET_PROPERTY(frequency_min,float,"Minimum frequency",0);
     GADGET_PROPERTY(frequency_max,float,"Maximum frequency",1300);
     GADGET_PROPERTY(frequency_step,float,"Frequency step",1300);
