@@ -110,7 +110,7 @@ namespace Gadgetron {
       ComponentCreator cc = reinterpret_cast<ComponentCreator> (tmp);
       
       if (cc == 0) {
-	GERROR("Failed to load factory (%s) from DLL (%s)\n", dllname, factoryname);
+	GERROR("Failed to load factory (%s) from DLL (%s)\n", factoryname, dllname);
 	return 0;
       }
       
