@@ -124,6 +124,145 @@ public:
     // whether to perform timing
     bool performTiming_;
 
+    GADGET_PROPERTY(verboseMode, bool, "Whether to print more information", false);
+    GADGET_PROPERTY(debugFolder, std::string, "If set, the debug output will be written out", "");
+    GADGET_PROPERTY_NO_FORCE(debugFolder2, std::string, "If set, the debug output will be written out", "");
+    GADGET_PROPERTY(performTiming, bool, "Whether to perform timing on some computational steps", false);
+
+    /// ------------------------------------------------------------------------------------
+    /// kspace filter parameters
+    GADGET_PROPERTY_LIMITS(filterRO, std::string, "Kspace filter for RO dimension", "ISMRMRD_FILTER_GAUSSIAN",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterRO_sigma, double, "Filter sigma for gaussian for RO dimension", 1.0);
+    GADGET_PROPERTY(filterRO_width, double, "Filter width for tapered hanning for RO dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterE1, std::string, "Kspace filter for E1 dimension", "ISMRMRD_FILTER_GAUSSIAN",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterE1_sigma, double, "Filter sigma for gaussian for E1 dimension", 1.0);
+    GADGET_PROPERTY(filterE1_width, double, "Filter width for tapered hanning for E1 dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterE2, std::string, "Kspace filter for E2 dimension", "ISMRMRD_FILTER_GAUSSIAN",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterE2_sigma, double, "Filter sigma for gaussian for E2 dimension", 1.0);
+    GADGET_PROPERTY(filterE2_width, double, "Filter width for tapered hanning for E2 dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterRefRO, std::string, "Kspace filter for ref data for RO dimension", "ISMRMRD_FILTER_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterRefRO_sigma, double, "Filter sigma for gaussian for RO dimension", 1.5);
+    GADGET_PROPERTY(filterRefRO_width, double, "Filter width for tapered hanning for RO dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterRefE1, std::string, "Kspace filter for ref data for E1 dimension", "ISMRMRD_FILTER_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterRefE1_sigma, double, "Filter sigma for gaussian for E1 dimension", 1.5);
+    GADGET_PROPERTY(filterRefE1_width, double, "Filter width for tapered hanning for E1 dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterRefE2, std::string, "Kspace filter for ref data for E2 dimension", "ISMRMRD_FILTER_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterRefE2_sigma, double, "Filter sigma for gaussian for E2 dimension", 1.5);
+    GADGET_PROPERTY(filterRefE2_width, double, "Filter width for tapered hanning for E2 dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterPartialFourierRO, std::string, "Kspace filter for partial fourier for RO dimension", "ISMRMRD_FILTER_TAPERED_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterPartialFourierRO_sigma, double, "Partial fourier filter sigma for gaussian for RO dimension", 1.5);
+    GADGET_PROPERTY(filterPartialFourierRO_width, double, "Partial fourier filter width for tapered hanning for RO dimension", 0.15);
+    GADGET_PROPERTY(filterPartialFourierRO_densityComp, bool, "Whether to apply density compensation for RO dimension", false);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterPartialFourierE1, std::string, "Kspace filter for partial fourier for E1 dimension", "ISMRMRD_FILTER_TAPERED_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterPartialFourierE1_sigma, double, "Partial fourier filter sigma for gaussian for E1 dimension", 1.5);
+    GADGET_PROPERTY(filterPartialFourierE1_width, double, "Partial fourier filter width for tapered hanning for E1 dimension", 0.15);
+    GADGET_PROPERTY(filterPartialFourierE1_densityComp, bool, "Whether to apply density compensation for E1 dimension", false);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterPartialFourierE2, std::string, "Kspace filter for partial fourier for E2 dimension", "ISMRMRD_FILTER_TAPERED_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterPartialFourierE2_sigma, double, "Partial fourier filter sigma for gaussian for E2 dimension", 1.5);
+    GADGET_PROPERTY(filterPartialFourierE2_width, double, "Partial fourier filter width for tapered hanning for E2 dimension", 0.15);
+    GADGET_PROPERTY(filterPartialFourierE2_densityComp, bool, "Whether to apply density compensation for E2 dimension", false);
+
+    // ------------------------------------------------------------------------------------
+
+    /// cloud computing
+    GADGET_PROPERTY_NO_FORCE(CloudComputing, bool, "Whether to use cloud", false);
+    GADGET_PROPERTY_NO_FORCE(CloudSize, int, "Cloud size", 1);
+    GADGET_PROPERTY_NO_FORCE(cloudNodeFile, std::string, "Cloud node file", "my_Cloud.txt");
+    GADGET_PROPERTY_NO_FORCE(CloudNodeXMLConfiguration, std::string, "Cloud node xml configuration file when using cloud bus", "GT_Cartesian_CloudNode.xml");
+
+    GADGET_PROPERTY_NO_FORCE(CloudNode0_IP, std::string, "IP for cloud node 0", "10.0.0.101");
+    GADGET_PROPERTY_NO_FORCE(CloudNode0_Port, std::string, "Gadgetron port for cloud node 0", "9002");
+    GADGET_PROPERTY_NO_FORCE(CloudNode0_XMLConfiguration, std::string, "Xml configuration file for cloud node 0", "GT_Cartesian_CloudNode.xml");
+    GADGET_PROPERTY_NO_FORCE(CloudNode0_ComputingPowerIndex, int, "Computing power index for cloud node 0", 1);
+
+    GADGET_PROPERTY_NO_FORCE(CloudNode1_IP, std::string, "IP for cloud node 1", "10.0.0.102");
+    GADGET_PROPERTY_NO_FORCE(CloudNode1_Port, std::string, "Gadgetron port for cloud node 1", "9002");
+    GADGET_PROPERTY_NO_FORCE(CloudNode1_XMLConfiguration, std::string, "Xml configuration file for cloud node 1", "GT_Cartesian_CloudNode.xml");
+    GADGET_PROPERTY_NO_FORCE(CloudNode1_ComputingPowerIndex, int, "Computing power index for cloud node 1", 1);
+
+    GADGET_PROPERTY_NO_FORCE(CloudNode2_IP, std::string, "IP for cloud node 2", "10.0.0.103");
+    GADGET_PROPERTY_NO_FORCE(CloudNode2_Port, std::string, "Gadgetron port for cloud node 2", "9002");
+    GADGET_PROPERTY_NO_FORCE(CloudNode2_XMLConfiguration, std::string, "Xml configuration file for cloud node 2", "GT_Cartesian_CloudNode.xml");
+    GADGET_PROPERTY_NO_FORCE(CloudNode2_ComputingPowerIndex, int, "Computing power index for cloud node 2", 1);
+
+    GADGET_PROPERTY_NO_FORCE(CloudNode3_IP, std::string, "IP for cloud node 3", "10.0.0.104");
+    GADGET_PROPERTY_NO_FORCE(CloudNode3_Port, std::string, "Gadgetron port for cloud node 3", "9002");
+    GADGET_PROPERTY_NO_FORCE(CloudNode3_XMLConfiguration, std::string, "Xml configuration file for cloud node 3", "GT_Cartesian_CloudNode.xml");
+    GADGET_PROPERTY_NO_FORCE(CloudNode3_ComputingPowerIndex, int, "Computing power index for cloud node 3", 1);
+
+    GADGET_PROPERTY_NO_FORCE(CloudNode4_IP, std::string, "IP for cloud node 4", "10.0.0.105");
+    GADGET_PROPERTY_NO_FORCE(CloudNode4_Port, std::string, "Gadgetron port for cloud node 4", "9002");
+    GADGET_PROPERTY_NO_FORCE(CloudNode4_XMLConfiguration, std::string, "Xml configuration file for cloud node 4", "GT_Cartesian_CloudNode.xml");
+    GADGET_PROPERTY_NO_FORCE(CloudNode4_ComputingPowerIndex, int, "Computing power index for cloud node 4", 1);
+
+    GADGET_PROPERTY_NO_FORCE(CloudNode5_IP, std::string, "IP for cloud node 5", "10.0.0.106");
+    GADGET_PROPERTY_NO_FORCE(CloudNode5_Port, std::string, "Gadgetron port for cloud node 5", "9002");
+    GADGET_PROPERTY_NO_FORCE(CloudNode5_XMLConfiguration, std::string, "Xml configuration file for cloud node 5", "GT_Cartesian_CloudNode.xml");
+    GADGET_PROPERTY_NO_FORCE(CloudNode5_ComputingPowerIndex, int, "Computing power index for cloud node 5", 1);
+
+    GADGET_PROPERTY_NO_FORCE(CloudNode6_IP, std::string, "IP for cloud node 6", "10.0.0.107");
+    GADGET_PROPERTY_NO_FORCE(CloudNode6_Port, std::string, "Gadgetron port for cloud node 6", "9002");
+    GADGET_PROPERTY_NO_FORCE(CloudNode6_XMLConfiguration, std::string, "Xml configuration file for cloud node 6", "GT_Cartesian_CloudNode.xml");
+    GADGET_PROPERTY_NO_FORCE(CloudNode6_ComputingPowerIndex, int, "Computing power index for cloud node 6", 1);
+
+    /// ------------------------------------------------------------------------------------
+    /// recon job parameters
+    GADGET_PROPERTY_NO_FORCE(job_split_by_S, bool, "Every S leads to a recon job", false);
+    GADGET_PROPERTY_NO_FORCE(job_num_of_N, int, "Recon job size along N", 32);
+    GADGET_PROPERTY_NO_FORCE(job_max_Megabytes, int, "Maximal recon job size in MegaBytes", 2048);
+    GADGET_PROPERTY_NO_FORCE(job_overlap, int, "Recon job overlap size", 2);
+
 protected:
 
     // --------------------------------------------------

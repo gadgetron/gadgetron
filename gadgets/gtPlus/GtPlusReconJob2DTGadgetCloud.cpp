@@ -76,98 +76,86 @@ bool GtPlusReconJob2DTGadgetCloud::readParameters()
     {
         GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlusReconJob2DTGadgetCloud parameters <------");
 
-        boost::shared_ptr<std::string> str = this->get_string_value("debugFolder");
-        debugFolder_ = *str;
+        debugFolder_ = debugFolder.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder_ is " << debugFolder_);
 
-        str = this->get_string_value("debugFolder2");
-        debugFolder2_ = *str;
+        debugFolder2_ = debugFolder2.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder2_ is " << debugFolder2_);
 
-        str = this->get_string_value("cloudNodeFile");
-        cloud_node_file_ = *str;
+        cloud_node_file_ = cloudNodeFile.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "cloud_node_file_ is " << cloud_node_file_);
 
-        performTiming_ = this->get_bool_value("performTiming");
+        performTiming_ = performTiming.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "performTiming_ is " << performTiming_);
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
         // kspace filter parameters
-        str = this->get_string_value("filterRO");
-        filterRO_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
-        filterRO_sigma_ = this->get_double_value("filterRO_sigma");
-        filterRO_width_ = this->get_double_value("filterRO_width");
-        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_type_ is " << *str);
+        filterRO_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(filterRO.value());
+        filterRO_sigma_ = filterRO_sigma.value();
+        filterRO_width_ = filterRO_width.value();
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_type_ is " << filterRO.value());
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_sigma_ is " << filterRO_sigma_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_width_ is " << filterRO_width_);
 
-        str = this->get_string_value("filterE1");
-        filterE1_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
-        filterE1_sigma_ = this->get_double_value("filterE1_sigma");
-        filterE1_width_ = this->get_double_value("filterE1_width");
-        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_type_ is " << *str);
+        filterE1_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(filterE1.value());
+        filterE1_sigma_ = filterE1_sigma.value();
+        filterE1_width_ = filterE1_width.value();
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_type_ is " << filterE1.value());
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_sigma_ is " << filterE1_sigma_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_width_ is " << filterE1_width_);
 
-        str = this->get_string_value("filterE2");
-        filterE2_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
-        filterE2_sigma_ = this->get_double_value("filterE2_sigma");
-        filterE2_width_ = this->get_double_value("filterE2_width");
-        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_type_ is " << *str);
+        filterE2_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(filterE2.value());
+        filterE2_sigma_ = filterE2_sigma.value();
+        filterE2_width_ = filterE2_width.value();
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_type_ is " << filterE2.value());
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_sigma_ is " << filterE2_sigma_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_width_ is " << filterE2_width_);
 
-        str = this->get_string_value("filterRefRO");
-        filterRO_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
-        filterRO_ref_sigma_ = this->get_double_value("filterRefRO_sigma");
-        filterRO_ref_width_ = this->get_double_value("filterRefRO_width");
-        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_ref_type_ is " << *str);
+        filterRO_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(filterRefRO.value());
+        filterRO_ref_sigma_ = filterRefRO_sigma.value();
+        filterRO_ref_width_ = filterRefRO_width.value();
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_ref_type_ is " << filterRefRO.value());
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_ref_sigma_ is " << filterRO_ref_sigma_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_ref_width_ is " << filterRO_ref_width_);
 
-        str = this->get_string_value("filterRefE1");
-        filterE1_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
-        filterE1_ref_sigma_ = this->get_double_value("filterRefE1_sigma");
-        filterE1_ref_width_ = this->get_double_value("filterRefE1_width");
-        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_ref_type_ is " << *str);
+        filterE1_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(filterRefE1.value());
+        filterE1_ref_sigma_ = filterRefE1_sigma.value();
+        filterE1_ref_width_ = filterRefE1_width.value();
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_ref_type_ is " << filterRefE1.value());
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_ref_sigma_ is " << filterE1_ref_sigma_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_ref_width_ is " << filterE1_ref_width_);
 
-        str = this->get_string_value("filterRefE2");
-        filterE2_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
-        filterE2_ref_sigma_ = this->get_double_value("filterRefE2_sigma");
-        filterE2_ref_width_ = this->get_double_value("filterRefE2_width");
-        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_ref_type_ is " << *str);
+        filterE2_ref_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(filterRefE2.value());
+        filterE2_ref_sigma_ = filterRefE2_sigma.value();
+        filterE2_ref_width_ = filterRefE2_width.value();
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_ref_type_ is " << filterRefE2.value());
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_ref_sigma_ is " << filterE2_ref_sigma_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_ref_width_ is " << filterE2_ref_width_);
 
-        str = this->get_string_value("filterPartialFourierRO");
-        filterRO_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
-        filterRO_pf_sigma_ = this->get_double_value("filterPartialFourierRO_sigma");
-        filterRO_pf_width_ = this->get_double_value("filterPartialFourierRO_width");
-        filterRO_pf_densityComp_ = this->get_bool_value("filterPartialFourierRO_densityComp");
-        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_type_ is " << *str);
+        filterRO_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(filterPartialFourierRO.value());
+        filterRO_pf_sigma_ = filterPartialFourierRO_sigma.value();
+        filterRO_pf_width_ = filterPartialFourierRO_width.value();
+        filterRO_pf_densityComp_ = filterPartialFourierRO_densityComp.value();
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_type_ is " << filterPartialFourierRO.value());
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_sigma_ is " << filterRO_pf_sigma_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_width_ is " << filterRO_pf_width_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterRO_pf_densityComp_ is " << filterRO_pf_densityComp_);
 
-        str = this->get_string_value("filterPartialFourierE1");
-        filterE1_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
-        filterE1_pf_sigma_ = this->get_double_value("filterPartialFourierE1_sigma");
-        filterE1_pf_width_ = this->get_double_value("filterPartialFourierE1_width");
-        filterE1_pf_densityComp_ = this->get_bool_value("filterPartialFourierE1_densityComp");
-        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_type_ is " << *str);
+        filterE1_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(filterPartialFourierE1.value());
+        filterE1_pf_sigma_ = filterPartialFourierE1_sigma.value();
+        filterE1_pf_width_ = filterPartialFourierE1_width.value();
+        filterE1_pf_densityComp_ = filterPartialFourierE1_densityComp.value();
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_type_ is " << filterPartialFourierE1.value());
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_sigma_ is " << filterE1_pf_sigma_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_width_ is " << filterE1_pf_width_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE1_pf_densityComp_ is " << filterE1_pf_densityComp_);
 
-        str = this->get_string_value("filterPartialFourierE2");
-        filterE2_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(*str);
-        filterE2_pf_sigma_ = this->get_double_value("filterPartialFourierE2_sigma");
-        filterE2_pf_width_ = this->get_double_value("filterPartialFourierE2_width");
-        filterE2_pf_densityComp_ = this->get_bool_value("filterPartialFourierE2_densityComp");
-        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_type_ is " << *str);
+        filterE2_pf_type_ = gtPlus_util_.getISMRMRDKSpaceFilterFromName(filterPartialFourierE2.value());
+        filterE2_pf_sigma_ = filterPartialFourierE2_sigma.value();
+        filterE2_pf_width_ = filterPartialFourierE2_width.value();
+        filterE2_pf_densityComp_ = filterPartialFourierE2_densityComp.value();
+        GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_type_ is " << filterPartialFourierE2.value());
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_sigma_ is " << filterE2_pf_sigma_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_width_ is " << filterE2_pf_width_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "filterE2_pf_densityComp_ is " << filterE2_pf_densityComp_);
@@ -186,38 +174,93 @@ bool GtPlusReconJob2DTGadgetCloud::readParameters()
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
-        CloudComputing_ = this->get_bool_value("CloudComputing");
-        CloudSize_ = (unsigned int)(this->get_int_value("CloudSize"));
+        CloudComputing_ = CloudComputing.value();
+        CloudSize_ = CloudSize.value();
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "CloudComputing_ is " << CloudComputing_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "CloudSize_ is " << CloudSize_);
 
+        cloud_node_file_ = cloudNodeFile.value();
+        GDEBUG_CONDITION_STREAM(verboseMode_, "cloud_node_file_ is " << cloud_node_file_);
+
         // read in the cloud information for every node
         gt_cloud_.resize(CloudSize_);
 
-        for ( unsigned int ii=0; ii<CloudSize_; ii++ )
+        size_t ii = 0;
+        if (CloudSize_ > 1)
         {
-            std::ostringstream ostreamstr1;
-            ostreamstr1 << "CloudNode" << ii << "_IP" << std::ends;
-            boost::shared_ptr<std::string> IP = this->get_string_value(ostreamstr1.str().c_str());
-            gt_cloud_[ii].get<0>() = *IP;
-
-            std::ostringstream ostreamstr2;
-            ostreamstr2 << "CloudNode" << ii << "_Port" << std::ends;
-            boost::shared_ptr<std::string> Port = this->get_string_value(ostreamstr2.str().c_str());
-            gt_cloud_[ii].get<1>() = *Port;
-
-            std::ostringstream ostreamstr3;
-            ostreamstr3 << "CloudNode" << ii << "_XMLConfiguration" << std::ends;
-            boost::shared_ptr<std::string> xmlName = this->get_string_value(ostreamstr3.str().c_str());
-            gt_cloud_[ii].get<2>() = *xmlName;
-
-            std::ostringstream ostreamstr4;
-            ostreamstr4 << "CloudNode" << ii << "_ComputingPowerIndex" << std::ends;
-            unsigned int computingPowerIndex = this->get_int_value(ostreamstr4.str().c_str());
-            gt_cloud_[ii].get<3>() = computingPowerIndex;
-
+            gt_cloud_[ii].get<0>() = CloudNode0_IP.value();
+            gt_cloud_[ii].get<1>() = CloudNode0_Port.value();
+            gt_cloud_[ii].get<2>() = CloudNode0_XMLConfiguration.value();
+            gt_cloud_[ii].get<3>() = CloudNode0_ComputingPowerIndex.value();
             GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
+            ii++;
+
+        }
+
+        if (CloudSize_ > 2)
+        {
+            gt_cloud_[ii].get<0>() = CloudNode1_IP.value();
+            gt_cloud_[ii].get<1>() = CloudNode1_Port.value();
+            gt_cloud_[ii].get<2>() = CloudNode1_XMLConfiguration.value();
+            gt_cloud_[ii].get<3>() = CloudNode1_ComputingPowerIndex.value();
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
+            ii++;
+        }
+
+        if (CloudSize_ > 3)
+        {
+            gt_cloud_[ii].get<0>() = CloudNode2_IP.value();
+            gt_cloud_[ii].get<1>() = CloudNode2_Port.value();
+            gt_cloud_[ii].get<2>() = CloudNode2_XMLConfiguration.value();
+            gt_cloud_[ii].get<3>() = CloudNode2_ComputingPowerIndex.value();
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
+            ii++;
+        }
+
+        if (CloudSize_ > 4)
+        {
+            gt_cloud_[ii].get<0>() = CloudNode3_IP.value();
+            gt_cloud_[ii].get<1>() = CloudNode3_Port.value();
+            gt_cloud_[ii].get<2>() = CloudNode3_XMLConfiguration.value();
+            gt_cloud_[ii].get<3>() = CloudNode3_ComputingPowerIndex.value();
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
+            ii++;
+        }
+
+        if (CloudSize_ > 5)
+        {
+            gt_cloud_[ii].get<0>() = CloudNode4_IP.value();
+            gt_cloud_[ii].get<1>() = CloudNode4_Port.value();
+            gt_cloud_[ii].get<2>() = CloudNode4_XMLConfiguration.value();
+            gt_cloud_[ii].get<3>() = CloudNode4_ComputingPowerIndex.value();
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
+            ii++;
+        }
+
+        if (CloudSize_ > 6)
+        {
+            gt_cloud_[ii].get<0>() = CloudNode5_IP.value();
+            gt_cloud_[ii].get<1>() = CloudNode5_Port.value();
+            gt_cloud_[ii].get<2>() = CloudNode5_XMLConfiguration.value();
+            gt_cloud_[ii].get<3>() = CloudNode5_ComputingPowerIndex.value();
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
+            ii++;
+        }
+
+        if (CloudSize_ > 7)
+        {
+            gt_cloud_[ii].get<0>() = CloudNode6_IP.value();
+            gt_cloud_[ii].get<1>() = CloudNode6_Port.value();
+            gt_cloud_[ii].get<2>() = CloudNode6_XMLConfiguration.value();
+            gt_cloud_[ii].get<3>() = CloudNode6_ComputingPowerIndex.value();
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
+            ii++;
+        }
+
+        if (CloudSize_ >= 8)
+        {
+            GDEBUG_CONDITION_STREAM(true, "Maximal 7 cloud Nodes are supported for xml configuration ... ");
         }
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
@@ -236,7 +279,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
     // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
     //   0  1  2   3    4   5    6     7  8   9
 
-    verboseMode_ = this->get_bool_value("verboseMode");
+    verboseMode_ = verboseMode.value();
 
     // read in parameters from the xml
     GADGET_CHECK_RETURN(this->readParameters(), GADGET_FAIL);
@@ -307,7 +350,7 @@ bool GtPlusReconJob2DTGadgetCloud::setWorkOrder2DTParameters(GtPlusRecon2DTPara&
 bool GtPlusReconJob2DTGadgetCloud::parseGTCloudNodeFile(const std::string& filename, CloudType& gtCloud)
 {
     std::string nodeFileName = get_gadgetron_home();
-    nodeFileName.append("/config/gtCloud/");
+    nodeFileName.append("/share/gadgetron/config/gtCloud/");
     nodeFileName.append(filename);
     GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud node file name is " << nodeFileName);
 

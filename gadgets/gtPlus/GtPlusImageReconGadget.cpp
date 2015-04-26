@@ -36,13 +36,12 @@ namespace Gadgetron
         {
             GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlusImageReconGadget parameters <------");
 
-            verboseMode_ = this->get_bool_value("verboseMode");
+            verboseMode_ = verboseMode.value();
             GDEBUG_CONDITION_STREAM(verboseMode_, "verboseMode_ is " << verboseMode_);
 
             GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
-            boost::shared_ptr<std::string> str = this->get_string_value("debugFolder");
-            debugFolder_ = *str;
+            debugFolder_ = debugFolder.value();
             GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder_ is " << debugFolder_);
 
             if ( !debugFolder_.empty() )
@@ -54,7 +53,7 @@ namespace Gadgetron
                 GDEBUG_STREAM("GtPlusImageRecon, debugFolder is not set ...");
             }
 
-            performTiming_ = this->get_bool_value("performTiming");
+            performTiming_ = performTiming.value();
             GDEBUG_CONDITION_STREAM(verboseMode_, "performTiming_ is " << performTiming_);
 
             GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");

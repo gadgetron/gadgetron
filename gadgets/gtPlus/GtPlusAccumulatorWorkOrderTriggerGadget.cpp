@@ -40,29 +40,29 @@ GtPlusAccumulatorWorkOrderTriggerGadget::~GtPlusAccumulatorWorkOrderTriggerGadge
 int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* mb)
 {
     // gadget parameters
-    image_series_ = this->get_int_value("image_series");
+    image_series_ = image_series.value();
 
-    noacceleration_triggerDim1_ = gtPlus_util_.getISMRMRDDimFromName(*(this->get_string_value("noacceleration_triggerDim1")));
-    noacceleration_triggerDim2_ = gtPlus_util_.getISMRMRDDimFromName(*(this->get_string_value("noacceleration_triggerDim2")));
-    noacceleration_numOfKSpace_triggerDim1_ = this->get_int_value("noacceleration_numOfKSpace_triggerDim1"); 
+    noacceleration_triggerDim1_ = gtPlus_util_.getISMRMRDDimFromName(noacceleration_triggerDim1.value());
+    noacceleration_triggerDim2_ = gtPlus_util_.getISMRMRDDimFromName(noacceleration_triggerDim2.value());
+    noacceleration_numOfKSpace_triggerDim1_ = noacceleration_numOfKSpace_triggerDim1.value();
 
-    interleaved_triggerDim1_ = gtPlus_util_.getISMRMRDDimFromName(*(this->get_string_value("interleaved_triggerDim1")));
-    interleaved_triggerDim2_ = gtPlus_util_.getISMRMRDDimFromName(*(this->get_string_value("interleaved_triggerDim2")));
-    interleaved_numOfKSpace_triggerDim1_ = this->get_int_value("interleaved_numOfKSpace_triggerDim1"); 
+    interleaved_triggerDim1_ = gtPlus_util_.getISMRMRDDimFromName(interleaved_triggerDim1.value());
+    interleaved_triggerDim2_ = gtPlus_util_.getISMRMRDDimFromName(interleaved_triggerDim2.value());
+    interleaved_numOfKSpace_triggerDim1_ = interleaved_numOfKSpace_triggerDim1.value();
 
-    embedded_triggerDim1_ = gtPlus_util_.getISMRMRDDimFromName(*(this->get_string_value("embedded_triggerDim1")));
-    embedded_triggerDim2_ = gtPlus_util_.getISMRMRDDimFromName(*(this->get_string_value("embedded_triggerDim2")));
-    embedded_numOfKSpace_triggerDim1_ = this->get_int_value("embedded_numOfKSpace_triggerDim1");
+    embedded_triggerDim1_ = gtPlus_util_.getISMRMRDDimFromName(embedded_triggerDim1.value());
+    embedded_triggerDim2_ = gtPlus_util_.getISMRMRDDimFromName(embedded_triggerDim2.value());
+    embedded_numOfKSpace_triggerDim1_ = embedded_numOfKSpace_triggerDim1.value();
 
-    separate_triggerDim1_ = gtPlus_util_.getISMRMRDDimFromName(*(this->get_string_value("separate_triggerDim1")));
-    separate_triggerDim2_ = gtPlus_util_.getISMRMRDDimFromName(*(this->get_string_value("separate_triggerDim2")));
-    separate_numOfKSpace_triggerDim1_ = this->get_int_value("separate_numOfKSpace_triggerDim1");
+    separate_triggerDim1_ = gtPlus_util_.getISMRMRDDimFromName(separate_triggerDim1.value());
+    separate_triggerDim2_ = gtPlus_util_.getISMRMRDDimFromName(separate_triggerDim2.value());
+    separate_numOfKSpace_triggerDim1_ = separate_numOfKSpace_triggerDim1.value();
 
-    other_kspace_matching_Dim_ = gtPlus_util_.getISMRMRDDimFromName(*(this->get_string_value("other_kspace_matching_Dim")));
+    other_kspace_matching_Dim_ = gtPlus_util_.getISMRMRDDimFromName(other_kspace_matching_Dim.value());
 
-    verboseMode_ = this->get_bool_value("verboseMode");
+    verboseMode_ = verboseMode.value();
 
-    timeStampResolution_ = (float)this->get_double_value("timeStampResolution");
+    timeStampResolution_ = timeStampResolution.value();
     if ( timeStampResolution_ < FLT_EPSILON ) timeStampResolution_ = 0.0025f;
     GDEBUG_CONDITION_STREAM(verboseMode_, "timeStampResolution_ is " << timeStampResolution_);
 

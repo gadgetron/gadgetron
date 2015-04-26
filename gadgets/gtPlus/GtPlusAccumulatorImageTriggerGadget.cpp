@@ -35,18 +35,18 @@ GtPlusAccumulatorImageTriggerGadget::~GtPlusAccumulatorImageTriggerGadget()
 int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
 {
     // gadget parameters
-    verboseMode_ = this->get_bool_value("verboseMode");
+    verboseMode_ = verboseMode.value();
 
-    cha_trigger_ = this->get_bool_value("TriggerChannel");
-    slc_trigger_ = this->get_bool_value("TriggerSlice");
-    e2_trigger_  = this->get_bool_value("TriggerE2");
-    con_trigger_ = this->get_bool_value("TriggerContrast");
-    phs_trigger_ = this->get_bool_value("TriggerPhase");
-    rep_trigger_ = this->get_bool_value("TriggerRepetition");
-    set_trigger_ = this->get_bool_value("TriggerSet");
-    ave_trigger_ = this->get_bool_value("TriggerAverage");
+    cha_trigger_ = TriggerChannel.value();
+    slc_trigger_ = TriggerSlice.value();
+    e2_trigger_  = TriggerE2.value();
+    con_trigger_ = TriggerContrast.value();
+    phs_trigger_ = TriggerPhase.value();
+    rep_trigger_ = TriggerRepetition.value();
+    set_trigger_ = TriggerSet.value();
+    ave_trigger_ = TriggerAverage.value();
 
-    pass_image_immediate_ = this->get_bool_value("PassImageImmediately");
+    pass_image_immediate_ = PassImageImmediately.value();
 
     // ---------------------------------------------------------------------------------------------------------
     // pass the xml file

@@ -35,11 +35,10 @@ bool GtPlusReconJob2DTGadget::readParameters()
     {
         GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlusReconJob2DTGadget parameters <------");
 
-        boost::shared_ptr<std::string> str = this->get_string_value("debugFolder");
-        debugFolder_ = *str;
+        debugFolder_ = debugFolder.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "debugFolder_ is " << debugFolder_);
 
-        performTiming_ = this->get_bool_value("performTiming");
+        performTiming_ = performTiming.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "performTiming_ is " << performTiming_);
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
@@ -58,7 +57,7 @@ int GtPlusReconJob2DTGadget::process_config(ACE_Message_Block* mb)
     // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
     //   0  1  2   3    4   5    6     7  8   9
 
-    verboseMode_ = this->get_bool_value("verboseMode");
+    verboseMode_ = verboseMode.value();
 
     // read in parameters from the xml
     GADGET_CHECK_RETURN(this->readParameters(), GADGET_FAIL);

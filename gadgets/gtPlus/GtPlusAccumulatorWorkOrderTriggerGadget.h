@@ -58,6 +58,65 @@ public:
 
     /// parameters to control the triggering
 
+    GADGET_PROPERTY_NO_FORCE(image_series, int, "Image series number", 100);
+    GADGET_PROPERTY(verboseMode, bool, "Whether to print more information", false);
+    GADGET_PROPERTY_NO_FORCE(timeStampResolution, float, "Time tick resolution in second", 0.0025f);
+
+    // ----------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(noacceleration_triggerDim1, std::string, "First trigger dimension for no acceleration mode", "DIM_NONE", 
+        GadgetPropertyLimitsEnumeration, "DIM_NONE", "DIM_ReadOut", "DIM_Encoding1", "DIM_Channel", "DIM_Slice", "DIM_Encoding2", 
+        "DIM_Contrast", "DIM_Phase", "DIM_Repetition", "DIM_Set", "DIM_Segment", "DIM_Average", "DIM_other1", "DIM_other2", "DIM_other3");
+
+    GADGET_PROPERTY_LIMITS(noacceleration_triggerDim2, std::string, "Second trigger dimension for no acceleration mode", "DIM_NONE",
+        GadgetPropertyLimitsEnumeration, "DIM_NONE", "DIM_ReadOut", "DIM_Encoding1", "DIM_Channel", "DIM_Slice", "DIM_Encoding2",
+        "DIM_Contrast", "DIM_Phase", "DIM_Repetition", "DIM_Set", "DIM_Segment", "DIM_Average", "DIM_other1", "DIM_other2", "DIM_other3");
+
+    GADGET_PROPERTY(noacceleration_numOfKSpace_triggerDim1, int, "Number of full kspace for dynamic triggering, no acceleration mode", 0);
+
+    // ----------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(interleaved_triggerDim1, std::string, "First trigger dimension for interleaved mode", "DIM_NONE",
+        GadgetPropertyLimitsEnumeration, "DIM_NONE", "DIM_ReadOut", "DIM_Encoding1", "DIM_Channel", "DIM_Slice", "DIM_Encoding2",
+        "DIM_Contrast", "DIM_Phase", "DIM_Repetition", "DIM_Set", "DIM_Segment", "DIM_Average", "DIM_other1", "DIM_other2", "DIM_other3");
+
+    GADGET_PROPERTY_LIMITS(interleaved_triggerDim2, std::string, "Second trigger dimension for interleaved mode", "DIM_NONE",
+        GadgetPropertyLimitsEnumeration, "DIM_NONE", "DIM_ReadOut", "DIM_Encoding1", "DIM_Channel", "DIM_Slice", "DIM_Encoding2",
+        "DIM_Contrast", "DIM_Phase", "DIM_Repetition", "DIM_Set", "DIM_Segment", "DIM_Average", "DIM_other1", "DIM_other2", "DIM_other3");
+
+    GADGET_PROPERTY(interleaved_numOfKSpace_triggerDim1, int, "Number of full kspace for dynamic triggering, interleaved mode", 0);
+
+    // ----------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(embedded_triggerDim1, std::string, "First trigger dimension for embedded mode", "DIM_NONE",
+        GadgetPropertyLimitsEnumeration, "DIM_NONE", "DIM_ReadOut", "DIM_Encoding1", "DIM_Channel", "DIM_Slice", "DIM_Encoding2",
+        "DIM_Contrast", "DIM_Phase", "DIM_Repetition", "DIM_Set", "DIM_Segment", "DIM_Average", "DIM_other1", "DIM_other2", "DIM_other3");
+
+    GADGET_PROPERTY_LIMITS(embedded_triggerDim2, std::string, "Second trigger dimension for embedded mode", "DIM_NONE",
+        GadgetPropertyLimitsEnumeration, "DIM_NONE", "DIM_ReadOut", "DIM_Encoding1", "DIM_Channel", "DIM_Slice", "DIM_Encoding2",
+        "DIM_Contrast", "DIM_Phase", "DIM_Repetition", "DIM_Set", "DIM_Segment", "DIM_Average", "DIM_other1", "DIM_other2", "DIM_other3");
+
+    GADGET_PROPERTY(embedded_numOfKSpace_triggerDim1, int, "Number of kspace for dynamic triggering, embedded mode", 0);
+
+    // ----------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(separate_triggerDim1, std::string, "First trigger dimension for separate mode", "DIM_NONE",
+        GadgetPropertyLimitsEnumeration, "DIM_NONE", "DIM_ReadOut", "DIM_Encoding1", "DIM_Channel", "DIM_Slice", "DIM_Encoding2",
+        "DIM_Contrast", "DIM_Phase", "DIM_Repetition", "DIM_Set", "DIM_Segment", "DIM_Average", "DIM_other1", "DIM_other2", "DIM_other3");
+
+    GADGET_PROPERTY_LIMITS(separate_triggerDim2, std::string, "Second trigger dimension for separate mode", "DIM_NONE",
+        GadgetPropertyLimitsEnumeration, "DIM_NONE", "DIM_ReadOut", "DIM_Encoding1", "DIM_Channel", "DIM_Slice", "DIM_Encoding2",
+        "DIM_Contrast", "DIM_Phase", "DIM_Repetition", "DIM_Set", "DIM_Segment", "DIM_Average", "DIM_other1", "DIM_other2", "DIM_other3");
+
+    GADGET_PROPERTY(separate_numOfKSpace_triggerDim1, int, "Number of kspace for dynamic triggering, separate mode", 0);
+
+    // ----------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(other_kspace_matching_Dim, std::string, "Extra kspace dimension to differentiate other readout lines", "DIM_NONE",
+        GadgetPropertyLimitsEnumeration, "DIM_NONE", "DIM_ReadOut", "DIM_Encoding1", "DIM_Channel", "DIM_Slice", "DIM_Encoding2",
+        "DIM_Contrast", "DIM_Phase", "DIM_Repetition", "DIM_Set", "DIM_Segment", "DIM_Average", "DIM_other1", "DIM_other2", "DIM_other3");
+
+
     /// for interleaved mode
     // if DIM_NONE, the trigger is performed in the close function
 
