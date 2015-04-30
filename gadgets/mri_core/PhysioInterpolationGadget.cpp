@@ -241,7 +241,7 @@ namespace Gadgetron{
                     tmpm1->getObjectPtr()->physiology_time_stamp[phys_time_index_] = static_cast<unsigned>(floor((recon_cycle_time[i]+0.0001-current_cycle)*cycle_lengths[current_cycle])); 
                     tmpm1->getObjectPtr()->phase = current_phase;
                     tmpm1->getObjectPtr()->image_index = current_phase+1 + (uint16_t)slc*phases_to_reconstruct_;
-                    tmpm1->getObjectPtr()->image_series_index = current_cycle*10;
+                    tmpm1->getObjectPtr()->image_series_index = current_cycle * 10 + tmpm1->getObjectPtr()->slice;
 
                     // make sure the phase is within the acquisition limit
                     if ( tmpm1->getObjectPtr()->phase+1 >= time_stamps_[slc].size() )
@@ -265,7 +265,14 @@ namespace Gadgetron{
                         double cycle_length_in_ms = time_stamp_resolution_.value()*cycle_lengths[current_cycle];
 
                         std::ostringstream ostr;
-                        ostr << "_RR" << cycle_length_in_ms << "ms";
+                        if (slc_limit_ > 1)
+                        {
+                            ostr << "_SLC_" << tmpm1->getObjectPtr()->slice << "_RR" << cycle_length_in_ms << "ms";
+                        }
+                        else
+                        {
+                            ostr << "_RR" << cycle_length_in_ms << "ms";
+                        }
 
                         std::string imageComment = "PhysioInterp" + ostr.str();
                         tmpm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, imageComment.c_str());
