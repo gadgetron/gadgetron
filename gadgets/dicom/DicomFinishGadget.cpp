@@ -413,28 +413,34 @@ namespace Gadgetron {
         WRITE_DCM_STRING(key, buf);
 
         // Repetition Time
-        key.set(0x0018, 0x0080);
-        ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TR.front());
-        WRITE_DCM_STRING(key, buf);
+        if (seq_info.TR.is_present() && seq_info.TR.get().size() > 0)
+        {
+            key.set(0x0018, 0x0080);
+            ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TR.get().front());
+            WRITE_DCM_STRING(key, buf);
+        }
 
         // Echo Time
-        key.set(0x0018, 0x0081);
-        ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TE.front());
-        WRITE_DCM_STRING(key, buf);
+        if (seq_info.TE.is_present() && seq_info.TE.get().size() > 0)
+        {
+            key.set(0x0018, 0x0081);
+            ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TE.get().front());
+            WRITE_DCM_STRING(key, buf);
+        }
 
         // Inversion Time
-        if (seq_info.TI.size()>0)
+        if (seq_info.TI.get().size()>0)
         {
             key.set(0x0018, 0x0082);
-            ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.front());
+            ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.get().front());
             WRITE_DCM_STRING(key, buf);
         }
 
         // Flip Angle
-        if (seq_info.flipAngle_deg.size()>0)
+        if (seq_info.flipAngle_deg.is_present() && seq_info.flipAngle_deg.get().size()>0)
         {
             key.set(0x0018, 0x1314);
-            ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)seq_info.flipAngle_deg.front());
+            ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)seq_info.flipAngle_deg.get().front());
             WRITE_DCM_STRING(key, buf);
         }
 
