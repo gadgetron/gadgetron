@@ -70,6 +70,10 @@ namespace Gadgetron
 
         virtual int process_config(ACE_Message_Block * mb);
         virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1);
+        virtual int send_message(ACE_Message_Block *mb)
+        {
+            return this->controller_->output_ready(mb);
+        }
 
         template <typename T>
         int write_data_attrib(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2)
@@ -398,7 +402,7 @@ namespace Gadgetron
                 mfilename->cont(m3);
             }
 
-            int ret = this->controller_->output_ready(mb);
+            int ret = this->send_message(mb);
 
             if ((ret < 0))
             {
