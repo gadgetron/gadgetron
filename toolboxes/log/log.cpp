@@ -70,7 +70,6 @@ namespace Gadgetron
        if (newStdOut == NULL) {
          printf("Unable to redirect stdout to %s\n", log_file);
          fflush(stdout);
-         exit(EXIT_FAILURE);
        }
     }
   }
