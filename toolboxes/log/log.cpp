@@ -61,6 +61,17 @@ namespace Gadgetron
       enableOutputOption(GADGETRON_LOG_PRINT_LEVEL);
       enableOutputOption(GADGETRON_LOG_PRINT_DATETIME);
     }
+
+    // Redirect stdout to a log file
+    char *log_file = getenv(GADGETRON_LOG_FILE_ENVIRONMENT);
+    if (log_file != NULL) {
+       fflush(stdout);
+       FILE *newStdOut = freopen(log_file, "a", stdout);
+       if (newStdOut == NULL) {
+         printf("Unable to redirect stdout to %s\n", log_file);
+         fflush(stdout);
+       }
+    }
   }
 
 

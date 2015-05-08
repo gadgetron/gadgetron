@@ -297,9 +297,9 @@ int GadgetStreamController::configure(std::string config_xml_string)
       classname = i->classname;
 
       GINFO("--Found writer declaration\n");
-      GINFO("  Reader dll: %s\n", dllname.c_str());
-      GINFO("  Reader class: %s\n", classname.c_str());
-      GINFO("  Reader slot: %d\n", slot);
+      GINFO("  Writer dll: %s\n", dllname.c_str());
+      GINFO("  Writer class: %s\n", classname.c_str());
+      GINFO("  Writer slot: %d\n", slot);
       
       GadgetMessageWriter* w =
 	load_dll_component<GadgetMessageWriter>(dllname.c_str(),
