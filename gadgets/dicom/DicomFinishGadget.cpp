@@ -429,7 +429,7 @@ namespace Gadgetron {
         }
 
         // Inversion Time
-        if (seq_info.TI.get().size()>0)
+        if (seq_info.TI.is_present() && seq_info.TI.get().size()>0)
         {
             key.set(0x0018, 0x0082);
             ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.get().front());
