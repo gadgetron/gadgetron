@@ -41,7 +41,11 @@ namespace Gadgetron {
     if ( !boost::filesystem::exists(workingdirectory) )
       {
         boost::filesystem::path workingPath(workingdirectory);
-        if ( !boost::filesystem::create_directories(workingPath) )
+        try
+          {
+            boost::filesystem::create_directories(workingPath);
+          }
+        catch (...)
 	  {
 	    GERROR("Error creating the working directory.\n");
 	    return false;
