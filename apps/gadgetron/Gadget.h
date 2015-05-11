@@ -262,7 +262,7 @@ namespace Gadgetron{
                 if (success == -1) {
                     m->release();
                     this->flush();
-                    GDEBUG("Gadget (%s) process failed\n", this->module()->name());
+                    GERROR("Gadget (%s) process failed\n", this->module()->name());
                     return GADGET_FAIL;
                 }
             }
