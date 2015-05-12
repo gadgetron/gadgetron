@@ -730,36 +730,9 @@
         <!-- parameters for the cloud computation 
              The cloud should be defined as the following: CloudNodeX_IP/Port/XMLConfiguration etc.
         -->
-        <property>
-            <name>CloudComputing</name>
-            <value>false</value>
-        </property>
-
-        <property>
-            <name>CloudSize</name>
-            <value>1</value>
-        </property>
-
-        <!-- node 0 -->
-        <property>
-            <name>CloudNode0_IP</name>
-            <value>localhost</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_Port</name>
-            <value>9003</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_XMLConfiguration</name>
-            <value>GtProg_2DT_Cartesian_CloudNode.xml</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_ComputingPowerIndex</name>
-            <value>1</value>
-        </property>
+        <property><name>CloudComputing</name><value>false</value></property>
+        <property><name>cloudNodeFile</name><value>myCloud_2DT_DualLayer_FirstLayer.txt</value></property>
+        <property><name>CloudNodeXMLConfiguration</name><value>GT_2DT_Cartesian_FirstLayer_CloudNode.xml</value></property>
 
     </gadget>
 

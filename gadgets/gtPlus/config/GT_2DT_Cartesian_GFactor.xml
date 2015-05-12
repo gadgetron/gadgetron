@@ -374,11 +374,11 @@
         <!-- parameters for ISMRMRD_SPIRIT -->
         <property>
             <name>spirit_kSize_RO</name>
-            <value>9</value>
+            <value>7</value>
         </property>
         <property>
             <name>spirit_kSize_E1</name>
-            <value>9</value>
+            <value>7</value>
         </property>
         <property>
             <name>spirit_kSize_E2</name>
@@ -406,7 +406,73 @@
         </property>
         <property>
             <name>spirit_print_iter</name>
+            <value>false</value>
+        </property>
+
+        <!-- parameters for ISMRMRD_L1SPIRIT -->
+        <property>
+            <name>spirit_perform_linear</name>
             <value>true</value>
+        </property>
+        <property>
+            <name>spirit_perform_nonlinear</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>spirit_parallel_imaging_lamda</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>spirit_image_reg_lamda</name>
+            <value>0.0025</value>
+        </property>
+        <property>
+            <name>spirit_data_fidelity_lamda</name>
+            <value>0</value>
+        </property>
+        <property>
+            <name>spirit_ncg_iter_max</name>
+            <value>10</value>
+        </property>
+        <property>
+            <name>spirit_ncg_iter_thres</name>
+            <value>0.0001</value>
+        </property>
+        <property>
+            <name>spirit_ncg_print_iter</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>spirit_use_coil_sen_map</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>spirit_use_moco_enhancement</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>spirit_recon_moco_images</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>spirit_RO_enhancement_ratio</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>spirit_E1_enhancement_ratio</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>spirit_E2_enhancement_ratio</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>spirit_temporal_enhancement_ratio</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>spirit_2D_scale_per_chunk</name>
+            <value>false</value>
         </property>
 
         <!-- parameters for scaling and image sending -->
@@ -669,11 +735,6 @@
         </property>
 
         <property>
-            <name>cloudNodeFile</name>
-            <value>myCloud_2DT.txt</value>
-        </property>
-
-        <property>
             <name>performTiming</name>
             <value>true</value>
         </property>
@@ -714,36 +775,9 @@
         <!-- parameters for the cloud computation 
              The cloud should be defined as the following: CloudNodeX_IP/Port/XMLConfiguration etc.
         -->
-        <property>
-            <name>CloudComputing</name>
-            <value>false</value>
-        </property>
-
-        <property>
-            <name>CloudSize</name>
-            <value>1</value>
-        </property>
-
-        <!-- node 0 -->
-        <property>
-            <name>CloudNode0_IP</name>
-            <value>localhost</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_Port</name>
-            <value>9003</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_XMLConfiguration</name>
-            <value>GtProg_2DT_Cartesian_CloudNode.xml</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_ComputingPowerIndex</name>
-            <value>1</value>
-        </property>
+        <property><name>CloudComputing</name><value>false</value></property>
+        <property><name>cloudNodeFile</name><value>myCloud_2DT.txt</value></property>
+        <property><name>CloudNodeXMLConfiguration</name><value>GT_2DT_Cartesian_CloudNode.xml</value></property>
 
     </gadget>
 

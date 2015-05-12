@@ -197,13 +197,13 @@ public:
 
     /// ------------------------------------------------------------------------------------
     /// debug and image sending
-    GADGET_PROPERTY_NO_FORCE(image_series, int, "Image series number", 0);
+    GADGET_PROPERTY(image_series, int, "Image series number", 0);
     GADGET_PROPERTY(verboseMode, bool, "Whether to print more information", false);
     GADGET_PROPERTY(debugFolder, std::string, "If set, the debug output will be written out", "");
-    GADGET_PROPERTY_NO_FORCE(debugFolder2, std::string, "If set, the debug output will be written out", "");
-    GADGET_PROPERTY_NO_FORCE(timeStampResolution, float, "Time tick resolution in second", 0.0025f);
-    GADGET_PROPERTY_NO_FORCE(send_out_recon, bool, "Whether to send out recon images", true);
-    GADGET_PROPERTY_NO_FORCE(send_out_recon_second, bool, "Whether to send out extra recon images", true);
+    GADGET_PROPERTY(debugFolder2, std::string, "If set, the debug output will be written out", "");
+    GADGET_PROPERTY(timeStampResolution, float, "Time tick resolution in second", 0.0025f);
+    GADGET_PROPERTY(send_out_recon, bool, "Whether to send out recon images", true);
+    GADGET_PROPERTY(send_out_recon_second, bool, "Whether to send out extra recon images", true);
     GADGET_PROPERTY(performTiming, bool, "Whether to perform timing on some computational steps", false);
 
     /// ------------------------------------------------------------------------------------
@@ -292,66 +292,30 @@ public:
 
     /// ------------------------------------------------------------------------------------
     /// cloud computing
-    GADGET_PROPERTY_NO_FORCE(CloudComputing, bool, "Whether to use cloud", false);
-    GADGET_PROPERTY_NO_FORCE(CloudSize, int, "Cloud size", 1);
-    GADGET_PROPERTY_NO_FORCE(cloudNodeFile, std::string, "Cloud node file", "my_Cloud.txt");
-    GADGET_PROPERTY_NO_FORCE(CloudNodeXMLConfiguration, std::string, "Cloud node xml configuration file when using cloud bus", "GT_Cartesian_CloudNode.xml");
-
-    GADGET_PROPERTY_NO_FORCE(CloudNode0_IP, std::string, "IP for cloud node 0", "10.0.0.101");
-    GADGET_PROPERTY_NO_FORCE(CloudNode0_Port, std::string, "Gadgetron port for cloud node 0", "9002");
-    GADGET_PROPERTY_NO_FORCE(CloudNode0_XMLConfiguration, std::string, "Xml configuration file for cloud node 0", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY_NO_FORCE(CloudNode0_ComputingPowerIndex, int, "Computing power index for cloud node 0", 1);
-
-    GADGET_PROPERTY_NO_FORCE(CloudNode1_IP, std::string, "IP for cloud node 1", "10.0.0.102");
-    GADGET_PROPERTY_NO_FORCE(CloudNode1_Port, std::string, "Gadgetron port for cloud node 1", "9002");
-    GADGET_PROPERTY_NO_FORCE(CloudNode1_XMLConfiguration, std::string, "Xml configuration file for cloud node 1", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY_NO_FORCE(CloudNode1_ComputingPowerIndex, int, "Computing power index for cloud node 1", 1);
-
-    GADGET_PROPERTY_NO_FORCE(CloudNode2_IP, std::string, "IP for cloud node 2", "10.0.0.103");
-    GADGET_PROPERTY_NO_FORCE(CloudNode2_Port, std::string, "Gadgetron port for cloud node 2", "9002");
-    GADGET_PROPERTY_NO_FORCE(CloudNode2_XMLConfiguration, std::string, "Xml configuration file for cloud node 2", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY_NO_FORCE(CloudNode2_ComputingPowerIndex, int, "Computing power index for cloud node 2", 1);
-
-    GADGET_PROPERTY_NO_FORCE(CloudNode3_IP, std::string, "IP for cloud node 3", "10.0.0.104");
-    GADGET_PROPERTY_NO_FORCE(CloudNode3_Port, std::string, "Gadgetron port for cloud node 3", "9002");
-    GADGET_PROPERTY_NO_FORCE(CloudNode3_XMLConfiguration, std::string, "Xml configuration file for cloud node 3", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY_NO_FORCE(CloudNode3_ComputingPowerIndex, int, "Computing power index for cloud node 3", 1);
-
-    GADGET_PROPERTY_NO_FORCE(CloudNode4_IP, std::string, "IP for cloud node 4", "10.0.0.105");
-    GADGET_PROPERTY_NO_FORCE(CloudNode4_Port, std::string, "Gadgetron port for cloud node 4", "9002");
-    GADGET_PROPERTY_NO_FORCE(CloudNode4_XMLConfiguration, std::string, "Xml configuration file for cloud node 4", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY_NO_FORCE(CloudNode4_ComputingPowerIndex, int, "Computing power index for cloud node 4", 1);
-
-    GADGET_PROPERTY_NO_FORCE(CloudNode5_IP, std::string, "IP for cloud node 5", "10.0.0.106");
-    GADGET_PROPERTY_NO_FORCE(CloudNode5_Port, std::string, "Gadgetron port for cloud node 5", "9002");
-    GADGET_PROPERTY_NO_FORCE(CloudNode5_XMLConfiguration, std::string, "Xml configuration file for cloud node 5", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY_NO_FORCE(CloudNode5_ComputingPowerIndex, int, "Computing power index for cloud node 5", 1);
-
-    GADGET_PROPERTY_NO_FORCE(CloudNode6_IP, std::string, "IP for cloud node 6", "10.0.0.107");
-    GADGET_PROPERTY_NO_FORCE(CloudNode6_Port, std::string, "Gadgetron port for cloud node 6", "9002");
-    GADGET_PROPERTY_NO_FORCE(CloudNode6_XMLConfiguration, std::string, "Xml configuration file for cloud node 6", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY_NO_FORCE(CloudNode6_ComputingPowerIndex, int, "Computing power index for cloud node 6", 1);
+    GADGET_PROPERTY(CloudComputing, bool, "Whether to use cloud", false);
+    GADGET_PROPERTY(cloudNodeFile, std::string, "Cloud node file", "my_Cloud.txt");
+    GADGET_PROPERTY(CloudNodeXMLConfiguration, std::string, "Cloud node xml configuration file when using cloud bus", "GT_Cartesian_CloudNode.xml");
 
     /// ------------------------------------------------------------------------------------
     /// coil compression
-    GADGET_PROPERTY_NO_FORCE(upstream_coil_compression, bool, "Whether to perform upstream coil compression", false);
-    GADGET_PROPERTY_NO_FORCE(upstream_coil_compression_thres, double, "Threadhold for upstream coil compression", -1);
-    GADGET_PROPERTY_NO_FORCE(upstream_coil_compression_num_modesKept, int, "Number of modes to keep for upstream coil compression", -1);
+    GADGET_PROPERTY(upstream_coil_compression, bool, "Whether to perform upstream coil compression", false);
+    GADGET_PROPERTY(upstream_coil_compression_thres, double, "Threadhold for upstream coil compression", -1);
+    GADGET_PROPERTY(upstream_coil_compression_num_modesKept, int, "Number of modes to keep for upstream coil compression", -1);
 
-    GADGET_PROPERTY_NO_FORCE(downstream_coil_compression, bool, "Whether to perform downstream coil compression", true);
-    GADGET_PROPERTY_NO_FORCE(coil_compression_thres, double, "Threadhold for downstream coil compression", 0.002);
-    GADGET_PROPERTY_NO_FORCE(coil_compression_num_modesKept, int, "Number of modes to keep for downstream coil compression", -1);
+    GADGET_PROPERTY(downstream_coil_compression, bool, "Whether to perform downstream coil compression", true);
+    GADGET_PROPERTY(coil_compression_thres, double, "Threadhold for downstream coil compression", 0.002);
+    GADGET_PROPERTY(coil_compression_num_modesKept, int, "Number of modes to keep for downstream coil compression", -1);
 
     /// ------------------------------------------------------------------------------------
     /// coil map estimation
     GADGET_PROPERTY_LIMITS(coil_map_algorithm, std::string, "Coil map estimation method", "ISMRMRD_SOUHEIL",
         GadgetPropertyLimitsEnumeration, "ISMRMRD_SOUHEIL", "ISMRMRD_SOUHEIL_ITER");
 
-    GADGET_PROPERTY_NO_FORCE(csm_kSize, int, "For ISMRMRD_SOUHEIL, kernel size", 7);
-    GADGET_PROPERTY_NO_FORCE(csm_powermethod_num, int, "For ISMRMRD_SOUHEIL, number to apply power method", 3);
-    GADGET_PROPERTY_NO_FORCE(csm_true_3D, bool, "Whether to use 3D kernel for 3D coil map estimation", true);
-    GADGET_PROPERTY_NO_FORCE(csm_iter_num, int, "For ISMRMRD_SOUHEIL_ITER, number of iterations", 5);
-    GADGET_PROPERTY_NO_FORCE(csm_iter_thres, double, "For ISMRMRD_SOUHEIL_ITER, iteration threshold", 1e-5);
+    GADGET_PROPERTY(csm_kSize, int, "For ISMRMRD_SOUHEIL, kernel size", 7);
+    GADGET_PROPERTY(csm_powermethod_num, int, "For ISMRMRD_SOUHEIL, number to apply power method", 3);
+    GADGET_PROPERTY(csm_true_3D, bool, "Whether to use 3D kernel for 3D coil map estimation", true);
+    GADGET_PROPERTY(csm_iter_num, int, "For ISMRMRD_SOUHEIL_ITER, number of iterations", 5);
+    GADGET_PROPERTY(csm_iter_thres, double, "For ISMRMRD_SOUHEIL_ITER, iteration threshold", 1e-5);
 
     /// ------------------------------------------------------------------------------------
     /// recon parameters
@@ -360,85 +324,85 @@ public:
                             "ISMRMRD_SOFTSENSE", "ISMRMRD_L1SOFTSENSE", "ISMRMRD_2DTBINNING", "ISMRMRD_2DTBINNING_FLOW", 
                             "ISMRMRD_L1SPIRIT_SLEP", "ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP", "ISMRMRD_NONE");
 
-    GADGET_PROPERTY_NO_FORCE(recon_auto_parameters, bool, "Whether to estimate recon algorithm parametes automatically", true);
-    GADGET_PROPERTY_NO_FORCE(gfactor_needed, bool, "Whether to compute gfactor map", false);
-    GADGET_PROPERTY_NO_FORCE(wrap_around_map_needed, bool, "Whether to compute wrap-around map", false);
-    GADGET_PROPERTY_NO_FORCE(recon_kspace_needed, bool, "Whether to compute multi-channel full kspace", false);
+    GADGET_PROPERTY(recon_auto_parameters, bool, "Whether to estimate recon algorithm parametes automatically", true);
+    GADGET_PROPERTY(gfactor_needed, bool, "Whether to compute gfactor map", false);
+    GADGET_PROPERTY(wrap_around_map_needed, bool, "Whether to compute wrap-around map", false);
+    GADGET_PROPERTY(recon_kspace_needed, bool, "Whether to compute multi-channel full kspace", false);
 
     /// ------------------------------------------------------------------------------------
     /// grappa parameters
-    GADGET_PROPERTY_NO_FORCE(grappa_kSize_RO, int, "Grappa kernel size RO", 5);
-    GADGET_PROPERTY_NO_FORCE(grappa_kSize_E1, int, "Grappa kernel size E1", 4);
-    GADGET_PROPERTY_NO_FORCE(grappa_kSize_E2, int, "Grappa kernel size E2", 4);
-    GADGET_PROPERTY_NO_FORCE(grappa_reg_lamda, double, "Grappa regularization threshold", 0.0005);
-    GADGET_PROPERTY_NO_FORCE(grappa_calib_over_determine_ratio, double, "Grappa calibration overdermination ratio", 0);
+    GADGET_PROPERTY(grappa_kSize_RO, int, "Grappa kernel size RO", 5);
+    GADGET_PROPERTY(grappa_kSize_E1, int, "Grappa kernel size E1", 4);
+    GADGET_PROPERTY(grappa_kSize_E2, int, "Grappa kernel size E2", 4);
+    GADGET_PROPERTY(grappa_reg_lamda, double, "Grappa regularization threshold", 0.0005);
+    GADGET_PROPERTY(grappa_calib_over_determine_ratio, double, "Grappa calibration overdermination ratio", 0);
 
     /// ------------------------------------------------------------------------------------
     /// spirit parameters
-    GADGET_PROPERTY_NO_FORCE(spirit_kSize_RO, int, "Spirit kernel size RO", 7);
-    GADGET_PROPERTY_NO_FORCE(spirit_kSize_E1, int, "Spirit kernel size E1", 7);
-    GADGET_PROPERTY_NO_FORCE(spirit_kSize_E2, int, "Spirit kernel size E2", 5);
-    GADGET_PROPERTY_NO_FORCE(spirit_reg_lamda, double, "Spirit regularization threshold", 0.005);
-    GADGET_PROPERTY_NO_FORCE(spirit_calib_over_determine_ratio, double, "Spirit calibration overdermination ratio", 0);
-    GADGET_PROPERTY_NO_FORCE(spirit_solve_symmetric, bool, "Whether to solve symmetric spirit kernel size E2", false);
-    GADGET_PROPERTY_NO_FORCE(spirit_iter_max, int, "Spirit number of iterations", 150);
-    GADGET_PROPERTY_NO_FORCE(spirit_iter_thres, double, "Spirit threshold for iteration", 0.0015);
-    GADGET_PROPERTY_NO_FORCE(spirit_print_iter, bool, "Spirit print iteration info", false);
+    GADGET_PROPERTY(spirit_kSize_RO, int, "Spirit kernel size RO", 7);
+    GADGET_PROPERTY(spirit_kSize_E1, int, "Spirit kernel size E1", 7);
+    GADGET_PROPERTY(spirit_kSize_E2, int, "Spirit kernel size E2", 5);
+    GADGET_PROPERTY(spirit_reg_lamda, double, "Spirit regularization threshold", 0.005);
+    GADGET_PROPERTY(spirit_calib_over_determine_ratio, double, "Spirit calibration overdermination ratio", 0);
+    GADGET_PROPERTY(spirit_solve_symmetric, bool, "Whether to solve symmetric spirit kernel size E2", false);
+    GADGET_PROPERTY(spirit_iter_max, int, "Spirit number of iterations", 150);
+    GADGET_PROPERTY(spirit_iter_thres, double, "Spirit threshold for iteration", 0.0015);
+    GADGET_PROPERTY(spirit_print_iter, bool, "Spirit print iteration info", false);
 
-    GADGET_PROPERTY_NO_FORCE(spirit_perform_linear, bool, "Whether to perform linear spirit", true);
-    GADGET_PROPERTY_NO_FORCE(spirit_perform_nonlinear, bool, "Whether to perform non-linear spirit", true);
-    GADGET_PROPERTY_NO_FORCE(spirit_parallel_imaging_lamda, double, "Parallel imaging term lamda", 1.0);
-    GADGET_PROPERTY_NO_FORCE(spirit_image_reg_lamda, double, "Imaging regularization term lamda", 0.00005);
-    GADGET_PROPERTY_NO_FORCE(spirit_data_fidelity_lamda, double, "Data fedility term lamda", 1.0);
+    GADGET_PROPERTY(spirit_perform_linear, bool, "Whether to perform linear spirit", true);
+    GADGET_PROPERTY(spirit_perform_nonlinear, bool, "Whether to perform non-linear spirit", true);
+    GADGET_PROPERTY(spirit_parallel_imaging_lamda, double, "Parallel imaging term lamda", 1.0);
+    GADGET_PROPERTY(spirit_image_reg_lamda, double, "Imaging regularization term lamda", 0.00005);
+    GADGET_PROPERTY(spirit_data_fidelity_lamda, double, "Data fedility term lamda", 1.0);
 
-    GADGET_PROPERTY_NO_FORCE(spirit_ncg_iter_max, int, "Nonlinear cg solver numbre of iterations", 10);
-    GADGET_PROPERTY_NO_FORCE(spirit_ncg_iter_thres, double, "Nonlinear cg solver iteration threshold", 0.0001);
-    GADGET_PROPERTY_NO_FORCE(spirit_ncg_print_iter, bool, "Spirit print nonlinear cg iteration info", true);
+    GADGET_PROPERTY(spirit_ncg_iter_max, int, "Nonlinear cg solver numbre of iterations", 10);
+    GADGET_PROPERTY(spirit_ncg_iter_thres, double, "Nonlinear cg solver iteration threshold", 0.0001);
+    GADGET_PROPERTY(spirit_ncg_print_iter, bool, "Spirit print nonlinear cg iteration info", true);
 
-    GADGET_PROPERTY_NO_FORCE(spirit_use_coil_sen_map, bool, "Spirit using coil map in image regularization", false);
-    GADGET_PROPERTY_NO_FORCE(spirit_use_moco_enhancement, bool, "Spirit using motion correction enhancement in image regularization", false);
-    GADGET_PROPERTY_NO_FORCE(spirit_recon_moco_images, bool, "Spirit recon motion corrected image series", false);
-    GADGET_PROPERTY_NO_FORCE(spirit_RO_enhancement_ratio, double, "RO enhancement ratio for image regularization", 1.0);
-    GADGET_PROPERTY_NO_FORCE(spirit_E1_enhancement_ratio, double, "E1 enhancement ratio for image regularization", 1.0);
-    GADGET_PROPERTY_NO_FORCE(spirit_E2_enhancement_ratio, double, "E2 enhancement ratio for image regularization", 1.0);
-    GADGET_PROPERTY_NO_FORCE(spirit_temporal_enhancement_ratio, double, "Temporal enhancement ratio for image regularization", 5.0);
+    GADGET_PROPERTY(spirit_use_coil_sen_map, bool, "Spirit using coil map in image regularization", false);
+    GADGET_PROPERTY(spirit_use_moco_enhancement, bool, "Spirit using motion correction enhancement in image regularization", false);
+    GADGET_PROPERTY(spirit_recon_moco_images, bool, "Spirit recon motion corrected image series", false);
+    GADGET_PROPERTY(spirit_RO_enhancement_ratio, double, "RO enhancement ratio for image regularization", 1.0);
+    GADGET_PROPERTY(spirit_E1_enhancement_ratio, double, "E1 enhancement ratio for image regularization", 1.0);
+    GADGET_PROPERTY(spirit_E2_enhancement_ratio, double, "E2 enhancement ratio for image regularization", 1.0);
+    GADGET_PROPERTY(spirit_temporal_enhancement_ratio, double, "Temporal enhancement ratio for image regularization", 5.0);
 
-    GADGET_PROPERTY_NO_FORCE(spirit_2D_scale_per_chunk, bool, "Spirit scaling per chunk for 2DT", false);
-    GADGET_PROPERTY_NO_FORCE(spirit_3D_scale_per_chunk, bool, "Spirit scalng per chunk for 3D", false);
+    GADGET_PROPERTY(spirit_2D_scale_per_chunk, bool, "Spirit scaling per chunk for 2DT", false);
+    GADGET_PROPERTY(spirit_3D_scale_per_chunk, bool, "Spirit scalng per chunk for 3D", false);
 
     /// ------------------------------------------------------------------------------------
     /// retro gating parameters
-    GADGET_PROPERTY_NO_FORCE(retro_gated_interp_method, std::string, "Interpolation method used for retro-gating", "ISMRMRD_INTERP_RETRO_GATING_LINEAR");
+    GADGET_PROPERTY(retro_gated_interp_method, std::string, "Interpolation method used for retro-gating", "ISMRMRD_INTERP_RETRO_GATING_LINEAR");
 
     /// ------------------------------------------------------------------------------------
     /// recon job parameters
-    GADGET_PROPERTY_NO_FORCE(job_split_by_S, bool, "Every S leads to a recon job", false);
-    GADGET_PROPERTY_NO_FORCE(job_num_of_N, int, "Recon job size along N", 32);
-    GADGET_PROPERTY_NO_FORCE(job_max_Megabytes, int, "Maximal recon job size in MegaBytes", 2048);
-    GADGET_PROPERTY_NO_FORCE(job_overlap, int, "Recon job overlap size", 2);
-    GADGET_PROPERTY_NO_FORCE(job_perform_on_control_node, bool, "Whether to perform recon job on control node", false);
+    GADGET_PROPERTY(job_split_by_S, bool, "Every S leads to a recon job", false);
+    GADGET_PROPERTY(job_num_of_N, int, "Recon job size along N", 32);
+    GADGET_PROPERTY(job_max_Megabytes, int, "Maximal recon job size in MegaBytes", 2048);
+    GADGET_PROPERTY(job_overlap, int, "Recon job overlap size", 2);
+    GADGET_PROPERTY(job_perform_on_control_node, bool, "Whether to perform recon job on control node", false);
 
     /// ------------------------------------------------------------------------------------
     /// partial fourier handling parameters
     GADGET_PROPERTY_LIMITS(partialFourier_algo, std::string, "Partial fourier handling method", "ISMRMRD_PF_ZEROFILLING_FILTER",
         GadgetPropertyLimitsEnumeration, "ISMRMRD_PF_HOMODYNE", "ISMRMRD_PF_FENGHUANG", "ISMRMRD_PF_POCS", "ISMRMRD_PF_ZEROFILLING_FILTER", "ISMRMRD_PF_ZEROFILLING", "ISMRMRD_PF_NONE");
 
-    GADGET_PROPERTY_NO_FORCE(partialFourier_homodyne_iters, int, "Number of iterations for homodyne PF handling", 6);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_homodyne_thres, double, "Threshold for homodyne PF handling", 0.01);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_homodyne_densityComp, bool, "Whether to perform density compensation for homodyne PF handling", false);
+    GADGET_PROPERTY(partialFourier_homodyne_iters, int, "Number of iterations for homodyne PF handling", 6);
+    GADGET_PROPERTY(partialFourier_homodyne_thres, double, "Threshold for homodyne PF handling", 0.01);
+    GADGET_PROPERTY(partialFourier_homodyne_densityComp, bool, "Whether to perform density compensation for homodyne PF handling", false);
 
-    GADGET_PROPERTY_NO_FORCE(partialFourier_POCS_iters, int, "Number of iterations for POCS PF handling", 6);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_POCS_thres, double, "Threshold for POSC PF handling", 0.01);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_POCS_transitBand, int, "Transition band width for POCS PF handling", 24);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_POCS_transitBand_E2, int, "Transition band width for POCS PF handling for E2 dimension", 16);
+    GADGET_PROPERTY(partialFourier_POCS_iters, int, "Number of iterations for POCS PF handling", 6);
+    GADGET_PROPERTY(partialFourier_POCS_thres, double, "Threshold for POSC PF handling", 0.01);
+    GADGET_PROPERTY(partialFourier_POCS_transitBand, int, "Transition band width for POCS PF handling", 24);
+    GADGET_PROPERTY(partialFourier_POCS_transitBand_E2, int, "Transition band width for POCS PF handling for E2 dimension", 16);
 
-    GADGET_PROPERTY_NO_FORCE(partialFourier_FengHuang_kSize_RO, int, "RO kernel size for FengHuang PF handling", 5);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_FengHuang_kSize_E1, int, "E1 kernel size for FengHuang PF handling", 5);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_FengHuang_kSize_E2, int, "E2 kernel size for FengHuang PF handling", 5);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_FengHuang_thresReg, double, "Threshold for FengHuang PF handling", 0.01);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_FengHuang_sameKernel_allN, bool, "Whether all N have the same kernel for FengHuang PF handling", false);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_FengHuang_transitBand, int, "Transition band width for FengHuang PF handling", 24);
-    GADGET_PROPERTY_NO_FORCE(partialFourier_FengHuang_transitBand_E2, int, "Transition band width for FengHuang PF handling for E2 dimension", 16);
+    GADGET_PROPERTY(partialFourier_FengHuang_kSize_RO, int, "RO kernel size for FengHuang PF handling", 5);
+    GADGET_PROPERTY(partialFourier_FengHuang_kSize_E1, int, "E1 kernel size for FengHuang PF handling", 5);
+    GADGET_PROPERTY(partialFourier_FengHuang_kSize_E2, int, "E2 kernel size for FengHuang PF handling", 5);
+    GADGET_PROPERTY(partialFourier_FengHuang_thresReg, double, "Threshold for FengHuang PF handling", 0.01);
+    GADGET_PROPERTY(partialFourier_FengHuang_sameKernel_allN, bool, "Whether all N have the same kernel for FengHuang PF handling", false);
+    GADGET_PROPERTY(partialFourier_FengHuang_transitBand, int, "Transition band width for FengHuang PF handling", 24);
+    GADGET_PROPERTY(partialFourier_FengHuang_transitBand_E2, int, "Transition band width for FengHuang PF handling for E2 dimension", 16);
 
     // --------------------------------------------------
     // variables used for data buffer and processing

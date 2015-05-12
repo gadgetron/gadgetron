@@ -399,12 +399,90 @@
             <value>0.005</value>
         </property>
         <property>
+            <name>spirit_calib_over_determine_ratio</name>
+            <value>0</value>
+        </property>
+        <property>
+            <name>spirit_solve_symmetric</name>
+            <value>false</value>
+        </property>
+        <property>
             <name>spirit_iter_max</name>
-            <value>70</value>
+            <value>90</value>
         </property>
         <property>
             <name>spirit_iter_thres</name>
-            <value>1e-5</value>
+            <value>0.0015</value>
+        </property>
+        <property>
+            <name>spirit_print_iter</name>
+            <value>false</value>
+        </property>
+
+        <!-- parameters for ISMRMRD_L1SPIRIT -->
+        <property>
+            <name>spirit_perform_linear</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>spirit_perform_nonlinear</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>spirit_parallel_imaging_lamda</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>spirit_image_reg_lamda</name>
+            <value>0.0025</value>
+        </property>
+        <property>
+            <name>spirit_data_fidelity_lamda</name>
+            <value>0</value>
+        </property>
+        <property>
+            <name>spirit_ncg_iter_max</name>
+            <value>10</value>
+        </property>
+        <property>
+            <name>spirit_ncg_iter_thres</name>
+            <value>0.0001</value>
+        </property>
+        <property>
+            <name>spirit_ncg_print_iter</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>spirit_use_coil_sen_map</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>spirit_use_moco_enhancement</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>spirit_recon_moco_images</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>spirit_RO_enhancement_ratio</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>spirit_E1_enhancement_ratio</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>spirit_E2_enhancement_ratio</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>spirit_temporal_enhancement_ratio</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>spirit_2D_scale_per_chunk</name>
+            <value>false</value>
         </property>
 
         <!-- parameters for scaling and image sending -->
@@ -619,6 +697,10 @@
             <name>partialFourier_FengHuang_transitBand</name>
             <value>24</value>
         </property>
+
+        <property><name>CloudComputing</name><value>false</value></property>
+        <property><name>cloudNodeFile</name><value>myCloud_2DT.txt</value></property>
+        <property><name>CloudNodeXMLConfiguration</name><value>GT_2DT_Cartesian_CloudNode.xml</value></property>
 
         <!-- parameters for debug and timing -->
         <property>

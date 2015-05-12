@@ -63,7 +63,7 @@ public:
     GADGET_PROPERTY(verboseMode, bool, "Whether to print more information", false);
     GADGET_PROPERTY(debugFolder, std::string, "If set, the debug output will be written out", "");
     GADGET_PROPERTY(debugFolder2, std::string, "If set, the debug output will be written out", "");
-    GADGET_PROPERTY_NO_FORCE(performTiming, bool, "Whether to perform timing on some computational steps", false);
+    GADGET_PROPERTY(performTiming, bool, "Whether to perform timing on some computational steps", false);
 
 protected:
 

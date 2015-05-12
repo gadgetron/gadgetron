@@ -672,11 +672,6 @@
         </property>
 
         <property>
-            <name>cloudNodeFile</name>
-            <value>myCloud_3DT.txt</value>
-        </property>
-
-        <property>
             <name>performTiming</name>
             <value>true</value>
         </property>
@@ -717,57 +712,9 @@
         <!-- parameters for the cloud computation 
              The cloud should be defined as the following: CloudNodeX_IP/Port/XMLConfiguration etc.
         -->
-        <property>
-            <name>CloudComputing</name>
-            <value>false</value>
-        </property>
-
-        <property>
-            <name>CloudSize</name>
-            <value>2</value>
-        </property>
-
-        <!-- node 0 -->
-        <property>
-            <name>CloudNode0_IP</name>
-            <value>localhost</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_Port</name>
-            <value>9003</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_XMLConfiguration</name>
-            <value>GtProg_3DT_Cartesian_CloudNode.xml</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_ComputingPowerIndex</name>
-            <value>1</value>
-        </property>
-
-        <!-- node 1 -->
-        <property>
-            <name>CloudNode1_IP</name>
-            <value>localhost</value>
-        </property>
-
-        <property>
-            <name>CloudNode1_Port</name>
-            <value>9004</value>
-        </property>
-
-        <property>
-            <name>CloudNode1_XMLConfiguration</name>
-            <value>GtProg_3DT_Cartesian_CloudNode.xml</value>
-        </property>
-
-        <property>
-            <name>CloudNode1_ComputingPowerIndex</name>
-            <value>1</value>
-        </property>
+        <property><name>CloudComputing</name><value>false</value></property>
+        <property><name>cloudNodeFile</name><value>myCloud_3DT.txt</value></property>
+        <property><name>CloudNodeXMLConfiguration</name><value>GT_3DT_Cartesian_CloudNode.xml</value></property>
 
     </gadget>
 

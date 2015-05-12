@@ -242,93 +242,12 @@ namespace Gadgetron
             GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
             CloudComputing_ = CloudComputing.value();
-            CloudSize_ = CloudSize.value();
-
             GDEBUG_CONDITION_STREAM(verboseMode_, "CloudComputing_ is " << CloudComputing_);
-            GDEBUG_CONDITION_STREAM(verboseMode_, "CloudSize_ is " << CloudSize_);
 
             cloud_node_file_ = cloudNodeFile.value();
             GDEBUG_CONDITION_STREAM(verboseMode_, "cloud_node_file_ is " << cloud_node_file_);
 
-            // read in the cloud information for every node
-            gt_cloud_.resize(CloudSize_);
-
-            size_t ii = 0;
-            if (CloudSize_ > 1)
-            {
-                gt_cloud_[ii].get<0>() = CloudNode0_IP.value();
-                gt_cloud_[ii].get<1>() = CloudNode0_Port.value();
-                gt_cloud_[ii].get<2>() = CloudNode0_XMLConfiguration.value();
-                gt_cloud_[ii].get<3>() = CloudNode0_ComputingPowerIndex.value();
-                GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
-                ii++;
-
-            }
-
-            if (CloudSize_ > 2)
-            {
-                gt_cloud_[ii].get<0>() = CloudNode1_IP.value();
-                gt_cloud_[ii].get<1>() = CloudNode1_Port.value();
-                gt_cloud_[ii].get<2>() = CloudNode1_XMLConfiguration.value();
-                gt_cloud_[ii].get<3>() = CloudNode1_ComputingPowerIndex.value();
-                GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
-                ii++;
-            }
-
-            if (CloudSize_ > 3)
-            {
-                gt_cloud_[ii].get<0>() = CloudNode2_IP.value();
-                gt_cloud_[ii].get<1>() = CloudNode2_Port.value();
-                gt_cloud_[ii].get<2>() = CloudNode2_XMLConfiguration.value();
-                gt_cloud_[ii].get<3>() = CloudNode2_ComputingPowerIndex.value();
-                GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
-                ii++;
-            }
-
-            if (CloudSize_ > 4)
-            {
-                gt_cloud_[ii].get<0>() = CloudNode3_IP.value();
-                gt_cloud_[ii].get<1>() = CloudNode3_Port.value();
-                gt_cloud_[ii].get<2>() = CloudNode3_XMLConfiguration.value();
-                gt_cloud_[ii].get<3>() = CloudNode3_ComputingPowerIndex.value();
-                GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
-                ii++;
-            }
-
-            if (CloudSize_ > 5)
-            {
-                gt_cloud_[ii].get<0>() = CloudNode4_IP.value();
-                gt_cloud_[ii].get<1>() = CloudNode4_Port.value();
-                gt_cloud_[ii].get<2>() = CloudNode4_XMLConfiguration.value();
-                gt_cloud_[ii].get<3>() = CloudNode4_ComputingPowerIndex.value();
-                GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
-                ii++;
-            }
-
-            if (CloudSize_ > 6)
-            {
-                gt_cloud_[ii].get<0>() = CloudNode5_IP.value();
-                gt_cloud_[ii].get<1>() = CloudNode5_Port.value();
-                gt_cloud_[ii].get<2>() = CloudNode5_XMLConfiguration.value();
-                gt_cloud_[ii].get<3>() = CloudNode5_ComputingPowerIndex.value();
-                GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
-                ii++;
-            }
-
-            if (CloudSize_ > 7)
-            {
-                gt_cloud_[ii].get<0>() = CloudNode6_IP.value();
-                gt_cloud_[ii].get<1>() = CloudNode6_Port.value();
-                gt_cloud_[ii].get<2>() = CloudNode6_XMLConfiguration.value();
-                gt_cloud_[ii].get<3>() = CloudNode6_ComputingPowerIndex.value();
-                GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud Node " << ii << " : " << gt_cloud_[ii]);
-                ii++;
-            }
-
-            if (CloudSize_ >= 8)
-            {
-                GDEBUG_CONDITION_STREAM(true, "Maximal 7 cloud Nodes are supported for xml configuration ... ");
-            }
+            GDEBUG_CONDITION_STREAM(verboseMode_, "CloudNodeXMLConfiguration is " << CloudNodeXMLConfiguration.value());
 
             GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
@@ -578,23 +497,30 @@ namespace Gadgetron
         if (this->using_cloudbus.value() && has_cloud_node_xml_configuration) {
             std::vector<GadgetronNodeInfo> nodes;
             CloudBus::instance()->get_node_info(nodes);
-            gtCloud.resize(nodes.size());
 
-            unsigned int n;
-            for ( n=0; n<nodes.size(); n++ )
+            if (nodes.size()>0)
             {
-                std::stringstream ss;
-                gtCloud[n].get<0>() = nodes[n].address;
-                ss << nodes[n].port;
-                gtCloud[n].get<1>() = ss.str();
-                gtCloud[n].get<2>() = CloudNodeXMLConfiguration.value();
-                gtCloud[n].get<3>() = nodes[n].compute_capability;
+                gtCloud.resize(nodes.size());
 
-                GDEBUG_CONDITION_STREAM(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
+                unsigned int n;
+                for ( n=0; n<nodes.size(); n++ )
+                {
+                    std::stringstream ss;
+                    gtCloud[n].get<0>() = nodes[n].address;
+                    ss << nodes[n].port;
+                    gtCloud[n].get<1>() = ss.str();
+                    gtCloud[n].get<2>() = CloudNodeXMLConfiguration.value();
+                    gtCloud[n].get<3>() = nodes[n].compute_capability;
+
+                    GDEBUG_CONDITION_STREAM(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
+                }
+
+                return true; //We will leave the function here
             }
-
-            return true; //We will leave the function here
-
+            else
+            {
+                GDEBUG_STREAM("Cloud bus cannot find any nodes; using the node text file instead ... ");
+            }
         }
 
         std::string nodeFileName = get_gadgetron_home();

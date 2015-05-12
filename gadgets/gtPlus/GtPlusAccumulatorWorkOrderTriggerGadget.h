@@ -58,9 +58,9 @@ public:
 
     /// parameters to control the triggering
 
-    GADGET_PROPERTY_NO_FORCE(image_series, int, "Image series number", 100);
+    GADGET_PROPERTY(image_series, int, "Image series number", 100);
     GADGET_PROPERTY(verboseMode, bool, "Whether to print more information", false);
-    GADGET_PROPERTY_NO_FORCE(timeStampResolution, float, "Time tick resolution in second", 0.0025f);
+    GADGET_PROPERTY(timeStampResolution, float, "Time tick resolution in second", 0.0025f);
 
     // ----------------------------------------------
 

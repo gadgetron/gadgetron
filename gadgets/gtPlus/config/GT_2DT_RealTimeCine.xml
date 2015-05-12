@@ -672,6 +672,10 @@
             <value>24</value>
         </property>
 
+        <property><name>CloudComputing</name><value>false</value></property>
+        <property><name>cloudNodeFile</name><value>myCloud_2DT.txt</value></property>
+        <property><name>CloudNodeXMLConfiguration</name><value>GT_2DT_Cartesian_CloudNode.xml</value></property>
+
         <!-- parameters for debug and timing -->
         <property>
             <name>debugFolder</name>
