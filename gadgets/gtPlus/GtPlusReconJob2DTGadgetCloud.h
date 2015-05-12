@@ -217,44 +217,8 @@ public:
 
     /// cloud computing
     GADGET_PROPERTY(CloudComputing, bool, "Whether to use cloud", false);
-    GADGET_PROPERTY(CloudSize, int, "Cloud size", 1);
     GADGET_PROPERTY(cloudNodeFile, std::string, "Cloud node file", "my_Cloud.txt");
     GADGET_PROPERTY(CloudNodeXMLConfiguration, std::string, "Cloud node xml configuration file when using cloud bus", "GT_Cartesian_CloudNode.xml");
-
-    GADGET_PROPERTY(CloudNode0_IP, std::string, "IP for cloud node 0", "10.0.0.101");
-    GADGET_PROPERTY(CloudNode0_Port, std::string, "Gadgetron port for cloud node 0", "9002");
-    GADGET_PROPERTY(CloudNode0_XMLConfiguration, std::string, "Xml configuration file for cloud node 0", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY(CloudNode0_ComputingPowerIndex, int, "Computing power index for cloud node 0", 1);
-
-    GADGET_PROPERTY(CloudNode1_IP, std::string, "IP for cloud node 1", "10.0.0.102");
-    GADGET_PROPERTY(CloudNode1_Port, std::string, "Gadgetron port for cloud node 1", "9002");
-    GADGET_PROPERTY(CloudNode1_XMLConfiguration, std::string, "Xml configuration file for cloud node 1", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY(CloudNode1_ComputingPowerIndex, int, "Computing power index for cloud node 1", 1);
-
-    GADGET_PROPERTY(CloudNode2_IP, std::string, "IP for cloud node 2", "10.0.0.103");
-    GADGET_PROPERTY(CloudNode2_Port, std::string, "Gadgetron port for cloud node 2", "9002");
-    GADGET_PROPERTY(CloudNode2_XMLConfiguration, std::string, "Xml configuration file for cloud node 2", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY(CloudNode2_ComputingPowerIndex, int, "Computing power index for cloud node 2", 1);
-
-    GADGET_PROPERTY(CloudNode3_IP, std::string, "IP for cloud node 3", "10.0.0.104");
-    GADGET_PROPERTY(CloudNode3_Port, std::string, "Gadgetron port for cloud node 3", "9002");
-    GADGET_PROPERTY(CloudNode3_XMLConfiguration, std::string, "Xml configuration file for cloud node 3", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY(CloudNode3_ComputingPowerIndex, int, "Computing power index for cloud node 3", 1);
-
-    GADGET_PROPERTY(CloudNode4_IP, std::string, "IP for cloud node 4", "10.0.0.105");
-    GADGET_PROPERTY(CloudNode4_Port, std::string, "Gadgetron port for cloud node 4", "9002");
-    GADGET_PROPERTY(CloudNode4_XMLConfiguration, std::string, "Xml configuration file for cloud node 4", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY(CloudNode4_ComputingPowerIndex, int, "Computing power index for cloud node 4", 1);
-
-    GADGET_PROPERTY(CloudNode5_IP, std::string, "IP for cloud node 5", "10.0.0.106");
-    GADGET_PROPERTY(CloudNode5_Port, std::string, "Gadgetron port for cloud node 5", "9002");
-    GADGET_PROPERTY(CloudNode5_XMLConfiguration, std::string, "Xml configuration file for cloud node 5", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY(CloudNode5_ComputingPowerIndex, int, "Computing power index for cloud node 5", 1);
-
-    GADGET_PROPERTY(CloudNode6_IP, std::string, "IP for cloud node 6", "10.0.0.107");
-    GADGET_PROPERTY(CloudNode6_Port, std::string, "Gadgetron port for cloud node 6", "9002");
-    GADGET_PROPERTY(CloudNode6_XMLConfiguration, std::string, "Xml configuration file for cloud node 6", "GT_Cartesian_CloudNode.xml");
-    GADGET_PROPERTY(CloudNode6_ComputingPowerIndex, int, "Computing power index for cloud node 6", 1);
 
     /// ------------------------------------------------------------------------------------
     /// recon job parameters
