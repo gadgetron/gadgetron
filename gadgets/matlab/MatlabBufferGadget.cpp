@@ -13,7 +13,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 
 	const char* fieldnames[2] = {"data","reference"};
 	auto reconArray = mxCreateStructArray(1,&nencoding_spaces,2,fieldnames);
-//auto reconArray = mxCreateCellArray(1,&nencoding_spaces);
+	//auto reconArray = mxCreateCellArray(1,&nencoding_spaces);
 
 	for (int i = 0; i <  recon_data->rbit_.size(); i++){
 		auto mxrecon = BufferToMatlabStruct(&recon_data->rbit_[i].data_);
@@ -75,9 +75,9 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	qlen = mxGetNumberOfElements(bufferQ);
 	GDEBUG("Buffer Queue size: %d \n", qlen);
 
-	IsmrmrdReconData output_data;
 	for (mwIndex idx = 0; idx <qlen; idx++){
 
+		IsmrmrdReconData output_data;
 		IsmrmrdReconBit bit;
 		bit.data_ = MatlabStructToBuffer(mxGetField(bufferQ,idx,"data"));
 
@@ -88,18 +88,18 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 			GDEBUG("Number of elements %i \n",bit.ref_.data_.get_number_of_elements());
 		}
 		output_data.rbit_.push_back(bit);
-	}
-
-
-
-
-	if (!output_data.rbit_.empty()){
 		auto m3 = new GadgetContainerMessage<IsmrmrdReconData>(output_data.rbit_);
 		if (this->next()->putq(m3) < 0){
 			GDEBUG("Failed to put Buffer message on queue\n");
 			return GADGET_FAIL;
 		}
+
 	}
+
+
+
+
+
 	mxDestroyArray(bufferQ);
 	mxDestroyArray(imageQ);
 	//mxDestroyArray(reconArray); //We're not supposed to delete this?
