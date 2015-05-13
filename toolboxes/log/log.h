@@ -8,6 +8,7 @@
 #include <sstream> //For deprecated macros
 
 #define GADGETRON_LOG_MASK_ENVIRONMENT "GADGETRON_LOG_MASK"
+#define GADGETRON_LOG_FILE_ENVIRONMENT "GADGETRON_LOG_FILE"
 
 namespace Gadgetron
 {

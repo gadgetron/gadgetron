@@ -9,27 +9,16 @@ if(WIN32)
 endif(WIN32)
 
 if (WIN32)
-    set(GT_DICOM_LIBRARIES
-        #z
-        ${DCMTK_dcmdata_LIBRARY}
-        ${DCMTK_oflog_LIBRARY}
-        ${DCMTK_ofstd_LIBRARY}
-        #m
-        #rt
-        #nsl
-        #pthread
-        )
+    set(GT_DICOM_LIBRARIES ${DCMTK_dcmdata_LIBRARY} ${DCMTK_oflog_LIBRARY} ${DCMTK_ofstd_LIBRARY})
 else (WIN32)
     set(GT_DICOM_LIBRARIES
-        z
         ${DCMTK_dcmdata_LIBRARY}
         ${DCMTK_oflog_LIBRARY}
         ${DCMTK_ofstd_LIBRARY}
-        m
-        #rt
-        #nsl
-        pthread
-        )
+        z m pthread)
+    if (APPLE)
+        list(APPEND GT_DICOM_LIBRARIES iconv)
+    endif (APPLE)
 endif (WIN32)
 
 # sanity check:
