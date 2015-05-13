@@ -78,6 +78,13 @@ int main(int argc, char** argv)
   std::cout << "  -- Python Support     : NO" << std::endl; 
 #endif
 
+#if defined USE_MATLAB
+  std::cout << "  -- Matlab Support     : YES" << std::endl;
+#else
+  std::cout << "  -- Matlab Support     : NO" << std::endl;
+#endif
+
+
 #if defined USE_CUDA
   std::cout << "  -- CUDA Support       : YES (" << GADGETRON_CUDA_NVCC_FLAGS << ")" << std::endl;
   int deviceCount = 0;

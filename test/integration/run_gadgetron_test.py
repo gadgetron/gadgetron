@@ -64,6 +64,12 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
     else:
         need_python_support = False
 
+    if config.has_option('REQUIREMENTS','matlab_support'):
+        need_matlab_support = config.getboolean('REQUIREMENTS','matlab_support')
+    else:
+        need_matlab_support = False
+
+
     if config.has_option('REQUIREMENTS','gpu_support'):
         need_gpu_support = config.getboolean('REQUIREMENTS','gpu_support')
     else:
@@ -103,6 +109,7 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
 
     has_python_support = False
     has_cuda_support = False
+    has_matlab_support = False
     system_memory = 1024 #MB
     number_of_gpus = 0
     gpu_memory = 256 #MB
@@ -112,6 +119,13 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
     if m:
         if m.group(1) == 'YES':
             has_python_support = True
+
+    p = re.compile('^[ \w]+-- Matlab Support     : ([A-Z]+)', re.MULTILINE)
+    m = p.search(info);
+    if m:
+        if m.group(1) == 'YES':
+            has_matlab_support = True
+
 
     p = re.compile('^[ \w]+-- CUDA Support[ ]+: ([A-Z]+)', re.MULTILINE)
     m = p.search(info);
@@ -153,11 +167,15 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
     if (need_python_support and (not has_python_support)):
         print "Test skipped because Python is not available"
         skipping_test = True
+    if (need_matlab_support and (not has_matlab_support)):
+        print "Test skipped because Matlab is not available"
+        skipping_test = True
 
     if skipping_test:
         print "System Requirements: Actual/Required"
         print "System Memory: " + str(system_memory) + "/" + str(need_system_memory)
         print "Python Support: " + str(has_python_support) + "/" + str(need_python_support)
+        print "Matlab Support: " + str(has_matlab_support) + "/" + str(need_matlab_support)
         print "CUDA Support: " + str(has_cuda_support and (number_of_gpus > 0)) + "/" + str(need_gpu_support)
         print "GPU Memory: " + str(gpu_memory) + "/" + str(need_gpu_memory)
 

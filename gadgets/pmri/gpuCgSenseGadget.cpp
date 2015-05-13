@@ -230,7 +230,7 @@ namespace Gadgetron{
     
     // Now pass on the reconstructed images
     //
-    put_frames_on_que(frames,rotations,j,cgresult.get(),channels);
+    put_frames_on_que(frames,rotations,j,cgresult.get());
     
     frame_counter_ += frames;
 

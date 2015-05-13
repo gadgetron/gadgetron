@@ -103,7 +103,6 @@ int gpuBufferSensePrepGadget::process(
 		throw std::runtime_error("Unsupported number of trajectory dimensions");
 	}
 	{
-		std::cout << "Buffer dims: ";
 		auto tmpdim = *buffer->data_.get_dimensions();
 		for (auto dim : tmpdim)
 			std::cout << dim << " ";
@@ -119,7 +118,6 @@ int gpuBufferSensePrepGadget::process(
 		reg_images->squeeze();
 
 		auto csm = estimate_b1_map<float,2>(reg_images.get());
-
 		*reg_images *= *csm;
 		auto combined = sum(reg_images.get(),reg_images->get_number_of_dimensions()-1);
 
@@ -164,9 +162,13 @@ int gpuBufferSensePrepGadget::process(
 
 	size_t traj_elements = job.tra_host_->get_number_of_elements();
 	auto traj_dims = *job.tra_host_->get_dimensions();
-	if (traj_elements%profiles_per_frame_)
-		throw std::runtime_error("Profiles per frame must be divisor of the total number of profiles");
+
 	size_t kpoints_per_frame = traj_dims[0]*profiles_per_frame_;
+	if (traj_elements%kpoints_per_frame){
+		std::stringstream ss;
+		ss << "Profiles per frame (" << profiles_per_frame_ << ") must be a divisor of total number of profiles (" << traj_elements/traj_dims[0] << ")";
+		throw std::runtime_error(ss.str());
+	}
 	std::vector<size_t> new_traj_dims ={kpoints_per_frame,traj_elements/kpoints_per_frame};
 
 	job.tra_host_->reshape(&new_traj_dims);
@@ -219,7 +221,6 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 		GDEBUG("Computing\n\n");
 		plan.compute(data,result,dcw,cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C);
 
-		write_nd_array(abs(result).get(),"reg.real");
 		return boost::shared_ptr<cuNDArray<float_complext>>(result);
 
 	} else { //No density compensation, we have to do iterative reconstruction.
@@ -234,8 +235,9 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuBufferSensePrepGadget::reconstr
 
 		E->set_domain_dimensions(&csm_dims);
 		cuCgSolver<float_complext> solver;
-		solver.set_max_iterations(200);
+		solver.set_max_iterations(0);
 		solver.set_encoding_operator(E);
+		solver.set_output_mode(cuCgSolver<float_complext>::OUTPUT_VERBOSE);
 		E->set_codomain_dimensions(data->get_dimensions().get());
 		E->preprocess(&flat_traj);
 		auto res = solver.solve(data);
