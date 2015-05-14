@@ -28,67 +28,65 @@ bool GtPlusRecon3DTGadget::readParameters()
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "------> GtPlusRecon3DTGadget parameters <------");
 
-        boost::shared_ptr<std::string> str = this->get_string_value("dim_5th");
-        para_.dim_5th_ = gtPlus_util_.getISMRMRDDimFromName(*str);
-        GDEBUG_CONDITION_STREAM(verboseMode_, "dim_5th_ is " << *str);
+        para_.dim_5th_ = gtPlus_util_.getISMRMRDDimFromName(dim_5th.value());
+        GDEBUG_CONDITION_STREAM(verboseMode_, "dim_5th_ is " << dim_5th.value());
 
-        str = this->get_string_value("workOrder_ShareDim");
-        para_.workOrder_ShareDim_ = gtPlus_util_.getISMRMRDDimFromName(*str);
-        GDEBUG_CONDITION_STREAM(verboseMode_, "workOrder_ShareDim_ is " << *str);
+        para_.workOrder_ShareDim_ = gtPlus_util_.getISMRMRDDimFromName(workOrder_ShareDim.value());
+        GDEBUG_CONDITION_STREAM(verboseMode_, "workOrder_ShareDim_ is " << workOrder_ShareDim.value());
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
-        para_.no_acceleration_averageall_ref_ = this->get_bool_value("no_acceleration_averageall_ref");
+        para_.no_acceleration_averageall_ref_ = no_acceleration_averageall_ref.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "no_acceleration_averageall_ref_ is " << para_.no_acceleration_averageall_ref_);
 
-        para_.no_acceleration_same_combinationcoeff_allN_ = this->get_bool_value("no_acceleration_same_combinationcoeff_allN");
+        para_.no_acceleration_same_combinationcoeff_allN_ = no_acceleration_same_combinationcoeff_allN.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "no_acceleration_same_combinationcoeff_allN_ is " << para_.no_acceleration_same_combinationcoeff_allN_);
 
-        para_.no_acceleration_whichN_combinationcoeff_ = this->get_int_value("no_acceleration_whichN_combinationcoeff");
+        para_.no_acceleration_whichN_combinationcoeff_ = no_acceleration_whichN_combinationcoeff.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "no_acceleration_whichN_combinationcoeff_ is " << para_.no_acceleration_whichN_combinationcoeff_);
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
-        para_.interleaved_same_combinationcoeff_allN_ = this->get_bool_value("interleaved_same_combinationcoeff_allN");
+        para_.interleaved_same_combinationcoeff_allN_ = interleaved_same_combinationcoeff_allN.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "interleaved_same_combinationcoeff_allN_ is " << para_.interleaved_same_combinationcoeff_allN_);
 
-        para_.interleaved_whichN_combinationcoeff_ = this->get_int_value("interleaved_whichN_combinationcoeff");
+        para_.interleaved_whichN_combinationcoeff_ = interleaved_whichN_combinationcoeff.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "interleaved_whichN_combinationcoeff_ is " << para_.interleaved_whichN_combinationcoeff_);
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
-        para_.embedded_averageall_ref_ = this->get_bool_value("embedded_averageall_ref");
+        para_.embedded_averageall_ref_ = embedded_averageall_ref.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_averageall_ref_ is " << para_.embedded_averageall_ref_);
 
-        para_.embedded_fullres_coilmap_ = this->get_bool_value("embedded_fullres_coilmap");
+        para_.embedded_fullres_coilmap_ = embedded_fullres_coilmap.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_fullres_coilmap_ is " << para_.embedded_fullres_coilmap_);
 
-        para_.embedded_same_combinationcoeff_allN_ = this->get_bool_value("embedded_same_combinationcoeff_allN");
+        para_.embedded_same_combinationcoeff_allN_ = embedded_same_combinationcoeff_allN.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_same_combinationcoeff_allN_ is " << para_.embedded_same_combinationcoeff_allN_);
 
-        para_.embedded_whichN_combinationcoeff_ = this->get_int_value("embedded_whichN_combinationcoeff");
+        para_.embedded_whichN_combinationcoeff_ = embedded_whichN_combinationcoeff.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_whichN_combinationcoeff_ is " << para_.embedded_whichN_combinationcoeff_);
 
-        para_.embedded_ref_fillback_ = this->get_bool_value("embedded_ref_fillback");
+        para_.embedded_ref_fillback_ = embedded_ref_fillback.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "embedded_ref_fillback_ is " << para_.embedded_ref_fillback_);
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
-        para_.separate_averageall_ref_ = this->get_bool_value("separate_averageall_ref");
+        para_.separate_averageall_ref_ = separate_averageall_ref.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "separate_averageall_ref_ is " << para_.separate_averageall_ref_);
 
-        para_.separate_fullres_coilmap_ = this->get_bool_value("separate_fullres_coilmap");
+        para_.separate_fullres_coilmap_ = separate_fullres_coilmap.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "separate_fullres_coilmap_ is " << para_.separate_fullres_coilmap_);
 
-        para_.separate_same_combinationcoeff_allN_ = this->get_bool_value("separate_same_combinationcoeff_allN");
+        para_.separate_same_combinationcoeff_allN_ = separate_same_combinationcoeff_allN.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "separate_same_combinationcoeff_allN_ is " << para_.separate_same_combinationcoeff_allN_);
 
-        para_.separate_whichN_combinationcoeff_ = this->get_int_value("separate_whichN_combinationcoeff");
+        para_.separate_whichN_combinationcoeff_ = separate_whichN_combinationcoeff.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "separate_whichN_combinationcoeff_ is " << para_.separate_whichN_combinationcoeff_);
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
-        para_.same_coil_compression_coeff_allN_ = this->get_bool_value("same_coil_compression_coeff_allN");
+        para_.same_coil_compression_coeff_allN_ = same_coil_compression_coeff_allN.value();
         GDEBUG_CONDITION_STREAM(verboseMode_, "same_coil_compression_coeff_allN_ is " << para_.same_coil_compression_coeff_allN_);
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");

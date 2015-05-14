@@ -78,6 +78,17 @@ public:
     /// whether to immediately pass the image to the next gadget
     bool pass_image_immediate_;
 
+    GADGET_PROPERTY(verboseMode, bool, "Whether to print more information", false);
+    GADGET_PROPERTY(TriggerChannel, bool, "Whether to trigger along channel", false);
+    GADGET_PROPERTY(TriggerSlice, bool, "Whether to trigger along slice", false);
+    GADGET_PROPERTY(TriggerE2, bool, "Whether to trigger along e2", false);
+    GADGET_PROPERTY(TriggerContrast, bool, "Whether to trigger along contrast", false);
+    GADGET_PROPERTY(TriggerPhase, bool, "Whether to trigger along phase", false);
+    GADGET_PROPERTY(TriggerRepetition, bool, "Whether to trigger along repetition", false);
+    GADGET_PROPERTY(TriggerSet, bool, "Whether to trigger along set", false);
+    GADGET_PROPERTY(TriggerAverage, bool, "Whether to trigger along average", false);
+    GADGET_PROPERTY(PassImageImmediately, bool, "Whether to pass image immediately", false);
+
 protected:
 
     virtual int process_config(ACE_Message_Block* mb);
