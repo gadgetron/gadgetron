@@ -32,4 +32,7 @@ namespace Gadgetron {
 	 */
 	template<class T> EXPORTHYPER void CSI_dftH(cuNDArray<complext<T> >* kspace, cuNDArray<complext<T> >* tspace, thrust::device_vector<T>* frequencies, T dte, T dtt);
 
+	template<class T> EXPORTHYPER boost::shared_ptr<cuNDArray<complext<T> > 	> calculate_frequency_calibration(cuNDArray<complext<T> >* time_track, thrust::device_vector<T>* frequencies,cuNDArray<complext<T> > * csm,T dtt,T dte);
+
+	template<class T> EXPORTHYPER void mult_freq(cuNDArray<complext<T> >* in_out, cuNDArray<complext<T> >* freqs, bool conjugate);
 }

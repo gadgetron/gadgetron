@@ -67,4 +67,5 @@ gtplus/T2W/meas_MID00057_T2w.dat: 46aa75c471a41c793006328a224a4001
 epi/epi_2d_out_20150406_sji.h5: bf73508d9730c478b04e22c2323d4805
 epi/meas_MID517_nih_ep2d_bold_fa60_FID82077.dat: 8790d64a101acdc7b6990dd414b14be6
 matlab/Kidney4cmSlice.h5: b2507b868f4a397d87e53bf86b1cf275
-matlab/Kidney4cmSlice_out.h5: dd8bddf0a8b750aa52c6354a449a3bdf 
+matlab/Kidney4cmSlice_out.h5: 6d49b8f947122cf321a12aa59ace0bab
+hyper/Kidney4cmSlice_sb_out.h5: 2b0a3debc4890dcc0fe71b5ecc66d40c

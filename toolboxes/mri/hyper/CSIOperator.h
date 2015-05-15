@@ -25,6 +25,9 @@ public:
 	void set_senseOp(boost::shared_ptr<linearOperator<cuNDArray<complext<T>>>> op){ senseOp = op;}
 	void set_frequencies(std::vector<T> & freq) { frequencies=thrust::device_vector<T>(freq.begin(),freq.end());
 	}
+	thrust::device_vector<T> get_frequencies(){
+		return frequencies;
+	}
 
 
 	T get_echotime(){ return dte_;}

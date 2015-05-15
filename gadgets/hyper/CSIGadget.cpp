@@ -120,7 +120,7 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 		}
 
 // Allocate encoding operator for non-Cartesian Sense
-		E_ = boost::make_shared< CSIOperator<float> >(1/bw->value, -dte->value);
+		E_ = boost::make_shared< CSIOperator<float> >(1/bw->value, dte->value);
 		E_->set_weight(mu_);
 
 		std::vector<float> freqs = frequencies.value();
