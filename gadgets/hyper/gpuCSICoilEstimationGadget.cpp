@@ -21,8 +21,6 @@
 namespace Gadgetron {
 
 gpuCSICoilEstimationGadget::gpuCSICoilEstimationGadget() {
-	set_parameter("kernel_width","5.5");
-	set_parameter("skip_lines","0");
 
 }
 
@@ -39,10 +37,11 @@ int gpuCSICoilEstimationGadget::process_config(ACE_Message_Block* mb) {
 		return GADGET_FAIL;
 	}
 	img_size = {h.encoding[0].reconSpace.matrixSize.x,h.encoding[0].reconSpace.matrixSize.y};
-	kernel_width = get_double_value("kernel_width");
+	kernel_width_ = kernel_width.value();
 
 	coils = h.acquisitionSystemInformation->receiverChannels;
-	skip_lines = get_int_value("skip_lines");
+	skip_lines_ = skip_lines.value();
+	return GADGET_OK;
 }
 
 int gpuCSICoilEstimationGadget::process(
@@ -53,7 +52,7 @@ int gpuCSICoilEstimationGadget::process(
 	auto senseData = cm1->getObjectPtr();
 
 	coils = bucket->data_.front().head_->getObjectPtr()->active_channels;
-	//GDEBUG("Active channels %i \n",coils);
+	GDEBUG("Active channels %i \n",coils);
 
 
 	{
@@ -63,15 +62,16 @@ int gpuCSICoilEstimationGadget::process(
 
 		std::tie(ho_data,ho_traj) = combine_data(bucket->data_);
 
-		if (skip_lines > 0){
+		if (skip_lines_ > 0){
 			auto cal_dims = *ho_data->get_dimensions();
-			cal_dims.back() = skip_lines;
+			cal_dims.back() = skip_lines_;
 			auto data_dims = *ho_data->get_dimensions();
-			data_dims.back() -= skip_lines;
+			data_dims.back() -= skip_lines_;
 
 
 			hoNDArray<float_complext> cal_view(cal_dims,(float_complext*) ho_data->get_data_ptr());
 			senseData->freq_calibration = boost::make_shared<cuNDArray<float_complext>>(cal_view);
+			senseData->freq_calibration->squeeze();
 			hoNDArray<float_complext> data_view(data_dims,(float_complext*)ho_data->get_data_ptr()+cal_view.get_number_of_elements());
 			senseData->data = boost::make_shared<cuNDArray<float_complext>>(data_view);
 		} else {
@@ -132,11 +132,13 @@ int gpuCSICoilEstimationGadget::process(
 
 	senseData->csm = calculate_CSM(ref_data.get(),ref_traj.get(),ref_dcw.get());
 
-	this->next()->putq(cm1);
-	//All important stuff has been taken from the bucket. Free it.
-	m1->release();
 
+	if (this->next()->putq(cm1) == GADGET_FAIL){
+		GERROR("Failed to put message on que\n");
+		return GADGET_FAIL;
+	}
 
+	return GADGET_OK;
 
 
 }
@@ -183,7 +185,7 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calcul
 
 	if (dcw) { //We have density compensation, so we can get away with gridding
 
-		cuNFFT_plan<float,2> plan(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width);
+		cuNFFT_plan<float,2> plan(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width_);
 		std::vector<size_t> csm_dims = img_size;
 		csm_dims.push_back(coils);
 		cuNDArray<float_complext> tmp(csm_dims);
@@ -202,7 +204,6 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calcul
 		GDEBUG("Computing\n\n");
 		plan.compute(&second_spiral,&tmp,&spiral_dcw,cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C);
 		auto tmp_abs = abs(&tmp);
-		write_nd_array(tmp_abs.get(),"images.real");
 
 		return estimate_b1_map<float,2>(&tmp);
 
@@ -212,13 +213,13 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calcul
 
 		auto E = boost::make_shared<cuNFFTOperator<float,2>>();
 
-		E->setup(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width);
+		E->setup(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width_);
 		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
 		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
 
 		E->set_domain_dimensions(&csm_dims);
 		cuCgSolver<float_complext> solver;
-		solver.set_max_iterations(200);
+		solver.set_max_iterations(20);
 		solver.set_encoding_operator(E);
 		std::vector<size_t> spiral_dims{data->get_size(0),data->get_size(1)}; //Trajectories, coils
 		cuNDArray<complext<float>> second_spiral(spiral_dims,data->get_data_ptr()+spiral_dims[0]*spiral_dims[1]*0);
@@ -229,7 +230,6 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calcul
 		auto tmp = solver.solve(&second_spiral);
 		auto tmp_abs = abs(tmp.get());
 
-		write_nd_array(tmp_abs.get(),"images2.real");
 
 		auto res = estimate_b1_map<float,2>(tmp.get());
 		//fill(res.get(),float_complext(1,0));

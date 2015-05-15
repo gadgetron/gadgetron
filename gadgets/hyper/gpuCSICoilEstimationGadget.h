@@ -36,9 +36,14 @@ protected:
     static std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<float >>> separate_traj_and_dcw(hoNDArray<float>*);
     std::vector<size_t> img_size;
     size_t coils;
-    float kernel_width;
 
-    unsigned int skip_lines;
+
+    GADGET_PROPERTY(kernel_width,float,"Kernel width for NFFT calculation",5.5);
+    GADGET_PROPERTY(skip_lines,unsigned int,"Calibration lines to skip",0);
+
+    float kernel_width_;
+
+    unsigned int skip_lines_;
 
 };
 
