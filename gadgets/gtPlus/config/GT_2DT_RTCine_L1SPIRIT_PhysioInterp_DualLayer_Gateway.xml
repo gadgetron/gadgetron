@@ -318,11 +318,6 @@
             <value>0.001</value>
         </property>
 
-        <property>
-            <name>csm_use_gpu</name>
-            <value>false</value>
-        </property>
-
         <!-- algorithm -->
         <property>
             <name>recon_algorithm</name>
@@ -360,10 +355,6 @@
             <name>grappa_calib_over_determine_ratio</name>
             <value>0</value>
         </property>
-        <property>
-            <name>grappa_use_gpu</name>
-            <value>false</value>
-        </property>
 
         <!-- parameters for ISMRMRD_SPIRIT -->
         <property>
@@ -381,10 +372,6 @@
         <property>
             <name>spirit_reg_lamda</name>
             <value>0.005</value>
-        </property>
-        <property>
-            <name>spirit_use_gpu</name>
-            <value>false</value>
         </property>
         <property>
             <name>spirit_calib_over_determine_ratio</name>
@@ -698,11 +685,6 @@
         </property>
 
         <property>
-            <name>cloudNodeFile</name>
-            <value>NHLBI_Cloud_2DT_DualLayer.txt</value>
-        </property>
-
-        <property>
             <name>performTiming</name>
             <value>true</value>
         </property>
@@ -743,36 +725,9 @@
         <!-- parameters for the cloud computation 
              The cloud should be defined as the following: CloudNodeX_IP/Port/XMLConfiguration etc.
         -->
-        <property>
-            <name>CloudComputing</name>
-            <value>true</value>
-        </property>
-
-        <property>
-            <name>CloudSize</name>
-            <value>1</value>
-        </property>
-
-        <!-- node 0 -->
-        <property>
-            <name>CloudNode0_IP</name>
-            <value>localhost</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_Port</name>
-            <value>9003</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_XMLConfiguration</name>
-            <value>GtProg_2DT_Cartesian_FirstLayer_CloudNode.xml</value>
-        </property>
-
-        <property>
-            <name>CloudNode0_ComputingPowerIndex</name>
-            <value>1</value>
-        </property>
+        <property><name>CloudComputing</name><value>true</value></property>
+        <property><name>cloudNodeFile</name><value>myCloud_2DT_DualLayer.txt</value></property>
+        <property><name>CloudNodeXMLConfiguration</name><value>Gt_2DT_Cartesian_FirstLayer_CloudNode.xml</value></property>
 
     </gadget>
 

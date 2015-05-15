@@ -124,6 +124,109 @@ public:
     // whether to perform timing
     bool performTiming_;
 
+    GADGET_PROPERTY(verboseMode, bool, "Whether to print more information", false);
+    GADGET_PROPERTY(debugFolder, std::string, "If set, the debug output will be written out", "");
+    GADGET_PROPERTY(debugFolder2, std::string, "If set, the debug output will be written out", "");
+    GADGET_PROPERTY(performTiming, bool, "Whether to perform timing on some computational steps", false);
+
+    /// ------------------------------------------------------------------------------------
+    /// kspace filter parameters
+    GADGET_PROPERTY_LIMITS(filterRO, std::string, "Kspace filter for RO dimension", "ISMRMRD_FILTER_GAUSSIAN",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterRO_sigma, double, "Filter sigma for gaussian for RO dimension", 1.0);
+    GADGET_PROPERTY(filterRO_width, double, "Filter width for tapered hanning for RO dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterE1, std::string, "Kspace filter for E1 dimension", "ISMRMRD_FILTER_GAUSSIAN",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterE1_sigma, double, "Filter sigma for gaussian for E1 dimension", 1.0);
+    GADGET_PROPERTY(filterE1_width, double, "Filter width for tapered hanning for E1 dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterE2, std::string, "Kspace filter for E2 dimension", "ISMRMRD_FILTER_GAUSSIAN",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterE2_sigma, double, "Filter sigma for gaussian for E2 dimension", 1.0);
+    GADGET_PROPERTY(filterE2_width, double, "Filter width for tapered hanning for E2 dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterRefRO, std::string, "Kspace filter for ref data for RO dimension", "ISMRMRD_FILTER_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterRefRO_sigma, double, "Filter sigma for gaussian for RO dimension", 1.5);
+    GADGET_PROPERTY(filterRefRO_width, double, "Filter width for tapered hanning for RO dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterRefE1, std::string, "Kspace filter for ref data for E1 dimension", "ISMRMRD_FILTER_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterRefE1_sigma, double, "Filter sigma for gaussian for E1 dimension", 1.5);
+    GADGET_PROPERTY(filterRefE1_width, double, "Filter width for tapered hanning for E1 dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterRefE2, std::string, "Kspace filter for ref data for E2 dimension", "ISMRMRD_FILTER_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterRefE2_sigma, double, "Filter sigma for gaussian for E2 dimension", 1.5);
+    GADGET_PROPERTY(filterRefE2_width, double, "Filter width for tapered hanning for E2 dimension", 0.15);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterPartialFourierRO, std::string, "Kspace filter for partial fourier for RO dimension", "ISMRMRD_FILTER_TAPERED_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterPartialFourierRO_sigma, double, "Partial fourier filter sigma for gaussian for RO dimension", 1.5);
+    GADGET_PROPERTY(filterPartialFourierRO_width, double, "Partial fourier filter width for tapered hanning for RO dimension", 0.15);
+    GADGET_PROPERTY(filterPartialFourierRO_densityComp, bool, "Whether to apply density compensation for RO dimension", false);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterPartialFourierE1, std::string, "Kspace filter for partial fourier for E1 dimension", "ISMRMRD_FILTER_TAPERED_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterPartialFourierE1_sigma, double, "Partial fourier filter sigma for gaussian for E1 dimension", 1.5);
+    GADGET_PROPERTY(filterPartialFourierE1_width, double, "Partial fourier filter width for tapered hanning for E1 dimension", 0.15);
+    GADGET_PROPERTY(filterPartialFourierE1_densityComp, bool, "Whether to apply density compensation for E1 dimension", false);
+
+    // ------------------------------------------------------------------------------------
+
+    GADGET_PROPERTY_LIMITS(filterPartialFourierE2, std::string, "Kspace filter for partial fourier for E2 dimension", "ISMRMRD_FILTER_TAPERED_HANNING",
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_FILTER_GAUSSIAN", "ISMRMRD_FILTER_HANNING",
+        "ISMRMRD_FILTER_TUKEY", "ISMRMRD_FILTER_TAPERED_HANNING", "ISMRMRD_FILTER_NONE");
+
+    GADGET_PROPERTY(filterPartialFourierE2_sigma, double, "Partial fourier filter sigma for gaussian for E2 dimension", 1.5);
+    GADGET_PROPERTY(filterPartialFourierE2_width, double, "Partial fourier filter width for tapered hanning for E2 dimension", 0.15);
+    GADGET_PROPERTY(filterPartialFourierE2_densityComp, bool, "Whether to apply density compensation for E2 dimension", false);
+
+    // ------------------------------------------------------------------------------------
+
+    /// cloud computing
+    GADGET_PROPERTY(CloudComputing, bool, "Whether to use cloud", false);
+    GADGET_PROPERTY(cloudNodeFile, std::string, "Cloud node file", "my_Cloud.txt");
+    GADGET_PROPERTY(CloudNodeXMLConfiguration, std::string, "Cloud node xml configuration file when using cloud bus", "GT_Cartesian_CloudNode.xml");
+
+    /// ------------------------------------------------------------------------------------
+    /// recon job parameters
+    GADGET_PROPERTY(job_split_by_S, bool, "Every S leads to a recon job", false);
+    GADGET_PROPERTY(job_num_of_N, int, "Recon job size along N", 32);
+    GADGET_PROPERTY(job_max_Megabytes, int, "Maximal recon job size in MegaBytes", 2048);
+    GADGET_PROPERTY(job_overlap, int, "Recon job overlap size", 2);
+
 protected:
 
     // --------------------------------------------------

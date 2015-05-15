@@ -77,6 +77,11 @@ public:
     // whether to perform timing
     bool performTiming_;
 
+    GADGET_PROPERTY(image_series_num, int, "Image series number", 100);
+    GADGET_PROPERTY(verboseMode, bool, "Whether to print more information", false);
+    GADGET_PROPERTY(debugFolder, std::string, "If set, the debug output will be written out", "");
+    GADGET_PROPERTY(performTiming, bool, "Whether to perform timing on some computational steps", false);
+
 protected:
 
     // encoding space size
