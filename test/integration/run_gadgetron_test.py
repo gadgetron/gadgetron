@@ -402,6 +402,9 @@ def main():
         if os.environ.get("USER", None) is not None:
             myenv["USER"] = os.environ["USER"]
             
+        if os.environ.get("HOME", None) is not None:
+            myenv["HOME"] = os.environ["HOME"]
+            
         myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin" + ":" + myenv["GADGETRON_HOME"] + "/bin:/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
 
     myenv["ACE_DEBUG"] = "1"
