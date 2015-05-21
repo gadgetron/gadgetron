@@ -678,21 +678,6 @@ public:
     // data: in image domain, at least 4D [RO E1 E2 CHA], the coil map will be estimated for every 2D kspace [RO E1 CHA] across E2
     bool coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=7, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3, bool true3D=false);
 
-    // the Souheil method
-    // data: [RO E1 CHA], only 3D array
-    // these functions are using 2D data correlation matrix
-    bool coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
-
-    // data: [RO E1 E2 CHA], this functions uses true 3D data correlation matrix
-    bool coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
-
-    // the Souheil iteration method
-    // data: [RO E1 CHA], only 3D array
-    bool coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t iterNum, typename realType<T>::Type thres);
-
-    // data: [RO E1 E2 CHA], true 3D coil map estimation
-    bool coilMap3DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t iterNum, typename realType<T>::Type thres);
-
     // sum of square coil combination
     // data: in image domain, at least 3D [RO E1 CHA]
     bool sumOfSquare(const hoNDArray<T>& data, hoNDArray<T>& sos);
