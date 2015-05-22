@@ -687,7 +687,7 @@
 
         <property>
             <name>verboseMode</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- parameters for system acquisition -->
