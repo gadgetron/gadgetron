@@ -555,7 +555,7 @@ void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
 
             Gadgetron::multiply(data, R, coilMap);
 
-            Gadgetron::conv2(coilMap, ker, coilMapConv);
+            Gadgetron::conv3(coilMap, ker, coilMapConv);
 
             Gadgetron::multiplyConj(coilMapConv, coilMapConv, D);
 
