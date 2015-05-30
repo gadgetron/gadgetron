@@ -158,9 +158,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
   if (c.cloudBus) {
     GINFO("Starting cloudBus: %s:%d\n", 
-	  c.cloudBus->multiCastAddress.c_str(), c.cloudBus->port);
-    Gadgetron::CloudBus::set_mcast_address(c.cloudBus->multiCastAddress.c_str());
-    Gadgetron::CloudBus::set_mcast_port(c.cloudBus->port);
+	  c.cloudBus->relayAddress.c_str(), c.cloudBus->port);
+    Gadgetron::CloudBus::set_relay_address(c.cloudBus->relayAddress.c_str());
+    Gadgetron::CloudBus::set_relay_port(c.cloudBus->port);
     Gadgetron::CloudBus::set_gadgetron_port(std::atoi(port_no));
     Gadgetron::CloudBus* cb = Gadgetron::CloudBus::instance();//This actually starts the bus.
     gadget_parameters["using_cloudbus"] = std::string("true"); //This is our message to the Gadgets that we have activated the bus

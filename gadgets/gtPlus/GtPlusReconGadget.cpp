@@ -496,7 +496,7 @@ namespace Gadgetron
 
         if (this->using_cloudbus.value() && has_cloud_node_xml_configuration) {
             std::vector<GadgetronNodeInfo> nodes;
-            CloudBus::instance()->get_node_info(nodes);
+            //CloudBus::instance()->get_node_info(nodes);
 
             if (nodes.size()>0)
             {
