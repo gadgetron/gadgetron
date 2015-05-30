@@ -24,8 +24,17 @@ target_link_libraries(gadgetron_cloudbus
 		     gadgetron_toolbox_log
                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 
+add_executable(gadgetron_cloudbus_relay cloudbus_relay.cpp)
+
+target_link_libraries(gadgetron_cloudbus_relay 
+                     gadgetron_toolbox_cloudbus 
+		     gadgetron_toolbox_log
+                     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
+
+
 install(TARGETS gadgetron_toolbox_cloudbus DESTINATION lib COMPONENT main)
 install(TARGETS gadgetron_cloudbus DESTINATION bin COMPONENT main)
+install(TARGETS gadgetron_cloudbus_relay DESTINATION bin COMPONENT main)
 
 install(FILES 
   CloudBus.h

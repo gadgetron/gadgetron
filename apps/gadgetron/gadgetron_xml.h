@@ -75,7 +75,7 @@ namespace GadgetronXML
 
   struct CloudBus
   {
-    std::string multiCastAddress;
+    std::string relayAddress;
     unsigned int port;
   };
 
