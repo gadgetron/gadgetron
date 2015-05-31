@@ -711,7 +711,7 @@
         </property>
         <property>
             <name>job_num_of_N</name>
-            <value>64</value>
+            <value>16</value>
         </property>
         <property>
             <name>job_max_Megabytes</name>
