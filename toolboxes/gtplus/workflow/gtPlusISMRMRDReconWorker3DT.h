@@ -920,8 +920,15 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
 
             if ( performTiming_ ) { gt_timer2_.start("average along N ... "); }
             hoNDArray<T> aveAll;
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(refRecon, aveAll));
-            aveAll.squeeze();
+            if (refRecon.get_size(4) > 1)
+            {
+                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(refRecon, aveAll));
+                aveAll.squeeze();
+            }
+            else
+            {
+                aveAll.create(refRecon.get_size(0), refRecon.get_size(1), refRecon.get_size(2), refRecon.get_size(3), refRecon.begin());
+            }
             if ( performTiming_ ) { gt_timer2_.stop(); }
 
             if ( performTiming_ ) { gt_timer2_.start("compute coil compression coefficients ... "); }
@@ -973,6 +980,8 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                         workOrder3DT->data_ = data_dst_;
                         if ( performTiming_ ) { gt_timer3_.stop(); }
 
+                        data_dst_.clear();
+
                         //if ( performTiming_ ) { gt_timer2_.stop(); }
                     }
 
@@ -981,6 +990,8 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                         //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeff, ref_dst_, true));
                         gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeffRef, ref_dst_, true);
                         workOrder3DT->ref_ = ref_dst_;
+
+                        ref_dst_.clear();
                         //if ( performTiming_ ) { gt_timer2_.stop(); }
                     }
 
@@ -1049,8 +1060,15 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                 if ( workOrder3DT->same_coil_compression_coeff_allN_ )
                 {
                     hoNDArray<T> aveAll;
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(workOrder3DT->ref_recon_, aveAll));
-                    aveAll.squeeze();
+                    if (workOrder3DT->ref_recon_.get_size(4) > 1)
+                    {
+                        GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(workOrder3DT->ref_recon_, aveAll));
+                        aveAll.squeeze();
+                    }
+                    else
+                    {
+                        aveAll.create(RO, E1, E2, srcCHA, workOrder3DT->ref_recon_.begin());
+                    }
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(aveAll, debugFolder_+"aveAll"); }
 
                     hoMatrix<T> coeff, eigenValues;
