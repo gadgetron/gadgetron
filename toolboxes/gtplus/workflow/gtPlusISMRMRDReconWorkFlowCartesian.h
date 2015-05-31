@@ -1151,7 +1151,11 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
         bool has_recon_time_stamp_second = false;
         bool has_recon_physio_time_stamp_second = false;
 
+        size_t numOfRecon = dimSize[9] * dimSize[8] * dimSize[7] * dimSize[6] * dimSize[5];
+
         // call up the recon
+        size_t num_recon = 0;
+
         size_t dim9, dim8, dim7, dim6, dim5, dim4, dim3, dim2;
         for ( dim9=0; dim9<dimSize[9]; dim9++ )
         {
@@ -1371,6 +1375,17 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
                                 gt_exporter_.exportArray(workOrder_->time_stamp_, debugFolder_+"workOrder_time_stamp");
                                 gt_exporter_.exportArray(workOrder_->physio_time_stamp_, debugFolder_+"workOrder_physio_time_stamp");
                                 gt_exporter_.exportArrayComplex(workOrder_->ref_, debugFolder_+"workOrder_ref");
+                            }
+
+                            // ---------------------------
+                            // clean the input array
+                            // ---------------------------
+                            num_recon++;
+
+                            if (num_recon == numOfRecon)
+                            {
+                                this->data_->clear();
+                                this->ref_->clear();
                             }
 
                             // ---------------------------
