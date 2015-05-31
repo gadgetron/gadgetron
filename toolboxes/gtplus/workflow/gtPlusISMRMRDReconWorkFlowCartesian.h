@@ -1021,6 +1021,8 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
         size_t dd;
 
         // find the dimension size for data and ref
+        size_t E2 = data_->get_size(4);
+
         std::vector<size_t> dimSize(dims.size());
         std::vector<size_t> dimSizeRef(dims.size(), 1);
         size_t indChannelDim = 2;
@@ -1382,7 +1384,7 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
                             // ---------------------------
                             num_recon++;
 
-                            if (num_recon == numOfRecon)
+                            if (num_recon == numOfRecon && E2>1)
                             {
                                 this->data_->clear();
                                 this->ref_->clear();
