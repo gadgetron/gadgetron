@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
-        xmlns="http://gadgetron.sf.net/gadgetron"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                              xmlns="http://gadgetron.sf.net/gadgetron"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <!--
        _____              _____     _____   ______   _______   _____     ____    _   _ 
@@ -81,7 +81,7 @@
 
         <property>
             <name>noacceleration_triggerDim2</name>
-            <value>DIM_Repetition</value>
+            <value>DIM_NONE</value>
         </property>
 
         <property>
@@ -260,7 +260,7 @@
 
         <property>
             <name>coil_compression_num_modesKept</name>
-            <value>-1</value>
+            <value>10</value>
         </property>
 
         <!-- parameters for coil map estimation 
@@ -307,7 +307,7 @@
 
         <property>
             <name>recon_kspace_needed</name>
-            <value>false</value>
+            <value>true</value>
         </property>
 
         <property>
@@ -711,7 +711,7 @@
         </property>
         <property>
             <name>job_num_of_N</name>
-            <value>16</value>
+            <value>12</value>
         </property>
         <property>
             <name>job_max_Megabytes</name>
@@ -729,9 +729,18 @@
         <!-- parameters for the cloud computation 
              The cloud should be defined as the following: CloudNodeX_IP/Port/XMLConfiguration etc.
         -->
-        <property><name>CloudComputing</name><value>false</value></property>
-        <property><name>cloudNodeFile</name><value>myCloud_3DT.txt</value></property>
-        <property><name>CloudNodeXMLConfiguration</name><value>GT_3DT_Cartesian_CloudNode.xml</value></property>
+        <property>
+            <name>CloudComputing</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>cloudNodeFile</name>
+            <value>myCloud_3DT.txt</value>
+        </property>
+        <property>
+            <name>CloudNodeXMLConfiguration</name>
+            <value>GT_3DT_Cartesian_CloudNode.xml</value>
+        </property>
 
     </gadget>
 
