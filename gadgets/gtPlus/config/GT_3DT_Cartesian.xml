@@ -76,12 +76,12 @@
         <!-- No acceleration mode -->
         <property>
             <name>noacceleration_triggerDim1</name>
-            <value>DIM_Encoding2</value>
+            <value>DIM_NONE</value>
         </property>
 
         <property>
             <name>noacceleration_triggerDim2</name>
-            <value>DIM_Slice</value>
+            <value>DIM_Repetition</value>
         </property>
 
         <property>
@@ -216,7 +216,7 @@
         </property>
         <property>
             <name>separate_fullres_coilmap</name>
-            <value>true</value>
+            <value>false</value>
         </property>
         <property>
             <name>separate_same_combinationcoeff_allN</name>
@@ -272,7 +272,7 @@
         -->
         <property>
             <name>coil_map_algorithm</name>
-            <value>ISMRMRD_SOUHEIL_ITER</value>
+            <value>ISMRMRD_SOUHEIL</value>
         </property>
         <property>
             <name>csm_kSize</name>
@@ -286,7 +286,7 @@
 
         <property>
             <name>csm_true_3D</name>
-            <value>false</value>
+            <value>true</value>
         </property>
 
         <property>
@@ -695,7 +695,7 @@
 
         <property>
             <name>verboseMode</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- parameters for system acquisition -->

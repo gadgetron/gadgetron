@@ -1114,7 +1114,7 @@ namespace Gadgetron
         // find the center partition
         if ( E2 > 1 )
         {
-            size_t midE2 = E2/2;
+            long long midE2 = E2/2;
             size_t offset = images->get_offset(slc, midE2, con, phs, rep, set, 0, ave);
 
             while ( std::abs(imageHeader.slice_dir[0])<1e-6 && std::abs(imageHeader.slice_dir[1])<1e-6 && std::abs(imageHeader.slice_dir[2])<1e-6 )
@@ -1140,9 +1140,10 @@ namespace Gadgetron
 
             // comput slice postion vector for this partition
             float posVecCurr[3];
-            posVecCurr[0] = (float)(posVec[0] + aSpacing_[2]*sliceVec[0]*(e2-midE2+0.5f));
-            posVecCurr[1] = (float)(posVec[1] + aSpacing_[2]*sliceVec[1]*(e2-midE2+0.5f));
-            posVecCurr[2] = (float)(posVec[2] + aSpacing_[2]*sliceVec[2]*(e2-midE2+0.5f));
+            float e2_offset = (float)e2 - (float)midE2 + 0.5f;
+            posVecCurr[0] = (float)(posVec[0] + aSpacing_[2] * sliceVec[0] * e2_offset);
+            posVecCurr[1] = (float)(posVec[1] + aSpacing_[2] * sliceVec[1] * e2_offset);
+            posVecCurr[2] = (float)(posVec[2] + aSpacing_[2] * sliceVec[2] * e2_offset);
 
             imageHeader.position[0] = posVecCurr[0];
             imageHeader.position[1] = posVecCurr[1];
