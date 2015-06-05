@@ -39,6 +39,7 @@ int gpuLALMSenseGadget::process_config( ACE_Message_Block* mb )
 	damping_ = damping.value();
 	use_preconditioner_ = use_preconditioner.value();
 
+	tau_ = tau.value();
 	// Get the Ismrmrd header
 	//
 	ISMRMRD::IsmrmrdHeader h;
@@ -79,6 +80,7 @@ int gpuLALMSenseGadget::process_config( ACE_Message_Block* mb )
 
 		solver_.set_alpha(huber_value_);
 		solver_.set_damping(damping_);
+		solver_.set_tau(tau_);
 		// Add "TV" regularization
 		//
 

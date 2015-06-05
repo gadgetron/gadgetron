@@ -37,6 +37,7 @@ namespace Gadgetron{
     GADGET_PROPERTY(number_of_cg_iterations, int, "Number of conjugate gradient iterations", 10);
     GADGET_PROPERTY(mu, float, "Mu regularization parameter", 1.0);
     GADGET_PROPERTY(lambda, float, "Lambda regularization parameter", 2.0);
+    GADGET_PROPERTY(lambdaT,float,"Relative lambda in the temporal direction",1.0);
     GADGET_PROPERTY(gamma, float, "Gamma regularization parameter", 0.0);
     GADGET_PROPERTY(alpha, float, "Alpha regularization parameter", 0.5);
     GADGET_PROPERTY(is_cyclic, bool, "Is cyclic", true);
@@ -51,6 +52,7 @@ namespace Gadgetron{
     double cg_limit_;
     double mu_;
     double lambda_;
+    double lambdaT_;
     double alpha_;
     double gamma_;
     unsigned int rotations_to_discard_;

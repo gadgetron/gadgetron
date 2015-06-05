@@ -36,6 +36,8 @@ template<class T> __global__ void timeswitch_kernel3D(T* data, size_t nelements)
 }
 
 template<class T> void Gadgetron::timeswitch1D(cuNDArray<complext<T> >* inout){
+	if (inout->get_size(0) > cudaDeviceManager::Instance()->max_blockdim())
+		return timeswitch(inout,0);
 	dim3 dimBlock(inout->get_size(0));
 	size_t max_grid = cudaDeviceManager::Instance()->max_griddim();
 	size_t nelements = inout->get_number_of_elements();
@@ -46,6 +48,11 @@ template<class T> void Gadgetron::timeswitch1D(cuNDArray<complext<T> >* inout){
 }
 
 template<class T> void Gadgetron::timeswitch2D(cuNDArray<complext<T> >* inout){
+	if (inout->get_size(0) > cudaDeviceManager::Instance()->max_blockdim()){
+		timeswitch(inout,0);
+		timeswitch(inout,1);
+		return;
+	}
 	dim3 dimBlock(inout->get_size(0));
 	size_t max_grid = cudaDeviceManager::Instance()->max_griddim();
 	size_t nelements = inout->get_number_of_elements();
@@ -58,6 +65,12 @@ template<class T> void Gadgetron::timeswitch2D(cuNDArray<complext<T> >* inout){
 
 
 template<class T> void Gadgetron::timeswitch3D(cuNDArray<complext<T> >* inout){
+	if (inout->get_size(0) > cudaDeviceManager::Instance()->max_blockdim()){
+		timeswitch(inout,0);
+		timeswitch(inout,1);
+		timeswitch(inout,2);
+		return;
+	}
 	dim3 dimBlock(inout->get_size(0));
 	size_t max_grid = cudaDeviceManager::Instance()->max_griddim();
 	size_t nelements = inout->get_number_of_elements();

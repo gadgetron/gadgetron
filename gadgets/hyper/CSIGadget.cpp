@@ -174,7 +174,7 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 
 		//solver_.add_regularization_group_operator(dZ);
 		solver_.add_group();
-
+/*
 		auto W = boost::make_shared<cuDWTOperator<float_complext,3>>();
 		W->set_domain_dimensions(&img_dims_);
 		W->set_codomain_dimensions(&img_dims_);
@@ -188,6 +188,7 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 		W2->set_weight(2*mu_);
 		solver_.add_regularization_operator(W);
 		solver_.add_regularization_operator(W2);
+		*/
 		// Setup solver
 		solver_.set_encoding_operator( E_ );        // encoding matrix
 		solver_.set_max_outer_iterations( number_of_sb_iterations_ );
@@ -215,6 +216,10 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 
 	auto traj = m1->getObjectPtr()->traj;
 
+	auto trajdims2 = *traj->get_dimensions();
+	trajdims2.back() = 1;
+	//Extract initial trajectory
+	cuNDArray<floatd2> traj2(trajdims2,traj->get_data_ptr());
 
 	auto data = m1->getObjectPtr()->data;
 	auto csm =m1->getObjectPtr()->csm;
@@ -222,6 +227,8 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 	//dcw.reset();
 	auto permutations = std::vector<size_t>{0,2,1};
 	data= permute(data.get(),&permutations);
+
+
 
 	if (dcw)
 		sqrt_inplace(dcw.get());
@@ -232,6 +239,7 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 
 	std::vector<size_t> sense_dims = *data->get_dimensions();
 	sense_dims[1] = img_dims_[2];
+
 
 
 	S_->set_domain_dimensions(&img_dims_);
@@ -253,7 +261,7 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 	S_->set_csm(csm);
 	S_->set_dcw(dcw);
 	S_->setup( matrix_size_, matrix_size_os_, kernel_width_ );
-	S_->preprocess(traj.get());
+	S_->preprocess(&traj2);
 
 	GDEBUG("Setup done, solving....\n");
 	/*

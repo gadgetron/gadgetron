@@ -65,7 +65,6 @@ namespace Gadgetron{
     GDEBUG("NoiseAdjustGadget::pass_nonconformant_data_ is %d\n", pass_nonconformant_data_);
 
     noise_dwell_time_us_preset_ = noise_dwell_time_us_preset.value();
-
     ISMRMRD::deserialize(mb->rd_ptr(),current_ismrmrd_header_);
     
     if ( current_ismrmrd_header_.acquisitionSystemInformation ) {

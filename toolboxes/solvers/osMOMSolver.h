@@ -128,37 +128,43 @@ public:
 				if (i ==0 && isubset == 0)
 					step_size = _alpha*nrm2(x)/this->encoding_operator_->get_number_of_subsets();
 
+
+				for (auto op : regularization_operators){
+					/*
+									for (auto i = 0u; i < reg_steps_; i++){
+										op->gradient(x,&tmp_image);
+										tmp_image *= REAL(1)/nrm2(&tmp_image);
+										axpy(-step_size*op->get_weight(),&tmp_image,x);
+									}
+					 */
+
+
+					std::cout << "Reg: " << op->magnitude(x) << std::endl;
+
+									tmp_image /= nrm2(&tmp_image);
+									auto reg_val = op->magnitude(x);
+									std::cout << "Reg val: " << reg_val << std::endl;
+									ARRAY_TYPE y = *x;
+									axpy(-kappa_int,&tmp_image,&y);
+
+
+									while(op->magnitude(&y) > reg_val){
+
+										kappa_int /= 2;
+										axpy(kappa_int,&tmp_image,&y);
+										std::cout << "Kappa: " << kappa_int << std::endl;
+									}
+
+									reg_val = op->magnitude(&y);
+					 *x = y;
+
+				}
+
 				//axpy(REAL(_beta),&tmp_image,x);
 				if (non_negativity_){
 					clamp_min(x,REAL(0));
 				}
 
-				for (auto op : regularization_operators){
-					/*
-					for (auto i = 0u; i < reg_steps_; i++){
-						op->gradient(x,&tmp_image);
-						tmp_image *= REAL(1)/nrm2(&tmp_image);
-						axpy(-step_size*op->get_weight(),&tmp_image,x);
-					}
-					 */
-					op->gradient(x,&tmp_image);
-					tmp_image /= nrm2(&tmp_image);
-					auto reg_val = op->magnitude(x);
-					std::cout << "Reg val: " << reg_val << std::endl;
-					ARRAY_TYPE y = *x;
-					axpy(-kappa_int,&tmp_image,&y);
-
-
-					while(op->magnitude(&y) > reg_val){
-
-						kappa_int /= 2;
-						axpy(kappa_int,&tmp_image,&y);
-						std::cout << "Kappa: " << kappa_int << std::endl;
-					}
-					reg_val = op->magnitude(&y);
-					*x = y;
-
-				}
 
 				*z = *x;
 				*z *= 1+(told-1)/t;

@@ -223,6 +223,12 @@ namespace Gadgetron{
       }
     }
 
+    virtual void clear(){
+    	operators_.clear();
+    	offsets_.clear();
+    	num_elements_ = 0;
+    }
+
   protected:
     std::vector< boost::shared_ptr< linearOperator<ARRAY_TYPE> > > operators_;
     std::vector<size_t> offsets_;
