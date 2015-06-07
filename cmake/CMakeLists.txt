@@ -8,6 +8,7 @@ FindIsmrmrd.cmake
 FindGMatlab.cmake
 FindDCMTK.cmake
 FindMKL.cmake
+FindPLplot.cmake
 DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
 
 if (WIN32)
