@@ -63,6 +63,7 @@ set( config_files
     config/GT_2DT_Cartesian_DualLayer_Gateway_SPIRIT.xml
     config/GT_2DT_Cartesian_FirstLayer_CloudNode.xml
     config/GT_2DT_Cartesian_GFactor.xml
+    config/GT_2DT_Cartesian_GFactor_NoiseStd.xml
     config/GT_2DT_Cartesian_ImageTrigger_Dicom.xml
     config/GT_2DT_Cartesian_L1SPIRIT.xml
     config/GT_2DT_Cartesian_PseudoReplica_SNRUnitRecon.xml

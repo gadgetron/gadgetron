@@ -8,6 +8,9 @@
 #include <stack>
 #include <cmath>
 
+#include "plConfig.h"
+#include "plplot.h"
+
 namespace Gadgetron
 {
 
@@ -436,5 +439,178 @@ template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<float> >& x,
 
 template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<double> >& x, const std::vector<hoNDArray<double> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend,
     size_t xsize, size_t ysize, bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+
+// ---------------------------------------------------
+
+template <typename T> 
+bool plotNoiseStandardDeviation(const hoNDArray< std::complex<T> >& m, const std::vector<std::string>& coilStrings,
+                    const std::string& xlabel, const std::string& ylabel, const std::string& title,
+                    size_t xsize, size_t ysize, bool trueColor,
+                    hoNDArray<float>& plotIm)
+{
+    try
+    {
+        size_t CHA = m.get_size(0);
+        GADGET_CHECK_RETURN_FALSE(coilStrings.size() == CHA);
+
+        hoNDArray<double> xd, yd, yd2;
+
+        xd.create(CHA);
+        yd.create(CHA);
+
+        size_t c;
+        for (c = 0; c < CHA; c++)
+        {
+            xd(c) = c+1;
+            yd(c) = std::sqrt( std::abs(m(c, c)) );
+        }
+
+        double maxY = Gadgetron::max(&yd);
+
+        yd2 = yd;
+        std::sort(yd2.begin(), yd2.end());
+        double medY = yd2(CHA / 2);
+
+        double medRange = 0.2;
+
+        if (maxY < medY*(1 + medRange))
+        {
+            maxY = medY*(1 + medRange);
+        }
+
+        hoNDArray<unsigned char> im;
+        im.create(3, xsize, ysize);
+        Gadgetron::clear(im);
+
+        plsdev("mem");
+
+        plsmem(im.get_size(1), im.get_size(2), im.begin());
+
+        plinit();
+        plfont(2);
+        pladv(0);
+        plvpor(0.11, 0.75, 0.1, 0.9);
+
+        plwind(0, CHA+1, 0, maxY*1.05);
+
+        plcol0(15);
+        plbox("bcnst", 0.0, 0, "bcnstv", 0.0, 0);
+
+        std::string gly;
+        getPlotGlyph(25, gly); // circle
+        plstring(CHA, xd.begin(), yd.begin(), gly.c_str());
+
+        // draw the median line
+        pllsty(1);
+
+        double px[2], py[2];
+
+        px[0] = 0;
+        px[1] = CHA+1;
+
+        py[0] = medY;
+        py[1] = medY;
+
+        plline(2, px, py);
+
+        pllsty(2);
+
+        py[0] = medY*(1 - medRange);
+        py[1] = medY*(1 - medRange);
+
+        plline(2, px, py);
+
+        py[0] = medY*(1 + medRange);
+        py[1] = medY*(1 + medRange);
+
+        plline(2, px, py);
+
+        plmtex("b", 3.2, 0.5, 0.5, xlabel.c_str());
+        plmtex("t", 2.0, 0.5, 0.5, title.c_str());
+        plmtex("l", 3.0, 0.5, 0.5, ylabel.c_str());
+
+        // draw the legend
+        std::vector<PLINT> opt_array(CHA), text_colors(CHA), line_colors(CHA), line_styles(CHA), symbol_numbers(CHA), symbol_colors(CHA);
+        std::vector<PLFLT> symbol_scales(CHA), line_widths(CHA), box_scales(CHA, 1);
+
+        std::vector<const char*> symbols(CHA);
+        PLFLT legend_width, legend_height;
+
+        std::vector<const char*> legend_text(CHA);
+
+        std::vector<std::string> legends(CHA);
+
+        size_t n;
+        for (n = 0; n < CHA; n++)
+        {
+            opt_array[n] = PL_LEGEND_SYMBOL;
+            text_colors[n] = 15;
+            line_colors[n] = 15;
+            line_styles[n] = (n % 8 + 1);
+            line_widths[n] = 0.2;
+            symbol_colors[n] = 15;
+            symbol_scales[n] = 0.75;
+            symbol_numbers[n] = 1;
+            symbols[n] = gly.c_str();
+
+            std::ostringstream ostr;
+            ostr << n << ":" << coilStrings[n];
+
+            legends[n] = ostr.str();
+
+            legend_text[n] = legends[n].c_str();
+        }
+
+        pllegend(&legend_width,
+            &legend_height,
+            PL_LEGEND_BACKGROUND,
+            PL_POSITION_OUTSIDE | PL_POSITION_RIGHT,
+            0.02,                                       // x
+            0.0,                                        // y
+            0.05,                                       // plot_width
+            0,                                          // bg_color
+            15,                                         // bb_color
+            1,                                          // bb_style
+            0,                                          // nrow
+            0,                                          // ncolumn
+            CHA,                                        // nlegend
+            &opt_array[0],
+            0.05,                                       // text_offset
+            0.35,                                       // text_scale
+            1.0,                                        // text_spacing
+            0.5,                                        // text_justification
+            &text_colors[0],
+            (const char **)(&legend_text[0]),
+            NULL,                                       // box_colors
+            NULL,                                       // box_patterns
+            &box_scales[0],                             // box_scales
+            NULL,                                       // box_line_widths
+            &line_colors[0],
+            &line_styles[0],
+            &line_widths[0],
+            &symbol_colors[0],
+            &symbol_scales[0],
+            &symbol_numbers[0],
+            (const char **)(&symbols[0])
+            );
+
+        plend();
+
+        outputPlotIm(im, trueColor, plotIm);
+    }
+    catch (...)
+    {
+        GERROR_STREAM("Errors happened in plotNoiseStandardDeviation(...) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template EXPORTGTPLPLOT bool plotNoiseStandardDeviation(const hoNDArray< std::complex<float> >& m, const std::vector<std::string>& coilStrings,
+    const std::string& xlabel, const std::string& ylabel, const std::string& title, size_t xsize, size_t ysize, bool trueColor, hoNDArray<float>& plotIm);
+
+template EXPORTGTPLPLOT bool plotNoiseStandardDeviation(const hoNDArray< std::complex<double> >& m, const std::vector<std::string>& coilStrings,
+    const std::string& xlabel, const std::string& ylabel, const std::string& title, size_t xsize, size_t ysize, bool trueColor, hoNDArray<float>& plotIm);
 
 }

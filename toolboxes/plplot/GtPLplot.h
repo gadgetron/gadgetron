@@ -15,9 +15,6 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_reductions.h"
 
-#include "plConfig.h"
-#include "plplot.h"
-
 namespace Gadgetron
 {
     /// plot 1D hoNDArray as curves
@@ -33,6 +30,10 @@ namespace Gadgetron
     template <typename T> EXPORTGTPLPLOT
     bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray<T> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend,
         size_t xsize, size_t ysize, bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+
+    /// plot noise std
+    template <typename T> EXPORTGTPLPLOT
+    bool plotNoiseStandardDeviation(const hoNDArray< std::complex<T> >& m, const std::vector<std::string>& coilStrings, const std::string& xlabel, const std::string& ylabel, const std::string& title, size_t xsize, size_t ysize, bool trueColor, hoNDArray<float>& plotIm);
 }
 
 #endif // GT_PLPLOT_H

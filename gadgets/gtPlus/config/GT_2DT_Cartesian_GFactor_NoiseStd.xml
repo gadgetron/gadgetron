@@ -810,4 +810,63 @@
         <classname>ImageFinishGadget</classname>
     </gadget>
 
+    <!-- Noise variance plot add-on -->
+    <gadget>
+        <name>NoiseCovariancePlotting</name>
+        <dll>gadgetron_plplot</dll>
+        <classname>NoiseCovariancePlottingGadget</classname>
+
+        <property>
+            <name>xlabel</name>
+            <value>Channel</value>
+        </property>
+
+        <property>
+            <name>ylabel</name>
+            <value>SD</value>
+        </property>
+
+        <property>
+            <name>title</name>
+            <value>Gadgetron</value>
+        </property>
+
+        <property>
+            <name>xsize</name>
+            <value>2048</value>
+        </property>
+
+        <property>
+            <name>ysize</name>
+            <value>2048</value>
+        </property>
+
+        <property>
+            <name>series_num</name>
+            <value>1000</value>
+        </property>
+    </gadget>
+
+    <gadget>
+        <name>Noise_FloatToShort</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>FloatToUShortGadget</classname>
+
+        <property>
+            <name>max_intensity</name>
+            <value>32767</value>
+        </property>
+
+        <property>
+            <name>intensity_offset</name>
+            <value>0</value>
+        </property>
+    </gadget>
+
+    <gadget>
+        <name>Noise_ImageFinish</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageFinishGadget</classname>
+    </gadget>
+
 </gadgetronStreamConfiguration>
