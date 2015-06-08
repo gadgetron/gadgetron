@@ -11,107 +11,6 @@
 namespace Gadgetron
 {
 
-template <typename T> EXPORTGTPLPLOT
-bool plotCurve(const hoNDArray<T>& x, const hoNDArray<T>& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, size_t xsize, size_t ysize, bool trueColor, hoNDArray<float>& plotIm)
-{
-    try
-    {
-        size_t N = y.get_size(0);
-
-        T maxV = Gadgetron::max(const_cast<hoNDArray<T>*>(&y));
-        T minV = Gadgetron::min(const_cast<hoNDArray<T>*>(&y));
-
-        T maxX = Gadgetron::max( const_cast<hoNDArray<T>*>(&x) );
-        T minX = Gadgetron::min( const_cast<hoNDArray<T>*>(&x) );
-
-        plsdev("mem");
-
-        hoNDArray<unsigned char> im;
-        im.create(3, xsize, ysize);
-        Gadgetron::clear(im);
-
-        plsmem(im.get_size(1), im.get_size(2), im.begin());
-
-        plinit();
-        plfont(2);
-
-        pladv(0);
-        plvpor(0.15, 0.85, 0.1, 0.9);
-
-        T spaceX = 0.01*(maxX - minX);
-        T spaceY = 0.05*(maxV - minV);
-
-        plwind(minX - spaceX, maxX + spaceX, minV - spaceY, maxV + spaceY);
-
-        plcol0(15);
-        plbox("bcnst", 0.0, 0, "bcnstv", 0.0, 0);
-
-        int mark[2], space[2];
-
-        mark[0] = 4000;
-        space[0] = 2500;
-        plstyl(1, mark, space);
-
-        hoNDArray<double> xd;
-        xd.copyFrom(x);
-
-        hoNDArray<double> yd;
-        yd.copyFrom(y);
-
-        plcol0(2);
-        plline(N, xd.begin(), yd.begin());
-        plstring(N, xd.begin(), yd.begin(), "#(728)");
-
-        plcol0(15);
-        plmtex("b", 3.2, 0.5, 0.5, xlabel.c_str());
-        plmtex("t", 2.0, 0.5, 0.5, title.c_str());
-        plmtex("l", 5.0, 0.5, 0.5, ylabel.c_str());
-
-        plend();
-
-        plotIm.copyFrom(im);
-
-        if (trueColor)
-        {
-            std::vector<size_t> dim_order(3);
-            dim_order[0] = 1;
-            dim_order[1] = 2;
-            dim_order[2] = 0;
-
-            hoNDArray<float> plotImPermuted;
-            plotImPermuted.copyFrom(plotIm);
-
-            plotIm.create(xsize, ysize, 3);
-
-            Gadgetron::permute(&plotImPermuted, &plotIm, &dim_order);
-        }
-        else
-        {
-            hoNDArray<float> plotIm2D;
-            Gadgetron::sum_over_dimension(plotIm, plotIm2D, 0);
-
-            plotIm2D.squeeze();
-
-            std::vector<size_t> dim_order(2);
-            dim_order[0] = 0;
-            dim_order[1] = 1;
-
-            plotIm.create(xsize, ysize);
-            Gadgetron::permute(&plotIm2D, &plotIm, &dim_order);
-        }
-    }
-    catch (...)
-    {
-        GERROR_STREAM("Errors happened in plotCurve(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template EXPORTGTPLPLOT bool plotCurve(const hoNDArray<float>& x, const hoNDArray<float>& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, size_t xsize, size_t ysize, bool trueColor, hoNDArray<float>& plotIm);
-template EXPORTGTPLPLOT bool plotCurve(const hoNDArray<double>& x, const hoNDArray<double>& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, size_t xsize, size_t ysize, bool trueColor, hoNDArray<float>& plotIm);
-
 // -----------------------------------------------
 
 template <typename T> 
@@ -141,6 +40,43 @@ void findDataRange(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDAr
     }
 }
 
+void outputPlotIm(const hoNDArray<unsigned char>& im, bool trueColor, hoNDArray<float>& plotIm)
+{
+    size_t xsize = im.get_size(1);
+    size_t ysize = im.get_size(2);
+
+    plotIm.copyFrom(im);
+
+    if (trueColor)
+    {
+        std::vector<size_t> dim_order(3);
+        dim_order[0] = 1;
+        dim_order[1] = 2;
+        dim_order[2] = 0;
+
+        hoNDArray<float> plotImPermuted;
+        plotImPermuted.copyFrom(plotIm);
+
+        plotIm.create(xsize, ysize, 3);
+
+        Gadgetron::permute(&plotImPermuted, &plotIm, &dim_order);
+    }
+    else
+    {
+        hoNDArray<float> plotIm2D;
+        Gadgetron::sum_over_dimension(plotIm, plotIm2D, 0);
+
+        plotIm2D.squeeze();
+
+        std::vector<size_t> dim_order(2);
+        dim_order[0] = 0;
+        dim_order[1] = 1;
+
+        plotIm.create(xsize, ysize);
+        Gadgetron::permute(&plotIm2D, &plotIm, &dim_order);
+    }
+}
+
 //0    black(default background)
 //1    red(default foreground)
 //2    yellow
@@ -163,7 +99,7 @@ void getPlotColor(size_t n, int& color)
     switch (n%15)
     {
         case 0:
-            color = 1;
+            color = 15;
             break;
 
         case 1:
@@ -215,7 +151,7 @@ void getPlotColor(size_t n, int& color)
             break;
 
         case 14:
-            color = 15;
+            color = 1;
             break;
 
         default:
@@ -225,22 +161,22 @@ void getPlotColor(size_t n, int& color)
 
 void getPlotGlyph(size_t n, std::string& gly)
 {
-    switch (n%15)
+    switch (n%26)
     {
         case 0:
-            gly = "#(718)"; // o
+            gly = "#(2367)"; // .
             break;
 
         case 1:
-            gly = "#(728)"; // *
+            gly = "#(752)"; // *
             break;
 
         case 2:
-            gly = "#(725)"; // +
+            gly = "#(225)"; // +
             break;
 
         case 3:
-            gly = "#(727)"; // x
+            gly = "#(048)"; // x
             break;
 
         case 5:
@@ -283,6 +219,50 @@ void getPlotGlyph(size_t n, std::string& gly)
             gly = "#(851)"; // square
             break;
 
+        case 15:
+            gly = "#(751)"; // rectangle
+            break;
+
+        case 16:
+            gly = "#(828)"; 
+            break;
+
+        case 17:
+            gly = "#(227)"; // x
+            break;
+
+        case 18:
+            gly = "#(229)"; // .
+            break;
+
+        case 19:
+            gly = "#(233)"; // #
+            break;
+
+        case 20:
+            gly = "#(850)"; // filled circle
+            break;
+
+        case 21:
+            gly = "#(844)"; // unfilled star
+            break;
+
+        case 22:
+            gly = "#(843)"; // unfilled diamond
+            break;
+
+        case 23:
+            gly = "#(842)"; // unfilled triangle
+            break;
+
+        case 24:
+            gly = "#(841)"; // big square
+            break;
+
+        case 25:
+            gly = "#(840)"; // circle
+            break;
+
         default:
             gly = "#(856)"; // star
     }
@@ -317,7 +297,15 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
         plfont(2);
 
         pladv(0);
-        plvpor(0.15, 0.75, 0.1, 0.9);
+
+        if (legend.size() == x.size())
+        {
+            plvpor(0.11, 0.75, 0.1, 0.9);
+        }
+        else
+        {
+            plvpor(0.15, 0.85, 0.1, 0.9);
+        }
 
         T spaceX = 0.01*(maxX - minX);
         T spaceY = 0.05*(maxY - minY);
@@ -327,11 +315,11 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
         plcol0(15);
         plbox("bgcnst", 0.0, 0, "bgcnstv", 0.0, 0);
 
-        int mark[2], space[2];
+        // int mark[2], space[2];
 
-        mark[0] = 4000;
-        space[0] = 2500;
-        plstyl(1, mark, space);
+        //mark[0] = 4000;
+        //space[0] = 2500;
+        //plstyl(1, mark, space);
 
         size_t num = x.size();
 
@@ -352,6 +340,7 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
                 int c;
                 getPlotColor(n, c);
                 plcol0(c);
+                pllsty(n % 8 + 1);
                 plline(N, xd.begin(), yd.begin());
             }
 
@@ -383,65 +372,55 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
                 getPlotColor(n, c);
                 getPlotGlyph(n, glyphs[n]);
 
-                opt_array[n] = PL_LEGEND_SYMBOL;
+                opt_array[n] = PL_LEGEND_SYMBOL | PL_LEGEND_LINE;
                 text_colors[n] = 15;
                 line_colors[n] = c;
-                line_styles[n] = 1;
-                line_widths[n] = 1.;
+                line_styles[n] = (n%8+1);
+                line_widths[n] = 0.2;
                 symbol_colors[n] = c;
-                symbol_scales[n] = 1.;
+                symbol_scales[n] = 0.75;
                 symbol_numbers[n] = 1;
                 symbols[n] = glyphs[n].c_str();
                 legend_text[n] = legend[n].c_str();
             }
 
-            // plscol0a(15, 32, 32, 32, 0);
-            pllegend(&legend_width, &legend_height,
-                PL_LEGEND_BACKGROUND,
-                PL_POSITION_OUTSIDE | PL_POSITION_RIGHT | PL_POSITION_TOP,
-                0.02, 0.0, 0.15, 
-                0, 15, 1, 0, 0,
-                num, &opt_array[0],
-                0.0, 0.5, 1.0, 1, &text_colors[0], (const char **)(&legend_text[0]),
-                NULL, NULL, &box_scales[0], NULL,
-                &line_colors[0], &line_styles[0], &line_widths[0],
-                &symbol_colors[0], &symbol_scales[0], &symbol_numbers[0], (const char **)(&symbols[0]));
+            pllegend(&legend_width, 
+                    &legend_height,
+                    PL_LEGEND_BACKGROUND,
+                    PL_POSITION_OUTSIDE | PL_POSITION_RIGHT | PL_POSITION_TOP,
+                    0.02,                                       // x
+                    0.0,                                        // y
+                    0.05,                                       // plot_width
+                    0,                                          // bg_color
+                    15,                                         // bb_color
+                    1,                                          // bb_style
+                    0,                                          // nrow
+                    0,                                          // ncolumn
+                    num,                                        // nlegend
+                    &opt_array[0], 
+                    0.05,                                       // text_offset
+                    0.35,                                       // text_scale
+                    1.0,                                        // text_spacing
+                    0.5,                                        // text_justification
+                    &text_colors[0], 
+                    (const char **)(&legend_text[0]), 
+                    NULL,                                       // box_colors
+                    NULL,                                       // box_patterns
+                    &box_scales[0],                             // box_scales
+                    NULL,                                       // box_line_widths
+                    &line_colors[0], 
+                    &line_styles[0], 
+                    &line_widths[0],
+                    &symbol_colors[0], 
+                    &symbol_scales[0], 
+                    &symbol_numbers[0], 
+                    (const char **)(&symbols[0])
+                    );
         }
 
         plend();
 
-
-        // output plots
-        plotIm.copyFrom(im);
-
-        if (trueColor)
-        {
-            std::vector<size_t> dim_order(3);
-            dim_order[0] = 1;
-            dim_order[1] = 2;
-            dim_order[2] = 0;
-
-            hoNDArray<float> plotImPermuted;
-            plotImPermuted.copyFrom(plotIm);
-
-            plotIm.create(xsize, ysize, 3);
-
-            Gadgetron::permute(&plotImPermuted, &plotIm, &dim_order);
-        }
-        else
-        {
-            hoNDArray<float> plotIm2D;
-            Gadgetron::sum_over_dimension(plotIm, plotIm2D, 0);
-
-            plotIm2D.squeeze();
-
-            std::vector<size_t> dim_order(2);
-            dim_order[0] = 0;
-            dim_order[1] = 1;
-
-            plotIm.create(xsize, ysize);
-            Gadgetron::permute(&plotIm2D, &plotIm, &dim_order);
-        }
+        outputPlotIm(im, trueColor, plotIm);
     }
     catch (...)
     {

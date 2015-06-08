@@ -20,17 +20,16 @@
 
 namespace Gadgetron
 {
-    /// plot a 1D hoNDArray as a curve
+    /// plot 1D hoNDArray as curves
     /// x: x coordinate of 1D curve
     /// y: values of 1D curve
     /// xlabel, ylabel: x and y label strings
     /// title: title string
+    /// legend: legend string for every curve, if empty, no legends will be plotted
     /// xsize, ysize: the plotted image size
     /// plotIm: the plotted image, if trueColor = true, [xsize ysize 3] array
     /// if trueColor = false, the grey image will be generated [xsize ysize]
-    template <typename T> EXPORTGTPLPLOT
-    bool plotCurve(const hoNDArray<T>& x, const hoNDArray<T>& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, size_t xsize, size_t ysize, bool trueColor, hoNDArray<float>& plotIm);
-
+    /// if drawLine = false, the line will be not plotted, onl glyphs
     template <typename T> EXPORTGTPLPLOT
     bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray<T> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend,
         size_t xsize, size_t ysize, bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
