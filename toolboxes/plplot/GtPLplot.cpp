@@ -576,7 +576,7 @@ bool plotNoiseStandardDeviation(const hoNDArray< std::complex<T> >& m, const std
             CHA,                                        // nlegend
             &opt_array[0],
             0.05,                                       // text_offset
-            0.35,                                       // text_scale
+            0.5,                                        // text_scale
             1.0,                                        // text_spacing
             0.5,                                        // text_justification
             &text_colors[0],

@@ -230,6 +230,8 @@ int NoiseCovariancePlottingGadget::close(unsigned long flags)
                 cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_RECON_FIGURE);
 
                 cm3->getObjectPtr()->set(GADGETRON_IMAGE_SCALE_RATIO, (double)(1));
+                cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)(200));
+                cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(400));
 
                 cm1->getObjectPtr()->matrix_size[0] = (uint16_t)plotIm.get_size(0);
                 cm1->getObjectPtr()->matrix_size[1] = (uint16_t)plotIm.get_size(1);

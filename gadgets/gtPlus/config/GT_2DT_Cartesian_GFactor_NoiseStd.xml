@@ -833,12 +833,12 @@
 
         <property>
             <name>xsize</name>
-            <value>2048</value>
+            <value>1024</value>
         </property>
 
         <property>
             <name>ysize</name>
-            <value>2048</value>
+            <value>1024</value>
         </property>
 
         <property>
