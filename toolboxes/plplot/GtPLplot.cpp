@@ -489,7 +489,7 @@ bool plotNoiseStandardDeviation(const hoNDArray< std::complex<T> >& m, const std
         plinit();
         plfont(2);
         pladv(0);
-        plvpor(0.11, 0.75, 0.1, 0.9);
+        plvpor(0.15, 0.75, 0.1, 0.8);
 
         plwind(0, CHA+1, 0, maxY*1.05);
 

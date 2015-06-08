@@ -224,8 +224,8 @@ int NoiseCovariancePlottingGadget::close(unsigned long flags)
                 img_dims[1] = plotIm.get_size(1);
 
                 // set the image attributes
-                cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, "GT Noise Variance");
-                cm3->getObjectPtr()->set(GADGETRON_SEQUENCEDESCRIPTION, "_GT_Noise_Plot");
+                cm3->getObjectPtr()->set(GADGETRON_IMAGECOMMENT, "Noise SD");
+                cm3->getObjectPtr()->set(GADGETRON_SEQUENCEDESCRIPTION, "_GT_Noise_SD_Plot");
                 cm3->getObjectPtr()->set(GADGETRON_IMAGEPROCESSINGHISTORY, "GT");
                 cm3->getObjectPtr()->set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_RECON_FIGURE);
 
@@ -235,6 +235,34 @@ int NoiseCovariancePlottingGadget::close(unsigned long flags)
                 cm1->getObjectPtr()->matrix_size[1] = (uint16_t)plotIm.get_size(1);
                 cm1->getObjectPtr()->matrix_size[2] = 1;
                 cm1->getObjectPtr()->channels = 1;
+
+                cm1->getObjectPtr()->field_of_view[0] = 400;
+                cm1->getObjectPtr()->field_of_view[1] = 400;
+                cm1->getObjectPtr()->field_of_view[2] = 8;
+
+                cm1->getObjectPtr()->position[0] = 0;
+                cm1->getObjectPtr()->position[1] = 0;
+                cm1->getObjectPtr()->position[2] = 0;
+
+                cm1->getObjectPtr()->patient_table_position[0] = 0;
+                cm1->getObjectPtr()->patient_table_position[1] = 0;
+                cm1->getObjectPtr()->patient_table_position[2] = 0;
+
+                cm1->getObjectPtr()->read_dir[0] = 1;
+                cm1->getObjectPtr()->read_dir[1] = 0;
+                cm1->getObjectPtr()->read_dir[2] = 0;
+
+                cm1->getObjectPtr()->phase_dir[0] = 0;
+                cm1->getObjectPtr()->phase_dir[1] = 1;
+                cm1->getObjectPtr()->phase_dir[2] = 0;
+
+                cm1->getObjectPtr()->slice_dir[0] = 0;
+                cm1->getObjectPtr()->slice_dir[1] = 0;
+                cm1->getObjectPtr()->slice_dir[2] = 1;
+
+                // give arbitrary time for the figure
+                cm1->getObjectPtr()->acquisition_time_stamp = 21937963;
+                cm1->getObjectPtr()->physiology_time_stamp[0] = 2;
 
                 try
                 {
