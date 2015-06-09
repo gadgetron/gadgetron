@@ -27,11 +27,15 @@ include_directories(
 
 set( header_files NoiseCovariancePlottingGadget.h )
 set( src_files NoiseCovariancePlottingGadget.cpp )
+set( config_files GT_2DT_Cartesian_GFactor_NoiseStd.xml )
+
+source_group(config FILES ${config_files})
 
 add_library(gadgetron_plplot SHARED 
     gadgetron_plplot_export.h 
     ${header_files} 
     ${src_files}
+    ${config_files}
 )
 
 set_target_properties(gadgetron_plplot PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -53,3 +57,6 @@ install(FILES
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_plplot DESTINATION lib COMPONENT main)
+
+install (FILES  ${config_files} 
+        DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

@@ -49,3 +49,7 @@ install (FILES
         PLplotExport.h 
         ${header_files} 
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+
+if (GTEST_FOUND)
+    add_subdirectory(ut)
+endif (GTEST_FOUND)

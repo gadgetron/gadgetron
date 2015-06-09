@@ -527,7 +527,7 @@ bool plotNoiseStandardDeviation(const hoNDArray< std::complex<T> >& m, const std
 
         plmtex("b", 3.2, 0.5, 0.5, xlabel.c_str());
         plmtex("t", 2.0, 0.5, 0.5, title.c_str());
-        plmtex("l", 3.0, 0.5, 0.5, ylabel.c_str());
+        plmtex("l", 5.0, 0.5, 0.5, ylabel.c_str());
 
         // draw the legend
         std::vector<PLINT> opt_array(CHA), text_colors(CHA), line_colors(CHA), line_styles(CHA), symbol_numbers(CHA), symbol_colors(CHA);
