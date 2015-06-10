@@ -7,7 +7,7 @@
 #include <thrust/functional.h>
 
 using namespace Gadgetron;
-using namespace std;
+//using namespace std;
 
 template<typename T> struct cuNDA_abs : public thrust::unary_function<T,typename realType<T>::Type>
 {
