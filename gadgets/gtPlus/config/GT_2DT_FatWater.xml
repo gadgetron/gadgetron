@@ -3,16 +3,6 @@
         xmlns="http://gadgetron.sf.net/gadgetron"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <!--
-       _____              _____     _____   ______   _______   _____     ____    _   _ 
-      / ____|     /\     |  __ \   / ____| |  ____| |__   __| |  __ \   / __ \  | \ | |
-     | |  __     /  \    | |  | | | |  __  | |__       | |    | |__) | | |  | | |  \| |
-     | | |_ |   / /\ \   | |  | | | | |_ | |  __|      | |    |  _  /  | |  | | | . ` |
-     | |__| |  / ____ \  | |__| | | |__| | | |____     | |    | | \ \  | |__| | | |\  |
-      \_____| /_/    \_\ |_____/   \_____| |______|    |_|    |_|  \_\  \____/  |_| \_|
-                                                                                       
-    -->
-
     <!-- 
         GT Plus configuratin file for 2DT cartesian reconstruction on fat water multi-contrast application
 
