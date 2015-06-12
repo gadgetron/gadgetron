@@ -34,13 +34,13 @@ TYPED_TEST_CASE(hoNDFFT_test, realImplementations);
 TYPED_TEST(hoNDFFT_test,fftNrm2Test){
 	hoNDFFT<TypeParam>::instance()->fft(&this->Array);
 
-	EXPECT_NEAR(nrm2(&this->Array2),nrm2(&this->Array),nrm2(&this->Array)*1e-3);
+	EXPECT_NEAR(nrm2(&this->Array2),nrm2(&this->Array),nrm2(&this->Array)*1e-2);
 
 }
 
 TYPED_TEST(hoNDFFT_test,ifftNrm2Test){
 	hoNDFFT<TypeParam>::instance()->ifft(&this->Array);
 
-	EXPECT_NEAR(nrm2(&this->Array2),nrm2(&this->Array),nrm2(&this->Array)*1e-3);
+	EXPECT_NEAR(nrm2(&this->Array2),nrm2(&this->Array),nrm2(&this->Array)*1e-2);
 
 }
