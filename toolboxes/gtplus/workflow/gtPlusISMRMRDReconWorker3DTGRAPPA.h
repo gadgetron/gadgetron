@@ -395,14 +395,41 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                     hoNDArray<T> aliasedImPermuted(E1, E2, RO, srcCHA, N);
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 
-                    if ( performTiming_ ) { gt_timer3_.start("permuteROTo3rdDimensionFor3DRecon for aliased images ... "); }
+                    if ( performTiming_ ) { gt_timer3_.start("permute 3DT for aliased images ... "); }
 
-                    std::vector<size_t> dim_order(3);
-                    dim_order[0] = 1;
-                    dim_order[1] = 2;
-                    dim_order[2] = 0;
+                    {
+                        T* pAliasedImPermuted = aliasedImPermuted.begin();
+                        T* pAliasedIm = aliasedIm.begin();
 
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&aliasedIm, &aliasedImPermuted, &dim_order));
+                        long long ro, e1, cha, e2, n;
+
+                        for (n = 0; n < N; n++)
+                        {
+#pragma omp parallel for private(cha, e2, e1, ro) shared(n, N, srcCHA, E2, E1, RO, pAliasedIm, pAliasedImPermuted)
+                            for (cha = 0; cha < srcCHA; cha++)
+                            {
+                                size_t offset = cha*RO*E1*E2 + n*RO*E1*E2*srcCHA;
+
+                                for (e2 = 0; e2 < E2; e2++)
+                                {
+                                    for (e1= 0; e1 < E1; e1++)
+                                    {
+                                        for (ro = 0; ro < RO; ro++)
+                                        {
+                                            pAliasedImPermuted[e1 + e2*E1 + ro*E1*E2 + offset] = pAliasedIm[ro + e1*RO + e2*RO*E1 + offset];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //std::vector<size_t> dim_order(3);
+                    //dim_order[0] = 1;
+                    //dim_order[1] = 2;
+                    //dim_order[2] = 0;
+
+                    //GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(&aliasedIm, &aliasedImPermuted, &dim_order));
 
                     if ( performTiming_ ) { gt_timer3_.stop(); }
 

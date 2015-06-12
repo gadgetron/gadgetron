@@ -29,7 +29,7 @@ else
         chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install software-properties-common python-dev python-twisted python-psutil python-numpy python-libxml2 -y
         chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron add-apt-repository "deb http://us.archive.ubuntu.com/ubuntu/ trusty main restricted multiverse universe"  
         chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get update  
-        chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install python-h5py libhdf5-serial-dev hdf5-tools python-pip -y 
+        chroot ${CHROOT_GADGETRON_BINARY_DIR}/chroot/chroot-root/gadgetron apt-get install python-h5py libhdf5-serial-dev hdf5-tools python-pip libplplot-dev -y 
 
         TAR_FILE_NAME=gadgetron-base-`date '+%Y%m%d-%H%M'`
 

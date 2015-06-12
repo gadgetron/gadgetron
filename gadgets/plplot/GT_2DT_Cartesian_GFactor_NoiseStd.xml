@@ -4,11 +4,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <!-- 
-        GT Plus configuratin file for general 2D cartesian reconstruction using linear SPIRIT
-        The GtPlus cloud computing by default is turned on in this configuration file
-        The dual-layer cloud topology is used here, therefore every incoming SLICE is sent
-        to one first layer GtPlus cloud node. This first layer node can further split the job and
-        process the SLICE with one or more second layer nodes.
+        GT Plus configuratin file for general 2D or 2D+T cartesian reconstruction
 
         Author: Hui Xue
         Magnetic Resonance Technology Program
@@ -18,12 +14,6 @@
         MD 20814
         USA
         Email: hui.xue@nih.gov
-
-        Ref to: 
-
-        Hui Xue, Souheil Inati, Thomas Sangild Sorensen, Peter Kellman, Michael S. Hansen. 
-        Distributed MRI Reconstruction using Gadgetron based Cloud Computing. 
-        Magenetic Resonance in Medicine, doi: 10.1002/mrm.25213.
     -->
 
     <!-- reader -->
@@ -40,18 +30,24 @@
         <classname>MRIImageWriter</classname>
     </writer>
 
-    <!-- RO asymmetric echo handling -->
-    <gadget>
-        <name>AsymmetricEcho</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>AsymmetricEchoAdjustROGadget</classname>
-    </gadget>
-
     <!-- Noise prewhitening -->
     <gadget>
         <name>NoiseAdjust</name>
         <dll>gadgetron_mricore</dll>
         <classname>NoiseAdjustGadget</classname>
+
+        <!-- File prefix for stored noise prewhitener matrix -->
+        <property>
+            <name>noise_dependency_prefix</name>
+            <value>GadgetronNoiseCovarianceMatrix</value>
+        </property>
+    </gadget>
+
+    <!-- RO asymmetric echo handling -->
+    <gadget>
+        <name>AsymmetricEcho</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>AsymmetricEchoAdjustROGadget</classname>
     </gadget>
 
     <!-- RO oversampling removal -->
@@ -97,12 +93,12 @@
 
         <property>
             <name>interleaved_triggerDim2</name>
-            <value>DIM_Slice</value>
+            <value>DIM_NONE</value>
         </property>
 
         <property>
             <name>interleaved_numOfKSpace_triggerDim1</name>
-            <value>0</value>
+            <value>4</value>
         </property>
 
         <!-- Embedded mode -->
@@ -145,20 +141,20 @@
 
     </gadget>
 
-    <!-- Recon computation for 2DT cases -->
+    <!--Recon computation for 2DT cases -->
     <gadget>
         <name>Recon</name>
         <dll>gadgetronPlus</dll>
-        <classname>GtPlusRecon2DTGadgetCloud</classname>
+        <classname>GtPlusRecon2DTGadget</classname>
 
         <!-- kspace data -->
         <property>
             <name>dim_4th</name>
-            <value>DIM_Phase</value>
+            <value>DIM_NONE</value>
         </property>
         <property>
             <name>dim_5th</name>
-            <value>DIM_Slice</value>
+            <value>DIM_NONE</value>
         </property>
 
         <!-- work flow -->
@@ -226,7 +222,7 @@
         </property>
         <property>
             <name>embedded_ref_fillback</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- Separate mode -->
@@ -258,13 +254,28 @@
         </property>
 
         <property>
+            <name>upstream_coil_compression</name>
+            <value>false</value>
+        </property>
+
+        <property>
+            <name>upstream_coil_compression_thres</name>
+            <value>-1</value>
+        </property>
+
+        <property>
+            <name>upstream_coil_compression_num_modesKept</name>
+            <value>-1</value>
+        </property>
+
+        <property>
             <name>downstream_coil_compression</name>
             <value>true</value>
         </property>
 
         <property>
             <name>coil_compression_thres</name>
-            <value>0.001</value>
+            <value>-1</value>
         </property>
 
         <property>
@@ -272,13 +283,7 @@
             <value>-1</value>
         </property>
 
-        <!-- parameters for coil map estimation 
-            enum ISMRMRDCOILMAPALGO
-            {
-                ISMRMRD_SOUHEIL,
-                ISMRMRD_SOUHEIL_ITER
-            };
-        -->
+        <!-- parameters for coil map estimation, ISMRMRD_SOUHEIL, ISMRMRD_SOUHEIL_ITER -->
         <property>
             <name>coil_map_algorithm</name>
             <value>ISMRMRD_SOUHEIL</value>
@@ -322,6 +327,16 @@
         <property>
             <name>recon_auto_parameters</name>
             <value>true</value>
+        </property>
+
+        <property>
+            <name>gfactor_needed</name>
+            <value>true</value>
+        </property>
+
+        <property>
+            <name>wrap_around_map_needed</name>
+            <value>false</value>
         </property>
 
         <!-- parameters for ISMRMRD_GRAPPA -->
@@ -381,7 +396,7 @@
         </property>
         <property>
             <name>spirit_print_iter</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- parameters for ISMRMRD_L1SPIRIT -->
@@ -391,7 +406,7 @@
         </property>
         <property>
             <name>spirit_perform_nonlinear</name>
-            <value>false</value>
+            <value>true</value>
         </property>
         <property>
             <name>spirit_parallel_imaging_lamda</name>
@@ -463,7 +478,27 @@
 
         <property>
             <name>scalingFactor</name>
-            <value>-1.0</value>
+            <value>10</value>
+        </property>
+
+        <property>
+            <name>scalingFactor_gfactor</name>
+            <value>100</value>
+        </property>
+
+        <property>
+            <name>scalingFactor_snr_image</name>
+            <value>10</value>
+        </property>
+
+        <property>
+            <name>scalingFactor_std_map</name>
+            <value>1000</value>
+        </property>
+
+        <property>
+            <name>start_frame_for_std_map</name>
+            <value>5</value>
         </property>
 
         <property>
@@ -472,9 +507,16 @@
         </property>
 
         <!-- parameters for kspace filter, image data -->
+        <!-- 
+             ISMRMRD_FILTER_GAUSSIAN,
+             ISMRMRD_FILTER_HANNING,
+             ISMRMRD_FILTER_TUKEY,
+             ISMRMRD_FILTER_TAPERED_HANNING,
+             ISMRMRD_FILTER_NONE 
+        -->
         <property>
             <name>filterRO</name>
-            <value>ISMRMRD_FILTER_GAUSSIAN</value>
+            <value>ISMRMRD_FILTER_NONE</value>
         </property>
         <property>
             <name>filterRO_sigma</name>
@@ -487,7 +529,7 @@
 
         <property>
             <name>filterE1</name>
-            <value>ISMRMRD_FILTER_GAUSSIAN</value>
+            <value>ISMRMRD_FILTER_NONE</value>
         </property>
         <property>
             <name>filterE1_sigma</name>
@@ -500,7 +542,7 @@
 
         <property>
             <name>filterE2</name>
-            <value>ISMRMRD_FILTER_GAUSSIAN</value>
+            <value>ISMRMRD_FILTER_NONE</value>
         </property>
         <property>
             <name>filterE2_sigma</name>
@@ -512,6 +554,13 @@
         </property>
 
         <!-- parameters for kspace filter, ref data -->
+        <!-- 
+             ISMRMRD_FILTER_GAUSSIAN,
+             ISMRMRD_FILTER_HANNING,
+             ISMRMRD_FILTER_TUKEY,
+             ISMRMRD_FILTER_TAPERED_HANNING,
+             ISMRMRD_FILTER_NONE 
+        -->
         <property>
             <name>filterRefRO</name>
             <value>ISMRMRD_FILTER_HANNING</value>
@@ -552,6 +601,7 @@
         </property>
 
         <!-- parameters for kspace filter, partial fourier/asymmetric echo filter -->
+        <!-- only ISMRMRD_FILTER_TAPERED_HANNING is available for the moment -->
         <property>
             <name>filterPartialFourierRO</name>
             <value>ISMRMRD_FILTER_TAPERED_HANNING</value>
@@ -566,7 +616,7 @@
         </property>
         <property>
             <name>filterPartialFourierRO_densityComp</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <property>
@@ -583,7 +633,7 @@
         </property>
         <property>
             <name>filterPartialFourierE1_densityComp</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <property>
@@ -600,13 +650,13 @@
         </property>
         <property>
             <name>filterPartialFourierE2_densityComp</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- parameters for partial fourier handling algorithm, ISMRMRD_PF_HOMODYNE, ISMRMRD_PF_POCS, ISMRMRD_PF_FENGHUANG, ISMRMRD_PF_ZEROFILLING_FILTER, ISMRMRD_PF_ZEROFILLING -->
         <property>
             <name>partialFourier_algo</name>
-            <value>ISMRMRD_PF_FENGHUANG</value>
+            <value>ISMRMRD_PF_ZEROFILLING_FILTER</value>
         </property>
 
         <!-- parameters for partial fourier homodyne algorithm -->
@@ -681,7 +731,7 @@
 
         <property>
             <name>verboseMode</name>
-            <value>false</value>
+            <value>true</value>
         </property>
 
         <!-- parameters for system acquisition -->
@@ -697,11 +747,11 @@
         </property>
         <property>
             <name>job_num_of_N</name>
-            <value>48</value>
+            <value>32</value>
         </property>
         <property>
             <name>job_max_Megabytes</name>
-            <value>2048</value>
+            <value>10240</value>
         </property>
         <property>
             <name>job_overlap</name>
@@ -715,9 +765,9 @@
         <!-- parameters for the cloud computation 
              The cloud should be defined as the following: CloudNodeX_IP/Port/XMLConfiguration etc.
         -->
-         <property><name>CloudComputing</name><value>false</value></property>
-        <property><name>cloudNodeFile</name><value>myCloud_2DT_DualLayer.txt</value></property>
-        <property><name>CloudNodeXMLConfiguration</name><value>GT_2DT_Cartesian_FirstLayer_CloudNode.xml</value></property>
+        <property><name>CloudComputing</name><value>false</value></property>
+        <property><name>cloudNodeFile</name><value>myCloud_2DT.txt</value></property>
+        <property><name>CloudNodeXMLConfiguration</name><value>GT_2DT_Cartesian_CloudNode.xml</value></property>
 
     </gadget>
 
@@ -732,10 +782,79 @@
         <name>FloatToShortAttrib</name>
         <dll>gadgetron_mricore</dll>
         <classname>FloatToUShortGadget</classname>
+
+        <property>
+            <name>max_intensity</name>
+            <value>32767</value>
+        </property>
+
+        <property>
+            <name>intensity_offset</name>
+            <value>16384</value>
+        </property>
     </gadget>
 
     <gadget>
         <name>ImageFinish</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageFinishGadget</classname>
+    </gadget>
+
+    <!-- Noise variance plot add-on -->
+    <gadget>
+        <name>NoiseCovariancePlotting</name>
+        <dll>gadgetron_plplot</dll>
+        <classname>NoiseCovariancePlottingGadget</classname>
+
+        <property>
+            <name>xlabel</name>
+            <value>Channel</value>
+        </property>
+
+        <property>
+            <name>ylabel</name>
+            <value>SD</value>
+        </property>
+
+        <property>
+            <name>title</name>
+            <value>Gadgetron</value>
+        </property>
+
+        <property>
+            <name>xsize</name>
+            <value>1024</value>
+        </property>
+
+        <property>
+            <name>ysize</name>
+            <value>1024</value>
+        </property>
+
+        <property>
+            <name>series_num</name>
+            <value>1000</value>
+        </property>
+    </gadget>
+
+    <gadget>
+        <name>Noise_FloatToShort</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>FloatToUShortGadget</classname>
+
+        <property>
+            <name>max_intensity</name>
+            <value>32767</value>
+        </property>
+
+        <property>
+            <name>intensity_offset</name>
+            <value>0</value>
+        </property>
+    </gadget>
+
+    <gadget>
+        <name>Noise_ImageFinish</name>
         <dll>gadgetron_mricore</dll>
         <classname>ImageFinishGadget</classname>
     </gadget>

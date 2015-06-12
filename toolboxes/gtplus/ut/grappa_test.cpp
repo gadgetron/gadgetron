@@ -45,13 +45,13 @@ protected:
     virtual void SetUp()
     {
         GDEBUG_STREAM("=============================================================================================");
-        gtPluse_ut_folder_ = std::string(::getenv("GTPLUS_UNITTEST_DIRECTORY"));
+        gt_ut_folder_ = std::string(::getenv("GADGETRON_UNITTEST_DIRECTORY"));
         GDEBUG_STREAM("=============================================================================================");
-        GDEBUG_STREAM("Unit Test for GtPlus");
-        gtPluse_ut_data_folder_ = gtPluse_ut_folder_ + "/data/";
-        gtPluse_ut_res_folder_ = gtPluse_ut_folder_ + "/result/";
-        GDEBUG_STREAM("gtPluse_ut_data_folder_ is " << gtPluse_ut_data_folder_);
-        GDEBUG_STREAM("gtPluse_ut_res_folder_ is " << gtPluse_ut_res_folder_);
+        GDEBUG_STREAM("Unit Test");
+        gt_ut_data_folder_ = gt_ut_folder_ + "/data/";
+        gt_ut_res_folder_ = gt_ut_folder_ + "/result/";
+        GDEBUG_STREAM("gt_ut_data_folder_ is " << gt_ut_data_folder_);
+        GDEBUG_STREAM("gt_ut_res_folder_ is " << gt_ut_res_folder_);
 
         timer_.set_timing_in_destruction(false);
 
@@ -69,9 +69,9 @@ protected:
 #endif // WIN32
     }
 
-    std::string gtPluse_ut_folder_;
-    std::string gtPluse_ut_data_folder_;
-    std::string gtPluse_ut_res_folder_;
+    std::string gt_ut_folder_;
+    std::string gt_ut_data_folder_;
+    std::string gt_ut_res_folder_;
 
     gtPlusIOAnalyze gt_io_;
     gtPlusISMRMRDReconUtil<T> util_;
@@ -99,8 +99,8 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
 
     // image data
     hoNDArray<std::complex<float> > data;
-    gt_io.importArrayComplex(data, this->gtPluse_ut_data_folder_ + "StdandardDataR2_Kspace_real", 
-        this->gtPluse_ut_data_folder_ + "StdandardDataR2_Kspace_imag");
+    gt_io.importArrayComplex(data, this->gt_ut_data_folder_ + "StdandardDataR2_Kspace_real", 
+        this->gt_ut_data_folder_ + "StdandardDataR2_Kspace_imag");
     data.print(std::cout);
 
     unsigned long long RO = data.get_size(0);
@@ -126,8 +126,8 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
 
     // ref
     hoNDArray<T> refTmp;
-    gt_io.importArrayComplex(refTmp, this->gtPluse_ut_data_folder_ + "StdandardDataR2_Ref_real", 
-        this->gtPluse_ut_data_folder_ + "StdandardDataR2_Ref_imag");
+    gt_io.importArrayComplex(refTmp, this->gt_ut_data_folder_ + "StdandardDataR2_Ref_real", 
+        this->gt_ut_data_folder_ + "StdandardDataR2_Ref_imag");
 
     hoNDArray<T> ref(refTmp.get_size(0), refTmp.get_size(1), refTmp.get_size(2), SLC, E2, CON, PHS);
     memcpy(ref.begin(), refTmp.begin(), refTmp.get_number_of_bytes());
@@ -135,8 +135,8 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
 
     // noise
     hoNDArray<T> noise;
-    gt_io.importArrayComplex(noise, this->gtPluse_ut_data_folder_ + "StdandardDataR2_Noise_real", 
-        this->gtPluse_ut_data_folder_ + "StdandardDataR2_Noise_imag");
+    gt_io.importArrayComplex(noise, this->gt_ut_data_folder_ + "StdandardDataR2_Noise_real", 
+        this->gt_ut_data_folder_ + "StdandardDataR2_Noise_imag");
     noise.print(std::cout);
 
     // call the recon
@@ -253,9 +253,9 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
     workOrder->interleaved_whichS_combinationcoeff_ = interleaved_whichS_combinationcoeff_;
 
     worker_grappa_.performTiming_ = true;
-    worker_grappa_.debugFolder_ = this->gtPluse_ut_res_folder_;
+    worker_grappa_.debugFolder_ = this->gt_ut_res_folder_;
 
-    workflow_.debugFolder_ = this->gtPluse_ut_res_folder_;
+    workflow_.debugFolder_ = this->gt_ut_res_folder_;
 
     workflow_.worker_ = &worker_grappa_;
     workflow_.workOrder_ = workOrder;
@@ -264,15 +264,15 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA_SNRUnit)
     workflow_.recon();
     workflow_.postProcessing();
 
-    gt_io.exportArrayComplex(workflow_.res_, this->gtPluse_ut_res_folder_+"StdandardDataR2_res");
+    gt_io.exportArrayComplex(workflow_.res_, this->gt_ut_res_folder_+"StdandardDataR2_res");
 
     workflow_.res_.squeeze();
-    gt_io.export3DArrayComplex(workflow_.res_, this->gtPluse_ut_res_folder_+"StdandardDataR2_res_squeezed");
+    gt_io.export3DArrayComplex(workflow_.res_, this->gt_ut_res_folder_+"StdandardDataR2_res_squeezed");
 
     hoNDArray<T> std;
     bool NMinusOne = true;
     stdOver3rdDimension(workflow_.res_, std, NMinusOne);
-    gt_io.export2DArrayComplex(std, this->gtPluse_ut_res_folder_+"StdandardDataR2_res_squeezed_std");
+    gt_io.export2DArrayComplex(std, this->gt_ut_res_folder_+"StdandardDataR2_res_squeezed_std");
 }
 
 TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
@@ -285,12 +285,12 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
 
     // image data
     hoNDArray<float> real_data;
-    std::string filename = this->gtPluse_ut_data_folder_ + "underSampledKSpace_real";
+    std::string filename = this->gt_ut_data_folder_ + "underSampledKSpace_real";
     gt_io.importArray(real_data, filename);
     real_data.print(std::cout);
 
     hoNDArray<float> imag_data;
-    filename = this->gtPluse_ut_data_folder_ + "underSampledKSpace_imag";
+    filename = this->gt_ut_data_folder_ + "underSampledKSpace_imag";
     gt_io.importArray(imag_data, filename);
     imag_data.print(std::cout);
 
@@ -319,12 +319,12 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
 
     // ref
     hoNDArray<float> real_ref;
-    filename = this->gtPluse_ut_data_folder_ + "ref_real";
+    filename = this->gt_ut_data_folder_ + "ref_real";
     gt_io.importArray(real_ref, filename);
     real_ref.print(std::cout);
 
     hoNDArray<float> imag_ref;
-    filename = this->gtPluse_ut_data_folder_ + "ref_imag";
+    filename = this->gt_ut_data_folder_ + "ref_imag";
     gt_io.importArray(imag_ref, filename);
     imag_ref.print(std::cout);
 
@@ -447,19 +447,19 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     workOrder->interleaved_whichS_combinationcoeff_ = interleaved_whichS_combinationcoeff_;
 
     worker_grappa_.performTiming_ = true;
-    worker_grappa_.debugFolder_ = this->gtPluse_ut_res_folder_;
+    worker_grappa_.debugFolder_ = this->gt_ut_res_folder_;
 
-    workflow_.debugFolder_ = this->gtPluse_ut_res_folder_;
+    workflow_.debugFolder_ = this->gt_ut_res_folder_;
     workflow_.worker_ = &worker_grappa_;
     workflow_.workOrder_ = workOrder;
 
-    gt_io.exportArrayComplex(workflow_.workOrder_->ref_, this->gtPluse_ut_res_folder_+"ref");
+    gt_io.exportArrayComplex(workflow_.workOrder_->ref_, this->gt_ut_res_folder_+"ref");
 
     workflow_.preProcessing();
     workflow_.recon();
     workflow_.postProcessing();
 
-    gt_io.exportArrayComplex(workflow_.res_, this->gtPluse_ut_res_folder_+"grappa2D_gtPlus_res");
+    gt_io.exportArrayComplex(workflow_.res_, this->gt_ut_res_folder_+"grappa2D_gtPlus_res");
 }
 
 TYPED_TEST(gtPlus_grappa_Test, grappa2D)
@@ -472,12 +472,12 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
 
     // image data
     hoNDArray<float> real_data;
-    std::string filename = this->gtPluse_ut_data_folder_ + "underSampledKSpace_real";
+    std::string filename = this->gt_ut_data_folder_ + "underSampledKSpace_real";
     gt_io.importArray(real_data, filename);
     real_data.print(std::cout);
 
     hoNDArray<float> imag_data;
-    filename = this->gtPluse_ut_data_folder_ + "underSampledKSpace_imag";
+    filename = this->gt_ut_data_folder_ + "underSampledKSpace_imag";
     gt_io.importArray(imag_data, filename);
     imag_data.print(std::cout);
 
@@ -493,12 +493,12 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
 
     // ref
     hoNDArray<float> real_ref;
-    filename = this->gtPluse_ut_data_folder_ + "ref_real";
+    filename = this->gt_ut_data_folder_ + "ref_real";
     gt_io.importArray(real_ref, filename);
     real_ref.print(std::cout);
 
     hoNDArray<float> imag_ref;
-    filename = this->gtPluse_ut_data_folder_ + "ref_imag";
+    filename = this->gt_ut_data_folder_ + "ref_imag";
     gt_io.importArray(imag_ref, filename);
     imag_ref.print(std::cout);
 
@@ -529,13 +529,13 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     Gadgetron::abs(sosIm, magSoS);
     timer.stop();
 
-    filename = this->gtPluse_ut_res_folder_ + "SoS";
+    filename = this->gt_ut_res_folder_ + "SoS";
     gt_io.exportArray(magSoS, filename);
 
     // coil map estimation
     hoNDFFT<float>::instance()->ifft2c(ref, complexIm);
 
-    filename = this->gtPluse_ut_res_folder_ + "complexIm";
+    filename = this->gt_ut_res_folder_ + "complexIm";
     gt_io.export3DArrayComplex(complexIm, filename);
 
     hoNDArray<std::complex<float> > coilMap;
@@ -543,7 +543,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     utilCplx.coilMap2DNIH(complexIm, coilMap, ISMRMRD_SOUHEIL, 7, 3, 3, true);
     timer.stop();
 
-    filename = this->gtPluse_ut_res_folder_ + "coilMap";
+    filename = this->gt_ut_res_folder_ + "coilMap";
     gt_io.export3DArrayComplex(coilMap, filename);
 
     // grappa kernel estimation
@@ -572,13 +572,13 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
 
     Gadgetron::norm2(convKer, v);
     GDEBUG_STREAM("convKer = " << v);
-    gt_io.exportArrayComplex(convKer, this->gtPluse_ut_res_folder_ + "convKer");
+    gt_io.exportArrayComplex(convKer, this->gt_ut_res_folder_ + "convKer");
 
     ho4DArray<T> kIm(RO, E1, srcCHA, dstCHA);
     timer.start("grappa2d_image_domain_kernel");
     Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
     timer.stop();
-    gt_io.exportArrayComplex(kIm, this->gtPluse_ut_res_folder_ + "kIm");
+    gt_io.exportArrayComplex(kIm, this->gt_ut_res_folder_ + "kIm");
 
     Gadgetron::norm2(kIm, v);
     GDEBUG_STREAM("kIm = " << v);
@@ -596,14 +596,14 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     Gadgetron::norm2(unmixC, v);
     GDEBUG_STREAM("unmixC = " << v);
 
-    gt_io.export3DArrayComplex(unmixC, this->gtPluse_ut_res_folder_ + "unmixC");
-    gt_io.export2DArray(gFactor, this->gtPluse_ut_res_folder_ + "gFactor");
+    gt_io.export3DArrayComplex(unmixC, this->gt_ut_res_folder_ + "unmixC");
+    gt_io.export2DArray(gFactor, this->gt_ut_res_folder_ + "gFactor");
 
     // unwarpping
     hoNDArray<T> res;
     grappa.applyImageDomainKernel(kspace, kIm, res);
-    gt_io.export3DArrayComplex(res, this->gtPluse_ut_res_folder_ + "grappa2D_res");
+    gt_io.export3DArrayComplex(res, this->gt_ut_res_folder_ + "grappa2D_res");
 
     Gadgetron::apply_unmix_coeff_kspace(kspace, unmixC, res);
-    gt_io.export2DArrayComplex(res, this->gtPluse_ut_res_folder_ + "res_unmixC");
+    gt_io.export2DArrayComplex(res, this->gt_ut_res_folder_ + "res_unmixC");
 }

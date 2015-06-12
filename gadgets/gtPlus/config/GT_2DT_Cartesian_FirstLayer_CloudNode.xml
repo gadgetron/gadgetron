@@ -3,16 +3,6 @@
         xmlns="http://gadgetron.sf.net/gadgetron"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <!--
-       _____              _____     _____   ______   _______   _____     ____    _   _ 
-      / ____|     /\     |  __ \   / ____| |  ____| |__   __| |  __ \   / __ \  | \ | |
-     | |  __     /  \    | |  | | | |  __  | |__       | |    | |__) | | |  | | |  \| |
-     | | |_ |   / /\ \   | |  | | | | |_ | |  __|      | |    |  _  /  | |  | | | . ` |
-     | |__| |  / ____ \  | |__| | | |__| | | |____     | |    | | \ \  | |__| | | |\  |
-      \_____| /_/    \_\ |_____/   \_____| |______|    |_|    |_|  \_\  \____/  |_| \_|
-                                                                                       
-    -->
-
     <!-- 
         GT Plus configuratin file for general 2D cartesian reconstruction using linear or non-linear SPIRIT
         The dual-layer cloud topology is used here, therefore every incoming SLICE is sent

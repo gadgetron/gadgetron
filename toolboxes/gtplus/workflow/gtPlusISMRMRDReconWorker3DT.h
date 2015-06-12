@@ -753,17 +753,21 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
         {
             if ( workOrder3DT->CalibMode_ == ISMRMRD_embedded )
             {
-                refRecon = ref;
+                if (performTiming_) { gt_timer2_.start("detectSampledRegionE1E2 ... "); }
+                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.detectSampledRegionE1E2(ref, startE1_, endE1_, startE2_, endE2_));
+                if (performTiming_) { gt_timer2_.stop(); }
             }
 
             if ( workOrder3DT->CalibMode_ == ISMRMRD_separate )
             {
                 GADGET_CHECK_RETURN_FALSE(prepRefByAveragingCrossN(workOrder3DT, ref, workOrder3DT->separate_averageall_ref_, 0, refRecon));
-            }
 
-            if ( performTiming_ ) { gt_timer2_.start("detectSampledRegionE1E2 ... "); }
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.detectSampledRegionE1E2(refRecon, startE1_, endE1_, startE2_, endE2_));
-            if ( performTiming_ ) { gt_timer2_.stop(); }
+                if (performTiming_) { gt_timer2_.start("detectSampledRegionE1E2 ... "); }
+                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.detectSampledRegionE1E2(refRecon, startE1_, endE1_, startE2_, endE2_));
+                if (performTiming_) { gt_timer2_.stop(); }
+
+                if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(refRecon, debugFolder_ + "refRecon_beforeCrop"); }
+            }
 
             std::vector<size_t> crop_offset(5);
             crop_offset[0] = 0;
@@ -773,19 +777,19 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
             crop_offset[4] = 0;
 
             std::vector<size_t> crop_size(5);
-            crop_size[0] = refRecon.get_size(0);
-            crop_size[1] = endE1_-startE1_+1;
-            crop_size[2] = endE2_-startE2_+1;
-            crop_size[3] = srcCHA;
-            crop_size[4] = refRecon.get_size(4);
 
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refRecon, debugFolder_+"refRecon_beforeCrop"); }
+            crop_size[1] = endE1_ - startE1_ + 1;
+            crop_size[2] = endE2_ - startE2_ + 1;
+            crop_size[3] = srcCHA;
 
             if ( workOrder3DT->CalibMode_ == ISMRMRD_embedded )
             {
+                crop_size[0] = ref.get_size(0);
+                crop_size[4] = ref.get_size(4);
+
                 if ( performTiming_ ) { gt_timer2_.start("crop sampled region ... "); }
                 hoNDArray<T> croppedRef;
-                GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(ref, croppedRef, crop_offset, crop_size));
                 if ( performTiming_ ) { gt_timer2_.stop(); }
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(croppedRef, debugFolder_+"refRecon_afterCrop"); }
 
@@ -795,7 +799,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                     || workOrder3DT->recon_algorithm_ == ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
                 {
                     // copy the ref into the data
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1E2(refRecon, workOrder3DT->data_, 0, refRecon.get_size(0)-1, startE1_, endE1_, startE2_, endE2_));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1E2(ref, workOrder3DT->data_, 0, refRecon.get_size(0)-1, startE1_, endE1_, startE2_, endE2_));
                 }
 
                 GADGET_CHECK_RETURN_FALSE(prepRefByAveragingCrossN(workOrder3DT, croppedRef, workOrder3DT->embedded_averageall_ref_, 0, refRecon));
@@ -839,6 +843,9 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
             }
             else
             {
+                crop_size[0] = refRecon.get_size(0);
+                crop_size[4] = refRecon.get_size(4);
+
                 hoNDArray<T> croppedRef;
                 GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(croppedRef, debugFolder_+"croppedRef"); }
@@ -913,8 +920,15 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
 
             if ( performTiming_ ) { gt_timer2_.start("average along N ... "); }
             hoNDArray<T> aveAll;
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(refRecon, aveAll));
-            aveAll.squeeze();
+            if (refRecon.get_size(4) > 1)
+            {
+                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(refRecon, aveAll));
+                aveAll.squeeze();
+            }
+            else
+            {
+                aveAll.create(refRecon.get_size(0), refRecon.get_size(1), refRecon.get_size(2), refRecon.get_size(3), refRecon.begin());
+            }
             if ( performTiming_ ) { gt_timer2_.stop(); }
 
             if ( performTiming_ ) { gt_timer2_.start("compute coil compression coefficients ... "); }
@@ -953,16 +967,8 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
 
             if (coeff.cols()<srcCHA)
             {
-                // apply the coil compression
-                #ifdef USE_OMP
-                    omp_set_nested(1);
-                #endif // USE_OMP
-
                 if ( performTiming_ ) { gt_timer2_.start("apply upstream coil compression ... "); }
-                #pragma omp parallel sections default(shared)
                 {
-
-                    #pragma omp section
                     {
                         //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on data ... "); }
                         // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_, true));
@@ -974,19 +980,21 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                         workOrder3DT->data_ = data_dst_;
                         if ( performTiming_ ) { gt_timer3_.stop(); }
 
+                        data_dst_.clear();
+
                         //if ( performTiming_ ) { gt_timer2_.stop(); }
                     }
 
-                    #pragma omp section
                     {
                         //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on ref ... "); }
                         //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeff, ref_dst_, true));
                         gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeffRef, ref_dst_, true);
                         workOrder3DT->ref_ = ref_dst_;
+
+                        ref_dst_.clear();
                         //if ( performTiming_ ) { gt_timer2_.stop(); }
                     }
 
-                    #pragma omp section
                     {
                         //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on refRecon ... "); }
                         hoNDArray<T> refRecon_upstream;
@@ -997,7 +1005,6 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                         //if ( performTiming_ ) { gt_timer2_.stop(); }
                     }
 
-                    #pragma omp section
                     {
                         //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on ref for coil map ... "); }
                         hoNDArray<T> refCoilMap_upstream;
@@ -1010,10 +1017,6 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 }
 
                 if ( performTiming_ ) { gt_timer2_.stop(); }
-
-                #ifdef USE_OMP
-                    omp_set_nested(0);
-                #endif // USE_OMP 
             }
         }
     }
@@ -1057,8 +1060,15 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                 if ( workOrder3DT->same_coil_compression_coeff_allN_ )
                 {
                     hoNDArray<T> aveAll;
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(workOrder3DT->ref_recon_, aveAll));
-                    aveAll.squeeze();
+                    if (workOrder3DT->ref_recon_.get_size(4) > 1)
+                    {
+                        GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(workOrder3DT->ref_recon_, aveAll));
+                        aveAll.squeeze();
+                    }
+                    else
+                    {
+                        aveAll.create(RO, E1, E2, srcCHA, workOrder3DT->ref_recon_.begin());
+                    }
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(aveAll, debugFolder_+"aveAll"); }
 
                     hoMatrix<T> coeff, eigenValues;
