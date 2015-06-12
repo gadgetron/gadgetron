@@ -53,7 +53,7 @@ static cusparseStatus_t  sparseCSRMV(cusparseHandle_t handle, cusparseOperation_
 	return cusparseZcsrmv( handle, transA,m, n, nnz,  (cuDoubleComplex*) alpha, descrA,  (cuDoubleComplex*) csrValA,  csrRowPtrA,  csrColndA, (cuDoubleComplex*) x,  (cuDoubleComplex*) beta,  (cuDoubleComplex*)y);
 }
 
-template<class T> EXPORTGPUCORE void Gadgetron::sparseMV(T alpha,T beta, const cuCsrMatrix<T> & mat, const cuNDArray<T> & vec_in, cuNDArray<T>& vec_out, bool adjoint=false){
+template<class T> EXPORTGPUCORE void Gadgetron::sparseMV(T alpha,T beta, const cuCsrMatrix<T> & mat, const cuNDArray<T> & vec_in, cuNDArray<T>& vec_out, bool adjoint){
 
 	if (vec_in.get_number_of_elements() != (adjoint ? mat.m : mat.n))
 		throw std::runtime_error("Matrix and input vector have mismatching dimensions");
