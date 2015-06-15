@@ -77,4 +77,7 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_FILTER                          "FIL"
     #define GADGETRON_IMAGE_MOCO                            "MOCO"
     #define GADGETRON_IMAGE_AVE                             "AVE"
+
+    /// figures created during reconstruction
+    #define GADGETRON_IMAGE_RECON_FIGURE                   "FIG"
 }
