@@ -263,6 +263,7 @@ GtPlusGadgetImageArray::~GtPlusGadgetImageArray()
     if (imageArray_)
     {
         delete [] imageArray_;
+        imageArray_ = NULL;
     }
 }
 
