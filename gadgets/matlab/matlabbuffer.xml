@@ -51,7 +51,6 @@
     <property><name>debug_mode</name><value>true</value></property>
     <property><name>matlab_path</name><value></value></property>
     <property><name>matlab_classname</name><value>bufferRecon</value></property>
-    <property><name>matlab_port</name><value>3000</value></property>
   </gadget>
   <gadget>
     <name>Combine</name>

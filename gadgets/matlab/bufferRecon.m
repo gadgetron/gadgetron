@@ -14,9 +14,9 @@ classdef bufferRecon < handle & BaseBufferGadget
         function g = config(g)
             
             fprintf('The resonance frequency is %d\n', g.xml.experimentalConditions.H1resonanceFrequency_Hz);
-            nx = g.xml.encoding.encodedSpace.matrixSize.x;
-            ny = g.xml.encoding.encodedSpace.matrixSize.y;
-            nz = g.xml.encoding.encodedSpace.matrixSize.z;
+            nx = g.xml.encoding.reconSpace.matrixSize.x;
+            ny = g.xml.encoding.reconSpace.matrixSize.y;
+            nz = g.xml.encoding.reconSpace.matrixSize.z;
             % for 2D sequences the number of getZ breaks
             %try
             %catch
@@ -46,37 +46,42 @@ classdef bufferRecon < handle & BaseBufferGadget
         function g = process(g, recon_data)
             disp('Processing')
             % stuff the line
+            recon_data.data
+            data = recon_data(1).data; %Assume only one encoding space
+            head = data.headers; %Just get header from first trajectory
             
-            data = recon_data{1}.data; %Assume only one encoding space
-            head = recon_data{1}.headers{1}; %Just get header from first trajectory
-            
+            img_data = squeeze(data.data);
+            img_data = fftshift(fftshift(ifft2(ifftshift(ifftshift(img_data,1),2)),1),2);
+            img_data = squeeze(sqrt(sum(img_data.^2,3)));
+            %img_data = img_data./sqrt(size(img_data,1)*size(img_data,2));
             
             % At the end of the acquisition, reconstruct the slice
             img_head = ismrmrd.ImageHeader;
 
-            %img_head.slice = head.idx.slice;
+
             % set the matrix size
             % set one element at a time to not break the type (uint16) of matrix_size
-            img_head.matrix_size(1) = g.img_size(1); % nx
-            img_head.matrix_size(2) = g.img_size(2); % ny
-            img_head.matrix_size(3) = g.img_size(3); % nz
-            
-            img_head.position = head.position;
-            img_head.read_dir = head.read_dir;
-            img_head.phase_dir = head.phase_dir;
-            img_head.slice_dir = head.slice_dir;
-            img_head.patient_table_position = head.patient_table_position;
-            img_head.acquisition_time_stamp = head.acquisition_time_stamp;
+            img_head.matrix_size(1) = size(img_data,1);
+            img_head.matrix_size(2) = size(img_data,2);
+            img_head.matrix_size(3) = size(img_data,3);
+
+            img_head.position = head.position(:,1);
+            img_head.read_dir = head.read_dir(:,1);
+            img_head.phase_dir = head.phase_dir(:,1);
+            img_head.slice_dir = head.slice_dir(:,1);
+            img_head.patient_table_position = head.patient_table_position(:,1);
+            img_head.acquisition_time_stamp = head.acquisition_time_stamp(1);
             img_head.image_index = g.image_num;
             img_head.image_series_index = g.series_num;
+            img_head.channels = 1;
             
-            img_data = squeeze(data);
-            img_data = fftshift(ifftn(fftshift(img_data)));
-            imagesc(abs(img_data(:,:,1,1))); axis image; axis square;
-            pause(2)
-            close()
+           
+            %imagesc(abs(img_data(:,:,1,1))); axis image; axis square;
+            %pause(2)
+            %close()
             
-            disp(size(img_data));
+            %disp(size(img_data));
+            
             g.putImageQ(img_head, img_data);
             %fprintf('Put on Queue %d, type = %d\n',length(g.Q),g.Q{1}.type);
             
