@@ -38,7 +38,9 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_INTENSITY_UNCHANGED            "GADGETRON_Image_Intensity_Unchanged"
     #define GADGETRON_IMAGE_AIF                            "GADGETRON_AIF"
     #define GADGETRON_IMAGE_AIF_LV_MASK                    "GADGETRON_AIFLVMASK"
+    #define GADGETRON_IMAGE_AIF_Gd_CONCENTRATION           "GADGETRON_AIF_Gd_Concentration"
     #define GADGETRON_IMAGE_PERF_FLOW_MAP                  "GADGETRON_Perf_Flow_Map"
+    #define GADGETRON_IMAGE_PERF_Gd_CONCENTRATION          "GADGETRON_Perf_Gd_Concentration"
 
     // other images than the regular reconstruction results
     #define GADGETRON_IMAGE_OTHER                          "GADGETRON_Image_Other"

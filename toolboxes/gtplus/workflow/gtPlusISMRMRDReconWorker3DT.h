@@ -462,7 +462,7 @@ performCalib(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& ref_s
         bool reconKSpace = this->computeKSpace(workOrder3DT);
 
         // calibration
-        if ( (workOrder3DT->kernelIm_->get_size(3)!=srcCHA) || (workOrder3DT->kernelIm_->get_size(4)!=dstCHA) )
+        if ((workOrder3DT->kernel_->get_size(3) != srcCHA) || (workOrder3DT->kernel_->get_size(4) != dstCHA))
         {
            GADGET_CHECK_RETURN_FALSE(this->performCalibPrep(ref_src, ref_dst, workOrder3DT));
 
@@ -474,7 +474,6 @@ performCalib(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& ref_s
                 this->performCalibImpl(ref_src, ref_dst, workOrder3DT, usedN);
 
                 GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder3DT->kernel_, usedN));
-                GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder3DT->kernelIm_, usedN));
 
                 if ( !reconKSpace )
                 {
@@ -1419,8 +1418,8 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
         size_t RO = workOrder3DT->data_.get_size(0);
         size_t E1 = workOrder3DT->data_.get_size(1);
         size_t E2 = workOrder3DT->data_.get_size(2);
-        size_t srcCHA = workOrder3DT->kernelIm_->get_size(3);
-        size_t dstCHA = workOrder3DT->kernelIm_->get_size(4);
+        size_t srcCHA = workOrder3DT->kernel_->get_size(3);
+        size_t dstCHA = workOrder3DT->kernel_->get_size(4);
         size_t N = workOrder3DT->data_.get_size(4);
 
         if ( workOrder3DT->CalibMode_ == ISMRMRD_embedded )
@@ -2696,8 +2695,8 @@ estimateJobSize(gtPlusReconWorkOrder<T>* workOrder3DT, size_t maxNumOfBytesPerJo
         size_t E2 = workOrder3DT->data_.get_size(2);
         size_t N = workOrder3DT->data_.get_size(4);
 
-        size_t srcCHA = workOrder3DT->kernelIm_->get_size(3);
-        size_t dstCHA = workOrder3DT->kernelIm_->get_size(4);
+        size_t srcCHA = workOrder3DT->kernel_->get_size(3);
+        size_t dstCHA = workOrder3DT->kernel_->get_size(4);
 
         size_t totalJobNum = RO;
         jobSize = (size_t)std::ceil( (double)(totalJobNum+overlapBetweenJobs*(nodeN-1))/(double)nodeN );
