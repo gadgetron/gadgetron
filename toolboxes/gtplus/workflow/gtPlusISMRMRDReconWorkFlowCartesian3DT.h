@@ -31,6 +31,8 @@ public:
     using BaseClass::time_stamp_;
     using BaseClass::physio_time_stamp_;
     using BaseClass::ref_;
+    using BaseClass::gfactor_;
+    using BaseClass::wrap_around_map_;
     using BaseClass::noise_;
     using BaseClass::noiseBW_;
     using BaseClass::receriverBWRatio_;
@@ -101,6 +103,9 @@ protected:
     using BaseClass::AVE_ref_;
 
     using BaseClass::gtPlus_util_;
+
+    virtual bool copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool gfactor_needed);
+    virtual bool copyWrapAroundMap(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool wrap_around_map_needed);
 };
 
 template <typename T> 
@@ -253,6 +258,167 @@ bool gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::recon()
     catch(...)
     {
         GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::recon() ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T>
+bool gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::
+copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool gfactor_needed)
+{
+    try
+    {
+        if (gfactor_needed && (workOrder_->gfactor_.get_size(0) == res_.get_size(0)) && (workOrder_->gfactor_.get_size(1) == res_.get_size(1)) && (workOrder_->gfactor_.get_size(2) == res_.get_size(2)))
+        {
+            size_t RO = gfactor_.get_size(0);
+            size_t E1 = gfactor_.get_size(1);
+            size_t E2 = gfactor_.get_size(2);
+            size_t N = gfactor_.get_size(4);
+
+            size_t gfactor_N = workOrder_->gfactor_.get_size(3);
+
+            if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(workOrder_->gfactor_, debugFolder_ + "workOrder_gfactor_afterunwrapping"); }
+
+            std::vector<size_t> indRes(10);
+            indRes[0] = 0;
+            indRes[1] = 0;
+            indRes[2] = 0;
+            indRes[3] = 0;
+            indRes[4] = 0;
+            indRes[5] = dim5;
+            indRes[6] = dim6;
+            indRes[7] = dim7;
+            indRes[8] = dim8;
+            indRes[9] = dim9;
+
+            if (gfactor_N == N)
+            {
+                size_t offset = gfactor_.calculate_offset(indRes);
+                memcpy(gfactor_.begin() + offset, workOrder_->gfactor_.begin(), workOrder_->gfactor_.get_number_of_bytes());
+            }
+            else
+            {
+                std::vector<size_t> indGfactor(9);
+                indGfactor[0] = 0;
+                indGfactor[1] = 0;
+                indGfactor[2] = 0;
+                indGfactor[3] = 0;
+                indGfactor[4] = dim5;
+                indGfactor[5] = dim6;
+                indGfactor[6] = dim7;
+                indGfactor[7] = dim8;
+                indGfactor[8] = dim9;
+
+                size_t n;
+                for (n = 0; n<N; n++)
+                {
+                    indRes[4] = n;
+                    size_t offset = gfactor_.calculate_offset(indRes);
+
+                    if (n < gfactor_N)
+                    {
+                        indGfactor[3] = n;
+                    }
+                    else
+                    {
+                        indGfactor[3] = gfactor_N - 1;
+                    }
+
+                    size_t offset2 = workOrder_->gfactor_.calculate_offset(indGfactor);
+
+                    memcpy(gfactor_.begin() + offset, workOrder_->gfactor_.begin() + offset2, sizeof(T)*RO*E1*E2);
+                }
+            }
+
+            if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(gfactor_, debugFolder_ + "gfactor_after_copyGFactor"); }
+        }
+    }
+    catch (...)
+    {
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::copyGFactor() ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T>
+bool gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::
+copyWrapAroundMap(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool wrap_around_map_needed)
+{
+    try
+    {
+        if (wrap_around_map_needed && (workOrder_->wrap_around_map_.get_size(0) == res_.get_size(0)) && (workOrder_->wrap_around_map_.get_size(1) == res_.get_size(1)))
+        {
+            size_t RO = wrap_around_map_.get_size(0);
+            size_t E1 = wrap_around_map_.get_size(1);
+            size_t E2 = wrap_around_map_.get_size(2);
+            size_t CHA = wrap_around_map_.get_size(3);
+            size_t N = wrap_around_map_.get_size(4);
+
+            size_t wrap_around_map_CHA = workOrder_->wrap_around_map_.get_size(3);
+            size_t wrap_around_map_N = workOrder_->wrap_around_map_.get_size(4);
+
+            std::vector<size_t> indRes(10);
+            size_t offset;
+
+            indRes[0] = 0;
+            indRes[1] = 0;
+            indRes[2] = 0;
+            indRes[3] = 0;
+            indRes[4] = 0;
+            indRes[5] = dim5;
+            indRes[6] = dim6;
+            indRes[7] = dim7;
+            indRes[8] = dim8;
+            indRes[9] = dim9;
+
+            if (wrap_around_map_N == N)
+            {
+                offset = wrap_around_map_.calculate_offset(indRes);
+                memcpy(wrap_around_map_.begin() + offset, workOrder_->wrap_around_map_.begin(), workOrder_->wrap_around_map_.get_number_of_bytes());
+            }
+            else
+            {
+                std::vector<size_t> indWrapAroundMap(10);
+                indWrapAroundMap[0] = 0;
+                indWrapAroundMap[1] = 0;
+                indWrapAroundMap[2] = 0;
+                indWrapAroundMap[3] = 0;
+                indWrapAroundMap[4] = 0;
+                indWrapAroundMap[5] = dim5;
+                indWrapAroundMap[6] = dim6;
+                indWrapAroundMap[7] = dim7;
+                indWrapAroundMap[8] = dim8;
+                indWrapAroundMap[9] = dim9;
+
+                size_t n;
+                for (n = 0; n<N; n++)
+                {
+                    indRes[4] = n;
+                    offset = wrap_around_map_.calculate_offset(indRes);
+
+                    if (n < wrap_around_map_N)
+                    {
+                        indWrapAroundMap[4] = n;
+                    }
+                    else
+                    {
+                        indWrapAroundMap[4] = wrap_around_map_N - 1;
+                    }
+
+                    size_t offset2 = workOrder_->wrap_around_map_.calculate_offset(indWrapAroundMap);
+
+                    memcpy(wrap_around_map_.begin() + offset, workOrder_->wrap_around_map_.begin() + offset2, sizeof(T)*RO*E1*E2*wrap_around_map_CHA);
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GERROR_STREAM("Errors in gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::copyWrapAroundMap() ... ");
         return false;
     }
 
