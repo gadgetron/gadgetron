@@ -115,7 +115,7 @@ int gpuBufferSensePrepGadget::process(
 		}
 
 		auto reg_images = reconstruct_regularization(&data,traj.get(),dcw.get(),ncoils);
-		reg_images->squeeze();
+		//reg_images->squeeze();
 
 		auto csm = estimate_b1_map<float,2>(reg_images.get());
 		*reg_images *= *csm;
