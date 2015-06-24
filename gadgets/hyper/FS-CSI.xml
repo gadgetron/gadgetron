@@ -40,7 +40,11 @@
 	<property><name>trigger_dimension</name><value>repetition</value></property>
 </gadget>
 	
-
+<gadget>
+	<name>BucketToBufferGadget</name>
+	<dll>gadgetron_mricore</dll>
+	<classname>BucketToBufferGadget</classname>
+</gadget>
   <gadget>
     <name>CoilEstimation</name>
     <dll>gadgetron_hyper</dll>
