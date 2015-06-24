@@ -60,6 +60,7 @@ int CSIGadget::process_config(ACE_Message_Block *mb){
 	number_of_sb_iterations_ = number_of_sb_iterations.value();
 	number_of_cg_iterations_ = number_of_cg_iterations.value();
 
+	use_compressed_sensing_ = compressed_sensing.value();
 
 	mu_ = mu.value();
 
@@ -216,8 +217,7 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 
 	auto traj = m1->getObjectPtr()->traj;
 
-	auto trajdims2 = *traj->get_dimensions();
-	trajdims2.back() = 1;
+	auto trajdims2 = std::vector<size_t>{traj->get_size(0),1};
 	//Extract initial trajectory
 	cuNDArray<floatd2> traj2(trajdims2,traj->get_data_ptr());
 
@@ -225,8 +225,7 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 	auto csm =m1->getObjectPtr()->csm;
 	auto dcw = m1->getObjectPtr()->dcw;
 	//dcw.reset();
-	auto permutations = std::vector<size_t>{0,2,1};
-	data= permute(data.get(),&permutations);
+
 
 
 
@@ -289,7 +288,15 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 	solv.set_encoding_operator(E_);
 	solv.set_tc_tolerance(1e-8f);
 	*/
-	auto result = solver_.solve(data.get());
+	boost::shared_ptr<cuNDArray<float_complext>> result;
+	if (use_compressed_sensing_)
+		result = solver_.solve(data.get());
+	else {
+		cgSolver<cuNDArray<float_complext>> cgsolver;
+		cgsolver.set_max_iterations(solver_.get_inner_solver()->get_max_iterations());
+		cgsolver.set_encoding_operator(E_);
+		result = cgsolver.solve(data.get());
+	}
 	//auto result = solv.solve(data.get());
 
 	//E_->mult_MH(data.get(),result.get(),false);

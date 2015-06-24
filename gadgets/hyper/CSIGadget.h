@@ -38,6 +38,7 @@ protected:
     GADGET_PROPERTY(frequency_min,float,"Minimum frequency",0);
     GADGET_PROPERTY(frequency_max,float,"Maximum frequency",1300);
     GADGET_PROPERTY(frequency_step,float,"Frequency step",1300);
+    GADGET_PROPERTY(compressed_sensing,bool,"Use compressed sensing",true);
 
 
 
@@ -50,6 +51,7 @@ protected:
     float mu_;
     float lambda_;
     bool output_convergence_;
+    bool use_compressed_sensing_;
 
     std::vector<size_t> img_dims_;
 

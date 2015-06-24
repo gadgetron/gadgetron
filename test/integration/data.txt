@@ -69,4 +69,4 @@ epi/meas_MID517_nih_ep2d_bold_fa60_FID82077.dat: 8790d64a101acdc7b6990dd414b14be
 matlab/Kidney4cmSlice.h5: b2507b868f4a397d87e53bf86b1cf275
 matlab/Kidney4cmSlice_out.h5: 6d49b8f947122cf321a12aa59ace0bab
 matlab/matlab_out.h5: 8f80f50ccaf3d16872f4bbe78410a287 
-hyper/Kidney4cmSlice_sb_out.h5: 2b0a3debc4890dcc0fe71b5ecc66d40c
+hyper/Kidney4cmSlice_sb_outV2.h5: e7b7b97dae3811ed9afae1e0c4eb5a02
