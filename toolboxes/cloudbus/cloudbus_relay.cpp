@@ -6,6 +6,7 @@
 #include "ace/Stream.h"
 
 #include "log.h"
+#include "cloudbus_io.h"
 
 namespace Gadgetron{
 
@@ -55,6 +56,17 @@ namespace Gadgetron{
 	delete [] buffer;
 	return -1;
       }
+
+      uint32_t msg_id = *((uint32_t*)buffer);
+      GadgetronNodeInfo n;
+      switch (msg_id) {
+      case (GADGETRON_CLOUDBUS_NODE_INFO):
+	deserialize(n,buffer+4,msg_size-4);
+	GDEBUG("Received node information from: %s,%s,%d\n", n.uuid.c_str(), n.address.c_str(), n.port);
+	break;
+      default:
+	GERROR("Unknow message ID = %d\n", msg_id);
+      }
       
       GDEBUG("Received message of size: %d\n", msg_size);
       delete [] buffer;
@@ -76,6 +88,8 @@ namespace Gadgetron{
 	ACE_Event_Handler::DONT_CALL;
   
       this->reactor ()->remove_handler (this, mask);
+
+      return 0;
     }
     
     virtual int output_ready(ACE_Message_Block* mb) 

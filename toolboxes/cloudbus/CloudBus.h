@@ -25,20 +25,12 @@
 #define GADGETRON_DEFAULT_RELAY_ADDR "localhost"
 #define GADGETRON_DEFAULT_RELAY_PORT 8002
 #define GADGETRON_NODE_INFO_MESSAGE_LENGTH 16+sizeof(uint32_t)*2 //16 bytes for uuid + 2 ints
-
 #define MAXHOSTNAMELENGTH 1024
 
-namespace Gadgetron
-{
+#include "cloudbus_io.h"
 
-  struct GadgetronNodeInfo
-  {
-    std::string uuid;
-    std::string address;
-    uint32_t port;
-    uint32_t compute_capability;
-  };
-  
+namespace Gadgetron
+{  
 
   class EXPORTCLOUDBUS CloudBus : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH>
   {
@@ -86,6 +78,7 @@ namespace Gadgetron
 		return -1;
 	      }
 	      connected_ = true;
+	      send_node_info();
 	    } 
 	  }
 	}
@@ -107,6 +100,23 @@ namespace Gadgetron
       node_info_.compute_capability = c;
     }
 
+    void send_node_info()
+    {
+      size_t buf_len = calculate_node_info_length(node_info_);
+      try {
+	char* buffer = new char[4+4+buf_len];
+	*((uint32_t*)buffer) = buf_len+4;
+	*((uint32_t*)buffer + 4) = GADGETRON_CLOUDBUS_NODE_INFO;
+	if (connected_) {
+	  serialize(node_info_,buffer + 8,buf_len);
+	  this->peer().send_n(buffer,buf_len+8);
+	}
+	delete [] buffer;
+      } catch (...) {
+	GERROR("Failed to send gadgetron node info\n");
+	throw;
+      }
+    }
 
     //void get_node_info(std::vector<GadgetronNodeInfo>& nodes);
     //size_t get_number_of_nodes();
