@@ -155,8 +155,8 @@ protected:
 
     /// copy workOrder results to workflow
     bool copyReconResultsSecond(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9);
-    bool copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool gfactor_needed);
-    bool copyWrapAroundMap(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool wrap_around_map_needed);
+    virtual bool copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool gfactor_needed);
+    virtual bool copyWrapAroundMap(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool wrap_around_map_needed);
 };
 
 template <typename T> 
@@ -474,9 +474,9 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
 {
     try
     {
-        size_t RO = res_.get_size(0);
-        size_t E1 = res_.get_size(1);
-        size_t E2 = res_.get_size(2);
+        size_t RO = input_.get_size(0);
+        size_t E1 = input_.get_size(1);
+        size_t E2 = input_.get_size(2);
 
         output_ = input_;
 

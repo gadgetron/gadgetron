@@ -133,11 +133,12 @@ namespace Gadgetron {
     /// apply grappa convolution kernel to perform per-channel unwrapping
     /// convKer: 3D kspace grappa convolution kernel [convKRO convKE1 convKE2 srcCHA dstCHA]
     /// kspace: undersampled kspace [RO E1 E2 srcCHA] or [RO E1 E2 srcCHA N]
-    /// unmixCoeff: [RO E1 E2 srcCHA] or [RO E1 E2 srcCHA N] unmixing coefficient
+    /// complexIm: [RO E1 E2 dstCHA N] unwrapped complex images
     template <typename T> EXPORTMRICORE void grappa3d_image_domain_unwrapping(const hoNDArray<T>& convKer, const hoNDArray<T>& kspace,
                                                                         size_t acceFactorE1, size_t acceFactorE2,
                                                                         hoNDArray<T>& complexIm);
 
+    /// aliasedIm: wrapped complex images [RO E1 E2 srcCHA] or [RO E1 E2 srcCHA N]
     template <typename T> EXPORTMRICORE void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray<T>& convKer, const hoNDArray<T>& aliasedIm,
                                                                         size_t acceFactorE1, size_t acceFactorE2,
                                                                         hoNDArray<T>& complexIm);
@@ -145,7 +146,7 @@ namespace Gadgetron {
     /// apply unmixing coefficient on undersampled kspace
     /// kspace: [RO E1 E2 srcCHA ...]
     /// unmixCoeff : [RO E1 E2 srcCHA]
-    /// complexIm : [RO E1 E2 ...] wrapped complex images
+    /// complexIm : [RO E1 E2 ...] unwrapped complex images
     template <typename T> EXPORTMRICORE void apply_unmix_coeff_kspace_3D(const hoNDArray<T>& kspace, const hoNDArray<T>& unmixCoeff, hoNDArray<T>& complexIm);
 
     /// aliasedIm : [RO E1 E2 srcCHA ...]
