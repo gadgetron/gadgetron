@@ -2670,17 +2670,17 @@ copyAlongROE1E2TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t
         }
 
         hoNDArray<T> srcFiltered(src), dstFiltered(dst);
-        if ( startRO>=0 && endRO<=RO-1 && startE1==0 && endE1==E1-1 && startE2==0 && endE1==E2-1 )
+        if ( endRO<=RO-1 && startE1==0 && endE1==E1-1 && startE2==0 && endE1==E2-1 )
         {
             GADGET_CHECK_RETURN_FALSE(kspacefilterRO(src, filter_src_E1, srcFiltered));
             GADGET_CHECK_RETURN_FALSE(kspacefilterRO(dst, filter_dst_E1, dstFiltered));
         }
-        else if ( startRO==0 && endRO==RO-1 && startE1>=0 && endE1<=E1-1 && startE2==0 && endE1==E2-1 )
+        else if ( startRO==0 && endRO==RO-1 && endE1<=E1-1 && startE2==0 && endE1==E2-1 )
         {
             GADGET_CHECK_RETURN_FALSE(kspacefilterE1(src, filter_src_RO, srcFiltered));
             GADGET_CHECK_RETURN_FALSE(kspacefilterE1(dst, filter_dst_RO, dstFiltered));
         }
-        else if ( startRO==0 && endRO==RO-1 && startE1==0 && endE1==E1-1 && startE2>=0 && endE1<=E2-1 )
+        else if ( startRO==0 && endRO==RO-1 && startE1==0 && endE1==E1-1 && endE1<=E2-1 )
         {
             GADGET_CHECK_RETURN_FALSE(kspace3DfilterE2(src, filter_src_RO, srcFiltered));
             GADGET_CHECK_RETURN_FALSE(kspace3DfilterE2(dst, filter_dst_RO, dstFiltered));

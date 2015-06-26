@@ -103,10 +103,10 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
        //Grab address of data
        data_ptr = input->get_data_ptr();
 
-       register int idx1_max = chunks*chunk_size;
-       register int idx1, idx2;       //Index variables
-       register int idx2_limit;
-       register int middle_point = ((length+1)/2);
+       int idx1_max = chunks*chunk_size;
+       int idx1, idx2;       //Index variables
+       int idx2_limit;
+       int middle_point = ((length+1)/2);
 
        for (idx1 = 0; idx1 < idx1_max; idx1+=chunk_size) //Loop over all chunks
        {
@@ -115,7 +115,7 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
            {
                ///Copy data to buffer.
                {
-                   register int j, idx3 = idx2;
+                   int j, idx3 = idx2;
                    for (j = middle_point; j < length; idx3+=stride)
                    {
                        fft_buffer[j++] = data_ptr[idx3  ];
@@ -129,7 +129,7 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
                fftw_execute_(fft_plan);
 
                {
-                   register int j, idx3 = idx2;
+                   int j, idx3 = idx2;
 
                    for (j = middle_point; j < length; idx3+=stride)
                    {
