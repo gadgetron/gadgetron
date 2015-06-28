@@ -26,15 +26,23 @@ classdef bufferRecon < handle & BaseBufferGadget
             head = data.headers; %Just get header from first trajectory
             
             img_data = data.data;
-            % fft along x
-            img_data = fftshift(ifft(fftshift(img_data,1),[],1),1);
-            % fft along y
-            img_data = fftshift(ifft(fftshift(img_data,2),[],2),2);
-            if size(img_data,3) > 1
-                % fft along y
-                img_data = fftshift(ifft(fftshift(img_data,3),[],3),3);
-            end
             
+            % Inverse FFT
+            %  use the 1/sqrt(N) convention for both fft and ifft
+            %  so we need to scale the matlab/fftw functions
+            %  which put all the scaling in the ifft
+            
+            % fft along x
+            img_data = sqrt(size(img_data,1)) * fftshift(ifft(fftshift(img_data,1),[],1),1);
+            
+            % fft along y
+            img_data = sqrt(size(img_data,2)) * fftshift(ifft(fftshift(img_data,2),[],2),2);
+            
+            % fft along z if 3D
+            if size(img_data,3) > 1
+                img_data =  sqrt(size(img_data,3)) * fftshift(ifft(fftshift(img_data,3),[],3),3);
+            end
+
             % sqrt of sum of squares over channels
             img_data = sqrt(sum(abs(img_data).^2,4));
             

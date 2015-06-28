@@ -19,7 +19,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 		auto mxrecon = BufferToMatlabStruct(&recon_data->rbit_[i].data_);
 		mxSetField(reconArray,i,"data",mxrecon);
 		if (recon_data->rbit_[i].ref_.data_.get_number_of_elements()){
-			auto mxref = BufferToMatlabStruct(&recon_data->rbit_[i].data_);
+			auto mxref = BufferToMatlabStruct(&recon_data->rbit_[i].ref_);
 			mxSetField(reconArray,i,"reference",mxref);
 		}
 

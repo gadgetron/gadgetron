@@ -2496,7 +2496,6 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFengHuangRecon(gtPlusReconWor
             if ( endRO < RO-1 )
             {
                 endRO -= tb;
-                if ( endRO < 0 ) endRO = RO-1;
             }
 
             if ( startRO > endRO )
@@ -2514,7 +2513,6 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFengHuangRecon(gtPlusReconWor
             if ( endE1 < E1-1 )
             {
                 endE1 -= tb;
-                if ( endE1 < 0 ) endE1 = E1-1;
             }
 
             if ( startE1 > endE1 )

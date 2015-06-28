@@ -2207,7 +2207,6 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
             if ( endRO < RO-1 )
             {
                 endRO -= tb;
-                if ( endRO < 0 ) endRO = RO-1;
             }
 
             if ( startRO > endRO )
@@ -2225,7 +2224,6 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
             if ( endE1 < E1-1 )
             {
                 endE1 -= tb;
-                if ( endE1 < 0 ) endE1 = E1-1;
             }
 
             if ( startE1 > endE1 )
@@ -2243,7 +2241,6 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
             if ( endE2 < E2-1 )
             {
                 endE2 -= tb;
-                if ( endE2 < 0 ) endE2 = E2-1;
             }
 
             if ( startE2 > endE2 )
