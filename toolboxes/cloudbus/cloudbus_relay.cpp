@@ -8,7 +8,7 @@
 #include <map>
 
 #include "log.h"
-#include "cloudbus_io.h"
+#include "CloudBus.h"
 
 namespace Gadgetron{
 
@@ -119,10 +119,10 @@ namespace Gadgetron{
       this->notifier_.reactor (this->reactor ());
       this->msg_queue ()->notification_strategy (&this->notifier_);
 
-      ACE_TCHAR peer_name[MAXHOSTNAMELEN];
+      ACE_TCHAR peer_name[MAXHOSTNAMELENGTH];
       ACE_INET_Addr peer_addr;
       if (peer().get_remote_addr (peer_addr) == 0 &&
-	  peer_addr.addr_to_string (peer_name, MAXHOSTNAMELEN) == 0) {
+          peer_addr.addr_to_string(peer_name, MAXHOSTNAMELENGTH) == 0) {
 	GDEBUG("Connection from %s\n", peer_name);
       }
 
@@ -151,7 +151,7 @@ namespace Gadgetron{
 
       uint32_t msg_id = *((uint32_t*)buffer);
       GadgetronNodeInfo n;
-      ACE_TCHAR peer_name[MAXHOSTNAMELEN];
+      ACE_TCHAR peer_name[MAXHOSTNAMELENGTH];
       ACE_INET_Addr peer_addr;
       std::vector<GadgetronNodeInfo> nl;
   

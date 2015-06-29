@@ -9,6 +9,7 @@
 #include <ace/SOCK_Stream.h>
 #include <ace/SOCK_Acceptor.h>
 #include <ace/Svc_Handler.h>
+#include <ace/Condition_T.h>
 
 #include "log.h"
 

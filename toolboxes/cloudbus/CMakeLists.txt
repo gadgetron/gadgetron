@@ -8,6 +8,7 @@ include_directories(${ACE_INCLUDE_DIR}
 add_library(gadgetron_toolbox_cloudbus SHARED
   CloudBus.cpp
   CloudBus.h
+  cloudbus_io.h 
   cloudbus_export.h
 )
 
@@ -38,5 +39,6 @@ install(TARGETS gadgetron_cloudbus_relay DESTINATION bin COMPONENT main)
 
 install(FILES 
   CloudBus.h
+  cloudbus_io.h 
   cloudbus_export.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
