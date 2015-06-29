@@ -35,7 +35,7 @@ namespace GadgetronXML
     pugi::xml_node b = root.child("cloudBus");
     if (b) {
       CloudBus cb;
-      cb.multiCastAddress = b.child_value("multiCastAddress");
+      cb.relayAddress = b.child_value("relayAddress");
       cb.port = static_cast<unsigned int>(std::atoi(b.child_value("port")));
       h.cloudBus = cb;
     }

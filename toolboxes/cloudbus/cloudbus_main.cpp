@@ -7,8 +7,8 @@ int main(int argc, char** argv)
 {
   GDEBUG_STREAM("CloudBus Main Program" << std::endl);
 
-  int port = GADGETRON_DEFAULT_MULTICAST_PORT;
-  const char* addr = GADGETRON_DEFAULT_MULTICAST_ADDR;
+  int port = GADGETRON_DEFAULT_RELAY_PORT;
+  const char* addr = GADGETRON_DEFAULT_RELAY_ADDR;
   bool query_only_mode = true;
 
   if (argc > 1) {
@@ -27,8 +27,8 @@ int main(int argc, char** argv)
   }
 
   //Port and address must be set before grabbing the instance for the first time. 
-  Gadgetron::CloudBus::set_mcast_address(addr);
-  Gadgetron::CloudBus::set_mcast_port(port);
+  Gadgetron::CloudBus::set_relay_address(addr);
+  Gadgetron::CloudBus::set_relay_port(port);
   Gadgetron::CloudBus::set_query_only(query_only_mode);
   Gadgetron::CloudBus* cb = Gadgetron::CloudBus::instance();
   cb->wait();

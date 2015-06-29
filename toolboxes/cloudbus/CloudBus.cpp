@@ -4,155 +4,30 @@
 namespace Gadgetron
 {
   CloudBus* CloudBus::instance_ = 0;
-  const char* CloudBus::mcast_inet_addr_ = GADGETRON_DEFAULT_MULTICAST_ADDR;
-  int CloudBus::mcast_port_ = GADGETRON_DEFAULT_MULTICAST_PORT;
+  const char* CloudBus::relay_inet_addr_ = GADGETRON_DEFAULT_RELAY_ADDR;
+  int CloudBus::relay_port_ = GADGETRON_DEFAULT_RELAY_PORT;
   bool CloudBus::query_mode_ = false; //Listen only is disabled default
   int CloudBus::gadgetron_port_ = 9002; //Default port
-
-  CloudBusTask::CloudBusTask(int port, const char* addr)
-    : inherited()
-    , mcast_addr_(port, addr)
-    , mcast_dgram_(ACE_SOCK_Dgram_Mcast::OPT_BINDADDR_NO)
-  {
-  }
-
-  CloudBusTask::CloudBusTask()
-    : inherited()
-    , mcast_addr_(GADGETRON_DEFAULT_MULTICAST_PORT, GADGETRON_DEFAULT_MULTICAST_ADDR)
-    , mcast_dgram_(ACE_SOCK_Dgram_Mcast::OPT_BINDADDR_NO)
-  {
-  }
-    
-  int CloudBusTask::open(void*)
-  {
-    return this->activate( THR_NEW_LWP | THR_JOINABLE,1); //single thread
-  }
-
-  CloudBusReceiverTask::CloudBusReceiverTask(int port, const char* addr)
-    : CloudBusTask(port, addr)
-  {
-    
-  }
-
-  int CloudBusReceiverTask::open(void*)
-  {
-
-#if defined(__linux) || defined(__linux__) || defined(linux)
-    //On linux we will loop through all names interfaces and join as many as we can
-    struct if_nameindex *intf;
-    intf = if_nameindex ();
-    if (intf == 0) {
-      GERROR("Unable to get names of network interfaces\n");
-      return -1;
-    }
-    
-    int ifs_joined = 0;
-    int index = 0;
-    while (intf[index].if_index != 0 || intf[index].if_name != 0) {
-      if (mcast_dgram_.join(mcast_addr_,1,intf[index].if_name) != -1) {
-	++ifs_joined;
-      }
-      ++index;
-    }      
-    if_freenameindex (intf);
-
-    if (!ifs_joined) {
-      GERROR_STREAM("Error doing dgram join");
-      return -1;
-    }
-#else
-    if (mcast_dgram_.join(mcast_addr_) == -1) {
-      GERROR_STREAM("Error doing dgram join");
-      return -1;
-    }
-#endif
-
-    return CloudBusTask::open();      
-  }
-
-  int CloudBusReceiverTask::close(u_long flags)
-  {
-    mcast_dgram_.leave(mcast_addr_);
-    return CloudBusTask::close(flags);
-  }
-
-  int CloudBusReceiverTask::svc(void)
-  {
-    char buffer[GADGETRON_NODE_INFO_MESSAGE_LENGTH]; //Size of message
-    GadgetronNodeInfo info;
-    ACE_INET_Addr peer_address;
-    while (mcast_dgram_.recv(buffer, GADGETRON_NODE_INFO_MESSAGE_LENGTH, peer_address) != -1)
-      {
-	info.uuid = boost::uuids::to_string(*((boost::uuids::uuid*)buffer));
-	info.address = std::string(peer_address.get_host_addr());
-	memcpy(&info.port              , buffer + 16,                    sizeof(uint32_t));
-	memcpy(&info.compute_capability, buffer + 16 + sizeof(uint32_t), sizeof(uint32_t));
-	CloudBus::instance()->update_node(info.uuid.c_str(), info);
-      }
-
-    return 0;
-  }
-
-  CloudBusSenderTask::CloudBusSenderTask(int port, const char* addr)
-    : CloudBusTask(port, addr)
-  {
-    
-  }
-
-  int CloudBusSenderTask::open(void*)
-  {
-    if (mcast_dgram_.open(mcast_addr_) == -1) {
-      GDEBUG_STREAM("Error doing dgram open");
-      return -1;
-    }
-    return CloudBusTask::open();      
-  }
-
-  int CloudBusSenderTask::svc(void)
-  {
-    char buffer[GADGETRON_NODE_INFO_MESSAGE_LENGTH]; //Size of message
-    if (CloudBus::instance()->uuid_.size() != 16) {
-      GDEBUG_STREAM("Severe problem, UUID is != 16");
-      GDEBUG_STREAM("uuid: " << CloudBus::instance()->uuid_ << "(" << CloudBus::instance()->uuid_.size() << ")");
-    }
-    
-    memcpy(buffer                        ,  CloudBus::instance()->uuid_.begin(), 16);
-    memcpy(buffer + 16,                    &CloudBus::instance()->node_info_.port, sizeof(uint32_t));
-    memcpy(buffer + 16 + sizeof(uint32_t), &CloudBus::instance()->node_info_.compute_capability, sizeof(uint32_t));
-    
-    while (true) {
-      if (!CloudBus::instance()->query_mode_) {
-	if (mcast_dgram_.send(buffer, GADGETRON_NODE_INFO_MESSAGE_LENGTH) == -1) {
-	  GDEBUG_STREAM("Failed to send dgram data");
-	}
-      }
-      CloudBus::instance()->remove_stale_nodes();
-      ACE_OS::sleep(5);//Sleep for 5 seconds
-    }
-
-    return 0;
-  }
 
   CloudBus* CloudBus::instance()
   {
     if (!instance_)
       {
-	instance_ = new CloudBus(mcast_port_, mcast_inet_addr_);
-	instance_->receiver_.open();
-	instance_->sender_.open();
+	instance_ = new CloudBus(relay_port_, relay_inet_addr_);
+	instance_->open();
       }
     return instance_;
   }
 
   
-  void CloudBus::set_mcast_address(const char* addr)
+  void CloudBus::set_relay_address(const char* addr)
   {
-    mcast_inet_addr_ = addr;
+    relay_inet_addr_ = addr;
   }
 
-  void CloudBus::set_mcast_port(int port)
+  void CloudBus::set_relay_port(int port)
   {
-    mcast_port_ = port;
+    relay_port_ = port;
   }
 
   void CloudBus::set_query_only(bool m)
@@ -165,38 +40,169 @@ namespace Gadgetron
     gadgetron_port_ = port;
   }
 
-  void CloudBus::wait()
+  void CloudBus::set_compute_capability(uint32_t c)
   {
-    sender_.wait();
-    receiver_.wait();
-    receiver_.close();
+    node_info_.compute_capability = c;
   }
 
-  void CloudBus::get_node_info(std::vector<GadgetronNodeInfo>& nodes)
+
+  int CloudBus::open(void*)
+  {
+    if (!this->reactor()) {
+      this->reactor(ACE_Reactor::instance());
+    }
+    return this->activate( THR_NEW_LWP | THR_JOINABLE,1); //single thread
+  }
+
+  
+
+  int CloudBus::handle_close (ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
+  {
+    GDEBUG("Cloud bus connection closed\n");
+    this->peer().close();
+    connected_ = false;
+    return 0;
+  }
+
+  int CloudBus::handle_input (ACE_HANDLE fd)
+  {
+    size_t recv_cnt;
+    uint32_t msg_size;
+    if ((recv_cnt = peer().recv_n (&msg_size, sizeof(uint32_t))) <= 0) {
+      GDEBUG("Failed to get msg_size from relay. Relay must have disconnected\n");
+      return -1;
+    }
+    char* buffer = new char[msg_size];
+    nodes_.clear();
+    if ((recv_cnt = peer().recv_n (buffer, msg_size)) <= 0) {
+      GDEBUG("Failed to read message from relay. Relay must have disconnected\n");
+      delete [] buffer;
+      return -1;
+    }
+      
+    uint32_t msg_id = *((uint32_t*)buffer);
+    if (msg_id != GADGETRON_CLOUDBUS_NODE_LIST_REPLY) {
+      GERROR("Unexpected message id = %d\n", msg_id);
+      return -1;
+    }
+    deserialize(nodes_, buffer+4, msg_size-4);
+    delete [] buffer;
+    node_list_condition_.signal();
+    return 0;
+  }
+
+  
+  int CloudBus::svc(void)
+  {
+    
+    while (true) {
+      if (connected_) {
+	//
+      } else {
+	std::string connect_addr(relay_inet_addr_);
+	if (connect_addr == "localhost") {
+	  connect_addr = node_info_.address;
+	}
+	ACE_INET_Addr server(relay_port_,connect_addr.c_str());
+	ACE_SOCK_Connector connector;
+
+	if (connector.connect(this->peer(),server) == 0) {
+	  ACE_TCHAR peer_name[MAXHOSTNAMELENGTH];
+	  ACE_INET_Addr peer_addr;
+	  if ((this->peer().get_remote_addr (peer_addr) == 0) && 
+	      (peer_addr.addr_to_string (peer_name, MAXHOSTNAMELENGTH) == 0)) {
+
+	    GDEBUG("CloudBus connected to relay at  %s\n", peer_name);
+	    if (this->reactor ()->register_handler(this, ACE_Event_Handler::READ_MASK) != 0) {
+	      GERROR("Failed to register read handler\n");
+	      return -1;
+	    }
+
+	    mtx_.acquire();
+	    connected_ = true;
+	    mtx_.release();
+	    if (!query_mode_) {
+	      send_node_info();
+	    }
+	  } 
+	}
+      }
+      //Sleep for 5 seconds
+      ACE_Time_Value tv (5);
+      ACE_OS::sleep (tv);	  	
+    }
+    return 0;
+  }
+
+  void CloudBus::send_node_info()
+  {
+    size_t buf_len = calculate_node_info_length(node_info_);
+    try {
+      char* buffer = new char[4+4+buf_len];
+      *((uint32_t*)buffer) = buf_len+4;
+      *((uint32_t*)(buffer + 4)) = GADGETRON_CLOUDBUS_NODE_INFO;
+      if (connected_) {
+	serialize(node_info_,buffer + 8,buf_len);
+	this->peer().send_n(buffer,buf_len+8);
+      }
+      delete [] buffer;
+    } catch (...) {
+      GERROR("Failed to send gadgetron node info\n");
+      throw;
+    }
+    print_nodes();
+  }
+
+  void CloudBus::update_node_info()
   {
     mtx_.acquire();
-    nodes.clear();
-    for (map_type_::iterator it = nodes_.begin(); it != nodes_.end(); ++it) {
-      GadgetronNodeInfo n = it->second.first;
-      nodes.push_back(n);
+    if (connected_) {
+      uint32_t req[2];
+      req[0] = 4;
+      req[1] = GADGETRON_CLOUDBUS_NODE_LIST_QUERY;
+
+      this->peer().send_n((char*)(&req),8);
+      node_list_condition_.wait();
     }
+    mtx_.release();
+  }
+  
+  void CloudBus::print_nodes()
+  {
+    std::vector<GadgetronNodeInfo> nl;
+    get_node_info(nl);
+    GDEBUG("Number of available nodes: %d\n", nl.size());
+    for (std::vector<GadgetronNodeInfo>::iterator it = nl.begin();
+	 it != nl.end(); it++)
+      {
+	GDEBUG("  %s, %s, %d\n", it->uuid.c_str(), it->address.c_str(), it->port);
+      }
+  }
+  
+  void CloudBus::get_node_info(std::vector<GadgetronNodeInfo>& nodes)
+  {
+    update_node_info();
+    mtx_.acquire();
+    nodes = nodes_;
     mtx_.release();
   }
   
   size_t CloudBus::get_number_of_nodes()
   {
-    size_t n = 0;
+    update_node_info();
+    size_t nodes;
     mtx_.acquire();
-    n = nodes_.size();
+    nodes = nodes_.size();
     mtx_.release();
-    return n;
+    return nodes;
   }
 
   CloudBus::CloudBus(int port, const char* addr)
-    : receiver_(port, addr)
-    , sender_(port, addr)
-    , mtx_("CLOUDBUSMTX")
+    : mtx_("CLOUDBUSMTX")
+    , mtx_node_list_("CLOUDBUSMTXNODELIST")
+    , node_list_condition_(mtx_node_list_)
     , uuid_(boost::uuids::random_generator()())
+    , connected_(false)      
   {
     node_info_.port = gadgetron_port_;
     set_compute_capability(1);
@@ -207,42 +213,4 @@ namespace Gadgetron
     node_info_.address = std::string(local_addr.get_host_name());
   }
 
-  void CloudBus::update_node(const char* a, GadgetronNodeInfo& info)
-  {
-    mtx_.acquire();
-    std::string key(a);
-    map_type_::iterator it = nodes_.find(key);
-    if (it == nodes_.end()) {
-      if (info.uuid != node_info_.uuid) { //Reject stuff coming from myself
-	GDEBUG_STREAM("---->>>> New Cloud Node <<<<< ----- " << info.uuid << " (" << info.address << ":" << info.port << ", " << info.compute_capability << ")");
-      } 
-    } 
-
-    if (info.uuid != node_info_.uuid) {
-      nodes_[key] = std::pair<GadgetronNodeInfo,time_t>(info,time(NULL));
-    }
-    mtx_.release();
-  }
-
-  void CloudBus::remove_stale_nodes()
-  {
-    mtx_.acquire();
-    map_type_ new_nodes_;
-    time_t now = time(NULL);
-    for (map_type_::iterator it = nodes_.begin(); it != nodes_.end(); ++it) {
-      if (fabs(difftime(it->second.second,now)) > 30) {
-        GadgetronNodeInfo n = it->second.first;
-        GDEBUG_STREAM("---->>>> DELETING STALE CLOUD NODE <<<<< ----- " << n.uuid << " (" << n.address << ":" << n.port  << ", " << n.compute_capability << ")");
-      }
-      else
-      {
-        new_nodes_[it->first] = it->second;
-      }
-    }
-
-    nodes_.clear();
-    nodes_ = new_nodes_;
-
-    mtx_.release();
-  }
 }

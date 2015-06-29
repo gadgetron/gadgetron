@@ -6,8 +6,8 @@
   <port>9002</port>
 
   <cloudBus>
-    <multiCastAddress>224.2.2.9</multiCastAddress>
-    <port>4148</port>
+    <relayAddress>localhost</relayAddress>
+    <port>8002</port>
   </cloudBus>
   
 </gadgetronConfiguration>
