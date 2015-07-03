@@ -871,9 +871,9 @@ namespace Gadgetron
         T res=0;
 
         unsigned int ix, iy;
-        for ( iy=0; iy<SplineDegree; iy++ )
+        for ( iy=0; iy<=SplineDegree; iy++ )
         {
-            for ( ix=0; ix<SplineDegree; ix++ )
+            for ( ix=0; ix<=SplineDegree; ix++ )
             {
                 res += coeff[ xIndex[ix] + sx*yIndex[iy] ] * xWeight[ix] * yWeight[iy];
             }
@@ -903,13 +903,13 @@ namespace Gadgetron
         T res=0;
 
         unsigned int ix, iy, iz;
-        for ( iz=0; iz<SplineDegree; iz++ )
+        for ( iz=0; iz<=SplineDegree; iz++ )
         {
-            for ( iy=0; iy<SplineDegree; iy++ )
+            for ( iy=0; iy<=SplineDegree; iy++ )
             {
                 long long offset = yIndex[iy]*sx + zIndex[iz]*sx*sy;
 
-                for ( ix=0; ix<SplineDegree; ix++ )
+                for ( ix=0; ix<=SplineDegree; ix++ )
                 {
                     res += coeff[ xIndex[ix] + offset ] 
                         * xWeight[ix] * yWeight[iy] * zWeight[iz];
@@ -944,15 +944,15 @@ namespace Gadgetron
         T res=0;
 
         unsigned int ix, iy, iz, it;
-        for ( it=0; it<SplineDegree; it++ )
+        for ( it=0; it<=SplineDegree; it++ )
         {
-            for ( iz=0; iz<SplineDegree; iz++ )
+            for (iz = 0; iz <= SplineDegree; iz++)
             {
-                for ( iy=0; iy<SplineDegree; iy++ )
+                for (iy = 0; iy <= SplineDegree; iy++)
                 {
                     long long offset = yIndex[iy]*sx + zIndex[iz]*sx*sy + tIndex[it]*sx*sy*sz;
 
-                    for ( ix=0; ix<SplineDegree; ix++ )
+                    for (ix = 0; ix <= SplineDegree; ix++)
                     {
                         res += coeff[ xIndex[ix] + offset ] 
                             * xWeight[ix] * yWeight[iy] * zWeight[iz] * tWeight[it];
@@ -993,17 +993,17 @@ namespace Gadgetron
 
         unsigned int ix, iy, iz, it, ip;
 
-        for ( ip=0; ip<SplineDegree; ip++ )
+        for (ip = 0; ip <= SplineDegree; ip++)
         {
-            for ( it=0; it<SplineDegree; it++ )
+            for (it = 0; it <= SplineDegree; it++)
             {
-                for ( iz=0; iz<SplineDegree; iz++ )
+                for (iz = 0; iz <= SplineDegree; iz++)
                 {
-                    for ( iy=0; iy<SplineDegree; iy++ )
+                    for (iy = 0; iy <= SplineDegree; iy++)
                     {
                         long long offset = yIndex[iy]*sx + zIndex[iz]*sx*sy + tIndex[it]*sx*sy*sz + pIndex[ip]*sx*sy*sz*st;
 
-                        for ( ix=0; ix<SplineDegree; ix++ )
+                        for (ix = 0; ix <= SplineDegree; ix++)
                         {
                             res += coeff[ xIndex[ix] + offset ] 
                                 * xWeight[ix] * yWeight[iy] * zWeight[iz] * tWeight[it] * pWeight[ip];
@@ -1049,15 +1049,15 @@ namespace Gadgetron
 
         unsigned int ix, iy, iz, it, ip, iq;
 
-        for ( iq=0; iq<SplineDegree; iq++ )
+        for (iq = 0; iq <= SplineDegree; iq++)
         {
-            for ( ip=0; ip<SplineDegree; ip++ )
+            for (ip = 0; ip <= SplineDegree; ip++)
             {
-                for ( it=0; it<SplineDegree; it++ )
+                for (it = 0; it <= SplineDegree; it++)
                 {
-                    for ( iz=0; iz<SplineDegree; iz++ )
+                    for (iz = 0; iz <= SplineDegree; iz++)
                     {
-                        for ( iy=0; iy<SplineDegree; iy++ )
+                        for (iy = 0; iy <= SplineDegree; iy++)
                         {
                             long long offset = yIndex[iy]*sx 
                                              + zIndex[iz]*sx*sy 
@@ -1065,7 +1065,7 @@ namespace Gadgetron
                                              + pIndex[ip]*sx*sy*sz*st
                                              + qIndex[iq]*sx*sy*sz*st*sp;
 
-                            for ( ix=0; ix<SplineDegree; ix++ )
+                            for (ix = 0; ix <= SplineDegree; ix++)
                             {
                                 res += coeff[ xIndex[ix] + offset ] 
                                     * xWeight[ix] * yWeight[iy] * zWeight[iz] * tWeight[it] * pWeight[ip] * qWeight[iq];
@@ -1116,17 +1116,17 @@ namespace Gadgetron
 
         unsigned int ix, iy, iz, it, ip, iq, ir;
 
-        for ( ir=0; ir<SplineDegree; ir++ )
+        for (ir = 0; ir <= SplineDegree; ir++)
         {
-            for ( iq=0; iq<SplineDegree; iq++ )
+            for (iq = 0; iq <= SplineDegree; iq++)
             {
-                for ( ip=0; ip<SplineDegree; ip++ )
+                for (ip = 0; ip <= SplineDegree; ip++)
                 {
-                    for ( it=0; it<SplineDegree; it++ )
+                    for (it = 0; it <= SplineDegree; it++)
                     {
-                        for ( iz=0; iz<SplineDegree; iz++ )
+                        for (iz = 0; iz <= SplineDegree; iz++)
                         {
-                            for ( iy=0; iy<SplineDegree; iy++ )
+                            for (iy = 0; iy <= SplineDegree; iy++)
                             {
                                 long long offset = yIndex[iy]*sx 
                                                  + zIndex[iz]*sx*sy 
@@ -1135,7 +1135,7 @@ namespace Gadgetron
                                                  + qIndex[iq]*sx*sy*sz*st*sp
                                                  + rIndex[ir]*sx*sy*sz*st*sp*sq;
 
-                                for ( ix=0; ix<SplineDegree; ix++ )
+                                for (ix = 0; ix <= SplineDegree; ix++)
                                 {
                                     res += coeff[ xIndex[ix] + offset ] 
                                         * xWeight[ix] * yWeight[iy] * zWeight[iz] * tWeight[it] * pWeight[ip] * qWeight[iq] * rWeight[ir];
@@ -1191,19 +1191,19 @@ namespace Gadgetron
 
         unsigned int ix, iy, iz, it, ip, iq, ir, is;
 
-        for ( is=0; is<SplineDegree; is++ )
+        for ( is=0; is<=SplineDegree; is++ )
         {
-            for ( ir=0; ir<SplineDegree; ir++ )
+            for ( ir=0; ir<=SplineDegree; ir++ )
             {
-                for ( iq=0; iq<SplineDegree; iq++ )
+                for ( iq=0; iq<=SplineDegree; iq++ )
                 {
-                    for ( ip=0; ip<SplineDegree; ip++ )
+                    for ( ip=0; ip<=SplineDegree; ip++ )
                     {
-                        for ( it=0; it<SplineDegree; it++ )
+                        for ( it=0; it<=SplineDegree; it++ )
                         {
-                            for ( iz=0; iz<SplineDegree; iz++ )
+                            for ( iz=0; iz<=SplineDegree; iz++ )
                             {
-                                for ( iy=0; iy<SplineDegree; iy++ )
+                                for ( iy=0; iy<=SplineDegree; iy++ )
                                 {
                                     long long offset = yIndex[iy]*sx 
                                                      + zIndex[iz]*sx*sy 
@@ -1213,7 +1213,7 @@ namespace Gadgetron
                                                      + rIndex[ir]*sx*sy*sz*st*sp*sq
                                                      + sIndex[ir]*sx*sy*sz*st*sp*sq*sr;
 
-                                    for ( ix=0; ix<SplineDegree; ix++ )
+                                    for ( ix=0; ix<=SplineDegree; ix++ )
                                     {
                                         res += coeff[ xIndex[ix] + offset ] 
                                             * xWeight[ix] * yWeight[iy] * zWeight[iz] * tWeight[it] * pWeight[ip] * qWeight[iq] * rWeight[ir] * sWeight[is];
@@ -1274,21 +1274,21 @@ namespace Gadgetron
 
         unsigned int ix, iy, iz, it, ip, iq, ir, is, iu;
 
-        for ( iu=0; iu<SplineDegree; iu++ )
+        for ( iu=0; iu<=SplineDegree; iu++ )
         {
-            for ( is=0; is<SplineDegree; is++ )
+            for ( is=0; is<=SplineDegree; is++ )
             {
-                for ( ir=0; ir<SplineDegree; ir++ )
+                for ( ir=0; ir<=SplineDegree; ir++ )
                 {
-                    for ( iq=0; iq<SplineDegree; iq++ )
+                    for ( iq=0; iq<=SplineDegree; iq++ )
                     {
-                        for ( ip=0; ip<SplineDegree; ip++ )
+                        for ( ip=0; ip<=SplineDegree; ip++ )
                         {
-                            for ( it=0; it<SplineDegree; it++ )
+                            for ( it=0; it<=SplineDegree; it++ )
                             {
-                                for ( iz=0; iz<SplineDegree; iz++ )
+                                for ( iz=0; iz<=SplineDegree; iz++ )
                                 {
-                                    for ( iy=0; iy<SplineDegree; iy++ )
+                                    for ( iy=0; iy<=SplineDegree; iy++ )
                                     {
                                         long long offset = yIndex[iy]*sx 
                                                          + zIndex[iz]*sx*sy 
@@ -1299,7 +1299,7 @@ namespace Gadgetron
                                                          + sIndex[ir]*sx*sy*sz*st*sp*sq*sr
                                                          + uIndex[ir]*sx*sy*sz*st*sp*sq*sr*ss;
 
-                                        for ( ix=0; ix<SplineDegree; ix++ )
+                                        for ( ix=0; ix<=SplineDegree; ix++ )
                                         {
                                             res += coeff[ xIndex[ix] + offset ] 
                                                 * xWeight[ix] * yWeight[iy] * zWeight[iz] * tWeight[it] * pWeight[ip] * qWeight[iq] * rWeight[ir] * sWeight[is] * uWeight[iu];
@@ -1332,9 +1332,9 @@ namespace Gadgetron
         T res=0;
 
         unsigned int ix, iy;
-        for ( iy=0; iy<SplineDegree; iy++ )
+        for ( iy=0; iy<=SplineDegree; iy++ )
         {
-            for ( ix=0; ix<SplineDegree; ix++ )
+            for ( ix=0; ix<=SplineDegree; ix++ )
             {
                 res += coeff[ xIndex[ix] + sx*yIndex[iy] ] * xWeight[ix] * yWeight[iy];
             }
@@ -1363,13 +1363,13 @@ namespace Gadgetron
         T res=0;
 
         unsigned int ix, iy, iz;
-        for ( iz=0; iz<SplineDegree; iz++ )
+        for ( iz=0; iz<=SplineDegree; iz++ )
         {
-            for ( iy=0; iy<SplineDegree; iy++ )
+            for ( iy=0; iy<=SplineDegree; iy++ )
             {
                 long long offset = yIndex[iy]*sx + zIndex[iz]*sx*sy;
 
-                for ( ix=0; ix<SplineDegree; ix++ )
+                for ( ix=0; ix<=SplineDegree; ix++ )
                 {
                     res += coeff[ xIndex[ix] + offset ] 
                         * xWeight[ix] * yWeight[iy] * zWeight[iz];
@@ -1404,15 +1404,15 @@ namespace Gadgetron
         T res=0;
 
         unsigned int ix, iy, iz, it;
-        for ( it=0; it<SplineDegree; it++ )
+        for ( it=0; it<=SplineDegree; it++ )
         {
-            for ( iz=0; iz<SplineDegree; iz++ )
+            for ( iz=0; iz<=SplineDegree; iz++ )
             {
-                for ( iy=0; iy<SplineDegree; iy++ )
+                for ( iy=0; iy<=SplineDegree; iy++ )
                 {
                     long long offset = yIndex[iy]*sx + zIndex[iz]*sx*sy + tIndex[it]*sx*sy*sz;
 
-                    for ( ix=0; ix<SplineDegree; ix++ )
+                    for ( ix=0; ix<=SplineDegree; ix++ )
                     {
                         res += coeff[ xIndex[ix] + offset ] 
                             * xWeight[ix] * yWeight[iy] * zWeight[iz] * tWeight[it];
