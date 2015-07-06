@@ -708,4 +708,28 @@ namespace Gadgetron
 
         return true;
     }
+
+    std::string getKSpaceFilterNameFromType(Gadgetron::ISMRMRDKSPACEFILTER type)
+    {
+        std::string name;
+
+        if (type == ISMRMRD_FILTER_GAUSSIAN)
+        {
+            name = "Gaussian";
+        }
+        else if (type == ISMRMRD_FILTER_HANNING)
+        {
+            name = "Hanning";
+        }
+        else if (type == ISMRMRD_FILTER_TAPERED_HANNING)
+        {
+            name = "TaperedHanning";
+        }
+        else
+        {
+            name = "None";
+        }
+
+        return name;
+    }
 }

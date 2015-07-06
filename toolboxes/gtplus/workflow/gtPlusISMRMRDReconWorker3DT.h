@@ -25,6 +25,8 @@
 
 #include "gtPlusISMRMRDReconWorker.h"
 
+#include "mri_core_kspace_filter.h"
+
 namespace Gadgetron { namespace gtPlus {
 
 template <typename T> 
@@ -1927,13 +1929,17 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
         hoNDArray<T> filterRO(RO);
         if ( (workOrder3DT.start_RO_<0 || workOrder3DT.end_RO_<0) )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, 0, RO-1, 
-                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
+            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, 0, RO-1, 
+                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));*/
+
+            Gadgetron::generate_symmetric_filter_ref(RO, 0, RO - 1, filterRO);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, workOrder3DT.start_RO_, workOrder3DT.end_RO_, 
-                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
+            //GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, workOrder3DT.start_RO_, workOrder3DT.end_RO_, 
+            //    filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
+
+            Gadgetron::generate_symmetric_filter_ref(RO, workOrder3DT.start_RO_, workOrder3DT.end_RO_, filterRO);
 
             startRO = workOrder3DT.start_RO_;
             endRO = workOrder3DT.end_RO_;
@@ -1945,13 +1951,17 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
         hoNDArray<T> filterE1(E1);
         if ( (workOrder3DT.start_E1_<0 || workOrder3DT.end_E1_<0) )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, 0, E1-1, 
-                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));
+            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, 0, E1-1, 
+                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));*/
+
+            Gadgetron::generate_symmetric_filter_ref(E1, 0, E1 - 1, filterE1);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, workOrder3DT.start_E1_, workOrder3DT.end_E1_, 
-                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));
+            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, workOrder3DT.start_E1_, workOrder3DT.end_E1_, 
+                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));*/
+
+            Gadgetron::generate_symmetric_filter_ref(E1, workOrder3DT.start_E1_, workOrder3DT.end_E1_, filterE1);
 
             startE1 = workOrder3DT.start_E1_;
             endE1 = workOrder3DT.end_E1_;
@@ -1963,13 +1973,17 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
         hoNDArray<T> filterE2(E1);
         if ( (workOrder3DT.start_E2_<0 || workOrder3DT.end_E2_<0) )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E2, 0, E2-1, 
-                filterE2, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E2)));
+            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E2, 0, E2-1, 
+                filterE2, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E2)));*/
+
+            Gadgetron::generate_symmetric_filter_ref(E2, 0, E2 - 1, filterE2);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E2, workOrder3DT.start_E2_, workOrder3DT.end_E2_, 
-                filterE2, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E2)));
+            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E2, workOrder3DT.start_E2_, workOrder3DT.end_E2_, 
+                filterE2, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E2)));*/
+
+            Gadgetron::generate_symmetric_filter_ref(E2, workOrder3DT.start_E2_, workOrder3DT.end_E2_, filterE2);
 
             startE2 = workOrder3DT.start_E2_;
             endE2 = workOrder3DT.end_E2_;
@@ -2134,13 +2148,13 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
 
         // find the symmetric region in the kspace
         size_t startSymRO, endSymRO;
-        GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findSymmetricSampledRegion(startRO, endRO, RO/2, startSymRO, endSymRO));
+        Gadgetron::find_symmetric_sampled_region(startRO, endRO, RO / 2, startSymRO, endSymRO);
 
         size_t startSymE1, endSymE1;
-        GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findSymmetricSampledRegion(startE1, endE1, E1/2, startSymE1, endSymE1));
+        Gadgetron::find_symmetric_sampled_region(startE1, endE1, E1 / 2, startSymE1, endSymE1);
 
         size_t startSymE2, endSymE2;
-        GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findSymmetricSampledRegion(startE2, endE2, E2/2, startSymE2, endSymE2));
+        Gadgetron::find_symmetric_sampled_region(startE2, endE2, E2 / 2, startSymE2, endSymE2);
 
         // the reference kspace for kernel estimation
         hoNDArray<T> src, dst;

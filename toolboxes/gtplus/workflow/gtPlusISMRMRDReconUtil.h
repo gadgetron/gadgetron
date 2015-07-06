@@ -65,6 +65,7 @@
 #include "mri_core_def.h"
 #include "mri_core_utility.h"
 #include "mri_core_coil_map_estimation.h"
+#include "mri_core_kspace_filter.h"
 
 namespace Gadgetron {
 
@@ -379,7 +380,7 @@ public:
     // symmetric filter, used for image filtering
     // sigma: for Gaussian, in the unit of pixel
     // width: for Tukey filter etc., the length of transition band
-    bool generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width);
+    /// bool generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width);
 
     // asymmetric filter, used for partial fourier/asymmetric echo filtering
     // start, end: the data range
@@ -388,16 +389,16 @@ public:
     // if filterType==ISMRMRD_FILTER_TAPERED_HANNING and the densityComp is true, the density compensation version of tapered filter will be generated
     // where unacquired region has filter values 0 and symmetric region 1 and nonsymmetric region 2
     // if densityComp==false, the one side tapered filter will be generated
-    bool generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, size_t width, bool densityComp=false);
+    /// bool generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, size_t width, bool densityComp=false);
 
     // generate ref data filter
-    bool generateSymmetricFilterForRef(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width);
+    /// bool generateSymmetricFilterForRef(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width);
 
     // find the symmetric sampled region
-    bool findSymmetricSampledRegion(size_t start, size_t end, size_t center, size_t& startSym, size_t& endSym);
+    /// bool findSymmetricSampledRegion(size_t start, size_t end, size_t center, size_t& startSym, size_t& endSym);
 
     // compute the filter SNR unit scale factor
-    bool computeFilterSNRUnitScaleFactor(const hoNDArray<T>& filter, T& scalFactor);
+    /// bool computeFilterSNRUnitScaleFactor(const hoNDArray<T>& filter, T& scalFactor);
 
     // ------------------------------------------------------------------------
     // detect sampled region

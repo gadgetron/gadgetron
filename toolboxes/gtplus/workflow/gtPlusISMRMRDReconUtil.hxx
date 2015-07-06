@@ -759,7 +759,7 @@ compute3DFilterFromThree1D(const hoNDArray<float>& fx, const hoNDArray<float>& f
             {
                 for ( x=0; x<RO; x++ )
                 {
-                    pFxyz[z+RO*E1+y*RO+x] =  std::complex<float> (fx(x)*fy(y)*fz(z));
+                    pFxyz[z*RO*E1+y*RO+x] =  std::complex<float> (fx(x)*fy(y)*fz(z));
                 }
             }
         }
@@ -794,7 +794,7 @@ compute3DFilterFromThree1D(const hoNDArray<double>& fx, const hoNDArray<double>&
             {
                 for ( x=0; x<RO; x++ )
                 {
-                    pFxyz[z+RO*E1+y*RO+x] =  std::complex<double> (fx(x)*fy(y)*fz(z));
+                    pFxyz[z*RO*E1+y*RO+x] =  std::complex<double> (fx(x)*fy(y)*fz(z));
                 }
             }
         }
@@ -1193,489 +1193,489 @@ kspace3DfilterROE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const ho
 // compute kspace filters
 // ------------------------------------------------------------------------
 
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::
-generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width)
-{
-    try
-    {
-        if ( len == 0 ) return true;
-
-        if ( start > len-1 ) start = 0;
-        if ( end > len-1 ) end = len-1;
-
-        if ( start > end )
-        {
-            start = 0;
-            end = len-1;
-        }
-
-        filter.create(len);
-        Gadgetron::fill(filter, T(1.0));
-
-        if ( width==0 || width>=len ) width = 1;
-
-        size_t ii;
-        switch (filterType)
-        {
-            case ISMRMRD_FILTER_GAUSSIAN:
-                {
-                    double r = -1.0*sigma*sigma/2;
-
-                    if ( len%2 == 0 )
-                    {
-                        // to make sure the zero points match and boundary of filters are symmetric
-                        double stepSize = 2.0/(len-2);
-                        std::vector<double> x(len-1);
-
-                        for ( ii=0; ii<len-1; ii++ )
-                        {
-                            x[ii] = -1 + ii*stepSize;
-                        }
-
-                        for ( ii=0; ii<len-1; ii++ )
-                        {
-                            filter(ii+1) = T( (value_type)(std::exp(r*(x[ii]*x[ii]))) );
-                        }
-
-                        filter(0) = T(0);
-                    }
-                    else
-                    {
-                        double stepSize = 2.0/(len-1);
-                        std::vector<double> x(len);
-
-                        for ( ii=0; ii<len; ii++ )
-                        {
-                            x[ii] = -1 + ii*stepSize;
-                        }
-
-                        for ( ii=0; ii<len; ii++ )
-                        {
-                            filter(ii) = T( (value_type)(std::exp(r*(x[ii]*x[ii]))) );
-                        }
-                    }
-                }
-            break;
-
-            case ISMRMRD_FILTER_TAPERED_HANNING:
-                 {
-                    hoNDArray<T> w(width);
-
-                    for ( ii=1; ii<=width; ii++ )
-                    {
-                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(2*width+1) ) )) );
-                    }
-
-                    if ( len%2 == 0 )
-                    {
-                        for ( ii=1; ii<=width; ii++ )
-                        {
-                            filter(ii) = w(ii-1);
-                            filter(len-ii) = filter(ii);
-                        }
-
-                        filter(0) = T(0);
-                    }
-                    else
-                    {
-                        for ( ii=1; ii<=width; ii++ )
-                        {
-                            filter(ii-1) = w(ii-1);
-                            filter(len-ii) = filter(ii-1);
-                        }
-                    }
-                }
-            break;
-
-            // symmetric hanning
-            //  does not include the first and last zero sample
-            case ISMRMRD_FILTER_HANNING:
-                 {
-                    if ( len%2 == 0 )
-                    {
-                        size_t N = len-1;
-                        double halfLen = (double)( (N+1)/2 );
-                        for ( ii=1; ii<=halfLen; ii++ )
-                        {
-                            filter(ii) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(N+1) ) )) );
-                        }
-
-                        for ( ii=(size_t)halfLen; ii<N; ii++ )
-                        {
-                            filter(ii+1) = filter(N-ii);
-                        }
-
-                        filter(0) = T(0);
-                    }
-                    else
-                    {
-                        double halfLen = (double)( (len+1)/2 );
-                        for ( ii=1; ii<=(size_t)halfLen; ii++ )
-                        {
-                            filter(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(len+1) ) )) );
-                        }
-
-                        for ( ii=(size_t)halfLen; ii<len; ii++ )
-                        {
-                            filter(ii) = filter(len-1-ii);
-                        }
-                    }
-                }
-            break;
-
-            default:
-            break;
-        }
-
-        T sos = 0.0f;
-        for ( ii=0; ii<len; ii++ )
-        {
-            sos += filter(ii)*filter(ii);
-        }
-
-        T r = (value_type)( 1.0/std::sqrt( std::abs(sos)/(len) ) );
-        for ( ii=0; ii<len; ii++ )
-        {
-            filter(ii) *= r;
-        }
-    }
-    catch(...)
-    {
-        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::generateSymmetricFilter(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::
-generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, size_t width, bool densityComp)
-{
-    try
-    {
-        if ( len == 0 ) return true;
-
-        if ( start > len-1 ) start = 0;
-        if ( end > len-1 ) end = len-1;
-
-        if ( start > end )
-        {
-            start = 0;
-            end = len-1;
-        }
-
-        filter.create(len);
-        Gadgetron::clear(filter);
-
-        size_t ii;
-        for ( ii=start; ii<=end; ii++ )
-        {
-            filter(ii) = T(1.0);
-        }
-
-        if ( width==0 || width>=len ) width = 1;
-
-        hoNDArray<T> w(width);
-
-        switch (filterType)
-        {
-            case ISMRMRD_FILTER_TAPERED_HANNING:
-                 {
-                    for ( ii=1; ii<=width; ii++ )
-                    {
-                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(2*width+1) ) )) );
-                    }
-                }
-            break;
-
-            default:
-                Gadgetron::fill(w, T(1.0));
-            break;
-        }
-
-        if ( densityComp )
-        {
-            size_t startSym(0), endSym(len-1);
-            GADGET_CHECK_RETURN_FALSE(findSymmetricSampledRegion(start, end, len/2, startSym, endSym));
-
-            if ( start==0 && end==len-1 )
-            {
-                for ( ii=1; ii<=width; ii++ )
-                {
-                    filter(ii-1) = w(ii-1);
-                    filter(len-ii) = filter(ii-1);
-                }
-            }
-
-            if ( start==0 && end<len-1 )
-            {
-                for ( ii=0; ii<startSym; ii++ )
-                {
-                    filter(ii) = 2.0;
-                }
-
-                for ( ii=1; ii<=width; ii++ )
-                {
-                    filter(ii-1+startSym) = T(1.0) + w(width-ii);
-                    filter(end-ii+1) = w(ii-1);
-                }
-            }
-
-            if ( start>0 && end==len-1 )
-            {
-                for ( ii=endSym+1; ii<len; ii++ )
-                {
-                    filter(ii) = 2.0;
-                }
-
-                for ( ii=1; ii<=width; ii++ )
-                {
-                    filter(endSym-ii+1) = T(1.0) + w(width-ii);
-                    filter(start+ii-1) = w(ii-1);
-                }
-            }
-
-            if ( start>0 && end<len-1 )
-            {
-                if ( start==startSym && end==endSym )
-                {
-                    for ( ii=1; ii<=width; ii++ )
-                    {
-                        filter(start+ii-1) = w(ii-1);
-                        filter(end-ii+1) = w(ii-1);
-                    }
-                }
-                else if ( start==startSym && end>endSym )
-                {
-                    for ( ii=endSym+1; ii<=end; ii++ )
-                    {
-                        filter(ii) = 2.0;
-                    }
-
-                    for ( ii=1; ii<=width; ii++ )
-                    {
-                        filter(end-ii+1) = T(1.0) + w(ii-1);
-                        filter(endSym-ii+1) = w(width-ii);
-                        filter(start+ii-1) = w(ii-1);
-                    }
-                }
-                else if ( start<startSym && end==endSym )
-                {
-                    for ( ii=start; ii<startSym; ii++ )
-                    {
-                        filter(ii) = 2.0;
-                    }
-
-                    for ( ii=1; ii<=width; ii++ )
-                    {
-                        filter(ii-1+start) = T(1.0) + w(ii-1);
-                        filter(ii-1+startSym) = w(width-ii);
-                        filter(end-ii+1) = w(ii-1);
-                    }
-                }
-                else
-                {
-                    for ( ii=1; ii<=width; ii++ )
-                    {
-                        filter(start+ii-1) = w(ii-1);
-                        filter(end-ii+1) = w(ii-1);
-                    }
-                }
-            }
-        }
-        else
-        {
-            if ( start==0 && end==len-1 )
-            {
-                for ( ii=1; ii<=width; ii++ )
-                {
-                    filter(ii-1) = w(ii-1);
-                    filter(len-ii) = filter(ii-1);
-                }
-            }
-
-            if ( start==0 && end<len-1 )
-            {
-                for ( ii=1; ii<=width; ii++ )
-                {
-                    filter(end-ii+1) = w(ii-1);
-                }
-            }
-
-            if ( start>0 && end==len-1 )
-            {
-                for ( ii=1; ii<=width; ii++ )
-                {
-                    filter(start+ii-1) = w(ii-1);
-                }
-            }
-
-            if ( start>0 && end<len-1 )
-            {
-                for ( ii=1; ii<=width; ii++ )
-                {
-                    filter(start+ii-1) = w(ii-1);
-                    filter(end-ii+1) = w(ii-1);
-                }
-            }
-        }
-
-        T sos = 0.0f;
-        for ( ii=0; ii<len; ii++ )
-        {
-            sos += filter(ii)*filter(ii);
-        }
-
-        // T r = 1.0/std::sqrt( std::abs(sos)/len );
-        T r = (value_type)( 1.0/std::sqrt( std::abs(sos)/(end-start+1) ) ); // SNR unit filter
-        for ( ii=0; ii<len; ii++ )
-        {
-            filter(ii) *= r;
-        }
-    }
-    catch(...)
-    {
-        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::generateAsymmetricFilter(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::
-generateSymmetricFilterForRef(size_t len, size_t start, size_t end, 
-        hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width)
-{
-    try
-    {
-        if ( len < 2 ) return true;
-
-        GADGET_CHECK_RETURN_FALSE(start>=0&&end<=len-1&&start<=end);
-
-        if ( start==0 && end==len-1 )
-        {
-            GADGET_CHECK_RETURN_FALSE(generateSymmetricFilter(len, 0, len-1, filter, filterType, sigma, width));
-            return true;
-        }
-
-        size_t centerInd = len/2;
-
-        size_t lenFilter(0); // make a symmetric filter with zero at the center
-        size_t lenFilterEnd = 2*(end-centerInd)+1;
-        size_t lenFilterStart = 2*(centerInd-start)+1;
-
-        if ( start==0 && end<len-1 )
-        {
-            lenFilter = lenFilterEnd;
-        }
-        else if ( start>0 && end==len-1 )
-        {
-            lenFilter = lenFilterStart;
-        }
-        else if ( start>0 && end<len-1 )
-        {
-            lenFilter = ( (lenFilterStart<lenFilterEnd) ? lenFilterStart : lenFilterEnd );
-        }
-        else
-        {
-            GERROR_STREAM("Invalid inputs : start - end - len : " << start << " " << end << " " << len);
-        }
-
-        GADGET_CHECK_RETURN_FALSE(lenFilter>0);
-
-        hoNDArray<T> filterSym(lenFilter);
-        GADGET_CHECK_RETURN_FALSE(generateSymmetricFilter(lenFilter, 0, lenFilter-1, filterSym, filterType, sigma, width));
-
-        filter.create(len);
-        Gadgetron::clear(&filter);
-
-        if ( start==0 && end<len-1 )
-        {
-            memcpy(filter.begin()+end-lenFilter+1, filterSym.begin(), filterSym.get_number_of_bytes());
-            return true;
-        }
-        else if ( start>0 && end==len-1 )
-        {
-            memcpy(filter.begin()+start, filterSym.begin(), filterSym.get_number_of_bytes());
-            return true;
-        }
-        else if ( start>0 && end<len-1 )
-        {
-            if ( lenFilter == lenFilterStart ) 
-            {
-                memcpy(filter.begin()+start, filterSym.begin(), filterSym.get_number_of_bytes());
-            }
-            else
-            {
-                memcpy(filter.begin()+end-lenFilter+1, filterSym.begin(), filterSym.get_number_of_bytes());
-            }
-
-            return true;
-        }
-        else
-        {
-            GERROR_STREAM("Invalid inputs : start - end - len : " << start << " " << end << " " << len);
-        }
-    }
-    catch(...)
-    {
-        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::generateSymmetricFilterForRef(...) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::
-findSymmetricSampledRegion(size_t start, size_t end, size_t center, size_t& startSym, size_t& endSym)
-{
-    GADGET_CHECK_RETURN_FALSE(end>=start);
-    GADGET_CHECK_RETURN_FALSE(center>=start);
-    GADGET_CHECK_RETURN_FALSE(end>=center);
-
-    size_t halfSizeStart = center - start;
-    size_t halfSizeEnd =  end - center;
-
-    if ( halfSizeStart > halfSizeEnd )
-    {
-        startSym = center - halfSizeEnd;
-        endSym = center + halfSizeEnd;
-    }
-    else
-    {
-        startSym = center - halfSizeStart;
-        endSym = center + halfSizeStart;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::computeFilterSNRUnitScaleFactor(const hoNDArray<T>& filter, T& scalFactor)
-{
-    size_t ii, len;
-
-    len = filter.get_number_of_elements();
-    if ( len == 0 )
-    {
-        scalFactor = T(1.0);
-        return true;
-    }
-
-    T sos(0.0);
-    for ( ii=0; ii<len; ii++ )
-    {
-        sos += filter(ii)*filter(ii);
-    }
-
-    scalFactor = (value_type)(1.0/std::sqrt( std::abs(sos)/len ));
-
-    return true;
-}
+//template <typename T> 
+//bool gtPlusISMRMRDReconUtil<T>::
+//generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width)
+//{
+//    try
+//    {
+//        if ( len == 0 ) return true;
+//
+//        if ( start > len-1 ) start = 0;
+//        if ( end > len-1 ) end = len-1;
+//
+//        if ( start > end )
+//        {
+//            start = 0;
+//            end = len-1;
+//        }
+//
+//        filter.create(len);
+//        Gadgetron::fill(filter, T(1.0));
+//
+//        if ( width==0 || width>=len ) width = 1;
+//
+//        size_t ii;
+//        switch (filterType)
+//        {
+//            case ISMRMRD_FILTER_GAUSSIAN:
+//                {
+//                    double r = -1.0*sigma*sigma/2;
+//
+//                    if ( len%2 == 0 )
+//                    {
+//                        // to make sure the zero points match and boundary of filters are symmetric
+//                        double stepSize = 2.0/(len-2);
+//                        std::vector<double> x(len-1);
+//
+//                        for ( ii=0; ii<len-1; ii++ )
+//                        {
+//                            x[ii] = -1 + ii*stepSize;
+//                        }
+//
+//                        for ( ii=0; ii<len-1; ii++ )
+//                        {
+//                            filter(ii+1) = T( (value_type)(std::exp(r*(x[ii]*x[ii]))) );
+//                        }
+//
+//                        filter(0) = T(0);
+//                    }
+//                    else
+//                    {
+//                        double stepSize = 2.0/(len-1);
+//                        std::vector<double> x(len);
+//
+//                        for ( ii=0; ii<len; ii++ )
+//                        {
+//                            x[ii] = -1 + ii*stepSize;
+//                        }
+//
+//                        for ( ii=0; ii<len; ii++ )
+//                        {
+//                            filter(ii) = T( (value_type)(std::exp(r*(x[ii]*x[ii]))) );
+//                        }
+//                    }
+//                }
+//            break;
+//
+//            case ISMRMRD_FILTER_TAPERED_HANNING:
+//                 {
+//                    hoNDArray<T> w(width);
+//
+//                    for ( ii=1; ii<=width; ii++ )
+//                    {
+//                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(2*width+1) ) )) );
+//                    }
+//
+//                    if ( len%2 == 0 )
+//                    {
+//                        for ( ii=1; ii<=width; ii++ )
+//                        {
+//                            filter(ii) = w(ii-1);
+//                            filter(len-ii) = filter(ii);
+//                        }
+//
+//                        filter(0) = T(0);
+//                    }
+//                    else
+//                    {
+//                        for ( ii=1; ii<=width; ii++ )
+//                        {
+//                            filter(ii-1) = w(ii-1);
+//                            filter(len-ii) = filter(ii-1);
+//                        }
+//                    }
+//                }
+//            break;
+//
+//            // symmetric hanning
+//            //  does not include the first and last zero sample
+//            case ISMRMRD_FILTER_HANNING:
+//                 {
+//                    if ( len%2 == 0 )
+//                    {
+//                        size_t N = len-1;
+//                        double halfLen = (double)( (N+1)/2 );
+//                        for ( ii=1; ii<=halfLen; ii++ )
+//                        {
+//                            filter(ii) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(N+1) ) )) );
+//                        }
+//
+//                        for ( ii=(size_t)halfLen; ii<N; ii++ )
+//                        {
+//                            filter(ii+1) = filter(N-ii);
+//                        }
+//
+//                        filter(0) = T(0);
+//                    }
+//                    else
+//                    {
+//                        double halfLen = (double)( (len+1)/2 );
+//                        for ( ii=1; ii<=(size_t)halfLen; ii++ )
+//                        {
+//                            filter(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(len+1) ) )) );
+//                        }
+//
+//                        for ( ii=(size_t)halfLen; ii<len; ii++ )
+//                        {
+//                            filter(ii) = filter(len-1-ii);
+//                        }
+//                    }
+//                }
+//            break;
+//
+//            default:
+//            break;
+//        }
+//
+//        T sos = 0.0f;
+//        for ( ii=0; ii<len; ii++ )
+//        {
+//            sos += filter(ii)*filter(ii);
+//        }
+//
+//        T r = (value_type)( 1.0/std::sqrt( std::abs(sos)/(len) ) );
+//        for ( ii=0; ii<len; ii++ )
+//        {
+//            filter(ii) *= r;
+//        }
+//    }
+//    catch(...)
+//    {
+//        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::generateSymmetricFilter(...) ... ");
+//        return false;
+//    }
+//
+//    return true;
+//}
+//
+//template <typename T> 
+//bool gtPlusISMRMRDReconUtil<T>::
+//generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, size_t width, bool densityComp)
+//{
+//    try
+//    {
+//        if ( len == 0 ) return true;
+//
+//        if ( start > len-1 ) start = 0;
+//        if ( end > len-1 ) end = len-1;
+//
+//        if ( start > end )
+//        {
+//            start = 0;
+//            end = len-1;
+//        }
+//
+//        filter.create(len);
+//        Gadgetron::clear(filter);
+//
+//        size_t ii;
+//        for ( ii=start; ii<=end; ii++ )
+//        {
+//            filter(ii) = T(1.0);
+//        }
+//
+//        if ( width==0 || width>=len ) width = 1;
+//
+//        hoNDArray<T> w(width);
+//
+//        switch (filterType)
+//        {
+//            case ISMRMRD_FILTER_TAPERED_HANNING:
+//                 {
+//                    for ( ii=1; ii<=width; ii++ )
+//                    {
+//                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*M_PI*ii/(2*width+1) ) )) );
+//                    }
+//                }
+//            break;
+//
+//            default:
+//                Gadgetron::fill(w, T(1.0));
+//            break;
+//        }
+//
+//        if ( densityComp )
+//        {
+//            size_t startSym(0), endSym(len-1);
+//            GADGET_CHECK_RETURN_FALSE(findSymmetricSampledRegion(start, end, len/2, startSym, endSym));
+//
+//            if ( start==0 && end==len-1 )
+//            {
+//                for ( ii=1; ii<=width; ii++ )
+//                {
+//                    filter(ii-1) = w(ii-1);
+//                    filter(len-ii) = filter(ii-1);
+//                }
+//            }
+//
+//            if ( start==0 && end<len-1 )
+//            {
+//                for ( ii=0; ii<startSym; ii++ )
+//                {
+//                    filter(ii) = 2.0;
+//                }
+//
+//                for ( ii=1; ii<=width; ii++ )
+//                {
+//                    filter(ii-1+startSym) = T(1.0) + w(width-ii);
+//                    filter(end-ii+1) = w(ii-1);
+//                }
+//            }
+//
+//            if ( start>0 && end==len-1 )
+//            {
+//                for ( ii=endSym+1; ii<len; ii++ )
+//                {
+//                    filter(ii) = 2.0;
+//                }
+//
+//                for ( ii=1; ii<=width; ii++ )
+//                {
+//                    filter(endSym-ii+1) = T(1.0) + w(width-ii);
+//                    filter(start+ii-1) = w(ii-1);
+//                }
+//            }
+//
+//            if ( start>0 && end<len-1 )
+//            {
+//                if ( start==startSym && end==endSym )
+//                {
+//                    for ( ii=1; ii<=width; ii++ )
+//                    {
+//                        filter(start+ii-1) = w(ii-1);
+//                        filter(end-ii+1) = w(ii-1);
+//                    }
+//                }
+//                else if ( start==startSym && end>endSym )
+//                {
+//                    for ( ii=endSym+1; ii<=end; ii++ )
+//                    {
+//                        filter(ii) = 2.0;
+//                    }
+//
+//                    for ( ii=1; ii<=width; ii++ )
+//                    {
+//                        filter(end-ii+1) = T(1.0) + w(ii-1);
+//                        filter(endSym-ii+1) = w(width-ii);
+//                        filter(start+ii-1) = w(ii-1);
+//                    }
+//                }
+//                else if ( start<startSym && end==endSym )
+//                {
+//                    for ( ii=start; ii<startSym; ii++ )
+//                    {
+//                        filter(ii) = 2.0;
+//                    }
+//
+//                    for ( ii=1; ii<=width; ii++ )
+//                    {
+//                        filter(ii-1+start) = T(1.0) + w(ii-1);
+//                        filter(ii-1+startSym) = w(width-ii);
+//                        filter(end-ii+1) = w(ii-1);
+//                    }
+//                }
+//                else
+//                {
+//                    for ( ii=1; ii<=width; ii++ )
+//                    {
+//                        filter(start+ii-1) = w(ii-1);
+//                        filter(end-ii+1) = w(ii-1);
+//                    }
+//                }
+//            }
+//        }
+//        else
+//        {
+//            if ( start==0 && end==len-1 )
+//            {
+//                for ( ii=1; ii<=width; ii++ )
+//                {
+//                    filter(ii-1) = w(ii-1);
+//                    filter(len-ii) = filter(ii-1);
+//                }
+//            }
+//
+//            if ( start==0 && end<len-1 )
+//            {
+//                for ( ii=1; ii<=width; ii++ )
+//                {
+//                    filter(end-ii+1) = w(ii-1);
+//                }
+//            }
+//
+//            if ( start>0 && end==len-1 )
+//            {
+//                for ( ii=1; ii<=width; ii++ )
+//                {
+//                    filter(start+ii-1) = w(ii-1);
+//                }
+//            }
+//
+//            if ( start>0 && end<len-1 )
+//            {
+//                for ( ii=1; ii<=width; ii++ )
+//                {
+//                    filter(start+ii-1) = w(ii-1);
+//                    filter(end-ii+1) = w(ii-1);
+//                }
+//            }
+//        }
+//
+//        T sos = 0.0f;
+//        for ( ii=0; ii<len; ii++ )
+//        {
+//            sos += filter(ii)*filter(ii);
+//        }
+//
+//        // T r = 1.0/std::sqrt( std::abs(sos)/len );
+//        T r = (value_type)( 1.0/std::sqrt( std::abs(sos)/(end-start+1) ) ); // SNR unit filter
+//        for ( ii=0; ii<len; ii++ )
+//        {
+//            filter(ii) *= r;
+//        }
+//    }
+//    catch(...)
+//    {
+//        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::generateAsymmetricFilter(...) ... ");
+//        return false;
+//    }
+//
+//    return true;
+//}
+//
+//template <typename T> 
+//bool gtPlusISMRMRDReconUtil<T>::
+//generateSymmetricFilterForRef(size_t len, size_t start, size_t end, 
+//        hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width)
+//{
+//    try
+//    {
+//        if ( len < 2 ) return true;
+//
+//        GADGET_CHECK_RETURN_FALSE(start>=0&&end<=len-1&&start<=end);
+//
+//        if ( start==0 && end==len-1 )
+//        {
+//            GADGET_CHECK_RETURN_FALSE(generateSymmetricFilter(len, 0, len-1, filter, filterType, sigma, width));
+//            return true;
+//        }
+//
+//        size_t centerInd = len/2;
+//
+//        size_t lenFilter(0); // make a symmetric filter with zero at the center
+//        size_t lenFilterEnd = 2*(end-centerInd)+1;
+//        size_t lenFilterStart = 2*(centerInd-start)+1;
+//
+//        if ( start==0 && end<len-1 )
+//        {
+//            lenFilter = lenFilterEnd;
+//        }
+//        else if ( start>0 && end==len-1 )
+//        {
+//            lenFilter = lenFilterStart;
+//        }
+//        else if ( start>0 && end<len-1 )
+//        {
+//            lenFilter = ( (lenFilterStart<lenFilterEnd) ? lenFilterStart : lenFilterEnd );
+//        }
+//        else
+//        {
+//            GERROR_STREAM("Invalid inputs : start - end - len : " << start << " " << end << " " << len);
+//        }
+//
+//        GADGET_CHECK_RETURN_FALSE(lenFilter>0);
+//
+//        hoNDArray<T> filterSym(lenFilter);
+//        GADGET_CHECK_RETURN_FALSE(generateSymmetricFilter(lenFilter, 0, lenFilter-1, filterSym, filterType, sigma, width));
+//
+//        filter.create(len);
+//        Gadgetron::clear(&filter);
+//
+//        if ( start==0 && end<len-1 )
+//        {
+//            memcpy(filter.begin()+end-lenFilter+1, filterSym.begin(), filterSym.get_number_of_bytes());
+//            return true;
+//        }
+//        else if ( start>0 && end==len-1 )
+//        {
+//            memcpy(filter.begin()+start, filterSym.begin(), filterSym.get_number_of_bytes());
+//            return true;
+//        }
+//        else if ( start>0 && end<len-1 )
+//        {
+//            if ( lenFilter == lenFilterStart ) 
+//            {
+//                memcpy(filter.begin()+start, filterSym.begin(), filterSym.get_number_of_bytes());
+//            }
+//            else
+//            {
+//                memcpy(filter.begin()+end-lenFilter+1, filterSym.begin(), filterSym.get_number_of_bytes());
+//            }
+//
+//            return true;
+//        }
+//        else
+//        {
+//            GERROR_STREAM("Invalid inputs : start - end - len : " << start << " " << end << " " << len);
+//        }
+//    }
+//    catch(...)
+//    {
+//        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::generateSymmetricFilterForRef(...) ... ");
+//        return false;
+//    }
+//
+//    return true;
+//}
+//
+//template <typename T> 
+//bool gtPlusISMRMRDReconUtil<T>::
+//findSymmetricSampledRegion(size_t start, size_t end, size_t center, size_t& startSym, size_t& endSym)
+//{
+//    GADGET_CHECK_RETURN_FALSE(end>=start);
+//    GADGET_CHECK_RETURN_FALSE(center>=start);
+//    GADGET_CHECK_RETURN_FALSE(end>=center);
+//
+//    size_t halfSizeStart = center - start;
+//    size_t halfSizeEnd =  end - center;
+//
+//    if ( halfSizeStart > halfSizeEnd )
+//    {
+//        startSym = center - halfSizeEnd;
+//        endSym = center + halfSizeEnd;
+//    }
+//    else
+//    {
+//        startSym = center - halfSizeStart;
+//        endSym = center + halfSizeStart;
+//    }
+//
+//    return true;
+//}
+//
+//template <typename T> 
+//bool gtPlusISMRMRDReconUtil<T>::computeFilterSNRUnitScaleFactor(const hoNDArray<T>& filter, T& scalFactor)
+//{
+//    size_t ii, len;
+//
+//    len = filter.get_number_of_elements();
+//    if ( len == 0 )
+//    {
+//        scalFactor = T(1.0);
+//        return true;
+//    }
+//
+//    T sos(0.0);
+//    for ( ii=0; ii<len; ii++ )
+//    {
+//        sos += filter(ii)*filter(ii);
+//    }
+//
+//    scalFactor = (value_type)(1.0/std::sqrt( std::abs(sos)/len ));
+//
+//    return true;
+//}
 
 template <typename T> 
 bool gtPlusISMRMRDReconUtil<T>::
@@ -2455,20 +2455,24 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
 
         if ( startRO==0 && endRO==RO-1 )
         {
-            GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_NONE, transBandRO, densityComp));
+            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_NONE, transBandRO, densityComp));
+            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "None", transBandRO, densityComp);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, filterType, transBandRO, densityComp));
+            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, filterType, transBandRO, densityComp));
+            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "Hanning", transBandRO, densityComp);
         }
 
         if ( startE1==0 && endE1==E1-1 )
         {
-            GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_NONE, transBandE1, densityComp));
+            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_NONE, transBandE1, densityComp));
+            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "None", transBandE1, densityComp);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, filterType, transBandE1, densityComp));
+            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, filterType, transBandE1, densityComp));
+            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "Hanning", transBandE1, densityComp);
         }
 
         // in this way, the SNR unit scale property is perserved
@@ -2613,29 +2617,35 @@ copyAlongROE1E2TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t
 
         if ( startRO==0 && endRO==RO-1 )
         {
-            GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_NONE, transBandRO, densityComp));
+            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_NONE, transBandRO, densityComp));
+            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "None", transBandRO, densityComp);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, filterType, transBandRO, densityComp));
+            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, filterType, transBandRO, densityComp));
+            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "Hanning", transBandRO, densityComp);
         }
 
         if ( startE1==0 && endE1==E1-1 )
         {
-            GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_NONE, transBandE1, densityComp));
+            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_NONE, transBandE1, densityComp));
+            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "None", transBandE1, densityComp);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, filterType, transBandE1, densityComp));
+            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, filterType, transBandE1, densityComp));
+            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "Hanning", transBandE1, densityComp);
         }
 
         if ( startE2==0 && endE2==E2-1 )
         {
-            GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_NONE, transBandE2, densityComp));
+            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_NONE, transBandE2, densityComp));
+            Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, "None", transBandE2, densityComp);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E2, startE2, endE2, filter_src_E2, filterType, transBandE2, densityComp));
+            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E2, startE2, endE2, filter_src_E2, filterType, transBandE2, densityComp));
+            Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, "Hanning", transBandE2, densityComp);
         }
 
         // in this way, the SNR unit scale property is perserved
