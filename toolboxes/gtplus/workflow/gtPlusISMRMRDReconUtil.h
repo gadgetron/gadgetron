@@ -343,64 +343,6 @@ public:
     bool computeKLFilter(const hoNDArray<T>& data, size_t numOfModesKept, hoNDArray<T>& dataKLF);
 
     // ------------------------------------------------------------------------
-    // kspace filter
-    // ------------------------------------------------------------------------
-    bool compute2DFilterFromTwo1D(const hoNDArray<T>& fx, const hoNDArray<T>& fy, hoNDArray<T>& fxy);
-    bool compute2DFilterFromTwo1D(const hoNDArray<float>& fx, const hoNDArray<float>& fy, hoNDArray< std::complex<float> >& fxy);
-    bool compute2DFilterFromTwo1D(const hoNDArray<double>& fx, const hoNDArray<double>& fy, hoNDArray< std::complex<double> >& fxy);
-
-    bool compute3DFilterFromThree1D(const hoNDArray<T>& fx, const hoNDArray<T>& fy, const hoNDArray<T>& fz, hoNDArray<T>& fxyz);
-    bool compute3DFilterFromThree1D(const hoNDArray<float>& fx, const hoNDArray<float>& fy, const hoNDArray<float>& fz, hoNDArray< std::complex<float> >& fxyz);
-    bool compute3DFilterFromThree1D(const hoNDArray<double>& fx, const hoNDArray<double>& fy, const hoNDArray<double>& fz, hoNDArray< std::complex<double> >& fxyz);
-
-    // data: in kspace, [RO E1 E2 CHA SLC CON PHS REP SET]
-    bool kspacefilterRO(hoNDArray<T>& data, const hoNDArray<T>& fRO);
-    bool kspacefilterRO(const hoNDArray<T>& data, const hoNDArray<T>& fRO, hoNDArray<T>& dataFiltered);
-    bool kspacefilterROE1(const hoNDArray<T>& data, const hoNDArray<T>& fROE1, hoNDArray<T>& dataFiltered);
-    bool kspacefilterROE1(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const hoNDArray<T>& fE1, hoNDArray<T>& dataFiltered);
-    bool kspacefilterE1(const hoNDArray<T>& data, const hoNDArray<T>& fE1, hoNDArray<T>& dataFiltered);
-
-    // kspace fitler for ISMRMRD dimension order
-    bool kspacefilterE2(const hoNDArray<T>& data, const hoNDArray<T>& fE2, hoNDArray<T>& dataFiltered);
-    bool kspacefilterROE2(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const hoNDArray<T>& fE2, hoNDArray<T>& dataFiltered);
-    bool kspacefilterE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fE1, const hoNDArray<T>& fE2, hoNDArray<T>& dataFiltered);
-    bool kspacefilterROE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fROE1E2, hoNDArray<T>& dataFiltered);
-    bool kspacefilterROE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const hoNDArray<T>& fE1, const hoNDArray<T>& fE2, hoNDArray<T>& dataFiltered);
-
-    // kspace filter for the array whose first three dimensions are RO, E1 and E2; 
-    bool kspace3DfilterE2(const hoNDArray<T>& data, const hoNDArray<T>& fE2, hoNDArray<T>& dataFiltered);
-    bool kspace3DfilterROE2(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const hoNDArray<T>& fE2, hoNDArray<T>& dataFiltered);
-    bool kspace3DfilterE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fE1, const hoNDArray<T>& fE2, hoNDArray<T>& dataFiltered);
-    bool kspace3DfilterROE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fROE1E2, hoNDArray<T>& dataFiltered);
-    bool kspace3DfilterROE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const hoNDArray<T>& fE1, const hoNDArray<T>& fE2, hoNDArray<T>& dataFiltered);
-
-    // ------------------------------------------------------------------------
-    // generate kspace filters
-    // ------------------------------------------------------------------------
-    // symmetric filter, used for image filtering
-    // sigma: for Gaussian, in the unit of pixel
-    // width: for Tukey filter etc., the length of transition band
-    /// bool generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width);
-
-    // asymmetric filter, used for partial fourier/asymmetric echo filtering
-    // start, end: the data range
-    // tapered hanning filer is implemented for this
-    // if filterType==ISMRMRD_FILTER_NONE and densityComp==true, the 0-1-2 filter will be generated
-    // if filterType==ISMRMRD_FILTER_TAPERED_HANNING and the densityComp is true, the density compensation version of tapered filter will be generated
-    // where unacquired region has filter values 0 and symmetric region 1 and nonsymmetric region 2
-    // if densityComp==false, the one side tapered filter will be generated
-    /// bool generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, size_t width, bool densityComp=false);
-
-    // generate ref data filter
-    /// bool generateSymmetricFilterForRef(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width);
-
-    // find the symmetric sampled region
-    /// bool findSymmetricSampledRegion(size_t start, size_t end, size_t center, size_t& startSym, size_t& endSym);
-
-    // compute the filter SNR unit scale factor
-    /// bool computeFilterSNRUnitScaleFactor(const hoNDArray<T>& filter, T& scalFactor);
-
-    // ------------------------------------------------------------------------
     // detect sampled region
     // ------------------------------------------------------------------------
     // data : [RO E1 SLC E2 CON PHS REP SET] array

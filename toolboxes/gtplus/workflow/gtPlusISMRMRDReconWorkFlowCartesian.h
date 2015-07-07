@@ -740,7 +740,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                     && workOrder_->filterROE1E2_.get_size(2)==E2 )
             {
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res);
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterROE1E2(res, workOrder_->filterROE1E2_, dataCurr_));
+                Gadgetron::apply_kspace_filter_ROE1E2(res, workOrder_->filterROE1E2_, dataCurr_);
                 inKSpace = true;
             }
             else if ( (workOrder_->filterRO_.get_number_of_elements() == RO) 
@@ -754,7 +754,7 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"kspace_beforefiltered"); }
 
                 if ( performTiming_ ) { gt_timer1_.start("postProcessing - 3D kspace filter ... "); }
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterROE1E2(res, workOrder_->filterRO_, workOrder_->filterE1_, workOrder_->filterE2_, dataCurr_));
+                Gadgetron::apply_kspace_filter_ROE1E2(res, workOrder_->filterRO_, workOrder_->filterE1_, workOrder_->filterE2_, dataCurr_);
                 if ( performTiming_ ) { gt_timer1_.stop(); }
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(dataCurr_, debugFolder_+"kspace_afterfiltered"); }
@@ -771,21 +771,24 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
 
                 if ( workOrder_->filterRO_.get_number_of_elements() == RO )
                 {
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterRO(*pSrc, workOrder_->filterRO_, *pDst));
+                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterRO(*pSrc, workOrder_->filterRO_, *pDst));
+                    Gadgetron::apply_kspace_filter_RO(*pSrc, workOrder_->filterRO_, *pDst);
                     std::swap(pSrc, pDst);
                     filterPerformed = true;
                 }
 
                 if ( workOrder_->filterE1_.get_number_of_elements() == E1 )
                 {
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterE1(*pSrc, workOrder_->filterE1_, *pDst));
+                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterE1(*pSrc, workOrder_->filterE1_, *pDst));
+                    Gadgetron::apply_kspace_filter_E1(*pSrc, workOrder_->filterE1_, *pDst);
                     std::swap(pSrc, pDst);
                     filterPerformed = true;
                 }
 
                 if ( workOrder_->filterE2_.get_number_of_elements() == E2 )
                 {
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterE2(*pSrc, workOrder_->filterE2_, *pDst));
+                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterE2(*pSrc, workOrder_->filterE2_, *pDst));
+                    Gadgetron::apply_kspace_filter_E2(*pSrc, workOrder_->filterE2_, *pDst);
                     std::swap(pSrc, pDst);
                     filterPerformed = true;
                 }
@@ -909,13 +912,15 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
             if ( workOrder_->filterROE1_.get_size(0)==RO && workOrder_->filterROE1_.get_size(1)==E1 )
             {
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res, workOrder_->filterROE1_, dataCurr_));
+                // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res, workOrder_->filterROE1_, dataCurr_));
+                Gadgetron::apply_kspace_filter_ROE1(res, workOrder_->filterROE1_, dataCurr_);
                 inKSpace = true;
             }
             else if ( (workOrder_->filterRO_.get_number_of_elements() == RO) && (workOrder_->filterE1_.get_number_of_elements() == E1) )
             {
                 Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res, workOrder_->filterRO_, workOrder_->filterE1_, dataCurr_));
+                // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res, workOrder_->filterRO_, workOrder_->filterE1_, dataCurr_));
+                Gadgetron::apply_kspace_filter_ROE1(res, workOrder_->filterRO_, workOrder_->filterE1_, dataCurr_);
                 inKSpace = true;
             }
             else
@@ -923,14 +928,16 @@ postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around
                 if ( (workOrder_->filterRO_.get_number_of_elements() == RO) && (workOrder_->filterE1_.get_number_of_elements() != E1) )
                 {
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterRO(res, workOrder_->filterRO_, dataCurr_));
+                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterRO(res, workOrder_->filterRO_, dataCurr_));
+                    Gadgetron::apply_kspace_filter_RO(res, workOrder_->filterRO_, dataCurr_);
                     inKSpace = true;
                 }
 
                 if ( (workOrder_->filterRO_.get_number_of_elements() != RO) && (workOrder_->filterE1_.get_number_of_elements() == E1) )
                 {
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res);
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterE1(res, workOrder_->filterE1_, dataCurr_));
+                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterE1(res, workOrder_->filterE1_, dataCurr_));
+                    Gadgetron::apply_kspace_filter_E1(res, workOrder_->filterE1_, dataCurr_);
                     inKSpace = true;
                 }
             }
