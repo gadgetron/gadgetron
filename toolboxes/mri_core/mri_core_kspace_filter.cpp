@@ -23,7 +23,6 @@ void generate_symmetric_filter(size_t len, hoNDArray<T>& filter, const std::stri
         if (len == 0) return;
 
         filter.create(len);
-        Gadgetron::fill(filter, T(1.0)); // be default, no filter is applied
 
         if (width == 0 || width >= len) width = 1;
 
@@ -126,6 +125,14 @@ void generate_symmetric_filter(size_t len, hoNDArray<T>& filter, const std::stri
                 }
             }
         }
+        else if (filterType=="None" || filterType=="none")
+        {
+            Gadgetron::fill(filter, T(1.0));
+        }
+        else
+        {
+            GADGET_THROW("generate_symmetric_filter, unrecognized fiter type ... ");
+        }
 
         T sos = 0.0f;
         for (ii = 0; ii<len; ii++)
@@ -188,9 +195,13 @@ void generate_asymmetric_filter(size_t len, size_t start, size_t end, hoNDArray<
                 w(ii - 1) = T((0.5 * (1 - std::cos(2.0*M_PI*ii / (2 * width + 1)))));
             }
         }
-        else
+        else if (filterType=="None" || filterType=="none")
         {
             Gadgetron::fill(w, T(1.0));
+        }
+        else
+        {
+            GADGET_THROW("generate_symmetric_filter, unrecognized fiter type ... ");
         }
 
         if (densityComp)

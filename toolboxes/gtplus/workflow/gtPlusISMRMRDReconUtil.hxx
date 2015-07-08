@@ -1380,7 +1380,7 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
         else
         {
             // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, filterType, transBandRO, densityComp));
-            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "Hanning", transBandRO, densityComp);
+            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "TaperedHanning", transBandRO, densityComp);
         }
 
         if ( startE1==0 && endE1==E1-1 )
@@ -1391,7 +1391,7 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
         else
         {
             // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, filterType, transBandE1, densityComp));
-            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "Hanning", transBandE1, densityComp);
+            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "TaperedHanning", transBandE1, densityComp);
         }
 
         // in this way, the SNR unit scale property is perserved
@@ -1542,7 +1542,7 @@ copyAlongROE1E2TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t
         else
         {
             // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, filterType, transBandRO, densityComp));
-            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "Hanning", transBandRO, densityComp);
+            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "TaperedHanning", transBandRO, densityComp);
         }
 
         if ( startE1==0 && endE1==E1-1 )
@@ -1553,7 +1553,7 @@ copyAlongROE1E2TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t
         else
         {
             // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, filterType, transBandE1, densityComp));
-            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "Hanning", transBandE1, densityComp);
+            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "TaperedHanning", transBandE1, densityComp);
         }
 
         if ( startE2==0 && endE2==E2-1 )
