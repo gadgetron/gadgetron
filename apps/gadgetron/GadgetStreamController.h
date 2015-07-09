@@ -25,9 +25,7 @@ class EXPORTGADGETBASE GadgetStreamController
 public:
   GadgetStreamController();
 
-  virtual ~GadgetStreamController()
-    { 
-    }
+  virtual ~GadgetStreamController();
 
   int open (void);
 

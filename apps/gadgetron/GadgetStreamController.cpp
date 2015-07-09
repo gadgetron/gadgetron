@@ -13,6 +13,7 @@
 
 #include "gadgetron_xml.h"
 #include "url_encode.h"
+#include "CloudBus.h"
 
 #include <complex>
 #include <fstream>
@@ -24,10 +25,17 @@ GadgetStreamController::GadgetStreamController()
   , notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
   , writer_task_(&this->peer())
 {
+  CloudBus::instance()->report_recon_start();    
+}
+
+GadgetStreamController::~GadgetStreamController()
+{ 
+  CloudBus::instance()->report_recon_end();
 }
 
 int GadgetStreamController::open (void)
 {
+
 	//We will set up the controllers message queue such that when a packet is enqueued write will be triggered.
 	this->notifier_.reactor (this->reactor ());
 	this->msg_queue ()->notification_strategy (&this->notifier_);
@@ -70,6 +78,7 @@ int GadgetStreamController::open (void)
 
 	return this->reactor ()->register_handler(this,
 			ACE_Event_Handler::READ_MASK);// | ACE_Event_Handler::WRITE_MASK);
+	
 }
 
 
@@ -237,6 +246,9 @@ int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 int GadgetStreamController::configure(std::string config_xml_string)
 {
 
+  //Store a copy
+  config_xml_ = config_xml_string;
+  
   GadgetronXML::GadgetStreamConfiguration cfg;
   try {
     deserialize(config_xml_string.c_str(), cfg);  

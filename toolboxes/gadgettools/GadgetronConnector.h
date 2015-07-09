@@ -118,10 +118,8 @@ public:
 	GadgetronConnector();
 	virtual ~GadgetronConnector();
 
-    int openImpl (std::string hostname, std::string port);
 	int open (std::string hostname, std::string port);
 	virtual int handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE);
-	//virtual int handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE);
 	virtual int handle_close (ACE_HANDLE handle, ACE_Reactor_Mask close_mask);
 	virtual int svc(void);
 
@@ -144,13 +142,11 @@ public:
 	int send_gadgetron_parameters(std::string xml_string);
 
 protected:
-	//ACE_Reactor_Notification_Strategy notifier_;
 	std::string hostname_;
 	std::string port_;
 
 	GadgetronSlotContainer<GadgetMessageReader> readers_;
 	WriterTask writer_task_;
-	//GadgetronSlotContainer<GadgetMessageWriter> writers_;
 };
 
 }

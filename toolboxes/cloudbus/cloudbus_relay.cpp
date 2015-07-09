@@ -62,7 +62,7 @@ namespace Gadgetron{
     void add_node(CloudBusNodeController* c, GadgetronNodeInfo n)
     {
       mtx_.acquire();
-      GDEBUG("Adding node: %s, %s, %d\n", n.uuid.c_str(), n.address.c_str(), n.port);
+      GDEBUG("Adding node: %s, %s, %d, (active reconstructions: %d)\n", n.uuid.c_str(), n.address.c_str(), n.port, n.active_reconstructions);
       node_map_[c] = n;
       mtx_.release();
     }

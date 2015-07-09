@@ -46,13 +46,19 @@ namespace Gadgetron {
       global_gadget_parameters_ = globalGadgetPara;
     }
 
+    std::string get_xml_configuration()
+    {
+      return config_xml_;
+    }
+    
   protected:
     ACE_Stream<ACE_MT_SYNCH> stream_;
     bool stream_configured_;  
     std::vector<ACE_DLL_Handle*> dll_handles_;
     std::map<std::string, std::string> global_gadget_parameters_;
     std::string gadgetron_home_;
-    
+    std::string config_xml_; //Copy of the original XML configuration
+
     virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name)
     {
 

@@ -9,6 +9,49 @@ namespace Gadgetron
   bool CloudBus::query_mode_ = false; //Listen only is disabled default
   int CloudBus::gadgetron_port_ = 9002; //Default port
 
+  int CloudBusReaderTask::open(void* = 0)
+  {
+    return this->activate( THR_NEW_LWP | THR_JOINABLE, 1 );
+  }
+
+  int CloudBusReaderTask::close(unsigned long flags)
+  {
+    return this->cloud_bus_->handle_close(ACE_INVALID_HANDLE, 0);
+  }
+
+  int CloudBusReaderTask::svc(void)
+  {
+    while (true)
+      {
+	size_t recv_cnt;
+	uint32_t msg_size;
+	if ((recv_cnt = cloud_bus_->peer().recv_n (&msg_size, sizeof(uint32_t))) <= 0) {
+	  GDEBUG("Failed to get msg_size from relay. Relay must have disconnected\n");
+	  return -1;
+	}
+
+	char* buffer = new char[msg_size];
+	cloud_bus_->nodes_.clear();
+	if ((recv_cnt = cloud_bus_->peer().recv_n (buffer, msg_size)) <= 0) {
+	  GDEBUG("Failed to read message from relay. Relay must have disconnected\n");
+	  delete [] buffer;
+	  return -1;
+	}
+      
+	uint32_t msg_id = *((uint32_t*)buffer);
+	if (msg_id != GADGETRON_CLOUDBUS_NODE_LIST_REPLY) {
+	  GERROR("Unexpected message id = %d\n", msg_id);
+	  return -1;
+	}
+	deserialize(cloud_bus_->nodes_, buffer+4, msg_size-4);
+	delete [] buffer;
+	cloud_bus_->node_list_condition_.signal();
+
+      }
+    return 0;
+  }
+
+  
   CloudBus* CloudBus::instance()
   {
     if (!instance_)
@@ -45,7 +88,28 @@ namespace Gadgetron
     node_info_.compute_capability = c;
   }
 
+  unsigned int CloudBus::active_reconstructions()
+  {
+    return node_info_.active_reconstructions;
+  }
+  
+  void CloudBus::report_recon_start()
+  {
+    mtx_.acquire();
+    node_info_.active_reconstructions++;
+    mtx_.release();
+    send_node_info();
+  }
+  
+  void CloudBus::report_recon_end()
+  {
+    mtx_.acquire();
+    if (node_info_.active_reconstructions > 0) node_info_.active_reconstructions--;
+    mtx_.release();
+    send_node_info();
+  }
 
+  
   int CloudBus::open(void*)
   {
     if (!this->reactor()) {
@@ -54,40 +118,20 @@ namespace Gadgetron
     return this->activate( THR_NEW_LWP | THR_JOINABLE,1); //single thread
   }
 
-  
-
   int CloudBus::handle_close (ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
   {
     GDEBUG("Cloud bus connection closed\n");
     this->peer().close();
     connected_ = false;
+    if (reader_task_) {
+      delete reader_task_;
+      reader_task_ = 0;
+    }
     return 0;
   }
 
   int CloudBus::handle_input (ACE_HANDLE fd)
   {
-    size_t recv_cnt;
-    uint32_t msg_size;
-    if ((recv_cnt = peer().recv_n (&msg_size, sizeof(uint32_t))) <= 0) {
-      GDEBUG("Failed to get msg_size from relay. Relay must have disconnected\n");
-      return -1;
-    }
-    char* buffer = new char[msg_size];
-    nodes_.clear();
-    if ((recv_cnt = peer().recv_n (buffer, msg_size)) <= 0) {
-      GDEBUG("Failed to read message from relay. Relay must have disconnected\n");
-      delete [] buffer;
-      return -1;
-    }
-      
-    uint32_t msg_id = *((uint32_t*)buffer);
-    if (msg_id != GADGETRON_CLOUDBUS_NODE_LIST_REPLY) {
-      GERROR("Unexpected message id = %d\n", msg_id);
-      return -1;
-    }
-    deserialize(nodes_, buffer+4, msg_size-4);
-    delete [] buffer;
-    node_list_condition_.signal();
     return 0;
   }
 
@@ -113,11 +157,10 @@ namespace Gadgetron
 	      (peer_addr.addr_to_string (peer_name, MAXHOSTNAMELENGTH) == 0)) {
 
 	    GDEBUG("CloudBus connected to relay at  %s\n", peer_name);
-	    if (this->reactor ()->register_handler(this, ACE_Event_Handler::READ_MASK) != 0) {
-	      GERROR("Failed to register read handler\n");
-	      return -1;
-	    }
 
+	    reader_task_ = new CloudBusReaderTask(this);
+	    reader_task_->open();
+	    
 	    mtx_.acquire();
 	    connected_ = true;
 	    mtx_.release();
@@ -150,7 +193,6 @@ namespace Gadgetron
       GERROR("Failed to send gadgetron node info\n");
       throw;
     }
-    print_nodes();
   }
 
   void CloudBus::update_node_info()
@@ -202,7 +244,8 @@ namespace Gadgetron
     , mtx_node_list_("CLOUDBUSMTXNODELIST")
     , node_list_condition_(mtx_node_list_)
     , uuid_(boost::uuids::random_generator()())
-    , connected_(false)      
+    , connected_(false)
+    , reader_task_(0)
   {
     node_info_.port = gadgetron_port_;
     set_compute_capability(1);
@@ -211,6 +254,7 @@ namespace Gadgetron
     ACE_INET_Addr local_addr;
     listener.get_local_addr (local_addr);
     node_info_.address = std::string(local_addr.get_host_name());
+    node_info_.active_reconstructions = 0;
   }
 
 }

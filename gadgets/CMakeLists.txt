@@ -49,6 +49,7 @@ else (CUDA_FOUND)
 endif(CUDA_FOUND)
 
 add_subdirectory(grappa)
+add_subdirectory(distributed)
 
 if (MATLAB_FOUND)
   message("Compiling MATLAB gadgets")

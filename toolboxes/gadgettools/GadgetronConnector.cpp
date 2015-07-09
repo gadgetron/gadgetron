@@ -6,24 +6,24 @@
 using namespace Gadgetron;
 
 GadgetronConnector::GadgetronConnector()
-    //: notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
     : writer_task_(&this->peer())
 {
 }
 
 GadgetronConnector::~GadgetronConnector() {
     readers_.clear();
-    //writers_.clear();
 }
 
-int GadgetronConnector::openImpl(std::string hostname, std::string port)
+int GadgetronConnector::open(std::string hostname, std::string port)
 {
+    //Make sure we have a reactor, otherwise assign one from the singleton instance
+    if (!this->reactor()) {
+      GDEBUG("Setting reactor");
+      this->reactor(ACE_Reactor::instance());
+    }
+
     hostname_= hostname;
     port_ = port;
-
-    //We will add a notification strategy to the message queue to make sure than handle_output gets triggered when packages are on the queue
-    //this->notifier_.reactor (this->reactor ());
-    //this->msg_queue ()->notification_strategy (&this->notifier_);
 
     ACE_INET_Addr server(port_.c_str(),hostname_.c_str());
     ACE_SOCK_Connector connector;
@@ -38,19 +38,6 @@ int GadgetronConnector::openImpl(std::string hostname, std::string port)
     if (peer().get_remote_addr (peer_addr) == 0 && peer_addr.addr_to_string (peer_name, MAXHOSTNAMELENGTH) == 0) {
       GDEBUG("Connection from %s\n", peer_name);
     }
-
-    return 0;
-}
-
-int GadgetronConnector::open(std::string hostname, std::string port)
-{
-    //Make sure we have a reactor, otherwise assign one from the singleton instance
-    if (!this->reactor()) {
-      GDEBUG("Setting reactor");
-      this->reactor(ACE_Reactor::instance());
-    }
-
-    this->openImpl(hostname, port);
 
     this->writer_task_.open();
 
