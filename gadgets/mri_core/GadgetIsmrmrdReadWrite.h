@@ -22,48 +22,50 @@ namespace Gadgetron{
     public:
         virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
         {
-            GadgetContainerMessage<ISMRMRD::Acquisition>* acqmb =
-                dynamic_cast< GadgetContainerMessage<ISMRMRD::Acquisition>* >(mb);
+	  auto h = AsContainerMessage<ISMRMRD::AcquisitionHeader>(mb);
 
-            if (!acqmb) {
-	      GERROR("GadgetAcquisitionMessageWriter, invalid acquisition message objects");
+	  if (!h) {
+	    GERROR("GadgetAcquisitionMessageWriter, invalid acquisition message objects");
+	    return -1;
+	  }
+
+	  ssize_t send_cnt = 0;
+	  
+	  GadgetMessageIdentifier id;
+	  id.id = GADGET_MESSAGE_ISMRMRD_ACQUISITION;
+
+	  if ((send_cnt = sock->send_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
+	    GERROR("Unable to send acquisition message identifier\n");
+	    return -1;
+	  }
+
+	  ISMRMRD::AcquisitionHeader* acqHead = h->getObjectPtr();
+	  if ((send_cnt = sock->send_n (acqHead, sizeof(ISMRMRD::AcquisitionHeader))) <= 0) {
+	    GERROR("Unable to send acquisition header\n");
+	    return -1;
+	  }
+
+	  unsigned long trajectory_elements = acqHead->trajectory_dimensions*acqHead->number_of_samples;
+	  unsigned long data_elements = acqHead->active_channels*acqHead->number_of_samples;
+
+	  auto d = AsContainerMessage< hoNDArray<std::complex<float> > >(h->cont());
+	  
+	  if (trajectory_elements) {
+	    auto t = AsContainerMessage< hoNDArray<float> >(h->cont());
+	    if ((send_cnt = sock->send_n (t->getObjectPtr()->get_data_ptr(), sizeof(float)*trajectory_elements)) <= 0) {
+	      GERROR("Unable to send acquisition trajectory elements\n");
 	      return -1;
-            }
+	    }
+	  }
 
-            ssize_t send_cnt = 0;
-
-            GadgetMessageIdentifier id;
-            id.id = GADGET_MESSAGE_ISMRMRD_ACQUISITION;
-
-            if ((send_cnt = sock->send_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
-	      GERROR("Unable to send acquisition message identifier\n");
+	  if (data_elements) {
+	    if ((send_cnt = sock->send_n (d->getObjectPtr()->get_data_ptr(), 2*sizeof(float)*data_elements)) <= 0) {
+	      GERROR("Unable to send acquisition data elements\n");
 	      return -1;
-            }
-
-            ISMRMRD::ISMRMRD_AcquisitionHeader acqHead = acqmb->getObjectPtr()->getHead();
-            if ((send_cnt = sock->send_n (&acqHead, sizeof(ISMRMRD::ISMRMRD_AcquisitionHeader))) <= 0) {
-	      GERROR("Unable to send acquisition header\n");
-	      return -1;
-            }
-
-            unsigned long trajectory_elements = acqmb->getObjectPtr()->getHead().trajectory_dimensions*acqmb->getObjectPtr()->getHead().number_of_samples;
-            unsigned long data_elements = acqmb->getObjectPtr()->getHead().active_channels*acqmb->getObjectPtr()->getHead().number_of_samples;
-
-            if (trajectory_elements) {
-                if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->getTrajPtr()[0], sizeof(float)*trajectory_elements)) <= 0) {
-		  GERROR("Unable to send acquisition trajectory elements\n");
-		  return -1;
-                }
-            }
-
-            if (data_elements) {
-                if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->getDataPtr()[0], 2*sizeof(float)*data_elements)) <= 0) {
-		  GERROR("Unable to send acquisition data elements\n");
-		  return -1;
-                }
-            }
-
-            return 0;
+	    }
+	  }
+	  
+	  return 0;
         }
     };
 

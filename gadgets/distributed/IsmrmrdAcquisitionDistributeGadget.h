@@ -17,6 +17,7 @@ namespace Gadgetron{
       
   protected:
     virtual int node_index(ACE_Message_Block* m);
+    virtual int message_id(ACE_Message_Block* m);
 
   };
 }

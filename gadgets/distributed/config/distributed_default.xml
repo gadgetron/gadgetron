@@ -15,6 +15,12 @@
       <classname>MRIImageWriter</classname>
     </writer>
 
+    <writer>
+      <slot>1008</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>GadgetIsmrmrdAcquisitionMessageWriter</classname>
+    </writer>
+
     <gadget>
         <name>RemoveROOversampling</name>
         <dll>gadgetron_mricore</dll>

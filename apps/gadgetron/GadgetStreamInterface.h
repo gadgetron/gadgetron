@@ -51,34 +51,6 @@ namespace Gadgetron {
       return config_xml_;
     }
     
-  protected:
-    ACE_Stream<ACE_MT_SYNCH> stream_;
-    bool stream_configured_;  
-    std::vector<ACE_DLL_Handle*> dll_handles_;
-    std::map<std::string, std::string> global_gadget_parameters_;
-    std::string gadgetron_home_;
-    std::string config_xml_; //Copy of the original XML configuration
-
-    virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name)
-    {
-
-      Gadget* g = load_dll_component<Gadget>(DLL,gadget);
-      
-      if (!g) {
-	GERROR("Failed to load gadget using factory\n");
-	return 0;
-      }
-      
-      g->set_controller(this);
-      
-      GadgetModule *module = 0;
-      ACE_NEW_RETURN (module,
-		      GadgetModule (gadget_module_name, g),
-		      0);
-      
-      return module;
-    }
-
     template <class T>  T* load_dll_component(const char* DLL, const char* component_name)
     {
       ACE_DLL_Manager* dllmgr = ACE_DLL_Manager::instance();
@@ -129,6 +101,35 @@ namespace Gadgetron {
       
       return c;
     }
+
+  protected:
+    ACE_Stream<ACE_MT_SYNCH> stream_;
+    bool stream_configured_;  
+    std::vector<ACE_DLL_Handle*> dll_handles_;
+    std::map<std::string, std::string> global_gadget_parameters_;
+    std::string gadgetron_home_;
+    std::string config_xml_; //Copy of the original XML configuration
+
+    virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name)
+    {
+
+      Gadget* g = load_dll_component<Gadget>(DLL,gadget);
+      
+      if (!g) {
+	GERROR("Failed to load gadget using factory\n");
+	return 0;
+      }
+      
+      g->set_controller(this);
+      
+      GadgetModule *module = 0;
+      ACE_NEW_RETURN (module,
+		      GadgetModule (gadget_module_name, g),
+		      0);
+      
+      return module;
+    }
+
   };
 }
 
