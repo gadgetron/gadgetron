@@ -27,6 +27,7 @@ namespace Gadgetron{
     {
     public:
       GADGET_DECLARE(DistributeGadget);
+      virtual int collector_putq(ACE_Message_Block* m);
       
     protected:
       GADGET_PROPERTY(collector, std::string, "Name of collection Gadget", "Collect");
@@ -36,7 +37,6 @@ namespace Gadgetron{
       virtual int process(ACE_Message_Block* m);
       virtual int process_config(ACE_Message_Block* m);
       virtual int close(unsigned long flags);
-
       /**
 	 Returns the index of the node to process this package on. 
 
@@ -60,6 +60,7 @@ namespace Gadgetron{
       
     private:
       std::string node_xml_config_;
+      std::string node_parameters_;
       std::map<int,GadgetronConnector*> node_map_;
       
     };

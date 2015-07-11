@@ -61,7 +61,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     CombineGadget.h
                                     CropAndCombineGadget.h  
                                     ImageWriterGadget.h 
-                                    MRIImageWriter.h 
+                                    MRIImageWriter.h
+				    MRIImageReader.h
                                     NoiseAdjustGadget_unoptimized.h 
                                     ExtractGadget.h 
                                     FloatToFixPointGadget.h 
@@ -91,7 +92,8 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 CombineGadget.cpp 
                                 CropAndCombineGadget.cpp 
                                 ImageWriterGadget.cpp 
-                                MRIImageWriter.cpp 
+                                MRIImageWriter.cpp
+				MRIImageReader.cpp
                                 NoiseAdjustGadget_unoptimized.cpp 
                                 ExtractGadget.cpp 
                                 FloatToFixPointGadget.cpp 

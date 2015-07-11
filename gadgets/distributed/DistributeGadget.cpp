@@ -8,6 +8,8 @@
 
   Make connector report when destroyed so that it can be deleted from map
   Make node index increment when in single package mode
+  Fix node selection to properly take the actual number of local jobs into account.
+
  */
 
 namespace Gadgetron{
@@ -20,13 +22,28 @@ namespace Gadgetron{
   }
 
   int DistributionConnector::process(size_t messageid, ACE_Message_Block* mb) {
-    mb->release();
-    return 0;
+    return distribute_gadget_->collector_putq(mb);
   }
 
   const char* DistributeGadget::get_node_xml_config()
   {
     return node_xml_config_.c_str();
+  }
+  
+  int DistributeGadget::collector_putq(ACE_Message_Block* m)
+  {
+    if (!collect_gadget_) {
+      GERROR("Collector gadget not set\n");
+      m->release();
+      return GADGET_FAIL;
+    }
+    
+    if (collect_gadget_->putq(m) == -1) {
+      m->release();
+      GERROR("DistributeGadget::collector_putq, passing data on to next gadget\n");
+      return GADGET_FAIL;
+    }
+    return GADGET_OK;
   }
   
   int DistributeGadget::process(ACE_Message_Block* m)
@@ -63,6 +80,11 @@ namespace Gadgetron{
       me.active_reconstructions = CloudBus::instance()->active_reconstructions();
       
       for (auto it = nl.begin(); it != nl.end(); it++) {
+	
+	//TODO:
+	//This needs to be more sophisticated, if the local node has only one active recon and all the nodes have one too,
+	//then the local node will get all the data, which may be equivalent to more than one recon.
+	//Each active run on the local node should count as one local recon, could be handled with the CloudBus
 	if (it->active_reconstructions < me.active_reconstructions) {
 	  me = *it;
 	}
@@ -119,6 +141,12 @@ namespace Gadgetron{
 	  GERROR("Failed to send XML configuration to compute node\n");
 	  return GADGET_FAIL;
 	}
+
+	if (con->send_gadgetron_parameters(node_parameters_) != 0) {
+	  GERROR("Failed to send XML parameters to compute node\n");
+	  return GADGET_FAIL;
+	}
+		
       } 
     }
 
@@ -169,6 +197,8 @@ namespace Gadgetron{
   int DistributeGadget::process_config(ACE_Message_Block* m)
   {
 
+    node_parameters_ = std::string(m->rd_ptr());
+    
     //Grab the original XML conifguration
     std::string xml = controller_->get_xml_configuration();
 
@@ -182,7 +212,7 @@ namespace Gadgetron{
 
     //Delete Gadgets after collector
     it = cfg.gadget.begin();
-    while ((it->name != collector.value()) && (it != cfg.gadget.end())) it++;
+    while ((it->name != collector.value()) && (it != cfg.gadget.end())) it++; it++;
     cfg.gadget.erase(it,cfg.gadget.end());
     
     std::stringstream o;
@@ -197,10 +227,12 @@ namespace Gadgetron{
     }
 
     collect_gadget_ = tmp;
-
+    
     if (!collect_gadget_) {
       GERROR("Failed to locate collector Gadget with name %s\n", collector.value().c_str());
       return GADGET_FAIL;
+    } else {
+      collect_gadget_->set_parameter("pass_through_mode","true");
     }
 
     return GADGET_OK;
@@ -208,20 +240,22 @@ namespace Gadgetron{
   
   int DistributeGadget::close(unsigned long flags)
   {
-    for (auto it = node_map_.begin(); it != node_map_.end(); ++it) {
-      if (it->second) {
-	auto m1 = new GadgetContainerMessage<GadgetMessageIdentifier>();
-	m1->getObjectPtr()->id = GADGET_MESSAGE_CLOSE;
-	
-	if (it->second->putq(m1) == -1) {
-	  GERROR("Unable to put CLOSE package on queue\n");
-	  return -1;
+    if (flags) {
+      for (auto it = node_map_.begin(); it != node_map_.end(); ++it) {
+	if (it->second) {
+	  auto m1 = new GadgetContainerMessage<GadgetMessageIdentifier>();
+	  m1->getObjectPtr()->id = GADGET_MESSAGE_CLOSE;
+	  
+	  if (it->second->putq(m1) == -1) {
+	    GERROR("Unable to put CLOSE package on queue\n");
+	    return -1;
+	  }
+	  it->second->wait();
+	  it->second->close(ACE_INVALID_HANDLE);
+	  delete it->second;
 	}
-	it->second->wait();
-	it->second->close(ACE_INVALID_HANDLE);
-	delete it->second;
       }
-      node_map_.erase(it);
+      GDEBUG("All connectors closed. Waiting for Gadget to close\n");
     }
     return Gadget::close(flags);
   }

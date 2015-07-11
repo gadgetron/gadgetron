@@ -8,7 +8,13 @@
       <dll>gadgetron_mricore</dll>
       <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
-  
+
+    <reader>
+      <slot>1022</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>MRIImageReader</classname>
+    </reader>
+    
     <writer>
       <slot>1022</slot>
       <dll>gadgetron_mricore</dll>
@@ -22,16 +28,15 @@
     </writer>
 
     <gadget>
-        <name>RemoveROOversampling</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>RemoveROOversamplingGadget</classname>
-    </gadget>
-
-
-    <gadget>
         <name>Distribute</name>
         <dll>gadgetron_distributed</dll>
         <classname>IsmrmrdAcquisitionDistributeGadget</classname>
+    </gadget>
+
+    <gadget>
+        <name>RemoveROOversampling</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>RemoveROOversamplingGadget</classname>
     </gadget>
     
     <gadget>
