@@ -85,7 +85,9 @@ namespace Gadgetron
     size_t get_number_of_nodes();
 
     unsigned int active_reconstructions();
-
+    unsigned int port();
+    const char* uuid();
+    
     void report_recon_start();
     void report_recon_end();
     

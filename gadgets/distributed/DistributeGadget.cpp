@@ -6,10 +6,9 @@
 /*
   TODO:
 
-  Make connector report when destroyed so that it can be deleted from map
+  Make connector report when destroyed so that it can be deleted from map (might not be needed)
   Make node index increment when in single package mode
-  Fix node selection to properly take the actual number of local jobs into account.
-
+  Make the ISMRMRDAcquisitionDistributer respond to a specific index. 
  */
 
 namespace Gadgetron{
@@ -24,6 +23,15 @@ namespace Gadgetron{
   int DistributionConnector::process(size_t messageid, ACE_Message_Block* mb) {
     return distribute_gadget_->collector_putq(mb);
   }
+
+
+  DistributeGadget::DistributeGadget()
+    : BasicPropertyGadget()
+    , mtx_("distribution_mtx")
+  {
+
+  }
+
 
   const char* DistributeGadget::get_node_xml_config()
   {
@@ -49,6 +57,10 @@ namespace Gadgetron{
   int DistributeGadget::process(ACE_Message_Block* m)
   {
     int node_index = this->node_index(m);
+
+    if (single_package_mode.value()) {
+      node_index = ++started_nodes_;
+    }
 
     if (node_index < 0) {
       GERROR("Negative node index received");
@@ -76,15 +88,12 @@ namespace Gadgetron{
       GDEBUG("Number of network nodes found: %d\n", nl.size());
 
       GadgetronNodeInfo me;
-      me.port = 0;
+      me.address = "localhost";//We may have to update this
+      me.port = CloudBus::instance()->port();
+      me.uuid = CloudBus::instance()->uuid();
       me.active_reconstructions = CloudBus::instance()->active_reconstructions();
       
       for (auto it = nl.begin(); it != nl.end(); it++) {
-	
-	//TODO:
-	//This needs to be more sophisticated, if the local node has only one active recon and all the nodes have one too,
-	//then the local node will get all the data, which may be equivalent to more than one recon.
-	//Each active run on the local node should count as one local recon, could be handled with the CloudBus
 	if (it->active_reconstructions < me.active_reconstructions) {
 	  me = *it;
 	}
@@ -93,64 +102,59 @@ namespace Gadgetron{
 	if (me.active_reconstructions == 0) break;
       }
 
-      if (me.port != 0) {
-	//This is not the local node.
+      con = new DistributionConnector(this);
+      
+      GadgetronXML::GadgetStreamConfiguration cfg;
+      try {
+	deserialize(node_xml_config_.c_str(), cfg);  
+      }  catch (const std::runtime_error& e) {
+	GERROR("Failed to parse Node Gadget Stream Configuration: %s\n", e.what());
+	return GADGET_FAIL;
+      }
 
-	con = new DistributionConnector(this);
-
-	GadgetronXML::GadgetStreamConfiguration cfg;
-	try {
-	  deserialize(node_xml_config_.c_str(), cfg);  
-	}  catch (const std::runtime_error& e) {
-	  GERROR("Failed to parse Node Gadget Stream Configuration: %s\n", e.what());
+      //Configuration of readers
+      for (auto i = cfg.reader.begin(); i != cfg.reader.end(); ++i) {
+	GadgetMessageReader* r =
+	  controller_->load_dll_component<GadgetMessageReader>(i->dll.c_str(),
+							       i->classname.c_str());	  
+	if (!r) {
+	  GERROR("Failed to load GadgetMessageReader from DLL\n");
 	  return GADGET_FAIL;
 	}
-
-	//Configuration of readers
-	for (auto i = cfg.reader.begin(); i != cfg.reader.end(); ++i) {
-	  GadgetMessageReader* r =
-	    controller_->load_dll_component<GadgetMessageReader>(i->dll.c_str(),
-								 i->classname.c_str());	  
-	  if (!r) {
-	    GERROR("Failed to load GadgetMessageReader from DLL\n");
-	    return GADGET_FAIL;
-	  }
-	  con->register_reader(i->slot, r);
-	}
+	con->register_reader(i->slot, r);
+      }
 	
-	for (auto i = cfg.writer.begin(); i != cfg.writer.end(); ++i) {
-	  GadgetMessageWriter* w =
-	    controller_->load_dll_component<GadgetMessageWriter>(i->dll.c_str(),
+      for (auto i = cfg.writer.begin(); i != cfg.writer.end(); ++i) {
+	GadgetMessageWriter* w =
+	  controller_->load_dll_component<GadgetMessageWriter>(i->dll.c_str(),
 								 i->classname.c_str());	  
-	  if (!w) {
-	    GERROR("Failed to load GadgetMessageWriter from DLL\n");
-	    return GADGET_FAIL;
-	  }
-	  con->register_writer(i->slot, w);
+	if (!w) {
+	  GERROR("Failed to load GadgetMessageWriter from DLL\n");
+	  return GADGET_FAIL;
 	}
+	con->register_writer(i->slot, w);
+      }
 
 	
-	char buffer[10];
-	sprintf(buffer,"%d",me.port);
-	if (con->open(me.address,std::string(buffer)) != 0) {
-	  GERROR("Failed to open connection to node %s : %d\n", me.address.c_str(), me.port);
-	  return GADGET_FAIL;
-	}
-
-	if (con->send_gadgetron_configuration_script(node_xml_config_) != 0) {
-	  GERROR("Failed to send XML configuration to compute node\n");
-	  return GADGET_FAIL;
-	}
-
-	if (con->send_gadgetron_parameters(node_parameters_) != 0) {
-	  GERROR("Failed to send XML parameters to compute node\n");
-	  return GADGET_FAIL;
-	}
-		
-      } 
+      char buffer[10];
+      sprintf(buffer,"%d",me.port);
+      if (con->open(me.address,std::string(buffer)) != 0) {
+	GERROR("Failed to open connection to node %s : %d\n", me.address.c_str(), me.port);
+	return GADGET_FAIL;
+      }
+      
+      if (con->send_gadgetron_configuration_script(node_xml_config_) != 0) {
+	GERROR("Failed to send XML configuration to compute node\n");
+	return GADGET_FAIL;
+      }
+      
+      if (con->send_gadgetron_parameters(node_parameters_) != 0) {
+	GERROR("Failed to send XML parameters to compute node\n");
+	return GADGET_FAIL;
+      }		
+      node_map_[node_index] = con;
     }
 
-    node_map_[node_index] = con;
 
     if (!con) {
       //Zero pointer for the connection means that either a) connection creation failed or b) using local chain.
@@ -186,8 +190,15 @@ namespace Gadgetron{
 	return GADGET_OK;
       }
 
-      //TODO:
-      //if this is single_package_mode, put end of scan
+      if (single_package_mode.value()) {
+	  auto m2 = new GadgetContainerMessage<GadgetMessageIdentifier>();
+	  m2->getObjectPtr()->id = GADGET_MESSAGE_CLOSE;
+	  
+	  if (con->putq(m2) == -1) {
+	    GERROR("Unable to put CLOSE package on queue\n");
+	    return -1;
+	  }
+      }
     }
     
     
@@ -197,6 +208,7 @@ namespace Gadgetron{
   int DistributeGadget::process_config(ACE_Message_Block* m)
   {
 
+    started_nodes_ = 0;
     node_parameters_ = std::string(m->rd_ptr());
     
     //Grab the original XML conifguration
@@ -237,11 +249,13 @@ namespace Gadgetron{
 
     return GADGET_OK;
   }
-  
+
   int DistributeGadget::close(unsigned long flags)
   {
     if (flags) {
-      for (auto it = node_map_.begin(); it != node_map_.end(); ++it) {
+      mtx_.acquire();
+      auto it = node_map_.begin();
+      while (it != node_map_.end()) {
 	if (it->second) {
 	  auto m1 = new GadgetContainerMessage<GadgetMessageIdentifier>();
 	  m1->getObjectPtr()->id = GADGET_MESSAGE_CLOSE;
@@ -251,10 +265,12 @@ namespace Gadgetron{
 	    return -1;
 	  }
 	  it->second->wait();
-	  it->second->close(ACE_INVALID_HANDLE);
 	  delete it->second;
 	}
+	node_map_.erase(it);
+	it = node_map_.begin();
       }
+      mtx_.release();
       GDEBUG("All connectors closed. Waiting for Gadget to close\n");
     }
     return Gadget::close(flags);

@@ -27,8 +27,6 @@ namespace Gadgetron{
 	return -1;
       }
     } else {
-      GDEBUG("RETURNING IMAGE FROM COLLECTOR");
-      
       if (!this->controller_)
         {
 	  GERROR("Cannot return result to controller, no controller set");

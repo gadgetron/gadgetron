@@ -28,17 +28,17 @@
     </writer>
 
     <gadget>
-        <name>Distribute</name>
-        <dll>gadgetron_distributed</dll>
-        <classname>IsmrmrdAcquisitionDistributeGadget</classname>
-    </gadget>
-
-    <gadget>
         <name>RemoveROOversampling</name>
         <dll>gadgetron_mricore</dll>
         <classname>RemoveROOversamplingGadget</classname>
     </gadget>
     
+    <gadget>
+        <name>Distribute</name>
+        <dll>gadgetron_distributed</dll>
+        <classname>IsmrmrdAcquisitionDistributeGadget</classname>
+    </gadget>
+
     <gadget>
         <name>AccTrig</name>
         <dll>gadgetron_mricore</dll>

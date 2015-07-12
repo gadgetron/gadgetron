@@ -92,6 +92,16 @@ namespace Gadgetron
   {
     return node_info_.active_reconstructions;
   }
+
+  unsigned int CloudBus::port()
+  {
+    return node_info_.port;
+  }
+
+  const char* CloudBus::uuid()
+  {
+    return node_info_.uuid.c_str();
+  }
   
   void CloudBus::report_recon_start()
   {

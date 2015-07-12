@@ -27,7 +27,8 @@ public:
 
   virtual ~GadgetStreamController();
 
-  int open (void);
+  virtual int open (void);
+  virtual int svc(void);
 
 
   virtual int handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE);

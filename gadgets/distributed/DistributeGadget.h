@@ -17,18 +17,18 @@ namespace Gadgetron{
   public:
     DistributionConnector(DistributeGadget* g);
     virtual int process(size_t messageid, ACE_Message_Block* mb);
-
+    
   protected:
     DistributeGadget* distribute_gadget_;
   };
 
-  
   class EXPORTDISTRIBUTEDGADGETS DistributeGadget : public BasicPropertyGadget
     {
     public:
       GADGET_DECLARE(DistributeGadget);
+      DistributeGadget();
       virtual int collector_putq(ACE_Message_Block* m);
-      
+
     protected:
       GADGET_PROPERTY(collector, std::string, "Name of collection Gadget", "Collect");
       GADGET_PROPERTY(single_package_mode, bool, "Indicates that only one package is sent to each node", false);
@@ -57,6 +57,9 @@ namespace Gadgetron{
       const char* get_node_xml_config();
       
       Gadget* collect_gadget_;
+
+      size_t started_nodes_;
+      ACE_Thread_Mutex mtx_;
       
     private:
       std::string node_xml_config_;

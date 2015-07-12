@@ -43,9 +43,15 @@ int GadgetronConnector::handle_input(ACE_HANDLE fd)
   return 0;
 }
 
-int GadgetronConnector::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
+int GadgetronConnector::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask)
 {
+
+  GDEBUG(" >>>>>>>>>>>>> HANDLE_CLOSE <<<<<<<<<<<<<<<<\n");
+  if (mask == ACE_Event_Handler::WRITE_MASK)
+    return 0;
+
   peer().close();
+
   return 0;
 }
 

@@ -141,6 +141,7 @@ namespace Gadgetron{
     int send_gadgetron_configuration_script(std::string config_xml_name);
     int send_gadgetron_parameters(std::string xml_string);
 
+    
   protected:
     std::string hostname_;
     std::string port_;
