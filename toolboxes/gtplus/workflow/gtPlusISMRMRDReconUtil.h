@@ -123,16 +123,6 @@ namespace Gadgetron {
         ISMRMRD_PF_NONE
     };
 
-    // define the kspace filter type
-    enum ISMRMRDKSPACEFILTER
-    {
-        ISMRMRD_FILTER_GAUSSIAN = 160,
-        ISMRMRD_FILTER_HANNING,
-        ISMRMRD_FILTER_TUKEY,
-        ISMRMRD_FILTER_TAPERED_HANNING,
-        ISMRMRD_FILTER_NONE
-    };
-
     // define the calibration mode of ISMRMRD
     enum ISMRMRDCALIBMODE
     {
@@ -436,9 +426,6 @@ public:
 
     // get the partial fourier/asymmetric echo handling algorithm name from algorithm
     std::string getNameFromISMRMRDPartialFourierReconAlgo(ISMRMRDPFALGO algo);
-
-    // get the kspace filter algorithm from name
-    ISMRMRDKSPACEFILTER getISMRMRDKSpaceFilterFromName(const std::string& name);
 
     // get retro-gating interpolation method from name
     ISMRMRDINTERPRETROGATING getISMRMRDRetroGatingInterpFromName(const std::string& name);

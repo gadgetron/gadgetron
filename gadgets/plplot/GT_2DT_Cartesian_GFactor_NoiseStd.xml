@@ -516,7 +516,7 @@
         -->
         <property>
             <name>filterRO</name>
-            <value>ISMRMRD_FILTER_NONE</value>
+            <value>None</value>
         </property>
         <property>
             <name>filterRO_sigma</name>
@@ -529,7 +529,7 @@
 
         <property>
             <name>filterE1</name>
-            <value>ISMRMRD_FILTER_NONE</value>
+            <value>None</value>
         </property>
         <property>
             <name>filterE1_sigma</name>
@@ -542,7 +542,7 @@
 
         <property>
             <name>filterE2</name>
-            <value>ISMRMRD_FILTER_NONE</value>
+            <value>None</value>
         </property>
         <property>
             <name>filterE2_sigma</name>
@@ -563,7 +563,7 @@
         -->
         <property>
             <name>filterRefRO</name>
-            <value>ISMRMRD_FILTER_HANNING</value>
+            <value>Hanning</value>
         </property>
         <property>
             <name>filterRefRO_sigma</name>
@@ -576,7 +576,7 @@
 
         <property>
             <name>filterRefE1</name>
-            <value>ISMRMRD_FILTER_HANNING</value>
+            <value>Hanning</value>
         </property>
         <property>
             <name>filterRefE1_sigma</name>
@@ -589,7 +589,7 @@
 
         <property>
             <name>filterRefE2</name>
-            <value>ISMRMRD_FILTER_HANNING</value>
+            <value>Hanning</value>
         </property>
         <property>
             <name>filterRefE2_sigma</name>
@@ -604,7 +604,7 @@
         <!-- only ISMRMRD_FILTER_TAPERED_HANNING is available for the moment -->
         <property>
             <name>filterPartialFourierRO</name>
-            <value>ISMRMRD_FILTER_TAPERED_HANNING</value>
+            <value>TaperedHanning</value>
         </property>
         <property>
             <name>filterPartialFourierRO_sigma</name>
@@ -621,7 +621,7 @@
 
         <property>
             <name>filterPartialFourierE1</name>
-            <value>ISMRMRD_FILTER_TAPERED_HANNING</value>
+            <value>TaperedHanning</value>
         </property>
         <property>
             <name>filterPartialFourierE1_sigma</name>
@@ -638,7 +638,7 @@
 
         <property>
             <name>filterPartialFourierE2</name>
-            <value>ISMRMRD_FILTER_TAPERED_HANNING</value>
+            <value>TaperedHanning</value>
         </property>
         <property>
             <name>filterPartialFourierE2_sigma</name>

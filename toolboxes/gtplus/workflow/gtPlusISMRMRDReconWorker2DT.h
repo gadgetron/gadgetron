@@ -2130,14 +2130,14 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
                 /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, 
                     filterPF_RO, ISMRMRD_FILTER_NONE, width_RO, true));*/
 
-                Gadgetron::generate_asymmetric_filter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, filterPF_RO, "None", width_RO, true);
+                Gadgetron::generate_asymmetric_filter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, filterPF_RO, ISMRMRD_FILTER_NONE, width_RO, true);
             }
             else
             {
                 /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, 
                     filterPF_RO, ISMRMRD_FILTER_TAPERED_HANNING, width_RO, true));*/
 
-                Gadgetron::generate_asymmetric_filter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, filterPF_RO, "TaperedHanning", width_RO, true);
+                Gadgetron::generate_asymmetric_filter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, filterPF_RO, ISMRMRD_FILTER_TAPERED_HANNING, width_RO, true);
             }
 
             if ( workOrder2DT.start_E1_<0 || workOrder2DT.end_E1_<0 || (workOrder2DT.start_E1_==0 && workOrder2DT.end_E1_==E1-1) )
@@ -2145,14 +2145,14 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
                 /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 
                     filterPF_E1, ISMRMRD_FILTER_NONE, width_E1, true));*/
 
-                Gadgetron::generate_asymmetric_filter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, filterPF_E1, "None", width_E1, true);
+                Gadgetron::generate_asymmetric_filter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, filterPF_E1, ISMRMRD_FILTER_NONE, width_E1, true);
             }
             else
             {
                 /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 
                     filterPF_E1, ISMRMRD_FILTER_TAPERED_HANNING, width_E1, true));*/
 
-                Gadgetron::generate_asymmetric_filter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, filterPF_E1, "TaperedHanning", width_E1, true);
+                Gadgetron::generate_asymmetric_filter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, filterPF_E1, ISMRMRD_FILTER_TAPERED_HANNING, width_E1, true);
             }
 
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterPF_RO, debugFolder_+"filterPF_RO_homodyne"); }

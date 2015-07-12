@@ -1374,24 +1374,20 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
 
         if ( startRO==0 && endRO==RO-1 )
         {
-            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_NONE, transBandRO, densityComp));
-            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "None", transBandRO, densityComp);
+            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_NONE, transBandRO, densityComp);
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, filterType, transBandRO, densityComp));
-            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "TaperedHanning", transBandRO, densityComp);
+            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_TAPERED_HANNING, transBandRO, densityComp);
         }
 
         if ( startE1==0 && endE1==E1-1 )
         {
-            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_NONE, transBandE1, densityComp));
-            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "None", transBandE1, densityComp);
+            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_NONE, transBandE1, densityComp);
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, filterType, transBandE1, densityComp));
-            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "TaperedHanning", transBandE1, densityComp);
+            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_TAPERED_HANNING, transBandE1, densityComp);
         }
 
         // in this way, the SNR unit scale property is perserved
@@ -1536,35 +1532,29 @@ copyAlongROE1E2TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t
 
         if ( startRO==0 && endRO==RO-1 )
         {
-            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_NONE, transBandRO, densityComp));
-            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "None", transBandRO, densityComp);
+            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_NONE, transBandRO, densityComp);
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(RO, startRO, endRO, filter_src_RO, filterType, transBandRO, densityComp));
-            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, "TaperedHanning", transBandRO, densityComp);
+            Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_TAPERED_HANNING, transBandRO, densityComp);
         }
 
         if ( startE1==0 && endE1==E1-1 )
         {
-            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_NONE, transBandE1, densityComp));
-            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "None", transBandE1, densityComp);
+            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_NONE, transBandE1, densityComp);
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E1, startE1, endE1, filter_src_E1, filterType, transBandE1, densityComp));
-            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, "TaperedHanning", transBandE1, densityComp);
+            Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_TAPERED_HANNING, transBandE1, densityComp);
         }
 
         if ( startE2==0 && endE2==E2-1 )
         {
-            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_NONE, transBandE2, densityComp));
-            Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, "None", transBandE2, densityComp);
+            Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_NONE, transBandE2, densityComp);
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(generateAsymmetricFilter(E2, startE2, endE2, filter_src_E2, filterType, transBandE2, densityComp));
-            Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, "Hanning", transBandE2, densityComp);
+            Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_TAPERED_HANNING, transBandE2, densityComp);
         }
 
         // in this way, the SNR unit scale property is perserved
@@ -1854,19 +1844,6 @@ std::string gtPlusISMRMRDReconUtil<T>::getNameFromISMRMRDPartialFourierReconAlgo
     if ( algo == ISMRMRD_PF_ZEROFILLING ) return std::string("ISMRMRD_PF_ZEROFILLING");
 
     return std::string("ISMRMRD_PF_NONE");
-}
-
-template <typename T> 
-ISMRMRDKSPACEFILTER gtPlusISMRMRDReconUtil<T>::
-getISMRMRDKSpaceFilterFromName(const std::string& name)
-{
-    if ( name == "ISMRMRD_FILTER_GAUSSIAN" ) return ISMRMRD_FILTER_GAUSSIAN;
-    if ( name == "ISMRMRD_FILTER_HANNING" ) return ISMRMRD_FILTER_HANNING;
-    if ( name == "ISMRMRD_FILTER_TUKEY" ) return ISMRMRD_FILTER_TUKEY;
-    if ( name == "ISMRMRD_FILTER_TAPERED_HANNING" ) return ISMRMRD_FILTER_TAPERED_HANNING;
-    if ( name == "ISMRMRD_FILTER_NONE" ) return ISMRMRD_FILTER_NONE;
-
-    return ISMRMRD_FILTER_NONE;
 }
 
 template <typename T> 

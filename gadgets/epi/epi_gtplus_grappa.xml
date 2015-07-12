@@ -285,7 +285,7 @@
         <!-- parameters for kspace filter, image data -->
         <property>
             <name>filterRO</name>
-            <value>ISMRMRD_FILTER_GAUSSIAN</value>
+            <value>Gaussian</value>
         </property>
         <property>
             <name>filterRO_sigma</name>
@@ -298,7 +298,7 @@
 
         <property>
             <name>filterE1</name>
-            <value>ISMRMRD_FILTER_GAUSSIAN</value>
+            <value>Gaussian</value>
         </property>
         <property>
             <name>filterE1_sigma</name>
@@ -311,7 +311,7 @@
 
         <property>
             <name>filterE2</name>
-            <value>ISMRMRD_FILTER_GAUSSIAN</value>
+            <value>Gaussian</value>
         </property>
         <property>
             <name>filterE2_sigma</name>
@@ -325,7 +325,7 @@
         <!-- parameters for kspace filter, ref data -->
         <property>
             <name>filterRefRO</name>
-            <value>ISMRMRD_FILTER_HANNING</value>
+            <value>Hanning</value>
         </property>
         <property>
             <name>filterRefRO_sigma</name>
@@ -338,7 +338,7 @@
 
         <property>
             <name>filterRefE1</name>
-            <value>ISMRMRD_FILTER_HANNING</value>
+            <value>Hanning</value>
         </property>
         <property>
             <name>filterRefE1_sigma</name>
@@ -351,7 +351,7 @@
 
         <property>
             <name>filterRefE2</name>
-            <value>ISMRMRD_FILTER_HANNING</value>
+            <value>Hanning</value>
         </property>
         <property>
             <name>filterRefE2_sigma</name>

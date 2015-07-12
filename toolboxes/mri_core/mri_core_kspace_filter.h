@@ -12,13 +12,29 @@
 namespace Gadgetron
 {
     /// ------------------------------------------------------------------------
+    /// filter types
+    /// ------------------------------------------------------------------------
+    // define the kspace filter type
+    enum ISMRMRDKSPACEFILTER
+    {
+        ISMRMRD_FILTER_GAUSSIAN = 160,
+        ISMRMRD_FILTER_HANNING,
+        ISMRMRD_FILTER_TAPERED_HANNING,
+        ISMRMRD_FILTER_NONE
+    };
+
+    // get the kspace filter algorithm from name
+    EXPORTMRICORE ISMRMRDKSPACEFILTER get_kspace_filter_type(const std::string& name);
+    EXPORTMRICORE std::string get_kspace_filter_name(ISMRMRDKSPACEFILTER filterType);
+
+    /// ------------------------------------------------------------------------
     /// filter generation
     /// ------------------------------------------------------------------------
     /// generate symmetric filter
     /// sigma: for Gaussian, in the unit of pixel
     /// width: for TaperedHanning filter etc., the length of transition band
     /// filterType: "Gaussian" or "Hanning" or "TaperedHanning" or "None"
-    template <typename T> EXPORTMRICORE void generate_symmetric_filter(size_t len, hoNDArray<T>& filter, const std::string& filterType, double sigma=1.5, size_t width=15);
+    template <typename T> EXPORTMRICORE void generate_symmetric_filter(size_t len, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma = 1.5, size_t width = 15);
 
     /// generate asymmetric filter, used for partial fourier/asymmetric echo filtering
     /// start, end: the data range within len
@@ -27,7 +43,7 @@ namespace Gadgetron
     /// if filterType==TaperedHanning and the densityComp is true, the density compensation version of tapered filter will be generated
     /// where unacquired region has filter values 0 and symmetric region 1 and nonsymmetric region 2
     /// if densityComp==false, the one side tapered filter will be generated
-    template <typename T> EXPORTMRICORE void generate_asymmetric_filter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, const std::string& filterType, size_t width, bool densityComp = false);
+    template <typename T> EXPORTMRICORE void generate_asymmetric_filter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, size_t width, bool densityComp = false);
 
     /// generate kspace filter for reference data
     /// a hanning filter is generated for the ref data, to make sure the ref image is free of ringing after zero-padding
