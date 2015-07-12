@@ -2,17 +2,9 @@
 #include "GadgetStreamInterface.h"
 #include "gadgetron_xml.h"
 #include "CloudBus.h"
-
-/*
-  TODO:
-
-  Make connector report when destroyed so that it can be deleted from map (might not be needed)
-  Make node index increment when in single package mode
-  Make the ISMRMRDAcquisitionDistributer respond to a specific index. 
- */
+#include <stdint.h>
 
 namespace Gadgetron{
-
 
   DistributionConnector::DistributionConnector(DistributeGadget* g)
     : distribute_gadget_(g)
@@ -66,6 +58,11 @@ namespace Gadgetron{
       GERROR("Negative node index received");
       return GADGET_FAIL;
     }
+
+    //If we are not supposed to use this node for compute, add one to make sure we are not on node 0
+    if (!use_this_node_for_compute.value()) {
+      node_index = node_index+1;
+    }
     
     if (node_index == 0) { //process locally
       if (this->next()->putq(m) == -1) {
@@ -92,6 +89,11 @@ namespace Gadgetron{
       me.port = CloudBus::instance()->port();
       me.uuid = CloudBus::instance()->uuid();
       me.active_reconstructions = CloudBus::instance()->active_reconstructions();
+
+      //This would give the current node the lowest possible priority
+      if (!use_this_node_for_compute.value()) {
+	me.active_reconstructions = UINT32_MAX;
+      }
       
       for (auto it = nl.begin(); it != nl.end(); it++) {
 	if (it->active_reconstructions < me.active_reconstructions) {

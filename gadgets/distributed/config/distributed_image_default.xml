@@ -34,20 +34,6 @@
     </gadget>
 
     <gadget>
-      <name>Distribute</name>
-      <dll>gadgetron_distributed</dll>
-      <classname>IsmrmrdAcquisitionDistributeGadget</classname>
-      <property>
-        <name>parallel_dimension</name>
-        <value>repetition</value>
-      </property>
-      <property>
-        <name>use_this_node_for_compute</name>
-        <value>true</value>
-      </property>
-    </gadget>
-
-    <gadget>
       <name>PCA</name>
       <dll>gadgetron_mricore</dll>
       <classname>PCACoilGadget</classname>
@@ -111,9 +97,21 @@
      </gadget>
 
     <gadget>
-        <name>Collect</name>
-        <dll>gadgetron_distributed</dll>
-        <classname>CollectGadget</classname>
+      <name>Distribute</name>
+      <dll>gadgetron_distributed</dll>
+      <classname>IsmrmrdImageDistributeGadget</classname>
+      <property>
+        <name>parallel_dimension</name>
+        <value>repetition</value>
+      </property>
+      <property>
+        <name>use_this_node_for_compute</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>single_package_mode</name>
+        <value>true</value>
+      </property>      
     </gadget>
 
     <gadget>
@@ -121,6 +119,12 @@
       <dll>gadgetron_mricore</dll>
       <classname>ExtractGadget</classname>
     </gadget>  
+
+    <gadget>
+        <name>Collect</name>
+        <dll>gadgetron_distributed</dll>
+        <classname>CollectGadget</classname>
+    </gadget>
 
     <gadget>
       <name>ImageFinish</name>

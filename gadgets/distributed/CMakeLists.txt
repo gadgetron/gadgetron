@@ -17,6 +17,8 @@ add_library(gadgetron_distributed SHARED
     CollectGadget.cpp
     IsmrmrdAcquisitionDistributeGadget.h
     IsmrmrdAcquisitionDistributeGadget.cpp
+    IsmrmrdImageDistributeGadget.h
+    IsmrmrdImageDistributeGadget.cpp
 )
 
 set_target_properties(gadgetron_distributed PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                      
@@ -34,7 +36,8 @@ install(FILES
     DistributeGadget.h
     CollectGadget.h
     IsmrmrdAcquisitionDistributeGadget.h
+    IsmrmrdImageDistributeGadget.h
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_distributed DESTINATION lib COMPONENT main)
-install(FILES config/distributed_default.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES config/distributed_default.xml config/distributed_image_default.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
