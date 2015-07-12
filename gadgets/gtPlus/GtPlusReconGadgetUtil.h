@@ -74,7 +74,4 @@ namespace Gadgetron
     // perform the patient to device coordinate transformation
     bool EXPORTGTPLUSGADGET PatientCoordinateSystemToDeviceCoordinateSystem(double& x, double& y, double& z, const std::string& position);
     bool EXPORTGTPLUSGADGET DeviceCoordinateSystemToPatientCoordinateSystem(double& x, double& y, double& z, const std::string& position);
-
-    // get the filter name from type
-    std::string EXPORTGTPLUSGADGET getKSpaceFilterNameFromType(Gadgetron::ISMRMRDKSPACEFILTER type);
 }

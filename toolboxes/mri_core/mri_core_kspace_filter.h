@@ -17,7 +17,7 @@ namespace Gadgetron
     // define the kspace filter type
     enum ISMRMRDKSPACEFILTER
     {
-        ISMRMRD_FILTER_GAUSSIAN = 160,
+        ISMRMRD_FILTER_GAUSSIAN = 1024,
         ISMRMRD_FILTER_HANNING,
         ISMRMRD_FILTER_TAPERED_HANNING,
         ISMRMRD_FILTER_NONE
