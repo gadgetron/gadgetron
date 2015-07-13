@@ -45,7 +45,7 @@ namespace Gadgetron
 	}
 	deserialize(cloud_bus_->nodes_, buffer+4, msg_size-4);
 	delete [] buffer;
-	cloud_bus_->node_list_condition_.signal();
+	cloud_bus_->node_list_condition_.broadcast();
 
       }
     return 0;
@@ -214,7 +214,8 @@ namespace Gadgetron
       req[1] = GADGETRON_CLOUDBUS_NODE_LIST_QUERY;
 
       this->peer().send_n((char*)(&req),8);
-      node_list_condition_.wait();
+      ACE_Time_Value t(0, 100000); //As a safety, we will wait a maximum of 100ms for this request and then move on.
+      node_list_condition_.wait(&t);
     }
     mtx_.release();
   }

@@ -85,7 +85,7 @@ namespace Gadgetron{
       GDEBUG("Number of network nodes found: %d\n", nl.size());
 
       GadgetronNodeInfo me;
-      me.address = "localhost";//We may have to update this
+      me.address = "127.0.0.1";//We may have to update this
       me.port = CloudBus::instance()->port();
       me.uuid = CloudBus::instance()->uuid();
       me.active_reconstructions = CloudBus::instance()->active_reconstructions();
