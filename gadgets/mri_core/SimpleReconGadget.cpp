@@ -142,10 +142,13 @@ int SimpleReconGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
 
         //Pass the image array down the chain
         if (this->next()->putq(cm1) < 0) {
-            return GADGET_FAIL;
+	  m1->release();
+          return GADGET_FAIL;
         }
 
     }
+
+    m1->release();
     return GADGET_OK;  
 
 }
