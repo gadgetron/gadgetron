@@ -31,6 +31,8 @@
 
 #include "gtPlusISMRMRDReconWorker.h"
 
+#include "mri_core_kspace_filter.h"
+
 namespace Gadgetron { namespace gtPlus {
 
 template <typename T> 
@@ -204,22 +206,26 @@ bool gtPlusReconWorker2DT<T>::performRefFilter(gtPlusReconWorkOrder2DT<T>* workO
 
         if ( workOrder2DT->filterROE1_ref_.get_size(0)==RO && workOrder2DT->filterROE1_ref_.get_size(1)==E1 )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(ref, workOrder2DT->filterROE1_ref_, refFiltered));
+            // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(ref, workOrder2DT->filterROE1_ref_, refFiltered));
+            Gadgetron::apply_kspace_filter_ROE1(ref, workOrder2DT->filterROE1_ref_, refFiltered);
         }
         else if ( (workOrder2DT->filterRO_ref_.get_number_of_elements()==RO) && (workOrder2DT->filterE1_ref_.get_number_of_elements()==E1) )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(ref, workOrder2DT->filterRO_ref_, workOrder2DT->filterE1_ref_, refFiltered));
+            // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(ref, workOrder2DT->filterRO_ref_, workOrder2DT->filterE1_ref_, refFiltered));
+            Gadgetron::apply_kspace_filter_ROE1(ref, workOrder2DT->filterRO_ref_, workOrder2DT->filterE1_ref_, refFiltered);
         }
         else
         {
             if ( (workOrder2DT->filterRO_ref_.get_number_of_elements()==RO) && (workOrder2DT->filterE1_ref_.get_number_of_elements()!=E1) )
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterRO(ref, workOrder2DT->filterRO_ref_, refFiltered));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterRO(ref, workOrder2DT->filterRO_ref_, refFiltered));
+                Gadgetron::apply_kspace_filter_RO(ref, workOrder2DT->filterRO_ref_, refFiltered);
             }
 
             if ( (workOrder2DT->filterRO_ref_.get_number_of_elements()!=RO) && (workOrder2DT->filterE1_ref_.get_number_of_elements()==E1) )
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterE1(ref, workOrder2DT->filterE1_ref_, refFiltered));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterE1(ref, workOrder2DT->filterE1_ref_, refFiltered));
+                Gadgetron::apply_kspace_filter_E1(ref, workOrder2DT->filterE1_ref_, refFiltered);
             }
         }
     }
@@ -1919,14 +1925,16 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder2D
         if ( workOrder2DT.filterROE1_partialfourier_.get_size(0)==RO 
                 && workOrder2DT.filterROE1_partialfourier_.get_size(1)==E1 )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspace, workOrder2DT.filterROE1_partialfourier_, buffer2DT_partial_fourier_));
+            // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspace, workOrder2DT.filterROE1_partialfourier_, buffer2DT_partial_fourier_));
+            Gadgetron::apply_kspace_filter_ROE1(kspace, workOrder2DT.filterROE1_partialfourier_, buffer2DT_partial_fourier_);
             kspace = buffer2DT_partial_fourier_;
         }
 
         else if ( (workOrder2DT.filterRO_partialfourier_.get_number_of_elements() == RO) 
                 && (workOrder2DT.filterE1_partialfourier_.get_number_of_elements() == E1) )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspace, workOrder2DT.filterRO_partialfourier_, workOrder2DT.filterE1_partialfourier_, buffer2DT_partial_fourier_));
+            // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspace, workOrder2DT.filterRO_partialfourier_, workOrder2DT.filterE1_partialfourier_, buffer2DT_partial_fourier_));
+            Gadgetron::apply_kspace_filter_ROE1(kspace, workOrder2DT.filterRO_partialfourier_, workOrder2DT.filterE1_partialfourier_, buffer2DT_partial_fourier_);
             kspace = buffer2DT_partial_fourier_;
         }
 
@@ -1937,14 +1945,16 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder2D
             if ( (workOrder2DT.filterRO_partialfourier_.get_number_of_elements() == RO) 
                     && (workOrder2DT.filterE1_partialfourier_.get_number_of_elements() != E1) )
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterRO(kspace, workOrder2DT.filterRO_partialfourier_, buffer2DT_partial_fourier_));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterRO(kspace, workOrder2DT.filterRO_partialfourier_, buffer2DT_partial_fourier_));
+                Gadgetron::apply_kspace_filter_RO(kspace, workOrder2DT.filterRO_partialfourier_, buffer2DT_partial_fourier_);
                 filterPerformed = true;
             }
 
             if ( (workOrder2DT.filterRO_partialfourier_.get_number_of_elements() != RO) 
                     && (workOrder2DT.filterE1_partialfourier_.get_number_of_elements() == E1) )
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterE1(kspace, workOrder2DT.filterE1_partialfourier_, buffer2DT_partial_fourier_));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterE1(kspace, workOrder2DT.filterE1_partialfourier_, buffer2DT_partial_fourier_));
+                Gadgetron::apply_kspace_filter_E1(kspace, workOrder2DT.filterE1_partialfourier_, buffer2DT_partial_fourier_);
                 filterPerformed = true;
             }
 
@@ -1994,13 +2004,16 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
         hoNDArray<T> filterRO(RO);
         if ( (workOrder2DT.start_RO_<0 || workOrder2DT.end_RO_<0) )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, 0, RO-1, 
-                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
+            //GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, 0, RO-1, 
+            //    filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
+            Gadgetron::generate_symmetric_filter_ref(RO, 0, RO - 1, filterRO);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, 
-                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
+            //GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, 
+            //    filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
+
+            Gadgetron::generate_symmetric_filter_ref(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, filterRO);
 
             startRO = workOrder2DT.start_RO_;
             endRO = workOrder2DT.end_RO_;
@@ -2012,13 +2025,17 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
         hoNDArray<T> filterE1(E1);
         if ( (workOrder2DT.start_E1_<0 || workOrder2DT.end_E1_<0) )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, 0, E1-1, 
-                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));
+            //GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, 0, E1-1, 
+            //    filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));
+
+            Gadgetron::generate_symmetric_filter_ref(E1, 0, E1 - 1, filterE1);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 
-                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));
+            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 
+                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));*/
+
+            Gadgetron::generate_symmetric_filter_ref(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, filterE1);
 
             startE1 = workOrder2DT.start_E1_;
             endE1 = workOrder2DT.end_E1_;
@@ -2048,7 +2065,9 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
         for ( ii=0; ii<workOrder2DT.partialFourier_homodyne_iters_; ii++ )
         {
             // kspace filter before phase extraction
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspaceIter, filterRO, filterE1, buffer2DT_partial_fourier_));
+            // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspaceIter, filterRO, filterE1, buffer2DT_partial_fourier_));
+            Gadgetron::apply_kspace_filter_ROE1(kspaceIter, filterRO, filterE1, buffer2DT_partial_fourier_);
+
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_partial_fourier_, debugFolder_+"homodyne_kspaceIter_afterFiltered"); }
 
             // go to image domain
@@ -2108,24 +2127,32 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
 
             if ( workOrder2DT.start_RO_<0 || workOrder2DT.end_RO_<0 || (workOrder2DT.start_RO_==0 && workOrder2DT.end_RO_==RO-1) )
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, 
-                    filterPF_RO, ISMRMRD_FILTER_NONE, width_RO, true));
+                /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, 
+                    filterPF_RO, ISMRMRD_FILTER_NONE, width_RO, true));*/
+
+                Gadgetron::generate_asymmetric_filter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, filterPF_RO, ISMRMRD_FILTER_NONE, width_RO, true);
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, 
-                    filterPF_RO, ISMRMRD_FILTER_TAPERED_HANNING, width_RO, true));
+                /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, 
+                    filterPF_RO, ISMRMRD_FILTER_TAPERED_HANNING, width_RO, true));*/
+
+                Gadgetron::generate_asymmetric_filter(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, filterPF_RO, ISMRMRD_FILTER_TAPERED_HANNING, width_RO, true);
             }
 
             if ( workOrder2DT.start_E1_<0 || workOrder2DT.end_E1_<0 || (workOrder2DT.start_E1_==0 && workOrder2DT.end_E1_==E1-1) )
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 
-                    filterPF_E1, ISMRMRD_FILTER_NONE, width_E1, true));
+                /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 
+                    filterPF_E1, ISMRMRD_FILTER_NONE, width_E1, true));*/
+
+                Gadgetron::generate_asymmetric_filter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, filterPF_E1, ISMRMRD_FILTER_NONE, width_E1, true);
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 
-                    filterPF_E1, ISMRMRD_FILTER_TAPERED_HANNING, width_E1, true));
+                /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 
+                    filterPF_E1, ISMRMRD_FILTER_TAPERED_HANNING, width_E1, true));*/
+
+                Gadgetron::generate_asymmetric_filter(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, filterPF_E1, ISMRMRD_FILTER_TAPERED_HANNING, width_E1, true);
             }
 
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterPF_RO, debugFolder_+"filterPF_RO_homodyne"); }
@@ -2168,40 +2195,46 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHomodyneRecon(gtPlusReconWork
 
             if ( workOrder2DT.start_RO_<0 || workOrder2DT.end_RO_<0 || (workOrder2DT.start_RO_==0 && workOrder2DT.end_RO_==RO-1) )
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterE1(kspace, filterPF_E1, kspace));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterE1(kspace, filterPF_E1, kspace));
+                Gadgetron::apply_kspace_filter_E1(kspace, filterPF_E1, kspace);
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_homodyne_PF_Filter"); }
 
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterE1(kspaceIter, filterPF_homodyne_E1, kspaceIter));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterE1(kspaceIter, filterPF_homodyne_E1, kspaceIter));
+                Gadgetron::apply_kspace_filter_E1(kspaceIter, filterPF_homodyne_E1, kspaceIter);
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"kspaceIter_after_homodyne_PF_Filter"); }
 
                 GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::add(filterPF_E1, filterPF_homodyne_E1, filterPF));
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeFilterSNRUnitScaleFactor(filterPF, scaleFactor));
+                Gadgetron::compute_filter_SNR_unit_scale_factor(filterPF, scaleFactor);
             }
             else if ( workOrder2DT.start_E1_<0 || workOrder2DT.end_E1_<0 || (workOrder2DT.start_E1_==0 && workOrder2DT.end_E1_==E1-1) )
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterRO(kspace, filterPF_RO, kspace));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterRO(kspace, filterPF_RO, kspace));
+                Gadgetron::apply_kspace_filter_RO(kspace, filterPF_RO, kspace);
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_homodyne_PF_Filter"); }
 
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterRO(kspaceIter, filterPF_homodyne_RO, kspaceIter));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterRO(kspaceIter, filterPF_homodyne_RO, kspaceIter));
+                Gadgetron::apply_kspace_filter_RO(kspaceIter, filterPF_homodyne_RO, kspaceIter);
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"kspaceIter_after_homodyne_PF_Filter"); }
 
                 GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::add(filterPF_RO, filterPF_homodyne_RO, filterPF));
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeFilterSNRUnitScaleFactor(filterPF, scaleFactor));
+                Gadgetron::compute_filter_SNR_unit_scale_factor(filterPF, scaleFactor);
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspace, filterPF_RO, filterPF_E1, kspace));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspace, filterPF_RO, filterPF_E1, kspace));
+                Gadgetron::apply_kspace_filter_ROE1(kspace, filterPF_RO, filterPF_E1, kspace);
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_homodyne_PF_Filter"); }
 
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspaceIter, filterPF_homodyne_RO, filterPF_homodyne_E1, kspaceIter));
+                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspaceIter, filterPF_homodyne_RO, filterPF_homodyne_E1, kspaceIter));
+                Gadgetron::apply_kspace_filter_ROE1(kspaceIter, filterPF_homodyne_RO, filterPF_homodyne_E1, kspaceIter);
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"kspaceIter_after_homodyne_PF_Filter"); }
 
                 GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::add(filterPF_RO, filterPF_homodyne_RO, filterPF));
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeFilterSNRUnitScaleFactor(filterPF, scaleFactor));
+                Gadgetron::compute_filter_SNR_unit_scale_factor(filterPF, scaleFactor);
 
                 T scaleFactorE1(1.0);
                 GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::add(filterPF_E1, filterPF_homodyne_E1, filterPF));
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeFilterSNRUnitScaleFactor(filterPF, scaleFactorE1));
+                Gadgetron::compute_filter_SNR_unit_scale_factor(filterPF, scaleFactorE1);
 
                 scaleFactor *= scaleFactorE1;
             }
@@ -2256,13 +2289,17 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
         hoNDArray<T> filterRO(RO);
         if ( (workOrder2DT.start_RO_<0 || workOrder2DT.end_RO_<0) )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, 0, RO-1, 
-                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
+            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, 0, RO-1, 
+                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));*/
+
+            Gadgetron::generate_symmetric_filter_ref(RO, 0, RO - 1, filterRO);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, 
-                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
+            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, 
+                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));*/
+
+            Gadgetron::generate_symmetric_filter_ref(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, filterRO);
 
             startRO = workOrder2DT.start_RO_;
             endRO = workOrder2DT.end_RO_;
@@ -2274,13 +2311,17 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
         hoNDArray<T> filterE1(E1);
         if ( (workOrder2DT.start_E1_<0 || workOrder2DT.end_E1_<0) )
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, 0, E1-1, 
-                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));
+            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, 0, E1-1, 
+                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));*/
+
+            Gadgetron::generate_symmetric_filter_ref(E1, 0, E1 - 1, filterE1);
         }
         else
         {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 
-                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));
+            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 
+                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));*/
+
+            Gadgetron::generate_symmetric_filter_ref(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, filterE1);
 
             startE1 = workOrder2DT.start_E1_;
             endE1 = workOrder2DT.end_E1_;
@@ -2294,7 +2335,8 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
         hoNDArray<T> magComplex(kspace.get_dimensions());
 
         // kspace filter
-        GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspaceIter, filterRO, filterE1, buffer2DT_partial_fourier_));
+        // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.kspacefilterROE1(kspaceIter, filterRO, filterE1, buffer2DT_partial_fourier_));
+        Gadgetron::apply_kspace_filter_ROE1(kspaceIter, filterRO, filterE1, buffer2DT_partial_fourier_);
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_partial_fourier_, debugFolder_+"POCS_afterFiltered"); }
 
         // go to image domain
@@ -2426,10 +2468,10 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFengHuangRecon(gtPlusReconWor
 
         // find the symmetric region in the kspace
         size_t startSymRO, endSymRO;
-        GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findSymmetricSampledRegion(startRO, endRO, RO/2, startSymRO, endSymRO));
+        Gadgetron::find_symmetric_sampled_region(startRO, endRO, RO/2, startSymRO, endSymRO);
 
         size_t startSymE1, endSymE1;
-        GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findSymmetricSampledRegion(startE1, endE1, E1/2, startSymE1, endSymE1));
+        Gadgetron::find_symmetric_sampled_region(startE1, endE1, E1/2, startSymE1, endSymE1);
 
         // the reference kspace for kernel estimation
         hoNDArray<T> src, dst;
