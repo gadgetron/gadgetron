@@ -188,10 +188,8 @@ namespace Gadgetron{
 	GERROR("Unable to put package on connector queue\n");
 	m1->release();
 	return GADGET_FAIL;
-      } else {
-	return GADGET_OK;
       }
-
+      
       if (single_package_mode.value()) {
 	  auto m2 = new GadgetContainerMessage<GadgetMessageIdentifier>();
 	  m2->getObjectPtr()->id = GADGET_MESSAGE_CLOSE;
