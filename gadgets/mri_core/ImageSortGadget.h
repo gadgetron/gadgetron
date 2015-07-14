@@ -18,7 +18,7 @@ namespace Gadgetron{
     GadgetContainerMessage<ISMRMRD::ImageHeader>* mb_;
   };
 
-  bool image_entry_compare(ImageEntry& i, ImageEntry& j)
+  bool image_entry_compare(const ImageEntry& i, const ImageEntry& j)
   {
     return (i.index_<j.index_);
   }
