@@ -28,12 +28,6 @@
     </writer>
 
     <gadget>
-      <name>NoiseAdjust</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>NoiseAdjustGadget</classname>
-    </gadget>
-
-    <gadget>
       <name>Distribute</name>
       <dll>gadgetron_distributed</dll>
       <classname>IsmrmrdAcquisitionDistributeGadget</classname>
@@ -45,19 +39,6 @@
         <name>use_this_node_for_compute</name>
         <value>true</value>
       </property>
-    </gadget>
-
-    <gadget>
-      <name>PCA</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>PCACoilGadget</classname>
-    </gadget>
-    
-    <gadget>
-      <name>CoilReduction</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>CoilReductionGadget</classname>
-      <property><name>coils_out</name><value>16</value></property>
     </gadget>
 
     <gadget>
@@ -120,6 +101,18 @@
       <name>Extract</name>
       <dll>gadgetron_mricore</dll>
       <classname>ExtractGadget</classname>
+    </gadget>  
+
+
+    <!-- We are inserting an image sorter here so that the images always come out in the same order for integration test -->
+    <gadget>
+      <name>Sort</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageSortGadget</classname>
+      <property>
+        <name>sorting_dimension</name>
+        <value>repetition</value>
+      </property>
     </gadget>  
 
     <gadget>

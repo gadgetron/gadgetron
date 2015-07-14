@@ -28,25 +28,6 @@
     </writer>
 
     <gadget>
-      <name>NoiseAdjust</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>NoiseAdjustGadget</classname>
-    </gadget>
-
-    <gadget>
-      <name>PCA</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>PCACoilGadget</classname>
-    </gadget>
-    
-    <gadget>
-      <name>CoilReduction</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>CoilReductionGadget</classname>
-      <property><name>coils_out</name><value>16</value></property>
-    </gadget>
-
-    <gadget>
         <name>RemoveROOversampling</name>
         <dll>gadgetron_mricore</dll>
         <classname>RemoveROOversamplingGadget</classname>
@@ -124,6 +105,16 @@
         <name>Collect</name>
         <dll>gadgetron_distributed</dll>
         <classname>CollectGadget</classname>
+    </gadget>
+
+    <gadget>
+      <name>ImageSort</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageSortGadget</classname>
+      <property>
+        <name>sorting_dimension</name>
+        <value>repetition</value>
+      </property>      
     </gadget>
 
     <gadget>

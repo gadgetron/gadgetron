@@ -85,6 +85,10 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
     else:
         need_system_memory = 1024
 
+    if config.has_option('REQUIREMENTS', 'nodes'):
+        nodes = config.getint('REQUIREMENTS','nodes')
+    else:
+        nodes = 0
 
     if need_siemens_conversion:
         if not os.path.isfile(siemens_dat):
@@ -198,6 +202,21 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
         else:
             p = subprocess.Popen(gadgetron_start, shell=True, stdout=gf, stderr=gf)
 
+        node_p = list()
+        if nodes > 0:
+            #start the cloudbus relay
+            relay_log_filename = os.path.join(pwd, out_folder, "gadgetron_cloudbus_relay.log")
+            with open(relay_log_filename, "w") as lgf:
+                p_relay = subprocess.Popen(["gadgetron_cloudbus_relay"], env=environment, stdout=lgf, stderr=lgf)
+            
+            for pi in range(nodes):
+                node_log_filename = "gadgetron_node_" + str(pi) + ".log"
+                node_log_filename = os.path.join(pwd, out_folder, node_log_filename)
+
+                with open(node_log_filename, "w") as ngf:
+                    pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1)], env=environment, stdout=ngf, stderr=ngf)
+                    node_p.append(pn)
+            
         time.sleep(2)
 
         with open(client_log_filename, "w") as cf:
@@ -264,7 +283,11 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
                 success = False
 
         p.terminate()
-
+        if nodes > 0:
+            p_relay.terminate()
+            for pi in node_p:
+                pi.terminate()
+                
         # make sure the gadgetron is stopped
         if chroot_path != "Empty":
             gadgetron_stop="sudo kill `pgrep -U root start.sh`"
