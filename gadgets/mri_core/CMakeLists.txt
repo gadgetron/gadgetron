@@ -81,6 +81,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     AcquisitionAccumulateTriggerGadget.h
                                     BucketToBufferGadget.h 
                                     ImageArraySplitGadget.h
+                                    ImageSplitSlicesGadget.h
                                     SimpleReconGadget.h)
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
@@ -111,6 +112,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 AcquisitionAccumulateTriggerGadget.cpp
                                 BucketToBufferGadget.cpp
                                 ImageArraySplitGadget.cpp
+                                ImageSplitSlicesGadget.cpp
                                 SimpleReconGadget.cpp  )
 
 if (WIN32)
@@ -123,6 +125,7 @@ set( gadgetron_mricore_config_files
     default_short.xml
     default_optimized.xml
     default_measurement_dependencies.xml
+    default_optimized_short.xml
 )
 
 add_library(gadgetron_mricore SHARED 

@@ -73,7 +73,8 @@ int ImageArraySplitGadget::process( GadgetContainerMessage<IsmrmrdImageArray>* m
         }
     }
     
-    return GADGET_OK;  
+    m1->release(); //We have copied all the data in this case
+    return GADGET_OK;
 
 }
 
