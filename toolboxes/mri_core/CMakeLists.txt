@@ -36,13 +36,15 @@ set( mri_core_header_files
         mri_core_utility.h
         mri_core_kspace_filter.h
         mri_core_grappa.h 
-        mri_core_coil_map_estimation.h )
+        mri_core_coil_map_estimation.h 
+        mri_core_KarhunenLoeve_Transform.h )
 
 set( mri_core_source_files
         mri_core_utility.cpp 
         mri_core_grappa.cpp 
         mri_core_kspace_filter.cpp
-        mri_core_coil_map_estimation.cpp )
+        mri_core_coil_map_estimation.cpp 
+        mri_core_KarhunenLoeve_Transform.cpp )
 
 add_library(gadgetron_toolbox_mri_core SHARED 
      ${mri_core_header_files} ${mri_core_source_files} )
