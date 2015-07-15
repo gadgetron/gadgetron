@@ -85,11 +85,11 @@ namespace GadgetronXML
 
       pugi::xml_node property = gadget.child("property");
       while (property) {
-	GadgetronParameter p;
-	p.name = property.child_value("name");
-	p.value = property.child_value("value");
-	g.property.push_back(p);
-	property = property.next_sibling("property");
+        GadgetronParameter p;
+        p.name = property.child_value("name");
+        p.value = property.child_value("value");
+        g.property.push_back(p);
+        property = property.next_sibling("property");
       }
 
       cfg.gadget.push_back(g);
@@ -97,16 +97,6 @@ namespace GadgetronXML
     }
   }
 
-  /*
-
-<?xml version="1.0" encoding="UTF-8"?>
-<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
-        xmlns="http://gadgetron.sf.net/gadgetron"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-
-
-
-   */
 
   void append_node(pugi::xml_node& n, const char* child, const std::string& v)
   {
@@ -144,59 +134,59 @@ namespace GadgetronXML
 
 
     for (std::vector<Reader>::const_iterator it = cfg.reader.begin();
-	 it != cfg.reader.end(); it++)
-      {
-	n1 = root.append_child("reader");
+    it != cfg.reader.end(); it++)
+    {
+      n1 = root.append_child("reader");
 
-	n2 = n1.append_child("slot");
-	n2.append_child(pugi::node_pcdata).set_value(to_string_val(it->slot).c_str());
+      n2 = n1.append_child("slot");
+      n2.append_child(pugi::node_pcdata).set_value(to_string_val(it->slot).c_str());
 
-	n2 = n1.append_child("dll");
-	n2.append_child(pugi::node_pcdata).set_value(it->dll.c_str());
+      n2 = n1.append_child("dll");
+      n2.append_child(pugi::node_pcdata).set_value(it->dll.c_str());
 
-	n2 = n1.append_child("classname");
-	n2.append_child(pugi::node_pcdata).set_value(it->classname.c_str());
-      }
+      n2 = n1.append_child("classname");
+      n2.append_child(pugi::node_pcdata).set_value(it->classname.c_str());
+    }
 
     for (std::vector<Writer>::const_iterator it = cfg.writer.begin();
-	 it != cfg.writer.end(); it++)
-      {
-	n1 = root.append_child("writer");
+    it != cfg.writer.end(); it++)
+    {
+      n1 = root.append_child("writer");
 
-	n2 = n1.append_child("slot");
-	n2.append_child(pugi::node_pcdata).set_value(to_string_val(it->slot).c_str());
+      n2 = n1.append_child("slot");
+      n2.append_child(pugi::node_pcdata).set_value(to_string_val(it->slot).c_str());
 
-	n2 = n1.append_child("dll");
-	n2.append_child(pugi::node_pcdata).set_value(it->dll.c_str());
+      n2 = n1.append_child("dll");
+      n2.append_child(pugi::node_pcdata).set_value(it->dll.c_str());
 
-	n2 = n1.append_child("classname");
-	n2.append_child(pugi::node_pcdata).set_value(it->classname.c_str());
-      }
+      n2 = n1.append_child("classname");
+      n2.append_child(pugi::node_pcdata).set_value(it->classname.c_str());
+    }
 
     for (std::vector<Gadget>::const_iterator it = cfg.gadget.begin();
-	 it != cfg.gadget.end(); it++)
+    it != cfg.gadget.end(); it++)
+    {
+      n1 = root.append_child("gadget");
+
+      n2 = n1.append_child("name");
+      n2.append_child(pugi::node_pcdata).set_value(it->name.c_str());
+
+      n2 = n1.append_child("dll");
+      n2.append_child(pugi::node_pcdata).set_value(it->dll.c_str());
+
+      n2 = n1.append_child("classname");
+      n2.append_child(pugi::node_pcdata).set_value(it->classname.c_str());
+
+      for (std::vector<GadgetronParameter>::const_iterator it2 = it->property.begin();
+      it2 != it->property.end(); it2++)
       {
-	n1 = root.append_child("gadget");
-
-	n2 = n1.append_child("name");
-	n2.append_child(pugi::node_pcdata).set_value(it->name.c_str());
-
-	n2 = n1.append_child("dll");
-	n2.append_child(pugi::node_pcdata).set_value(it->dll.c_str());
-
-	n2 = n1.append_child("classname");
-	n2.append_child(pugi::node_pcdata).set_value(it->classname.c_str());
-
-	for (std::vector<GadgetronParameter>::const_iterator it2 = it->property.begin();
-	     it2 != it->property.end(); it2++)
-	  {
-	    n2 = n1.append_child("property");
-	    n3 = n2.append_child("name");
-	    n3.append_child(pugi::node_pcdata).set_value(it2->name.c_str());
-	    n3 = n2.append_child("value");
-	    n3.append_child(pugi::node_pcdata).set_value(it2->value.c_str());
-	  }
+        n2 = n1.append_child("property");
+        n3 = n2.append_child("name");
+        n3.append_child(pugi::node_pcdata).set_value(it2->name.c_str());
+        n3 = n2.append_child("value");
+        n3.append_child(pugi::node_pcdata).set_value(it2->value.c_str());
       }
+    }
 
     doc.save(o);
 
