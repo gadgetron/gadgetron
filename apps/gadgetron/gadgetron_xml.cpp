@@ -15,7 +15,7 @@ namespace GadgetronXML
     if (!root) {
       throw std::runtime_error("gadgetronConfiguration element not found in configuration file");
     }
-    
+
     pugi::xml_node port = root.child("port");
     if (!port) {
       throw std::runtime_error("Port not found in Gadgetron configuration");
@@ -37,9 +37,13 @@ namespace GadgetronXML
       CloudBus cb;
       cb.relayAddress = b.child_value("relayAddress");
       cb.port = static_cast<unsigned int>(std::atoi(b.child_value("port")));
+      if ((cb.relayAddress.size() == 0) || (cb.port == 0))
+      {
+        throw std::runtime_error("Invalid CloudBus configuration.");
+      }
       h.cloudBus = cb;
     }
-    
+
   }
 
   void deserialize(const char* xml_config, GadgetStreamConfiguration& cfg)
@@ -61,7 +65,7 @@ namespace GadgetronXML
       cfg.reader.push_back(r);
       reader = reader.next_sibling("reader");
     }
-    
+
     pugi::xml_node writer = root.child("writer");
     while (writer) {
       Writer w;
@@ -78,7 +82,7 @@ namespace GadgetronXML
       g.name = gadget.child_value("name");
       g.dll = gadget.child_value("dll");
       g.classname = gadget.child_value("classname");
-      
+
       pugi::xml_node property = gadget.child("property");
       while (property) {
 	GadgetronParameter p;
@@ -99,16 +103,16 @@ namespace GadgetronXML
 <gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
         xmlns="http://gadgetron.sf.net/gadgetron"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        
+
 
 
    */
 
-  void append_node(pugi::xml_node& n, const char* child, const std::string& v) 
+  void append_node(pugi::xml_node& n, const char* child, const std::string& v)
   {
     pugi::xml_node n2 = n.append_child(child);
     n2.append_child(pugi::node_pcdata).set_value(v.c_str());
-  } 
+  }
 
   std::string to_string_val(const unsigned short& v)
   {
@@ -131,10 +135,10 @@ namespace GadgetronXML
 
     a = root.append_attribute("xmlns:xsi");
     a.set_value("http://www.w3.org/2001/XMLSchema-instance");
-  
+
     a = root.append_attribute("xmlns:xs");
     a.set_value("http://www.w3.org/2001/XMLSchema");
-    
+
     a = root.append_attribute("xsi:schemaLocation");
     a.set_value("http://gadgetron.sf.net/gadgetron gadgetron.xsd");
 
@@ -143,7 +147,7 @@ namespace GadgetronXML
 	 it != cfg.reader.end(); it++)
       {
 	n1 = root.append_child("reader");
-	
+
 	n2 = n1.append_child("slot");
 	n2.append_child(pugi::node_pcdata).set_value(to_string_val(it->slot).c_str());
 
@@ -158,7 +162,7 @@ namespace GadgetronXML
 	 it != cfg.writer.end(); it++)
       {
 	n1 = root.append_child("writer");
-	
+
 	n2 = n1.append_child("slot");
 	n2.append_child(pugi::node_pcdata).set_value(to_string_val(it->slot).c_str());
 
@@ -173,7 +177,7 @@ namespace GadgetronXML
 	 it != cfg.gadget.end(); it++)
       {
 	n1 = root.append_child("gadget");
-	
+
 	n2 = n1.append_child("name");
 	n2.append_child(pugi::node_pcdata).set_value(it->name.c_str());
 
