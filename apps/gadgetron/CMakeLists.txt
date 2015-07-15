@@ -69,6 +69,7 @@ add_library(gadgetron_gadgetbase SHARED
 target_link_libraries(gadgetron_gadgetbase
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   gadgetron_toolbox_gadgettools
+  gadgetron_toolbox_cloudbus
   gadgetron_toolbox_log
 )
 

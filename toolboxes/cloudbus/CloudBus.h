@@ -32,8 +32,36 @@
 namespace Gadgetron
 {  
 
+  class CloudBus;
+  
+  class CloudBusReaderTask : public ACE_Task<ACE_MT_SYNCH>
+  {
+    
+  public:
+    typedef ACE_Task<ACE_MT_SYNCH> inherited;
+    
+  CloudBusReaderTask(CloudBus* cloudbus)
+    : inherited()
+    , cloud_bus_(cloudbus)
+    {
+      
+    }
+    
+    virtual int open(void*);
+    virtual int close(unsigned long flags);
+    virtual int svc(void);
+
+  protected:
+    ACE_SOCK_Stream* socket_;
+    CloudBus* cloud_bus_;
+  };
+
+
+  
   class EXPORTCLOUDBUS CloudBus : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH>
   {
+    friend CloudBusReaderTask;
+    
   public:
     typedef ACE_Task<ACE_MT_SYNCH> inherited;
 
@@ -55,6 +83,13 @@ namespace Gadgetron
     void get_node_info(std::vector<GadgetronNodeInfo>& nodes);
     void print_nodes();
     size_t get_number_of_nodes();
+
+    unsigned int active_reconstructions();
+    unsigned int port();
+    const char* uuid();
+    
+    void report_recon_start();
+    void report_recon_end();
     
   protected:
     ///Protected constructor. 
@@ -77,6 +112,8 @@ namespace Gadgetron
     boost::uuids::uuid uuid_;
     bool connected_;
     ACE_SOCK_Stream socket_;
+
+    CloudBusReaderTask* reader_task_;
   };
 }
 

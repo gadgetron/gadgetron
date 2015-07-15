@@ -114,6 +114,7 @@ namespace GadgetronXML
   };
 
   void EXPORTGADGETBASE deserialize(const char* xml, GadgetStreamConfiguration& cfg);
+  void EXPORTGADGETBASE serialize(const GadgetStreamConfiguration& cfg, std::ostream& o);
 
 };
 

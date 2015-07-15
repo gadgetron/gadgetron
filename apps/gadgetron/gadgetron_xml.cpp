@@ -92,4 +92,110 @@ namespace GadgetronXML
       gadget = gadget.next_sibling("gadget");
     }
   }
+
+  /*
+
+<?xml version="1.0" encoding="UTF-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        
+
+
+   */
+
+  void append_node(pugi::xml_node& n, const char* child, const std::string& v) 
+  {
+    pugi::xml_node n2 = n.append_child(child);
+    n2.append_child(pugi::node_pcdata).set_value(v.c_str());
+  } 
+
+  std::string to_string_val(const unsigned short& v)
+  {
+    char buffer[256];
+    sprintf(buffer,"%d",v);
+    return std::string(buffer);
+  }
+
+  void serialize(const GadgetStreamConfiguration& cfg, std::ostream& o)
+  {
+    pugi::xml_document doc;
+    pugi::xml_node root = doc.append_child();
+    pugi::xml_node n1,n2,n3;
+    pugi::xml_attribute a;
+
+    root.set_name("gadgetronStreamConfiguration");
+
+    a = root.append_attribute("xmlns");
+    a.set_value("http://gadgetron.sf.net/gadgetron");
+
+    a = root.append_attribute("xmlns:xsi");
+    a.set_value("http://www.w3.org/2001/XMLSchema-instance");
+  
+    a = root.append_attribute("xmlns:xs");
+    a.set_value("http://www.w3.org/2001/XMLSchema");
+    
+    a = root.append_attribute("xsi:schemaLocation");
+    a.set_value("http://gadgetron.sf.net/gadgetron gadgetron.xsd");
+
+
+    for (std::vector<Reader>::const_iterator it = cfg.reader.begin();
+	 it != cfg.reader.end(); it++)
+      {
+	n1 = root.append_child("reader");
+	
+	n2 = n1.append_child("slot");
+	n2.append_child(pugi::node_pcdata).set_value(to_string_val(it->slot).c_str());
+
+	n2 = n1.append_child("dll");
+	n2.append_child(pugi::node_pcdata).set_value(it->dll.c_str());
+
+	n2 = n1.append_child("classname");
+	n2.append_child(pugi::node_pcdata).set_value(it->classname.c_str());
+      }
+
+    for (std::vector<Writer>::const_iterator it = cfg.writer.begin();
+	 it != cfg.writer.end(); it++)
+      {
+	n1 = root.append_child("writer");
+	
+	n2 = n1.append_child("slot");
+	n2.append_child(pugi::node_pcdata).set_value(to_string_val(it->slot).c_str());
+
+	n2 = n1.append_child("dll");
+	n2.append_child(pugi::node_pcdata).set_value(it->dll.c_str());
+
+	n2 = n1.append_child("classname");
+	n2.append_child(pugi::node_pcdata).set_value(it->classname.c_str());
+      }
+
+    for (std::vector<Gadget>::const_iterator it = cfg.gadget.begin();
+	 it != cfg.gadget.end(); it++)
+      {
+	n1 = root.append_child("gadget");
+	
+	n2 = n1.append_child("name");
+	n2.append_child(pugi::node_pcdata).set_value(it->name.c_str());
+
+	n2 = n1.append_child("dll");
+	n2.append_child(pugi::node_pcdata).set_value(it->dll.c_str());
+
+	n2 = n1.append_child("classname");
+	n2.append_child(pugi::node_pcdata).set_value(it->classname.c_str());
+
+	for (std::vector<GadgetronParameter>::const_iterator it2 = it->property.begin();
+	     it2 != it->property.end(); it2++)
+	  {
+	    n2 = n1.append_child("property");
+	    n3 = n2.append_child("name");
+	    n3.append_child(pugi::node_pcdata).set_value(it2->name.c_str());
+	    n3 = n2.append_child("value");
+	    n3.append_child(pugi::node_pcdata).set_value(it2->value.c_str());
+	  }
+      }
+
+    doc.save(o);
+
+  }
+
 }

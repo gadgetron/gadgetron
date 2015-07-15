@@ -22,6 +22,7 @@ namespace Gadgetron
     std::string address;
     uint32_t port;
     uint32_t compute_capability;
+    uint32_t active_reconstructions;
   };
 
   size_t calculate_node_info_length(GadgetronNodeInfo& n)
@@ -29,7 +30,7 @@ namespace Gadgetron
     size_t len = 0;
     len += 4 + n.uuid.size();
     len += 4 + n.address.size();
-    len += 8;
+    len += 12;
     return len;
   }
   
@@ -49,6 +50,7 @@ namespace Gadgetron
 
     *((uint32_t*)(buffer + pos)) = n.port; pos += 4;
     *((uint32_t*)(buffer + pos)) = n.compute_capability; pos += 4;
+    *((uint32_t*)(buffer + pos)) = n.active_reconstructions; pos += 4;
     
     return pos;
   }
@@ -67,7 +69,8 @@ namespace Gadgetron
 
     n.port = *((uint32_t*)(buffer+pos)); pos += 4;
     n.compute_capability = *((uint32_t*)(buffer+pos)); pos += 4;
-
+    n.active_reconstructions = *((uint32_t*)(buffer+pos)); pos += 4;
+    
     return pos;
   }
 

@@ -61,7 +61,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     CombineGadget.h
                                     CropAndCombineGadget.h  
                                     ImageWriterGadget.h 
-                                    MRIImageWriter.h 
+                                    MRIImageWriter.h
+				    MRIImageReader.h
                                     NoiseAdjustGadget_unoptimized.h 
                                     ExtractGadget.h 
                                     FloatToFixPointGadget.h 
@@ -81,7 +82,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     AcquisitionAccumulateTriggerGadget.h
                                     BucketToBufferGadget.h 
                                     ImageArraySplitGadget.h
-                                    SimpleReconGadget.h)
+                                    SimpleReconGadget.h
+				    ImageSortGadget.h)
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -91,7 +93,8 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 CombineGadget.cpp 
                                 CropAndCombineGadget.cpp 
                                 ImageWriterGadget.cpp 
-                                MRIImageWriter.cpp 
+                                MRIImageWriter.cpp
+				MRIImageReader.cpp
                                 NoiseAdjustGadget_unoptimized.cpp 
                                 ExtractGadget.cpp 
                                 FloatToFixPointGadget.cpp 
@@ -111,7 +114,8 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 AcquisitionAccumulateTriggerGadget.cpp
                                 BucketToBufferGadget.cpp
                                 ImageArraySplitGadget.cpp
-                                SimpleReconGadget.cpp  )
+                                SimpleReconGadget.cpp
+				ImageSortGadget.cpp)
 
 if (WIN32)
     set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )
