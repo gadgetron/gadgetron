@@ -26,3 +26,4 @@ test/integration/test_cases.txt
 tags
 test/integration/*.xprot
 test/integration/*.xml
+.atom-build.json

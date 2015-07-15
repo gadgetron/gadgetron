@@ -14,32 +14,33 @@ namespace Gadgetron{
   {
   public:
     GADGET_DECLARE(IsmrmrdAcquisitionDistributeGadget);
-      
+
   protected:
-    GADGET_PROPERTY_LIMITS(parallel_dimension, std::string, "Dimension that data will be parallelized over", "slice",
-			   GadgetPropertyLimitsEnumeration, 
-			   "kspace_encode_step_1",
-			   "kspace_encode_step_2",
-			   "average",
-			   "slice",
-			   "contrast",
-			   "phase",
-			   "repetition",
-			   "set",
-			   "segment",
-			   "user_0",
-			   "user_1",
-			   "user_2",
-			   "user_3",
-			   "user_4",
-			   "user_5",
-			   "user_6",
-			   "user_7");
+    GADGET_PROPERTY_LIMITS(parallel_dimension, std::string,
+      "Dimension that data will be parallelized over", "slice",
+      GadgetPropertyLimitsEnumeration,
+      "kspace_encode_step_1",
+      "kspace_encode_step_2",
+      "average",
+      "slice",
+      "contrast",
+      "phase",
+      "repetition",
+      "set",
+      "segment",
+      "user_0",
+      "user_1",
+      "user_2",
+      "user_3",
+      "user_4",
+      "user_5",
+      "user_6",
+      "user_7");
 
-    
-    virtual int node_index(ACE_Message_Block* m);
-    virtual int message_id(ACE_Message_Block* m);
 
-  };
-}
-#endif //DISTRIBUTEGADGET_H
+      virtual int node_index(ACE_Message_Block* m);
+      virtual int message_id(ACE_Message_Block* m);
+
+    };
+  }
+  #endif //DISTRIBUTEGADGET_H

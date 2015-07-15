@@ -10,7 +10,7 @@ namespace Gadgetron{
     if (!h) return GADGET_FAIL;
 
     std::string parallel_dimension_local = parallel_dimension.value();
-    
+
     if (parallel_dimension_local.size() == 0) {
       return -1;
     } else if (parallel_dimension_local.compare("average") == 0) {
@@ -43,5 +43,3 @@ namespace Gadgetron{
   GADGET_FACTORY_DECLARE(IsmrmrdImageDistributeGadget)
 
 }
-
-

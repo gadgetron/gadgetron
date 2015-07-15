@@ -16,22 +16,22 @@ namespace Gadgetron{
       return 0;
     }
   }
-  
+
   int CollectGadget::process(ACE_Message_Block* m)
   {
     if (pass_through_mode.value()) {
       //It is enough to put the first one, since they are linked
       if (this->next()->putq(m) == -1) {
-	m->release();
-	GERROR("CollectGadget::process, passing data on to next gadget");
-	return -1;
+        m->release();
+        GERROR("CollectGadget::process, passing data on to next gadget");
+        return -1;
       }
     } else {
       if (!this->controller_)
-        {
-	  GERROR("Cannot return result to controller, no controller set");
-	  return -1;
-        }
+      {
+        GERROR("Cannot return result to controller, no controller set");
+        return -1;
+      }
 
       GadgetContainerMessage<GadgetMessageIdentifier>* mb = new GadgetContainerMessage<GadgetMessageIdentifier>();
 
@@ -41,18 +41,16 @@ namespace Gadgetron{
       int ret = this->controller_->output_ready(mb);
 
       if ((ret < 0))
-        {
-	  GERROR("Failed to return massage to controller\n");
-	  return GADGET_FAIL;
-        }
+      {
+        GERROR("Failed to return massage to controller\n");
+        return GADGET_FAIL;
+      }
 
       return GADGET_OK;
     }
-    
+
     return GADGET_OK;
   }
 
   GADGET_FACTORY_DECLARE(CollectGadget)
 }
-
-
