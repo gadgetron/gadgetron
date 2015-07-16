@@ -14,21 +14,21 @@ namespace Gadgetron{
 
   //Forward declaration
   class CloudBusNodeController;
-  
+
   class CloudBusRelayAcceptor : public ACE_Event_Handler
   {
   public:
     CloudBusRelayAcceptor()
       : mtx_("CLOUDBUSRELAYMTX")
     {
-      
+
     }
-    
-    virtual ~CloudBusRelayAcceptor () 
+
+    virtual ~CloudBusRelayAcceptor ()
     {
       this->handle_close (ACE_INVALID_HANDLE, 0);
-    } 
-    
+    }
+
     int open (const ACE_INET_Addr &listen_addr)
     {
       if (this->acceptor_.open (listen_addr, 1) == -1) {
@@ -37,27 +37,27 @@ namespace Gadgetron{
       }
       return this->reactor ()->register_handler(this, ACE_Event_Handler::ACCEPT_MASK);
     }
-    
+
     virtual ACE_HANDLE get_handle (void) const
-    { 
-      return this->acceptor_.get_handle (); 
+    {
+      return this->acceptor_.get_handle ();
     }
-    
+
     virtual int handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE);
-    
+
     virtual int handle_close (ACE_HANDLE handle,
 			      ACE_Reactor_Mask close_mask)
     {
       GDEBUG("Close CloudBus Relay Acceptor\n");
-      
+
       if (this->acceptor_.get_handle () != ACE_INVALID_HANDLE) {
-	ACE_Reactor_Mask m = 
+	ACE_Reactor_Mask m =
 	  ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL;
 	this->reactor ()->remove_handler (this, m);
 	this->acceptor_.close ();
       }
       return 0;
-    }    
+    }
 
     void add_node(CloudBusNodeController* c, GadgetronNodeInfo n)
     {
@@ -92,7 +92,7 @@ namespace Gadgetron{
       }
       mtx_.release();
     }
-    
+
   protected:
     ACE_SOCK_Acceptor acceptor_;
     std::map<CloudBusNodeController*, GadgetronNodeInfo> node_map_;
@@ -101,7 +101,7 @@ namespace Gadgetron{
 
 
 
-  class CloudBusNodeController 
+  class CloudBusNodeController
     : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH>
   {
   public:
@@ -109,12 +109,12 @@ namespace Gadgetron{
       : notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
     {
     }
-    
+
     virtual ~CloudBusNodeController()
     {
       this->acceptor_->delete_node(this);
     }
-    
+
     virtual int open (void) {
       this->notifier_.reactor (this->reactor ());
       this->msg_queue ()->notification_strategy (&this->notifier_);
@@ -142,7 +142,7 @@ namespace Gadgetron{
       }
 
       char* buffer = new char[msg_size];
-      
+
       if ((recv_cnt = peer().recv_n (buffer, msg_size)) <= 0) {
 	GERROR("Unable to read message\n");
 	delete [] buffer;
@@ -154,20 +154,20 @@ namespace Gadgetron{
       ACE_TCHAR peer_name[MAXHOSTNAMELENGTH];
       ACE_INET_Addr peer_addr;
       std::vector<GadgetronNodeInfo> nl;
-  
+
       switch (msg_id) {
       case (GADGETRON_CLOUDBUS_NODE_INFO):
-	
+
 	deserialize(n,buffer+4,msg_size-4);
 
 	//We will change the host name to the actually connected peer address since the relay host may not be able to resolve the host name
 	if (peer().get_remote_addr (peer_addr) == 0) {
 	  n.address = std::string(peer_addr.get_host_addr());
 	}
-	
+
 	this->acceptor_->add_node(this,n);
 	break;
-      case (GADGETRON_CLOUDBUS_NODE_LIST_QUERY):	
+      case (GADGETRON_CLOUDBUS_NODE_LIST_QUERY):
 	{
 	  //Get list of all nodes except myself
 	  this->acceptor_->get_node_list(nl,this);
@@ -187,7 +187,7 @@ namespace Gadgetron{
       default:
 	GERROR("Unknow message ID = %d\n", msg_id);
       }
-      
+
       delete [] buffer;
 
       return 0;
@@ -197,24 +197,23 @@ namespace Gadgetron{
 			      ACE_Reactor_Mask mask)
     {
       GDEBUG("CloudBus connection connection closed\n");
-      
+
       if (mask == ACE_Event_Handler::WRITE_MASK)
 	return 0;
-      
+
       this->stream_.close();
-      
-      mask = ACE_Event_Handler::ALL_EVENTS_MASK |
-	ACE_Event_Handler::DONT_CALL;
-  
+
+      mask = ACE_Event_Handler::ALL_EVENTS_MASK | ACE_Event_Handler::DONT_CALL;
+
       this->reactor ()->remove_handler (this, mask);
 
-      //We are done with this controller. 
+      //We are done with this controller.
       delete this;
-      
+
       return 0;
     }
-    
-    virtual int output_ready(ACE_Message_Block* mb) 
+
+    virtual int output_ready(ACE_Message_Block* mb)
     {
       return 0;
     }
@@ -227,23 +226,23 @@ namespace Gadgetron{
   private:
     ACE_Reactor_Notification_Strategy notifier_;
     ACE_Stream<ACE_MT_SYNCH> stream_;
-    CloudBusRelayAcceptor* acceptor_;    
+    CloudBusRelayAcceptor* acceptor_;
   };
 
   int CloudBusRelayAcceptor::handle_input (ACE_HANDLE fd)
   {
     CloudBusNodeController *controller;
-    
+
     ACE_NEW_RETURN (controller, CloudBusNodeController, -1);
-    
+
     auto_ptr<CloudBusNodeController> p (controller);
     controller->set_acceptor(this);
-    
+
     if (this->acceptor_.accept (controller->peer ()) == -1) {
-      GERROR("Failed to accept controller connection\n"); 
+      GERROR("Failed to accept controller connection\n");
       return -1;
     }
-    
+
     p.release ();
     controller->reactor (this->reactor ());
     if (controller->open () == -1)
@@ -257,7 +256,16 @@ namespace Gadgetron{
 
 int main(int argc, char** argv)
 {
-  const int port_no = 8002;
+  int port_no = 8002;
+
+  if (argc > 2) {
+    GERROR("Invalid number of arguments\n");
+    GERROR("Usage: %s <port no>\n", argv[0]);
+  }
+
+  if (argc > 1) {
+    port_no = std::atoi(argv[1]);
+  }
 
   ACE_INET_Addr port_to_listen (port_no);
 
