@@ -7,7 +7,7 @@ import sys
 import ConfigParser
 import os
 import platform
-import threading 
+import threading
 import signal
 import psutil
 import inspect
@@ -36,7 +36,7 @@ def isGadgetronAlive(port,environment):
         hostname = "127.0.0.1"
 
     process = subprocess.Popen(["gt_alive",hostname,str(port)], env=environment)
-    
+
     time.sleep(1)
     ret = process.poll()
     if ret == None:
@@ -68,22 +68,22 @@ class GadgetronResource(resource.Resource):
         ismrmrd_home = config.get('GADGETRON', 'ISMRMRD_HOME')
         self.gadgetron_log_filename = config.get('GADGETRON','logfile')
         self.gadgetron_port = config.get('GADGETRON','port')
-        gf = open(self.gadgetron_log_filename,"w")
-        
+        gf = self.open_log_file()
+
         self.environment = dict()
         self.environment["GADGETRON_HOME"]=gadgetron_home
         self.environment["PATH"]=self.environment["GADGETRON_HOME"] + "/bin"
 
         if (platform.system() == 'Linux'):
-            self.environment["LD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib"  
+            self.environment["LD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib"
         elif (platform.system() == 'Darwin'):
-            self.environment["DYLD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib:/opt/local/lib"  
+            self.environment["DYLD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib:/opt/local/lib"
 
         #self.process_lock.acquire()
         self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
         #self.process_lock.release()
         resource.Resource.__init__(self)
-        
+
         self.check_thread = threading.Thread(target=self.check_gadgetron)
         self.check_thread.start()
 
@@ -92,13 +92,22 @@ class GadgetronResource(resource.Resource):
         self.check_thread.join()
         self.gadgetron_process.terminate()
 
+    def open_log_file(self):
+        #If log file exists, we will back it up
+        #In the event of a crash, it is important to be able to recover the file
+        if os.path.exists(self.gadgetron_log_filename):
+            backup_name =  self.gadgetron_log_filename + time.strftime("%Y%m%d_%H%M%S")
+            os.rename(self.gadgetron_log_filename, backup_name)
+        gf = open(self.gadgetron_log_filename,"w")
+        return gf
+
     def restart_gadgetron(self):
         self.process_lock.acquire()
         s = self.gadgetron_process.poll()
         if (s == None):
             self.gadgetron_process.kill()
             time.sleep(2)
-        gf = open(self.gadgetron_log_filename,"w")
+        gf = self.open_log_file()
         self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
         time.sleep(2)
         self.process_lock.release()
@@ -112,7 +121,7 @@ class GadgetronResource(resource.Resource):
             if (s != None):
                 self.restart_gadgetron()
             time.sleep(3)
-        
+
 
     def render_page(self):
         doc = "<html>\n<body>\n"
@@ -126,7 +135,7 @@ class GadgetronResource(resource.Resource):
             doc += "<span style=\"color: green;\">[OK]</span></div>"
         else:
             doc += "<span style=\"color: red;\">[UNRESPONSIVE]</span></div>"
-            
+
         doc += "<div><p><span><form method=\"POST\"><input type=\"submit\" value=\"RESTART\"><input type=\"hidden\" name=\"command\" value=\"restart\"></form></span></div>"
         doc += "<div><p><span><form method=\"POST\"><input type=\"submit\" value=\"REFRESH\"><input type=\"hidden\" name=\"command\" value=\"refresh\"></form></span></div>"
         if (alive):
@@ -137,15 +146,15 @@ class GadgetronResource(resource.Resource):
             doc += "<li>Memory Percent: " + str(round(p.get_memory_percent(),2)) + "</li>"
             doc += "</ul></div>"
 
-            doc += "<div><iframe width=\"1024\" height=\"768\" src=\"/log\"></iframe></div>" 
-        
+            doc += "<div><iframe width=\"1024\" height=\"768\" src=\"/log\"></iframe></div>"
+
         doc += "</body>\n</html>"
         return doc
 
-        
+
     def render_GET(self, request):
         return self.render_page()
-        
+
     def render_POST(self, request):
         if 'command' in request.args:
             if request.args['command'] == ['restart']:
