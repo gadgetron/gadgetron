@@ -39,12 +39,6 @@ namespace Gadgetron{
     RegistrationScatteringGadget() {
       this->of_solver_ = 0x0;
       this->number_of_phases_ = 0; // This is a property queried from the PhysioInterpolationGadget
-      this->set_parameter(std::string("alpha").c_str(), "0.05");
-      this->set_parameter(std::string("beta").c_str(), "1.0");
-      this->set_parameter(std::string("limit").c_str(), "0.01");
-      this->set_parameter(std::string("num_multiresolution_levels").c_str(), "3");
-      this->set_parameter(std::string("max_iterations_per_level").c_str(), "500");    
-      this->set_parameter(std::string("output_convergence").c_str(), "false");
     }
 
     virtual ~RegistrationScatteringGadget() {
@@ -52,15 +46,21 @@ namespace Gadgetron{
     }
 
   protected:
+    GADGET_PROPERTY(alpha, float, "Alpha regularization parameters", 0.05);
+    GADGET_PROPERTY(beta,  float, "Beta regularization parameters", 1.0);
+    GADGET_PROPERTY(limit, float, "Iteration limit", 0.01);
+    GADGET_PROPERTY(num_multiresolution_levels, int, "Number of multiresolution levels", 3);
+    GADGET_PROPERTY(max_iterations_per_level, int, "Maximum number of iterations per level", 500);
+    GADGET_PROPERTY(output_convergence, bool, "Output convergence", false);
 
     virtual int process_config(ACE_Message_Block *mb)
     {
-      this->alpha_ = (typename ARRAY_TYPE::element_type)this->get_double_value("alpha");
-      this->beta_  = (typename ARRAY_TYPE::element_type)this->get_double_value("beta");
-      this->limit_ = (typename ARRAY_TYPE::element_type)this->get_double_value("limit");
-      this->output_convergence_ = this->get_bool_value(std::string("output_convergence").c_str());
-      this->num_multires_levels_ = this->get_int_value(std::string("num_multiresolution_levels").c_str());
-      this->max_iterations_per_level_ = this->get_int_value(std::string("max_iterations_per_level").c_str());
+      this->alpha_ = (typename ARRAY_TYPE::element_type)alpha.value();
+      this->beta_  = (typename ARRAY_TYPE::element_type)beta.value();
+      this->limit_ = (typename ARRAY_TYPE::element_type)limit.value();
+      this->output_convergence_ = output_convergence.value();
+      this->num_multires_levels_ = num_multiresolution_levels.value();
+      this->max_iterations_per_level_ = max_iterations_per_level.value();
       
       // Fow now we require the existence of a gadget named "PhysioInterpolationGadget" upstream,
       // to determine the number of incoming phases.
