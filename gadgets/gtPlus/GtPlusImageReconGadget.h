@@ -81,10 +81,6 @@ public:
     GADGET_PROPERTY(verboseMode, bool, "Whether to print more information", false);
     GADGET_PROPERTY(debugFolder, std::string, "If set, the debug output will be written out", "");
     GADGET_PROPERTY(performTiming, bool, "Whether to perform timing on some computational steps", false);
-    GADGET_PROPERTY(window_center, double, "Window center", 25.0);
-    GADGET_PROPERTY(window_width, double, "Window width", 50.0);
-    GADGET_PROPERTY(sd_window_center, double, "SD map window center", 5.0);
-    GADGET_PROPERTY(sd_window_width, double, "SD map window width", 10.0);
 
 protected:
 

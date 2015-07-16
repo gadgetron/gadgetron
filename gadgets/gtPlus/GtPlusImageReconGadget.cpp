@@ -495,36 +495,6 @@ namespace Gadgetron
                                                                     GWARN_STREAM("Image attrib does not have the scale ratio ...");
                                                                     scalingRatio = 1;
                                                                 }
-
-                                                                if ( isParametricT1Map || isParametricT2Map || isParametricT2StarMap )
-                                                                {
-                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)((window_center.value())*scalingRatio) );
-                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)((window_width.value())*scalingRatio) );
-                                                                }
-
-                                                                if ( isParametricT1SDMap || isParametricT2SDMap || isParametricT2StarSDMap || isParametricT2StarAMap )
-                                                                {
-                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)((sd_window_center.value())*scalingRatio) );
-                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)((sd_window_width.value())*scalingRatio) );
-                                                                }
-
-                                                                if ( isParametricT2StarTruncMap )
-                                                                {
-                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)(4) );
-                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)(8) );
-                                                                }
-
-                                                                /* if ( isParametricT2Map )
-                                                                {
-                                                                cm3->getObjectPtr()->attributeInteger_.set(GADGETRON_IMAGE_WINDOWCENTER, 0, (long long)(60*scalingRatio) );
-                                                                cm3->getObjectPtr()->attributeInteger_.set(GADGETRON_IMAGE_WINDOWWIDTH, 0, (long long)(120*scalingRatio) );
-                                                                }
-
-                                                                if ( isParametricT2StarMap )
-                                                                {
-                                                                cm3->getObjectPtr()->attributeInteger_.set(GADGETRON_IMAGE_WINDOWCENTER, 0, (long long)(25*scalingRatio) );
-                                                                cm3->getObjectPtr()->attributeInteger_.set(GADGETRON_IMAGE_WINDOWWIDTH, 0, (long long)(50*scalingRatio) );
-                                                                } */
                                                             }
                                                             else
                                                             {
