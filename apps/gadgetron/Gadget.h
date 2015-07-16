@@ -265,7 +265,7 @@ namespace Gadgetron{
       if (p) {
         p->string_value(val);
       } else {
-        throw std::runtime_error("Attempting to set non-registered property while operaying in forced using_properties mode");
+        throw std::runtime_error("Attempting to set non-registered property");
       }
 
       parameter_mutex_.acquire();
@@ -534,12 +534,12 @@ namespace Gadgetron{
     {
     public:
       GadgetProperty(const char* name, const char* type_string, const char* description,
-        Gadget* g, std::initializer_list<T> default_value, L limits, bool force_using_properties = true)
+        Gadget* g, std::initializer_list<T> default_value, L limits)
         : GadgetPropertyBase(name,type_string,description)
         , g_(g)
         , limits_(limits)
         {
-          g_->register_property(this, force_using_properties);
+          g_->register_property(this);
           this->value(default_value);
         }
 
