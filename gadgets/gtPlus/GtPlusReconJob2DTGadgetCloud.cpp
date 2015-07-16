@@ -163,10 +163,10 @@ bool GtPlusReconJob2DTGadgetCloud::readParameters()
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "-----------------------------------------------");
 
-        job_split_by_S_ = this->get_bool_value("job_split_by_S");
-        job_num_of_N_ = (size_t)(this->get_int_value("job_num_of_N"));
-        job_max_Megabytes_ = (size_t)(this->get_int_value("job_max_Megabytes"));
-        job_overlap_ = (size_t)(this->get_int_value("job_overlap"));
+        job_split_by_S_ = job_split_by_S.value();
+        job_num_of_N_ = (size_t)(job_num_of_N.value());
+        job_max_Megabytes_ = (size_t)(job_max_Megabytes.value());
+        job_overlap_ = (size_t)(job_overlap.value());
 
         GDEBUG_CONDITION_STREAM(verboseMode_, "job_split_by_S_ is " << job_split_by_S_);
         GDEBUG_CONDITION_STREAM(verboseMode_, "job_num_of_N_ is " << job_num_of_N_);
@@ -275,7 +275,7 @@ bool GtPlusReconJob2DTGadgetCloud::parseGTCloudNodeFile(const std::string& filen
     GDEBUG_CONDITION_STREAM(verboseMode_, "Cloud node file name is " << nodeFileName);
 
     std::ifstream fs(nodeFileName.c_str(), std::ios::in);
-    if (!fs.is_open()) 
+    if (!fs.is_open())
     {
         GWARN_STREAM("Cannot open GT CloudNodeFile; use the local setting instead ... ");
         return false;
@@ -355,8 +355,8 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
 
     boost::shared_ptr< std::vector<size_t> > dims = job->kspace.get_dimensions();
 
-    GDEBUG_CONDITION_STREAM(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
-        << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
+    GDEBUG_CONDITION_STREAM(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = ["
+        << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4]
         << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << "]");
 
     GtPlusRecon2DTPara& para = job->para;

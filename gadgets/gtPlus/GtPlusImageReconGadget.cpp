@@ -115,9 +115,9 @@ namespace Gadgetron
                 dataRole[ii] = std::string( (*ori(0)).attrib_.as_str(GADGETRON_DATA_ROLE, ii) );
             }
 
-            if ( (dataRole[0] == GADGETRON_IMAGE_GFACTOR) 
-                || (dataRole[0] == GADGETRON_IMAGE_SNR_MAP) 
-                || (dataRole[0] == GADGETRON_IMAGE_STD_MAP) 
+            if ( (dataRole[0] == GADGETRON_IMAGE_GFACTOR)
+                || (dataRole[0] == GADGETRON_IMAGE_SNR_MAP)
+                || (dataRole[0] == GADGETRON_IMAGE_STD_MAP)
                 || (dataRole[0] == GADGETRON_IMAGE_WRAPAROUNDMAP) )
             {
                 GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_++, processStr, dataRole), GADGET_FAIL);
@@ -141,8 +141,8 @@ namespace Gadgetron
         std::vector<std::string> dataRole;
 
         boost::shared_ptr< std::vector<size_t> > dims = ori.get_dimensions();
-        GDEBUG_CONDITION_STREAM(verboseMode_, "[Cha Slice E2 Con Phase Rep Set Ave] = [" << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " 
-            << (*dims)[3] << " " << (*dims)[4]  << " " << (*dims)[5] << " " 
+        GDEBUG_CONDITION_STREAM(verboseMode_, "[Cha Slice E2 Con Phase Rep Set Ave] = [" << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " "
+            << (*dims)[3] << " " << (*dims)[4]  << " " << (*dims)[5] << " "
             << (*dims)[6] << " " << (*dims)[7] << "]");
 
         this->sendOutImages(ori, image_series_num_++, processStr, dataRole);
@@ -254,14 +254,14 @@ namespace Gadgetron
         size_t nCON = meas_max_idx_.contrast+1;
         if ( nE2 == 0 ) nE2 = 1;
 
-        size_t imageNum = imheader.average*nREP*nSET*nPHS*nCON*nSLC*nE2*nCHA 
-            + imheader.repetition*nSET*nPHS*nCON*nSLC*nE2*nCHA 
-            + imheader.set*nPHS*nCON*nSLC*nE2*nCHA 
-            + imheader.phase*nCON*nSLC*nE2*nCHA 
+        size_t imageNum = imheader.average*nREP*nSET*nPHS*nCON*nSLC*nE2*nCHA
+            + imheader.repetition*nSET*nPHS*nCON*nSLC*nE2*nCHA
+            + imheader.set*nPHS*nCON*nSLC*nE2*nCHA
+            + imheader.phase*nCON*nSLC*nE2*nCHA
             + imheader.contrast*nSLC*nE2*nCHA
-            + imheader.slice*nE2*nCHA 
-            + e2*nCHA 
-            + cha 
+            + imheader.slice*nE2*nCHA
+            + e2*nCHA
+            + cha
             + 1;
 
         return imageNum;
@@ -280,10 +280,10 @@ namespace Gadgetron
             size_t SET = images.get_size(6);
             size_t AVE = images.get_size(7);
 
-            GDEBUG_CONDITION_STREAM(verboseMode_, "--> GtPlusImageReconGadget, sending out images, array boundary [CHA SLC E2 CON PHS REP SET AVE] = [" 
-                << CHA << " " << SLC << " " 
-                << E2 << " " << CON << " " 
-                << PHS << " " << REP << " " 
+            GDEBUG_CONDITION_STREAM(verboseMode_, "--> GtPlusImageReconGadget, sending out images, array boundary [CHA SLC E2 CON PHS REP SET AVE] = ["
+                << CHA << " " << SLC << " "
+                << E2 << " " << CON << " "
+                << PHS << " " << REP << " "
                 << SET << " " << AVE << "] " );
 
             size_t ave(0), set(0), rep(0), phs(0), con(0), e2(0), slc(0), cha(0);
@@ -372,7 +372,7 @@ namespace Gadgetron
                                                                     isRealImage = true;
                                                                 }
 
-                                                                if ( (dataRole[n]==GADGETRON_IMAGE_T1MAP) 
+                                                                if ( (dataRole[n]==GADGETRON_IMAGE_T1MAP)
                                                                     || (dataRole[n]==GADGETRON_IMAGE_T1SDMAP)
                                                                     || (dataRole[n]==GADGETRON_IMAGE_T2MAP)
                                                                     || (dataRole[n]==GADGETRON_IMAGE_T2SDMAP)
@@ -498,14 +498,14 @@ namespace Gadgetron
 
                                                                 if ( isParametricT1Map || isParametricT2Map || isParametricT2StarMap )
                                                                 {
-                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)((this->get_double_value("window_center"))*scalingRatio) );
-                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)((this->get_double_value("window_width"))*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)((window_center.value())*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)((window_width.value())*scalingRatio) );
                                                                 }
 
                                                                 if ( isParametricT1SDMap || isParametricT2SDMap || isParametricT2StarSDMap || isParametricT2StarAMap )
                                                                 {
-                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)((this->get_double_value("sd_window_center"))*scalingRatio) );
-                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)((this->get_double_value("sd_window_width"))*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)((sd_window_center.value())*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)((sd_window_width.value())*scalingRatio) );
                                                                 }
 
                                                                 if ( isParametricT2StarTruncMap )
@@ -538,15 +538,15 @@ namespace Gadgetron
                                                             Gadgetron::appendISMRMRMetaValues(*cm3->getObjectPtr(), GADGETRON_SEQUENCEDESCRIPTION, dataRoleAll);
                                                         }
 
-                                                        GDEBUG_CONDITION_STREAM(verboseMode_, "--> GtPlusImageReconGadget, sending out 2D image [CHA SLC E2 CON PHS REP SET AVE] = [" 
-                                                            << cha << " " 
-                                                            << cm1->getObjectPtr()->slice << " " 
-                                                            << e2 << " " 
-                                                            << cm1->getObjectPtr()->contrast << " " 
-                                                            << cm1->getObjectPtr()->phase << " " 
-                                                            << cm1->getObjectPtr()->repetition << " " 
-                                                            << cm1->getObjectPtr()->set << " " 
-                                                            << cm1->getObjectPtr()->average << "] \t" 
+                                                        GDEBUG_CONDITION_STREAM(verboseMode_, "--> GtPlusImageReconGadget, sending out 2D image [CHA SLC E2 CON PHS REP SET AVE] = ["
+                                                            << cha << " "
+                                                            << cm1->getObjectPtr()->slice << " "
+                                                            << e2 << " "
+                                                            << cm1->getObjectPtr()->contrast << " "
+                                                            << cm1->getObjectPtr()->phase << " "
+                                                            << cm1->getObjectPtr()->repetition << " "
+                                                            << cm1->getObjectPtr()->set << " "
+                                                            << cm1->getObjectPtr()->average << "] \t"
                                                             << " -- Image number -- " << cm1->getObjectPtr()->image_index);
 
                                                         // image processing history
@@ -566,7 +566,7 @@ namespace Gadgetron
                                                         }
                                                     }
 
-                                                    if ( this->next()->putq(cm1) < 0 ) 
+                                                    if ( this->next()->putq(cm1) < 0 )
                                                     {
                                                         cm1->release();
                                                         return false;
