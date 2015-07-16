@@ -186,9 +186,9 @@ bool gtplusBSplineFFD2D<T, CoordType, DOut>::evaluateFFD2D(CoordType px, CoordTy
         GADGET_DEBUG_CHECK_RETURN_FALSE( (px>=-2) && (px<=this->get_size(0)+1) );
         GADGET_DEBUG_CHECK_RETURN_FALSE( (py>=-2) && (py<=this->get_size(1)+1) );
 
-        GADGET_DEBUG_CHECK_RETURN_FALSE(ordX>=0 && ordX<=2);
-        GADGET_DEBUG_CHECK_RETURN_FALSE(ordY>=0 && ordY<=2);
-        GADGET_DEBUG_CHECK_RETURN_FALSE(ordX+ordY<=2);
+        GADGET_DEBUG_CHECK_RETURN_FALSE(ordx>=0 && ordx<=2);
+        GADGET_DEBUG_CHECK_RETURN_FALSE(ordy>=0 && ordy<=2);
+        GADGET_DEBUG_CHECK_RETURN_FALSE(ordx+ordy<=2);
 
         long long ix = (long long)std::floor(px);
         CoordType deltaX = px-(CoordType)ix;
