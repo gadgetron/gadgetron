@@ -24,43 +24,44 @@ namespace Gadgetron
     /// data: M*N data matrix
     /// eigenVectors: N*K eigen vector matrix, every column is a eigen vector
     /// dataEigen: M*K eigen data matrix
-    template <typename T> EXPORTMRICORE void apply_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& dataEigen, const hoNDArray<T>& eigenVectors);
+    template <typename T> EXPORTMRICORE void apply_eigen_vector(const hoNDArray<T>& data, const hoNDArray<T>& eigenVectors, hoNDArray<T>& dataEigen);
 
     /// number of kept eigen modes
     /// all modes with eigen values greater than thres*max(eigenValues) are kept
-    template <typename T> EXPORTMRICORE void compute_number_of_eigen_modes_kept(const hoNDArray<T>& eigenValues, double thres, long long& numOfModesKept);
+    template <typename T> EXPORTMRICORE void compute_number_of_eigen_modes_kept(const hoNDArray<T>& eigenValues, double thres, size_t& numOfModesKept);
 
     /// prune the eigen vector matrixes to keep the last numOfModesKept columns
-    template <typename T> EXPORTMRICORE void prune_eigen_vector_matrix(const hoNDArray<T>& eigenVectors, long long numOfModesKept, hoNDArray<T>& eigenVectorsPruned);
+    template <typename T> EXPORTMRICORE void prune_eigen_vector_matrix(const hoNDArray<T>& eigenVectors, size_t numOfModesKept, hoNDArray<T>& eigenVectorsPruned);
 
     /// ------------------------------------------------------------------------
     /// KL transform coil compression
     /// ------------------------------------------------------------------------
-    /// data: at least 3D [RO E1 CHA ...]
-    /// the KL transform is applied along CHA
+    /// data: the first dimsion is dimension 0
+    /// the KL transform is applied along the KLTDim dimension
+    /// coeff: square eigen vector matrix
+    /// KLTDim : the dimension to perform KL transform
+    template <typename T> EXPORTMRICORE void compute_KLT_coeff(const hoNDArray<T>& data, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues, size_t KLTDim);
+
     /// coeff: CHA*numOfModesKept eigen vector matrix
     /// eigenValues: CHA*1 eigen values
     /// thres <0 or numOfModesKept==-1, keep all modes
     /// if isChaLastDim==true, the CHA is the last dimension
-    template <typename T> EXPORTMRICORE void computeKLCoilCompressionCoeff(const hoNDArray<T>& data, double thres, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues, bool isChaLastDim = false);
-    template <typename T> EXPORTMRICORE void computeKLCoilCompressionCoeff(const hoNDArray<T>& data, int numOfModesKept, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues, bool isChaLastDim = false);
-    /// coeff: CHA*CHA eigen vector matrix
-    template <typename T> EXPORTMRICORE void computeKLTCoeff(const hoNDArray<T>& data, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues, bool isChaLastDim = false);
+    /// data: [RO E1 CHA ...]
+    template <typename T> EXPORTMRICORE void compute_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, double thres, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues);
+    template <typename T> EXPORTMRICORE void compute_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, int numOfModesKept, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues);
 
-    /// dataEigen: [RO E1 numOfModesKept ...] 
-    template <typename T> EXPORTMRICORE void computeKLCoilCompression(const hoNDArray<T>& data, double thres, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues, hoNDArray<T>& dataEigen, bool isChaLastDim = false);
-    template <typename T> EXPORTMRICORE void computeKLCoilCompression(const hoNDArray<T>& data, int numOfModesKept, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues, hoNDArray<T>& dataEigen, bool isChaLastDim = false);
+    /// data: [RO E1 E2 CHA ...]
+    template <typename T> EXPORTMRICORE void compute_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, double thres, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues);
+    template <typename T> EXPORTMRICORE void compute_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, int numOfModesKept, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues);
 
     /// apply coil compression coefficients
-    template <typename T> EXPORTMRICORE void appyKLCoilCompressionCoeff(const hoNDArray<T>& data, const hoNDArray<T>& coeff, hoNDArray<T>& dataEigen, bool isChaLastDim = false);
-
-    /// apply coil compression coefficients on array [RO E1 srcCHA ...]
-    /// dataEigen: [RO E1 dstCHA ...]
-    /// coeff: [srcCHA dstCHA] matrixes for every last dimension
-    /// every last dimension has different compression coefficients
-    template <typename T> EXPORTMRICORE void applyKLCoilCompressionCoeff(const hoNDArray<T>& data, const std::vector<hoNDArray<T> >& coeff, hoNDArray<T>& dataEigen, bool isChaLastDim = false);
+    /// data : [RO E1 srcCHA ...] for 2D or [RO E1 E2 srcCHA ...] for 3D
+    /// coeff: [srcCHA dstCHA]
+    /// dataEigen: [RO E1 dstCHA ...] or [RO E1 E2 dstCHA ...]
+    template <typename T> EXPORTMRICORE void appy_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, const hoNDArray<T>& coeff, hoNDArray<T>& dataEigen);
+    template <typename T> EXPORTMRICORE void appy_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, const hoNDArray<T>& coeff, hoNDArray<T>& dataEigen);
 
     /// compute KL transform and perform filtering
-    /// the KL dimension is the last dimension
-    template <typename T> EXPORTMRICORE void computeKLFilter(const hoNDArray<T>& data, size_t numOfModesKept, hoNDArray<T>& dataKLF);
+    /// the KLT dimension is the last dimension
+    template <typename T> EXPORTMRICORE void compute_KLT_filter(const hoNDArray<T>& data, size_t numOfModesKept, hoNDArray<T>& dataKLF);
 }
