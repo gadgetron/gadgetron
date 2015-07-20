@@ -224,7 +224,6 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
             {
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->data_, debugFolder_+"data_"); }
-                // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_, true));
                 Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_);
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(data_dst_, debugFolder_+"data_dst_"); }
             }
@@ -251,8 +250,6 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
                     #pragma omp section
                     {
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref_src_, debugFolder_+"ref_src_"); }
-                        //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(ref_src_, *workOrder3DT->coilCompressionCoef_, ref_dst_, true));
-                        // gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(ref_src_, *workOrder3DT->coilCompressionCoef_, ref_dst_, true);
                         Gadgetron::appy_KLT_coil_compression_coeff_3D(ref_src_, *workOrder3DT->coilCompressionCoef_, ref_dst_);
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref_dst_, debugFolder_+"ref_dst_"); }
                     }
@@ -260,8 +257,6 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
                     #pragma omp section
                     {
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->data_, debugFolder_+"data_"); }
-                        //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_, true));
-                        // gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_, true);
                         Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_);
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(data_dst_, debugFolder_+"data_dst_"); }
                     }
@@ -269,8 +264,6 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
                     #pragma omp section
                     {
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->ref_coil_map_, debugFolder_+"ref_coil_map_"); }
-                        //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_coil_map_, *workOrder3DT->coilCompressionCoef_, ref_coil_map_dst_, true));
-                        // gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_coil_map_, *workOrder3DT->coilCompressionCoef_, ref_coil_map_dst_, true);
                         Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->ref_coil_map_, *workOrder3DT->coilCompressionCoef_, ref_coil_map_dst_);
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref_coil_map_dst_, debugFolder_+"ref_coil_map_dst_"); }
                     }
@@ -658,7 +651,7 @@ bool gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(WorkOrderType* workOrder3
 
             hoMatrix<T> A(RO*E1*E2*CHA, N, const_cast<T*>(ref.begin()));
             hoMatrix<T> A_KLF(RO*E1*E2*CHA, N, refKLF.begin());
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLFilter(A, numOfModes, A_KLF));
+            Gadgetron::compute_KLT_filter(A, numOfModes, A_KLF);
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refKLF, debugFolder_+"refKLF"); }
 
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(refKLF, refRecon));
@@ -670,7 +663,7 @@ bool gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(WorkOrderType* workOrder3
 
             hoMatrix<T> A(RO*E1*E2*CHA, N, const_cast<T*>(ref.begin()));
             hoMatrix<T> A_KLF(RO*E1*E2*CHA, N, refRecon.begin());
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLFilter(A, numOfModes, A_KLF));
+            Gadgetron::compute_KLT_filter(A, numOfModes, A_KLF);
         }
         else
         {
@@ -949,16 +942,10 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
             hoMatrix<T> coeff, eigenValues;
             if ( workOrder3DT->upstream_coil_compression_num_modesKept_ > 0 )
             {
-                /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(aveAll, 
-                            workOrder3DT->upstream_coil_compression_num_modesKept_, coeff, eigenValues, true));*/
-
                 Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, (size_t)workOrder3DT->upstream_coil_compression_num_modesKept_, coeff, eigenValues);
             }
             else
             {
-                /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(aveAll, 
-                            workOrder3DT->upstream_coil_compression_thres_, coeff, eigenValues, true));*/
-
                 Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, workOrder3DT->upstream_coil_compression_thres_, coeff, eigenValues);
             }
             if ( performTiming_ ) { gt_timer2_.stop(); }
@@ -988,10 +975,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 if ( performTiming_ ) { gt_timer2_.start("apply upstream coil compression ... "); }
                 {
                     {
-                        //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on data ... "); }
-                        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_, true));
-                        if ( performTiming_ ) { gt_timer3_.start("applyKLCoilCompressionCoeff ... "); }
-                        // gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_, true);
+                        if ( performTiming_ ) { gt_timer3_.start("appy_KLT_coil_compression_coeff_3D ... "); }
                         Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_);
                         if ( performTiming_ ) { gt_timer3_.stop(); }
 
@@ -1000,41 +984,27 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                         if ( performTiming_ ) { gt_timer3_.stop(); }
 
                         data_dst_.clear();
-
-                        //if ( performTiming_ ) { gt_timer2_.stop(); }
                     }
 
                     {
-                        //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on ref ... "); }
-                        //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeff, ref_dst_, true));
-                        // gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeffRef, ref_dst_, true);
                         Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->ref_, upstreamCoilCoeffRef, ref_dst_);
                         workOrder3DT->ref_ = ref_dst_;
 
                         ref_dst_.clear();
-                        //if ( performTiming_ ) { gt_timer2_.stop(); }
                     }
 
                     {
-                        //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on refRecon ... "); }
                         hoNDArray<T> refRecon_upstream;
-                        //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refRecon, upstreamCoilCoeff, refRecon_upstream, true));
-                        // gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refRecon, upstreamCoilCoeffRefRecon, refRecon_upstream, true);
                         Gadgetron::appy_KLT_coil_compression_coeff_3D(refRecon, upstreamCoilCoeffRefRecon, refRecon_upstream);
                         refRecon = refRecon_upstream;
                         refRecon_upstream.clear();
-                        //if ( performTiming_ ) { gt_timer2_.stop(); }
                     }
 
                     {
-                        //if ( performTiming_ ) { gt_timer2_.start("apply the coil compression on ref for coil map ... "); }
                         hoNDArray<T> refCoilMap_upstream;
-                        //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refCoilMap, upstreamCoilCoeff, refCoilMap_upstream, true));
-                        // gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refCoilMap, upstreamCoilCoeffRefRecon, refCoilMap_upstream, true);
                         Gadgetron::appy_KLT_coil_compression_coeff_3D(refCoilMap, upstreamCoilCoeffRefRecon, refCoilMap_upstream);
                         refCoilMap = refCoilMap_upstream;
                         refCoilMap_upstream.clear();
-                        //if ( performTiming_ ) { gt_timer2_.stop(); }
                     }
                 }
 
@@ -1096,16 +1066,10 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                     hoMatrix<T> coeff, eigenValues;
                     if ( workOrder3DT->coil_compression_num_modesKept_ > 0 )
                     {
-                        /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(aveAll, 
-                                    workOrder3DT->coil_compression_num_modesKept_, coeff, eigenValues, true));*/
-
                         Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, (size_t)workOrder3DT->coil_compression_num_modesKept_, coeff, eigenValues);
                     }
                     else
                     {
-                        /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(aveAll, 
-                                    workOrder3DT->coil_compression_thres_, coeff, eigenValues, true));*/
-
                         Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, workOrder3DT->coil_compression_thres_, coeff, eigenValues);
                     }
 
@@ -1139,16 +1103,10 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                         {
                             if ( workOrder3DT->coil_compression_num_modesKept_ > 0 )
                             {
-                                /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(dataCurrN, 
-                                            workOrder3DT->coil_compression_num_modesKept_, coeff, eigenValues, true));*/
-
                                 Gadgetron::compute_KLT_coil_compression_coeff_3D(dataCurrN, (size_t)workOrder3DT->coil_compression_num_modesKept_, coeff, eigenValues);
                             }
                             else
                             {
-                                /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(dataCurrN, 
-                                            workOrder3DT->coil_compression_thres_, coeff, eigenValues, true));*/
-
                                 Gadgetron::compute_KLT_coil_compression_coeff_3D(dataCurrN, workOrder3DT->coil_compression_thres_, coeff, eigenValues);
                             }
 
@@ -1157,9 +1115,6 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                         }
                         else
                         {
-                            /*GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(dataCurrN, 
-                                            (int)num_modesKept, coeff, eigenValues, true));*/
-
                             Gadgetron::compute_KLT_coil_compression_coeff_3D(dataCurrN, num_modesKept, coeff, eigenValues);
 
                             workOrder3DT->coilCompressionCoef_->push_back(coeff);
@@ -1511,7 +1466,6 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
             {
-                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.applyKLCoilCompressionCoeff(workOrder3DT->ref_, *workOrder3DT->coilCompressionCoef_, ref_dst, true));
                 Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->ref_, *workOrder3DT->coilCompressionCoef_, ref_dst);
             }
             else

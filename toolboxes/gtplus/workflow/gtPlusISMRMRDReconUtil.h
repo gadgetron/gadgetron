@@ -282,58 +282,6 @@ public:
     typedef std::pair<ISMRMRDDIM, size_t> DimensionRecordType;
 
     // ------------------------------------------------------------------------
-    // coil compression and KarhunenLoeverTransform
-    // ------------------------------------------------------------------------
-    // data: M rows and N cols matrix
-    // the KLT direction is along the N
-    // eigenVectors: N*N eigen vectors, every column is a eigen vector
-    // eigenValues: N*1 eigen values, descending order
-    bool KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T>& eigenValues);
-
-    // apply the eigen transform
-    // data: M*N data matrix
-    // eigenVectors: N*K eigen vector matrix, every column is a eigen vector
-    // dataEigen: M*K eigen data matrix
-    bool KLT_applyEigen(const hoMatrix<T>& data, hoMatrix<T>& dataEigen, const hoMatrix<T>& eigenVectors);
-    bool KLT_applyEigen(const hoNDArray<T>& data, hoNDArray<T>& dataEigen, const hoMatrix<T>& eigenVectors);
-
-    // number of kept eigen modes
-    // all modes with eigen values greater than thres*max(eigenValues) are kept
-    bool KLT_numberOfKeptModes(const hoMatrix<T>& eigenValues, double thres, long long& numOfModesKept);
-
-    // prune the eigen vector matrixes to keep the last numOfModesKept columns
-    bool pruneEigenVectorMatrix(const hoMatrix<T>& eigenVectors, long long numOfModesKept, hoMatrix<T>& eigenVectorsPruned);
-
-    // KLT based coil compression
-    // data: at least 3D [RO E1 CHA ...]
-    // the KL transform is applied along CHA
-    // coeff: CHA*numOfModesKept eigen vector matrix
-    // eigenValues: CHA*1 eigen values
-    // thres <0 or numOfModesKept==-1, keep all modes
-    // if isChaLastDim==true, the CHA is the last dimension
-    bool computeKLCoilCompressionCoeff(const hoNDArray<T>& data, double thres, hoMatrix<T>& coeff, hoMatrix<T>& eigenValues, bool isChaLastDim=false);
-    bool computeKLCoilCompressionCoeff(const hoNDArray<T>& data, int numOfModesKept, hoMatrix<T>& coeff, hoMatrix<T>& eigenValues, bool isChaLastDim=false);
-    // coeff: CHA*CHA eigen vector matrix
-    bool computeKLTCoeff(const hoNDArray<T>& data, hoMatrix<T>& coeff, hoMatrix<T>& eigenValues, bool isChaLastDim=false);
-
-    // dataEigen: [RO E1 numOfModesKept ...] 
-    bool computeKLCoilCompression(const hoNDArray<T>& data, double thres, hoMatrix<T>& coeff, hoMatrix<T>& eigenValues, hoNDArray<T>& dataEigen, bool isChaLastDim=false);
-    bool computeKLCoilCompression(const hoNDArray<T>& data, int numOfModesKept, hoMatrix<T>& coeff, hoMatrix<T>& eigenValues, hoNDArray<T>& dataEigen, bool isChaLastDim=false);
-
-    // apply coil compression coefficients
-    bool appyKLCoilCompressionCoeff(const hoNDArray<T>& data, const hoMatrix<T>& coeff, hoNDArray<T>& dataEigen, bool isChaLastDim=false);
-
-    // apply coil compression coefficients on array [RO E1 srcCHA ...]
-    // dataEigen: [RO E1 dstCHA ...]
-    // coeff: [srcCHA dstCHA] matrixes for every last dimension
-    // every last dimension has different compression coefficients
-    bool applyKLCoilCompressionCoeff(const hoNDArray<T>& data, const std::vector<hoMatrix<T> >& coeff, hoNDArray<T>& dataEigen, bool isChaLastDim=false);
-
-    // compute KL transform and perform filtering
-    // the KL dimension is the last dimension
-    bool computeKLFilter(const hoNDArray<T>& data, size_t numOfModesKept, hoNDArray<T>& dataKLF);
-
-    // ------------------------------------------------------------------------
     // detect sampled region
     // ------------------------------------------------------------------------
     // data : [RO E1 SLC E2 CON PHS REP SET] array
