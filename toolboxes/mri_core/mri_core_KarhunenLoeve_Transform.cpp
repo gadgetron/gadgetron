@@ -395,7 +395,7 @@ void appy_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, const hoNDArra
 
         long long n;
 
-#pragma omp parallel for default(none) private(n) shared(N, RO, E1, CHA, dstCHA, data, dataEigen, coeff)
+#pragma omp parallel for default(none) private(n) shared(N, RO, E1, CHA, dstCHA, data, dataEigen, coeff) if(N>1)
         for (n = 0; n < (long long)N; n++)
         {
             hoNDArray<T> data2D(RO*E1, CHA, const_cast<T*>(data.begin()) + n*RO*E1*CHA);
@@ -444,7 +444,7 @@ void appy_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, const hoNDArra
 
         long long n;
 
-#pragma omp parallel for default(none) private(n) shared(N, RO, E1, E2, CHA, dstCHA, data, dataEigen, coeff)
+#pragma omp parallel for default(none) private(n) shared(N, RO, E1, E2, CHA, dstCHA, data, dataEigen, coeff) if(N>1)
         for (n = 0; n < (long long)N; n++)
         {
             hoNDArray<T> data3D(RO*E1*E2, CHA, const_cast<T*>(data.begin()) + n*RO*E1*E2*CHA);
@@ -502,12 +502,24 @@ void appy_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, const std::vec
             dimLastDim[n] = dim[n];
         }
 
-        hoNDArray<T> dataEigenLastDim;
-        for (n = 0; n<LastDimData; n++)
+        std::vector<size_t> dimEigenLastDim(dimLastDim);
+        dimEigenLastDim[2] = dstCHA;
+
+        if (LastDimData>1)
         {
-            hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin() + n*N));
+            hoNDArray<T> dataEigenLastDim;
+            for (n = 0; n < LastDimData; n++)
+            {
+                hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin() + n*N));
+                Gadgetron::appy_KLT_coil_compression_coeff_2D(dataLastDim, coeff[n], dataEigenLastDim);
+                memcpy(dataEigen.begin() + n*eigenN, dataEigenLastDim.begin(), dataEigenLastDim.get_number_of_bytes());
+            }
+        }
+        else
+        {
+            hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin()));
+            hoNDArray<T> dataEigenLastDim(&dimEigenLastDim, dataEigen.begin());
             Gadgetron::appy_KLT_coil_compression_coeff_2D(dataLastDim, coeff[n], dataEigenLastDim);
-            memcpy(dataEigen.begin() + n*eigenN, dataEigenLastDim.begin(), dataEigenLastDim.get_number_of_bytes());
         }
     }
     catch (...)
@@ -559,12 +571,24 @@ void appy_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, const std::vec
             dimLastDim[n] = dim[n];
         }
 
-        hoNDArray<T> dataEigenLastDim;
-        for (n = 0; n<LastDimData; n++)
+        std::vector<size_t> dimEigenLastDim(dimLastDim);
+        dimEigenLastDim[3] = dstCHA;
+
+        if (LastDimData>1)
         {
-            hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin() + n*N));
-            Gadgetron::appy_KLT_coil_compression_coeff_3D(dataLastDim, coeff[n], dataEigenLastDim);
-            memcpy(dataEigen.begin() + n*eigenN, dataEigenLastDim.begin(), dataEigenLastDim.get_number_of_bytes());
+            hoNDArray<T> dataEigenLastDim;
+            for (n = 0; n<LastDimData; n++)
+            {
+                hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin() + n*N));
+                Gadgetron::appy_KLT_coil_compression_coeff_3D(dataLastDim, coeff[n], dataEigenLastDim);
+                memcpy(dataEigen.begin() + n*eigenN, dataEigenLastDim.begin(), dataEigenLastDim.get_number_of_bytes());
+            }
+        }
+        else
+        {
+            hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin()));
+            hoNDArray<T> dataEigenLastDim(&dimEigenLastDim, dataEigen.begin());
+            Gadgetron::appy_KLT_coil_compression_coeff_2D(dataLastDim, coeff[n], dataEigenLastDim);
         }
     }
     catch (...)
