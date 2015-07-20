@@ -519,7 +519,7 @@ void appy_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, const std::vec
         {
             hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin()));
             hoNDArray<T> dataEigenLastDim(&dimEigenLastDim, dataEigen.begin());
-            Gadgetron::appy_KLT_coil_compression_coeff_2D(dataLastDim, coeff[n], dataEigenLastDim);
+            Gadgetron::appy_KLT_coil_compression_coeff_2D(dataLastDim, coeff[0], dataEigenLastDim);
         }
     }
     catch (...)
@@ -588,7 +588,7 @@ void appy_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, const std::vec
         {
             hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin()));
             hoNDArray<T> dataEigenLastDim(&dimEigenLastDim, dataEigen.begin());
-            Gadgetron::appy_KLT_coil_compression_coeff_2D(dataLastDim, coeff[n], dataEigenLastDim);
+            Gadgetron::appy_KLT_coil_compression_coeff_3D(dataLastDim, coeff[0], dataEigenLastDim);
         }
     }
     catch (...)
