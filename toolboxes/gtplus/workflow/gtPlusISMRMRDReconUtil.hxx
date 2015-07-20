@@ -232,7 +232,8 @@ computeKLTCoeff(const hoNDArray<T>& data, hoMatrix<T>& coeff, hoMatrix<T>& eigen
             size_t N = data.get_number_of_elements()/CHA;
 
             GADGET_CHECK_RETURN_FALSE(A.createMatrix(N, CHA, const_cast<T*>(data.begin())));
-            GADGET_CHECK_RETURN_FALSE(KLT_eigenAnalysis(A, coeff, eigenValues));
+            // GADGET_CHECK_RETURN_FALSE(KLT_eigenAnalysis(A, coeff, eigenValues));
+            eigen_analysis(A, coeff, eigenValues);
         }
         else
         {
@@ -243,7 +244,8 @@ computeKLTCoeff(const hoNDArray<T>& data, hoMatrix<T>& coeff, hoMatrix<T>& eigen
             if ( NDim == 3 )
             {
                 GADGET_CHECK_RETURN_FALSE(A.createMatrix(RO*E1, CHA, const_cast<T*>(data.begin())));
-                GADGET_CHECK_RETURN_FALSE(KLT_eigenAnalysis(A, coeff, eigenValues));
+                // GADGET_CHECK_RETURN_FALSE(KLT_eigenAnalysis(A, coeff, eigenValues));
+                eigen_analysis(A, coeff, eigenValues);
             }
             else if ( NDim == 4 )
             {
@@ -260,7 +262,8 @@ computeKLTCoeff(const hoNDArray<T>& data, hoMatrix<T>& coeff, hoMatrix<T>& eigen
 
                 GADGET_CHECK_RETURN_FALSE(A.createMatrix(RO*E1*N, CHA, dataP.begin()));
 
-                GADGET_CHECK_RETURN_FALSE(KLT_eigenAnalysis(A, coeff, eigenValues));
+                // GADGET_CHECK_RETURN_FALSE(KLT_eigenAnalysis(A, coeff, eigenValues));
+                eigen_analysis(A, coeff, eigenValues);
             }
             else if ( NDim >= 5 )
             {
@@ -279,7 +282,8 @@ computeKLTCoeff(const hoNDArray<T>& data, hoMatrix<T>& coeff, hoMatrix<T>& eigen
                 size_t num = data.get_number_of_elements()/CHA;
                 GADGET_CHECK_RETURN_FALSE(A.createMatrix(num, CHA, dataP.begin()));
 
-                GADGET_CHECK_RETURN_FALSE(KLT_eigenAnalysis(A, coeff, eigenValues));
+                // GADGET_CHECK_RETURN_FALSE(KLT_eigenAnalysis(A, coeff, eigenValues));
+                eigen_analysis(A, coeff, eigenValues);
             }
         }
     }
@@ -307,6 +311,8 @@ computeKLCoilCompressionCoeff(const hoNDArray<T>& data, double thres, hoMatrix<T
         long long numOfModesKept;
         GADGET_CHECK_RETURN_FALSE(KLT_numberOfKeptModes(eigenValues, thres, numOfModesKept));
         GADGET_CHECK_RETURN_FALSE(pruneEigenVectorMatrix(eigenVectors, numOfModesKept, coeff));
+
+
     }
     catch(...)
     {

@@ -384,12 +384,14 @@ void appy_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, const hoNDArra
         size_t E1 = dim[1];
 
         size_t CHA = data.get_size(2);
-        size_t N = data.get_number_of_elements() / CHA;
+        size_t N = data.get_number_of_elements() / (RO*E1*CHA);
 
         size_t dstCHA = coeff.get_size(1);
 
         std::vector<size_t> dimEigen(dim);
         dimEigen[2] = dstCHA;
+
+        dataEigen.create(dimEigen);
 
         long long n;
 
@@ -431,12 +433,14 @@ void appy_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, const hoNDArra
         size_t E2 = dim[2];
 
         size_t CHA = data.get_size(3);
-        size_t N = data.get_number_of_elements() / CHA;
+        size_t N = data.get_number_of_elements() / (RO*E1*E2*CHA);
 
         size_t dstCHA = coeff.get_size(1);
 
         std::vector<size_t> dimEigen(dim);
         dimEigen[3] = dstCHA;
+
+        dataEigen.create(dimEigen);
 
         long long n;
 
@@ -459,6 +463,120 @@ template EXPORTMRICORE void appy_KLT_coil_compression_coeff_3D(const hoNDArray<f
 template EXPORTMRICORE void appy_KLT_coil_compression_coeff_3D(const hoNDArray<double>& data, const hoNDArray<double>& coeff, hoNDArray<double>& dataEigen);
 template EXPORTMRICORE void appy_KLT_coil_compression_coeff_3D(const hoNDArray< std::complex<float> >& data, const hoNDArray< std::complex<float> >& coeff, hoNDArray< std::complex<float> >& dataEigen);
 template EXPORTMRICORE void appy_KLT_coil_compression_coeff_3D(const hoNDArray< std::complex<double> >& data, const hoNDArray< std::complex<double> >& coeff, hoNDArray< std::complex<double> >& dataEigen);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void appy_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, const std::vector< hoNDArray<T> >& coeff, hoNDArray<T>& dataEigen)
+{
+    try
+    {
+        size_t NDim = data.get_number_of_dimensions();
+        GADGET_CHECK_THROW(NDim >= 3);
+
+        GADGET_CHECK_THROW(coeff.size() >= data.get_size(NDim - 1));
+
+        size_t LastDim = coeff.size();
+        size_t dstCHA = coeff[0].get_size(1);
+
+        size_t n;
+        for (n = 1; n<LastDim; n++)
+        {
+            GADGET_CHECK_THROW(coeff[n].get_size(1) == dstCHA);
+        }
+
+        size_t LastDimData = data.get_size(NDim - 1);
+        std::vector<size_t> dim;
+        data.get_dimensions(dim);
+        long long N = data.get_number_of_elements() / LastDimData;
+
+        std::vector<size_t> dimEigen(dim);
+        dimEigen[2] = dstCHA;
+
+        dataEigen.create(&dimEigen);
+        long long eigenN = dataEigen.get_number_of_elements() / LastDimData;
+
+        std::vector<size_t> dimLastDim(NDim - 1);
+        for (n = 0; n<NDim - 1; n++)
+        {
+            dimLastDim[n] = dim[n];
+        }
+
+        hoNDArray<T> dataEigenLastDim;
+        for (n = 0; n<LastDimData; n++)
+        {
+            hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin() + n*N));
+            Gadgetron::appy_KLT_coil_compression_coeff_2D(dataLastDim, coeff[n], dataEigenLastDim);
+            memcpy(dataEigen.begin() + n*eigenN, dataEigenLastDim.begin(), dataEigenLastDim.get_number_of_bytes());
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in appy_KLT_coil_compression_coeff_2D(std::vector<hoNDArray<T> >& coeff) ... ");
+    }
+}
+
+template EXPORTMRICORE void appy_KLT_coil_compression_coeff_2D(const hoNDArray<float>& data, const std::vector< hoNDArray<float> >& coeff, hoNDArray<float>& dataEigen);
+template EXPORTMRICORE void appy_KLT_coil_compression_coeff_2D(const hoNDArray<double>& data, const std::vector< hoNDArray<double> >& coeff, hoNDArray<double>& dataEigen);
+template EXPORTMRICORE void appy_KLT_coil_compression_coeff_2D(const hoNDArray< std::complex<float> >& data, const std::vector< hoNDArray< std::complex<float> > >& coeff, hoNDArray< std::complex<float> >& dataEigen);
+template EXPORTMRICORE void appy_KLT_coil_compression_coeff_2D(const hoNDArray< std::complex<double> >& data, const std::vector< hoNDArray< std::complex<double> > >& coeff, hoNDArray< std::complex<double> >& dataEigen);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void appy_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, const std::vector< hoNDArray<T> >& coeff, hoNDArray<T>& dataEigen)
+{
+    try
+    {
+        size_t NDim = data.get_number_of_dimensions();
+        GADGET_CHECK_THROW(NDim >= 4);
+
+        GADGET_CHECK_THROW(coeff.size() >= data.get_size(NDim - 1));
+
+        size_t LastDim = coeff.size();
+        size_t dstCHA = coeff[0].get_size(1);
+
+        size_t n;
+        for (n = 1; n<LastDim; n++)
+        {
+            GADGET_CHECK_THROW(coeff[n].get_size(1) == dstCHA);
+        }
+
+        size_t LastDimData = data.get_size(NDim - 1);
+        std::vector<size_t> dim;
+        data.get_dimensions(dim);
+        long long N = data.get_number_of_elements() / LastDimData;
+
+        std::vector<size_t> dimEigen(dim);
+        dimEigen[3] = dstCHA;
+
+        dataEigen.create(&dimEigen);
+        long long eigenN = dataEigen.get_number_of_elements() / LastDimData;
+
+        std::vector<size_t> dimLastDim(NDim - 1);
+        for (n = 0; n<NDim - 1; n++)
+        {
+            dimLastDim[n] = dim[n];
+        }
+
+        hoNDArray<T> dataEigenLastDim;
+        for (n = 0; n<LastDimData; n++)
+        {
+            hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin() + n*N));
+            Gadgetron::appy_KLT_coil_compression_coeff_3D(dataLastDim, coeff[n], dataEigenLastDim);
+            memcpy(dataEigen.begin() + n*eigenN, dataEigenLastDim.begin(), dataEigenLastDim.get_number_of_bytes());
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in appy_KLT_coil_compression_coeff_3D(std::vector<hoNDArray<T> >& coeff) ... ");
+    }
+}
+
+template EXPORTMRICORE void appy_KLT_coil_compression_coeff_3D(const hoNDArray<float>& data, const std::vector< hoNDArray<float> >& coeff, hoNDArray<float>& dataEigen);
+template EXPORTMRICORE void appy_KLT_coil_compression_coeff_3D(const hoNDArray<double>& data, const std::vector< hoNDArray<double> >& coeff, hoNDArray<double>& dataEigen);
+template EXPORTMRICORE void appy_KLT_coil_compression_coeff_3D(const hoNDArray< std::complex<float> >& data, const std::vector< hoNDArray< std::complex<float> > >& coeff, hoNDArray< std::complex<float> >& dataEigen);
+template EXPORTMRICORE void appy_KLT_coil_compression_coeff_3D(const hoNDArray< std::complex<double> >& data, const std::vector< hoNDArray< std::complex<double> > >& coeff, hoNDArray< std::complex<double> >& dataEigen);
 
 // ------------------------------------------------------------------------
 

@@ -196,7 +196,7 @@ namespace Gadgetron {
             dim_permute[i - num_dim_memcpy - 1] = in->get_size(i);
         }
 
-        long long n;
+        size_t n;
 
         hoNDArray<T> permuteArray(dim_permute, in->begin(), false);
 
