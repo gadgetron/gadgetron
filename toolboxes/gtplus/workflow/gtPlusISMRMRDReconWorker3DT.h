@@ -939,19 +939,25 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
             if ( performTiming_ ) { gt_timer2_.stop(); }
 
             if ( performTiming_ ) { gt_timer2_.start("compute coil compression coefficients ... "); }
-            hoMatrix<T> coeff, eigenValues;
+            hoNDArray<T> coeff, eigenValues;
             if ( workOrder3DT->upstream_coil_compression_num_modesKept_ > 0 )
             {
-                Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, (size_t)workOrder3DT->upstream_coil_compression_num_modesKept_, coeff, eigenValues);
+                // Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, (size_t)workOrder3DT->upstream_coil_compression_num_modesKept_, coeff, eigenValues);
+                Gadgetron::hoNDKLT<T> klt(aveAll, 3, (size_t)workOrder3DT->upstream_coil_compression_num_modesKept_);
+                klt.KL_transformation(coeff);
+                klt.eigen_value(eigenValues);
             }
             else
             {
-                Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, workOrder3DT->upstream_coil_compression_thres_, coeff, eigenValues);
+                // Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, workOrder3DT->upstream_coil_compression_thres_, coeff, eigenValues);
+                Gadgetron::hoNDKLT<T> klt(aveAll, 3, (value_type)workOrder3DT->upstream_coil_compression_thres_);
+                klt.KL_transformation(coeff);
+                klt.eigen_value(eigenValues);
             }
             if ( performTiming_ ) { gt_timer2_.stop(); }
 
             eigenValues.print(std::cout);
-            GDEBUG_STREAM("Upstream coil compression, number of channel kept is " << coeff.cols());
+            GDEBUG_STREAM("Upstream coil compression, number of channel kept is " << coeff.get_size(1));
 
             size_t n;
             std::vector<hoNDArray<T> > upstreamCoilCoeffRef(workOrder3DT->ref_.get_size(4)), upstreamCoilCoeffRefRecon(refRecon.get_size(4)), upstreamCoilCoeffData(workOrder3DT->data_.get_size(4));
@@ -970,7 +976,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 upstreamCoilCoeffData[n] = coeff;
             }
 
-            if (coeff.cols()<srcCHA)
+            if (coeff.get_size(1)<srcCHA)
             {
                 if ( performTiming_ ) { gt_timer2_.start("apply upstream coil compression ... "); }
                 {
@@ -1063,14 +1069,20 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                     }
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(aveAll, debugFolder_+"aveAll"); }
 
-                    hoMatrix<T> coeff, eigenValues;
+                    hoNDArray<T> coeff, eigenValues;
                     if ( workOrder3DT->coil_compression_num_modesKept_ > 0 )
                     {
-                        Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, (size_t)workOrder3DT->coil_compression_num_modesKept_, coeff, eigenValues);
+                        // Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, (size_t)workOrder3DT->coil_compression_num_modesKept_, coeff, eigenValues);
+                        Gadgetron::hoNDKLT<T> klt(aveAll, 3, (size_t)workOrder3DT->upstream_coil_compression_num_modesKept_);
+                        klt.KL_transformation(coeff);
+                        klt.eigen_value(eigenValues);
                     }
                     else
                     {
-                        Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, workOrder3DT->coil_compression_thres_, coeff, eigenValues);
+                        // Gadgetron::compute_KLT_coil_compression_coeff_3D(aveAll, workOrder3DT->coil_compression_thres_, coeff, eigenValues);
+                        Gadgetron::hoNDKLT<T> klt(aveAll, 3, (value_type)workOrder3DT->coil_compression_thres_);
+                        klt.KL_transformation(coeff);
+                        klt.eigen_value(eigenValues);
                     }
 
                     workOrder3DT->coilCompressionCoef_->resize(dataN);
@@ -1081,7 +1093,7 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                     }
 
                     if ( !debugFolder_.empty() ) {  eigenValues.print(std::cout); }
-                    GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.cols());
+                    GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.get_size(1));
                 }
                 else
                 {
@@ -1097,17 +1109,23 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                     {
                         hoNDArray<T> dataCurrN(&allNDim, workOrder3DT->ref_recon_.begin()+n*RO*E1*E2*srcCHA, false);
 
-                        hoMatrix<T> coeff, eigenValues;
+                        hoNDArray<T> coeff, eigenValues;
 
                         if ( n == 0 )
                         {
                             if ( workOrder3DT->coil_compression_num_modesKept_ > 0 )
                             {
-                                Gadgetron::compute_KLT_coil_compression_coeff_3D(dataCurrN, (size_t)workOrder3DT->coil_compression_num_modesKept_, coeff, eigenValues);
+                                // Gadgetron::compute_KLT_coil_compression_coeff_3D(dataCurrN, (size_t)workOrder3DT->coil_compression_num_modesKept_, coeff, eigenValues);
+                                Gadgetron::hoNDKLT<T> klt(dataCurrN, 3, (size_t)workOrder3DT->upstream_coil_compression_num_modesKept_);
+                                klt.KL_transformation(coeff);
+                                klt.eigen_value(eigenValues);
                             }
                             else
                             {
-                                Gadgetron::compute_KLT_coil_compression_coeff_3D(dataCurrN, workOrder3DT->coil_compression_thres_, coeff, eigenValues);
+                                // Gadgetron::compute_KLT_coil_compression_coeff_3D(dataCurrN, workOrder3DT->coil_compression_thres_, coeff, eigenValues);
+                                Gadgetron::hoNDKLT<T> klt(dataCurrN, 3, (value_type)workOrder3DT->coil_compression_thres_);
+                                klt.KL_transformation(coeff);
+                                klt.eigen_value(eigenValues);
                             }
 
                             num_modesKept = coeff.get_size(0);
@@ -1115,13 +1133,16 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                         }
                         else
                         {
-                            Gadgetron::compute_KLT_coil_compression_coeff_3D(dataCurrN, num_modesKept, coeff, eigenValues);
+                            // Gadgetron::compute_KLT_coil_compression_coeff_3D(dataCurrN, num_modesKept, coeff, eigenValues);
+                            Gadgetron::hoNDKLT<T> klt(dataCurrN, 3, (size_t)num_modesKept);
+                            klt.KL_transformation(coeff);
+                            klt.eigen_value(eigenValues);
 
                             workOrder3DT->coilCompressionCoef_->push_back(coeff);
                         }
 
                         if ( !debugFolder_.empty() ) {  eigenValues.print(std::cout); }
-                        GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.cols());
+                        GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.get_size(1));
                     }
                 }
             }

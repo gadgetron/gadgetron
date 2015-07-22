@@ -1,5 +1,6 @@
 
 #include "gtPlusISMRMRDReconUtil.h"
+#include "hoNDKLT.h"
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -947,13 +948,19 @@ namespace Gadgetron {
             size_t NDim = data.get_number_of_dimensions();
             GADGET_CHECK_THROW(NDim >= 3);
 
-            hoNDArray<T> eigenVectors;
-            compute_KLT_coeff(data, eigenVectors, eigenValues, 2); // RO, E1, CHA
+            //hoNDArray<T> eigenVectors;
+            //compute_KLT_coeff(data, eigenVectors, eigenValues, 2); // RO, E1, CHA
 
-            size_t numOfModesKept;
-            compute_number_of_eigen_modes_kept(eigenValues, thres, numOfModesKept);
+            //size_t numOfModesKept;
+            //compute_number_of_eigen_modes_kept(eigenValues, thres, numOfModesKept);
 
-            prune_eigen_vector_matrix(eigenVectors, numOfModesKept, coeff);
+            //prune_eigen_vector_matrix(eigenVectors, numOfModesKept, coeff);
+
+            Gadgetron::hoNDKLT<T> klt;
+            klt.prepare(data, 2, (typename realType<T>::Type)thres);
+
+            klt.KL_transformation(coeff);
+            klt.eigen_value(eigenValues);
         }
         catch (...)
         {
@@ -976,20 +983,26 @@ namespace Gadgetron {
             size_t NDim = data.get_number_of_dimensions();
             GADGET_CHECK_THROW(NDim >= 3);
 
-            hoNDArray<T> eigenVectors;
-            compute_KLT_coeff(data, eigenVectors, eigenValues, 2); // RO, E1, CHA
+            //hoNDArray<T> eigenVectors;
+            //compute_KLT_coeff(data, eigenVectors, eigenValues, 2); // RO, E1, CHA
 
-            size_t CHA = data.get_size(2);
+            //size_t CHA = data.get_size(2);
 
-            if (numOfModesKept >= CHA - 1)
-            {
-                coeff = eigenVectors;
-                return;
-            }
+            //if (numOfModesKept >= CHA - 1)
+            //{
+            //    coeff = eigenVectors;
+            //    return;
+            //}
 
-            if (numOfModesKept == 0) numOfModesKept = 1;
+            //if (numOfModesKept == 0) numOfModesKept = 1;
 
-            prune_eigen_vector_matrix(eigenVectors, numOfModesKept, coeff);
+            //prune_eigen_vector_matrix(eigenVectors, numOfModesKept, coeff);
+
+            Gadgetron::hoNDKLT<T> klt;
+            klt.prepare(data, 2, numOfModesKept);
+
+            klt.KL_transformation(coeff);
+            klt.eigen_value(eigenValues);
         }
         catch (...)
         {
@@ -1013,13 +1026,19 @@ namespace Gadgetron {
             size_t NDim = data.get_number_of_dimensions();
             GADGET_CHECK_THROW(NDim >= 4);
 
-            hoNDArray<T> eigenVectors;
-            compute_KLT_coeff(data, eigenVectors, eigenValues, 3); // RO, E1, E2, CHA
+            //hoNDArray<T> eigenVectors;
+            //compute_KLT_coeff(data, eigenVectors, eigenValues, 3); // RO, E1, E2, CHA
 
-            size_t numOfModesKept;
-            compute_number_of_eigen_modes_kept(eigenValues, thres, numOfModesKept);
+            //size_t numOfModesKept;
+            //compute_number_of_eigen_modes_kept(eigenValues, thres, numOfModesKept);
 
-            prune_eigen_vector_matrix(eigenVectors, numOfModesKept, coeff);
+            //prune_eigen_vector_matrix(eigenVectors, numOfModesKept, coeff);
+
+            Gadgetron::hoNDKLT<T> klt;
+            klt.prepare(data, 3, (typename realType<T>::Type)thres);
+
+            klt.KL_transformation(coeff);
+            klt.eigen_value(eigenValues);
         }
         catch (...)
         {
@@ -1042,20 +1061,27 @@ namespace Gadgetron {
             size_t NDim = data.get_number_of_dimensions();
             GADGET_CHECK_THROW(NDim >= 4);
 
-            hoNDArray<T> eigenVectors;
-            compute_KLT_coeff(data, eigenVectors, eigenValues, 3); // RO, E1, E2, CHA
+            //hoNDArray<T> eigenVectors;
+            //compute_KLT_coeff(data, eigenVectors, eigenValues, 3); // RO, E1, E2, CHA
 
-            size_t CHA = data.get_size(3);
+            //size_t CHA = data.get_size(3);
 
-            if (numOfModesKept >= CHA - 1)
-            {
-                coeff = eigenVectors;
-                return;
-            }
+            //if (numOfModesKept >= CHA - 1)
+            //{
+            //    coeff = eigenVectors;
+            //    return;
+            //}
 
-            if (numOfModesKept == 0) numOfModesKept = 1;
+            //if (numOfModesKept == 0) numOfModesKept = 1;
 
-            prune_eigen_vector_matrix(eigenVectors, numOfModesKept, coeff);
+            //prune_eigen_vector_matrix(eigenVectors, numOfModesKept, coeff);
+
+            Gadgetron::hoNDKLT<T> klt;
+            klt.prepare(data, 3, numOfModesKept);
+
+            klt.KL_transformation(coeff);
+            klt.eigen_value(eigenValues);
+
         }
         catch (...)
         {

@@ -21,6 +21,7 @@ if (FFTW3_FOUND)
   add_subdirectory(ct)
 endif()
 
+add_subdirectory(klt)
 add_subdirectory(nfft)
 add_subdirectory(dwt)
 add_subdirectory(registration)
