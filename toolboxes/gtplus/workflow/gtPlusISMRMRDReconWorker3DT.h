@@ -962,7 +962,13 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
             }
             if ( performTiming_ ) { gt_timer2_.stop(); }
 
-            eigenValues.print(std::cout);
+            {
+                eigenValues.print(std::cout);
+                for (size_t i = 0; i<eigenValues.get_size(0); i++)
+                {
+                    GDEBUG_STREAM(i << " = " << eigenValues(i));
+                }
+            }
             GDEBUG_STREAM("Upstream coil compression, number of channel kept is " << coeff.get_size(1));
 
             size_t n;
@@ -1098,7 +1104,14 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                         (*workOrder3DT->coilCompressionCoef_)[n] = coeff;
                     }
 
-                    if ( !debugFolder_.empty() ) {  eigenValues.print(std::cout); }
+                    if (!debugFolder_.empty())
+                    {
+                        eigenValues.print(std::cout);
+                        for (size_t i = 0; i<eigenValues.get_size(0); i++)
+                        {
+                            GDEBUG_STREAM(i << " = " << eigenValues(i));
+                        }
+                    }
                     GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.get_size(1));
                 }
                 else
@@ -1147,7 +1160,14 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
                             workOrder3DT->coilCompressionCoef_->push_back(coeff);
                         }
 
-                        if ( !debugFolder_.empty() ) {  eigenValues.print(std::cout); }
+                        if (!debugFolder_.empty())
+                        {
+                            eigenValues.print(std::cout);
+                            for (size_t i = 0; i<eigenValues.get_size(0); i++)
+                            {
+                                GDEBUG_STREAM(i << " = " << eigenValues(i));
+                            }
+                        }
                         GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.get_size(1));
                     }
                 }

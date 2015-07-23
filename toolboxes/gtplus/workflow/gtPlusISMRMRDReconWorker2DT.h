@@ -564,7 +564,13 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                     klt.eigen_value(eigenValues);
                 }
 
-                eigenValues.print(std::cout);
+                {
+                    eigenValues.print(std::cout);
+                    for (size_t i = 0; i < eigenValues.get_size(0); i++)
+                    {
+                        GDEBUG_STREAM(i << " = " << eigenValues(i));
+                    }
+                }
                 GDEBUG_STREAM("Upstream coil compression, number of channel kept is " << coeff.get_size(1));
 
                 size_t n;
@@ -629,7 +635,14 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                         klt.eigen_value(eigenValues);
                     }
 
-                    if ( !debugFolder_.empty() ) {  eigenValues.print(std::cout); }
+                    if ( !debugFolder_.empty() )
+                    {
+                        eigenValues.print(std::cout);
+                        for (size_t i = 0; i<eigenValues.get_size(0); i++)
+                        {
+                            GDEBUG_STREAM(i << " = " << eigenValues(i));
+                        }
+                    }
                     GDEBUG_STREAM("Upstream coil compression, number of channel kept is " << coeff.get_size(1));
 
                     if ( s < upstreamCoilCoeffRef.size() )
@@ -765,7 +778,14 @@ bool gtPlusReconWorker2DT<T>::coilCompression(gtPlusReconWorkOrder2DT<T>* workOr
                         (*workOrder2DT->coilCompressionCoef_)[s] = coeff;
                     }
 
-                    if ( !debugFolder_.empty() ) {  eigenValues.print(std::cout); }
+                    if (!debugFolder_.empty())
+                    {
+                        eigenValues.print(std::cout);
+                        for (size_t i = 0; i<eigenValues.get_size(0); i++)
+                        {
+                            GDEBUG_STREAM(i << " = " << eigenValues(i));
+                        }
+                    }
                     GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.get_size(1));
                 }
                 else
@@ -815,7 +835,14 @@ bool gtPlusReconWorker2DT<T>::coilCompression(gtPlusReconWorkOrder2DT<T>* workOr
                             workOrder2DT->coilCompressionCoef_->push_back(coeff);
                         }
 
-                        if ( !debugFolder_.empty() ) {  eigenValues.print(std::cout); }
+                        if (!debugFolder_.empty())
+                        {
+                            eigenValues.print(std::cout);
+                            for (size_t i = 0; i<eigenValues.get_size(0); i++)
+                            {
+                                GDEBUG_STREAM(i << " = " << eigenValues(i));
+                            }
+                        }
                         GDEBUG_STREAM("Coil compression, number of channel kept is " << coeff.get_size(1));
                     }
 
