@@ -145,6 +145,9 @@ public:
     // aliasedIm : [RO E1 E2 srcCHA ...]
     bool applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm, const hoNDArray<T>& unmixCoeff, hoNDArray<T>& complexIm);
 
+    // apply coil compression coefficient
+    bool appy_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, const std::vector< hoNDArray<T> >& coeff, hoNDArray<T>& dataEigen);
+
     // ----------------------------------------------------
     // Partial fourier handling for 3DT reconstruction
     // ----------------------------------------------------
@@ -224,7 +227,7 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
             {
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->data_, debugFolder_+"data_"); }
-                Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_);
+                this->appy_KLT_coil_compression_coeff_3D(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_);
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(data_dst_, debugFolder_+"data_dst_"); }
             }
             else
@@ -250,21 +253,21 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
                     #pragma omp section
                     {
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref_src_, debugFolder_+"ref_src_"); }
-                        Gadgetron::appy_KLT_coil_compression_coeff_3D(ref_src_, *workOrder3DT->coilCompressionCoef_, ref_dst_);
+                        this->appy_KLT_coil_compression_coeff_3D(ref_src_, *workOrder3DT->coilCompressionCoef_, ref_dst_);
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref_dst_, debugFolder_+"ref_dst_"); }
                     }
 
                     #pragma omp section
                     {
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->data_, debugFolder_+"data_"); }
-                        Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_);
+                        this->appy_KLT_coil_compression_coeff_3D(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_);
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(data_dst_, debugFolder_+"data_dst_"); }
                     }
 
                     #pragma omp section
                     {
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->ref_coil_map_, debugFolder_+"ref_coil_map_"); }
-                        Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->ref_coil_map_, *workOrder3DT->coilCompressionCoef_, ref_coil_map_dst_);
+                        this->appy_KLT_coil_compression_coeff_3D(workOrder3DT->ref_coil_map_, *workOrder3DT->coilCompressionCoef_, ref_coil_map_dst_);
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ref_coil_map_dst_, debugFolder_+"ref_coil_map_dst_"); }
                     }
                 }
@@ -651,7 +654,10 @@ bool gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(WorkOrderType* workOrder3
 
             hoMatrix<T> A(RO*E1*E2*CHA, N, const_cast<T*>(ref.begin()));
             hoMatrix<T> A_KLF(RO*E1*E2*CHA, N, refKLF.begin());
-            Gadgetron::compute_KLT_filter(A, numOfModes, A_KLF);
+            // Gadgetron::compute_KLT_filter(A, numOfModes, A_KLF);
+            hoNDKLT<T> klt;
+            klt.prepare(A, 1, (size_t)0);
+            klt.KL_filter(A, A_KLF, 1, numOfModes);
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refKLF, debugFolder_+"refKLF"); }
 
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(refKLF, refRecon));
@@ -663,7 +669,10 @@ bool gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(WorkOrderType* workOrder3
 
             hoMatrix<T> A(RO*E1*E2*CHA, N, const_cast<T*>(ref.begin()));
             hoMatrix<T> A_KLF(RO*E1*E2*CHA, N, refRecon.begin());
-            Gadgetron::compute_KLT_filter(A, numOfModes, A_KLF);
+            // Gadgetron::compute_KLT_filter(A, numOfModes, A_KLF);
+            hoNDKLT<T> klt;
+            klt.prepare(A, 1, (size_t)0);
+            klt.KL_filter(A, A_KLF, 1, numOfModes);
         }
         else
         {
@@ -982,7 +991,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 {
                     {
                         if ( performTiming_ ) { gt_timer3_.start("appy_KLT_coil_compression_coeff_3D ... "); }
-                        Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_);
+                        this->appy_KLT_coil_compression_coeff_3D(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_);
                         if ( performTiming_ ) { gt_timer3_.stop(); }
 
                         if ( performTiming_ ) { gt_timer3_.start("copy data ... "); }
@@ -993,7 +1002,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                     }
 
                     {
-                        Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->ref_, upstreamCoilCoeffRef, ref_dst_);
+                        this->appy_KLT_coil_compression_coeff_3D(workOrder3DT->ref_, upstreamCoilCoeffRef, ref_dst_);
                         workOrder3DT->ref_ = ref_dst_;
 
                         ref_dst_.clear();
@@ -1001,14 +1010,14 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
 
                     {
                         hoNDArray<T> refRecon_upstream;
-                        Gadgetron::appy_KLT_coil_compression_coeff_3D(refRecon, upstreamCoilCoeffRefRecon, refRecon_upstream);
+                        this->appy_KLT_coil_compression_coeff_3D(refRecon, upstreamCoilCoeffRefRecon, refRecon_upstream);
                         refRecon = refRecon_upstream;
                         refRecon_upstream.clear();
                     }
 
                     {
                         hoNDArray<T> refCoilMap_upstream;
-                        Gadgetron::appy_KLT_coil_compression_coeff_3D(refCoilMap, upstreamCoilCoeffRefRecon, refCoilMap_upstream);
+                        this->appy_KLT_coil_compression_coeff_3D(refCoilMap, upstreamCoilCoeffRefRecon, refCoilMap_upstream);
                         refCoilMap = refCoilMap_upstream;
                         refCoilMap_upstream.clear();
                     }
@@ -1413,6 +1422,80 @@ bool gtPlusReconWorker3DT<T>::applyUnmixCoeffImage(const hoNDArray<T>& aliasedIm
     return true;
 }
 
+template <typename T>
+bool gtPlusReconWorker3DT<T>::appy_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, const std::vector< hoNDArray<T> >& coeff, hoNDArray<T>& dataEigen)
+{
+    try
+    {
+        size_t NDim = data.get_number_of_dimensions();
+        GADGET_CHECK_RETURN_FALSE(NDim >= 4);
+
+        GADGET_CHECK_RETURN_FALSE(coeff.size() >= data.get_size(NDim - 1));
+
+        size_t LastDim = coeff.size();
+        size_t dstCHA = coeff[0].get_size(1);
+
+        size_t n;
+        for (n = 1; n<LastDim; n++)
+        {
+            GADGET_CHECK_RETURN_FALSE(coeff[n].get_size(1) == dstCHA);
+        }
+
+        size_t LastDimData = data.get_size(NDim - 1);
+        std::vector<size_t> dim;
+        data.get_dimensions(dim);
+        long long N = data.get_number_of_elements() / LastDimData;
+
+        std::vector<size_t> dimEigen(dim);
+        dimEigen[3] = dstCHA;
+
+        dataEigen.create(&dimEigen);
+        long long eigenN = dataEigen.get_number_of_elements() / LastDimData;
+
+        std::vector<size_t> dimLastDim(NDim - 1);
+        for (n = 0; n<NDim - 1; n++)
+        {
+            dimLastDim[n] = dim[n];
+        }
+
+        std::vector<size_t> dimEigenLastDim(dimLastDim);
+        dimEigenLastDim[3] = dstCHA;
+
+        if (LastDimData>1)
+        {
+            hoNDArray<T> dataEigenLastDim;
+            for (n = 0; n<LastDimData; n++)
+            {
+                hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin() + n*N));
+                // Gadgetron::appy_KLT_coil_compression_coeff_3D(dataLastDim, coeff[n], dataEigenLastDim);
+
+                hoNDKLT<T> klt;
+                klt.prepare(coeff[n]);
+                klt.transform(dataLastDim, dataEigenLastDim, 3);
+
+                memcpy(dataEigen.begin() + n*eigenN, dataEigenLastDim.begin(), dataEigenLastDim.get_number_of_bytes());
+            }
+        }
+        else
+        {
+            hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin()));
+            hoNDArray<T> dataEigenLastDim(&dimEigenLastDim, dataEigen.begin());
+            // Gadgetron::appy_KLT_coil_compression_coeff_3D(dataLastDim, coeff[0], dataEigenLastDim);
+
+            hoNDKLT<T> klt;
+            klt.prepare(coeff[0]);
+            klt.transform(dataLastDim, dataEigenLastDim, 3);
+        }
+    }
+    catch (...)
+    {
+        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::appy_KLT_coil_compression_coeff_3D(std::vector<hoNDArray<T> >& coeff) ... ");
+        return false;
+    }
+
+    return true;
+}
+
 template <typename T> 
 bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
 {
@@ -1487,7 +1570,7 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
             {
-                Gadgetron::appy_KLT_coil_compression_coeff_3D(workOrder3DT->ref_, *workOrder3DT->coilCompressionCoef_, ref_dst);
+                this->appy_KLT_coil_compression_coeff_3D(workOrder3DT->ref_, *workOrder3DT->coilCompressionCoef_, ref_dst);
             }
             else
             {

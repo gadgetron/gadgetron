@@ -35,18 +35,21 @@ namespace Gadgetron{
         /// this function will compute the KLT transformation matrix and its inverse
         /// M : [data.get_size(dim) output_length]
         /// output_length == 0 means keep all modes
-        void prepare(const hoNDArray<T>& data, size_t dim = 0, size_t output_length = 0);
+        void prepare(const hoNDArray<T>& data, size_t dim, size_t output_length = 0);
         /// the output length will be determined by thres; the minimal eigen value kept is >= (max eigen value * thres)
-        void prepare(const hoNDArray<T>& data, size_t dim = 0, value_type thres=(value_type)0.001);
+        void prepare(const hoNDArray<T>& data, size_t dim, value_type thres=(value_type)0.001);
         /// set the eigen vector matrix
         void prepare(const hoNDArray<T>& V, const hoNDArray<T>& E, size_t output_length = 0);
         /// set the KL transformation matrix
         void prepare(const hoNDArray<T>& M);
 
-        /// Applies the transform
+        /// apply the transform
         /// The input array size must meet in.get_size(dim) == M.get_size(0)
         /// out array will have out.get_size(dim)==out_length
         void transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim = 0);
+
+        /// compute KL filter along dim
+        void KL_filter(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim, size_t mode_kept);
 
         /// return M.get_size(0), the length of tranformed dimension
         size_t transform_length();

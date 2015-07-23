@@ -281,7 +281,10 @@ void hoNDKLT<T>::transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim
         size_t N = M_.get_size(0);
         size_t num = in.get_number_of_elements() / N;
 
-        if (dim == NDim - 1)
+        size_t K = 1;
+        for (size_t n = dim + 1; n < NDim; n++) K *= dim_in[n];
+
+        if ((dim == NDim - 1) || (K == 1))
         {
             hoNDArray<T> in2D;
             in2D.create(num, N, const_cast<T*>(in.begin()));
@@ -296,19 +299,17 @@ void hoNDKLT<T>::transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim
             std::vector<size_t> dimOrder(NDim), dimPermuted(dim_in);
 
             size_t l;
-            for (l = 0; l<dim; l++)
+            for (l = 0; l<NDim; l++)
             {
                 dimOrder[l] = l;
+                dimPermuted[l] = dim_in[l];
             }
 
-            for (l = dim; l<NDim - 1; l++)
-            {
-                dimOrder[l] = l + 1;
-                dimPermuted[l] = dim_in[l + 1];
-            }
-
+            dimOrder[dim] = NDim-1;
             dimOrder[NDim - 1] = dim;
-            dimPermuted[NDim-1] = N;
+
+            dimPermuted[dim] = dim_in[NDim - 1];
+            dimPermuted[NDim - 1] = dim_in[dim];
 
             hoNDArray<T> inP;
             inP.create(dimPermuted);
@@ -330,6 +331,98 @@ void hoNDKLT<T>::transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim
     catch (...)
     {
         GADGET_THROW("Errors in hoNDKLT<T>::transform(hoNDArray<T>& in, hoNDArray<T>& out, size_t dim) ... ");
+    }
+}
+
+template<typename T>
+void hoNDKLT<T>::KL_filter(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim, size_t mode_kept)
+{
+    try
+    {
+        size_t NDim = in.get_number_of_dimensions();
+        GADGET_CHECK_THROW(dim<NDim);
+
+        GADGET_CHECK_THROW(in.get_size(dim) == V_.get_size(0));
+
+        std::vector<size_t> dim_in;
+        in.get_dimensions(dim_in);
+
+        out.create(dim_in);
+
+        size_t N = V_.get_size(0);
+        size_t num = in.get_number_of_elements() / N;
+
+        hoMatrix<T> E(N, N);
+        memcpy(E.begin(), V_.begin(), sizeof(T)*N*N);
+
+        size_t r, c;
+        for (c = 0; c<N - mode_kept + 1; c++)
+        {
+            for (r = 0; r<N; r++)
+            {
+                E(r, c) = T(0);
+            }
+        }
+
+        hoMatrix<T> ET;
+        ET.createMatrix(N, N);
+        memcpy(ET.begin(), V_.begin(), sizeof(T)*N*N);
+
+        Gadgetron::conjugatetrans(E, ET);
+
+        hoMatrix<T> EET(N, N);
+        Gadgetron::clear(EET);
+        Gadgetron::gemm(EET, E, false, ET, false);
+
+        size_t K = 1;
+        for (size_t n = dim + 1; n < NDim; n++) K *= dim_in[n];
+
+        if ((dim == NDim - 1) || (K==1))
+        {
+            hoNDArray<T> in2D;
+            in2D.create(num, N, const_cast<T*>(in.begin()));
+
+            hoNDArray<T> out2D;
+            out2D.create(num, N, out.begin());
+
+            Gadgetron::gemm(out2D, in2D, false, EET, false);
+        }
+        else
+        {
+            std::vector<size_t> dimOrder(NDim), dimPermuted(dim_in);
+
+            size_t l;
+            for (l = 0; l<NDim; l++)
+            {
+                dimOrder[l] = l;
+                dimPermuted[l] = dim_in[l];
+            }
+
+            dimOrder[dim] = NDim - 1;
+            dimOrder[NDim - 1] = dim;
+
+            dimPermuted[dim] = dim_in[NDim - 1];
+            dimPermuted[NDim - 1] = dim_in[dim];
+
+            hoNDArray<T> inP;
+            inP.create(dimPermuted);
+            Gadgetron::permute(const_cast< hoNDArray<T>* >(&in), &inP, &dimOrder);
+            hoNDArray<T> inP2D;
+            inP2D.create(num, N, inP.begin());
+
+            hoNDArray<T> outP;
+            outP.create(dimPermuted);
+            hoNDArray<T> outP2D;
+            outP2D.create(num, N, outP.begin());
+
+            Gadgetron::gemm(outP2D, inP2D, false, EET, false);
+
+            Gadgetron::permute(&outP, &out, &dimOrder);
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in hoNDKLT<T>::KL_filter(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim, size_t mode_kept) ... ");
     }
 }
 
