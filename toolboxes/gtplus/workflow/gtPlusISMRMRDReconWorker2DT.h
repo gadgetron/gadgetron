@@ -32,7 +32,6 @@
 #include "gtPlusISMRMRDReconWorker.h"
 
 #include "mri_core_kspace_filter.h"
-#include "mri_core_KarhunenLoeve_Transform.h"
 
 namespace Gadgetron { namespace gtPlus {
 

@@ -67,7 +67,6 @@
 #include "mri_core_utility.h"
 #include "mri_core_coil_map_estimation.h"
 #include "mri_core_kspace_filter.h"
-#include "mri_core_KarhunenLoeve_Transform.h"
 
 namespace Gadgetron {
 
