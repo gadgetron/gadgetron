@@ -51,7 +51,7 @@ hoNDKLT<T>& hoNDKLT<T>::operator=(const Self& v)
 }
 
 template<typename T>
-void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V, hoNDArray<T>& E)
+void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V, hoNDArray<T>& E, bool remove_mean)
 {
     try
     {
@@ -68,6 +68,7 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V,
         Gadgetron::clear(V);
         Gadgetron::clear(E);
 
+        // compute data'*data
         char uplo = 'L';
         bool isAHA = true;
         Gadgetron::herk(V, data2D, uplo, isAHA);
@@ -76,28 +77,24 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V,
         m.createMatrix(N, N, V.begin());
         m.copyLowerTriToUpper();
 
-        hoMatrix<T> mean(N, 1);
+        if (remove_mean)
+        {
+            // compute and subtract mean for every mode
+            hoNDArray<T> mean(N, 1);
+            hoNDArray<T> dataMean(1, N, mean.begin());
+            Gadgetron::sum_over_dimension(data2D, dataMean, 0);
 
-        hoNDArray<T> dataMean(1, N);
-        Gadgetron::sum_over_dimension(data2D, dataMean, 0);
-        memcpy(mean.begin(), dataMean.begin(), sizeof(T)*N);
+            Gadgetron::scal((T)(1.0 / M), mean);
 
-        Gadgetron::scal((T)(1.0 / M), mean);
+            hoNDArray<T> MMH(N, N);
+            Gadgetron::clear(MMH);
 
-        hoNDArray<T> MMH(N, N);
-        Gadgetron::clear(MMH);
+            hoNDArray<T> meanCopy(mean);
+            Gadgetron::gemm(MMH, meanCopy, false, mean, true);
+            Gadgetron::subtract(V, MMH, V);
+        }
 
-        hoNDArray<T> meanCopy(mean);
-        Gadgetron::gemm(MMH, meanCopy, false, mean, true);
-        Gadgetron::scal((T)M, MMH);
-        Gadgetron::subtract(V, MMH, V);
-        Gadgetron::scal((T)(1.0 / (M - 1)), V);
-
-        hoMatrix<T> EH(N, N);
-        conjugatetrans(m, EH);
-        Gadgetron::add(V, EH, V);
-        Gadgetron::scal((T)(0.5), V);
-
+        // compute eigen vector and values
         Gadgetron::heev(V, E);
     }
     catch (...)
@@ -107,7 +104,7 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V,
 }
 
 template<typename T>
-void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, size_t output_length)
+void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, size_t output_length, bool remove_mean)
 {
     try
     {
@@ -133,7 +130,7 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, size_t output_len
 
         if (dim == NDim - 1)
         {
-            this->compute_eigen_vector(data, V_, E_);
+            this->compute_eigen_vector(data, V_, E_, remove_mean);
         }
         else if (K == 1)
         {
@@ -143,29 +140,30 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, size_t output_len
             hoNDArray<T> dataS;
             dataS.create(dimShrinked, const_cast<T*>(data.begin()));
 
-            this->compute_eigen_vector(dataS, V_, E_);
+            this->compute_eigen_vector(dataS, V_, E_, remove_mean);
         }
         else
         {
-            std::vector<size_t> dimOrder(NDim);
+            std::vector<size_t> dimOrder(NDim), dimPermuted(dimD);
 
             size_t l;
-            for (l = 0; l<dim; l++)
+            for (l = 0; l<NDim; l++)
             {
                 dimOrder[l] = l;
+                dimPermuted[l] = dimD[l];
             }
 
-            for (l = dim; l<NDim - 1; l++)
-            {
-                dimOrder[l] = l + 1;
-            }
-
+            dimOrder[dim] = NDim - 1;
             dimOrder[NDim - 1] = dim;
 
-            hoNDArray<T> dataP(data);
+            dimPermuted[dim] = dimD[NDim - 1];
+            dimPermuted[NDim - 1] = dimD[dim];
+
+            hoNDArray<T> dataP;
+            dataP.create(dimPermuted);
             Gadgetron::permute( const_cast<hoNDArray<T>* >(&data), &dataP, &dimOrder);
 
-            this->compute_eigen_vector(dataP, V_, E_);
+            this->compute_eigen_vector(dataP, V_, E_, remove_mean);
         }
 
         GADGET_CHECK_THROW(V_.get_size(0)==N);
@@ -181,11 +179,11 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, size_t output_len
 }
 
 template<typename T>
-void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, value_type thres)
+void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, value_type thres, bool remove_mean)
 {
     try
     {
-        this->prepare(data, dim, (size_t)0);
+        this->prepare(data, dim, (size_t)0, remove_mean);
 
         size_t N = E_.get_size(0);
 

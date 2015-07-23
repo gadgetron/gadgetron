@@ -7,10 +7,11 @@
 
 #include "PCACoilGadget.h"
 #include "GadgetIsmrmrdReadWrite.h"
-#include "hoArmadillo.h"
 #include "hoNDArray_elemwise.h"
 #include "ismrmrd/xml.h"
 #include "hoNDArray_fileio.h"
+#include "hoNDKLT.h"
+#include "hoNDArray_linalg.h"
 
 #include <ace/OS_NS_stdlib.h>
 #include <boost/algorithm/string.hpp>
@@ -63,6 +64,10 @@ namespace Gadgetron {
       present_uncombined_channels.value((int)uncombined_channels_.size());
       GDEBUG("Number of uncombined channels (present_uncombined_channels) set to %d\n", uncombined_channels_.size());
 
+#ifdef USE_OMP
+      omp_set_num_threads(1);
+#endif // USE_OMP
+
       return GADGET_OK;
     }
 
@@ -112,7 +117,8 @@ namespace Gadgetron {
                 int total_samples = samples_to_use*profiles_available;
 
                 std::vector<size_t> dims(2);
-                dims[0] = channels;dims[1] = total_samples;
+                // dims[0] = channels; dims[1] = total_samples;
+                dims[0] = total_samples; dims[1] = channels;
 
                 hoNDArray< std::complex<float> > A;
                 try{ A.create(&dims); }
@@ -143,6 +149,7 @@ namespace Gadgetron {
                 means.fill(std::complex<float>(0.0f,0.0f));
 
                 std::complex<float>* means_ptr = means.get_data_ptr();
+
                 for (size_t p = 0; p < profiles_available; p++) {
                     GadgetContainerMessage<hoNDArray<std::complex<float> > >* m_tmp =
                         AsContainerMessage<hoNDArray< std::complex<float> > >(buffer_[location][p]->cont());
@@ -159,10 +166,10 @@ namespace Gadgetron {
 			  bool uncombined_channel = std::find(uncombined_channels_.begin(),uncombined_channels_.end(), c) != uncombined_channels_.end();
 			  //We use the conjugate of the data so that the output VT of the SVD is the actual PCA coefficient matrix
 			  if (uncombined_channel) {
-			    A_ptr[c + sample_counter*channels] = std::complex<float>(0.0,0.0);
+                  A_ptr[sample_counter + c *total_samples] = std::complex<float>(0.0, 0.0);
 			  } else {
-			    A_ptr[c + sample_counter*channels] = d[c*samples_per_profile + data_offset + s];
-			    means_ptr[c] += d[c*samples_per_profile + data_offset + s];
+                  A_ptr[sample_counter + c *total_samples] = d[c*samples_per_profile + data_offset + s];
+			      means_ptr[c] += d[c*samples_per_profile + data_offset + s];
 			  }
 			}
 			
@@ -174,7 +181,7 @@ namespace Gadgetron {
                 //Subtract off mean
                 for (size_t c = 0; c < channels; c++) {
                     for (size_t s = 0; s < total_samples; s++) {
-                        A_ptr[c + s*channels] -=  means_ptr[c]/std::complex<float>(total_samples,0);
+                        A_ptr[s + c *total_samples] -= means_ptr[c] / std::complex<float>(total_samples, 0);
                     }
                 }
 
@@ -192,17 +199,25 @@ namespace Gadgetron {
                     return GADGET_FAIL;
                 }
 
-                arma::cx_fmat Am = as_arma_matrix(&A);
-                arma::cx_fmat Vm = as_arma_matrix(VT);
-                arma::cx_fmat Um;
-                arma::fvec Sv;
+                // call the hoNDKLT to compute coefficients
+                hoNDKLT< std::complex<float> > klt;
+                klt.prepare(A, (size_t)1, (size_t)0, false);
+                klt.eigen_vector(*VT); // the smallest eigen value correponds to the first channel
 
-
-                if( !arma::svd_econ(Um,Sv,Vm,Am.st(),'r') ){
-                    GDEBUG("Failed to compute SVD\n");
-                    return GADGET_FAIL;
+                // need to flip the eigen vectors, since the first eigen channel is expected to be the one with largest eigen value
+                hoNDArray< std::complex<float> > VT_Flipped(*VT);
+                {
+                    for (size_t r = 0; r < channels; r++)
+                    {
+                        for (size_t c = 0; c < channels; c++)
+                        {
+                            VT_Flipped(r, c) = (*VT)(r, channels - c - 1);
+                        }
+                    }
                 }
-		
+
+                *VT = VT_Flipped;
+
 		//We will create a new matrix that explicitly preserves the uncombined channels
 		if (uncombined_channels_.size()) {
 		  hoNDArray< std::complex<float> >* VT_new = new hoNDArray< std::complex<float> >;
@@ -212,33 +227,37 @@ namespace Gadgetron {
                     return GADGET_FAIL;
 		  }
 
-		  arma::cx_fmat Vm_new = as_arma_matrix(VT_new);
+		  // arma::cx_fmat Vm_new = as_arma_matrix(VT_new);
 
 		  size_t uncomb_count = 0;
 		  size_t comb_count = 0;
-		  for (size_t c = 0; c < Vm_new.n_cols; c++) {
-		    bool uncombined_channel = std::find(uncombined_channels_.begin(),uncombined_channels_.end(), c) != uncombined_channels_.end();
-		    if (uncombined_channel) {
-		      for (size_t r = 0; r < Vm_new.n_rows; r++) {
-			if (r == c) {
-			  Vm_new(r,uncomb_count) = 1;
-			} else {
-			  Vm_new(r,uncomb_count) = 0;
-			}
-		      }
-		      uncomb_count++;
-		    } else {
-		      for (size_t r = 0; r < Vm_new.n_rows; r++) { 
-			bool uncombined_channel_row = std::find(uncombined_channels_.begin(),uncombined_channels_.end(), r) != uncombined_channels_.end();
-			if (uncombined_channel_row) {
-			  Vm_new(r,comb_count+uncombined_channels_.size()) = 0;
-			} else {
-			  Vm_new(r,comb_count+uncombined_channels_.size()) = Vm(r,c);
-			}
-		      }
-		      comb_count++;
-		    }
-		  } 
+          for (size_t c = 0; c < VT_new->get_size(1); c++) {
+              bool uncombined_channel = std::find(uncombined_channels_.begin(), uncombined_channels_.end(), c) != uncombined_channels_.end();
+              if (uncombined_channel) {
+                  for (size_t r = 0; r < VT_new->get_size(0); r++) {
+                      if (r == c) {
+                          (*VT_new)(r, uncomb_count) = 1;
+                      }
+                      else {
+                          (*VT_new)(r, uncomb_count) = 0;
+                      }
+                  }
+                  uncomb_count++;
+              }
+              else {
+                  for (size_t r = 0; r < VT_new->get_size(0); r++) {
+                      bool uncombined_channel_row = std::find(uncombined_channels_.begin(), uncombined_channels_.end(), r) != uncombined_channels_.end();
+                      if (uncombined_channel_row) {
+                          (*VT_new)(r, comb_count + uncombined_channels_.size()) = 0;
+                      }
+                      else {
+                          (*VT_new)(r, comb_count + uncombined_channels_.size()) = (*VT)(r, c);
+                      }
+                  }
+                  comb_count++;
+              }
+          }
+
 		  GDEBUG("uncomb_count = %d, comb_count = %d\n", uncomb_count, comb_count);
 
 		  //Delete the old one and set the new one
@@ -278,6 +297,7 @@ namespace Gadgetron {
                 arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
                 arma::cx_fmat aPca = as_arma_matrix(pca_coefficients_[location]);
                 am3 = am2*aPca;
+                // Gadgetron::gemm( *(m3->getObjectPtr()), *(m2->getObjectPtr()), false, *(pca_coefficients_[location]), false);
             }
 
             m1->cont(m3);
