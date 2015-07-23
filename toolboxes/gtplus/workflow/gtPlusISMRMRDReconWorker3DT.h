@@ -654,7 +654,6 @@ bool gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(WorkOrderType* workOrder3
 
             hoMatrix<T> A(RO*E1*E2*CHA, N, const_cast<T*>(ref.begin()));
             hoMatrix<T> A_KLF(RO*E1*E2*CHA, N, refKLF.begin());
-            // Gadgetron::compute_KLT_filter(A, numOfModes, A_KLF);
             hoNDKLT<T> klt;
             klt.prepare(A, 1, (size_t)0);
             klt.KL_filter(A, A_KLF, 1, numOfModes);
@@ -669,7 +668,6 @@ bool gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(WorkOrderType* workOrder3
 
             hoMatrix<T> A(RO*E1*E2*CHA, N, const_cast<T*>(ref.begin()));
             hoMatrix<T> A_KLF(RO*E1*E2*CHA, N, refRecon.begin());
-            // Gadgetron::compute_KLT_filter(A, numOfModes, A_KLF);
             hoNDKLT<T> klt;
             klt.prepare(A, 1, (size_t)0);
             klt.KL_filter(A, A_KLF, 1, numOfModes);
@@ -1467,7 +1465,6 @@ bool gtPlusReconWorker3DT<T>::appy_KLT_coil_compression_coeff_3D(const hoNDArray
             for (n = 0; n<LastDimData; n++)
             {
                 hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin() + n*N));
-                // Gadgetron::appy_KLT_coil_compression_coeff_3D(dataLastDim, coeff[n], dataEigenLastDim);
 
                 hoNDKLT<T> klt;
                 klt.prepare(coeff[n]);
@@ -1480,7 +1477,6 @@ bool gtPlusReconWorker3DT<T>::appy_KLT_coil_compression_coeff_3D(const hoNDArray
         {
             hoNDArray<T> dataLastDim(&dimLastDim, const_cast<T*>(data.begin()));
             hoNDArray<T> dataEigenLastDim(&dimEigenLastDim, dataEigen.begin());
-            // Gadgetron::appy_KLT_coil_compression_coeff_3D(dataLastDim, coeff[0], dataEigenLastDim);
 
             hoNDKLT<T> klt;
             klt.prepare(coeff[0]);

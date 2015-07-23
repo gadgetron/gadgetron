@@ -262,43 +262,6 @@ namespace Gadgetron {
              r : [N+2 M], the data point values with computed boundaries
     */
     template<typename CoordType, typename T> EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType start, CoordType end, hoNDArray<CoordType>& vx, hoNDArray<T>& vy);
-
-    /// number of kept eigen modes
-    /// all modes with eigen values greater than thres*max(eigenValues) are kept
-    template <typename T> EXPORTGTPLUS void compute_number_of_eigen_modes_kept(const hoNDArray<T>& eigenValues, double thres, size_t& numOfModesKept);
-
-    /// prune the eigen vector matrixes to keep the last numOfModesKept columns
-    template <typename T> EXPORTGTPLUS void prune_eigen_vector_matrix(const hoNDArray<T>& eigenVectors, size_t numOfModesKept, hoNDArray<T>& eigenVectorsPruned);
-
-    /// coeff: CHA*numOfModesKept eigen vector matrix
-    /// eigenValues: CHA*1 eigen values
-    /// thres <0 or numOfModesKept==-1, keep all modes
-    /// if isChaLastDim==true, the CHA is the last dimension
-    /// data: [RO E1 CHA ...]
-    template <typename T> EXPORTGTPLUS void compute_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, double thres, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues);
-    template <typename T> EXPORTGTPLUS void compute_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, size_t numOfModesKept, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues);
-
-    /// data: [RO E1 E2 CHA ...]
-    template <typename T> EXPORTGTPLUS void compute_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, double thres, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues);
-    template <typename T> EXPORTGTPLUS void compute_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, size_t numOfModesKept, hoNDArray<T>& coeff, hoNDArray<T>& eigenValues);
-
-    /// apply coil compression coefficients
-    /// data : [RO E1 srcCHA ...] for 2D or [RO E1 E2 srcCHA ...] for 3D
-    /// coeff: [srcCHA dstCHA]
-    /// dataEigen: [RO E1 dstCHA ...] or [RO E1 E2 dstCHA ...]
-    template <typename T> EXPORTGTPLUS void appy_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, const hoNDArray<T>& coeff, hoNDArray<T>& dataEigen);
-    template <typename T> EXPORTGTPLUS void appy_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, const hoNDArray<T>& coeff, hoNDArray<T>& dataEigen);
-
-    /// apply coil compresion coefficients 
-    /// data: [RO E1 srcCHA ... N] for 2D or [RO E1 E2 srcCHA ... N] for 3D
-    /// coeff has N elements; everyone is [srcCHA dstCHA] array
-    /// for every subarray in data, coeff[n] will be applied
-    template <typename T> EXPORTGTPLUS void appy_KLT_coil_compression_coeff_2D(const hoNDArray<T>& data, const std::vector< hoNDArray<T> >& coeff, hoNDArray<T>& dataEigen);
-    template <typename T> EXPORTGTPLUS void appy_KLT_coil_compression_coeff_3D(const hoNDArray<T>& data, const std::vector< hoNDArray<T> >& coeff, hoNDArray<T>& dataEigen);
-
-    /// compute KL transform and perform filtering
-    /// the KLT dimension is the last dimension
-    template <typename T> EXPORTGTPLUS void compute_KLT_filter(const hoNDArray<T>& data, size_t numOfModesKept, hoNDArray<T>& dataKLF);
 }
 
 namespace Gadgetron { namespace gtPlus {

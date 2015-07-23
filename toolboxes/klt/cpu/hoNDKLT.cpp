@@ -252,6 +252,14 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& M)
     {
         M_ = M;
         output_length_ = M_.get_size(1);
+
+        size_t N = M_.get_size(0);
+        GADGET_CHECK_THROW(N >= output_length_);
+
+        V_.create(N, N);
+        Gadgetron::clear(V_);
+
+        memcpy(V_.begin() + (N - output_length_)*N, M_.begin(), M_.get_number_of_bytes());
     }
     catch (...)
     {
