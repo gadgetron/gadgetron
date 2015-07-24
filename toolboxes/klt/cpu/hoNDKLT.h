@@ -17,9 +17,9 @@ namespace Gadgetron{
 
     /*
         After calling perpare, the KL transformation is computed
-        The eigen values are in the ascending order, 
-        which means the first eigen channel has the SMALLEST eigen value
-        and the last eigen channel has the LARGEST eigen value
+        The eigen values are in the descending order, 
+        which means the first eigen channel has the LARGEST eigen value
+        and the last eigen channel has the SMALLEST eigen value
     */
 
     template <typename T> class EXPORTCPUKLT hoNDKLT

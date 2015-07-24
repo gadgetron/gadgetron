@@ -75,16 +75,23 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V,
         Gadgetron::scal((T)(1.0 / M), dataMean);
 
         // subtract mean from data
-        hoNDArray<T> data2DNoMean(M, N);
+        hoNDArray<T> data2DNoMean;
 
-        size_t m, n;
-
-        for (n = 0; n < N; n++)
+        if (remove_mean)
         {
-            for (m = 0; m < M; m++)
+            size_t m, n;
+
+            for (n = 0; n < N; n++)
             {
-                data2DNoMean(m, n) = data2D(m, n) - dataMean(0, n);
+                for (m = 0; m < M; m++)
+                {
+                    data2DNoMean(m, n) = data2D(m, n) - dataMean(0, n);
+                }
             }
+        }
+        else
+        {
+            data2DNoMean.create(M, N, data2D.begin());
         }
 
         // call svd
