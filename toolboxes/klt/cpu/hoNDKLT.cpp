@@ -72,12 +72,16 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V,
 
         // compute and subtract mean from data
         hoNDArray<T> data2DNoMean;
+
+        arma::Mat<T> Am;
         if (remove_mean)
         {
             hoNDArray<T> dataMean(1, N);
             Gadgetron::sum_over_dimension(data2D, dataMean, 0);
 
             Gadgetron::scal((T)(1.0 / M), dataMean);
+
+            data2DNoMean.create(M, N);
 
             for (n = 0; n < N; n++)
             {
@@ -86,14 +90,15 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V,
                     data2DNoMean(m, n) = data2D(m, n) - dataMean(0, n);
                 }
             }
+
+            Am = as_arma_matrix(&data2DNoMean);
         }
         else
         {
-            data2DNoMean.create(M, N, data2D.begin());
+            Am = as_arma_matrix(&data2D);
         }
 
         // call svd
-        arma::Mat<T> Am = as_arma_matrix(&data2DNoMean);
         arma::Mat<T> Vm = as_arma_matrix(&V);
         arma::Mat<T> Um;
         arma::Col<value_type> Sv;
