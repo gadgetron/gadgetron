@@ -68,18 +68,16 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V,
         Gadgetron::clear(V);
         Gadgetron::clear(E);
 
-        // compute mean
-        hoNDArray<T> dataMean(1, N);
-        Gadgetron::sum_over_dimension(data2D, dataMean, 0);
+        size_t m, n;
 
-        Gadgetron::scal((T)(1.0 / M), dataMean);
-
-        // subtract mean from data
+        // compute and subtract mean from data
         hoNDArray<T> data2DNoMean;
-
         if (remove_mean)
         {
-            size_t m, n;
+            hoNDArray<T> dataMean(1, N);
+            Gadgetron::sum_over_dimension(data2D, dataMean, 0);
+
+            Gadgetron::scal((T)(1.0 / M), dataMean);
 
             for (n = 0; n < N; n++)
             {
@@ -252,7 +250,7 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, value_type thres,
         }
         else
         {
-            long long n;
+            size_t n;
             for (n = 1; n < N; n++)
             {
                 if (std::abs(E_(n)) < thres*std::abs(E_(0)))
