@@ -103,7 +103,7 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V,
         for (n = 0; n < N; n++)
         {
             value_type v = Sv(n);
-            E(n) = v*v; // the E is eigen value, the squre root of singular value
+            E(n) = v*v; // the E is eigen value, the square of singular value
         }
 
         //// compute mean
