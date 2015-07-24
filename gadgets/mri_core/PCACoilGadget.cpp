@@ -205,7 +205,7 @@ namespace Gadgetron {
                 klt.eigen_vector(*VT); // the smallest eigen value correponds to the first channel
 
                 // need to flip the eigen vectors, since the first eigen channel is expected to be the one with largest eigen value
-                hoNDArray< std::complex<float> > VT_Flipped(*VT);
+                /*hoNDArray< std::complex<float> > VT_Flipped(*VT);
                 {
                     for (size_t r = 0; r < channels; r++)
                     {
@@ -216,7 +216,7 @@ namespace Gadgetron {
                     }
                 }
 
-                *VT = VT_Flipped;
+                *VT = VT_Flipped;*/
 
 		//We will create a new matrix that explicitly preserves the uncombined channels
 		if (uncombined_channels_.size()) {

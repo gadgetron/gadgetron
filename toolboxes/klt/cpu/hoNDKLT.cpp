@@ -45,7 +45,7 @@ hoNDKLT<T>& hoNDKLT<T>::operator=(const Self& v)
     this->output_length_ = v.output_length_;
 
     size_t N = this->V_.get_size(0);
-    this->M_.create(N, this->output_length_, V_.begin() + (N - output_length_)*N);
+    this->M_.create(N, this->output_length_, V_.begin());
 
     return *this;
 }
@@ -68,34 +68,86 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, hoNDArray<T>& V,
         Gadgetron::clear(V);
         Gadgetron::clear(E);
 
-        // compute data'*data
-        char uplo = 'L';
-        bool isAHA = true;
-        Gadgetron::herk(V, data2D, uplo, isAHA);
+        // compute mean
+        hoNDArray<T> dataMean(1, N);
+        Gadgetron::sum_over_dimension(data2D, dataMean, 0);
 
-        hoMatrix<T> m;
-        m.createMatrix(N, N, V.begin());
-        m.copyLowerTriToUpper();
+        Gadgetron::scal((T)(1.0 / M), dataMean);
 
-        if (remove_mean)
+        // subtract mean from data
+        hoNDArray<T> data2DNoMean(M, N);
+
+        size_t m, n;
+
+        for (n = 0; n < N; n++)
         {
-            // compute and subtract mean for every mode
-            hoNDArray<T> mean(N, 1);
-            hoNDArray<T> dataMean(1, N, mean.begin());
-            Gadgetron::sum_over_dimension(data2D, dataMean, 0);
-
-            Gadgetron::scal((T)(1.0 / M), mean);
-
-            hoNDArray<T> MMH(N, N);
-            Gadgetron::clear(MMH);
-
-            hoNDArray<T> meanCopy(mean);
-            Gadgetron::gemm(MMH, meanCopy, false, mean, true);
-            Gadgetron::subtract(V, MMH, V);
+            for (m = 0; m < M; m++)
+            {
+                data2DNoMean(m, n) = data2D(m, n) - dataMean(0, n);
+            }
         }
 
-        // compute eigen vector and values
-        Gadgetron::heev(V, E);
+        // call svd
+        arma::Mat<T> Am = as_arma_matrix(&data2DNoMean);
+        arma::Mat<T> Vm = as_arma_matrix(&V);
+        arma::Mat<T> Um;
+        arma::Col<value_type> Sv;
+
+        GADGET_CHECK_THROW(arma::svd_econ(Um, Sv, Vm, Am, 'r'));
+
+        for (n = 0; n < N; n++)
+        {
+            value_type v = Sv(n);
+            E(n) = v*v; // the E is eigen value, the squre root of singular value
+        }
+
+        //// compute mean
+        //hoNDArray<T> mean(N);
+
+
+        //// compute data'*data
+        //char uplo = 'L';
+        //bool isAHA = true;
+        //Gadgetron::herk(V, data2D, uplo, isAHA);
+
+        //hoMatrix<T> m;
+        //m.createMatrix(N, N, V.begin());
+        //m.copyLowerTriToUpper();
+
+        //if (remove_mean)
+        //{
+        //    // compute and subtract mean for every mode
+        //    hoNDArray<T> mean(N, 1);
+        //    hoNDArray<T> dataMean(1, N, mean.begin());
+        //    Gadgetron::sum_over_dimension(data2D, dataMean, 0);
+
+        //    Gadgetron::scal((T)(1.0 / M), mean);
+
+        //    hoNDArray<T> MMH(N, N);
+        //    Gadgetron::clear(MMH);
+
+        //    hoNDArray<T> meanCopy(mean);
+        //    Gadgetron::gemm(MMH, meanCopy, false, mean, true);
+        //    Gadgetron::subtract(V, MMH, V);
+        //}
+
+        //// compute eigen vector and values
+        //Gadgetron::heev(V, E);
+
+        //// make the first eigen channel with the largest eigen value
+        //hoNDArray<T> V_flipped(V), E_flipped(E);
+        //for (size_t r = 0; r < N; r++)
+        //{
+        //    for (size_t c = 0; c < N; c++)
+        //    {
+        //        V_flipped(r, c) = V(r, N - 1 - c);
+        //    }
+
+        //    E_flipped(r) = E(N - 1 - r);
+        //}
+
+        //V = V_flipped;
+        //E = E_flipped;
     }
     catch (...)
     {
@@ -170,7 +222,7 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, size_t output_len
         GADGET_CHECK_THROW(V_.get_size(1) == N);
         GADGET_CHECK_THROW(E_.get_size(0) == N);
 
-        M_.create(N, output_length_, V_.begin() + (N - output_length_)*N);
+        M_.create(N, output_length_, V_.begin());
     }
     catch (...)
     {
@@ -194,18 +246,18 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, value_type thres,
         else
         {
             long long n;
-            for (n = N - 2; n >= 0; n--)
+            for (n = 1; n < N; n++)
             {
-                if (std::abs(E_(n)) < thres*std::abs(E_(N - 1)))
+                if (std::abs(E_(n)) < thres*std::abs(E_(0)))
                 {
                     break;
                 }
             }
 
-            output_length_ = N - n - 1;
+            output_length_ = n+1;
         }
 
-        M_.create(N, output_length_, V_.begin() + (N - output_length_)*N);
+        M_.create(N, output_length_, V_.begin());
     }
     catch (...)
     {
@@ -235,7 +287,7 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& V, const hoNDArray<T>& E, size_t ou
             output_length_ = N;
         }
 
-        M_.create(N, output_length_, V_.begin() + (N - output_length_)*N);
+        M_.create(N, output_length_, V_.begin());
     }
     catch (...)
     {
@@ -257,7 +309,7 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& M)
         V_.create(N, N);
         Gadgetron::clear(V_);
 
-        memcpy(V_.begin() + (N - output_length_)*N, M_.begin(), M_.get_number_of_bytes());
+        memcpy(V_.begin(), M_.begin(), M_.get_number_of_bytes());
     }
     catch (...)
     {
@@ -362,7 +414,7 @@ void hoNDKLT<T>::KL_filter(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim
         memcpy(E.begin(), V_.begin(), sizeof(T)*N*N);
 
         size_t r, c;
-        for (c = 0; c<N - mode_kept + 1; c++)
+        for (c = mode_kept; c<N; c++)
         {
             for (r = 0; r<N; r++)
             {
@@ -463,7 +515,7 @@ void hoNDKLT<T>::output_length(size_t length)
             output_length_ = N;
         }
 
-        M_.create(N, output_length_, V_.begin() + (N - output_length_)*N);
+        M_.create(N, output_length_, V_.begin());
     }
     else
     {
@@ -477,7 +529,7 @@ void hoNDKLT<T>::output_length(size_t length)
             hoNDArray<T> Mc(M_);
             M_.create(N, length);
 
-            memcpy(M_.begin(), Mc.begin() + N*(M-output_length_), sizeof(T)*N*length);
+            memcpy(M_.begin(), Mc.begin(), sizeof(T)*N*length);
         }
     }
 }
