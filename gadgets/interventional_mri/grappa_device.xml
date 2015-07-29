@@ -40,6 +40,13 @@
       <property><name>coils_out</name><value>16</value></property>
     </gadget>
 
+    <!-- RO asymmetric echo handling -->
+    <gadget>
+        <name>AsymmetricEcho</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>AsymmetricEchoAdjustROGadget</classname>
+    </gadget>
+
     <gadget>
       <name>RemoveROOversampling</name>
       <dll>gadgetron_mricore</dll>
