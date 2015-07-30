@@ -459,10 +459,9 @@ namespace Gadgetron {
             WRITE_DCM_STRING(key, "3.0");
         }
 
-
+		key.set(0x0018, 0x0091);
         // Echo Train Length
         if (h.encoding[0].echoTrainLength) {
-            key.set(0x0018, 0x0091);
             ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)*h.encoding[0].echoTrainLength);
             WRITE_DCM_STRING(key, buf);
         }
