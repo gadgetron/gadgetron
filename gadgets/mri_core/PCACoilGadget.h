@@ -4,6 +4,7 @@
 #include "gadgetron_mricore_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
+#include "hoNDKLT.h"
 #include "ismrmrd/ismrmrd.h"
 
 #include <complex>
@@ -39,7 +40,7 @@ namespace Gadgetron {
     std::map< int, bool> buffering_mode_;
 
     //Map for storing PCA coefficients for each location
-    std::map<int, hoNDArray<std::complex<float> >* > pca_coefficients_;
+    std::map<int, hoNDKLT<std::complex<float> >* > pca_coefficients_;
 
     int max_buffered_profiles_;
     int samples_to_use_;
