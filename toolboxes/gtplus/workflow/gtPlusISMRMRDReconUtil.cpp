@@ -1,5 +1,6 @@
 
 #include "gtPlusISMRMRDReconUtil.h"
+#include "hoNDKLT.h"
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -861,4 +862,6 @@ namespace Gadgetron {
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<float>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<float>& vy);
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray< std::complex<float> >& y, double start, double end, hoNDArray<double>& vx, hoNDArray< std::complex<float> >& vy);
     template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray< std::complex<double> >& y, double start, double end, hoNDArray<double>& vx, hoNDArray< std::complex<double> >& vy);
+
+    // ------------------------------------------------------------------------
 }

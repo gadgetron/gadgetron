@@ -633,7 +633,7 @@ public:
     boost::shared_ptr< hoNDArray<T> > kernel_; // [RO E1 srcCHA dstCHA dstE1 1 or N S]
     boost::shared_ptr< hoNDArray<T> > kernelIm_; // [RO E1 srcCHA dstCHA 1 or N S]
     boost::shared_ptr< hoNDArray<T> > unmixingCoeffIm_; // [RO E1 srcCHA 1 or N S]
-    boost::shared_ptr< std::vector<hoMatrix<T> > > coilCompressionCoef_; // [dstCHA srcCHA] matrices
+    boost::shared_ptr< std::vector<hoNDKLT<T> > > coilCompressionCoef_; // [dstCHA srcCHA] matrices
     boost::shared_ptr< hoNDArray<T> > coilMap_; // [RO E1 dstCHA 1 or N S]
 
     // -------------------------------
@@ -693,8 +693,8 @@ gtPlusReconWorkOrder<T>::gtPlusReconWorkOrder() : gtPlusReconWorkOrderPara()
     tmp = new hoNDArray<T>();
     unmixingCoeffIm_ = boost::shared_ptr< hoNDArray<T> >(tmp);
 
-    std::vector<hoMatrix<T> >* tmpCoilCoef = new std::vector<hoMatrix<T> >();
-    coilCompressionCoef_ = boost::shared_ptr< std::vector<hoMatrix<T> > >(tmpCoilCoef);
+    std::vector<hoNDKLT<T> >* tmpCoilCoef = new std::vector<hoNDKLT<T> >();
+    coilCompressionCoef_ = boost::shared_ptr< std::vector<hoNDKLT<T> > >(tmpCoilCoef);
 
     tmp = new hoNDArray<T>();
     coilMap_ = boost::shared_ptr< hoNDArray<T> >(tmp);

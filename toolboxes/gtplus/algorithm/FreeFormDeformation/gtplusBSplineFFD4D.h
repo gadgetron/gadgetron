@@ -204,11 +204,11 @@ bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFD4D(CoordType px, CoordTy
         GADGET_DEBUG_CHECK_RETURN_FALSE( (pz>=-2) && (pz<=this->get_size(2)+1) );
         GADGET_DEBUG_CHECK_RETURN_FALSE( (ps>=-2) && (ps<=this->get_size(3)+1) );
 
-        GADGET_DEBUG_CHECK_RETURN_FALSE(ordX>=0 && ordX<=2);
-        GADGET_DEBUG_CHECK_RETURN_FALSE(ordY>=0 && ordY<=2);
-        GADGET_DEBUG_CHECK_RETURN_FALSE(ordZ>=0 && ordZ<=2);
-        GADGET_DEBUG_CHECK_RETURN_FALSE(ordS>=0 && ordS<=2);
-        GADGET_DEBUG_CHECK_RETURN_FALSE(ordX+ordY+ordZ+ordS<=2);
+        GADGET_DEBUG_CHECK_RETURN_FALSE(ordx>=0 && ordx<=2);
+        GADGET_DEBUG_CHECK_RETURN_FALSE(ordy>=0 && ordy<=2);
+        GADGET_DEBUG_CHECK_RETURN_FALSE(ordz>=0 && ordz<=2);
+        GADGET_DEBUG_CHECK_RETURN_FALSE(ords>=0 && ords<=2);
+        GADGET_DEBUG_CHECK_RETURN_FALSE(ordx+ordy+ordz+ords<=2);
 
         long long ix = (long long)std::floor(px);
         CoordType deltaX = px-(CoordType)ix;

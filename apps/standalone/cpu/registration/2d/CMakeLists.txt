@@ -1,5 +1,6 @@
 include_directories( 
         ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
         ${ACE_INCLUDE_DIR}
         ${ISMRMRD_INCLUDE_DIR}
     )

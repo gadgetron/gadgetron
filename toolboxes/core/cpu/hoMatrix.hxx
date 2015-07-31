@@ -64,7 +64,7 @@ inline T& hoMatrix<T>::operator()(size_t r, size_t c)
 template <typename T> 
 inline const T& hoMatrix<T>::operator()(size_t r, size_t c) const
 {
-    GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && c<(*dimensions_)[0] && r<(*dimensions_)[1]);
+    GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && r<(*dimensions_)[0] && c<(*dimensions_)[1]);
     return accesser_[c][r];
 }
 

@@ -8,6 +8,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
