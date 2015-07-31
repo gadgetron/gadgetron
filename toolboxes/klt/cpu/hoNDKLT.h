@@ -47,6 +47,11 @@ namespace Gadgetron{
         void prepare(const hoNDArray<T>& data, size_t dim, size_t output_length = 0, bool remove_mean=true);
         /// the output length will be determined by thres; the minimal eigen value kept is >= (max eigen value * thres)
         void prepare(const hoNDArray<T>& data, size_t dim, value_type thres = (value_type)0.001, bool remove_mean = true);
+        /// prepare with untransformed slots, the first slot is slot 0 along dimension dim
+        /// all untransformed slots will be moved to the top after applying the transform
+        /// output_length does include the number of untransformed slots
+        void prepare(const hoNDArray<T>& data, size_t dim, std::vector<size_t>& untransformed, size_t output_length = 0, bool remove_mean = true);
+        void prepare(const hoNDArray<T>& data, size_t dim, std::vector<size_t>& untransformed, value_type thres = (value_type)0.001, bool remove_mean = true);
 
         /// apply the transform
         /// The input array size must meet in.get_size(dim) == M.get_size(0)
@@ -85,6 +90,12 @@ namespace Gadgetron{
 
         /// compute eigen vector and values
         void compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean);
+
+        /// exclude untransformed data
+        void exclude_untransformed(const hoNDArray<T>& data, size_t dim, std::vector<size_t>& untransformed, hoNDArray<T>& dataCropped);
+
+        /// copy untransformed eigen vector and reset transform
+        void copy_and_reset_transform(size_t N, std::vector<size_t>& untransformed);
     };
 }
 

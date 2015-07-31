@@ -276,6 +276,215 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, value_type thres,
 }
 
 template<typename T>
+void hoNDKLT<T>::exclude_untransformed(const hoNDArray<T>& data, size_t dim, std::vector<size_t>& untransformed, hoNDArray<T>& dataCropped)
+{
+    try
+    {
+        size_t NDim = data.get_number_of_dimensions();
+        GADGET_CHECK_THROW(dim < NDim);
+
+        size_t N = data.get_size(dim);
+
+        size_t unN = untransformed.size();
+        GADGET_CHECK_THROW(unN <= NDim);
+
+        size_t d;
+        for (d = 0; d < unN; d++)
+        {
+            GADGET_CHECK_THROW(untransformed[d] < N);
+        }
+
+        // crop the data to exclude untransformed slots
+        std::vector<size_t> dims;
+        data.get_dimensions(dims);
+
+        std::vector<size_t> dimCropped(dims);
+        dimCropped[dim] = N - unN;
+
+        hoNDArray<T> dataCropped;
+        dataCropped.create(dimCropped);
+
+        size_t numInside = 1;
+        for (d = 0; d < dim; d++)
+        {
+            numInside *= dims[d];
+        }
+
+        size_t num = data.get_number_of_elements() / numInside;
+
+        size_t numCopySize = numInside / N;
+
+        size_t n;
+        for (n = 0; n < num; n++)
+        {
+            size_t ind = 0;
+            for (d = 0; d < N; d++)
+            {
+                bool isUntransformed = false;
+                for (size_t un = 0; un < unN; un++)
+                {
+                    if (untransformed[un] == d)
+                    {
+                        isUntransformed = true;
+                        break;
+                    }
+                }
+
+                if (isUntransformed)
+                {
+                    continue;
+                }
+                else
+                {
+                    memcpy(dataCropped.begin() + num*numCopySize*(N - unN) + ind*numCopySize, data.begin() + num*numCopySize*N + d*numCopySize, sizeof(T)*numCopySize);
+                    ind++;
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in hoNDKLT<T>::exclude_untransformed(...) ... ");
+    }
+}
+
+template<typename T>
+void hoNDKLT<T>::copy_and_reset_transform(size_t N, std::vector<size_t>& untransformed)
+{
+    try
+    {
+        // adjust the eigen vector matrix
+        hoNDArray<T> V;
+        V.create(N, N);
+        Gadgetron::clear(V);
+
+        hoNDArray<T> E;
+        E.create(N, 1);
+        Gadgetron::clear(V);
+
+        size_t unN = untransformed.size();
+
+        size_t d;
+        // set the columns for the untransformed slots
+        for (d = 0; d < unN; d++)
+        {
+            V(untransformed[d], d) = 1;
+            E(d) = E_(0);
+        }
+
+        // set the colunmns for the transformed slots
+        for (d = unN; d < N; d++)
+        {
+            size_t ind = 0;
+            for (size_t n = 0; n < N; n++)
+            {
+                bool isUntransformed = false;
+                for (size_t un = 0; un < unN; un++)
+                {
+                    if (untransformed[un] == n)
+                    {
+                        isUntransformed = true;
+                        break;
+                    }
+                }
+
+                if (!isUntransformed)
+                {
+                    V(n, d) = V_(ind, d - unN);
+                    ind++;
+                }
+            }
+
+            E(d) = E_(d - unN);
+        }
+
+        V_ = V;
+        E_ = E;
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in hoNDKLT<T>::copy_and_reset_transform(...) ... ");
+    }
+}
+
+template<typename T>
+void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, std::vector<size_t>& untransformed, size_t output_length, bool remove_mean)
+{
+    try
+    {
+        size_t NDim = data.get_number_of_dimensions();
+        GADGET_CHECK_THROW(dim<NDim);
+
+        size_t N = data.get_size(dim);
+
+        size_t unN = untransformed.size();
+        GADGET_CHECK_THROW(unN<=NDim);
+        GADGET_CHECK_THROW(output_length >= unN);
+
+        size_t d;
+        for (d = 0; d < unN; d++)
+        {
+            GADGET_CHECK_THROW(untransformed[d] < N);
+        }
+
+        // crop the data to exclude untransformed slots
+        hoNDArray<T> dataCropped;
+        this->exclude_untransformed(data, dim, untransformed, dataCropped);
+
+        // compute the transform
+        this->prepare(dataCropped, dim, output_length - unN, remove_mean);
+
+        // adjust the eigen vector matrix
+        this->copy_and_reset_transform(N, untransformed);
+
+        M_.create(N, output_length_, V_.begin());
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in hoNDKLT<T>::prepare(untransformed, thres) ... ");
+    }
+}
+
+template<typename T>
+void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, std::vector<size_t>& untransformed, value_type thres, bool remove_mean)
+{
+    try
+    {
+        size_t NDim = data.get_number_of_dimensions();
+        GADGET_CHECK_THROW(dim<NDim);
+
+        size_t N = data.get_size(dim);
+
+        size_t unN = untransformed.size();
+        GADGET_CHECK_THROW(unN <= NDim);
+
+        size_t d;
+        for (d = 0; d < unN; d++)
+        {
+            GADGET_CHECK_THROW(untransformed[d] < N);
+        }
+
+        // crop the data to exclude untransformed slots
+        hoNDArray<T> dataCropped;
+        this->exclude_untransformed(data, dim, untransformed, dataCropped);
+
+        // compute the transform
+        this->prepare(dataCropped, dim, thres, remove_mean);
+
+        // adjust the eigen vector matrix
+        this->copy_and_reset_transform(N, untransformed);
+
+        output_length_ += unN;
+
+        M_.create(N, output_length_, V_.begin());
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in hoNDKLT<T>::prepare(untransformed, thres) ... ");
+    }
+}
+
+template<typename T>
 void hoNDKLT<T>::transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim) const
 {
     try
