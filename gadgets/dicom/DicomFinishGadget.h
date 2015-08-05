@@ -67,6 +67,7 @@ namespace Gadgetron
         { }
 
     protected:
+        DcmFileFormat dcmFile;
 
         virtual int process_config(ACE_Message_Block * mb);
         virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1);
@@ -414,7 +415,6 @@ namespace Gadgetron
         }
 
     private:
-        DcmFileFormat dcmFile;
         std::string seriesIUIDRoot;
         long initialSeriesNumber;
         std::map <unsigned int, std::string> seriesIUIDs;
