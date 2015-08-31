@@ -26,7 +26,7 @@ protected:
     virtual int process(Gadgetron::GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
         Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray< std::complex<float> > >* m2);
 
-    unsigned int maxRO_;
+    std::vector<unsigned int> maxRO_;
 };
 
 }

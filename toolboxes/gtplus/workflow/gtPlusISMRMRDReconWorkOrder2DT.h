@@ -183,7 +183,7 @@ public:
     using BaseClass::kernel_; // [RO E1 srcCHA dstCHA dstE1 1 or N S]
     using BaseClass::kernelIm_; // [RO E1 srcCHA dstCHA 1 or N S]
     using BaseClass::unmixingCoeffIm_; // [RO E1 srcCHA 1 or N S]
-    using BaseClass::coilCompressionCoef_; // [dstCHA srcCHA] matrixes
+    using BaseClass::coilCompressionCoef_; // [dstCHA srcCHA], hoNDKLT
 
     // parameters to change the default behavior
 

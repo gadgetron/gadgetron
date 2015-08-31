@@ -1678,7 +1678,7 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::image_to_world(const std::vector<coord_type>& ind, std::vector<coord_type>& coord) const
     {
-        GADGET_DEBUG_CHECK_THROW(ind.size >= D);
+        GADGET_DEBUG_CHECK_THROW(ind.size() >= D);
 
         if ( coord.size() < D ) coord.resize(D);
 
@@ -2184,7 +2184,7 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::image_to_world(const std::vector<size_t>& ind, std::vector<coord_type>& coord) const
     {
-        GADGET_DEBUG_CHECK_THROW(ind.size >= D);
+        GADGET_DEBUG_CHECK_THROW(ind.size() >= D);
 
         if ( coord.size() < D ) coord.resize(D);
 
@@ -2353,7 +2353,7 @@ namespace Gadgetron
     inline void hoNDImage<T, D>::set_image_to_world_matrix(const hoMatrix<coord_type>& image2world)
     {
         GADGET_DEBUG_CHECK_THROW(D+1==image2world.rows());
-        GADGET_DEBUG_CHECK_THROW(D+1==image2world.cols);
+        GADGET_DEBUG_CHECK_THROW(D+1==image2world.cols());
 
         // origin
         hoMatrix<coord_type> pt(D+1, 1);

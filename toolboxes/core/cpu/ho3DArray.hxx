@@ -184,7 +184,7 @@ inline T& ho3DArray<T>::operator()(size_t x , size_t y, size_t z)
 template <typename T> 
 inline const T& ho3DArray<T>::operator()(size_t x , size_t y, size_t z) const
 {
-    GADGET_DEBUG_CHECK_THROW(x<(*dimensions_)[0] && y<(*dimensions_)[1] && z<(*dimensions_)[[2]);
+    GADGET_DEBUG_CHECK_THROW(x<(*dimensions_)[0] && y<(*dimensions_)[1] && z<(*dimensions_)[2]);
     return accesser_[z][y][x];
 }
 

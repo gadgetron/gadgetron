@@ -13,6 +13,7 @@
 
 #include "gadgetron_xml.h"
 #include "url_encode.h"
+#include "CloudBus.h"
 
 #include <complex>
 #include <fstream>
@@ -24,135 +25,145 @@ GadgetStreamController::GadgetStreamController()
   , notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
   , writer_task_(&this->peer())
 {
+  CloudBus::instance()->report_recon_start();    
+}
+
+GadgetStreamController::~GadgetStreamController()
+{ 
+  CloudBus::instance()->report_recon_end();
 }
 
 int GadgetStreamController::open (void)
 {
-	//We will set up the controllers message queue such that when a packet is enqueued write will be triggered.
-	this->notifier_.reactor (this->reactor ());
-	this->msg_queue ()->notification_strategy (&this->notifier_);
 
-	ACE_TCHAR peer_name[MAXHOSTNAMELEN];
-	ACE_INET_Addr peer_addr;
-	if (peer().get_remote_addr (peer_addr) == 0 &&
-	    peer_addr.addr_to_string (peer_name, MAXHOSTNAMELEN) == 0) {
-	  GINFO("Connection from %s\n", peer_name);
-	}
+  //We will set up the controllers message queue such that when a packet is enqueued write will be triggered.
+  this->notifier_.reactor (this->reactor ());
+  this->msg_queue ()->notification_strategy (&this->notifier_);
 
-	//We have to have these basic types to be able to receive configuration file for stream
-	readers_.insert(GADGET_MESSAGE_CONFIG_FILE,
-			new GadgetMessageConfigFileReader());
+  ACE_TCHAR peer_name[MAXHOSTNAMELEN];
+  ACE_INET_Addr peer_addr;
+  if (peer().get_remote_addr (peer_addr) == 0 &&
+      peer_addr.addr_to_string (peer_name, MAXHOSTNAMELEN) == 0) {
+    GINFO("Connection from %s\n", peer_name);
+  }
 
-	readers_.insert(GADGET_MESSAGE_CONFIG_SCRIPT,
-			new GadgetMessageScriptReader());
+  //We have to have these basic types to be able to receive configuration file for stream
+  readers_.insert(GADGET_MESSAGE_CONFIG_FILE,
+		  new GadgetMessageConfigFileReader());
 
-	readers_.insert(GADGET_MESSAGE_PARAMETER_SCRIPT,
-			new GadgetMessageScriptReader());
+  readers_.insert(GADGET_MESSAGE_CONFIG_SCRIPT,
+		  new GadgetMessageScriptReader());
 
-	GadgetModule *head = 0;
-	GadgetModule *tail = 0;
+  readers_.insert(GADGET_MESSAGE_PARAMETER_SCRIPT,
+		  new GadgetMessageScriptReader());
 
-	if (tail == 0) {
-		Gadget* eg = new EndGadget();
-		if (eg) {
-			eg->set_controller(this);
-		}
+  GadgetModule *head = 0;
+  GadgetModule *tail = 0;
+
+  if (tail == 0) {
+    Gadget* eg = new EndGadget();
+    if (eg) {
+      eg->set_controller(this);
+    }
 		
-		ACE_NEW_RETURN(tail,
-			       ACE_Module<ACE_MT_SYNCH>( ACE_TEXT("EndGadget"),
-							 eg ),
-			       -1);
+    ACE_NEW_RETURN(tail,
+		   ACE_Module<ACE_MT_SYNCH>( ACE_TEXT("EndGadget"),
+					     eg ),
+		   -1);
 
-		stream_.open(0,head,tail);
-	}
+    stream_.open(0,head,tail);
+  }
 
-	this->writer_task_.open();
+  this->writer_task_.open();
 
-	return this->reactor ()->register_handler(this,
-			ACE_Event_Handler::READ_MASK);// | ACE_Event_Handler::WRITE_MASK);
+  return this->activate( THR_NEW_LWP | THR_JOINABLE, 1);
+
 }
 
+int GadgetStreamController::svc(void)
+{
+  while (true) {
+    GadgetMessageIdentifier id;
+    ssize_t recv_cnt = 0;
+    if ((recv_cnt = peer().recv_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
+      GERROR("GadgetStreamController, unable to read message identifier\n");
+      return -1;
+    }
+
+    if (id.id == GADGET_MESSAGE_CLOSE) {
+      stream_.close(1); //Shutdown gadgets and wait for them
+      GDEBUG("Stream closed\n");
+      GDEBUG("Closing writer task\n");
+      this->writer_task_.close(1);
+      GDEBUG("Writer task closed\n");
+      continue;
+    }
+
+    GadgetMessageReader* r = readers_.find(id.id);
+
+    if (!r) {
+      GERROR("Unrecognized Message ID received: %d\n", id.id);
+      return GADGET_FAIL;
+    }
+
+    ACE_Message_Block* mb = r->read(&peer());
+
+    if (!mb) {
+      GERROR("GadgetMessageReader returned null pointer\n");
+      return GADGET_FAIL;
+    }
+
+    //We need to handle some special cases to make sure that we can get a stream set up.
+    if (id.id == GADGET_MESSAGE_CONFIG_FILE) {
+      GadgetContainerMessage<GadgetMessageConfigurationFile>* cfgm =
+	AsContainerMessage<GadgetMessageConfigurationFile>(mb);
+
+      if (!cfgm) {
+	GERROR("Failed to cast message block to configuration file\n");
+	mb->release();
+	return GADGET_FAIL;
+      } else {
+	if (this->configure_from_file(std::string(cfgm->getObjectPtr()->configuration_file)) != GADGET_OK) {
+	  GERROR("GadgetStream configuration failed\n");
+	  mb->release();
+	  return GADGET_FAIL;
+	} else {
+	  mb->release();
+	  continue;
+	}
+      }
+    } else if (id.id == GADGET_MESSAGE_CONFIG_SCRIPT) {
+      std::string xml_config(mb->rd_ptr(), mb->length());
+      if (this->configure(xml_config) != GADGET_OK) {
+	GERROR("GadgetStream configuration failed\n");
+	mb->release();
+	return GADGET_FAIL;
+      } else {
+	mb->release();
+	continue;
+      }
+    }
+
+    ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,10000); //10ms from now
+    if (stream_.put(mb) == -1) {
+      GERROR("Failed to put stuff on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
+      mb->release();
+      return GADGET_FAIL;
+    }
+  }
+  return GADGET_OK;
+}
 
 int GadgetStreamController::handle_input (ACE_HANDLE)
 {
-	//Reading sequence:
-	GadgetMessageIdentifier id;
-	ssize_t recv_cnt = 0;
-	if ((recv_cnt = peer().recv_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
-	  GERROR("GadgetStreamController, unable to read message identifier\n");
-	  return -1;
-	}
-
-	if (id.id == GADGET_MESSAGE_CLOSE) {
-	  GDEBUG("Received close signal from client. Closing stream...\n");
-	  stream_.close(1); //Shutdown gadgets and wait for them
-	  GDEBUG("Stream closed\n");
-	  GDEBUG("Closing writer task\n");
-	  this->writer_task_.close(1);
-	  GDEBUG("Writer task closed\n");
-	  return 0;
-	}
-
-	GadgetMessageReader* r = readers_.find(id.id);
-
-	if (!r) {
-	  GERROR("Unrecognized Message ID received: %d\n", id.id);
-	  return GADGET_FAIL;
-	}
-
-	ACE_Message_Block* mb = r->read(&peer());
-
-	if (!mb) {
-	  GERROR("GadgetMessageReader returned null pointer\n");
-	  return GADGET_FAIL;
-	}
-
-	//We need to handle some special cases to make sure that we can get a stream set up.
-	if (id.id == GADGET_MESSAGE_CONFIG_FILE) {
-	  GadgetContainerMessage<GadgetMessageConfigurationFile>* cfgm =
-	    AsContainerMessage<GadgetMessageConfigurationFile>(mb);
-
-	  if (!cfgm) {
-	    GERROR("Failed to cast message block to configuration file\n");
-	    mb->release();
-	    return GADGET_FAIL;
-	  } else {
-	    if (this->configure_from_file(std::string(cfgm->getObjectPtr()->configuration_file)) != GADGET_OK) {
-	      GERROR("GadgetStream configuration failed\n");
-	      mb->release();
-	      return GADGET_FAIL;
-	    } else {
-	      mb->release();
-	      return GADGET_OK;
-	    }
-	  }
-	} else if (id.id == GADGET_MESSAGE_CONFIG_SCRIPT) {
-	  std::string xml_config(mb->rd_ptr(), mb->length());
-	  if (this->configure(xml_config) != GADGET_OK) {
-	    GERROR("GadgetStream configuration failed\n");
-	    mb->release();
-	    return GADGET_FAIL;
-	  } else {
-	    mb->release();
-	    return GADGET_OK;
-	  }
-	}
-
-	ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,10000); //10ms from now
-	if (stream_.put(mb) == -1) {
-	  GERROR("Failed to put stuff on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
-	  mb->release();
-	  return GADGET_FAIL;
-	}
-
-	return GADGET_OK;
+  return 0;
 }
 
 
 int GadgetStreamController::output_ready(ACE_Message_Block* mb) 
 { 
-	int res = this->writer_task_.putq(mb);
-	return res;
+  int res = this->writer_task_.putq(mb);
+  return res;
 }
 
 
@@ -167,12 +178,7 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
   GINFO("Shutting down stream and closing up shop...\n");
   
   this->stream_.close();
-  
-  mask = ACE_Event_Handler::ALL_EVENTS_MASK |
-    ACE_Event_Handler::DONT_CALL;
-  
-  this->reactor ()->remove_handler (this, mask);
-  
+
   //Empty output queue in case there is something on it.
   int messages_dropped = this->msg_queue ()->flush();
   
@@ -237,6 +243,9 @@ int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 int GadgetStreamController::configure(std::string config_xml_string)
 {
 
+  //Store a copy
+  config_xml_ = config_xml_string;
+  
   GadgetronXML::GadgetStreamConfiguration cfg;
   try {
     deserialize(config_xml_string.c_str(), cfg);  
@@ -358,7 +367,7 @@ int GadgetStreamController::configure(std::string config_xml_string)
 	  g->set_parameter(pname.c_str(),pval.c_str(),false);
 	}
       
-        // set the global gadget parameters for every gadget
+      // set the global gadget parameters for every gadget
       std::map<std::string, std::string>::const_iterator iter;
       for ( iter=global_gadget_parameters_.begin(); iter!=global_gadget_parameters_.end(); iter++ )
         {

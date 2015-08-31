@@ -8,6 +8,7 @@ if (MATLAB_FOUND)
 
     include_directories( 
         ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
         ${ACE_INCLUDE_DIR}
         ${MATLAB_INCLUDE_DIR}  

@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
 <gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
         xmlns="http://gadgetron.sf.net/gadgetron"
@@ -35,6 +34,13 @@
       <property><name>coils_out</name><value>16</value></property>
     </gadget>
     
+    <!-- RO asymmetric echo handling -->
+    <gadget>
+        <name>AsymmetricEcho</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>AsymmetricEchoAdjustROGadget</classname>
+    </gadget>
+
     <gadget>
       <name>RemoveROOversampling</name>
       <dll>gadgetron_mricore</dll>

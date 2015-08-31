@@ -506,17 +506,9 @@
             <value>false</value>
         </property>
 
-        <!-- parameters for kspace filter, image data -->
-        <!-- 
-             ISMRMRD_FILTER_GAUSSIAN,
-             ISMRMRD_FILTER_HANNING,
-             ISMRMRD_FILTER_TUKEY,
-             ISMRMRD_FILTER_TAPERED_HANNING,
-             ISMRMRD_FILTER_NONE 
-        -->
         <property>
             <name>filterRO</name>
-            <value>ISMRMRD_FILTER_NONE</value>
+            <value>None</value>
         </property>
         <property>
             <name>filterRO_sigma</name>
@@ -529,7 +521,7 @@
 
         <property>
             <name>filterE1</name>
-            <value>ISMRMRD_FILTER_NONE</value>
+            <value>None</value>
         </property>
         <property>
             <name>filterE1_sigma</name>
@@ -542,7 +534,7 @@
 
         <property>
             <name>filterE2</name>
-            <value>ISMRMRD_FILTER_NONE</value>
+            <value>None</value>
         </property>
         <property>
             <name>filterE2_sigma</name>
@@ -553,17 +545,9 @@
             <value>0.15</value>
         </property>
 
-        <!-- parameters for kspace filter, ref data -->
-        <!-- 
-             ISMRMRD_FILTER_GAUSSIAN,
-             ISMRMRD_FILTER_HANNING,
-             ISMRMRD_FILTER_TUKEY,
-             ISMRMRD_FILTER_TAPERED_HANNING,
-             ISMRMRD_FILTER_NONE 
-        -->
         <property>
             <name>filterRefRO</name>
-            <value>ISMRMRD_FILTER_HANNING</value>
+            <value>Hanning</value>
         </property>
         <property>
             <name>filterRefRO_sigma</name>
@@ -576,7 +560,7 @@
 
         <property>
             <name>filterRefE1</name>
-            <value>ISMRMRD_FILTER_HANNING</value>
+            <value>Hanning</value>
         </property>
         <property>
             <name>filterRefE1_sigma</name>
@@ -589,7 +573,7 @@
 
         <property>
             <name>filterRefE2</name>
-            <value>ISMRMRD_FILTER_HANNING</value>
+            <value>Hanning</value>
         </property>
         <property>
             <name>filterRefE2_sigma</name>
@@ -604,7 +588,7 @@
         <!-- only ISMRMRD_FILTER_TAPERED_HANNING is available for the moment -->
         <property>
             <name>filterPartialFourierRO</name>
-            <value>ISMRMRD_FILTER_TAPERED_HANNING</value>
+            <value>TaperedHanning</value>
         </property>
         <property>
             <name>filterPartialFourierRO_sigma</name>
@@ -621,7 +605,7 @@
 
         <property>
             <name>filterPartialFourierE1</name>
-            <value>ISMRMRD_FILTER_TAPERED_HANNING</value>
+            <value>TaperedHanning</value>
         </property>
         <property>
             <name>filterPartialFourierE1_sigma</name>
@@ -638,7 +622,7 @@
 
         <property>
             <name>filterPartialFourierE2</name>
-            <value>ISMRMRD_FILTER_TAPERED_HANNING</value>
+            <value>TaperedHanning</value>
         </property>
         <property>
             <name>filterPartialFourierE2_sigma</name>

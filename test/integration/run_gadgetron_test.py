@@ -85,6 +85,10 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
     else:
         need_system_memory = 1024
 
+    if config.has_option('REQUIREMENTS', 'nodes'):
+        nodes = config.getint('REQUIREMENTS','nodes')
+    else:
+        nodes = 0
 
     if need_siemens_conversion:
         if not os.path.isfile(siemens_dat):
@@ -198,6 +202,21 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
         else:
             p = subprocess.Popen(gadgetron_start, shell=True, stdout=gf, stderr=gf)
 
+        node_p = list()
+        if nodes > 0:
+            #start the cloudbus relay
+            relay_log_filename = os.path.join(pwd, out_folder, "gadgetron_cloudbus_relay.log")
+            with open(relay_log_filename, "w") as lgf:
+                p_relay = subprocess.Popen(["gadgetron_cloudbus_relay"], env=environment, stdout=lgf, stderr=lgf)
+
+            for pi in range(nodes):
+                node_log_filename = "gadgetron_node_" + str(pi) + ".log"
+                node_log_filename = os.path.join(pwd, out_folder, node_log_filename)
+
+                with open(node_log_filename, "w") as ngf:
+                    pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1)], env=environment, stdout=ngf, stderr=ngf)
+                    node_p.append(pn)
+
         time.sleep(2)
 
         with open(client_log_filename, "w") as cf:
@@ -264,6 +283,10 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
                 success = False
 
         p.terminate()
+        if nodes > 0:
+            p_relay.terminate()
+            for pi in node_p:
+                pi.terminate()
 
         # make sure the gadgetron is stopped
         if chroot_path != "Empty":
@@ -375,18 +398,22 @@ def main():
         myenv["SystemRoot"] = os.environ.get('SystemRoot', "")
         myenv["PATH"] = os.environ.get('Path', "")
         myenv["PATH"] += myenv["ISMRMRD_HOME"] + "/lib;"
-        #myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/lib;" + myenv["PATH"]
         myenv["PATH"] += myenv["ISMRMRD_HOME"] + "/bin;"
-        #myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin;" + myenv["PATH"]
         myenv["PATH"] += myenv["GADGETRON_HOME"] + "/lib;"
-        #myenv["PATH"] = myenv["GADGETRON_HOME"] + "/lib;" + myenv["PATH"]
         myenv["PATH"] += myenv["GADGETRON_HOME"] + "/bin;"
-        #myenv["PATH"] = myenv["GADGETRON_HOME"] + "/bin;" + myenv["PATH"]
         myenv[libpath] = ""
     else:
         myenv[libpath] = myenv["ISMRMRD_HOME"] + "/lib:"
         myenv[libpath] += myenv["GADGETRON_HOME"] + "/lib:"
         myenv[libpath] += myenv["GADGETRON_HOME"] + "/../arma/lib:"
+
+        # add Matlab library path if $MATLAB_HOME is set
+        if os.environ.get("MATLAB_HOME"):
+            if platform.system() == "Darwin":
+                myenv[libpath] += os.environ["MATLAB_HOME"] + "/bin/maci64:"
+            else:
+                myenv[libpath] += os.environ["MATLAB_HOME"] + "/bin/glnxa64:"
+
         if len(sys.argv) >= 5:
             myenv[libpath] += chroot_path + "/usr/local/cuda/lib64:"
             myenv[libpath] += chroot_path + "/opt/intel/mkl/lib/intel64:"
@@ -396,16 +423,20 @@ def main():
             myenv[libpath] += "/opt/intel/mkl/lib/intel64:"
             myenv[libpath] += "/opt/intel/lib/intel64:"
 
-        if os.environ.get(libpath, None) is not None:
+        if os.environ.get(libpath):
             myenv[libpath] += os.environ[libpath]
-            
-        if os.environ.get("USER", None) is not None:
+
+        if os.environ.get("USER"):
             myenv["USER"] = os.environ["USER"]
-            
-        if os.environ.get("HOME", None) is not None:
+
+        if os.environ.get("HOME"):
             myenv["HOME"] = os.environ["HOME"]
-            
-        myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin" + ":" + myenv["GADGETRON_HOME"] + "/bin:/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
+
+        myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin:"
+        myenv["PATH"] += myenv["GADGETRON_HOME"] + "/bin:"
+        if os.environ.get("MATLAB_HOME"):
+            myenv["PATH"] += os.environ["MATLAB_HOME"] + "/bin:"
+        myenv["PATH"] += "/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
 
     myenv["ACE_DEBUG"] = "1"
     #myenv["GADGETRON_LOG_MASK"] = "ALL"

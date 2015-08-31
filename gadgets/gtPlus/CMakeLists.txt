@@ -8,6 +8,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -98,7 +99,6 @@ set( config_files
 
 set( gadgetronPlus_header_files GtPlusGadgetImageArray.h
                                 GtPlusAccumulatorWorkOrderTriggerGadget.h
-                                GtPlusAccumulatorImageTriggerGadget.h
                                 GtPlusGadgetOpenMP.h
                                 GtPlusReconGadget.h
                                 GtPlusRecon2DTGadget.h
@@ -109,13 +109,11 @@ set( gadgetronPlus_header_files GtPlusGadgetImageArray.h
                                 GtPlusReconJob2DTGadget.h 
                                 GtPlusReconJob3DTGadget.h 
                                 GtPlusReconJob2DTGadgetCloud.h 
-                                GtPlusImageReconGadget.h 
                                 GtPlusReconGadgetUtil.h 
                                 )
 
 set( gadgetronPlus_src_files GtPlusGadgetImageArray.cpp
                             GtPlusAccumulatorWorkOrderTriggerGadget.cpp
-                            GtPlusAccumulatorImageTriggerGadget.cpp
                             GtPlusGadgetOpenMP.cpp
                             GtPlusReconGadget.cpp
                             GtPlusRecon2DTGadget.cpp
@@ -125,7 +123,6 @@ set( gadgetronPlus_src_files GtPlusGadgetImageArray.cpp
                             GtPlusReconJob2DTGadget.cpp 
                             GtPlusReconJob3DTGadget.cpp 
                             GtPlusReconJob2DTGadgetCloud.cpp 
-                            GtPlusImageReconGadget.cpp 
                             GtPlusReconGadgetUtil.cpp 
                             )
 

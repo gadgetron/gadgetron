@@ -75,7 +75,7 @@ namespace GadgetronXML
 
   struct CloudBus
   {
-    std::string multiCastAddress;
+    std::string relayAddress;
     unsigned int port;
   };
 
@@ -114,6 +114,7 @@ namespace GadgetronXML
   };
 
   void EXPORTGADGETBASE deserialize(const char* xml, GadgetStreamConfiguration& cfg);
+  void EXPORTGADGETBASE serialize(const GadgetStreamConfiguration& cfg, std::ostream& o);
 
 };
 

@@ -14,15 +14,15 @@ int AsymmetricEchoAdjustROGadget::process_config(ACE_Message_Block* mb)
   ISMRMRD::IsmrmrdHeader h;
   deserialize(mb->rd_ptr(),h);
 
-  if (h.encoding.size() != 1) {
-    GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
-    GDEBUG("This partial fourier gadget only supports one encoding space\n");
-    return GADGET_FAIL;
+  maxRO_.resize(h.encoding.size() );
+
+  for (size_t e = 0; e < h.encoding.size(); e++)
+  {
+      ISMRMRD::EncodingSpace e_space = h.encoding[e].encodedSpace;
+      maxRO_[e] = e_space.matrixSize.x;
+      GDEBUG_STREAM("max RO for encoding space  " << e << " : " << maxRO_[e]);
   }
 
-  ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
-  maxRO_ = e_space.matrixSize.x;
-  GDEBUG_STREAM("max RO : " << maxRO_);
   return GADGET_OK;
 }
 
@@ -61,10 +61,12 @@ int AsymmetricEchoAdjustROGadget
 
     if (!is_noise) 
     {
+        unsigned int encoding_ref = m1->getObjectPtr()->encoding_space_ref;
+
         // adjust the center echo
         int az = addPrePostZeros(centre_column, samples);
 
-        if ( az!= 0 && samples < maxRO_ )
+        if (az != 0 && samples < maxRO_[encoding_ref])
         {
             GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
             if (!m3)
@@ -73,7 +75,7 @@ int AsymmetricEchoAdjustROGadget
             }
 
             std::vector<size_t> data_out_dims = *m2->getObjectPtr()->get_dimensions();
-            data_out_dims[0] = maxRO_;
+            data_out_dims[0] = maxRO_[encoding_ref];
             try
             {
                 m3->getObjectPtr()->create(&data_out_dims);
@@ -96,7 +98,7 @@ int AsymmetricEchoAdjustROGadget
                 //#pragma omp parallel for default(none) private(c) shared(channels, pM3, pM2, samples, numOfBytes)
                 for ( c=0; c<channels; c++ )
                 {
-                    memcpy(pM3+c*maxRO_+maxRO_-samples, pM2+c*samples, numOfBytes);
+                    memcpy(pM3 + c*maxRO_[encoding_ref] + maxRO_[encoding_ref] - samples, pM2 + c*samples, numOfBytes);
                 }
             }
 
@@ -105,7 +107,7 @@ int AsymmetricEchoAdjustROGadget
                 //#pragma omp parallel for default(none) private(c) shared(channels, pM3, pM2, samples, numOfBytes)
                 for ( c=0; c<channels; c++ )
                 {
-                    memcpy(pM3+c*maxRO_, pM2+c*samples, numOfBytes);
+                    memcpy(pM3 + c*maxRO_[encoding_ref], pM2 + c*samples, numOfBytes);
                 }
             }
 

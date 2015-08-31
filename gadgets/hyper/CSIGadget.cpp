@@ -30,7 +30,7 @@ CSIGadget::~CSIGadget() {
 int CSIGadget::process_config(ACE_Message_Block *mb){
 	//GDEBUG("gpuCgSenseGadget::process_config\n");
 
-	device_number_ = get_int_value("deviceno");
+        device_number_ = deviceno.value();
 
 	int number_of_devices = 0;
 	if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
