@@ -38,6 +38,11 @@ namespace Gadgetron{
     */
     template<class T> EXPORTCPUCOREMATH T stddev(hoNDArray<T>* data);
 
+    /***
+     * Calulates the median of the array
+     */
+    template<class T> EXPORTCPUCOREMATH T median(hoNDArray<T>* data);
+
     /**
     * @brief Calculates the dot product of two arrays (as vectors).
     * @param[in] x Array 1. For complex arrays the complex conjugate of x is used.
