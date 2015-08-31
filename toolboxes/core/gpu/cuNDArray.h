@@ -2,8 +2,6 @@
 \brief GPU-based N-dimensional array (data container)
 */
 
-#ifndef CUNDARRAY_H
-#define CUNDARRAY_H
 #pragma once
 
 #include "NDArray.h"
@@ -11,7 +9,6 @@
 #include "complext.h"
 #include "GadgetronCuException.h"
 #include "check_CUDA.h"
-#include "hoCuNDArray.h"
 #include <boost/shared_ptr.hpp>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -875,4 +872,3 @@ namespace Gadgetron{
 
 }
 
-#endif //CUNDARRAY_H

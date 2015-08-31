@@ -9,6 +9,7 @@
 #pragma once
 
 #include "hoNDArray.h"
+#include "cuNDArray.h"
 #include "check_CUDA.h"
 
 namespace Gadgetron{
@@ -129,6 +130,23 @@ namespace Gadgetron{
         return *this;
     }
 
+
+    hoCuNDArray<T>& operator=(const cuNDArray<T> & rhs)
+    {
+
+        if ( rhs.get_number_of_elements() == 0 ){
+            this->clear();
+            return *this;
+        }
+
+        // Are the dimensions the same? Then we can just memcpy
+        if (!this->dimensions_equal(&rhs)){
+        	this->create(rhs.get_dimensions());
+        }
+
+          cudaMemcpy(this->data_, rhs.get_data_ptr(), this->elements_*sizeof(T),cudaMemcpyDeviceToHost);
+        return *this;
+    }
 #if __cplusplus > 199711L
     hoCuNDArray<T>& operator=(hoCuNDArray<T>&& rhs)
     {
