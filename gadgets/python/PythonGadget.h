@@ -45,6 +45,7 @@ namespace Gadgetron{
           register_converter<hoNDArray< std::complex<float> > >();
           register_converter<hoNDArray< float > >();
           register_converter<hoNDArray< unsigned short > >();
+          register_converter<hoNDArray< ISMRMRD::AcquisitionHeader > >();
 
           // ensure boost can convert ISMRMRD headers automatically
           register_converter<ISMRMRD::ImageHeader>();

@@ -81,6 +81,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     AcquisitionAccumulateTriggerGadget.h
                                     BucketToBufferGadget.h 
                                     ImageArraySplitGadget.h
+                                    PseudoReplicatorGadget.h
                                     SimpleReconGadget.h)
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
@@ -111,6 +112,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 AcquisitionAccumulateTriggerGadget.cpp
                                 BucketToBufferGadget.cpp
                                 ImageArraySplitGadget.cpp
+                                PseudoReplicatorGadget.cpp
                                 SimpleReconGadget.cpp  )
 
 if (WIN32)
