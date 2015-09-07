@@ -1614,6 +1614,7 @@ namespace Gadgetron{
 
     template EXPORTCPUCOREMATH void fill( hoNDArray<float>* x, float val);
     template EXPORTCPUCOREMATH void fill( hoNDArray<double>* x, double val);
+    template EXPORTCPUCOREMATH void fill( hoNDArray<bool>* x, bool val);
     template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<float> >* x,  std::complex<float>  val);
     template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<double> >* x,  std::complex<double>  val);
     template EXPORTCPUCOREMATH void fill( hoNDArray< complext<float> >* x,  complext<float>  val);
@@ -2701,6 +2702,34 @@ namespace Gadgetron{
         return x;
     }
 
+    hoNDArray<bool>& operator&= (hoNDArray<bool> &x, const hoNDArray<bool> &y)
+		{
+    	if (compatible_dimensions<bool,bool>(x,y)) {
+    		const size_t elementsX = x.get_number_of_elements();
+    		const size_t elementsY = y.get_number_of_elements();
+    		bool* x_ptr = x.get_data_ptr();
+    		bool* y_ptr = y.get_data_ptr();
+    		for (size_t i = 0; i < elementsX; i++)
+    			x_ptr[i] &= y_ptr[i%elementsY];
+    		return x;
+    	} else {
+    		throw std::runtime_error("&= incompatible dimensions.");
+    	}
+		}
+    hoNDArray<bool>& operator|= (hoNDArray<bool> &x, const hoNDArray<bool> &y)
+		{
+    	if (compatible_dimensions<bool,bool>(x,y)) {
+    		const size_t elementsX = x.get_number_of_elements();
+    		const size_t elementsY = y.get_number_of_elements();
+    		bool* x_ptr = x.get_data_ptr();
+    		bool* y_ptr = y.get_data_ptr();
+    		for (size_t i = 0; i < elementsX; i++)
+    			x_ptr[i] |= y_ptr[i%elementsY];
+    		return x;
+    	} else {
+    		throw std::runtime_error("|= incompatible dimensions.");
+    	}
+		}
     // --------------------------------------------------------------------------------
 
     //

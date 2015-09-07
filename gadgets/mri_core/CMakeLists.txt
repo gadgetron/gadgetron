@@ -83,6 +83,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     AcquisitionAccumulateTriggerGadget.h
                                     BucketToBufferGadget.h 
                                     ImageArraySplitGadget.h
+                                    PseudoReplicatorGadget.h
                                     SimpleReconGadget.h
                                     ImageSortGadget.h)
 
@@ -115,6 +116,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 AcquisitionAccumulateTriggerGadget.cpp
                                 BucketToBufferGadget.cpp
                                 ImageArraySplitGadget.cpp
+                                PseudoReplicatorGadget.cpp
                                 SimpleReconGadget.cpp
                                 ImageSortGadget.cpp)
 

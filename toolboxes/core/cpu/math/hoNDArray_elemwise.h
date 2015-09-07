@@ -691,4 +691,28 @@ void conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
 template <typename T> EXPORTCPUCOREMATH
 void sum_over_dimension(const hoNDArray<T>& x, hoNDArray<T>& y, size_t dim);
 
+
+
+/**
+ * @brief Implementation of element-wise operator&= on two hoNDArrays.
+ * @param[in,out] x Input and output array.
+ * @param[in] y Input array.
+
+ * Let y be an n-dimensional array.
+ * Then the sizes of the first n array dimensions must match between x and y.
+ * If x contains further dimensions the operator is batched across those dimensions.
+ */
+ hoNDArray<bool>& operator&= (hoNDArray<bool> &x, const hoNDArray<bool> &y);
+
+/**
+ * @brief Implementation of element-wise operator&= on two hoNDArrays.
+ * @param[in,out] x Input and output array.
+ * @param[in] y Input array.
+
+ * Let y be an n-dimensional array.
+ * Then the sizes of the first n array dimensions must match between x and y.
+ * If x contains further dimensions the operator is batched across those dimensions.
+ */
+ hoNDArray<bool>& operator|= (hoNDArray<bool> &x, const hoNDArray<bool> &y);
+
 }

@@ -326,6 +326,7 @@ int CSIGadget::process(GadgetContainerMessage<cuSenseData>* m1){
 	m->getObjectPtr()->matrix_size[2] = img_dims_[2];
 	m->getObjectPtr()->channels       = 1;
 	m->getObjectPtr()->image_index    = 1;
+	m->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
 
 
 	if (!this->next()->putq(m)){
