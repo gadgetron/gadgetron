@@ -74,10 +74,18 @@ class GadgetronResource(resource.Resource):
         self.environment["GADGETRON_HOME"]=gadgetron_home
         self.environment["PATH"]=self.environment["GADGETRON_HOME"] + "/bin"
 
-        if (platform.system() == 'Linux'):
-            self.environment["LD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib"
-        elif (platform.system() == 'Darwin'):
-            self.environment["DYLD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib:/opt/local/lib"
+        libpath = "LD_LIBRARY_PATH"
+        if platform.system() == "Darwin":
+            libpath = "DYLD_FALLBACK_LIBRARY_PATH"
+
+        self.environment[libpath]=self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib:"
+
+        self.environment[libpath] += "/usr/local/cuda/lib64:"
+        self.environment[libpath] += "/opt/intel/mkl/lib/intel64:"
+        self.environment[libpath] += "/opt/intel/lib/intel64:"
+
+        if os.environ.get(libpath):
+            self.environment[libpath] += os.environ[libpath]
 
         #self.process_lock.acquire()
         self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
