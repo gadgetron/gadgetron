@@ -1,5 +1,4 @@
 from numpy import *
-from pylab import *
 from ismrmrdtools import transform
 from gadgetron import Gadget
 import ismrmrd
