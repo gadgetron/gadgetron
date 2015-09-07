@@ -29,6 +29,7 @@ int PseudoReplicatorGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m)
 	std::mt19937 engine;
 	std::normal_distribution<float> distribution;
 
+	auto m_copy = *m->getObjectPtr();
 	//First just send the normal data to obtain standard image
 	if (this->next()->putq(m) == GADGET_FAIL)
 			return GADGET_FAIL;
@@ -37,7 +38,7 @@ int PseudoReplicatorGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m)
 	for (int i =0; i < repetitions_; i++){
 
 		auto cm = new GadgetContainerMessage<IsmrmrdReconData>();
-		*cm->getObjectPtr() = *m->getObjectPtr();
+		*cm->getObjectPtr() = m_copy;
 		auto & datasets = cm->getObjectPtr()->rbit_;
 
 		for (auto & buffer : datasets){
