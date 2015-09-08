@@ -6,3 +6,9 @@ port=9002
 GADGETRON_HOME=@CMAKE_INSTALL_PREFIX@
 ISMRMRD_HOME=@ISMRMRD_INCLUDE_DIR@/..
 logfile=/tmp/gadgetron.log
+relay_host=localhost
+relay_port=8002
+
+[RELAY]
+port=8002
+logfile=/tmp/cloudbus_relay.log
