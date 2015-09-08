@@ -83,6 +83,8 @@ void print_usage()
 {
   GINFO("Usage: \n");
   GINFO("gadgetron   -p <PORT>                      (default 9002)       \n");
+  GINFO("            -r <RELAY HOST>                (default localhost)  \n");
+  GINFO("            -l <RELAY PORT>                (default 0, disabled)\n");
 }
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
