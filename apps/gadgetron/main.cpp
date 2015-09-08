@@ -102,6 +102,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
 
   ACE_TCHAR port_no[1024];
+  ACE_TCHAR relay_host[1024];
+  uint16_t  relay_port = 0;
+
+  ACE_OS_String::strncpy(relay_host, "localhost", 1024);
+
   std::map<std::string, std::string> gadget_parameters;
 
   // the working directory of gadgetron should always be set
@@ -116,6 +121,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
       
       GadgetronXML::deserialize(gcfg_text.c_str(), c);
       ACE_OS_String::strncpy(port_no, c.port.c_str(), 1024);
+
+      if (c.cloudBus) {
+	ACE_OS_String::strncpy(relay_host, c.cloudBus->relayAddress.c_str(), 1024);
+	relay_port = c.cloudBus->port;
+      }
 
       for (std::vector<GadgetronXML::GadgetronParameter>::iterator it = c.globalGadgetParameter.begin();
 	   it != c.globalGadgetParameter.end();
@@ -134,7 +144,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     return -1;
   }
 
-  static const ACE_TCHAR options[] = ACE_TEXT(":p:");
+  static const ACE_TCHAR options[] = ACE_TEXT(":p:r:l:");
   ACE_Get_Opt cmd_opts(argc, argv, options);
 
   int option;
@@ -142,6 +152,12 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     switch (option) {
     case 'p':
       ACE_OS_String::strncpy(port_no, cmd_opts.opt_arg(), 1024);
+      break;
+    case 'r':
+      ACE_OS_String::strncpy(relay_host, cmd_opts.opt_arg(), 1024);
+      break;
+    case 'l':
+      relay_port = std::atoi(cmd_opts.opt_arg());
       break;
     case ':':
       print_usage();
@@ -156,11 +172,10 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     }
   }
 
-  if (c.cloudBus) {
-    GINFO("Starting cloudBus: %s:%d\n", 
-	  c.cloudBus->relayAddress.c_str(), c.cloudBus->port);
-    Gadgetron::CloudBus::set_relay_address(c.cloudBus->relayAddress.c_str());
-    Gadgetron::CloudBus::set_relay_port(c.cloudBus->port);
+  if (relay_port > 0) {
+    GINFO("Starting cloudBus: %s:%d\n", relay_host, relay_port);
+    Gadgetron::CloudBus::set_relay_address(relay_host);
+    Gadgetron::CloudBus::set_relay_port(relay_port);
     Gadgetron::CloudBus::set_gadgetron_port(std::atoi(port_no));
     Gadgetron::CloudBus* cb = Gadgetron::CloudBus::instance();//This actually starts the bus.
     gadget_parameters["using_cloudbus"] = std::string("true"); //This is our message to the Gadgets that we have activated the bus
