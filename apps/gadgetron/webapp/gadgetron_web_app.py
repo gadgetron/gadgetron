@@ -54,9 +54,14 @@ class GadgetronResource(resource.Resource):
     isLeaf = True
     numberRequests = 0
     gadgetron_log_filename = 'gadgetron_log.txt'
+    relay_log_filename = 'cloudbus_relay_log.txt'
     gadgetron_process = 0
+    relay_process = 0
     environment = 0;
     gadgetron_port = 9002
+    relay_host = "localhost"
+    relay_port = 8002
+    local_relay_port = 8002
     check_thread = 0
     run_gadgetron_check = True
     process_lock = threading.Lock()
@@ -68,19 +73,34 @@ class GadgetronResource(resource.Resource):
         ismrmrd_home = config.get('GADGETRON', 'ISMRMRD_HOME')
         self.gadgetron_log_filename = config.get('GADGETRON','logfile')
         self.gadgetron_port = config.get('GADGETRON','port')
-        gf = self.open_log_file()
+        self.relay_host = config.get('GADGETRON','relay_host')
+        self.relay_port = config.get('GADGETRON','relay_port')
+        self.relay_log_filename = config.get('RELAY','logfile')
+        self.local_relay_port = config.get('RELAY','port')
+
+        gf = self.open_log_file(self.gadgetron_log_filename)
+        rf = self.open_log_file(self.relay_log_filename)
 
         self.environment = dict()
         self.environment["GADGETRON_HOME"]=gadgetron_home
         self.environment["PATH"]=self.environment["GADGETRON_HOME"] + "/bin"
 
-        if (platform.system() == 'Linux'):
-            self.environment["LD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib"
-        elif (platform.system() == 'Darwin'):
-            self.environment["DYLD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib:/opt/local/lib"
+        libpath = "LD_LIBRARY_PATH"
+        if platform.system() == "Darwin":
+            libpath = "DYLD_FALLBACK_LIBRARY_PATH"
+
+        self.environment[libpath]=self.environment["GADGETRON_HOME"] + "/lib:" + ismrmrd_home + "/lib:"
+
+        self.environment[libpath] += "/usr/local/cuda/lib64:"
+        self.environment[libpath] += "/opt/intel/mkl/lib/intel64:"
+        self.environment[libpath] += "/opt/intel/lib/intel64:"
+
+        if os.environ.get(libpath):
+            self.environment[libpath] += os.environ[libpath]
 
         #self.process_lock.acquire()
-        self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
+        self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port,"-r",self.relay_host, "-l", self.relay_port], env=self.environment,stdout=gf,stderr=gf)
+        self.relay_process = subprocess.Popen(["gadgetron_cloudbus_relay", self.local_relay_port], env=self.environment,stdout=rf,stderr=rf)
         #self.process_lock.release()
         resource.Resource.__init__(self)
 
@@ -92,13 +112,13 @@ class GadgetronResource(resource.Resource):
         self.check_thread.join()
         self.gadgetron_process.terminate()
 
-    def open_log_file(self):
+    def open_log_file(self, logfilename):
         #If log file exists, we will back it up
         #In the event of a crash, it is important to be able to recover the file
-        if os.path.exists(self.gadgetron_log_filename):
-            backup_name =  self.gadgetron_log_filename + time.strftime("%Y%m%d_%H%M%S")
-            os.rename(self.gadgetron_log_filename, backup_name)
-        gf = open(self.gadgetron_log_filename,"w")
+        if os.path.exists(logfilename):
+            backup_name =  logfilename + time.strftime("%Y%m%d_%H%M%S")
+            os.rename(logfilename, backup_name)
+        gf = open(logfilename,"w")
         return gf
 
     def restart_gadgetron(self):
@@ -107,19 +127,38 @@ class GadgetronResource(resource.Resource):
         if (s == None):
             self.gadgetron_process.kill()
             time.sleep(2)
-        gf = self.open_log_file()
-        self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
+        gf = self.open_log_file(self.gadgetron_log_filename)
+        self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port,"-r",self.relay_host, "-l", self.relay_port], env=self.environment,stdout=gf,stderr=gf)
+        time.sleep(2)
+        self.process_lock.release()
+
+    def restart_relay(self):
+        self.process_lock.acquire()
+        s = self.relay_process.poll()
+        if (s == None):
+            self.relay_process.kill()
+            time.sleep(2)
+        rf = self.open_log_file(self.relay_log_filename)
+        self.relay_process = subprocess.Popen(["gadgetron_cloudbus_relay", self.local_relay_port], env=self.environment,stdout=rf,stderr=rf)
         time.sleep(2)
         self.process_lock.release()
 
     def check_gadgetron(self):
         global run_gadgetron_check
         while (run_gadgetron_check):
+            #Check gadgetron
             self.process_lock.acquire()
             s = self.gadgetron_process.poll()
             self.process_lock.release()
             if (s != None):
                 self.restart_gadgetron()
+            #Check relay
+            self.process_lock.acquire()
+            s = self.relay_process.poll()
+            self.process_lock.release()
+            if (s != None):
+                self.restart_relay()
+                
             time.sleep(3)
 
 
@@ -142,8 +181,9 @@ class GadgetronResource(resource.Resource):
             p = psutil.Process(self.gadgetron_process.pid)
             doc += "<div><ul>"
             doc += "<li>Process ID: " + str(self.gadgetron_process.pid) + "</li>"
-            doc += "<li>CPU Percent: " + str(round(p.get_cpu_percent(),2)) + "</li>"
-            doc += "<li>Memory Percent: " + str(round(p.get_memory_percent(),2)) + "</li>"
+            if platform.system() != "Darwin":
+                doc += "<li>CPU Percent: " + str(round(p.get_cpu_percent(),2)) + "</li>"
+                doc += "<li>Memory Percent: " + str(round(p.get_memory_percent(),2)) + "</li>"
             doc += "</ul></div>"
 
             doc += "<div><iframe width=\"1024\" height=\"768\" src=\"/log\"></iframe></div>"
