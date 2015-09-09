@@ -103,7 +103,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make && \
+    make -j $(nproc) && \
     make install
 
 #GADGETRON
@@ -113,7 +113,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make && \
+    make -j $(nproc) && \
     make install && \
     cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml
 
@@ -137,7 +137,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make && \
+    make -j $(nproc) && \
     make install
 
 #PHILIPS_TO_ISMRMRD
@@ -147,7 +147,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make && \
+    make -j $(nproc) && \
     make install
 
 RUN apt-get install --yes --no-install-recommends --no-install-suggests python-twisted-web
