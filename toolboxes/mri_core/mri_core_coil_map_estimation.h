@@ -28,23 +28,80 @@
 
 namespace Gadgetron
 {
-    // the Souheil method
-    // data: [RO E1 CHA], only 3D array
-    // these functions are using 2D data correlation matrix
-    // ks: the kernel size for local covariance estimation
-    // power: number of iterations to apply power method
-    template<typename T> EXPORTMRICORE void coil_map_2d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
+    // --------------------------------------------------------------------------
+    /// define the coil sensitivity map estimation algorithms
+    // --------------------------------------------------------------------------
+    enum ismrmrdCOILMAPALGO
+    {
+        ISMRMRD_Inati,
+        ISMRMRD_Inati_iterative
+    };
 
-    // data: [RO E1 E2 CHA], this functions uses true 3D data correlation matrix
-    template<typename T> EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
+    EXPORTMRICORE std::string get_ismrmrd_coil_map_algo_name(ismrmrdCOILMAPALGO v);
+    EXPORTMRICORE ismrmrdCOILMAPALGO get_ismrmrd_coil_map_algo(const std::string& name);
 
-    // the Souheil iteration method
-    // data: [RO E1 CHA], only 3D array
-    // ks: the kernel size for local covariance estimation
-    // iterNum: number of iterations to refine coil map
-    // thres: threshold to stop the iterations
-    template<typename T> EXPORTMRICORE void coil_map_2d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t iterNum, typename realType<T>::Type thres);
+    /// define the coil map maker
+    template <typename T> 
+    class EXPORTMRICORE coilMapMaker
+    {
+    public:
 
-    // data: [RO E1 E2 CHA], true 3D coil map estimation
-    template<typename T> EXPORTMRICORE void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t iterNum, typename realType<T>::Type thres);
+        coilMapMaker();
+        virtual ~coilMapMaker();
+
+        /// complexIm: [RO E1 E2 CHA ...]
+        /// if E2 == 1, the 2D coil map estimation will be assumed
+        virtual void make_coil_map(const hoNDArray<T>& complexIm, hoNDArray<T>& coilMap) = 0;
+
+        virtual void dump(std::ostream& os) const;
+    };
+
+    template <typename T> 
+    class EXPORTMRICORE coilMapMakerInati : public coilMapMaker<T>
+    {
+    public:
+
+        typedef coilMapMaker<T> BaseClass;
+
+        coilMapMakerInati();
+        virtual ~coilMapMakerInati();
+
+        virtual void make_coil_map(const hoNDArray<T>& complexIm, hoNDArray<T>& coilMap);
+
+        virtual void dump(std::ostream& os) const;
+
+        /// parameters
+
+        /// kernel size in the unit of pixel
+        size_t ks_;
+        /// number of iterations for power method
+        size_t power_;
+    };
+
+    template <typename T> 
+    class EXPORTMRICORE coilMapMakerInatiIter : public coilMapMaker<T>
+    {
+    public:
+
+        typedef coilMapMaker<T> BaseClass;
+        typedef typename realType<T>::Type value_type;
+
+        coilMapMakerInatiIter();
+        virtual ~coilMapMakerInatiIter();
+
+        virtual void make_coil_map(const hoNDArray<T>& complexIm, hoNDArray<T>& coilMap);
+
+        virtual void dump(std::ostream& os) const;
+
+        /// parameters
+
+        /// kernel size in the unit of pixel
+        size_t ks_;
+        /// kernel size in the unit of pixel for E2 dimension
+        size_t kz_;
+        /// number of iterations
+        size_t iter_num_;
+        /// threshold for iteration
+        value_type thres_;
+    };
 }

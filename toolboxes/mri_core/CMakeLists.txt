@@ -5,7 +5,7 @@ endif (WIN32)
 include_directories(
     ${Boost_INCLUDE_DIR} 
     ${ARMADILLO_INCLUDE_DIRS} 
-    ${ACE_INCLUDE_DIR} 
+    # ${ACE_INCLUDE_DIR} 
     ${ISMRMRD_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
     ${MKL_INCLUDE_DIR}
@@ -25,25 +25,30 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math 
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
+    ${CMAKE_SOURCE_DIR}/apps/gadgetron 
 )
 
 set( mri_core_header_files
         mri_core_export.h
         mri_core_def.h
+        mri_core_acquisition_bucket.h
         mri_core_data.h
         mri_core_utility.h
         mri_core_kspace_filter.h
         mri_core_grappa.h 
-        mri_core_coil_map_estimation.h )
+        mri_core_recon_para.h 
+        mri_core_partial_fourier.h 
+        mri_core_coil_map_estimation.h 
+        mri_core_reference_preparation.h )
 
 set( mri_core_source_files
         mri_core_utility.cpp 
         mri_core_grappa.cpp 
         mri_core_kspace_filter.cpp
-        mri_core_coil_map_estimation.cpp )
+        mri_core_coil_map_estimation.cpp 
+        mri_core_partial_fourier.cpp 
+        mri_core_recon_para.cpp 
+        mri_core_reference_preparation.cpp )
 
 add_library(gadgetron_toolbox_mri_core SHARED 
      ${mri_core_header_files} ${mri_core_source_files} )
@@ -51,7 +56,14 @@ add_library(gadgetron_toolbox_mri_core SHARED
 set_target_properties(gadgetron_toolbox_mri_core PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 set_target_properties(gadgetron_toolbox_mri_core PROPERTIES LINKER_LANGUAGE CXX)
 
-target_link_libraries(gadgetron_toolbox_mri_core gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math ${ARMADILLO_LIBRARIES} gadgetron_toolbox_cpufft )
+target_link_libraries(gadgetron_toolbox_mri_core 
+                    gadgetron_toolbox_cpucore 
+                    gadgetron_toolbox_cpucore_math 
+                    ${ARMADILLO_LIBRARIES} 
+                    gadgetron_toolbox_cpufft 
+                    gadgetron_toolbox_cpuklt 
+                    # gadgetron_toolbox_gtplus_io 
+                    )
 
 install(TARGETS gadgetron_toolbox_mri_core DESTINATION lib COMPONENT main)
 
