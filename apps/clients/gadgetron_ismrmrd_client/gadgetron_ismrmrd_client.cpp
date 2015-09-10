@@ -67,6 +67,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_CONFIG_SCRIPT                          =   2,
     GADGET_MESSAGE_PARAMETER_SCRIPT                       =   3,
     GADGET_MESSAGE_CLOSE                                  =   4,
+    GADGET_MESSAGE_TEXT                                   =   5,
     GADGET_MESSAGE_INT_ID_MAX                             = 999,
     GADGET_MESSAGE_EXT_ID_MIN                             = 1000,
     GADGET_MESSAGE_ACQUISITION                            = 1001, /**< DEPRECATED */
@@ -87,7 +88,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT     = 1016, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT    = 1017, /**< DEPRECATED */
     GADGET_MESSAGE_DICOM_WITHNAME                         = 1018,
-    GADGET_MESSAGE_DEPENDENCY_QUERYS                       = 1019,
+    GADGET_MESSAGE_DEPENDENCY_QUERY                       = 1019,
     GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT               = 1020, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT     = 1021, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGE                          = 1022,
@@ -144,6 +145,51 @@ public:
 
 };
 
+class GadgetronClientTextReader : public GadgetronClientMessageReader
+{
+  
+public:
+  GadgetronClientTextReader()
+  {
+    
+  }
+
+  virtual ~GadgetronClientTextReader()
+  {
+    
+  }
+
+  virtual void read(tcp::socket* stream)
+  {
+    ssize_t recv_count = 0;
+    
+    typedef unsigned long long size_t_type;
+    uint32_t len(0);
+    boost::asio::read(*stream, boost::asio::buffer(&len, sizeof(uint32_t)));
+
+    
+    char* buf = NULL;
+    try {
+      buf = new char[len+1];
+      memset(buf, '\0', len+1);
+    } catch (std::runtime_error &err) {
+      std::cerr << "TextReader, failed to allocate buffer" << std::endl;
+      throw;
+    }
+       
+    if (boost::asio::read(*stream, boost::asio::buffer(buf, len)) != len)
+    {
+      delete [] buf;
+      throw GadgetronClientException("Incorrect number of bytes read for dependency query");  
+    }
+
+    std::string s(buf);
+    std::cout << s;
+    delete[] buf;
+  }  
+};
+
+
 class GadgetronClientDependencyQueryReader : public GadgetronClientMessageReader
 {
   
@@ -160,7 +206,6 @@ public:
 
   virtual void read(tcp::socket* stream)
   {
-    std::cout << "Receiving dependency query" << std::endl;
     ssize_t recv_count = 0;
     
     typedef unsigned long long size_t_type;
@@ -914,20 +959,25 @@ public:
 
         GadgetMessageIdentifier id;
         while (socket_->is_open()) {
+	  try {
             boost::asio::read(*socket_, boost::asio::buffer(&id,sizeof(GadgetMessageIdentifier)));
-
+	    
             if (id.id == GADGET_MESSAGE_CLOSE) {
-                break;
+	      break;
             }
-
+	    
             GadgetronClientMessageReader* r = find_reader(id.id);
-
+	    
             if (!r) {
-                std::cout << "Message received with ID: " << id.id << std::endl;
-                throw GadgetronClientException("Unknown Message ID");
+	      std::cout << "Message received with ID: " << id.id << std::endl;
+	      throw GadgetronClientException("Unknown Message ID");
             } else {
-                r->read(socket_);
+	      r->read(socket_);
             }
+	  } catch (...) {
+	    std::cout << "Input stream has terminated" << std::endl;
+	    return;	    
+	  }
         }
     }
 
@@ -1147,7 +1197,6 @@ int main(int argc, char **argv)
         }
     }
 
-    std::cout << "Gadgetron ISMRMRD client" << std::endl;
 
     //Let's check if the files exist:
     std::string hdf5_xml_varname = std::string(hdf5_in_group) + std::string("/xml");
@@ -1166,16 +1215,17 @@ int main(int argc, char **argv)
       ismrmrd_dataset->readHeader(xml_config);
     }
 
-
-    std::cout << "  -- host            :      " << host_name << std::endl;
-    std::cout << "  -- port            :      " << port << std::endl;
-    std::cout << "  -- hdf5 file  in   :      " << in_filename << std::endl;
-    std::cout << "  -- hdf5 group in   :      " << hdf5_in_group << std::endl;
-    std::cout << "  -- conf            :      " << config_file << std::endl;
-    std::cout << "  -- loop            :      " << loops << std::endl;
-    std::cout << "  -- hdf5 file out   :      " << out_filename << std::endl;
-    std::cout << "  -- hdf5 group out  :      " << hdf5_out_group << std::endl;
-
+    if (!vm.count("query")) {
+      std::cout << "Gadgetron ISMRMRD client" << std::endl;
+      std::cout << "  -- host            :      " << host_name << std::endl;
+      std::cout << "  -- port            :      " << port << std::endl;
+      std::cout << "  -- hdf5 file  in   :      " << in_filename << std::endl;
+      std::cout << "  -- hdf5 group in   :      " << hdf5_in_group << std::endl;
+      std::cout << "  -- conf            :      " << config_file << std::endl;
+      std::cout << "  -- loop            :      " << loops << std::endl;
+      std::cout << "  -- hdf5 file out   :      " << out_filename << std::endl;
+      std::cout << "  -- hdf5 group out  :      " << hdf5_out_group << std::endl;
+    }
 
     GadgetronClientConnector con;
 
@@ -1190,7 +1240,8 @@ int main(int argc, char **argv)
 
     con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
 
-    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERYS, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));			
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));			
+    con.register_reader(GADGET_MESSAGE_TEXT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientTextReader()));
 			
     try {
         con.connect(host_name,port);

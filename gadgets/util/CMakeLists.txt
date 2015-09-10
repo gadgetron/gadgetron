@@ -31,4 +31,5 @@ install(FILES
     GadgetronInfoGadget.h
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
+install(FILES config/gadgetron_info.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 install(TARGETS gadgetron_util DESTINATION lib COMPONENT main)

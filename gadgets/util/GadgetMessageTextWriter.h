@@ -13,9 +13,7 @@ namespace Gadgetron{
     public:
         virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
         {
-	  auto h = AsContainerMessage<std::string>(mb);
-
-	  if (!h) {
+	  if (!mb) {
 	    GERROR("GadgetMessageTextWriter, invalid acquisition message objects");
 	    return -1;
 	  }
@@ -30,14 +28,14 @@ namespace Gadgetron{
 	    return -1;
 	  }
 
-	  uint32_t text_len = h->getObjectPtr()->size();
+	  uint32_t text_len = (uint32_t)mb->size();
 	  if ((send_cnt = sock->send_n (&text_len, sizeof(uint32_t))) <= 0) {
-	    GERROR("Unable to send length of text\n");
+	    GERROR("Unable to send length of text");
 	    return -1;
 	  }
 	  
-	  if ((send_cnt = sock->send_n (h->getObjectPtr()->c_str(), text_len)) <= 0) {
-	    GERROR("Unable to send text\n");
+	  if ((send_cnt = sock->send_n (mb->rd_ptr(), text_len)) <= 0) {
+	    GERROR("Unable to send text of length %d\n", text_len);
 	    return -1;
 	  }
 
