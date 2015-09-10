@@ -625,19 +625,19 @@ public:
 
             // since the NDArray does not carry the pixel spacing
             header.dime.pixdim[0] = 0;
-            if ( pixelSize.size() > 1 )
+            if ( pixelSize.size() > 0 )
                 header.dime.pixdim[1] = pixelSize[0];
-            if ( pixelSize.size() > 2 )
+            if ( pixelSize.size() > 1 )
                 header.dime.pixdim[2] = pixelSize[1];
-            if ( pixelSize.size() > 3 )
+            if ( pixelSize.size() > 2 )
                 header.dime.pixdim[3] = pixelSize[2];
-            if ( pixelSize.size() > 4 )
+            if ( pixelSize.size() > 3 )
                 header.dime.pixdim[4] = pixelSize[3];
-            if ( pixelSize.size() > 5 )
+            if ( pixelSize.size() > 4 )
                 header.dime.pixdim[5] = pixelSize[4];
-            if ( pixelSize.size() > 6 )
+            if ( pixelSize.size() > 5 )
                 header.dime.pixdim[6] = pixelSize[5];
-            if ( pixelSize.size() > 7 )
+            if ( pixelSize.size() > 6 )
                 header.dime.pixdim[7] = pixelSize[6];
 
             header.dime.vox_offset = 0;
@@ -749,12 +749,13 @@ public:
         st1 << filename << ".hdr";
         std::string head_varname = st1.str();
 
-        std::vector<size_t> dim(3);
+        std::vector<size_t> dim(4, 1);
         dim[0] = h.matrix_size[0];
         dim[1] = h.matrix_size[1];
         dim[2] = h.matrix_size[2];
+        dim[3] = h.channels;
 
-        std::vector<float> pixelSize(3);
+        std::vector<float> pixelSize(4, 1);
         pixelSize[0] = h.field_of_view[0] / h.matrix_size[0];
         pixelSize[1] = h.field_of_view[1] / h.matrix_size[1];
         pixelSize[2] = h.field_of_view[2] / h.matrix_size[2];
@@ -775,7 +776,7 @@ public:
 
         std::ofstream outfileData;
         outfileData.open(img_varname.c_str(), std::ios::out | std::ios::binary);
-        outfileData.write(reinterpret_cast<const char*>(im.getDataPtr()), sizeof(T)*dim[0] * dim[1] * dim[2]);
+        outfileData.write(reinterpret_cast<const char*>(im.getDataPtr()), sizeof(T)*dim[0] * dim[1] * dim[2] * dim[3]);
         outfileData.close();
     }
 
