@@ -206,7 +206,7 @@ public:
 
   virtual void read(tcp::socket* stream)
   {
-    ssize_t recv_count = 0;
+    size_t recv_count = 0;
     
     typedef unsigned long long size_t_type;
     size_t_type len(0);
