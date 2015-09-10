@@ -41,6 +41,10 @@ namespace Gadgetron {
     /// gFactor: [RO E1], gfactor
     template <typename T> EXPORTMRICORE void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, size_t acceFactorE1, hoNDArray<T>& unmixCoeff, hoNDArray< typename realType<T>::Type >& gFactor);
 
+    /// compute per channel gfactor from image domain kernel
+    /// gFactor: [RO E1 dstCHA], gfactor
+    template <typename T> EXPORTMRICORE void grappa2d_per_channel_gfactor(const hoNDArray<T>& kerIm, size_t acceFactorE1, hoNDArray< typename realType<T>::Type >& gFactor);
+
     /// apply unmixing coefficient on undersampled kspace
     /// kspace: [RO E1 srcCHA ...]
     /// unmixCoeff : [RO E1 srcCHA]
@@ -129,6 +133,10 @@ namespace Gadgetron {
                                                                 size_t acceFactorE1, size_t acceFactorE2, 
                                                                 hoNDArray<T>& unmixCoeff, 
                                                                 hoNDArray< typename realType<T>::Type >& gFactor);
+
+    /// compute gfactor for every dst channel
+    /// gfactor: [RO E1 E2 dstCHA]
+    template <typename T> EXPORTMRICORE void grappa3d_per_channel_gfactor(const hoNDArray<T>& convKer, size_t RO, size_t E1, size_t E2, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< typename realType<T>::Type >& gFactor);
 
     /// apply grappa convolution kernel to perform per-channel unwrapping
     /// convKer: 3D kspace grappa convolution kernel [convKRO convKE1 convKE2 srcCHA dstCHA]

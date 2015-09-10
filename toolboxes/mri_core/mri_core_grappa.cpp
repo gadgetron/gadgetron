@@ -341,7 +341,7 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
 
         size_t startRO(0), endRO(0), startE1(0), endE1(0);
 
-        size_t ro, e1, scha, dcha;
+        size_t ro, e1;
 
         for (e1 = 0; e1 < E1; e1++)
         {
@@ -423,13 +423,13 @@ void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coil
         }
         Gadgetron::clear(&unmixCoeff);
 
-        std::vector<size_t> dimGFactor(2);
+        /*std::vector<size_t> dimGFactor(2);
         dimGFactor[0] = RO; dimGFactor[1] = E1;
         if (!gFactor.dimensions_equal(&dimGFactor))
         {
             gFactor.create(RO, E1);
         }
-        Gadgetron::clear(&gFactor);
+        Gadgetron::clear(&gFactor);*/
 
         int src;
 
@@ -481,6 +481,71 @@ void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coil
 
 template EXPORTMRICORE void grappa2d_unmixing_coeff(const hoNDArray< std::complex<float> >& kerIm, const hoNDArray< std::complex<float> >& coilMap, size_t acceFactorE1, hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray<float>& gFactor);
 template EXPORTMRICORE void grappa2d_unmixing_coeff(const hoNDArray< std::complex<double> >& kerIm, const hoNDArray< std::complex<double> >& coilMap, size_t acceFactorE1, hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray<double>& gFactor);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void grappa2d_per_channel_gfactor(const hoNDArray<T>& kerIm, size_t acceFactorE1, hoNDArray< typename realType<T>::Type >& gFactor)
+{
+    try
+    {
+        typedef typename realType<T>::Type value_type;
+
+        size_t RO = kerIm.get_size(0);
+        size_t E1 = kerIm.get_size(1);
+        size_t srcCHA = kerIm.get_size(2);
+        size_t dstCHA = kerIm.get_size(3);
+
+        GADGET_CHECK_THROW(acceFactorE1 >= 1);
+
+        if (gFactor.get_size(0)!=RO 
+            || gFactor.get_size(1) != E1
+            || gFactor.get_size(2) != dstCHA)
+        {
+            gFactor.create(RO, E1, dstCHA);
+        }
+
+        long long dst;
+
+        T* pKerIm = const_cast<T*>(kerIm.begin());
+
+        hoNDArray<T> gFactorBuf;
+        gFactorBuf.create(RO, E1, dstCHA);
+        Gadgetron::clear(gFactorBuf);
+
+#pragma omp parallel default(none) private(dst) shared(RO, E1, srcCHA, dstCHA, pKerIm, gFactorBuf)
+        {
+            hoNDArray<T> kerIm;
+            hoNDArray<T> gfactorCHA;
+
+            hoNDArray<T> coeffTmp;
+            coeffTmp.create(RO, E1, srcCHA);
+
+#pragma omp for
+            for (dst = 0; dst<(long long)dstCHA; dst++)
+            {
+                kerIm.create(RO, E1, srcCHA, pKerIm + dst*RO*E1*srcCHA);
+                Gadgetron::multiplyConj(kerIm, kerIm, coeffTmp);
+
+                gfactorCHA.create(RO, E1, 1, gFactorBuf.begin() + dst*RO*E1);
+
+                Gadgetron::sum_over_dimension(coeffTmp, gfactorCHA, 2);
+            }
+        }
+
+        Gadgetron::sqrt(gFactorBuf, gFactorBuf);
+        Gadgetron::scal((value_type)(1.0 / acceFactorE1), gFactorBuf);
+
+        Gadgetron::complex_to_real(gFactorBuf, gFactor);
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa2d_per_channel_gfactor(const hoNDArray<T>& kerIm, size_t acceFactorE1, hoNDArray< typename realType<T>::Type >& gFactor) ... ");
+    }
+}
+
+template EXPORTMRICORE void grappa2d_per_channel_gfactor(const hoNDArray< std::complex<float> >& kerIm, size_t acceFactorE1, hoNDArray<float>& gFactor);
+template EXPORTMRICORE void grappa2d_per_channel_gfactor(const hoNDArray< std::complex<double> >& kerIm, size_t acceFactorE1, hoNDArray<double>& gFactor);
 
 // ------------------------------------------------------------------------
 
@@ -975,7 +1040,7 @@ void grappa3d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
 
         size_t startRO(0), endRO(0), startE1(0), endE1(0), startE2(0), endE2(0);
 
-        size_t ro, e1, e2, scha, dcha;
+        size_t ro, e1, e2;
 
         for (e2 = 0; e2 < E2; e2++)
         {
@@ -1044,7 +1109,7 @@ void grappa3d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t
             hoNDArray<T> kImRes(RO, E1, E2);
 
     #pragma omp for 
-            for (n = 0; n < srcCHA*dstCHA; n++)
+            for (n = 0; n < (long long)(srcCHA*dstCHA); n++)
             {
                 long long d = n / srcCHA;
                 long long s = n - d*srcCHA;
@@ -1124,7 +1189,7 @@ void grappa3d_unmixing_coeff(const hoNDArray<T>& convKer, const hoNDArray<T>& co
             kImTmp.create(RO, E1, E2);
 
             #pragma omp for 
-            for (scha = 0; scha < srcCHA; scha++)
+            for (scha = 0; scha < (long long)srcCHA; scha++)
             {
                 hoNDArray<T> unmixCha;
                 unmixCha.create(RO, E1, E2, unmixCoeff.begin() + scha*RO*E1*E2);
@@ -1165,6 +1230,80 @@ void grappa3d_unmixing_coeff(const hoNDArray<T>& convKer, const hoNDArray<T>& co
 
 template EXPORTMRICORE void grappa3d_unmixing_coeff(const hoNDArray< std::complex<float> >& convKer, const hoNDArray< std::complex<float> >& coilMap, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray< float >& gFactor);
 template EXPORTMRICORE void grappa3d_unmixing_coeff(const hoNDArray< std::complex<double> >& convKer, const hoNDArray< std::complex<double> >& coilMap, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray< double >& gFactor);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void grappa3d_per_channel_gfactor(const hoNDArray<T>& convKer, size_t RO, size_t E1, size_t E2, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< typename realType<T>::Type >& gFactor)
+{
+    try
+    {
+        size_t kRO = convKer.get_size(0);
+        size_t kE1 = convKer.get_size(1);
+        size_t kE2 = convKer.get_size(2);
+
+        size_t srcCHA = convKer.get_size(3);
+        size_t dstCHA = convKer.get_size(4);
+
+        if (gFactor.get_size(0) != RO
+            || gFactor.get_size(1) != E1
+            || gFactor.get_size(2) != E2
+            || gFactor.get_size(3) != dstCHA)
+        {
+            gFactor.create(RO, E1, E2, dstCHA);
+        }
+
+        hoNDArray<T> convKerScaled;
+        convKerScaled = convKer;
+
+        Gadgetron::scal((typename realType<T>::Type)(std::sqrt((double)(RO*E1*E2))), convKerScaled);
+
+        long long dcha;
+
+#pragma omp parallel private(dcha) shared(RO, E1, E2, srcCHA, dstCHA, kRO, kE1, kE2, convKerScaled, acceFactorE1, acceFactorE2, gFactor)
+        {
+            hoNDArray<T> convKerCha;
+            hoNDArray<T> convKerChaPadded;
+            convKerChaPadded.create(RO, E1, E2);
+
+            hoNDArray<T> kImCha, kImTmp, kImSum;
+            kImCha.create(RO, E1, E2);
+            kImTmp.create(RO, E1, E2);
+            kImSum.create(RO, E1, E2);
+            Gadgetron::clear(kImSum);
+
+#pragma omp for 
+            for (dcha = 0; dcha < (long long)dstCHA; dcha++)
+            {
+                for (size_t scha = 0; scha < srcCHA; scha++)
+                {
+                    convKerCha.create(kRO, kE1, kE2, convKerScaled.begin() + scha*kRO*kE1*kE2 + dcha*kRO*kE1*kE2*srcCHA);
+                    Gadgetron::pad(RO, E1, E2, &convKerCha, &convKerChaPadded, true);
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(convKerChaPadded, kImCha, kImTmp);
+
+                    Gadgetron::multiplyConj(kImCha, kImCha, kImTmp);
+                    Gadgetron::add(kImTmp, kImSum, kImSum);
+                }
+
+                typename realType<T>::Type* pGFactor = &(gFactor(0, 0, 0, dcha));
+                hoNDArray< typename realType<T>::Type > gFactorCha;
+                gFactorCha.create(RO, E1, E2, pGFactor);
+
+                complex_to_real(kImSum, gFactorCha);
+
+                Gadgetron::sqrt(gFactorCha, gFactorCha);
+                Gadgetron::scal((typename realType<T>::Type)(1.0 / acceFactorE1 / acceFactorE2), gFactorCha);
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa3d_per_channel_gfactor(...) ... ");
+    }
+}
+
+template EXPORTMRICORE void grappa3d_per_channel_gfactor(const hoNDArray< std::complex<float> >& convKer, size_t RO, size_t E1, size_t E2, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< float >& gFactor);
+template EXPORTMRICORE void grappa3d_per_channel_gfactor(const hoNDArray< std::complex<double> >& convKer, size_t RO, size_t E1, size_t E2, size_t acceFactorE1, size_t acceFactorE2, hoNDArray< double >& gFactor);
 
 // ------------------------------------------------------------------------
 
@@ -1236,7 +1375,7 @@ void grappa3d_image_domain_unwrapping(const hoNDArray<T>& convKer, const hoNDArr
             hoNDArray<T> complexImCha;
 
 #pragma omp for 
-            for (dcha = 0; dcha < dstCHA; dcha++)
+            for (dcha = 0; dcha < (long long)dstCHA; dcha++)
             {
                 for (size_t scha = 0; scha < srcCHA; scha++)
                 {
@@ -1322,7 +1461,7 @@ void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray<T>& convKer, 
             hoNDArray<T> complexImCha;
 
 #pragma omp for 
-            for (dcha = 0; dcha < dstCHA; dcha++)
+            for (dcha = 0; dcha < (long long)dstCHA; dcha++)
             {
                 for (size_t scha = 0; scha < srcCHA; scha++)
                 {

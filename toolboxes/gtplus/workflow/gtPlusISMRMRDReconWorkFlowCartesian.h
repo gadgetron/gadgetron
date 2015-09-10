@@ -345,16 +345,40 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
 
         output_ = input_;
 
+        hoNDArray<T> buffer2D;
+
         // if encoded FOV are the same as recon FOV
         if ( (std::abs(encodingFOV_RO_/2 - reconFOV_RO_)<0.1) && (std::abs(encodingFOV_E1_-reconFOV_E1_)<0.1) )
         {
-            if ( isKSpace )
+            if (RO <= reconSizeRO_ && E1 <= reconSizeE1_ )
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().zpadResize2DOnKSpace(input_, reconSizeRO_, reconSizeE1_, output_));
+                if (isKSpace)
+                {
+                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().zpadResize2DOnKSpace(input_, reconSizeRO_, reconSizeE1_, output_));
+                }
+                else
+                {
+                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().zpadResize2D(input_, reconSizeRO_, reconSizeE1_, output_));
+                }
+            }
+            else if (RO >= reconSizeRO_ && E1 >= reconSizeE1_)
+            {
+                if (isKSpace)
+                {
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, reconSizeE1_, &input_, &output_));
+                }
+                else
+                {
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(input_, buffer2D);
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, reconSizeE1_, &buffer2D, &output_));
+                }
+
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(output_);
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().zpadResize2D(input_, reconSizeRO_, reconSizeE1_, output_));
+                GDEBUG_STREAM("Inconsistent image size [" << RO << " " << E1 << "]; recon image size [" << reconSizeRO_ << " " << reconSizeE1_ << "] ... ");
+                return false;
             }
         }
         else if (encodingFOV_E1_>=reconFOV_E1_)
@@ -369,8 +393,6 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             hoNDArray<T>* pSrc = &input_;
             hoNDArray<T>* pDst = &output_;
             hoNDArray<T>* pTmp;
-
-            hoNDArray<T> buffer2D;
 
             // adjust E1
             if ( encodingE1>E1 && encodingE1>inputE1 )
@@ -480,16 +502,40 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
 
         output_ = input_;
 
+        hoNDArray<T> buffer3D;
+
         // if encoded FOV are the same as recon FOV
         if ( (std::abs(encodingFOV_RO_/2 - reconFOV_RO_)<0.1) && (std::abs(encodingFOV_E1_-reconFOV_E1_)<0.1) && (std::abs(encodingFOV_E2_-reconFOV_E2_)<0.1) )
         {
-            if ( isKSpace )
+            if (RO <= reconSizeRO_ && E1 <= reconSizeE1_ && E2 <= reconSizeE2_)
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().zpadResize3DOnKSpace(input_, reconSizeRO_, reconSizeE1_, reconSizeE2_, output_));
+                if (isKSpace)
+                {
+                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().zpadResize3DOnKSpace(input_, reconSizeRO_, reconSizeE1_, reconSizeE2_, output_));
+                }
+                else
+                {
+                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().zpadResize3D(input_, reconSizeRO_, reconSizeE1_, reconSizeE2_, output_));
+                }
+            }
+            else if (RO >= reconSizeRO_ && E1 >= reconSizeE1_ && E2 >= reconSizeE2_)
+            {
+                if (isKSpace)
+                {
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, reconSizeE1_, reconSizeE2_, &input_, &output_));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(output_);
+                }
+                else
+                {
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(input_, buffer3D);
+                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::crop(reconSizeRO_, reconSizeE1_, reconSizeE2_, &buffer3D, &output_));
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(output_);
+                }
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().zpadResize3D(input_, reconSizeRO_, reconSizeE1_, reconSizeE2_, output_));
+                GDEBUG_STREAM("Inconsistent image size [" << RO << " " << E1 << " " << E2 << "]; recon image size [" << reconSizeRO_ << " " << reconSizeE1_ << " " << reconSizeE2_ << "] ... ");
+                return false;
             }
         }
         else if ( (encodingFOV_E1_>=reconFOV_E1_) && (encodingFOV_E2_>=reconFOV_E2_) )
@@ -511,8 +557,6 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             hoNDArray<T>* pSrc = &input_;
             hoNDArray<T>* pDst = &output_;
             hoNDArray<T>* pTmp;
-
-            hoNDArray<T> buffer3D;
 
             // adjust E1
             if ( encodingE1 >= E1+1 )

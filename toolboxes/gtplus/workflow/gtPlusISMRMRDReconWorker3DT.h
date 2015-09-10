@@ -26,6 +26,7 @@
 #include "gtPlusISMRMRDReconWorker.h"
 
 #include "mri_core_kspace_filter.h"
+#include "mri_core_partial_fourier.h"
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -156,10 +157,6 @@ public:
     bool performPartialFourierPOCSRecon(WorkOrderType& workOrder3DT, hoNDArray<T>& kspace);
     // apply the Feng Huang partial fourier reconstruction
     bool performPartialFourierFengHuangRecon(WorkOrderType& workOrder3DT, hoNDArray<T>& kspace);
-
-    //// compute Feng Huang kernel and perform recon
-    bool calibFengHuang(WorkOrderType& workOrder3DT, const hoNDArray<T>& src, const hoNDArray<T>& dst, ho6DArray<T>& kernel);
-    bool performReconFangHuang(WorkOrderType& workOrder3DT, const hoNDArray<T>& kspaceConj, hoNDArray<T>& kspace, int startRO, int endRO, int startE1, int endE1, int startE2, int endE2, ho6DArray<T>& kernel);
 
     // estimate job size for 3DT recon
     virtual bool estimateJobSize(gtPlusReconWorkOrder<T>* workOrder3DT, size_t maxNumOfBytesPerJob, size_t overlapBetweenJobs, size_t numOfNodes, size_t& jobSize);
@@ -1895,6 +1892,8 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder3D
         size_t RO = kspace.get_size(0);
         size_t E1 = kspace.get_size(1);
         size_t E2 = kspace.get_size(2);
+        size_t CHA = kspace.get_size(3);
+        size_t N = kspace.get_size(4);
 
         // check whether partial fourier is used
         if ( (workOrder3DT.start_RO_<0 || workOrder3DT.end_RO_<0 || (workOrder3DT.end_RO_-workOrder3DT.start_RO_+1==RO) ) 
@@ -1908,59 +1907,25 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder3D
 
         hoNDArray<T> buffer3DT_partial_fourier(kspace.get_dimensions());
 
-        if ( workOrder3DT.filterROE1E2_partialfourier_.get_size(0)==RO 
-                && workOrder3DT.filterROE1E2_partialfourier_.get_size(1)==E1
-                && workOrder3DT.filterROE1E2_partialfourier_.get_size(2)==E2 )
-        {
-            Gadgetron::apply_kspace_filter_ROE1E2(kspace, workOrder3DT.filterROE1E2_partialfourier_, buffer3DT_partial_fourier);
-            kspace = buffer3DT_partial_fourier;
-        }
+        Gadgetron::partialFourierCartesianFilterHandler<T> pf;
+        pf.start_RO_ = (workOrder3DT.start_RO_ >= 0) ? workOrder3DT.start_RO_ : 0;
+        pf.end_RO_   = (workOrder3DT.end_RO_ >= 0) ? workOrder3DT.end_RO_ : RO - 1;
+        pf.start_E1_ = (workOrder3DT.start_E1_ >= 0) ? workOrder3DT.start_E1_ : 0;
+        pf.end_E1_   = (workOrder3DT.end_E1_ >= 0) ? workOrder3DT.end_E1_ : E1 - 1;
+        pf.start_E2_ = (workOrder3DT.start_E2_ >= 0) ? workOrder3DT.start_E2_ : 0;
+        pf.end_E2_   = (workOrder3DT.end_E2_ >= 0) ? workOrder3DT.end_E2_ : E2 - 1;
+        pf.verbose_  = this->verbose_;
 
-        else if ( (workOrder3DT.filterRO_partialfourier_.get_number_of_elements() == RO) 
-                && (workOrder3DT.filterE1_partialfourier_.get_number_of_elements() == E1) 
-                && (workOrder3DT.filterE2_partialfourier_.get_number_of_elements() == E2) )
-        {
-            Gadgetron::apply_kspace_filter_ROE1E2(kspace, workOrder3DT.filterRO_partialfourier_,
-                    workOrder3DT.filterE1_partialfourier_, workOrder3DT.filterE2_partialfourier_, buffer3DT_partial_fourier);
+        pf.filter_RO_pf_ = workOrder3DT.filterRO_partialfourier_;
+        pf.filter_E1_pf_ = workOrder3DT.filterE1_partialfourier_;
+        pf.filter_E2_pf_ = workOrder3DT.filterE2_partialfourier_;
 
-            kspace = buffer3DT_partial_fourier;
-        }
+        hoNDArray<T> kspaceBuf(RO, E1, E2, CHA, N, kspace.begin());
+        pf.partial_fourier(kspaceBuf, buffer3DT_partial_fourier);
 
-        else
-        {
-            hoNDArray<T>* pSrc = &kspace;
-            hoNDArray<T>* pDst = &buffer3DT_partial_fourier;
+        memcpy(kspace.begin(), buffer3DT_partial_fourier.begin(), kspace.get_number_of_bytes());
 
-            bool filterPerformed = false;
-
-            if ( workOrder3DT.filterRO_partialfourier_.get_number_of_elements() == RO )
-            {
-                Gadgetron::apply_kspace_filter_RO(*pSrc, workOrder3DT.filterRO_partialfourier_, *pDst);
-                std::swap(pSrc, pDst);
-                filterPerformed = true;
-            }
-
-            if ( workOrder3DT.filterE1_partialfourier_.get_number_of_elements() == E1 )
-            {
-                Gadgetron::apply_kspace_filter_E1(*pSrc, workOrder3DT.filterE1_partialfourier_, *pDst);
-                std::swap(pSrc, pDst);
-                filterPerformed = true;
-            }
-
-            if ( workOrder3DT.filterE2_partialfourier_.get_number_of_elements() == E2 )
-            {
-                Gadgetron::apply_kspace_filter_E2(*pSrc, workOrder3DT.filterE2_partialfourier_, *pDst);
-                std::swap(pSrc, pDst);
-                filterPerformed = true;
-            }
-
-            if ( filterPerformed && pDst != &kspace )
-            {
-                kspace = *pDst;
-            }
-
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_PF_Filter"); }
-        }
+        if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(kspace, debugFolder_ + "kspace_after_PF_Filter"); }
     }
     catch(...)
     {
@@ -1994,149 +1959,27 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_before_POCS"); }
 
-        // create kspace filter for homodyne phase estimation
-        ISMRMRDKSPACEFILTER filter_ref_type_ = ISMRMRD_FILTER_HANNING;
-        double filter_ref_sigma_ = 1.5;
-        double filter_ref_width_ = 0.15;
+        Gadgetron::partialFourierCartesianPOCSHandler<T> pf;
 
-        size_t startRO(0), endRO(RO-1);
-        hoNDArray<T> filterRO(RO);
-        if ( (workOrder3DT.start_RO_<0 || workOrder3DT.end_RO_<0) )
-        {
-            Gadgetron::generate_symmetric_filter_ref(RO, 0, RO - 1, filterRO);
-        }
-        else
-        {
-            Gadgetron::generate_symmetric_filter_ref(RO, workOrder3DT.start_RO_, workOrder3DT.end_RO_, filterRO);
+        pf.start_RO_ = (workOrder3DT.start_RO_ >= 0) ? workOrder3DT.start_RO_ : 0;
+        pf.end_RO_ = (workOrder3DT.end_RO_ >= 0) ? workOrder3DT.end_RO_ : RO - 1;
+        pf.start_E1_ = (workOrder3DT.start_E1_ >= 0) ? workOrder3DT.start_E1_ : 0;
+        pf.end_E1_ = (workOrder3DT.end_E1_ >= 0) ? workOrder3DT.end_E1_ : E1 - 1;
+        pf.start_E2_ = (workOrder3DT.start_E2_ >= 0) ? workOrder3DT.start_E2_ : 0;
+        pf.end_E2_ = (workOrder3DT.end_E2_ >= 0) ? workOrder3DT.end_E2_ : E2 - 1;
+        pf.transit_band_RO_ = workOrder3DT.partialFourier_POCS_transitBand_;
+        pf.transit_band_E1_ = workOrder3DT.partialFourier_POCS_transitBand_;
+        pf.transit_band_E2_ = workOrder3DT.partialFourier_POCS_transitBand_E2_;
+        pf.verbose_ = this->verbose_;
+        pf.iter_ = workOrder3DT.partialFourier_POCS_iters_;
+        pf.thres_ = workOrder3DT.partialFourier_POCS_thres_;
 
-            startRO = workOrder3DT.start_RO_;
-            endRO = workOrder3DT.end_RO_;
-        }
+        hoNDArray<T> kspaceBuf(RO, E1, E2, CHA, N, kspace.begin());
+        hoNDArray<T> res;
 
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterRO, debugFolder_+"filterRO_POCS"); }
+        pf.partial_fourier(kspaceBuf, res);
 
-        size_t startE1(0), endE1(E1-1);
-        hoNDArray<T> filterE1(E1);
-        if ( (workOrder3DT.start_E1_<0 || workOrder3DT.end_E1_<0) )
-        {
-            Gadgetron::generate_symmetric_filter_ref(E1, 0, E1 - 1, filterE1);
-        }
-        else
-        {
-            Gadgetron::generate_symmetric_filter_ref(E1, workOrder3DT.start_E1_, workOrder3DT.end_E1_, filterE1);
-
-            startE1 = workOrder3DT.start_E1_;
-            endE1 = workOrder3DT.end_E1_;
-        }
-
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterE1, debugFolder_+"filterE1_POCS"); }
-
-        size_t startE2(0), endE2(E2-1);
-        hoNDArray<T> filterE2(E1);
-        if ( (workOrder3DT.start_E2_<0 || workOrder3DT.end_E2_<0) )
-        {
-            Gadgetron::generate_symmetric_filter_ref(E2, 0, E2 - 1, filterE2);
-        }
-        else
-        {
-            Gadgetron::generate_symmetric_filter_ref(E2, workOrder3DT.start_E2_, workOrder3DT.end_E2_, filterE2);
-
-            startE2 = workOrder3DT.start_E2_;
-            endE2 = workOrder3DT.end_E2_;
-        }
-
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterE2, debugFolder_+"filterE2_POCS"); }
-
-        hoNDArray<T> kspaceIter(kspace.get_dimensions());
-        kspaceIter = kspace;
-
-        // magnitude of complex images
-        hoNDArray<typename realType<T>::Type> mag(kspace.get_dimensions());
-        hoNDArray<T> magComplex(kspace.get_dimensions());
-
-        hoNDArray<T> buffer3DT(kspace.get_dimensions());
-        hoNDArray<T> buffer3DT_partial_fourier(kspace.get_dimensions());
-
-        // kspace filter
-        Gadgetron::apply_kspace_filter_ROE1E2(kspaceIter, filterRO, filterE1, filterE2, buffer3DT_partial_fourier);
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT_partial_fourier, debugFolder_+"POCS_afterFiltered"); }
-
-        // go to image domain
-        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(buffer3DT_partial_fourier);
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT_partial_fourier, debugFolder_+"POCS_afterFiltered_complexIm"); }
-
-        // get the complex image phase for the filtered kspace
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(buffer3DT_partial_fourier, mag));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::addEpsilon(mag));
-        GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::divide(buffer3DT_partial_fourier, magComplex, buffer3DT));
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT, debugFolder_+"POCS_afterFiltered_complexIm_phase"); }
-
-        // complex images, initialized as not filtered complex image
-        hoNDArray<T> complexIm(kspaceIter);
-        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kspaceIter, complexIm);
-        hoNDArray<T> complexImPOCS(complexIm);
-
-        // the kspace during iteration is buffered here
-        hoNDArray<T> buffer3DT_partial_fourierkspaceIter(kspaceIter);
-
-        size_t ii;
-        for ( ii=0; ii<workOrder3DT.partialFourier_POCS_iters_; ii++ )
-        {
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(complexImPOCS, mag));
-            GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(magComplex, buffer3DT, complexImPOCS));
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImPOCS, debugFolder_+"POCS_complexImPOCS"); }
-
-            // go back to kspace
-            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(complexImPOCS, kspaceIter);
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"POCS_kspaceIter"); }
-
-            // buffer kspace during iteration
-            buffer3DT_partial_fourierkspaceIter = kspaceIter;
-
-            // restore the acquired region
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1E2(kspace, kspaceIter, startRO, endRO, startE1, endE1, startE2, endE2));
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"POCS_kspaceIter_copyOri"); }
-
-            // update complex image
-            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kspaceIter, complexImPOCS);
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImPOCS, debugFolder_+"POCS_kspaceIter_copyOri_complexImPOCS"); }
-
-            // compute threshold to stop the iteration
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(complexImPOCS, complexIm, buffer3DT_partial_fourier));
-            typename realType<T>::Type diff, prev;
-            Gadgetron::norm2(complexIm, prev);
-            Gadgetron::norm2(buffer3DT_partial_fourier, diff);
-
-            typename realType<T>::Type thres = diff/prev;
-
-            if ( !debugFolder_.empty() )
-            {
-                GDEBUG_STREAM("POCS iter : " << ii << " - thres : " << thres << " ... ");
-            }
-
-            if ( thres < workOrder3DT.partialFourier_POCS_thres_ )
-            {
-                break;
-            }
-
-            complexIm = complexImPOCS;
-        }
-
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT_partial_fourierkspaceIter, debugFolder_+"kspaceIter_after_POCS"); }
-
-        if ( workOrder3DT.partialFourier_POCS_transitBand_ == 0 )
-        {
-            kspace = kspaceIter;
-        }
-        else
-        {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1E2TransitionBand(kspace, buffer3DT_partial_fourierkspaceIter, startRO, endRO, startE1, endE1, startE2, endE2, 
-                workOrder3DT.partialFourier_POCS_transitBand_, workOrder3DT.partialFourier_POCS_transitBand_, workOrder3DT.partialFourier_POCS_transitBand_E2_));
-
-            kspace = buffer3DT_partial_fourierkspaceIter;
-        }
+        memcpy(kspace.begin(), res.begin(), kspace.get_number_of_bytes());
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_POCS"); }
     }
@@ -2193,551 +2036,35 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
             endE2 = workOrder3DT.end_E2_;
         }
 
-        // compute the conjugate symmetric kspace
-        hoNDArray<T> buffer3DT(kspace.get_dimensions());
+        Gadgetron::partialFourierCartesianFengHuangHandler<T> pf;
 
-        if ( performTiming_ ) { gt_timer1_.start("conjugateSymmetry3D"); }
-        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().conjugateSymmetry3D(kspace, buffer3DT));
-        if ( performTiming_ ) { gt_timer1_.stop(); }
+        pf.start_RO_ = startRO;
+        pf.end_RO_ = endRO;
+        pf.start_E1_ = startE1;
+        pf.end_E1_ = endE1;
+        pf.start_E2_ = startE2;
+        pf.end_E2_ = endE2;
+        pf.transit_band_RO_ = workOrder3DT.partialFourier_POCS_transitBand_;
+        pf.transit_band_E1_ = workOrder3DT.partialFourier_POCS_transitBand_;
+        pf.transit_band_E2_ = workOrder3DT.partialFourier_POCS_transitBand_E2_;
+        pf.verbose_ = this->verbose_;
+        pf.kRO_ = workOrder3DT.partialFourier_FengHuang_kSize_RO_;
+        pf.kE1_ = workOrder3DT.partialFourier_FengHuang_kSize_E1_;
+        pf.kE2_ = workOrder3DT.partialFourier_FengHuang_kSize_E2_;
+        pf.thres_ = workOrder3DT.partialFourier_FengHuang_thresReg_;
 
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT, debugFolder_+"kspaceConj_FengHuang"); }
+        hoNDArray<T> kspaceBuf(RO, E1, E2, CHA, N, kspace.begin());
+        hoNDArray<T> res;
 
-        // find the symmetric region in the kspace
-        size_t startSymRO, endSymRO;
-        Gadgetron::find_symmetric_sampled_region(startRO, endRO, RO / 2, startSymRO, endSymRO);
+        pf.partial_fourier(kspaceBuf, res);
 
-        size_t startSymE1, endSymE1;
-        Gadgetron::find_symmetric_sampled_region(startE1, endE1, E1 / 2, startSymE1, endSymE1);
-
-        size_t startSymE2, endSymE2;
-        Gadgetron::find_symmetric_sampled_region(startE2, endE2, E2 / 2, startSymE2, endSymE2);
-
-        // the reference kspace for kernel estimation
-        hoNDArray<T> src, dst;
-        std::vector<size_t> start(5), size(5);
-
-        start[0] = startSymRO;
-        start[1] = startSymE1;
-        start[2] = startSymE2;
-        start[3] = 0;
-        start[4] = 0;
-
-        size[0] = endSymRO-startSymRO+1;
-        size[1] = endSymE1-startSymE1+1;
-        size[2] = endSymE2-startSymE2+1;;
-        size[3] = CHA;
-        size[4] = N;
-
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::cropUpTo11DArray(buffer3DT, src, start, size));
-        GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(kspace, dst, start, size));
-
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(src, debugFolder_+"src_FengHuang"); }
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(dst, debugFolder_+"dst_FengHuang"); }
-
-        if ( workOrder3DT.partialFourier_FengHuang_sameKernel_allN_ )
-        {
-            hoNDArray<T> ave4D;
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(src, ave4D));
-            src = ave4D;
-
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace5D(dst, ave4D));
-            dst = ave4D;
-
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(src, debugFolder_+"src_ave4D_FengHuang"); }
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(dst, debugFolder_+"dst_ave4D_FengHuang"); }
-        }
-
-        // estimate the kernels
-        ho6DArray<T> kernel; // [RO E1 E2 srcCHA 1 N]
-        if ( performTiming_ ) { gt_timer1_.start("calibFengHuang"); }
-        GADGET_CHECK_RETURN_FALSE(this->calibFengHuang(workOrder3DT, src, dst, kernel));
-        if ( performTiming_ ) { gt_timer1_.stop(); }
-
-        // perform the recon
-        if ( workOrder3DT.partialFourier_FengHuang_transitBand_==0 )
-        {
-            if ( performTiming_ ) { gt_timer1_.start("performReconFangHuang"); }
-            GADGET_CHECK_RETURN_FALSE(this->performReconFangHuang(workOrder3DT, buffer3DT, kspace, (int)startRO, (int)endRO, (int)startE1, (int)endE1, (int)startE2, (int)endE2, kernel));
-            if ( performTiming_ ) { gt_timer1_.stop(); }
-        }
-        else
-        {
-            if ( performTiming_ ) { gt_timer1_.start("performReconFangHuang with transition band"); }
-
-            long long tb =  (long long)workOrder3DT.partialFourier_FengHuang_transitBand_;
-
-            long long sRO(startRO), eRO(endRO), sE1(startE1), eE1(endE1), sE2(startE2), eE2(endE2);
-
-            if ( startRO > 0 )
-            {
-                startRO += tb;
-                if ( startRO > RO ) startRO = 0;
-            }
-
-            if ( endRO < RO-1 )
-            {
-                endRO -= tb;
-            }
-
-            if ( startRO > endRO )
-            {
-                startRO = 0;
-                endRO = RO-1;
-            }
-
-            if ( startE1 > 0 )
-            {
-                startE1 += tb;
-                if ( startE1 > E1 ) startE1 = 0;
-            }
-
-            if ( endE1 < E1-1 )
-            {
-                endE1 -= tb;
-            }
-
-            if ( startE1 > endE1 )
-            {
-                startE1 = 0;
-                endE1 = E1-1;
-            }
-
-            if ( startE2 > 0 )
-            {
-                startE2 += tb;
-                if ( startE2 > E2 ) startE2 = 0;
-            }
-
-            if ( endE2 < E2-1 )
-            {
-                endE2 -= tb;
-            }
-
-            if ( startE2 > endE2 )
-            {
-                startE2 = 0;
-                endE2 = E2-1;
-            }
-
-            hoNDArray<T> buffer3DT_partial_fourier_kspaceIter(kspace.get_dimensions());
-            GADGET_CHECK_RETURN_FALSE(this->performReconFangHuang(workOrder3DT, buffer3DT, 
-                    buffer3DT_partial_fourier_kspaceIter, (int)startRO, (int)endRO, (int)startE1, (int)endE1, (int)startE2, (int)endE2, kernel));
-
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer3DT_partial_fourier_kspaceIter, debugFolder_+"kspace_FengHuang_recon"); }
-
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_FengHuang_original"); }
-
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1E2TransitionBand(kspace, buffer3DT_partial_fourier_kspaceIter, 
-                    sRO, eRO, sE1, eE1, sE2, eE2, workOrder3DT.partialFourier_FengHuang_transitBand_, 
-                    workOrder3DT.partialFourier_FengHuang_transitBand_, workOrder3DT.partialFourier_FengHuang_transitBand_E2_));
-
-            kspace = buffer3DT_partial_fourier_kspaceIter;
-
-            if ( performTiming_ ) { gt_timer1_.stop(); }
-        }
+        memcpy(kspace.begin(), res.begin(), kspace.get_number_of_bytes());
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_FengHuang"); }
     }
     catch(...)
     {
         GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType& workOrder3DT, hoNDArray<T>& kspace) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const hoNDArray<T>& src, const hoNDArray<T>& dst, ho6DArray<T>& kernel)
-{
-    try
-    {
-        GADGET_CHECK_RETURN_FALSE(src.dimensions_equal(&dst));
-
-        long long RO = (long long)src.get_size(0);
-        long long E1 = (long long)src.get_size(1);
-        long long E2 = (long long)src.get_size(2);
-        long long srcCHA = (long long)src.get_size(3);
-        long long N = (long long)src.get_size(4);
-
-        long long kx = (long long)workOrder3DT.partialFourier_FengHuang_kSize_RO_;
-        long long ky = (long long)workOrder3DT.partialFourier_FengHuang_kSize_E1_;
-        long long kz = (long long)workOrder3DT.partialFourier_FengHuang_kSize_E2_;
-
-        if ( kx%2 == 0 ) kx++;
-        if ( ky%2 == 0 ) ky++;
-        if ( kz%2 == 0 ) kz++;
-
-        long long halfKx = (long long)kx/2;
-        long long halfKy = (long long)ky/2;
-        long long halfKz = (long long)kz/2;
-
-        // the cross-channel kernel is not estimated
-        kernel.createArray(kx, ky, kz, srcCHA, 1, N);
-
-        long long ii=0;
-        long long num = N*srcCHA;
-
-        long long startRO = halfKx;
-        long long endRO = RO - halfKx - 1;
-
-        long long startE1 = halfKy;
-        long long endE1 = E1 - halfKy - 1;
-
-        long long startE2 = halfKz;
-        long long endE2 = E2 - halfKz - 1;
-
-        long long rowA, colA, rowB, colB;
-        rowA = (endE2-startE2+1)*(endE1-startE1+1)*(endRO-startRO+1); 
-        colA = kx*ky*kz;
-
-        rowB = rowA;
-        colB = 1;
-
-        double thresReg = workOrder3DT.partialFourier_FengHuang_thresReg_;
-
-        #ifdef USE_OMP
-            omp_set_nested(1);
-        #endif // USE_OMP
-
-        #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, srcCHA, N, kx, ky, kz, src, dst, kernel, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, startE2, endE2, halfKx, halfKy, halfKz, thresReg) if ( num > 1 ) num_threads( (int)(num<16 ? num : 16) )
-        {
-            hoNDArray<T> A_mem(rowA, colA);
-            hoNDArray<T> B_mem(rowB, colB);
-            hoNDArray<T> K_mem(colA, colB);
-
-            hoMatrix<T> A(rowA, colA, A_mem.begin());
-            hoMatrix<T> B(rowB, colB, B_mem.begin());
-            hoMatrix<T> K(colA, colB, K_mem.begin());
-
-            #pragma omp for
-            for ( ii=0; ii<num; ii ++ )
-            {
-                ho3DArray<T> src3D(RO, E1, E2, const_cast<T*>(src.begin())+ii*RO*E1*E2);
-                ho3DArray<T> dst3D(RO, E1, E2, const_cast<T*>(dst.begin())+ii*RO*E1*E2);
-
-                long long ro, e1, e2, row(0);
-                long long x, y, z;
-
-                for ( e2=startE2; e2<=endE2; e2++ )
-                {
-                    for ( e1=startE1; e1<=endE1; e1++ )
-                    {
-                        for ( ro=startRO; ro<=endRO; ro++ )
-                        {
-
-                            size_t colInd(0);
-                            for ( z=-halfKz; z<=halfKz; z++ )
-                            {
-                                for ( y=-halfKy; y<=halfKy; y++ )
-                                {
-                                    for ( x=-halfKx; x<=halfKx; x++ )
-                                    {
-                                        A(row, colInd++) = src3D(ro+x, e1+y, e2+z);
-                                    }
-                                }
-                            }
-
-                            B(row, 0) = dst3D(ro, e1, e2);
-
-                            row++;
-                        }
-                    }
-                }
-
-                Gadgetron::SolveLinearSystem_Tikhonov(A, B, K, thresReg);
-
-                memcpy(kernel.begin()+ii*kx*ky*kz, K.begin(), sizeof(T)*kx*ky*kz);
-            }
-        }
-
-        #ifdef USE_OMP
-            omp_set_nested(0);
-        #endif // USE_OMP
-    }
-    catch(...)
-    {
-        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const hoNDArray<T>& src, const hoNDArray<T>& dst, ho6DArray<T>& kernel) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT, 
-                                                const hoNDArray<T>& kspaceConj, hoNDArray<T>& kspace, 
-                                                int startRO, int endRO, int startE1, int endE1, 
-                                                int startE2, int endE2, ho6DArray<T>& kernel)
-{
-    try
-    {
-        GADGET_CHECK_RETURN_FALSE(kspaceConj.dimensions_equal(&kspace));
-
-        long long RO = (long long)kspace.get_size(0);
-        long long E1 = (long long)kspace.get_size(1);
-        long long E2 = (long long)kspace.get_size(2);
-        long long CHA = (long long)kspace.get_size(3);
-        long long N = (long long)kspace.get_size(4);
-
-        long long kx = (long long)kernel.get_size(0);
-        long long ky = (long long)kernel.get_size(1);
-        long long kz = (long long)kernel.get_size(2);
-
-        long long halfKx = kx/2;
-        long long halfKy = ky/2;
-        long long halfKz = kz/2;
-
-        long long kerN = kernel.get_size(5);
-        GADGET_CHECK_RETURN_FALSE( (kerN==1) || (kerN==N) );
-
-        long long num = CHA*N;
-
-        long long rowD = RO*E1*E2 - ( (endE2-startE2+1) * (endE1-startE1+1) * (endRO-startRO+1) );
-        long long colD = kx*ky*kz;
-
-        ho2DArray<long long> coeffX(colD, rowD);
-        long long* pCx = coeffX.begin();
-
-        ho2DArray<long long> coeffY(colD, rowD);
-        long long* pCy = coeffY.begin();
-
-        ho2DArray<long long> coeffZ(colD, rowD);
-        long long* pCz = coeffZ.begin();
-
-        long long ro, e1, e2;
-        long long row(0);
-        long long x, y, z;
-
-        ho2DArray<long long> rowInd(3, rowD);
-        long long* pRowInd = rowInd.begin();
-
-        hoNDArray<long long> offsetX(colD);
-        long long* pOffsetX = offsetX.begin();
-
-        hoNDArray<long long> offsetY(colD);
-        long long* pOffsetY = offsetY.begin();
-
-        hoNDArray<long long> offsetZ(colD);
-        long long* pOffsetZ = offsetZ.begin();
-
-        long long colInd(0);
-        for ( z=-halfKz; z<=halfKz; z++ )
-        {
-            for ( y=-halfKy; y<=halfKy; y++ )
-            {
-                for ( x=-halfKx; x<=halfKx; x++ )
-                {
-                    offsetX(colInd) = x;
-                    offsetY(colInd) = y;
-                    offsetZ(colInd) = z;
-                    colInd++;
-                }
-            }
-        }
-
-        if ( performTiming_ ) { gt_timer3_.start("performReconFangHuang - compute coeff array"); }
-
-        if ( performTiming_ ) { gt_timer2_.start("performReconFangHuang - compute coeff array - internal"); }
-
-        long long* pRowIndCurr;
-        for ( e2=0; e2<E2; e2++ )
-        {
-            for ( e1=0; e1<E1; e1++ )
-            {
-                for ( ro=0; ro<RO; ro++ )
-                {
-                    if ( (ro>=startRO) && (ro<=endRO) && (e1>=startE1) && (e1<=endE1) && (e2>=startE2) && (e2<=endE2) )
-                    {
-                        continue;
-                    }
-
-                    pRowIndCurr = pRowInd + row*3;
-
-                    pRowIndCurr[0] = ro;
-                    pRowIndCurr[1] = e1;
-                    pRowIndCurr[2] = e2;
-
-                    row++;
-                }
-            }
-        }
-
-        long long r;
-        #pragma omp parallel for default(none) private(r) shared(rowD, colD, pCx, pCy, pCz, pRowInd, pRowIndCurr, pOffsetX, pOffsetY, pOffsetZ)
-        for ( r=0; r<rowD; r++ )
-        {
-            long long offsetC = r*colD;
-            pRowIndCurr = pRowInd + r*3;
-
-            for ( int colInd=0; colInd<colD; colInd++ )
-            {
-                pCx[offsetC+colInd] = pRowIndCurr[0]+pOffsetX[colInd];
-                pCy[offsetC+colInd] = pRowIndCurr[1]+pOffsetY[colInd];
-                pCz[offsetC+colInd] = pRowIndCurr[2]+pOffsetZ[colInd];
-            }
-        }
-
-        if ( performTiming_ ) { gt_timer2_.stop(); }
-
-        #pragma omp parallel for default(none) private(r) shared(rowD, colD, pCx, pCy, pCz, RO, E1, E2)
-        for ( r=0; r<rowD; r++ )
-        {
-            for ( int c=0; c<colD; c++ )
-            {
-                long long offset = c + r*colD;
-
-                //pCx[offset] += pOffsetX[c];
-
-                if ( pCx[offset] < 0 )
-                {
-                    pCx[offset] += RO;
-                }
-                else if ( pCx[offset] > RO-1 )
-                {
-                    pCx[offset] -= RO;
-                }
-
-                //pCy[offset] += pOffsetY[c];
-
-                if ( pCy[offset] < 0 )
-                {
-                    pCy[offset] += E1;
-                }
-                else if ( pCy[offset] > E1-1 )
-                {
-                    pCy[offset] -= E1;
-                }
-
-                //pCz[offset] += pOffsetZ[c];
-
-                if ( pCz[offset] < 0 )
-                {
-                    pCz[offset] += E2;
-                }
-                else if ( pCz[offset] > E2-1 )
-                {
-                    pCz[offset] -= E2;
-                }
-            }
-        }
-
-        /*row = 0;
-        for ( e2=0; e2<E2; e2++ )
-        {
-            for ( e1=0; e1<E1; e1++ )
-            {
-                for ( ro=0; ro<RO; ro++ )
-                {
-                    if ( (ro>=startRO) && (ro<=endRO) && (e1>=startE1) && (e1<=endE1) && (e2>=startE2) && (e2<=endE2) )
-                    {
-                        continue;
-                    }
-
-                    size_t colInd(0);
-
-                    for ( z=-halfKz; z<=halfKz; z++ )
-                    {
-                        dz = e2 + z;
-                        if ( dz < 0 ) dz += E2;
-                        if ( dz > E2-1 ) dz -= E2;
-
-                        for ( y=-halfKy; y<=halfKy; y++ )
-                        {
-                            dy = e1 + y;
-                            if ( dy < 0 ) dy += E1;
-                            if ( dy > E1-1 ) dy -= E1;
-
-                            for ( x=-halfKx; x<=halfKx; x++ )
-                            {
-                                dx = ro + x;
-                                if ( dx < 0 ) dx += RO;
-                                if ( dx > RO-1 ) dx -= RO;
-
-                                coeffX(row, colInd) = dx;
-                                coeffY(row, colInd) = dy;
-                                coeffZ(row, colInd) = dz;
-                                colInd++;
-                            }
-                        }
-                    }
-
-                    row++;
-                }
-            }
-        }*/
-        if ( performTiming_ ) { gt_timer3_.stop(); }
-
-        long long ii;
-        int numOfThreads = (int)((num>4) ? 4 : num);
-        #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, CHA, N, kerN, kspaceConj, kspace, kernel, rowD, colD, coeffX, coeffY, coeffZ, pCx, pCy, pCz) if ( num > 1 ) num_threads( numOfThreads )
-        {
-            hoNDArray<T> D_mem(rowD, colD);
-
-            hoMatrix<T> D(rowD, colD, D_mem.begin());
-            T* pD = D.begin();
-
-            hoMatrix<T> K(colD, 1);
-            hoMatrix<T> R(rowD, 1);
-
-            Gadgetron::clear(D);
-            Gadgetron::clear(K);
-            Gadgetron::clear(R);
-
-            #pragma omp for
-            for ( ii=0; ii<num; ii ++ )
-            {
-                ho3DArray<T> src3D(RO, E1, E2, const_cast<T*>(kspaceConj.begin())+ii*RO*E1*E2);
-                ho3DArray<T> dst3D(RO, E1, E2, kspace.begin()+ii*RO*E1*E2);
-
-                long long row;
-
-                if ( performTiming_ ) { gt_timer2_.start("fill data matrix ... "); }
-                #pragma omp parallel for private(row) shared(colD, rowD, D, src3D, pD)
-                for ( row=0; row<rowD; row++ )
-                {
-                    for ( long long col=0; col<colD; col++ )
-                    {
-                        long long offset = col + row*colD;
-                        pD[offset] = src3D(pCx[offset], pCy[offset], pCz[offset]);
-                    }
-                }
-                if ( performTiming_ ) { gt_timer2_.stop(); }
-
-                if ( kerN == 1 )
-                {
-                    long long ind = ii;
-                    long long currS = ind/(CHA*N);
-                    ind %= CHA*N;
-                    long long currN = ind/CHA;
-                    ind %= CHA;
-                    memcpy(K.begin(), kernel.begin()+(ind+currS*CHA)*colD, sizeof(T)*colD);
-                }
-                else
-                {
-                    memcpy(K.begin(), kernel.begin()+ii*colD, sizeof(T)*colD);
-                }
-
-                // R = D*K
-                if ( performTiming_ ) { gt_timer2_.start("matrix multiplication ... "); }
-                Gadgetron::gemm(R, D, false, K, false);
-                if ( performTiming_ ) { gt_timer2_.stop(); }
-
-                size_t colCenter = colD/2;
-
-                if ( performTiming_ ) { gt_timer2_.start("fill the result array ... "); }
-                #pragma omp parallel for private(row) default(none) shared(rowD, dst3D, colCenter, coeffX, coeffY, coeffZ, R)
-                for ( row=0; row<rowD; row++ )
-                {
-                    dst3D( coeffX(colCenter, row), coeffY(colCenter, row), coeffZ(colCenter, row) ) = R(row, 0);
-                }
-                if ( performTiming_ ) { gt_timer2_.stop(); }
-            }
-        }
-    }
-    catch(...)
-    {
-        GERROR_STREAM("Errors in gtPlusReconWorker3DT<T>::performReconFangHuang(...) ... ");
         return false;
     }
 

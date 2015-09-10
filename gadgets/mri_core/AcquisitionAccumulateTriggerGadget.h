@@ -8,7 +8,7 @@
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include <map>
-#include "mri_core_data.h"
+#include "mri_core_acquisition_bucket.h"
 
 namespace Gadgetron{
 

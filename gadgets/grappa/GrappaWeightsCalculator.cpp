@@ -187,6 +187,10 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
             size_t kRO = 5;
             size_t kNE1 = 4;
 
+            Gadgetron::coilMapMakerInati< std::complex<float> > csm;
+            csm.ks_ = ks;
+            csm.power_ = power;
+
             if (numUnCombined==0)
             {
                 hoNDArray< std::complex<float> > acs(RO, E1, target_coils_, reinterpret_cast< std::complex<float>* >(host_data->begin()));
@@ -199,7 +203,13 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                 }
 
                 hoNDFFT<float>::instance()->ifft2c(target_acs, complex_im_);
-                Gadgetron::coil_map_2d_Inati(complex_im_, coil_map_, ks, power);
+                // Gadgetron::coil_map_2d_Inati(complex_im_, coil_map_, ks, power);
+
+                coil_map_.create(RO, E1, target_coils_);
+
+                hoNDArray< std::complex<float> > complexImBuf(RO, E1, 1, target_coils_, complex_im_.begin());
+                hoNDArray< std::complex<float> > coilMapBuf(RO, E1, 1, target_coils_, coil_map_.begin());
+                csm.make_coil_map(complexImBuf, coilMapBuf);
 
                 // compute unmixing coefficients
                 if (mb1->getObjectPtr()->acceleration_factor == 1)
@@ -286,7 +296,14 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 
                 hoNDFFT<float>::instance()->ifft2c(target_acs_, complex_im_);
 
-                Gadgetron::coil_map_2d_Inati(complex_im_, coil_map_, ks, power);
+                coil_map_.create(RO, E1, complex_im_.get_size(2));
+
+                hoNDArray< std::complex<float> > complexImBuf(RO, E1, 1, complex_im_.get_size(2), complex_im_.begin());
+                hoNDArray< std::complex<float> > coilMapBuf(RO, E1, 1, coil_map_.get_size(2), coil_map_.begin());
+                csm.make_coil_map(complexImBuf, coilMapBuf);
+
+                // Gadgetron::coil_map_2d_Inati(complex_im_, coil_map_, ks, power);
+                // csm.make_coil_map_2d(complex_im_, coil_map_);
 
                 // compute unmixing coefficients
                 if (mb1->getObjectPtr()->acceleration_factor == 1)

@@ -467,7 +467,7 @@ detectSampledTimesE1E2(const hoNDArray<T>& data5D, hoNDArray<size_t>& sampledTim
     try
     {
         size_t NDim = data5D.get_number_of_dimensions();
-        GADGET_CHECK_RETURN_FALSE(NDim>=3);
+        GADGET_CHECK_RETURN_FALSE(NDim >= 3);
 
         size_t RO = data5D.get_size(0);
         size_t E1 = data5D.get_size(1);
@@ -475,13 +475,14 @@ detectSampledTimesE1E2(const hoNDArray<T>& data5D, hoNDArray<size_t>& sampledTim
         size_t CHA = data5D.get_size(3);
         size_t N = data5D.get_size(4);
 
-        hoNDArray<typename realType<T>::Type> mag(RO, E1, E2);
+        hoNDArray<typename realType<T>::Type> mag(data5D.get_dimensions());
+        GADGET_CATCH_THROW(Gadgetron::abs(data5D, mag));
 
-        hoNDArray<T> dataFirstChannel(RO, E1, E2, const_cast<T*>(data5D.begin()));
-        Gadgetron::abs(dataFirstChannel, mag);
+        hoNDArray<typename realType<T>::Type> mag4D(RO, E1, E2, 1, N);
+        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(mag, mag4D, 3));
 
-        hoNDArray<typename realType<T>::Type> mag3D(1, E1, E2);
-        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(mag, mag3D, 0));
+        hoNDArray<typename realType<T>::Type> mag3D(1, E1, E2, 1, N);
+        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(mag4D, mag3D, 0));
 
         typename realType<T>::Type* pMag3D = mag3D.begin();
 
@@ -490,21 +491,21 @@ detectSampledTimesE1E2(const hoNDArray<T>& data5D, hoNDArray<size_t>& sampledTim
         size_t* pTimes = sampledTimes.get_data_ptr();
 
         size_t e1, e2, n;
-        for ( e2=0; e2<E2; e2++ )
+        for (e2 = 0; e2<E2; e2++)
         {
-            for ( e1=0; e1<E1; e1++ )
+            for (e1 = 0; e1<E1; e1++)
             {
-                for ( n=0; n<N; n++ )
+                for (n = 0; n<N; n++)
                 {
-                    if ( pMag3D[e1+e2*E1+n*E1*E2] > 0 )
+                    if (pMag3D[e1 + e2*E1 + n*E1*E2] > 0)
                     {
-                        pTimes[e1+e2*E1]++;
+                        pTimes[e1 + e2*E1]++;
                     }
                 }
             }
         }
     }
-    catch(...)
+    catch (...)
     {
         GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::detectSampledTimesE1E2(...) ... ");
         return false;
@@ -2534,53 +2535,76 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
             ks++;
         }
 
+        Gadgetron::coilMapMakerInatiIter<T> csm_iter;
+        csm_iter.ks_ = ks;
+        csm_iter.kz_ = ks;
+        csm_iter.iter_num_ = iterNum;
+        csm_iter.thres_ = thres;
+
+        Gadgetron::coilMapMakerInati<T> csm;
+        csm.ks_ = ks;
+        csm.power_ = power;
+
         long long n;
 
         if ( N >= 16 )
         {
-            #pragma omp parallel default(none) private(n) shared(ks, RO, E1, CHA, num, algo, N, data, coilMap, power, iterNum, thres)
+            #pragma omp parallel default(none) private(n, csm_iter, csm) shared(ks, RO, E1, CHA, num, algo, N, data, coilMap, power, iterNum, thres)
             {
                 #pragma omp for
                 for ( n=0; n<(long long)N; n++ )
                 {
-                    hoNDArray<T> dataCurr(RO, E1, CHA, const_cast<T*>(data.begin()+n*num));
-                    hoNDArray<T> coilMapCurr(RO, E1, CHA, coilMap.begin()+n*num);
+                    hoNDArray<T> dataCurr(RO, E1, 1, CHA, const_cast<T*>(data.begin()+n*num));
+                    hoNDArray<T> coilMapCurr(RO, E1, 1, CHA, coilMap.begin()+n*num);
 
                     if ( algo == ISMRMRD_SOUHEIL_ITER )
                     {
-                        Gadgetron::coil_map_2d_Inati_Iter(dataCurr, coilMapCurr, ks, iterNum, thres);
+                        csm_iter.make_coil_map(dataCurr, coilMapCurr);
+
+                        // Gadgetron::coil_map_2d_Inati_Iter(dataCurr, coilMapCurr, ks, iterNum, thres);
                     }
                     else
                     {
-                        Gadgetron::coil_map_2d_Inati(dataCurr, coilMapCurr, ks, power);
+                        csm.make_coil_map(dataCurr, coilMapCurr);
+
+                        // Gadgetron::coil_map_2d_Inati(dataCurr, coilMapCurr, ks, power);
                     }
                 }
             }
         }
         else if ( N == 1 )
         {
+            hoNDArray<T> dataBuf(RO, E1, 1, CHA, const_cast<T*>(data.begin()));
+            hoNDArray<T> coilMapBuf(RO, E1, 1, CHA, coilMap.begin());
+
             if ( algo == ISMRMRD_SOUHEIL_ITER )
             {
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati_Iter(data, coilMap, ks, iterNum, thres));
+                csm_iter.make_coil_map(dataBuf, coilMapBuf);
+
+                // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati_Iter(data, coilMap, ks, iterNum, thres));
             }
             else
             {
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati(data, coilMap, ks, power));
+                csm.make_coil_map(dataBuf, coilMapBuf);
+                // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati(data, coilMap, ks, power));
             }
         }
         else
         {
             for ( n=0; n<(long long)N; n++ )
             {
-                hoNDArray<T> dataCurr(RO, E1, CHA, const_cast<T*>(data.begin()+n*num));
-                hoNDArray<T> coilMapCurr(RO, E1, CHA, coilMap.begin()+n*num);
+                hoNDArray<T> dataCurr(RO, E1, 1, CHA, const_cast<T*>(data.begin()+n*num));
+                hoNDArray<T> coilMapCurr(RO, E1, 1, CHA, coilMap.begin()+n*num);
                 if ( algo == ISMRMRD_SOUHEIL_ITER )
                 {
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati_Iter(dataCurr, coilMapCurr, ks, iterNum, thres));
+                    csm_iter.make_coil_map(dataCurr, coilMapCurr);
+
+                    // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati_Iter(dataCurr, coilMapCurr, ks, iterNum, thres));
                 }
                 else
                 {
-                    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati(dataCurr, coilMapCurr, ks, power));
+                    csm.make_coil_map(dataCurr, coilMapCurr);
+                    // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_2d_Inati(dataCurr, coilMapCurr, ks, power));
                 }
             }
         }
@@ -2621,6 +2645,16 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
             ks++;
         }
 
+        Gadgetron::coilMapMakerInatiIter<T> csm_iter;
+        csm_iter.ks_ = ks;
+        csm_iter.kz_ = ks;
+        csm_iter.iter_num_ = iterNum;
+        csm_iter.thres_ = thres;
+
+        Gadgetron::coilMapMakerInati<T> csm;
+        csm.ks_ = ks;
+        csm.power_ = power;
+
         //std::string debugFolder = "D:/software/Gadgetron/20130114/install/gadgetron/DebugOutput/";
         //gtPlusIOAnalyze gt_io;
 
@@ -2638,22 +2672,24 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
             if ( algo == ISMRMRD_SOUHEIL_ITER )
             {
                 GDEBUG_STREAM("calling 3D version of Souhiel iterative coil map estimation ... ");
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_3d_Inati_Iter(data, coilMap, ks, ks, iterNum, thres));
+                // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_3d_Inati_Iter(data, coilMap, ks, ks, iterNum, thres));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(csm_iter.make_coil_map(data, coilMap));
             }
             else if ( algo==ISMRMRD_SOUHEIL && E2>5*ks && true3D )
             {
                 GDEBUG_STREAM("calling 3D version of Souhiel coil map estimation ... ");
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_3d_Inati(data, coilMap, ks, power));
+                // GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::coil_map_3d_Inati(data, coilMap, ks, power));
+                GADGET_CHECK_EXCEPTION_RETURN_FALSE(csm.make_coil_map(data, coilMap));
             }
             else
             {
                 hoNDArray<T> dataCurr(RO, E1, E2, CHA, const_cast<T*>(data.begin()+n*RO*E1*E2*CHA));
                 hoNDArray<T> coilMapCurr(RO, E1, E2, CHA, coilMap.begin()+n*RO*E1*E2*CHA);
 
-                #pragma omp parallel default(none) private(e2) shared(dataCurr, coilMapCurr, RO, E1, E2, CHA, algo, ks, power, iterNum, thres) if (E2>12)
+                #pragma omp parallel default(none) private(e2, csm_iter, csm) shared(dataCurr, coilMapCurr, RO, E1, E2, CHA, algo, ks, power, iterNum, thres) if (E2>12)
                 {
-                    hoNDArray<T> data2D(RO, E1, CHA);
-                    hoNDArray<T> coilMap2D(RO, E1, CHA);
+                    hoNDArray<T> data2D(RO, E1, 1, CHA);
+                    hoNDArray<T> coilMap2D(RO, E1, 1, CHA);
 
                     #pragma omp for
                     for ( e2=0; e2<(int)E2; e2++ )
@@ -2667,11 +2703,13 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
 
                         if ( algo == ISMRMRD_SOUHEIL_ITER )
                         {
-                            Gadgetron::coil_map_2d_Inati_Iter(data2D, coilMap2D, ks, iterNum, thres);
+                            // Gadgetron::coil_map_2d_Inati_Iter(data2D, coilMap2D, ks, iterNum, thres);
+                            csm_iter.make_coil_map(data2D, coilMap2D);
                         }
                         else
                         {
-                            Gadgetron::coil_map_2d_Inati(data2D, coilMap2D, ks, power);
+                            // Gadgetron::coil_map_2d_Inati(data2D, coilMap2D, ks, power);
+                            csm.make_coil_map(data2D, coilMap2D);
                         }
 
                         for ( cha=0; cha<(long long)CHA; cha++ )
