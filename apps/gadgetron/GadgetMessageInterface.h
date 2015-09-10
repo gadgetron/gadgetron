@@ -18,6 +18,7 @@ enum GadgetronMessageID {
   GADGET_MESSAGE_CONFIG_SCRIPT    =   2,
   GADGET_MESSAGE_PARAMETER_SCRIPT =   3,
   GADGET_MESSAGE_CLOSE            =   4,
+  GADGET_MESSAGE_TEXT             =   5,
   GADGET_MESSAGE_INT_ID_MAX       = 999
 };
 

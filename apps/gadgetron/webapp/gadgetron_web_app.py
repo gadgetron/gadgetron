@@ -35,9 +35,9 @@ def isGadgetronAlive(port,environment):
     except:
         hostname = "127.0.0.1"
 
-    process = subprocess.Popen(["gt_alive",hostname,str(port)], env=environment)
+    process = subprocess.Popen(["gadgetron_ismrmrd_client","-q", "-p", str(port), "-a", hostname, "-c", "isalive.xml"], env=environment)
 
-    time.sleep(1)
+    time.sleep(2)
     ret = process.poll()
     if ret == None:
         #Process is hanging

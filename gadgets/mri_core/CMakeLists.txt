@@ -130,6 +130,8 @@ set( gadgetron_mricore_config_files
     default_short.xml
     default_optimized.xml
     default_measurement_dependencies.xml
+    isalive.xml
+    gtquery.xml
 )
 
 add_library(gadgetron_mricore SHARED 
