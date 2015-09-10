@@ -87,7 +87,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT     = 1016, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT    = 1017, /**< DEPRECATED */
     GADGET_MESSAGE_DICOM_WITHNAME                         = 1018,
-    GADGET_MESSAGE_DEPENDENCY_QUERY                       = 1019,
+    GADGET_MESSAGE_DEPENDENCY_QUERYS                       = 1019,
     GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT               = 1020, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT     = 1021, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGE                          = 1022,
@@ -143,6 +143,67 @@ public:
     virtual void read(tcp::socket* s) = 0;
 
 };
+
+class GadgetronClientDependencyQueryReader : public GadgetronClientMessageReader
+{
+  
+public:
+  GadgetronClientDependencyQueryReader(std::string filename) : number_of_calls_(0) , filename_(filename)
+  {
+    
+  }
+
+  virtual ~GadgetronClientDependencyQueryReader()
+  {
+    
+  }
+
+  virtual void read(tcp::socket* stream)
+  {
+    std::cout << "Receiving dependency query" << std::endl;
+    ssize_t recv_count = 0;
+    
+    typedef unsigned long long size_t_type;
+    size_t_type len(0);
+    boost::asio::read(*stream, boost::asio::buffer(&len, sizeof(size_t_type)));
+
+    char* buf = NULL;
+    try {
+      buf = new char[len];
+      memset(buf, '\0', len);
+      memcpy(buf, &len, sizeof(size_t_type));
+    } catch (std::runtime_error &err) {
+      std::cerr << "DependencyQueryReader, failed to allocate buffer" << std::endl;
+      throw;
+    }
+    
+    
+    if (boost::asio::read(*stream, boost::asio::buffer(buf, len)) != len)
+    {
+      delete [] buf;
+      throw GadgetronClientException("Incorrect number of bytes read for dependency query");  
+    }
+    
+    std::ofstream outfile;
+    outfile.open (filename_.c_str(), std::ios::out|std::ios::binary);
+
+    if (outfile.good()) {
+      outfile.write(buf, len);
+      outfile.close();
+      number_of_calls_++;
+    } else {
+      delete[] buf;
+      throw GadgetronClientException("Unable to write dependency query to file");  
+    }
+    
+    delete[] buf;
+  }
+  
+  protected:
+    size_t number_of_calls_;
+    std::string filename_;
+};
+
 
 class GadgetronClientImageMessageReader : public GadgetronClientMessageReader
 {
@@ -1036,11 +1097,13 @@ int main(int argc, char **argv)
     std::string config_xml_local;
     unsigned int loops;
     std::string out_fileformat;
+    bool open_input_file = true;
 
     po::options_description desc("Allowed options");
 
     desc.add_options()
         ("help,h", "produce help message")
+        ("query,q", "Dependency query mode")
         ("port,p", po::value<std::string>(&port)->default_value("9002"), "Port")
         ("address,a", po::value<std::string>(&host_name)->default_value("localhost"), "Address (hostname) of Gadgetron host")
         ("filename,f", po::value<std::string>(&in_filename), "Input file")
@@ -1062,12 +1125,16 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if (!vm.count("filename")) {
+    if (!vm.count("filename") && !vm.count("query")) {
         std::cout << std::endl << std::endl << "\tYou must supply a filename" << std::endl << std::endl;
         std::cout << desc << std::endl;
         return -1;
     }
 
+    if (vm.count("query")) {
+      open_input_file = false;
+    }
+    
     if (vm.count("config-local")) {
         std::ifstream t(config_file_local.c_str());
         if (t) {
@@ -1091,10 +1158,13 @@ int main(int argc, char **argv)
     // Add check to see if input file exists
 
     //Let's open the input file
-    ISMRMRD::Dataset ismrmrd_dataset(in_filename.c_str(), hdf5_in_group.c_str(), false);
-    // Read the header
+    boost::shared_ptr<ISMRMRD::Dataset> ismrmrd_dataset;
     std::string xml_config;
-    ismrmrd_dataset.readHeader(xml_config);
+    if (open_input_file) {
+      ismrmrd_dataset = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(in_filename.c_str(), hdf5_in_group.c_str(), false));
+      // Read the header
+      ismrmrd_dataset->readHeader(xml_config);
+    }
 
 
     std::cout << "  -- host            :      " << host_name << std::endl;
@@ -1120,6 +1190,8 @@ int main(int argc, char **argv)
 
     con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
 
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERYS, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));			
+			
     try {
         con.connect(host_name,port);
         if (vm.count("config-local")) {
@@ -1127,25 +1199,28 @@ int main(int argc, char **argv)
         } else {
             con.send_gadgetron_configuration_file(config_file);
         }
-        con.send_gadgetron_parameters(xml_config);
 
-        uint32_t acquisitions = 0;
-        {
-            mtx.lock();
-            acquisitions = ismrmrd_dataset.getNumberOfAcquisitions();
+	if (open_input_file) {
+	  con.send_gadgetron_parameters(xml_config);
+	  
+	  uint32_t acquisitions = 0;
+	  {
+	    mtx.lock();
+            acquisitions = ismrmrd_dataset->getNumberOfAcquisitions();
             mtx.unlock();
-        }
-
-        ISMRMRD::Acquisition acq_tmp;
-        for (uint32_t i = 0; i < acquisitions; i++) {
+	  }
+	  
+	  ISMRMRD::Acquisition acq_tmp;
+	  for (uint32_t i = 0; i < acquisitions; i++) {
             {
-                {
-                    boost::mutex::scoped_lock scoped_lock(mtx);
-                    ismrmrd_dataset.readAcquisition(i, acq_tmp);
-                }
-                con.send_ismrmrd_acquisition(acq_tmp);
+	      {
+		boost::mutex::scoped_lock scoped_lock(mtx);
+		ismrmrd_dataset->readAcquisition(i, acq_tmp);
+	      }
+	      con.send_ismrmrd_acquisition(acq_tmp);
             }
-        }
+	  }
+	}
 
         con.send_gadgetron_close();
         con.wait();

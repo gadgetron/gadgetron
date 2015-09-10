@@ -28,7 +28,7 @@ include_directories(
     )
 
 add_executable(gt_alive gt_alive.cpp)
-add_executable(gtdependencyquery gt_query.cpp DependencyQueryReader.h gtquery.xml)
+add_executable(gtdependencyquery gt_query.cpp DependencyQueryReader.h)
 
 target_link_libraries(gt_alive gadgetron_toolbox_cpucore 
                                gadgetron_toolbox_gadgettools 
@@ -46,4 +46,3 @@ target_link_libraries(gtdependencyquery gadgetron_toolbox_cpucore
 
 install(TARGETS gt_alive gtdependencyquery DESTINATION bin COMPONENT main)
 install(FILES DependencyQueryReader.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
-install(FILES isalive.xml gtquery.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
