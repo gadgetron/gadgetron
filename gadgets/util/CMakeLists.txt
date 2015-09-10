@@ -10,6 +10,10 @@ add_library(gadgetron_util SHARED
     gadgetron_util_gadgets_export.h 
     ParameterRelayGadget.h
     ParameterRelayGadget.cpp
+    GadgetMessageTextWriter.h
+    GadgetMessageTextWriter.cpp
+    GadgetronInfoGadget.h
+    GadgetronInfoGadget.cpp
 )
 
 set_target_properties(gadgetron_util PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                      
@@ -23,6 +27,8 @@ target_link_libraries(gadgetron_util
 install(FILES 
     gadgetron_util_gadgets_export.h
     ParameterRelayGadget.h
+    GadgetMessageTextWriter.h
+    GadgetronInfoGadget.h
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_util DESTINATION lib COMPONENT main)
