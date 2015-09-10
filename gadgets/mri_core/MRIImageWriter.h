@@ -29,13 +29,14 @@ namespace Gadgetron{
             uint16_t RO = header->getObjectPtr()->matrix_size[0];
             uint16_t E1 = header->getObjectPtr()->matrix_size[1];
             uint16_t E2 = header->getObjectPtr()->matrix_size[2];
+            uint16_t CHA = header->getObjectPtr()->channels;
 
-            unsigned long expected_elements = RO*E1*E2;
+            unsigned long expected_elements = RO*E1*E2*CHA;
 
             if (expected_elements != data->getObjectPtr()->get_number_of_elements())
             {
                 GDEBUG("Number of header elements %d is inconsistent with number of elements in NDArray %d\n", expected_elements, data->getObjectPtr()->get_number_of_elements());
-                GDEBUG("Header dimensions: %d, %d, %d\n", RO, E1, E2);
+                GDEBUG("Header dimensions: %d, %d, %d, %d\n", RO, E1, E2, CHA);
                 GDEBUG("Number of array dimensions: %d:\n", data->getObjectPtr()->get_number_of_dimensions());
                 for (size_t i = 0; i < data->getObjectPtr()->get_number_of_dimensions(); i++)
                 {
