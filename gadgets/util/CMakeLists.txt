@@ -17,12 +17,23 @@ add_library(gadgetron_util SHARED
 )
 
 set_target_properties(gadgetron_util PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})                                                                                                                                                                                                      
-
+if (CUDA_FOUND)
 target_link_libraries(gadgetron_util
     gadgetron_gadgetbase
     gadgetron_toolbox_log
     ${ACE_LIBRARIES}
+    ${CUDA_LIBRARIES} 
+    ${CUDA_CUFFT_LIBRARIES} 
+    ${CUDA_CUBLAS_LIBRARIES} 
 )
+
+else (CUDA_FOUND)
+  target_link_libraries(gadgetron_util
+    gadgetron_gadgetbase
+    gadgetron_toolbox_log
+    ${ACE_LIBRARIES}
+)
+endif(CUDA_FOUND)
 
 install(FILES 
     gadgetron_util_gadgets_export.h
