@@ -55,11 +55,8 @@ namespace Gadgetron {
     {
     public:
 
-        GenericCartesianGrappaReconObj();
-        GenericCartesianGrappaReconObj(const GenericCartesianGrappaReconObj<T>& v);
-        virtual ~GenericCartesianGrappaReconObj();
-
-        GenericCartesianGrappaReconObj<T>& operator=(const GenericCartesianGrappaReconObj<T>& v);
+        GenericCartesianGrappaReconObj() {}
+        virtual ~GenericCartesianGrappaReconObj() {}
 
         // ------------------------------------
         /// recon outputs
@@ -79,15 +76,6 @@ namespace Gadgetron {
         /// reference data ready for coil map estimation
         /// [RO E1 E2 CHA Nor1 Sor1 SLC]
         hoNDArray<T> ref_coil_map_;
-
-        /// ref calibration array in dst channels
-        hoNDArray<T> ref_calib_dst_;
-
-        /// kspace data in dst channel
-        hoNDArray<T> data_dst_;
-
-        /// ref coil map array in dst channel
-        hoNDArray<T> ref_coil_map_dst_;
 
         /// for combined imgae channel
         /// convolution kernel, [RO E1 E2 srcCHA - uncombinedCHA dstCHA - uncombinedCHA Nor1 Sor1 SLC]
@@ -201,9 +189,6 @@ namespace Gadgetron {
         virtual int process_config(ACE_Message_Block* mb);
         virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
 
-        // close call
-        int close(unsigned long flags);
-
         // --------------------------------------------------
         // recon step functions
         // --------------------------------------------------
@@ -217,9 +202,6 @@ namespace Gadgetron {
         // this may be the most complicated part of the whole recon
         // for every calibration mode, the ref is prepared accordingly
         virtual void prepare_ref(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
-
-        // generate the destination channel
-        virtual void generate_downstream_dst_channel(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
 
         // estimate coil map
         virtual void perform_coil_map_estimation(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);

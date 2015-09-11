@@ -9,59 +9,10 @@
 #include "mri_core_grappa.h"
 #include "mri_core_utility.h"
 
-/// GenericCartesianGrappaReconObj
 namespace Gadgetron {
 
-    template<typename T>
-    GenericCartesianGrappaReconObj<T>::GenericCartesianGrappaReconObj()
+    GenericCartesianGrappaReconGadget::GenericCartesianGrappaReconGadget() : num_encoding_spaces_(1), process_called_times_(0)
     {
-    }
-
-    template<typename T>
-    GenericCartesianGrappaReconObj<T>::GenericCartesianGrappaReconObj(const GenericCartesianGrappaReconObj<T>& v)
-    {
-        *this = v;
-    }
-
-    template<typename T>
-    GenericCartesianGrappaReconObj<T>::~GenericCartesianGrappaReconObj()
-    {
-    }
-
-    template<typename T>
-    GenericCartesianGrappaReconObj<T>& GenericCartesianGrappaReconObj<T>::operator=(const GenericCartesianGrappaReconObj<T>& v)
-    {
-        try
-        {
-            if (this == &v)
-                return *this;
-
-            this->recon_res_ = v.recon_res_;
-
-            this->gfactor_ = v.gfactor_;
-
-            this->kernel_ = v.kernel_;
-            this->kernelIm_ = v.kernelIm_;
-            this->unmixing_coeff_ = v.unmixing_coeff_;
-            this->coil_map_ = v.coil_map_;
-        }
-        catch (...)
-        {
-            GADGET_THROW("Erorros happened in GenericCartesianGrappaReconObj<T>::operator=(const GenericCartesianGrappaReconObj<T>& v) ... ");
-        }
-
-        return *this;
-    }
-
-    template class EXPORTGADGETSMRICORE GenericCartesianGrappaReconObj < std::complex<float> >;
-}
-
-namespace Gadgetron {
-
-    GenericCartesianGrappaReconGadget::GenericCartesianGrappaReconGadget()
-    {
-        num_encoding_spaces_ = 1;
-        process_called_times_ = 0;
     }
 
     GenericCartesianGrappaReconGadget::~GenericCartesianGrappaReconGadget()
@@ -85,38 +36,6 @@ namespace Gadgetron {
             GDEBUG("acquisitionSystemInformation not found in header. Bailing out");
             return GADGET_FAIL;
         }
-
-        // -------------------------------------------------
-
-        unsigned short num_acq_channels = h.acquisitionSystemInformation.get().receiverChannels.get();
-        GDEBUG_CONDITION_STREAM(verbose.value(), "Number of acquisition channels : " << num_acq_channels);
-
-        // -------------------------------------------------
-
-        if (!h.acquisitionSystemInformation->systemFieldStrength_T)
-        {
-            GDEBUG("acquisitionSystemInformation->systemFieldStrength_T not found in header. Bailing out");
-            return GADGET_FAIL;
-        }
-        float systemFieldStrength_T = h.acquisitionSystemInformation.get().systemFieldStrength_T.get();
-        GDEBUG_CONDITION_STREAM(verbose.value(), "System filed strength : " << systemFieldStrength_T);
-
-        // -------------------------------------------------
-
-        if (!h.measurementInformation)
-        {
-            GDEBUG("measurementInformation not found in header. Bailing out");
-            return GADGET_FAIL;
-        }
-
-        if (!h.measurementInformation->protocolName)
-        {
-            GDEBUG("measurementInformation->protocolName not found in header. Bailing out");
-            return GADGET_FAIL;
-        }
-
-        std::string protocolName = h.measurementInformation.get().protocolName.get();
-        GDEBUG_CONDITION_STREAM(verbose.value(), "Protocol name : " << protocolName);
 
         // -------------------------------------------------
 
@@ -157,7 +76,6 @@ namespace Gadgetron {
             meas_max_idx_[e].average = e_limits.average ? e_limits.average->maximum : 0;
             meas_max_idx_[e].segment = 0;
 
-
             if (!h.encoding[e].parallelImaging)
             {
                 GDEBUG("Parallel Imaging section not found in header");
@@ -179,114 +97,42 @@ namespace Gadgetron {
             bool interleaved = (calib.compare("interleaved") == 0);
             bool other = (calib.compare("other") == 0);
 
-            if (separate)
-            {
-                GDEBUG_CONDITION_STREAM(verbose.value(), "Colibration mode is separate");
-            }
-            else if (embedded)
-            {
-                GDEBUG_CONDITION_STREAM(verbose.value(), "Colibration mode is embedded");
-            }
-            else if (interleaved)
-            {
-                GDEBUG_CONDITION_STREAM(verbose.value(), "Colibration mode is interleaved");
-            }
-            else if (external)
-            {
-                GDEBUG_CONDITION_STREAM(verbose.value(), "Colibration mode is external");
-            }
-            else if (other)
-            {
-                GDEBUG_CONDITION_STREAM(verbose.value(), "Colibration mode is other");
-            }
-
             calib_mode_[e] = Gadgetron::ISMRMRD_noacceleration;
             if (acceFactorE1_[e] > 1 || acceFactorE2_[e] > 1)
             {
                 if (interleaved)
-                {
                     calib_mode_[e] = Gadgetron::ISMRMRD_interleaved;
-
-                    if (p_imaging.interleavingDimension)
-                    {
-                        if (p_imaging.interleavingDimension->compare("phase") == 0)
-                        {
-                            GDEBUG_CONDITION_STREAM(verbose.value(), "Interleaved dimension is phase");
-                        }
-                        else if (p_imaging.interleavingDimension->compare("repetition") == 0)
-                        {
-                            GDEBUG_CONDITION_STREAM(verbose.value(), "Interleaved dimension is repetition");
-                        }
-                        else if (p_imaging.interleavingDimension->compare("average") == 0)
-                        {
-                            GDEBUG_CONDITION_STREAM(verbose.value(), "Interleaved dimension is average");
-                        }
-                        else if (p_imaging.interleavingDimension->compare("contrast") == 0)
-                        {
-                            GDEBUG_CONDITION_STREAM(verbose.value(), "Interleaved dimension is contrast");
-                        }
-                        else if (p_imaging.interleavingDimension->compare("other") == 0)
-                        {
-                            GDEBUG_CONDITION_STREAM(verbose.value(), "Interleaved dimension is other1");
-                        }
-                        else
-                        {
-                            GDEBUG("Unknown interleaving dimension. Bailing out");
-                            return GADGET_FAIL;
-                        }
-                    }
-                }
                 else if (embedded)
-                {
                     calib_mode_[e] = Gadgetron::ISMRMRD_embedded;
-                }
                 else if (separate)
-                {
                     calib_mode_[e] = Gadgetron::ISMRMRD_separate;
-                }
                 else if (external)
-                {
                     calib_mode_[e] = Gadgetron::ISMRMRD_external;
-                }
                 else if (other)
-                {
                     calib_mode_[e] = Gadgetron::ISMRMRD_other;
-                }
             }
         }
 
-        // ---------------------------------------------------------------------------------------------------------
         return GADGET_OK;
     }
 
     int GenericCartesianGrappaReconGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1)
     {
-        GDEBUG_CONDITION_STREAM(verbose.value(), "GenericCartesianGrappaReconGadget::process(...) starts ... ");
-
         process_called_times_++;
 
         IsmrmrdReconData* recon_bit_ = m1->getObjectPtr();
-
         if (recon_bit_->rbit_.size() > num_encoding_spaces_)
         {
             GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->rbit_.size() << " instead of " << num_encoding_spaces_);
-            GWARN_STREAM("Only first " << num_encoding_spaces_ << " encoding spaces will be processed ... ");
         }
 
         // for every encoding space
         size_t e;
         for (e = 0; e < recon_bit_->rbit_.size(); e++)
         {
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Encoding space : " << e);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "======================================================================");
-
-            // ---------------------------------------------------------------
-            // compute the recon size with square pixel spacing and update recon_bit_
             this->ensure_recon_size(recon_bit_->rbit_[e], recon_obj_[e], e);
 
-            // if needed, fill in the ref (in the noacceleration mode, the ref is often not filled)
-            if (calib_mode_[e] == Gadgetron::ISMRMRD_noacceleration 
-                && recon_bit_->rbit_[e].ref_.data_.get_number_of_elements()==0)
+            if (calib_mode_[e] == Gadgetron::ISMRMRD_noacceleration && recon_bit_->rbit_[e].ref_.data_.get_number_of_elements()==0)
             {
                 std::vector<size_t> dim;
                 recon_bit_->rbit_[e].data_.data_.get_dimensions(dim);
@@ -302,35 +148,27 @@ namespace Gadgetron {
                 recon_bit_->rbit_[e].ref_.sampling_ = recon_bit_->rbit_[e].data_.sampling_;
             }
 
-            // ---------------------------------------------------------------
-            // if there are ref data, update the calibration
             if (recon_bit_->rbit_[e].ref_.data_.get_number_of_elements() > 0)
             {
                 // after this step, the recon_obj_[e].ref_calib_ and recon_obj_[e].ref_coil_map_ are set
                 this->prepare_ref(recon_bit_->rbit_[e], recon_obj_[e], e);
 
-                // genearte destination channel
-                this->generate_downstream_dst_channel(recon_bit_->rbit_[e], recon_obj_[e], e);
-
-                // estimate coil map
+                // after this step, coil map is computed and stored in recon_obj_[e].coil_map_
                 this->perform_coil_map_estimation(recon_bit_->rbit_[e], recon_obj_[e], e);
 
-                // calibration
+                // after this step, recon_obj_[e].kernel_, recon_obj_[e].kernelIm_, recon_obj_[e].unmixing_coeff_ are filled
+                // gfactor is computed too
                 this->perform_calib(recon_bit_->rbit_[e], recon_obj_[e], e);
 
-                // clean the recon ref memory
                 recon_bit_->rbit_[e].ref_.data_.clear();
                 recon_bit_->rbit_[e].ref_.trajectory_.clear();
             }
 
-            // ---------------------------------------------------------------
-            // perform unwrapping
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
             {
                 this->perform_unwrapping(recon_bit_->rbit_[e], recon_obj_[e], e);
 
                 this->compute_image_header(recon_bit_->rbit_[e], recon_obj_[e], e);
-
                 this->send_out_image_array(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
 
                 if (send_out_gfactor.value() && recon_obj_[e].gfactor_.get_number_of_elements()>0)
@@ -348,15 +186,12 @@ namespace Gadgetron {
             recon_obj_[e].gfactor_.clear();
         }
 
-        GDEBUG_CONDITION_STREAM(verbose.value(), "GenericCartesianGrappaReconGadget::process(...) ends ... ");
-
         m1->release();
         return GADGET_OK;
     }
 
     size_t GenericCartesianGrappaReconGadget::compute_image_number(ISMRMRD::ImageHeader& imheader, size_t encoding, size_t CHA, size_t cha, size_t E2)
     {
-
         if (encoding >= meas_max_idx_.size())
         {
             GWARN_STREAM("encoding >= meas_max_idx_.size()");
@@ -400,18 +235,12 @@ namespace Gadgetron {
                     {
                         ISMRMRD::ImageHeader header = res.headers_(n, s, slc);
 
-                        if (header.measurement_uid == 0)
-                        {
-                            continue;
-                        }
+                        if (header.measurement_uid == 0) continue;
 
                         res.headers_(n, s, slc).image_index = (uint16_t)this->compute_image_number(res.headers_(n, s, slc), encoding, CHA, 0, E2);
                         res.headers_(n, s, slc).image_series_index = series_num;
-                        GDEBUG_CONDITION_STREAM(verbose.value(), "image number " << res.headers_(n, s, slc).image_index << "    image series " << res.headers_(n, s, slc).image_series_index << " ... ");
 
-                        // set the image attributes
                         size_t offset = n + s*N + slc*N*S;
-
                         res.meta_[offset].set(GADGETRON_IMAGENUMBER, (long)res.headers_(n, s, slc).image_index);
                         res.meta_[offset].set(GADGETRON_IMAGEPROCESSINGHISTORY, "GT");
 
@@ -437,15 +266,7 @@ namespace Gadgetron {
                         {
                             for (size_t cha = 0; cha < CHA; cha++)
                             {
-                                GDEBUG_STREAM("sending out " << data_role << " image [CHA SLC CON PHS REP SET AVE] = ["
-                                    << cha << " "
-                                    << res.headers_(n, s, slc).slice << " "
-                                    << res.headers_(n, s, slc).contrast << " "
-                                    << res.headers_(n, s, slc).phase << " "
-                                    << res.headers_(n, s, slc).repetition << " "
-                                    << res.headers_(n, s, slc).set << " "
-                                    << res.headers_(n, s, slc).average << " " << "] "
-                                    << " -- Image number -- " << res.headers_(n, s, slc).image_index);
+                                GDEBUG_STREAM("sending out " << data_role << " image [CHA SLC CON PHS REP SET AVE] = [" << cha << " "<< res.headers_(n, s, slc).slice << " " << res.headers_(n, s, slc).contrast << " "<< res.headers_(n, s, slc).phase << " " << res.headers_(n, s, slc).repetition << " " << res.headers_(n, s, slc).set << " " << res.headers_(n, s, slc).average << " " << "] "<< " -- Image number -- " << res.headers_(n, s, slc).image_index); 
                             }
                         }
                     }
@@ -466,19 +287,6 @@ namespace Gadgetron {
         {
             GERROR_STREAM("Errors in GenericCartesianGrappaReconGadget::send_out_image_array(...) ... ");
             return GADGET_FAIL;
-        }
-
-        return GADGET_OK;
-    }
-
-    int GenericCartesianGrappaReconGadget::close(unsigned long flags)
-    {
-        GDEBUG_CONDITION_STREAM(true, "GenericCartesianGrappaReconGadget - close(flags) : " << flags);
-
-        if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
-
-        if (flags != 0)
-        {
         }
 
         return GADGET_OK;
@@ -568,7 +376,7 @@ namespace Gadgetron {
             }
             else
             {
-                GDEBUG_STREAM("recon_squared_pixel is true; but it is not required to change encoding E1 ... ");
+                GDEBUG_STREAM("it is not required to change encoding E1 ... ");
             }
         }
         catch (...)
@@ -608,30 +416,7 @@ namespace Gadgetron {
             size_t S = ref.get_size(5);
             size_t SLC = ref.get_size(6);
 
-            // -------------------------------------------------------------------------------
-
-            if (calib_mode_[encoding] == ISMRMRD_noacceleration)
-            {
-                GADGET_THROW("To be implemented ... ");
-            }
-
-            // -------------------------------------------------------------------------------
-
-            else if (calib_mode_[encoding] == ISMRMRD_interleaved)
-            {
-                GADGET_THROW("To be implemented ... ");
-            }
-
-            // -------------------------------------------------------------------------------
-
-            else if (calib_mode_[encoding] == ISMRMRD_embedded)
-            {
-                GADGET_THROW("To be implemented ... ");
-            }
-
-            // -------------------------------------------------------------------------------
-
-            else if (calib_mode_[encoding] == ISMRMRD_separate || calib_mode_[encoding] == ISMRMRD_external || calib_mode_[encoding] == ISMRMRD_other)
+            if (calib_mode_[encoding] == ISMRMRD_separate || calib_mode_[encoding] == ISMRMRD_external || calib_mode_[encoding] == ISMRMRD_other)
             {
                 if (average_all_ref_N.value())
                 {
@@ -729,7 +514,7 @@ namespace Gadgetron {
             }
             else
             {
-                GADGET_THROW("Unrecognized calibration mode ... ");
+                GADGET_THROW("To be implemented ... ");
             }
         }
         catch (...)
@@ -738,49 +523,21 @@ namespace Gadgetron {
         }
     }
 
-    void GenericCartesianGrappaReconGadget::generate_downstream_dst_channel(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding)
-    {
-        try
-        {
-            std::vector<size_t> dim;
-
-            recon_obj.ref_calib_.get_dimensions(dim);
-            recon_obj.ref_calib_dst_.create(dim, recon_obj.ref_calib_.begin());
-
-            recon_bit.data_.data_.get_dimensions(dim);
-            recon_obj.data_dst_.create(dim, recon_bit.data_.data_.begin());
-
-            recon_obj.ref_coil_map_.get_dimensions(dim);
-            recon_obj.ref_coil_map_dst_.create(dim, recon_obj.ref_coil_map_.begin());
-        }
-        catch (...)
-        {
-            GADGET_THROW("Errors happened in GenericCartesianGrappaReconGadget::generate_downstream_dst_channel(...) ... ");
-        }
-    }
-
     void GenericCartesianGrappaReconGadget::perform_coil_map_estimation(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t e)
     {
         try
         {
-            size_t RO = recon_obj.ref_coil_map_dst_.get_size(0);
-            size_t E1 = recon_obj.ref_coil_map_dst_.get_size(1);
-            size_t E2 = recon_obj.ref_coil_map_dst_.get_size(2);
-            size_t dstCHA = recon_obj.ref_coil_map_dst_.get_size(3);
-            size_t N = recon_obj.ref_coil_map_dst_.get_size(4);
-            size_t S = recon_obj.ref_coil_map_dst_.get_size(5);
-            size_t SLC = recon_obj.ref_coil_map_dst_.get_size(6);
-
-            recon_obj.coil_map_.create(RO, E1, E2, dstCHA, N, S, SLC);
+            recon_obj.coil_map_ = recon_obj.ref_coil_map_;
             Gadgetron::clear(recon_obj.coil_map_);
 
+            size_t E2 = recon_obj.ref_coil_map_.get_size(2);
             if (E2 > 1)
             {
-                Gadgetron::hoNDFFT<float>::instance()->ifft3c(recon_obj.ref_coil_map_dst_, complex_im_recon_buf_);
+                Gadgetron::hoNDFFT<float>::instance()->ifft3c(recon_obj.ref_coil_map_, complex_im_recon_buf_);
             }
             else
             {
-                Gadgetron::hoNDFFT<float>::instance()->ifft2c(recon_obj.ref_coil_map_dst_, complex_im_recon_buf_);
+                Gadgetron::hoNDFFT<float>::instance()->ifft2c(recon_obj.ref_coil_map_, complex_im_recon_buf_);
             }
 
             this->compute_coil_map(complex_im_recon_buf_, recon_obj.coil_map_);
@@ -797,19 +554,14 @@ namespace Gadgetron {
         {
             typedef  std::complex<float> T;
 
-            // estimate grappa kernel between ref_preparer_[e]->ref_calib_ and recon_obj.ref_calib_dst_
-
-            if (acceFactorE1_[e] <= 1 && acceFactorE2_[e] <= 1)
-            {
-                return;
-            }
+            if (acceFactorE1_[e] <= 1 && acceFactorE2_[e] <= 1) return;
 
             size_t RO = recon_bit.data_.data_.get_size(0);
             size_t E1 = recon_bit.data_.data_.get_size(1);
             size_t E2 = recon_bit.data_.data_.get_size(2);
 
             hoNDArray<T>& src = recon_obj.ref_calib_;
-            hoNDArray<T>& dst = recon_obj.ref_calib_dst_;
+            hoNDArray<T>& dst = recon_obj.ref_calib_;
 
             size_t ref_RO = src.get_size(0);
             size_t ref_E1 = src.get_size(1);
@@ -892,9 +644,9 @@ namespace Gadgetron {
         {
             typedef std::complex<float> T;
 
-            size_t RO = recon_obj.data_dst_.get_size(0);
-            size_t E1 = recon_obj.data_dst_.get_size(1);
-            size_t E2 = recon_obj.data_dst_.get_size(2);
+            size_t RO = recon_obj.ref_coil_map_.get_size(0);
+            size_t E1 = recon_obj.ref_coil_map_.get_size(1);
+            size_t E2 = recon_obj.ref_coil_map_.get_size(2);
 
             size_t ref_RO = src.get_size(0);
             size_t ref_E1 = src.get_size(1);
@@ -915,22 +667,13 @@ namespace Gadgetron {
             {
                 size_t convKNE2 = recon_obj.kernel_.get_size(2);
 
-                hoNDArray<T> acsSrc(ref_RO, ref_E1, ref_E2, srcCHA, const_cast<T*>(src.begin()));
-                hoNDArray<T> acsDst(ref_RO, ref_E1, ref_E2, dstCHA, const_cast<T*>(dst.begin()));
+                hoNDArray<T> ker(convKRO, convKNE1, convKNE2, srcCHA, dstCHA, &(recon_obj.kernel_(0, 0, 0, 0, 0, n, s, slc)));
+                hoNDArray<T> coilMap(RO, E1, E2, dstCHA, &(recon_obj.coil_map_(0, 0, 0, 0, n, s, slc)));
 
-                T* pKernel = &(recon_obj.kernel_(0, 0, 0, 0, 0, n, s, slc));
-                hoNDArray<T> ker(convKRO, convKNE1, convKNE2, srcCHA, dstCHA, pKernel);
+                hoNDArray<T> unmixC(RO, E1, E2, srcCHA, &(recon_obj.unmixing_coeff_(0, 0, 0, 0, n, s, slc)));
+                hoNDArray<float> gFactor(RO, E1, E2, 1, &(recon_obj.gfactor_(0, 0, 0, 0, n, s, slc)));
 
-                T* pCoilMap = &(recon_obj.coil_map_(0, 0, 0, 0, n, s, slc));
-                hoNDArray<T> coilMap(RO, E1, E2, dstCHA, pCoilMap);
-
-                T* pUnmixing = &(recon_obj.unmixing_coeff_(0, 0, 0, 0, n, s, slc));
-                hoNDArray<T> unmixC(RO, E1, E2, srcCHA, pUnmixing);
-
-                float* pGFactor = &(recon_obj.gfactor_(0, 0, 0, 0, n, s, slc));
-                hoNDArray<float> gFactor(RO, E1, E2, 1, pGFactor);
-
-                Gadgetron::grappa3d_calib_convolution_kernel(acsSrc, acsDst, (size_t)acceFactorE1_[e], (size_t)acceFactorE2_[e], grappa_reg_lamda.value(), grappa_calib_over_determine_ratio.value(), kRO, kNE1, kNE2, ker);
+                Gadgetron::grappa3d_calib_convolution_kernel(src, dst, (size_t)acceFactorE1_[e], (size_t)acceFactorE2_[e], grappa_reg_lamda.value(), grappa_calib_over_determine_ratio.value(), kRO, kNE1, kNE2, ker);
                 Gadgetron::grappa3d_unmixing_coeff(ker, coilMap, (size_t)acceFactorE1_[e], (size_t)acceFactorE2_[e], unmixC, gFactor);
             }
             else
@@ -938,26 +681,18 @@ namespace Gadgetron {
                 hoNDArray<T> acsSrc(ref_RO, ref_E1, srcCHA, const_cast<T*>(src.begin()));
                 hoNDArray<T> acsDst(ref_RO, ref_E1, dstCHA, const_cast<T*>(dst.begin()));
 
-                T* pKernel = &(recon_obj.kernel_(0, 0, 0, 0, n, s, slc));
-                hoNDArray<T> convKer(convKRO, convKNE1, srcCHA, dstCHA, pKernel);
-
-                T* pkIm = &(recon_obj.kernelIm_(0, 0, 0, 0, 0, n, s, slc));
-                hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, pkIm);
-
-                T* pCoilMap = &(recon_obj.coil_map_(0, 0, 0, 0, n, s, slc));
-                hoNDArray<T> coilMap(RO, E1, dstCHA, pCoilMap);
-
-                T* pUnmixing = &(recon_obj.unmixing_coeff_(0, 0, 0, 0, n, s, slc));
-                hoNDArray<T> unmixC(RO, E1, srcCHA, pUnmixing);
-
-                float* pGFactor = &(recon_obj.gfactor_(0, 0, 0, 0, n, s, slc));
-                hoNDArray<float> gFactor;
+                hoNDArray<T> convKer(convKRO, convKNE1, srcCHA, dstCHA, &(recon_obj.kernel_(0, 0, 0, 0, n, s, slc)));
+                hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, &(recon_obj.kernelIm_(0, 0, 0, 0, 0, n, s, slc)));
+                hoNDArray<T> coilMap(RO, E1, dstCHA, &(recon_obj.coil_map_(0, 0, 0, 0, n, s, slc)));
+                hoNDArray<T> unmixC(RO, E1, srcCHA, &(recon_obj.unmixing_coeff_(0, 0, 0, 0, n, s, slc)));
 
                 Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t)acceFactorE1_[e], grappa_reg_lamda.value(), kRO, kNE1, convKer);
                 Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
 
+                hoNDArray<float> gFactor;
                 Gadgetron::grappa2d_unmixing_coeff(kIm, coilMap, (size_t)acceFactorE1_[e], unmixC, gFactor);
-                memcpy(pGFactor, gFactor.begin(), gFactor.get_number_of_bytes());
+
+                memcpy(&(recon_obj.gfactor_(0, 0, 0, 0, n, s, slc)), gFactor.begin(), gFactor.get_number_of_bytes());
             }
         }
         catch (...)
@@ -972,16 +707,16 @@ namespace Gadgetron {
         {
             typedef std::complex<float> T;
 
-            size_t RO = recon_obj.data_dst_.get_size(0);
-            size_t E1 = recon_obj.data_dst_.get_size(1);
-            size_t E2 = recon_obj.data_dst_.get_size(2);
-            size_t dstCHA = recon_obj.data_dst_.get_size(3);
-            size_t N = recon_obj.data_dst_.get_size(4);
-            size_t S = recon_obj.data_dst_.get_size(5);
-            size_t SLC = recon_obj.data_dst_.get_size(6);
+            size_t RO = recon_bit.data_.data_.get_size(0);
+            size_t E1 = recon_bit.data_.data_.get_size(1);
+            size_t E2 = recon_bit.data_.data_.get_size(2);
+            size_t dstCHA = recon_bit.data_.data_.get_size(3);
+            size_t N = recon_bit.data_.data_.get_size(4);
+            size_t S = recon_bit.data_.data_.get_size(5);
+            size_t SLC = recon_bit.data_.data_.get_size(6);
 
             hoNDArray<T>& src = recon_obj.ref_calib_;
-            hoNDArray<T>& dst = recon_obj.ref_calib_dst_;
+            hoNDArray<T>& dst = recon_obj.ref_calib_;
 
             size_t ref_RO = src.get_size(0);
             size_t ref_E1 = src.get_size(1);
@@ -1372,8 +1107,5 @@ namespace Gadgetron {
         }
     }
 
-    // ----------------------------------------------------------------------------------------
-
     GADGET_FACTORY_DECLARE(GenericCartesianGrappaReconGadget)
-
 }
