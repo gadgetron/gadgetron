@@ -37,8 +37,6 @@
 
 #include "hoNDArray_utils.h"
 
-#include "gtPlusIOAnalyze.h"
-
 #include "GadgetStreamController.h"
 
 #include "hoNDArray_utils.h"
@@ -193,17 +191,6 @@ namespace Gadgetron {
         // variables for debug and timing
         // --------------------------------------------------
 
-        // debug folder
-        std::string debug_folder_full_path_;
-
-        // clock for timing
-        Gadgetron::GadgetronTimer gt_timer1_;
-        Gadgetron::GadgetronTimer gt_timer2_;
-        Gadgetron::GadgetronTimer gt_timer3_;
-
-        // exporter
-        Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
-
         // in verbose mode, more info is printed out
         bool verbose_;
 
@@ -221,13 +208,10 @@ namespace Gadgetron {
         // recon step functions
         // --------------------------------------------------
 
-        // recon chain
-        // prepare recon
-        // if the squared pixel recon if prescribed, the new recon image size to ensure squared pixel will be computed
-        // if needed, the incoming data matrix will be padded and ref_preparer_ recon size will be updated
-        // then all recon components will be set with updated parameters
-        // finally, the consistency of this recon will be checked; if necessary, changes will be made to ensure the parameter consistency
-        virtual void prepare_recon(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
+        // ensure the recon image to have squared pixel, therefore zero-=padding resizing is not needed for E1
+        // TODO: consider extend this to E2 as well
+        // if needed, the incoming data matrix will be padded
+        virtual void ensure_recon_size(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
 
         // prepare the ref data
         // this may be the most complicated part of the whole recon
@@ -239,10 +223,6 @@ namespace Gadgetron {
 
         // estimate coil map
         virtual void perform_coil_map_estimation(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
-
-        /// complexIm: [RO E1 E2 CHA ...]
-        /// if E2 == 1, the 2D coil map estimation will be assumed
-        virtual void compute_coil_map(const hoNDArray< std::complex<float> >& complexIm, hoNDArray< std::complex<float> >& coilMap);
 
         // calibration, if only one dst channel is prescribed, the GrappaOne is used
         virtual void perform_calib(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
@@ -260,6 +240,10 @@ namespace Gadgetron {
         // implementation functions
         // --------------------------------------------------
 
+        /// complexIm: [RO E1 E2 CHA ...]
+        /// if E2 == 1, the 2D coil map estimation will be assumed
+        virtual void compute_coil_map(const hoNDArray< std::complex<float> >& complexIm, hoNDArray< std::complex<float> >& coilMap);
+
         // perform one calibration
         virtual void perform_calib_impl(size_t n, size_t s, size_t slc, size_t e, const hoNDArray< std::complex<float> >& src, const hoNDArray< std::complex<float> >& dst, ReconObjType& recon_obj);
 
@@ -272,9 +256,6 @@ namespace Gadgetron {
         // --------------------------------------------------
         // utility functions
         // --------------------------------------------------
-        void get_current_moment(std::string& procTime);
-        void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath);
-
         // compute image number
         virtual size_t compute_image_number(ISMRMRD::ImageHeader& imheader, size_t encoding = 0, size_t CHA = 1, size_t cha = 0, size_t E2 = 1);
     };

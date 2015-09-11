@@ -155,7 +155,6 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_cpufft
     gadgetron_toolbox_cpuklt
     gadgetron_toolbox_mri_core
-    gadgetron_toolbox_gtplus_io
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
