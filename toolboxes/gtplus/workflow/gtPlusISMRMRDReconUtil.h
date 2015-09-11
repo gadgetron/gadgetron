@@ -125,15 +125,7 @@ namespace Gadgetron {
     };
 
     // define the calibration mode of ISMRMRD
-    enum ISMRMRDCALIBMODE
-    {
-        ISMRMRD_embedded = 256,
-        ISMRMRD_interleaved,
-        ISMRMRD_separate,
-        ISMRMRD_external,
-        ISMRMRD_other,
-        ISMRMRD_noacceleration
-    };
+    typedef Gadgetron::ismrmrdCALIBMODE ISMRMRDCALIBMODE;
 
     // define the interpolation method
     enum ISMRMRDINTERP

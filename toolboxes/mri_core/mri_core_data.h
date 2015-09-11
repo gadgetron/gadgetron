@@ -38,6 +38,19 @@ namespace Gadgetron
 	NONE
       };
 
+    // --------------------------------------------------------------------------
+    /// define the calibration mode of ISMRMRD
+    // --------------------------------------------------------------------------
+    enum ismrmrdCALIBMODE
+    {
+        ISMRMRD_embedded,
+        ISMRMRD_interleaved,
+        ISMRMRD_separate,
+        ISMRMRD_external,
+        ISMRMRD_other,
+        ISMRMRD_noacceleration
+    };
+
   class SamplingLimit
   {
   public:

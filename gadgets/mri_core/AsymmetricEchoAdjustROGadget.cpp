@@ -100,6 +100,9 @@ int AsymmetricEchoAdjustROGadget
                 {
                     memcpy(pM3 + c*maxRO_[encoding_ref] + maxRO_[encoding_ref] - samples, pM2 + c*samples, numOfBytes);
                 }
+
+                m1->getObjectPtr()->discard_pre = maxRO_[encoding_ref] - samples;
+                m1->getObjectPtr()->discard_post = 0;
             }
 
             if ( az == 2 ) // post zeros
@@ -109,12 +112,16 @@ int AsymmetricEchoAdjustROGadget
                 {
                     memcpy(pM3 + c*maxRO_[encoding_ref], pM2 + c*samples, numOfBytes);
                 }
+
+                m1->getObjectPtr()->discard_pre = 0;
+                m1->getObjectPtr()->discard_post = maxRO_[encoding_ref] - samples;
             }
 
             m2->release(); //We are done with this data
 
             m1->cont(m3);
-            m1->getObjectPtr()->number_of_samples = data_out_dims[0];
+            m1->getObjectPtr()->number_of_samples = (uint16_t)data_out_dims[0];
+            // m1->getObjectPtr()->center_sample = m1->getObjectPtr()->number_of_samples / 2;
         }
 
         if (this->next()->putq(m1) == -1) 
