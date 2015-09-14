@@ -45,5 +45,6 @@ install(FILES
   CBCT_binning.h
   conebeam_projection.h
   hoCuConebeamProjectionOperator.h
+  hoCuOFConebeamProjectionOperator.h
   gpuxray_export.h 
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
