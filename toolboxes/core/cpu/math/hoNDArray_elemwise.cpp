@@ -2750,6 +2750,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > sgn<float>( hoNDArray<float>* );
     template EXPORTCPUCOREMATH void sgn_inplace<float>( hoNDArray<float>* );
     template EXPORTCPUCOREMATH void clamp<float>( hoNDArray<float>*, float, float );
+    template EXPORTCPUCOREMATH void clamp<float>( hoNDArray<float>*,float,float, float, float );
     template EXPORTCPUCOREMATH void clamp_min<float>( hoNDArray<float>*, float );
     template EXPORTCPUCOREMATH void clamp_max<float>( hoNDArray<float>*, float );
     template EXPORTCPUCOREMATH void normalize<float>( hoNDArray<float>*, float );
