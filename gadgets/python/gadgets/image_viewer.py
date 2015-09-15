@@ -58,8 +58,8 @@ class ImageViewWindow:
 
 class ImageViewer(Gadget):
     def process_config(self, cfg):
-        print "Attempting to open window"
-        print "Window running"
+        print("Attempting to open window")
+        print("Window running")
         #Configuration Ignored
 
     def process(self, h,im):

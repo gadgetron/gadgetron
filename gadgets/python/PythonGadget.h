@@ -83,7 +83,10 @@ namespace Gadgetron{
             // Reload the module so changes take place at Gadgetron runtime
             boost::python::import("__main__").attr("__dict__")[module_name.c_str()] = module_;
             std::string tmp = std::string("reload(") + std::string(module_name.c_str()) + std::string(")\n");
-
+#if defined PYVER && PYVER == 3
+            // prefix reload call for Python 3
+            tmp = std::string("from importlib import reload;") + tmp;
+#endif
             //GDEBUG("Reloading with command: %s\n", tmp.c_str());
             boost::python::exec(tmp.c_str(), boost::python::import("__main__").attr("__dict__"));
 
