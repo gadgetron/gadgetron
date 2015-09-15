@@ -253,7 +253,12 @@ if (LAPACK_FOUND)
   message("LAPACK Found")
   ADD_DEFINITIONS(-DUSE_LAPACK)
 endif (LAPACK_FOUND)
-find_package(PythonLibs 2)
+
+find_package(PythonLibs)
+string(REPLACE "." ";" PYTHON_VERSION_MAJOR ${PYTHONLIBS_VERSION_STRING})
+list(GET PYTHON_VERSION_MAJOR 0 PYVER)
+add_definitions(-DPYVER=${PYVER})
+
 find_package(NumPy)
 find_package(GMatlab)
 if (MATLAB_FOUND)

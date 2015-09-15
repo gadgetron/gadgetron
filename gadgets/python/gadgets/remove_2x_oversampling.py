@@ -5,8 +5,8 @@ from gadgetron import Gadget
 class Remove2xOversampling(Gadget):
 
     def process_config(self, conf):
-        #print "remove 2x oversampling: Configuration received"
-        #print str(conf)
+        #print("remove 2x oversampling: Configuration received")
+        #print(str(conf))
         return
 
     def process(self, acq, data):

@@ -4,7 +4,7 @@ from gadgetron import Gadget
 class RMSCoilCombine(Gadget):
 
     def process_config(self, cfg):
-        print "RMS Coil Combine, Config ignored"
+        print("RMS Coil Combine, Config ignored")
 
     def process(self, h, im):
         combined_image = np.sqrt(np.sum(np.square(np.abs(im)),axis=0))
