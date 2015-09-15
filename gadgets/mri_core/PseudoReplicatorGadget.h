@@ -8,9 +8,11 @@
 #pragma once
 #include "Gadget.h"
 #include "mri_core_data.h"
+#include "gadgetron_mricore_export.h"
+
 namespace Gadgetron {
 
-class PseudoReplicatorGadget : public Gadget1<IsmrmrdReconData>{
+class EXPORTGADGETSMRICORE PseudoReplicatorGadget : public Gadget1<IsmrmrdReconData>{
 public:
 	GADGET_PROPERTY(repetitions,int,"Number of pseudoreplicas to produce",10);
 	PseudoReplicatorGadget()  ;
