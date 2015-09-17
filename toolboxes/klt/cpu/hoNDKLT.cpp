@@ -264,7 +264,7 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, value_type thres,
                 }
             }
 
-            output_length_ = n+1;
+            output_length_ = n;
         }
 
         M_.create(N, output_length_, V_.begin());
