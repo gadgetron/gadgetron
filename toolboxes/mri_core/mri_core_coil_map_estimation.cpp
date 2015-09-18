@@ -10,6 +10,10 @@
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
 
+#ifdef USE_OMP
+    #include <omp.h>
+#endif // USE_OMP
+
 namespace Gadgetron
 {
 
@@ -221,7 +225,7 @@ template EXPORTMRICORE void coil_map_2d_Inati(const hoNDArray< std::complex<doub
 // ------------------------------------------------------------------------
 
 template<typename T> 
-void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power)
+void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t power)
 {
     try
     {
@@ -248,12 +252,18 @@ void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t k
             ks++;
         }
 
-        size_t kss = ks*ks*ks;
+        if (kz % 2 != 1)
+        {
+            kz++;
+        }
+
+        size_t kss = ks*ks*kz;
         long long halfKs = (long long)ks / 2;
+        long long halfKz = (long long)kz / 2;
 
         long long e2;
 
-        #pragma omp parallel default(none) private(e2) shared(ks, RO, E1, E2, CHA, pSen, pData, halfKs, power, kss)
+        #pragma omp parallel default(none) private(e2) shared(ks, kz, RO, E1, E2, CHA, pSen, pData, halfKs, halfKz, power, kss)
         {
             hoMatrix<T> D(kss, CHA);
             hoMatrix<T> DC(kss, CHA);
@@ -285,13 +295,13 @@ void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t k
                     for (ro = 0; ro<(long long)RO; ro++)
                     {
                         // fill the data matrix D
-                        if (e2 >= halfKs && e2<E2 - halfKs && e1 >= halfKs && e1<E1 - halfKs && ro >= halfKs && ro<RO - halfKs)
+                        if (e2 >= halfKz && e2<E2 - halfKz && e1 >= halfKs && e1<E1 - halfKs && ro >= halfKs && ro<RO - halfKs)
                         {
                             for (cha = 0; cha<CHA; cha++)
                             {
                                 const T* pDataCurr = pData + cha*RO*E1*E2;
                                 long long ind = 0;
-                                for (ke2 = -halfKs; ke2 <= halfKs; ke2++)
+                                for (ke2 = -halfKz; ke2 <= halfKz; ke2++)
                                 {
                                     de2 = e2 + ke2;
                                     for (ke1 = -halfKs; ke1 <= halfKs; ke1++)
@@ -311,7 +321,7 @@ void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t k
                             {
                                 const T* pDataCurr = pData + cha*RO*E1*E2;
                                 long long ind = 0;
-                                for (ke2 = -halfKs; ke2 <= halfKs; ke2++)
+                                for (ke2 = -halfKz; ke2 <= halfKz; ke2++)
                                 {
                                     de2 = e2 + ke2;
                                     if (de2 < 0) de2 += E2;
@@ -383,8 +393,8 @@ void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t k
     }
 }
 
-template EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t power);
-template EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t power);
+template EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t power);
+template EXPORTMRICORE void coil_map_3d_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t power);
 
 // ------------------------------------------------------------------------
 
@@ -604,6 +614,129 @@ void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
 
 template EXPORTMRICORE void coil_map_3d_Inati_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t iterNum, float thres);
 template EXPORTMRICORE void coil_map_3d_Inati_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t iterNum, double thres);
+
+// ------------------------------------------------------------------------
+
+template<typename T> void coil_map_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t power)
+{
+    try
+    {
+        size_t RO = data.get_size(0);
+        size_t E1 = data.get_size(1);
+        size_t E2 = data.get_size(2);
+        size_t CHA = data.get_size(3);
+
+        if (!data.dimensions_equal(&coilMap))
+        {
+            coilMap = data;
+        }
+
+        if (CHA <= 1)
+        {
+            GWARN_STREAM("coil_map_Inati, CHA <= 1");
+            return;
+        }
+
+        size_t num = data.get_number_of_elements() / (RO*E1*E2*CHA);
+
+        long long n;
+
+        if (E2 > 1)
+        {
+            for (n = 0; n < (long long)num; n++)
+            {
+
+                hoNDArray<T> im(RO, E1, E2, CHA, const_cast<T*>(data.begin() + n*RO*E1*E2*CHA));
+                hoNDArray<T> cmap(RO, E1, E2, CHA, coilMap.begin() + n*RO*E1*E2*CHA);
+
+                Gadgetron::coil_map_3d_Inati(im, cmap, ks, kz, power);
+            }
+        }
+        else
+        {
+#ifdef USE_OMP
+            int num_procs = omp_get_num_procs();
+#pragma omp parallel for default(none) private(n) shared(num, RO, E1, CHA, data, coilMap, ks, power) if(num>num_procs/2)
+#endif // USE_OMP
+            for (n = 0; n < (long long)num; n++)
+            {
+                hoNDArray<T> im(RO, E1, CHA, const_cast<T*>(data.begin()) + n*RO*E1*CHA);
+                hoNDArray<T> cmap(RO, E1, CHA, coilMap.begin() + n*RO*E1*CHA);
+
+                Gadgetron::coil_map_2d_Inati(im, cmap, ks, power);
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors happened in coil_map_Inati(...) ... ")
+    }
+}
+
+template EXPORTMRICORE void coil_map_Inati(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t power);
+template EXPORTMRICORE void coil_map_Inati(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t power);
+
+// ------------------------------------------------------------------------
+
+template<typename T> void coil_map_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t iterNum, typename realType<T>::Type thres)
+{
+    try
+    {
+        size_t RO = data.get_size(0);
+        size_t E1 = data.get_size(1);
+        size_t E2 = data.get_size(2);
+        size_t CHA = data.get_size(3);
+
+        if (!data.dimensions_equal(&coilMap))
+        {
+            coilMap = data;
+        }
+
+        if (CHA <= 1)
+        {
+            GWARN_STREAM("coil_map_Inati_Iter, CHA <= 1");
+            return;
+        }
+
+        size_t num = data.get_number_of_elements() / (RO*E1*E2*CHA);
+
+        long long n;
+
+        if (E2 > 1)
+        {
+            for (n = 0; n < (long long)num; n++)
+            {
+
+                hoNDArray<T> im(RO, E1, E2, CHA, const_cast<T*>(data.begin() + n*RO*E1*E2*CHA));
+                hoNDArray<T> cmap(RO, E1, E2, CHA, coilMap.begin() + n*RO*E1*E2*CHA);
+
+                Gadgetron::coil_map_3d_Inati_Iter(im, cmap, ks, kz, iterNum, thres);
+            }
+        }
+        else
+        {
+#ifdef USE_OMP
+            int num_procs = omp_get_num_procs();
+#pragma omp parallel for default(none) private(n) shared(num, RO, E1, CHA, data, coilMap, ks, iterNum, thres) if(num>num_procs/2)
+#endif // USE_OMP
+            for (n = 0; n < (long long)num; n++)
+            {
+                hoNDArray<T> im(RO, E1, CHA, const_cast<T*>(data.begin()) + n*RO*E1*CHA);
+                hoNDArray<T> cmap(RO, E1, CHA, coilMap.begin() + n*RO*E1*CHA);
+
+                Gadgetron::coil_map_2d_Inati_Iter(im, cmap, ks, iterNum, thres);
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors happened in coil_map_Inati_Iter(...) ... ")
+    }
+}
+
+template EXPORTMRICORE void coil_map_Inati_Iter(const hoNDArray< std::complex<float> >& data, hoNDArray< std::complex<float> >& coilMap, size_t ks, size_t kz, size_t iterNum, float thres);
+template EXPORTMRICORE void coil_map_Inati_Iter(const hoNDArray< std::complex<double> >& data, hoNDArray< std::complex<double> >& coilMap, size_t ks, size_t kz, size_t iterNum, double thres);
+
 
 // ------------------------------------------------------------------------
 
