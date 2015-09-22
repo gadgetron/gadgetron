@@ -237,50 +237,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                 size_t target_coils_with_uncombined = target_coils_ + numUnCombined;
                 if (target_coils_with_uncombined > CHA) target_coils_with_uncombined = CHA;
 
-                std::vector<size_t> dimTarget(3);
-                dimTarget[0] = RO;
-                dimTarget[1] = E1;
-                dimTarget[2] = target_coils_with_uncombined; //  target_coils_ + numUnCombined;
-
-                if (!target_acs_.dimensions_equal(&dimTarget))
-                {
-                    target_acs_.create(RO, E1, target_coils_with_uncombined);
-                }
-
-                // copy first target_coils_ channels and all uncombined channels to target_acs_
-                size_t sCha, ind(0), ind_uncombined(0);
                 std::list<unsigned int>::iterator it;
-
-                // record from which src channel a target channel is selected
-                std::vector<size_t> srcChaLoc(target_coils_with_uncombined);
-                for (sCha = 0; sCha<CHA; sCha++)
-                {
-                    bool uncombined = false;
-                    for (it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++)
-                    {
-                        if (sCha == *it)
-                        {
-                            uncombined = true;
-                            break;
-                        }
-                    }
-
-                    if (!uncombined)
-                    {
-                        if (ind<target_coils_with_uncombined - numUnCombined)
-                        {
-                            memcpy(target_acs_.begin() + ind * RO*E1, acs.begin() + sCha * RO*E1, sizeof(std::complex<float>)*RO*E1);
-                            srcChaLoc[ind] = sCha;
-                            ind++;
-                        }
-                    }
-                    else
-                    {
-                        memcpy(target_acs_.begin() + (target_coils_with_uncombined - numUnCombined + ind_uncombined) * RO*E1, acs.begin() + sCha * RO*E1, sizeof(std::complex<float>)*RO*E1);
-                        srcChaLoc[target_coils_with_uncombined - numUnCombined + ind_uncombined] = sCha;
-                        ind_uncombined++;
-                    }
-                }
 
                 // compute unmixing coefficients
                 if (mb1->getObjectPtr()->acceleration_factor == 1)
@@ -301,14 +258,10 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                     Gadgetron::clear(unmixing_);
 
                     // copy back to unmixing
-                    size_t t;
-                    for (t = 0; t<target_coils_with_uncombined; t++)
-                    {
-                        memcpy(unmixing_.begin() + srcChaLoc[t] * RO*E1, coil_map_.begin() + t*RO*E1, sizeof(std::complex<float>)*RO*E1);
-                    }
+                    memcpy(unmixing_.begin(), coil_map_.begin(), sizeof(std::complex<float>)*RO*E1*CHA);
 
                     // set uncombined channels
-                    ind = 1;
+                    size_t ind = 1;
                     for (it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++)
                     {
                         std::complex<float>* pUnmixing = unmixing_.begin() + ind*RO*E1*CHA + (*it)*RO*E1;
@@ -322,7 +275,52 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
                 }
                 else
                 {
-                    // if with acceleration, the target coils are used for unmixing coefficient estimation
+                    // first, assemble the target_acs
+                    // the combined channel comes first and then all uncombined channels
+                    std::vector<size_t> dimTarget(3);
+                    dimTarget[0] = RO;
+                    dimTarget[1] = E1;
+                    dimTarget[2] = target_coils_with_uncombined;
+
+                    if (!target_acs_.dimensions_equal(&dimTarget))
+                    {
+                        target_acs_.create(RO, E1, target_coils_with_uncombined);
+                    }
+
+                    // copy first combined channels and all uncombined channels to target_acs_
+                    size_t sCha, ind(0), ind_uncombined(0);
+
+                    // record from which src channel, a target channel is selected
+                    std::vector<size_t> srcChaLoc(target_coils_with_uncombined);
+                    for (sCha = 0; sCha<CHA; sCha++)
+                    {
+                        bool uncombined = false;
+                        for (it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++)
+                        {
+                            if (sCha == *it)
+                            {
+                                uncombined = true;
+                                break;
+                            }
+                        }
+
+                        if (!uncombined)
+                        {
+                            if ( ind < (target_coils_with_uncombined - numUnCombined) )
+                            {
+                                memcpy(target_acs_.begin() + ind * RO*E1, acs.begin() + sCha * RO*E1, sizeof(std::complex<float>)*RO*E1);
+                                srcChaLoc[ind] = sCha;
+                                ind++;
+                            }
+                        }
+                        else
+                        {
+                            memcpy(target_acs_.begin() + (target_coils_with_uncombined - numUnCombined + ind_uncombined) * RO*E1, acs.begin() + sCha * RO*E1, sizeof(std::complex<float>)*RO*E1);
+                            srcChaLoc[target_coils_with_uncombined - numUnCombined + ind_uncombined] = sCha;
+                            ind_uncombined++;
+                        }
+                    }
+
                     if (!complex_im_.dimensions_equal(&target_acs_))
                     {
                         complex_im_.create(RO, E1, target_acs_.get_size(2));
@@ -338,16 +336,19 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 
                     Gadgetron::grappa2d_image_domain_kernel(conv_ker_, RO, E1, kIm_);
 
+                    // kIm_ stored the unwrapping coefficients as [RO E1 CHA target_coils_with_uncombined]
+                    // for the target_coils_with_uncombined dimension, combined channels come first and then uncombined channels
+
                     Gadgetron::clear(unmixing_);
 
                     hoNDArray< std::complex<float> > unmixing_all_channels(RO, E1, CHA, unmixing_.begin());
                     Gadgetron::grappa2d_unmixing_coeff(kIm_, coil_map_, (size_t)(mb1->getObjectPtr()->acceleration_factor), unmixing_all_channels, gFactor_);
 
                     // set unmixing coefficients for uncombined channels
-                    size_t ind = 1;
+                    ind = 1;
                     for (it = uncombined_channels_.begin(); it != uncombined_channels_.end(); it++)
                     {
-                        memcpy(unmixing_.begin() + ind*RO*E1*CHA, kIm_.begin() + (target_coils_ + ind - 1)*RO*E1*CHA, sizeof(std::complex<float>)*RO*E1*CHA);
+                        memcpy(unmixing_.begin() + ind*RO*E1*CHA, kIm_.begin() + (target_coils_with_uncombined - numUnCombined + ind - 1)*RO*E1*CHA, sizeof(std::complex<float>)*RO*E1*CHA);
                         ind++;
                     }
                 }
