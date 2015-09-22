@@ -101,7 +101,7 @@
       <name>DeviceChannelSplitter</name>
       <dll>gadgetron_interventional_mri</dll>
       <classname>DeviceChannelSplitterGadgetUSHORT</classname>
-    </gadget>>
+    </gadget>
 
      <gadget>
       <name>ImageFinish</name>
