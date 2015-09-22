@@ -96,6 +96,9 @@ namespace Gadgetron{
 
         /// copy untransformed eigen vector and reset transform
         void copy_and_reset_transform(size_t N, std::vector<size_t>& untransformed);
+
+        /// compute number of kept channels
+        void compute_num_kept(value_type thres);
     };
 }
 

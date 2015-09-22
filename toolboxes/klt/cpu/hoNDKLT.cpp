@@ -241,33 +241,37 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, size_t output_len
 }
 
 template<typename T>
+void hoNDKLT<T>::compute_num_kept(value_type thres)
+{
+    size_t N = E_.get_size(0);
+
+    if (thres <= 0)
+    {
+        output_length_ = N;
+    }
+    else
+    {
+        size_t n;
+        for (n = 1; n < N; n++)
+        {
+            if (std::abs(E_(n)) < thres*std::abs(E_(0)))
+            {
+                break;
+            }
+        }
+
+        output_length_ = n;
+    }
+}
+
+template<typename T>
 void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, value_type thres, bool remove_mean)
 {
     try
     {
         this->prepare(data, dim, (size_t)0, remove_mean);
-
-        size_t N = E_.get_size(0);
-
-        if (thres <= 0)
-        {
-            output_length_ = N;
-        }
-        else
-        {
-            size_t n;
-            for (n = 1; n < N; n++)
-            {
-                if (std::abs(E_(n)) < thres*std::abs(E_(0)))
-                {
-                    break;
-                }
-            }
-
-            output_length_ = n;
-        }
-
-        M_.create(N, output_length_, V_.begin());
+        this->compute_num_kept(thres);
+        M_.create(E_.get_size(0), output_length_, V_.begin());
     }
     catch (...)
     {
@@ -446,14 +450,14 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, std::vector<size_
             // adjust the eigen vector matrix
             this->copy_and_reset_transform(N, untransformed);
 
-            output_length_ = output_length;
+            output_length_ += unN;
+
+            M_.create(N, output_length_, V_.begin());
         }
         else
         {
             this->prepare(data, dim, output_length, remove_mean);
         }
-
-        M_.create(N, output_length_, V_.begin());
     }
     catch (...)
     {
@@ -466,40 +470,18 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, std::vector<size_
 {
     try
     {
-        size_t NDim = data.get_number_of_dimensions();
-        GADGET_CHECK_THROW(dim<NDim);
-
-        size_t N = data.get_size(dim);
-
         size_t unN = untransformed.size();
-        GADGET_CHECK_THROW(unN<N);
-
-        size_t d;
-        for (d = 0; d < unN; d++)
-        {
-            GADGET_CHECK_THROW(untransformed[d] < N);
-        }
 
         if (unN > 0)
         {
-            // crop the data to exclude untransformed slots
-            hoNDArray<T> dataCropped;
-            this->exclude_untransformed(data, dim, untransformed, dataCropped);
-
-            // compute the transform
-            this->prepare(dataCropped, dim, thres, remove_mean);
-
-            // adjust the eigen vector matrix
-            this->copy_and_reset_transform(N, untransformed);
-
-            output_length_ += unN;
+            this->prepare(data, dim, untransformed, (size_t)(0), remove_mean);
+            this->compute_num_kept(thres);
+            M_.create(data.get_size(dim), output_length_, V_.begin());
         }
         else
         {
             this->prepare(data, dim, thres, remove_mean);
         }
-
-        M_.create(N, output_length_, V_.begin());
     }
     catch (...)
     {
