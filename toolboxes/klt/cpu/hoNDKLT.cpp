@@ -446,7 +446,7 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, std::vector<size_
             // adjust the eigen vector matrix
             this->copy_and_reset_transform(N, untransformed);
 
-            output_length_ = output_length;
+            output_length_ += unN;
         }
         else
         {
