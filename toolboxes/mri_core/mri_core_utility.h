@@ -29,4 +29,10 @@ namespace Gadgetron
     /// set up the kspace filter for ref used for coil map estimation
     template <typename T> EXPORTMRICORE void generate_ref_filter_for_coil_map(const hoNDArray<T>& ref, const SamplingLimit& lim_RO, const SamplingLimit& lim_E1, const SamplingLimit& lim_E2, hoNDArray<T>& filter_RO, hoNDArray<T>& filter_E1, hoNDArray<T>& filter_E2);
 
+    /// get the path of debug folder
+    /// environmental variable GADGETRON_DEBUG_FOLDER is used 
+    EXPORTMRICORE void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath);
+
+    /// get current time into string
+    EXPORTMRICORE void get_current_moment(std::string& procTime);
 }

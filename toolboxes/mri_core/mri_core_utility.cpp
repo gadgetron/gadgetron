@@ -7,6 +7,7 @@
 #include "mri_core_utility.h"
 #include "hoNDArray_elemwise.h"
 #include "mri_core_kspace_filter.h"
+#include <ctime>
 
 namespace Gadgetron
 {
@@ -209,6 +210,42 @@ namespace Gadgetron
 
     template EXPORTMRICORE void generate_ref_filter_for_coil_map(const hoNDArray< std::complex<float> >& ref, const SamplingLimit& lim_RO, const SamplingLimit& lim_E1, const SamplingLimit& lim_E2, hoNDArray< std::complex<float> >& filter_RO, hoNDArray< std::complex<float> >& filter_E1, hoNDArray< std::complex<float> >& filter_E2);
     template EXPORTMRICORE void generate_ref_filter_for_coil_map(const hoNDArray< std::complex<double> >& ref, const SamplingLimit& lim_RO, const SamplingLimit& lim_E1, const SamplingLimit& lim_E2, hoNDArray< std::complex<double> >& filter_RO, hoNDArray< std::complex<double> >& filter_E1, hoNDArray< std::complex<double> >& filter_E2);
+
+    // ------------------------------------------------------------------------
+
+    void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath)
+    {
+        char* v = std::getenv("GADGETRON_DEBUG_FOLDER");
+        if (v == NULL)
+        {
+#ifdef _WIN32
+            debugFolderPath = "c:/temp/gadgetron";
+#else
+            debugFolderPath = "/tmp/gadgetron";
+#endif // _WIN32
+        }
+        else
+        {
+            debugFolderPath = std::string(v);
+        }
+
+        debugFolderPath.append("/");
+        debugFolderPath.append(debugFolder);
+        debugFolderPath.append("/");
+    }
+
+    // ------------------------------------------------------------------------
+
+    void get_current_moment(std::string& procTime)
+    {
+        char timestamp[100];
+        time_t mytime;
+        struct tm *mytm;
+        mytime = time(NULL);
+        mytm = localtime(&mytime);
+        strftime(timestamp, sizeof(timestamp), "%a, %b %d %Y, %H:%M:%S", mytm);
+        procTime = timestamp;
+    }
 
     // ------------------------------------------------------------------------
 }

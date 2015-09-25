@@ -50,6 +50,24 @@
         <property><name>ignore_segment</name><value>true</value></property>
     </gadget>
 
+    <!-- Prep ref -->
+    <gadget>
+        <name>PrepRef</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>GenericCartesianReconReferencePrepGadget</classname>
+
+        <!-- parameters for debug and timing -->
+        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>perform_timing</name><value>true</value></property>
+        <property><name>verbose</name><value>true</value></property>
+
+        <!-- averaging across repetition -->
+        <property><name>average_all_ref_N</name><value>true</value></property>
+
+        <!-- every set has its own kernels -->
+        <property><name>average_all_ref_S</name><value>false</value></property>
+    </gadget>
+
     <!-- Recon -->
     <gadget>
         <name>Recon</name>
@@ -66,12 +84,6 @@
 
         <!-- whether to send out gfactor -->
         <property><name>send_out_gfactor</name><value>true</value></property>
-
-        <!-- averaging across repetition -->
-        <property><name>average_all_ref_N</name><value>true</value></property>
-
-        <!-- every set has its own kernels -->
-        <property><name>average_all_ref_S</name><value>false</value></property>
     </gadget>
 
     <!-- ImageArray to images -->

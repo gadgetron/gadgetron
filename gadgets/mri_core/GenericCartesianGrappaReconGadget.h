@@ -1,26 +1,5 @@
 /** \file   GenericCartesianGrappaReconGadget.h
     \brief  This is the class gadget for both 2DT and 3DT cartesian grappa and grappaone reconstruction, working on the IsmrmrdReconData.
-
-            This class implements a general cartesian recon chain: 
-
-            Kspace -------------------------------------------------------> (padding for squared pixel recon)
-            Ref                                                                           |
-            |-> (padding for squared pixel recon)                                         |
-                  |-> ref preparation for embedded/separate/interleaved modes             |
-                        |-> coil compression                                              |
-                              |-> calibration ---------------------------------------------> coil combination -> PF handling (GenericReconPartialFourierHandlingGadget)
-                                                                                                                  |-> kspace filter (GenericReconKSpaceFilteringGadget)
-                                                                                                                        |-> FOV adjustment and image resizing (GenericReconFieldOfViewAdjustmentGadget)
-                                                                                                                             |-> Image array scaling (ImageArrayScalingGadget)
-
-            The input is IsmrmrdReconData and output is single 2D or 3D ISMRMRD images
-
-            If required, the gfactor map can be sent out
-
-            If the  number of required destination channel is 1, the GrappaONE recon will be performed
-
-            The image number computation logic is implemented in compute_image_number function, which can be overloaded
-
     \author Hui Xue
 */
 
@@ -36,6 +15,8 @@
 #include "GadgetronTimer.h"
 
 #include "hoNDArray_utils.h"
+
+#include "gtPlusIOAnalyze.h"
 
 #include "GadgetStreamController.h"
 
@@ -182,6 +163,16 @@ namespace Gadgetron {
         // in verbose mode, more info is printed out
         bool verbose_;
 
+        // debug folder
+        std::string debug_folder_full_path_;
+
+        // clock for timing
+        Gadgetron::GadgetronTimer gt_timer_local_;
+        Gadgetron::GadgetronTimer gt_timer_;
+
+        // exporter
+        Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
+
         // --------------------------------------------------
         // gadget functions
         // --------------------------------------------------
@@ -193,15 +184,8 @@ namespace Gadgetron {
         // recon step functions
         // --------------------------------------------------
 
-        // ensure the recon image to have squared pixel, therefore zero-=padding resizing is not needed for E1
-        // TODO: consider extend this to E2 as well
-        // if needed, the incoming data matrix will be padded
-        virtual void ensure_recon_size(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
-
-        // prepare the ref data
-        // this may be the most complicated part of the whole recon
-        // for every calibration mode, the ref is prepared accordingly
-        virtual void prepare_ref(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
+        // make the ref data for coil map estimation
+        virtual void make_ref_coil_map(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
 
         // estimate coil map
         virtual void perform_coil_map_estimation(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
@@ -217,23 +201,6 @@ namespace Gadgetron {
 
         // send out the recon results
         virtual int send_out_image_array(IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role);
-
-        // --------------------------------------------------
-        // implementation functions
-        // --------------------------------------------------
-
-        /// complexIm: [RO E1 E2 CHA ...]
-        /// if E2 == 1, the 2D coil map estimation will be assumed
-        virtual void compute_coil_map(const hoNDArray< std::complex<float> >& complexIm, hoNDArray< std::complex<float> >& coilMap);
-
-        // perform one calibration
-        virtual void perform_calib_impl(size_t n, size_t s, size_t slc, size_t e, const hoNDArray< std::complex<float> >& src, const hoNDArray< std::complex<float> >& dst, ReconObjType& recon_obj);
-
-        // perform coil combination with uncombined channels
-        // complex_im: [RO E1 E2 CHA N S SLC]
-        // coil_map: [RO E1 E2 CHA-unCHA Nor1 Sor1 SLC]
-        // res: [RO E1 E2 unCHA+1 N S SLC]
-        void coil_combination(const hoNDArray< std::complex<float> >& complex_im, const hoNDArray< std::complex<float> >& coil_map, hoNDArray< std::complex<float> >& res);
 
         // --------------------------------------------------
         // utility functions
