@@ -12,7 +12,7 @@
 namespace Gadgetron
 {
     template <typename T>
-    void detect_readout_sampling_status(const hoNDArray<T>& data, hoNDArray<float>& sampled)
+    std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray<T>& data)
     {
         try
         {
@@ -26,8 +26,8 @@ namespace Gadgetron
             size_t S = data.get_size(5);
             size_t SLC = data.get_size(6);
 
+            hoNDArray<bool> sampled;
             sampled.create(E1, E2, N, S, SLC);
-            Gadgetron::clear(sampled);
 
             size_t slc, s, n, e2, e1;
 
@@ -52,13 +52,19 @@ namespace Gadgetron
 
                                 if (v > 0)
                                 {
-                                    sampled(e1, e2, n, s, slc) = 1;
+                                    sampled(e1, e2, n, s, slc) = true;
+                                }
+                                else
+                                {
+                                    sampled(e1, e2, n, s, slc) =false;
                                 }
                             }
                         }
                     }
                 }
             }
+
+            return std::make_tuple(std::move(sampled));
         }
         catch (...)
         {
@@ -66,20 +72,20 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTMRICORE void detect_readout_sampling_status(const hoNDArray< float >& data, hoNDArray<float>& sampled);
-    template EXPORTMRICORE void detect_readout_sampling_status(const hoNDArray< double >& data, hoNDArray<float>& sampled);
-    template EXPORTMRICORE void detect_readout_sampling_status(const hoNDArray< std::complex<float> >& data, hoNDArray<float>& sampled);
-    template EXPORTMRICORE void detect_readout_sampling_status(const hoNDArray< std::complex<double> >& data, hoNDArray<float>& sampled);
+    template EXPORTMRICORE std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray< float >& data);
+    template EXPORTMRICORE std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray< double >& data);
+    template EXPORTMRICORE std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray< std::complex<float> >& data);
+    template EXPORTMRICORE std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray< std::complex<double> >& data);
 
     // ------------------------------------------------------------------------
 
     template <typename T>
-    void detect_sampled_region_E1(const hoNDArray<T>& data, size_t& start_E1, size_t& end_E1)
+    std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray<T>& data)
     {
         try
         {
-            hoNDArray<float> sampled;
-            Gadgetron::detect_readout_sampling_status(data, sampled);
+            hoNDArray<bool> sampled;
+            sampled = std::get<0>(Gadgetron::detect_readout_sampling_status(data));
 
             size_t RO = data.get_size(0);
             size_t E1 = data.get_size(1);
@@ -89,6 +95,7 @@ namespace Gadgetron
             size_t S = data.get_size(5);
             size_t SLC = data.get_size(6);
 
+            size_t start_E1, end_E1;
             start_E1 = E1;
             end_E1 = 0;
 
@@ -104,7 +111,7 @@ namespace Gadgetron
                         {
                             for (e1 = 0; e1 < E1; e1++)
                             {
-                                if (sampled(e1, e2, n, s, slc)>0)
+                                if (sampled(e1, e2, n, s, slc)==true)
                                 {
                                     if (e1 < start_E1) start_E1 = e1;
                                     if (e1 > end_E1) end_E1 = e1;
@@ -115,6 +122,7 @@ namespace Gadgetron
                 }
             }
 
+            return std::make_tuple(start_E1, end_E1);
         }
         catch (...)
         {
@@ -122,20 +130,20 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTMRICORE void detect_sampled_region_E1(const hoNDArray<float>& data, size_t& start_E1, size_t& end_E1);
-    template EXPORTMRICORE void detect_sampled_region_E1(const hoNDArray<double>& data, size_t& start_E1, size_t& end_E1);
-    template EXPORTMRICORE void detect_sampled_region_E1(const hoNDArray< std::complex<float> >& data, size_t& start_E1, size_t& end_E1);
-    template EXPORTMRICORE void detect_sampled_region_E1(const hoNDArray< std::complex<double> >& data, size_t& start_E1, size_t& end_E1);
+    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray<float>& data);
+    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray<double>& data);
+    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray< std::complex<float> >& data);
+    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray< std::complex<double> >& data);
 
     // ------------------------------------------------------------------------
 
     template <typename T>
-    void detect_sampled_region_E2(const hoNDArray<T>& data, size_t& start_E2, size_t& end_E2)
+    std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray<T>& data)
     {
         try
         {
-            hoNDArray<float> sampled;
-            Gadgetron::detect_readout_sampling_status(data, sampled);
+            hoNDArray<bool> sampled;
+            sampled = std::get<0>(Gadgetron::detect_readout_sampling_status(data));
 
             size_t RO = data.get_size(0);
             size_t E1 = data.get_size(1);
@@ -145,6 +153,7 @@ namespace Gadgetron
             size_t S = data.get_size(5);
             size_t SLC = data.get_size(6);
 
+            size_t start_E2, end_E2;
             start_E2 = E2;
             end_E2 = 0;
 
@@ -160,7 +169,7 @@ namespace Gadgetron
                         {
                             for (e1 = 0; e1 < E1; e1++)
                             {
-                                if (sampled(e1, e2, n, s, slc)>0)
+                                if (sampled(e1, e2, n, s, slc)==true)
                                 {
                                     if (e2 < start_E2) start_E2 = e2;
                                     if (e2 > end_E2) end_E2 = e2;
@@ -171,6 +180,7 @@ namespace Gadgetron
                 }
             }
 
+            return std::make_tuple(start_E2, end_E2);
         }
         catch (...)
         {
@@ -178,74 +188,10 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTMRICORE void detect_sampled_region_E2(const hoNDArray<float>& data, size_t& start_E2, size_t& end_E2);
-    template EXPORTMRICORE void detect_sampled_region_E2(const hoNDArray<double>& data, size_t& start_E2, size_t& end_E2);
-    template EXPORTMRICORE void detect_sampled_region_E2(const hoNDArray< std::complex<float> >& data, size_t& start_E2, size_t& end_E2);
-    template EXPORTMRICORE void detect_sampled_region_E2(const hoNDArray< std::complex<double> >& data, size_t& start_E2, size_t& end_E2);
-
-    // ------------------------------------------------------------------------
-
-    template <typename T>
-    void generate_ref_filter_for_coil_map(const hoNDArray<T>& ref, const SamplingLimit& lim_RO, const SamplingLimit& lim_E1, const SamplingLimit& lim_E2, hoNDArray<T>& filter_RO, hoNDArray<T>& filter_E1, hoNDArray<T>& filter_E2)
-    {
-        try
-        {
-            size_t RO = ref.get_size(0);
-            size_t E1 = ref.get_size(1);
-            size_t E2 = ref.get_size(2);
-
-            Gadgetron::generate_symmetric_filter_ref(RO, lim_RO.min_, lim_RO.max_, filter_RO);
-            Gadgetron::generate_symmetric_filter_ref(E1, lim_E1.min_, lim_E1.max_, filter_E1);
-
-            if (E2 > 1)
-            {
-                Gadgetron::generate_symmetric_filter_ref(E2, lim_E2.min_, lim_E2.max_, filter_E2);
-            }
-        }
-        catch (...)
-        {
-            GADGET_THROW("Errors in generate_ref_filter_for_coil_map(...) ... ");
-        }
-    }
-
-    template EXPORTMRICORE void generate_ref_filter_for_coil_map(const hoNDArray< std::complex<float> >& ref, const SamplingLimit& lim_RO, const SamplingLimit& lim_E1, const SamplingLimit& lim_E2, hoNDArray< std::complex<float> >& filter_RO, hoNDArray< std::complex<float> >& filter_E1, hoNDArray< std::complex<float> >& filter_E2);
-    template EXPORTMRICORE void generate_ref_filter_for_coil_map(const hoNDArray< std::complex<double> >& ref, const SamplingLimit& lim_RO, const SamplingLimit& lim_E1, const SamplingLimit& lim_E2, hoNDArray< std::complex<double> >& filter_RO, hoNDArray< std::complex<double> >& filter_E1, hoNDArray< std::complex<double> >& filter_E2);
-
-    // ------------------------------------------------------------------------
-
-    void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath)
-    {
-        char* v = std::getenv("GADGETRON_DEBUG_FOLDER");
-        if (v == NULL)
-        {
-#ifdef _WIN32
-            debugFolderPath = "c:/temp/gadgetron";
-#else
-            debugFolderPath = "/tmp/gadgetron";
-#endif // _WIN32
-        }
-        else
-        {
-            debugFolderPath = std::string(v);
-        }
-
-        debugFolderPath.append("/");
-        debugFolderPath.append(debugFolder);
-        debugFolderPath.append("/");
-    }
-
-    // ------------------------------------------------------------------------
-
-    void get_current_moment(std::string& procTime)
-    {
-        char timestamp[100];
-        time_t mytime;
-        struct tm *mytm;
-        mytime = time(NULL);
-        mytm = localtime(&mytime);
-        strftime(timestamp, sizeof(timestamp), "%a, %b %d %Y, %H:%M:%S", mytm);
-        procTime = timestamp;
-    }
+    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray<float>& data);
+    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray<double>& data);
+    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray< std::complex<float> >& data);
+    template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray< std::complex<double> >& data);
 
     // ------------------------------------------------------------------------
 }

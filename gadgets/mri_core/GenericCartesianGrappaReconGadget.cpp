@@ -25,23 +25,10 @@ namespace Gadgetron {
     {
         gt_timer_.set_timing_in_destruction(false);
         gt_timer_local_.set_timing_in_destruction(false);
-
-        std::string procTime;
-        Gadgetron::get_current_moment(procTime);
-
-        GDEBUG_STREAM("* ======================================================================================================= *");
-        GDEBUG_STREAM("---> GenericCartesianGrappaReconGadget, constructor(), Currnt processing time : " << procTime << " <---");
-        GDEBUG_STREAM("* ======================================================================================================= *");
     }
 
     GenericCartesianGrappaReconGadget::~GenericCartesianGrappaReconGadget()
     {
-        std::string procTime;
-        Gadgetron::get_current_moment(procTime);
-
-        GDEBUG_STREAM("* ======================================================================================================= *");
-        GDEBUG_STREAM("---> GenericCartesianGrappaReconGadget, destructor(), Currnt processing time : " << procTime << " <---");
-        GDEBUG_STREAM("* ======================================================================================================= *");
     }
 
     int GenericCartesianGrappaReconGadget::process_config(ACE_Message_Block* mb)
@@ -480,13 +467,9 @@ namespace Gadgetron {
             //}
 
             // filter the ref_coil_map
-            if (filter_RO_ref_coi_map_.get_size(0) != RO
-                || filter_E1_ref_coi_map_.get_size(0) != E1
-                || ((E2 > 1) && (filter_E2_ref_coi_map_.get_size(0) != E2)))
+            if (filter_RO_ref_coi_map_.get_size(0) != RO)
             {
-                Gadgetron::generate_ref_filter_for_coil_map(ref_coil_map,
-                    recon_bit.ref_.sampling_.sampling_limits_[0], recon_bit.ref_.sampling_.sampling_limits_[1], recon_bit.ref_.sampling_.sampling_limits_[2], 
-                    filter_RO_ref_coi_map_, filter_E1_ref_coi_map_, filter_E2_ref_coi_map_);
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(0), recon_bit.ref_.sampling_.sampling_limits_[0].min_, recon_bit.ref_.sampling_.sampling_limits_[0].max_, filter_RO_ref_coi_map_);
 
                 //if (!debug_folder_full_path_.empty())
                 //{
@@ -494,7 +477,31 @@ namespace Gadgetron {
                 //    os << "encoding_" << encoding;
 
                 //    gt_exporter_.exportArrayComplex(filter_RO_ref_coi_map_, debug_folder_full_path_ + "filter_RO_ref_coi_map_" + os.str());
+                //}
+            }
+
+            if (filter_E1_ref_coi_map_.get_size(0) != E1)
+            {
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(1), recon_bit.ref_.sampling_.sampling_limits_[1].min_, recon_bit.ref_.sampling_.sampling_limits_[1].max_, filter_E1_ref_coi_map_);
+
+                //if (!debug_folder_full_path_.empty())
+                //{
+                //    std::stringstream os;
+                //    os << "encoding_" << encoding;
+
                 //    gt_exporter_.exportArrayComplex(filter_E1_ref_coi_map_, debug_folder_full_path_ + "filter_E1_ref_coi_map_" + os.str());
+                //}
+            }
+
+            if ( (E2 > 1) && (filter_E2_ref_coi_map_.get_size(0) != E2) )
+            {
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(2), recon_bit.ref_.sampling_.sampling_limits_[2].min_, recon_bit.ref_.sampling_.sampling_limits_[2].max_, filter_E2_ref_coi_map_);
+
+                //if (!debug_folder_full_path_.empty())
+                //{
+                //    std::stringstream os;
+                //    os << "encoding_" << encoding;
+
                 //    gt_exporter_.exportArrayComplex(filter_E2_ref_coi_map_, debug_folder_full_path_ + "filter_E2_ref_coi_map_" + os.str());
                 //}
             }

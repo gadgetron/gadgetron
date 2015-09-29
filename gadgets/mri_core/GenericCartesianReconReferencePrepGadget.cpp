@@ -222,12 +222,16 @@ namespace Gadgetron {
 
             // step 2, detect sampled region in ref, along E1 and E2
             size_t start_E1(0), end_E1(0);
-            Gadgetron::detect_sampled_region_E1(ref, start_E1, end_E1);
+            auto t = Gadgetron::detect_sampled_region_E1(ref);
+            start_E1 = std::get<0>(t);
+            end_E1 = std::get<1>(t);
 
             size_t start_E2(0), end_E2(0);
             if (E2 > 1)
             {
-                Gadgetron::detect_sampled_region_E2(ref, start_E2, end_E2);
+                auto t = Gadgetron::detect_sampled_region_E2(ref);
+                start_E2 = std::get<0>(t);
+                end_E2 = std::get<1>(t);
             }
 
             // crop the ref_calib, along RO, E1 and E2
@@ -250,28 +254,28 @@ namespace Gadgetron {
             }*/
 
             // step 3, update the sampling limits
-            sampling_limits[0].center_ = RO/2;
+            sampling_limits[0].center_ = (uint16_t)(RO/2);
 
             if ( (calib_mode_[e] == Gadgetron::ISMRMRD_interleaved) || (calib_mode_[e] == Gadgetron::ISMRMRD_noacceleration) )
             {
                 // need to keep the ref kspace center information
-                sampling_limits[1].min_ = start_E1;
-                sampling_limits[1].max_ = end_E1;
+                sampling_limits[1].min_ = (uint16_t)(start_E1);
+                sampling_limits[1].max_ = (uint16_t)(end_E1);
 
-                sampling_limits[2].min_ = start_E2;
-                sampling_limits[2].max_ = end_E2;
+                sampling_limits[2].min_ = (uint16_t)(start_E2);
+                sampling_limits[2].max_ = (uint16_t)(end_E2);
 
-                sampling_limits[1].center_ = E1 / 2;
-                sampling_limits[2].center_ = E2 / 2;
+                sampling_limits[1].center_ = (uint16_t)(E1 / 2);
+                sampling_limits[2].center_ = (uint16_t)(E2 / 2);
             }
             else
             {
                 // sepearate, embedded mode, the ref center is the kspace center
                 sampling_limits[1].min_ = 0;
-                sampling_limits[1].max_ = end_E1 - start_E1;
+                sampling_limits[1].max_ = (uint16_t)(end_E1 - start_E1);
 
                 sampling_limits[2].min_ = 0;
-                sampling_limits[2].max_ = end_E2 - start_E2;
+                sampling_limits[2].max_ = (uint16_t)(end_E2 - start_E2);
 
                 sampling_limits[1].center_ = (sampling_limits[1].max_ + 1) / 2;
                 sampling_limits[2].center_ = (sampling_limits[2].max_ + 1) / 2;
