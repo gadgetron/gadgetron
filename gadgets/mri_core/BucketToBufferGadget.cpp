@@ -99,7 +99,6 @@ namespace Gadgetron{
     //}
 
     //Iterate over the reference data of the bucket
-    size_t count = 0;
     for(std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->ref_.begin();
         it != m1->getObjectPtr()->ref_.end(); ++it)
       {
@@ -131,7 +130,7 @@ namespace Gadgetron{
         IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->refstats_[espace];
 
         //Fill the sampling description for this data buffer
-        if(count == 0 )
+        if (dataBuffer.sampling_.recon_matrix_[0] == 0)
             fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr);
 
         //Make sure that the data storage for this data buffer has been allocated
@@ -140,15 +139,12 @@ namespace Gadgetron{
 
         // Stuff the data, header and trajectory into this data buffer
         stuff(it, dataBuffer, encoding);
-
-        count++;
       }
 
 
     //Iterate over the imaging data of the bucket
     // this is exactly the same code as for the reference data except for
     // the chunk of the data buffer.
-    count = 0;
     for(std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->data_.begin();
         it != m1->getObjectPtr()->data_.end(); ++it)
       {
@@ -180,7 +176,7 @@ namespace Gadgetron{
         IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->datastats_[espace];
 
         //Fill the sampling description for this data buffer
-        if (count == 0)
+        if (dataBuffer.sampling_.recon_matrix_[0] == 0)
             fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr);
 
         //Make sure that the data storage for this data buffer has been allocated
@@ -189,8 +185,6 @@ namespace Gadgetron{
 
         // Stuff the data, header and trajectory into this data buffer
         stuff(it, dataBuffer, encoding);
-
-        count++;
       }
 
 
