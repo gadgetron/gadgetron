@@ -12,7 +12,7 @@
 namespace Gadgetron
 {
     template <typename T>
-    std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray<T>& data)
+    hoNDArray<bool> detect_readout_sampling_status(const hoNDArray<T>& data)
     {
         try
         {
@@ -64,7 +64,7 @@ namespace Gadgetron
                 }
             }
 
-            return std::make_tuple(std::move(sampled));
+            return sampled;
         }
         catch (...)
         {
@@ -72,10 +72,10 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTMRICORE std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray< float >& data);
-    template EXPORTMRICORE std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray< double >& data);
-    template EXPORTMRICORE std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray< std::complex<float> >& data);
-    template EXPORTMRICORE std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray< std::complex<double> >& data);
+    template EXPORTMRICORE hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< float >& data);
+    template EXPORTMRICORE hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< double >& data);
+    template EXPORTMRICORE hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< std::complex<float> >& data);
+    template EXPORTMRICORE hoNDArray<bool> detect_readout_sampling_status(const hoNDArray< std::complex<double> >& data);
 
     // ------------------------------------------------------------------------
 
@@ -84,8 +84,7 @@ namespace Gadgetron
     {
         try
         {
-            hoNDArray<bool> sampled;
-            sampled = std::get<0>(Gadgetron::detect_readout_sampling_status(data));
+            hoNDArray<bool> sampled = Gadgetron::detect_readout_sampling_status(data);
 
             size_t RO = data.get_size(0);
             size_t E1 = data.get_size(1);
@@ -142,8 +141,7 @@ namespace Gadgetron
     {
         try
         {
-            hoNDArray<bool> sampled;
-            sampled = std::get<0>(Gadgetron::detect_readout_sampling_status(data));
+            hoNDArray<bool> sampled = Gadgetron::detect_readout_sampling_status(data);
 
             size_t RO = data.get_size(0);
             size_t E1 = data.get_size(1);

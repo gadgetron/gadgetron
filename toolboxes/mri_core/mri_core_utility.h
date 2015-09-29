@@ -18,7 +18,7 @@ namespace Gadgetron
     /// data: [RO E1 E2 CHA N S SLC]
 
     /// sampled: [E1 E2 N S SLC], if a readout is sampled, corresponding sampled location is 1; otherwise, 0
-    template <typename T> EXPORTMRICORE std::tuple<hoNDArray<bool> > detect_readout_sampling_status(const hoNDArray<T>& data);
+    template <typename T> EXPORTMRICORE hoNDArray<bool> detect_readout_sampling_status(const hoNDArray<T>& data);
 
     /// detect sampled region along E1
     template <typename T> EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray<T>& data);
