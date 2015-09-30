@@ -129,8 +129,8 @@ namespace Gadgetron{
         //this bucket's reference stats
         IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->refstats_[espace];
 
-        //Fill the sampling description for this data buffer
-        if (dataBuffer.sampling_.recon_matrix_[0] == 0)
+        //Fill the sampling description for this data buffer, only need to fill the sampling_ once
+        if (it == m1->getObjectPtr()->ref_.begin())
             fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr);
 
         //Make sure that the data storage for this data buffer has been allocated
@@ -175,8 +175,8 @@ namespace Gadgetron{
         //this bucket's imaging data stats
         IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->datastats_[espace];
 
-        //Fill the sampling description for this data buffer
-        if (dataBuffer.sampling_.recon_matrix_[0] == 0)
+        //Fill the sampling description for this data buffer, only need to fill sampling_ once
+        if (it == m1->getObjectPtr()->data_.begin())
             fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr);
 
         //Make sure that the data storage for this data buffer has been allocated
