@@ -121,7 +121,7 @@ int AsymmetricEchoAdjustROGadget
 
             m1->cont(m3);
             m1->getObjectPtr()->number_of_samples = (uint16_t)data_out_dims[0];
-            // m1->getObjectPtr()->center_sample = m1->getObjectPtr()->number_of_samples / 2;
+            m1->getObjectPtr()->center_sample = m1->getObjectPtr()->number_of_samples / 2;
         }
 
         if (this->next()->putq(m1) == -1) 

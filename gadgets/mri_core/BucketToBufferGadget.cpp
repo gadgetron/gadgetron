@@ -548,25 +548,8 @@ namespace Gadgetron{
 
     // For cartesian trajectories, assume that any oversampling has been removed.
     if (encoding.trajectory.compare("cartesian") == 0) {
-
-        size_t num = acqhdr.number_of_samples / 2;
-
-        if (acqhdr.discard_pre == 0 && acqhdr.discard_post==0)
-        {
-            sampling.sampling_limits_[0].min_ = 0;
-            sampling.sampling_limits_[0].max_ = acqhdr.number_of_samples - 1;
-        }
-        else if (acqhdr.discard_pre>0) // pre zeros
-        {
-            sampling.sampling_limits_[0].min_ = acqhdr.discard_pre;
-            sampling.sampling_limits_[0].max_ = acqhdr.number_of_samples - 1;
-        }
-        else if (acqhdr.discard_post>0) // post zeros
-        {
-            sampling.sampling_limits_[0].min_ = 0;
-            sampling.sampling_limits_[0].max_ = acqhdr.number_of_samples - acqhdr.discard_post - 1;
-        }
-
+        sampling.sampling_limits_[0].min_ = acqhdr.discard_pre;
+        sampling.sampling_limits_[0].max_ = acqhdr.number_of_samples - acqhdr.discard_post - 1;
         sampling.sampling_limits_[0].center_ = acqhdr.number_of_samples / 2;
     } else {
         sampling.sampling_limits_[0].min_ = 0;
