@@ -344,7 +344,8 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
     {
         if ( (workOrder_.start_RO_<0) && (workOrder_.end_RO_<0) )
         {
-            gtPlus_util_.findStartEndROAfterZeroFilling(m1->getObjectPtr()->center_sample, m1->getObjectPtr()->number_of_samples, workOrder_.start_RO_, workOrder_.end_RO_);
+	    workOrder_.start_RO_ = m1->getObjectPtr()->discard_pre;
+	    workOrder_.end_RO_ = m1->getObjectPtr()->number_of_samples - m1->getObjectPtr()->discard_post - 1;
 
             GDEBUG_CONDITION_STREAM(verboseMode_, "start_RO : " << workOrder_.start_RO_);
             GDEBUG_CONDITION_STREAM(verboseMode_, "end_RO : " << workOrder_.end_RO_);

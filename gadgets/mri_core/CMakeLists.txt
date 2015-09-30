@@ -85,7 +85,9 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     ImageArraySplitGadget.h
                                     PseudoReplicatorGadget.h
                                     SimpleReconGadget.h
-                                    ImageSortGadget.h)
+                                    ImageSortGadget.h
+                                    GenericCartesianGrappaReconGadget.h 
+                                    GenericCartesianReconReferencePrepGadget.h )
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -118,7 +120,9 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 ImageArraySplitGadget.cpp
                                 PseudoReplicatorGadget.cpp
                                 SimpleReconGadget.cpp
-                                ImageSortGadget.cpp)
+                                ImageSortGadget.cpp
+                                GenericCartesianGrappaReconGadget.cpp 
+                                GenericCartesianReconReferencePrepGadget.cpp )
 
 if (WIN32)
     set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )
@@ -132,6 +136,7 @@ set( gadgetron_mricore_config_files
     default_measurement_dependencies.xml
     isalive.xml
     gtquery.xml
+    Generic_Cartesian_Grappa_T2W.xml
 )
 
 add_library(gadgetron_mricore SHARED 
@@ -151,6 +156,8 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpufft
     gadgetron_toolbox_cpuklt
+    gadgetron_toolbox_mri_core
+    # gadgetron_toolbox_gtplus_io
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 

@@ -129,12 +129,13 @@ namespace Gadgetron{
         //this bucket's reference stats
         IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->refstats_[espace];
 
-        //Fill the sampling description for this data buffer
-        fillSamplingDescription(dataBuffer.sampling_, encoding, stats);
+        //Fill the sampling description for this data buffer, only need to fill the sampling_ once
+        if (it == m1->getObjectPtr()->ref_.begin())
+            fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr);
 
         //Make sure that the data storage for this data buffer has been allocated
         //TODO should this check the limits, or should that be done in the stuff function?
-        allocateDataArrays(dataBuffer, acqhdr, encoding, stats);
+        allocateDataArrays(dataBuffer, acqhdr, encoding, stats, true);
 
         // Stuff the data, header and trajectory into this data buffer
         stuff(it, dataBuffer, encoding);
@@ -174,12 +175,13 @@ namespace Gadgetron{
         //this bucket's imaging data stats
         IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->datastats_[espace];
 
-        //Fill the sampling description for this data buffer
-        fillSamplingDescription(dataBuffer.sampling_, encoding, stats);
+        //Fill the sampling description for this data buffer, only need to fill sampling_ once
+        if (it == m1->getObjectPtr()->data_.begin())
+            fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr);
 
         //Make sure that the data storage for this data buffer has been allocated
         //TODO should this check the limits, or should that be done in the stuff function?
-        allocateDataArrays(dataBuffer, acqhdr, encoding, stats);
+        allocateDataArrays(dataBuffer, acqhdr, encoding, stats, false);
 
         // Stuff the data, header and trajectory into this data buffer
         stuff(it, dataBuffer, encoding);
@@ -357,7 +359,7 @@ namespace Gadgetron{
 
   }
 
-  void BucketToBufferGadget::allocateDataArrays(IsmrmrdDataBuffered & dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats)
+  void BucketToBufferGadget::allocateDataArrays(IsmrmrdDataBuffered & dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref)
   {
     if (dataBuffer.data_.get_number_of_elements() == 0)
       {
@@ -366,14 +368,31 @@ namespace Gadgetron{
         //11D, fixed order [E0, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
         uint16_t NE0;
         if (encoding.trajectory.compare("cartesian") == 0) {
-            NE0 = encoding.reconSpace.matrixSize.x;
+            // if seperate or external calibration mode, using the acq length for NE0
+            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
+                || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+            {
+                NE0 = acqhdr.number_of_samples;
+            }
+            else
+            {
+                NE0 = encoding.reconSpace.matrixSize.x;
+            }
         } else {
             NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
         }
 
         uint16_t NE1;
         if (encoding.trajectory.compare("cartesian") == 0) {
-            NE1 = encoding.encodedSpace.matrixSize.y;
+            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
+                || encoding.parallelImaging.get().calibrationMode.get() == "external") )
+            {
+                NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
+            }
+            else
+            {
+                NE1 = encoding.encodedSpace.matrixSize.y;
+            }
         } else {
             if (encoding.encodingLimits.kspace_encoding_step_1.is_present()) {
                 NE1 = encoding.encodingLimits.kspace_encoding_step_1->maximum - encoding.encodingLimits.kspace_encoding_step_1->minimum + 1;
@@ -384,7 +403,15 @@ namespace Gadgetron{
 
         uint16_t NE2;
         if (encoding.trajectory.compare("cartesian") == 0) {
-            NE2 = encoding.encodedSpace.matrixSize.z;
+            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
+                || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+            {
+                NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
+            }
+            else
+            {
+                NE2 = encoding.encodedSpace.matrixSize.z;
+            }
         } else {
             if (encoding.encodingLimits.kspace_encoding_step_2.is_present()) {
                 NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
@@ -494,7 +521,7 @@ namespace Gadgetron{
 
   }
 
-  void BucketToBufferGadget::fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats)
+  void BucketToBufferGadget::fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader& acqhdr)
   {
     // For cartesian trajectories, assume that any oversampling has been removed.
     if (encoding.trajectory.compare("cartesian") == 0) {
@@ -521,9 +548,9 @@ namespace Gadgetron{
 
     // For cartesian trajectories, assume that any oversampling has been removed.
     if (encoding.trajectory.compare("cartesian") == 0) {
-        sampling.sampling_limits_[0].min_ = 0;
-        sampling.sampling_limits_[0].max_ = encoding.reconSpace.matrixSize.x - 1;
-        sampling.sampling_limits_[0].center_ = encoding.reconSpace.matrixSize.x / 2;
+        sampling.sampling_limits_[0].min_ = acqhdr.discard_pre;
+        sampling.sampling_limits_[0].max_ = acqhdr.number_of_samples - acqhdr.discard_post - 1;
+        sampling.sampling_limits_[0].center_ = acqhdr.number_of_samples / 2;
     } else {
         sampling.sampling_limits_[0].min_ = 0;
         sampling.sampling_limits_[0].max_ = encoding.encodedSpace.matrixSize.x - 1;
@@ -591,11 +618,20 @@ namespace Gadgetron{
       }
 
     std::complex<float> *dataptr;
-    uint16_t NCHA = dataBuffer.data_.get_size(3);
+    uint16_t NCHA = (uint16_t)dataBuffer.data_.get_size(3);
+    uint16_t NN = (uint16_t)dataBuffer.data_.get_size(4);
+    uint16_t NS = (uint16_t)dataBuffer.data_.get_size(5);
+
+    uint16_t NUsed = (uint16_t)getN(acqhdr.idx);
+    if (NUsed >= NN) NUsed = NN - 1;
+
+    uint16_t SUsed = (uint16_t)getS(acqhdr.idx);
+    if (SUsed >= NS) SUsed = NS - 1;
+
     for (uint16_t cha = 0; cha < NCHA; cha++)
       {
         dataptr = & dataBuffer.data_(
-            offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, cha, getN(acqhdr.idx),  getS(acqhdr.idx), slice_loc);
+            offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, cha, NUsed, SUsed, slice_loc);
 
 
         memcpy(dataptr, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
@@ -603,16 +639,19 @@ namespace Gadgetron{
 
     //Stuff the header
     dataBuffer.headers_(acqhdr.idx.kspace_encode_step_1,
-        acqhdr.idx.kspace_encode_step_2, getN(acqhdr.idx),  getS(acqhdr.idx), slice_loc) = acqhdr;
+        acqhdr.idx.kspace_encode_step_2, NUsed, SUsed, slice_loc) = acqhdr;
 
     //Stuff the trajectory
     if (acqhdr.trajectory_dimensions > 0) {
+
         hoNDArray< float > & acqtraj = *it->traj_->getObjectPtr();  // TODO do we need to check this?
 
         float * trajptr;
+
         trajptr = &dataBuffer.trajectory_(0,
-            offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, getN(acqhdr.idx),  getS(acqhdr.idx), slice_loc);
-        memcpy(trajptr, & acqtraj(0,acqhdr.discard_pre ), sizeof(float)*npts_to_copy*acqhdr.trajectory_dimensions);
+            offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, NUsed, SUsed, slice_loc);
+
+        memcpy(trajptr, &acqtraj(0, acqhdr.discard_pre), sizeof(float)*npts_to_copy*acqhdr.trajectory_dimensions);
 
     }
   }
@@ -620,3 +659,4 @@ namespace Gadgetron{
   GADGET_FACTORY_DECLARE(BucketToBufferGadget)
 
 }
+
