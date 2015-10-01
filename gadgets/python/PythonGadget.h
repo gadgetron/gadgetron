@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ace/OS_NS_unistd.h>
+
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetReference.h"
