@@ -99,9 +99,10 @@ namespace Gadgetron{
     //}
 
     //Iterate over the reference data of the bucket
-    for(std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->ref_.begin();
+    IsmrmrdDataBuffered* pCurrDataBuffer = NULL;
+    for (std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->ref_.begin();
         it != m1->getObjectPtr()->ref_.end(); ++it)
-      {
+    {
         //Get a reference to the header for this acquisition
         ISMRMRD::AcquisitionHeader & acqhdr = *it->head_->getObjectPtr();
 
@@ -129,9 +130,12 @@ namespace Gadgetron{
         //this bucket's reference stats
         IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->refstats_[espace];
 
-        //Fill the sampling description for this data buffer, only need to fill the sampling_ once
-        if (it == m1->getObjectPtr()->ref_.begin())
+        //Fill the sampling description for this data buffer, only need to fill the sampling_ once per recon bit
+        if (&dataBuffer != pCurrDataBuffer)
+        {
             fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr);
+            pCurrDataBuffer = &dataBuffer;
+        }
 
         //Make sure that the data storage for this data buffer has been allocated
         //TODO should this check the limits, or should that be done in the stuff function?
@@ -145,9 +149,10 @@ namespace Gadgetron{
     //Iterate over the imaging data of the bucket
     // this is exactly the same code as for the reference data except for
     // the chunk of the data buffer.
-    for(std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->data_.begin();
+    pCurrDataBuffer = NULL;
+    for (std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->data_.begin();
         it != m1->getObjectPtr()->data_.end(); ++it)
-      {
+    {
         //Get a reference to the header for this acquisition
         ISMRMRD::AcquisitionHeader & acqhdr = *it->head_->getObjectPtr();
 
@@ -175,9 +180,12 @@ namespace Gadgetron{
         //this bucket's imaging data stats
         IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->datastats_[espace];
 
-        //Fill the sampling description for this data buffer, only need to fill sampling_ once
-        if (it == m1->getObjectPtr()->data_.begin())
+        //Fill the sampling description for this data buffer, only need to fill sampling_ once per recon bit
+        if (&dataBuffer != pCurrDataBuffer)
+        {
             fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr);
+            pCurrDataBuffer = &dataBuffer;
+        }
 
         //Make sure that the data storage for this data buffer has been allocated
         //TODO should this check the limits, or should that be done in the stuff function?
