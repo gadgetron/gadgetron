@@ -1989,6 +1989,9 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder2D
     {
         size_t RO = kspace.get_size(0);
         size_t E1 = kspace.get_size(1);
+        size_t CHA = kspace.get_size(2);
+        size_t N = kspace.get_size(3);
+        size_t S = kspace.get_size(4);
 
         // check whether partial fourier is used
         if ( (workOrder2DT.start_RO_<0 || workOrder2DT.end_RO_<0 || (workOrder2DT.end_RO_-workOrder2DT.start_RO_+1==RO) ) 
@@ -1997,7 +2000,8 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder2D
             return true;
         }
 
-        hoNDArray<T> input(kspace);
+        hoNDArray<T> input;
+        input.create(RO, E1, 1, CHA, N, S, kspace.begin());
 
         if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(kspace, debugFolder_ + "kspace_before_PF_Filter"); }
 
@@ -2007,10 +2011,14 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder2D
 
         bool filter_pf_density_comp_ = false;
 
+        hoNDArray<T> res;
+
         Gadgetron::partial_fourier_filter(input,
             workOrder2DT.start_RO_, workOrder2DT.end_RO_, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 0, 0,
             filter_pf_width_RO_, filter_pf_width_E1_, filter_pf_width_E2_, filter_pf_density_comp_,
-            workOrder2DT.filterRO_partialfourier_, workOrder2DT.filterE1_partialfourier_, workOrder2DT.filterE2_partialfourier_, kspace);
+            workOrder2DT.filterRO_partialfourier_, workOrder2DT.filterE1_partialfourier_, workOrder2DT.filterE2_partialfourier_, res);
+
+        memcpy(kspace.begin(), res.begin(), sizeof(T)*RO*E1*CHA*N*S);
 
 
         //if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_before_PF_Filter"); }
@@ -2337,14 +2345,17 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
             return true;
         }
 
-        hoNDArray<T> input(kspace);
+        hoNDArray<T> input, res;
+        input.create(RO, E1, 1, CHA, N, S, kspace.begin());
 
         if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(kspace, debugFolder_ + "kspace_before_POCS"); }
 
         Gadgetron::partial_fourier_POCS(input,
             workOrder2DT.start_RO_, workOrder2DT.end_RO_, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 0, 0,
             workOrder2DT.partialFourier_POCS_transitBand_, workOrder2DT.partialFourier_POCS_transitBand_, 0,
-            workOrder2DT.partialFourier_POCS_iters_, workOrder2DT.partialFourier_POCS_thres_, kspace);
+            workOrder2DT.partialFourier_POCS_iters_, workOrder2DT.partialFourier_POCS_thres_, res);
+
+        memcpy(kspace.begin(), res.begin(), sizeof(T)*RO*E1*CHA*N*S);
 
         //if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_before_POCS"); }
 
