@@ -197,7 +197,7 @@ namespace Gadgetron {
                 {
                     if (calib_mode_[e] == ISMRMRD_interleaved)
                     {
-                        GADGET_CHECK_EXCEPTION_RETURN(this->averaging_with_sampling_times(ref, ref_calib, true), GADGET_FAIL);
+                        GADGET_CHECK_EXCEPTION_RETURN(this->averaging_with_sampling_times(ref, ref_calib), GADGET_FAIL);
                     }
                     else
                     {
@@ -219,16 +219,8 @@ namespace Gadgetron {
             {
                 if (S > 1)
                 {
-                    if (calib_mode_[e] == ISMRMRD_interleaved)
-                    {
-                        GADGET_CHECK_EXCEPTION_RETURN(this->averaging_with_sampling_times(ref_calib, ref_recon_buf, false), GADGET_FAIL);
-                    }
-                    else
-                    {
-                        Gadgetron::sum_over_dimension(ref_calib, ref_recon_buf, 5);
-                        Gadgetron::scal((float)(1.0 / S), ref_recon_buf);
-                    }
-
+                    Gadgetron::sum_over_dimension(ref_calib, ref_recon_buf, 5);
+                    Gadgetron::scal((float)(1.0 / S), ref_recon_buf);
                     ref_calib = ref_recon_buf;
                 }
             }
@@ -319,12 +311,14 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    void GenericCartesianReconReferencePrepGadget::averaging_with_sampling_times(const hoNDArray< std::complex<float> >& input, hoNDArray< std::complex<float> >& res, bool alongN)
+    void GenericCartesianReconReferencePrepGadget::averaging_with_sampling_times(const hoNDArray< std::complex<float> >& input, hoNDArray< std::complex<float> >& res)
     {
         try
         {
             hoNDArray<bool> sampled = Gadgetron::detect_readout_sampling_status(input);
-            Gadgetron::sum_over_dimension(input, res, ((alongN) ? 4:5));
+
+            // sum over N
+            Gadgetron::sum_over_dimension(input, res, 4);
 
             size_t RO = input.get_size(0);
             size_t E1 = input.get_size(1);
@@ -334,11 +328,7 @@ namespace Gadgetron {
             size_t S = input.get_size(5);
             size_t SLC = input.get_size(6);
 
-            if (alongN && N == 1) return;
-            if (!alongN && S == 1) return;
-
-            hoNDArray<float> freq;
-            freq.create( ((alongN) ? 1 : N), ((!alongN) ? 1 : S));
+            if (N == 1) return;
 
             size_t ro, e1, e2, cha, n, s, slc;
             for (slc = 0; slc < SLC; slc++)
@@ -349,40 +339,20 @@ namespace Gadgetron {
                     {
                         for (e1 = 0; e1 < E1; e1++)
                         {
-                            Gadgetron::clear(freq);
+                            float freq = 0;
 
-                            if (alongN)
-                            {
-                                for (s = 0; s < S; s++)
-                                {
-                                    for (n = 0; n < N; n++)
-                                    {
-                                        if (sampled(e1, e2, n, s, slc)) freq(0, s) += 1;
-                                    }
-
-                                    if (freq(0, s) > 1)
-                                    {
-                                        float freq_reciprocal = (float)(1.0 / freq(0, s));
-                                        std::complex<float>* pAve = &(res(0, e1, e2, cha, 0, s, slc));
-                                        for (ro = 0; ro < RO; ro++) pAve[ro] *= freq_reciprocal;
-                                    }
-                                }
-                            }
-                            else
+                            for (s = 0; s < S; s++)
                             {
                                 for (n = 0; n < N; n++)
                                 {
-                                    for (s = 0; s < S; s++)
-                                    {
-                                        if (sampled(e1, e2, n, s, slc)) freq(n, 0) += 1;
-                                    }
+                                    if (sampled(e1, e2, n, s, slc)) freq += 1;
+                                }
 
-                                    if (freq(n, 0) > 1)
-                                    {
-                                        float freq_reciprocal = (float)(1.0 / freq(n, 0));
-                                        std::complex<float>* pAve = &(res(0, e1, e2, cha, n, 0, slc));
-                                        for (ro = 0; ro < RO; ro++) pAve[ro] *= freq_reciprocal;
-                                    }
+                                if (freq > 1)
+                                {
+                                    float freq_reciprocal = (float)(1.0 / freq);
+                                    std::complex<float>* pAve = &(res(0, e1, e2, cha, 0, s, slc));
+                                    for (ro = 0; ro < RO; ro++) pAve[ro] *= freq_reciprocal;
                                 }
                             }
                         }

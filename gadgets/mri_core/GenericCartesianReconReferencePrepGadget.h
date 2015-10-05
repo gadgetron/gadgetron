@@ -50,6 +50,8 @@ namespace Gadgetron {
 
         /// ref preparation
         /// whether to average all N for ref generation
+        /// for the interleaved mode, the sampling times will be counted and used for averaging
+        /// it is recommended to set N as the interleaved dimension
         GADGET_PROPERTY(average_all_ref_N, bool, "Whether to average all N for ref generation", true);
         /// whether to average all S for ref generation
         GADGET_PROPERTY(average_all_ref_S, bool, "Whether to average all S for ref generation", false);
@@ -101,9 +103,9 @@ namespace Gadgetron {
         // --------------------------------------------------
         // implementation functions
         // --------------------------------------------------
-        /// averaging input by counting the time of sampling for a E1/E2 location
+        /// averaging input by counting the time of sampling along N for a E1/E2 location
         /// input: [RO E1 E2 CHA N S SLC]
-        /// if alongN==false, the averaging is performed along S dimension
-        void averaging_with_sampling_times(const hoNDArray< std::complex<float> >& input, hoNDArray< std::complex<float> >& res, bool alongN);
+        /// res: [RO E1 E2 CHA 1 S SLC]
+        void averaging_with_sampling_times(const hoNDArray< std::complex<float> >& input, hoNDArray< std::complex<float> >& res);
     };
 }
