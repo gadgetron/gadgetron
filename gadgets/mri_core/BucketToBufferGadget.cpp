@@ -602,7 +602,14 @@ namespace Gadgetron{
     uint16_t npts_to_copy = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
     long long offset;
     if (encoding.trajectory.compare("cartesian") == 0) {
-        offset  = (long long) dataBuffer.sampling_.sampling_limits_[0].center_ - (long long) acqhdr.center_sample;
+        if ((acqhdr.number_of_samples == dataBuffer.data_.get_size(0)) && (acqhdr.center_sample == acqhdr.number_of_samples/2)) // acq has been corrected for center , e.g. by asymmetric handling
+        {
+            offset = acqhdr.discard_pre;
+        }
+        else
+        {
+            offset = (long long)dataBuffer.sampling_.sampling_limits_[0].center_ - (long long)acqhdr.center_sample;
+        }
     } else {
         //TODO what about EPI with asymmetric readouts?
         //TODO any other sort of trajectory?
