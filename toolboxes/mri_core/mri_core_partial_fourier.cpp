@@ -97,141 +97,7 @@ namespace Gadgetron
     // ------------------------------------------------------------------------
 
     template <typename T>
-    void partial_fourier_transition_band_2d(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t transBandRO, size_t transBandE1)
-    {
-        try
-        {
-            size_t NDim = src.get_number_of_dimensions();
-            GADGET_CHECK_THROW(NDim >= 2);
-
-            size_t RO = dst.get_size(0);
-            size_t E1 = dst.get_size(1);
-
-            size_t RO_src = src.get_size(0);
-            size_t E1_src = src.get_size(1);
-
-            GADGET_CHECK_THROW(RO == RO_src);
-            GADGET_CHECK_THROW(E1 == E1_src);
-            GADGET_CHECK_THROW(src.get_number_of_elements() == dst.get_number_of_elements());
-
-            if ((startRO >= RO) || (endRO >= RO) || (startRO>endRO))
-            {
-                dst = src;
-                GWARN_STREAM("partial_fourier_transition_band_2d(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
-                return;
-            }
-
-            if ((startE1 >= E1) || (endE1 >= E1) || (startE1>endE1))
-            {
-                dst = src;
-                GWARN_STREAM("partial_fourier_transition_band_2d(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
-                return;
-            }
-
-            while (transBandRO>1 && startRO + transBandRO > RO / 2)
-            {
-                transBandRO--;
-            }
-
-            while (transBandRO>1 && endRO - transBandRO < RO / 2)
-            {
-                transBandRO--;
-            }
-
-            while (transBandE1>1 && startE1 + transBandE1 > E1 / 2)
-            {
-                transBandE1--;
-            }
-
-            while (transBandE1>1 && endE1 - transBandE1 < E1 / 2)
-            {
-                transBandE1--;
-            }
-
-            ISMRMRDKSPACEFILTER filterType = ISMRMRD_FILTER_TAPERED_HANNING;
-            bool densityComp = false;
-
-            hoNDArray<T> filter_src_RO, filter_src_E1;
-
-            if (startRO == 0 && endRO == RO - 1)
-            {
-                Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_NONE, transBandRO, densityComp);
-            }
-            else
-            {
-                Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_TAPERED_HANNING, transBandRO, densityComp);
-            }
-
-            if (startE1 == 0 && endE1 == E1 - 1)
-            {
-                Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_NONE, transBandE1, densityComp);
-            }
-            else
-            {
-                Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_TAPERED_HANNING, transBandE1, densityComp);
-            }
-
-            // in this way, the SNR unit scale property is perserved
-            T midValue = filter_src_RO(RO / 2);
-            T scalFactor = T(1.0) / midValue;
-            Gadgetron::scal(scalFactor, filter_src_RO);
-
-            midValue = filter_src_E1(E1 / 2);
-            scalFactor = T(1.0) / midValue;
-            Gadgetron::scal(scalFactor, filter_src_E1);
-
-            hoNDArray<T> filter_dst_RO(RO), filter_dst_E1(E1);
-
-            size_t ii;
-            for (ii = 0; ii<RO; ii++)
-            {
-                filter_dst_RO(ii) = T(1.0) - filter_src_RO(ii);
-            }
-
-            for (ii = 0; ii<E1; ii++)
-            {
-                filter_dst_E1(ii) = T(1.0) - filter_src_E1(ii);
-            }
-
-            hoNDArray<T> srcFiltered(src), dstFiltered(dst);
-            if (startRO == 0 && endRO == RO - 1)
-            {
-                Gadgetron::apply_kspace_filter_E1(src, filter_src_E1, srcFiltered);
-                Gadgetron::apply_kspace_filter_E1(dst, filter_dst_E1, dstFiltered);
-            }
-            else if (startE1 == 0 && endE1 == E1 - 1)
-            {
-                Gadgetron::apply_kspace_filter_RO(src, filter_src_RO, srcFiltered);
-                Gadgetron::apply_kspace_filter_RO(dst, filter_dst_RO, dstFiltered);
-            }
-            else
-            {
-                Gadgetron::apply_kspace_filter_ROE1(src, filter_src_RO, filter_src_E1, srcFiltered);
-
-                hoNDArray<T> fxy;
-                Gadgetron::compute_2d_filter(filter_src_RO, filter_src_E1, fxy);
-
-                size_t Nxy = RO*E1;
-                for (ii = 0; ii<Nxy; ii++)
-                {
-                    fxy(ii) = T(1.0) - fxy(ii);
-                }
-
-                Gadgetron::apply_kspace_filter_ROE1(dst, fxy, dstFiltered);
-            }
-
-            Gadgetron::add(srcFiltered, dstFiltered, dst);
-        }
-        catch (...)
-        {
-            GADGET_THROW("Errors happened in partial_fourier_transition_band_2d(...) ... ");
-        }
-    }
-
-    // ------------------------------------------------------------------------
-
-    template <typename T>
-    void partial_fourier_transition_band_3d(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, size_t transBandRO, size_t transBandE1, size_t transBandE2)
+    void partial_fourier_transition_band(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, size_t transBandRO, size_t transBandE1, size_t transBandE2)
     {
         try
         {
@@ -254,21 +120,21 @@ namespace Gadgetron
             if ((startRO >= RO) || (endRO >= RO) || (startRO>endRO))
             {
                 dst = src;
-                GWARN_STREAM("partial_fourier_transition_band_3d(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
+                GWARN_STREAM("partial_fourier_transition_band(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
                 return;
             }
 
             if ((startE1 >= E1) || (endE1 >= E1) || (startE1>endE1))
             {
                 dst = src;
-                GWARN_STREAM("partial_fourier_transition_band_3d(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
+                GWARN_STREAM("partial_fourier_transition_band(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
                 return;
             }
 
-            if ((startE2 >= E2) || (endE2 >= E2) || (startE2>endE2))
+            if ( (E2>1) && ((startE2 >= E2) || (endE2 >= E2) || (startE2>endE2)) )
             {
                 dst = src;
-                GWARN_STREAM("partial_fourier_transition_band_3d(...) : (startE2>=E2) || (endE2>=E2) || (startE2>endE2) ... ");
+                GWARN_STREAM("partial_fourier_transition_band(...) : (startE2>=E2) || (endE2>=E2) || (startE2>endE2) ... ");
                 return;
             }
 
@@ -306,6 +172,8 @@ namespace Gadgetron
             bool densityComp = false;
 
             hoNDArray<T> filter_src_RO, filter_src_E1, filter_src_E2;
+            hoNDArray<T> filter_dst_RO(RO), filter_dst_E1(E1), filter_dst_E2(E2);
+            size_t ii;
 
             if (startRO == 0 && endRO == RO - 1)
             {
@@ -314,6 +182,15 @@ namespace Gadgetron
             else
             {
                 Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_src_RO, ISMRMRD_FILTER_TAPERED_HANNING, transBandRO, densityComp);
+            }
+
+            T midValue = filter_src_RO(RO / 2);
+            T scalFactor = T(1.0) / midValue;
+            Gadgetron::scal(scalFactor, filter_src_RO);
+
+            for (ii = 0; ii<RO; ii++)
+            {
+                filter_dst_RO(ii) = T(1.0) - filter_src_RO(ii);
             }
 
             if (startE1 == 0 && endE1 == E1 - 1)
@@ -325,61 +202,59 @@ namespace Gadgetron
                 Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_src_E1, ISMRMRD_FILTER_TAPERED_HANNING, transBandE1, densityComp);
             }
 
-            if (startE2 == 0 && endE2 == E2 - 1)
-            {
-                Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_NONE, transBandE2, densityComp);
-            }
-            else
-            {
-                Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_TAPERED_HANNING, transBandE2, densityComp);
-            }
-
-            // in this way, the SNR unit scale property is perserved
-            T midValue = filter_src_RO(RO / 2);
-            T scalFactor = T(1.0) / midValue;
-            Gadgetron::scal(scalFactor, filter_src_RO);
-
             midValue = filter_src_E1(E1 / 2);
             scalFactor = T(1.0) / midValue;
             Gadgetron::scal(scalFactor, filter_src_E1);
-
-            midValue = filter_src_E2(E2 / 2);
-            scalFactor = T(1.0) / midValue;
-            Gadgetron::scal(scalFactor, filter_src_E2);
-
-            hoNDArray<T> filter_dst_RO(RO), filter_dst_E1(E1), filter_dst_E2(E2);
-
-            size_t ii;
-            for (ii = 0; ii<RO; ii++)
-            {
-                filter_dst_RO(ii) = T(1.0) - filter_src_RO(ii);
-            }
 
             for (ii = 0; ii<E1; ii++)
             {
                 filter_dst_E1(ii) = T(1.0) - filter_src_E1(ii);
             }
 
-            for (ii = 0; ii<E2; ii++)
+            if (E2 > 1)
             {
-                filter_dst_E2(ii) = T(1.0) - filter_src_E2(ii);
+                if (startE2 == 0 && endE2 == E2 - 1)
+                {
+                    Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_NONE, transBandE2, densityComp);
+                }
+                else
+                {
+                    Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_src_E2, ISMRMRD_FILTER_TAPERED_HANNING, transBandE2, densityComp);
+                }
+
+                midValue = filter_src_E2(E2 / 2);
+                scalFactor = T(1.0) / midValue;
+                Gadgetron::scal(scalFactor, filter_src_E2);
+
+                for (ii = 0; ii<E2; ii++)
+                {
+                    filter_dst_E2(ii) = T(1.0) - filter_src_E2(ii);
+                }
+            }
+            else
+            {
+                filter_src_E2.create(1);
+                filter_src_E2(0) = 1;
+
+                filter_dst_E2.create(1);
+                filter_dst_E2(0) = 1;
             }
 
             hoNDArray<T> srcFiltered(src), dstFiltered(dst);
             if (endRO <= RO - 1 && startE1 == 0 && endE1 == E1 - 1 && startE2 == 0 && endE1 == E2 - 1)
             {
-                Gadgetron::apply_kspace_filter_RO(src, filter_src_E1, srcFiltered);
-                Gadgetron::apply_kspace_filter_RO(dst, filter_dst_E1, dstFiltered);
+                Gadgetron::apply_kspace_filter_RO(src, filter_src_RO, srcFiltered);
+                Gadgetron::apply_kspace_filter_RO(dst, filter_dst_RO, dstFiltered);
             }
             else if (startRO == 0 && endRO == RO - 1 && endE1 <= E1 - 1 && startE2 == 0 && endE1 == E2 - 1)
             {
-                Gadgetron::apply_kspace_filter_E1(src, filter_src_RO, srcFiltered);
-                Gadgetron::apply_kspace_filter_E1(dst, filter_dst_RO, dstFiltered);
+                Gadgetron::apply_kspace_filter_E1(src, filter_src_E1, srcFiltered);
+                Gadgetron::apply_kspace_filter_E1(dst, filter_dst_E1, dstFiltered);
             }
             else if (startRO == 0 && endRO == RO - 1 && startE1 == 0 && endE1 == E1 - 1 && endE1 <= E2 - 1)
             {
-                Gadgetron::apply_kspace_filter_E2(src, filter_src_RO, srcFiltered);
-                Gadgetron::apply_kspace_filter_E2(dst, filter_dst_RO, dstFiltered);
+                Gadgetron::apply_kspace_filter_E2(src, filter_src_E2, srcFiltered);
+                Gadgetron::apply_kspace_filter_E2(dst, filter_dst_E2, dstFiltered);
             }
             else
             {
@@ -401,7 +276,7 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GADGET_THROW("Errors happened in partial_fourier_transition_band_3d(...) ... ");
+            GADGET_THROW("Errors happened in partial_fourier_transition_band(...) ... ");
         }
     }
 
@@ -585,15 +460,7 @@ namespace Gadgetron
             }
             else
             {
-                if (is3D)
-                {
-                    Gadgetron::partial_fourier_transition_band_3d(kspace, buffer_partial_fourier_Iter, startRO, endRO, startE1, endE1, startE2, endE2, transit_band_RO, transit_band_E1, transit_band_E2);
-                }
-                else
-                {
-                    Gadgetron::partial_fourier_transition_band_2d(kspace, buffer_partial_fourier_Iter, startRO, endRO, startE1, endE1, transit_band_RO, transit_band_E1);
-                }
-
+                Gadgetron::partial_fourier_transition_band(kspace, buffer_partial_fourier_Iter, startRO, endRO, startE1, endE1, startE2, endE2, transit_band_RO, transit_band_E1, transit_band_E2);
                 res = buffer_partial_fourier_Iter;
             }
         }
