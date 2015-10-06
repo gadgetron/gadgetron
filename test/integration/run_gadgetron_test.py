@@ -111,7 +111,7 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
     #Start the Gadgetron if needed
     if start_gadgetron:
         with open(gadgetron_log_filename, "w") as gf:
-            p = subprocess.Popen(["gadgetron", "-p", port], env=environment, stdout=gf, stderr=gf)
+            gp = subprocess.Popen(["gadgetron", "-p", port], env=environment, stdout=gf, stderr=gf)
 
             node_p = list()
             if nodes > 0:
@@ -281,7 +281,7 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
             success = False
 
         if start_gadgetron:    
-            p.terminate()
+            gp.terminate()
             if nodes > 0:
                 p_relay.terminate()
                 for pi in node_p:
