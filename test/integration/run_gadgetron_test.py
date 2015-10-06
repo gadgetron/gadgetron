@@ -10,7 +10,7 @@ import platform
 import time
 import re
 
-def run_test(environment, testcase_cfg_file, chroot_path, port):
+def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
     print("Running test case: " + testcase_cfg_file)
 
     pwd = os.getcwd()
@@ -108,8 +108,30 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
 
     os.makedirs(out_folder)
 
+    #Start the Gadgetron if needed
+    if start_gadgetron:
+        with open(gadgetron_log_filename, "w") as gf:
+            p = subprocess.Popen(["gadgetron", "-p", port], env=environment, stdout=gf, stderr=gf)
+
+            node_p = list()
+            if nodes > 0:
+                #start the cloudbus relay
+                relay_log_filename = os.path.join(pwd, out_folder, "gadgetron_cloudbus_relay.log")
+                with open(relay_log_filename, "w") as lgf:
+                    p_relay = subprocess.Popen(["gadgetron_cloudbus_relay"], env=environment, stdout=lgf, stderr=lgf)
+
+                for pi in range(nodes):
+                    node_log_filename = "gadgetron_node_" + str(pi) + ".log"
+                    node_log_filename = os.path.join(pwd, out_folder, node_log_filename)
+
+                    with open(node_log_filename, "w") as ngf:
+                        pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1)], env=environment, stdout=ngf, stderr=ngf)
+                        node_p.append(pn)
+                        
+            time.sleep(2)
+
     #Let's figure out if we should run this test or not
-    info = subprocess.check_output(["gadgetron_info"], env=environment);
+    info = subprocess.check_output(["gadgetron_ismrmrd_client", "-p", port, "-q", "-c", "gadgetron_info.xml"], env=environment);
 
     has_python_support = False
     has_cuda_support = False
@@ -194,105 +216,77 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
         return True
 
     success = True
-    gadgetron_start = "sudo " + chroot_path + "../start.sh"
 
-    with open(gadgetron_log_filename, "w") as gf:
-        if chroot_path == "Empty":
-            p = subprocess.Popen(["gadgetron", "-p", port], env=environment, stdout=gf, stderr=gf)
-        else:
-            p = subprocess.Popen(gadgetron_start, shell=True, stdout=gf, stderr=gf)
-
-        node_p = list()
-        if nodes > 0:
-            #start the cloudbus relay
-            relay_log_filename = os.path.join(pwd, out_folder, "gadgetron_cloudbus_relay.log")
-            with open(relay_log_filename, "w") as lgf:
-                p_relay = subprocess.Popen(["gadgetron_cloudbus_relay"], env=environment, stdout=lgf, stderr=lgf)
-
-            for pi in range(nodes):
-                node_log_filename = "gadgetron_node_" + str(pi) + ".log"
-                node_log_filename = os.path.join(pwd, out_folder, node_log_filename)
-
-                with open(node_log_filename, "w") as ngf:
-                    pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1)], env=environment, stdout=ngf, stderr=ngf)
-                    node_p.append(pn)
-
-        time.sleep(2)
-
-        with open(client_log_filename, "w") as cf:
-            if need_siemens_conversion:
-
-                def convert_siemens_dependency(dependency, measurement, descr):
-                    """Helper function for converting and reconstruction Siemens dependency measurements."""
-                    success = True
-                    print("Converting Siemens .dat file to ISMRMRD for the first dependency measurement.")
-                    r = subprocess.call(["siemens_to_ismrmrd", "-X","-f", siemens_dat, "-m",
-                                        siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
-                                        dependency, "-z", str(measurement + 1)],
-                                        env=environment, stdout=cf, stderr=cf)
-                    if r != 0:
-                        print("Failed to run siemens_to_ismrmrd for the %s dependency measurement!" % descr)
-                        success = False
-
-                    print("Running Gadgetron recon on the %s dependency measurement" % descr)
-                    r = 0
-                    r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f", dependency, "-c",
-                                            "default_measurement_dependencies.xml"],
-                                            env=environment, stdout=cf, stderr=cf)
-                    if r != 0:
-                        print("Failed to run gadgetron_ismrmrd_client on the %s dependency measurement!" % descr)
-                        success = False
-                    return success
-
-                # if there are dependencies
-                if siemens_data_measurement > 0:
-                    if siemens_dependency_measurement1 >= 0:
-                        success = convert_siemens_dependency(dependency_1, siemens_dependency_measurement1, "first")
-                    if siemens_dependency_measurement2 >= 0:
-                        success = convert_siemens_dependency(dependency_2, siemens_dependency_measurement2, "second")
-                    if siemens_dependency_measurement3 >= 0:
-                        success = convert_siemens_dependency(dependency_3, siemens_dependency_measurement3, "third")
-
-                # conversion of primary Siemens .dat file
-                print("Converting Siemens .dat file to ISMRMRD for data measurement.")
-                cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
-                        siemens_parameter_xml, "-x", siemens_parameter_xsl,
-                        "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1)]
-
-                r = subprocess.call(cmd, env=environment, stdout=cf, stderr=cf)
-                if r != 0:
-                    print("Failed to run siemens_to_ismrmrd!")
-                    success = False
-            else:
-                # copy existing ISMRMRD dataset to 'out_folder'
-                # this guarantees that the test dataset can't be modified by a test
-                dirname = os.path.dirname(ismrmrd_result)
-                if not os.path.isdir(dirname):
-                    os.makedirs(dirname)
-                shutil.copyfile(ismrmrd_existing, ismrmrd_result)
-
-            print("Running Gadgetron recon on data measurement")
-            r = 0
-            start_time = time.time()
-            r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f" , ismrmrd_result, "-c",
-                                    gadgetron_configuration, "-G", gadgetron_configuration, "-o", result_h5],
+    with open(client_log_filename, "w") as cf:
+        if need_siemens_conversion:
+            
+            def convert_siemens_dependency(dependency, measurement, descr):
+                """Helper function for converting and reconstruction Siemens dependency measurements."""
+                success = True
+                print("Converting Siemens .dat file to ISMRMRD for the first dependency measurement.")
+                r = subprocess.call(["siemens_to_ismrmrd", "-X","-f", siemens_dat, "-m",
+                                     siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
+                                     dependency, "-z", str(measurement + 1)],
                                     env=environment, stdout=cf, stderr=cf)
-            print "Elapsed time: " + str(time.time()-start_time)
+                if r != 0:
+                    print("Failed to run siemens_to_ismrmrd for the %s dependency measurement!" % descr)
+                    success = False
+
+                print("Running Gadgetron recon on the %s dependency measurement" % descr)
+                r = 0
+                r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f", dependency, "-c",
+                                     "default_measurement_dependencies.xml"],
+                                    env=environment, stdout=cf, stderr=cf)
+                if r != 0:
+                    print("Failed to run gadgetron_ismrmrd_client on the %s dependency measurement!" % descr)
+                    success = False
+                return success
+
+            # if there are dependencies
+            if siemens_data_measurement > 0:
+                if siemens_dependency_measurement1 >= 0:
+                    success = convert_siemens_dependency(dependency_1, siemens_dependency_measurement1, "first")
+                if siemens_dependency_measurement2 >= 0:
+                    success = convert_siemens_dependency(dependency_2, siemens_dependency_measurement2, "second")
+                if siemens_dependency_measurement3 >= 0:
+                    success = convert_siemens_dependency(dependency_3, siemens_dependency_measurement3, "third")
+
+            # conversion of primary Siemens .dat file
+            print("Converting Siemens .dat file to ISMRMRD for data measurement.")
+            cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
+                   siemens_parameter_xml, "-x", siemens_parameter_xsl,
+                   "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1)]
+
+            r = subprocess.call(cmd, env=environment, stdout=cf, stderr=cf)
             if r != 0:
-                print("Failed to run gadgetron_ismrmrd_client!")
+                print("Failed to run siemens_to_ismrmrd!")
                 success = False
+        else:
+            # copy existing ISMRMRD dataset to 'out_folder'
+            # this guarantees that the test dataset can't be modified by a test
+            dirname = os.path.dirname(ismrmrd_result)
+            if not os.path.isdir(dirname):
+                os.makedirs(dirname)
+            shutil.copyfile(ismrmrd_existing, ismrmrd_result)
 
-        p.terminate()
-        if nodes > 0:
-            p_relay.terminate()
-            for pi in node_p:
-                pi.terminate()
+        print("Running Gadgetron recon on data measurement")
+        r = 0
+        start_time = time.time()
+        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f" , ismrmrd_result, "-c",
+                             gadgetron_configuration, "-G", gadgetron_configuration, "-o", result_h5],
+                            env=environment, stdout=cf, stderr=cf)
+        print "Elapsed time: " + str(time.time()-start_time)
+        if r != 0:
+            print("Failed to run gadgetron_ismrmrd_client!")
+            success = False
 
-        # make sure the gadgetron is stopped
-        if chroot_path != "Empty":
-            gadgetron_stop="sudo kill `pgrep -U root start.sh`"
-            subprocess.call(gadgetron_stop, shell=True)
-
+        if start_gadgetron:    
+            p.terminate()
+            if nodes > 0:
+                p_relay.terminate()
+                for pi in node_p:
+                    pi.terminate()
+            
     if not success:
         return False
 
@@ -351,44 +345,23 @@ def run_test(environment, testcase_cfg_file, chroot_path, port):
     return result
 
 def main():
-    if len(sys.argv) < 4:
-        sys.stderr.write("Missing arguments\n")
-        prog = os.path.basename(sys.argv[0])
-        help = "Usage: %s <ismrmrd home> <gadgetron home> <test case config> <optional: chroot path>\n" % prog
-        sys.stderr.write(help)
-        sys.exit(1)
+    import argparse
 
-    if len(sys.argv) >= 5:
-        if platform.system() != "Linux":
-            prog = os.path.basename(sys.argv[0])
-            help = "%s with chroot can only run in linux \n" % prog
-            sys.stderr.write(help)
-            sys.exit(1)
-
-    if len(sys.argv) >= 5:
-        if os.getuid() != 0:
-            prog = os.path.basename(sys.argv[0])
-            help = "%s with chroot requires root previlige to run \n" % prog
-            sys.stderr.write(help)
-            sys.exit(1)
-
-    chroot_path = "Empty"
-    port = "9003"
-    if len(sys.argv) >= 5:
-        chroot_path = sys.argv[4]
-        port = "9002"
-
+    parser = argparse.ArgumentParser(description="Gadgetron Integration Test")
+    parser.add_argument("-G", metavar='GADGETRON_HOME', dest='gadgetron_home', required=False, default="/usr/local", help="Gadgetron installation home")
+    parser.add_argument("-I", metavar='ISMRMRD_HOME', dest='ismrmrd_home', required=False, default="/usr/local", help="ISMRMRD installation home")
+    parser.add_argument("-p", metavar='PORT', dest='port',type=int, required=False, default=9003, help="Port of gadgetron instance")
+    parser.add_argument("-e", dest='external', required=False, default=False, action='store_true', help="External, do not start gadgetron")    
+    parser.add_argument("-c", metavar='CASE_FILE', dest='case', required=True, help="Test case file")
+    args = parser.parse_args()
+    
+    port = str(args.port)
     myenv = dict()
 
-    if len(sys.argv) >= 5:
-        myenv["ISMRMRD_HOME"] = os.path.join(chroot_path, os.path.realpath(sys.argv[1]))
-        myenv["GADGETRON_HOME"] = os.path.join(chroot_path, os.path.realpath(sys.argv[2]))
-    else:
-        myenv["ISMRMRD_HOME"] = os.path.realpath(sys.argv[1])
-        myenv["GADGETRON_HOME"] = os.path.realpath(sys.argv[2])
-
+    myenv["ISMRMRD_HOME"] = os.path.realpath(args.ismrmrd_home)
+    myenv["GADGETRON_HOME"] = os.path.realpath(args.gadgetron_home)
     myenv["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
-    test_case = sys.argv[3]
+    test_case = args.case
 
     libpath = "LD_LIBRARY_PATH"
     if platform.system() == "Darwin":
@@ -414,14 +387,9 @@ def main():
             else:
                 myenv[libpath] += os.environ["MATLAB_HOME"] + "/bin/glnxa64:"
 
-        if len(sys.argv) >= 5:
-            myenv[libpath] += chroot_path + "/usr/local/cuda/lib64:"
-            myenv[libpath] += chroot_path + "/opt/intel/mkl/lib/intel64:"
-            myenv[libpath] += chroot_path + "/opt/intel/lib/intel64:"
-        else:
-            myenv[libpath] += "/usr/local/cuda/lib64:"
-            myenv[libpath] += "/opt/intel/mkl/lib/intel64:"
-            myenv[libpath] += "/opt/intel/lib/intel64:"
+        myenv[libpath] += "/usr/local/cuda/lib64:"
+        myenv[libpath] += "/opt/intel/mkl/lib/intel64:"
+        myenv[libpath] += "/opt/intel/lib/intel64:"
 
         if os.environ.get(libpath):
             myenv[libpath] += os.environ[libpath]
@@ -449,12 +417,13 @@ def main():
     print("  -- GADGETRON_HOME  : " +  myenv["GADGETRON_HOME"])
     print("  -- PATH            : " +  myenv["PATH"])
     print("  -- " + libpath + " : " +  myenv[libpath])
-    if len(sys.argv) >= 5:
-        print("  -- chroot          : " +  chroot_path)
     print("  -- TEST CASE       : " + test_case)
 
-    test_result = run_test(myenv, test_case, chroot_path, port)
-
+    if (args.external):
+        test_result = run_test(myenv, test_case, port,start_gadgetron=False)
+    else:
+        test_result = run_test(myenv, test_case, port,start_gadgetron=True)
+        
     if test_result:
         print("TEST: " + test_case + " SUCCESS")
         return 0
