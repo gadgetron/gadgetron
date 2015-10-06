@@ -20,63 +20,7 @@ namespace Gadgetron
     // ------------------------------------------------------------------------
 
     template <typename T>
-    void partial_fourier_reset_kspace_2d(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size_t endRO, size_t startE1, size_t endE1)
-    {
-        try
-        {
-            size_t NDim = src.get_number_of_dimensions();
-            GADGET_CHECK_THROW(NDim >= 2);
-
-            size_t RO = dst.get_size(0);
-            size_t E1 = dst.get_size(1);
-
-            size_t RO_src = src.get_size(0);
-            size_t E1_src = src.get_size(1);
-
-            GADGET_CHECK_THROW(RO == RO_src);
-            GADGET_CHECK_THROW(E1 == E1_src);
-            GADGET_CHECK_THROW(src.get_number_of_elements() == dst.get_number_of_elements());
-
-            if ((startRO >= RO) || (endRO >= RO) || (startRO>endRO))
-            {
-                dst = src;
-                GWARN_STREAM("partial_fourier_reset_kspace_2d(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
-                return;
-            }
-
-            if ((startE1 >= E1) || (endE1 >= E1) || (startE1>endE1))
-            {
-                dst = src;
-                GWARN_STREAM("partial_fourier_reset_kspace_2d(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
-                return;
-            }
-
-            size_t N = dst.get_number_of_elements() / (RO*E1);
-            const T* pSrc = src.begin();
-            T* pDst = dst.begin();
-
-            long long n;
-
-#pragma omp parallel for default(none) private(n) shared(N, pSrc, pDst, RO, E1, startRO, endRO, startE1, endE1)
-            for (n = 0; n<(long long)N; n++)
-            {
-                for (size_t e1 = startE1; e1 <= endE1; e1++)
-                {
-                    size_t offset = n*RO*E1 + e1*RO + startRO;
-                    memcpy(pDst + offset, pSrc + offset, sizeof(T)*(endRO - startRO + 1));
-                }
-            }
-        }
-        catch (...)
-        {
-            GADGET_THROW("Errors happened in partial_fourier_reset_kspace_2d(...) ... ");
-        }
-    }
-
-    // ------------------------------------------------------------------------
-
-    template <typename T>
-    void partial_fourier_reset_kspace_3d(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2)
+    void partial_fourier_reset_kspace(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2)
     {
         try
         {
@@ -99,22 +43,30 @@ namespace Gadgetron
             if ((startRO >= RO) || (endRO >= RO) || (startRO>endRO))
             {
                 dst = src;
-                GWARN_STREAM("partial_fourier_reset_kspace_3d(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
+                GWARN_STREAM("partial_fourier_reset_kspace(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
                 return;
             }
 
             if ((startE1 >= E1) || (endE1 >= E1) || (startE1>endE1))
             {
                 dst = src;
-                GWARN_STREAM("partial_fourier_reset_kspace_3d(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
+                GWARN_STREAM("partial_fourier_reset_kspace(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
                 return;
             }
 
-            if ((startE2 >= E2) || (endE2 >= E2) || (startE2>endE2))
+            if (E2 > 1)
             {
-                dst = src;
-                GWARN_STREAM("partial_fourier_reset_kspace_3d(...) : (startE2>=E2) || (endE2>=E2) || (startE2>endE2) ... ");
-                return;
+                if ((startE2 >= E2) || (endE2 >= E2) || (startE2 > endE2))
+                {
+                    dst = src;
+                    GWARN_STREAM("partial_fourier_reset_kspace(...) : (startE2>=E2) || (endE2>=E2) || (startE2>endE2) ... ");
+                    return;
+                }
+            }
+            else
+            {
+                startE2 = 0;
+                endE2 = 0;
             }
 
             size_t N = dst.get_number_of_elements() / (RO*E1*E2);
@@ -138,7 +90,7 @@ namespace Gadgetron
         }
         catch (...)
         {
-            GADGET_THROW("Errors happened in partial_fourier_reset_kspace_3d(...) ... ");
+            GADGET_THROW("Errors happened in partial_fourier_reset_kspace(...) ... ");
         }
     }
 
@@ -506,6 +458,11 @@ namespace Gadgetron
                     endE2 = E2 - 1;
                 }
             }
+            else
+            {
+                startE2 = 0;
+                endE2 = 0;
+            }
 
             if ((endRO - startRO + 1 == RO) && (endE1 - startE1 + 1 == E1) && (endE2 - startE2 + 1 == E2))
             {
@@ -593,17 +550,15 @@ namespace Gadgetron
                 buffer_partial_fourier_Iter = kspaceIter;
 
                 // restore the acquired region
+                partial_fourier_reset_kspace(kspace, kspaceIter, startRO, endRO, startE1, endE1, startE2, endE2);
+
                 if (is3D)
                 {
-                    partial_fourier_reset_kspace_3d(kspace, kspaceIter, startRO, endRO, startE1, endE1, startE2, endE2);
-
                     // update complex image
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(kspaceIter, complexImPOCS);
                 }
                 else
                 {
-                    partial_fourier_reset_kspace_2d(kspace, kspaceIter, startRO, endRO, startE1, endE1);
-
                     // update complex image
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspaceIter, complexImPOCS);
                 }
