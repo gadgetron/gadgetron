@@ -19,6 +19,7 @@ namespace Gadgetron
 {
     // ------------------------------------------------------------------------
 
+    /// reset the kspace for acquired region
     template <typename T>
     void partial_fourier_reset_kspace(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2)
     {
@@ -96,6 +97,7 @@ namespace Gadgetron
 
     // ------------------------------------------------------------------------
 
+    /// create and apply the transition band
     template <typename T>
     void partial_fourier_transition_band(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t startRO, size_t endRO, size_t startE1, size_t endE1, size_t startE2, size_t endE2, size_t transBandRO, size_t transBandE1, size_t transBandE2)
     {
