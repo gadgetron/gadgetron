@@ -656,7 +656,7 @@ namespace Gadgetron {
 
                 long long ii;
 
-#pragma omp parallel for default(none) private(ii) shared(src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, convKRO, convKE1, convKE2, kRO, kNE1, kNE2)
+#pragma omp parallel for default(none) private(ii) shared(src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, convKRO, convKE1, convKE2, kRO, kNE1, kNE2) if(num>1)
                 for (ii = 0; ii < num; ii++)
                 {
                     size_t slc = ii / (ref_N*ref_S);
@@ -822,7 +822,7 @@ namespace Gadgetron {
 
             long long ii;
 
-#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, E2, srcCHA, convkRO, convkE1, convkE2, ref_N, ref_S, recon_obj, dstCHA, e)
+#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, E2, srcCHA, convkRO, convkE1, convkE2, ref_N, ref_S, recon_obj, dstCHA, e) if(num>1)
             {
 #pragma omp for 
                 for (ii = 0; ii < num; ii++)

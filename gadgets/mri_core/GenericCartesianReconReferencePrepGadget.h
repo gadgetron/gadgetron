@@ -99,13 +99,5 @@ namespace Gadgetron {
         // default interface function
         virtual int process_config(ACE_Message_Block* mb);
         virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
-
-        // --------------------------------------------------
-        // implementation functions
-        // --------------------------------------------------
-        /// averaging input by counting the time of sampling along N for a E1/E2 location
-        /// input: [RO E1 E2 CHA N S SLC]
-        /// res: [RO E1 E2 CHA 1 S SLC]
-        void averaging_with_sampling_times(const hoNDArray< std::complex<float> >& input, hoNDArray< std::complex<float> >& res);
     };
 }
