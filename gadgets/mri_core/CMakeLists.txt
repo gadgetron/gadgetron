@@ -137,6 +137,7 @@ set( gadgetron_mricore_config_files
     isalive.xml
     gtquery.xml
     Generic_Cartesian_Grappa_T2W.xml
+    Generic_Cartesian_Grappa_RealTimeCine.xml
 )
 
 add_library(gadgetron_mricore SHARED 

@@ -210,7 +210,7 @@ namespace Gadgetron {
                 // ---------------------------------------------------------------
 
                 // after this step, coil map is computed and stored in recon_obj_[e].coil_map_
-                if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::make_ref_coil_map"); }
+                if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::perform_coil_map_estimation"); }
                 this->perform_coil_map_estimation(recon_bit_->rbit_[e], recon_obj_[e], e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
@@ -419,7 +419,7 @@ namespace Gadgetron {
             size_t RO = 2 * cRO;
             if (sRO>0 || eRO<RO - 1)
             {
-                RO = 2 * std::max(cRO - sRO, eRO - cRO);
+                RO = 2 * std::max(cRO - sRO, eRO - cRO+1);
             }
 
             size_t E1 = eE1 - sE1 + 1;
@@ -427,8 +427,8 @@ namespace Gadgetron {
 
             if ((calib_mode_[encoding] == Gadgetron::ISMRMRD_interleaved) || (calib_mode_[encoding] == Gadgetron::ISMRMRD_noacceleration))
             {
-                E1 = 2 * std::max(cE1 - sE1, eE1 - cE1);
-                if (E2>1 ) E2 = 2 * std::max(cE2 - sE2, eE2 - cE2);
+                E1 = 2 * std::max(cE1 - sE1, eE1 - cE1+1);
+                if (E2>1 ) E2 = 2 * std::max(cE2 - sE2, eE2 - cE2+1);
             }
 
             ref_coil_map.create(RO, E1, E2, CHA, N, S, SLC);
@@ -656,7 +656,7 @@ namespace Gadgetron {
 
                 long long ii;
 
-#pragma omp parallel for default(none) private(ii) shared(src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, convKRO, convKE1, convKE2, kRO, kNE1, kNE2)
+#pragma omp parallel for default(none) private(ii) shared(src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, convKRO, convKE1, convKE2, kRO, kNE1, kNE2) if(num>1)
                 for (ii = 0; ii < num; ii++)
                 {
                     size_t slc = ii / (ref_N*ref_S);
@@ -822,7 +822,7 @@ namespace Gadgetron {
 
             long long ii;
 
-#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, E2, srcCHA, convkRO, convkE1, convkE2, ref_N, ref_S, recon_obj, dstCHA, e)
+#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, E2, srcCHA, convkRO, convkE1, convkE2, ref_N, ref_S, recon_obj, dstCHA, e) if(num>1)
             {
 #pragma omp for 
                 for (ii = 0; ii < num; ii++)

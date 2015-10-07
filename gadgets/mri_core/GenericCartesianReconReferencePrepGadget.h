@@ -50,6 +50,8 @@ namespace Gadgetron {
 
         /// ref preparation
         /// whether to average all N for ref generation
+        /// for the interleaved mode, the sampling times will be counted and used for averaging
+        /// it is recommended to set N as the interleaved dimension
         GADGET_PROPERTY(average_all_ref_N, bool, "Whether to average all N for ref generation", true);
         /// whether to average all S for ref generation
         GADGET_PROPERTY(average_all_ref_S, bool, "Whether to average all S for ref generation", false);

@@ -162,8 +162,10 @@ namespace Gadgetron {
             size_t RO = ref.get_size(0);
             size_t E1 = ref.get_size(1);
             size_t E2 = ref.get_size(2);
+            size_t CHA = ref.get_size(3);
             size_t N = ref.get_size(4);
             size_t S = ref.get_size(5);
+            size_t SLC = ref.get_size(6);
 
             // stored the ref data ready for calibration
             hoNDArray< std::complex<float> > ref_calib;
@@ -180,7 +182,8 @@ namespace Gadgetron {
 
             // -----------------------------------------
             // 1) average the ref according to the input parameters; 
-            //    TODO: if interleaved mode, need to detect sampling times for every E1/E2 location
+            //    if interleaved mode, sampling times for every E1/E2 location is detected and line by line averaging is performed 
+            //    this is required when irregular cartesian sampling is used or number of frames cannot be divided in full by acceleration factor
             // 2) detect the sampled region and crop the ref data if needed
             // 3) update the sampling_limits
             // -----------------------------------------
@@ -192,8 +195,47 @@ namespace Gadgetron {
             {
                 if (N > 1)
                 {
-                    Gadgetron::sum_over_dimension(ref, ref_calib, (size_t)4);
-                    Gadgetron::scal((float)(1.0 / N), ref_calib);
+                    if (calib_mode_[e] == ISMRMRD_interleaved)
+                    {
+                        hoNDArray<bool> sampled = Gadgetron::detect_readout_sampling_status(ref);
+                        Gadgetron::sum_over_dimension(ref, ref_calib, 4);
+
+                        // for every E1/E2 location, count how many times it is sampled for all N
+                        size_t ro, e1, e2, cha, n, s, slc;
+                        for (slc = 0; slc < SLC; slc++)
+                        {
+                            for (cha = 0; cha < CHA; cha++)
+                            {
+                                for (e2 = 0; e2 < E2; e2++)
+                                {
+                                    for (e1 = 0; e1 < E1; e1++)
+                                    {
+                                        float freq = 0;
+
+                                        for (s = 0; s < S; s++)
+                                        {
+                                            for (n = 0; n < N; n++)
+                                            {
+                                                if (sampled(e1, e2, n, s, slc)) freq += 1;
+                                            }
+
+                                            if (freq > 1)
+                                            {
+                                                float freq_reciprocal = (float)(1.0 / freq);
+                                                std::complex<float>* pAve = &(ref_calib(0, e1, e2, cha, 0, s, slc));
+                                                for (ro = 0; ro < RO; ro++) pAve[ro] *= freq_reciprocal;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Gadgetron::sum_over_dimension(ref, ref_calib, (size_t)4);
+                        Gadgetron::scal((float)(1.0 / N), ref_calib);
+                    }
                 }
                 else
                 {
