@@ -5,17 +5,19 @@ import subprocess
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Gadgetron Integration Test")
-    parser.add_argument("-G", metavar='GADGETRON_HOME', dest='gadgetron_home', required=False, default="/usr/local", help="Gadgetron installation home")
-    parser.add_argument("-I", metavar='ISMRMRD_HOME', dest='ismrmrd_home', required=False, default="/usr/local", help="ISMRMRD installation home")
-    parser.add_argument("-p", metavar='PORT', dest='port',type=int, required=False, default=9003, help="Port of gadgetron instance")
-    parser.add_argument("-e", dest='external', required=False, default=False, action='store_true', help="External, do not start gadgetron")    
-    parser.add_argument("-l", metavar='TEST_CASE_LIST_FILE', dest='list_file', required=True, help="List of test cases")
+
+    parser = argparse.ArgumentParser(description="Gadgetron Integration Test",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-G', '--gadgetron_home', default=os.environ.get('GADGETRON_HOME'), help="Gadgetron installation home")
+    parser.add_argument('-I', '--ismrmrd_home', default=os.environ.get('ISMRMRD_HOME'), help="ISMRMRD installation home")
+    parser.add_argument('-p', '--port', type=int, default=9003, help="Port of gadgetron instance")
+    parser.add_argument('-e', '--external', action='store_true', help="External, do not start gadgetron")
+    parser.add_argument('test_case_list_file', help="List of test cases")  
     args = parser.parse_args()
     
     ismrmrd_home = args.ismrmrd_home
     gadgetron_home = args.gadgetron_home
-    test_case_list = args.list_file
+    test_case_list = args.test_case_list_file
     pwd = os.getcwd()
 
     test_cases = open( test_case_list, 'r' )
@@ -36,9 +38,9 @@ def main():
 
         # Now run the test
         if args.external:
-            r = subprocess.call(["python", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, "-c", t, "-p", str(args.port), "-e"])
+            r = subprocess.call(["python", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-p", str(args.port), "-e"])
         else:
-            r = subprocess.call(["python", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, "-c", t, "-p", str(args.port)])
+            r = subprocess.call(["python", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-p", str(args.port)])
 
         # Grab the log files and append to master logs
         gadgetron_outfile.write("==============================================\n")

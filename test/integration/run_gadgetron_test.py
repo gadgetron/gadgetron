@@ -346,13 +346,13 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
 
 def main():
     import argparse
-
-    parser = argparse.ArgumentParser(description="Gadgetron Integration Test")
-    parser.add_argument("-G", metavar='GADGETRON_HOME', dest='gadgetron_home', required=False, default="/usr/local", help="Gadgetron installation home")
-    parser.add_argument("-I", metavar='ISMRMRD_HOME', dest='ismrmrd_home', required=False, default="/usr/local", help="ISMRMRD installation home")
-    parser.add_argument("-p", metavar='PORT', dest='port',type=int, required=False, default=9003, help="Port of gadgetron instance")
-    parser.add_argument("-e", dest='external', required=False, default=False, action='store_true', help="External, do not start gadgetron")    
-    parser.add_argument("-c", metavar='CASE_FILE', dest='case', required=True, help="Test case file")
+    parser = argparse.ArgumentParser(description="Gadgetron Integration Test",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-G', '--gadgetron_home', default=os.environ.get('GADGETRON_HOME'), help="Gadgetron installation home")
+    parser.add_argument('-I', '--ismrmrd_home', default=os.environ.get('ISMRMRD_HOME'), help="ISMRMRD installation home")
+    parser.add_argument('-p', '--port', type=int, default=9003, help="Port of gadgetron instance")
+    parser.add_argument('-e', '--external', action='store_true', help="External, do not start gadgetron")
+    parser.add_argument('case_file', help="Test case file")
     args = parser.parse_args()
     
     port = str(args.port)
@@ -361,7 +361,7 @@ def main():
     myenv["ISMRMRD_HOME"] = os.path.realpath(args.ismrmrd_home)
     myenv["GADGETRON_HOME"] = os.path.realpath(args.gadgetron_home)
     myenv["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
-    test_case = args.case
+    test_case = args.case_file
 
     libpath = "LD_LIBRARY_PATH"
     if platform.system() == "Darwin":
