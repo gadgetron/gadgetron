@@ -1,11 +1,23 @@
 import os
 import sys
-import urllib2
 import hashlib
+
+if sys.version_info[0] >= 3:
+    import urllib.request
+    import urllib.error
+    HTTPError = urllib.error.HTTPError
+    URLError = urllib.error.URLError
+    urlopen = urllib.request.urlopen
+else:
+    import urllib2
+    HTTPError = urllib2.HTTPError
+    URLError = urllib2.URLError
+    urlopen = urllib2.urlopen
 
 DATAFILE = "data.txt"
 DATADIR = "data"
 HOST = 'http://gadgetrontestdata.s3-website-us-east-1.amazonaws.com'
+
 
 def md5sum(filename, blocksize=64*1024):
     hsh = hashlib.md5()
@@ -16,6 +28,7 @@ def md5sum(filename, blocksize=64*1024):
             buf = f.read(blocksize)
     return hsh.hexdigest()
 
+
 def load_checksums(datafile):
     checksums = {}
     with open(datafile) as f:
@@ -24,10 +37,12 @@ def load_checksums(datafile):
             checksums[filepath.strip()] = checksum.strip()
     return checksums
 
+
 def download(url, dest):
-    furl = urllib2.urlopen(url)
+    furl = urlopen(url)
     with open(dest, 'wb') as fdest:
         fdest.write(furl.read())
+
 
 def main():
     # determine test dir from full path to this script
@@ -46,7 +61,7 @@ def main():
 
     print("Storing test data in %s" % datadir)
 
-    for dataname,checksum in checksums.items():
+    for dataname, checksum in checksums.items():
         datapath = os.path.join(datadir, dataname)
         parent = os.path.dirname(datapath)
         if not os.path.isdir(parent):
@@ -59,9 +74,9 @@ def main():
             print("Downloading: %s..." % dataname)
             try:
                 download(url, datapath)
-            except urllib2.HTTPError, e:
+            except HTTPError as e:
                 print("HTTP Error: %d %s" % (e.code, url))
-            except urllib2.URLError, e:
+            except URLError as e:
                 print("URL Error: %s - %s" % (e.reason, url))
 
 if __name__ == '__main__':
