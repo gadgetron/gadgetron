@@ -547,7 +547,7 @@ void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
         size_t iter, cha;
 
         hoNDArray<T> dataByCha(RO*E1*E2, CHA, const_cast<T*>(data.begin()));
-        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(data, D_sum, 0));
+        GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(dataByCha, D_sum, 0));
         Gadgetron::norm2(D_sum, v);
         Gadgetron::scal((value_type)1.0 / v, D_sum);
 
