@@ -56,6 +56,14 @@ if (MATLAB_FOUND)
         SET_TARGET_PROPERTIES(Matlab_gt_write_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
         install(TARGETS Matlab_gt_write_analyze DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
+        add_library(Matlab_compute_coil_map_2D SHARED Matlab_compute_coil_map_2D.cpp)
+        SET_TARGET_PROPERTIES(Matlab_compute_coil_map_2D PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+        install(TARGETS Matlab_compute_coil_map_2D DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
+
+        add_library(Matlab_compute_coil_map_3D SHARED Matlab_compute_coil_map_3D.cpp)
+        SET_TARGET_PROPERTIES(Matlab_compute_coil_map_3D PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+        install(TARGETS Matlab_compute_coil_map_3D DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
+
     endif ( MKL_FOUND AND FFTW3_FOUND )
 
 else(MATLAB_FOUND)
