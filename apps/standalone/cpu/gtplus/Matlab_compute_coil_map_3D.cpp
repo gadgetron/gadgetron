@@ -86,12 +86,12 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         const mwSize* dims = mxGetDimensions(prhs[0]);
 
         // algo
-        Gadgetron::gtPlus::ISMRMRDCOILMAPALGO algo = Gadgetron::gtPlus::ISMRMRD_SOUHEIL_ITER;
+        Gadgetron::ISMRMRDCOILMAPALGO algo = Gadgetron::ISMRMRD_SOUHEIL_ITER;
         std::string algoStr;
         converter.Matlab2Str(prhs[1], algoStr);
         if ( algoStr == "ISMRMRD_SOUHEIL" )
         {
-            algo = Gadgetron::gtPlus::ISMRMRD_SOUHEIL;
+            algo = Gadgetron::ISMRMRD_SOUHEIL;
         }
 
         // ks
