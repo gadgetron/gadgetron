@@ -18,6 +18,7 @@ DATAFILE = "data.txt"
 DATADIR = "data"
 HOST = 'http://gadgetrontestdata.s3-website-us-east-1.amazonaws.com'
 
+
 def md5sum(filename, blocksize=64*1024):
     hsh = hashlib.md5()
     with open(filename, "r+b") as f:
@@ -27,6 +28,7 @@ def md5sum(filename, blocksize=64*1024):
             buf = f.read(blocksize)
     return hsh.hexdigest()
 
+
 def load_checksums(datafile):
     checksums = {}
     with open(datafile) as f:
@@ -35,10 +37,12 @@ def load_checksums(datafile):
             checksums[filepath.strip()] = checksum.strip()
     return checksums
 
+
 def download(url, dest):
     furl = urlopen(url)
     with open(dest, 'wb') as fdest:
         fdest.write(furl.read())
+
 
 def main():
     # determine test dir from full path to this script
@@ -57,7 +61,7 @@ def main():
 
     print("Storing test data in %s" % datadir)
 
-    for dataname,checksum in checksums.items():
+    for dataname, checksum in checksums.items():
         datapath = os.path.join(datadir, dataname)
         parent = os.path.dirname(datapath)
         if not os.path.isdir(parent):
