@@ -183,27 +183,27 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
     skipping_test = False
 
     if (need_system_memory > system_memory):
-        print "Test skipped because needed system memory (" + str(need_system_memory) + " MB) is larger than available system memory (" + str(system_memory) + " MB)"
+        print("Test skipped because needed system memory (" + str(need_system_memory) + " MB) is larger than available system memory (" + str(system_memory) + " MB)")
         skipping_test = True
 
     if (need_gpu_support and ((not has_cuda_support) or (number_of_gpus == 0) or (need_gpu_memory > gpu_memory))):
-        print "Test skipped because system does not meet gpu requirements"
+        print("Test skipped because system does not meet gpu requirements")
         skipping_test = True #It is not a failed test, just skipping
 
     if (need_python_support and (not has_python_support)):
-        print "Test skipped because Python is not available"
+        print("Test skipped because Python is not available")
         skipping_test = True
     if (need_matlab_support and (not has_matlab_support)):
-        print "Test skipped because Matlab is not available"
+        print("Test skipped because Matlab is not available")
         skipping_test = True
 
     if skipping_test:
-        print "System Requirements: Actual/Required"
-        print "System Memory: " + str(system_memory) + "/" + str(need_system_memory)
-        print "Python Support: " + str(has_python_support) + "/" + str(need_python_support)
-        print "Matlab Support: " + str(has_matlab_support) + "/" + str(need_matlab_support)
-        print "CUDA Support: " + str(has_cuda_support and (number_of_gpus > 0)) + "/" + str(need_gpu_support)
-        print "GPU Memory: " + str(gpu_memory) + "/" + str(need_gpu_memory)
+        print("System Requirements: Actual/Required")
+        print("System Memory: " + str(system_memory) + "/" + str(need_system_memory))
+        print("Python Support: " + str(has_python_support) + "/" + str(need_python_support))
+        print("Matlab Support: " + str(has_matlab_support) + "/" + str(need_matlab_support))
+        print("CUDA Support: " + str(has_cuda_support and (number_of_gpus > 0)) + "/" + str(need_gpu_support))
+        print("GPU Memory: " + str(gpu_memory) + "/" + str(need_gpu_memory))
 
         f = open(gadgetron_log_filename, "w");
         f.write("Test skipped because requirements not met\n");
@@ -282,7 +282,7 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
         r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f" , ismrmrd_result, "-c",
                              gadgetron_configuration, "-G", gadgetron_configuration, "-o", result_h5],
                             env=environment, stdout=cf, stderr=cf)
-        print "Elapsed time: " + str(time.time()-start_time)
+        print("Elapsed time: " + str(time.time()-start_time))
         if r != 0:
             print("Failed to run gadgetron_ismrmrd_client!")
             success = False
