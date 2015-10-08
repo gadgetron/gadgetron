@@ -7,8 +7,8 @@ import ConfigParser
 import os
 import shutil
 import platform
-import time
 import re
+
 
 def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
     print("Running test case: " + testcase_cfg_file)
@@ -59,34 +59,33 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
     dependency_2 = os.path.join(pwd, out_folder, "dependency_2.h5")
     dependency_3 = os.path.join(pwd, out_folder, "dependency_3.h5")
 
-    if config.has_option('REQUIREMENTS','python_support'):
-        need_python_support = config.getboolean('REQUIREMENTS','python_support')
+    if config.has_option('REQUIREMENTS', 'python_support'):
+        need_python_support = config.getboolean('REQUIREMENTS', 'python_support')
     else:
         need_python_support = False
 
-    if config.has_option('REQUIREMENTS','matlab_support'):
-        need_matlab_support = config.getboolean('REQUIREMENTS','matlab_support')
+    if config.has_option('REQUIREMENTS', 'matlab_support'):
+        need_matlab_support = config.getboolean('REQUIREMENTS', 'matlab_support')
     else:
         need_matlab_support = False
 
-
-    if config.has_option('REQUIREMENTS','gpu_support'):
-        need_gpu_support = config.getboolean('REQUIREMENTS','gpu_support')
+    if config.has_option('REQUIREMENTS', 'gpu_support'):
+        need_gpu_support = config.getboolean('REQUIREMENTS', 'gpu_support')
     else:
         need_gpu_support = False
 
-    if config.has_option('REQUIREMENTS','gpu_memory'):
-        need_gpu_memory = config.getfloat('REQUIREMENTS','gpu_memory')
+    if config.has_option('REQUIREMENTS', 'gpu_memory'):
+        need_gpu_memory = config.getfloat('REQUIREMENTS', 'gpu_memory')
     else:
-        need_gpu_memoryt = 256
+        need_gpu_memory = 256
 
-    if config.has_option('REQUIREMENTS','system_memory'):
-        need_system_memory= config.getfloat('REQUIREMENTS','system_memory')
+    if config.has_option('REQUIREMENTS', 'system_memory'):
+        need_system_memory = config.getfloat('REQUIREMENTS', 'system_memory')
     else:
         need_system_memory = 1024
 
     if config.has_option('REQUIREMENTS', 'nodes'):
-        nodes = config.getint('REQUIREMENTS','nodes')
+        nodes = config.getint('REQUIREMENTS', 'nodes')
     else:
         nodes = 0
 
@@ -127,7 +126,7 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
                     with open(node_log_filename, "w") as ngf:
                         pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1)], env=environment, stdout=ngf, stderr=ngf)
                         node_p.append(pn)
-                        
+
             time.sleep(2)
 
     #Let's figure out if we should run this test or not
@@ -136,43 +135,40 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
     has_python_support = False
     has_cuda_support = False
     has_matlab_support = False
-    system_memory = 1024 #MB
+    system_memory = 1024  # MB
     number_of_gpus = 0
-    gpu_memory = 256 #MB
+    gpu_memory = 256  # MB
 
     p = re.compile('^[ \w]+-- Python Support     : ([A-Z]+)', re.MULTILINE)
-    m = p.search(info);
+    m = p.search(info)
     if m:
         if m.group(1) == 'YES':
             has_python_support = True
 
     p = re.compile('^[ \w]+-- Matlab Support     : ([A-Z]+)', re.MULTILINE)
-    m = p.search(info);
+    m = p.search(info)
     if m:
         if m.group(1) == 'YES':
             has_matlab_support = True
 
-
     p = re.compile('^[ \w]+-- CUDA Support[ ]+: ([A-Z]+)', re.MULTILINE)
-    m = p.search(info);
+    m = p.search(info)
     if m:
         if m.group(1) == 'YES':
             has_cuda_support = True
 
-
     p = re.compile('^[ \w]+\* Number of CUDA capable devices: ([0-9]+)', re.MULTILINE)
-    m = p.search(info);
+    m = p.search(info)
     if m:
         number_of_gpus = m.group(1)
 
     p = re.compile('^[ \w]+-- System Memory size : ([0-9\.]+) MB', re.MULTILINE)
-    m = p.search(info);
+    m = p.search(info)
     if m:
         system_memory = float(m.group(1))
 
-
     p = re.compile('^[ \w]+\+ Total amount of global GPU memory: ([0-9\.]+) MB', re.MULTILINE)
-    m = p.search(info);
+    m = p.search(info)
     if m:
         gpu_memory = float(m.group(1))
     else:
@@ -188,7 +184,7 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
 
     if (need_gpu_support and ((not has_cuda_support) or (number_of_gpus == 0) or (need_gpu_memory > gpu_memory))):
         print("Test skipped because system does not meet gpu requirements")
-        skipping_test = True #It is not a failed test, just skipping
+        skipping_test = True  # It is not a failed test, just skipping
 
     if (need_python_support and (not has_python_support)):
         print("Test skipped because Python is not available")
@@ -205,15 +201,15 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
         print("CUDA Support: " + str(has_cuda_support and (number_of_gpus > 0)) + "/" + str(need_gpu_support))
         print("GPU Memory: " + str(gpu_memory) + "/" + str(need_gpu_memory))
 
-        f = open(gadgetron_log_filename, "w");
-        f.write("Test skipped because requirements not met\n");
-        f.close();
+        f = open(gadgetron_log_filename, "w")
+        f.write("Test skipped because requirements not met\n")
+        f.close()
 
-        f = open(client_log_filename, "w");
-        f.write("Test skipped because requirements not met\n");
-        f.close();
+        f = open(client_log_filename, "w")
+        f.write("Test skipped because requirements not met\n")
+        f.close()
 
-        if start_gadgetron:    
+        if start_gadgetron:
             gp.terminate()
             if nodes > 0:
                 p_relay.terminate()
@@ -226,7 +222,7 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
 
     with open(client_log_filename, "w") as cf:
         if need_siemens_conversion:
-            
+
             def convert_siemens_dependency(dependency, measurement, descr):
                 """Helper function for converting and reconstruction Siemens dependency measurements."""
                 success = True
@@ -287,13 +283,13 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
             print("Failed to run gadgetron_ismrmrd_client!")
             success = False
 
-    if start_gadgetron:    
+    if start_gadgetron:
         gp.terminate()
         if nodes > 0:
             p_relay.terminate()
             for pi in node_p:
                 pi.terminate()
-            
+
     if not success:
         return False
 
@@ -325,13 +321,13 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
 
     # If the types in the hdf5 are unsigned short numpy produces norms, dot products etc. in unsigned short. And that _will_ overflow...
     norm_diff = (numpy.linalg.norm(d1[...].flatten().astype('float32') -
-                        d2[...].flatten().astype('float32')) /
-            numpy.linalg.norm(d2[...].flatten().astype('float32')))
+                 d2[...].flatten().astype('float32')) /
+                 numpy.linalg.norm(d2[...].flatten().astype('float32')))
 
     scale = (float(numpy.dot(d1[...].flatten().astype('float32'),
-                    d1[...].flatten().astype('float32'))) /
-            float(numpy.dot(d1[...].flatten().astype('float32'),
-                    d2[...].flatten().astype('float32'))))
+             d1[...].flatten().astype('float32'))) /
+             float(numpy.dot(d1[...].flatten().astype('float32'),
+             d2[...].flatten().astype('float32'))))
 
     result = True
 
@@ -341,15 +337,16 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
 
     if compare_values:
         print("   --Comparing values, norm diff : %s (threshold: %s)" %
-                (str(norm_diff), str(comparison_threshold_values)))
+              (str(norm_diff), str(comparison_threshold_values)))
         result = result and (norm_diff < comparison_threshold_values)
 
     if compare_scales:
         print("   --Comparing image scales, ratio : %s (%s) (threshold: %s)" %
-                (str(scale), str(abs(1-scale)), str(comparison_threshold_scales)))
+              (str(scale), str(abs(1-scale)), str(comparison_threshold_scales)))
         result = result and (abs(1-scale) < comparison_threshold_scales)
 
     return result
+
 
 def main():
     import argparse
@@ -361,7 +358,7 @@ def main():
     parser.add_argument('-e', '--external', action='store_true', help="External, do not start gadgetron")
     parser.add_argument('case_file', help="Test case file")
     args = parser.parse_args()
-    
+
     port = str(args.port)
     myenv = dict()
 
@@ -420,17 +417,17 @@ def main():
         os.putenv('PATH', myenv['PATH'])
 
     print("Running Gadgetron test with: ")
-    print("  -- ISMRMRD_HOME  : " +  myenv["ISMRMRD_HOME"])
-    print("  -- GADGETRON_HOME  : " +  myenv["GADGETRON_HOME"])
-    print("  -- PATH            : " +  myenv["PATH"])
-    print("  -- " + libpath + " : " +  myenv[libpath])
+    print("  -- ISMRMRD_HOME  : " + myenv["ISMRMRD_HOME"])
+    print("  -- GADGETRON_HOME  : " + myenv["GADGETRON_HOME"])
+    print("  -- PATH            : " + myenv["PATH"])
+    print("  -- " + libpath + " : " + myenv[libpath])
     print("  -- TEST CASE       : " + test_case)
 
     if (args.external):
-        test_result = run_test(myenv, test_case, port,start_gadgetron=False)
+        test_result = run_test(myenv, test_case, port, start_gadgetron=False)
     else:
-        test_result = run_test(myenv, test_case, port,start_gadgetron=True)
-        
+        test_result = run_test(myenv, test_case, port, start_gadgetron=True)
+
     if test_result:
         print("TEST: " + test_case + " SUCCESS")
         return 0
@@ -438,5 +435,5 @@ def main():
         print("TEST: " + test_case + " FAILED")
         return -100
 
-if __name__=="__main__":
+if __name__ == "__main__":
     sys.exit(main())
