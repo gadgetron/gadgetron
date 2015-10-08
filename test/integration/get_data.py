@@ -1,7 +1,18 @@
 import os
 import sys
-import urllib2
 import hashlib
+
+if sys.version_info[0] >= 3:
+    import urllib.request
+    import urllib.error
+    HTTPError = urllib.error.HTTPError
+    URLError = urllib.error.URLError
+    urlopen = urllib.request.urlopen
+else:
+    import urllib2
+    HTTPError = urllib2.HTTPError
+    URLError = urllib2.URLError
+    urlopen = urllib2.urlopen
 
 DATAFILE = "data.txt"
 DATADIR = "data"
@@ -25,7 +36,7 @@ def load_checksums(datafile):
     return checksums
 
 def download(url, dest):
-    furl = urllib2.urlopen(url)
+    furl = urlopen(url)
     with open(dest, 'wb') as fdest:
         fdest.write(furl.read())
 
@@ -59,9 +70,9 @@ def main():
             print("Downloading: %s..." % dataname)
             try:
                 download(url, datapath)
-            except urllib2.HTTPError, e:
+            except HTTPError as e:
                 print("HTTP Error: %d %s" % (e.code, url))
-            except urllib2.URLError, e:
+            except URLError as e:
                 print("URL Error: %s - %s" % (e.reason, url))
 
 if __name__ == '__main__':
