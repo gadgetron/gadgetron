@@ -213,6 +213,13 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
         f.write("Test skipped because requirements not met\n");
         f.close();
 
+        if start_gadgetron:    
+            gp.terminate()
+            if nodes > 0:
+                p_relay.terminate()
+                for pi in node_p:
+                    pi.terminate()
+
         return True
 
     success = True
@@ -280,12 +287,12 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
             print("Failed to run gadgetron_ismrmrd_client!")
             success = False
 
-        if start_gadgetron:    
-            gp.terminate()
-            if nodes > 0:
-                p_relay.terminate()
-                for pi in node_p:
-                    pi.terminate()
+    if start_gadgetron:    
+        gp.terminate()
+        if nodes > 0:
+            p_relay.terminate()
+            for pi in node_p:
+                pi.terminate()
             
     if not success:
         return False
