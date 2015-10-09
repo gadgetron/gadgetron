@@ -349,6 +349,9 @@ namespace Gadgetron {
                             res.meta_[offset].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_GFACTOR);
                             res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_GFACTOR);
                             res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_GFACTOR);
+
+                            // set the skip processing flag, so gfactor map will not be processed during e.g. partial fourier handling or kspace filter gadgets
+                            res.meta_[offset].set(GADGETRON_SKIP_PROCESSING_AFTER_RECON, (long)1);
                         }
 
                         if (verbose.value())

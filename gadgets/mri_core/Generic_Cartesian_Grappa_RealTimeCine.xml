@@ -97,6 +97,9 @@
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
+        <!-- if incoming images have this meta field, it will not be processed -->
+        <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>
+
         <!-- Parfial fourier POCS parameters -->
         <property><name>partial_fourier_POCS_iters</name><value>6</value></property>
         <property><name>partial_fourier_POCS_thres</name><value>0.01</value></property>

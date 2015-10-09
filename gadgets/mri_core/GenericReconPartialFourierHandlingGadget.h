@@ -54,6 +54,7 @@ namespace Gadgetron {
         /// ------------------------------------------------------------------------------------
         /// parameters to control the reconstruction
         /// ------------------------------------------------------------------------------------
+        GADGET_PROPERTY(skip_processing_meta_field, std::string, "If this meta field exists, pass the incoming image array to next gadget without processing", "Skip_processing_after_recon");
 
         /// ------------------------------------------------------------------------------------
         /// debug and timing

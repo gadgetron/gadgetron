@@ -97,6 +97,9 @@
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
+        <!-- if incoming images have this meta field, it will not be processed -->
+        <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>
+
         <!-- Parfial fourier handling filter parameters -->
         <property><name>partial_fourier_filter_RO_width</name><value>0.15</value></property>
         <property><name>partial_fourier_filter_E1_width</name><value>0.15</value></property>

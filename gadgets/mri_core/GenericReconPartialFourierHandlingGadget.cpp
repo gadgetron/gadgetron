@@ -105,14 +105,12 @@ namespace Gadgetron {
             GDEBUG_STREAM(os.str());
         }
 
-        std::string dataRole = std::string(recon_res_->meta_[0].as_str(GADGETRON_DATA_ROLE));
-
         // some images do not need partial fourier handling processing
-        if (dataRole == GADGETRON_IMAGE_GFACTOR)
+        if (recon_res_->meta_[0].length(skip_processing_meta_field.value().c_str())>0)
         {
             if (this->next()->putq(m1) == -1)
             {
-                GERROR("GenericReconPartialFourierHandlingGadget::process, passing gfactor on to next gadget");
+                GERROR("GenericReconPartialFourierHandlingGadget::process, passing incoming image array on to next gadget");
                 return GADGET_FAIL;
             }
 
@@ -148,10 +146,8 @@ namespace Gadgetron {
         size_t SLC = recon_res_->data_.get_size(6);
 
         // ----------------------------------------------------------
-        // pf SNR scaling
+        // pf kspace sampling range
         // ----------------------------------------------------------
-        real_value_type partialFourierCompensationFactor = 1;
-
         // if image padding is performed, those dimension may not need partial fourier handling
 
         startRO_ = sampling_limits[0].min_;
@@ -190,37 +186,6 @@ namespace Gadgetron {
             }
 
             return GADGET_OK;
-        }
-
-        if (lenRO < RO)
-        {
-            partialFourierCompensationFactor *= (real_value_type)(RO) / (real_value_type)(lenRO);
-        }
-
-        if (lenE1 < E1)
-        {
-            partialFourierCompensationFactor *= (real_value_type)(E1) / (real_value_type)(lenE1);
-        }
-
-        if (E2>1 && lenE2 < E2)
-        {
-            partialFourierCompensationFactor *= (real_value_type)(E2) / (real_value_type)(lenE2);
-        }
-
-        partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
-        if (verbose.value())
-        {
-            GDEBUG_STREAM("Partial fourier scaling factor : " << partialFourierCompensationFactor);
-        }
-
-        /*if (!debug_folder_full_path_.empty())
-        {
-            gt_exporter_.exportArrayComplex(recon_res_->data_, debug_folder_full_path_ + "data_before_pf");
-        }*/
-
-        if (partialFourierCompensationFactor>1)
-        {
-            Gadgetron::scal(partialFourierCompensationFactor, recon_res_->data_);
         }
 
         // ----------------------------------------------------------
