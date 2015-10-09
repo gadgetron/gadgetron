@@ -41,35 +41,6 @@ namespace Gadgetron
             GADGET_CHECK_THROW(E2 == E2_src);
             GADGET_CHECK_THROW(src.get_number_of_elements() == dst.get_number_of_elements());
 
-            if ((startRO >= RO) || (endRO >= RO) || (startRO>endRO))
-            {
-                dst = src;
-                GWARN_STREAM("partial_fourier_reset_kspace(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
-                return;
-            }
-
-            if ((startE1 >= E1) || (endE1 >= E1) || (startE1>endE1))
-            {
-                dst = src;
-                GWARN_STREAM("partial_fourier_reset_kspace(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
-                return;
-            }
-
-            if (E2 > 1)
-            {
-                if ((startE2 >= E2) || (endE2 >= E2) || (startE2 > endE2))
-                {
-                    dst = src;
-                    GWARN_STREAM("partial_fourier_reset_kspace(...) : (startE2>=E2) || (endE2>=E2) || (startE2>endE2) ... ");
-                    return;
-                }
-            }
-            else
-            {
-                startE2 = 0;
-                endE2 = 0;
-            }
-
             size_t N = dst.get_number_of_elements() / (RO*E1*E2);
             const T* pSrc = src.begin();
             T* pDst = dst.begin();
@@ -118,27 +89,6 @@ namespace Gadgetron
             GADGET_CHECK_THROW(E1 == E1_src);
             GADGET_CHECK_THROW(E2 == E2_src);
             GADGET_CHECK_THROW(src.get_number_of_elements() == dst.get_number_of_elements());
-
-            if ((startRO >= RO) || (endRO >= RO) || (startRO>endRO))
-            {
-                dst = src;
-                GWARN_STREAM("partial_fourier_transition_band(...) : (startRO>=RO) || (endRO>=RO) || (startRO>endRO) ... ");
-                return;
-            }
-
-            if ((startE1 >= E1) || (endE1 >= E1) || (startE1>endE1))
-            {
-                dst = src;
-                GWARN_STREAM("partial_fourier_transition_band(...) : (startE1>=E1) || (endE1>=E1) || (startE1>endE1) ... ");
-                return;
-            }
-
-            if ( (E2>1) && ((startE2 >= E2) || (endE2 >= E2) || (startE2>endE2)) )
-            {
-                dst = src;
-                GWARN_STREAM("partial_fourier_transition_band(...) : (startE2>=E2) || (endE2>=E2) || (startE2>endE2) ... ");
-                return;
-            }
 
             while (transBandRO>1 && startRO + transBandRO > RO / 2)
             {
