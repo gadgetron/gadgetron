@@ -25,7 +25,6 @@ include_directories(
 
 add_subdirectory(mri_core)
 add_subdirectory(interventional_mri)
-add_subdirectory(util)
 
 if (ARMADILLO_FOUND)
     add_subdirectory(epi)
@@ -64,7 +63,8 @@ if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     MESSAGE("PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
     MESSAGE("NUMPY_INCLUDE_DIRS: ${NUMPY_INCLUDE_DIRS}")
     MESSAGE("Compiling Python Gadgets")
-    add_subdirectory(python)
+    add_subdirectory(python)   
+    add_definitions(-DCOMPILING_WITH_PYTHON_SUPPORT)
 else (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     if(NOT PYTHONLIBS_FOUND)
         MESSAGE("Python Libraries/Headers NOT found, NOT compiling Python Gadgets")
@@ -76,6 +76,8 @@ else (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
         MESSAGE("Boost Python NOT found, NOT compiling Python Gadgets")
     endif(NOT Boost_PYTHON_FOUND)
 endif (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+
+add_subdirectory(util)
 
 find_package(DCMTK)
 if(DCMTK_FOUND)
