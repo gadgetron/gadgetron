@@ -3,6 +3,7 @@ import sys
 import os
 import platform
 
+
 def main():
     if len(sys.argv) < 4:
         sys.stderr.write("Missing arguments\n")
@@ -10,7 +11,7 @@ def main():
         help = "Usage: %s <ismrmrd home> <gadgetron home> <location of test_all.exe>\n" % prog
         sys.stderr.write(help)
         sys.exit(1)
-        
+
     myenv = dict()
     myenv["ISMRMRD_HOME"] = os.path.realpath(sys.argv[1])
     myenv["GADGETRON_HOME"] = os.path.realpath(sys.argv[2])
@@ -43,20 +44,20 @@ def main():
 
     if platform.system() == "Windows":
         os.putenv('PATH', myenv['PATH'])
-    
+
     print("Running unit tests with: ")
-    print("  -- ISMRMRD_HOME  : " +  myenv["ISMRMRD_HOME"])
-    print("  -- GADGETRON_HOME  : " +  myenv["GADGETRON_HOME"])
-    print("  -- PATH            : " +  myenv["PATH"])
-    print("  -- " + libpath + " : " +  myenv[libpath])
-    
+    print("  -- ISMRMRD_HOME  : " + myenv["ISMRMRD_HOME"])
+    print("  -- GADGETRON_HOME  : " + myenv["GADGETRON_HOME"])
+    print("  -- PATH            : " + myenv["PATH"])
+    print("  -- " + libpath + " : " + myenv[libpath])
+
     r = subprocess.call("test_all.exe", env=myenv)
-    
+
     if r != 0:
         print("Failed to run unit tests!")
         return -100
 
     return 0
 
-if __name__=="__main__":
+if __name__ == "__main__":
     sys.exit(main())

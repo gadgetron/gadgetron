@@ -1,7 +1,7 @@
 import os
 import sys
-import glob
 import subprocess
+
 
 def main():
     import argparse
@@ -12,21 +12,21 @@ def main():
     parser.add_argument('-I', '--ismrmrd_home', default=os.environ.get('ISMRMRD_HOME'), help="ISMRMRD installation home")
     parser.add_argument('-p', '--port', type=int, default=9003, help="Port of gadgetron instance")
     parser.add_argument('-e', '--external', action='store_true', help="External, do not start gadgetron")
-    parser.add_argument('test_case_list_file', help="List of test cases")  
+    parser.add_argument('test_case_list_file', help="List of test cases")
     args = parser.parse_args()
-    
+
     ismrmrd_home = args.ismrmrd_home
     gadgetron_home = args.gadgetron_home
     test_case_list = args.test_case_list_file
     pwd = os.getcwd()
 
-    test_cases = open( test_case_list, 'r' )
+    test_cases = open(test_case_list, 'r')
     content = test_cases.read().splitlines()
 
     test_result = True
 
     gadgetron_outfile = open('gadgetron.log', 'w')
-    client_outfile    = open('client.log', 'w')
+    client_outfile = open('client.log', 'w')
 
     for t in content:
         print("Grabbing test case: " + t)
@@ -67,5 +67,5 @@ def main():
         print("ALL_TESTS:  FAILED")
         return -100
 
-if __name__=="__main__":
+if __name__ == "__main__":
     sys.exit(main())
