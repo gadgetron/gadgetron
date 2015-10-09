@@ -87,7 +87,10 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     SimpleReconGadget.h
                                     ImageSortGadget.h
                                     GenericCartesianGrappaReconGadget.h 
-                                    GenericCartesianReconReferencePrepGadget.h )
+                                    GenericCartesianReconReferencePrepGadget.h 
+                                    GenericReconPartialFourierHandlingGadget.h 
+                                    GenericReconPartialFourierHandlingFilterGadget.h 
+                                    GenericReconPartialFourierHandlingPOCSGadget.h )
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -122,7 +125,10 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 SimpleReconGadget.cpp
                                 ImageSortGadget.cpp
                                 GenericCartesianGrappaReconGadget.cpp 
-                                GenericCartesianReconReferencePrepGadget.cpp )
+                                GenericCartesianReconReferencePrepGadget.cpp 
+                                GenericReconPartialFourierHandlingGadget.cpp 
+                                GenericReconPartialFourierHandlingFilterGadget.cpp 
+                                GenericReconPartialFourierHandlingPOCSGadget.cpp )
 
 if (WIN32)
     set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )

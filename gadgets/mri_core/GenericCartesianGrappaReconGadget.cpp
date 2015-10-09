@@ -349,6 +349,9 @@ namespace Gadgetron {
                             res.meta_[offset].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_GFACTOR);
                             res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_GFACTOR);
                             res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_GFACTOR);
+
+                            // set the skip processing flag, so gfactor map will not be processed during e.g. partial fourier handling or kspace filter gadgets
+                            res.meta_[offset].set(GADGETRON_SKIP_PROCESSING_AFTER_RECON, (long)1);
                         }
 
                         if (verbose.value())
@@ -1003,6 +1006,36 @@ namespace Gadgetron {
                             memcpy(im_header.user_float, acq_header.user_float, sizeof(float)*ISMRMRD::ISMRMRD_USER_FLOATS);
 
                             im_header.attribute_string_len = 0;
+
+                            meta.set("encoding", (long)e);
+
+                            meta.set("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[0]);
+                            meta.append("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[1]);
+                            meta.append("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[2]);
+
+                            meta.set("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[0]);
+                            meta.append("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[1]);
+                            meta.append("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[2]);
+
+                            meta.set("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[0]);
+                            meta.append("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[1]);
+                            meta.append("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[2]);
+
+                            meta.set("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[0]);
+                            meta.append("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[1]);
+                            meta.append("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[2]);
+
+                            meta.set("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].min_);
+                            meta.append("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].center_);
+                            meta.append("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].max_);
+
+                            meta.set("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].min_);
+                            meta.append("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].center_);
+                            meta.append("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].max_);
+
+                            meta.set("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].min_);
+                            meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].center_);
+                            meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].max_);
                         }
                     }
                 }

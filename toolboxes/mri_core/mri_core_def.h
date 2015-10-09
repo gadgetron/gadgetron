@@ -89,5 +89,9 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_AVE                             "AVE"
 
     /// figures created during reconstruction
-    #define GADGETRON_IMAGE_RECON_FIGURE                   "FIG"
+    #define GADGETRON_IMAGE_RECON_FIGURE                    "FIG"
+
+    /// control flags for image recon and other processing
+    /// if set, skip the processing steps after the recon, e.g. partial fourier handling and kspace filter
+    #define GADGETRON_SKIP_PROCESSING_AFTER_RECON           "Skip_processing_after_recon"
 }

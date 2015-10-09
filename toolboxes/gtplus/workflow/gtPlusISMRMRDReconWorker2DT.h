@@ -32,6 +32,7 @@
 #include "gtPlusISMRMRDReconWorker.h"
 
 #include "mri_core_kspace_filter.h"
+#include "mri_core_partial_fourier.h"
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -1988,6 +1989,9 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder2D
     {
         size_t RO = kspace.get_size(0);
         size_t E1 = kspace.get_size(1);
+        size_t CHA = kspace.get_size(2);
+        size_t N = kspace.get_size(3);
+        size_t S = kspace.get_size(4);
 
         // check whether partial fourier is used
         if ( (workOrder2DT.start_RO_<0 || workOrder2DT.end_RO_<0 || (workOrder2DT.end_RO_-workOrder2DT.start_RO_+1==RO) ) 
@@ -1996,45 +2000,25 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder2D
             return true;
         }
 
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_before_PF_Filter"); }
+        hoNDArray<T> input;
+        input.create(RO, E1, 1, CHA, N, S, kspace.begin());
 
-        if ( workOrder2DT.filterROE1_partialfourier_.get_size(0)==RO 
-                && workOrder2DT.filterROE1_partialfourier_.get_size(1)==E1 )
-        {
-            Gadgetron::apply_kspace_filter_ROE1(kspace, workOrder2DT.filterROE1_partialfourier_, buffer2DT_partial_fourier_);
-            kspace = buffer2DT_partial_fourier_;
-        }
+        if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(kspace, debugFolder_ + "kspace_before_PF_Filter"); }
 
-        else if ( (workOrder2DT.filterRO_partialfourier_.get_number_of_elements() == RO) 
-                && (workOrder2DT.filterE1_partialfourier_.get_number_of_elements() == E1) )
-        {
-            Gadgetron::apply_kspace_filter_ROE1(kspace, workOrder2DT.filterRO_partialfourier_, workOrder2DT.filterE1_partialfourier_, buffer2DT_partial_fourier_);
-            kspace = buffer2DT_partial_fourier_;
-        }
+        double filter_pf_width_RO_ = 0.15;
+        double filter_pf_width_E1_ = 0.15;
+        double filter_pf_width_E2_ = 0.15;
 
-        else
-        {
-            bool filterPerformed = false;
+        bool filter_pf_density_comp_ = false;
 
-            if ( (workOrder2DT.filterRO_partialfourier_.get_number_of_elements() == RO) 
-                    && (workOrder2DT.filterE1_partialfourier_.get_number_of_elements() != E1) )
-            {
-                Gadgetron::apply_kspace_filter_RO(kspace, workOrder2DT.filterRO_partialfourier_, buffer2DT_partial_fourier_);
-                filterPerformed = true;
-            }
+        hoNDArray<T> res;
 
-            if ( (workOrder2DT.filterRO_partialfourier_.get_number_of_elements() != RO) 
-                    && (workOrder2DT.filterE1_partialfourier_.get_number_of_elements() == E1) )
-            {
-                Gadgetron::apply_kspace_filter_E1(kspace, workOrder2DT.filterE1_partialfourier_, buffer2DT_partial_fourier_);
-                filterPerformed = true;
-            }
+        Gadgetron::partial_fourier_filter(input,
+            workOrder2DT.start_RO_, workOrder2DT.end_RO_, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 0, 0,
+            filter_pf_width_RO_, filter_pf_width_E1_, filter_pf_width_E2_, filter_pf_density_comp_,
+            workOrder2DT.filterRO_partialfourier_, workOrder2DT.filterE1_partialfourier_, workOrder2DT.filterE2_partialfourier_, res);
 
-            if ( filterPerformed )
-            {
-                kspace = buffer2DT_partial_fourier_;
-            }
-        }
+        memcpy(kspace.begin(), res.begin(), sizeof(T)*RO*E1*CHA*N*S);
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_PF_Filter"); }
     }
@@ -2320,128 +2304,17 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierPOCSRecon(gtPlusReconWorkOrde
             return true;
         }
 
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_before_POCS"); }
+        hoNDArray<T> input, res;
+        input.create(RO, E1, 1, CHA, N, S, kspace.begin());
 
-        // create kspace filter for homodyne phase estimation
-        ISMRMRDKSPACEFILTER filter_ref_type_ = ISMRMRD_FILTER_HANNING;
-        double filter_ref_sigma_ = 1.5;
-        double filter_ref_width_ = 0.15;
+        if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(kspace, debugFolder_ + "kspace_before_POCS"); }
 
-        size_t startRO(0), endRO(RO-1);
-        hoNDArray<T> filterRO(RO);
-        if ( (workOrder2DT.start_RO_<0 || workOrder2DT.end_RO_<0) )
-        {
-            Gadgetron::generate_symmetric_filter_ref(RO, 0, RO - 1, filterRO);
-        }
-        else
-        {
-            Gadgetron::generate_symmetric_filter_ref(RO, workOrder2DT.start_RO_, workOrder2DT.end_RO_, filterRO);
+        Gadgetron::partial_fourier_POCS(input,
+            workOrder2DT.start_RO_, workOrder2DT.end_RO_, workOrder2DT.start_E1_, workOrder2DT.end_E1_, 0, 0,
+            workOrder2DT.partialFourier_POCS_transitBand_, workOrder2DT.partialFourier_POCS_transitBand_, 0,
+            workOrder2DT.partialFourier_POCS_iters_, workOrder2DT.partialFourier_POCS_thres_, res);
 
-            startRO = workOrder2DT.start_RO_;
-            endRO = workOrder2DT.end_RO_;
-        }
-
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterRO, debugFolder_+"filterRO_POCS"); }
-
-        size_t startE1(0), endE1(E1-1);
-        hoNDArray<T> filterE1(E1);
-        if ( (workOrder2DT.start_E1_<0 || workOrder2DT.end_E1_<0) )
-        {
-            Gadgetron::generate_symmetric_filter_ref(E1, 0, E1 - 1, filterE1);
-        }
-        else
-        {
-            Gadgetron::generate_symmetric_filter_ref(E1, workOrder2DT.start_E1_, workOrder2DT.end_E1_, filterE1);
-
-            startE1 = workOrder2DT.start_E1_;
-            endE1 = workOrder2DT.end_E1_;
-        }
-
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(filterE1, "filterE1_POCS"); }
-
-        hoNDArray<T> kspaceIter(kspace);
-        // magnitude of complex images
-        hoNDArray<typename realType<T>::Type> mag(kspace.get_dimensions());
-        hoNDArray<T> magComplex(kspace.get_dimensions());
-
-        // kspace filter
-        Gadgetron::apply_kspace_filter_ROE1(kspaceIter, filterRO, filterE1, buffer2DT_partial_fourier_);
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_partial_fourier_, debugFolder_+"POCS_afterFiltered"); }
-
-        // go to image domain
-        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(buffer2DT_partial_fourier_);
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_partial_fourier_, debugFolder_+"POCS_afterFiltered_complexIm"); }
-
-        // get the complex image phase for the filtered kspace
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(buffer2DT_partial_fourier_, mag));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::addEpsilon(mag));
-        GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::divide(buffer2DT_partial_fourier_, magComplex, buffer2DT_));
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_, debugFolder_+"POCS_afterFiltered_complexIm_phase"); }
-
-        // complex images, initialized as not filtered complex image
-        hoNDArray<T> complexIm(kspaceIter);
-        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspaceIter, complexIm);
-        hoNDArray<T> complexImPOCS(complexIm);
-
-        // the kspace during iteration is buffered here
-        buffer2DT_partial_fourier_kspaceIter_ = kspaceIter;
-
-        size_t ii;
-        for ( ii=0; ii<workOrder2DT.partialFourier_POCS_iters_; ii++ )
-        {
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::abs(complexImPOCS, mag));
-            GADGET_CHECK_RETURN_FALSE(magComplex.copyFrom(mag));
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::multiply(magComplex, buffer2DT_, complexImPOCS));
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImPOCS, debugFolder_+"POCS_complexImPOCS"); }
-
-            // go back to kspace
-            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(complexImPOCS, kspaceIter);
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"POCS_kspaceIter"); }
-
-            // buffer kspace during iteration
-            buffer2DT_partial_fourier_kspaceIter_ = kspaceIter;
-
-            // restore the acquired region
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1(kspace, kspaceIter, startRO, endRO, startE1, endE1));
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspaceIter, debugFolder_+"POCS_kspaceIter_copyOri"); }
-
-            // update complex image
-            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspaceIter, complexImPOCS);
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImPOCS, debugFolder_+"POCS_kspaceIter_copyOri_complexImPOCS"); }
-
-            // compute threshold to stop the iteration
-            GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(complexImPOCS, complexIm, buffer2DT_partial_fourier_));
-            typename realType<T>::Type diff, prev;
-            Gadgetron::norm2(complexIm, prev);
-            Gadgetron::norm2(buffer2DT_partial_fourier_, diff);
-
-            typename realType<T>::Type thres = diff/prev;
-
-            if ( !debugFolder_.empty() )
-            {
-                GDEBUG_STREAM("POCS iter : " << ii << " - thres : " << thres << " ... ");
-            }
-
-            if ( thres < workOrder2DT.partialFourier_POCS_thres_ )
-            {
-                break;
-            }
-
-            complexIm = complexImPOCS;
-        }
-
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_partial_fourier_kspaceIter_, debugFolder_+"kspaceIter_after_POCS"); }
-
-        if ( workOrder2DT.partialFourier_POCS_transitBand_ == 0 )
-        {
-            kspace = kspaceIter;
-        }
-        else
-        {
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1TransitionBand(kspace, buffer2DT_partial_fourier_kspaceIter_, startRO, endRO, startE1, endE1, workOrder2DT.partialFourier_POCS_transitBand_, workOrder2DT.partialFourier_POCS_transitBand_));
-            kspace = buffer2DT_partial_fourier_kspaceIter_;
-        }
+        memcpy(kspace.begin(), res.begin(), sizeof(T)*RO*E1*CHA*N*S);
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kspace, debugFolder_+"kspace_after_POCS"); }
     }

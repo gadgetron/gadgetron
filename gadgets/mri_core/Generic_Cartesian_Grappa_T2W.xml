@@ -86,6 +86,27 @@
         <property><name>send_out_gfactor</name><value>true</value></property>
     </gadget>
 
+    <!-- Partial fourier handling -->
+    <gadget>
+        <name>PartialFourierHandling</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>GenericReconPartialFourierHandlingFilterGadget</classname>
+
+        <!-- parameters for debug and timing -->
+        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>perform_timing</name><value>true</value></property>
+        <property><name>verbose</name><value>true</value></property>
+
+        <!-- if incoming images have this meta field, it will not be processed -->
+        <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>
+
+        <!-- Parfial fourier handling filter parameters -->
+        <property><name>partial_fourier_filter_RO_width</name><value>0.15</value></property>
+        <property><name>partial_fourier_filter_E1_width</name><value>0.15</value></property>
+        <property><name>partial_fourier_filter_E2_width</name><value>0.15</value></property>
+        <property><name>partial_fourier_filter_densityComp</name><value>false</value></property>
+    </gadget>
+
     <!-- ImageArray to images -->
     <gadget>
         <name>ImageArraySplit</name>
