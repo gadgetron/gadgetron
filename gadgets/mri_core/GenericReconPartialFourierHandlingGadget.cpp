@@ -11,8 +11,16 @@ namespace Gadgetron {
     GenericReconPartialFourierHandlingGadget::GenericReconPartialFourierHandlingGadget()
     {
         num_encoding_spaces_ = 1;
-
         process_called_times_ = 0;
+
+        startRO_ = 0;
+        endRO_ = 0;
+
+        startE1_ = 0;
+        endE1_ = 0;
+
+        startE2_ = 0;
+        endE2_ = 0;
     }
 
     GenericReconPartialFourierHandlingGadget::~GenericReconPartialFourierHandlingGadget()
@@ -144,9 +152,32 @@ namespace Gadgetron {
         // ----------------------------------------------------------
         real_value_type partialFourierCompensationFactor = 1;
 
-        long lenRO = sampling_limits[0].max_ - sampling_limits[0].min_ + 1;
-        long lenE1 = sampling_limits[1].max_ - sampling_limits[1].min_ + 1;
-        long lenE2 = sampling_limits[2].max_ - sampling_limits[2].min_ + 1;
+        // if image padding is performed, those dimension may not need partial fourier handling
+
+        startRO_ = sampling_limits[0].min_;
+        endRO_ = sampling_limits[0].max_;
+
+        startE1_ = 0;
+        endE1_ = E1 - 1;
+
+        startE2_ = 0;
+        endE2_ = E2 - 1;
+
+        if (std::abs((double)(sampling_limits[1].max_ - E1 / 2) - (double)(E1 / 2 - sampling_limits[1].min_)) > acceFactorE1_[encoding])
+        {
+            startE1_ = sampling_limits[1].min_;
+            endE1_ = sampling_limits[1].max_;
+        }
+
+        if ((E2>1) && (std::abs((double)(sampling_limits[2].max_ - E2 / 2) - (double)(E2 / 2 - sampling_limits[2].min_)) > acceFactorE2_[encoding]))
+        {
+            startE2_ = sampling_limits[2].min_;
+            endE2_ = sampling_limits[2].max_;
+        }
+
+        long lenRO = endRO_ - startRO_ + 1;
+        long lenE1 = endE1_ - startE1_ + 1;
+        long lenE2 = endE2_ - startE2_ + 1;
 
         if (lenRO == RO && lenE1 == E1 && lenE2 == E2)
         {
@@ -192,32 +223,6 @@ namespace Gadgetron {
             Gadgetron::scal(partialFourierCompensationFactor, recon_res_->data_);
         }
 
-        if (partial_fourier_algo.value() == "None")
-        {
-            GDEBUG_CONDITION_STREAM(verbose.value(), "partial_fourier_algo.value() == None");
-
-            if (this->next()->putq(m1) == -1)
-            {
-                GERROR("GenericReconPartialFourierHandlingGadget::process, passing data on to next gadget");
-                return GADGET_FAIL;
-            }
-
-            return GADGET_OK;
-        }
-
-        // not all PF handling methods support SNR images
-        // only zero-filling filter PF handling supports SNR images
-        if (dataRole == GADGETRON_IMAGE_SNR_MAP && partial_fourier_algo.value() != "ZeroFillingFilter")
-        {
-            if (this->next()->putq(m1) == -1)
-            {
-                GERROR("GenericReconPartialFourierHandlingGadget::process, passing SNR images on to next gadget");
-                return GADGET_FAIL;
-            }
-
-            return GADGET_OK;
-        }
-
         // ----------------------------------------------------------
         // go to kspace
         // ----------------------------------------------------------
@@ -238,55 +243,7 @@ namespace Gadgetron {
         // ----------------------------------------------------------
         // pf handling
         // ----------------------------------------------------------
-
-        // if image padding is performed, those dimension may not need partial fourier handling
-        size_t startE1(0), endE1(E1 - 1);
-        size_t startE2(0), endE2(E2 - 1);
-
-        if (std::abs((double)(sampling_limits[1].max_ - E1 / 2) - (double)(E1 / 2 - sampling_limits[1].min_)) > acceFactorE1_[encoding])
-        {
-            startE1 = sampling_limits[1].min_;
-            endE1 = sampling_limits[1].max_;
-        }
-
-        if ( (E2>1) && (std::abs((double)(sampling_limits[2].max_ - E2 / 2) - (double)(E2 / 2 - sampling_limits[2].min_)) > acceFactorE2_[encoding]) ) 
-        {
-            startE2 = sampling_limits[2].min_;
-            endE2 = sampling_limits[2].max_;
-        }
-
-        if (partial_fourier_algo.value() == "ZeroFillingFilter")
-        {
-            if (perform_timing.value()) { gt_timer_.start("GenericReconPartialFourierHandlingGadget, partial_fourier_filter"); }
-            GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::partial_fourier_filter(kspace_buf_,
-                sampling_limits[0].min_, sampling_limits[0].max_, startE1, endE1, startE2, endE2,
-                partial_fourier_filter_RO_width.value(), partial_fourier_filter_E1_width.value(),
-                partial_fourier_filter_E2_width.value(), partial_fourier_filter_densityComp.value(),
-                filter_pf_RO_, filter_pf_E1_, filter_pf_E2_, pf_res_), GADGET_FAIL);
-            if (perform_timing.value()) { gt_timer_.stop(); }
-        }
-        else if (partial_fourier_algo.value() == "POCS")
-        {
-            if (perform_timing.value()) { gt_timer_.start("GenericReconPartialFourierHandlingGadget, partial_fourier_POCS"); }
-            GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::partial_fourier_POCS(kspace_buf_,
-                sampling_limits[0].min_, sampling_limits[0].max_, startE1, endE1, startE2, endE2,
-                partial_fourier_POCS_transitBand.value(), partial_fourier_POCS_transitBand.value(),
-                partial_fourier_POCS_transitBand_E2.value(), partial_fourier_POCS_iters.value(),
-                partial_fourier_POCS_thres.value(), pf_res_), GADGET_FAIL);
-            if (perform_timing.value()) { gt_timer_.stop(); }
-        }
-        else
-        {
-            GERROR_STREAM("Incorrect partial fourier handling algorithm type ... ");
-
-            if (this->next()->putq(m1) == -1)
-            {
-                GERROR("GenericReconPartialFourierHandlingGadget::process, passing data on to next gadget");
-                return GADGET_FAIL;
-            }
-
-            return GADGET_OK;
-        }
+        GADGET_CHECK_RETURN(this->perform_partial_fourier_handling() == GADGET_OK, GADGET_FAIL);
 
         /*if (!debug_folder_full_path_.empty())
         {
@@ -338,7 +295,4 @@ namespace Gadgetron {
     }
 
     // ----------------------------------------------------------------------------------------
-
-    GADGET_FACTORY_DECLARE(GenericReconPartialFourierHandlingGadget)
-
 }

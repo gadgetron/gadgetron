@@ -61,28 +61,6 @@ namespace Gadgetron {
         GADGET_PROPERTY(debug_folder, std::string, "If set, the debug output will be written out", "");
         GADGET_PROPERTY(perform_timing, bool, "Whether to perform timing on some computational steps", false);
 
-        /// ------------------------------------------------------------------------------------
-        /// partial fourier and asymmetric echo handling
-        GADGET_PROPERTY_LIMITS(partial_fourier_algo, std::string, "Partial fourier handling method", "ZeroFillingFilter",
-            GadgetPropertyLimitsEnumeration, "None", "ZeroFillingFilter", "POCS");
-
-        // ------------------------------------------------------------------------------------
-
-        GADGET_PROPERTY(partial_fourier_filter_RO_width, double, "Partial fourier filter width for tapered hanning for RO dimension", 0.15);
-        GADGET_PROPERTY(partial_fourier_filter_E1_width, double, "Partial fourier filter width for tapered hanning for E1 dimension", 0.15);
-        GADGET_PROPERTY(partial_fourier_filter_E2_width, double, "Partial fourier filter width for tapered hanning for E2 dimension", 0.15);
-
-        GADGET_PROPERTY(partial_fourier_filter_densityComp, bool, "Whether to apply density compensation for RO dimension", false);
-
-        // ------------------------------------------------------------------------------------
-
-        GADGET_PROPERTY(partial_fourier_POCS_iters, int, "Number of iterations for POCS PF handling", 6);
-        GADGET_PROPERTY(partial_fourier_POCS_thres, double, "Threshold for POSC PF handling", 0.01);
-        GADGET_PROPERTY(partial_fourier_POCS_transitBand, int, "Transition band width for POCS PF handling", 24);
-        GADGET_PROPERTY(partial_fourier_POCS_transitBand_E2, int, "Transition band width for POCS PF handling for E2 dimension", 16);
-
-        // ------------------------------------------------------------------------------------
-
     protected:
 
         // --------------------------------------------------
@@ -100,6 +78,14 @@ namespace Gadgetron {
         // variable for recon
         // --------------------------------------------------
 
+        // sampled range
+        size_t startRO_;
+        size_t endRO_;
+        size_t startE1_;
+        size_t endE1_;
+        size_t startE2_;
+        size_t endE2_;
+
         // kspace buffer
         hoNDArray<T> kspace_buf_;
 
@@ -108,11 +94,6 @@ namespace Gadgetron {
 
         // number of times the process function is called
         size_t process_called_times_;
-
-        // partial fourier filters, avoid recomputing
-        hoNDArray<T> filter_pf_RO_;
-        hoNDArray<T> filter_pf_E1_;
-        hoNDArray<T> filter_pf_E2_;
 
         // --------------------------------------------------
         // variables for debug and timing
@@ -141,5 +122,11 @@ namespace Gadgetron {
 
         // close call
         int close(unsigned long flags);
+
+        // --------------------------------------------------
+        // implementation functions
+        // --------------------------------------------------
+        virtual int perform_partial_fourier_handling() = 0;
+
     };
 }

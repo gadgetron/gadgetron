@@ -90,15 +90,12 @@
     <gadget>
         <name>PartialFourierHandling</name>
         <dll>gadgetron_mricore</dll>
-        <classname>GenericReconPartialFourierHandlingGadget</classname>
+        <classname>GenericReconPartialFourierHandlingFilterGadget</classname>
 
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value>DebugFolder</value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
-
-        <!-- "None", "ZeroFillingFilter", "POCS" -->
-        <property><name>partial_fourier_algo</name><value>ZeroFillingFilter</value></property>
 
         <!-- Parfial fourier handling filter parameters -->
         <property><name>partial_fourier_filter_RO_width</name><value>0.15</value></property>
