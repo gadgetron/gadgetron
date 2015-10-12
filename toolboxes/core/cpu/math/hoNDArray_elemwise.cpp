@@ -1998,6 +1998,12 @@ namespace Gadgetron{
         axpy(a, *x, *y, *y);
     }
 
+    template <class T> void axpy(T a, hoNDArray< complext<T> > *x, hoNDArray< complext<T> > *y )
+    {
+	axpy( complext<T>(a), x, y );
+    }
+
+	
     // --------------------------------------------------------------------------------
 
     inline void scal(size_t N, float a, float* x)
@@ -2958,6 +2964,8 @@ namespace Gadgetron{
 
     template EXPORTCPUCOREMATH void axpy<float>( float, hoNDArray<float>*, hoNDArray<float>* );
     template EXPORTCPUCOREMATH void axpy<double>( double, hoNDArray<double>*, hoNDArray<double>* );
+    template EXPORTCPUCOREMATH void axpy<float>( float, hoNDArray<complext<float>>*, hoNDArray<complext<float>>* );
+    template EXPORTCPUCOREMATH void axpy<double>( double, hoNDArray<complext<double>>*, hoNDArray<complext<double>>* );
     template EXPORTCPUCOREMATH void axpy< std::complex<float> >( std::complex<float> , hoNDArray< std::complex<float> >*, hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH void axpy< std::complex<double> >( std::complex<double> , hoNDArray< std::complex<double> >*, hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH void axpy< complext<float> >( complext<float> , hoNDArray< complext<float> >*, hoNDArray< complext<float> >* );

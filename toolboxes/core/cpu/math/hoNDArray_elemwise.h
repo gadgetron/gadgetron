@@ -657,6 +657,9 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDAr
  */
 template<class T> EXPORTCPUCOREMATH void axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y );
 
+	template <class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray< complext<T> > *x, hoNDArray< complext<T> > *y );
+
+	
 /**
 * @brief compute r = a*x + y
 */
