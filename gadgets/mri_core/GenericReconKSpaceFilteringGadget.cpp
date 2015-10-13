@@ -169,7 +169,7 @@ namespace Gadgetron {
                     size_t len;
                     this->find_kspace_sampled_range(sampling_limits[0].min_, sampling_limits[0].max_, RO, len);
 
-                    hoNDArray<T> f;
+                    hoNDArray< std::complex<float> > f;
                     Gadgetron::generate_symmetric_filter(len, f, Gadgetron::get_kspace_filter_type(filterRO.value()), filterRO_sigma.value(), (size_t)std::ceil(filterRO_width.value()*len));
                     Gadgetron::pad(RO, &f, &filter_RO_[encoding]);
 
@@ -196,7 +196,7 @@ namespace Gadgetron {
                     size_t len;
                     this->find_kspace_sampled_range(sampling_limits[1].min_, sampling_limits[1].max_, E1, len);
 
-                    hoNDArray<T> f;
+                    hoNDArray< std::complex<float> > f;
                     Gadgetron::generate_symmetric_filter(len, f, Gadgetron::get_kspace_filter_type(filterE1.value()), filterE1_sigma.value(), (size_t)std::ceil(filterE1_width.value()*len));
                     Gadgetron::pad(E1, &f, &filter_E1_[encoding]);
 
@@ -223,7 +223,7 @@ namespace Gadgetron {
                     size_t len;
                     this->find_kspace_sampled_range(sampling_limits[2].min_, sampling_limits[2].max_, E2, len);
 
-                    hoNDArray<T> f;
+                    hoNDArray< std::complex<float> > f;
                     Gadgetron::generate_symmetric_filter(len, f, Gadgetron::get_kspace_filter_type(filterE2.value()), filterE2_sigma.value(), (size_t)std::ceil(filterE2_width.value()*len));
                     Gadgetron::pad(E2, &f, &filter_E2_[encoding]);
 
@@ -245,11 +245,11 @@ namespace Gadgetron {
             if (perform_timing.value()) { gt_timer_.start("GenericReconKSpaceFilteringGadget: fftc"); }
             if (E2 > 1)
             {
-                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(recon_res_->data_, kspace_buf_);
+                Gadgetron::hoNDFFT<float>::instance()->fft3c(recon_res_->data_, kspace_buf_);
             }
             else
             {
-                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(recon_res_->data_, kspace_buf_);
+                Gadgetron::hoNDFFT<float>::instance()->fft2c(recon_res_->data_, kspace_buf_);
             }
             if (perform_timing.value()) { gt_timer_.stop(); }
 
@@ -285,8 +285,8 @@ namespace Gadgetron {
             {
                 filter_res_ = kspace_buf_;
 
-                hoNDArray<T>* pSrc = &kspace_buf_;
-                hoNDArray<T>* pDst = &filter_res_;
+                hoNDArray< std::complex<float> >* pSrc = &kspace_buf_;
+                hoNDArray< std::complex<float> >* pDst = &filter_res_;
 
                 bool filterPerformed = false;
 
@@ -329,11 +329,11 @@ namespace Gadgetron {
             // ----------------------------------------------------------
             if (E2 > 1)
             {
-                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(filter_res_, recon_res_->data_);
+                Gadgetron::hoNDFFT<float>::instance()->ifft3c(filter_res_, recon_res_->data_);
             }
             else
             {
-                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(filter_res_, recon_res_->data_);
+                Gadgetron::hoNDFFT<float>::instance()->ifft2c(filter_res_, recon_res_->data_);
             }
 
             // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_res_->data_, debug_folder_full_path_ + "data_after_filtering_" + str); }
