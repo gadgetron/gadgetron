@@ -273,6 +273,8 @@ namespace Gadgetron {
 
             recon_obj_[e].recon_res_.data_.clear();
             recon_obj_[e].gfactor_.clear();
+            recon_obj_[e].recon_res_.headers_.clear();
+            recon_obj_[e].recon_res_.meta_.clear();
         }
 
         m1->release();
@@ -352,6 +354,8 @@ namespace Gadgetron {
 
                             // set the skip processing flag, so gfactor map will not be processed during e.g. partial fourier handling or kspace filter gadgets
                             res.meta_[offset].set(GADGETRON_SKIP_PROCESSING_AFTER_RECON, (long)1);
+                            // set the flag to use dedicated scaling factor
+                            res.meta_[offset].set(GADGETRON_USE_DEDICATED_SCALING_FACTOR, (long)1);
                         }
 
                         if (verbose.value())

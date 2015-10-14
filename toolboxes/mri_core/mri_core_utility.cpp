@@ -6,6 +6,8 @@
 
 #include "mri_core_utility.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_utils.h"
+#include "hoNDFFT.h"
 #include "mri_core_kspace_filter.h"
 #include <ctime>
 
@@ -190,6 +192,88 @@ namespace Gadgetron
     template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray<double>& data);
     template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray< std::complex<float> >& data);
     template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray< std::complex<double> >& data);
+
+
+    // ------------------------------------------------------------------------
+
+    template <typename T>
+    void zero_pad_resize(const hoNDArray<T>& complexIm, size_t sizeRO, size_t sizeE1, size_t sizeE2, hoNDArray<T>& complexImResized)
+    {
+        try
+        {
+            std::vector<size_t> dim;
+            complexIm.get_dimensions(dim);
+
+            size_t RO = complexIm.get_size(0);
+            size_t E1 = complexIm.get_size(1);
+            size_t E2 = complexIm.get_size(2);
+
+            GADGET_CHECK_THROW(sizeRO >= RO);
+            GADGET_CHECK_THROW(sizeE1 >= E1);
+
+            if (sizeE2 > 1)
+            {
+                if (RO == sizeRO && E1 == sizeE1 && E2 == sizeE2)
+                {
+                    complexImResized = complexIm;
+                    return;
+                }
+
+                if (complexImResized.get_size(0) != sizeRO || complexImResized.get_size(1) != sizeE1 || complexImResized.get_size(2) != sizeE2)
+                {
+                    dim[0] = sizeRO;
+                    dim[1] = sizeE1;
+                    dim[2] = sizeE2;
+                    complexImResized.create(dim);
+                }
+
+                Gadgetron::clear(&complexImResized);
+
+                hoNDArray<T> kspace(complexIm);
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(complexIm, kspace);
+
+                Gadgetron::pad(sizeRO, sizeE1, sizeE2, &kspace, &complexImResized);
+
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(complexImResized);
+
+                typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeRO*sizeE1*sizeE2) / std::sqrt((double)RO*E1));
+                Gadgetron::scal(scaling, complexImResized);
+            }
+            else
+            {
+                if (RO == sizeRO && E1 == sizeE1)
+                {
+                    complexImResized = complexIm;
+                    return;
+                }
+
+                if (complexImResized.get_size(0) != sizeRO || complexImResized.get_size(1) != sizeE1)
+                {
+                    dim[0] = sizeRO;
+                    dim[1] = sizeE1;
+                    complexImResized.create(dim);
+                }
+
+                Gadgetron::clear(&complexImResized);
+
+                hoNDArray<T> kspace(complexIm);
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(complexIm, kspace);
+
+                Gadgetron::pad(sizeRO, sizeE1, &kspace, &complexImResized);
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(complexImResized);
+
+                typename realType<T>::Type scaling = (typename realType<T>::Type)(std::sqrt((double)sizeRO*sizeE1) / std::sqrt((double)RO*E1));
+                Gadgetron::scal(scaling, complexImResized);
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Errors in zero_pad_resize(...) ... ");
+        }
+    }
+
+    template EXPORTMRICORE void zero_pad_resize(const hoNDArray< std::complex<float> >& complexIm, size_t sizeRO, size_t sizeE1, size_t sizeE2, hoNDArray< std::complex<float> >& complexImResized);
+    template EXPORTMRICORE void zero_pad_resize(const hoNDArray< std::complex<double> >& complexIm, size_t sizeRO, size_t sizeE1, size_t sizeE2, hoNDArray< std::complex<double> >& complexImResized);
 
     // ------------------------------------------------------------------------
 }
