@@ -423,7 +423,7 @@ namespace Gadgetron{
 	GDEBUG("Noise dwell time: %f\n", noise_dwell_time_us_);
 	GDEBUG("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
 	GDEBUG("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
-	GDEBUG("noise_bw_scale_factor: %f", noise_bw_scale_factor_);
+	GDEBUG("noise_bw_scale_factor: %f\n", noise_bw_scale_factor_);
       }
 
       if (noise_decorrelation_calculated_) {
