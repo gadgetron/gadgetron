@@ -43,8 +43,7 @@ namespace Gadgetron {
 
         calib_mode_.resize(NE, ISMRMRD_noacceleration);
 
-        size_t e;
-        for (e = 0; e < h.encoding.size(); e++)
+        for (size_t e = 0; e < h.encoding.size(); e++)
         {
             ISMRMRD::EncodingSpace e_space = h.encoding[e].encodedSpace;
             ISMRMRD::EncodingSpace r_space = h.encoding[e].reconSpace;
@@ -92,16 +91,6 @@ namespace Gadgetron {
 
         // ---------------------------------------------------------------------------------------------------------
 
-        /*if (!debug_folder.value().empty())
-        {
-            Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        }
-        else
-        {
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        }*/
-
         return GADGET_OK;
     }
 
@@ -119,6 +108,7 @@ namespace Gadgetron {
         size_t e;
         for (e = 0; e < recon_bit_->rbit_.size(); e++)
         {
+        		auto & rbit = recon_bit_->rbit_[e];
             std::stringstream os;
             os << "_encoding_" << e;
 
@@ -128,36 +118,21 @@ namespace Gadgetron {
             // -----------------------------------------
             if (calib_mode_[e] == Gadgetron::ISMRMRD_noacceleration)
             {
-                // if no ref data is set, make the ref point to the  data
-                if (recon_bit_->rbit_[e].ref_.data_.get_number_of_elements() == 0)
+                // if no ref data is set, make copy the ref point from the  data
+                if (!rbit.ref_)
                 {
-                    std::vector<size_t> dim;
-                    recon_bit_->rbit_[e].data_.data_.get_dimensions(dim);
-                    recon_bit_->rbit_[e].ref_.data_.create(dim, recon_bit_->rbit_[e].data_.data_.begin());
-
-                    if (recon_bit_->rbit_[e].data_.trajectory_.get_number_of_elements() > 0)
-                    {
-                        recon_bit_->rbit_[e].data_.trajectory_.get_dimensions(dim);
-                        recon_bit_->rbit_[e].ref_.trajectory_.create(dim, recon_bit_->rbit_[e].data_.trajectory_.begin());
-                    }
-
-                    recon_bit_->rbit_[e].ref_.headers_ = recon_bit_->rbit_[e].data_.headers_;
-                    recon_bit_->rbit_[e].ref_.sampling_ = recon_bit_->rbit_[e].data_.sampling_;
+                	rbit.ref_ = rbit.data_;
                 }
             }
 
-            if (recon_bit_->rbit_[e].ref_.data_.get_number_of_elements() == 0)
-            {
-                continue;
-            }
+            if (!rbit.ref_) continue;
 
             // useful variables
-            hoNDArray< std::complex<float> >& ref = recon_bit_->rbit_[e].ref_.data_;
+            hoNDArray< std::complex<float> >& ref = (*rbit.ref_).data_;
 
             SamplingLimit sampling_limits[3];
-            sampling_limits[0] = recon_bit_->rbit_[e].ref_.sampling_.sampling_limits_[0];
-            sampling_limits[1] = recon_bit_->rbit_[e].ref_.sampling_.sampling_limits_[1];
-            sampling_limits[2] = recon_bit_->rbit_[e].ref_.sampling_.sampling_limits_[2];
+            for (int i = 0; i < 3; i++)
+            	sampling_limits[i] = (*rbit.ref_).sampling_.sampling_limits_[i];
 
             size_t RO = ref.get_size(0);
             size_t E1 = ref.get_size(1);
@@ -169,18 +144,7 @@ namespace Gadgetron {
 
             // stored the ref data ready for calibration
             hoNDArray< std::complex<float> > ref_calib;
-
-            /*if (!debug_folder_full_path_.empty())
-            {
-                gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].ref_.data_, debug_folder_full_path_ + "ref" + os.str());
-            }
-
-            if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].ref_.trajectory_.get_number_of_elements() > 0)
-            {
-                gt_exporter_.exportArray(recon_bit_->rbit_[e].ref_.trajectory_, debug_folder_full_path_ + "ref_traj" + os.str());
-            }*/
-
-            // -----------------------------------------
+           // -----------------------------------------
             // 1) average the ref according to the input parameters; 
             //    if interleaved mode, sampling times for every E1/E2 location is detected and line by line averaging is performed 
             //    this is required when irregular cartesian sampling is used or number of frames cannot be divided in full by acceleration factor
@@ -256,12 +220,6 @@ namespace Gadgetron {
                     ref_calib = ref_recon_buf;
                 }
             }
-
-            /*if (!debug_folder_full_path_.empty())
-            {
-                gt_exporter_.exportArrayComplex(ref_calib, debug_folder_full_path_ + "ref_calib_after_averaging" + os.str());
-            }*/
-
             // step 2, detect sampled region in ref, along E1 and E2
             size_t start_E1(0), end_E1(0);
             auto t = Gadgetron::detect_sampled_region_E1(ref);
@@ -289,12 +247,6 @@ namespace Gadgetron {
 
             Gadgetron::crop(crop_offset, crop_size, &ref_calib, &ref_recon_buf);
             ref_calib = ref_recon_buf;
-
-            /*if (!debug_folder_full_path_.empty())
-            {
-                gt_exporter_.exportArrayComplex(ref_calib, debug_folder_full_path_ + "ref_calib_after_cropping" + os.str());
-            }*/
-
             // step 3, update the sampling limits
             sampling_limits[0].center_ = (uint16_t)(RO/2);
 
@@ -324,15 +276,10 @@ namespace Gadgetron {
             }
 
             ref = ref_calib;
-            recon_bit_->rbit_[e].ref_.sampling_.sampling_limits_[0] = sampling_limits[0];
-            recon_bit_->rbit_[e].ref_.sampling_.sampling_limits_[1] = sampling_limits[1];
-            recon_bit_->rbit_[e].ref_.sampling_.sampling_limits_[2] = sampling_limits[2];
+            for (int i = 0; i < 3; i++)
+            	(*rbit.ref_).sampling_.sampling_limits_[i] = sampling_limits[i];
 
-            /*if (!debug_folder_full_path_.empty())
-            {
-                gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].ref_.data_, debug_folder_full_path_ + "ref_after_prep" + os.str());
-            }*/
-        }
+       }
 
         if (this->next()->putq(m1) < 0)
         {

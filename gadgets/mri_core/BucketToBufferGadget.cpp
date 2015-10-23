@@ -124,7 +124,9 @@ namespace Gadgetron{
         //the reconstruction bit corresponding to this ReconDataBuffer and encoding space
         IsmrmrdReconBit & rbit = getRBit(recon_data_buffers, key, espace);
         //and the corresponding data buffer for the reference data
-        IsmrmrdDataBuffered & dataBuffer = rbit.ref_;
+        if (!rbit.ref_)
+        	rbit.ref_ = IsmrmrdDataBuffered();
+        IsmrmrdDataBuffered & dataBuffer = *rbit.ref_;
         //this encoding space's xml header info
         ISMRMRD::Encoding & encoding = hdr_.encoding[espace];
         //this bucket's reference stats

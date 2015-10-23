@@ -98,17 +98,18 @@ int gpuCSICoilEstimationGadget::process(
 	boost::shared_ptr<cuNDArray<float> > ref_dcw;
 
 
-	GDEBUG("Reference data: %u\n",bucket->rbit_.front().ref_.data_.get_number_of_elements());
 
-	if (bucket->rbit_.front().ref_.data_.get_number_of_elements() == 0){
+	if (!bucket->rbit_.front().ref_){
 		GDEBUG("Setting reference data to real data\n");
 		ref_data = senseData->data;
 		ref_traj = senseData->traj;
 		ref_dcw = senseData->dcw;
 	} else {
 
-		hoNDArray<std::complex<float>> * ho_data = &bucket->rbit_.front().ref_.data_;
-		hoNDArray<float>* ho_traj = &bucket->rbit_.front().ref_.trajectory_;
+		auto & ref = *bucket->rbit_.front().ref_;
+
+		hoNDArray<std::complex<float>> * ho_data = &ref.data_;
+		hoNDArray<float>* ho_traj = &ref.trajectory_;
 
 		ref_data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
 		if (ho_traj->get_size(0) > 2){
