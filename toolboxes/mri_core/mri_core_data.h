@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include "hoNDArray.h"
+#include <boost/optional.hpp>
 
 namespace Gadgetron 
 {
@@ -131,7 +132,7 @@ namespace Gadgetron
   {
   public:
     IsmrmrdDataBuffered data_;
-    IsmrmrdDataBuffered ref_;
+    boost::optional<IsmrmrdDataBuffered> ref_;
   };
 
   /**

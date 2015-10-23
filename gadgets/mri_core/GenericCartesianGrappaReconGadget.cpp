@@ -151,8 +151,7 @@ namespace Gadgetron {
         }
 
         // for every encoding space
-        size_t e;
-        for (e = 0; e < recon_bit_->rbit_.size(); e++)
+        for (size_t e = 0; e < recon_bit_->rbit_.size(); e++)
         {
             std::stringstream os;
             os << "_encoding_" << e;
@@ -175,7 +174,7 @@ namespace Gadgetron {
 
             // ---------------------------------------------------------------
 
-            if (recon_bit_->rbit_[e].ref_.data_.get_number_of_elements() > 0)
+            if (recon_bit_->rbit_[e].ref_)
             {
                 //if (!debug_folder_full_path_.empty())
                 //{
@@ -192,7 +191,7 @@ namespace Gadgetron {
                 // after this step, the recon_obj_[e].ref_calib_ and recon_obj_[e].ref_coil_map_ are set
 
                 if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::make_ref_coil_map"); }
-                this->make_ref_coil_map(recon_bit_->rbit_[e], recon_obj_[e], e);
+                this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_,*recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj_[e], e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ----------------------------------------------------------
@@ -224,8 +223,7 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
 
-                recon_bit_->rbit_[e].ref_.data_.clear();
-                recon_bit_->rbit_[e].ref_.trajectory_.clear();
+                recon_bit_->rbit_[e].ref_ = boost::none;
             }
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
@@ -390,37 +388,38 @@ namespace Gadgetron {
 
     // ----------------------------------------------------------------------------------------
 
-    void GenericCartesianGrappaReconGadget::make_ref_coil_map(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding)
+    void GenericCartesianGrappaReconGadget::make_ref_coil_map(IsmrmrdDataBuffered& ref_, std::vector<size_t>  recon_dims, ReconObjType& recon_obj, size_t encoding)
     {
+
         try
         {
-            hoNDArray< std::complex<float> >& ref = recon_bit.ref_.data_;
+            hoNDArray< std::complex<float> >& ref_data = ref_.data_;
             hoNDArray< std::complex<float> >& ref_calib = recon_obj.ref_calib_;
             hoNDArray< std::complex<float> >& ref_coil_map = recon_obj.ref_coil_map_;
 
             // sampling limits
-            size_t sRO = recon_bit.ref_.sampling_.sampling_limits_[0].min_;
-            size_t eRO = recon_bit.ref_.sampling_.sampling_limits_[0].max_;
-            size_t cRO = recon_bit.ref_.sampling_.sampling_limits_[0].center_;
+            size_t sRO = ref_.sampling_.sampling_limits_[0].min_;
+            size_t eRO = ref_.sampling_.sampling_limits_[0].max_;
+            size_t cRO = ref_.sampling_.sampling_limits_[0].center_;
 
-            size_t sE1 = recon_bit.ref_.sampling_.sampling_limits_[1].min_;
-            size_t eE1 = recon_bit.ref_.sampling_.sampling_limits_[1].max_;
-            size_t cE1 = recon_bit.ref_.sampling_.sampling_limits_[1].center_;
+            size_t sE1 = ref_.sampling_.sampling_limits_[1].min_;
+            size_t eE1 = ref_.sampling_.sampling_limits_[1].max_;
+            size_t cE1 = ref_.sampling_.sampling_limits_[1].center_;
 
-            size_t sE2 = recon_bit.ref_.sampling_.sampling_limits_[2].min_;
-            size_t eE2 = recon_bit.ref_.sampling_.sampling_limits_[2].max_;
-            size_t cE2 = recon_bit.ref_.sampling_.sampling_limits_[2].center_;
+            size_t sE2 = ref_.sampling_.sampling_limits_[2].min_;
+            size_t eE2 = ref_.sampling_.sampling_limits_[2].max_;
+            size_t cE2 = ref_.sampling_.sampling_limits_[2].center_;
 
             // recon size
-            size_t recon_RO = recon_bit.data_.data_.get_size(0);
-            size_t recon_E1 = recon_bit.data_.data_.get_size(1);
-            size_t recon_E2 = recon_bit.data_.data_.get_size(2);
+            size_t recon_RO = recon_dims[0];
+            size_t recon_E1 = recon_dims[1];
+            size_t recon_E2 = recon_dims[2];
 
             // ref array size
-            size_t CHA = ref.get_size(3);
-            size_t N = ref.get_size(4);
-            size_t S = ref.get_size(5);
-            size_t SLC = ref.get_size(6);
+            size_t CHA = ref_data.get_size(3);
+            size_t N = ref_data.get_size(4);
+            size_t S = ref_data.get_size(5);
+            size_t SLC = ref_data.get_size(6);
 
             // determine the ref_coil_map size
             size_t RO = 2 * cRO;
@@ -454,7 +453,7 @@ namespace Gadgetron {
                             {
                                 for (e1 = sE1; e1 <= eE1; e1++)
                                 {
-                                    std::complex<float>* pSrc = &(ref(0, e1-sE1, e2-sE2, cha, n, s, slc));
+                                    std::complex<float>* pSrc = &(ref_data(0, e1-sE1, e2-sE2, cha, n, s, slc));
                                     std::complex<float>* pDst = &(ref_coil_map(0, e1, e2, cha, n, s, slc));
 
                                     memcpy(pDst + sRO, pSrc, sizeof(std::complex<float>)*(eRO - sRO + 1));
@@ -476,7 +475,7 @@ namespace Gadgetron {
             // filter the ref_coil_map
             if (filter_RO_ref_coi_map_.get_size(0) != RO)
             {
-                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(0), recon_bit.ref_.sampling_.sampling_limits_[0].min_, recon_bit.ref_.sampling_.sampling_limits_[0].max_, filter_RO_ref_coi_map_);
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(0), ref_.sampling_.sampling_limits_[0].min_, ref_.sampling_.sampling_limits_[0].max_, filter_RO_ref_coi_map_);
 
                 //if (!debug_folder_full_path_.empty())
                 //{
@@ -489,7 +488,7 @@ namespace Gadgetron {
 
             if (filter_E1_ref_coi_map_.get_size(0) != E1)
             {
-                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(1), recon_bit.ref_.sampling_.sampling_limits_[1].min_, recon_bit.ref_.sampling_.sampling_limits_[1].max_, filter_E1_ref_coi_map_);
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(1), ref_.sampling_.sampling_limits_[1].min_, ref_.sampling_.sampling_limits_[1].max_, filter_E1_ref_coi_map_);
 
                 //if (!debug_folder_full_path_.empty())
                 //{
@@ -502,7 +501,7 @@ namespace Gadgetron {
 
             if ( (E2 > 1) && (filter_E2_ref_coi_map_.get_size(0) != E2) )
             {
-                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(2), recon_bit.ref_.sampling_.sampling_limits_[2].min_, recon_bit.ref_.sampling_.sampling_limits_[2].max_, filter_E2_ref_coi_map_);
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(2), ref_.sampling_.sampling_limits_[2].min_, ref_.sampling_.sampling_limits_[2].max_, filter_E2_ref_coi_map_);
 
                 //if (!debug_folder_full_path_.empty())
                 //{
@@ -535,9 +534,8 @@ namespace Gadgetron {
             // pad the ref_coil_map into the data array
             Gadgetron::pad(recon_RO, recon_E1, recon_E2, &ref_recon_buf, &ref_coil_map);
 
-            std::vector<size_t> dim;
-            ref.get_dimensions(dim);
-            ref_calib.create(dim, ref.begin());
+            std::vector<size_t> dim = *ref_data.get_dimensions();
+            ref_calib.create(dim, ref_data.begin());
 
             //if (!debug_folder_full_path_.empty())
             //{
