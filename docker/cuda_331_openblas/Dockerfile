@@ -51,7 +51,7 @@ RUN apt-get install --no-install-recommends --no-install-suggests --yes  \
     hdf5-tools python-dev python-numpy liblapack-dev libxml2-dev \
     libxslt-dev libarmadillo-dev libace-dev python-h5py \
     python-matplotlib python-libxml2 gcc-multilib python-psutil \
-    libgtest-dev liblapack-dev libblas-dev
+    libgtest-dev liblapack-dev libblas-dev libplplot-dev
 
 #MKL
 #If you want MKL instead intead of OpenBLAS, use the code below
