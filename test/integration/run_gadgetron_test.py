@@ -10,7 +10,7 @@ import platform
 import re
 
 
-def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
+def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
     print("Running test case: " + testcase_cfg_file)
 
     pwd = os.getcwd()
@@ -130,7 +130,7 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
             time.sleep(2)
 
     #Let's figure out if we should run this test or not
-    info = subprocess.check_output(["gadgetron_ismrmrd_client", "-p", port, "-q", "-c", "gadgetron_info.xml"], env=environment);
+    info = subprocess.check_output(["gadgetron_ismrmrd_client", "-a", host, "-p", port, "-q", "-c", "gadgetron_info.xml"], env=environment);
 
     has_python_support = False
     has_cuda_support = False
@@ -237,7 +237,7 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
 
                 print("Running Gadgetron recon on the %s dependency measurement" % descr)
                 r = 0
-                r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f", dependency, "-c",
+                r = subprocess.call(["gadgetron_ismrmrd_client", "-a", host, "-p", port, "-f", dependency, "-c",
                                      "default_measurement_dependencies.xml"],
                                     env=environment, stdout=cf, stderr=cf)
                 if r != 0:
@@ -275,7 +275,7 @@ def run_test(environment, testcase_cfg_file, port, start_gadgetron=True):
         print("Running Gadgetron recon on data measurement")
         r = 0
         start_time = time.time()
-        r = subprocess.call(["gadgetron_ismrmrd_client", "-p", port, "-f" , ismrmrd_result, "-c",
+        r = subprocess.call(["gadgetron_ismrmrd_client", "-a", host, "-p", port, "-f" , ismrmrd_result, "-c",
                              gadgetron_configuration, "-G", gadgetron_configuration, "-o", result_h5],
                             env=environment, stdout=cf, stderr=cf)
         print("Elapsed time: " + str(time.time()-start_time))
@@ -356,11 +356,13 @@ def main():
     parser.add_argument('-I', '--ismrmrd_home', default=os.environ.get('ISMRMRD_HOME'), help="ISMRMRD installation home")
     parser.add_argument('-p', '--port', type=int, default=9003, help="Port of gadgetron instance")
     parser.add_argument('-e', '--external', action='store_true', help="External, do not start gadgetron")
+    parser.add_argument('-a', '--address', default="localhost", help="Address of gadgetron host (external)")
     parser.add_argument('case_file', help="Test case file")
     args = parser.parse_args()
 
     port = str(args.port)
     myenv = dict()
+    host = str(args.address)
 
     myenv["ISMRMRD_HOME"] = os.path.realpath(args.ismrmrd_home)
     myenv["GADGETRON_HOME"] = os.path.realpath(args.gadgetron_home)
@@ -424,9 +426,9 @@ def main():
     print("  -- TEST CASE       : " + test_case)
 
     if (args.external):
-        test_result = run_test(myenv, test_case, port, start_gadgetron=False)
+        test_result = run_test(myenv, test_case, host, port, start_gadgetron=False)
     else:
-        test_result = run_test(myenv, test_case, port, start_gadgetron=True)
+        test_result = run_test(myenv, test_case, host, port, start_gadgetron=True)
 
     if test_result:
         print("TEST: " + test_case + " SUCCESS")
