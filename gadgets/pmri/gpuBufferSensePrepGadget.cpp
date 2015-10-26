@@ -89,18 +89,21 @@ int gpuBufferSensePrepGadget::process(
 
 	boost::shared_ptr<cuNDArray<float>> dcw;
 	boost::shared_ptr<cuNDArray<floatd2>> traj;
+	if (buffer->trajectory_){
+		auto & trajectory = *buffer->trajectory_;
 
-	if (buffer->headers_[0].trajectory_dimensions == 3){
-		auto traj_dcw = separate_traj_and_dcw(&buffer->trajectory_);
-		dcw = boost::make_shared<cuNDArray<float>>(std::get<1>(traj_dcw).get());
-		traj = boost::make_shared<cuNDArray<floatd2>>(std::get<0>(traj_dcw).get());
-	} else if (buffer->headers_[0].trajectory_dimensions == 2){
-		auto old_traj_dims = *buffer->trajectory_.get_dimensions();
-		std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
-		hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)buffer->trajectory_.get_data_ptr());
-		traj = boost::make_shared<cuNDArray<floatd2>>(tmp_traj);
-	} else {
-		throw std::runtime_error("Unsupported number of trajectory dimensions");
+		if (buffer->headers_[0].trajectory_dimensions == 3){
+			auto traj_dcw = separate_traj_and_dcw(&trajectory);
+			dcw = boost::make_shared<cuNDArray<float>>(std::get<1>(traj_dcw).get());
+			traj = boost::make_shared<cuNDArray<floatd2>>(std::get<0>(traj_dcw).get());
+		} else if (buffer->headers_[0].trajectory_dimensions == 2){
+			auto old_traj_dims = *trajectory.get_dimensions();
+			std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
+			hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)trajectory.get_data_ptr());
+			traj = boost::make_shared<cuNDArray<floatd2>>(tmp_traj);
+		} else {
+			throw std::runtime_error("Unsupported number of trajectory dimensions");
+		}
 	}
 	{
 		auto tmpdim = *buffer->data_.get_dimensions();
@@ -133,21 +136,24 @@ int gpuBufferSensePrepGadget::process(
 	//Permute as Sensegadgets expect last dimension to be coils. *Sigh*
 	job.dat_host_ =permute((hoNDArray<float_complext>*)&mainbuffer->data_,&new_order);
 
-	if (mainbuffer->headers_[0].trajectory_dimensions >2 ){
-		auto traj_dcw = separate_traj_and_dcw(&mainbuffer->trajectory_);
-		job.tra_host_ = std::get<0>(traj_dcw);
-		job.dcw_host_ = std::get<1>(traj_dcw);
-	} else if (mainbuffer->headers_[0].trajectory_dimensions == 2){
-		auto old_traj_dims = *buffer->trajectory_.get_dimensions();
-		std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
-		hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)mainbuffer->trajectory_.get_data_ptr());
-		job.tra_host_ = boost::make_shared<hoNDArray<floatd2>>(tmp_traj);
-		auto host_dcw = boost::make_shared<hoNDArray<float>>(traj_dims);
-		fill(host_dcw.get(),1.0f);
-		job.dcw_host_ = host_dcw;
+	if (mainbuffer->trajectory_){
+		auto & trajectory = *mainbuffer->trajectory_;
+		if (mainbuffer->headers_[0].trajectory_dimensions >2 ){
+			auto traj_dcw = separate_traj_and_dcw(&trajectory);
+			job.tra_host_ = std::get<0>(traj_dcw);
+			job.dcw_host_ = std::get<1>(traj_dcw);
+		} else if (mainbuffer->headers_[0].trajectory_dimensions == 2){
+			auto old_traj_dims = *trajectory.get_dimensions();
+			std::vector<size_t> traj_dims (old_traj_dims.begin()+1,old_traj_dims.end()); //Remove first element
+			hoNDArray<floatd2> tmp_traj(traj_dims,(floatd2*)trajectory.get_data_ptr());
+			job.tra_host_ = boost::make_shared<hoNDArray<floatd2>>(tmp_traj);
+			auto host_dcw = boost::make_shared<hoNDArray<float>>(traj_dims);
+			fill(host_dcw.get(),1.0f);
+			job.dcw_host_ = host_dcw;
 
-	} else {
-		throw std::runtime_error("Unsupported number of trajectory dimensions");
+		} else {
+			throw std::runtime_error("Unsupported number of trajectory dimensions");
+		}
 	}
 	{
 		float scale_factor = float(prod(image_dims_recon_os_))/asum(job.dcw_host_.get());
@@ -155,7 +161,7 @@ int gpuBufferSensePrepGadget::process(
 	}
 
 	auto data_dims = *job.dat_host_->get_dimensions();
-		//Sense gadgets expect only 1 dimension for encoding, so collapse the first
+	//Sense gadgets expect only 1 dimension for encoding, so collapse the first
 	size_t elements = std::accumulate(data_dims.begin(),data_dims.end()-1,1,std::multiplies<size_t>());
 	std::vector<size_t> new_data_dims = {elements,data_dims.back()};
 	job.dat_host_->reshape(&new_data_dims);

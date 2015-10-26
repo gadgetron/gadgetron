@@ -245,9 +245,10 @@ mxArray* Gadgetron::BufferToMatlabStruct(IsmrmrdDataBuffered* buffer){
 	auto mxdata = hoNDArrayToMatlab(&buffer->data_);
 	mxSetField(mxstruct,0,"data",mxdata);
 	//Add trajectory if available
-	if (buffer->trajectory_.get_number_of_elements() > 0){
+	if (buffer->trajectory_){
+		auto & trajectory = *buffer->trajectory_;
 		int traj_fieldnumber = mxAddField(mxstruct,"trajectory");
-		auto mxtraj = hoNDArrayToMatlab(&buffer->trajectory_);
+		auto mxtraj = hoNDArrayToMatlab(&trajectory);
 		mxSetFieldByNumber(mxstruct,0,traj_fieldnumber,mxtraj);
 	}
 
@@ -299,11 +300,12 @@ IsmrmrdDataBuffered Gadgetron::MatlabStructToBuffer(mxArray* mxstruct){
 	auto traj = mxGetField(mxstruct,0,"trajectory");
 	if (traj){
 		buffer.trajectory_ = *MatlabToHoNDArray<float>(traj);
-		if (buffer.trajectory_.get_number_of_dimensions() != 7){
-			std::vector<size_t> newdims = *buffer.trajectory_.get_dimensions();
-			for (int i = buffer.trajectory_.get_number_of_dimensions(); i<7; i++)
+		auto & trajectory = *buffer.trajectory_;
+		if (trajectory.get_number_of_dimensions() != 7){
+			std::vector<size_t> newdims = *trajectory.get_dimensions();
+			for (int i = trajectory.get_number_of_dimensions(); i<7; i++)
 				newdims.push_back(1);
-			buffer.trajectory_.reshape(&newdims);
+			trajectory.reshape(&newdims);
 		}
 	}
 	auto headers = mxGetField(mxstruct,0,"headers");
