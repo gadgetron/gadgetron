@@ -517,8 +517,8 @@ namespace Gadgetron{
         uint16_t TRAJDIM = acqhdr.trajectory_dimensions;
         if (TRAJDIM > 0)
           {
-            dataBuffer.trajectory_.create(TRAJDIM, NE0, NE1, NE2, NN, NS, NLOC);
-            clear(&dataBuffer.trajectory_);
+        		dataBuffer.trajectory_ = hoNDArray<float>(TRAJDIM, NE0,NE1,NE2, NN, NS, NLOC);
+            clear(dataBuffer.trajectory_.get_ptr());
           }
 
         //boost::shared_ptr< std::vector<size_t> > dims =  dataBuffer.data_.get_dimensions();
@@ -665,7 +665,7 @@ namespace Gadgetron{
 
         float * trajptr;
 
-        trajptr = &dataBuffer.trajectory_(0,
+        trajptr = &(*dataBuffer.trajectory_)(0,
             offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, NUsed, SUsed, slice_loc);
 
         memcpy(trajptr, &acqtraj(0, acqhdr.discard_pre), sizeof(float)*npts_to_copy*acqhdr.trajectory_dimensions);

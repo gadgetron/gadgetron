@@ -65,8 +65,6 @@ namespace Gadgetron
         center_ = 0;
         max_ = 0;
     }
-
-    ~SamplingLimit() {}
   };
   
   class SamplingDescription
@@ -103,18 +101,16 @@ namespace Gadgetron
         recon_matrix_[2] = 0;
     }
 
-    ~SamplingDescription() {}
   };
   
-  class IsmrmrdDataBuffered
+  struct IsmrmrdDataBuffered
   {
   public:
     //7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
     hoNDArray< std::complex<float> > data_;
     
     //7D, fixed order [TRAJ, E0, E1, E2, N, S, LOC]
-    //This element is optional (length is 0 if not present)
-    hoNDArray< float > trajectory_;
+    boost::optional<hoNDArray<float>> trajectory_;
     
     //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
@@ -128,7 +124,7 @@ namespace Gadgetron
   /**
      This class is used to group a sub-unit of the data that would feed into a reconstruction. 
    */
-  class IsmrmrdReconBit
+  struct IsmrmrdReconBit
   {
   public:
     IsmrmrdDataBuffered data_;
@@ -138,7 +134,7 @@ namespace Gadgetron
   /**
      This class is used to store a unit of data that would feed into a reconstruction. 
    */
-  class IsmrmrdReconData
+  struct IsmrmrdReconData
   {
   public:
     std::vector<IsmrmrdReconBit> rbit_;
