@@ -148,6 +148,7 @@ set( gadgetron_mricore_config_files
     default_measurement_dependencies.xml
     isalive.xml
     gtquery.xml
+    Generic_Cartesian_Grappa.xml
     Generic_Cartesian_Grappa_T2W.xml
     Generic_Cartesian_Grappa_RealTimeCine.xml
 )
