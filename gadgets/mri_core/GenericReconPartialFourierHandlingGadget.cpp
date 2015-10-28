@@ -61,7 +61,7 @@ namespace Gadgetron {
         {
             if (!h.encoding[e].parallelImaging)
             {
-                GDEBUG("Parallel Imaging section not found in header");
+                GDEBUG_STREAM("Parallel Imaging section not found in header");
                 acceFactorE1_[e] = 1;
                 acceFactorE2_[e] = 1;
             }
