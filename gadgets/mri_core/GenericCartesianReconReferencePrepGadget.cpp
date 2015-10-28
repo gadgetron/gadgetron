@@ -58,34 +58,37 @@ namespace Gadgetron {
             if (!h.encoding[e].parallelImaging)
             {
                 GDEBUG("Parallel Imaging section not found in header");
-                return GADGET_FAIL;
+                calib_mode_[e] = ISMRMRD_noacceleration;
             }
-
-            ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
-            GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE1 is " << p_imaging.accelerationFactor.kspace_encoding_step_1);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE2 is " << p_imaging.accelerationFactor.kspace_encoding_step_2);
-
-            std::string calib = *p_imaging.calibrationMode;
-
-            bool separate = (calib.compare("separate") == 0);
-            bool embedded = (calib.compare("embedded") == 0);
-            bool external = (calib.compare("external") == 0);
-            bool interleaved = (calib.compare("interleaved") == 0);
-            bool other = (calib.compare("other") == 0);
-
-            calib_mode_[e] = Gadgetron::ISMRMRD_noacceleration;
-            if (p_imaging.accelerationFactor.kspace_encoding_step_1 > 1 || p_imaging.accelerationFactor.kspace_encoding_step_2 > 1)
+            else
             {
-                if (interleaved)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_interleaved;
-                else if (embedded)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_embedded;
-                else if (separate)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_separate;
-                else if (external)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_external;
-                else if (other)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_other;
+
+                ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
+                GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE1 is " << p_imaging.accelerationFactor.kspace_encoding_step_1);
+                GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE2 is " << p_imaging.accelerationFactor.kspace_encoding_step_2);
+
+                std::string calib = *p_imaging.calibrationMode;
+
+                bool separate = (calib.compare("separate") == 0);
+                bool embedded = (calib.compare("embedded") == 0);
+                bool external = (calib.compare("external") == 0);
+                bool interleaved = (calib.compare("interleaved") == 0);
+                bool other = (calib.compare("other") == 0);
+
+                calib_mode_[e] = Gadgetron::ISMRMRD_noacceleration;
+                if (p_imaging.accelerationFactor.kspace_encoding_step_1 > 1 || p_imaging.accelerationFactor.kspace_encoding_step_2 > 1)
+                {
+                    if (interleaved)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_interleaved;
+                    else if (embedded)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_embedded;
+                    else if (separate)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_separate;
+                    else if (external)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_external;
+                    else if (other)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_other;
+                }
             }
         }
 

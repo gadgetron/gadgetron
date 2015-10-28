@@ -62,15 +62,18 @@ namespace Gadgetron {
             if (!h.encoding[e].parallelImaging)
             {
                 GDEBUG("Parallel Imaging section not found in header");
-                return GADGET_FAIL;
+                acceFactorE1_[e] = 1;
+                acceFactorE2_[e] = 1;
             }
+            else
+            {
+                ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
 
-            ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
-
-            acceFactorE1_[e] = p_imaging.accelerationFactor.kspace_encoding_step_1;
-            acceFactorE2_[e] = p_imaging.accelerationFactor.kspace_encoding_step_2;
-            GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE1 is " << acceFactorE1_[e]);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE2 is " << acceFactorE2_[e]);
+                acceFactorE1_[e] = p_imaging.accelerationFactor.kspace_encoding_step_1;
+                acceFactorE2_[e] = p_imaging.accelerationFactor.kspace_encoding_step_2;
+                GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE1 is " << acceFactorE1_[e]);
+                GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE2 is " << acceFactorE2_[e]);
+            }
         }
 
         // ---------------------------------------------------------------------------------------------------------
