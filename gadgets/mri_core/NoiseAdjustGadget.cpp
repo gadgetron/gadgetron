@@ -328,8 +328,8 @@ namespace Gadgetron{
 	  }
 	}
 
-    float v = Gadgetron::norm2(noise_prewhitener_matrixf_);
-    if (v <= FLT_EPSILON)
+    float v = Gadgetron::norm1(noise_covariance_matrixf_);
+    if (v <= 0)
     {
         GDEBUG("Accumulated noise prewhietner is empty\n");
         for (size_t cha = 0; cha < c; cha++)
