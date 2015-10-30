@@ -379,14 +379,21 @@ namespace Gadgetron{
         uint16_t NE0;
         if (encoding.trajectory.compare("cartesian") == 0) {
             // if seperate or external calibration mode, using the acq length for NE0
-            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
-                || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+            if (encoding.parallelImaging)
             {
-                NE0 = acqhdr.number_of_samples;
+                if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
+                    || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+                {
+                    NE0 = acqhdr.number_of_samples;
+                }
+                else
+                {
+                    NE0 = encoding.reconSpace.matrixSize.x;
+                }
             }
             else
             {
-                NE0 = encoding.reconSpace.matrixSize.x;
+                NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
             }
         } else {
             NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
@@ -394,14 +401,26 @@ namespace Gadgetron{
 
         uint16_t NE1;
         if (encoding.trajectory.compare("cartesian") == 0) {
-            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
-                || encoding.parallelImaging.get().calibrationMode.get() == "external") )
+            if (encoding.parallelImaging)
             {
-                NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
+                if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
+                    || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+                {
+                    NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
+                }
+                else
+                {
+                    NE1 = encoding.encodedSpace.matrixSize.y;
+                }
             }
             else
             {
-                NE1 = encoding.encodedSpace.matrixSize.y;
+                if (encoding.encodingLimits.kspace_encoding_step_1.is_present()) {
+                    NE1 = encoding.encodingLimits.kspace_encoding_step_1->maximum - encoding.encodingLimits.kspace_encoding_step_1->minimum + 1;
+                }
+                else {
+                    NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
+                }
             }
         } else {
             if (encoding.encodingLimits.kspace_encoding_step_1.is_present()) {
@@ -413,14 +432,26 @@ namespace Gadgetron{
 
         uint16_t NE2;
         if (encoding.trajectory.compare("cartesian") == 0) {
-            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
-                || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+            if (encoding.parallelImaging)
             {
-                NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
+                if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
+                    || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+                {
+                    NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
+                }
+                else
+                {
+                    NE2 = encoding.encodedSpace.matrixSize.z;
+                }
             }
             else
             {
-                NE2 = encoding.encodedSpace.matrixSize.z;
+                if (encoding.encodingLimits.kspace_encoding_step_2.is_present()) {
+                    NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
+                }
+                else {
+                    NE2 = *stats.kspace_encode_step_2.rbegin() - *stats.kspace_encode_step_2.begin() + 1;
+                }
             }
         } else {
             if (encoding.encodingLimits.kspace_encoding_step_2.is_present()) {

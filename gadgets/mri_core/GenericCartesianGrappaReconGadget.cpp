@@ -439,6 +439,7 @@ namespace Gadgetron {
             if (sRO>0 || eRO<RO - 1)
             {
                 RO = 2 * std::max(cRO - sRO, eRO - cRO+1);
+                if (RO>recon_RO) RO = recon_RO;
             }
 
             size_t E1 = eE1 - sE1 + 1;
@@ -447,7 +448,13 @@ namespace Gadgetron {
             if ((calib_mode_[encoding] == Gadgetron::ISMRMRD_interleaved) || (calib_mode_[encoding] == Gadgetron::ISMRMRD_noacceleration))
             {
                 E1 = 2 * std::max(cE1 - sE1, eE1 - cE1+1);
-                if (E2>1 ) E2 = 2 * std::max(cE2 - sE2, eE2 - cE2+1);
+                if (E1>recon_E1) E1 = recon_E1;
+
+                if (E2 > 1)
+                {
+                    E2 = 2 * std::max(cE2 - sE2, eE2 - cE2 + 1);
+                    if (E2 > recon_E2) E2 = recon_E2;
+                }
             }
 
             ref_coil_map.create(RO, E1, E2, CHA, N, S, SLC);
@@ -477,13 +484,13 @@ namespace Gadgetron {
                 }
             }
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    std::stringstream os;
-            //    os << "encoding_" << encoding;
+            /*if (!debug_folder_full_path_.empty())
+            {
+                std::stringstream os;
+                os << "encoding_" << encoding;
 
-            //    gt_exporter_.exportArrayComplex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map_before_filtering_" + os.str());
-            //}
+                gt_exporter_.exportArrayComplex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map_before_filtering_" + os.str());
+            }*/
 
             // filter the ref_coil_map
             if (filter_RO_ref_coi_map_.get_size(0) != RO)
@@ -536,13 +543,13 @@ namespace Gadgetron {
                 Gadgetron::apply_kspace_filter_ROE1(ref_coil_map, filter_RO_ref_coi_map_, filter_E1_ref_coi_map_, ref_recon_buf);
             }
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    std::stringstream os;
-            //    os << "encoding_" << encoding;
+            /*if (!debug_folder_full_path_.empty())
+            {
+                std::stringstream os;
+                os << "encoding_" << encoding;
 
-            //    gt_exporter_.exportArrayComplex(ref_recon_buf, debug_folder_full_path_ + "ref_coil_map_after_filtering_" + os.str());
-            //}
+                gt_exporter_.exportArrayComplex(ref_recon_buf, debug_folder_full_path_ + "ref_coil_map_after_filtering_" + os.str());
+            }*/
 
             // pad the ref_coil_map into the data array
             Gadgetron::pad(recon_RO, recon_E1, recon_E2, &ref_recon_buf, &ref_coil_map);
@@ -951,14 +958,14 @@ namespace Gadgetron {
                             }
                         }
 
-                        if (acq_header.measurement_uid == 0)
-                        {
-                            std::ostringstream ostr;
-                            ostr << "Cannot create valid image header : n = " << n << ", s = " << s << ", slc = " << slc;
-                            GADGET_THROW(ostr.str());
-                        }
-                        else
-                        {
+                        //if (acq_header.measurement_uid == 0)
+                        //{
+                        //    std::ostringstream ostr;
+                        //    ostr << "Cannot create valid image header : n = " << n << ", s = " << s << ", slc = " << slc;
+                        //    GADGET_THROW(ostr.str());
+                        //}
+                        //else
+                        //{
                             ISMRMRD::ImageHeader& im_header = recon_obj.recon_res_.headers_(n, s, slc);
                             ISMRMRD::MetaContainer& meta = recon_obj.recon_res_.meta_[n + s*N + slc*N*S];
 
@@ -1010,7 +1017,7 @@ namespace Gadgetron {
                             im_header.physiology_time_stamp[1] = acq_header.physiology_time_stamp[1];
                             im_header.physiology_time_stamp[2] = acq_header.physiology_time_stamp[2];
 
-                            im_header.image_type = ISMRMRD::ISMRMRD_IMTYPE_COMPLEX;
+                            im_header.image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
                             im_header.image_index = (uint16_t)(n + s*N + slc*N*S);
                             im_header.image_series_index = 0;
 
@@ -1048,7 +1055,7 @@ namespace Gadgetron {
                             meta.set("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].min_);
                             meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].center_);
                             meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].max_);
-                        }
+                        //}
                     }
                 }
             }
