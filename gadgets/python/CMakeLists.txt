@@ -16,6 +16,7 @@ include_directories(
   ${CMAKE_BINARY_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/python
+  ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
   ${PYTHON_INCLUDE_PATH}
   ${NUMPY_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
