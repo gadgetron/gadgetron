@@ -50,7 +50,7 @@ namespace Gadgetron{
         S_ = SET;
     } else if (S_dimension.value().compare("segment") == 0) {
         S_ = SEGMENT;
-    } else if (N_dimension.value().compare("slice") == 0){
+    } else if (S_dimension.value().compare("slice") == 0){
         S_ = SLICE;
     } else {
         GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", S_dimension.value().c_str());
