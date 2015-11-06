@@ -105,7 +105,8 @@ namespace Gadgetron
       python_gadget_.attr("put_next")(*m1->getObjectPtr());
     } catch(boost::python::error_already_set const &) {
       GERROR("Passing recondata on to python wrapper gadget failed\n");
-      PyErr_Print();
+      std::string python_error = pyerr_to_string();
+      GDEBUG(python_error.c_str());
       return GADGET_FAIL;
 
     }
@@ -240,7 +241,7 @@ namespace Gadgetron
       }
       break;
       case (GADGET_MESSAGE_RECONDATA):
-     if (this->return_recondata(m0->cont()) == GADGET_FAIL);
+     if (this->return_recondata(m0->cont()) == GADGET_FAIL)
       {
             GERROR("Unable to convert and return GADGET_MESSAGE_RECONDATA");
             m0->release();
@@ -286,8 +287,6 @@ namespace Gadgetron
 
   int GadgetInstrumentationStreamController::put_recondata(boost::python::object rec){
     auto m1 = new GadgetContainerMessage<IsmrmrdReconData>(boost::python::extract<IsmrmrdReconData>(rec)());
-
-    ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,10000); //10ms from now
     if (stream_.put(m1) == -1) {
       GERROR("Failed to put stuff on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
       m1->release();
