@@ -30,6 +30,7 @@ public:
   int put_image_cplx(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta = 0);
   int put_image_float(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta = 0);
   int put_image_ushort(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta = 0);
+  int put_recondata(boost::python::object rec);
   int set_python_gadget(boost::python::object g)
   {
     python_gadget_ = g;
@@ -43,6 +44,7 @@ public:
  protected:
   boost::python::object python_gadget_;
   template <class T1, class T2, class T3> int return_data(ACE_Message_Block* mb);
+  int return_recondata(ACE_Message_Block* mb);
 };
 
 class GadgetInstrumentationStreamControllerWrapper
@@ -57,6 +59,7 @@ class GadgetInstrumentationStreamControllerWrapper
       // ensure boost can convert ISMRMRD headers automatically
       register_converter<ISMRMRD::ImageHeader>();
       register_converter<ISMRMRD::AcquisitionHeader>();
+      register_converter<IsmrmrdReconData>();
 
       cntrl_ = new GadgetInstrumentationStreamController;
     }
@@ -112,6 +115,10 @@ class GadgetInstrumentationStreamControllerWrapper
   int put_image_ushort_attr(ISMRMRD::ImageHeader img, boost::python::object arr, const char* meta = 0)
   {
     return cntrl_->put_image_ushort(img,arr, meta);
+  }
+
+  int put_recondata(boost::python::object rec){
+    return cntrl_->put_recondata(rec);
   }
 
 

@@ -37,6 +37,31 @@ struct hoNDArray_to_numpy_array {
     }
 };
 
+/// Used for making a NumPy array from and hoNDArray
+template <>
+struct hoNDArray_to_numpy_array<ISMRMRD::AcquisitionHeader> {
+    static PyObject* convert(const hoNDArray<ISMRMRD::AcquisitionHeader>& arr) {
+        size_t ndim = arr.get_number_of_dimensions();
+        std::vector<npy_intp> dims2(ndim);
+        for (size_t i = 0; i < ndim; i++) {
+            dims2[ndim-i-1] = static_cast<npy_intp>(arr.get_size(i));
+        }
+        PyObject *obj = NumPyArray_SimpleNew(dims2.size(), &dims2[0], get_numpy_type<ISMRMRD::AcquisitionHeader>());
+
+        std::vector<PyObject*> pyobjects;
+        for (auto & acq : arr){
+          pyobjects.push_back(bp::incref(bp::object(acq).ptr()));
+        }
+
+        // Copy data
+        memcpy(NumPyArray_DATA(obj), pyobjects.data(),
+                pyobjects.size()* sizeof(PyObject*));
+
+        // increment the reference count so it exists after `return`
+        return bp::incref(obj);
+    }
+};
+
 /// Used for making an hoNDArray from a NumPy array
 template <typename T>
 struct hoNDArray_from_numpy_array {
@@ -74,6 +99,48 @@ struct hoNDArray_from_numpy_array {
                 sizeof(T) * arr->get_number_of_elements());
     }
 };
+
+/// Used for making an hoNDArray from a NumPy array
+template <>
+struct hoNDArray_from_numpy_array<ISMRMRD::AcquisitionHeader> {
+    hoNDArray_from_numpy_array() {
+        // actually register this converter with Boost
+        bp::converter::registry::push_back(
+                &convertible,
+                &construct,
+                bp::type_id<hoNDArray<ISMRMRD::AcquisitionHeader> >());
+    }
+
+    /// Returns NULL if the NumPy array is not convertible.
+    //Or well.. it should
+    static void* convertible(PyObject* obj) {
+        return obj;
+    }
+
+    /// Construct an hoNDArray in-place
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data* data) {
+        void* storage = ((bp::converter::rvalue_from_python_storage<hoNDArray<ISMRMRD::AcquisitionHeader> >*)data)->storage.bytes;
+        data->convertible = storage;
+
+        size_t ndim = NumPyArray_NDIM(obj);
+        std::vector<size_t> dims(ndim);
+        for (size_t i = 0; i < ndim; i++) {
+            dims[ndim - i - 1] = NumPyArray_DIM(obj, i);
+        }
+
+        // Placement-new of hoNDArray in memory provided by Boost
+        hoNDArray<ISMRMRD::AcquisitionHeader>* arr = new (storage) hoNDArray<ISMRMRD::AcquisitionHeader>(dims);
+
+        size_t elements = arr->get_number_of_elements();
+        auto data_ptr = arr->get_data_ptr();
+        PyObject** pyobjects = (PyObject**) NumPyArray_DATA(obj);
+
+        for (size_t i = 0; i < elements; i++)
+          data_ptr[i] = bp::extract<ISMRMRD::AcquisitionHeader>(bp::object(bp::handle<>(bp::borrowed(pyobjects[i]))));
+
+    }
+};
+
 
 /// Create and register hoNDArray converter as necessary
 template <typename T> void create_hoNDArray_converter() {

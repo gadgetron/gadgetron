@@ -235,15 +235,14 @@ namespace Gadgetron{
 
     ACE_NEW_RETURN (controller, CloudBusNodeController, -1);
 
-    auto_ptr<CloudBusNodeController> p (controller);
     controller->set_acceptor(this);
 
     if (this->acceptor_.accept (controller->peer ()) == -1) {
       GERROR("Failed to accept controller connection\n");
+      delete controller;
       return -1;
     }
 
-    p.release ();
     controller->reactor (this->reactor ());
     if (controller->open () == -1)
       controller->handle_close (ACE_INVALID_HANDLE, 0);
