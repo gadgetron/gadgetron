@@ -6,6 +6,4 @@ install(FILES
     image_viewer.py
     tpat_snr_scale.py
     pseudoreplicagather.py
-    bucket_recon.py
-    passthrough.py
     DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)

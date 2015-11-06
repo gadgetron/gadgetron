@@ -314,9 +314,9 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
     a2 = a2.tolist()
     while a2.count(1) > 0:
         a2.remove(1)
-    print " Shape 1: " + str(d1.shape) + "  numpy: " + str(a1)
-    print " Shape 2: " + str(d2.shape) + "  numpy: " + str(a2)
-    print " Compare dimensions: " + str(compare_dimensions)
+    #print(" Shape 1: " + str(d1.shape) + "  numpy: " + str(a1))
+    #print(" Shape 2: " + str(d2.shape) + "  numpy: " + str(a2))
+    #print(" Compare dimensions: " + str(compare_dimensions))
     shapes_match = (a1 == a2)
 
     # If the types in the hdf5 are unsigned short numpy produces norms, dot products etc. in unsigned short. And that _will_ overflow...

@@ -68,8 +68,6 @@ class Gadget(object):
                             self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), args[2].serialize())
                         else:
                             self.next_gadget.return_image_cplx(header,args[1].astype('complex64'))
-                elif hasattr(args[0],"__getitem__") and hasattr(args[0][0],"data"):
-                     self.next_gadget.return_recondata(args[0])
                 else:
                     raise("Unsupported types when returning to Gadgetron framework")
             else:
@@ -134,8 +132,6 @@ class WrapperGadget(Gadget):
                     self.controller_.put_image_cplx_attr(header, args[0].astype('complex64'), args[1].serialize())
                 else:
                     self.controller_.put_image_cplx(header,args[0].astype('complex64'))
-        elif hasattr(args[0],"__getitem__") and hasattr(args[0][0],"data"):
-            self.controller_.put_recondata(args[0]);
         else:
             raise("Unsupported types when sending data to Gadgetron framework")
         return 0
@@ -179,29 +175,3 @@ def get_last_gadget(first_gadget):
         else:
             break
     return g
-
-class SamplingLimit:
-	def __init__(self):
-		self.min = 0
-		self.center = 0
-		self.max = 0
-
-class SamplingDescription:
-	def __init__(self):
-		self.encoded_FOV = (0.0,0.0,0.0)
-		self.recon_FOV = (0.0,0.0,0.0)
-		self.encoded_matrix = (0,0,0)
-		self.recon_matrix = (0,0,0)
-		self.sampling_limits = (SamplingLimit(),SamplingLimit(),SamplingLimit())
-
-class IsmrmrdDataBuffered:
-	def __init__(self,data,headers,sampling=SamplingDescription(),trajectory=None):
-		self.data = data 
-                if (trajectory != None): self.trajectory =trajectory 
-		self.headers =headers 
-		self.sampling = sampling
-	
-class IsmrmrdReconBit:
-	def __init__(self,data,ref=None):
-		self.data = data
-		if (ref != None): self.ref = ref

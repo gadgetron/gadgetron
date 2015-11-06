@@ -19,23 +19,6 @@ namespace Gadgetron{
   {
   }
 
-  int GadgetReference::return_recondata(boost::python::object rec){
-    auto m1 = new GadgetContainerMessage<IsmrmrdReconData>(boost::python::extract<IsmrmrdReconData>(rec)());
-    if (gadget_){
-     ACE_Time_Value nowait (ACE_OS::gettimeofday());
-     if (gadget_->next()->putq(m1,&nowait) == -1){
-       m1->release();
-       return GADGET_FAIL;
-     } else
-       return GADGET_OK;
-    } else {
-      GDEBUG("Data returned from python, but no next gadget in chain");
-      m1->release();
-      return GADGET_OK;
-    }
-
-
-  }
   template<class TH, class TD>
   int GadgetReference::return_data(TH header, boost::python::object arr, const char* meta)
   {
