@@ -87,7 +87,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 			bit.ref_ = MatlabStructToBuffer(ref);
 		}
 		output_data.rbit_.push_back(bit);
-		auto m3 = new GadgetContainerMessage<IsmrmrdReconData>(output_data.rbit_);
+		auto m3 = new GadgetContainerMessage<IsmrmrdReconData>(output_data);
 		if (this->next()->putq(m3) < 0){
 			GDEBUG("Failed to put Buffer message on queue\n");
 			return GADGET_FAIL;
