@@ -40,6 +40,14 @@ ENDIF()
 find_package(BLAS)
 find_package(LAPACK)
 
+
+
+if (MATLAB_FOUND)
+  message("Compiling MATLAB toolbox")
+  add_subdirectory(matlab)
+endif(MATLAB_FOUND)
+
+
 # Should we compile the python toolbox
 find_package(Boost COMPONENTS python system thread REQUIRED)
 if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)

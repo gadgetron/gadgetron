@@ -114,6 +114,31 @@ template<class T> struct MatlabConverter {
 			output[i] = T(raw_ptr[i]);
 	}
 };
+
+template<class REAL,unsigned int N> struct MatlabConverter<vector_td<REAL,N>> {
+  static mxArray* convert(hoNDArray<vector_td<REAL,N>>* input){
+    std::vector<size_t> dims = *input->get_dimensions();
+    std::vector<size_t> dims2;
+    dims2.push_back(N);
+    for (auto s : dims) dims2.push_back(s);
+
+    hoNDArray<REAL> tmp(dims2,(REAL*)input->get_data_ptr());
+    return MatlabConverter<REAL>::convert(&tmp);
+  }
+  static hoNDArray<vector_td<REAL,N>>* convert(mxArray* matarray){
+
+    auto tmp = MatlabConverter<REAL>::convert(matarray);
+    auto dims = *tmp->get_dimensions();
+    if (dims[0] != N)
+      throw std::runtime_error("Converting from Matlab array to hoNDArray with vector_td, but sizes don't match");
+    std::vector<size_t> dims2(dims.begin()+1,dims.end());
+    auto result = new hoNDArray<vector_td<REAL,N>>(dims2);
+    memcpy(result->get_data_ptr(),tmp->get_data_ptr(),result->get_number_of_bytes());
+    delete tmp;
+    return result;
+
+  }
+};
 template<class REAL> struct MatlabConverter<complext<REAL>> {
 	static mxArray* convert(hoNDArray<complext<REAL>>* input){
 
@@ -376,3 +401,14 @@ template hoNDArray<double_complext>* Gadgetron::MatlabToHoNDArray<double_complex
 
 template hoNDArray<std::complex<double>>* Gadgetron::MatlabToHoNDArray<std::complex<double>>(mxArray *);
 template hoNDArray<std::complex<float>>* Gadgetron::MatlabToHoNDArray<std::complex<float>>(mxArray *);
+
+template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,1>>(hoNDArray<vector_td<float,1>> *);
+template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,2>>(hoNDArray<vector_td<float,2>> *);
+template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,3>>(hoNDArray<vector_td<float,3>> *);
+template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,4>>(hoNDArray<vector_td<float,4>> *);
+
+
+template hoNDArray<vector_td<float,1>>* Gadgetron::MatlabToHoNDArray<vector_td<float,1>>(mxArray *);
+template hoNDArray<vector_td<float,2>>* Gadgetron::MatlabToHoNDArray<vector_td<float,2>>(mxArray *);
+template hoNDArray<vector_td<float,3>>* Gadgetron::MatlabToHoNDArray<vector_td<float,3>>(mxArray *);
+template hoNDArray<vector_td<float,4>>* Gadgetron::MatlabToHoNDArray<vector_td<float,4>>(mxArray *);
