@@ -388,6 +388,8 @@ mxArray* Gadgetron::samplingdescriptionToMatlabStruct(SamplingDescription* samp)
 
 template mxArray* Gadgetron::hoNDArrayToMatlab<float>(hoNDArray<float> *);
 template mxArray* Gadgetron::hoNDArrayToMatlab<double>(hoNDArray<double> *);
+
+template mxArray* Gadgetron::hoNDArrayToMatlab<size_t>(hoNDArray<size_t> *);
 template mxArray* Gadgetron::hoNDArrayToMatlab<float_complext>(hoNDArray<float_complext> *);
 template mxArray* Gadgetron::hoNDArrayToMatlab<double_complext>(hoNDArray<double_complext> *);
 template mxArray* Gadgetron::hoNDArrayToMatlab<std::complex<double>>(hoNDArray<std::complex<double>> *);
@@ -396,6 +398,7 @@ template mxArray* Gadgetron::hoNDArrayToMatlab<std::complex<float>>(hoNDArray<st
 
 template hoNDArray<float>* Gadgetron::MatlabToHoNDArray<float>(mxArray *);
 template hoNDArray<double>* Gadgetron::MatlabToHoNDArray<double>(mxArray *);
+template hoNDArray<size_t>* Gadgetron::MatlabToHoNDArray<size_t>(mxArray *);
 template hoNDArray<float_complext>* Gadgetron::MatlabToHoNDArray<float_complext>(mxArray *);
 template hoNDArray<double_complext>* Gadgetron::MatlabToHoNDArray<double_complext>(mxArray *);
 
