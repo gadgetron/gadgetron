@@ -13,6 +13,8 @@
 #include <thread>
 #include <mutex>
 
+#include "gadgetron_rest_exports.h"
+
 /*
 
   This simple webserver was inspired by:
@@ -368,7 +370,7 @@ namespace Gadgetron {
     
     typedef boost::asio::ip::tcp::socket HTTP;
     
-    template<> class Server<HTTP> : public ServerBase<HTTP> {
+    template<> class EXPORTREST Server<HTTP> : public ServerBase<HTTP> {
 
     public:
       static Server<HTTP>* instance();
