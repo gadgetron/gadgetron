@@ -57,9 +57,8 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 
 		auto image= MatlabToHoNDArray<std::complex<float>>(res_data);
 		auto m4 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >(image);
-		auto dims = *image->get_dimensions();
+		auto dims = *image.get_dimensions();
 
-		delete image;
 		m3->cont(m4);
 		if (this->next()->putq(m3) < 0) {
 			GDEBUG("Failed to put Image message on queue\n");

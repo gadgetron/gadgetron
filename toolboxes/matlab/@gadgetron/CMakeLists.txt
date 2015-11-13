@@ -4,6 +4,8 @@ ${CMAKE_SOURCE_DIR}/toolboxes/core/
 ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu 
 ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu 
 ${CMAKE_SOURCE_DIR}/toolboxes/operators
+${CMAKE_SOURCE_DIR}/toolboxes/solvers
+${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
 ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu 
 ${CMAKE_SOURCE_DIR}/toolboxes/matlab/ 
 ${ISMRMRD_INCLUDE_DIR}

@@ -25,7 +25,7 @@ template<class T> mxArray* hoNDArrayToMatlab(hoNDArray<T>* );
  * @param
  * @return
  */
-template<class T> hoNDArray<T>* MatlabToHoNDArray(mxArray*);
+template<class T> hoNDArray<T> MatlabToHoNDArray(mxArray*);
 
 /**
  * Creates a matlab struct from an IsmrmrdDataBuffer
