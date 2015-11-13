@@ -10,6 +10,8 @@
 #include <functional>
 #include <iostream>
 #include <sstream>
+#include <thread>
+#include <mutex>
 
 /*
 
@@ -46,7 +48,7 @@
 
 
 namespace Gadgetron {
-  namespace REST {
+  namespace ReST {
   
     template <class socket_type> class ServerBase
       {
@@ -133,7 +135,11 @@ namespace Gadgetron {
 	std::function<void(typename ServerBase<socket_type>::Response&, std::shared_ptr<typename ServerBase<socket_type>::Request>)> > > > > opt_resource;
         
       public:
-      void start() {
+      std::mutex opt_resources_mtx_;
+
+      void update_resources()
+      {
+	std::lock_guard<std::mutex> lock(opt_resources_mtx_);
 	//Copy the resources to opt_resource for more efficient request processing
 	opt_resource.clear();
 	for(auto& res: resource) {
@@ -153,7 +159,10 @@ namespace Gadgetron {
 	    it->second.emplace_back(boost::regex(res.first), res_method.second);
 	  }
 	}
-                        
+      }
+      
+      void start() {
+	update_resources();
 	accept(); 
             
 	//If num_threads>1, start m_io_service.run() in (num_threads-1) threads for thread-pooling
@@ -301,6 +310,7 @@ namespace Gadgetron {
       }
 
       void find_resource(std::shared_ptr<socket_type> socket, std::shared_ptr<Request> request) {
+	std::lock_guard<std::mutex> lock(opt_resources_mtx_);
 	//Find path- and method-match, and call write_response
 	for(auto& res: opt_resource) {
 	  if(request->method==res.first) {
@@ -367,6 +377,8 @@ namespace Gadgetron {
       
     private:
       static Server<HTTP>* instance_;
+      std::thread server_thread_;      
+      void open();
       
     Server(unsigned short port, size_t num_threads=1, size_t timeout_request=5, size_t timeout_content=300) : 
       ServerBase<HTTP>::ServerBase(port, num_threads, timeout_request, timeout_content) {}
@@ -389,6 +401,8 @@ namespace Gadgetron {
 	  });
       }
     };
+
+    typedef Server<HTTP> GadgetronReST;
   }
 }
 #endif	//GADGETRON_REST_H

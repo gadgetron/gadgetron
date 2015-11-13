@@ -1,25 +1,35 @@
 #include "gadgetron_rest.h"
-#include <thread>
 
 namespace Gadgetron
 {
-  namespace REST
+  namespace ReST
   {
-    Server<HTTP>* Server<HTTP>::instance_ = nullptr;
-    unsigned int Server<HTTP>::port_ = 8080;
-    size_t Server<HTTP>::threads_ = 1;
+    GadgetronReST* GadgetronReST::instance_ = nullptr;
+    unsigned int GadgetronReST::port_ = 9080;
+    size_t GadgetronReST::threads_ = 1;
     
-    Server<HTTP>* Server<HTTP>::instance()
+    GadgetronReST* GadgetronReST::instance()
     {
       if (!instance_) {
-	instance_ = new Server<HTTP>(port_,threads_);
-	Server<HTTP>* tmp = instance_;
-	std::thread server_thread([tmp](){
-	    tmp->start();
-	});
-	    
+	instance_ = new GadgetronReST(port_,threads_);
+
+	instance_->default_resource["GET"]=[](GadgetronReST::Response& response, std::shared_ptr<GadgetronReST::Request> request)
+	  {
+	    std::string content = "<html><body><h1>GADGETRON</h1></body></html>\n";
+	    response << "HTTP/1.1 200 OK\r\nContent-Length: " << content.length() << "\r\n\r\n" << content;
+	  };
+	
+	instance_->open();
       }
       return instance_;
+    }
+
+    void GadgetronReST::open()
+    {
+      GadgetronReST* tmp = this;
+      server_thread_ = std::thread([tmp](){
+	  tmp->start();
+	});
     }
   }
 }
