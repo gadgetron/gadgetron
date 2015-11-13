@@ -44,6 +44,15 @@ namespace GadgetronXML
       h.cloudBus = cb;
     }
 
+    pugi::xml_node r = root.child("rest");
+    if (r) {
+      ReST re;
+      re.port = static_cast<unsigned int>(std::atoi(r.child_value("port")));
+      if (re.port == 0) {
+	throw std::runtime_error("Invalid ReST configuration.");
+      }
+      h.rest = re;
+    }
   }
 
   void deserialize(const char* xml_config, GadgetStreamConfiguration& cfg)

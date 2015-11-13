@@ -4,6 +4,7 @@ include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
+  ${CMAKE_SOURCE_DIR}/toolboxes/rest
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
@@ -33,6 +34,7 @@ add_executable(gadgetron
 target_link_libraries(gadgetron 
   gadgetron_gadgetbase
   gadgetron_toolbox_log
+  gadgetron_toolbox_rest
   gadgetron_toolbox_gadgettools gadgetron_toolbox_cloudbus 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
