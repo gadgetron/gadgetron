@@ -20,6 +20,7 @@ namespace Gadgetron
 
     void ReST::open()
     {
+      crow::logger::setLogLevel(crow::LogLevel::ERROR);
       Gadgetron::ReST* tmp = this;
       server_thread_ = std::thread([tmp](){
 	  tmp->app_.port(port_)

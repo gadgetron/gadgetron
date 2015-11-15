@@ -1,4 +1,4 @@
-find_package(Boost COMPONENTS regex system thread coroutine context filesystem date_time REQUIRED)
+find_package(Boost COMPONENTS date_time filesystem system thread regex REQUIRED)
 find_package( Threads )
 
 include_directories(${Boost_INCLUDE_DIR})
