@@ -133,8 +133,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
       if (c.rest) {
 	Gadgetron::ReST::port_ = c.rest->port;
-	Gadgetron::ReST::instance(); //Fire up the server
-	
 	Gadgetron::ReST::instance()->server().route_dynamic("/info")([]()
 	  {
 	    std::stringstream ss;

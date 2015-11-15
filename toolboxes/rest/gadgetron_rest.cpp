@@ -1,4 +1,5 @@
 #include "gadgetron_rest.h"
+#include <chrono>
 
 namespace Gadgetron
 {
@@ -23,9 +24,12 @@ namespace Gadgetron
       crow::logger::setLogLevel(crow::LogLevel::ERROR);
       Gadgetron::ReST* tmp = this;
       server_thread_ = std::thread([tmp](){
-	  tmp->app_.port(port_)
-	  .multithreaded()
-	  .run();
+	  tmp->app_.port(port_).run();
 	});
+
+      //TODO: We should get rid of this.
+      //Not sure what the deal is, but we get a crash here if we return the instance before it
+      //is properly started. 
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
