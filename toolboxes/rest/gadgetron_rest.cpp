@@ -9,9 +9,9 @@ namespace Gadgetron
   {
     if (!instance_) {
       instance_ = new ReST();
-	CROW_ROUTE(instance_->app_, "/")([]() {
-	    return "<html><body><h1>GADGETRON</h1></body></html>\n";
-	  });
+      instance_->app_.route_dynamic("/")([]() {
+	  return "<html><body><h1>GADGETRON</h1></body></html>\n";
+	});
 
 	instance_->open();
       }
