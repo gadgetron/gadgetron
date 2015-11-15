@@ -132,18 +132,16 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
       }
 
       if (c.rest) {
-	Gadgetron::ReST::GadgetronReST::port_ = c.rest->port;
-	Gadgetron::ReST::GadgetronReST::instance(); //Fire up the server
+	Gadgetron::ReST::port_ = c.rest->port;
+	Gadgetron::ReST::instance(); //Fire up the server
 	
-	Gadgetron::ReST::GadgetronReST::instance()->resource["^/info$"]["GET"]=[](Gadgetron::ReST::GadgetronReST::Response& response,
-										  std::shared_ptr<Gadgetron::ReST::GadgetronReST::Request> request)
+	Gadgetron::ReST::instance()->server().route_dynamic("/info")([]()
 	  {
 	    std::stringstream ss;
 	    print_system_information(ss);
 	    std::string content = ss.str();
-	    response << "HTTP/1.1 200 OK\r\nContent-Length: " << content.length() << "\r\n\r\n" << content;
-	  };
-	Gadgetron::ReST::GadgetronReST::instance()->update_resources();
+	    return content;
+	  });
       }
       
       for (std::vector<GadgetronXML::GadgetronParameter>::iterator it = c.globalGadgetParameter.begin();
