@@ -1,3 +1,6 @@
+
+#include "gadgetron_rest.h"
+
 #include "GadgetServerAcceptor.h"
 #include "FileInfo.h"
 #include "url_encode.h"
@@ -5,7 +8,7 @@
 #include "gadgetron_config.h"
 #include "gadgetron_paths.h"
 #include "CloudBus.h"
-#include "gadgetron_rest.h"
+
 #include "gadgetron_system_info.h"
 
 #include <ace/Log_Msg.h>
@@ -29,6 +32,7 @@
 #endif // _WIN32
 
 #include <boost/filesystem.hpp>
+
 using namespace boost::filesystem;
 
 using namespace Gadgetron;

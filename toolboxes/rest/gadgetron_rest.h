@@ -1,7 +1,22 @@
 #ifndef GADGETRON_REST_H
 #define	GADGETRON_REST_H
+
 #include <thread>
+
 #include "crow/crow.h"
+
+// require these undef to avoid visual studio conflicts for ERROR and DELETE
+// TODO: remove these once updated to visual studio 2015
+#ifdef WIN32
+    #ifdef ERROR
+        #undef ERROR
+    #endif // ERROR
+
+    #ifdef DELETE
+        #undef DELETE
+    #endif // DELETE
+#endif // WIN32
+
 #include "gadgetron_rest_exports.h"
 
 namespace Gadgetron {
