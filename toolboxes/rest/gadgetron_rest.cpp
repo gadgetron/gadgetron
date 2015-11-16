@@ -1,11 +1,5 @@
-#include "gadgetron_rest.h"
 #include <chrono>
-
-#ifdef WIN32
-    #ifdef ERROR
-        #undef ERROR
-    #endif // ERROR
-#endif // WIN32
+#include "gadgetron_rest.h"
 
 namespace Gadgetron
 {

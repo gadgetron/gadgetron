@@ -8,6 +8,7 @@ ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
 ${CMAKE_SOURCE_DIR}/toolboxes/operators
 ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu 
 ${ISMRMRD_INCLUDE_DIR}
+${Boost_INCLUDE_DIR}
 ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/ )
 
 
