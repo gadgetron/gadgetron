@@ -9,6 +9,10 @@
     <relayAddress>localhost</relayAddress>
     <port>8002</port>
   </cloudBus>
+
+  <rest>
+    <port>9080</port>
+  </rest>
   
 </gadgetronConfiguration>
   

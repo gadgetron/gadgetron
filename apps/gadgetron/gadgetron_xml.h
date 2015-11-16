@@ -80,11 +80,17 @@ namespace GadgetronXML
   };
 
 
+  struct ReST
+  {
+    unsigned int port;
+  };
+  
   struct GadgetronConfiguration
   {
     std::string port;
     std::vector<GadgetronParameter> globalGadgetParameter;
-    Optional<CloudBus> cloudBus;    
+    Optional<CloudBus> cloudBus;
+    Optional<ReST> rest;
   };
 
   void EXPORTGADGETBASE deserialize(const char* xml_config, GadgetronConfiguration& h);
