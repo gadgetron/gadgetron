@@ -5,6 +5,8 @@
 #include "gadgetron_config.h"
 #include "gadgetron_paths.h"
 #include "CloudBus.h"
+#include "gadgetron_rest.h"
+#include "gadgetron_system_info.h"
 
 #include <ace/Log_Msg.h>
 #include <ace/Service_Config.h>
@@ -129,6 +131,21 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 	relay_port = c.cloudBus->port;
       }
 
+      if (c.rest) {
+	Gadgetron::ReST::GadgetronReST::port_ = c.rest->port;
+	Gadgetron::ReST::GadgetronReST::instance(); //Fire up the server
+	
+	Gadgetron::ReST::GadgetronReST::instance()->resource["^/info$"]["GET"]=[](Gadgetron::ReST::GadgetronReST::Response& response,
+										  std::shared_ptr<Gadgetron::ReST::GadgetronReST::Request> request)
+	  {
+	    std::stringstream ss;
+	    print_system_information(ss);
+	    std::string content = ss.str();
+	    response << "HTTP/1.1 200 OK\r\nContent-Length: " << content.length() << "\r\n\r\n" << content;
+	  };
+	Gadgetron::ReST::GadgetronReST::instance()->update_resources();
+      }
+      
       for (std::vector<GadgetronXML::GadgetronParameter>::iterator it = c.globalGadgetParameter.begin();
 	   it != c.globalGadgetParameter.end();
 	   ++it)

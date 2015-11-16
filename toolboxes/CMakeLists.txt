@@ -27,6 +27,7 @@ add_subdirectory(klt)
 add_subdirectory(nfft)
 add_subdirectory(dwt)
 add_subdirectory(registration)
+add_subdirectory(rest)
 
 IF (ACE_FOUND)
   add_subdirectory(gadgettools)
