@@ -1,6 +1,6 @@
 find_package(Ismrmrd REQUIRED)
 
-include_directories(${MATLAB_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/toolboxes/mri_core ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math)
+include_directories(${MATLAB_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/toolboxes/mri_core ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math ${CMAKE_SOURCE_DIR}/toolboxes/matlab)
 
 if (UNIX)
     if (APPLE)
@@ -14,7 +14,7 @@ else(UNIX)
 endif(UNIX)
 
 if (UNIX)
-    add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp MatlabBufferGadget.h MatlabBufferGadget.cpp MatlabUtils.h MatlabUtils.cpp)
+    add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp MatlabBufferGadget.h MatlabBufferGadget.cpp )
 else(UNIX)
     add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp)
 endif(UNIX)
@@ -23,6 +23,7 @@ set_target_properties(gadgetron_matlab PROPERTIES VERSION ${GADGETRON_VERSION_ST
 target_link_libraries(
     gadgetron_matlab
     gadgetron_toolbox_log
+    gadgetron_toolbox_matlab
     gadgetron_gadgetbase
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpucore_math

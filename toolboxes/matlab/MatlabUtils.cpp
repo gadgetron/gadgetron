@@ -43,58 +43,58 @@ template<class T> struct MatlabConverter {
 
 	}
 
-	static hoNDArray<T>* convert(mxArray* input) {
+	static hoNDArray<T> convert(mxArray* input) {
 		auto ndims = mxGetNumberOfDimensions(input);
 		auto dims = mxGetDimensions(input);
 		std::vector<size_t> dimensions(ndims);
 		for (size_t i = 0; i <ndims; i++) dimensions[i] = dims[i];
 
-		auto result =  new hoNDArray<T>(dimensions);
+		auto result =  hoNDArray<T>(dimensions);
 
 		if (mxGetImagData(input)) //This is for REAL data only
 			throw std::runtime_error("Trying to convert complex matlab data to non-complex c++ type");
 		if (mxGetClassID(input) == MatlabClassID<T>::value ){ //Same type, so we can just memcpy
 			T* raw_data = (T*) mxGetData(input);
-			memcpy(result->get_data_ptr(),raw_data,result->get_number_of_elements()*sizeof(T));
+			memcpy(result.get_data_ptr(),raw_data,result.get_number_of_elements()*sizeof(T));
 		} else {
 			switch (mxGetClassID(input)){ // Have to do runtime type conversion, which means cases en-masse.
 			case MatlabClassID<double>::value :
-			copyMatlabdata<double>(input,result->get_data_ptr(),result->get_number_of_elements());
+			copyMatlabdata<double>(input,result.get_data_ptr(),result.get_number_of_elements());
 			break;
 
 			case MatlabClassID<float>::value:
-			copyMatlabdata<float>(input,result->get_data_ptr(),result->get_number_of_elements());
+			copyMatlabdata<float>(input,result.get_data_ptr(),result.get_number_of_elements());
 			break;
 
 			case MatlabClassID<int8_t>::value:
-			copyMatlabdata<int8_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+			copyMatlabdata<int8_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 			break;
 
 			case MatlabClassID<uint8_t>::value:
-			copyMatlabdata<uint8_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+			copyMatlabdata<uint8_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 			break;
 
 			case MatlabClassID<int16_t>::value:
-			copyMatlabdata<int16_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+			copyMatlabdata<int16_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 			break;
 
 			case MatlabClassID<uint16_t>::value:
-			copyMatlabdata<uint16_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+			copyMatlabdata<uint16_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 			break;
 
 			case MatlabClassID<int32_t>::value:
-			copyMatlabdata<int32_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+			copyMatlabdata<int32_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 			break;
 
 			case MatlabClassID<uint32_t>::value:
-			copyMatlabdata<uint32_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+			copyMatlabdata<uint32_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 			break;
 			case MatlabClassID<int64_t>::value:
-			copyMatlabdata<int64_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+			copyMatlabdata<int64_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 			break;
 
 			case MatlabClassID<uint64_t>::value:
-			copyMatlabdata<uint64_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+			copyMatlabdata<uint64_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 			break;
 
 			default:
@@ -113,6 +113,30 @@ template<class T> struct MatlabConverter {
 		for (size_t i = 0; i < len; i++)
 			output[i] = T(raw_ptr[i]);
 	}
+};
+
+template<class REAL,unsigned int N> struct MatlabConverter<vector_td<REAL,N>> {
+  static mxArray* convert(hoNDArray<vector_td<REAL,N>>* input){
+    std::vector<size_t> dims = *input->get_dimensions();
+    std::vector<size_t> dims2;
+    dims2.push_back(N);
+    for (auto s : dims) dims2.push_back(s);
+
+    hoNDArray<REAL> tmp(dims2,(REAL*)input->get_data_ptr());
+    return MatlabConverter<REAL>::convert(&tmp);
+  }
+  static hoNDArray<vector_td<REAL,N>> convert(mxArray* matarray){
+
+    auto tmp = MatlabConverter<REAL>::convert(matarray);
+    auto dims = *tmp.get_dimensions();
+    if (dims[0] != N)
+      throw std::runtime_error("Converting from Matlab array to hoNDArray with vector_td, but sizes don't match");
+    std::vector<size_t> dims2(dims.begin()+1,dims.end());
+    auto result = hoNDArray<vector_td<REAL,N>>(dims2);
+    memcpy(result.get_data_ptr(),tmp.get_data_ptr(),result.get_number_of_bytes());
+    return result;
+
+  }
 };
 template<class REAL> struct MatlabConverter<complext<REAL>> {
 	static mxArray* convert(hoNDArray<complext<REAL>>* input){
@@ -143,50 +167,50 @@ template<class REAL> struct MatlabConverter<complext<REAL>> {
 
 		return result;
 	}
-	static hoNDArray<complext<REAL> >* convert(mxArray* input) {
+	static hoNDArray<complext<REAL> > convert(mxArray* input) {
 		auto ndims = mxGetNumberOfDimensions(input);
 		auto dims = mxGetDimensions(input);
 		std::vector<size_t> dimensions(ndims);
 		for (size_t i = 0; i <ndims; i++) dimensions[i] = dims[i];
-		auto result = new hoNDArray<complext<REAL>>(dimensions);
+		auto result = hoNDArray<complext<REAL>>(dimensions);
 		switch (mxGetClassID(input)){ // Have to do runtime type conversion, which means cases en-masse.
 		case MatlabClassID<double>::value :
-		copyMatlabdata<double>(input,result->get_data_ptr(),result->get_number_of_elements());
+		copyMatlabdata<double>(input,result.get_data_ptr(),result.get_number_of_elements());
 		break;
 
 		case MatlabClassID<float>::value:
-		copyMatlabdata<float>(input,result->get_data_ptr(),result->get_number_of_elements());
+		copyMatlabdata<float>(input,result.get_data_ptr(),result.get_number_of_elements());
 		break;
 
 		case MatlabClassID<int8_t>::value:
-		copyMatlabdata<int8_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+		copyMatlabdata<int8_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 		break;
 
 		case MatlabClassID<uint8_t>::value:
-		copyMatlabdata<uint8_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+		copyMatlabdata<uint8_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 		break;
 
 		case MatlabClassID<int16_t>::value:
-		copyMatlabdata<int16_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+		copyMatlabdata<int16_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 		break;
 
 		case MatlabClassID<uint16_t>::value:
-		copyMatlabdata<uint16_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+		copyMatlabdata<uint16_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 		break;
 
 		case MatlabClassID<int32_t>::value:
-		copyMatlabdata<int32_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+		copyMatlabdata<int32_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 		break;
 
 		case MatlabClassID<uint32_t>::value:
-		copyMatlabdata<uint32_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+		copyMatlabdata<uint32_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 		break;
 		case MatlabClassID<int64_t>::value:
-		copyMatlabdata<int64_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+		copyMatlabdata<int64_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 		break;
 
 		case MatlabClassID<uint64_t>::value:
-		copyMatlabdata<uint64_t>(input,result->get_data_ptr(),result->get_number_of_elements());
+		copyMatlabdata<uint64_t>(input,result.get_data_ptr(),result.get_number_of_elements());
 		break;
 
 		default:
@@ -218,8 +242,9 @@ template<class REAL> struct MatlabConverter<std::complex<REAL>> {
 		return MatlabConverter<complext<REAL>>::convert((hoNDArray<complext<REAL>>*) input);
 	}
 
-	static hoNDArray<std::complex<REAL>>* convert(mxArray* input){
-		return (hoNDArray<std::complex<REAL>>*) MatlabConverter<complext<REAL>>::convert(input);
+	static hoNDArray<std::complex<REAL>> convert(mxArray* input){
+		auto tmp = MatlabConverter<complext<REAL>>::convert(input);
+		return std::move(*((hoNDArray<std::complex<REAL>>*)&tmp));
 	}
 };
 
@@ -229,7 +254,7 @@ template<class T> mxArray* Gadgetron::hoNDArrayToMatlab(hoNDArray<T> * input){
 }
 
 
-template<class T> hoNDArray<T>* Gadgetron::MatlabToHoNDArray(mxArray* data){
+template<class T> hoNDArray<T> Gadgetron::MatlabToHoNDArray(mxArray* data){
 	return MatlabConverter<T>::convert(data);
 }
 
@@ -290,7 +315,7 @@ IsmrmrdDataBuffered Gadgetron::MatlabStructToBuffer(mxArray* mxstruct){
 	IsmrmrdDataBuffered buffer;
 
 	auto data = mxGetField(mxstruct,0,"data");
-	buffer.data_ = *MatlabToHoNDArray<std::complex<float>>(data);
+	buffer.data_ = MatlabToHoNDArray<std::complex<float>>(data);
 	if (buffer.data_.get_number_of_dimensions() != 7){ //Someone (Matlab) got rid of our dimensions. Ghee thanks;
 		std::vector<size_t> newdims = *buffer.data_.get_dimensions();
 		for (int i = buffer.data_.get_number_of_dimensions(); i<7; i++)
@@ -299,7 +324,7 @@ IsmrmrdDataBuffered Gadgetron::MatlabStructToBuffer(mxArray* mxstruct){
 	}
 	auto traj = mxGetField(mxstruct,0,"trajectory");
 	if (traj){
-		buffer.trajectory_ = *MatlabToHoNDArray<float>(traj);
+		buffer.trajectory_ = MatlabToHoNDArray<float>(traj);
 		auto & trajectory = *buffer.trajectory_;
 		if (trajectory.get_number_of_dimensions() != 7){
 			std::vector<size_t> newdims = *trajectory.get_dimensions();
@@ -363,16 +388,30 @@ mxArray* Gadgetron::samplingdescriptionToMatlabStruct(SamplingDescription* samp)
 
 template mxArray* Gadgetron::hoNDArrayToMatlab<float>(hoNDArray<float> *);
 template mxArray* Gadgetron::hoNDArrayToMatlab<double>(hoNDArray<double> *);
+
+template mxArray* Gadgetron::hoNDArrayToMatlab<size_t>(hoNDArray<size_t> *);
 template mxArray* Gadgetron::hoNDArrayToMatlab<float_complext>(hoNDArray<float_complext> *);
 template mxArray* Gadgetron::hoNDArrayToMatlab<double_complext>(hoNDArray<double_complext> *);
 template mxArray* Gadgetron::hoNDArrayToMatlab<std::complex<double>>(hoNDArray<std::complex<double>> *);
 template mxArray* Gadgetron::hoNDArrayToMatlab<std::complex<float>>(hoNDArray<std::complex<float>> *);
 
 
-template hoNDArray<float>* Gadgetron::MatlabToHoNDArray<float>(mxArray *);
-template hoNDArray<double>* Gadgetron::MatlabToHoNDArray<double>(mxArray *);
-template hoNDArray<float_complext>* Gadgetron::MatlabToHoNDArray<float_complext>(mxArray *);
-template hoNDArray<double_complext>* Gadgetron::MatlabToHoNDArray<double_complext>(mxArray *);
+template hoNDArray<float> Gadgetron::MatlabToHoNDArray<float>(mxArray *);
+template hoNDArray<double> Gadgetron::MatlabToHoNDArray<double>(mxArray *);
+template hoNDArray<size_t> Gadgetron::MatlabToHoNDArray<size_t>(mxArray *);
+template hoNDArray<float_complext> Gadgetron::MatlabToHoNDArray<float_complext>(mxArray *);
+template hoNDArray<double_complext> Gadgetron::MatlabToHoNDArray<double_complext>(mxArray *);
 
-template hoNDArray<std::complex<double>>* Gadgetron::MatlabToHoNDArray<std::complex<double>>(mxArray *);
-template hoNDArray<std::complex<float>>* Gadgetron::MatlabToHoNDArray<std::complex<float>>(mxArray *);
+template hoNDArray<std::complex<double>> Gadgetron::MatlabToHoNDArray<std::complex<double>>(mxArray *);
+template hoNDArray<std::complex<float>> Gadgetron::MatlabToHoNDArray<std::complex<float>>(mxArray *);
+
+template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,1>>(hoNDArray<vector_td<float,1>> *);
+template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,2>>(hoNDArray<vector_td<float,2>> *);
+template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,3>>(hoNDArray<vector_td<float,3>> *);
+template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,4>>(hoNDArray<vector_td<float,4>> *);
+
+
+template hoNDArray<vector_td<float,1>> Gadgetron::MatlabToHoNDArray<vector_td<float,1>>(mxArray *);
+template hoNDArray<vector_td<float,2>> Gadgetron::MatlabToHoNDArray<vector_td<float,2>>(mxArray *);
+template hoNDArray<vector_td<float,3>> Gadgetron::MatlabToHoNDArray<vector_td<float,3>>(mxArray *);
+template hoNDArray<vector_td<float,4>> Gadgetron::MatlabToHoNDArray<vector_td<float,4>>(mxArray *);
