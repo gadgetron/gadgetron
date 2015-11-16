@@ -112,6 +112,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   ACE_TCHAR port_no[1024];
   ACE_TCHAR relay_host[1024];
   uint16_t  relay_port = 0;
+  uint16_t  rest_port = 0;
 
   ACE_OS_String::strncpy(relay_host, "localhost", 1024);
 
@@ -136,14 +137,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
       }
 
       if (c.rest) {
-	Gadgetron::ReST::port_ = c.rest->port;
-	Gadgetron::ReST::instance()->server().route_dynamic("/info")([]()
-	  {
-	    std::stringstream ss;
-	    print_system_information(ss);
-	    std::string content = ss.str();
-	    return content;
-	  });
+	rest_port = c.rest->port;
       }
       
       for (std::vector<GadgetronXML::GadgetronParameter>::iterator it = c.globalGadgetParameter.begin();
@@ -163,7 +157,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     return -1;
   }
 
-  static const ACE_TCHAR options[] = ACE_TEXT(":p:r:l:");
+  static const ACE_TCHAR options[] = ACE_TEXT(":p:r:l:R:");
   ACE_Get_Opt cmd_opts(argc, argv, options);
 
   int option;
@@ -178,6 +172,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     case 'l':
       relay_port = std::atoi(cmd_opts.opt_arg());
       break;
+    case 'R':
+      rest_port = std::atoi(cmd_opts.opt_arg());
+      break;
     case ':':
       print_usage();
       GERROR("-%c requires an argument.\n", cmd_opts.opt_opt());
@@ -189,6 +186,18 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
       return -1;
       break;
     }
+  }
+
+  if (rest_port > 0) {
+    GINFO("Starting ReST interface on port %d\n", rest_port);
+    Gadgetron::ReST::port_ = rest_port;
+    Gadgetron::ReST::instance()->server().route_dynamic("/info")([]()
+    {
+      std::stringstream ss;
+      print_system_information(ss);
+      std::string content = ss.str();
+      return content;
+    });
   }
 
   if (relay_port > 0) {

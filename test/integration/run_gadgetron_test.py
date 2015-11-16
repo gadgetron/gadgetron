@@ -124,7 +124,7 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
                     node_log_filename = os.path.join(pwd, out_folder, node_log_filename)
 
                     with open(node_log_filename, "w") as ngf:
-                        pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1)], env=environment, stdout=ngf, stderr=ngf)
+                        pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1), "-R", "0"], env=environment, stdout=ngf, stderr=ngf)
                         node_p.append(pn)
 
             time.sleep(2)
