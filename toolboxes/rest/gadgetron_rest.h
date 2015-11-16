@@ -1,7 +1,7 @@
 #ifndef GADGETRON_REST_H
 #define	GADGETRON_REST_H
 #include <thread>
-#include "crow_all.h"
+#include "crow/crow.h"
 #include "gadgetron_rest_exports.h"
 
 namespace Gadgetron {
