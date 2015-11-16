@@ -7,6 +7,7 @@ ${CMAKE_SOURCE_DIR}/toolboxes/operators
 ${CMAKE_SOURCE_DIR}/toolboxes/solvers
 ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
 ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu 
+${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu 
 ${CMAKE_SOURCE_DIR}/toolboxes/matlab/ 
 ${ISMRMRD_INCLUDE_DIR}
 ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/ )
@@ -34,13 +35,35 @@ target_link_libraries(
 )
 
 
-set(CMAKE_CXX_FLAGS "-O3 -DMX_COMPAT_32   -D_GNU_SOURCE  -DMATLAB_MEX_FILE  -DNDEBUG  -ansi -fPIC -fexceptions  -fno-omit-frame-pointer -std=c++11  -pthread  -Wl,--no-undefined -Wl,-soname,gadgetronNFFT.mexa64 -Wl,-rpath,${MATLAB_LIB_PATHS}:${CMAKE_INSTALL_PREFIX}/lib:${CUDA_TOOLKIT_ROOT_DIR}/lib64" )
+add_library(gadgetronSENSE SHARED gadgetronSENSE.cpp)
+target_link_libraries(
+	gadgetronSENSE
+    gadgetron_toolbox_matlab
+    gadgetron_toolbox_cpucore
+    gadgetron_toolbox_cpucore_math
+    gadgetron_toolbox_gpunfft
+    gadgetron_toolbox_gpuparallelmri
+    ${MATLAB_MEX_LIBRARY}
+    ${MATLAB_MX_LIBRARY}
+    ${MATLAB_ENG_LIBRARY}
+	${CUDA_LIBRARIES} 
+  	${CUDA_CUFFT_LIBRARIES} 
+  	${CUDA_CUBLAS_LIBRARIES} 
+)
+
+
+set(CMAKE_CXX_FLAGS "-O3 -DMX_COMPAT_32   -D_GNU_SOURCE  -DMATLAB_MEX_FILE  -DNDEBUG  -ansi -fPIC -fexceptions  -fno-omit-frame-pointer -std=c++11  -pthread  -Wl,--no-undefined  -Wl,-rpath,${MATLAB_LIB_PATHS}:${CMAKE_INSTALL_PREFIX}/lib:${CUDA_TOOLKIT_ROOT_DIR}/lib64" )
 
 MESSAGE("Matlab CXX flags: ${CMAKE_CXX_FLAGS}")
 set_target_properties(gadgetronNFFT PROPERTIES PREFIX "" )
 set_target_properties(gadgetronNFFT PROPERTIES SUFFIX .mexa64 LINKER_LANGUAGE CXX)
 
+set_target_properties(gadgetronSENSE PROPERTIES PREFIX "" )
+set_target_properties(gadgetronSENSE PROPERTIES SUFFIX .mexa64 LINKER_LANGUAGE CXX)
+
+
 SET(MATLAB_OUTPUT_DIR PATH CACHE PATH "")
 
 install(DIRECTORY DESTINATION ${MATLAB_OUTPUT_DIR}/@gadgetron)
 install(TARGETS gadgetronNFFT DESTINATION ${MATLAB_OUTPUT_DIR}/@gadgetron COMPONENT main)
+install(TARGETS gadgetronSENSE DESTINATION ${MATLAB_OUTPUT_DIR}/@gadgetron COMPONENT main)
