@@ -1,6 +1,12 @@
 #include "gadgetron_rest.h"
 #include <chrono>
 
+#ifdef WIN32
+    #ifdef ERROR
+        #undef ERROR
+    #endif // ERROR
+#endif // WIN32
+
 namespace Gadgetron
 {
   ReST* Gadgetron::ReST::instance_ = nullptr;
