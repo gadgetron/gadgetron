@@ -1,6 +1,6 @@
 #include "cuNFFTOperator.h"
 
-//#include "mex.h"
+#include "mex.h"
 #include "MatlabUtils.h"
 #include <boost/make_shared.hpp>
 #include "vector_td_operators.h"
@@ -62,10 +62,16 @@ static mxArray* gadgetronNFFT_internal(mxArray* input_data,mxArray* input_trajec
 }
 }
 
-extern"C" void mexFunction(int nlhs, mxArray *plhs[], int nrhs, mxArray *prhs[]){
+void cleanUp(){
+	cudaDeviceReset();
+}
+void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs_const[]){
 
+	mexAtExit(cleanUp);
 
 	//mexPrintf("Pie!");
+
+	mxArray ** prhs = (mxArray**) prhs_const;
 
 	if (nrhs < 4) return;
 	if (nlhs < 1) return;

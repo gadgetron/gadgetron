@@ -1,6 +1,6 @@
 #include "cuNFFTOperator.h"
 #include "cuNonCartesianSenseOperator.h"
-//#include "mex.h"
+#include "mex.h"
 #include "MatlabUtils.h"
 #include <boost/make_shared.hpp>
 #include "vector_td_operators.h"
@@ -13,9 +13,13 @@ template<unsigned int N> static boost::shared_ptr<hoNDArray<float_complext> > ga
 	cuNDArray<float_complext> cuInput(*input_data);
 	cuNDArray<vector_td<float,N> > cu_traj(*trajectory);
 	auto cuCsm = boost::make_shared<cuNDArray<float_complext>>(*csm);
+	std::vector<size_t> out_dims(&matrix_size[0],&matrix_size[N]);
+
 
 	auto op = boost::make_shared<cuNonCartesianSenseOperator<float,N>>();
 	op->setup(matrix_size,matrix_size*size_t(2),W);
+	op->set_domain_dimensions(&out_dims);
+	op->set_codomain_dimensions(cuInput.get_dimensions().get());
 	op->preprocess(&cu_traj);
 	if (dcw){
 		auto cu_dcw = boost::make_shared<cuNDArray<float>>(*dcw);
@@ -24,12 +28,8 @@ template<unsigned int N> static boost::shared_ptr<hoNDArray<float_complext> > ga
 
 		cuInput *= *cu_dcw;
 	}
-	std::vector<size_t> out_dims(&matrix_size[0],&matrix_size[N]);
-	out_dims.push_back(cuInput.get_number_of_elements()/cu_traj.get_number_of_elements());
+		op->set_csm(cuCsm);
 
-	op->set_csm(cuCsm);
-	op->set_domain_dimensions(&out_dims);
-	op->set_codomain_dimensions(cuInput.get_dimensions().get());
 	cuCgSolver<float_complext> cg;
 	cg.set_max_iterations(10);
 	cg.set_tc_tolerance(1e-8);
@@ -64,13 +64,17 @@ static mxArray* gadgetronSENSE_internal(mxArray* input_data,mxArray* input_traje
 }
 }
 
-extern"C" void mexFunction(int nlhs, mxArray *plhs[], int nrhs, mxArray *prhs[]){
+void cleanUp(){
+	cudaDeviceReset();
+}
+void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs_const[]){
 
-
+	mexAtExit(cleanUp);
 	//mexPrintf("Pie!");
 
 	if (nrhs < 4) return;
 	if (nlhs < 1) return;
+	mxArray ** prhs = (mxArray**) prhs_const; //Yes yes, not very nice
 
 	mxArray* input_data = prhs[0];
 	mxArray* input_trajectory = prhs[1];
