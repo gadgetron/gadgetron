@@ -110,7 +110,7 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
     #Start the Gadgetron if needed
     if start_gadgetron:
         with open(gadgetron_log_filename, "w") as gf:
-            gp = subprocess.Popen(["gadgetron", "-p", port], env=environment, stdout=gf, stderr=gf)
+            gp = subprocess.Popen(["gadgetron", "-p", port, "-R", "19080"], env=environment, stdout=gf, stderr=gf)
 
             node_p = list()
             if nodes > 0:
