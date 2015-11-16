@@ -26,7 +26,7 @@ template<>	struct MatlabClassID<int32_t>{ static constexpr mxClassID value =  mx
 template<>	struct MatlabClassID<uint32_t>{ static constexpr mxClassID value =  mxUINT32_CLASS;};
 template<>	struct MatlabClassID<int64_t>{ static constexpr mxClassID value =  mxINT64_CLASS;};
 template<>	struct MatlabClassID<uint64_t>{ static constexpr mxClassID value =  mxUINT64_CLASS;};
-template<>	struct MatlabClassID<unsigned long>{ static constexpr mxClassID value =  mxUINT64_CLASS;};
+template<>	struct MatlabClassID<size_t>{ static constexpr mxClassID value =  mxUINT64_CLASS;};
 
 template<class T> struct MatlabConverter {
 	static mxArray* convert(hoNDArray<T>* input){
