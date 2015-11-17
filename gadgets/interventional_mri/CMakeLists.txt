@@ -50,6 +50,6 @@ install(FILES
     DeviceChannelSplitterGadget.h
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-install(FILES grappa_device.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES grappa_device.xml grappa_device_cpu.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_interventional_mri DESTINATION lib COMPONENT main)
