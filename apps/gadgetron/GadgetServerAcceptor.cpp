@@ -1,3 +1,4 @@
+#include "gadgetron_rest.h"
 #include "GadgetServerAcceptor.h"
 #include "GadgetStreamController.h"
 
@@ -14,6 +15,13 @@ int GadgetServerAcceptor::open (const ACE_INET_Addr &listen_addr)
     GERROR("error opening acceptor\n");
     return -1;
   }
+
+  //Register a way to close the Acceptor via the ReST API
+  Gadgetron::ReST::instance()->server().route_dynamic("/acceptor/close")([a = this]()
+  {
+    a->close();
+    return "Acceptor closed\n";
+  });
 
   return this->reactor ()->register_handler(this, ACE_Event_Handler::ACCEPT_MASK);
 }

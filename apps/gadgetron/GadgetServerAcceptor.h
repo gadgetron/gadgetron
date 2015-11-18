@@ -22,6 +22,11 @@ public:
   virtual int handle_close (ACE_HANDLE handle,
                             ACE_Reactor_Mask close_mask);
 
+  int close()
+  {
+    return this->acceptor_.close();
+  }
+  
   std::map<std::string, std::string> global_gadget_parameters_;
 
 protected:
