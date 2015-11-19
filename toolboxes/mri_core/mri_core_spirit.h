@@ -45,18 +45,6 @@ namespace Gadgetron {
     /// kIm: image domain kernel [RO E1 srcCHA dstCHA]
     template <typename T> EXPORTMRICORE void spirit2d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t E1, hoNDArray<T>& kIm);
 
-    /// perform spirit calibration, get the mulitplication kernel
-    /// ker: [kRO kE1 srcCHA dstCHA oRO oE1]
-    template <typename T> EXPORTMRICORE void spirit2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst,
-                                                        double thres, size_t kRO, size_t kE1, size_t oRO, size_t oE1,
-                                                        size_t startRO, size_t endRO, size_t startE1, size_t endE1,
-                                                        hoNDArray<T>& ker);
-
-    /// convert the spirit multiplication kernel computed from spirit2d_calib to convolution kernel
-    /// kerL [kRO, kE1, srcCHA, dstCHA, oRO, oE1]
-    /// convKer : [convRO convE1 srcCHA dstCHA]
-    template <typename T> EXPORTMRICORE void spirit2d_convert_to_convolution_kernel(const hoNDArray<T>& ker, size_t kRO, size_t kE1, size_t oRO, size_t oE1, hoNDArray<T>& convKer, bool minusI = false);
-
     /// ---------------------------------------------------------------------
     /// 3D spirit
     /// ---------------------------------------------------------------------
