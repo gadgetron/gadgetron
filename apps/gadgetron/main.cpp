@@ -91,6 +91,7 @@ void print_usage()
   GINFO("gadgetron   -p <PORT>                      (default 9002)       \n");
   GINFO("            -r <RELAY HOST>                (default localhost)  \n");
   GINFO("            -l <RELAY PORT>                (default 0, disabled)\n");
+  GINFO("            -R <REST PORT>                 (default 0, disabled)\n");
 }
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
@@ -205,10 +206,19 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     Gadgetron::CloudBus::set_relay_address(relay_host);
     Gadgetron::CloudBus::set_relay_port(relay_port);
     Gadgetron::CloudBus::set_gadgetron_port(std::atoi(port_no));
+    Gadgetron::CloudBus::set_rest_port(rest_port);
     Gadgetron::CloudBus* cb = Gadgetron::CloudBus::instance();//This actually starts the bus.
     gadget_parameters["using_cloudbus"] = std::string("true"); //This is our message to the Gadgets that we have activated the bus
+    if (rest_port) {
+      Gadgetron::ReST::instance()->server()
+	.route_dynamic("/cloudbus/active_recons")([]()
+						  {
+						    std::stringstream str;
+						    str << Gadgetron::CloudBus::instance()->active_reconstructions();
+						    return str.str();
+						  });
+    }
   }
-
 
   // if the working directory is not set, use the default path
   if ( !workingDirectorySet )
@@ -236,7 +246,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   acceptor.reactor (ACE_Reactor::instance ());
   if (acceptor.open (port_to_listen) == -1)
     return 1;
-
+  
   ACE_Reactor::instance()->run_reactor_event_loop ();
 
   return 0;
