@@ -17,9 +17,9 @@ int GadgetServerAcceptor::open (const ACE_INET_Addr &listen_addr)
   }
 
   //Register a way to close the Acceptor via the ReST API
-  Gadgetron::ReST::instance()->server().route_dynamic("/acceptor/close")([a = this]()
+  Gadgetron::ReST::instance()->server().route_dynamic("/acceptor/close")([this]()
   {
-    a->close();
+    this->close();
     return "Acceptor closed\n";
   });
 
