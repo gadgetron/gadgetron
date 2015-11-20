@@ -18,6 +18,7 @@
 #pragma once
 
 #include "gtPlusAlgorithmBase.h"
+#include "mri_core_spirit.h"
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -1158,32 +1159,7 @@ imageDomainAdjointKernel(const hoNDArray<T>& kIm, hoNDArray<T>& adjkIm)
 {
     try
     {
-        std::vector<size_t> dim, dimAdj, dimOrder;
-        kIm.get_dimensions(dim);
-
-        size_t NDim = dim.size();
-
-        dimAdj = dim;
-        dimAdj[NDim - 1] = dim[NDim - 2];
-        dimAdj[NDim - 2] = dim[NDim - 1];
-
-        if (!adjkIm.dimensions_equal(&dimAdj))
-        {
-            adjkIm.create(dimAdj);
-        }
-
-        dimOrder.resize(NDim);
-
-        for (size_t d = 0; d < NDim; d++)
-        {
-            dimOrder[d] = d;
-        }
-        dimOrder[NDim - 2] = NDim - 1;
-        dimOrder[NDim - 1] = NDim - 2;
-
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::permute(const_cast< hoNDArray<T>* >(&kIm), &adjkIm, &dimOrder));
-
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::conjugate(adjkIm, adjkIm));
+        Gadgetron::spirit_image_domain_adjoint_kernel(kIm, adjkIm);
     }
     catch(...)
     {
@@ -1199,52 +1175,7 @@ bool gtPlusSPIRIT<T>::AdjointForwardKernel(const hoNDArray<T>& kImS2D, const hoN
 {
     try
     {
-        boost::shared_ptr< std::vector<size_t> > dimS2D = kImS2D.get_dimensions();
-
-        size_t NDim = kImS2D.get_number_of_dimensions();
-
-        long long srcCHA = (*dimS2D)[NDim-2];
-        long long dstCHA = (*dimS2D)[NDim-1];
-
-        GADGET_CHECK_RETURN_FALSE(kImD2S.get_number_of_dimensions()==NDim);
-        GADGET_CHECK_RETURN_FALSE(kImD2S.get_number_of_elements()==kImS2D.get_number_of_elements());
-
-        std::vector<size_t> dimRes(*dimS2D);
-        dimRes[NDim-2] = dstCHA;
-
-        kIm.create(&dimRes);
-        Gadgetron::clear(&kIm);
-
-        size_t N = kImS2D.get_number_of_elements()/srcCHA/dstCHA;
-
-        long long d;
-        #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA, kIm, kImS2D, kImD2S) num_threads( (int)dstCHA ) if (dstCHA > 4)
-        {
-            hoNDArray<T> ker(N);
-
-            std::vector<size_t> dim(1);
-            dim[0] = N;
-
-            hoNDArray<T> dKer, kerS2D, kerD2S;
-
-            #pragma omp for
-            for ( d=0; d<dstCHA; d++ )
-            {
-                for ( long long dprime=0; dprime<dstCHA; dprime++ )
-                {
-                    dKer.create(&dim, kIm.begin()+d*N+dprime*N*dstCHA);
-
-                    for ( long long s=0; s<srcCHA; s++ )
-                    {
-                        kerS2D.create(&dim, const_cast<T*>(kImS2D.begin())+s*N+dprime*N*srcCHA);
-                        kerD2S.create(&dim, const_cast<T*>(kImD2S.begin())+d*N+s*N*dstCHA);
-
-                        Gadgetron::multiply(kerS2D, kerD2S, ker);
-                        Gadgetron::add(dKer, ker, dKer);
-                    }
-                }
-            }
-        }
+        Gadgetron::spirit_adjoint_forward_kernel(kImS2D, kImD2S, kIm);
     }
     catch(...)
     {
