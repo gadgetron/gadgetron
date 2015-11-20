@@ -10,7 +10,7 @@ function mount_safe {
     mount --bind $MOUNT_DIR $MOUNT_POINT
     MOUNT_READY=0
     MOUNT_TRY=0
-    MAX_MOUNT_TRY=100
+    MAX_MOUNT_TRY=1000
 
     if [ $# -eq 3 ]; then
       MOUNT_FILE=$3
@@ -21,7 +21,7 @@ function mount_safe {
           sleep 0.2
           let MOUNT_TRY++
           if [ $MOUNT_TRY -eq $MAX_MOUNT_TRY ]; then
-	          MOUNT_READY=1
+            MOUNT_READY=1
           fi  
         fi
       done
@@ -33,7 +33,7 @@ function mount_safe {
           sleep 0.2
           let MOUNT_TRY++
           if [ $MOUNT_TRY -eq $MAX_MOUNT_TRY ]; then
-	          MOUNT_READY=1
+            MOUNT_READY=1
           fi
         fi
       done  
@@ -50,13 +50,15 @@ else
     FULL_PATH_TO_IMG_FILE=${1}
     GLOBAL_MOUNT_POINT=${2}
 
-    mkdir -p ${GLOBAL_MOUNT_POINT}
-    mount -o loop ${FULL_PATH_TO_IMG_FILE} ${GLOBAL_MOUNT_POINT}
-    sleep 0.2
+    if ! mountpoint -q ${GLOBAL_MOUNT_POINT}; then
+        mkdir -p ${GLOBAL_MOUNT_POINT}
+        mount -o loop ${FULL_PATH_TO_IMG_FILE} ${GLOBAL_MOUNT_POINT}
+        sleep 0.2
+    fi
 
     MOUNT_READY=0
     MOUNT_TRY=0
-    MAX_MOUNT_TRY=100
+    MAX_MOUNT_TRY=1000
     while [ ${MOUNT_READY} -eq 0 ]; do
       if mountpoint -q ${GLOBAL_MOUNT_POINT} && [ -e ${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron@CMAKE_INSTALL_PREFIX@/@GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH@/start.sh ]; then
           MOUNT_READY=1
@@ -64,16 +66,24 @@ else
           sleep 0.2
           let MOUNT_TRY++
           if [ $MOUNT_TRY -eq $MAX_MOUNT_TRY ]; then
-		          MOUNT_READY=1
-			    exit 1
-	      fi
+                MOUNT_READY=1
+                exit 1
+          fi
       fi
     done
 
     if mountpoint -q ${GLOBAL_MOUNT_POINT}; then
-        mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/proc" /proc self/exe
-	mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/dev" /dev null
-        mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/sys" /sys kernel
+        if ! mountpoint -q ${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/proc; then
+            mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/proc" /proc self/exe
+        fi
+
+        if ! mountpoint -q ${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/dev; then
+            mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/dev" /dev null
+        fi
+
+        if ! mountpoint -q ${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/sys; then
+            mount_safe "${GLOBAL_MOUNT_POINT}/chroot-root/gadgetron/sys" /sys kernel
+        fi
     else
       exit 1
     fi

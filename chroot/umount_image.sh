@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function umount_check {
-    MAX_TRY=100
+    MAX_TRY=500
     MOUNT_DIR=$1
     UMOUNT_READY=0
     UMOUNT_TRY=0
@@ -11,7 +11,7 @@ function umount_check {
             if [ $UMOUNT_TRY -eq $MAX_TRY ]; then
                 UMOUNT_READY=1
             else
-                sleep 0.2
+                sleep 0.5
             fi
         else
             UMOUNT_READY=1
@@ -39,6 +39,10 @@ else
       if mountpoint -q ${MOUNT_POINT}/chroot-root/gadgetron/sys; then
         umount ${MOUNT_POINT}/chroot-root/gadgetron/sys
         umount_check ${MOUNT_POINT}/chroot-root/gadgetron/sys
+      fi
+      if mountpoint -q ${MOUNT_POINT}/chroot-root/gadgetron/tmp/dependency; then
+        umount ${MOUNT_POINT}/chroot-root/gadgetron/tmp/dependency
+        umount_check ${MOUNT_POINT}/chroot-root/gadgetron/tmp/dependency
       fi
       umount ${MOUNT_POINT}
       umount_check ${MOUNT_POINT}
