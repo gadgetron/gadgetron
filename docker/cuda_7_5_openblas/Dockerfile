@@ -1,10 +1,5 @@
 FROM ubuntu:14.04
 
-ENV CUDA_DOWNLOAD_PATH http://developer.download.nvidia.com/compute/cuda/7_0/Prod/local_installers
-ENV CUDA_RUN cuda_7.0.28_linux.run
-ENV CUDA_DRIVER 346.46
-ENV CUDA_INSTALL cuda-linux64-rel-7.0.28-19326674.run
-
 # Update and install minimal.
 RUN \
   apt-get update \
@@ -16,29 +11,6 @@ RUN \
        build-essential \
        module-init-tools \
        wget
-
-#UNPACK THE CUDA INSTALLER
-RUN cd /opt && \
-  wget ${CUDA_DOWNLOAD_PATH}/${CUDA_RUN} --no-verbose && \
-  chmod +x *.run && \
-  mkdir nvidia_installers && \
-  ./${CUDA_RUN} -silent -extract=`pwd`/nvidia_installers && \
-  rm ${CUDA_RUN}
-
-#INSTALL DRIVER
-RUN cd /opt/nvidia_installers && \
-    ./NVIDIA-Linux-x86_64-${CUDA_DRIVER}.run -s -N --no-kernel-module
-
-#INSTALL CUDA LIBRARIES, etc. 
-RUN cd /opt/nvidia_installers && \
-    ./${CUDA_INSTALL} -silent -noprompt && \
-    cd ../ && \
-    rm -rf nvidia_installers
-
-#SET SOME ENV variables for CUDA
-ENV CUDA_PATH=/usr/local/cuda \
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64 \
-    PATH=$PATH:/usr/local/cuda/bin
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes  \
     emacs python-pip cython libhdf5-serial-dev cmake git-core \
@@ -101,17 +73,6 @@ RUN cd /opt/code && \
     make -j $(nproc) && \
     make install
 
-#GADGETRON
-RUN cd /opt/code && \
-    git clone https://github.com/gadgetron/gadgetron.git && \
-    cd gadgetron && \
-    mkdir build && \
-    cd build && \
-    cmake ../ && \
-    make -j $(nproc) && \
-    make install && \
-    cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml
-
 #ISMRMRD PYTHON API
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python.git &&  \
@@ -123,7 +84,6 @@ RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python-tools.git &&  \
     cd ismrmrd-python-tools && \
     sudo python setup.py install
-
 
 #SIEMENS_TO_ISMRMRD
 RUN cd /opt/code && \
@@ -144,6 +104,40 @@ RUN cd /opt/code && \
     cmake ../ && \
     make -j $(nproc) && \
     make install
+
+#UNPACK THE CUDA INSTALLER
+ENV CUDA_DOWNLOAD_PATH http://developer.download.nvidia.com/compute/cuda/7.5/Prod/local_installers
+ENV CUDA_RUN cuda_7.5.18_linux.run
+ENV CUDA_INSTALL cuda-linux64-rel-7.5.18-19867135.run
+
+RUN cd /opt && \
+  wget ${CUDA_DOWNLOAD_PATH}/${CUDA_RUN} --no-verbose && \
+  chmod +x *.run && \
+  mkdir nvidia_installers && \
+  ./${CUDA_RUN} -silent -extract=`pwd`/nvidia_installers && \
+  rm ${CUDA_RUN}
+
+#INSTALL CUDA LIBRARIES, etc. 
+RUN cd /opt/nvidia_installers && \
+    ./${CUDA_INSTALL} -silent -noprompt && \
+    cd ../ && \
+    rm -rf nvidia_installers
+
+#SET SOME ENV variables for CUDA
+ENV CUDA_PATH=/usr/local/cuda \
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64 \
+    PATH=$PATH:/usr/local/cuda/bin
+
+#GADGETRON
+RUN cd /opt/code && \
+    git clone https://github.com/gadgetron/gadgetron.git && \
+    cd gadgetron && \
+    mkdir build && \
+    cd build && \
+    cmake ../ && \
+    make -j $(nproc) && \
+    make install && \
+    cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml
 
 RUN apt-get install --yes --no-install-recommends --no-install-suggests python-twisted-web
 
@@ -177,5 +171,14 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
 # Clean up packages.
 RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
+
+#INSTALL DRIVER
+ENV CUDA_DRIVER 352.63
+ENV CUDA_DRIVER_INSTALL http://us.download.nvidia.com/XFree86/Linux-x86_64/${CUDA_DRIVER}/NVIDIA-Linux-x86_64-${CUDA_DRIVER}.run
+RUN wget \
+      $CUDA_DRIVER_INSTALL -P /tmp --no-verbose \
+      && chmod +x /tmp/NVIDIA-Linux-x86_64-${CUDA_DRIVER}.run \
+      && /tmp/NVIDIA-Linux-x86_64-${CUDA_DRIVER}.run -s -N --no-kernel-module \
+      && rm -rf /tmp/*
 
 CMD ["/usr/bin/supervisord"]
