@@ -124,9 +124,17 @@ RUN cd /opt/nvidia_installers && \
     rm -rf nvidia_installers
 
 #SET SOME ENV variables for CUDA
-ENV CUDA_PATH=/usr/local/cuda \
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64 \
-    PATH=$PATH:/usr/local/cuda/bin
+LABEL com.nvidia.cuda.version="7.5"
+RUN echo "/usr/local/cuda/lib" >> /etc/ld.so.conf.d/cuda.conf && \
+    echo "/usr/local/cuda/lib64" >> /etc/ld.so.conf.d/cuda.conf && \
+    ldconfig
+
+RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+
+
+ENV PATH /usr/local/cuda/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
 
 #GADGETRON
 RUN cd /opt/code && \
@@ -171,14 +179,5 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
 # Clean up packages.
 RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
-
-#INSTALL DRIVER
-ENV CUDA_DRIVER 352.63
-ENV CUDA_DRIVER_INSTALL http://us.download.nvidia.com/XFree86/Linux-x86_64/${CUDA_DRIVER}/NVIDIA-Linux-x86_64-${CUDA_DRIVER}.run
-RUN wget \
-      $CUDA_DRIVER_INSTALL -P /tmp --no-verbose \
-      && chmod +x /tmp/NVIDIA-Linux-x86_64-${CUDA_DRIVER}.run \
-      && /tmp/NVIDIA-Linux-x86_64-${CUDA_DRIVER}.run -s -N --no-kernel-module \
-      && rm -rf /tmp/*
 
 CMD ["/usr/bin/supervisord"]

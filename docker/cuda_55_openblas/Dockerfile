@@ -1,12 +1,5 @@
 FROM ubuntu:14.04
 
-ENV CUDA_DRIVER 331.113
-ENV CUDA_DRIVER_INSTALL http://us.download.nvidia.com/XFree86/Linux-x86_64/${CUDA_DRIVER}/NVIDIA-Linux-x86_64-${CUDA_DRIVER}.run
-
-ENV CUDA_DOWNLOAD_PATH http://developer.download.nvidia.com/compute/cuda/5_5/rel/installers 
-ENV CUDA_RUN cuda_5.5.22_linux_64.run
-ENV CUDA_INSTALL cuda-linux64-rel-5.5.22-16488124.run
-
 # Update and install minimal.
 RUN \
   apt-get update \
@@ -18,32 +11,6 @@ RUN \
        build-essential \
        module-init-tools \
        wget
-
-# Install CUDA DRIVER
-RUN wget \
-      $CUDA_DRIVER_INSTALL -P /tmp --no-verbose \
-      && chmod +x /tmp/NVIDIA-Linux-x86_64-${CUDA_DRIVER}.run \
-      && /tmp/NVIDIA-Linux-x86_64-${CUDA_DRIVER}.run -s -N --no-kernel-module \
-      && rm -rf /tmp/*
-
-#UNPACK THE CUDA INSTALLER
-RUN cd /opt && \
-  wget ${CUDA_DOWNLOAD_PATH}/${CUDA_RUN} --no-verbose && \
-  chmod +x *.run && \
-  mkdir nvidia_installers && \
-  ./${CUDA_RUN} -extract=`pwd`/nvidia_installers && \
-  rm ${CUDA_RUN}
-
-#INSTALL CUDA LIBRARIES, etc. 
-RUN cd /opt/nvidia_installers && \
-    ./${CUDA_INSTALL} -noprompt && \
-    cd ../ && \
-    rm -rf nvidia_installers
-
-#SET SOME ENV variables for CUDA
-ENV CUDA_PATH=/usr/local/cuda \
-    LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64 \
-    PATH=$PATH:/usr/local/cuda/bin
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes  \
     emacs python-pip cython libhdf5-serial-dev cmake git-core \
@@ -106,16 +73,6 @@ RUN cd /opt/code && \
     make -j $(nproc) && \
     make install
 
-#GADGETRON
-RUN cd /opt/code && \
-    git clone https://github.com/gadgetron/gadgetron.git && \
-    cd gadgetron && \
-    mkdir build && \
-    cd build && \
-    cmake ../ && \
-    make -j $(nproc) && \
-    make install && \
-    cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml
 
 #ISMRMRD PYTHON API
 RUN cd /opt/code && \
@@ -150,11 +107,48 @@ RUN cd /opt/code && \
     make -j $(nproc) && \
     make install
 
-RUN apt-get install --yes --no-install-recommends --no-install-suggests python-twisted-web
+#UNPACK THE CUDA INSTALLER
+ENV CUDA_DOWNLOAD_PATH http://developer.download.nvidia.com/compute/cuda/5_5/rel/installers 
+ENV CUDA_RUN cuda_5.5.22_linux_64.run
+ENV CUDA_INSTALL cuda-linux64-rel-5.5.22-16488124.run
 
-# Clean up packages.
-RUN  apt-get clean && \
-   rm -rf /var/lib/apt/lists/*
+RUN cd /opt && \
+  wget ${CUDA_DOWNLOAD_PATH}/${CUDA_RUN} --no-verbose && \
+  chmod +x *.run && \
+  mkdir nvidia_installers && \
+  ./${CUDA_RUN} -extract=`pwd`/nvidia_installers && \
+  rm ${CUDA_RUN}
+
+#INSTALL CUDA LIBRARIES, etc. 
+RUN cd /opt/nvidia_installers && \
+    ./${CUDA_INSTALL} -noprompt && \
+    cd ../ && \
+    rm -rf nvidia_installers
+
+#SET SOME ENV variables for CUDA
+LABEL com.nvidia.cuda.version="5.5"
+RUN echo "/usr/local/cuda/lib" >> /etc/ld.so.conf.d/cuda.conf && \
+    echo "/usr/local/cuda/lib64" >> /etc/ld.so.conf.d/cuda.conf && \
+    ldconfig
+
+RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf && \
+    echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+
+ENV PATH /usr/local/cuda/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
+
+#GADGETRON
+RUN cd /opt/code && \
+    git clone https://github.com/gadgetron/gadgetron.git && \
+    cd gadgetron && \
+    mkdir build && \
+    cd build && \
+    cmake ../ && \
+    make -j $(nproc) && \
+    make install && \
+    cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml
+
+RUN apt-get install --yes --no-install-recommends --no-install-suggests python-twisted-web
 
 #Create script for running web app
 RUN cd /opt && \
@@ -163,5 +157,29 @@ RUN cd /opt && \
     echo 'python /usr/local/bin/gadgetron_web_app.py /usr/local/share/gadgetron/config/gadgetron_web_app.cfg' >> start_web.sh && \
     chmod +x start_web.sh
 
-#Run the gadgetron web app
-CMD /opt/start_web.sh
+RUN apt-get install -y openssh-server supervisor
+RUN mkdir -p /var/run/sshd /var/log/supervisor
+
+RUN echo 'root:gadgetron' | chpasswd
+RUN sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+#Generate supervisor file
+RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:sshd]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=/usr/sbin/sshd -D' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:gadgetron]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=/opt/start_web.sh' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf 
+
+# Clean up packages.
+RUN  apt-get clean && \
+   rm -rf /var/lib/apt/lists/*
+
+CMD ["/usr/bin/supervisord"]
+
