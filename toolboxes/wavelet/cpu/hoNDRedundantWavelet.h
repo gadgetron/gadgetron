@@ -30,6 +30,8 @@ namespace Gadgetron{
         void compute_wavelet_filter(const std::string& wav_name);
         /// compute wavelet filters from scale function
         void compute_wavelet_filter(const std::vector<T>& s);
+        /// set wavelet filters
+        void set_wavelet_filter(const std::vector<T>& fl_d, const std::vector<T>& fh_d, const std::vector<T>& fl_r, const std::vector<T>& fh_r);
 
     protected:
 
@@ -59,14 +61,6 @@ namespace Gadgetron{
         virtual void dwt3D(const T* const in, T* out, size_t RO, size_t E1, size_t E2, size_t level);
         /// in: [RO 1+7*level] array
         virtual void idwt3D(const T* const in, T* out, size_t RO, size_t E1, size_t E2, size_t level);
-
-        /// buffer used for computation
-        std::vector<T> buf_l_;
-        std::vector<T> buf_h_;
-
-        std::vector<T> buf_ro_;
-        std::vector<T> buf_e1_;
-        std::vector<T> buf_e2_;
 
         /// perform decomposition filter
         void filter_d(const T* const in, size_t len_in, size_t stride_in, T* out_l, T* out_h, size_t stride_out);

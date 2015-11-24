@@ -36,4 +36,5 @@ install(FILES
   cpuwavelet_export.h 
   hoNDWavelet.h
   hoNDHarrWavelet.h
+  hoNDRedundantWavelet.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

@@ -126,6 +126,19 @@ void hoNDRedundantWavelet<T>::compute_wavelet_filter(const std::string& wav_name
 }
 
 template<typename T>
+void hoNDRedundantWavelet<T>::set_wavelet_filter(const std::vector<T>& fl_d, const std::vector<T>& fh_d, const std::vector<T>& fl_r, const std::vector<T>& fh_r)
+{
+    GADGET_CHECK_THROW(fl_d.size() == fh_d.size());
+    GADGET_CHECK_THROW(fl_d.size() == fl_r.size());
+    GADGET_CHECK_THROW(fl_d.size() == fh_r.size());
+
+    fl_d_ = fl_d;
+    fh_d_ = fh_d;
+    fl_r_ = fl_r;
+    fh_r_ = fh_r;
+}
+
+template<typename T>
 void hoNDRedundantWavelet<T>::filter_d(const T* const in, size_t len_in, size_t stride_in, T* out_l, T* out_h, size_t stride_out)
 {
     try
@@ -215,18 +228,16 @@ void hoNDRedundantWavelet<T>::dwt1D(const T* const in, T* out, size_t RO, size_t
     {
         memcpy(out, in, sizeof(T)*RO);
 
-        size_t len = fl_d_.size();
-
-        if (buf_ro_.size() != RO) buf_ro_.resize(RO);
+        std::vector<T> buf_ro(RO);
 
         for (size_t n = 0; n < level; n++)
         {
             T* l = out;
             T* h = l + n * RO + RO;
 
-            this->filter_d(l, RO, 1, &buf_ro_[0], h, 1);
+            this->filter_d(l, RO, 1, &buf_ro[0], h, 1);
 
-            memcpy(out, &buf_ro_[0], sizeof(T)*RO);
+            memcpy(out, &buf_ro[0], sizeof(T)*RO);
         }
     }
     catch (...)
@@ -242,9 +253,7 @@ void hoNDRedundantWavelet<T>::idwt1D(const T* const in, T* out, size_t RO, size_
     {
         memcpy(out, in, sizeof(T)*RO);
 
-        size_t len = fl_r_.size();
-
-        if (buf_ro_.size() != RO) buf_ro_.resize(RO);
+        std::vector<T> buf_ro(RO);
 
         long long n;
         for (n = (long long)level - 1; n >= 0; n--)
@@ -252,8 +261,8 @@ void hoNDRedundantWavelet<T>::idwt1D(const T* const in, T* out, size_t RO, size_
             T* l = out;
             const T* const h = in + n * RO + RO;
 
-            this->filter_r(l, h, RO, 1, &buf_ro_[0], 1);
-            memcpy(out, &buf_ro_[0], sizeof(T)*RO);
+            this->filter_r(l, h, RO, 1, &buf_ro[0], 1);
+            memcpy(out, &buf_ro[0], sizeof(T)*RO);
         }
     }
     catch (...)
@@ -269,13 +278,7 @@ void hoNDRedundantWavelet<T>::dwt2D(const T* const in, T* out, size_t RO, size_t
     {
         memcpy(out, in, sizeof(T)*RO*E1);
 
-        size_t maxL = std::max(RO, E1);
-
-        size_t len = fl_d_.size();
-
-        if (buf_l_.size() != E1) buf_l_.resize(E1);
-        if (buf_h_.size() != E1) buf_h_.resize(E1);
-        if (buf_ro_.size() != RO) buf_ro_.resize(RO);
+        std::vector<T> buf_l(E1), buf_h(E1), buf_ro(RO);
 
         for (size_t n = 0; n<level; n++)
         {
@@ -285,14 +288,12 @@ void hoNDRedundantWavelet<T>::dwt2D(const T* const in, T* out, size_t RO, size_t
             // along E1
             for (ro = 0; ro < RO; ro++)
             {
-                this->filter_d(out + ro, E1, RO, &buf_l_[0], &buf_h_[0], 1);
+                this->filter_d(out + ro, E1, RO, &buf_l[0], &buf_h[0], 1);
 
-                size_t ii = ro;
                 for (e1 = 0; e1<E1; e1++)
                 {
-                    LH[ii] = buf_h_[e1];
-                    out[ii] = buf_l_[e1];
-                    ii += RO;
+                    out[ro + e1*RO] = buf_l[e1];
+                    LH[ro + e1*RO] = buf_h[e1];
                 }
             }
 
@@ -302,10 +303,11 @@ void hoNDRedundantWavelet<T>::dwt2D(const T* const in, T* out, size_t RO, size_t
             // along RO
             for (e1 = 0; e1<E1; e1++)
             {
-                this->filter_d(out + e1*RO, RO, 1, &buf_ro_[0], HL + e1*RO, 1);
-                memcpy(out + e1*RO, &buf_ro_[0], sizeof(T)*RO);
+                this->filter_d(out + e1*RO, RO, 1, &buf_ro[0], HL + e1*RO, 1);
+                memcpy(out + e1*RO, &buf_ro[0], sizeof(T)*RO);
 
-                this->filter_d(LH + e1*RO, RO, 1, LH + e1*RO, HH + e1*RO, 1);
+                this->filter_d(LH + e1*RO, RO, 1, &buf_ro[0], HH + e1*RO, 1);
+                memcpy(LH + e1*RO, &buf_ro[0], sizeof(T)*RO);
             }
         }
     }
@@ -322,12 +324,7 @@ void hoNDRedundantWavelet<T>::idwt2D(const T* const in, T* out, size_t RO, size_
     {
         memcpy(out, in, sizeof(T)*RO*E1);
 
-        size_t maxL = std::max(RO, E1);
-
-        size_t len = fl_r_.size();
-
-        if (buf_ro_.size() != RO) buf_ro_.resize(RO);
-        if (buf_e1_.size() != E1) buf_e1_.resize(E1);
+        std::vector<T> buf_ro(RO), buf_e1(E1);
 
         hoNDArray<T> tmp(RO*E1);
         T* pTmp = tmp.begin();
@@ -343,8 +340,8 @@ void hoNDRedundantWavelet<T>::idwt2D(const T* const in, T* out, size_t RO, size_
             // along RO
             for (e1 = 0; e1<E1; e1++)
             {
-                this->filter_r(out + e1*RO, HL + e1*RO, RO, 1, &buf_ro_[0], 1);
-                memcpy(out + e1*RO, &buf_ro_[0], sizeof(T)*RO);
+                this->filter_r(out + e1*RO, HL + e1*RO, RO, 1, &buf_ro[0], 1);
+                memcpy(out + e1*RO, &buf_ro[0], sizeof(T)*RO);
 
                 this->filter_r(LH + e1*RO, HH + e1*RO, RO, 1, pTmp + e1*RO, 1);
             }
@@ -352,11 +349,11 @@ void hoNDRedundantWavelet<T>::idwt2D(const T* const in, T* out, size_t RO, size_
             // along e1
             for (ro = 0; ro<RO; ro++)
             {
-                this->filter_r(out + ro, pTmp+ro, E1, RO, &buf_e1_[0], 1);
+                this->filter_r(out + ro, pTmp + ro, E1, RO, &buf_e1[0], 1);
 
                 for (e1 = 0; e1<E1; e1++)
                 {
-                    out[ro + e1*RO] = buf_e1_[e1];
+                    out[ro + e1*RO] = buf_e1[e1];
                 }
             }
         }
@@ -376,10 +373,6 @@ void hoNDRedundantWavelet<T>::dwt3D(const T* const in, T* out, size_t RO, size_t
 
         long long N2D = RO*E1;
         long long N3D = RO*E1*E2;
-
-        size_t maxL = std::max(std::max(RO, E1), E2);
-
-        size_t len = fl_d_.size();
 
         // process order E2, E1, RO
 
