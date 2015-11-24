@@ -3,7 +3,7 @@
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_linalg.h"
 #include "hoNDArray_utils.h"
-#include <strstream>
+#include <sstream>
 
 namespace Gadgetron{
 
@@ -112,7 +112,7 @@ void hoNDRedundantWavelet<T>::compute_wavelet_filter(const std::string& wav_name
         }
         else
         {
-            std::strstream ss;
+            std::stringstream ss;
             ss << "Unsupported wavelet name : " << wav_name << std::endl;
             GADGET_THROW(ss.str());
         }
