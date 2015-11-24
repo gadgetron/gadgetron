@@ -534,7 +534,7 @@ void hoNDRedundantWavelet<T>::idwt3D(const T* const in, T* out, size_t RO, size_
             // ------------------------------------------
 
             long long e2;
-#pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, lll, hll, lhl, hhl, llh, hlh, lhh, hhh, pLL, pHL, pLH, pHH) 
+#pragma omp parallel for private(e2) shared(RO, E1, E2, N2D, pLL, pHL, pLH, pHH) 
             for (e2 = 0; e2<(long long)E2; e2++)
             {
                 for (size_t e1 = 0; e1<E1; e1++)
