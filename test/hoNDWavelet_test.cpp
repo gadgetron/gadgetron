@@ -36,7 +36,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDHarrWaveletTest1D)
     hoNDArray< std::complex<TypeParam> > r, rr, diff;
 
     size_t WavDim = 1;
-    size_t level = 1;
+    size_t level = 3;
 
     wav.transform(this->Array, r, WavDim, level, true);
     wav.transform(r, rr, WavDim, level, false);
@@ -56,7 +56,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDHarrWaveletTest2D)
     hoNDArray< std::complex<TypeParam> > r, rr, diff;
 
     size_t WavDim = 2;
-    size_t level = 1;
+    size_t level = 2;
 
     wav.transform(this->Array, r, WavDim, level, true);
     wav.transform(r, rr, WavDim, level, false);
@@ -97,7 +97,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDRedundantWaveletTest1D)
     hoNDArray< std::complex<TypeParam> > r, rr, diff;
 
     size_t WavDim = 1;
-    size_t level = 1;
+    size_t level = 2;
 
     wav.transform(this->Array, r, WavDim, level, true);
     wav.transform(r, rr, WavDim, level, false);
@@ -118,7 +118,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDRedundantWaveletTest2D)
     hoNDArray< std::complex<TypeParam> > r, rr, diff;
 
     size_t WavDim = 2;
-    size_t level = 1;
+    size_t level = 3;
 
     wav.transform(this->Array, r, WavDim, level, true);
     wav.transform(r, rr, WavDim, level, false);
@@ -139,7 +139,7 @@ TYPED_TEST(hoNDWavelet_test, hoNDRedundantWaveletTest3D)
     hoNDArray< std::complex<TypeParam> > r, rr, diff;
 
     size_t WavDim = 3;
-    size_t level = 1;
+    size_t level = 2;
 
     wav.transform(this->Array, r, WavDim, level, true);
     wav.transform(r, rr, WavDim, level, false);
