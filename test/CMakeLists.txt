@@ -47,6 +47,7 @@ if ( CUDA_FOUND )
       hoNDArray_blas_test.cpp 
       hoNDArray_utils_test.cpp
       hoNDFFT_test.cpp
+      hoNDWavelet_test.cpp
       vector_td_test.cpp
       cuNDArray_elemwise_test.cpp 
       cuNDArray_operators_test.cpp 
