@@ -34,11 +34,11 @@ public:
 
     // perform the redundant haar wavelet forward transform
     // in : [RO E1 E2], out : [RO E1 E2 1+7*level]
-    bool dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level);
+    // bool dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level);
 
     // perform the redundant haar wavelet inverse transform
     // in : [RO E1 E2 1+7*level], out : [RO E1 E2]
-    bool idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level);
+    // bool idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level);
 
     virtual bool unitary() const { return true; }
 
@@ -197,7 +197,9 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
             {
                 hoNDArray<T> in(RO, E1, E2, pX+t*RO*E1*E2);
                 hoNDArray<T> out(RO, E1, E2, W, pY+t*RO*E1*E2*W);
-                this->dwtRedundantHaar(in, out, numOfWavLevels_);
+                // this->dwtRedundantHaar(in, out, numOfWavLevels_);
+                Gadgetron::hoNDHarrWavelet<T> wav;
+                wav.transform(in, out, 3, numOfWavLevels_, true);
             }
         }
         else
@@ -227,7 +229,9 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
                         hoNDArray<T> in_dwt(RO, E1, E2, forward_buf_.begin()+cha*RO*E1*E2);
                         hoNDArray<T> out(RO, E1, E2, W, pY+t*RO*E1*E2*W*CHA+cha*RO*E1*E2*W);
 
-                        this->dwtRedundantHaar(in_dwt, out, numOfWavLevels_);
+                        // this->dwtRedundantHaar(in_dwt, out, numOfWavLevels_);
+                        Gadgetron::hoNDHarrWavelet<T> wav;
+                        wav.transform(in_dwt, out, 3, numOfWavLevels_, true);
                     }
                 }
             }
@@ -287,7 +291,9 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
             {
                 hoNDArray<T> in(RO, E1, E2, W, pX+t*RO*E1*E2*W);
                 hoNDArray<T> out(RO, E1, E2, pY+t*RO*E1*E2);
-                this->idwtRedundantHaar(in, out, numOfWavLevels_);
+                // this->idwtRedundantHaar(in, out, numOfWavLevels_);
+                Gadgetron::hoNDHarrWavelet<T> wav;
+                wav.transform(in, out, 3, numOfWavLevels_, false);
             }
         }
         else
@@ -315,7 +321,9 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
                         hoNDArray<T> in(RO, E1, E2, W, pX+cha*RO*E1*E2*W);
                         hoNDArray<T> out_idwt(RO, E1, E2, adjoint_buf_.begin()+cha*RO*E1*E2);
 
-                        this->idwtRedundantHaar(in, out_idwt, numOfWavLevels_);
+                        // this->idwtRedundantHaar(in, out_idwt, numOfWavLevels_);
+                        Gadgetron::hoNDHarrWavelet<T> wav;
+                        wav.transform(in, out_idwt, 3, numOfWavLevels_, false);
                     }
 
                     Gadgetron::permute(&adjoint_buf_, &out, &dimOrder);
@@ -838,325 +846,325 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm
     return true;
 }
 
-template <typename T> 
-bool gtPlusWavelet3DOperator<T>::
-dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
-{
-    try
-    {
-        long long RO = (long long)in.get_size(0);
-        long long E1 = (long long)in.get_size(1);
-        long long E2 = (long long)in.get_size(2);
-
-        T* pOut = out.begin();
-        memcpy(pOut, in.begin(), sizeof(T)*RO*E1*E2);
-
-        long long N2D = RO*E1;
-        long long N3D = RO*E1*E2;
-
-        for (size_t n=0; n<level; n++)
-        {
-            T* lll = pOut;
-            T* llh = lll + n*7*N3D + N3D;
-            T* lhl = llh + N3D;
-            T* lhh = lhl + N3D;
-            T* hll = lhh + N3D;
-            T* hlh = hll + N3D;
-            T* hhl = hlh + N3D;
-            T* hhh = hhl + N3D;
-
-            long long e2;
-            #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, lll, llh)
-            for (e2=0; e2<E2; e2++)
-            {
-                long long ind3D = e2 * N2D;
-                for (long long ro=0; ro<RO; ro++)
-                {
-                    T v1 = lll[ro + ind3D];
-
-                    long long ind = ro + ind3D;
-                    for (long long e1=0; e1<E1-1; e1++)
-                    {
-                        llh[ind] = lll[ind] - lll[ind+RO];
-                        lll[ind] += lll[ind+RO];
-                        ind += RO;
-                    }
-
-                    llh[ind] = lll[ind] - v1;
-                    lll[ind] += v1;
-                }
-            }
-
-            this->scal( N3D, T(0.5), lll);
-            this->scal( N3D, T(0.5), llh );
-
-            #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, lll, llh, lhh, lhl)
-            for (e2=0; e2<E2; e2++)
-            {
-                long long ind3D = e2*N2D;
-                for (long long e1=0; e1<E1; e1++)
-                {
-                    T v1 = lll[e1*RO + ind3D];
-                    T v2 = llh[e1*RO + ind3D];
-
-                    long long ind = e1*RO + ind3D;
-                    for (long long ro=0; ro<RO-1; ro++)
-                    {
-                        lhh[ind] = llh[ind] - llh[ind + 1];
-                        llh[ind] += llh[ind + 1];
-
-                        lhl[ind] = lll[ind] - lll[ind + 1];
-                        lll[ind] += lll[ind + 1];
-
-                        ind++;
-                    }
-
-                    lhl[ind] = lll[ind] - v1;
-                    lll[ind] += v1;
-
-                    lhh[ind] = llh[ind] - v2;
-                    llh[ind] += v2;
-                }
-            }
-
-            #pragma omp parallel sections
-            {
-                #pragma omp section
-                this->scal( N3D, T(0.5), lll );
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), lhl );
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), llh );
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), lhh );
-            }
-
-            long long e1;
-            #pragma omp parallel for default(none) private(e1) shared(RO, E1, E2, N2D, lll, hll, lhl, hhl, llh, hlh, lhh, hhh)
-            for (e1=0; e1<E1; e1++)
-            {
-                for (long long ro=0; ro<RO; ro++)
-                {
-                    long long ind2D = e1*RO + ro;
-
-                    T v1 = lll[ind2D];
-                    T v2 = lhl[ind2D];
-                    T v3 = llh[ind2D];
-                    T v4 = lhh[ind2D];
-
-                    long long ind = ind2D;
-                    for (long long e2=0; e2<E2-1; e2++)
-                    {
-                        hll[ind] = lll[ind] - lll[ind + N2D];
-                        lll[ind] += lll[ind + N2D];
-
-                        hhl[ind] = lhl[ind] - lhl[ind + N2D];
-                        lhl[ind] += lhl[ind + N2D];
-
-                        hlh[ind] = llh[ind] - llh[ind + N2D];
-                        llh[ind] += llh[ind + N2D];
-
-                        hhh[ind] = lhh[ind] - lhh[ind + N2D];
-                        lhh[ind] += lhh[ind + N2D];
-
-                        ind += N2D;
-                    }
-
-                    if ( E2 > 1 )
-                    {
-                        hll[ind] = lll[ind] - v1;
-                        lll[ind] += v1;
-
-                        hhl[ind] = lhl[ind] - v2;
-                        lhl[ind] += v2;
-
-                        hlh[ind] = llh[ind] - v3;
-                        llh[ind] += v3;
-
-                        hhh[ind] = lhh[ind] - v4;
-                        lhh[ind] += v4;
-                    }
-                }
-            }
-
-            #pragma omp parallel sections
-            {
-                #pragma omp section
-                this->scal( N3D, T(0.5), lll);
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), hll);
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), lhl);
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), hhl);
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), llh);
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), hlh);
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), lhh);
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), hhh);
-            }
-        }
-    }
-    catch (...)
-    {
-        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
-        return false;
-    }
-    return true;
-}
-
-template <typename T> 
-bool gtPlusWavelet3DOperator<T>::
-idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
-{
-    try
-    {
-        long long RO = (long long)in.get_size(0);
-        long long E1 = (long long)in.get_size(1);
-        long long E2 = (long long)in.get_size(2);
-
-        T* pIn = const_cast<T*>(in.begin());
-        T* pOut = out.begin();
-        memcpy(pOut, in.begin(), sizeof(T)*RO*E1*E2);
-
-        long long N2D = RO*E1;
-        long long N3D = RO*E1*E2;
-
-        hoNDArray<T> LL(N3D);
-        T* pLL = LL.begin();
-
-        hoNDArray<T> HL(N3D);
-        T* pHL = HL.begin();
-
-        hoNDArray<T> LH(N3D);
-        T* pLH = LH.begin();
-
-        hoNDArray<T> HH(N3D);
-        T* pHH = HH.begin();
-
-        long long n;
-        for (n=(long long)level-1; n>=0; n--)
-        {
-            T* lll = pOut;
-            T* llh = pIn + n*7*N3D + N3D;
-            T* lhl = llh + N3D;
-            T* lhh = lhl + N3D;
-            T* hll = lhh + N3D;
-            T* hlh = hll + N3D;
-            T* hhl = hlh + N3D;
-            T* hhh = hhl + N3D;
-
-            long long e1;
-            #pragma omp parallel for default(none) private(e1) shared(RO, E1, E2, N2D, lll, hll, lhl, hhl, llh, hlh, lhh, hhh, pLL, pHL, pLH, pHH) 
-            for (e1=0; e1<E1; e1++)
-            {
-                for (long long ro=0; ro<RO; ro++)
-                {
-                    long long ind2D = e1*RO + ro;
-
-                    long long ind;
-                    for (long long e2=E2-1; e2>0; e2--)
-                    {
-                        ind = ind2D + e2*N2D;
-                        pLL[ind] = (lll[ind]+lll[ind-N2D]) + (hll[ind]-hll[ind-N2D]);
-                        pHL[ind] = (lhl[ind]+lhl[ind-N2D]) + (hhl[ind]-hhl[ind-N2D]);
-                        pLH[ind] = (llh[ind]+llh[ind-N2D]) + (hlh[ind]-hlh[ind-N2D]);
-                        pHH[ind] = (lhh[ind]+lhh[ind-N2D]) + (hhh[ind]-hhh[ind-N2D]);
-                    }
-
-                    if ( E2 > 1 )
-                    {
-                        ind = ind2D + (E2-1)*N2D;
-                        pLL[ind2D] = (lll[ind2D]+lll[ind]) + (hll[ind2D]-hll[ind]);
-                        pHL[ind2D] = (lhl[ind2D]+lhl[ind]) + (hhl[ind2D]-hhl[ind]);
-                        pLH[ind2D] = (llh[ind2D]+llh[ind]) + (hlh[ind2D]-hlh[ind]);
-                        pHH[ind2D] = (lhh[ind2D]+lhh[ind]) + (hhh[ind2D]-hhh[ind]);
-                    }
-                }
-            }
-
-            #pragma omp parallel sections
-            {
-                #pragma omp section
-                this->scal( N3D, T(0.5), pLL );
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), pHL );
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), pLH );
-
-                #pragma omp section
-                this->scal( N3D, T(0.5), pHH );
-            }
-
-            long long e2;
-            #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, pLL, pHL, pLH, pHH) 
-            for (e2=0; e2<(long long)E2; e2++)
-            {
-                long long ind3D = e2*N2D;
-                for (long long e1=0; e1<(long long)E1; e1++)
-                {
-                    long long ind = e1*RO + RO-1 + ind3D;
-
-                    T v1 = pLL[ind];
-                    T v2 = pLH[ind];
-
-                    for (long long ro=(long long)RO-1; ro>0; ro--)
-                    {
-                        pLL[ind] = (pLL[ind]+pLL[ind-1]) + (pHL[ind]-pHL[ind-1]);
-                        pLH[ind] = (pLH[ind]+pLH[ind-1]) + (pHH[ind]-pHH[ind-1]);
-                        ind--;
-                    }
-
-                    pLL[ind] = (pLL[ind]+v1) + (pHL[ind]-pHL[ind+RO-1]);
-                    pLH[ind] = (pLH[ind]+v2) + (pHH[ind]-pHH[ind+RO-1]);
-                }
-            }
-
-            this->scal( N3D, T(0.5), pLL );
-            this->scal( N3D, T(0.5), pLH );
-
-            #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, pLL,pLH, pOut) 
-            for (e2=0; e2<(long long)E2; e2++)
-            {
-                long long ind3D = e2*N2D;
-                for (long long ro=0; ro<(long long)RO; ro++)
-                {
-                    long long ind = (E1-1)*RO + ro + ind3D;
-                    for (long long e1=(long long)E1-1; e1>0; e1--)
-                    {
-                        pOut[ind] = (pLL[ind]+pLL[ind-RO]) + (pLH[ind]-pLH[ind-RO]);
-                        ind -= RO;
-                    }
-
-                    pOut[ind] = (pLL[ind]+pLL[ind+(E1-1)*RO]) + (pLH[ind]-pLH[ind+(E1-1)*RO]);
-                }
-            }
-
-            this->scal( N3D, T(0.5), pOut );
-        }
-    }
-    catch (...)
-    {
-        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
-        return false;
-    }
-    return true;
-}
+//template <typename T> 
+//bool gtPlusWavelet3DOperator<T>::
+//dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
+//{
+//    try
+//    {
+//        long long RO = (long long)in.get_size(0);
+//        long long E1 = (long long)in.get_size(1);
+//        long long E2 = (long long)in.get_size(2);
+//
+//        T* pOut = out.begin();
+//        memcpy(pOut, in.begin(), sizeof(T)*RO*E1*E2);
+//
+//        long long N2D = RO*E1;
+//        long long N3D = RO*E1*E2;
+//
+//        for (size_t n=0; n<level; n++)
+//        {
+//            T* lll = pOut;
+//            T* llh = lll + n*7*N3D + N3D;
+//            T* lhl = llh + N3D;
+//            T* lhh = lhl + N3D;
+//            T* hll = lhh + N3D;
+//            T* hlh = hll + N3D;
+//            T* hhl = hlh + N3D;
+//            T* hhh = hhl + N3D;
+//
+//            long long e2;
+//            #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, lll, llh)
+//            for (e2=0; e2<E2; e2++)
+//            {
+//                long long ind3D = e2 * N2D;
+//                for (long long ro=0; ro<RO; ro++)
+//                {
+//                    T v1 = lll[ro + ind3D];
+//
+//                    long long ind = ro + ind3D;
+//                    for (long long e1=0; e1<E1-1; e1++)
+//                    {
+//                        llh[ind] = lll[ind] - lll[ind+RO];
+//                        lll[ind] += lll[ind+RO];
+//                        ind += RO;
+//                    }
+//
+//                    llh[ind] = lll[ind] - v1;
+//                    lll[ind] += v1;
+//                }
+//            }
+//
+//            this->scal( N3D, T(0.5), lll);
+//            this->scal( N3D, T(0.5), llh );
+//
+//            #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, lll, llh, lhh, lhl)
+//            for (e2=0; e2<E2; e2++)
+//            {
+//                long long ind3D = e2*N2D;
+//                for (long long e1=0; e1<E1; e1++)
+//                {
+//                    T v1 = lll[e1*RO + ind3D];
+//                    T v2 = llh[e1*RO + ind3D];
+//
+//                    long long ind = e1*RO + ind3D;
+//                    for (long long ro=0; ro<RO-1; ro++)
+//                    {
+//                        lhh[ind] = llh[ind] - llh[ind + 1];
+//                        llh[ind] += llh[ind + 1];
+//
+//                        lhl[ind] = lll[ind] - lll[ind + 1];
+//                        lll[ind] += lll[ind + 1];
+//
+//                        ind++;
+//                    }
+//
+//                    lhl[ind] = lll[ind] - v1;
+//                    lll[ind] += v1;
+//
+//                    lhh[ind] = llh[ind] - v2;
+//                    llh[ind] += v2;
+//                }
+//            }
+//
+//            #pragma omp parallel sections
+//            {
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), lll );
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), lhl );
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), llh );
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), lhh );
+//            }
+//
+//            long long e1;
+//            #pragma omp parallel for default(none) private(e1) shared(RO, E1, E2, N2D, lll, hll, lhl, hhl, llh, hlh, lhh, hhh)
+//            for (e1=0; e1<E1; e1++)
+//            {
+//                for (long long ro=0; ro<RO; ro++)
+//                {
+//                    long long ind2D = e1*RO + ro;
+//
+//                    T v1 = lll[ind2D];
+//                    T v2 = lhl[ind2D];
+//                    T v3 = llh[ind2D];
+//                    T v4 = lhh[ind2D];
+//
+//                    long long ind = ind2D;
+//                    for (long long e2=0; e2<E2-1; e2++)
+//                    {
+//                        hll[ind] = lll[ind] - lll[ind + N2D];
+//                        lll[ind] += lll[ind + N2D];
+//
+//                        hhl[ind] = lhl[ind] - lhl[ind + N2D];
+//                        lhl[ind] += lhl[ind + N2D];
+//
+//                        hlh[ind] = llh[ind] - llh[ind + N2D];
+//                        llh[ind] += llh[ind + N2D];
+//
+//                        hhh[ind] = lhh[ind] - lhh[ind + N2D];
+//                        lhh[ind] += lhh[ind + N2D];
+//
+//                        ind += N2D;
+//                    }
+//
+//                    if ( E2 > 1 )
+//                    {
+//                        hll[ind] = lll[ind] - v1;
+//                        lll[ind] += v1;
+//
+//                        hhl[ind] = lhl[ind] - v2;
+//                        lhl[ind] += v2;
+//
+//                        hlh[ind] = llh[ind] - v3;
+//                        llh[ind] += v3;
+//
+//                        hhh[ind] = lhh[ind] - v4;
+//                        lhh[ind] += v4;
+//                    }
+//                }
+//            }
+//
+//            #pragma omp parallel sections
+//            {
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), lll);
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), hll);
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), lhl);
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), hhl);
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), llh);
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), hlh);
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), lhh);
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), hhh);
+//            }
+//        }
+//    }
+//    catch (...)
+//    {
+//        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
+//        return false;
+//    }
+//    return true;
+//}
+//
+//template <typename T> 
+//bool gtPlusWavelet3DOperator<T>::
+//idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
+//{
+//    try
+//    {
+//        long long RO = (long long)in.get_size(0);
+//        long long E1 = (long long)in.get_size(1);
+//        long long E2 = (long long)in.get_size(2);
+//
+//        T* pIn = const_cast<T*>(in.begin());
+//        T* pOut = out.begin();
+//        memcpy(pOut, in.begin(), sizeof(T)*RO*E1*E2);
+//
+//        long long N2D = RO*E1;
+//        long long N3D = RO*E1*E2;
+//
+//        hoNDArray<T> LL(N3D);
+//        T* pLL = LL.begin();
+//
+//        hoNDArray<T> HL(N3D);
+//        T* pHL = HL.begin();
+//
+//        hoNDArray<T> LH(N3D);
+//        T* pLH = LH.begin();
+//
+//        hoNDArray<T> HH(N3D);
+//        T* pHH = HH.begin();
+//
+//        long long n;
+//        for (n=(long long)level-1; n>=0; n--)
+//        {
+//            T* lll = pOut;
+//            T* llh = pIn + n*7*N3D + N3D;
+//            T* lhl = llh + N3D;
+//            T* lhh = lhl + N3D;
+//            T* hll = lhh + N3D;
+//            T* hlh = hll + N3D;
+//            T* hhl = hlh + N3D;
+//            T* hhh = hhl + N3D;
+//
+//            long long e1;
+//            #pragma omp parallel for default(none) private(e1) shared(RO, E1, E2, N2D, lll, hll, lhl, hhl, llh, hlh, lhh, hhh, pLL, pHL, pLH, pHH) 
+//            for (e1=0; e1<E1; e1++)
+//            {
+//                for (long long ro=0; ro<RO; ro++)
+//                {
+//                    long long ind2D = e1*RO + ro;
+//
+//                    long long ind;
+//                    for (long long e2=E2-1; e2>0; e2--)
+//                    {
+//                        ind = ind2D + e2*N2D;
+//                        pLL[ind] = (lll[ind]+lll[ind-N2D]) + (hll[ind]-hll[ind-N2D]);
+//                        pHL[ind] = (lhl[ind]+lhl[ind-N2D]) + (hhl[ind]-hhl[ind-N2D]);
+//                        pLH[ind] = (llh[ind]+llh[ind-N2D]) + (hlh[ind]-hlh[ind-N2D]);
+//                        pHH[ind] = (lhh[ind]+lhh[ind-N2D]) + (hhh[ind]-hhh[ind-N2D]);
+//                    }
+//
+//                    if ( E2 > 1 )
+//                    {
+//                        ind = ind2D + (E2-1)*N2D;
+//                        pLL[ind2D] = (lll[ind2D]+lll[ind]) + (hll[ind2D]-hll[ind]);
+//                        pHL[ind2D] = (lhl[ind2D]+lhl[ind]) + (hhl[ind2D]-hhl[ind]);
+//                        pLH[ind2D] = (llh[ind2D]+llh[ind]) + (hlh[ind2D]-hlh[ind]);
+//                        pHH[ind2D] = (lhh[ind2D]+lhh[ind]) + (hhh[ind2D]-hhh[ind]);
+//                    }
+//                }
+//            }
+//
+//            #pragma omp parallel sections
+//            {
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), pLL );
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), pHL );
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), pLH );
+//
+//                #pragma omp section
+//                this->scal( N3D, T(0.5), pHH );
+//            }
+//
+//            long long e2;
+//            #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, pLL, pHL, pLH, pHH) 
+//            for (e2=0; e2<(long long)E2; e2++)
+//            {
+//                long long ind3D = e2*N2D;
+//                for (long long e1=0; e1<(long long)E1; e1++)
+//                {
+//                    long long ind = e1*RO + RO-1 + ind3D;
+//
+//                    T v1 = pLL[ind];
+//                    T v2 = pLH[ind];
+//
+//                    for (long long ro=(long long)RO-1; ro>0; ro--)
+//                    {
+//                        pLL[ind] = (pLL[ind]+pLL[ind-1]) + (pHL[ind]-pHL[ind-1]);
+//                        pLH[ind] = (pLH[ind]+pLH[ind-1]) + (pHH[ind]-pHH[ind-1]);
+//                        ind--;
+//                    }
+//
+//                    pLL[ind] = (pLL[ind]+v1) + (pHL[ind]-pHL[ind+RO-1]);
+//                    pLH[ind] = (pLH[ind]+v2) + (pHH[ind]-pHH[ind+RO-1]);
+//                }
+//            }
+//
+//            this->scal( N3D, T(0.5), pLL );
+//            this->scal( N3D, T(0.5), pLH );
+//
+//            #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, pLL,pLH, pOut) 
+//            for (e2=0; e2<(long long)E2; e2++)
+//            {
+//                long long ind3D = e2*N2D;
+//                for (long long ro=0; ro<(long long)RO; ro++)
+//                {
+//                    long long ind = (E1-1)*RO + ro + ind3D;
+//                    for (long long e1=(long long)E1-1; e1>0; e1--)
+//                    {
+//                        pOut[ind] = (pLL[ind]+pLL[ind-RO]) + (pLH[ind]-pLH[ind-RO]);
+//                        ind -= RO;
+//                    }
+//
+//                    pOut[ind] = (pLL[ind]+pLL[ind+(E1-1)*RO]) + (pLH[ind]-pLH[ind+(E1-1)*RO]);
+//                }
+//            }
+//
+//            this->scal( N3D, T(0.5), pOut );
+//        }
+//    }
+//    catch (...)
+//    {
+//        GERROR_STREAM("Errors in gtPlusWavelet3DOperator<T>::idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
+//        return false;
+//    }
+//    return true;
+//}
 
 template <typename T> 
 bool gtPlusWavelet3DOperator<T>::

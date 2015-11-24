@@ -36,11 +36,11 @@ public:
 
     // perform the redundant haar wavelet forward transform
     // in : [RO E1], out : [RO E1 1+3*level]
-    bool dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level);
+    // bool dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level);
 
     // perform the redundant haar wavelet inverse transform
     // in : [RO E1 1+3*level], out : [RO E1]
-    bool idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level);
+    // bool idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level);
 
     virtual bool unitary() const { return true; }
 
@@ -132,7 +132,10 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
         {
             hoNDArray<T> in(RO, E1, pX+t*RO*E1);
             hoNDArray<T> out(RO, E1, W, pY+t*RO*E1*W);
-            this->dwtRedundantHaar(in, out, numOfWavLevels_);
+            // this->dwtRedundantHaar(in, out, numOfWavLevels_);
+
+            Gadgetron::hoNDHarrWavelet<T> wav;
+            wav.transform(in, out, 2, numOfWavLevels_, true);
         }
     }
     catch (...)
@@ -183,7 +186,10 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
         {
             hoNDArray<T> in(RO, E1, W, pX+t*RO*E1*W);
             hoNDArray<T> out(RO, E1, pY+t*RO*E1);
-            this->idwtRedundantHaar(in, out, numOfWavLevels_);
+            // this->idwtRedundantHaar(in, out, numOfWavLevels_);
+
+            Gadgetron::hoNDHarrWavelet<T> wav;
+            wav.transform(in, out, 2, numOfWavLevels_, false);
         }
     }
     catch (...)
@@ -194,172 +200,172 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
     return true;
 }
 
-template <typename T> 
-bool gtPlusWavelet2DOperator<T>::
-dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
-{
-    try
-    {
-        size_t RO = in.get_size(0);
-        size_t E1 = in.get_size(1);
-
-        T scaleFactor = 0.5;
-
-        T* pOut = out.begin();
-        memcpy(pOut, in.begin(), sizeof(T)*RO*E1);
-
-        for (size_t n=0; n<level; n++)
-        {
-            T* LH = pOut + (3*n+1)*RO*E1;
-
-            long long ro;
-            #pragma omp parallel for default(none) private(ro) shared(RO, E1, pOut, LH)
-            for (ro=0; ro<(long long)RO; ro++)
-            {
-                T v1 = pOut[ro];
-
-                long long ii=ro, e1;
-                for (e1=0; e1<(long long)E1-1; e1++)
-                {
-                    LH[ii] = pOut[ii] - pOut[ii+RO];
-                    pOut[ii] += pOut[ii+RO];
-                    ii+=RO;
-                }
-
-                LH[ii] = pOut[ii] - v1;
-                pOut[ii] += v1;
-            }
-
-            this->scal( RO*E1, scaleFactor, pOut );
-            this->scal( RO*E1, scaleFactor, LH );
-
-            T* HL = LH + RO*E1;
-            T* HH = HL + RO*E1;
-
-            long long e1;
-            #pragma omp parallel for default(none) private(e1) shared(RO, E1, pOut, LH, HL, HH)
-            for (e1=0; e1<(long long)E1; e1++)
-            {
-                T v1 = pOut[e1*RO];
-                T v2 = LH[e1*RO];
-
-                size_t ii = e1*RO;
-                for (long long ro=0; ro<(long long)RO-1; ro++)
-                {
-                    HH[ii] = LH[ii] - LH[ii+1];
-                    LH[ii] += LH[ii+1];
-
-                    HL[ii] = pOut[ii] - pOut[ii+1];
-                    pOut[ii] += pOut[ii+1];
-
-                    ii++;
-                }
-
-                HH[ii] = LH[ii] - v2;
-                LH[ii] += v2;
-
-                HL[ii] = pOut[ii] - v1;
-                pOut[ii] += v1;
-            }
-
-            this->scal( RO*E1, scaleFactor, pOut);
-            this->scal( RO*E1, scaleFactor, LH);
-            this->scal( RO*E1, scaleFactor, HL);
-            this->scal( RO*E1, scaleFactor, HH);
-        }
-    }
-    catch (...)
-    {
-        GERROR_STREAM("Errors in gtPlusWavelet2DOperator<T>::dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
-        return false;
-    }
-    return true;
-}
-
-template <typename T> 
-bool gtPlusWavelet2DOperator<T>::
-idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
-{
-    try
-    {
-        size_t RO = in.get_size(0);
-        size_t E1 = in.get_size(1);
-
-        T* pIn = const_cast<T*>(in.begin());
-        T* pOut = out.begin();
-        memcpy(pOut, in.begin(), sizeof(T)*RO*E1);
-
-        hoNDArray<T> tmp(RO*E1);
-        T* pTmp = tmp.begin();
-
-        T scaleFactor = 0.5;
-
-        long long n;
-        for (n=(long long)level-1; n>=0; n--)
-        {
-            T* LH = pIn + (3*n+1)*RO*E1;
-            T* HL = LH + RO*E1;
-            T* HH = HL + RO*E1;
-
-            long long e1;
-            #pragma omp parallel for default(none) private(e1) shared(RO, E1, pOut, LH, HL, HH, pTmp)
-            for (e1=0; e1<(long long)E1; e1++)
-            {
-                size_t ii = e1*RO+RO-1;
-
-                T vLL = pOut[ii];
-                T vLH = LH[ii];
-                T vHL = HL[ii];
-                T vHH = HH[ii];
-
-                for (long long ro=RO-1; ro>0; ro--)
-                {
-                    // ii = e1*RO + ro;
-                    pOut[ii] += pOut[ii-1] + HL[ii] - HL[ii-1];
-                    pTmp[ii] = LH[ii] + LH[ii-1] + HH[ii] - HH[ii-1];
-
-                    ii--;
-                }
-
-                // ii -= 1;
-                /*pOut[ii] += HL[ii] + vLL - vLH;
-                pTmp [ii] = LH[ii] + HH[ii] + vHL - vHH;*/
-
-                pOut[ii] += vLL + HL[ii] - vHL;
-                pTmp [ii] = LH[ii] + vLH + HH[ii] - vHH;
-            }
-
-            this->scal( RO*E1, scaleFactor, pOut );
-            this->scal( RO*E1, scaleFactor, pTmp );
-
-            long long ro;
-            #pragma omp parallel for default(none) private(ro) shared(RO, E1, pOut, pTmp)
-            for (ro=0; ro<(long long)RO; ro++)
-            {
-                size_t ii = (E1-1)*RO+ro;
-                T vLL = pOut[ii];
-                T vLH = pTmp [ii];
-
-                for (long long e1=E1-1; e1>0; e1--)
-                {
-                    // ii = e1*RO + ro;
-                    pOut[ii] += pTmp[ii] + pOut[ii-RO] - pTmp[ii-RO];
-                    ii -= RO;
-                }
-
-                pOut[ro] += pTmp[ro] + vLL - vLH;
-            }
-
-            this->scal( RO*E1, scaleFactor, pOut );
-        }
-    }
-    catch (...)
-    {
-        GERROR_STREAM("Errors in gtPlusWavelet2DOperator<T>::idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
-        return false;
-    }
-    return true;
-}
+//template <typename T> 
+//bool gtPlusWavelet2DOperator<T>::
+//dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
+//{
+//    try
+//    {
+//        size_t RO = in.get_size(0);
+//        size_t E1 = in.get_size(1);
+//
+//        T scaleFactor = 0.5;
+//
+//        T* pOut = out.begin();
+//        memcpy(pOut, in.begin(), sizeof(T)*RO*E1);
+//
+//        for (size_t n=0; n<level; n++)
+//        {
+//            T* LH = pOut + (3*n+1)*RO*E1;
+//
+//            long long ro;
+//            #pragma omp parallel for default(none) private(ro) shared(RO, E1, pOut, LH)
+//            for (ro=0; ro<(long long)RO; ro++)
+//            {
+//                T v1 = pOut[ro];
+//
+//                long long ii=ro, e1;
+//                for (e1=0; e1<(long long)E1-1; e1++)
+//                {
+//                    LH[ii] = pOut[ii] - pOut[ii+RO];
+//                    pOut[ii] += pOut[ii+RO];
+//                    ii+=RO;
+//                }
+//
+//                LH[ii] = pOut[ii] - v1;
+//                pOut[ii] += v1;
+//            }
+//
+//            this->scal( RO*E1, scaleFactor, pOut );
+//            this->scal( RO*E1, scaleFactor, LH );
+//
+//            T* HL = LH + RO*E1;
+//            T* HH = HL + RO*E1;
+//
+//            long long e1;
+//            #pragma omp parallel for default(none) private(e1) shared(RO, E1, pOut, LH, HL, HH)
+//            for (e1=0; e1<(long long)E1; e1++)
+//            {
+//                T v1 = pOut[e1*RO];
+//                T v2 = LH[e1*RO];
+//
+//                size_t ii = e1*RO;
+//                for (long long ro=0; ro<(long long)RO-1; ro++)
+//                {
+//                    HH[ii] = LH[ii] - LH[ii+1];
+//                    LH[ii] += LH[ii+1];
+//
+//                    HL[ii] = pOut[ii] - pOut[ii+1];
+//                    pOut[ii] += pOut[ii+1];
+//
+//                    ii++;
+//                }
+//
+//                HH[ii] = LH[ii] - v2;
+//                LH[ii] += v2;
+//
+//                HL[ii] = pOut[ii] - v1;
+//                pOut[ii] += v1;
+//            }
+//
+//            this->scal( RO*E1, scaleFactor, pOut);
+//            this->scal( RO*E1, scaleFactor, LH);
+//            this->scal( RO*E1, scaleFactor, HL);
+//            this->scal( RO*E1, scaleFactor, HH);
+//        }
+//    }
+//    catch (...)
+//    {
+//        GERROR_STREAM("Errors in gtPlusWavelet2DOperator<T>::dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
+//        return false;
+//    }
+//    return true;
+//}
+//
+//template <typename T> 
+//bool gtPlusWavelet2DOperator<T>::
+//idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
+//{
+//    try
+//    {
+//        size_t RO = in.get_size(0);
+//        size_t E1 = in.get_size(1);
+//
+//        T* pIn = const_cast<T*>(in.begin());
+//        T* pOut = out.begin();
+//        memcpy(pOut, in.begin(), sizeof(T)*RO*E1);
+//
+//        hoNDArray<T> tmp(RO*E1);
+//        T* pTmp = tmp.begin();
+//
+//        T scaleFactor = 0.5;
+//
+//        long long n;
+//        for (n=(long long)level-1; n>=0; n--)
+//        {
+//            T* LH = pIn + (3*n+1)*RO*E1;
+//            T* HL = LH + RO*E1;
+//            T* HH = HL + RO*E1;
+//
+//            long long e1;
+//            #pragma omp parallel for default(none) private(e1) shared(RO, E1, pOut, LH, HL, HH, pTmp)
+//            for (e1=0; e1<(long long)E1; e1++)
+//            {
+//                size_t ii = e1*RO+RO-1;
+//
+//                T vLL = pOut[ii];
+//                T vLH = LH[ii];
+//                T vHL = HL[ii];
+//                T vHH = HH[ii];
+//
+//                for (long long ro=RO-1; ro>0; ro--)
+//                {
+//                    // ii = e1*RO + ro;
+//                    pOut[ii] += pOut[ii-1] + HL[ii] - HL[ii-1];
+//                    pTmp[ii] = LH[ii] + LH[ii-1] + HH[ii] - HH[ii-1];
+//
+//                    ii--;
+//                }
+//
+//                // ii -= 1;
+//                /*pOut[ii] += HL[ii] + vLL - vLH;
+//                pTmp [ii] = LH[ii] + HH[ii] + vHL - vHH;*/
+//
+//                pOut[ii] += vLL + HL[ii] - vHL;
+//                pTmp [ii] = LH[ii] + vLH + HH[ii] - vHH;
+//            }
+//
+//            this->scal( RO*E1, scaleFactor, pOut );
+//            this->scal( RO*E1, scaleFactor, pTmp );
+//
+//            long long ro;
+//            #pragma omp parallel for default(none) private(ro) shared(RO, E1, pOut, pTmp)
+//            for (ro=0; ro<(long long)RO; ro++)
+//            {
+//                size_t ii = (E1-1)*RO+ro;
+//                T vLL = pOut[ii];
+//                T vLH = pTmp [ii];
+//
+//                for (long long e1=E1-1; e1>0; e1--)
+//                {
+//                    // ii = e1*RO + ro;
+//                    pOut[ii] += pTmp[ii] + pOut[ii-RO] - pTmp[ii-RO];
+//                    ii -= RO;
+//                }
+//
+//                pOut[ro] += pTmp[ro] + vLL - vLH;
+//            }
+//
+//            this->scal( RO*E1, scaleFactor, pOut );
+//        }
+//    }
+//    catch (...)
+//    {
+//        GERROR_STREAM("Errors in gtPlusWavelet2DOperator<T>::idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level) ... ");
+//        return false;
+//    }
+//    return true;
+//}
 
 template <typename T> 
 void gtPlusWavelet2DOperator<T>::printInfo(std::ostream& os)

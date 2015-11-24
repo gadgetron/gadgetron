@@ -6,6 +6,7 @@
 #pragma once
 
 #include "gtPlusOperator.h"
+#include "hoNDHarrWavelet.h"
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -82,11 +83,11 @@ public:
     // compute the obj on the assembled kspace
     virtual bool objTask(const hoNDArray<T>& x, T& obj);
 
-    // utility function
-    void scal(size_t N, float a, float* x);
-    void scal(size_t N, double a, double* x);
-    void scal(size_t N, std::complex<float> a, std::complex<float>* x);
-    void scal(size_t N, std::complex<double> a, std::complex<double>* x);
+    //// utility function
+    //void scal(size_t N, float a, float* x);
+    //void scal(size_t N, double a, double* x);
+    //void scal(size_t N, std::complex<float> a, std::complex<float>* x);
+    //void scal(size_t N, std::complex<double> a, std::complex<double>* x);
 
     using BaseClass::acquired_points_;
     using BaseClass::acquired_points_indicator_;
@@ -125,67 +126,67 @@ gtPlusWaveletOperator<T>::~gtPlusWaveletOperator()
 {
 }
 
-template <typename T> 
-void gtPlusWaveletOperator<T>::scal(size_t N, float a, float* x)
-{
-    long long n;
-    #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>64*1024)
-    for (n = 0; n < (long long)N; n++)
-    {
-        x[n] *= a;
-    }
-}
-
-template <typename T> 
-void gtPlusWaveletOperator<T>::scal(size_t N, double a, double* x)
-{
-    long long n;
-    #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>64*1024)
-    for (n = 0; n < (long long)N; n++)
-    {
-        x[n] *= a;
-    }
-}
-
-template <typename T> 
-void gtPlusWaveletOperator<T>::scal(size_t N,  std::complex<float>  a,  std::complex<float> * x)
-{
-    long long n;
-
-    #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>64*1024)
-    for (n = 0; n < (long long)N; n++)
-    {
-        const  std::complex<float> & c = x[n];
-        const float re = c.real();
-        const float im = c.imag();
-
-        const float ar = a.real();
-        const float ai = a.imag();
-
-        reinterpret_cast<float(&)[2]>(x[n])[0] = re*ar-im*ai;
-        reinterpret_cast<float(&)[2]>(x[n])[1] = re*ai+im*ar;
-    }
-}
-
-template <typename T> 
-void gtPlusWaveletOperator<T>::scal(size_t N,  std::complex<double>  a,  std::complex<double> * x)
-{
-    long long n;
-
-    #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>64*1024)
-    for (n = 0; n < (long long)N; n++)
-    {
-        const  std::complex<double> & c = x[n];
-        const double re = c.real();
-        const double im = c.imag();
-
-        const double ar = a.real();
-        const double ai = a.imag();
-
-        reinterpret_cast<double(&)[2]>(x[n])[0] = re*ar-im*ai;
-        reinterpret_cast<double(&)[2]>(x[n])[1] = re*ai+im*ar;
-    }
-}
+//template <typename T> 
+//void gtPlusWaveletOperator<T>::scal(size_t N, float a, float* x)
+//{
+//    long long n;
+//    #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>64*1024)
+//    for (n = 0; n < (long long)N; n++)
+//    {
+//        x[n] *= a;
+//    }
+//}
+//
+//template <typename T> 
+//void gtPlusWaveletOperator<T>::scal(size_t N, double a, double* x)
+//{
+//    long long n;
+//    #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>64*1024)
+//    for (n = 0; n < (long long)N; n++)
+//    {
+//        x[n] *= a;
+//    }
+//}
+//
+//template <typename T> 
+//void gtPlusWaveletOperator<T>::scal(size_t N,  std::complex<float>  a,  std::complex<float> * x)
+//{
+//    long long n;
+//
+//    #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>64*1024)
+//    for (n = 0; n < (long long)N; n++)
+//    {
+//        const  std::complex<float> & c = x[n];
+//        const float re = c.real();
+//        const float im = c.imag();
+//
+//        const float ar = a.real();
+//        const float ai = a.imag();
+//
+//        reinterpret_cast<float(&)[2]>(x[n])[0] = re*ar-im*ai;
+//        reinterpret_cast<float(&)[2]>(x[n])[1] = re*ai+im*ar;
+//    }
+//}
+//
+//template <typename T> 
+//void gtPlusWaveletOperator<T>::scal(size_t N,  std::complex<double>  a,  std::complex<double> * x)
+//{
+//    long long n;
+//
+//    #pragma omp parallel for default(none) private(n) shared(N, x, a) if (N>64*1024)
+//    for (n = 0; n < (long long)N; n++)
+//    {
+//        const  std::complex<double> & c = x[n];
+//        const double re = c.real();
+//        const double im = c.imag();
+//
+//        const double ar = a.real();
+//        const double ai = a.imag();
+//
+//        reinterpret_cast<double(&)[2]>(x[n])[0] = re*ar-im*ai;
+//        reinterpret_cast<double(&)[2]>(x[n])[1] = re*ai+im*ar;
+//    }
+//}
 
 template <typename T> 
 bool gtPlusWaveletOperator<T>::

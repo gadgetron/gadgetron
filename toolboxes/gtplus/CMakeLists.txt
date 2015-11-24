@@ -31,6 +31,7 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
         ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
         ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/wavelet/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/core
         ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -208,6 +209,7 @@ if ( HAS_64_BIT )
                           gadgetron_toolbox_cpucore_math 
                           gadgetron_toolbox_cpufft
                           gadgetron_toolbox_cpuklt
+                          gadgetron_toolbox_cpuwavelet
                           gadgetron_toolbox_mri_core
                           gadgetron_toolbox_gtplus_io 
                           gadgetron_toolbox_cpucore_math 
