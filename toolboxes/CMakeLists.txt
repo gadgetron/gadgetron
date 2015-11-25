@@ -24,7 +24,6 @@ if (FFTW3_FOUND)
 endif()
 
 add_subdirectory(klt)
-add_subdirectory(wavelet)
 add_subdirectory(nfft)
 add_subdirectory(dwt)
 add_subdirectory(registration)

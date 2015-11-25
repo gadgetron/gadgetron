@@ -1,8 +1,5 @@
 
 #include "hoNDRedundantWavelet.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_linalg.h"
-#include "hoNDArray_utils.h"
 #include <sstream>
 
 namespace Gadgetron{
@@ -603,11 +600,11 @@ void hoNDRedundantWavelet<T>::idwt3D(const T* const in, T* out, size_t RO, size_
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUWAVELET hoNDRedundantWavelet<float>;
-template class EXPORTCPUWAVELET hoNDRedundantWavelet<double>;
-template class EXPORTCPUWAVELET hoNDRedundantWavelet< std::complex<float> >;
-template class EXPORTCPUWAVELET hoNDRedundantWavelet< std::complex<double> >;
-template class EXPORTCPUWAVELET hoNDRedundantWavelet< complext<float> >;
-template class EXPORTCPUWAVELET hoNDRedundantWavelet< complext<double> >;
+template class EXPORTCPUDWT hoNDRedundantWavelet<float>;
+template class EXPORTCPUDWT hoNDRedundantWavelet<double>;
+template class EXPORTCPUDWT hoNDRedundantWavelet< std::complex<float> >;
+template class EXPORTCPUDWT hoNDRedundantWavelet< std::complex<double> >;
+template class EXPORTCPUDWT hoNDRedundantWavelet< complext<float> >;
+template class EXPORTCPUDWT hoNDRedundantWavelet< complext<double> >;
 
 }

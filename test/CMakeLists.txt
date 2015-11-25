@@ -11,7 +11,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/wavelet/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/dwt/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
@@ -31,7 +31,7 @@ link_libraries(
     gadgetron_toolbox_cpucore 
     gadgetron_toolbox_cpucore_math
     gadgetron_toolbox_cpufft
-    gadgetron_toolbox_cpuwavelet
+    gadgetron_toolbox_cpudwt
     ${BOOST_LIBRARIES}
     ${GTEST_LIBRARIES} 
     ${ARMADILLO_LIBRARIES}

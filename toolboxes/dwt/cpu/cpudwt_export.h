@@ -7,13 +7,13 @@
 #define CPUWAVELET_EXPORT_H_
 
 #if defined (WIN32)
-    #if defined (__BUILD_GADGETRON_CPUWAVELET__) || defined (cpuwavelet_EXPORTS)
-        #define EXPORTCPUWAVELET __declspec(dllexport)
+    #if defined (__BUILD_GADGETRON_CPUDWT__) || defined (cpudwt_EXPORTS)
+        #define EXPORTCPUDWT __declspec(dllexport)
     #else
-        #define EXPORTCPUWAVELET __declspec(dllimport)
+        #define EXPORTCPUDWT __declspec(dllimport)
     #endif
 #else
-#define EXPORTCPUWAVELET
+#define EXPORTCPUDWT
 #endif
 
 #endif // CPUWAVELET_EXPORT_H_

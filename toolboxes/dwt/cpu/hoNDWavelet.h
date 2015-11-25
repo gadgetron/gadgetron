@@ -7,7 +7,7 @@
 #define hoNDWavelet_H
 
 #include "hoNDArray.h"
-#include "cpuwavelet_export.h"
+#include "cpudwt_export.h"
 
 #ifdef USE_OMP
     #include "omp.h"
@@ -16,7 +16,7 @@
 namespace Gadgetron{
 
     /// support wavelet transform of 1D, 2D and 3D
-    template <typename T> class EXPORTCPUWAVELET hoNDWavelet
+    template <typename T> class EXPORTCPUDWT hoNDWavelet
     {
     public:
 

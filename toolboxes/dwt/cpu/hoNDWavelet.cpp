@@ -1,8 +1,5 @@
 
 #include "hoNDWavelet.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_linalg.h"
-#include "hoNDArray_utils.h"
 
 namespace Gadgetron{
 
@@ -160,11 +157,11 @@ void hoNDWavelet<T>::transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUWAVELET hoNDWavelet<float>;
-template class EXPORTCPUWAVELET hoNDWavelet<double>;
-template class EXPORTCPUWAVELET hoNDWavelet< std::complex<float> >;
-template class EXPORTCPUWAVELET hoNDWavelet< std::complex<double> >;
-template class EXPORTCPUWAVELET hoNDWavelet< complext<float> >;
-template class EXPORTCPUWAVELET hoNDWavelet< complext<double> >;
+template class EXPORTCPUDWT hoNDWavelet<float>;
+template class EXPORTCPUDWT hoNDWavelet<double>;
+template class EXPORTCPUDWT hoNDWavelet< std::complex<float> >;
+template class EXPORTCPUDWT hoNDWavelet< std::complex<double> >;
+template class EXPORTCPUDWT hoNDWavelet< complext<float> >;
+template class EXPORTCPUDWT hoNDWavelet< complext<double> >;
 
 }

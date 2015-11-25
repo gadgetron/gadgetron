@@ -1,8 +1,5 @@
 
 #include "hoNDHarrWavelet.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_linalg.h"
-#include "hoNDArray_utils.h"
 
 namespace Gadgetron{
 
@@ -581,11 +578,11 @@ void hoNDHarrWavelet<T>::idwt3D(const T* const in, T* out, size_t RO, size_t E1,
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCPUWAVELET hoNDHarrWavelet<float>;
-template class EXPORTCPUWAVELET hoNDHarrWavelet<double>;
-template class EXPORTCPUWAVELET hoNDHarrWavelet< std::complex<float> >;
-template class EXPORTCPUWAVELET hoNDHarrWavelet< std::complex<double> >;
-template class EXPORTCPUWAVELET hoNDHarrWavelet< complext<float> >;
-template class EXPORTCPUWAVELET hoNDHarrWavelet< complext<double> >;
+template class EXPORTCPUDWT hoNDHarrWavelet<float>;
+template class EXPORTCPUDWT hoNDHarrWavelet<double>;
+template class EXPORTCPUDWT hoNDHarrWavelet< std::complex<float> >;
+template class EXPORTCPUDWT hoNDHarrWavelet< std::complex<double> >;
+template class EXPORTCPUDWT hoNDHarrWavelet< complext<float> >;
+template class EXPORTCPUDWT hoNDHarrWavelet< complext<double> >;
 
 }
