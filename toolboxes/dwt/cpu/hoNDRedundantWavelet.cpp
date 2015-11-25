@@ -138,226 +138,184 @@ void hoNDRedundantWavelet<T>::set_wavelet_filter(const std::vector<T>& fl_d, con
 template<typename T>
 void hoNDRedundantWavelet<T>::filter_d(const T* const in, size_t len_in, size_t stride_in, T* out_l, T* out_h, size_t stride_out)
 {
-    try
+    size_t len = fl_d_.size();
+
+    size_t n, m;
+    for (n = 0; n < len_in-len+1; n++)
     {
-        size_t len = fl_d_.size();
-
-        size_t n, m;
-        for (n = 0; n < len_in-len+1; n++)
+        T vl = 0;
+        T vh = 0;
+        for (m = 0; m < len; m++)
         {
-            T vl = 0;
-            T vh = 0;
-            for (m = 0; m < len; m++)
-            {
-                vl += in[(n + m)*stride_in] * fl_d_[len - m - 1];
-                vh += in[(n + m)*stride_in] * fh_d_[len - m - 1];
-            }
-
-            out_l[n*stride_out] = vl;
-            out_h[n*stride_out] = vh;
+            vl += in[(n + m)*stride_in] * fl_d_[len - m - 1];
+            vh += in[(n + m)*stride_in] * fh_d_[len - m - 1];
         }
 
-        for (n = len_in - len + 1; n < len_in; n++)
-        {
-            T vl = 0;
-            T vh = 0;
-            for (m = 0; m < len; m++)
-            {
-                size_t k = n + m;
-                if (k >= len_in) k -= len_in;
-                vl += in[k*stride_in] * fl_d_[len - m - 1];
-                vh += in[k*stride_in] * fh_d_[len - m - 1];
-            }
-
-            out_l[n*stride_out] = vl;
-            out_h[n*stride_out] = vh;
-        }
+        out_l[n*stride_out] = vl;
+        out_h[n*stride_out] = vh;
     }
-    catch (...)
+
+    for (n = len_in - len + 1; n < len_in; n++)
     {
-        GADGET_THROW("Errors in hoNDWavelet<T>::filter_d(...) ... ");
+        T vl = 0;
+        T vh = 0;
+        for (m = 0; m < len; m++)
+        {
+            size_t k = n + m;
+            if (k >= len_in) k -= len_in;
+            vl += in[k*stride_in] * fl_d_[len - m - 1];
+            vh += in[k*stride_in] * fh_d_[len - m - 1];
+        }
+
+        out_l[n*stride_out] = vl;
+        out_h[n*stride_out] = vh;
     }
 }
 
 template<typename T>
 void hoNDRedundantWavelet<T>::filter_r(const T* const in_l, const T* const in_h, size_t len_in, size_t stride_in, T* out, size_t stride_out)
 {
-    try
+    long long len = fl_r_.size();
+
+    long long n, m;
+    for (n = len-1; n < (long long)len_in; n++)
     {
-        long long len = fl_r_.size();
-
-        long long n, m;
-        for (n = len-1; n < (long long)len_in; n++)
+        T v = 0;
+        for (m = 0; m < len; m++)
         {
-            T v = 0;
-            for (m = 0; m < len; m++)
-            {
-                size_t k = (n + m + 1 - len)*stride_in;
-                v += (in_l[k] * fl_r_[len - m - 1]) + (in_h[k] * fh_r_[len - m - 1]);
-            }
-
-            out[n*stride_out] = v;
+            size_t k = (n + m + 1 - len)*stride_in;
+            v += (in_l[k] * fl_r_[len - m - 1]) + (in_h[k] * fh_r_[len - m - 1]);
         }
 
-        for (n = 0; n < len -1; n++)
-        {
-            T v = 0;
-            for (m = 0; m < len; m++)
-            {
-                long long k = (n + m + 1 - len);
-                if (k < 0) k += len_in;
-                v += (in_l[k*stride_in] * fl_r_[len - m - 1]) + (in_h[k*stride_in] * fh_r_[len - m - 1]);
-            }
-
-            out[n*stride_out] = v;
-        }
+        out[n*stride_out] = v;
     }
-    catch (...)
+
+    for (n = 0; n < len -1; n++)
     {
-        GADGET_THROW("Errors in hoNDWavelet<T>::filter_r(...) ... ");
+        T v = 0;
+        for (m = 0; m < len; m++)
+        {
+            long long k = (n + m + 1 - len);
+            if (k < 0) k += len_in;
+            v += (in_l[k*stride_in] * fl_r_[len - m - 1]) + (in_h[k*stride_in] * fh_r_[len - m - 1]);
+        }
+
+        out[n*stride_out] = v;
     }
 }
 
 template<typename T>
 void hoNDRedundantWavelet<T>::dwt1D(const T* const in, T* out, size_t RO, size_t level)
 {
-    try
+    memcpy(out, in, sizeof(T)*RO);
+
+    std::vector<T> buf_ro(RO);
+
+    for (size_t n = 0; n < level; n++)
     {
-        memcpy(out, in, sizeof(T)*RO);
+        T* l = out;
+        T* h = l + n * RO + RO;
 
-        std::vector<T> buf_ro(RO);
+        this->filter_d(l, RO, 1, &buf_ro[0], h, 1);
 
-        for (size_t n = 0; n < level; n++)
-        {
-            T* l = out;
-            T* h = l + n * RO + RO;
-
-            this->filter_d(l, RO, 1, &buf_ro[0], h, 1);
-
-            memcpy(out, &buf_ro[0], sizeof(T)*RO);
-        }
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in hoNDWavelet<T>::dwt1D(...) ... ");
+        memcpy(out, &buf_ro[0], sizeof(T)*RO);
     }
 }
 
 template<typename T>
 void hoNDRedundantWavelet<T>::idwt1D(const T* const in, T* out, size_t RO, size_t level)
 {
-    try
+    memcpy(out, in, sizeof(T)*RO);
+
+    std::vector<T> buf_ro(RO);
+
+    long long n;
+    for (n = (long long)level - 1; n >= 0; n--)
     {
-        memcpy(out, in, sizeof(T)*RO);
+        T* l = out;
+        const T* const h = in + n * RO + RO;
 
-        std::vector<T> buf_ro(RO);
-
-        long long n;
-        for (n = (long long)level - 1; n >= 0; n--)
-        {
-            T* l = out;
-            const T* const h = in + n * RO + RO;
-
-            this->filter_r(l, h, RO, 1, &buf_ro[0], 1);
-            memcpy(out, &buf_ro[0], sizeof(T)*RO);
-        }
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in hoNDWavelet<T>::idwt1D(...) ... ");
+        this->filter_r(l, h, RO, 1, &buf_ro[0], 1);
+        memcpy(out, &buf_ro[0], sizeof(T)*RO);
     }
 }
 
 template<typename T>
 void hoNDRedundantWavelet<T>::dwt2D(const T* const in, T* out, size_t RO, size_t E1, size_t level)
 {
-    try
+    memcpy(out, in, sizeof(T)*RO*E1);
+
+    std::vector<T> buf_l(E1), buf_h(E1), buf_ro(RO);
+
+    for (size_t n = 0; n<level; n++)
     {
-        memcpy(out, in, sizeof(T)*RO*E1);
+        T* LH = out + (3 * n + 1)*RO*E1;
 
-        std::vector<T> buf_l(E1), buf_h(E1), buf_ro(RO);
-
-        for (size_t n = 0; n<level; n++)
+        size_t ro, e1;
+        // along E1
+        for (ro = 0; ro < RO; ro++)
         {
-            T* LH = out + (3 * n + 1)*RO*E1;
+            this->filter_d(out + ro, E1, RO, &buf_l[0], &buf_h[0], 1);
 
-            size_t ro, e1;
-            // along E1
-            for (ro = 0; ro < RO; ro++)
-            {
-                this->filter_d(out + ro, E1, RO, &buf_l[0], &buf_h[0], 1);
-
-                for (e1 = 0; e1<E1; e1++)
-                {
-                    out[ro + e1*RO] = buf_l[e1];
-                    LH[ro + e1*RO] = buf_h[e1];
-                }
-            }
-
-            T* HL = LH + RO*E1;
-            T* HH = HL + RO*E1;
-
-            // along RO
             for (e1 = 0; e1<E1; e1++)
             {
-                this->filter_d(out + e1*RO, RO, 1, &buf_ro[0], HL + e1*RO, 1);
-                memcpy(out + e1*RO, &buf_ro[0], sizeof(T)*RO);
-
-                this->filter_d(LH + e1*RO, RO, 1, &buf_ro[0], HH + e1*RO, 1);
-                memcpy(LH + e1*RO, &buf_ro[0], sizeof(T)*RO);
+                out[ro + e1*RO] = buf_l[e1];
+                LH[ro + e1*RO] = buf_h[e1];
             }
         }
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in hoNDWavelet<T>::dwt2D(...) ... ");
+
+        T* HL = LH + RO*E1;
+        T* HH = HL + RO*E1;
+
+        // along RO
+        for (e1 = 0; e1<E1; e1++)
+        {
+            this->filter_d(out + e1*RO, RO, 1, &buf_ro[0], HL + e1*RO, 1);
+            memcpy(out + e1*RO, &buf_ro[0], sizeof(T)*RO);
+
+            this->filter_d(LH + e1*RO, RO, 1, &buf_ro[0], HH + e1*RO, 1);
+            memcpy(LH + e1*RO, &buf_ro[0], sizeof(T)*RO);
+        }
     }
 }
 
 template<typename T>
 void hoNDRedundantWavelet<T>::idwt2D(const T* const in, T* out, size_t RO, size_t E1, size_t level)
 {
-    try
+    memcpy(out, in, sizeof(T)*RO*E1);
+
+    std::vector<T> buf_ro(RO), buf_e1(E1);
+
+    hoNDArray<T> tmp(RO*E1);
+    T* pTmp = tmp.begin();
+
+    long long n;
+    for (n = (long long)level - 1; n >= 0; n--)
     {
-        memcpy(out, in, sizeof(T)*RO*E1);
+        const T* const LH = in + (3 * n + 1)*RO*E1;
+        const T* const HL = LH + RO*E1;
+        const T* const HH = HL + RO*E1;
 
-        std::vector<T> buf_ro(RO), buf_e1(E1);
-
-        hoNDArray<T> tmp(RO*E1);
-        T* pTmp = tmp.begin();
-
-        long long n;
-        for (n = (long long)level - 1; n >= 0; n--)
+        size_t ro, e1;
+        // along RO
+        for (e1 = 0; e1<E1; e1++)
         {
-            const T* const LH = in + (3 * n + 1)*RO*E1;
-            const T* const HL = LH + RO*E1;
-            const T* const HH = HL + RO*E1;
+            this->filter_r(out + e1*RO, HL + e1*RO, RO, 1, &buf_ro[0], 1);
+            memcpy(out + e1*RO, &buf_ro[0], sizeof(T)*RO);
 
-            size_t ro, e1;
-            // along RO
+            this->filter_r(LH + e1*RO, HH + e1*RO, RO, 1, pTmp + e1*RO, 1);
+        }
+
+        // along e1
+        for (ro = 0; ro<RO; ro++)
+        {
+            this->filter_r(out + ro, pTmp + ro, E1, RO, &buf_e1[0], 1);
+
             for (e1 = 0; e1<E1; e1++)
             {
-                this->filter_r(out + e1*RO, HL + e1*RO, RO, 1, &buf_ro[0], 1);
-                memcpy(out + e1*RO, &buf_ro[0], sizeof(T)*RO);
-
-                this->filter_r(LH + e1*RO, HH + e1*RO, RO, 1, pTmp + e1*RO, 1);
-            }
-
-            // along e1
-            for (ro = 0; ro<RO; ro++)
-            {
-                this->filter_r(out + ro, pTmp + ro, E1, RO, &buf_e1[0], 1);
-
-                for (e1 = 0; e1<E1; e1++)
-                {
-                    out[ro + e1*RO] = buf_e1[e1];
-                }
+                out[ro + e1*RO] = buf_e1[e1];
             }
         }
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in hoNDWavelet<T>::idwt2D(...) ... ");
     }
 }
 

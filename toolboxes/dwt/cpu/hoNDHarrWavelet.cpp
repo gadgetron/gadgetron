@@ -16,215 +16,187 @@ hoNDHarrWavelet<T>::~hoNDHarrWavelet()
 template<typename T>
 void hoNDHarrWavelet<T>::dwt1D(const T* const in, T* out, size_t RO, size_t level)
 {
-    try
-    {
-        memcpy(out, in, sizeof(T)*RO);
+    memcpy(out, in, sizeof(T)*RO);
 
-        for (size_t n = 0; n < level; n++)
+    for (size_t n = 0; n < level; n++)
+    {
+        T* l = out;
+        T* h = l + n * RO + RO;
+
+        T v1 = l[0];
+        size_t ro;
+        for (ro = 0; ro < RO - 1; ro++)
         {
-            T* l = out;
-            T* h = l + n * RO + RO;
-
-            T v1 = l[0];
-            size_t ro;
-            for (ro = 0; ro < RO - 1; ro++)
-            {
-                const T& t = l[ro + 1];
-                h[ro] = l[ro] - t;
-                l[ro] += t;
-            }
-
-            // periodic boundary condition
-            h[RO - 1] = l[RO - 1] - v1;
-            l[RO - 1] += v1;
-
-            for (ro = 0; ro < RO; ro++)
-            {
-                l[ro] *= (value_type)(0.5);
-                h[ro] *= (value_type)(0.5);
-            }
+            const T& t = l[ro + 1];
+            h[ro] = l[ro] - t;
+            l[ro] += t;
         }
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in hoNDWavelet<T>::dwt1D(...) ... ");
+
+        // periodic boundary condition
+        h[RO - 1] = l[RO - 1] - v1;
+        l[RO - 1] += v1;
+
+        for (ro = 0; ro < RO; ro++)
+        {
+            l[ro] *= (value_type)(0.5);
+            h[ro] *= (value_type)(0.5);
+        }
     }
 }
 
 template<typename T>
 void hoNDHarrWavelet<T>::idwt1D(const T* const in, T* out, size_t RO, size_t level)
 {
-    try
-    {
-        memcpy(out, in, sizeof(T)*RO);
+    memcpy(out, in, sizeof(T)*RO);
 
-        long long n;
-        for (n = (long long)level - 1; n >= 0; n--)
+    long long n;
+    for (n = (long long)level - 1; n >= 0; n--)
+    {
+        T* l = out;
+        const T* const h = in + n * RO + RO;
+
+        T v1 = l[RO - 1];
+
+        size_t ro;
+        for (ro = RO - 1; ro > 0; ro--)
         {
-            T* l = out;
-            const T* const h = in + n * RO + RO;
-
-            T v1 = l[RO - 1];
-
-            size_t ro;
-            for (ro = RO - 1; ro > 0; ro--)
-            {
-                l[ro] = (l[ro] + l[ro - 1]) + (h[ro] - h[ro - 1]);
-            }
-
-            l[0] = (l[0] + v1) + (h[0] - h[RO - 1]);
-
-            for (ro = 0; ro < RO; ro++)
-            {
-                l[ro] *= (value_type)(0.5);
-            }
+            l[ro] = (l[ro] + l[ro - 1]) + (h[ro] - h[ro - 1]);
         }
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in hoNDWavelet<T>::idwt1D(...) ... ");
+
+        l[0] = (l[0] + v1) + (h[0] - h[RO - 1]);
+
+        for (ro = 0; ro < RO; ro++)
+        {
+            l[ro] *= (value_type)(0.5);
+        }
     }
 }
 
 template<typename T>
 void hoNDHarrWavelet<T>::dwt2D(const T* const in, T* out, size_t RO, size_t E1, size_t level)
 {
-    try
+    value_type scaleFactor = 0.5;
+
+    memcpy(out, in, sizeof(T)*RO*E1);
+
+    for (size_t n = 0; n<level; n++)
     {
-        value_type scaleFactor = 0.5;
+        T* LH = out + (3 * n + 1)*RO*E1;
 
-        memcpy(out, in, sizeof(T)*RO*E1);
-
-        for (size_t n = 0; n<level; n++)
+        long long ro;
+        for (ro = 0; ro<(long long)RO; ro++)
         {
-            T* LH = out + (3 * n + 1)*RO*E1;
+            T v1 = out[ro];
 
-            long long ro;
-            for (ro = 0; ro<(long long)RO; ro++)
+            long long ii = ro, e1;
+            for (e1 = 0; e1<(long long)E1 - 1; e1++)
             {
-                T v1 = out[ro];
-
-                long long ii = ro, e1;
-                for (e1 = 0; e1<(long long)E1 - 1; e1++)
-                {
-                    LH[ii] = out[ii] - out[ii + RO];
-                    out[ii] += out[ii + RO];
-                    ii += RO;
-                }
-
-                LH[ii] = out[ii] - v1;
-                out[ii] += v1;
+                LH[ii] = out[ii] - out[ii + RO];
+                out[ii] += out[ii + RO];
+                ii += RO;
             }
 
-            this->apply_harr_scal(RO*E1, scaleFactor, out);
-            this->apply_harr_scal(RO*E1, scaleFactor, LH);
-
-            T* HL = LH + RO*E1;
-            T* HH = HL + RO*E1;
-
-            long long e1;
-            for (e1 = 0; e1<(long long)E1; e1++)
-            {
-                T v1 = out[e1*RO];
-                T v2 = LH[e1*RO];
-
-                size_t ii = e1*RO;
-                for (long long ro = 0; ro<(long long)RO - 1; ro++)
-                {
-                    HH[ii] = LH[ii] - LH[ii + 1];
-                    LH[ii] += LH[ii + 1];
-
-                    HL[ii] = out[ii] - out[ii + 1];
-                    out[ii] += out[ii + 1];
-
-                    ii++;
-                }
-
-                HH[ii] = LH[ii] - v2;
-                LH[ii] += v2;
-
-                HL[ii] = out[ii] - v1;
-                out[ii] += v1;
-            }
-
-            this->apply_harr_scal(RO*E1, scaleFactor, out);
-            this->apply_harr_scal(RO*E1, scaleFactor, LH);
-            this->apply_harr_scal(RO*E1, scaleFactor, HL);
-            this->apply_harr_scal(RO*E1, scaleFactor, HH);
+            LH[ii] = out[ii] - v1;
+            out[ii] += v1;
         }
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in hoNDWavelet<T>::dwt2D(...) ... ");
+
+        this->apply_harr_scal(RO*E1, scaleFactor, out);
+        this->apply_harr_scal(RO*E1, scaleFactor, LH);
+
+        T* HL = LH + RO*E1;
+        T* HH = HL + RO*E1;
+
+        long long e1;
+        for (e1 = 0; e1<(long long)E1; e1++)
+        {
+            T v1 = out[e1*RO];
+            T v2 = LH[e1*RO];
+
+            size_t ii = e1*RO;
+            for (long long ro = 0; ro<(long long)RO - 1; ro++)
+            {
+                HH[ii] = LH[ii] - LH[ii + 1];
+                LH[ii] += LH[ii + 1];
+
+                HL[ii] = out[ii] - out[ii + 1];
+                out[ii] += out[ii + 1];
+
+                ii++;
+            }
+
+            HH[ii] = LH[ii] - v2;
+            LH[ii] += v2;
+
+            HL[ii] = out[ii] - v1;
+            out[ii] += v1;
+        }
+
+        this->apply_harr_scal(RO*E1, scaleFactor, out);
+        this->apply_harr_scal(RO*E1, scaleFactor, LH);
+        this->apply_harr_scal(RO*E1, scaleFactor, HL);
+        this->apply_harr_scal(RO*E1, scaleFactor, HH);
     }
 }
 
 template<typename T>
 void hoNDHarrWavelet<T>::idwt2D(const T* const in, T* out, size_t RO, size_t E1, size_t level)
 {
-    try
+    memcpy(out, in, sizeof(T)*RO*E1);
+
+    hoNDArray<T> tmp(RO*E1);
+    T* pTmp = tmp.begin();
+
+    value_type scaleFactor = 0.5;
+
+    long long n;
+    for (n = (long long)level - 1; n >= 0; n--)
     {
-        memcpy(out, in, sizeof(T)*RO*E1);
+        const T* const LH = in + (3 * n + 1)*RO*E1;
+        const T* const HL = LH + RO*E1;
+        const T* const HH = HL + RO*E1;
 
-        hoNDArray<T> tmp(RO*E1);
-        T* pTmp = tmp.begin();
-
-        value_type scaleFactor = 0.5;
-
-        long long n;
-        for (n = (long long)level - 1; n >= 0; n--)
+        long long e1;
+        for (e1 = 0; e1<(long long)E1; e1++)
         {
-            const T* const LH = in + (3 * n + 1)*RO*E1;
-            const T* const HL = LH + RO*E1;
-            const T* const HH = HL + RO*E1;
+            size_t ii = e1*RO + RO - 1;
 
-            long long e1;
-            for (e1 = 0; e1<(long long)E1; e1++)
+            T vLL = out[ii];
+            T vLH = LH[ii];
+            T vHL = HL[ii];
+            T vHH = HH[ii];
+
+            for (long long ro = RO - 1; ro>0; ro--)
             {
-                size_t ii = e1*RO + RO - 1;
+                out[ii] += out[ii - 1] + HL[ii] - HL[ii - 1];
+                pTmp[ii] = LH[ii] + LH[ii - 1] + HH[ii] - HH[ii - 1];
 
-                T vLL = out[ii];
-                T vLH = LH[ii];
-                T vHL = HL[ii];
-                T vHH = HH[ii];
-
-                for (long long ro = RO - 1; ro>0; ro--)
-                {
-                    out[ii] += out[ii - 1] + HL[ii] - HL[ii - 1];
-                    pTmp[ii] = LH[ii] + LH[ii - 1] + HH[ii] - HH[ii - 1];
-
-                    ii--;
-                }
-
-                out[ii] += vLL + HL[ii] - vHL;
-                pTmp[ii] = LH[ii] + vLH + HH[ii] - vHH;
+                ii--;
             }
 
-            this->apply_harr_scal(RO*E1, scaleFactor, out);
-            this->apply_harr_scal(RO*E1, scaleFactor, pTmp);
-
-            long long ro;
-            for (ro = 0; ro<(long long)RO; ro++)
-            {
-                size_t ii = (E1 - 1)*RO + ro;
-                T vLL = out[ii];
-                T vLH = pTmp[ii];
-
-                for (long long e1 = E1 - 1; e1>0; e1--)
-                {
-                    out[ii] += pTmp[ii] + out[ii - RO] - pTmp[ii - RO];
-                    ii -= RO;
-                }
-
-                out[ro] += pTmp[ro] + vLL - vLH;
-            }
-
-            this->apply_harr_scal(RO*E1, scaleFactor, out);
+            out[ii] += vLL + HL[ii] - vHL;
+            pTmp[ii] = LH[ii] + vLH + HH[ii] - vHH;
         }
-    }
-    catch (...)
-    {
-        GADGET_THROW("Errors in hoNDWavelet<T>::idwt2D(...) ... ");
+
+        this->apply_harr_scal(RO*E1, scaleFactor, out);
+        this->apply_harr_scal(RO*E1, scaleFactor, pTmp);
+
+        long long ro;
+        for (ro = 0; ro<(long long)RO; ro++)
+        {
+            size_t ii = (E1 - 1)*RO + ro;
+            T vLL = out[ii];
+            T vLH = pTmp[ii];
+
+            for (long long e1 = E1 - 1; e1>0; e1--)
+            {
+                out[ii] += pTmp[ii] + out[ii - RO] - pTmp[ii - RO];
+                ii -= RO;
+            }
+
+            out[ro] += pTmp[ro] + vLL - vLH;
+        }
+
+        this->apply_harr_scal(RO*E1, scaleFactor, out);
     }
 }
 
