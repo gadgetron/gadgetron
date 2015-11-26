@@ -19,7 +19,7 @@ if (FFTW3_FOUND)
   add_subdirectory(mri_core)
   add_subdirectory(mri)
   if (NOT(WIN32))
-	  add_subdirectory(ct)
+    add_subdirectory(ct)
   endif()
 endif()
 
