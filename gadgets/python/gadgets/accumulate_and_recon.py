@@ -28,20 +28,20 @@ class AccumulateAndRecon(Gadget):
             eNy = self.enc.encodedSpace.matrixSize.y
             eNx = self.enc.encodedSpace.matrixSize.x
         
-            self.myBuffer = np.zeros((eNx/2,eNy,eNz,nslices,channels),dtype=np.complex64)
+            self.myBuffer = np.zeros((channels,nslices,eNz,eNy,eNx>>1),dtype=np.complex64)
 
         line_offset = self.enc.encodedSpace.matrixSize.y/2 - self.enc.encodingLimits.kspace_encoding_step_1.center             
-        self.myBuffer[:,acq.idx.kspace_encode_step_1+line_offset,acq.idx.kspace_encode_step_2,acq.idx.slice,:] = data
+        self.myBuffer[:,acq.idx.slice,acq.idx.kspace_encode_step_2,acq.idx.kspace_encode_step_1+line_offset,:] = data
 
         if (acq.flags & (1<<7)): #Is this the last scan in slice
-            image = transform.transform_kspace_to_image(self.myBuffer,dim=(0,1,2))
+            image = transform.transform_kspace_to_image(self.myBuffer,dim=(2,3,4))
             image = image * np.product(image.shape)*100 #Scaling for the scanner
             #Create a new image header and transfer value
             img_head = ismrmrd.ImageHeader()
             img_head.channels = acq.active_channels
             img_head.slice = acq.idx.slice
-            img_head.matrix_size[0] = self.myBuffer.shape[0]
-            img_head.matrix_size[1] = self.myBuffer.shape[1]
+            img_head.matrix_size[0] = self.myBuffer.shape[4]
+            img_head.matrix_size[1] = self.myBuffer.shape[3]
             img_head.matrix_size[2] = self.myBuffer.shape[2]
             img_head.position = acq.position
             img_head.read_dir = acq.read_dir

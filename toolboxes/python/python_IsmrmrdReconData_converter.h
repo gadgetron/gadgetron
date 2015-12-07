@@ -92,8 +92,6 @@ struct IsmrmrdReconData_from_python_object {
     void* storage = ((bp::converter::rvalue_from_python_storage<IsmrmrdReconData >*)data)->storage.bytes;
     IsmrmrdReconData* reconData = new (storage) IsmrmrdReconData;
     data->convertible = storage;
-
-
     try {
       bp::list pyRecondata((bp::handle<>(bp::borrowed(obj))));
       auto length = bp::len(pyRecondata);
@@ -105,7 +103,7 @@ struct IsmrmrdReconData_from_python_object {
         if (PyObject_HasAttrString(reconBit.ptr(),"ref")){
           rBit.ref_ = extractDataBuffered(reconBit.attr("ref"));
         }
-        reconData->rbit_.push_back(rBit);
+        reconData->rbit_.push_back(std::move(rBit));
       }
 
     }catch (const bp::error_already_set&) {

@@ -68,8 +68,8 @@ class Gadget(object):
                             self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), args[2].serialize())
                         else:
                             self.next_gadget.return_image_cplx(header,args[1].astype('complex64'))
-                elif len(args[0]) > 0 and isinstance(args[0][0],IsmrmrdReconBit): 
-                    self.next_gadget.return_recondata(args[0])
+                elif hasattr(args[0],"__getitem__") and hasattr(args[0][0],"data"):
+                     self.next_gadget.return_recondata(args[0])
                 else:
                     raise("Unsupported types when returning to Gadgetron framework")
             else:

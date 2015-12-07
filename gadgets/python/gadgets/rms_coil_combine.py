@@ -7,8 +7,7 @@ class RMSCoilCombine(Gadget):
         print("RMS Coil Combine, Config ignored")
 
     def process(self, h, im):
-
-        combined_image = np.sqrt(np.sum(np.square(np.abs(im)),axis=(len(im.shape)-1)))
+        combined_image = np.sqrt(np.sum(np.square(np.abs(im)),axis=0))
 
         print "RMS coil",im.shape,combined_image.shape
         h.channels = 1
