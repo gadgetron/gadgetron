@@ -8,4 +8,5 @@ install(FILES
     pseudoreplicagather.py
     bucket_recon.py
     passthrough.py
+	IDEAL.py
     DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
