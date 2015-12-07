@@ -128,6 +128,14 @@ void* NumPyArray_DATA(PyObject* obj)
     return PyArray_DATA((PyArrayObject*)obj);
 }
 
+npy_intp* NumPyArray_STRIDES(PyObject* obj)
+{
+    return PyArray_STRIDES((PyArrayObject*)obj);
+}
+
+PyObject* NumPyArray_FromAny(PyObject* op, PyArray_Descr* dtype, int min_depth, int max_depth, int requirements, PyObject* context){
+  return PyArray_FromAny(op, dtype, min_depth, max_depth, requirements, context);
+}
 /// Wraps PyArray_ITEMSIZE
 int NumPyArray_ITEMSIZE(PyObject* obj)
 {
@@ -143,6 +151,13 @@ npy_intp NumPyArray_SIZE(PyObject* obj)
 PyObject* NumPyArray_SimpleNew(int nd, npy_intp* dims, int typenum)
 {
     return PyArray_SimpleNew(nd, dims, typenum);
+}
+
+
+/// Wraps PyArray_SimpleNew
+PyObject* NumPyArray_EMPTY(int nd, npy_intp* dims, int typenum, int fortran)
+{
+    return PyArray_EMPTY(nd, dims, typenum,fortran);
 }
 
 }
