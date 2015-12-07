@@ -19,9 +19,9 @@ struct hoNDArray_to_numpy_array {
         size_t ndim = arr.get_number_of_dimensions();
         std::vector<npy_intp> dims2(ndim);
         for (size_t i = 0; i < ndim; i++) {
-            dims2[i] = static_cast<npy_intp>(arr.get_size(i));
+            dims2[ndim-i-1] = static_cast<npy_intp>(arr.get_size(i));
         }
-        PyObject *obj = NumPyArray_EMPTY(dims2.size(), dims2.data(), get_numpy_type<T>(),true);
+        PyObject *obj = NumPyArray_SimpleNew(dims2.size(), &dims2[0], get_numpy_type<T>());
         if (sizeof(T) != NumPyArray_ITEMSIZE(obj)) {
             GERROR("sizeof(T): %d, ITEMSIZE: %d\n", sizeof(T), NumPyArray_ITEMSIZE(obj));
             throw std::runtime_error("hondarray_to_numpy_array: "
@@ -44,9 +44,9 @@ struct hoNDArray_to_numpy_array<ISMRMRD::AcquisitionHeader> {
         size_t ndim = arr.get_number_of_dimensions();
         std::vector<npy_intp> dims2(ndim);
         for (size_t i = 0; i < ndim; i++) {
-            dims2[i] = static_cast<npy_intp>(arr.get_size(i));
+            dims2[ndim-i-1] = static_cast<npy_intp>(arr.get_size(i));
         }
-        PyObject *obj = NumPyArray_EMPTY(dims2.size(), dims2.data(), get_numpy_type<ISMRMRD::AcquisitionHeader>(),1);
+        PyObject *obj = NumPyArray_SimpleNew(dims2.size(), &dims2[0], get_numpy_type<ISMRMRD::AcquisitionHeader>());
 
         std::vector<PyObject*> pyobjects;
         for (auto & acq : arr){
@@ -83,21 +83,20 @@ struct hoNDArray_from_numpy_array {
     }
 
     /// Construct an hoNDArray in-place
-    static void construct(PyObject* obj_orig, bp::converter::rvalue_from_python_stage1_data* data) {
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data* data) {
         void* storage = ((bp::converter::rvalue_from_python_storage<hoNDArray<T> >*)data)->storage.bytes;
         data->convertible = storage;
 
-        PyObject* obj =  NumPyArray_FromAny(obj_orig, nullptr, 1, 36,  NPY_ARRAY_IN_FARRAY, nullptr);
         size_t ndim = NumPyArray_NDIM(obj);
         std::vector<size_t> dims(ndim);
         for (size_t i = 0; i < ndim; i++) {
-            dims[i] = NumPyArray_DIM(obj, i);
+            dims[ndim - i - 1] = NumPyArray_DIM(obj, i);
         }
+
         // Placement-new of hoNDArray in memory provided by Boost
         hoNDArray<T>* arr = new (storage) hoNDArray<T>(dims);
         memcpy(arr->get_data_ptr(), NumPyArray_DATA(obj),
                 sizeof(T) * arr->get_number_of_elements());
-        //PyObject_Del(obj);
     }
 };
 
@@ -119,15 +118,14 @@ struct hoNDArray_from_numpy_array<ISMRMRD::AcquisitionHeader> {
     }
 
     /// Construct an hoNDArray in-place
-    static void construct(PyObject* obj_orig, bp::converter::rvalue_from_python_stage1_data* data) {
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data* data) {
         void* storage = ((bp::converter::rvalue_from_python_storage<hoNDArray<ISMRMRD::AcquisitionHeader> >*)data)->storage.bytes;
         data->convertible = storage;
-        //Ensure fortran byte order
-        PyObject* obj =  NumPyArray_FromAny(obj_orig, nullptr, 1, 36,  NPY_ARRAY_IN_FARRAY, nullptr);
+
         size_t ndim = NumPyArray_NDIM(obj);
         std::vector<size_t> dims(ndim);
         for (size_t i = 0; i < ndim; i++) {
-            dims[i] = NumPyArray_DIM(obj, i);
+            dims[ndim - i - 1] = NumPyArray_DIM(obj, i);
         }
 
         // Placement-new of hoNDArray in memory provided by Boost
@@ -137,11 +135,8 @@ struct hoNDArray_from_numpy_array<ISMRMRD::AcquisitionHeader> {
         auto data_ptr = arr->get_data_ptr();
         PyObject** pyobjects = (PyObject**) NumPyArray_DATA(obj);
 
-        for (size_t i = 0; i < elements; i++){
-          data_ptr[i] = bp::extract<ISMRMRD::AcquisitionHeader>(bp::object(bp::borrowed(pyobjects[i])));
-        }
-
-        //PyObject_Del(obj);
+        for (size_t i = 0; i < elements; i++)
+          data_ptr[i] = bp::extract<ISMRMRD::AcquisitionHeader>(bp::object(bp::handle<>(bp::borrowed(pyobjects[i]))));
 
     }
 };

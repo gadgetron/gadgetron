@@ -11,10 +11,10 @@ class Remove2xOversampling(Gadget):
 
     def process(self, acq, data):
         orig_size = list(data.shape);
-        data2 = data.reshape([data.shape[0],(data.size/data.shape[0])])
-        new_length = data2.shape[0]>>1
-        data2 = transform.transform_image_to_kspace(transform.transform_kspace_to_image(data2,dim=(0,))[(0+(new_length>>1)):(new_length+(new_length>>1)),:],dim=(0,))
-        orig_size[0] = new_length
+        data2 = data.reshape([(data.size/data.shape[data.ndim-1]), data.shape[data.ndim-1]])
+        new_length = data2.shape[1]>>1
+        data2 = transform.transform_image_to_kspace(transform.transform_kspace_to_image(data2,dim=(1,))[:,(0+(new_length>>1)):(new_length+(new_length>>1))],dim=(1,))
+        orig_size[data.ndim-1] = new_length
         data2.reshape(tuple(orig_size))
         acq.samples = new_length
 
