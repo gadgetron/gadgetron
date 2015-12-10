@@ -1,5 +1,9 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
+if (WIN32)
+  ADD_DEFINITIONS(-DCROW_MSVC_WORKAROUND)
+endif(WIN32)
+
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron

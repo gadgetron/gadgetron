@@ -8,9 +8,11 @@
 #ifndef MATLABUTILS_H_
 #define MATLABUTILS_H_
 
+#include "matlab_export.h"
 #include "engine.h"
 #include "hoNDArray.h"
 #include "mri_core_data.h"
+
 namespace Gadgetron{
 
 /**
@@ -18,30 +20,30 @@ namespace Gadgetron{
  * @param
  * @return
  */
-template<class T> mxArray* hoNDArrayToMatlab(hoNDArray<T>* );
+template<class T> EXPORTMATLAB mxArray* hoNDArrayToMatlab(hoNDArray<T>* );
 
 /**
  * Create hoNDArray from a Matlab array. Will attempt type conversion.
  * @param
  * @return
  */
-template<class T> hoNDArray<T> MatlabToHoNDArray(mxArray*);
+template<class T> EXPORTMATLAB hoNDArray<T> MatlabToHoNDArray(mxArray*);
 
 /**
  * Creates a matlab struct from an IsmrmrdDataBuffer
  * @param buffer
  * @return
  */
-mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer);
+EXPORTMATLAB mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer);
 
 
-IsmrmrdDataBuffered MatlabStructToBuffer(mxArray* mxstruct);
+EXPORTMATLAB IsmrmrdDataBuffered MatlabStructToBuffer(mxArray* mxstruct);
 
 /**
  * Create a Matlab struct from a SamplingDescription
  * @param samp
  * @return
  */
-mxArray* samplingdescriptionToMatlabStruct(SamplingDescription* samp);
+EXPORTMATLAB mxArray* samplingdescriptionToMatlabStruct(SamplingDescription* samp);
 }
 #endif /* MATLABUTILS_H_ */

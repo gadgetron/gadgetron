@@ -613,7 +613,7 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
             }
 
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*pSrc, "res_beforeCut"); }
+            if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*pSrc, debugFolder_ + "res_beforeCut"); }
 
             // final cut on image
             if ( isKSpace )
