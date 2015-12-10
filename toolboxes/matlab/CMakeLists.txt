@@ -13,7 +13,7 @@ ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/ )
 
 
 
-add_library(gadgetron_toolbox_matlab SHARED  MatlabUtils.h MatlabUtils.cpp )
+add_library(gadgetron_toolbox_matlab SHARED  matlab_export.h MatlabUtils.h MatlabUtils.cpp )
 
 
 set_target_properties(gadgetron_toolbox_matlab PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})

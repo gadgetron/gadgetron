@@ -125,7 +125,7 @@ typedef mexLocalFunctionTable (*fn_mex_set_local_function_table)(mexLocalFunctio
 
 
 #ifdef __cplusplus
-extern"C"__declspec(dllexport)
+    extern "C" __declspec(dllexport)
 #endif
 
 void mexFunction(

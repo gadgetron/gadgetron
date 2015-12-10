@@ -67,7 +67,7 @@ ho7DArray<T>::ho7DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, s
 template <typename T> 
 ho7DArray<T>::~ho7DArray()
 {
-    GADGET_CHECK_THROW(release_accesser());
+    release_accesser();
 }
 
 template <typename T> 

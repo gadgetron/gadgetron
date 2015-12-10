@@ -387,32 +387,32 @@ mxArray* Gadgetron::samplingdescriptionToMatlabStruct(SamplingDescription* samp)
 
 
 
-template mxArray* Gadgetron::hoNDArrayToMatlab<float>(hoNDArray<float> *);
-template mxArray* Gadgetron::hoNDArrayToMatlab<double>(hoNDArray<double> *);
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<float>(hoNDArray<float> *);
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<double>(hoNDArray<double> *);
 
-template mxArray* Gadgetron::hoNDArrayToMatlab<size_t>(hoNDArray<size_t> *);
-template mxArray* Gadgetron::hoNDArrayToMatlab<float_complext>(hoNDArray<float_complext> *);
-template mxArray* Gadgetron::hoNDArrayToMatlab<double_complext>(hoNDArray<double_complext> *);
-template mxArray* Gadgetron::hoNDArrayToMatlab<std::complex<double>>(hoNDArray<std::complex<double>> *);
-template mxArray* Gadgetron::hoNDArrayToMatlab<std::complex<float>>(hoNDArray<std::complex<float>> *);
-
-
-template hoNDArray<float> Gadgetron::MatlabToHoNDArray<float>(mxArray *);
-template hoNDArray<double> Gadgetron::MatlabToHoNDArray<double>(mxArray *);
-template hoNDArray<size_t> Gadgetron::MatlabToHoNDArray<size_t>(mxArray *);
-template hoNDArray<float_complext> Gadgetron::MatlabToHoNDArray<float_complext>(mxArray *);
-template hoNDArray<double_complext> Gadgetron::MatlabToHoNDArray<double_complext>(mxArray *);
-
-template hoNDArray<std::complex<double>> Gadgetron::MatlabToHoNDArray<std::complex<double>>(mxArray *);
-template hoNDArray<std::complex<float>> Gadgetron::MatlabToHoNDArray<std::complex<float>>(mxArray *);
-
-template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,1>>(hoNDArray<vector_td<float,1>> *);
-template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,2>>(hoNDArray<vector_td<float,2>> *);
-template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,3>>(hoNDArray<vector_td<float,3>> *);
-template mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,4>>(hoNDArray<vector_td<float,4>> *);
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<size_t>(hoNDArray<size_t> *);
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<float_complext>(hoNDArray<float_complext> *);
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<double_complext>(hoNDArray<double_complext> *);
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<std::complex<double>>(hoNDArray<std::complex<double>> *);
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<std::complex<float>>(hoNDArray<std::complex<float>> *);
 
 
-template hoNDArray<vector_td<float,1>> Gadgetron::MatlabToHoNDArray<vector_td<float,1>>(mxArray *);
-template hoNDArray<vector_td<float,2>> Gadgetron::MatlabToHoNDArray<vector_td<float,2>>(mxArray *);
-template hoNDArray<vector_td<float,3>> Gadgetron::MatlabToHoNDArray<vector_td<float,3>>(mxArray *);
-template hoNDArray<vector_td<float,4>> Gadgetron::MatlabToHoNDArray<vector_td<float,4>>(mxArray *);
+template EXPORTMATLAB hoNDArray<float> Gadgetron::MatlabToHoNDArray<float>(mxArray *);
+template EXPORTMATLAB hoNDArray<double> Gadgetron::MatlabToHoNDArray<double>(mxArray *);
+template EXPORTMATLAB hoNDArray<size_t> Gadgetron::MatlabToHoNDArray<size_t>(mxArray *);
+template EXPORTMATLAB hoNDArray<float_complext> Gadgetron::MatlabToHoNDArray<float_complext>(mxArray *);
+template EXPORTMATLAB hoNDArray<double_complext> Gadgetron::MatlabToHoNDArray<double_complext>(mxArray *);
+
+template EXPORTMATLAB hoNDArray<std::complex<double>> Gadgetron::MatlabToHoNDArray<std::complex<double>>(mxArray *);
+template EXPORTMATLAB hoNDArray<std::complex<float>> Gadgetron::MatlabToHoNDArray<std::complex<float>>(mxArray *);
+
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,1>>(hoNDArray<vector_td<float,1>> *);
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,2>>(hoNDArray<vector_td<float,2>> *);
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,3>>(hoNDArray<vector_td<float,3>> *);
+template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,4>>(hoNDArray<vector_td<float,4>> *);
+
+
+template EXPORTMATLAB hoNDArray<vector_td<float,1>> Gadgetron::MatlabToHoNDArray<vector_td<float,1>>(mxArray *);
+template EXPORTMATLAB hoNDArray<vector_td<float,2>> Gadgetron::MatlabToHoNDArray<vector_td<float,2>>(mxArray *);
+template EXPORTMATLAB hoNDArray<vector_td<float,3>> Gadgetron::MatlabToHoNDArray<vector_td<float,3>>(mxArray *);
+template EXPORTMATLAB hoNDArray<vector_td<float,4>> Gadgetron::MatlabToHoNDArray<vector_td<float,4>>(mxArray *);

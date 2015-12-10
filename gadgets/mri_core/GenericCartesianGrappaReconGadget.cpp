@@ -932,7 +932,7 @@ namespace Gadgetron {
                             {
                                 ISMRMRD::AcquisitionHeader& curr_header = recon_bit.data_.headers_(e1, e2, n, s, slc);
 
-                                if (curr_header.measurement_uid != 0) // a valid header
+                                // if (curr_header.measurement_uid != 0) // a valid header
                                 {
                                     if (E2 > 1)
                                     {
