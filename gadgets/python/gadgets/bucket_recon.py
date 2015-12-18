@@ -20,15 +20,15 @@ class BucketRecon(Gadget):
     def process(self, recondata,*args):
 
         print np.shape(recondata[0].data.data)
-        image = transform.transform_kspace_to_image(recondata[0].data.data,dim=(4,5,6))
-        image = np.reshape(image,(image.shape[3],image.shape[4],image.shape[5],image.shape[6]))
+        image = transform.transform_kspace_to_image(recondata[0].data.data,dim=(0,1,2))
+	image = np.reshape(image,(image.shape[0],image.shape[1],image.shape[2],image.shape[3]))
         #Create a new image header and transfer value
         acq = np.ravel(recondata[0].data.headers)[0]
         img_head = ismrmrd.ImageHeader()
         img_head.channels = acq.active_channels
         img_head.slice = acq.idx.slice
 
-        img_head.matrix_size = (image.shape[-1],image.shape[-2],image.shape[-3])
+        img_head.matrix_size = (image.shape[0],image.shape[1],image.shape[2])
         img_head.position = acq.position
         img_head.read_dir = acq.read_dir
         img_head.phase_dir = acq.phase_dir
