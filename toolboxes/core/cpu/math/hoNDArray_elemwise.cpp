@@ -948,6 +948,66 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
 
+    inline void abs(size_t N, const complext<float>* x, complext<float>* r)
+    {
+        try
+        {
+            long long n;
+
+            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                const complext<float>& c = x[n];
+                const float re = c.real();
+                const float im = c.imag();
+
+                reinterpret_cast<float(&)[2]>(r[n])[0] = std::sqrt( (re*re) + (im * im) );
+                reinterpret_cast<float(&)[2]>(r[n])[1] = 0;
+            }
+        }
+        catch(...)
+        {
+            GADGET_THROW("Error happened in abs(size_t N, const complext<float>* x, complext<float>* r) ... ");
+        }
+    }
+
+    inline void abs(size_t N, const complext<double>* x, complext<double>* r)
+    {
+        try
+        {
+            long long n;
+
+            #pragma omp parallel for default(none) private(n) shared(N, x, r) if (N>NumElementsUseThreading)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                const complext<double>& c = x[n];
+                const double re = c.real();
+                const double im = c.imag();
+
+                reinterpret_cast<double(&)[2]>(r[n])[0] = std::sqrt( (re*re) + (im * im) );
+                reinterpret_cast<double(&)[2]>(r[n])[1] = 0;
+            }
+        }
+        catch(...)
+        {
+            GADGET_THROW("Error happened in abs(size_t N, const complext<double>* x, complext<double>* r) ... ");
+        }
+    }
+
+    template <typename T> 
+    void abs(const hoNDArray< complext<T> >& x, hoNDArray< complext<T> >& r)
+    {
+        if ( r.get_number_of_elements()!=x.get_number_of_elements())
+        {
+            r.create(x.get_dimensions());
+        }
+
+        abs(x.get_number_of_elements(), x.begin(), r.begin());
+    }
+
+    template EXPORTCPUCOREMATH void abs(const hoNDArray< complext<float> >& x, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void abs(const hoNDArray< complext<double> >& x, hoNDArray< complext<double> >& r);
+
     template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs( hoNDArray<T> *x )
     {
         if( x == 0x0 )
