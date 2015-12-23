@@ -225,7 +225,8 @@ void inv(const hoNDArray<T>& x, hoNDArray<T>& r);
 template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs( hoNDArray<T> *x );
 template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
 template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r);
-
+template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray< complext<T> >& x, hoNDArray< complext<T> >& r);
+ 
 /**
  * @brief Calculates the element-wise absolute values (l2 norm) of the array entries (in place).
  * @param[in,out] x Input and output array.
