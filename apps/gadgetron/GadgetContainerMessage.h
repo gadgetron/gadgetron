@@ -76,7 +76,7 @@ public:
   :base(sizeof(T)), content_(0)
    {
 	 //Using placement new to put the new object at the ACE_Message_Block location
-    content_ = new (this->wr_ptr()) T{xs...};
+    content_ = new (this->wr_ptr()) T(xs...);
 
     //Advance the write pointer appropriately.
     this->wr_ptr(sizeof(T));

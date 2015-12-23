@@ -1,3 +1,4 @@
+#include "gadgetron_rest.h"
 #include "GadgetServerAcceptor.h"
 #include "GadgetStreamController.h"
 
@@ -15,6 +16,31 @@ int GadgetServerAcceptor::open (const ACE_INET_Addr &listen_addr)
     return -1;
   }
 
+  {
+      std::lock_guard<std::mutex> guard(acceptor_mtx_);
+      is_listening_ = true;
+  }
+  
+  //Register a way to close the Acceptor via the ReST API
+  Gadgetron::ReST::instance()->server().route_dynamic("/acceptor/close")([this]()
+  {
+    this->close();
+    return "Acceptor closed\n";
+  });
+
+  //Register a way to get the port number if it is listening.
+  Gadgetron::ReST::instance()->server().route_dynamic("/info/port")([this,listen_addr]()
+  {
+      std::lock_guard<std::mutex> guard(acceptor_mtx_);
+      if (this->is_listening_) {
+          std::stringstream ss;
+          ss << listen_addr.get_port_number();
+          return crow::response(200, ss.str());
+      }
+      return crow::response(500, "Port not available");
+  });
+
+  
   return this->reactor ()->register_handler(this, ACE_Event_Handler::ACCEPT_MASK);
 }
 
@@ -24,16 +50,15 @@ int GadgetServerAcceptor::handle_input (ACE_HANDLE)
 
   ACE_NEW_RETURN (controller, GadgetStreamController, -1);
 
-  auto_ptr<GadgetStreamController> p (controller);
 
   controller->set_global_gadget_parameters(global_gadget_parameters_);
 
   if (this->acceptor_.accept (controller->peer ()) == -1) {
     GERROR("Failed to accept controller connection\n"); 
+    delete controller;
     return -1;
   }
   
-  p.release ();
   controller->reactor (this->reactor ());
   if (controller->open () == -1)
     controller->handle_close (ACE_INVALID_HANDLE, 0);

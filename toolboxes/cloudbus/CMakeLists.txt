@@ -1,8 +1,13 @@
 find_package(ACE REQUIRED)
 find_package(Boost REQUIRED)
 
+if (WIN32)
+  ADD_DEFINITIONS(-DCROW_MSVC_WORKAROUND)
+endif(WIN32)
+
 include_directories(${ACE_INCLUDE_DIR}
-                    ${Boost_INCLUDE_DIR} 
+                    ${Boost_INCLUDE_DIR}
+		    ${CMAKE_SOURCE_DIR}/toolboxes/rest
                     )
 
 add_library(gadgetron_toolbox_cloudbus SHARED
@@ -30,6 +35,7 @@ add_executable(gadgetron_cloudbus_relay cloudbus_relay.cpp)
 target_link_libraries(gadgetron_cloudbus_relay 
                      gadgetron_toolbox_cloudbus 
 		     gadgetron_toolbox_log
+		     gadgetron_toolbox_rest
                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 
 

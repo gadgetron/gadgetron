@@ -59,6 +59,7 @@ enum GadgetMessageID {
   GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT               = 1020, /**< DEPRECATED */
   GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT     = 1021, /**< DEPRECATED */
   GADGET_MESSAGE_ISMRMRD_IMAGE                          = 1022,
+  GADGET_MESSAGE_RECONDATA                              = 1023,
   GADGET_MESSAGE_EXT_ID_MAX                             = 4096
 };
 

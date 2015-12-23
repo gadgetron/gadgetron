@@ -25,4 +25,8 @@ namespace Gadgetron
 
     /// detect sampled region along E2
     template <typename T> EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E2(const hoNDArray<T>& data);
+
+    /// zero padding resize for kspace and complex images
+    /// if sizeE2<=1, 2D zero padding resize is performed
+    template <typename T> EXPORTMRICORE void zero_pad_resize(const hoNDArray<T>& complexIm, size_t sizeRO, size_t sizeE1, size_t sizeE2, hoNDArray<T>& complexImResized);
 }

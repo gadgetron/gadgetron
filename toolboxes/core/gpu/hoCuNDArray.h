@@ -40,7 +40,7 @@ namespace Gadgetron{
     }
   
     hoCuNDArray(boost::shared_ptr< std::vector<size_t> > dimensions) : hoNDArray<T>::hoNDArray() {
-      this->create(dimensions.get());
+      this->create(dimensions);
     }
   
     hoCuNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false) : hoNDArray<T>::hoNDArray() {
@@ -57,32 +57,24 @@ namespace Gadgetron{
 
     // Copy constructors
     hoCuNDArray(const hoNDArray<T> &a): hoNDArray<T>(){
-      this->data_ = 0;
-      this->dimensions_ = boost::shared_ptr< std::vector<size_t> >(new std::vector<size_t>(*a.get_dimensions()));
-      this->allocate_memory();
+      this->create(a.get_dimensions());
       memcpy(this->data_, a.get_data_ptr(), this->elements_*sizeof(T));
     }
 
     hoCuNDArray(const hoNDArray<T> *a): hoNDArray<T>(){
       if(!a) throw std::runtime_error("hoCuNDArray::hoCuNDArray(): 0x0 pointer provided.");
-      this->data_ = 0;
-      this->dimensions_ = boost::shared_ptr< std::vector<size_t> >(new std::vector<size_t>(*a->get_dimensions()));
-      this->allocate_memory();
+      this->create(a->get_dimensions());
       memcpy(this->data_, a->get_data_ptr(), this->elements_*sizeof(T));
     }
 
     hoCuNDArray(const hoCuNDArray<T> &a): hoNDArray<T>(){
-      this->data_ = 0;
-      this->dimensions_ = boost::shared_ptr< std::vector<size_t> >(new std::vector<size_t>(*a.get_dimensions()));
-      this->allocate_memory();
+      this->create(a.get_dimensions());
       memcpy(this->data_, a.get_data_ptr(), this->elements_*sizeof(T));
     }
 
     hoCuNDArray(const hoCuNDArray<T> *a): hoNDArray<T>(){
       if(!a) throw std::runtime_error("hoCuNDArray::hoCuNDArray(): 0x0 pointer provided.");
-      this->data_ = 0;
-      this->dimensions_ = boost::shared_ptr< std::vector<size_t> >(new std::vector<size_t>(*a->get_dimensions()));
-      this->allocate_memory();
+      this->create(a->get_dimensions());
       memcpy(this->data_, a->get_data_ptr(), this->elements_*sizeof(T));
     }
 
@@ -155,6 +147,7 @@ namespace Gadgetron{
         this->clear();
         this->dimensions_ = rhs.dimensions_;
         this->offsetFactors_ = rhs.offsetFactors_;
+        this->elements_ = rhs.elements_;
         rhs.dimensions_.reset();
         rhs.offsetFactors_.reset();
         this->data_ = rhs.data_;

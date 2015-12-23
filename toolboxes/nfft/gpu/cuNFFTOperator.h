@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cuNDArray_math.h"
 #include "linearOperator.h"
 #include "cuNFFT.h"
 #include "gpunfft_export.h"

@@ -12,6 +12,7 @@ def main():
     parser.add_argument('-I', '--ismrmrd_home', default=os.environ.get('ISMRMRD_HOME'), help="ISMRMRD installation home")
     parser.add_argument('-p', '--port', type=int, default=9003, help="Port of gadgetron instance")
     parser.add_argument('-e', '--external', action='store_true', help="External, do not start gadgetron")
+    parser.add_argument('-a', '--address', default="localhost", help="Address of gadgetron host (external)")
     parser.add_argument('test_case_list_file', help="List of test cases")
     args = parser.parse_args()
 
@@ -38,9 +39,9 @@ def main():
 
         # Now run the test
         if args.external:
-            r = subprocess.call(["python", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-p", str(args.port), "-e"])
+            r = subprocess.call(["python", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-a", str(args.address), "-p", str(args.port), "-e"])
         else:
-            r = subprocess.call(["python", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-p", str(args.port)])
+            r = subprocess.call(["python", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-a", str(args.address), "-p", str(args.port)])
 
         # Grab the log files and append to master logs
         gadgetron_outfile.write("==============================================\n")

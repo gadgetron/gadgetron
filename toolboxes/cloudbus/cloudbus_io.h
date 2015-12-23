@@ -4,6 +4,7 @@
 #include <exception>
 #include <cstring>
 #include <vector>
+#include <chrono>
 
 namespace Gadgetron
 {
@@ -21,8 +22,10 @@ namespace Gadgetron
     std::string uuid;
     std::string address;
     uint32_t port;
+    uint32_t rest_port;
     uint32_t compute_capability;
     uint32_t active_reconstructions;
+    std::time_t last_recon;
   };
 
   size_t calculate_node_info_length(GadgetronNodeInfo& n)
@@ -30,7 +33,8 @@ namespace Gadgetron
     size_t len = 0;
     len += 4 + n.uuid.size();
     len += 4 + n.address.size();
-    len += 12;
+    len += 4*sizeof(uint32_t);
+    len += sizeof(std::time_t);
     return len;
   }
   
@@ -49,8 +53,10 @@ namespace Gadgetron
     memcpy ((buffer+pos), n.address.c_str(), n.address.size() ); pos += n.address.size();
 
     *((uint32_t*)(buffer + pos)) = n.port; pos += 4;
+    *((uint32_t*)(buffer + pos)) = n.rest_port; pos += 4;
     *((uint32_t*)(buffer + pos)) = n.compute_capability; pos += 4;
     *((uint32_t*)(buffer + pos)) = n.active_reconstructions; pos += 4;
+    *((std::time_t*)(buffer + pos)) = n.last_recon; pos += sizeof(std::time_t);
     
     return pos;
   }
@@ -68,9 +74,10 @@ namespace Gadgetron
     n.address = std::string(buffer+pos,address_size); pos += address_size;
 
     n.port = *((uint32_t*)(buffer+pos)); pos += 4;
+    n.rest_port = *((uint32_t*)(buffer+pos)); pos += 4;
     n.compute_capability = *((uint32_t*)(buffer+pos)); pos += 4;
     n.active_reconstructions = *((uint32_t*)(buffer+pos)); pos += 4;
-    
+    n.last_recon = *((std::time_t*)(buffer+pos)); pos += sizeof(std::time_t);
     return pos;
   }
 

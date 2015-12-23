@@ -19,7 +19,7 @@ if (FFTW3_FOUND)
   add_subdirectory(mri_core)
   add_subdirectory(mri)
   if (NOT(WIN32))
-	  add_subdirectory(ct)
+    add_subdirectory(ct)
   endif()
 endif()
 
@@ -27,6 +27,7 @@ add_subdirectory(klt)
 add_subdirectory(nfft)
 add_subdirectory(dwt)
 add_subdirectory(registration)
+add_subdirectory(rest)
 
 IF (ACE_FOUND)
   add_subdirectory(gadgettools)
@@ -39,6 +40,14 @@ ENDIF()
 
 find_package(BLAS)
 find_package(LAPACK)
+
+
+
+if (MATLAB_FOUND)
+  message("Compiling MATLAB toolbox")
+  add_subdirectory(matlab)
+endif(MATLAB_FOUND)
+
 
 # Should we compile the python toolbox
 find_package(Boost COMPONENTS python system thread REQUIRED)

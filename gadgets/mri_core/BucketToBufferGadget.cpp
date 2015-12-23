@@ -50,7 +50,7 @@ namespace Gadgetron{
         S_ = SET;
     } else if (S_dimension.value().compare("segment") == 0) {
         S_ = SEGMENT;
-    } else if (N_dimension.value().compare("slice") == 0){
+    } else if (S_dimension.value().compare("slice") == 0){
         S_ = SLICE;
     } else {
         GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", S_dimension.value().c_str());
@@ -124,7 +124,9 @@ namespace Gadgetron{
         //the reconstruction bit corresponding to this ReconDataBuffer and encoding space
         IsmrmrdReconBit & rbit = getRBit(recon_data_buffers, key, espace);
         //and the corresponding data buffer for the reference data
-        IsmrmrdDataBuffered & dataBuffer = rbit.ref_;
+        if (!rbit.ref_)
+        	rbit.ref_ = IsmrmrdDataBuffered();
+        IsmrmrdDataBuffered & dataBuffer = *rbit.ref_;
         //this encoding space's xml header info
         ISMRMRD::Encoding & encoding = hdr_.encoding[espace];
         //this bucket's reference stats
@@ -377,14 +379,21 @@ namespace Gadgetron{
         uint16_t NE0;
         if (encoding.trajectory.compare("cartesian") == 0) {
             // if seperate or external calibration mode, using the acq length for NE0
-            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
-                || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+            if (encoding.parallelImaging)
             {
-                NE0 = acqhdr.number_of_samples;
+                if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
+                    || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+                {
+                    NE0 = acqhdr.number_of_samples;
+                }
+                else
+                {
+                    NE0 = encoding.reconSpace.matrixSize.x;
+                }
             }
             else
             {
-                NE0 = encoding.reconSpace.matrixSize.x;
+                NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
             }
         } else {
             NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
@@ -392,14 +401,26 @@ namespace Gadgetron{
 
         uint16_t NE1;
         if (encoding.trajectory.compare("cartesian") == 0) {
-            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
-                || encoding.parallelImaging.get().calibrationMode.get() == "external") )
+            if (encoding.parallelImaging)
             {
-                NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
+                if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
+                    || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+                {
+                    NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
+                }
+                else
+                {
+                    NE1 = encoding.encodedSpace.matrixSize.y;
+                }
             }
             else
             {
-                NE1 = encoding.encodedSpace.matrixSize.y;
+                if (encoding.encodingLimits.kspace_encoding_step_1.is_present()) {
+                    NE1 = encoding.encodingLimits.kspace_encoding_step_1->maximum - encoding.encodingLimits.kspace_encoding_step_1->minimum + 1;
+                }
+                else {
+                    NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
+                }
             }
         } else {
             if (encoding.encodingLimits.kspace_encoding_step_1.is_present()) {
@@ -411,14 +432,26 @@ namespace Gadgetron{
 
         uint16_t NE2;
         if (encoding.trajectory.compare("cartesian") == 0) {
-            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
-                || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+            if (encoding.parallelImaging)
             {
-                NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
+                if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
+                    || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+                {
+                    NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
+                }
+                else
+                {
+                    NE2 = encoding.encodedSpace.matrixSize.z;
+                }
             }
             else
             {
-                NE2 = encoding.encodedSpace.matrixSize.z;
+                if (encoding.encodingLimits.kspace_encoding_step_2.is_present()) {
+                    NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
+                }
+                else {
+                    NE2 = *stats.kspace_encode_step_2.rbegin() - *stats.kspace_encode_step_2.begin() + 1;
+                }
             }
         } else {
             if (encoding.encodingLimits.kspace_encoding_step_2.is_present()) {
@@ -515,8 +548,8 @@ namespace Gadgetron{
         uint16_t TRAJDIM = acqhdr.trajectory_dimensions;
         if (TRAJDIM > 0)
           {
-            dataBuffer.trajectory_.create(TRAJDIM, NE0, NE1, NE2, NN, NS, NLOC);
-            clear(&dataBuffer.trajectory_);
+        		dataBuffer.trajectory_ = hoNDArray<float>(TRAJDIM, NE0,NE1,NE2, NN, NS, NLOC);
+            clear(dataBuffer.trajectory_.get_ptr());
           }
 
         //boost::shared_ptr< std::vector<size_t> > dims =  dataBuffer.data_.get_dimensions();
@@ -663,7 +696,7 @@ namespace Gadgetron{
 
         float * trajptr;
 
-        trajptr = &dataBuffer.trajectory_(0,
+        trajptr = &(*dataBuffer.trajectory_)(0,
             offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, NUsed, SUsed, slice_loc);
 
         memcpy(trajptr, &acqtraj(0, acqhdr.discard_pre), sizeof(float)*npts_to_copy*acqhdr.trajectory_dimensions);

@@ -8,7 +8,8 @@ namespace Gadgetron
   int CloudBus::relay_port_ = GADGETRON_DEFAULT_RELAY_PORT;
   bool CloudBus::query_mode_ = false; //Listen only is disabled default
   int CloudBus::gadgetron_port_ = 9002; //Default port
-
+  int CloudBus::rest_port_ = 0;
+  
   int CloudBusReaderTask::open(void* = 0)
   {
     return this->activate( THR_NEW_LWP | THR_JOINABLE, 1 );
@@ -83,6 +84,11 @@ namespace Gadgetron
     gadgetron_port_ = port;
   }
 
+  void CloudBus::set_rest_port(uint32_t port)
+  {
+    rest_port_ = port;
+  }
+
   void CloudBus::set_compute_capability(uint32_t c)
   {
     node_info_.compute_capability = c;
@@ -107,6 +113,8 @@ namespace Gadgetron
   {
     mtx_.acquire();
     node_info_.active_reconstructions++;
+    auto t = std::chrono::system_clock::now();
+    node_info_.last_recon = std::chrono::system_clock::to_time_t(t);
     mtx_.release();
     send_node_info();
   }
@@ -115,6 +123,8 @@ namespace Gadgetron
   {
     mtx_.acquire();
     if (node_info_.active_reconstructions > 0) node_info_.active_reconstructions--;
+    auto t = std::chrono::system_clock::now();
+    node_info_.last_recon = std::chrono::system_clock::to_time_t(t);
     mtx_.release();
     send_node_info();
   }
@@ -259,6 +269,7 @@ namespace Gadgetron
     , reader_task_(0)
   {
     node_info_.port = gadgetron_port_;
+    node_info_.rest_port = rest_port_;
     set_compute_capability(1);
     node_info_.uuid = boost::uuids::to_string(uuid_);
     ACE_SOCK_Acceptor listener (ACE_Addr::sap_any);
@@ -266,6 +277,7 @@ namespace Gadgetron
     listener.get_local_addr (local_addr);
     node_info_.address = std::string(local_addr.get_host_name());
     node_info_.active_reconstructions = 0;
+    node_info_.last_recon = 0;
   }
 
 }

@@ -76,6 +76,8 @@ namespace Gadgetron
     static void set_relay_port(int port);
     static void set_query_only(bool m = true);
     static void set_gadgetron_port(uint32_t port);
+    static void set_rest_port(uint32_t port);
+    
     void set_compute_capability(uint32_t c);
 
     void send_node_info();    
@@ -101,7 +103,8 @@ namespace Gadgetron
     static int relay_port_;
     static bool query_mode_; //Listen only
     static int gadgetron_port_;
-
+    static int rest_port_;
+    
     GadgetronNodeInfo node_info_;
     std::vector<GadgetronNodeInfo> nodes_;
     

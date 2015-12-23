@@ -12,6 +12,7 @@
 #include "gtPlusSPIRIT.h"
 #include "gtPlusSPIRIT2DTOperator.h"
 #include "gtPlusLSQRSolver.h"
+#include "mri_core_spirit.h"
 
 #include "GadgetCloudController.h"
 #include "GadgetCloudJobMessageReadWrite.h"
@@ -85,7 +86,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         size_t oRO = workOrder2DT->spirit_oSize_RO_;
         size_t oE1 = workOrder2DT->spirit_oSize_E1_;
 
-        workOrder2DT->kernel_->create(kRO, kE1, srcCHA, dstCHA, oRO, oE1, refN, S);
+        workOrder2DT->kernel_->create(2*kRO-1, 2*kE1-1, srcCHA, dstCHA, refN, S);
         workOrder2DT->kernelIm_->create(RO, E1, srcCHA, dstCHA, refN, S);
     }
     catch(...)
@@ -168,23 +169,17 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsSrc, debugFolder_+"acsSrc"); }
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(acsDst, debugFolder_+"acsDst"); }
 
-        ho6DArray<T> ker(kRO, kE1, srcCHA, dstCHA, oRO, oE1, 
-                            workOrder2DT->kernel_->begin()
-                            +n*kRO*kE1*srcCHA*dstCHA*oRO*oE1
-                            +usedS*kRO*kE1*srcCHA*dstCHA*oRO*oE1*refN);
-
-        gtPlusSPIRIT2DOperator<T> spirit;
-        spirit.calib_use_gpu_ = workOrder2DT->spirit_use_gpu_;
-
-        spirit.calib(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, kRO, kE1, oRO, oE1, ker);
-
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(ker, debugFolder_+"ker"); }
+        T* pKernel = &((*workOrder2DT->kernel_)(0, 0, 0, 0, n, usedS));
+        hoNDArray<T> ker(workOrder2DT->kernel_->get_size(0), workOrder2DT->kernel_->get_size(1), srcCHA, dstCHA, pKernel);
 
         bool minusI = true;
 
-        hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
-        GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, kRO, kE1, oRO, oE1, RO, E1, kIm, minusI));
-        if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(kIm, debugFolder_+"kIm"); }
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::spirit2d_calib_convolution_kernel(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, kRO, kE1, oRO, oE1, ker, minusI));
+        if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(ker, debugFolder_ + "ker"); }
+
+        hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin() + n*RO*E1*srcCHA*dstCHA + usedS*RO*E1*srcCHA*dstCHA*refN);
+        GADGET_CHECK_EXCEPTION_RETURN_FALSE( Gadgetron::spirit2d_image_domain_kernel(ker, RO, E1, kIm) );
+        if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(kIm, debugFolder_ + "kIm"); }
     }
     catch(...)
     {

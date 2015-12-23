@@ -34,7 +34,9 @@
 #include <iostream>
 #include <exception>
 #include <map>
-
+#include <thread>
+#include <chrono>
+#include <condition_variable>
 
 std::string get_date_time_string()
 {
@@ -92,6 +94,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT               = 1020, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT     = 1021, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGE                          = 1022,
+    GADGET_MESSAGE_RECONDATA                              = 1023,
     GADGET_MESSAGE_EXT_ID_MAX                             = 4096
 };
 
@@ -940,6 +943,7 @@ class GadgetronClientConnector
 public:
     GadgetronClientConnector() 
         : socket_(0)
+        , timeout_ms_(10000)
     {
 
     }
@@ -952,6 +956,11 @@ public:
         }
     }
 
+    void set_timeout(unsigned int t)
+    {
+        timeout_ms_ = t;
+    }
+    
     void read_task()
     {
         if (!socket_) {
@@ -994,24 +1003,40 @@ public:
         tcp::resolver::query query(tcp::v4(), hostname.c_str(), port.c_str());
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
         tcp::resolver::iterator end;
-
+        
         socket_ = new tcp::socket(io_service);
-
         if (!socket_) {
             throw GadgetronClientException("Unable to create socket.");
         }
 
-        //TODO:
-        //For newer versions of Boost, we should use
-        //   boost::asio::connect(*socket_, iterator);
-
+        std::condition_variable cv;
+        std::mutex cv_m;
+        
         boost::system::error_code error = boost::asio::error::host_not_found;
-        while (error && endpoint_iterator != end) {
-            socket_->close();
-            socket_->connect(*endpoint_iterator++, error);
+        std::thread t([&](){
+                //TODO:
+                //For newer versions of Boost, we should use
+                //   boost::asio::connect(*socket_, iterator);
+                while (error && endpoint_iterator != end) {
+                    socket_->close();
+                    socket_->connect(*endpoint_iterator++, error);
+                }
+                cv.notify_all();
+            });
+
+        {
+            std::unique_lock<std::mutex> lk(cv_m);
+            if (std::cv_status::timeout == cv.wait_until(lk, std::chrono::system_clock::now() +std::chrono::milliseconds(timeout_ms_)) ) {
+                socket_->close();
+             }
         }
+
+        t.join();
+        
         if (error)
             throw GadgetronClientException("Error connecting using socket.");
+                               
+
 
         reader_thread_ = boost::thread(boost::bind(&GadgetronClientConnector::read_task, this));
 
@@ -1129,6 +1154,7 @@ protected:
     tcp::socket* socket_;
     boost::thread reader_thread_;
     maptype readers_;
+    unsigned int timeout_ms_;
 
 
 };
@@ -1147,6 +1173,7 @@ int main(int argc, char **argv)
     std::string config_file_local;
     std::string config_xml_local;
     unsigned int loops;
+    unsigned int timeout_ms;
     std::string out_fileformat;
     bool open_input_file = true;
 
@@ -1164,6 +1191,7 @@ int main(int argc, char **argv)
         ("config,c", po::value<std::string>(&config_file)->default_value("default.xml"), "Configuration file (remote)")
         ("config-local,C", po::value<std::string>(&config_file_local), "Configuration file (local)")
         ("loops,l", po::value<unsigned int>(&loops)->default_value(1), "Loops")
+        ("timeout,t", po::value<unsigned int>(&timeout_ms)->default_value(10000), "Timeout [ms]")
         ("outformat,F", po::value<std::string>(&out_fileformat)->default_value("h5"), "Out format, h5 for hdf5 and hdr for analyze image")
         ;
 
@@ -1229,7 +1257,8 @@ int main(int argc, char **argv)
     }
 
     GadgetronClientConnector con;
-
+    con.set_timeout(timeout_ms);
+    
     if ( out_fileformat == "hdr" )
     {
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader(hdf5_out_group)));

@@ -90,52 +90,56 @@ namespace Gadgetron {
 
             if (!h.encoding[e].parallelImaging)
             {
-                GDEBUG("Parallel Imaging section not found in header");
-                return GADGET_FAIL;
+                GDEBUG_STREAM("Parallel Imaging section not found in header");
+                calib_mode_[e] = ISMRMRD_noacceleration;
+                acceFactorE1_[e] = 1;
+                acceFactorE2_[e] = 1;
             }
-
-            ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
-
-            acceFactorE1_[e] = p_imaging.accelerationFactor.kspace_encoding_step_1;
-            acceFactorE2_[e] = p_imaging.accelerationFactor.kspace_encoding_step_2;
-            GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE1 is " << acceFactorE1_[e]);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE2 is " << acceFactorE2_[e]);
-
-            std::string calib = *p_imaging.calibrationMode;
-
-            bool separate = (calib.compare("separate") == 0);
-            bool embedded = (calib.compare("embedded") == 0);
-            bool external = (calib.compare("external") == 0);
-            bool interleaved = (calib.compare("interleaved") == 0);
-            bool other = (calib.compare("other") == 0);
-
-            calib_mode_[e] = Gadgetron::ISMRMRD_noacceleration;
-            if (acceFactorE1_[e] > 1 || acceFactorE2_[e] > 1)
+            else
             {
-                if (interleaved)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_interleaved;
-                else if (embedded)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_embedded;
-                else if (separate)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_separate;
-                else if (external)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_external;
-                else if (other)
-                    calib_mode_[e] = Gadgetron::ISMRMRD_other;
+                ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
+
+                acceFactorE1_[e] = p_imaging.accelerationFactor.kspace_encoding_step_1;
+                acceFactorE2_[e] = p_imaging.accelerationFactor.kspace_encoding_step_2;
+                GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE1 is " << acceFactorE1_[e]);
+                GDEBUG_CONDITION_STREAM(verbose.value(), "acceFactorE2 is " << acceFactorE2_[e]);
+
+                std::string calib = *p_imaging.calibrationMode;
+
+                bool separate = (calib.compare("separate") == 0);
+                bool embedded = (calib.compare("embedded") == 0);
+                bool external = (calib.compare("external") == 0);
+                bool interleaved = (calib.compare("interleaved") == 0);
+                bool other = (calib.compare("other") == 0);
+
+                calib_mode_[e] = Gadgetron::ISMRMRD_noacceleration;
+                if (acceFactorE1_[e] > 1 || acceFactorE2_[e] > 1)
+                {
+                    if (interleaved)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_interleaved;
+                    else if (embedded)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_embedded;
+                    else if (separate)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_separate;
+                    else if (external)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_external;
+                    else if (other)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_other;
+                }
             }
         }
 
         // ---------------------------------------------------------------------------------------------------------
 
-        //if (!debug_folder.value().empty())
-        //{
-        //    Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        //}
-        //else
-        //{
-        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        //}
+        /*if (!debug_folder.value().empty())
+        {
+            Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
+            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
+        }
+        else
+        {
+            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
+        }*/
 
         return GADGET_OK;
     }
@@ -151,8 +155,7 @@ namespace Gadgetron {
         }
 
         // for every encoding space
-        size_t e;
-        for (e = 0; e < recon_bit_->rbit_.size(); e++)
+        for (size_t e = 0; e < recon_bit_->rbit_.size(); e++)
         {
             std::stringstream os;
             os << "_encoding_" << e;
@@ -163,49 +166,55 @@ namespace Gadgetron {
             // ---------------------------------------------------------------
             // export incoming data
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str());
-            //}
+            /*if (!debug_folder_full_path_.empty())
+            {
+                gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str());
+            }
 
-            //if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].data_.trajectory_.get_number_of_elements() > 0)
-            //{
-            //    gt_exporter_.exportArray(recon_bit_->rbit_[e].data_.trajectory_, debug_folder_full_path_ + "data_traj" + os.str());
-            //}
+            if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].data_.trajectory_)
+            {
+                if (recon_bit_->rbit_[e].ref_->trajectory_->get_number_of_elements() > 0)
+                {
+                    gt_exporter_.exportArray(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_traj" + os.str());
+                }
+            }*/
 
             // ---------------------------------------------------------------
 
-            if (recon_bit_->rbit_[e].ref_.data_.get_number_of_elements() > 0)
+            if (recon_bit_->rbit_[e].ref_)
             {
-                //if (!debug_folder_full_path_.empty())
-                //{
-                //    gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].ref_.data_, debug_folder_full_path_ + "ref" + os.str());
-                //}
+                /*if (!debug_folder_full_path_.empty())
+                {
+                    gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].ref_->data_, debug_folder_full_path_ + "ref" + os.str());
+                }
 
-                //if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].ref_.trajectory_.get_number_of_elements() > 0)
-                //{
-                //    gt_exporter_.exportArray(recon_bit_->rbit_[e].ref_.trajectory_, debug_folder_full_path_ + "ref_traj" + os.str());
-                //}
+                if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].ref_->trajectory_)
+                {
+                    if (recon_bit_->rbit_[e].ref_->trajectory_->get_number_of_elements() > 0)
+                    {
+                        gt_exporter_.exportArray(*(recon_bit_->rbit_[e].ref_->trajectory_), debug_folder_full_path_ + "ref_traj" + os.str());
+                    }
+                }*/
 
                 // ---------------------------------------------------------------
 
                 // after this step, the recon_obj_[e].ref_calib_ and recon_obj_[e].ref_coil_map_ are set
 
                 if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::make_ref_coil_map"); }
-                this->make_ref_coil_map(recon_bit_->rbit_[e], recon_obj_[e], e);
+                this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_,*recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj_[e], e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ----------------------------------------------------------
                 // export prepared ref for calibration and coil map
-                //if (!debug_folder_full_path_.empty())
-                //{
-                //    this->gt_exporter_.exportArrayComplex(recon_obj_[e].ref_calib_, debug_folder_full_path_ + "ref_calib" + os.str());
-                //}
+                /*if (!debug_folder_full_path_.empty())
+                {
+                    this->gt_exporter_.exportArrayComplex(recon_obj_[e].ref_calib_, debug_folder_full_path_ + "ref_calib" + os.str());
+                }
 
-                //if (!debug_folder_full_path_.empty())
-                //{
-                //    this->gt_exporter_.exportArrayComplex(recon_obj_[e].ref_coil_map_, debug_folder_full_path_ + "ref_coil_map" + os.str());
-                //}
+                if (!debug_folder_full_path_.empty())
+                {
+                    this->gt_exporter_.exportArrayComplex(recon_obj_[e].ref_coil_map_, debug_folder_full_path_ + "ref_coil_map" + os.str());
+                }*/
 
                 // ---------------------------------------------------------------
 
@@ -224,21 +233,23 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
 
-                recon_bit_->rbit_[e].ref_.data_.clear();
-                recon_bit_->rbit_[e].ref_.trajectory_.clear();
+                recon_bit_->rbit_[e].ref_ = boost::none;
             }
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
             {
-                //if (!debug_folder_full_path_.empty())
-                //{
-                //    gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data_before_unwrapping" + os.str());
-                //}
+                /*if (!debug_folder_full_path_.empty())
+                {
+                    gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data_before_unwrapping" + os.str());
+                }
 
-                //if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].data_.trajectory_.get_number_of_elements() > 0)
-                //{
-                //    gt_exporter_.exportArray(recon_bit_->rbit_[e].data_.trajectory_, debug_folder_full_path_ + "data_before_unwrapping_traj" + os.str());
-                //}
+                if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].data_.trajectory_)
+                {
+                    if (recon_bit_->rbit_[e].data_.trajectory_->get_number_of_elements() > 0)
+                    {
+                        gt_exporter_.exportArray(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_before_unwrapping_traj" + os.str());
+                    }
+                }*/
 
                 // ---------------------------------------------------------------
 
@@ -258,7 +269,7 @@ namespace Gadgetron {
                 this->send_out_image_array(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                if (send_out_gfactor.value() && recon_obj_[e].gfactor_.get_number_of_elements()>0)
+                if (send_out_gfactor.value() && recon_obj_[e].gfactor_.get_number_of_elements()>0 && (acceFactorE1_[e] * acceFactorE2_[e]>1))
                 {
                     IsmrmrdImageArray res;
                     Gadgetron::real_to_complex(recon_obj_[e].gfactor_, res.data_);
@@ -273,6 +284,8 @@ namespace Gadgetron {
 
             recon_obj_[e].recon_res_.data_.clear();
             recon_obj_[e].gfactor_.clear();
+            recon_obj_[e].recon_res_.headers_.clear();
+            recon_obj_[e].recon_res_.meta_.clear();
         }
 
         m1->release();
@@ -352,6 +365,8 @@ namespace Gadgetron {
 
                             // set the skip processing flag, so gfactor map will not be processed during e.g. partial fourier handling or kspace filter gadgets
                             res.meta_[offset].set(GADGETRON_SKIP_PROCESSING_AFTER_RECON, (long)1);
+                            // set the flag to use dedicated scaling factor
+                            res.meta_[offset].set(GADGETRON_USE_DEDICATED_SCALING_FACTOR, (long)1);
                         }
 
                         if (verbose.value())
@@ -386,43 +401,45 @@ namespace Gadgetron {
 
     // ----------------------------------------------------------------------------------------
 
-    void GenericCartesianGrappaReconGadget::make_ref_coil_map(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding)
+    void GenericCartesianGrappaReconGadget::make_ref_coil_map(IsmrmrdDataBuffered& ref_, std::vector<size_t>  recon_dims, ReconObjType& recon_obj, size_t encoding)
     {
+
         try
         {
-            hoNDArray< std::complex<float> >& ref = recon_bit.ref_.data_;
+            hoNDArray< std::complex<float> >& ref_data = ref_.data_;
             hoNDArray< std::complex<float> >& ref_calib = recon_obj.ref_calib_;
             hoNDArray< std::complex<float> >& ref_coil_map = recon_obj.ref_coil_map_;
 
             // sampling limits
-            size_t sRO = recon_bit.ref_.sampling_.sampling_limits_[0].min_;
-            size_t eRO = recon_bit.ref_.sampling_.sampling_limits_[0].max_;
-            size_t cRO = recon_bit.ref_.sampling_.sampling_limits_[0].center_;
+            size_t sRO = ref_.sampling_.sampling_limits_[0].min_;
+            size_t eRO = ref_.sampling_.sampling_limits_[0].max_;
+            size_t cRO = ref_.sampling_.sampling_limits_[0].center_;
 
-            size_t sE1 = recon_bit.ref_.sampling_.sampling_limits_[1].min_;
-            size_t eE1 = recon_bit.ref_.sampling_.sampling_limits_[1].max_;
-            size_t cE1 = recon_bit.ref_.sampling_.sampling_limits_[1].center_;
+            size_t sE1 = ref_.sampling_.sampling_limits_[1].min_;
+            size_t eE1 = ref_.sampling_.sampling_limits_[1].max_;
+            size_t cE1 = ref_.sampling_.sampling_limits_[1].center_;
 
-            size_t sE2 = recon_bit.ref_.sampling_.sampling_limits_[2].min_;
-            size_t eE2 = recon_bit.ref_.sampling_.sampling_limits_[2].max_;
-            size_t cE2 = recon_bit.ref_.sampling_.sampling_limits_[2].center_;
+            size_t sE2 = ref_.sampling_.sampling_limits_[2].min_;
+            size_t eE2 = ref_.sampling_.sampling_limits_[2].max_;
+            size_t cE2 = ref_.sampling_.sampling_limits_[2].center_;
 
             // recon size
-            size_t recon_RO = recon_bit.data_.data_.get_size(0);
-            size_t recon_E1 = recon_bit.data_.data_.get_size(1);
-            size_t recon_E2 = recon_bit.data_.data_.get_size(2);
+            size_t recon_RO = recon_dims[0];
+            size_t recon_E1 = recon_dims[1];
+            size_t recon_E2 = recon_dims[2];
 
             // ref array size
-            size_t CHA = ref.get_size(3);
-            size_t N = ref.get_size(4);
-            size_t S = ref.get_size(5);
-            size_t SLC = ref.get_size(6);
+            size_t CHA = ref_data.get_size(3);
+            size_t N = ref_data.get_size(4);
+            size_t S = ref_data.get_size(5);
+            size_t SLC = ref_data.get_size(6);
 
             // determine the ref_coil_map size
             size_t RO = 2 * cRO;
             if (sRO>0 || eRO<RO - 1)
             {
                 RO = 2 * std::max(cRO - sRO, eRO - cRO+1);
+                if (RO>recon_RO) RO = recon_RO;
             }
 
             size_t E1 = eE1 - sE1 + 1;
@@ -431,7 +448,13 @@ namespace Gadgetron {
             if ((calib_mode_[encoding] == Gadgetron::ISMRMRD_interleaved) || (calib_mode_[encoding] == Gadgetron::ISMRMRD_noacceleration))
             {
                 E1 = 2 * std::max(cE1 - sE1, eE1 - cE1+1);
-                if (E2>1 ) E2 = 2 * std::max(cE2 - sE2, eE2 - cE2+1);
+                if (E1>recon_E1) E1 = recon_E1;
+
+                if (E2 > 1)
+                {
+                    E2 = 2 * std::max(cE2 - sE2, eE2 - cE2 + 1);
+                    if (E2 > recon_E2) E2 = recon_E2;
+                }
             }
 
             ref_coil_map.create(RO, E1, E2, CHA, N, S, SLC);
@@ -450,7 +473,7 @@ namespace Gadgetron {
                             {
                                 for (e1 = sE1; e1 <= eE1; e1++)
                                 {
-                                    std::complex<float>* pSrc = &(ref(0, e1-sE1, e2-sE2, cha, n, s, slc));
+                                    std::complex<float>* pSrc = &(ref_data(0, e1-sE1, e2-sE2, cha, n, s, slc));
                                     std::complex<float>* pDst = &(ref_coil_map(0, e1, e2, cha, n, s, slc));
 
                                     memcpy(pDst + sRO, pSrc, sizeof(std::complex<float>)*(eRO - sRO + 1));
@@ -461,18 +484,18 @@ namespace Gadgetron {
                 }
             }
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    std::stringstream os;
-            //    os << "encoding_" << encoding;
+            /*if (!debug_folder_full_path_.empty())
+            {
+                std::stringstream os;
+                os << "encoding_" << encoding;
 
-            //    gt_exporter_.exportArrayComplex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map_before_filtering_" + os.str());
-            //}
+                gt_exporter_.exportArrayComplex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map_before_filtering_" + os.str());
+            }*/
 
             // filter the ref_coil_map
             if (filter_RO_ref_coi_map_.get_size(0) != RO)
             {
-                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(0), recon_bit.ref_.sampling_.sampling_limits_[0].min_, recon_bit.ref_.sampling_.sampling_limits_[0].max_, filter_RO_ref_coi_map_);
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(0), ref_.sampling_.sampling_limits_[0].min_, ref_.sampling_.sampling_limits_[0].max_, filter_RO_ref_coi_map_);
 
                 //if (!debug_folder_full_path_.empty())
                 //{
@@ -485,7 +508,7 @@ namespace Gadgetron {
 
             if (filter_E1_ref_coi_map_.get_size(0) != E1)
             {
-                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(1), recon_bit.ref_.sampling_.sampling_limits_[1].min_, recon_bit.ref_.sampling_.sampling_limits_[1].max_, filter_E1_ref_coi_map_);
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(1), ref_.sampling_.sampling_limits_[1].min_, ref_.sampling_.sampling_limits_[1].max_, filter_E1_ref_coi_map_);
 
                 //if (!debug_folder_full_path_.empty())
                 //{
@@ -498,7 +521,7 @@ namespace Gadgetron {
 
             if ( (E2 > 1) && (filter_E2_ref_coi_map_.get_size(0) != E2) )
             {
-                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(2), recon_bit.ref_.sampling_.sampling_limits_[2].min_, recon_bit.ref_.sampling_.sampling_limits_[2].max_, filter_E2_ref_coi_map_);
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(2), ref_.sampling_.sampling_limits_[2].min_, ref_.sampling_.sampling_limits_[2].max_, filter_E2_ref_coi_map_);
 
                 //if (!debug_folder_full_path_.empty())
                 //{
@@ -520,20 +543,19 @@ namespace Gadgetron {
                 Gadgetron::apply_kspace_filter_ROE1(ref_coil_map, filter_RO_ref_coi_map_, filter_E1_ref_coi_map_, ref_recon_buf);
             }
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    std::stringstream os;
-            //    os << "encoding_" << encoding;
+            /*if (!debug_folder_full_path_.empty())
+            {
+                std::stringstream os;
+                os << "encoding_" << encoding;
 
-            //    gt_exporter_.exportArrayComplex(ref_recon_buf, debug_folder_full_path_ + "ref_coil_map_after_filtering_" + os.str());
-            //}
+                gt_exporter_.exportArrayComplex(ref_recon_buf, debug_folder_full_path_ + "ref_coil_map_after_filtering_" + os.str());
+            }*/
 
             // pad the ref_coil_map into the data array
             Gadgetron::pad(recon_RO, recon_E1, recon_E2, &ref_recon_buf, &ref_coil_map);
 
-            std::vector<size_t> dim;
-            ref.get_dimensions(dim);
-            ref_calib.create(dim, ref.begin());
+            std::vector<size_t> dim = *ref_data.get_dimensions();
+            ref_calib.create(dim, ref_data.begin());
 
             //if (!debug_folder_full_path_.empty())
             //{
@@ -567,13 +589,13 @@ namespace Gadgetron {
                 Gadgetron::hoNDFFT<float>::instance()->ifft2c(recon_obj.ref_coil_map_, complex_im_recon_buf_);
             }
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    std::stringstream os;
-            //    os << "encoding_" << e;
+            /*if (!debug_folder_full_path_.empty())
+            {
+                std::stringstream os;
+                os << "encoding_" << e;
 
-            //    gt_exporter_.exportArrayComplex(complex_im_recon_buf_, debug_folder_full_path_ + "complex_im_for_coil_map_" + os.str());
-            //}
+                gt_exporter_.exportArrayComplex(complex_im_recon_buf_, debug_folder_full_path_ + "complex_im_for_coil_map_" + os.str());
+            }*/
 
             size_t ks = 7;
             size_t kz = 5;
@@ -581,13 +603,13 @@ namespace Gadgetron {
 
             Gadgetron::coil_map_Inati(complex_im_recon_buf_, recon_obj.coil_map_, ks, kz, power);
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    std::stringstream os;
-            //    os << "encoding_" << e;
+            /*if (!debug_folder_full_path_.empty())
+            {
+                std::stringstream os;
+                os << "encoding_" << e;
 
-            //    gt_exporter_.exportArrayComplex(recon_obj.coil_map_, debug_folder_full_path_ + "coil_map_" + os.str());
-            //}
+                gt_exporter_.exportArrayComplex(recon_obj.coil_map_, debug_folder_full_path_ + "coil_map_" + os.str());
+            }*/
         }
         catch (...)
         {
@@ -624,7 +646,7 @@ namespace Gadgetron {
 
             if (acceFactorE1_[e] <= 1 && acceFactorE2_[e] <= 1)
             {
-                Gadgetron::conjugate(recon_obj.ref_coil_map_, recon_obj.unmixing_coeff_);
+                Gadgetron::conjugate(recon_obj.coil_map_, recon_obj.unmixing_coeff_);
             }
             else
             {
@@ -844,9 +866,6 @@ namespace Gadgetron {
                     size_t usedS = s;
                     if (s >= ref_S) usedS = ref_S - 1;
 
-                    T* pKer = &(recon_obj.kernel_(0, 0, 0, 0, 0, usedN, usedS, slc));
-                    hoNDArray< std::complex<float> > ker(convkRO, convkE1, convkE2, srcCHA, dstCHA, pKer);
-
                     T* pUnmix = &(recon_obj.unmixing_coeff_(0, 0, 0, 0, usedN, usedS, slc));
                     hoNDArray< std::complex<float> > unmixing(RO, E1, E2, srcCHA, pUnmix);
 
@@ -913,7 +932,7 @@ namespace Gadgetron {
                             {
                                 ISMRMRD::AcquisitionHeader& curr_header = recon_bit.data_.headers_(e1, e2, n, s, slc);
 
-                                if (curr_header.measurement_uid != 0) // a valid header
+                                // if (curr_header.measurement_uid != 0) // a valid header
                                 {
                                     if (E2 > 1)
                                     {
@@ -939,14 +958,14 @@ namespace Gadgetron {
                             }
                         }
 
-                        if (acq_header.measurement_uid == 0)
-                        {
-                            std::ostringstream ostr;
-                            ostr << "Cannot create valid image header : n = " << n << ", s = " << s << ", slc = " << slc;
-                            GADGET_THROW(ostr.str());
-                        }
-                        else
-                        {
+                        //if (acq_header.measurement_uid == 0)
+                        //{
+                        //    std::ostringstream ostr;
+                        //    ostr << "Cannot create valid image header : n = " << n << ", s = " << s << ", slc = " << slc;
+                        //    GADGET_THROW(ostr.str());
+                        //}
+                        //else
+                        //{
                             ISMRMRD::ImageHeader& im_header = recon_obj.recon_res_.headers_(n, s, slc);
                             ISMRMRD::MetaContainer& meta = recon_obj.recon_res_.meta_[n + s*N + slc*N*S];
 
@@ -998,7 +1017,7 @@ namespace Gadgetron {
                             im_header.physiology_time_stamp[1] = acq_header.physiology_time_stamp[1];
                             im_header.physiology_time_stamp[2] = acq_header.physiology_time_stamp[2];
 
-                            im_header.image_type = ISMRMRD::ISMRMRD_IMTYPE_COMPLEX;
+                            im_header.image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
                             im_header.image_index = (uint16_t)(n + s*N + slc*N*S);
                             im_header.image_series_index = 0;
 
@@ -1036,7 +1055,7 @@ namespace Gadgetron {
                             meta.set("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].min_);
                             meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].center_);
                             meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].max_);
-                        }
+                        //}
                     }
                 }
             }

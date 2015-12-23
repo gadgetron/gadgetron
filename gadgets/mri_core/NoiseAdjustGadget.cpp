@@ -3,7 +3,7 @@
 #include "hoNDArray_elemwise.h"
 #include "hoMatrix.h"
 #include "hoNDArray_linalg.h"
-#include "hoNDArray_elemwise.h"
+#include "hoNDArray_reductions.h"
 
 #ifdef USE_OMP
 #include "omp.h"
@@ -328,11 +328,24 @@ namespace Gadgetron{
 	  }
 	}
 
-	//Cholesky and invert lower triangular
-	arma::cx_fmat noise_covf = as_arma_matrix(&noise_prewhitener_matrixf_);      
-	noise_covf = arma::inv(arma::trimatu(arma::chol(noise_covf)));
-      
-	noise_decorrelation_calculated_ = true;
+    float v = Gadgetron::norm1(noise_covariance_matrixf_);
+    if (v <= 0)
+    {
+        GDEBUG("Accumulated noise prewhietner is empty\n");
+        for (size_t cha = 0; cha < c; cha++)
+        {
+            noise_prewhitener_matrixf_(cha, cha) = 1;
+        }
+    }
+    else
+    {
+        //Cholesky and invert lower triangular
+        arma::cx_fmat noise_covf = as_arma_matrix(&noise_prewhitener_matrixf_);
+        noise_covf = arma::inv(arma::trimatu(arma::chol(noise_covf)));
+    }
+
+    noise_decorrelation_calculated_ = true;
+
       } else {
 	noise_decorrelation_calculated_ = false;
       }
@@ -394,7 +407,7 @@ namespace Gadgetron{
       hoNDArray< std::complex<float> > readout(*m2->getObjectPtr());
       gemm(noise_covariance_matrixf_once_, readout, true, *m2->getObjectPtr(), false);
       Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_);
-      
+
       number_of_noise_samples_ += samples;
       m1->release();
       return GADGET_OK;
@@ -423,7 +436,7 @@ namespace Gadgetron{
 	GDEBUG("Noise dwell time: %f\n", noise_dwell_time_us_);
 	GDEBUG("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
 	GDEBUG("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
-	GDEBUG("noise_bw_scale_factor: %f", noise_bw_scale_factor_);
+	GDEBUG("noise_bw_scale_factor: %f\n", noise_bw_scale_factor_);
       }
 
       if (noise_decorrelation_calculated_) {

@@ -16,7 +16,7 @@
 
 #include "hoNDArray_utils.h"
 
-// #include "gtPlusIOAnalyze.h"
+//#include "gtPlusIOAnalyze.h"
 
 #include "GadgetStreamController.h"
 
@@ -185,7 +185,7 @@ namespace Gadgetron {
         // --------------------------------------------------
 
         // make the ref data for coil map estimation
-        virtual void make_ref_coil_map(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
+        virtual void make_ref_coil_map(IsmrmrdDataBuffered& ref_,std::vector<size_t> recon_dims, ReconObjType& recon_obj, size_t encoding);
 
         // estimate coil map
         virtual void perform_coil_map_estimation(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);

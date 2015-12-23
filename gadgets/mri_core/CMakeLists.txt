@@ -90,7 +90,10 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     GenericCartesianReconReferencePrepGadget.h 
                                     GenericReconPartialFourierHandlingGadget.h 
                                     GenericReconPartialFourierHandlingFilterGadget.h 
-                                    GenericReconPartialFourierHandlingPOCSGadget.h )
+                                    GenericReconPartialFourierHandlingPOCSGadget.h 
+                                    GenericReconKSpaceFilteringGadget.h 
+                                    GenericReconFieldOfViewAdjustmentGadget.h 
+                                    GenericReconImageArrayScalingGadget.h )
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -128,7 +131,10 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 GenericCartesianReconReferencePrepGadget.cpp 
                                 GenericReconPartialFourierHandlingGadget.cpp 
                                 GenericReconPartialFourierHandlingFilterGadget.cpp 
-                                GenericReconPartialFourierHandlingPOCSGadget.cpp )
+                                GenericReconPartialFourierHandlingPOCSGadget.cpp 
+                                GenericReconKSpaceFilteringGadget.cpp 
+                                GenericReconFieldOfViewAdjustmentGadget.cpp 
+                                GenericReconImageArrayScalingGadget.cpp )
 
 if (WIN32)
     set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )
@@ -142,6 +148,7 @@ set( gadgetron_mricore_config_files
     default_measurement_dependencies.xml
     isalive.xml
     gtquery.xml
+    Generic_Cartesian_Grappa.xml
     Generic_Cartesian_Grappa_T2W.xml
     Generic_Cartesian_Grappa_RealTimeCine.xml
 )

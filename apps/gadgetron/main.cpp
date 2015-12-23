@@ -1,3 +1,6 @@
+
+#include "gadgetron_rest.h"
+
 #include "GadgetServerAcceptor.h"
 #include "FileInfo.h"
 #include "url_encode.h"
@@ -5,6 +8,8 @@
 #include "gadgetron_config.h"
 #include "gadgetron_paths.h"
 #include "CloudBus.h"
+
+#include "gadgetron_system_info.h"
 
 #include <ace/Log_Msg.h>
 #include <ace/Service_Config.h>
@@ -27,6 +32,7 @@
 #endif // _WIN32
 
 #include <boost/filesystem.hpp>
+
 using namespace boost::filesystem;
 
 using namespace Gadgetron;
@@ -85,6 +91,7 @@ void print_usage()
   GINFO("gadgetron   -p <PORT>                      (default 9002)       \n");
   GINFO("            -r <RELAY HOST>                (default localhost)  \n");
   GINFO("            -l <RELAY PORT>                (default 0, disabled)\n");
+  GINFO("            -R <REST PORT>                 (default 0, disabled)\n");
 }
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
@@ -106,6 +113,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   ACE_TCHAR port_no[1024];
   ACE_TCHAR relay_host[1024];
   uint16_t  relay_port = 0;
+  uint16_t  rest_port = 0;
 
   ACE_OS_String::strncpy(relay_host, "localhost", 1024);
 
@@ -129,6 +137,10 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 	relay_port = c.cloudBus->port;
       }
 
+      if (c.rest) {
+	rest_port = c.rest->port;
+      }
+      
       for (std::vector<GadgetronXML::GadgetronParameter>::iterator it = c.globalGadgetParameter.begin();
 	   it != c.globalGadgetParameter.end();
 	   ++it)
@@ -146,7 +158,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     return -1;
   }
 
-  static const ACE_TCHAR options[] = ACE_TEXT(":p:r:l:");
+  static const ACE_TCHAR options[] = ACE_TEXT(":p:r:l:R:");
   ACE_Get_Opt cmd_opts(argc, argv, options);
 
   int option;
@@ -161,6 +173,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     case 'l':
       relay_port = std::atoi(cmd_opts.opt_arg());
       break;
+    case 'R':
+      rest_port = std::atoi(cmd_opts.opt_arg());
+      break;
     case ':':
       print_usage();
       GERROR("-%c requires an argument.\n", cmd_opts.opt_opt());
@@ -174,15 +189,36 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     }
   }
 
+  if (rest_port > 0) {
+    GINFO("Starting ReST interface on port %d\n", rest_port);
+    Gadgetron::ReST::port_ = rest_port;
+    Gadgetron::ReST::instance()->server().route_dynamic("/info")([]()
+    {
+      std::stringstream ss;
+      print_system_information(ss);
+      std::string content = ss.str();
+      return content;
+    });
+  }
+
   if (relay_port > 0) {
     GINFO("Starting cloudBus: %s:%d\n", relay_host, relay_port);
     Gadgetron::CloudBus::set_relay_address(relay_host);
     Gadgetron::CloudBus::set_relay_port(relay_port);
     Gadgetron::CloudBus::set_gadgetron_port(std::atoi(port_no));
+    Gadgetron::CloudBus::set_rest_port(rest_port);
     Gadgetron::CloudBus* cb = Gadgetron::CloudBus::instance();//This actually starts the bus.
     gadget_parameters["using_cloudbus"] = std::string("true"); //This is our message to the Gadgets that we have activated the bus
+    if (rest_port) {
+      Gadgetron::ReST::instance()->server()
+	.route_dynamic("/cloudbus/active_recons")([]()
+						  {
+						    std::stringstream str;
+						    str << Gadgetron::CloudBus::instance()->active_reconstructions();
+						    return str.str();
+						  });
+    }
   }
-
 
   // if the working directory is not set, use the default path
   if ( !workingDirectorySet )
@@ -210,7 +246,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   acceptor.reactor (ACE_Reactor::instance ());
   if (acceptor.open (port_to_listen) == -1)
     return 1;
-
+  
   ACE_Reactor::instance()->run_reactor_event_loop ();
 
   return 0;

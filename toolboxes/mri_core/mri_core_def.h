@@ -40,6 +40,7 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_AIF_LV_MASK                    "AIFMASK"
     #define GADGETRON_IMAGE_AIF_Gd_CONCENTRATION           "Gd"
     #define GADGETRON_IMAGE_PERF_FLOW_MAP                  "Flow_Map"
+    #define GADGETRON_IMAGE_PERF_MAP                       "Perf_Map"
     #define GADGETRON_IMAGE_PERF_MEANTRANSITTIME_MAP       "MTT_Map"
     #define GADGETRON_IMAGE_PERF_INTERSITITAL_VOLUME_MAP   "Interstitial_Volume_Map"
     #define GADGETRON_IMAGE_PERF_VASCULAR_VOLUME_MAP       "Vascular_Volume_Map"
@@ -71,6 +72,7 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_B1MAP                          "B1MAP"
     #define GADGETRON_IMAGE_FLIPANGLEMAP                   "FLIPANGLEMAP"
     #define GADGETRON_IMAGE_FLOWMAP                        "FLOWMAP"
+    #define GADGETRON_IMAGE_PERFUSIONMAP                   "PERFUSIONMAP"
     #define GADGETRON_IMAGE_MEANTRANSITTIMEMAP             "MTT"
     #define GADGETRON_IMAGE_INTERSTITIALVOLUMEMAP          "INTERSTITIALVOLUME"
     #define GADGETRON_IMAGE_VASCULARVOLUMEMAP              "VASCULARVOLUME"
@@ -94,4 +96,5 @@ namespace Gadgetron
     /// control flags for image recon and other processing
     /// if set, skip the processing steps after the recon, e.g. partial fourier handling and kspace filter
     #define GADGETRON_SKIP_PROCESSING_AFTER_RECON           "Skip_processing_after_recon"
+    #define GADGETRON_USE_DEDICATED_SCALING_FACTOR          "Use_dedicated_scaling_factor"
 }

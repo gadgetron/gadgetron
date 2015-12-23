@@ -62,7 +62,7 @@ ho3DArray<T>::ho3DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* 
 template <typename T> 
 ho3DArray<T>::~ho3DArray()
 {
-    GADGET_CHECK_THROW(release_accesser());
+    release_accesser();
 }
 
 template <typename T> 

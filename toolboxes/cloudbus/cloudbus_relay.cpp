@@ -1,3 +1,5 @@
+#include "gadgetron_rest.h"
+
 #include "ace/Reactor.h"
 #include "ace/SOCK_Acceptor.h"
 #include "ace/Svc_Handler.h"
@@ -6,6 +8,7 @@
 #include "ace/Stream.h"
 
 #include <map>
+#include <chrono>
 
 #include "log.h"
 #include "CloudBus.h"
@@ -62,7 +65,11 @@ namespace Gadgetron{
     void add_node(CloudBusNodeController* c, GadgetronNodeInfo n)
     {
       mtx_.acquire();
-      GDEBUG("Adding node: %s, %s, %d, (active reconstructions: %d)\n", n.uuid.c_str(), n.address.c_str(), n.port, n.active_reconstructions);
+      auto t = std::chrono::system_clock::from_time_t(n.last_recon);
+      std::chrono::duration<double> time_since_last_recon =
+	std::chrono::system_clock::now() - t;
+      GDEBUG("Adding node: %s, %s, %d, (active reconstructions: %d, last recon %f s)\n",
+	     n.uuid.c_str(), n.address.c_str(), n.port, n.active_reconstructions, time_since_last_recon.count());
       node_map_[c] = n;
       mtx_.release();
     }
@@ -235,15 +242,14 @@ namespace Gadgetron{
 
     ACE_NEW_RETURN (controller, CloudBusNodeController, -1);
 
-    auto_ptr<CloudBusNodeController> p (controller);
     controller->set_acceptor(this);
 
     if (this->acceptor_.accept (controller->peer ()) == -1) {
       GERROR("Failed to accept controller connection\n");
+      delete controller;
       return -1;
     }
 
-    p.release ();
     controller->reactor (this->reactor ());
     if (controller->open () == -1)
       controller->handle_close (ACE_INVALID_HANDLE, 0);
@@ -257,16 +263,22 @@ namespace Gadgetron{
 int main(int argc, char** argv)
 {
   int port_no = 8002;
-
-  if (argc > 2) {
+  unsigned short rest_port = 18002;
+  
+  if (argc > 3) {
     GERROR("Invalid number of arguments\n");
-    GERROR("Usage: %s <port no>\n", argv[0]);
+    GERROR("Usage: %s <port no> <rest port no>\n", argv[0]);
   }
 
   if (argc > 1) {
     port_no = std::atoi(argv[1]);
   }
 
+  if (argc > 2) {
+    port_no = std::atoi(argv[2]);
+  }
+
+  
   ACE_INET_Addr port_to_listen (port_no);
 
   Gadgetron::CloudBusRelayAcceptor acceptor;
@@ -274,6 +286,40 @@ int main(int argc, char** argv)
   acceptor.reactor (ACE_Reactor::instance ());
   if (acceptor.open (port_to_listen) == -1)
     return 1;
+
+  Gadgetron::ReST::port_ = rest_port;
+  
+  Gadgetron::ReST::instance()->server()
+    .route_dynamic("/info")([]()
+			    {
+			      return "Gadgetron CloudBusRelay\n";
+			    });
+
+  Gadgetron::ReST::instance()->server()
+    .route_dynamic("/info/json")([&acceptor]()
+				 {
+				   std::vector<Gadgetron::GadgetronNodeInfo> nl;
+				   acceptor.get_node_list(nl);
+				   crow::json::wvalue out, nodes;
+				   out["number_of_nodes"] = nl.size();
+				   size_t idx = 0;
+				   for (auto n: nl)
+				   {
+				     crow::json::wvalue node;
+				     out["nodes"][idx]["uuid"] = n.uuid;
+				     out["nodes"][idx]["address"] = n.address;
+				     out["nodes"][idx]["port"] = n.port;
+				     out["nodes"][idx]["rest_port"] = n.rest_port;
+				     out["nodes"][idx]["compute_capability"] = n.compute_capability;
+				     out["nodes"][idx]["active_reconstructions"] = n.active_reconstructions;
+				     auto t = std::chrono::system_clock::from_time_t(n.last_recon);
+				     std::chrono::duration<double> time_since_last_recon =
+				       std::chrono::system_clock::now() - t;
+				     out["nodes"][idx]["last_recon"] = time_since_last_recon.count();
+				     idx++;
+				   }
+				   return out;
+				 });
 
   ACE_Reactor::instance()->run_reactor_event_loop ();
 
