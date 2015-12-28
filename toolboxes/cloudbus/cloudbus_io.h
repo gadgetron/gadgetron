@@ -3,6 +3,7 @@
 
 #include <exception>
 #include <cstring>
+#include <string>
 #include <vector>
 #include <chrono>
 #include <ctime>
