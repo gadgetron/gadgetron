@@ -3,9 +3,11 @@
 
 #include <exception>
 #include <cstring>
+#include <string>
 #include <vector>
 #include <chrono>
 #include <ctime>
+#include <stdexcept>
 
 #include "cloudbus_export.h"
 
