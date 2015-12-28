@@ -14,6 +14,7 @@ add_library(gadgetron_toolbox_cloudbus SHARED
   CloudBus.cpp
   CloudBus.h
   cloudbus_io.h 
+  cloudbus_io.cpp 
   cloudbus_export.h
 )
 
