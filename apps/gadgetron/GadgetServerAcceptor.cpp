@@ -1,6 +1,7 @@
 #include "gadgetron_rest.h"
 #include "GadgetServerAcceptor.h"
 #include "GadgetStreamController.h"
+#include "CloudBus.h"
 
 using namespace Gadgetron;
 
@@ -25,6 +26,11 @@ int GadgetServerAcceptor::open (const ACE_INET_Addr &listen_addr)
   Gadgetron::ReST::instance()->server().route_dynamic("/acceptor/close")([this]()
   {
     this->close();
+    auto it = this->global_gadget_parameters_.find("using_cloudbus");
+    if (it != this->global_gadget_parameters_.end() && it->second == std::string("true")) {
+        CloudBus::set_relay_port(0);
+        CloudBus::instance()->close();
+    }
     return "Acceptor closed\n";
   });
 

@@ -163,32 +163,34 @@ namespace Gadgetron
       if (connected_) {
 	//
       } else {
-	std::string connect_addr(relay_inet_addr_);
-	if (connect_addr == "localhost") {
-	  connect_addr = node_info_.address;
-	}
-	ACE_INET_Addr server(relay_port_,connect_addr.c_str());
-	ACE_SOCK_Connector connector;
-
-	if (connector.connect(this->peer(),server) == 0) {
-	  ACE_TCHAR peer_name[MAXHOSTNAMELENGTH];
-	  ACE_INET_Addr peer_addr;
-	  if ((this->peer().get_remote_addr (peer_addr) == 0) && 
-	      (peer_addr.addr_to_string (peer_name, MAXHOSTNAMELENGTH) == 0)) {
-
-	    GDEBUG("CloudBus connected to relay at  %s\n", peer_name);
-
-	    reader_task_ = new CloudBusReaderTask(this);
-	    reader_task_->open();
-	    
-	    mtx_.acquire();
-	    connected_ = true;
-	    mtx_.release();
-	    if (!query_mode_) {
-	      send_node_info();
-	    }
-	  } 
-	}
+          if (relay_port_ > 0) {
+              std::string connect_addr(relay_inet_addr_);
+              if (connect_addr == "localhost") {
+                  connect_addr = node_info_.address;
+              }
+              ACE_INET_Addr server(relay_port_,connect_addr.c_str());
+              ACE_SOCK_Connector connector;
+              
+              if (connector.connect(this->peer(),server) == 0) {
+                  ACE_TCHAR peer_name[MAXHOSTNAMELENGTH];
+                  ACE_INET_Addr peer_addr;
+                  if ((this->peer().get_remote_addr (peer_addr) == 0) && 
+                      (peer_addr.addr_to_string (peer_name, MAXHOSTNAMELENGTH) == 0)) {
+                      
+                      GDEBUG("CloudBus connected to relay at  %s\n", peer_name);
+                      
+                      reader_task_ = new CloudBusReaderTask(this);
+                      reader_task_->open();
+                      
+                      mtx_.acquire();
+                      connected_ = true;
+                      mtx_.release();
+                      if (!query_mode_) {
+                          send_node_info();
+                      }
+                  } 
+              }
+          }
       }
       //Sleep for 5 seconds
       ACE_Time_Value tv (5);
@@ -277,7 +279,8 @@ namespace Gadgetron
     listener.get_local_addr (local_addr);
     node_info_.address = std::string(local_addr.get_host_name());
     node_info_.active_reconstructions = 0;
-    node_info_.last_recon = 0;
+    auto t = std::chrono::system_clock::now();
+    node_info_.last_recon = std::chrono::system_clock::to_time_t(t);
   }
 
 }
