@@ -3,7 +3,6 @@ import ismrmrd
 import ismrmrd.xsd
 import numpy as np
 from scipy.fftpack import fft, fftshift
-import pylab
 
 
 class IDEAL(Gadget):
@@ -43,6 +42,7 @@ class IDEAL(Gadget):
         freqs = self.frequencies+cog_freq
 
         print "Frequency shift", cog_freq
+        print "Frequencies",freqs
         t = np.linspace(0,nte*self.dte,nte)
         A = np.matrix(np.exp(-1j*2*np.pi*np.outer(t,freqs)))
         pinv_A = np.linalg.pinv(A)
@@ -54,7 +54,7 @@ class IDEAL(Gadget):
         for lt in range(ntimes):
             for ls in range(nslices):
                 for lc in range(ncoils):
-                    outdata[:,:,ls,lc,lt] = np.reshape(np.array(pinv_A*np.squeeze(bdata[:,1:,ls,lc,lt]).T)*np.exp(1j*2*np.pi*np.outer(freqs,tt)),(nzf,nfreqs))
+                    outdata[:,:,ls,lc,lt] = np.reshape(np.array(pinv_A*bdata[:,1:,ls,lc,lt].T)*np.exp(1j*2*np.pi*np.outer(freqs,tt)),(nfreqs,nzf)).T
         nheaders = nslices*ntimes
         baseheader = buffer.headers.flat[0]
         headers = []
