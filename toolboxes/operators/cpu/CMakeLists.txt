@@ -4,12 +4,14 @@ endif (WIN32)
 
 include_directories(
     ${ISMRMRD_INCLUDE_DIR}
+    ${FFTW3_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/operators
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
+    ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
@@ -27,10 +29,16 @@ set(cpu_operator_header_files
     hoPartialDerivativeOperator.h
     hoTvOperator.h
     hoTvPicsOperator.h 
-    hoSPIRITOperator.h )
+    hoSPIRITOperator.h 
+    hoSPIRIT2DOperator.h 
+    hoSPIRIT2DTOperator.h 
+    hoSPIRIT3DOperator.h )
 
 set(cpu_operator_src_files 
-    hoSPIRITOperator.cpp )
+    hoSPIRITOperator.cpp 
+    hoSPIRIT2DOperator.cpp 
+    hoSPIRIT2DTOperator.cpp 
+    hoSPIRIT3DOperator.cpp )
 
 add_library(gadgetron_toolbox_cpuoperator SHARED ${operator_header_files} ${cpu_operator_header_files} ${cpu_operator_src_files} )
 

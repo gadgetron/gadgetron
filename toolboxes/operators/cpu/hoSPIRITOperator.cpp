@@ -20,14 +20,14 @@ void hoSPIRITOperator<T>::restore_acquired_kspace(const hoNDArray<T>& acquired, 
 {
     try
     {
-        GADGET_CATCH_THROW(acquired.get_number_of_elements() == y.get_number_of_elements());
+        GADGET_CHECK_THROW(acquired.get_number_of_elements() == y.get_number_of_elements());
 
         size_t N = acquired.get_number_of_elements();
 
         const T* pA = acquired.get_data_ptr();
         T* pY = y.get_data_ptr();
 
-        int n;
+        int n(0);
 #pragma omp parallel for default(none) private(n) shared(N, pA, pY)
         for (n = 0; n<(int)N; n++)
         {
@@ -64,7 +64,7 @@ void hoSPIRITOperator<T>::set_acquired_points(hoNDArray<T>& kspace)
 
         size_t N = kspace.get_number_of_elements();
 
-        long long ii;
+        long long ii(0);
 
 #pragma omp parallel for default(shared) private(ii) shared(N, kspace)
         for (ii = 0; ii<(long long)N; ii++)
@@ -78,6 +78,10 @@ void hoSPIRITOperator<T>::set_acquired_points(hoNDArray<T>& kspace)
                 acquired_points_indicator_(ii) = T(1.0);
             }
         }
+
+        // allocate the helper memory
+        kspace_.create(kspace.get_dimensions());
+        complexIm_.create(kspace.get_dimensions());
     }
     catch (...)
     {
@@ -121,8 +125,6 @@ void hoSPIRITOperator<T>::set_forward_kernel(hoNDArray<T>& forward_kernel, bool 
         dimSrc[NDim - 2] = dims[NDim - 2];
         dimDst[NDim - 2] = dims[NDim - 1];
 
-        kspace_.create(dimSrc);
-        complexIm_.create(dimSrc);
         res_after_apply_kernel_.create(dims);
         res_after_apply_kernel_sum_over_.create(dimDst);
         kspace_dst_.create(dimDst);

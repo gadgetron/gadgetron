@@ -30,9 +30,12 @@ public:
     virtual ~hoSPIRITOperator();
 
     /// set forward kernel, compute the adjoint and adjoint_forward kernel
+    /// forward_kernel : [... srcCHA dstCHA]
     void set_forward_kernel(hoNDArray<T>& forward_kernel, bool compute_adjoint_forward_kernel=false);
 
     /// apply(G-I)Dc'
+    /// x: [ ... srcCHA]
+    /// y: [ ... dstCHA]
     virtual void mult_M(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate = false);
     /// apply Dc(G-I)'
     virtual void mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate = false);
