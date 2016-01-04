@@ -21,6 +21,7 @@ install(FILES
   downsampleOperator.h
   upsampleOperator.h
   tvPicsOperator.h
+  subsetOperator.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 IF (ARMADILLO_FOUND)

@@ -34,7 +34,7 @@ class IDEAL(Gadget):
         dspec = bdata[:,0,...]
         nzf2 = max(nzf,8192)
         spec = fftshift(fft(dspec,n=nzf2,axis=0))
-        absspec = np.sum(np.abs(spec),axis=(1,2,3,4))
+        absspec = np.ravel(np.sum(np.abs(spec),axis=(1,2,3,4)))
         imax = np.argmax(absspec)
         iwidth = int(np.floor(max(2,20.0/(self.bw/nzf2))))
         fax = -np.linspace(-0.5,0.5,nzf2)*self.bw
@@ -47,7 +47,7 @@ class IDEAL(Gadget):
         A = np.matrix(np.exp(-1j*2*np.pi*np.outer(t,freqs)))
         pinv_A = np.linalg.pinv(A)
         tt = np.linspace(0.0,nzf/self.bw,nzf)
-
+        
         nfreqs = len(freqs)
         outdata = np.zeros((nzf,nfreqs,nslices,ncoils,ntimes),dtype=np.complex64)
 
