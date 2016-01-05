@@ -36,23 +36,29 @@ public:
     /// apply(G-I)Dc'
     /// x: [ ... srcCHA]
     /// y: [ ... dstCHA]
+    /// if no_null_space_==true, apply (G-I)
     virtual void mult_M(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate = false);
     /// apply Dc(G-I)'
+    /// if no_null_space_==true, (G-I)'
     virtual void mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate = false);
 
     /// compute right hand side
     /// b = -(G-I)D'x
+    /// if no_null_space_ == true, b = 0
     virtual void compute_righ_hand_side(const ARRAY_TYPE& x, ARRAY_TYPE& b);
 
     /// compute gradient of ||(G-I)(Dc'x+D'y)||2
+    /// if no_null_space_ == true, compute gradient of ||(G-I)x||2
     virtual void gradient(ARRAY_TYPE* x, ARRAY_TYPE* g, bool accumulate = false);
 
     /// compute cost value of L2 norm ||(G-I)(Dc'x+D'y)||2
+    /// if no_null_space_ == true, compute L2 norm of ||(G-I)x||2
     virtual REAL magnitude(ARRAY_TYPE* x);
 
     /// indicate the operator is unitary or not
     /// unitary operator, AA' = I
-    virtual bool unitary() const { return false; }
+    /// not unitary if no_null_space_==false, because Dc*Dc' is not identity
+    virtual bool unitary() const { return this->no_null_space_; }
 
     /// convert to image domain or back to kspace
     virtual void convert_to_image(const hoNDArray<T>& x, hoNDArray<T>& im) = 0;
@@ -70,6 +76,9 @@ public:
 
     /// if true, use the fft. not fftc
     bool use_non_centered_fft_;
+
+    /// if true, perform the spirit operation without null space constraint
+    bool no_null_space_;
 
     /// whether to perform timing
     bool performTiming_;

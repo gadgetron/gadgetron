@@ -6,7 +6,7 @@ namespace Gadgetron
 {
 
 template <typename T> 
-hoSPIRITOperator<T>::hoSPIRITOperator(std::vector<size_t> *dims) : use_non_centered_fft_(false), BaseClass(dims)
+hoSPIRITOperator<T>::hoSPIRITOperator(std::vector<size_t> *dims) : use_non_centered_fft_(false), no_null_space_(false), BaseClass(dims)
 {
 }
 
@@ -187,11 +187,19 @@ void hoSPIRITOperator<T>::mult_M(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate)
             kspace_dst_ = *y;
         }
 
-        // (G-I)Dc'x
-        Gadgetron::multiply(unacquired_points_indicator_, *x, *y);
+        if(no_null_space_)
+        {
+            // (G-I)x
+            this->convert_to_image(*x, complexIm_);
+        }
+        else
+        {
+            // (G-I)Dc'x
+            Gadgetron::multiply(unacquired_points_indicator_, *x, *y);
 
-        // x to image domain
-        this->convert_to_image(*y, complexIm_);
+            // x to image domain
+            this->convert_to_image(*y, complexIm_);
+        }
 
         // apply kernel and sum
         Gadgetron::multiply(forward_kernel_, complexIm_, res_after_apply_kernel_);
@@ -217,7 +225,7 @@ void hoSPIRITOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate)
 {
     try
     {
-        // Dc(G-I)'x
+        // Dc(G-I)'x or if no_null_space_ == true, (G-I)'x
 
         if(accumulate)
         {
@@ -234,8 +242,11 @@ void hoSPIRITOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate)
         // go back to kspace 
         this->convert_to_kspace(res_after_apply_kernel_sum_over_, *y);
 
-        // apply Dc
-        Gadgetron::multiply(unacquired_points_indicator_, *y, *y);
+        if (!no_null_space_)
+        {
+            // apply Dc
+            Gadgetron::multiply(unacquired_points_indicator_, *y, *y);
+        }
 
         if (accumulate)
         {
@@ -253,23 +264,31 @@ void hoSPIRITOperator<T>::compute_righ_hand_side(const hoNDArray<T>& x, hoNDArra
 {
     try
     {
-        // non-symmetric rhs: -(G-I)D'x
+        if (no_null_space_)
+        {
+            b.create(x.get_dimensions());
+            Gadgetron::clear(b);
+        }
+        else
+        {
+            // non-symmetric rhs: -(G-I)D'x
 
-        // need to be done for D'x, acquired points are already in place
+            // need to be done for D'x, acquired points are already in place
 
-        // x to image domain
-        this->convert_to_image(x, complexIm_);
+            // x to image domain
+            this->convert_to_image(x, complexIm_);
 
-        // apply kernel and sum
-        GADGET_CATCH_THROW(Gadgetron::multiply(forward_kernel_, complexIm_, res_after_apply_kernel_));
+            // apply kernel and sum
+            GADGET_CATCH_THROW(Gadgetron::multiply(forward_kernel_, complexIm_, res_after_apply_kernel_));
 
-        GADGET_CATCH_THROW(this->sum_over_src_channel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
+            GADGET_CATCH_THROW(this->sum_over_src_channel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_));
 
-        // go back to kspace 
-        this->convert_to_kspace(res_after_apply_kernel_sum_over_, b);
+            // go back to kspace 
+            this->convert_to_kspace(res_after_apply_kernel_sum_over_, b);
 
-        // multiply by -1
-        Gadgetron::scal((typename realType<T>::Type)(-1.0), b);
+            // multiply by -1
+            Gadgetron::scal((typename realType<T>::Type)(-1.0), b);
+        }
     }
     catch (...)
     {
@@ -282,20 +301,25 @@ void hoSPIRITOperator<T>::gradient(ARRAY_TYPE* x, ARRAY_TYPE* g, bool accumulate
 {
     try
     {
-        // gradient of L2 norm is
-        // 2*Dc*(G-I)'(G-I)(D'y+Dc'x)
-
         if (accumulate)
         {
             kspace_ = *g;
         }
 
-        // D'y+Dc'x
-        Gadgetron::multiply(unacquired_points_indicator_, *x, kspace_);
-        Gadgetron::add(acquired_points_, kspace_, kspace_);
+        if (no_null_space_)
+        {
+            // gradient of L2 norm is 2*Dc*(G-I)'(G-I)x
+            this->convert_to_image(*x, complexIm_);
+        }
+        else
+        {
+            // gradient of L2 norm is 2*Dc*(G-I)'(G-I)(D'y+Dc'x)
+            Gadgetron::multiply(unacquired_points_indicator_, *x, kspace_);
+            Gadgetron::add(acquired_points_, kspace_, kspace_);
 
-        // x to image domain
-        this->convert_to_image(kspace_, complexIm_);
+            // x to image domain
+            this->convert_to_image(kspace_, complexIm_);
+        }
 
         // apply kernel and sum
         Gadgetron::multiply(adjoint_forward_kernel_, complexIm_, res_after_apply_kernel_);
@@ -326,15 +350,21 @@ typename hoSPIRITOperator<T>::REAL hoSPIRITOperator<T>::magnitude(ARRAY_TYPE* x)
 {
     try
     {
-        // L2 norm
-        // ||(G-I)(D'y+Dc'x)||2
+        if (no_null_space_)
+        {
+            // L2 norm of ||(G-I)x||2
+            this->convert_to_image(*x, complexIm_);
+        }
+        else
+        {
+            // L2 norm of ||(G-I)(D'y+Dc'x)||2
+            // D'y+Dc'x
+            Gadgetron::multiply(unacquired_points_indicator_, *x, kspace_);
+            Gadgetron::add(acquired_points_, kspace_, kspace_);
 
-        // D'y+Dc'x
-        Gadgetron::multiply(unacquired_points_indicator_, *x, kspace_);
-        Gadgetron::add(acquired_points_, kspace_, kspace_);
-
-        // x to image domain
-        this->convert_to_image(kspace_, complexIm_);
+            // x to image domain
+            this->convert_to_image(kspace_, complexIm_);
+        }
 
         // apply kernel and sum
         Gadgetron::multiply(forward_kernel_, complexIm_, res_after_apply_kernel_);

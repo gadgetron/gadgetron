@@ -49,6 +49,7 @@ public:
     virtual void convert_to_kspace(const hoNDArray<T>& im, hoNDArray<T>& x);
 
     using BaseClass::use_non_centered_fft_;
+    using BaseClass::no_null_space_;
     using BaseClass::performTiming_;
     using BaseClass::debugFolder_;
 
