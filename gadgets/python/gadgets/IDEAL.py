@@ -44,12 +44,8 @@ class IDEAL(Gadget):
         print "Frequency shift", cog_freq
         print "Frequencies",freqs
         t = np.linspace(0,nte*self.dte,nte,endpoint=False)
-        print "t",t
         A = np.matrix(np.exp(-1j*2*np.pi*np.outer(t,freqs)))
         pinv_A = np.linalg.pinv(A)
-        print "A",A
-        print "inv_A",pinv_A
-
         tt = np.linspace(0.0,nzf/self.bw,nzf,endpoint=False)
         
         nfreqs = len(freqs)
@@ -62,11 +58,10 @@ class IDEAL(Gadget):
                     #for lk in range(nzf):
                     #    tmp = np.squeeze(pinv_A*np.reshape(bdata[lk,1:,ls,lc,lt],(nte,1)))
                     #    outdata[lk,:,ls,lc,lt] = np.array(tmp)*np.exp(1j*2*np.pi*tt[lk]*freqs)
-                    if (lt == 0 and ls == 0 and lc == 0):
-                        print outdata[0,:,ls,lc,lt]
 
         nheaders = nslices*ntimes
         baseheader = buffer.headers.flat[0]
+        print baseheader
         headers = []
         for rep in range(ntimes):
             header = baseheader 
@@ -93,7 +88,7 @@ class IDEAL(Gadget):
         print "Ref data nan",np.sum(ref_data)
         ref_headers = buffer.headers.flat[:ntimes]
 
-        buffer.trajectory = buffer.trajectory[:,:,1,...]
+        buffer.trajectory = buffer.trajectory[:,:,0,...]
         reference = IsmrmrdDataBuffered(ref_data,ref_headers,sampling=buffer.sampling, trajectory=buffer.trajectory)
 
         for f in range(nfreqs):
