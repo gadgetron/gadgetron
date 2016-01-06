@@ -709,6 +709,50 @@ namespace Gadgetron{
         reinterpret_cast<double(&)[2]>(r)[1] = sb;
     }
 
+    inline void dotc(size_t N, const  complext<float> * x, const  complext<float> * y,  complext<float> & r)
+    {
+        long long n;
+
+        float sa(0), sb(0);
+
+        #pragma omp parallel for private(n) reduction(+:sa) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const float a = x[n].real();
+            const float b = x[n].imag();
+            const float c = y[n].real();
+            const float d = y[n].imag();
+
+            sa += (a*c + b*d);
+            sb += (c*b - a*d);
+        }
+
+        reinterpret_cast<float(&)[2]>(r)[0] = sa;
+        reinterpret_cast<float(&)[2]>(r)[1] = sb;
+    }
+
+    inline void dotc(size_t N, const  complext<double> * x, const  complext<double> * y,  complext<double> & r)
+    {
+        long long n;
+
+        double sa(0), sb(0);
+
+        #pragma omp parallel for private(n) reduction(+:sa) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const double a = x[n].real();
+            const double b = x[n].imag();
+            const double c = y[n].real();
+            const double d = y[n].imag();
+
+            sa += (a*c + b*d);
+            sb += (c*b - a*d);
+        }
+
+        reinterpret_cast<double(&)[2]>(r)[0] = sa;
+        reinterpret_cast<double(&)[2]>(r)[1] = sb;
+    }
+
     template <typename T> 
     void dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r)
     {
@@ -718,6 +762,8 @@ namespace Gadgetron{
 
     template EXPORTCPUCOREMATH void dotc(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y,  std::complex<float> & r);
     template EXPORTCPUCOREMATH void dotc(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y,  std::complex<double> & r);
+    template EXPORTCPUCOREMATH void dotc(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y,  complext<float> & r);
+    template EXPORTCPUCOREMATH void dotc(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y,  complext<double> & r);
 
     template <typename T> 
     T dotc(const hoNDArray<T>& x, const hoNDArray<T>& y)
@@ -729,6 +775,8 @@ namespace Gadgetron{
 
     template EXPORTCPUCOREMATH std::complex<float> dotc(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y);
     template EXPORTCPUCOREMATH std::complex<double> dotc(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y);
+    template EXPORTCPUCOREMATH complext<float> dotc(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y);
+    template EXPORTCPUCOREMATH complext<double> dotc(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y);
 
     // --------------------------------------------------------------------------------
 
@@ -804,6 +852,48 @@ namespace Gadgetron{
         reinterpret_cast<double(&)[2]>(r)[1] = sb;
     }
 
+    inline void dotu(size_t N, const  complext<float> * x, const  complext<float> * y,  complext<float> & r)
+    {
+        long long n;
+
+        float sa(0), sb(0);
+        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const float a = x[n].real();
+            const float b = x[n].imag();
+            const float c = y[n].real();
+            const float d = y[n].imag();
+
+            sa += (a*c - b*d);
+            sb += (c*b + a*d);
+        }
+
+        reinterpret_cast<float(&)[2]>(r)[0] = sa;
+        reinterpret_cast<float(&)[2]>(r)[1] = sb;
+    }
+
+    inline void dotu(size_t N, const  complext<double> * x, const  complext<double> * y,  complext<double> & r)
+    {
+        long long n;
+
+        double sa(0), sb(0);
+        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
+        for (n = 0; n < (long long)N; n++)
+        {
+            const double a = x[n].real();
+            const double b = x[n].imag();
+            const double c = y[n].real();
+            const double d = y[n].imag();
+
+            sa += (a*c - b*d);
+            sb += (c*b + a*d);
+        }
+
+        reinterpret_cast<double(&)[2]>(r)[0] = sa;
+        reinterpret_cast<double(&)[2]>(r)[1] = sb;
+    }
+
     template <typename T> 
     void dotu(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r)
     {
@@ -815,6 +905,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void dotu(const hoNDArray<double>& x, const hoNDArray<double>& y, double& r);
     template EXPORTCPUCOREMATH void dotu(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, std::complex<float>& r);
     template EXPORTCPUCOREMATH void dotu(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, std::complex<double>& r);
+    template EXPORTCPUCOREMATH void dotu(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y, complext<float>& r);
+    template EXPORTCPUCOREMATH void dotu(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y, complext<double>& r);
 
     template <typename T> 
     T dotu(const hoNDArray<T>& x, const hoNDArray<T>& y)
@@ -828,6 +920,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH double dotu(const hoNDArray<double>& x, const hoNDArray<double>& y);
     template EXPORTCPUCOREMATH  std::complex<float>  dotu(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y);
     template EXPORTCPUCOREMATH  std::complex<double>  dotu(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y);
+    template EXPORTCPUCOREMATH  complext<float>  dotu(const hoNDArray< complext<float> >& x, const hoNDArray< complext<float> >& y);
+    template EXPORTCPUCOREMATH  complext<double>  dotu(const hoNDArray< complext<double> >& x, const hoNDArray< complext<double> >& y);
 
     // --------------------------------------------------------------------------------
 
