@@ -25,7 +25,7 @@ public:
     /// set forward kernel, compute the adjoint and adjoint_forward kernel
     /// forward_kernel : [RO E1 srcCHA dstCHA Nor1]
     /// the number of kernels can be 1 or equal to the number of 2D kspaces
-    void set_forward_kernel(hoNDArray<T>& forward_kernel, bool compute_adjoint_forward_kernel=false);
+    void set_forward_kernel(ARRAY_TYPE& forward_kernel, bool compute_adjoint_forward_kernel=false);
 
     /// apply(G-I)Dc'
     /// x: [RO E1 srcCHA N]

@@ -237,7 +237,7 @@ void hoSPIRIT2DTOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumula
 }
 
 template <typename T>
-void hoSPIRIT2DTOperator<T>::compute_righ_hand_side(const hoNDArray<T>& x, hoNDArray<T>& b)
+void hoSPIRIT2DTOperator<T>::compute_righ_hand_side(const ARRAY_TYPE& x, ARRAY_TYPE& b)
 {
     try
     {

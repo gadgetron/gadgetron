@@ -31,7 +31,7 @@ public:
 
     /// set forward kernel, compute the adjoint and adjoint_forward kernel
     /// forward_kernel : [... srcCHA dstCHA]
-    void set_forward_kernel(hoNDArray<T>& forward_kernel, bool compute_adjoint_forward_kernel=false);
+    void set_forward_kernel(ARRAY_TYPE& forward_kernel, bool compute_adjoint_forward_kernel=false);
 
     /// apply(G-I)Dc'
     /// x: [ ... srcCHA]
@@ -61,18 +61,18 @@ public:
     virtual bool unitary() const { return this->no_null_space_; }
 
     /// convert to image domain or back to kspace
-    virtual void convert_to_image(const hoNDArray<T>& x, hoNDArray<T>& im) = 0;
-    virtual void convert_to_kspace(const hoNDArray<T>& im, hoNDArray<T>& x) = 0;
+    virtual void convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im) = 0;
+    virtual void convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& x) = 0;
 
     // restore acquired kspace points to x
-    virtual void restore_acquired_kspace(const hoNDArray<T>& acquired, hoNDArray<T>& y);
-    virtual void restore_acquired_kspace(hoNDArray<T>& y);
+    virtual void restore_acquired_kspace(const ARRAY_TYPE& acquired, ARRAY_TYPE& y);
+    virtual void restore_acquired_kspace(ARRAY_TYPE& y);
 
     // set the acquired kspace, unacquired points are set to be zero
-    virtual void set_acquired_points(hoNDArray<T>& kspace);
+    virtual void set_acquired_points(ARRAY_TYPE& kspace);
 
     // set the coil sensivity map
-    virtual void set_coil_sen_map(hoNDArray<T>& senMap);
+    virtual void set_coil_sen_map(ARRAY_TYPE& senMap);
 
     /// if true, use the fft. not fftc
     bool use_non_centered_fft_;
@@ -104,7 +104,7 @@ protected:
     ARRAY_TYPE coil_senMap_;
 
     // utility functions
-    void sum_over_src_channel(const hoNDArray<T>& x, hoNDArray<T>& r);
+    void sum_over_src_channel(const ARRAY_TYPE& x, ARRAY_TYPE& r);
 
     // helper memory
     ARRAY_TYPE kspace_;
