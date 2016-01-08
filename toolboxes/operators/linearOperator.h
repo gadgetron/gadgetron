@@ -5,6 +5,7 @@
 #pragma once
 
 #include "generalOperator.h"
+#include "hoNDArray_reductions.h"
 
 namespace Gadgetron{
 
