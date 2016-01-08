@@ -5,7 +5,6 @@
 #pragma once
 
 #include "generalOperator.h"
-#include "hoNDArray_reductions.h"
 
 namespace Gadgetron{
 
@@ -57,7 +56,7 @@ namespace Gadgetron{
     virtual REAL magnitude(ARRAY_TYPE* in){
       ARRAY_TYPE tmp(&this->codomain_dims_);
       this->mult_M(in,&tmp);
-      return std::sqrt(this->get_weight())*real(Gadgetron::dot(&tmp,&tmp));
+      return std::sqrt(this->get_weight())*real(dot(&tmp,&tmp));
     }
     virtual void set_codomain_dimensions( std::vector<size_t> *dims )
     {
