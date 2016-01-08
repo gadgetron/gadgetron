@@ -29,8 +29,8 @@ public:
     virtual void convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& x);
 
     using BaseClass::use_non_centered_fft_;
-    using BaseClass::performTiming_;
-    using BaseClass::debugFolder_;
+    //using BaseClass::performTiming_;
+    //using BaseClass::debugFolder_;
 
 protected:
 
@@ -48,10 +48,10 @@ protected:
     using BaseClass::res_after_apply_kernel_;
     using BaseClass::res_after_apply_kernel_sum_over_;
 
-    using BaseClass::gt_timer1_;
-    using BaseClass::gt_timer2_;
-    using BaseClass::gt_timer3_;
-    using BaseClass::gt_exporter_;
+    //using BaseClass::gt_timer1_;
+    //using BaseClass::gt_timer2_;
+    //using BaseClass::gt_timer3_;
+    //using BaseClass::gt_exporter_;
 };
 
 }

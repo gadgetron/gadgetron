@@ -50,8 +50,8 @@ public:
 
     using BaseClass::use_non_centered_fft_;
     using BaseClass::no_null_space_;
-    using BaseClass::performTiming_;
-    using BaseClass::debugFolder_;
+    //using BaseClass::performTiming_;
+    //using BaseClass::debugFolder_;
 
 protected:
 
@@ -72,10 +72,10 @@ protected:
     using BaseClass::res_after_apply_kernel_sum_over_;
     ARRAY_TYPE res_after_apply_kernel_sum_over_dst_;
 
-    using BaseClass::gt_timer1_;
-    using BaseClass::gt_timer2_;
-    using BaseClass::gt_timer3_;
-    using BaseClass::gt_exporter_;
+    //using BaseClass::gt_timer1_;
+    //using BaseClass::gt_timer2_;
+    //using BaseClass::gt_timer3_;
+    //using BaseClass::gt_exporter_;
 
     void apply_forward_kernel(ARRAY_TYPE& x);
     void apply_adjoint_kernel(ARRAY_TYPE& x);

@@ -10,8 +10,8 @@
 #include "hoNDArray_reductions.h"
 #include "linearOperator.h"
 
-#include "GadgetronTimer.h"
-#include "gtPlusIOAnalyze.h"
+//#include "GadgetronTimer.h"
+//#include "gtPlusIOAnalyze.h"
 
 namespace Gadgetron { 
 
@@ -80,11 +80,11 @@ public:
     /// if true, perform the spirit operation without null space constraint
     bool no_null_space_;
 
-    /// whether to perform timing
-    bool performTiming_;
+    ///// whether to perform timing
+    //bool performTiming_;
 
-    /// debug folder
-    std::string debugFolder_;
+    ///// debug folder
+    //std::string debugFolder_;
 
 protected:
 
@@ -113,13 +113,13 @@ protected:
     ARRAY_TYPE res_after_apply_kernel_;
     ARRAY_TYPE res_after_apply_kernel_sum_over_;
 
-    // clock for timing
-    Gadgetron::GadgetronTimer gt_timer1_;
-    Gadgetron::GadgetronTimer gt_timer2_;
-    Gadgetron::GadgetronTimer gt_timer3_;
+    //// clock for timing
+    //Gadgetron::GadgetronTimer gt_timer1_;
+    //Gadgetron::GadgetronTimer gt_timer2_;
+    //Gadgetron::GadgetronTimer gt_timer3_;
 
-    // exporter
-    Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
+    //// exporter
+    //Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
 };
 
 }

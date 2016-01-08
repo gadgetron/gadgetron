@@ -13,10 +13,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm 
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
   )
 
 set(cpu_operator_header_files 
