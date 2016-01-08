@@ -16,7 +16,7 @@ hoSPIRIT3DOperator<T>::~hoSPIRIT3DOperator()
 }
 
 template <typename T>
-void hoSPIRIT3DOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T>& im)
+void hoSPIRIT3DOperator<T>::convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im)
 {
     try
     {
@@ -41,7 +41,7 @@ void hoSPIRIT3DOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T>
 }
 
 template <typename T>
-void hoSPIRIT3DOperator<T>::convert_to_kspace(const hoNDArray<T>& im, hoNDArray<T>& x)
+void hoSPIRIT3DOperator<T>::convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& x)
 {
     try
     {

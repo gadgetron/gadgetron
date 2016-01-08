@@ -17,7 +17,7 @@ hoSPIRIT2DTOperator<T>::~hoSPIRIT2DTOperator()
 }
 
 template <typename T> 
-void hoSPIRIT2DTOperator<T>::set_forward_kernel(hoNDArray<T>& forward_kernel, bool compute_adjoint_forward_kernel)
+void hoSPIRIT2DTOperator<T>::set_forward_kernel(ARRAY_TYPE& forward_kernel, bool compute_adjoint_forward_kernel)
 {
     try
     {
@@ -400,7 +400,7 @@ typename hoSPIRIT2DTOperator<T>::REAL hoSPIRIT2DTOperator<T>::magnitude(ARRAY_TY
 }
 
 template <typename T>
-void hoSPIRIT2DTOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T>& im)
+void hoSPIRIT2DTOperator<T>::convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im)
 {
     try
     {
@@ -435,7 +435,7 @@ void hoSPIRIT2DTOperator<T>::convert_to_image(const hoNDArray<T>& x, hoNDArray<T
 }
 
 template <typename T>
-void hoSPIRIT2DTOperator<T>::convert_to_kspace(const hoNDArray<T>& im, hoNDArray<T>& x)
+void hoSPIRIT2DTOperator<T>::convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& x)
 {
     try
     {

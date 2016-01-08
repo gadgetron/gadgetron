@@ -16,7 +16,7 @@ hoSPIRITOperator<T>::~hoSPIRITOperator()
 }
 
 template <typename T> 
-void hoSPIRITOperator<T>::restore_acquired_kspace(const hoNDArray<T>& acquired, hoNDArray<T>& y)
+void hoSPIRITOperator<T>::restore_acquired_kspace(const ARRAY_TYPE& acquired, ARRAY_TYPE& y)
 {
     try
     {
@@ -44,13 +44,13 @@ void hoSPIRITOperator<T>::restore_acquired_kspace(const hoNDArray<T>& acquired, 
 }
 
 template <typename T> 
-void hoSPIRITOperator<T>::restore_acquired_kspace(hoNDArray<T>& y)
+void hoSPIRITOperator<T>::restore_acquired_kspace(ARRAY_TYPE& y)
 {
     this->restore_acquired_kspace(acquired_points_, y);
 }
 
 template <typename T> 
-void hoSPIRITOperator<T>::set_acquired_points(hoNDArray<T>& kspace)
+void hoSPIRITOperator<T>::set_acquired_points(ARRAY_TYPE& kspace)
 {
     try
     {
@@ -90,13 +90,13 @@ void hoSPIRITOperator<T>::set_acquired_points(hoNDArray<T>& kspace)
 }
 
 template <typename T> 
-void hoSPIRITOperator<T>::set_coil_sen_map(hoNDArray<T>& senMap)
+void hoSPIRITOperator<T>::set_coil_sen_map(ARRAY_TYPE& senMap)
 {
     coil_senMap_ = senMap;
 }
 
 template <typename T> 
-void hoSPIRITOperator<T>::set_forward_kernel(hoNDArray<T>& forward_kernel, bool compute_adjoint_forward_kernel)
+void hoSPIRITOperator<T>::set_forward_kernel(ARRAY_TYPE& forward_kernel, bool compute_adjoint_forward_kernel)
 {
     try
     {
@@ -136,7 +136,7 @@ void hoSPIRITOperator<T>::set_forward_kernel(hoNDArray<T>& forward_kernel, bool 
 }
 
 template<typename T>
-void hoSPIRITOperator<T>::sum_over_src_channel(const hoNDArray<T>& x, hoNDArray<T>& r)
+void hoSPIRITOperator<T>::sum_over_src_channel(const ARRAY_TYPE& x, ARRAY_TYPE& r)
 {
     try
     {
@@ -173,7 +173,7 @@ void hoSPIRITOperator<T>::sum_over_src_channel(const hoNDArray<T>& x, hoNDArray<
     }
     catch (...)
     {
-        GADGET_THROW("Errors in hoSPIRITOperator<T>::sum_over_src_channel(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+        GADGET_THROW("Errors in hoSPIRITOperator<T>::sum_over_src_channel(const ARRAY_TYPE& x, ARRAY_TYPE& r) ... ");
     }
 }
 
@@ -260,7 +260,7 @@ void hoSPIRITOperator<T>::mult_MH(ARRAY_TYPE* x, ARRAY_TYPE* y, bool accumulate)
 }
 
 template <typename T>
-void hoSPIRITOperator<T>::compute_righ_hand_side(const hoNDArray<T>& x, hoNDArray<T>& b)
+void hoSPIRITOperator<T>::compute_righ_hand_side(const ARRAY_TYPE& x, ARRAY_TYPE& b)
 {
     try
     {
