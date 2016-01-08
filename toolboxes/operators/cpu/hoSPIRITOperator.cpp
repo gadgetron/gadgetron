@@ -54,7 +54,9 @@ void hoSPIRITOperator<T>::set_acquired_points(ARRAY_TYPE& kspace)
 {
     try
     {
-        acquired_points_ = kspace;
+        std::vector<size_t> dim;
+        kspace.get_dimensions(dim);
+        acquired_points_.create(dim, kspace.begin());
 
         acquired_points_indicator_.create(kspace.get_dimensions());
         Gadgetron::clear(acquired_points_indicator_);
@@ -100,7 +102,9 @@ void hoSPIRITOperator<T>::set_forward_kernel(ARRAY_TYPE& forward_kernel, bool co
 {
     try
     {
-        forward_kernel_ = forward_kernel;
+        std::vector<size_t> dim;
+        forward_kernel.get_dimensions(dim);
+        forward_kernel_.create(dim, forward_kernel.begin());
 
         GADGET_CATCH_THROW(Gadgetron::spirit_image_domain_adjoint_kernel(forward_kernel_, adjoint_kernel_));
 

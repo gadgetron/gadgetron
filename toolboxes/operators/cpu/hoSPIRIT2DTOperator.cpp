@@ -21,7 +21,9 @@ void hoSPIRIT2DTOperator<T>::set_forward_kernel(ARRAY_TYPE& forward_kernel, bool
 {
     try
     {
-        forward_kernel_ = forward_kernel;
+        std::vector<size_t> dim;
+        forward_kernel.get_dimensions(dim);
+        forward_kernel_.create(dim, forward_kernel.begin());
 
         size_t RO     = forward_kernel_.get_size(0);
         size_t E1     = forward_kernel_.get_size(1);
