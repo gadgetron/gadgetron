@@ -14,8 +14,6 @@
 
 #include "GadgetronTimer.h"
 
-#include <boost/thread/mutex.hpp>
-
 #include "GtPLplot.h"
 
 #ifdef max
