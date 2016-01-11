@@ -60,10 +60,6 @@ public:
     /// not unitary if no_null_space_==false, because Dc*Dc' is not identity
     virtual bool unitary() const { return this->no_null_space_; }
 
-    /// convert to image domain or back to kspace
-    virtual void convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im) = 0;
-    virtual void convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& x) = 0;
-
     // restore acquired kspace points to x
     virtual void restore_acquired_kspace(const ARRAY_TYPE& acquired, ARRAY_TYPE& y);
     virtual void restore_acquired_kspace(ARRAY_TYPE& y);
@@ -87,6 +83,10 @@ public:
     //std::string debugFolder_;
 
 protected:
+
+    /// convert to image domain or back to kspace
+    virtual void convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im) = 0;
+    virtual void convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& x) = 0;
 
     // G-I, [... srcCHA dstCHA]
     ARRAY_TYPE forward_kernel_;

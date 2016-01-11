@@ -22,17 +22,17 @@ public:
     hoSPIRIT3DOperator(std::vector<size_t> *dims);
     virtual ~hoSPIRIT3DOperator();
 
-    /// convert to image domain or back to kspace
-    /// x : [RO E1 E2 ...]
-    virtual void convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im);
-    /// im : [RO E1 E2 srcCHA]
-    virtual void convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& x);
-
     using BaseClass::use_non_centered_fft_;
     //using BaseClass::performTiming_;
     //using BaseClass::debugFolder_;
 
 protected:
+
+    /// convert to image domain or back to kspace
+    /// x : [RO E1 E2 ...]
+    virtual void convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im);
+    /// im : [RO E1 E2 srcCHA]
+    virtual void convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& x);
 
     using BaseClass::forward_kernel_;
     using BaseClass::adjoint_kernel_;

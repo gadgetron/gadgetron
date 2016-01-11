@@ -44,16 +44,16 @@ public:
     /// compute cost value of L2 norm ||(G-I)(Dc'x+D'y)||2
     virtual REAL magnitude(ARRAY_TYPE* x);
 
-    /// convert to image domain or back to kspace
-    virtual void convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im);
-    virtual void convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& x);
-
     using BaseClass::use_non_centered_fft_;
     using BaseClass::no_null_space_;
     //using BaseClass::performTiming_;
     //using BaseClass::debugFolder_;
 
 protected:
+
+    /// convert to image domain or back to kspace
+    virtual void convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im);
+    virtual void convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& x);
 
     using BaseClass::forward_kernel_;
     using BaseClass::adjoint_kernel_;
