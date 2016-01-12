@@ -21,6 +21,7 @@ set(operator_header_files
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/downsampleOperator.h
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/upsampleOperator.h
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/tvPicsOperator.h
+    ${CMAKE_SOURCE_DIR}/toolboxes/operators/subsetOperator.h
     )
   
 install(FILES ${operator_header_files}

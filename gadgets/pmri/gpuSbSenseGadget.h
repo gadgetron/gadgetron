@@ -40,6 +40,8 @@ namespace Gadgetron{
     GADGET_PROPERTY(lambdaT,float,"Relative lambda in the temporal direction",1.0);
     GADGET_PROPERTY(gamma, float, "Gamma regularization parameter", 0.0);
     GADGET_PROPERTY(alpha, float, "Alpha regularization parameter", 0.5);
+
+    GADGET_PROPERTY(cg_limit, float, "Residual limit for CG convergence", 1e-6);
     GADGET_PROPERTY(is_cyclic, bool, "Is cyclic", true);
     GADGET_PROPERTY(exclusive_access, bool, "Exclusive access to solver", false);
 

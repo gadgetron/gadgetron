@@ -22,7 +22,6 @@ target_link_libraries(gadgetron_toolbox_gpufft
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
   gadgetron_toolbox_gpucore 
-  ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
   )

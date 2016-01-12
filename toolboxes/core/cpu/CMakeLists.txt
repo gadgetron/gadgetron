@@ -76,7 +76,7 @@ set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_
 target_link_libraries(
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
-  ${Boost_LIBRARIES})
+  )
 
 install(TARGETS gadgetron_toolbox_cpucore DESTINATION lib COMPONENT main)
 

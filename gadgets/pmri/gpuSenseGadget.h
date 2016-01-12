@@ -26,7 +26,6 @@ protected:
   GADGET_PROPERTY(deviceno,int,"GPU device number", 0);
   GADGET_PROPERTY(setno,int,"Set number to process", 0);
   GADGET_PROPERTY(sliceno,int,"Slice number to process",0);
-  GADGET_PROPERTY(cg_limit, float, "Residual limit for CG convergence", 1e-6);
   GADGET_PROPERTY(oversampling_factor, float, "Oversampling factor for NFFT", 1.5);
   GADGET_PROPERTY(kernel_width, float, "Kernel width for NFFT", 5.5);
   GADGET_PROPERTY(save_individual_frames, bool, "Save individual frames", true);

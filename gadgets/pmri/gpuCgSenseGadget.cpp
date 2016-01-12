@@ -31,6 +31,7 @@ namespace Gadgetron{
     //GDEBUG("gpuCgSenseGadget::process_config\n");
     number_of_iterations_ = number_of_iterations.value();
     kappa_ = kappa.value();
+    cg_limit_ = cg_limit.value();
 
 
 
@@ -77,7 +78,6 @@ namespace Gadgetron{
       cg_.set_max_iterations( number_of_iterations_ );
       cg_.set_tc_tolerance( cg_limit_ );
       cg_.set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT);
-
       is_configured_ = true;
     }
 
@@ -197,7 +197,6 @@ namespace Gadgetron{
 
     // Invoke solver
     // 
-
     boost::shared_ptr< cuNDArray<float_complext> > cgresult;
 
     {
