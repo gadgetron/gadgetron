@@ -87,7 +87,7 @@
     <property><name>cg_limit</name>                <value>1e-6</value></property>
     <property><name>oversampling_factor</name>     <value>2</value></property>
     <property><name>kernel_width</name>            <value>7.5</value></property>
-    <property><name>kappa</name>                   <value>0.5</value></property>
+    <property><name>kappa</name>                   <value>0.6</value></property>
     <property><name>output_convergence</name><value>true</value></property>
     <property><name>save_individual_frames</name><value>false</value></property>
   </gadget>
