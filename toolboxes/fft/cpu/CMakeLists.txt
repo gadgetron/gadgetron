@@ -27,7 +27,6 @@ if (MKL_FOUND)
       gadgetron_toolbox_log
       gadgetron_toolbox_cpucore_math
       ${MKL_LIBRARIES} 
-      ${Boost_LIBRARIES} 
       )
 else (MKL_FOUND)
 target_link_libraries(gadgetron_toolbox_cpufft
@@ -35,7 +34,6 @@ target_link_libraries(gadgetron_toolbox_cpufft
   gadgetron_toolbox_log
   gadgetron_toolbox_cpucore_math
   ${FFTW3_LIBRARIES} 
-  ${Boost_LIBRARIES} 
   )
 endif (MKL_FOUND)
 

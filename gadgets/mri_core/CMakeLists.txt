@@ -175,7 +175,6 @@ target_link_libraries(gadgetron_mricore
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-    ${BOOST_LIBRARIES}
     ${OPTIMIZED_GADGET_LIBS}
 )
 
