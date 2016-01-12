@@ -12,7 +12,6 @@ include_directories( ${GTEST_INCLUDE_DIRS}
 include_directories(${GADGETRON_INCLUDE_DIR})
 
 link_libraries( ${GTEST_LIBRARIES} 
-                ${Boost_LIBRARIES} 
                 ${ISMRMRD_LIBRARIES} 
                 ${ARMADILLO_LIBRARIES} 
                 gadgetron_toolbox_plplot 

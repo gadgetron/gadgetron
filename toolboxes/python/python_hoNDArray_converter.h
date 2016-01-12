@@ -3,6 +3,10 @@
 
 #include "python_toolbox.h"
 #include "python_numpy_wrappers.h"
+#if (NPY_API_VERSION <= 6) && !defined(NPY_ARRAY_IN_FARRAY)
+  // work-around for NumPy 1.6 (or earlier?)
+  #define NPY_ARRAY_IN_FARRAY NPY_IN_FARRAY
+#endif
 
 #include "hoNDArray.h"
 #include "log.h"

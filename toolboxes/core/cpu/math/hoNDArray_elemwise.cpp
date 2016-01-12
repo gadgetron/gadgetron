@@ -718,6 +718,22 @@ namespace Gadgetron{
         }
     }
 
+    inline void addEpsilon(size_t N,  complext<float> * x)
+    {
+        const float eps = std::numeric_limits<float>::epsilon();
+
+        long long n;
+
+        #pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+        for (n=0; n<(long long)N; n++ )
+        {
+            if ( Gadgetron::abs(x[n]) < eps )
+            {
+                reinterpret_cast<float(&)[2]>(x[n])[0] += eps;
+            }
+        }
+    }
+
     inline void addEpsilon(size_t N,  std::complex<double> * x)
     {
         const double eps = std::numeric_limits<double>::epsilon();
@@ -734,6 +750,22 @@ namespace Gadgetron{
         }
     }
 
+    inline void addEpsilon(size_t N,  complext<double> * x)
+    {
+        const double eps = std::numeric_limits<double>::epsilon();
+
+        long long n;
+
+        #pragma omp parallel for private(n) if (N>NumElementsUseThreading)
+        for (n=0; n<(long long)N; n++ )
+        {
+            if ( Gadgetron::abs(x[n]) < eps )
+            {
+                reinterpret_cast<double(&)[2]>(x[n])[0] += eps;
+            }
+        }
+    }
+
     template <typename T> 
     void addEpsilon(hoNDArray<T>& x)
     {
@@ -744,6 +776,8 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void addEpsilon(hoNDArray<double>& x);
     template EXPORTCPUCOREMATH void addEpsilon(hoNDArray< std::complex<float> >& x);
     template EXPORTCPUCOREMATH void addEpsilon(hoNDArray< std::complex<double> >& x);
+    template EXPORTCPUCOREMATH void addEpsilon(hoNDArray< complext<float> >& x);
+    template EXPORTCPUCOREMATH void addEpsilon(hoNDArray< complext<double> >& x);
 
     // --------------------------------------------------------------------------------
 
@@ -1478,6 +1512,8 @@ namespace Gadgetron{
 
     template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< std::complex<float> >& cplx, hoNDArray<float>& real);
     template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< std::complex<double> >& cplx, hoNDArray<double>& real);
+    template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< complext<float> >& cplx, hoNDArray<float>& real);
+    template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< complext<double> >& cplx, hoNDArray<double>& real);
 
     template<class T> 
     void complex_to_real(const hoNDArray<T>& cplx, hoNDArray<T>& real)
@@ -1509,6 +1545,8 @@ namespace Gadgetron{
 
     template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< std::complex<float> >& cplx, hoNDArray< std::complex<float> >& real);
     template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< std::complex<double> >& cplx, hoNDArray< std::complex<double> >& real);
+    template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< complext<float> >& cplx, hoNDArray< complext<float> >& real);
+    template EXPORTCPUCOREMATH void complex_to_real(const hoNDArray< complext<double> >& cplx, hoNDArray< complext<double> >& real);
 
     template<class T> 
     void complex_to_real(hoNDArray<T>& cplx)
@@ -1534,6 +1572,8 @@ namespace Gadgetron{
 
     template EXPORTCPUCOREMATH void complex_to_real(hoNDArray< std::complex<float> >& cplx);
     template EXPORTCPUCOREMATH void complex_to_real(hoNDArray< std::complex<double> >& cplx);
+    template EXPORTCPUCOREMATH void complex_to_real(hoNDArray< complext<float> >& cplx);
+    template EXPORTCPUCOREMATH void complex_to_real(hoNDArray< complext<double> >& cplx);
 
     // --------------------------------------------------------------------------------
 
