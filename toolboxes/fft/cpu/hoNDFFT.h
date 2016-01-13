@@ -8,7 +8,7 @@
 #include "hoNDArray.h"
 #include "cpufft_export.h"
 
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <iostream>
 #include <fftw3.h>
 #include <complex>
@@ -220,7 +220,7 @@ template<> struct fftw_types<double>{
 
 
         static hoNDFFT<T>* instance_;
-        boost::mutex mutex_;
+        std::mutex mutex_;
 
         int num_of_max_threads_;
 
