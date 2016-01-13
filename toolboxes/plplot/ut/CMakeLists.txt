@@ -21,4 +21,4 @@ add_executable(gadgetron_ut_plplot
     plplot_ut.cpp 
     plplot_test.cpp )
 
-install(TARGETS gadgetron_ut_plplot DESTINATION lib COMPONENT main)
+install(TARGETS gadgetron_ut_plplot DESTINATION bin COMPONENT main)
