@@ -2,7 +2,7 @@ from gadgetron import *
 import ismrmrd
 import ismrmrd.xsd
 import numpy as np
-from scipy.fftpack import fft, fftshift
+from numpy.fft import fft, fftshift
 
 
 class IDEAL(Gadget):
