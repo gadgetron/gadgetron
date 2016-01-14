@@ -30,7 +30,7 @@ target_link_libraries(gadgetron_spiral
   gadgetron_gadgetbase
   gadgetron_toolbox_log
   gadgetron_toolbox_cpucore gadgetron_toolbox_gpucore gadgetron_toolbox_gpunfft gadgetron_toolbox_gpusolvers gadgetron_toolbox_gpuoperators
-  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
+  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_CUDART_LIBRARY}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 

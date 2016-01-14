@@ -30,7 +30,7 @@ set_target_properties(gadgetron_gpugadget PROPERTIES VERSION ${GADGETRON_VERSION
 target_link_libraries(gadgetron_gpugadget
   gadgetron_gadgetbase
   gadgetron_toolbox_gpunfft gadgetron_toolbox_gpusolvers gadgetron_toolbox_gpuoperators gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math gadgetron_toolbox_gpucore
-  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
+  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_CUDART_LIBRARY}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
