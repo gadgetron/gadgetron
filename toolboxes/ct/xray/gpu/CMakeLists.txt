@@ -35,7 +35,7 @@ set_target_properties(gadgetron_toolbox_gpuxray PROPERTIES VERSION ${GADGETRON_V
 target_link_libraries(
   gadgetron_toolbox_gpuxray gadgetron_toolbox_gpucore gadgetron_toolbox_gpunfft
   gadgetron_toolbox_cpucore_math
-  ${CUDA_LIBRARIES}
+  ${CUDA_CUDART_LIBRARY}
 )
 
 install(TARGETS gadgetron_toolbox_gpuxray DESTINATION lib COMPONENT main)

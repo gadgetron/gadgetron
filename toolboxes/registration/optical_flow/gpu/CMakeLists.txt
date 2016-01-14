@@ -22,7 +22,7 @@ set_target_properties(gadgetron_toolbox_gpureg PROPERTIES VERSION ${GADGETRON_VE
 target_link_libraries(gadgetron_toolbox_gpureg 
   gadgetron_toolbox_gpucore
   gadgetron_toolbox_log
-  ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}
+  ${CUDA_CUDART_LIBRARY} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES}
   )
 
 install(TARGETS gadgetron_toolbox_gpureg DESTINATION lib COMPONENT main)

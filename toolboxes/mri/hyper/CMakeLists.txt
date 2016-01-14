@@ -32,7 +32,7 @@ target_link_libraries(gadgetron_toolbox_hyper
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpunfft
   ${Boost_LIBRARIES}
-  ${CUDA_LIBRARIES}
+  ${CUDA_CUDART_LIBRARY}
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 
