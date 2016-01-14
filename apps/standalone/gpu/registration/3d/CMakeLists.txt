@@ -6,7 +6,7 @@ target_link_libraries(register_CK_3d_gpu
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpuoperators
   gadgetron_toolbox_gpusolvers 
-  ${CUDA_CUDART_LIBRARY}
+  ${CUDA_LIBRARIES}
   )
 
 install(TARGETS register_CK_3d_gpu DESTINATION bin COMPONENT main)

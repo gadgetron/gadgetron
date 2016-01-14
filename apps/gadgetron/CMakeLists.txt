@@ -62,8 +62,8 @@ target_link_libraries(gadgetron_info
  )
 
 if (CUDA_FOUND)
-  target_link_libraries(gadgetron_info ${CUDA_CUDART_LIBRARY})
-  target_link_libraries(gadgetron ${CUDA_CUDART_LIBRARY})
+  target_link_libraries(gadgetron_info ${CUDA_LIBRARIES})
+  target_link_libraries(gadgetron ${CUDA_LIBRARIES})
 endif(CUDA_FOUND)
 
 add_library(gadgetron_gadgetbase SHARED

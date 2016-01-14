@@ -36,7 +36,7 @@ set_target_properties(gadgetron_toolbox_gpuoperators PROPERTIES VERSION ${GADGET
 target_link_libraries(gadgetron_toolbox_gpuoperators 
   gadgetron_toolbox_gpucore 
   gadgetron_toolbox_gpunfft
-  ${CUDA_CUDART_LIBRARY}
+  ${CUDA_LIBRARIES}
   ${CUDA_CUBLAS_LIBRARIES} 
   )
 

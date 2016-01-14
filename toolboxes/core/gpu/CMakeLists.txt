@@ -51,7 +51,7 @@ target_link_libraries(gadgetron_toolbox_gpucore
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
   ${Boost_LIBRARIES}
-  ${CUDA_CUDART_LIBRARY} 
+  ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
   ${CUDA_CUBLAS_LIBRARIES} 
   ${CUDA_CUSPARSE_LIBRARIES}
