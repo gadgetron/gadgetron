@@ -82,10 +82,11 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    inline void asum(size_t N, const float* x, float& r)
+    template<typename REAL> inline
+    void asum(size_t N, const REAL* x, REAL& r)
     {
         long long i;
-        float sum(0);
+        REAL sum(0);
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
@@ -95,51 +96,29 @@ namespace Gadgetron{
         r = sum;
     }
 
-    inline void asum(size_t N, const double* x, double& r)
+    template EXPORTCPUCOREMATH void asum(size_t N, const float*  x, float&  r);
+    template EXPORTCPUCOREMATH void asum(size_t N, const double* x, double& r);
+    
+    template<typename REAL> inline
+    void asum(size_t N, const  std::complex<REAL> * x, REAL& r)
     {
         long long i;
-        double sum(0);
+        REAL sum(0);
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            sum += std::abs(x[i]);
-        }
-
-        r = sum;
-    }
-
-    inline void asum(size_t N, const  std::complex<float> * x, float& r)
-    {
-        long long i;
-        float sum(0);
-        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
-        for (i = 0; i < (long long)N; i++)
-        {
-            const  std::complex<float> & c = x[i];
-            const float re = c.real();
-            const float im = c.imag();
+            const  std::complex<REAL> & c = x[i];
+            const REAL re = c.real();
+            const REAL im = c.imag();
             sum += ( std::abs(re) + std::abs(im) );
         }
 
         r = sum;
     }
 
-    inline void asum(size_t N, const  std::complex<double> * x, double& r)
-    {
-        long long i;
-        double sum(0);
-        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
-        for (i = 0; i < (long long)N; i++)
-        {
-            const  std::complex<double> & c = x[i];
-            const double re = c.real();
-            const double im = c.imag();
-            sum += ( std::abs(re) + std::abs(im) );
-        }
-
-        r = sum;
-    }
-
+    template EXPORTCPUCOREMATH void asum(size_t N, const  std::complex<float>  * x, float& r);
+    template EXPORTCPUCOREMATH void asum(size_t N, const  std::complex<double> * x, double& r);
+	
     template<class T> void asum(const hoNDArray<T>& x, typename realType<T>::Type& r)
     {
         asum(x.get_number_of_elements(), x.begin(), r);
@@ -190,64 +169,53 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    template <typename T> inline 
-    void norm1(size_t N, const T* x, typename realType<T>::Type& r)
+    template <typename REAL> inline 
+    void norm1(size_t N, const REAL* x, REAL& r)
     {
         long long n;
 
-        typename realType<T>::Type norm1Sum(0);
+        REAL norm1Sum(0);
 
         #pragma omp parallel for private(n) reduction(+:norm1Sum) if (N>NumElementsUseThreading)
         for (n=0; n<(long long)N; n++)
         {
-            const T& c = x[n];
+            const REAL& c = x[n];
             norm1Sum += std::abs(c);
         }
 
         r = norm1Sum;
     }
 
-    inline void norm1(size_t N, const  std::complex<float> * x, float& r)
+    template EXPORTCPUCOREMATH void norm1(size_t N, const float*  x, float&  r);
+    template EXPORTCPUCOREMATH void norm1(size_t N, const double* x, double& r);
+
+    template <typename REAL> inline
+    void norm1(size_t N, const  std::complex<REAL> * x, REAL& r)
     {
         long long i;
-        float sum = 0.0f;
+        REAL sum = 0.0;
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            const std::complex<float>& c = x[i];
-            const float re = c.real();
-            const float im = c.imag();
+            const std::complex<REAL>& c = x[i];
+            const REAL re = c.real();
+            const REAL im = c.imag();
             sum += std::sqrt( (re*re) + (im * im) );
         }
 
         r = sum;
     }
 
-    inline void norm1(size_t N, const  complext<float> * x, float& r)
+    template <typename REAL> inline
+    void norm1(size_t N, const  complext<REAL> * x, REAL& r)
     {
-        norm1(N, (std::complex<float> *)x, r);
+        norm1(N, (std::complex<REAL> *)x, r);
     }
 
-    inline void norm1(size_t N, const  std::complex<double> * x, double& r)
-    {
-        long long i;
-        double sum = 0.0;
-        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
-        for (i = 0; i < (long long)N; i++)
-        {
-            const std::complex<double>& c = x[i];
-            const double re = c.real();
-            const double im = c.imag();
-            sum += std::sqrt( (re*re) + (im * im) );
-        }
-
-        r = sum;
-    }
-
-    inline void norm1(size_t N, const  complext<double> * x, double& r)
-    {
-        norm1(N, (std::complex<double> *)x, r);
-    }
+    template EXPORTCPUCOREMATH void norm1(size_t N, const std::complex<float>*  x, float&  r);
+    template EXPORTCPUCOREMATH void norm1(size_t N, const std::complex<double>* x, double& r);
+    template EXPORTCPUCOREMATH void norm1(size_t N, const  complext<float>  * x, float&  r);
+    template EXPORTCPUCOREMATH void norm1(size_t N, const  complext<double> * x, double& r);
 
     template <typename T> 
     void norm1(const hoNDArray<T>& x, typename realType<T>::Type& r)
@@ -291,83 +259,55 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    inline void norm2(size_t N, const float* x, float& r)
+    template <typename REAL> inline
+    void norm2(size_t N, const REAL* x, REAL& r)
     {
         long long i;
 
-        float sum(0);
+        REAL sum(0);
 
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            const float& re = x[i];
+            const REAL& re = x[i];
             sum += ( re*re );
         }
 
         r = std::sqrt(sum);
     }
 
-    inline void norm2(size_t N, const double* x, double& r)
+    template EXPORTCPUCOREMATH void norm2(size_t N, const float*  x, float&  r);
+    template EXPORTCPUCOREMATH void norm2(size_t N, const double* x, double& r);
+
+    template <typename REAL> inline
+    void norm2(size_t N, const  std::complex<REAL> * x, REAL& r)
     {
         long long i;
 
-        double sum(0);
+        REAL sum(0);
 
         #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
         for (i = 0; i < (long long)N; i++)
         {
-            const double& re = x[i];
-            sum += ( re*re );
-        }
-
-        r = std::sqrt(sum);
-    }
-
-    inline void norm2(size_t N, const  std::complex<float> * x, float& r)
-    {
-        long long i;
-
-        float sum(0);
-
-        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
-        for (i = 0; i < (long long)N; i++)
-        {
-            const std::complex<float>& c = x[i];
-            const float re = c.real();
-            const float im = c.imag();
+            const std::complex<REAL>& c = x[i];
+            const REAL re = c.real();
+            const REAL im = c.imag();
             sum += ( (re*re) + (im * im) );
         }
 
         r = std::sqrt(sum);
     }
 
-    inline void norm2(size_t N, const  complext<float> * x, float& r)
+    template <typename REAL> inline
+    void norm2(size_t N, const  complext<REAL> * x, REAL& r)
     {
-        norm2(N, (std::complex<float> *)x, r);
+        norm1(N, (std::complex<REAL> *)x, r);
     }
 
-    inline void norm2(size_t N, const  std::complex<double> * x, double& r)
-    {
-        long long i;
-
-        double sum(0);
-
-        #pragma omp parallel for private(i) reduction(+:sum) if (N>NumElementsUseThreading)
-        for (i = 0; i < (long long)N; i++)
-        {
-            const std::complex<double>& c = x[i];
-            const double re = c.real();
-            const double im = c.imag();
-            sum += ( (re*re) + (im * im) );
-        }
-
-        r = std::sqrt(sum);
-    }
-
-    inline void norm2(size_t N, const  complext<double> * x, double& r)
-    {
-        norm2(N, (std::complex<double> *)x, r);
-    }
+    template EXPORTCPUCOREMATH void norm2(size_t N, const std::complex<float>*  x, float&  r);
+    template EXPORTCPUCOREMATH void norm2(size_t N, const std::complex<double>* x, double& r);
+    template EXPORTCPUCOREMATH void norm2(size_t N, const  complext<float>  * x, float&  r);
+    template EXPORTCPUCOREMATH void norm2(size_t N, const  complext<double> * x, double& r);
 
     template <typename T> 
     void norm2(const hoNDArray<T>& x, typename realType<T>::Type& r)
@@ -665,93 +605,34 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    inline void dotc(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> & r)
+    template  <template<class> class COMPLEX, typename REAL> inline
+    void dotc(size_t N, const  COMPLEX<REAL> * x, const  COMPLEX<REAL> * y,  COMPLEX<REAL> & r)
     {
         long long n;
 
-        float sa(0), sb(0);
+        REAL sa(0), sb(0);
 
         #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const float a = x[n].real();
-            const float b = x[n].imag();
-            const float c = y[n].real();
-            const float d = y[n].imag();
+            const REAL a = x[n].real();
+            const REAL b = x[n].imag();
+            const REAL c = y[n].real();
+            const REAL d = y[n].imag();
 
             sa += (a*c + b*d);
             sb += (c*b - a*d);
         }
 
-        reinterpret_cast<float(&)[2]>(r)[0] = sa;
-        reinterpret_cast<float(&)[2]>(r)[1] = sb;
+        reinterpret_cast<REAL(&)[2]>(r)[0] = sa;
+        reinterpret_cast<REAL(&)[2]>(r)[1] = sb;
     }
 
-    inline void dotc(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> & r)
-    {
-        long long n;
+    template EXPORTCPUCOREMATH void dotc(size_t N, const  std::complex<float>  * x, const  std::complex<float>  * y,  std::complex<float>  & r);
+    template EXPORTCPUCOREMATH void dotc(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> & r);
+    template EXPORTCPUCOREMATH void dotc(size_t N, const  complext<float>  * x, const  complext<float>  * y,  complext<float>  & r);
+    template EXPORTCPUCOREMATH void dotc(size_t N, const  complext<double> * x, const  complext<double> * y,  complext<double> & r);
 
-        double sa(0), sb(0);
-
-        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const double a = x[n].real();
-            const double b = x[n].imag();
-            const double c = y[n].real();
-            const double d = y[n].imag();
-
-            sa += (a*c + b*d);
-            sb += (c*b - a*d);
-        }
-
-        reinterpret_cast<double(&)[2]>(r)[0] = sa;
-        reinterpret_cast<double(&)[2]>(r)[1] = sb;
-    }
-
-    inline void dotc(size_t N, const  complext<float> * x, const  complext<float> * y,  complext<float> & r)
-    {
-        long long n;
-
-        float sa(0), sb(0);
-
-        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const float a = x[n].real();
-            const float b = x[n].imag();
-            const float c = y[n].real();
-            const float d = y[n].imag();
-
-            sa += (a*c + b*d);
-            sb += (c*b - a*d);
-        }
-
-        reinterpret_cast<float(&)[2]>(r)[0] = sa;
-        reinterpret_cast<float(&)[2]>(r)[1] = sb;
-    }
-
-    inline void dotc(size_t N, const  complext<double> * x, const  complext<double> * y,  complext<double> & r)
-    {
-        long long n;
-
-        double sa(0), sb(0);
-
-        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const double a = x[n].real();
-            const double b = x[n].imag();
-            const double c = y[n].real();
-            const double d = y[n].imag();
-
-            sa += (a*c + b*d);
-            sb += (c*b - a*d);
-        }
-
-        reinterpret_cast<double(&)[2]>(r)[0] = sa;
-        reinterpret_cast<double(&)[2]>(r)[1] = sb;
-    }
 
     template <typename T> 
     void dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r)
@@ -780,11 +661,12 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    inline void dotu(size_t N, const float* x, const float* y, float& r)
+    template <typename REAL> inline
+    void dotu(size_t N, const REAL* x, const REAL* y, REAL& r)
     {
         long long n;
 
-        float res(0);
+        REAL res(0);
 
         #pragma omp parallel for private(n) reduction(+:res) if (N>NumElementsUseThreading)
         for (n=0; n<(long long)N; n++)
@@ -795,104 +677,36 @@ namespace Gadgetron{
         r = res;
     }
 
-    inline void dotu(size_t N, const double* x, const double* y, double& r)
+    template EXPORTCPUCOREMATH void dotu(size_t N, const float * x, const float * y, float& r);
+    template EXPORTCPUCOREMATH void dotu(size_t N, const double* x, const double* y, double& r);
+	
+    template  <template<class> class COMPLEX, typename REAL> inline
+	void dotu(size_t N, const  COMPLEX<REAL> * x, const  COMPLEX<REAL> * y,  COMPLEX<REAL> & r)
     {
         long long n;
 
-        double res(0);
-
-        #pragma omp parallel for private(n) reduction(+:res) if (N>NumElementsUseThreading)
-        for (n=0; n<(long long)N; n++)
-        {
-            res += x[n]*y[n];
-        }
-
-        r = res;
-    }
-
-    inline void dotu(size_t N, const  std::complex<float> * x, const  std::complex<float> * y,  std::complex<float> & r)
-    {
-        long long n;
-
-        float sa(0), sb(0);
+        REAL sa(0), sb(0);
         #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
-            const float a = x[n].real();
-            const float b = x[n].imag();
-            const float c = y[n].real();
-            const float d = y[n].imag();
+            const REAL a = x[n].real();
+            const REAL b = x[n].imag();
+            const REAL c = y[n].real();
+            const REAL d = y[n].imag();
 
             sa += (a*c - b*d);
             sb += (c*b + a*d);
         }
 
-        reinterpret_cast<float(&)[2]>(r)[0] = sa;
-        reinterpret_cast<float(&)[2]>(r)[1] = sb;
+        reinterpret_cast<REAL(&)[2]>(r)[0] = sa;
+        reinterpret_cast<REAL(&)[2]>(r)[1] = sb;
     }
 
-    inline void dotu(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> & r)
-    {
-        long long n;
+    template EXPORTCPUCOREMATH void dotu(size_t N, const  std::complex<float>  * x, const  std::complex<float>  * y,  std::complex<float>  & r);
+	template EXPORTCPUCOREMATH void dotu(size_t N, const  std::complex<double> * x, const  std::complex<double> * y,  std::complex<double> & r);
+    template EXPORTCPUCOREMATH void dotu(size_t N, const  complext<float> * x, const  complext<float> * y,  complext<float> & r);
+	template EXPORTCPUCOREMATH void dotu(size_t N, const  complext<double> * x, const  complext<double> * y,  complext<double> & r);
 
-        double sa(0), sb(0);
-        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const double a = x[n].real();
-            const double b = x[n].imag();
-            const double c = y[n].real();
-            const double d = y[n].imag();
-
-            sa += (a*c - b*d);
-            sb += (c*b + a*d);
-        }
-
-        reinterpret_cast<double(&)[2]>(r)[0] = sa;
-        reinterpret_cast<double(&)[2]>(r)[1] = sb;
-    }
-
-    inline void dotu(size_t N, const  complext<float> * x, const  complext<float> * y,  complext<float> & r)
-    {
-        long long n;
-
-        float sa(0), sb(0);
-        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const float a = x[n].real();
-            const float b = x[n].imag();
-            const float c = y[n].real();
-            const float d = y[n].imag();
-
-            sa += (a*c - b*d);
-            sb += (c*b + a*d);
-        }
-
-        reinterpret_cast<float(&)[2]>(r)[0] = sa;
-        reinterpret_cast<float(&)[2]>(r)[1] = sb;
-    }
-
-    inline void dotu(size_t N, const  complext<double> * x, const  complext<double> * y,  complext<double> & r)
-    {
-        long long n;
-
-        double sa(0), sb(0);
-        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
-        for (n = 0; n < (long long)N; n++)
-        {
-            const double a = x[n].real();
-            const double b = x[n].imag();
-            const double c = y[n].real();
-            const double d = y[n].imag();
-
-            sa += (a*c - b*d);
-            sb += (c*b + a*d);
-        }
-
-        reinterpret_cast<double(&)[2]>(r)[0] = sa;
-        reinterpret_cast<double(&)[2]>(r)[1] = sb;
-    }
 
     template <typename T> 
     void dotu(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r)
