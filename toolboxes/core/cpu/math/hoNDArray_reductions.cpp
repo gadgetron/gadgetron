@@ -671,7 +671,7 @@ namespace Gadgetron{
 
         float sa(0), sb(0);
 
-        #pragma omp parallel for private(n) reduction(+:sa) if (N>NumElementsUseThreading)
+        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const float a = x[n].real();
@@ -693,7 +693,7 @@ namespace Gadgetron{
 
         double sa(0), sb(0);
 
-        #pragma omp parallel for private(n) reduction(+:sa) if (N>NumElementsUseThreading)
+        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const double a = x[n].real();
@@ -715,7 +715,7 @@ namespace Gadgetron{
 
         float sa(0), sb(0);
 
-        #pragma omp parallel for private(n) reduction(+:sa) if (N>NumElementsUseThreading)
+        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const float a = x[n].real();
@@ -737,7 +737,7 @@ namespace Gadgetron{
 
         double sa(0), sb(0);
 
-        #pragma omp parallel for private(n) reduction(+:sa) if (N>NumElementsUseThreading)
+        #pragma omp parallel for private(n) reduction(+:sa) reduction(+:sb) if (N>NumElementsUseThreading)
         for (n = 0; n < (long long)N; n++)
         {
             const double a = x[n].real();
