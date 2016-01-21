@@ -1,3 +1,5 @@
+set(CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "")
+
 find_package(CUDA 5.5)
 
 # Check for GPUs present and their compute capability
