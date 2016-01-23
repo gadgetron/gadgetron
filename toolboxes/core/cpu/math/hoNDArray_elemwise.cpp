@@ -161,10 +161,7 @@ namespace Gadgetron{
   template EXPORTCPUCOREMATH void add(const hoNDArray< double >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
   template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
-  template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-  template EXPORTCPUCOREMATH void add(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-
-    // --------------------------------------------------------------------------------
+  // --------------------------------------------------------------------------------
 
 
   // internal low level function for element-wise subtraction of two arrays
@@ -291,10 +288,6 @@ namespace Gadgetron{
   template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<double> >& x, const hoNDArray< double >& y, hoNDArray< std::complex<double> >& r);
   template EXPORTCPUCOREMATH void subtract(const hoNDArray< double >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
   template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-
-  template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-  template EXPORTCPUCOREMATH void subtract(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-
 
     // --------------------------------------------------------------------------------
 
@@ -424,9 +417,6 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void multiply(const hoNDArray< double >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
     template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
-    template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
-    template EXPORTCPUCOREMATH void multiply(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-
     // --------------------------------------------------------------------------------
 
     // internal low level function for element-wise division of two arrays
@@ -552,9 +542,6 @@ namespace Gadgetron{
 
     template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<double> >& x, const hoNDArray< double >& y, hoNDArray< std::complex<double> >& r);
     template EXPORTCPUCOREMATH void divide(const hoNDArray< double >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-    template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
-
-    template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void divide(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, hoNDArray< std::complex<double> >& r);
 
     // --------------------------------------------------------------------------------
