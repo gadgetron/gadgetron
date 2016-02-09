@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function umount_check {
-    MAX_TRY=100
+    MAX_TRY=200
     MOUNT_DIR=$1
     UMOUNT_READY=0
     UMOUNT_TRY=0
@@ -18,6 +18,10 @@ function umount_check {
             UMOUNT_READY=1
         fi
     done
+
+    if mountpoint -q ${MOUNT_DIR}; then
+        umount ${MOUNT_DIR}
+    fi
 }
 
 if [ $(id -u) -ne 0 ]; then

@@ -1,5 +1,28 @@
 #!/bin/bash
 
+function umount_check {
+    MAX_TRY=500
+    MOUNT_DIR=$1
+    UMOUNT_READY=0
+    UMOUNT_TRY=0
+    while [ ${UMOUNT_READY} -eq 0 ]; do
+        if mountpoint -q ${MOUNT_DIR}; then
+            let UMOUNT_TRY++
+            if [ $UMOUNT_TRY -eq $MAX_TRY ]; then
+                UMOUNT_READY=1
+            else
+                sleep 0.5
+            fi
+        else
+            UMOUNT_READY=1
+        fi
+    done
+
+    if mountpoint -q ${MOUNT_DIR}; then
+        umount ${MOUNT_DIR}
+    fi
+}
+
 if [ $(id -u) -ne 0 ]; then 
  	echo -e "\nPlease start the script as a root or sudo!\n"
  	exit 1
@@ -59,6 +82,22 @@ else
 	echo CHROOT_IMAGE_FILENAME=${CHROOT_IMAGE_FILENAME}
 	echo CHROOT_INSTALL_PATH=${CHROOT_INSTALL_PATH}
 
+    # umount existing folder
+    if mountpoint -q ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/proc; then
+        umount ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/proc
+        umount_check ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/proc
+    fi
+
+    if mountpoint -q ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/dev; then
+        umount ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/dev
+        umount_check ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/dev
+    fi
+
+    if mountpoint -q ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/sys; then
+        umount ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/sys
+        umount_check ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/sys
+    fi
+
 	mkdir -p ${CHROOT_INSTALL_PATH}
 
 	cp -rf ${CHROOT_IMAGE_FILENAME} ${CHROOT_INSTALL_PATH}/
@@ -79,6 +118,8 @@ else
 	ln -s ${CHROOT_INSTALL_PATH}/${FILENAME} ${CHROOT_INSTALL_PATH}/current
 
 	cp -f ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/usr/local/share/gadgetron/chroot/gadgetron_chroot.conf /etc/init/
+
+    mkdir -p ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/tmp/gadgetron_data
 
 	if [ ${install_img} -eq 1 ]; then
                 echo "copy image file : ${CHROOT_IMAGE_IMG_FILENAME} ... "		
