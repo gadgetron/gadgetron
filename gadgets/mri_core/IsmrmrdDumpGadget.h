@@ -21,8 +21,10 @@ namespace Gadgetron{
       IsmrmrdDumpGadget();
 
     protected:
-      GADGET_PROPERTY(file_prefix, std::string, "Prefix for dump file", "ISMRMRD_DUMP");
-      GADGET_PROPERTY(append_timestamp, bool, "Append timestamp to file name prefix", true);
+      GADGET_PROPERTY(folder,           std::string, "Folder  for dump file", ".");
+      GADGET_PROPERTY(file_prefix,      std::string, "Prefix for dump file", "ISMRMRD_DUMP");
+      GADGET_PROPERTY(append_id,        bool,        "ISMRMRD measurement ID to file name prefix (if available)", true);
+      GADGET_PROPERTY(append_timestamp, bool,        "Append timestamp to file name prefix", true);
 
       virtual int process_config(ACE_Message_Block* mb);
 
@@ -30,10 +32,7 @@ namespace Gadgetron{
 			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
     private:
-      std::string file_prefix_;
-      std::string ismrmrd_file_name_;
       boost::shared_ptr<ISMRMRD::Dataset>  ismrmrd_dataset_;
-      bool append_timestamp_;
     };
 }
 #endif //ISMRMRDDUMPGADGET_H

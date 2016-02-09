@@ -41,7 +41,8 @@ include_directories(
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
-)
+    ${Boost_INCLUDE_DIR}
+)   
 
 if (ARMADILLO_FOUND)
     list(APPEND OPTIMIZED_GADGETS NoiseAdjustGadget.cpp)
@@ -176,6 +177,7 @@ target_link_libraries(gadgetron_mricore
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
     ${OPTIMIZED_GADGET_LIBS}
+    ${Boost_LIBRARIES}
 )
 
 install(FILES 
