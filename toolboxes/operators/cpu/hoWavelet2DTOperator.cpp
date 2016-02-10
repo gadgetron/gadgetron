@@ -706,8 +706,11 @@ void hoWavelet2DTOperator<T>::L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<val
             const T* pWavCoeff = wavCoeff.begin();
             for (n = 0; n < N; n++)
             {
-                T v = pWavCoeff[n] * std::conj(pWavCoeff[n]);
-                complexIm_norm_(n) = std::abs(v);
+                /*T v = pWavCoeff[n] * std::conj(pWavCoeff[n]);
+                complexIm_norm_(n) = std::abs(v);*/
+
+                value_type v = std::abs(pWavCoeff[n]);
+                complexIm_norm_(n) = v*v;
             }
 
             Gadgetron::sum_over_dimension(complexIm_norm_, wavCoeffNorm, 4);
