@@ -46,13 +46,19 @@ if [ $(id -u) -ne 0 ]; then
 else
  BASEDIR=$(dirname $0)
 
- if [ $# -eq 1 ]; then
+ if [ $# -ge 1 ]; then
 
   CHROOT_DIR=${1}
 
   mount_safe "${CHROOT_DIR}/proc" /proc self/exe
   mount_safe "${CHROOT_DIR}/dev" /dev
   mount_safe "${CHROOT_DIR}/sys" /sys
+
+  if [ $# -eq 2 ]; then
+    DATA_DIR=${2}
+    mkdir -p ${CHROOT_DIR}/tmp/gadgetron_data
+    mount_safe "${CHROOT_DIR}/tmp/gadgetron_data" ${DATA_DIR}
+  fi
 
   exit 0
 

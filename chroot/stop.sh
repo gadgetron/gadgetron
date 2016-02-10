@@ -31,7 +31,7 @@ if [ $(id -u) -ne 0 ]; then
 else
  BASEDIR=$(dirname $0)
 
- if [ $# -eq 1 ]; then
+ if [ $# -ge 1 ]; then
   CHROOT_DIR=${1} 
 
   if mountpoint -q $CHROOT_DIR/proc; then
@@ -46,6 +46,13 @@ else
     umount $CHROOT_DIR/dev
     umount_check $CHROOT_DIR/dev
   fi
+
+  if [ $# -eq 2 ]; then
+    DATA_DIR=${2}
+    umount $CHROOT_DIR/tmp/gadgetron_data
+    umount_check $CHROOT_DIR/tmp/gadgetron_data
+  fi
+
   exit 0
 
  else

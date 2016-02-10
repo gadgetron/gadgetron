@@ -77,6 +77,8 @@ else
 		fi  
 	fi
 
+    CHROOT_ISMRMRD_DATA_PATH=/tmp/gadgetron_data
+
   	service gadgetron_chroot stop
 
 	echo CHROOT_IMAGE_FILENAME=${CHROOT_IMAGE_FILENAME}
@@ -96,6 +98,11 @@ else
     if mountpoint -q ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/sys; then
         umount ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/sys
         umount_check ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/sys
+    fi
+
+    if mountpoint -q ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/tmp/gadgetron_data; then
+        umount ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/tmp/gadgetron_data
+        umount_check ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/tmp/gadgetron_data
     fi
 
 	mkdir -p ${CHROOT_INSTALL_PATH}
@@ -120,6 +127,7 @@ else
 	cp -f ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/usr/local/share/gadgetron/chroot/gadgetron_chroot.conf /etc/init/
 
     mkdir -p ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/tmp/gadgetron_data
+    mkdir -p ${CHROOT_ISMRMRD_DATA_PATH}
 
 	if [ ${install_img} -eq 1 ]; then
                 echo "copy image file : ${CHROOT_IMAGE_IMG_FILENAME} ... "		
