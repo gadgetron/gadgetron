@@ -10,7 +10,7 @@ def shut_down_idle_nodes(max_idle_time=1800, relay_host='localhost',relay_rest_p
     f.close
     node_info = json.loads(js)
     
-    if node_info['number_of_nodes'] > 0:
+    if node_info['number_of_nodes'] > 1:
         activity_sorted = sorted(node_info[u'nodes'], key=lambda n: float(n[u'last_recon']), reverse=True)
         if float(activity_sorted[0][u'last_recon']) > max_idle_time:
             node_address = activity_sorted[0][u'address']
