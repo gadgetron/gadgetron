@@ -689,7 +689,8 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(complexImMultiChannel, debugFolder_+"unwarppedComplexIm"); }
 
             if ( performTiming_ ) { gt_timer3_.start("spirit 3D coil combination ... "); }
-            gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(complexImMultiChannel, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
+            // gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(complexImMultiChannel, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
+            Gadgetron::coil_combine(complexImMultiChannel, *workOrder3DT->coilMap_, 3, workOrder3DT->complexIm_);
             if ( performTiming_ ) { gt_timer3_.stop(); }
 
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"combined"); }

@@ -354,7 +354,8 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 && (workOrder3DT->coilMap_->get_size(3)==dstCHA) )
             {
                 if ( performTiming_ ) { gt_timer3_.start("grappa 3D coil combination ... "); }
-                gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(workOrder3DT->fullkspace_, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
+                // gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(workOrder3DT->fullkspace_, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
+                Gadgetron::coil_combine(workOrder3DT->fullkspace_, *workOrder3DT->coilMap_, 3, workOrder3DT->complexIm_);
                 if ( performTiming_ ) { gt_timer3_.stop(); }
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"combined"); }

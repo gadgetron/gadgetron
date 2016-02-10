@@ -118,7 +118,8 @@ bool gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT
 
         /*if ( refN == N )
         {*/
-            gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_unwrapping_, *(workOrder2DT->coilMap_), workOrder2DT->complexIm_ );
+            // gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_unwrapping_, *(workOrder2DT->coilMap_), workOrder2DT->complexIm_ );
+        Gadgetron::coil_combine(buffer2DT_unwrapping_, *(workOrder2DT->coilMap_), 2, workOrder2DT->complexIm_ );
         /*}
         else
         {

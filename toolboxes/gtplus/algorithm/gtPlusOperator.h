@@ -9,6 +9,7 @@
 #include "GadgetronTimer.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusIOAnalyze.h"
+#include "linearOperator.h"
 
 #ifdef USE_OMP
     #include "omp.h"
@@ -17,7 +18,7 @@
 namespace Gadgetron { namespace gtPlus {
 
 template <typename T> 
-class gtPlusOperator
+class gtPlusOperator : public linearOperator< hoNDArray<T> >
 {
 public:
 
@@ -30,9 +31,11 @@ public:
 
     // forward operator
     virtual bool forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y) = 0;
+    virtual void mult_M(hoNDArray<T>* x, hoNDArray<T>* y, bool accumulate = false);
 
     // adjoint operator
     virtual bool adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y) = 0;
+    virtual void mult_MH(hoNDArray<T>* x, hoNDArray<T>* y, bool accumulate = false);
 
     // adjoint - forward operator
     virtual bool adjointforwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y);
@@ -124,6 +127,36 @@ void gtPlusOperator<T>::printInfo(std::ostream& os)
     os << "-------------- GTPlus ISMRMRD operator ------------------" << endl;
     os << "Operator for gtPlus ISMRMRD package" << endl;
     os << "----------------------------------------------------------------------" << endl;
+}
+
+template <typename T>
+void gtPlusOperator<T>::mult_M(hoNDArray<T>* x, hoNDArray<T>* y, bool accumulate)
+{
+    if (!accumulate)
+    {
+        GADGET_CHECK_THROW(this->forwardOperator(*x, *y));
+    }
+    else
+    {
+        kspace_ = *y;
+        GADGET_CHECK_THROW(this->forwardOperator(*x, *y));
+        Gadgetron::add(kspace_, *y, *y);
+    }
+}
+
+template <typename T>
+void gtPlusOperator<T>::mult_MH(hoNDArray<T>* x, hoNDArray<T>* y, bool accumulate)
+{
+    if (!accumulate)
+    {
+        GADGET_CHECK_THROW(this->adjointOperator(*x, *y));
+    }
+    else
+    {
+        complexIm_ = *y;
+        GADGET_CHECK_THROW(this->forwardOperator(*x, *y));
+        Gadgetron::add(complexIm_, *y, *y);
+    }
 }
 
 template <typename T> 
