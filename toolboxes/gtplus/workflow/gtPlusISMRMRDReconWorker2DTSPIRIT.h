@@ -701,12 +701,14 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             if ( refN == N )
             {
                 hoNDArray<T> coilMap(RO, E1, dstCHA, refN, workOrder2DT->coilMap_->begin()+usedS*RO*E1*dstCHA*refN);
-                gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImMultiChannel, coilMap, combined);
+                // gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImMultiChannel, coilMap, combined);
+                Gadgetron::coil_combine(complexImMultiChannel, coilMap, 2, combined);
             }
             else
             {
                 hoNDArray<T> coilMap(RO, E1, dstCHA, workOrder2DT->coilMap_->begin()+usedS*RO*E1*dstCHA*refN);
-                gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImMultiChannel, coilMap, combined);
+                // gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImMultiChannel, coilMap, combined);
+                Gadgetron::coil_combine(complexImMultiChannel, coilMap, 2, combined);
             }
 
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(combined, debugFolder_+"combined"); }

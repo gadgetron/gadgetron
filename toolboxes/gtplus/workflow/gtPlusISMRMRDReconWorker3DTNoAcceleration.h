@@ -126,7 +126,8 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
 
         hoNDArray<T> buffer3DT(workOrder3DT->data_.get_dimensions());
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->data_, buffer3DT);
-        gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
+        // gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
+        Gadgetron::coil_combine(buffer3DT, *workOrder3DT->coilMap_, 3, workOrder3DT->complexIm_);
 
         if ( performTiming_ ) { gt_timer1_.stop(); }
 

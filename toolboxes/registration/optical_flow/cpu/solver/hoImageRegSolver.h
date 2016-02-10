@@ -20,8 +20,6 @@
 #include "hoImageRegTransformation.h"
 #include "hoImageRegWarper.h"
 #include "hoImageRegDissimilarity.h"
-#include "gtPlusISMRMRDReconUtil.h"
-#include "GtPrepUtil.h"
 
 #ifdef USE_OMP
     #include <omp.h>

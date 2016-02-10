@@ -600,7 +600,8 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         {
             // perform coil combination
             //gt_timer2_.start("4");
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_complex_.coilCombine(complexIm_, *coil_senMap_, res_after_apply_kernel_));
+            // GADGET_CHECK_RETURN_FALSE(gtPlus_util_complex_.coilCombine(complexIm_, *coil_senMap_, res_after_apply_kernel_));
+            Gadgetron::coil_combine(complexIm_, *coil_senMap_, 2, res_after_apply_kernel_);
             //gt_timer2_.stop();
 
             //gt_timer2_.start("5");
@@ -678,7 +679,8 @@ objTask(const hoNDArray<T>& x, T& obj)
         {
             // perform coil combination
             //gt_timer3_.start("4");
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_complex_.coilCombine(complexIm_, *coil_senMap_, res_after_apply_kernel_));
+            // GADGET_CHECK_RETURN_FALSE(gtPlus_util_complex_.coilCombine(complexIm_, *coil_senMap_, res_after_apply_kernel_));
+            Gadgetron::coil_combine(complexIm_, *coil_senMap_, 2, res_after_apply_kernel_);
             //gt_timer3_.stop();
 
             //gt_timer3_.start("5");
