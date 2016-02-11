@@ -19,7 +19,7 @@ function mount_safe {
           sleep 0.2
           let MOUNT_TRY++
           if [ $MOUNT_TRY -eq $MAX_MOUNT_TRY ]; then
-	          MOUNT_READY=1
+            MOUNT_READY=1
           fi  
         fi
       done
@@ -31,7 +31,7 @@ function mount_safe {
           sleep 0.2
           let MOUNT_TRY++
           if [ $MOUNT_TRY -eq $MAX_MOUNT_TRY ]; then
-	          MOUNT_READY=1
+            MOUNT_READY=1
           fi
         fi
       done  
@@ -63,7 +63,7 @@ else
   exit 0
 
  else
-  echo -e "\nUsage: $0 (chrootdir)\n"
+  echo -e "\nUsage: $0 (chrootdir) (datadir)\n"
   exit 1
  fi
 

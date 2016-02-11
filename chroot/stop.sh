@@ -56,7 +56,7 @@ else
   exit 0
 
  else
-  echo -e "\nUsage: $0 (chroot_dir)\n"
+  echo -e "\nUsage: $0 (chroot_dir) (datadir)\n"
   exit 1
  fi
 fi
