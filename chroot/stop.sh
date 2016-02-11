@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function umount_check {
-    MAX_TRY=100
+    MAX_TRY=200
     MOUNT_DIR=$1
     UMOUNT_READY=0
     UMOUNT_TRY=0
@@ -18,6 +18,10 @@ function umount_check {
             UMOUNT_READY=1
         fi
     done
+
+    if mountpoint -q ${MOUNT_DIR}; then
+        umount ${MOUNT_DIR}
+    fi
 }
 
 if [ $(id -u) -ne 0 ]; then
@@ -27,7 +31,7 @@ if [ $(id -u) -ne 0 ]; then
 else
  BASEDIR=$(dirname $0)
 
- if [ $# -eq 1 ]; then
+ if [ $# -ge 1 ]; then
   CHROOT_DIR=${1} 
 
   if mountpoint -q $CHROOT_DIR/proc; then
@@ -42,10 +46,17 @@ else
     umount $CHROOT_DIR/dev
     umount_check $CHROOT_DIR/dev
   fi
+
+  if [ $# -eq 2 ]; then
+    DATA_DIR=${2}
+    umount $CHROOT_DIR/tmp/gadgetron_data
+    umount_check $CHROOT_DIR/tmp/gadgetron_data
+  fi
+
   exit 0
 
  else
-  echo -e "\nUsage: $0 (chroot_dir)\n"
+  echo -e "\nUsage: $0 (chroot_dir) (datadir)\n"
   exit 1
  fi
 fi

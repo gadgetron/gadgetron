@@ -147,6 +147,7 @@ set( gadgetron_mricore_config_files
     default_short.xml
     default_optimized.xml
     default_measurement_dependencies.xml
+    default_measurement_dependencies_ismrmrd_storage.xml
     isalive.xml
     gtquery.xml
     Generic_Cartesian_Grappa.xml
