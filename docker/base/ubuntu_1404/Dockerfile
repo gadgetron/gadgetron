@@ -2,13 +2,16 @@ FROM ubuntu:14.04
 
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
-    wget build-essential emacs python-pip cython libhdf5-serial-dev cmake git-core \
+    wget build-essential emacs python-pip libhdf5-serial-dev cmake git-core \
     libboost-all-dev libfftw3-dev h5utils \
-    hdf5-tools python-dev python-numpy liblapack-dev libxml2-dev \
-    libxslt-dev libarmadillo-dev libace-dev python-h5py \
-    python-matplotlib python-libxml2 gcc-multilib python-psutil \
-    libgtest-dev liblapack-dev libblas-dev libplplot-dev python-twisted-web \
+    hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
+    libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
+    libgtest-dev liblapack-dev libatlas-base-dev libatlas-dev libplplot-dev \
     supervisor
+
+#Python stuff
+RUN pip install Cython
+RUN pip install numpy pyxb h5py psutil Twisted lxml matplotlib  
 
 #OpenBLAS with OpenMP
 RUN cd /opt && \
@@ -25,9 +28,6 @@ RUN cd /opt && \
     update-alternatives --set libblas.so.3 /usr/lib/openblas-base/libblas.so.3 && \
     cd /opt && \
     rm -rf debsource
-
-#Python stuff
-RUN pip install pyxb
 
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \
