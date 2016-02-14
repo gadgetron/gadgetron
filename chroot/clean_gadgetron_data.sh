@@ -1,24 +1,17 @@
 #!/bin/bash
 
-if [ $(id -u) -ne 0 ]; then 
-    echo -e "\nPlease start the script as a root or sudo!\n"
-    exit 1
+BASEDIR=$(dirname $0)
 
+if [ $# -eq 0 ]; then
+    CHROOT_ISMRMRD_DATA_PATH=/tmp/gadgetron_data
+    CHROOT_ISMRMRD_DATA_HOURS=240
 else
-
-    BASEDIR=$(dirname $0)
-
-    if [ $# -eq 0 ]; then
-        CHROOT_ISMRMRD_DATA_PATH=/tmp/gadgetron_data
+    if [ $# -eq 1 ]; then
+        CHROOT_ISMRMRD_DATA_PATH=${1}
         CHROOT_ISMRMRD_DATA_HOURS=240
     else
-        if [ $# -eq 1 ]; then
-            CHROOT_ISMRMRD_DATA_PATH=${1}
-            CHROOT_ISMRMRD_DATA_HOURS=240
-        else
-            CHROOT_ISMRMRD_DATA_PATH=${1}
-            CHROOT_ISMRMRD_DATA_HOURS=${2}
-        fi
+        CHROOT_ISMRMRD_DATA_PATH=${1}
+        CHROOT_ISMRMRD_DATA_HOURS=${2}
     fi
 fi
 
@@ -28,7 +21,6 @@ current_moment=`date +%s`
 
 for file in ${CHROOT_ISMRMRD_DATA_PATH}/*.h5
 do
-    #echo ${file}
     # check the file creation time, if this file is too old, delete it
     file_moment=`stat -c %Y ${file}`
     file_duration_seconds=$((current_moment-file_moment))
