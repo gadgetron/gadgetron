@@ -128,6 +128,7 @@ else
 
     mkdir -p ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/tmp/gadgetron_data
     mkdir -p ${CHROOT_ISMRMRD_DATA_PATH}
+    cp -f ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/usr/local/share/gadgetron/chroot/clean_gadgetron_data.sh ${CHROOT_ISMRMRD_DATA_PATH}
 
     if [ ${install_img} -eq 1 ]; then
                 echo "copy image file : ${CHROOT_IMAGE_IMG_FILENAME} ... "      
