@@ -1,4 +1,4 @@
-FROM gadgetron_ubuntu1404_cuda75_base
+FROM gadgetron_ubuntu1404_cuda55_base
 
 #ISMRMRD
 RUN mkdir /opt/code
@@ -9,7 +9,8 @@ RUN cd /opt/code && \
     cd build && \
     cmake ../ && \
     make -j $(nproc) && \
-    make install
+    make install && \
+    git rev-parse HEAD >> /opt/code/ismrmrd_sha1.txt
 
 #GADGETRON
 RUN cd /opt/code && \
@@ -20,6 +21,7 @@ RUN cd /opt/code && \
     cmake ../ && \
     make -j $(nproc) && \
     make install && \
+    git rev-parse HEAD >> /opt/code/gadgetron_sha1.txt && \
     cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml
 
 #ISMRMRD PYTHON API
