@@ -1,8 +1,5 @@
 FROM gadgetron/ubuntu1404_base
 
-ARG gadgetron_sha1=NA
-LABEL io.gadgetron.gadgetron.sha1=$gadgetron_sha1
-
 #ISMRMRD
 RUN mkdir /opt/code
 RUN cd /opt/code && \
