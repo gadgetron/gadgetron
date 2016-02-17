@@ -35,20 +35,23 @@ else
 
     if [ $# -eq 1 ]; then
         CHROOT_IMAGE_FILENAME=${1}
+        CHROOT_ISMRMRD_DATA_PATH=/tmp/gadgetron_chroot_data
         CHROOT_INSTALL_PATH=/home/gadgetron_chroot
     else
         if [ $# -eq 2 ]; then
             CHROOT_IMAGE_FILENAME=${1}
-            CHROOT_INSTALL_PATH=${2}
+            CHROOT_ISMRMRD_DATA_PATH=${2}
+            CHROOT_INSTALL_PATH=/home/gadgetron_chroot
         else
             if [ $# -eq 3 ]; then
                 if [ ${2} == "latest" ]; then
                     TAR_NAME=`find ${1} -type f -name 'gadgetron-*.tar.gz' |sort |head -n1`
                     CHROOT_IMAGE_FILENAME=${TAR_NAME}
                 else
-                    CHROOT_IMAGE_FILENAME=${1}/${2}         
+                    CHROOT_IMAGE_FILENAME=${1}/${2}
                 fi
                 CHROOT_INSTALL_PATH=${3}
+                CHROOT_ISMRMRD_DATA_PATH=/tmp/gadgetron_chroot_data
             else
                 if [ $# -eq 4 ]; then
                     if [ ${2} == "latest" ]; then
@@ -58,26 +61,39 @@ else
                         CHROOT_IMAGE_FILENAME=${1}/${2}         
                     fi
                     CHROOT_INSTALL_PATH=${3}
-
-                    if [ ${4} -eq 1 ]; then
-                        install_img=1
-                        IMG_NAME=`find ${1} -type f -name 'gadgetron-*.img' |sort |head -n1`
-                        CHROOT_IMAGE_IMG_FILENAME=${IMG_NAME}
-                    fi
+                    CHROOT_ISMRMRD_DATA_PATH=${4}
                 else
-                    echo -e "\nUsage 1, install chroot image to /home/gadgetron_chroot: $0 chroot_image_file chroot_install_path"
-                    echo -e "\nUsage 2, install chroot image to selected install path: $0 chroot_image_file chroot_install_path"
-                    echo -e "\nUsage 3, : $0 chroot_image_path chroot_image_name chroot_install_path"
-                    echo -e "\n           install chroot image to selected install path, if chroot_image_name=latest, the newest chroot image in the folder will be installed: $0 chroot_image_file chroot_install_path"
-                    echo -e "\nUsage 4, : $0 chroot_image_path chroot_image_name chroot_install_path install_img"
-                    echo -e "\n           like Usage 3, if install_img=1, the corresponding .img package will be copied to chroot_install_path"
-                    exit 1
-                fi  
+                    if [ $# -eq 5 ]; then
+                        if [ ${2} == "latest" ]; then
+                            TAR_NAME=`find ${1} -type f -name 'gadgetron-*.tar.gz' |sort |head -n1`
+                            CHROOT_IMAGE_FILENAME=${1}/${TAR_NAME}
+                        else
+                            CHROOT_IMAGE_FILENAME=${1}/${2}         
+                        fi
+                        CHROOT_INSTALL_PATH=${3}
+                        CHROOT_ISMRMRD_DATA_PATH=${4}
+
+                        if [ ${5} -eq 1 ]; then
+                            install_img=1
+                            IMG_NAME=`find ${1} -type f -name 'gadgetron-*.img' |sort |head -n1`
+                            CHROOT_IMAGE_IMG_FILENAME=${IMG_NAME}
+                        fi
+                    else
+                        echo -e "\nUsage 1, install chroot image to /home/gadgetron_chroot: $0 chroot_image_file"
+                        echo -e "\nUsage 2, install chroot image to selected install path: $0 chroot_image_file chroot_ismrmrd_data_path"
+                        echo -e "\nUsage 3, install chroot image to selected install path: $0 chroot_image_path chroot_image_name chroot_install_path"
+                        echo -e "\nUsage 4, : $0 chroot_image_path chroot_image_name chroot_install_path chroot_ismrmrd_data_path"
+                        echo -e "\n           install chroot image to selected install path, if chroot_image_name=latest, the newest chroot image in the folder will be installed"
+                        echo -e "\nUsage 5, : $0 chroot_image_path chroot_image_name chroot_install_path chroot_ismrmrd_data_path install_img"
+                        echo -e "\n           like Usage 4, if install_img=1, the corresponding .img package will be copied to chroot_install_path"
+                        exit 1
+                    fi
+                fi
             fi  
         fi  
     fi
 
-    CHROOT_ISMRMRD_DATA_PATH=/tmp/gadgetron_data
+    CHROOT_ISMRMRD_DATA_MOUNT_PATH=/tmp/gadgetron_data
 
     service gadgetron_chroot stop
 
@@ -105,6 +121,7 @@ else
         umount_check ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/tmp/gadgetron_data
     fi
 
+    # untar the chroot package
     mkdir -p ${CHROOT_INSTALL_PATH}
 
     cp -rf ${CHROOT_IMAGE_FILENAME} ${CHROOT_INSTALL_PATH}/
@@ -126,10 +143,14 @@ else
 
     cp -f ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/usr/local/share/gadgetron/chroot/gadgetron_chroot.conf /etc/init/
 
-    mkdir -p ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/tmp/gadgetron_data
+    # create chroot ismrmrd data mount point outside chroot
+    rm -f ${CHROOT_ISMRMRD_DATA_MOUNT_PATH}
     mkdir -p ${CHROOT_ISMRMRD_DATA_PATH}
     cp -f ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/usr/local/share/gadgetron/chroot/clean_gadgetron_data.sh ${CHROOT_ISMRMRD_DATA_PATH}
+    ln -s ${CHROOT_ISMRMRD_DATA_PATH} ${CHROOT_ISMRMRD_DATA_MOUNT_PATH}
 
+    # create chroot ismrmrd mount point inside chroot
+    mkdir -p ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/tmp/gadgetron_data
     if [ ${install_img} -eq 1 ]; then
                 echo "copy image file : ${CHROOT_IMAGE_IMG_FILENAME} ... "      
         cp -f ${CHROOT_IMAGE_IMG_FILENAME} ${CHROOT_INSTALL_PATH}/
