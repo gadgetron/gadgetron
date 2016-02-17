@@ -1,4 +1,4 @@
-FROM gadgetron_ubuntu1404_base
+FROM gadgetron/ubuntu1404_base
 
 LABEL com.nvidia.volumes.needed="nvidia_driver"
 

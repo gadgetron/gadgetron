@@ -1,4 +1,4 @@
-FROM gadgetron_ubuntu1404_cuda55_base
+FROM gadgetron/ubuntu1404_cuda55_base
 
 #ISMRMRD
 RUN mkdir /opt/code
