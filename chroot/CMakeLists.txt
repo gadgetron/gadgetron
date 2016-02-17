@@ -116,6 +116,7 @@ install(PROGRAMS
   ${CMAKE_SOURCE_DIR}/chroot/umount_image.sh
   ${CMAKE_SOURCE_DIR}/chroot/install_chroot_image.sh
   ${CMAKE_SOURCE_DIR}/chroot/clean_gadgetron_data.sh
+  ${CMAKE_SOURCE_DIR}/chroot/nvidia-copy.sh
   DESTINATION ${GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH}
   COMPONENT scripts
   )

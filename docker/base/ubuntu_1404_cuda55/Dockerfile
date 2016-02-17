@@ -3,10 +3,10 @@ FROM gadgetron_ubuntu1404_base
 LABEL com.nvidia.volumes.needed="nvidia_driver"
 
 #UNPACK THE CUDA INSTALLER
-ENV CUDA_DOWNLOAD_PATH http://developer.download.nvidia.com/compute/cuda/7.5/Prod/local_installers
-ENV CUDA_RUN cuda_7.5.18_linux.run
-ENV CUDA_INSTALL cuda-linux64-rel-7.5.18-19867135.run
-ENV CUDA_VERSION 7.5
+ENV CUDA_DOWNLOAD_PATH http://developer.download.nvidia.com/compute/cuda/5_5/rel/installers 
+ENV CUDA_RUN cuda_5.5.22_linux_64.run
+ENV CUDA_INSTALL cuda-linux64-rel-5.5.22-16488124.run
+ENV CUDA_VERSION 5.5
 
 RUN cd /opt && \
   wget ${CUDA_DOWNLOAD_PATH}/${CUDA_RUN} --no-verbose && \
@@ -22,7 +22,7 @@ RUN cd /opt/nvidia_installers && \
     rm -rf nvidia_installers
 
 #SET SOME ENV variables for CUDA
-LABEL com.nvidia.cuda.version="7.5"
+LABEL com.nvidia.cuda.version="5.5"
 RUN echo "/usr/local/cuda/lib" >> /etc/ld.so.conf.d/cuda.conf && \
     echo "/usr/local/cuda/lib64" >> /etc/ld.so.conf.d/cuda.conf && \
     ldconfig
