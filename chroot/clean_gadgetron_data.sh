@@ -25,8 +25,8 @@ else
 fi
 
 # check disk usage
-disk_used=`df / | awk '$1!="Filesystem"{print $3}'`
-disk_available=`df / | awk '$1!="Filesystem"{print $4}'`
+disk_used=`df /tmp/gadgetron_data | awk '$1!="Filesystem"{print $3}'`
+disk_available=`df /tmp/gadgetron_data | awk '$1!="Filesystem"{print $4}'`
 disk_total=$((disk_available+disk_used))
 disk_usage_ratio=$((100*disk_used/disk_total + 1))
 echo Disk usage ratio: ${disk_usage_ratio}%
@@ -56,5 +56,6 @@ else
         echo Keep  --- ${file}
     done
 fi
+echo --------------------------------------
 
 exit 0
