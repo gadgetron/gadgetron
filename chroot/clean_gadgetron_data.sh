@@ -29,6 +29,8 @@ disk_used=`df / | awk '$1!="Filesystem"{print $3}'`
 disk_available=`df / | awk '$1!="Filesystem"{print $4}'`
 disk_total=$((disk_available+disk_used))
 disk_usage_ratio=$((100*disk_used/disk_total + 1))
+echo Disk usage ratio: ${disk_usage_ratio}%
+echo --------------------------------------
 
 if [ $disk_usage_ratio -ge $CHROOT_ISMRMRD_DISK_USAGE ]; then
 
@@ -43,7 +45,15 @@ if [ $disk_usage_ratio -ge $CHROOT_ISMRMRD_DISK_USAGE ]; then
         file_duration_hours=$((file_duration_mins / 60))
         if [ ${file_duration_hours} -ge $CHROOT_ISMRMRD_DATA_HOURS ]; then
             rm -rf ${file}
+            echo Delete --- ${file}
+        else
+            echo Keep  --- ${file}
         fi
+    done
+else
+    for file in ${CHROOT_ISMRMRD_DATA_PATH}/*.h5
+    do
+        echo Keep  --- ${file}
     done
 fi
 
