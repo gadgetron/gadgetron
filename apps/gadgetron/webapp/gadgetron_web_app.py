@@ -182,8 +182,8 @@ class GadgetronResource(resource.Resource):
             doc += "<div><ul>"
             doc += "<li>Process ID: " + str(self.gadgetron_process.pid) + "</li>"
             if platform.system() != "Darwin":
-                doc += "<li>CPU Percent: " + str(round(p.get_cpu_percent(),2)) + "</li>"
-                doc += "<li>Memory Percent: " + str(round(p.get_memory_percent(),2)) + "</li>"
+                doc += "<li>CPU Percent: " + str(round(p.cpu_percent(),2)) + "</li>"
+                doc += "<li>Memory Percent: " + str(round(p.memory_percent(),2)) + "</li>"
             doc += "</ul></div>"
 
             doc += "<div><iframe width=\"1024\" height=\"768\" src=\"/log\"></iframe></div>"
