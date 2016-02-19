@@ -132,10 +132,14 @@ else
     echo ${FILENAME}
 
     mkdir ${CHROOT_INSTALL_PATH}/${FILENAME}
+    mkdir ${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root
+    mkdir ${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root/gadgetron
 
     echo untar ${CHROOT_INSTALL_PATH}/${FILENAME_WITH_EXTENSION} ... 
 
-    tar -xzf ${CHROOT_INSTALL_PATH}/${FILENAME_WITH_EXTENSION} --directory="${CHROOT_INSTALL_PATH}/${FILENAME}" .
+    echo ${CHROOT_INSTALL_PATH}/${FILENAME}
+    echo tar -xzf ${CHROOT_INSTALL_PATH}/${FILENAME_WITH_EXTENSION} --directory="${CHROOT_INSTALL_PATH}/${FILENAME}"
+    tar -xzf ${CHROOT_INSTALL_PATH}/${FILENAME_WITH_EXTENSION} --directory="${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root/gadgetron"
 
     rm -f ${CHROOT_INSTALL_PATH}/current
 
