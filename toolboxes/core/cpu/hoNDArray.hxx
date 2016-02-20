@@ -809,6 +809,32 @@ namespace Gadgetron
                 BOOST_THROW_EXCEPTION( runtime_error("hoNDArray<>::get_sub_array failed"));
             }
         }
+
+        // Since doing memcpy for a chunk of contiguous data is much faster than
+        //   copying element by element, we will loop with a single index
+        //   through all the dimensions except the first one and memcpy the
+        //   corresponding lines of data:
+
+        size_t dim2D = out.get_number_of_elements()/size[0];
+
+        // loop through all the dimensions except the first one:
+        for ( ii=0; ii<dim2D; ii++){
+            // (linear) index corresponding to (0, ii) if "out" were 2D
+            size_t ind1D = ii*size[0];
+
+            // the indices i,j,k,... corresponding to that ind1D
+            //    (note that the first index should be 0!):
+            std::vector<size_t> ind = out.calculate_index( ind1D );
+    
+            // calculate the indices in the source array corresponding
+            //   to "ind" in the output array:
+            for (size_t jj=0; jj<start.size(); jj++){
+                ind[jj] += start[jj];
+            }
+
+            // now, copy size[0] elements:
+            memcpy( &out.data_[ind1D], &((*this)( ind )), size[0]*sizeof(T) );
+        }                       
     }
 
     template <typename T> 
