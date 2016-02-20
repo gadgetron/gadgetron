@@ -132,14 +132,20 @@ else
     echo ${FILENAME}
 
     mkdir ${CHROOT_INSTALL_PATH}/${FILENAME}
-    mkdir ${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root
-    mkdir ${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root/gadgetron
 
     echo untar ${CHROOT_INSTALL_PATH}/${FILENAME_WITH_EXTENSION} ... 
+    tar -xzf ${CHROOT_INSTALL_PATH}/${FILENAME_WITH_EXTENSION} --directory="${CHROOT_INSTALL_PATH}/${FILENAME}"
 
-    echo ${CHROOT_INSTALL_PATH}/${FILENAME}
-    echo tar -xzf ${CHROOT_INSTALL_PATH}/${FILENAME_WITH_EXTENSION} --directory="${CHROOT_INSTALL_PATH}/${FILENAME}"
-    tar -xzf ${CHROOT_INSTALL_PATH}/${FILENAME_WITH_EXTENSION} --directory="${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root/gadgetron"
+    # detect whether new or older style chroot image is used
+    if [-d ${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root ]; then
+        echo Chroot script generated this package ...
+    else
+        echo Docker generated this package ...
+        rm -rf ${CHROOT_INSTALL_PATH}/${FILENAME}/*
+        mkdir ${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root
+        mkdir ${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root/gadgetron
+        tar -xzf ${CHROOT_INSTALL_PATH}/${FILENAME_WITH_EXTENSION} --directory="${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root/gadgetron"
+    fi
 
     rm -f ${CHROOT_INSTALL_PATH}/current
 
