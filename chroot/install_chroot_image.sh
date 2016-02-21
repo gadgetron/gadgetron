@@ -137,7 +137,7 @@ else
     tar -xzf ${CHROOT_INSTALL_PATH}/${FILENAME_WITH_EXTENSION} --directory="${CHROOT_INSTALL_PATH}/${FILENAME}"
 
     # detect whether new or older style chroot image is used
-    if [-d ${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root ]; then
+    if [ -d ${CHROOT_INSTALL_PATH}/${FILENAME}/chroot-root ]; then
         echo Chroot script generated this package ...
     else
         echo Docker generated this package ...
@@ -154,15 +154,16 @@ else
     cp -f ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/usr/local/share/gadgetron/chroot/gadgetron_chroot.conf /etc/init/
 
     # create chroot ismrmrd data mount point outside chroot
-    rm -f ${CHROOT_ISMRMRD_DATA_MOUNT_PATH}
+    echo CHROOT_ISMRMD_DATA_MOUNT_PATH=$CHROOT_ISMRMRD_DATA_MOUNT_PATH
+    echo CHROOT_ISMRMRD_DATA_PATH=$CHROOT_ISMRMRD_DATA_PATH
+    rm -rf ${CHROOT_ISMRMRD_DATA_MOUNT_PATH}
     mkdir -p ${CHROOT_ISMRMRD_DATA_PATH}
     cp -f ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/usr/local/share/gadgetron/chroot/clean_gadgetron_data.sh ${CHROOT_ISMRMRD_DATA_PATH}
     ln -s ${CHROOT_ISMRMRD_DATA_PATH} ${CHROOT_ISMRMRD_DATA_MOUNT_PATH}
 
     # create chroot ismrmrd mount point inside chroot
-    mkdir -p ${CHROOT_INSTALL_PATH}/current/chroot-root/gadgetron/tmp/gadgetron_data
     if [ ${install_img} -eq 1 ]; then
-                echo "copy image file : ${CHROOT_IMAGE_IMG_FILENAME} ... "      
+        echo "copy image file : ${CHROOT_IMAGE_IMG_FILENAME} ... "      
         cp -f ${CHROOT_IMAGE_IMG_FILENAME} ${CHROOT_INSTALL_PATH}/
     fi
 
