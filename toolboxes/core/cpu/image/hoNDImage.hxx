@@ -2218,61 +2218,13 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::image_to_world(size_t x, size_t y, size_t z, coord_type& cx, coord_type& cy, coord_type& cz) const
     {
-        GADGET_DEBUG_CHECK_THROW(D==3);
-
-        coord_type sx = x*this->pixelSize_[0];
-        coord_type sy = y*this->pixelSize_[1];
-        coord_type sz = z*this->pixelSize_[2];
-
-        cx =    (this->axis_[0][0] * sx 
-              + this->axis_[1][0] * sy) 
-              + (this->axis_[2][0] * sz 
-              + this->origin_[0]);
-
-        cy =    (this->axis_[0][1] * sx 
-              + this->axis_[1][1] * sy) 
-              + (this->axis_[2][1] * sz 
-              + this->origin_[1]);
-
-        cz =    (this->axis_[0][2] * sx 
-              + this->axis_[1][2] * sy) 
-              + (this->axis_[2][2] * sz 
-              + this->origin_[2]);
+        this->image_to_world(static_cast<coord_type>(x), static_cast<coord_type>(y), static_cast<coord_type>(z), cx, cy, cz);
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::image_to_world(size_t x, size_t y, size_t z, size_t s, coord_type& cx, coord_type& cy, coord_type& cz, coord_type& cs) const
     {
-        GADGET_DEBUG_CHECK_THROW(D==4);
-
-        coord_type sx = x*this->pixelSize_[0];
-        coord_type sy = y*this->pixelSize_[1];
-        coord_type sz = z*this->pixelSize_[2];
-        coord_type ss = s*this->pixelSize_[3];
-
-        cx =    (this->axis_[0][0] * sx 
-              + this->axis_[1][0] * sy) 
-              + (this->axis_[2][0] * sz 
-              + this->axis_[3][0] * ss) 
-              + this->origin_[0];
-
-        cy =    (this->axis_[0][1] * sx 
-              + this->axis_[1][1] * sy) 
-              + (this->axis_[2][1] * sz 
-              + this->axis_[3][1] * ss) 
-              + this->origin_[1];
-
-        cz =    (this->axis_[0][2] * sx 
-              + this->axis_[1][2] * sy) 
-              + (this->axis_[2][2] * sz 
-              + this->axis_[3][2] * ss) 
-              + this->origin_[2];
-
-        cs =    (this->axis_[0][3] * sx 
-              + this->axis_[1][3] * sy) 
-              + (this->axis_[2][3] * sz 
-              + this->axis_[3][3] * ss) 
-              + this->origin_[3];
+        this->image_to_world(static_cast<coord_type>(x), static_cast<coord_type>(y), static_cast<coord_type>(z), static_cast<coord_type>(s), cx, cy, cz, cs);
     }
 
     template <typename T, unsigned int D> 
