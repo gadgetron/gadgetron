@@ -13,7 +13,7 @@ chroot_base_name=$chroot_name
 chroot_name="${chroot_name}.tar.gz"
 echo "Creating chroot image with name: $chroot_name"
 
-docker run -ti --rm --volume=`pwd`:/opt/backup $image tar -cvpzf /opt/backup/$chroot_name --exclude=/opt/code --exclude=/opt/backup --one-file-system / 
+docker run -i --rm --volume=`pwd`:/opt/backup $image tar -cvpzf /opt/backup/$chroot_name --exclude=/opt/code --exclude=/opt/backup --one-file-system / 
 
 if [ $# -gt 1 ]; then
     sleep 3
