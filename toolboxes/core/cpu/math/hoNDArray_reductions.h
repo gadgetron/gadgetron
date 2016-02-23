@@ -168,8 +168,8 @@ namespace Gadgetron{
     typename realType<T>::Type norm1(const hoNDArray<T>& x);
 
     /**
-    * @brief dot product of conj(x) and y
-    r = conj(x) dot y
+    * @brief dot product of x and conj(y)
+    r = x dot conj(y)
     */
     template <typename T> EXPORTCPUCOREMATH 
     void dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r);
