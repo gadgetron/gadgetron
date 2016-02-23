@@ -1,4 +1,5 @@
 GADGETRON IMAGE RECONSTRUCTION FRAMEWORK
+=========================================
 
 Please read LICENSE file for licensing details.
 
@@ -6,8 +7,8 @@ Detailed installation instructions and manual is available at:
 
 http://gadgetron.github.io
 
--------------------------------------
 General Building Instructions (on Unix platforms)
+-------------------------------------------------
 
 mkdir build
 cd build
