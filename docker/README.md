@@ -1,12 +1,12 @@
 
 To build the Docker image, move to the folder with the desired configuration and run Docker build:
 
-    cd cuda_75/
+    cd incremental/ubuntu_1404_cuda75
     docker build --no-cache -t gadgetron .
 
 The `--no-cache` option will ensure that you do a fresh pull from the git repos. To start Docker container from image use the `nvidia-docker` script, which can be downloaded from https//raw.githubusercontent.com/NVIDIA/nvidia-docker/master/nvidia-docker or https//raw.githubusercontent.com/gadgetron/gadgetron/master/docker/nvidia-docker 
 
-    GPU=0 nvidia-docker run -e "GADGETRON_RELAY_HOST=<MY RELAY HOST IP/NAME>" --name gt1 -p 9002:9002 --rm -t gadgetron
+    GPU=0 nvidia-docker run -e "GADGETRON_RELAY_HOST=<MY RELAY HOST IP/NAME>" --name=gt1 --publish=9002:9002 --rm -t gadgetron
 
 Other possible ports to expose are
 
