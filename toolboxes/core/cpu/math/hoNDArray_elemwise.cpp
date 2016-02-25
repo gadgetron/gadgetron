@@ -2432,7 +2432,7 @@ namespace Gadgetron{
             }
 
             // perform the convolution
-            #pragma omp parallel for default(none) private(n) shared(num, x, RO, E1, E2, z, halfKRO, halfKE1, halfKE2, pKer) if ( num > 8 )
+            #pragma omp parallel for default(none) private(n) shared(num, x, RO, E1, E2, z, halfKRO, halfKE1, halfKE2, pKer, e1, ro) if ( num > 8 )
             for ( n=0; n<(long long)num; n++ )
             {
                 const T* pX = x + n*RO*E1*E2;
