@@ -218,7 +218,7 @@ TYPED_TEST(cuNDArray_utils_TestCplx,padTest){
 
   double scale = std::pow(2.0,4);
   EXPECT_EQ(out->get_number_of_elements(),this->Array.get_number_of_elements()*scale);
-  EXPECT_FLOAT_EQ(real(mean(out.get()))*scale,real(mean(&this->Array)));
+  EXPECT_NEAR(real(mean(out.get()))*scale,real(mean(&this->Array)), 0.001);
   EXPECT_NEAR(imag(mean(out.get()))*scale,imag(mean(&this->Array)), 0.001);
 }
 
