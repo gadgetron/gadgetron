@@ -9,8 +9,7 @@ RUN cd /opt/code && \
     cd build && \
     cmake ../ && \
     make -j $(nproc) && \
-    make install && \
-    git rev-parse HEAD >> /opt/code/ismrmrd_sha1.txt
+    make install
 
 #GADGETRON
 RUN cd /opt/code && \
@@ -21,21 +20,28 @@ RUN cd /opt/code && \
     cmake ../ && \
     make -j $(nproc) && \
     make install && \
+    /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
     git rev-parse HEAD >> /opt/code/gadgetron_sha1.txt && \
     cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml
+
+#HASH for ISMRMRD
+RUN cd /opt/code/ismrmrd && \
+    /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrd.sha1 --value `git rev-parse HEAD` 
 
 #ISMRMRD PYTHON API
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python.git &&  \
     cd ismrmrd-python && \
-    sudo python setup.py install
+    sudo python setup.py install && \
+    /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpython.sha1 --value `git rev-parse HEAD` 
+
 
 #ISMRMRD PYTHON TOOLS
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python-tools.git &&  \
     cd ismrmrd-python-tools && \
-    sudo python setup.py install
-
+    sudo python setup.py install && \
+    /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpythontools.sha1 --value `git rev-parse HEAD` 
 
 #SIEMENS_TO_ISMRMRD
 RUN cd /opt/code && \
@@ -45,7 +51,9 @@ RUN cd /opt/code && \
     cd build && \
     cmake ../ && \
     make -j $(nproc) && \
-    make install
+    make install && \
+    /opt/code/gadgetron/docker/manifest --key .io.gadgetron.siemens_to_ismrmrd.sha1 --value `git rev-parse HEAD` 
+
 
 #PHILIPS_TO_ISMRMRD
 RUN cd /opt/code && \
@@ -55,7 +63,9 @@ RUN cd /opt/code && \
     cd build && \
     cmake ../ && \
     make -j $(nproc) && \
-    make install
+    make install && \
+    /opt/code/gadgetron/docker/manifest --key .io.gadgetron.philips_to_ismrmrd.sha1 --value `git rev-parse HEAD` 
+
 
 #Create script for running web app
 RUN cd /opt && \
