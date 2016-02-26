@@ -21,7 +21,6 @@ RUN cd /opt/code && \
     make -j $(nproc) && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
-    git rev-parse HEAD >> /opt/code/gadgetron_sha1.txt && \
     cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml
 
 #HASH for ISMRMRD
