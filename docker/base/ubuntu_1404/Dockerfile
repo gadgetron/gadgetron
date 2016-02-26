@@ -3,7 +3,7 @@ FROM ubuntu:14.04
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     wget build-essential emacs python-pip libhdf5-serial-dev cmake git-core \
-    libboost-all-dev libfftw3-dev h5utils \
+    libboost-all-dev libfftw3-dev h5utils jq \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
     libgtest-dev liblapack-dev libatlas-base-dev libatlas-dev libplplot-dev \
