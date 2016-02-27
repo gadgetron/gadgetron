@@ -8,6 +8,7 @@ function usage
 filename=/opt/manifest.json
 key="."
 value=""
+jq_command="jq -M"
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -35,9 +36,9 @@ fi
 
 if [ -z "$value" ]; then
     #This is a query
-    jq $key $filename
+    $jq_command $key $filename
 else
     #This is an assignment
-    out=`jq "$key=\"$value\"" $filename`
+    out=`${jq_command} "$key=\"$value\"" $filename`
     echo $out > $filename
 fi
