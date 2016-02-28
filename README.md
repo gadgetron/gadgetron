@@ -10,11 +10,13 @@ http://gadgetron.github.io
 General Building Instructions (on Unix platforms)
 -------------------------------------------------
 
+```
 mkdir build
 cd build
 cmake ../
 make
 sudo make install
+```
 
 Please check manual for detailed instructions for your platform.
 
