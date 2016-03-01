@@ -141,8 +141,11 @@ namespace Gadgetron
   int CloudBus::handle_close (ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
   {
     GDEBUG("Cloud bus connection closed\n");
+    this->peer().close_reader();
+    this->peer().close_writer(); 
     this->peer().close();
     connected_ = false;
+    GDEBUG("Really closed\n");
     if (reader_task_) {
       delete reader_task_;
       reader_task_ = 0;
