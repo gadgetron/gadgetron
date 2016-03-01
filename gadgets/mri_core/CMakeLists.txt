@@ -80,13 +80,14 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     CplxDumpGadget.h 
                                     DependencyQueryGadget.h 
                                     DependencyQueryWriter.h 
-                                    ComplexToFloatGadget.h
-                                    AcquisitionAccumulateTriggerGadget.h
+                                    ComplexToFloatGadget.h 
+                                    AcquisitionAccumulateTriggerGadget.h 
                                     BucketToBufferGadget.h 
-                                    ImageArraySplitGadget.h
-                                    PseudoReplicatorGadget.h
-                                    SimpleReconGadget.h
-                                    ImageSortGadget.h
+                                    ImageArraySplitGadget.h 
+                                    PseudoReplicatorGadget.h 
+                                    SimpleReconGadget.h 
+                                    ImageSortGadget.h 
+                                    GenericReconGadget.h 
                                     GenericCartesianGrappaReconGadget.h 
                                     GenericCartesianReconReferencePrepGadget.h 
                                     GenericReconPartialFourierHandlingGadget.h 
@@ -129,6 +130,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 PseudoReplicatorGadget.cpp
                                 SimpleReconGadget.cpp
                                 ImageSortGadget.cpp
+                                GenericReconGadget.cpp 
                                 GenericCartesianGrappaReconGadget.cpp 
                                 GenericCartesianReconReferencePrepGadget.cpp 
                                 GenericReconPartialFourierHandlingGadget.cpp 
