@@ -158,71 +158,9 @@ namespace Gadgetron {
             hoNDArray< std::complex<float> > ref_recon_buf;
 
             // step 1
-            if (average_all_ref_N.value())
-            {
-                if (N > 1)
-                {
-                    if (calib_mode_[e] == ISMRMRD_interleaved)
-                    {
-                        hoNDArray<bool> sampled = Gadgetron::detect_readout_sampling_status(ref);
-                        Gadgetron::sum_over_dimension(ref, ref_calib, 4);
+            bool count_sampling_freq = (calib_mode_[e] == ISMRMRD_interleaved);
+            GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::compute_averaged_data_N_S(ref, average_all_ref_N.value(), average_all_ref_S.value(), count_sampling_freq, ref_calib), GADGET_FAIL);
 
-                        // for every E1/E2 location, count how many times it is sampled for all N
-                        size_t ro, e1, e2, cha, n, s, slc;
-                        for (slc = 0; slc < SLC; slc++)
-                        {
-                            for (cha = 0; cha < CHA; cha++)
-                            {
-                                for (e2 = 0; e2 < E2; e2++)
-                                {
-                                    for (e1 = 0; e1 < E1; e1++)
-                                    {
-                                        float freq = 0;
-
-                                        for (s = 0; s < S; s++)
-                                        {
-                                            for (n = 0; n < N; n++)
-                                            {
-                                                if (sampled(e1, e2, n, s, slc)) freq += 1;
-                                            }
-
-                                            if (freq > 1)
-                                            {
-                                                float freq_reciprocal = (float)(1.0 / freq);
-                                                std::complex<float>* pAve = &(ref_calib(0, e1, e2, cha, 0, s, slc));
-                                                for (ro = 0; ro < RO; ro++) pAve[ro] *= freq_reciprocal;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Gadgetron::sum_over_dimension(ref, ref_calib, (size_t)4);
-                        Gadgetron::scal((float)(1.0 / N), ref_calib);
-                    }
-                }
-                else
-                {
-                    ref_calib = ref;
-                }
-            }
-            else
-            {
-                ref_calib = ref;
-            }
-
-            if (average_all_ref_S.value())
-            {
-                if (S > 1)
-                {
-                    Gadgetron::sum_over_dimension(ref_calib, ref_recon_buf, 5);
-                    Gadgetron::scal((float)(1.0 / S), ref_recon_buf);
-                    ref_calib = ref_recon_buf;
-                }
-            }
             // step 2, detect sampled region in ref, along E1 and E2
             size_t start_E1(0), end_E1(0);
             auto t = Gadgetron::detect_sampled_region_E1(ref);

@@ -56,7 +56,12 @@ add_library(gadgetron_toolbox_mri_core SHARED
 set_target_properties(gadgetron_toolbox_mri_core PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 set_target_properties(gadgetron_toolbox_mri_core PROPERTIES LINKER_LANGUAGE CXX)
 
-target_link_libraries(gadgetron_toolbox_mri_core gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math ${ARMADILLO_LIBRARIES} gadgetron_toolbox_cpufft )
+target_link_libraries(gadgetron_toolbox_mri_core 
+                    gadgetron_toolbox_cpucore 
+                    gadgetron_toolbox_cpucore_math 
+                    ${ARMADILLO_LIBRARIES} 
+                    gadgetron_toolbox_cpufft 
+                    gadgetron_toolbox_cpuklt )
 
 install(TARGETS gadgetron_toolbox_mri_core DESTINATION lib COMPONENT main)
 

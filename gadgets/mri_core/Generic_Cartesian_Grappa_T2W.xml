@@ -68,6 +68,21 @@
         <property><name>average_all_ref_S</name><value>false</value></property>
     </gadget>
 
+    <!-- Coil compression -->
+    <gadget>
+        <name>CoilCompression</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>GenericReconEigenChannelGadget</classname>
+
+        <!-- parameters for debug and timing -->
+        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>perform_timing</name><value>true</value></property>
+        <property><name>verbose</name><value>true</value></property>
+
+        <property><name>average_all_ref_N</name><value>true</value></property>
+        <property><name>average_all_ref_S</name><value>true</value></property>
+    </gadget>
+
     <!-- Recon -->
     <gadget>
         <name>Recon</name>
