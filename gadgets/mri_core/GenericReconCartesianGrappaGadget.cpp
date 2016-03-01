@@ -1,5 +1,5 @@
 
-#include "GenericCartesianGrappaReconGadget.h"
+#include "GenericReconCartesianGrappaGadget.h"
 #include "mri_core_grappa.h"
 
 /*
@@ -14,15 +14,15 @@
 
 namespace Gadgetron {
 
-    GenericCartesianGrappaReconGadget::GenericCartesianGrappaReconGadget() : BaseClass()
+    GenericReconCartesianGrappaGadget::GenericReconCartesianGrappaGadget() : BaseClass()
     {
     }
 
-    GenericCartesianGrappaReconGadget::~GenericCartesianGrappaReconGadget()
+    GenericReconCartesianGrappaGadget::~GenericReconCartesianGrappaGadget()
     {
     }
 
-    int GenericCartesianGrappaReconGadget::process_config(ACE_Message_Block* mb)
+    int GenericReconCartesianGrappaGadget::process_config(ACE_Message_Block* mb)
     {
         GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
 
@@ -47,7 +47,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int GenericCartesianGrappaReconGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1)
+    int GenericReconCartesianGrappaGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1)
     {
         process_called_times_++;
 
@@ -103,7 +103,7 @@ namespace Gadgetron {
 
                 // after this step, the recon_obj_[e].ref_calib_ and recon_obj_[e].ref_coil_map_ are set
 
-                if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::make_ref_coil_map"); }
+                if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::make_ref_coil_map"); }
                 this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_,*recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
@@ -122,7 +122,7 @@ namespace Gadgetron {
                 // ---------------------------------------------------------------
 
                 // after this step, coil map is computed and stored in recon_obj_[e].coil_map_
-                if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::perform_coil_map_estimation"); }
+                if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::perform_coil_map_estimation"); }
                 this->perform_coil_map_estimation(recon_obj_[e].ref_coil_map_, recon_obj_[e].coil_map_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
@@ -130,7 +130,7 @@ namespace Gadgetron {
 
                 // after this step, recon_obj_[e].kernel_, recon_obj_[e].kernelIm_, recon_obj_[e].unmixing_coeff_ are filled
                 // gfactor is computed too
-                if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::perform_calib"); }
+                if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::perform_calib"); }
                 this->perform_calib(recon_bit_->rbit_[e], recon_obj_[e], e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
@@ -156,19 +156,19 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
 
-                if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::perform_unwrapping"); }
+                if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::perform_unwrapping"); }
                 this->perform_unwrapping(recon_bit_->rbit_[e], recon_obj_[e], e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ---------------------------------------------------------------
 
-                if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::compute_image_header"); }
+                if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::compute_image_header"); }
                 this->compute_image_header(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ---------------------------------------------------------------
 
-                if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::send_out_image_array"); }
+                if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array"); }
                 this->send_out_image_array(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
@@ -179,7 +179,7 @@ namespace Gadgetron {
                     res.headers_ = recon_obj_[e].recon_res_.headers_;
                     res.meta_ = recon_obj_[e].recon_res_.meta_;
 
-                    if (perform_timing.value()) { gt_timer_.start("GenericCartesianGrappaReconGadget::send_out_image_array"); }
+                    if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array"); }
                     this->send_out_image_array(recon_bit_->rbit_[e], res, e, image_series.value() + 10 * ((int)e + 1), GADGETRON_IMAGE_GFACTOR);
                     if (perform_timing.value()) { gt_timer_.stop(); }
                 }
@@ -195,7 +195,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    void GenericCartesianGrappaReconGadget::perform_calib(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t e)
+    void GenericReconCartesianGrappaGadget::perform_calib(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t e)
     {
         try
         {
@@ -348,11 +348,11 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_THROW("Errors happened in GenericCartesianGrappaReconGadget::perform_calib(...) ... ");
+            GADGET_THROW("Errors happened in GenericReconCartesianGrappaGadget::perform_calib(...) ... ");
         }
     }
 
-    void GenericCartesianGrappaReconGadget::perform_unwrapping(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t e)
+    void GenericReconCartesianGrappaGadget::perform_unwrapping(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t e)
     {
         try
         {
@@ -464,9 +464,9 @@ namespace Gadgetron {
         }
         catch (...)
         {
-            GADGET_THROW("Errors happened in GenericCartesianGrappaReconGadget::perform_unwrapping(...) ... ");
+            GADGET_THROW("Errors happened in GenericReconCartesianGrappaGadget::perform_unwrapping(...) ... ");
         }
     }
 
-    GADGET_FACTORY_DECLARE(GenericCartesianGrappaReconGadget)
+    GADGET_FACTORY_DECLARE(GenericReconCartesianGrappaGadget)
 }

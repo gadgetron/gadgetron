@@ -26,7 +26,7 @@ namespace Gadgetron {
     class EXPORTGADGETSMRICORE GenericReconImageArrayScalingGadget : public Gadget1<IsmrmrdImageArray>
     {
     public:
-        GADGET_DECLARE(GenericCartesianGrappaReconGadget);
+        GADGET_DECLARE(GenericReconImageArrayScalingGadget);
 
         typedef float real_value_type;
         typedef std::complex<real_value_type> ValueType;

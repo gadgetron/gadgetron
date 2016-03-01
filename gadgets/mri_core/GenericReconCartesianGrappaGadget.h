@@ -1,4 +1,4 @@
-/** \file   GenericCartesianGrappaReconGadget.h
+/** \file   GenericReconCartesianGrappaGadget.h
     \brief  This is the class gadget for both 2DT and 3DT cartesian grappa and grappaone reconstruction, working on the IsmrmrdReconData.
     \author Hui Xue
 */
@@ -9,14 +9,14 @@
 
 namespace Gadgetron {
 
-    /// define the recon status of GenericCartesianGrappaRecon
+    /// define the recon status
     template <typename T>
-    class EXPORTGADGETSMRICORE GenericCartesianGrappaReconObj
+    class EXPORTGADGETSMRICORE GenericReconCartesianGrappaObj
     {
     public:
 
-        GenericCartesianGrappaReconObj() {}
-        virtual ~GenericCartesianGrappaReconObj() {}
+        GenericReconCartesianGrappaObj() {}
+        virtual ~GenericReconCartesianGrappaObj() {}
 
         // ------------------------------------
         /// recon outputs
@@ -52,16 +52,16 @@ namespace Gadgetron {
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericCartesianGrappaReconGadget : public GenericReconGadget
+    class EXPORTGADGETSMRICORE GenericReconCartesianGrappaGadget : public GenericReconGadget
     {
     public:
-        GADGET_DECLARE(GenericCartesianGrappaReconGadget);
+        GADGET_DECLARE(GenericReconCartesianGrappaGadget);
 
         typedef GenericReconGadget BaseClass;
-        typedef Gadgetron::GenericCartesianGrappaReconObj< std::complex<float> > ReconObjType;
+        typedef Gadgetron::GenericReconCartesianGrappaObj< std::complex<float> > ReconObjType;
 
-        GenericCartesianGrappaReconGadget();
-        ~GenericCartesianGrappaReconGadget();
+        GenericReconCartesianGrappaGadget();
+        ~GenericReconCartesianGrappaGadget();
 
         /// ------------------------------------------------------------------------------------
         /// parameters to control the reconstruction
