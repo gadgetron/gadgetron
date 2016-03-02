@@ -128,6 +128,8 @@ namespace Gadgetron {
             size_t S = data.get_size(5);
             size_t SLC = data.get_size(6);
 
+            GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconEigenChannelGadget - incoming data array : [RO E1 E2 CHA N S SLC] - [" << RO << " " << E1 << " " << E2 << " " << CHA << " " << N << " " << S << " " << SLC << "]");
+
             // whether it is needed to update coefficients
             bool recompute_coeff = false;
             if ( (KLT_[e].size()!=SLC) || update_eigen_channel_coefficients.value() )
@@ -190,7 +192,7 @@ namespace Gadgetron {
                             {
                                 KLT_[e][slc][s][n].eigen_value(E);
 
-                                GDEBUG_STREAM("Eigen value, slc - " << slc << ", S - " << s << ", N - " << n << " : [");
+                                GDEBUG_STREAM("Number of modes kept: " << KLT_[e][slc][s][n].output_length() << "; Eigen value, slc - " << slc << ", S - " << s << ", N - " << n << " : [");
 
                                 for (size_t c = 0; c < E.get_size(0); c++)
                                 {

@@ -1,5 +1,5 @@
 
-#include "GenericCartesianReconReferencePrepGadget.h"
+#include "GenericReconCartesianReferencePrepGadget.h"
 #include <iomanip>
 
 #include "hoNDArray_reductions.h"
@@ -7,17 +7,17 @@
 
 namespace Gadgetron {
 
-    GenericCartesianReconReferencePrepGadget::GenericCartesianReconReferencePrepGadget() : num_encoding_spaces_(1), process_called_times_(0)
+    GenericReconCartesianReferencePrepGadget::GenericReconCartesianReferencePrepGadget() : num_encoding_spaces_(1), process_called_times_(0)
     {
         gt_timer_.set_timing_in_destruction(false);
         gt_timer_local_.set_timing_in_destruction(false);
     }
 
-    GenericCartesianReconReferencePrepGadget::~GenericCartesianReconReferencePrepGadget()
+    GenericReconCartesianReferencePrepGadget::~GenericReconCartesianReferencePrepGadget()
     {
     }
 
-    int GenericCartesianReconReferencePrepGadget::process_config(ACE_Message_Block* mb)
+    int GenericReconCartesianReferencePrepGadget::process_config(ACE_Message_Block* mb)
     {
         ISMRMRD::IsmrmrdHeader h;
         try
@@ -97,7 +97,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    int GenericCartesianReconReferencePrepGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1)
+    int GenericReconCartesianReferencePrepGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1)
     {
         process_called_times_++;
 
@@ -231,5 +231,5 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    GADGET_FACTORY_DECLARE(GenericCartesianReconReferencePrepGadget)
+    GADGET_FACTORY_DECLARE(GenericReconCartesianReferencePrepGadget)
 }

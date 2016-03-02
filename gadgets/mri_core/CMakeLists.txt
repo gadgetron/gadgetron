@@ -35,9 +35,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
@@ -80,15 +77,16 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     CplxDumpGadget.h 
                                     DependencyQueryGadget.h 
                                     DependencyQueryWriter.h 
-                                    ComplexToFloatGadget.h
-                                    AcquisitionAccumulateTriggerGadget.h
+                                    ComplexToFloatGadget.h 
+                                    AcquisitionAccumulateTriggerGadget.h 
                                     BucketToBufferGadget.h 
-                                    ImageArraySplitGadget.h
-                                    PseudoReplicatorGadget.h
-                                    SimpleReconGadget.h
-                                    ImageSortGadget.h
-                                    GenericCartesianGrappaReconGadget.h 
-                                    GenericCartesianReconReferencePrepGadget.h 
+                                    ImageArraySplitGadget.h 
+                                    PseudoReplicatorGadget.h 
+                                    SimpleReconGadget.h 
+                                    ImageSortGadget.h 
+                                    GenericReconGadget.h 
+                                    GenericReconCartesianGrappaGadget.h 
+                                    GenericReconCartesianReferencePrepGadget.h 
                                     GenericReconPartialFourierHandlingGadget.h 
                                     GenericReconPartialFourierHandlingFilterGadget.h 
                                     GenericReconPartialFourierHandlingPOCSGadget.h 
@@ -129,8 +127,9 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 PseudoReplicatorGadget.cpp
                                 SimpleReconGadget.cpp
                                 ImageSortGadget.cpp
-                                GenericCartesianGrappaReconGadget.cpp 
-                                GenericCartesianReconReferencePrepGadget.cpp 
+                                GenericReconGadget.cpp 
+                                GenericReconCartesianGrappaGadget.cpp 
+                                GenericReconCartesianReferencePrepGadget.cpp 
                                 GenericReconPartialFourierHandlingGadget.cpp 
                                 GenericReconPartialFourierHandlingFilterGadget.cpp 
                                 GenericReconPartialFourierHandlingPOCSGadget.cpp 
@@ -155,6 +154,7 @@ set( gadgetron_mricore_config_files
     Generic_Cartesian_Grappa.xml
     Generic_Cartesian_Grappa_T2W.xml
     Generic_Cartesian_Grappa_RealTimeCine.xml
+    Generic_Cartesian_Grappa_EPI.xml
 )
 
 add_library(gadgetron_mricore SHARED 

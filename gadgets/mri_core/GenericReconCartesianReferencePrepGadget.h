@@ -1,4 +1,4 @@
-/** \file   GenericCartesianReconReferencePrepGadget.h
+/** \file   GenericReconCartesianReferencePrepGadget.h
     \brief  This is the class gadget for both 2DT and 3DT cartesian reconstruction to prepare the reference data, working on the IsmrmrdReconData.
     \author Hui Xue
 */
@@ -28,15 +28,15 @@
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericCartesianReconReferencePrepGadget : public Gadget1<IsmrmrdReconData>
+    class EXPORTGADGETSMRICORE GenericReconCartesianReferencePrepGadget : public Gadget1<IsmrmrdReconData>
     {
     public:
-        GADGET_DECLARE(GenericCartesianReconReferencePrepGadget);
+        GADGET_DECLARE(GenericReconCartesianReferencePrepGadget);
 
         typedef Gadget1<IsmrmrdReconData> BaseClass;
 
-        GenericCartesianReconReferencePrepGadget();
-        ~GenericCartesianReconReferencePrepGadget();
+        GenericReconCartesianReferencePrepGadget();
+        ~GenericReconCartesianReferencePrepGadget();
 
         /// ------------------------------------------------------------------------------------
         /// parameters to control the reconstruction

@@ -54,7 +54,7 @@
     <gadget>
         <name>PrepRef</name>
         <dll>gadgetron_mricore</dll>
-        <classname>GenericCartesianReconReferencePrepGadget</classname>
+        <classname>GenericReconCartesianReferencePrepGadget</classname>
 
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value>DebugFolder</value></property>
@@ -72,7 +72,7 @@
     <gadget>
         <name>Recon</name>
         <dll>gadgetron_mricore</dll>
-        <classname>GenericCartesianGrappaReconGadget</classname>
+        <classname>GenericReconCartesianGrappaGadget</classname>
 
         <!-- image series -->
         <property><name>image_series</name><value>0</value></property>

@@ -23,11 +23,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/solvers
     ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math 
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
 )
 
 set( mri_core_header_files
