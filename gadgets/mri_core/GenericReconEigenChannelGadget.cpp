@@ -128,6 +128,8 @@ namespace Gadgetron {
             size_t S = data.get_size(5);
             size_t SLC = data.get_size(6);
 
+            GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconEigenChannelGadget - incoming data array : [RO E1 E2 CHA N S SLC] - [" << RO << " " << E1 << " " << E2 << " " << CHA << " " << N << " " << S << " " << SLC << "]");
+
             // whether it is needed to update coefficients
             bool recompute_coeff = false;
             if ( (KLT_[e].size()!=SLC) || update_eigen_channel_coefficients.value() )
