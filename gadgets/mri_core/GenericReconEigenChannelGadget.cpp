@@ -192,7 +192,7 @@ namespace Gadgetron {
                             {
                                 KLT_[e][slc][s][n].eigen_value(E);
 
-                                GDEBUG_STREAM("Eigen value, slc - " << slc << ", S - " << s << ", N - " << n << " : [");
+                                GDEBUG_STREAM("Number of modes kept: " << KLT_[e][slc][s][n].output_length() << "; Eigen value, slc - " << slc << ", S - " << s << ", N - " << n << " : [");
 
                                 for (size_t c = 0; c < E.get_size(0); c++)
                                 {

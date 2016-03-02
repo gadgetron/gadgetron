@@ -17,9 +17,7 @@
 
 #include "hoNDArray_utils.h"
 
-#ifdef GENERIC_RECON_DEBUG
-    #include "gtPlusIOAnalyze.h"
-#endif 
+// #include "gtPlusIOAnalyze.h"
 
 #include "GadgetStreamController.h"
 
@@ -104,13 +102,11 @@ namespace Gadgetron {
         Gadgetron::GadgetronTimer gt_timer_local_;
         Gadgetron::GadgetronTimer gt_timer_;
 
-#ifdef GENERIC_RECON_DEBUG
-        // debug folder
-        std::string debug_folder_full_path_;
+        //// debug folder
+        //std::string debug_folder_full_path_;
 
-        // exporter
-        Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
-#endif 
+        //// exporter
+        //Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
 
         // --------------------------------------------------
         // gadget functions

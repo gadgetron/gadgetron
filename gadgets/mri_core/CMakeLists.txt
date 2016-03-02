@@ -35,9 +35,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}

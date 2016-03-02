@@ -112,17 +112,15 @@ namespace Gadgetron {
 
         // ---------------------------------------------------------------------------------------------------------
 
-#ifdef GENERIC_RECON_DEBUG
-        if (!debug_folder.value().empty())
-        {
-            Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        }
-        else
-        {
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        }
-#endif // GENERIC_RECON_DEBUG
+        //if (!debug_folder.value().empty())
+        //{
+        //    Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
+        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
+        //}
+        //else
+        //{
+        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
+        //}
 
         return GADGET_OK;
     }
@@ -149,7 +147,7 @@ namespace Gadgetron {
             // ---------------------------------------------------------------
             // export incoming data
 
-#ifdef GENERIC_RECON_DEBUG
+/**
             if (!debug_folder_full_path_.empty())
             {
                 if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
@@ -165,12 +163,12 @@ namespace Gadgetron {
                     gt_exporter_.exportArray(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_traj" + os.str());
                 }
             }
-#endif 
+**/
 
             // ---------------------------------------------------------------
             // export incoming ref
 
-#ifdef GENERIC_RECON_DEBUG
+/**
             if (recon_bit_->rbit_[e].ref_)
             {
                 if (!debug_folder_full_path_.empty())
@@ -186,7 +184,7 @@ namespace Gadgetron {
                     }
                 }
             }
-#endif 
+**/
 
             // ---------------------------------------------------------------
             // add recon code here ...
@@ -386,7 +384,7 @@ namespace Gadgetron {
                 }
             }
 
-#ifdef GENERIC_RECON_DEBUG
+/**
             if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
@@ -394,14 +392,14 @@ namespace Gadgetron {
 
                 gt_exporter_.exportArrayComplex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map_before_filtering_" + os.str());
             }
-#endif 
+**/
 
             // filter the ref_coil_map
             if (filter_RO_ref_coi_map_.get_size(0) != RO)
             {
                 Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(0), ref_.sampling_.sampling_limits_[0].min_, ref_.sampling_.sampling_limits_[0].max_, filter_RO_ref_coi_map_);
 
-#ifdef GENERIC_RECON_DEBUG
+/**
                 if (!debug_folder_full_path_.empty())
                 {
                     std::stringstream os;
@@ -409,14 +407,14 @@ namespace Gadgetron {
 
                     gt_exporter_.exportArrayComplex(filter_RO_ref_coi_map_, debug_folder_full_path_ + "filter_RO_ref_coi_map_" + os.str());
                 }
-#endif 
+**/
             }
 
             if (filter_E1_ref_coi_map_.get_size(0) != E1)
             {
                 Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(1), ref_.sampling_.sampling_limits_[1].min_, ref_.sampling_.sampling_limits_[1].max_, filter_E1_ref_coi_map_);
 
-#ifdef GENERIC_RECON_DEBUG
+/**
                 if (!debug_folder_full_path_.empty())
                 {
                     std::stringstream os;
@@ -424,14 +422,14 @@ namespace Gadgetron {
 
                     gt_exporter_.exportArrayComplex(filter_E1_ref_coi_map_, debug_folder_full_path_ + "filter_E1_ref_coi_map_" + os.str());
                 }
-#endif 
+**/
             }
 
             if ( (E2 > 1) && (filter_E2_ref_coi_map_.get_size(0) != E2) )
             {
                 Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(2), ref_.sampling_.sampling_limits_[2].min_, ref_.sampling_.sampling_limits_[2].max_, filter_E2_ref_coi_map_);
 
-#ifdef GENERIC_RECON_DEBUG
+/**
                 if (!debug_folder_full_path_.empty())
                 {
                     std::stringstream os;
@@ -439,7 +437,7 @@ namespace Gadgetron {
 
                     gt_exporter_.exportArrayComplex(filter_E2_ref_coi_map_, debug_folder_full_path_ + "filter_E2_ref_coi_map_" + os.str());
                 }
-#endif 
+**/
             }
 
             hoNDArray< std::complex<float> > ref_recon_buf;
@@ -453,7 +451,7 @@ namespace Gadgetron {
                 Gadgetron::apply_kspace_filter_ROE1(ref_coil_map, filter_RO_ref_coi_map_, filter_E1_ref_coi_map_, ref_recon_buf);
             }
 
-#ifdef GENERIC_RECON_DEBUG
+/**
             if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
@@ -461,7 +459,7 @@ namespace Gadgetron {
 
                 gt_exporter_.exportArrayComplex(ref_recon_buf, debug_folder_full_path_ + "ref_coil_map_after_filtering_" + os.str());
             }
-#endif 
+**/
 
             // pad the ref_coil_map into the data array
             Gadgetron::pad(recon_RO, recon_E1, recon_E2, &ref_recon_buf, &ref_coil_map);
@@ -469,7 +467,7 @@ namespace Gadgetron {
             std::vector<size_t> dim = *ref_data.get_dimensions();
             ref_calib.create(dim, ref_data.begin());
 
-#ifdef GENERIC_RECON_DEBUG
+/**
             if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
@@ -478,7 +476,7 @@ namespace Gadgetron {
                 gt_exporter_.exportArrayComplex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map_" + os.str());
                 gt_exporter_.exportArrayComplex(ref_calib, debug_folder_full_path_ + "ref_calib_" + os.str());
             }
-#endif 
+**/
         }
         catch (...)
         {
@@ -503,7 +501,7 @@ namespace Gadgetron {
                 Gadgetron::hoNDFFT<float>::instance()->ifft2c(ref_coil_map, complex_im_recon_buf_);
             }
 
-#ifdef GENERIC_RECON_DEBUG
+/**
             if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
@@ -511,14 +509,14 @@ namespace Gadgetron {
 
                 gt_exporter_.exportArrayComplex(complex_im_recon_buf_, debug_folder_full_path_ + "complex_im_for_coil_map_" + os.str());
             }
-#endif 
+**/
             size_t ks = 7;
             size_t kz = 5;
             size_t power = 3;
 
             Gadgetron::coil_map_Inati(complex_im_recon_buf_, coil_map, ks, kz, power);
 
-#ifdef GENERIC_RECON_DEBUG
+/**
             if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
@@ -526,7 +524,7 @@ namespace Gadgetron {
 
                 gt_exporter_.exportArrayComplex(coil_map, debug_folder_full_path_ + "coil_map_" + os.str());
             }
-#endif 
+**/
         }
         catch (...)
         {
