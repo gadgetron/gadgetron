@@ -55,6 +55,9 @@ namespace Gadgetron {
         GADGET_PROPERTY(average_all_ref_N, bool, "Whether to average all N for ref generation", true);
         /// whether to average all S for ref generation
         GADGET_PROPERTY(average_all_ref_S, bool, "Whether to average all S for ref generation", false);
+        /// if no acceleration is used, whether to update ref for every incoming IsmrmrdReconData
+        /// if false, the ref will only be prepared for the first incoming IsmrmrdReconData
+        GADGET_PROPERTY(prepare_ref_always_no_acceleration, bool, "Whether to prepare ref for every incoming IsmrmrdReconData if the no acceleration is used", true);
 
     protected:
 
@@ -64,6 +67,8 @@ namespace Gadgetron {
 
         // number of encoding spaces in the protocol
         size_t num_encoding_spaces_;
+        /// indicate whether ref has been prepared for an encoding space
+        std::vector<bool> ref_prepared_;
 
         // for every encoding space
         // calibration mode

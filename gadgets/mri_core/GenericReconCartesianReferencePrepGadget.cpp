@@ -42,6 +42,7 @@ namespace Gadgetron {
         GDEBUG_CONDITION_STREAM(verbose.value(), "Number of encoding spaces: " << NE);
 
         calib_mode_.resize(NE, ISMRMRD_noacceleration);
+        ref_prepared_.resize(NE, false);
 
         for (size_t e = 0; e < h.encoding.size(); e++)
         {
@@ -111,7 +112,7 @@ namespace Gadgetron {
         size_t e;
         for (e = 0; e < recon_bit_->rbit_.size(); e++)
         {
-        		auto & rbit = recon_bit_->rbit_[e];
+            auto & rbit = recon_bit_->rbit_[e];
             std::stringstream os;
             os << "_encoding_" << e;
 
@@ -121,10 +122,27 @@ namespace Gadgetron {
             // -----------------------------------------
             if (calib_mode_[e] == Gadgetron::ISMRMRD_noacceleration)
             {
-                // if no ref data is set, make copy the ref point from the  data
-                if (!rbit.ref_)
+                if (prepare_ref_always_no_acceleration.value() || !ref_prepared_[e])
                 {
-                	rbit.ref_ = rbit.data_;
+                    // if no ref data is set, make copy the ref point from the  data
+                    if (!rbit.ref_)
+                    {
+                        rbit.ref_ = rbit.data_;
+                        ref_prepared_[e] = true;
+                    }
+                }
+                else
+                {
+                    if (ref_prepared_[e])
+                    {
+                        if (rbit.ref_)
+                        {
+                            // remove the ref
+                            rbit.ref_ = boost::none;
+                        }
+                    }
+
+                    continue;
                 }
             }
 
@@ -217,9 +235,10 @@ namespace Gadgetron {
             }
 
             ref = ref_calib;
-            for (int i = 0; i < 3; i++)
-            	(*rbit.ref_).sampling_.sampling_limits_[i] = sampling_limits[i];
+            ref_prepared_[e] = true;
 
+            for (int i = 0; i < 3; i++)
+                (*rbit.ref_).sampling_.sampling_limits_[i] = sampling_limits[i];
        }
 
         if (this->next()->putq(m1) < 0)
