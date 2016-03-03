@@ -1,6 +1,10 @@
 #include "EPIReconXGadget.h"
 #include "ismrmrd/xml.h"
 
+#ifdef USE_OMP
+#include "omp.h"
+#endif // USE_OMP
+
 namespace Gadgetron{
 
   EPIReconXGadget::EPIReconXGadget() {}
@@ -88,6 +92,10 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
     reconx_other.dwellTime_ = 1.0;
     reconx_other.computeTrajectory();
   }
+
+#ifdef USE_OMP
+  omp_set_num_threads(1);
+#endif // USE_OMP
 
   return 0;
 }
