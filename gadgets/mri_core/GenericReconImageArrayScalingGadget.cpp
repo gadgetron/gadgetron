@@ -62,6 +62,8 @@ namespace Gadgetron {
 
     int GenericReconImageArrayScalingGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1)
     {
+        if (perform_timing.value()) { gt_timer_.start("GenericReconImageArrayScalingGadget::process"); }
+
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconImageArrayScalingGadget::process(...) starts ... ");
 
         process_called_times_++;
@@ -107,6 +109,8 @@ namespace Gadgetron {
             GERROR("GenericReconImageArrayScalingGadget::process, passing data on to next gadget");
             return GADGET_FAIL;
         }
+
+        if (perform_timing.value()) { gt_timer_.stop(); }
 
         return GADGET_OK;
     }

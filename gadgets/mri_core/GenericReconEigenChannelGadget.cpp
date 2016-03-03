@@ -9,8 +9,8 @@ namespace Gadgetron {
 
     GenericReconEigenChannelGadget::GenericReconEigenChannelGadget() : num_encoding_spaces_(1), process_called_times_(0)
     {
-        /*gt_timer_.set_timing_in_destruction(false);
-        gt_timer_local_.set_timing_in_destruction(false);*/
+        gt_timer_.set_timing_in_destruction(false);
+        gt_timer_local_.set_timing_in_destruction(false);
     }
 
     GenericReconEigenChannelGadget::~GenericReconEigenChannelGadget()
@@ -102,6 +102,8 @@ namespace Gadgetron {
 
     int GenericReconEigenChannelGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1)
     {
+        if (perform_timing.value()) { gt_timer_.start("GenericReconEigenChannelGadget::process"); }
+
         process_called_times_++;
 
         IsmrmrdReconData* recon_bit_ = m1->getObjectPtr();
@@ -233,6 +235,8 @@ namespace Gadgetron {
                 }*/
             }
         }
+
+        if (perform_timing.value()) { gt_timer_.stop(); }
 
         if (this->next()->putq(m1) < 0)
         {

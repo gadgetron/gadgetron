@@ -155,6 +155,7 @@ set( gadgetron_mricore_config_files
     Generic_Cartesian_Grappa_T2W.xml
     Generic_Cartesian_Grappa_RealTimeCine.xml
     Generic_Cartesian_Grappa_EPI.xml
+    Generic_Cartesian_Grappa_EPI_AVE.xml
 )
 
 add_library(gadgetron_mricore SHARED 

@@ -91,6 +91,8 @@ namespace Gadgetron {
 
     int GenericReconKSpaceFilteringGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1)
     {
+        if (perform_timing.value()) { gt_timer_.start("GenericReconKSpaceFilteringGadget::process"); }
+
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconKSpaceFilteringGadget::process(...) starts ... ");
 
         process_called_times_++;
@@ -349,6 +351,8 @@ namespace Gadgetron {
             GERROR("GenericReconKSpaceFilteringGadget::process, passing data on to next gadget");
             return GADGET_FAIL;
         }
+
+        if (perform_timing.value()) { gt_timer_.stop(); }
 
         return GADGET_OK;
     }

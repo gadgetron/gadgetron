@@ -119,6 +119,11 @@ template <typename T> int EPIReconXObjectFlat<T>::apply(ISMRMRD::AcquisitionHead
     int Ne = 2*Km + 1;
     int p,q; // counters
 
+    if(numSamples_!=data_in.get_size(0))
+    {
+        numSamples_ = data_in.get_size(0);
+    }
+
     // resize the reconstruction operator
     Mpos_.create(reconNx_,numSamples_);
     Mneg_.create(reconNx_,numSamples_);

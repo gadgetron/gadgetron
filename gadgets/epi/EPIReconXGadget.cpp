@@ -89,6 +89,7 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
     reconx_other.reconNx_   = r_space2.matrixSize.x;
     reconx_other.reconFOV_  = r_space2.fieldOfView_mm.x;
     reconx_other.numSamples_ = e_space2.matrixSize.x;
+    oversamplng_ratio2_ = (float)e_space2.matrixSize.x / r_space2.matrixSize.x;
     reconx_other.dwellTime_ = 1.0;
     reconx_other.computeTrajectory();
   }
@@ -115,7 +116,23 @@ int EPIReconXGadget::process(
   if (hdr_in.encoding_space_ref == 0) {
     reconx.apply(*m1->getObjectPtr(), *m2->getObjectPtr(), hdr_out, data_out);
   }
-  else {
+  else
+  {
+    if(reconx_other.encodeNx_>m2->getObjectPtr()->get_size(0)/ oversamplng_ratio2_)
+    {
+        reconx_other.encodeNx_ = (int)(m2->getObjectPtr()->get_size(0) / oversamplng_ratio2_);
+    }
+
+    if (reconx_other.reconNx_>m2->getObjectPtr()->get_size(0) / oversamplng_ratio2_)
+    {
+        reconx_other.reconNx_ = (int)(m2->getObjectPtr()->get_size(0) / oversamplng_ratio2_);
+    }
+
+    if(reconx_other.numSamples_>m2->getObjectPtr()->get_size(0))
+    {
+        reconx_other.numSamples_ = m2->getObjectPtr()->get_size(0);
+    }
+
     reconx_other.apply(*m1->getObjectPtr(), *m2->getObjectPtr(), hdr_out, data_out);
   }
 
