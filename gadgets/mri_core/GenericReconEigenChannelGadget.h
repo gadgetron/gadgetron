@@ -108,8 +108,8 @@ namespace Gadgetron {
         // std::string debug_folder_full_path_;
 
         // clock for timing
-        // Gadgetron::GadgetronTimer gt_timer_local_;
-        // Gadgetron::GadgetronTimer gt_timer_;
+        Gadgetron::GadgetronTimer gt_timer_local_;
+        Gadgetron::GadgetronTimer gt_timer_;
 
         //// exporter
         // Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;

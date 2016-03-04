@@ -49,6 +49,8 @@ namespace Gadgetron {
 
     int GenericReconCartesianGrappaGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1)
     {
+        if (perform_timing.value()) { gt_timer_local_.start("GenericReconCartesianGrappaGadget::process"); }
+
         process_called_times_++;
 
         IsmrmrdReconData* recon_bit_ = m1->getObjectPtr();
@@ -192,6 +194,9 @@ namespace Gadgetron {
         }
 
         m1->release();
+
+        if (perform_timing.value()) { gt_timer_local_.stop(); }
+
         return GADGET_OK;
     }
 

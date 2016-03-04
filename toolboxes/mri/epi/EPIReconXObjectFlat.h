@@ -9,6 +9,7 @@
 #include "EPIReconXObject.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_linalg.h"
 #include "gadgetronmath.h"
 #include <complex>
 
@@ -118,6 +119,11 @@ template <typename T> int EPIReconXObjectFlat<T>::apply(ISMRMRD::AcquisitionHead
     int Ne = 2*Km + 1;
     int p,q; // counters
 
+    if(numSamples_!=data_in.get_size(0))
+    {
+        numSamples_ = data_in.get_size(0);
+    }
+
     // resize the reconstruction operator
     Mpos_.create(reconNx_,numSamples_);
     Mneg_.create(reconNx_,numSamples_);
@@ -166,16 +172,18 @@ template <typename T> int EPIReconXObjectFlat<T>::apply(ISMRMRD::AcquisitionHead
   }
 
   // convert to armadillo representation of matrices and vectors
-  arma::Mat<typename stdType<T>::Type> adata_in = as_arma_matrix(&data_in);
-  arma::Mat<typename stdType<T>::Type> adata_out = as_arma_matrix(&data_out);
+  //arma::Mat<typename stdType<T>::Type> adata_in = as_arma_matrix(&data_in);
+  //arma::Mat<typename stdType<T>::Type> adata_out = as_arma_matrix(&data_out);
 
   // Apply it
   if (hdr_in.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE)) {
     // Negative readout
-    adata_out = as_arma_matrix(&Mneg_) * adata_in;
+    // adata_out = as_arma_matrix(&Mneg_) * adata_in;
+      Gadgetron::gemm(data_out, Mneg_, data_in);
   } else {
     // Forward readout
-    adata_out = as_arma_matrix(&Mpos_) * adata_in;
+    //adata_out = as_arma_matrix(&Mpos_) * adata_in;
+      Gadgetron::gemm(data_out, Mpos_, data_in);
   }
 
   // Copy the input header to the output header and set the size and the center sample

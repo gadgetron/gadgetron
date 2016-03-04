@@ -13,7 +13,13 @@ namespace Gadgetron{
   {
 
     // FFT along 1st dimensions (x)
-    hoNDFFT<float>::instance()->fft1c( *m2->getObjectPtr() );
+    if(buf_.get_size(0)!= m2->getObjectPtr()->get_size(0))
+    {
+        buf_ = *m2->getObjectPtr();
+    }
+
+    hoNDFFT<float>::instance()->fft1c( *m2->getObjectPtr(), r_, buf_);
+    memcpy(m2->getObjectPtr()->begin(), r_.begin(), r_.get_number_of_bytes());
 
     if (this->next()->putq(m1) < 0)
     {

@@ -100,6 +100,8 @@ namespace Gadgetron {
 
     int GenericReconCartesianReferencePrepGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1)
     {
+        if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianReferencePrepGadget::process"); }
+
         process_called_times_++;
 
         IsmrmrdReconData* recon_bit_ = m1->getObjectPtr();
@@ -204,6 +206,11 @@ namespace Gadgetron {
             crop_size[1] = end_E1 - start_E1 + 1;
             crop_size[2] = end_E2 - start_E2 + 1;
 
+            if(crop_size[0]> (ref_calib.get_size(0)-crop_offset[0]))
+            {
+                crop_size[0] = ref_calib.get_size(0) - crop_offset[0];
+            }
+
             Gadgetron::crop(crop_offset, crop_size, &ref_calib, &ref_recon_buf);
             ref_calib = ref_recon_buf;
             // step 3, update the sampling limits
@@ -234,18 +241,25 @@ namespace Gadgetron {
                 sampling_limits[2].center_ = (sampling_limits[2].max_ + 1) / 2;
             }
 
+            if(sampling_limits[0].max_>=RO)
+            {
+                sampling_limits[0].max_ = RO - 1;
+            }
+
             ref = ref_calib;
             ref_prepared_[e] = true;
 
             for (int i = 0; i < 3; i++)
                 (*rbit.ref_).sampling_.sampling_limits_[i] = sampling_limits[i];
-       }
+        }
 
         if (this->next()->putq(m1) < 0)
         {
             GERROR_STREAM("Put IsmrmrdReconData to Q failed ... ");
             return GADGET_FAIL;
         }
+
+        if (perform_timing.value()) { gt_timer_.stop(); }
 
         return GADGET_OK;
     }

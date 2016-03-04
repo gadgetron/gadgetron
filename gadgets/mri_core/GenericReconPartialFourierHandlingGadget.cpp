@@ -61,7 +61,7 @@ namespace Gadgetron {
         {
             if (!h.encoding[e].parallelImaging)
             {
-                GDEBUG_STREAM("Parallel Imaging section not found in header");
+                GDEBUG_STREAM("Parallel Imaging section not found in header for encoding " << e);
                 acceFactorE1_[e] = 1;
                 acceFactorE2_[e] = 1;
             }
@@ -93,6 +93,8 @@ namespace Gadgetron {
 
     int GenericReconPartialFourierHandlingGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1)
     {
+        if (perform_timing.value()) { gt_timer_local_.start("GenericReconPartialFourierHandlingGadget::process"); }
+
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconPartialFourierHandlingGadget::process(...) starts ... ");
 
         process_called_times_++;
@@ -116,6 +118,8 @@ namespace Gadgetron {
                 GERROR("GenericReconPartialFourierHandlingGadget::process, passing incoming image array on to next gadget");
                 return GADGET_FAIL;
             }
+
+            if (perform_timing.value()) { gt_timer_local_.stop(); }
 
             return GADGET_OK;
         }
@@ -188,6 +192,8 @@ namespace Gadgetron {
                 return GADGET_FAIL;
             }
 
+            if (perform_timing.value()) { gt_timer_local_.stop(); }
+
             return GADGET_OK;
         }
 
@@ -245,6 +251,8 @@ namespace Gadgetron {
             GERROR("GenericReconPartialFourierHandlingGadget::process, passing data on to next gadget");
             return GADGET_FAIL;
         }
+
+        if (perform_timing.value()) { gt_timer_local_.stop(); }
 
         return GADGET_OK;
     }
