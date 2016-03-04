@@ -1,6 +1,7 @@
 
 #include "GenericReconCartesianGrappaGadget.h"
 #include "mri_core_grappa.h"
+#include "hoNDArray_reductions.h"
 
 /*
     The input is IsmrmrdReconData and output is single 2D or 3D ISMRMRD images
@@ -85,6 +86,15 @@ namespace Gadgetron {
             }*/
 
             // ---------------------------------------------------------------
+            // prepare squared pixel recon
+            if (recon_squared_pixel.value())
+            {
+                if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::prepare_squared_pixel_recon"); }
+                this->prepare_squared_pixel_recon(recon_bit_->rbit_[e], e);
+                if (perform_timing.value()) { gt_timer_.stop(); }
+            }
+
+            // ---------------------------------------------------------------
 
             if (recon_bit_->rbit_[e].ref_)
             {
@@ -120,6 +130,12 @@ namespace Gadgetron {
                 {
                     this->gt_exporter_.exportArrayComplex(recon_obj_[e].ref_coil_map_, debug_folder_full_path_ + "ref_coil_map" + os.str());
                 }*/
+
+                // ---------------------------------------------------------------
+                // after this step, the recon_obj_[e].ref_calib_dst_ and recon_obj_[e].ref_coil_map_ are modified
+                if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::make_ref_coil_map"); }
+                this->prepare_down_stream_coil_compression_ref_data(recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, recon_obj_[e].ref_calib_dst_);
+                if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ---------------------------------------------------------------
 
@@ -200,6 +216,112 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
+    void GenericReconCartesianGrappaGadget::prepare_down_stream_coil_compression_ref_data(const hoNDArray< std::complex<float> >& ref_src, hoNDArray< std::complex<float> >& ref_coil_map, hoNDArray< std::complex<float> >& ref_dst)
+    {
+        try
+        {
+            if(!downstream_coil_compression.value())
+            {
+                GDEBUG_CONDITION_STREAM(verbose.value(), "Downstream coil compression is not prescribed ... ");
+                ref_dst.clear();
+                return;
+            }
+
+            if (downstream_coil_compression_thres.value()<0 && downstream_coil_compression_num_modesKept.value()==0)
+            {
+                GDEBUG_CONDITION_STREAM(verbose.value(), "Downstream coil compression is prescribed to use all input channels ... ");
+                ref_dst.clear();
+                return;
+            }
+
+            // determine how many channels to use
+            size_t RO = ref_src.get_size(0);
+            size_t E1 = ref_src.get_size(1);
+            size_t E2 = ref_src.get_size(2);
+            size_t CHA = ref_src.get_size(3);
+            size_t N = ref_src.get_size(4);
+            size_t S = ref_src.get_size(5);
+            size_t SLC = ref_src.get_size(6);
+
+            size_t recon_RO = ref_coil_map.get_size(0);
+            size_t recon_E1 = ref_coil_map.get_size(1);
+            size_t recon_E2 = ref_coil_map.get_size(2);
+
+            std::complex<float>* pRef = const_cast< std::complex<float>* >(ref_src.begin());
+
+            size_t dstCHA = CHA;
+            if(downstream_coil_compression_num_modesKept.value()>0 && downstream_coil_compression_num_modesKept.value()<=CHA)
+            {
+                dstCHA = downstream_coil_compression_num_modesKept.value();
+            }
+            else
+            {
+                std::vector<float> E(CHA, 0);
+                long long cha;
+
+#pragma omp parallel default(none) private(cha) shared(CHA, pRef, E)
+                {
+                    hoNDArray< std::complex<float> > dataCha;
+#pragma omp for 
+                    for (cha = 0; cha < (long long)CHA; cha++)
+                    {
+                        dataCha.create(RO, E1, E2, pRef + cha*RO*E1*E2);
+                        float v;
+                        Gadgetron::norm2(dataCha, v);
+                        E[cha] = v*v;
+                    }
+                }
+
+                for (cha = 1; cha < (long long)CHA; cha++)
+                {
+                    if (std::abs(E[cha]) < downstream_coil_compression_thres.value()*std::abs(E[0]))
+                    {
+                        break;
+                    }
+                }
+
+                dstCHA = cha;
+            }
+
+            GDEBUG_CONDITION_STREAM(verbose.value(), "Downstream coil compression is prescribed to use " << dstCHA << " out of " << CHA << " channels ...");
+
+            if (dstCHA < CHA)
+            {
+                ref_dst.create(RO, E1, E2, dstCHA, N, S, SLC);
+                hoNDArray< std::complex<float> > ref_coil_map_dst;
+                ref_coil_map_dst.create(recon_RO, recon_E1, recon_E2, dstCHA, N, S, SLC);
+
+                size_t slc, s, n;
+                for (slc = 0; slc < SLC; slc++)
+                {
+                    for (s = 0; s < S; s++)
+                    {
+                        for (n = 0; n < N; n++)
+                        {
+                            std::complex<float>* pDst = &(ref_dst(0, 0, 0, 0, n, s, slc));
+                            const std::complex<float>* pSrc = &(ref_src(0, 0, 0, 0, n, s, slc));
+                            memcpy(pDst, pSrc, sizeof(std::complex<float>)*RO*E1*E2*dstCHA);
+
+                            pDst = &(ref_coil_map_dst(0, 0, 0, 0, n, s, slc));
+                            pSrc = &(ref_coil_map(0, 0, 0, 0, n, s, slc));
+                            memcpy(pDst, pSrc, sizeof(std::complex<float>)*recon_RO*recon_E1*recon_E2*dstCHA);
+                        }
+                    }
+                }
+
+                ref_coil_map = ref_coil_map_dst;
+            }
+            else
+            {
+                ref_dst.clear();
+            }
+        }
+        catch(...)
+        {
+            GADGET_THROW("Errors happened in GenericReconCartesianGrappaGadget::prepare_down_stream_coil_compression_ref_data(...) ... ");
+        }
+    }
+
     void GenericReconCartesianGrappaGadget::perform_calib(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t e)
     {
         try
@@ -209,7 +331,16 @@ namespace Gadgetron {
             size_t E2 = recon_bit.data_.data_.get_size(2);
 
             hoNDArray< std::complex<float> >& src = recon_obj.ref_calib_;
-            hoNDArray< std::complex<float> >& dst = recon_obj.ref_calib_;
+            hoNDArray< std::complex<float> >* pdst = &recon_obj.ref_calib_;
+
+            if(recon_obj.ref_calib_dst_.get_size(0)== recon_obj.ref_calib_.get_size(0) 
+                && recon_obj.ref_calib_dst_.get_size(1) == recon_obj.ref_calib_.get_size(1)
+                && recon_obj.ref_calib_dst_.get_size(2) == recon_obj.ref_calib_.get_size(2) )
+            {
+                pdst = &recon_obj.ref_calib_dst_;
+            }
+
+            hoNDArray< std::complex<float> >& dst = *pdst;
 
             size_t ref_RO = src.get_size(0);
             size_t ref_E1 = src.get_size(1);
