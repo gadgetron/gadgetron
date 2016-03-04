@@ -259,7 +259,7 @@ namespace Gadgetron {
                 std::vector<float> E(CHA, 0);
                 long long cha;
 
-#pragma omp parallel default(none) private(cha) shared(CHA, pRef, E)
+#pragma omp parallel default(none) private(cha) shared(RO, E1, E2, CHA, pRef, E)
                 {
                     hoNDArray< std::complex<float> > dataCha;
 #pragma omp for 
