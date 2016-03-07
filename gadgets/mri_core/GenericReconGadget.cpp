@@ -1,6 +1,7 @@
 
 #include "GenericReconGadget.h"
 #include "mri_core_kspace_filter.h"
+#include "hoNDArray_reductions.h"
 
 namespace Gadgetron {
 
@@ -303,6 +304,99 @@ namespace Gadgetron {
 
     // ----------------------------------------------------------------------------------------
 
+    void GenericReconGadget::prepare_squared_pixel_recon(IsmrmrdReconBit& recon_bit, size_t encoding)
+    {
+        try
+        {
+            size_t RO = recon_bit.data_.data_.get_size(0);
+            size_t E1 = recon_bit.data_.data_.get_size(1);
+            size_t E2 = recon_bit.data_.data_.get_size(2);
+
+            size_t N = recon_bit.data_.data_.get_size(4);
+            size_t S = recon_bit.data_.data_.get_size(5);
+            size_t SLC = recon_bit.data_.data_.get_size(6);
+
+            // compensate for sampling limits under acceleration
+            if (E1 - 1 - recon_bit.data_.sampling_.sampling_limits_[1].max_ < acceFactorE1_[encoding])
+            {
+                recon_bit.data_.sampling_.sampling_limits_[1].max_ = (uint16_t)E1 - 1;
+            }
+
+            if ((E2>1) && (E2 - 1 - recon_bit.data_.sampling_.sampling_limits_[2].max_ < acceFactorE2_[encoding]))
+            {
+                recon_bit.data_.sampling_.sampling_limits_[2].max_ = (uint16_t)E2 - 1;
+            }
+
+            float spacingE1 = recon_bit.data_.sampling_.recon_FOV_[1] / recon_bit.data_.sampling_.recon_matrix_[1];
+            size_t encodingE1 = (size_t)std::floor(recon_bit.data_.sampling_.encoded_FOV_[1] / spacingE1 + 0.5);
+
+            if (encodingE1 > E1)
+            {
+                GDEBUG_STREAM("recon_squared_pixel is true; change encoding E1 to be " << encodingE1);
+
+                // pad the data
+                hoNDArray< std::complex<float> > dataPadded;
+                Gadgetron::pad(RO, encodingE1, &recon_bit.data_.data_, &dataPadded);
+                recon_bit.data_.data_ = dataPadded;
+
+                // update the sampling_limits
+                uint16_t offsetE1 = (uint16_t)(encodingE1 / 2 - E1 / 2);
+
+                recon_bit.data_.sampling_.sampling_limits_[1].min_ += offsetE1;
+                recon_bit.data_.sampling_.sampling_limits_[1].max_ += offsetE1;
+
+                // update image headers
+                size_t headerE1 = recon_bit.data_.headers_.get_size(0);
+                size_t headerE2 = recon_bit.data_.headers_.get_size(1);
+
+                size_t n, s, slc, e1, e2;
+
+                for (slc = 0; slc < SLC; slc++)
+                {
+                    for (s = 0; s < S; s++)
+                    {
+                        for (n = 0; n < N; n++)
+                        {
+                            for (e2 = 0; e2 < headerE2; e2++)
+                            {
+                                for (e1 = 0; e1 < headerE1; e1++)
+                                {
+                                    if (recon_bit.data_.headers_(e1, e2, n, s, slc).measurement_uid != 0)
+                                    {
+                                        recon_bit.data_.headers_(e1, e2, n, s, slc).idx.kspace_encode_step_1 += offsetE1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // if calib_mode is embedded, pad the ref
+                if (calib_mode_[encoding] == Gadgetron::ISMRMRD_embedded)
+                {
+                    if (recon_bit.ref_->data_.get_size(0) == RO && recon_bit.ref_->data_.get_size(1) == E1)
+                    {
+                        Gadgetron::pad(RO, encodingE1, &recon_bit.ref_->data_, &dataPadded);
+                        recon_bit.ref_->data_ = dataPadded;
+
+                        recon_bit.ref_->sampling_.sampling_limits_[1].min_ += offsetE1;
+                        recon_bit.ref_->sampling_.sampling_limits_[1].max_ += offsetE1;
+                    }
+                }
+            }
+            else
+            {
+                GDEBUG_STREAM("recon_squared_pixel is true; but it is not required to change encoding E1 ... ");
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Errors happened in GenericReconGadget::prepare_squared_pixel_recon(...) ... ");
+        }
+    }
+
+    // ----------------------------------------------------------------------------------------
+
     void GenericReconGadget::make_ref_coil_map(IsmrmrdDataBuffered& ref_, std::vector<size_t>  recon_dims, hoNDArray< std::complex<float> >& ref_calib, hoNDArray< std::complex<float> >& ref_coil_map, size_t encoding)
     {
 
@@ -510,12 +604,23 @@ namespace Gadgetron {
                 gt_exporter_.exportArrayComplex(complex_im_recon_buf_, debug_folder_full_path_ + "complex_im_for_coil_map_" + os.str());
             }
 **/
-            size_t ks = 7;
-            size_t kz = 5;
-            size_t power = 3;
+            if (coil_map_algorithm.value() == "Inati")
+            {
+                size_t ks = 7;
+                size_t kz = 5;
+                size_t power = 3;
 
-            Gadgetron::coil_map_Inati(complex_im_recon_buf_, coil_map, ks, kz, power);
+                Gadgetron::coil_map_Inati(complex_im_recon_buf_, coil_map, ks, kz, power);
+            }
+            else
+            {
+                size_t ks = 7;
+                size_t kz = 5;
+                size_t iterNum = 5;
+                float thres = 0.001;
 
+                Gadgetron::coil_map_Inati_Iter(complex_im_recon_buf_, coil_map, ks, kz, iterNum, thres);
+            }
 /**
             if (!debug_folder_full_path_.empty())
             {
