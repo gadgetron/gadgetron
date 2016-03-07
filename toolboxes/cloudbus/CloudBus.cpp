@@ -60,6 +60,7 @@ namespace Gadgetron
 	instance_ = new CloudBus(relay_port_, relay_inet_addr_);
 	instance_->open();
       }
+    instance_->update_node_info();
     return instance_;
   }
 
