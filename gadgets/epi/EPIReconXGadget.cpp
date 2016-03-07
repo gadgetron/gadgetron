@@ -121,6 +121,7 @@ int EPIReconXGadget::process(
     if(reconx_other.encodeNx_>m2->getObjectPtr()->get_size(0)/ oversamplng_ratio2_)
     {
         reconx_other.encodeNx_ = (int)(m2->getObjectPtr()->get_size(0) / oversamplng_ratio2_);
+        reconx_other.computeTrajectory();
     }
 
     if (reconx_other.reconNx_>m2->getObjectPtr()->get_size(0) / oversamplng_ratio2_)
@@ -131,6 +132,7 @@ int EPIReconXGadget::process(
     if(reconx_other.numSamples_>m2->getObjectPtr()->get_size(0))
     {
         reconx_other.numSamples_ = m2->getObjectPtr()->get_size(0);
+        reconx_other.computeTrajectory();
     }
 
     reconx_other.apply(*m1->getObjectPtr(), *m2->getObjectPtr(), hdr_out, data_out);
