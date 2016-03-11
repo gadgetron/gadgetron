@@ -257,7 +257,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 {
     try
     {
-        int n;
+        int e1, e2, n;
 
         size_t RO = workOrder3DT->data_.get_size(0);
         size_t E1 = workOrder3DT->data_.get_size(1);
@@ -294,18 +294,69 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(data_dst, aliasedIm);
         }
 
-        typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt( (double)workOrder3DT->acceFactorE1_ * (double)workOrder3DT->acceFactorE2_ ));
-        Gadgetron::scal( fftCompensationRatio, aliasedIm);
-
-        // if the image data is scaled and ref lines are going to be filled back to the data, 
-        // the reference lines should be scaled too
-        if ( workOrder3DT->CalibMode_ == ISMRMRD_embedded )
+        // find the effective acce factor
+        size_t num = 0;
+        for (n = 0; n < N; n++)
         {
-            if ( workOrder3DT->embedded_ref_fillback_ )
+            for (e2 = 0; e2 < E2; e2++)
             {
-                Gadgetron::scal( fftCompensationRatio, workOrder3DT->ref_);
+                for (e1 = 0; e1 < E1; e1++)
+                {
+                    if (std::abs(workOrder3DT->data_(RO / 2, e1, e2, 0, n)) > 0)
+                    {
+                        num++;
+                    }
+                }
             }
         }
+
+        if (num > 0)
+        {
+            double lenRO = RO;
+            if (!(workOrder3DT->start_RO_<0 || workOrder3DT->end_RO_<0 || (workOrder3DT->end_RO_ - workOrder3DT->start_RO_ + 1 == RO)))
+            {
+                lenRO = (workOrder3DT->end_RO_ - workOrder3DT->start_RO_ + 1);
+            }
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker3DTGRAPPA, length for RO : " << lenRO << " - " << lenRO/RO);
+
+            double effectiveAcceFactor = (double)(N*E1*E2) / (num);
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker3DTGRAPPA, effectiveAcceFactor : " << effectiveAcceFactor);
+
+            double ROScalingFactor = (double)RO / (double)lenRO;
+
+            // since the grappa in gadgetron is doing signal preserving scaling, to perserve noise level, we need this compensation factor
+            double grappaKernelCompensationFactor = 1.0 / (workOrder3DT->acceFactorE1_*workOrder3DT->acceFactorE2_);
+
+            typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(std::sqrt(ROScalingFactor*effectiveAcceFactor) * grappaKernelCompensationFactor);
+
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker3DTGRAPPA, fftCompensationRatio : " << fftCompensationRatio);
+
+            Gadgetron::scal(fftCompensationRatio, aliasedIm);
+
+            // if the image data is scaled and ref lines are going to be filled back to the data, 
+            // the reference lines should be scaled too
+            if (workOrder3DT->CalibMode_ == ISMRMRD_embedded)
+            {
+                if (workOrder3DT->embedded_ref_fillback_)
+                {
+                    if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker3DTGRAPPA, ref fill back, scaling ref : " << fftCompensationRatio);
+                    Gadgetron::scal(fftCompensationRatio, workOrder3DT->ref_);
+                }
+            }
+        }
+
+        //typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt( (double)workOrder3DT->acceFactorE1_ * (double)workOrder3DT->acceFactorE2_ ));
+        //Gadgetron::scal( fftCompensationRatio, aliasedIm);
+
+        //// if the image data is scaled and ref lines are going to be filled back to the data, 
+        //// the reference lines should be scaled too
+        //if ( workOrder3DT->CalibMode_ == ISMRMRD_embedded )
+        //{
+        //    if ( workOrder3DT->embedded_ref_fillback_ )
+        //    {
+        //        Gadgetron::scal( fftCompensationRatio, workOrder3DT->ref_);
+        //    }
+        //}
 
         if ( performTiming_ ) { gt_timer3_.stop(); }
 

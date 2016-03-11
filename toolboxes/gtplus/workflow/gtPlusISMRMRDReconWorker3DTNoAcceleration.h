@@ -117,6 +117,41 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->coilMap_, debugFolder_+"coilMap_"); }
         }
 
+        size_t num = 0;
+
+        size_t e1, e2, n;
+        for (n = 0; n < N; n++)
+        {
+            for (e2 = 0; e2 < E2; e2++)
+            {
+                for (e1 = 0; e1 < E1; e1++)
+                {
+                    if (std::abs(workOrder3DT->data_(RO / 2, e1, e2, 0, n)) > 0)
+                    {
+                        num++;
+                    }
+                }
+            }
+        }
+
+        if (num > 0)
+        {
+            double lenRO = RO;
+            if (!(workOrder3DT->start_RO_<0 || workOrder3DT->end_RO_<0 || (workOrder3DT->end_RO_ - workOrder3DT->start_RO_ + 1 == RO)))
+            {
+                lenRO = (workOrder3DT->end_RO_ - workOrder3DT->start_RO_ + 1);
+            }
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker3DTNoAcceleration, length for RO : " << lenRO);
+
+            double effectiveAcceFactor = (double)(N*E1*E2) / (num);
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker3DTNoAcceleration, effectiveAcceFactor : " << effectiveAcceFactor);
+
+            typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(std::sqrt(RO*effectiveAcceFactor / lenRO));
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker3DTNoAcceleration, fftCompensationRatio : " << fftCompensationRatio);
+
+            Gadgetron::scal(fftCompensationRatio, workOrder3DT->data_);
+        }
+
         // partial fourier handling
         GADGET_CHECK_RETURN_FALSE(this->performPartialFourierHandling(workOrder3DT));
 

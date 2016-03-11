@@ -26,7 +26,7 @@ namespace Gadgetron {
         size_t E1 = kspace_buf_.get_size(1);
         size_t E2 = kspace_buf_.get_size(2);
 
-        real_value_type partialFourierCompensationFactor = 1;
+        /*real_value_type partialFourierCompensationFactor = 1;
 
         if (lenRO < RO)
         {
@@ -52,7 +52,7 @@ namespace Gadgetron {
         if (partialFourierCompensationFactor>1)
         {
             Gadgetron::scal(partialFourierCompensationFactor, kspace_buf_);
-        }
+        }*/
 
         GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::partial_fourier_filter(kspace_buf_,
             startRO_, endRO_, startE1_, endE1_, startE2_, endE2_,

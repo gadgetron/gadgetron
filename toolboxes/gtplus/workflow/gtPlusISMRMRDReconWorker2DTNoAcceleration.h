@@ -107,6 +107,41 @@ bool gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT
             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder2DT->coilMap_, debugFolder_+"coilMap_"); }
         }
 
+        size_t num = 0;
+
+        size_t e1, n, s;
+        for (s = 0; s < S; s++)
+        {
+            for (n = 0; n < N; n++)
+            {
+                for (e1 = 0; e1 < E1; e1++)
+                {
+                    if (std::abs(workOrder2DT->data_(RO / 2, e1, 0, n, s)) > 0)
+                    {
+                        num++;
+                    }
+                }
+            }
+        }
+
+        if (num > 0)
+        {
+            double lenRO = RO;
+            if (!(workOrder2DT->start_RO_<0 || workOrder2DT->end_RO_<0 || (workOrder2DT->end_RO_ - workOrder2DT->start_RO_ + 1 == RO)))
+            {
+                lenRO = (workOrder2DT->end_RO_ - workOrder2DT->start_RO_ + 1);
+            }
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker2DTNoAcceleration, length for RO : " << lenRO);
+
+            double effectiveAcceFactor = (double)(S*N*E1) / (num);
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker2DTNoAcceleration, effectiveAcceFactor : " << effectiveAcceFactor);
+
+            typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(std::sqrt(RO*effectiveAcceFactor/lenRO));
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker2DTNoAcceleration, fftCompensationRatio : " << fftCompensationRatio);
+
+            Gadgetron::scal(fftCompensationRatio, workOrder2DT->data_);
+        }
+
         // partial fourier handling
         GADGET_CHECK_RETURN_FALSE(this->performPartialFourierHandling(workOrder2DT));
 
@@ -115,6 +150,8 @@ bool gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT
         if ( performTiming_ ) { gt_timer1_.start("perform coil combination"); }
 
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_unwrapping_);
+
+        if (!debugFolder_.empty()) { gt_exporter_.exportArrayComplex(buffer2DT_unwrapping_, debugFolder_ + "unCombined"); }
 
         /*if ( refN == N )
         {*/

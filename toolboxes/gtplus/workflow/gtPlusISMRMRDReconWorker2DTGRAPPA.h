@@ -206,12 +206,15 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 {
     try
     {
-        int n;
+        int e1, n, s;
 
         size_t RO = workOrder2DT->data_.get_size(0);
         size_t E1 = workOrder2DT->data_.get_size(1);
         size_t N = workOrder2DT->data_.get_size(3);
         size_t S = workOrder2DT->data_.get_size(4);
+
+        size_t refRO = workOrder2DT->ref_.get_size(0);
+        size_t refE1 = workOrder2DT->ref_.get_size(1);
 
         size_t srcCHA = workOrder2DT->kernelIm_->get_size(2);
         size_t dstCHA = workOrder2DT->kernelIm_->get_size(3);
@@ -229,7 +232,58 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(data_dst, buffer2DT_);
         }
 
-        double effectiveAcceFactor = workOrder2DT->acceFactorE1_;
+        // find the effective acce factor
+        size_t num = 0;
+
+        for (s = 0; s < S; s++)
+        {
+            for (n = 0; n < N; n++)
+            {
+                for (e1 = 0; e1 < E1; e1++)
+                {
+                    if (std::abs(workOrder2DT->data_(RO / 2, e1, 0, n, s)) > 0)
+                    {
+                        num++;
+                    }
+                }
+            }
+        }
+
+        if (num > 0)
+        {
+            double lenRO = RO;
+            if (!(workOrder2DT->start_RO_<0 || workOrder2DT->end_RO_<0 || (workOrder2DT->end_RO_ - workOrder2DT->start_RO_ + 1 == RO)))
+            {
+                lenRO = (workOrder2DT->end_RO_ - workOrder2DT->start_RO_ + 1);
+            }
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker2DTGRAPPA, length for RO : " << lenRO);
+
+            double effectiveAcceFactor = (double)(S*N*E1) / (num);
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker2DTGRAPPA, effectiveAcceFactor : " << effectiveAcceFactor);
+
+            double ROScalingFactor = (double)RO / (double)lenRO;
+
+            // since the grappa in gadgetron is doing signal preserving scaling, to perserve noise level, we need this compensation factor
+            double grappaKernelCompensationFactor = 1.0 / workOrder2DT->acceFactorE1_;
+
+            typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(std::sqrt(ROScalingFactor*effectiveAcceFactor) * grappaKernelCompensationFactor);
+            if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker2DTGRAPPA, fftCompensationRatio : " << fftCompensationRatio);
+
+            Gadgetron::scal(fftCompensationRatio, buffer2DT_);
+
+            // if the image data is scaled and ref lines are going to be filled back to the data, 
+            // the reference lines should be scaled too
+            if (workOrder2DT->CalibMode_ == ISMRMRD_embedded)
+            {
+                if (workOrder2DT->embedded_ref_fillback_)
+                {
+                    if (this->verbose_) GDEBUG_STREAM("gtPlusReconWorker2DTGRAPPA, ref fill back, scaling ref : " << fftCompensationRatio);
+                    Gadgetron::scal(fftCompensationRatio, workOrder2DT->ref_);
+                }
+            }
+        }
+
+        /*double effectiveAcceFactor = workOrder2DT->acceFactorE1_;
         if ( workOrder2DT->start_E1_>0 && workOrder2DT->end_E1_>0 )
         {
             size_t num = workOrder2DT->end_E1_ - workOrder2DT->start_E1_ + 1;
@@ -245,19 +299,19 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             effectiveAcceFactor = (double)num/N;
         }
 
-        typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt(effectiveAcceFactor));
+        typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt(effectiveAcceFactor));*/
 
-        Gadgetron::scal( fftCompensationRatio, buffer2DT_);
+        //Gadgetron::scal( fftCompensationRatio, buffer2DT_);
 
-        // if the image data is scaled and ref lines are going to be filled back to the data, 
-        // the reference lines should be scaled too
-        if ( workOrder2DT->CalibMode_ == ISMRMRD_embedded )
-        {
-            if ( workOrder2DT->embedded_ref_fillback_ )
-            {
-                Gadgetron::scal( fftCompensationRatio, workOrder2DT->ref_);
-            }
-        }
+        //// if the image data is scaled and ref lines are going to be filled back to the data, 
+        //// the reference lines should be scaled too
+        //if ( workOrder2DT->CalibMode_ == ISMRMRD_embedded )
+        //{
+        //    if ( workOrder2DT->embedded_ref_fillback_ )
+        //    {
+        //        Gadgetron::scal( fftCompensationRatio, workOrder2DT->ref_);
+        //    }
+        //}
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(buffer2DT_, debugFolder_+"buffer2DT_"); }
 
