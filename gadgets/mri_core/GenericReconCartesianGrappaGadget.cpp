@@ -449,7 +449,7 @@ namespace Gadgetron {
                 // since the grappa in gadgetron is doing signal preserving scaling, to perserve noise level, we need this compensation factor
                 double grappaKernelCompensationFactor = 1.0 / (acceFactorE1_[e] * acceFactorE2_[e]);
 
-                float fftCompensationRatio = (typename realType<T>::Type)(std::sqrt(ROScalingFactor*effectiveAcceFactor) * grappaKernelCompensationFactor);
+                float fftCompensationRatio = (float)(std::sqrt(ROScalingFactor*effectiveAcceFactor) * grappaKernelCompensationFactor);
 
                 if (this->verbose.value()) GDEBUG_STREAM("GenericReconCartesianGrappaGadget, fftCompensationRatio : " << fftCompensationRatio);
 
