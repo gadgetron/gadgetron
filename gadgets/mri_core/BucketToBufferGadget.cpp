@@ -381,15 +381,7 @@ namespace Gadgetron{
             // if seperate or external calibration mode, using the acq length for NE0
             if (encoding.parallelImaging)
             {
-                if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
-                    || encoding.parallelImaging.get().calibrationMode.get() == "external"))
-                {
-                    NE0 = acqhdr.number_of_samples;
-                }
-                else
-                {
-                    NE0 = encoding.reconSpace.matrixSize.x;
-                }
+                NE0 = acqhdr.number_of_samples;
             }
             else
             {
