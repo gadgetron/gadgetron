@@ -95,9 +95,6 @@ namespace Gadgetron {
         // variables for debug and timing
         // --------------------------------------------------
 
-        // in verbose mode, more info is printed out
-        bool verbose_;
-
         // clock for timing
         Gadgetron::GadgetronTimer gt_timer_local_;
         Gadgetron::GadgetronTimer gt_timer_;

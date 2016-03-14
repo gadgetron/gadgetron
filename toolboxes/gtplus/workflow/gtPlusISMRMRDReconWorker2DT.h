@@ -1869,26 +1869,26 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
     try
     {
         // compensate for the partial fourier to preserve the SNR unit
-        value_type partialFourierCompensationFactor = 1;
+        // value_type partialFourierCompensationFactor = 1;
 
         size_t RO = workOrder2DT->data_.get_size(0);
         size_t E1 = workOrder2DT->data_.get_size(1);
 
-        if ( !( workOrder2DT->start_RO_<0 || workOrder2DT->end_RO_<0 || (workOrder2DT->end_RO_-workOrder2DT->start_RO_+1==RO) ) )
-        {
-            partialFourierCompensationFactor *= (value_type)(RO)/(value_type)(workOrder2DT->end_RO_-workOrder2DT->start_RO_+1);
-        }
+        //if ( !( workOrder2DT->start_RO_<0 || workOrder2DT->end_RO_<0 || (workOrder2DT->end_RO_-workOrder2DT->start_RO_+1==RO) ) )
+        //{
+        //    partialFourierCompensationFactor *= (value_type)(RO)/(value_type)(workOrder2DT->end_RO_-workOrder2DT->start_RO_+1);
+        //}
 
-        if ( !( workOrder2DT->start_E1_<0 || workOrder2DT->end_E1_<0 || (workOrder2DT->end_E1_-workOrder2DT->start_E1_+1==E1) ) )
+        /*if ( !( workOrder2DT->start_E1_<0 || workOrder2DT->end_E1_<0 || (workOrder2DT->end_E1_-workOrder2DT->start_E1_+1==E1) ) )
         {
             if ( workOrder2DT->end_E1_-workOrder2DT->start_E1_+1 <= E1 )
             {
                 partialFourierCompensationFactor *= (value_type)(E1)/(value_type)(workOrder2DT->end_E1_-workOrder2DT->start_E1_+1);
             }
-        }
+        }*/
 
-        partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
-        if ( performTiming_ ) { GDEBUG_STREAM("Partial fourier scaling factor : " << partialFourierCompensationFactor); }
+        /*partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
+        if ( performTiming_ ) { GDEBUG_STREAM("Partial fourier scaling factor : " << partialFourierCompensationFactor); }*/
 
         if ( performTiming_ )
         {
@@ -1898,10 +1898,10 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
 
         if ( workOrder2DT->CalibMode_ == ISMRMRD_noacceleration )
         {
-            if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
+            /*if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
                 GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder2DT->data_));
-            }
+            }*/
 
             if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {
@@ -1925,10 +1925,10 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
         }
         else if ( workOrder2DT->fullkspace_.get_number_of_elements() > 0 )
         {
-            if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
+            /*if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
                 GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder2DT->fullkspace_));
-            }
+            }*/
 
             if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {
@@ -1956,10 +1956,10 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
             hoNDArray<T> kspace(workOrder2DT->complexIm_);
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(workOrder2DT->complexIm_, kspace);
 
-            if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
+            /*if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
                 GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
-            }
+            }*/
 
             if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {
