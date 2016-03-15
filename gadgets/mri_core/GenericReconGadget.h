@@ -17,7 +17,7 @@
 
 #include "hoNDArray_utils.h"
 
-// #include "gtPlusIOAnalyze.h"
+#include "gtPlusIOAnalyze.h"
 
 #include "GadgetStreamController.h"
 
@@ -48,6 +48,10 @@ namespace Gadgetron {
 
         /// image series
         GADGET_PROPERTY(image_series, int, "Image series number", 0);
+
+        /// coil map estimation method
+        GADGET_PROPERTY_LIMITS(coil_map_algorithm, std::string, "Method for coil map estimation", "Inati",
+            GadgetPropertyLimitsEnumeration, "Inati", "Inati_Iter");
 
         /// ------------------------------------------------------------------------------------
         /// debug and timing
@@ -100,10 +104,10 @@ namespace Gadgetron {
         Gadgetron::GadgetronTimer gt_timer_;
 
         //// debug folder
-        //std::string debug_folder_full_path_;
+        std::string debug_folder_full_path_;
 
         //// exporter
-        //Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
+        Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
 
         // --------------------------------------------------
         // gadget functions

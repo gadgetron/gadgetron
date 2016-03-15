@@ -6,6 +6,7 @@
 #include "hoNDArray_reductions.h"
 #include "mri_core_def.h"
 #include "hoNDArray_utils.h"
+#include "hoNDArray_elemwise.h"
 #include "hoNDFFT.h"
 #include "mri_core_utility.h"
 
@@ -76,7 +77,7 @@ namespace Gadgetron {
 
         // ---------------------------------------------------------------------------------------------------------
         // generate the destination folder
-        /*if (!debug_folder.value().empty())
+        if (!debug_folder.value().empty())
         {
             Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
             GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
@@ -84,7 +85,7 @@ namespace Gadgetron {
         else
         {
             GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        }*/
+        }
 
         return GADGET_OK;
     }
@@ -123,8 +124,10 @@ namespace Gadgetron {
         size_t encoding = (size_t)recon_res_->meta_[0].as_long("encoding", 0);
         GADGET_CHECK_RETURN(encoding<num_encoding_spaces_, GADGET_FAIL);
 
+        std::string dataRole = std::string(recon_res_->meta_[0].as_str(GADGETRON_DATA_ROLE));
+
         std::stringstream os;
-        os << "encoding_" << encoding;
+        os << "encoding_" << encoding << "_" << dataRole;
         std::string str = os.str();
 
         size_t RO = recon_res_->data_.get_size(0);
@@ -138,21 +141,53 @@ namespace Gadgetron {
         // perform SNR unit scaling
         SamplingLimit sampling_limits[3];
 
-        sampling_limits[0].min_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 0);
-        sampling_limits[0].center_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 1);
-        sampling_limits[0].max_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 2);
+        if (recon_res_->meta_[0].length("sampling_limits_RO")>0)
+        {
+            sampling_limits[0].min_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 0);
+            sampling_limits[0].center_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 1);
+            sampling_limits[0].max_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 2);
+        }
 
-        sampling_limits[1].min_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 0);
-        sampling_limits[1].center_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 1);
-        sampling_limits[1].max_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 2);
+        if ( !( (sampling_limits[0].min_ >= 0) && (sampling_limits[0].max_ < RO) && (sampling_limits[0].min_ <= sampling_limits[0].max_)) )
+        {
+            sampling_limits[0].min_    = 0;
+            sampling_limits[0].center_ = RO / 2;
+            sampling_limits[0].max_    = RO - 1;
+        }
 
-        sampling_limits[2].min_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 0);
-        sampling_limits[2].center_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 1);
-        sampling_limits[2].max_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 2);
+        if (recon_res_->meta_[0].length("sampling_limits_E1") > 0)
+        {
+            sampling_limits[1].min_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 0);
+            sampling_limits[1].center_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 1);
+            sampling_limits[1].max_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 2);
+        }
+
+        if (!((sampling_limits[1].min_ >= 0) && (sampling_limits[1].max_ < E1) && (sampling_limits[1].min_ <= sampling_limits[1].max_)))
+        {
+            sampling_limits[1].min_    = 0;
+            sampling_limits[1].center_ = E1 / 2;
+            sampling_limits[1].max_    = E1 - 1;
+        }
+
+        if (recon_res_->meta_[0].length("sampling_limits_E2") > 0)
+        {
+            sampling_limits[2].min_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 0);
+            sampling_limits[2].center_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 1);
+            sampling_limits[2].max_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 2);
+        }
+
+        if (!((sampling_limits[2].min_ >= 0) && (sampling_limits[2].max_ < E2) && (sampling_limits[2].min_ <= sampling_limits[2].max_)))
+        {
+            sampling_limits[2].min_    = 0;
+            sampling_limits[2].center_ = E2 / 2;
+            sampling_limits[2].max_    = E2 - 1;
+        }
 
         // ----------------------------------------------------------
         // filter create if needed
         // ----------------------------------------------------------
+        size_t ii;
+
         if (filter_RO_[encoding].get_number_of_elements() != RO)
         {
             if (sampling_limits[0].min_ == 0 || sampling_limits[0].max_ == RO - 1)
@@ -161,7 +196,6 @@ namespace Gadgetron {
                 {
                     filter_RO_[encoding].create(RO);
                     Gadgetron::generate_symmetric_filter(RO, filter_RO_[encoding], Gadgetron::get_kspace_filter_type(filterRO.value()), filterRO_sigma.value(), (size_t)std::ceil(filterRO_width.value()*RO));
-                    // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(filter_RO_[encoding], debug_folder_full_path_ + "filterRO_" + str); }
                 }
             }
             else
@@ -174,9 +208,28 @@ namespace Gadgetron {
                     hoNDArray< std::complex<float> > f;
                     Gadgetron::generate_symmetric_filter(len, f, Gadgetron::get_kspace_filter_type(filterRO.value()), filterRO_sigma.value(), (size_t)std::ceil(filterRO_width.value()*len));
                     Gadgetron::pad(RO, &f, &filter_RO_[encoding]);
-
-                    // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(filter_RO_[encoding], debug_folder_full_path_ + "filterRO_" + str); }
                 }
+            }
+
+            if (filter_RO_[encoding].get_number_of_elements() == RO)
+            {
+                if (sampling_limits[0].min_ != 0 || sampling_limits[0].max_ != RO - 1)
+                {
+                    // compensate the sacling from min_ to max_
+                    std::complex<float> sos = 0.0f;
+                    for (ii = sampling_limits[0].min_; ii <= sampling_limits[0].max_; ii++)
+                    {
+                        sos += filter_RO_[encoding](ii)* std::conj(filter_RO_[encoding](ii));
+                    }
+
+                    Gadgetron::scal((float)(1.0 / std::sqrt(std::abs(sos) / (sampling_limits[0].max_ - sampling_limits[0].min_ + 1))), filter_RO_[encoding]);
+                }
+            }
+
+            if (!debug_folder_full_path_.empty())
+            {
+                if(filter_RO_[encoding].get_number_of_elements()>0)
+                    gt_exporter_.exportArrayComplex(filter_RO_[encoding], debug_folder_full_path_ + "filterRO_" + str);
             }
         }
 
@@ -188,12 +241,11 @@ namespace Gadgetron {
                 {
                     filter_E1_[encoding].create(E1);
                     Gadgetron::generate_symmetric_filter(E1, filter_E1_[encoding], Gadgetron::get_kspace_filter_type(filterE1.value()), filterE1_sigma.value(), (size_t)std::ceil(filterE1_width.value()*E1));
-                    // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(filter_E1_[encoding], debug_folder_full_path_ + "filterE1_" + str); }
                 }
             }
             else
             {
-                if (filterRO.value() != "None")
+                if (filterE1.value() != "None")
                 {
                     size_t len;
                     this->find_kspace_sampled_range(sampling_limits[1].min_, sampling_limits[1].max_, E1, len);
@@ -201,9 +253,28 @@ namespace Gadgetron {
                     hoNDArray< std::complex<float> > f;
                     Gadgetron::generate_symmetric_filter(len, f, Gadgetron::get_kspace_filter_type(filterE1.value()), filterE1_sigma.value(), (size_t)std::ceil(filterE1_width.value()*len));
                     Gadgetron::pad(E1, &f, &filter_E1_[encoding]);
-
-                    // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(filter_E1_[encoding], debug_folder_full_path_ + "filterE1_" + str); }
                 }
+            }
+
+            if (filter_E1_[encoding].get_number_of_elements() == E1)
+            {
+                if (sampling_limits[1].min_ != 0 || sampling_limits[1].max_ != E1 - 1)
+                {
+                    // compensate the sacling from min_ to max_
+                    std::complex<float> sos = 0.0f;
+                    for (ii = sampling_limits[1].min_; ii <= sampling_limits[1].max_; ii++)
+                    {
+                        sos += filter_E1_[encoding](ii)* std::conj(filter_E1_[encoding](ii));
+                    }
+
+                    Gadgetron::scal((float)(1.0 / std::sqrt(std::abs(sos) / (sampling_limits[1].max_ - sampling_limits[1].min_ + 1))), filter_E1_[encoding]);
+                }
+            }
+
+            if (!debug_folder_full_path_.empty())
+            {
+                if (filter_E1_[encoding].get_number_of_elements()>0)
+                    gt_exporter_.exportArrayComplex(filter_E1_[encoding], debug_folder_full_path_ + "filterE1_" + str);
             }
         }
 
@@ -215,7 +286,6 @@ namespace Gadgetron {
                 {
                     filter_E2_[encoding].create(E2);
                     Gadgetron::generate_symmetric_filter(E2, filter_E2_[encoding], Gadgetron::get_kspace_filter_type(filterE2.value()), filterE2_sigma.value(), (size_t)std::ceil(filterE2_width.value()*E2));
-                    // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(filter_E2_[encoding], debug_folder_full_path_ + "filterE2_" + str); }
                 }
             }
             else
@@ -228,22 +298,43 @@ namespace Gadgetron {
                     hoNDArray< std::complex<float> > f;
                     Gadgetron::generate_symmetric_filter(len, f, Gadgetron::get_kspace_filter_type(filterE2.value()), filterE2_sigma.value(), (size_t)std::ceil(filterE2_width.value()*len));
                     Gadgetron::pad(E2, &f, &filter_E2_[encoding]);
-
-                    // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(filter_E2_[encoding], debug_folder_full_path_ + "filterE2_" + str); }
                 }
+            }
+
+            if (filter_E2_[encoding].get_number_of_elements() == E2)
+            {
+                if (sampling_limits[2].min_ != 0 || sampling_limits[2].max_ != E1 - 1)
+                {
+                    // compensate the sacling from min_ to max_
+                    std::complex<float> sos = 0.0f;
+                    for (ii = sampling_limits[2].min_; ii <= sampling_limits[2].max_; ii++)
+                    {
+                        sos += filter_E2_[encoding](ii)* std::conj(filter_E2_[encoding](ii));
+                    }
+
+                    Gadgetron::scal((float)(1.0 / std::sqrt(std::abs(sos) / (sampling_limits[2].max_ - sampling_limits[2].min_ + 1))), filter_E2_[encoding]);
+                }
+            }
+
+            if (!debug_folder_full_path_.empty())
+            {
+                if (filter_E2_[encoding].get_number_of_elements()>0)
+                    gt_exporter_.exportArrayComplex(filter_E2_[encoding], debug_folder_full_path_ + "filterE2_" + str);
             }
         }
 
         // ----------------------------------------------------------
         // perform kspace filter
         // ----------------------------------------------------------
-        if ((filter_RO_[encoding].get_number_of_elements() == RO)
-            || (filter_E1_[encoding].get_number_of_elements() == E1)
-            || (filter_E2_[encoding].get_number_of_elements() == E2))
+        if ( (filter_RO_[encoding].get_number_of_elements() == RO)
+                || (filter_E1_[encoding].get_number_of_elements() == E1)
+                || ((E2>1) && (filter_E2_[encoding].get_number_of_elements() == E2)) )
         {
             // ----------------------------------------------------------
             // go to kspace
             // ----------------------------------------------------------
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_res_->data_, debug_folder_full_path_ + "image_before_filtering_" + str); }
+
             if (perform_timing.value()) { gt_timer_.start("GenericReconKSpaceFilteringGadget: fftc"); }
             if (E2 > 1)
             {
@@ -255,7 +346,7 @@ namespace Gadgetron {
             }
             if (perform_timing.value()) { gt_timer_.stop(); }
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(kspace_buf_, debug_folder_full_path_ + "kspace_before_filtering_" + str); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(kspace_buf_, debug_folder_full_path_ + "kspace_before_filtering_" + str); }
 
             // ----------------------------------------------------------
             // filtering
@@ -280,7 +371,8 @@ namespace Gadgetron {
                 Gadgetron::apply_kspace_filter_ROE1(kspace_buf_, filter_RO_[encoding], filter_E1_[encoding], filter_res_);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(filter_res_, debug_folder_full_path_ + "kspace_after_filtered_" + str); }
+                if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(filter_res_, debug_folder_full_path_ + "kspace_after_filtered_" + str); }
+
                 inKSpace = true;
             }
             else
@@ -338,7 +430,7 @@ namespace Gadgetron {
                 Gadgetron::hoNDFFT<float>::instance()->ifft2c(filter_res_, recon_res_->data_);
             }
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_res_->data_, debug_folder_full_path_ + "data_after_filtering_" + str); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_res_->data_, debug_folder_full_path_ + "image_after_filtering_" + str); }
 
             GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconKSpaceFilteringGadget::process(...) ends ... ");
         }

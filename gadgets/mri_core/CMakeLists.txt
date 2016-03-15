@@ -93,7 +93,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     GenericReconKSpaceFilteringGadget.h 
                                     GenericReconFieldOfViewAdjustmentGadget.h 
                                     GenericReconImageArrayScalingGadget.h 
-                                    GenericReconEigenChannelGadget.h )
+                                    GenericReconEigenChannelGadget.h 
+                                    GenericReconNoiseStdMapComputingGadget.h )
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -136,7 +137,8 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 GenericReconKSpaceFilteringGadget.cpp 
                                 GenericReconFieldOfViewAdjustmentGadget.cpp 
                                 GenericReconImageArrayScalingGadget.cpp 
-                                GenericReconEigenChannelGadget.cpp )
+                                GenericReconEigenChannelGadget.cpp 
+                                GenericReconNoiseStdMapComputingGadget.cpp )
 
 if (WIN32)
     set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )
@@ -152,6 +154,7 @@ set( gadgetron_mricore_config_files
     isalive.xml
     gtquery.xml
     Generic_Cartesian_Grappa.xml
+    Generic_Cartesian_Grappa_SNR.xml
     Generic_Cartesian_Grappa_T2W.xml
     Generic_Cartesian_Grappa_RealTimeCine.xml
     Generic_Cartesian_Grappa_EPI.xml
@@ -176,7 +179,7 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_cpufft
     gadgetron_toolbox_cpuklt
     gadgetron_toolbox_mri_core
-    # gadgetron_toolbox_gtplus_io
+    gadgetron_toolbox_gtplus_io
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 

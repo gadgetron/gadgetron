@@ -5,6 +5,10 @@
 #include "hoNDArray_reductions.h"
 namespace Gadgetron{
 
+    BucketToBufferGadget::BucketToBufferGadget()
+    {
+    }
+
   BucketToBufferGadget::~BucketToBufferGadget()
   {
     //The buckets array should be empty but just in case, let's make sure all the stuff is released.
@@ -135,7 +139,7 @@ namespace Gadgetron{
         //Fill the sampling description for this data buffer, only need to fill the sampling_ once per recon bit
         if (&dataBuffer != pCurrDataBuffer)
         {
-            fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr);
+            fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, true);
             pCurrDataBuffer = &dataBuffer;
         }
 
@@ -144,7 +148,7 @@ namespace Gadgetron{
         allocateDataArrays(dataBuffer, acqhdr, encoding, stats, true);
 
         // Stuff the data, header and trajectory into this data buffer
-        stuff(it, dataBuffer, encoding);
+        stuff(it, dataBuffer, encoding, true);
       }
 
 
@@ -185,7 +189,7 @@ namespace Gadgetron{
         //Fill the sampling description for this data buffer, only need to fill sampling_ once per recon bit
         if (&dataBuffer != pCurrDataBuffer)
         {
-            fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr);
+            fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, false);
             pCurrDataBuffer = &dataBuffer;
         }
 
@@ -194,7 +198,7 @@ namespace Gadgetron{
         allocateDataArrays(dataBuffer, acqhdr, encoding, stats, false);
 
         // Stuff the data, header and trajectory into this data buffer
-        stuff(it, dataBuffer, encoding);
+        stuff(it, dataBuffer, encoding, false);
       }
 
 
@@ -392,7 +396,8 @@ namespace Gadgetron{
         }
 
         uint16_t NE1;
-        if (encoding.trajectory.compare("cartesian") == 0) {
+        if (encoding.trajectory.compare("cartesian") == 0)
+        {
             if (encoding.parallelImaging)
             {
                 if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
@@ -402,16 +407,25 @@ namespace Gadgetron{
                 }
                 else
                 {
-                    NE1 = encoding.encodedSpace.matrixSize.y;
+                    // make sure squared pixel recon
+                    float dx = encoding.encodedSpace.fieldOfView_mm.x / encoding.encodedSpace.matrixSize.x;
+
+                    NE1 = (size_t)std::floor(encoding.encodedSpace.fieldOfView_mm.y / dx + 0.5);
+                    if(NE1<encoding.encodedSpace.matrixSize.y)
+                    {
+                        NE1 = encoding.encodedSpace.matrixSize.y;
+                    }
                 }
             }
             else
             {
-                if (encoding.encodingLimits.kspace_encoding_step_1.is_present()) {
+                if (encoding.encodingLimits.kspace_encoding_step_1.is_present())
+                {
                     NE1 = encoding.encodingLimits.kspace_encoding_step_1->maximum - encoding.encodingLimits.kspace_encoding_step_1->minimum + 1;
                 }
-                else {
-                    NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
+                else
+                {
+                    NE1 = encoding.encodedSpace.matrixSize.y;
                 }
             }
         } else {
@@ -441,8 +455,9 @@ namespace Gadgetron{
                 if (encoding.encodingLimits.kspace_encoding_step_2.is_present()) {
                     NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
                 }
-                else {
-                    NE2 = *stats.kspace_encode_step_2.rbegin() - *stats.kspace_encode_step_2.begin() + 1;
+                else
+                {
+                    NE2 = encoding.encodedSpace.matrixSize.z;
                 }
             }
         } else {
@@ -554,7 +569,7 @@ namespace Gadgetron{
 
   }
 
-  void BucketToBufferGadget::fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader& acqhdr)
+  void BucketToBufferGadget::fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader& acqhdr, bool forref)
   {
     // For cartesian trajectories, assume that any oversampling has been removed.
     if (encoding.trajectory.compare("cartesian") == 0) {
@@ -590,22 +605,68 @@ namespace Gadgetron{
         sampling.sampling_limits_[0].center_ = encoding.encodedSpace.matrixSize.x / 2;
     }
 
-    sampling.sampling_limits_[1].min_ =
-        encoding.encodingLimits.kspace_encoding_step_1->minimum;
-    sampling.sampling_limits_[1].max_ =
-        encoding.encodingLimits.kspace_encoding_step_1->maximum;
-    sampling.sampling_limits_[1].center_ =
-        encoding.encodingLimits.kspace_encoding_step_1->center;
+    if (!forref || (forref && (encoding.parallelImaging.get().calibrationMode.get() == "embedded")) )
+    {
+        // compute the sampling limits inside the encoded matrix
+        int16_t space_matrix_offset_E1 = 0;
+        if (encoding.encodingLimits.kspace_encoding_step_1.is_present())
+        {
+            space_matrix_offset_E1 = (int16_t)encoding.encodedSpace.matrixSize.y / 2 - (int16_t)encoding.encodingLimits.kspace_encoding_step_1->center;
+        }
 
-    sampling.sampling_limits_[2].min_ =
-        encoding.encodingLimits.kspace_encoding_step_2->minimum;
-    sampling.sampling_limits_[2].max_ =
-        encoding.encodingLimits.kspace_encoding_step_2->maximum;
-    sampling.sampling_limits_[2].center_ =
-        encoding.encodingLimits.kspace_encoding_step_2->center;
+        int16_t space_matrix_offset_E2 = 0;
+        if (encoding.encodingLimits.kspace_encoding_step_2.is_present() && encoding.encodedSpace.matrixSize.z>1)
+        {
+            space_matrix_offset_E2 = (int16_t)encoding.encodedSpace.matrixSize.z / 2 - (int16_t)encoding.encodingLimits.kspace_encoding_step_2->center;
+        }
+
+        {
+            sampling.sampling_limits_[1].min_ = encoding.encodingLimits.kspace_encoding_step_1->minimum + space_matrix_offset_E1;
+            sampling.sampling_limits_[1].max_ = encoding.encodingLimits.kspace_encoding_step_1->maximum + space_matrix_offset_E1;
+            sampling.sampling_limits_[1].center_ = sampling.encoded_matrix_[1] / 2;
+
+            if (sampling.sampling_limits_[1].min_ < 0) sampling.sampling_limits_[1].min_ = 0;
+            if (sampling.sampling_limits_[1].min_ >= encoding.encodedSpace.matrixSize.y) sampling.sampling_limits_[1].min_ = encoding.encodedSpace.matrixSize.y - 1;
+
+            if (sampling.sampling_limits_[1].max_ < 0) sampling.sampling_limits_[1].max_ = 0;
+            if (sampling.sampling_limits_[1].max_ >= encoding.encodedSpace.matrixSize.y) sampling.sampling_limits_[1].max_ = encoding.encodedSpace.matrixSize.y - 1;
+
+            if (sampling.sampling_limits_[1].min_ > sampling.sampling_limits_[1].max_) sampling.sampling_limits_[1].min_ = sampling.sampling_limits_[1].max_;
+
+            if (sampling.sampling_limits_[1].center_ < sampling.sampling_limits_[1].min_) sampling.sampling_limits_[1].center_ = sampling.sampling_limits_[1].min_;
+            if (sampling.sampling_limits_[1].center_ > sampling.sampling_limits_[1].max_) sampling.sampling_limits_[1].center_ = sampling.sampling_limits_[1].max_;
+        }
+
+        {
+            sampling.sampling_limits_[2].min_ = encoding.encodingLimits.kspace_encoding_step_2->minimum + space_matrix_offset_E2;
+            sampling.sampling_limits_[2].max_ = encoding.encodingLimits.kspace_encoding_step_2->maximum + space_matrix_offset_E2;
+            sampling.sampling_limits_[2].center_ = sampling.encoded_matrix_[2] / 2;
+
+            if (sampling.sampling_limits_[2].min_ < 0) sampling.sampling_limits_[2].min_ = 0;
+            if (sampling.sampling_limits_[2].min_ >= encoding.encodedSpace.matrixSize.z) sampling.sampling_limits_[2].min_ = encoding.encodedSpace.matrixSize.z - 1;
+
+            if (sampling.sampling_limits_[2].max_ < 0) sampling.sampling_limits_[2].max_ = 0;
+            if (sampling.sampling_limits_[2].max_ >= encoding.encodedSpace.matrixSize.z) sampling.sampling_limits_[2].max_ = encoding.encodedSpace.matrixSize.z - 1;
+
+            if (sampling.sampling_limits_[2].min_ > sampling.sampling_limits_[2].max_) sampling.sampling_limits_[2].min_ = sampling.sampling_limits_[2].max_;
+
+            if (sampling.sampling_limits_[2].center_ < sampling.sampling_limits_[2].min_) sampling.sampling_limits_[2].center_ = sampling.sampling_limits_[2].min_;
+            if (sampling.sampling_limits_[2].center_ > sampling.sampling_limits_[2].max_) sampling.sampling_limits_[2].center_ = sampling.sampling_limits_[2].max_;
+        }
+    }
+    else
+    {
+        sampling.sampling_limits_[1].min_       =   encoding.encodingLimits.kspace_encoding_step_1->minimum;
+        sampling.sampling_limits_[1].max_       =   encoding.encodingLimits.kspace_encoding_step_1->maximum;
+        sampling.sampling_limits_[1].center_    =   encoding.encodingLimits.kspace_encoding_step_1->center;
+
+        sampling.sampling_limits_[2].min_ = encoding.encodingLimits.kspace_encoding_step_2->minimum;
+        sampling.sampling_limits_[2].max_ = encoding.encodingLimits.kspace_encoding_step_2->maximum;
+        sampling.sampling_limits_[2].center_ = encoding.encodingLimits.kspace_encoding_step_2->center;
+    }
   }
 
-  void BucketToBufferGadget::stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding)
+  void BucketToBufferGadget::stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, bool forref)
   {
 
     // The acquisition header and data
@@ -658,6 +719,8 @@ namespace Gadgetron{
       }
 
     std::complex<float> *dataptr;
+    uint16_t NE1 = (uint16_t)dataBuffer.data_.get_size(1);
+    uint16_t NE2 = (uint16_t)dataBuffer.data_.get_size(2);
     uint16_t NCHA = (uint16_t)dataBuffer.data_.get_size(3);
     uint16_t NN = (uint16_t)dataBuffer.data_.get_size(4);
     uint16_t NS = (uint16_t)dataBuffer.data_.get_size(5);
@@ -668,18 +731,44 @@ namespace Gadgetron{
     uint16_t SUsed = (uint16_t)getS(acqhdr.idx);
     if (SUsed >= NS) SUsed = NS - 1;
 
+    int16_t e1 = (int16_t)acqhdr.idx.kspace_encode_step_1;
+    int16_t e2 = (int16_t)acqhdr.idx.kspace_encode_step_2;
+
+    if (!forref || (forref && (encoding.parallelImaging.get().calibrationMode.get() == "embedded")) )
+    {
+        // compute the center offset for E1 and E2
+        int16_t space_matrix_offset_E1 = 0;
+        if (encoding.encodingLimits.kspace_encoding_step_1.is_present())
+        {
+            space_matrix_offset_E1 = (int16_t)encoding.encodedSpace.matrixSize.y / 2 - (int16_t)encoding.encodingLimits.kspace_encoding_step_1->center;
+        }
+
+        int16_t space_matrix_offset_E2 = 0;
+        if (encoding.encodingLimits.kspace_encoding_step_2.is_present() && encoding.encodedSpace.matrixSize.z>1)
+        {
+            space_matrix_offset_E2 = (int16_t)encoding.encodedSpace.matrixSize.z / 2 - (int16_t)encoding.encodingLimits.kspace_encoding_step_2->center;
+        }
+
+        // compute the used e1 and e2 indices and make sure they are in the valid range
+        e1 = (int16_t)acqhdr.idx.kspace_encode_step_1 + space_matrix_offset_E1;
+        e2 = (int16_t)acqhdr.idx.kspace_encode_step_2 + space_matrix_offset_E2;
+    }
+
+    if (e1 < 0) e1 = 0;
+    if (e1 >= NE1) e1 = NE1 - 1;
+
+    if (e2 < 0) e2 = 0;
+    if (e2 >= NE2) e2 = NE2 - 1;
+
     for (uint16_t cha = 0; cha < NCHA; cha++)
       {
-        dataptr = & dataBuffer.data_(
-            offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, cha, NUsed, SUsed, slice_loc);
-
+        dataptr = & dataBuffer.data_(offset, e1, e2, cha, NUsed, SUsed, slice_loc);
 
         memcpy(dataptr, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
       }
 
     //Stuff the header
-    dataBuffer.headers_(acqhdr.idx.kspace_encode_step_1,
-        acqhdr.idx.kspace_encode_step_2, NUsed, SUsed, slice_loc) = acqhdr;
+    dataBuffer.headers_(e1, e2, NUsed, SUsed, slice_loc) = acqhdr;
 
     //Stuff the trajectory
     if (acqhdr.trajectory_dimensions > 0) {
@@ -688,8 +777,7 @@ namespace Gadgetron{
 
         float * trajptr;
 
-        trajptr = &(*dataBuffer.trajectory_)(0,
-            offset, acqhdr.idx.kspace_encode_step_1, acqhdr.idx.kspace_encode_step_2, NUsed, SUsed, slice_loc);
+        trajptr = &(*dataBuffer.trajectory_)(0, offset, e1, e2, NUsed, SUsed, slice_loc);
 
         memcpy(trajptr, &acqtraj(0, acqhdr.discard_pre), sizeof(float)*npts_to_copy*acqhdr.trajectory_dimensions);
 

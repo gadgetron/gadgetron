@@ -1,6 +1,7 @@
 
 #include "GenericReconGadget.h"
 #include "mri_core_kspace_filter.h"
+#include "hoNDArray_reductions.h"
 
 namespace Gadgetron {
 
@@ -112,15 +113,15 @@ namespace Gadgetron {
 
         // ---------------------------------------------------------------------------------------------------------
 
-        //if (!debug_folder.value().empty())
-        //{
-        //    Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        //}
-        //else
-        //{
-        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        //}
+        if (!debug_folder.value().empty())
+        {
+            Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
+            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
+        }
+        else
+        {
+            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
+        }
 
         return GADGET_OK;
     }
@@ -267,8 +268,14 @@ namespace Gadgetron {
 
                             // set the skip processing flag, so gfactor map will not be processed during e.g. partial fourier handling or kspace filter gadgets
                             res.meta_[offset].set(GADGETRON_SKIP_PROCESSING_AFTER_RECON, (long)1);
-                            // set the flag to use dedicated scaling factor
-                            res.meta_[offset].set(GADGETRON_USE_DEDICATED_SCALING_FACTOR, (long)1);
+                        }
+                        else if (data_role == GADGETRON_IMAGE_SNR_MAP)
+                        {
+                            res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+
+                            res.meta_[offset].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_SNR_MAP);
+                            res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_SNR_MAP);
+                            res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_SNR_MAP);
                         }
 
                         if (verbose.value())
@@ -329,6 +336,9 @@ namespace Gadgetron {
             size_t recon_E2 = recon_dims[2];
 
             // ref array size
+            size_t ref_data_RO = ref_data.get_size(0);
+            size_t ref_data_E1 = ref_data.get_size(1);
+            size_t ref_data_E2 = ref_data.get_size(2);
             size_t CHA = ref_data.get_size(3);
             size_t N = ref_data.get_size(4);
             size_t S = ref_data.get_size(5);
@@ -345,20 +355,28 @@ namespace Gadgetron {
             size_t E1 = eE1 - sE1 + 1;
             size_t E2 = eE2 - sE2 + 1;
 
+            // cut the center region for ref coil map
             if ((calib_mode_[encoding] == Gadgetron::ISMRMRD_interleaved) || (calib_mode_[encoding] == Gadgetron::ISMRMRD_noacceleration))
             {
-                E1 = 2 * std::max(cE1 - sE1, eE1 - cE1+1);
+                E1 = 2 * std::min(cE1 - sE1, eE1 - cE1+1) - 1;
                 if (E1>recon_E1) E1 = recon_E1;
 
                 if (E2 > 1)
                 {
-                    E2 = 2 * std::max(cE2 - sE2, eE2 - cE2 + 1);
+                    E2 = 2 * std::min(cE2 - sE2, eE2 - cE2 + 1) - 1;
                     if (E2 > recon_E2) E2 = recon_E2;
                 }
             }
 
             ref_coil_map.create(RO, E1, E2, CHA, N, S, SLC);
             Gadgetron::clear(ref_coil_map);
+
+            // make sure center aligned
+            size_t ref_sE1 = cE1 - E1 / 2;
+            size_t ref_eE1 = ref_sE1 + E1 - 1;
+
+            size_t ref_sE2 = cE2 - E2 / 2;
+            size_t ref_eE2 = ref_sE2 + E2 - 1;
 
             size_t slc, s, n, cha, e2, e1;
             for (slc = 0; slc < SLC; slc++)
@@ -369,12 +387,12 @@ namespace Gadgetron {
                     {
                         for (cha = 0; cha < CHA; cha++)
                         {
-                            for (e2 = sE2; e2 <= eE2; e2++)
+                            for (e2 = ref_sE2; e2 <= ref_eE2; e2++)
                             {
-                                for (e1 = sE1; e1 <= eE1; e1++)
+                                for (e1 = ref_sE1; e1 <= ref_eE1; e1++)
                                 {
-                                    std::complex<float>* pSrc = &(ref_data(0, e1-sE1, e2-sE2, cha, n, s, slc));
-                                    std::complex<float>* pDst = &(ref_coil_map(0, e1, e2, cha, n, s, slc));
+                                    std::complex<float>* pSrc = &(ref_data(0, e1, e2, cha, n, s, slc));
+                                    std::complex<float>* pDst = &(ref_coil_map(0, e1- ref_sE1, e2- ref_sE2, cha, n, s, slc));
 
                                     memcpy(pDst + sRO, pSrc, sizeof(std::complex<float>)*(eRO - sRO + 1));
                                 }
@@ -412,7 +430,7 @@ namespace Gadgetron {
 
             if (filter_E1_ref_coi_map_.get_size(0) != E1)
             {
-                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(1), ref_.sampling_.sampling_limits_[1].min_, ref_.sampling_.sampling_limits_[1].max_, filter_E1_ref_coi_map_);
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(1), 0, E1-1, filter_E1_ref_coi_map_);
 
 /**
                 if (!debug_folder_full_path_.empty())
@@ -427,7 +445,7 @@ namespace Gadgetron {
 
             if ( (E2 > 1) && (filter_E2_ref_coi_map_.get_size(0) != E2) )
             {
-                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(2), ref_.sampling_.sampling_limits_[2].min_, ref_.sampling_.sampling_limits_[2].max_, filter_E2_ref_coi_map_);
+                Gadgetron::generate_symmetric_filter_ref(ref_coil_map.get_size(2), 0, E2-1, filter_E2_ref_coi_map_);
 
 /**
                 if (!debug_folder_full_path_.empty())
@@ -501,7 +519,6 @@ namespace Gadgetron {
                 Gadgetron::hoNDFFT<float>::instance()->ifft2c(ref_coil_map, complex_im_recon_buf_);
             }
 
-/**
             if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
@@ -509,14 +526,25 @@ namespace Gadgetron {
 
                 gt_exporter_.exportArrayComplex(complex_im_recon_buf_, debug_folder_full_path_ + "complex_im_for_coil_map_" + os.str());
             }
-**/
-            size_t ks = 7;
-            size_t kz = 5;
-            size_t power = 3;
 
-            Gadgetron::coil_map_Inati(complex_im_recon_buf_, coil_map, ks, kz, power);
+            if (coil_map_algorithm.value() == "Inati")
+            {
+                size_t ks = 7;
+                size_t kz = 5;
+                size_t power = 3;
 
-/**
+                Gadgetron::coil_map_Inati(complex_im_recon_buf_, coil_map, ks, kz, power);
+            }
+            else
+            {
+                size_t ks = 7;
+                size_t kz = 5;
+                size_t iterNum = 5;
+                float thres = 0.001;
+
+                Gadgetron::coil_map_Inati_Iter(complex_im_recon_buf_, coil_map, ks, kz, iterNum, thres);
+            }
+
             if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
@@ -524,7 +552,6 @@ namespace Gadgetron {
 
                 gt_exporter_.exportArrayComplex(coil_map, debug_folder_full_path_ + "coil_map_" + os.str());
             }
-**/
         }
         catch (...)
         {
@@ -659,31 +686,31 @@ namespace Gadgetron {
 
                         meta.set("encoding", (long)e);
 
-                        meta.set("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[0]);
-                        meta.append("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[1]);
-                        meta.append("encoding_FOV", recon_bit.data_.sampling_.encoded_FOV_[2]);
+                        meta.set("encoding_FOV"         , recon_bit.data_.sampling_.encoded_FOV_[0]);
+                        meta.append("encoding_FOV"      , recon_bit.data_.sampling_.encoded_FOV_[1]);
+                        meta.append("encoding_FOV"      , recon_bit.data_.sampling_.encoded_FOV_[2]);
 
-                        meta.set("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[0]);
-                        meta.append("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[1]);
-                        meta.append("recon_FOV", recon_bit.data_.sampling_.recon_FOV_[2]);
+                        meta.set("recon_FOV"            , recon_bit.data_.sampling_.recon_FOV_[0]);
+                        meta.append("recon_FOV"         , recon_bit.data_.sampling_.recon_FOV_[1]);
+                        meta.append("recon_FOV"         , recon_bit.data_.sampling_.recon_FOV_[2]);
 
-                        meta.set("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[0]);
-                        meta.append("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[1]);
-                        meta.append("encoded_matrix", (long)recon_bit.data_.sampling_.encoded_matrix_[2]);
+                        meta.set("encoded_matrix"       , (long)recon_bit.data_.sampling_.encoded_matrix_[0]);
+                        meta.append("encoded_matrix"    , (long)recon_bit.data_.sampling_.encoded_matrix_[1]);
+                        meta.append("encoded_matrix"    , (long)recon_bit.data_.sampling_.encoded_matrix_[2]);
 
-                        meta.set("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[0]);
-                        meta.append("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[1]);
-                        meta.append("recon_matrix", (long)recon_bit.data_.sampling_.recon_matrix_[2]);
+                        meta.set("recon_matrix"         , (long)recon_bit.data_.sampling_.recon_matrix_[0]);
+                        meta.append("recon_matrix"      , (long)recon_bit.data_.sampling_.recon_matrix_[1]);
+                        meta.append("recon_matrix"      , (long)recon_bit.data_.sampling_.recon_matrix_[2]);
 
-                        meta.set("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].min_);
+                        meta.set("sampling_limits_RO"   , (long)recon_bit.data_.sampling_.sampling_limits_[0].min_);
                         meta.append("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].center_);
                         meta.append("sampling_limits_RO", (long)recon_bit.data_.sampling_.sampling_limits_[0].max_);
 
-                        meta.set("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].min_);
+                        meta.set("sampling_limits_E1"   , (long)recon_bit.data_.sampling_.sampling_limits_[1].min_);
                         meta.append("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].center_);
                         meta.append("sampling_limits_E1", (long)recon_bit.data_.sampling_.sampling_limits_[1].max_);
 
-                        meta.set("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].min_);
+                        meta.set("sampling_limits_E2"   , (long)recon_bit.data_.sampling_.sampling_limits_[2].min_);
                         meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].center_);
                         meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].max_);
                     }

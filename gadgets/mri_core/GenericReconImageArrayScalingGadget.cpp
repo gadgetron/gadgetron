@@ -73,9 +73,41 @@ namespace Gadgetron {
         size_t encoding = (size_t)recon_res_->meta_[0].as_long("encoding", 0);
         GADGET_CHECK_RETURN(encoding<num_encoding_spaces_, GADGET_FAIL);
 
+        std::string dataRole = std::string(recon_res_->meta_[0].as_str(GADGETRON_DATA_ROLE));
+
         std::string imageInfo;
 
-        if (recon_res_->meta_[0].length(use_dedicated_scalingFactor_meta_field.value().c_str())>0)
+        // ----------------------------------------------------
+        // apply scaling
+        // ----------------------------------------------------
+        // snr map
+        if (dataRole == GADGETRON_IMAGE_SNR_MAP)
+        {
+            Gadgetron::scal((real_value_type)(this->scalingFactor_snr_map.value()), recon_res_->data_);
+
+            std::ostringstream ostr_image;
+            ostr_image << "x" << std::setprecision(4) << this->scalingFactor_snr_map.value();
+            imageInfo = ostr_image.str();
+        }
+        // gfactor
+        else if (dataRole == GADGETRON_IMAGE_GFACTOR)
+        {
+            Gadgetron::scal((real_value_type)(this->scalingFactor_gfactor_map.value()), recon_res_->data_);
+
+            std::ostringstream ostr_image;
+            ostr_image << "x" << std::setprecision(4) << this->scalingFactor_gfactor_map.value();
+            imageInfo = ostr_image.str();
+        }
+        // snr std map
+        else if (dataRole == GADGETRON_IMAGE_STD_MAP)
+        {
+            Gadgetron::scal((real_value_type)(this->scalingFactor_snr_std_map.value()), recon_res_->data_);
+
+            std::ostringstream ostr_image;
+            ostr_image << "x" << std::setprecision(4) << this->scalingFactor_snr_std_map.value();
+            imageInfo = ostr_image.str();
+        }
+        else if (recon_res_->meta_[0].length(use_dedicated_scalingFactor_meta_field.value().c_str())>0)
         {
             Gadgetron::scal((real_value_type)(this->scalingFactor_dedicated.value()), recon_res_->data_);
 
@@ -95,7 +127,9 @@ namespace Gadgetron {
             imageInfo = ostr_image.str();
         }
 
+        // ----------------------------------------------------
         // update the image comment
+        // ----------------------------------------------------
         size_t num = recon_res_->meta_.size();
         for (size_t n = 0; n < num; n++)
         {

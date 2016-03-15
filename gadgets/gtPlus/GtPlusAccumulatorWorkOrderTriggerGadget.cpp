@@ -28,6 +28,15 @@ GtPlusAccumulatorWorkOrderTriggerGadget::GtPlusAccumulatorWorkOrderTriggerGadget
     embedded_ref_lines_E1_ = 0;
     embedded_ref_lines_E2_ = 0;
 
+    min_sampled_E1_ = 0;
+    min_sampled_E2_ = 0;
+
+    center_line_E1_ = 0;
+    center_line_E2_ = 0;
+
+    max_sampled_E1_ = 0;
+    max_sampled_E2_ = 0;
+
     timeStampResolution_ = 0.0025f;
 }
 
@@ -227,6 +236,12 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
         return GADGET_FAIL;
     }
 
+    min_sampled_E1_ = e_limits.kspace_encoding_step_1->minimum;
+    min_sampled_E2_ = e_limits.kspace_encoding_step_2->minimum;
+
+    GDEBUG_CONDITION_STREAM(verboseMode_, "min_sampled_E1_ is " << min_sampled_E1_);
+    GDEBUG_CONDITION_STREAM(verboseMode_, "min_sampled_E2_ is " << min_sampled_E2_);
+
     max_sampled_E1_ = e_limits.kspace_encoding_step_1->maximum;
     max_sampled_E2_ = e_limits.kspace_encoding_step_2->maximum;
 
@@ -355,81 +370,108 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
         }
 
         // if partial fourier or asymmetric echo is used, correct the kSpaceCenter
-        if ( std::abs( (long long)(space_size_[1])-(long long)max_sampled_E1_) > workOrder_.acceFactorE1_ )
+        //if ( std::abs( (long long)(space_size_[1])-(long long)max_sampled_E1_) > workOrder_.acceFactorE1_ )
+        //{
+        //    GDEBUG_CONDITION_STREAM(verboseMode_, "Partial fourier along E1 ... ");
+
+        //    // if ( (m1->getObjectPtr()->idx.user[5]>0) && (std::abs( (long long)m1->getObjectPtr()->idx.user[5] - (long long)space_size_[1]/2 )<2) )
+        //    if ( (m1->getObjectPtr()->idx.user[5]>0) )
+        //    {
+        //        workOrder_.kSpaceCenterEncode1_ = m1->getObjectPtr()->idx.user[5];
+        //    }
+
+        //    if ( 2*workOrder_.kSpaceCenterEncode1_ >= (max_sampled_E1_+1) )
+        //    {
+        //        space_matrix_offset_E1_ = 0;
+
+        //        workOrder_.start_E1_ = 0;
+        //        workOrder_.end_E1_ = (int)max_sampled_E1_;
+        //    }
+        //    else
+        //    {
+        //        space_matrix_offset_E1_ = space_size_[1] - max_sampled_E1_ -1;
+
+        //        workOrder_.start_E1_ = (int)space_matrix_offset_E1_;
+        //        workOrder_.end_E1_ = (int)workOrder_.kSpaceMaxEncode1_;
+        //    }
+
+        //    workOrder_.kSpaceMaxEncode1_ = 2*workOrder_.kSpaceCenterEncode1_-1;
+        //}
+        //else
+        //{
+        //    space_matrix_offset_E1_ = 0;
+        //}
+
+        //if ( std::abs( (long long)space_size_[2] - (long long)max_sampled_E2_) > workOrder_.acceFactorE2_ )
+        //{
+        //    GDEBUG_CONDITION_STREAM(verboseMode_, "Partial fourier along E2 ... ");
+
+        //    // if ( (m1->getObjectPtr()->idx.user[6]>0) && (std::abs( (long long)m1->getObjectPtr()->idx.user[6] - (long long)space_size_[2]/2 )<2) )
+        //    if ( (m1->getObjectPtr()->idx.user[6]>0) )
+        //    {
+        //        workOrder_.kSpaceCenterEncode2_ = m1->getObjectPtr()->idx.user[6];
+        //    }
+
+        //    if ( 2*workOrder_.kSpaceCenterEncode2_ >= (max_sampled_E2_+1) )
+        //    {
+        //        space_matrix_offset_E2_ = 0;
+
+        //        workOrder_.start_E2_ = 0;
+        //        workOrder_.end_E2_ = (int)max_sampled_E2_;
+        //    }
+        //    else
+        //    {
+        //        space_matrix_offset_E2_ = space_size_[2] - max_sampled_E2_-1;
+
+        //        workOrder_.start_E2_ = (int)space_matrix_offset_E2_;
+        //        workOrder_.end_E2_ = (int)workOrder_.kSpaceMaxEncode2_;
+        //    }
+
+        //    workOrder_.kSpaceMaxEncode2_ = 2*workOrder_.kSpaceCenterEncode2_-1;
+        //}
+        //else
+        //{
+        //    space_matrix_offset_E2_ = 0;
+        //}
+
+        space_matrix_offset_E1_ = (matrix_size_encoding_[1] / 2 - center_line_E1_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Center line offset along E1 : " << space_matrix_offset_E1_);
+
+        if (std::abs((long long)center_line_E1_ - (long long)((max_sampled_E1_ + 1) / 2)) > workOrder_.acceFactorE1_)
         {
             GDEBUG_CONDITION_STREAM(verboseMode_, "Partial fourier along E1 ... ");
 
-            // if ( (m1->getObjectPtr()->idx.user[5]>0) && (std::abs( (long long)m1->getObjectPtr()->idx.user[5] - (long long)space_size_[1]/2 )<2) )
-            if ( (m1->getObjectPtr()->idx.user[5]>0) )
-            {
-                workOrder_.kSpaceCenterEncode1_ = m1->getObjectPtr()->idx.user[5];
-            }
+            workOrder_.start_E1_ = (int)(min_sampled_E1_ + space_matrix_offset_E1_);
+            workOrder_.end_E1_ = (int)(max_sampled_E1_ + space_matrix_offset_E1_);
 
-            if ( 2*workOrder_.kSpaceCenterEncode1_ >= (max_sampled_E1_+1) )
-            {
-                space_matrix_offset_E1_ = 0;
+            GADGET_CHECK_RETURN_FALSE(workOrder_.start_E1_ >= 0);
+            GADGET_CHECK_RETURN_FALSE(workOrder_.start_E1_ < matrix_size_encoding_[1]);
 
-                workOrder_.start_E1_ = 0;
-                workOrder_.end_E1_ = (int)max_sampled_E1_;
-            }
-            else
-            {
-                space_matrix_offset_E1_ = space_size_[1] - max_sampled_E1_ -1;
-
-                workOrder_.start_E1_ = (int)space_matrix_offset_E1_;
-                workOrder_.end_E1_ = (int)workOrder_.kSpaceMaxEncode1_;
-            }
-
-            workOrder_.kSpaceMaxEncode1_ = 2*workOrder_.kSpaceCenterEncode1_-1;
-        }
-        else
-        {
-            space_matrix_offset_E1_ = 0;
+            GADGET_CHECK_RETURN_FALSE(workOrder_.end_E1_ >= 0);
+            GADGET_CHECK_RETURN_FALSE(workOrder_.end_E1_ < matrix_size_encoding_[1]);
         }
 
-        if ( std::abs( (long long)space_size_[2] - (long long)max_sampled_E2_) > workOrder_.acceFactorE2_ )
+        // -------------------------------------------------------------------------
+
+        space_matrix_offset_E2_ = (matrix_size_encoding_[2] / 2 - center_line_E2_);
+        GDEBUG_CONDITION_STREAM(verboseMode_, "Center line offset along E2 : " << space_matrix_offset_E2_);
+
+        if (std::abs((long long)center_line_E2_ - (long long)((max_sampled_E2_ + 1) / 2)) > workOrder_.acceFactorE2_)
         {
             GDEBUG_CONDITION_STREAM(verboseMode_, "Partial fourier along E2 ... ");
 
-            // if ( (m1->getObjectPtr()->idx.user[6]>0) && (std::abs( (long long)m1->getObjectPtr()->idx.user[6] - (long long)space_size_[2]/2 )<2) )
-            if ( (m1->getObjectPtr()->idx.user[6]>0) )
-            {
-                workOrder_.kSpaceCenterEncode2_ = m1->getObjectPtr()->idx.user[6];
-            }
+            workOrder_.start_E2_ = (int)(min_sampled_E2_ + space_matrix_offset_E2_);
+            workOrder_.end_E2_ = (int)(max_sampled_E2_ + space_matrix_offset_E2_);
 
-            if ( 2*workOrder_.kSpaceCenterEncode2_ >= (max_sampled_E2_+1) )
-            {
-                space_matrix_offset_E2_ = 0;
+            GADGET_CHECK_RETURN_FALSE(workOrder_.start_E2_ >= 0);
+            GADGET_CHECK_RETURN_FALSE(workOrder_.start_E2_ < matrix_size_encoding_[2]);
 
-                workOrder_.start_E2_ = 0;
-                workOrder_.end_E2_ = (int)max_sampled_E2_;
-            }
-            else
-            {
-                space_matrix_offset_E2_ = space_size_[2] - max_sampled_E2_-1;
-
-                workOrder_.start_E2_ = (int)space_matrix_offset_E2_;
-                workOrder_.end_E2_ = (int)workOrder_.kSpaceMaxEncode2_;
-            }
-
-            workOrder_.kSpaceMaxEncode2_ = 2*workOrder_.kSpaceCenterEncode2_-1;
-        }
-        else
-        {
-            space_matrix_offset_E2_ = 0;
+            GADGET_CHECK_RETURN_FALSE(workOrder_.end_E2_ >= 0);
+            GADGET_CHECK_RETURN_FALSE(workOrder_.end_E2_ < matrix_size_encoding_[2]);
         }
 
         first_kspace_scan_ = false;
     }
-
-    // hack for UCL data
-    //if ( bIsKSpace && bIsRef )
-    //{
-    //    if ( m1->getObjectPtr()->idx.kspace_encode_step_1%2 == 1 )
-    //    {
-    //        bIsKSpace = false;
-    //    }
-    //}
 
     // store kspace read out
     if ( bIsKSpace )
@@ -1173,15 +1215,8 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
         }
 
         // if necessary, shift the E1/E2 indexes
-        if ( workOrder_.start_E1_ > 0 )
-        {
-            idx.kspace_encode_step_1 += workOrder_.start_E1_;
-        }
-
-        if ( workOrder_.start_E2_ > 0 )
-        {
-            idx.kspace_encode_step_2 += workOrder_.start_E2_;
-        }
+        idx.kspace_encode_step_1 += space_matrix_offset_E1_;
+        idx.kspace_encode_step_2 += space_matrix_offset_E2_;
 
         if ( idx.kspace_encode_step_1 >= dimensions_[1] )
         {

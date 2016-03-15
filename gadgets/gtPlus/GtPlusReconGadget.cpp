@@ -49,6 +49,14 @@ namespace Gadgetron
 
         kSpaceMaxAcqE2No_ = 0;
 
+        min_E1_ = 0;
+        max_E1_ = 0;
+        center_E1_ = 0;
+
+        min_E2_ = 0;
+        max_E2_ = 0;
+        center_E2_ = 0;
+
         filterRO_type_ = ISMRMRD_FILTER_GAUSSIAN;
         filterRO_sigma_ = 1.5;
         filterRO_width_ = 0.15;
@@ -641,6 +649,24 @@ namespace Gadgetron
         field_of_view_recon_[2] = r_space.fieldOfView_mm.z;
         GDEBUG_CONDITION_STREAM(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
 
+        if (e_limits.kspace_encoding_step_1.is_present())
+        {
+            min_E1_ = e_limits.kspace_encoding_step_1->minimum;
+            max_E1_ = e_limits.kspace_encoding_step_1->maximum;
+            center_E1_ = e_limits.kspace_encoding_step_1->center;
+
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Encoding limit E1 : " << min_E1_ << " " << max_E1_ << " " << center_E1_);
+        }
+
+        if (e_limits.kspace_encoding_step_2.is_present())
+        {
+            min_E2_ = e_limits.kspace_encoding_step_2->minimum;
+            max_E2_ = e_limits.kspace_encoding_step_2->maximum;
+            center_E2_ = e_limits.kspace_encoding_step_2->center;
+
+            GDEBUG_CONDITION_STREAM(verboseMode_, "Encoding limit E2 : " << min_E2_ << " " << max_E2_ << " " << center_E2_);
+        }
+
         // this gadget supports two encoding spaces only if the
         // second encoding space has the same field of view and resolution as the first
         // e.g. for FLASH PAT reference scans.
@@ -991,16 +1017,67 @@ namespace Gadgetron
 
             if ( E1>1 && filterE1_type_ != ISMRMRD_FILTER_NONE )
             {
-                workOrder.filterE1_.create(E1);
-                Gadgetron::generate_symmetric_filter(E1, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, (size_t)std::ceil(filterE1_width_*E1));
-                if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(workOrder.filterE1_, debugFolder_fullPath_+"filterE1"); }
+                // set up the filter lengh along E1
+                if (max_E1_>0 && center_E1_>0)
+                {
+                    long long len = 2 * (center_E1_ - min_E1_);
+                    if (len < 2 * (max_E1_ + 1 - center_E1_))
+                    {
+                        len = 2 * (max_E1_ + 1 - center_E1_);
+                    }
+
+                    if (E1>len)
+                    {
+                        workOrder.filterE1_.create(len);
+                        Gadgetron::generate_symmetric_filter(len, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, (size_t)std::ceil(filterE1_width_*len));
+
+                        hoNDArray<ValueType> fE1;
+                        Gadgetron::pad(E1, &workOrder.filterE1_, &fE1);
+                        workOrder.filterE1_ = fE1;
+                    }
+                    else
+                    {
+                        workOrder.filterE1_.create(E1);
+                        Gadgetron::generate_symmetric_filter(E1, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, (size_t)std::ceil(filterE1_width_*E1));
+                    }
+                }
+                else
+                {
+                    workOrder.filterE1_.create(E1);
+                    Gadgetron::generate_symmetric_filter(E1, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, (size_t)std::ceil(filterE1_width_*E1));
+                }
             }
 
             if ( E2>1 && filterE2_type_ != ISMRMRD_FILTER_NONE )
             {
-                workOrder.filterE2_.create(E2);
-                Gadgetron::generate_symmetric_filter(E2, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, (size_t)std::ceil(filterE2_width_*E2));
-                if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(workOrder.filterE2_, debugFolder_fullPath_+"filterE2"); }
+                if (max_E2_>0 && center_E2_>0)
+                {
+                    long long len = 2 * (center_E2_ - min_E2_);
+                    if (len < 2 * (max_E2_ + 1 - center_E2_))
+                    {
+                        len = 2 * (max_E2_ + 1 - center_E2_);
+                    }
+
+                    if (E2>len)
+                    {
+                        workOrder.filterE2_.create(len);
+                        Gadgetron::generate_symmetric_filter(len, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, (size_t)std::ceil(filterE2_width_*len));
+
+                        hoNDArray<ValueType> fE2;
+                        Gadgetron::pad(E2, &workOrder.filterE2_, &fE2);
+                        workOrder.filterE2_ = fE2;
+                    }
+                    else
+                    {
+                        workOrder.filterE2_.create(E2);
+                        Gadgetron::generate_symmetric_filter(E2, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, (size_t)std::ceil(filterE2_width_*E2));
+                    }
+                }
+                else
+                {
+                    workOrder.filterE2_.create(E2);
+                    Gadgetron::generate_symmetric_filter(E2, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, (size_t)std::ceil(filterE2_width_*E2));
+                }
             }
 
             // ref data filter
@@ -1077,18 +1154,64 @@ namespace Gadgetron
                 if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(workOrder.filterRO_partialfourier_, debugFolder_fullPath_+"filterRO_partialfourier"); }
             }
 
-            if ( E1>1 && workOrder.start_E1_>=0 && workOrder.end_E1_>0 )
+            if (E1>1 && workOrder.start_E1_ >= 0 && workOrder.end_E1_>0)
             {
-                workOrder.filterE1_partialfourier_.create(E1);
-                Gadgetron::generate_asymmetric_filter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_partialfourier_, filterE1_pf_type_, (size_t)std::ceil(filterE1_pf_width_*E1), filterE1_pf_densityComp_);
-                if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(workOrder.filterE1_partialfourier_, debugFolder_fullPath_+"filterE1_partialfourier"); }
+                if (workOrder.start_E1_ == 0 || workOrder.end_E1_ == E1 - 1)
+                {
+                    workOrder.filterE1_partialfourier_.create(E1);
+                    Gadgetron::generate_asymmetric_filter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_partialfourier_, filterE1_pf_type_, (size_t)std::ceil(filterE1_pf_width_*E1), filterE1_pf_densityComp_);
+                }
+                else
+                {
+                    size_t fil_len = workOrder.end_E1_ - workOrder.start_E1_ + 1;
+                    size_t len_end = 2 * (workOrder.end_E1_ - E1 / 2 + 1);
+                    size_t len_start = 2 * (E1 / 2 - workOrder.start_E1_ + 1);
+
+                    if (len_end>len_start)
+                    {
+                        hoNDArray<ValueType> fil(len_end);
+                        Gadgetron::generate_asymmetric_filter(len_end, len_end - fil_len, len_end - 1, fil, filterE1_pf_type_, (size_t)std::ceil(filterE1_pf_width_*len_end), filterE1_pf_densityComp_);
+                        Gadgetron::pad(E1, &fil, &workOrder.filterE1_partialfourier_);
+                    }
+                    else
+                    {
+                        hoNDArray<ValueType> fil(len_start);
+                        Gadgetron::generate_asymmetric_filter(len_start, 0, fil_len - 1, fil, filterE1_pf_type_, (size_t)std::ceil(filterE1_pf_width_*len_start), filterE1_pf_densityComp_);
+                        Gadgetron::pad(E1, &fil, &workOrder.filterE1_partialfourier_);
+                    }
+                }
+
+                if (!debugFolder_fullPath_.empty()) { gt_exporter_.exportArrayComplex(workOrder.filterE1_partialfourier_, debugFolder_fullPath_ + "filterE1_partialfourier"); }
             }
 
-            if ( E2>1 && workOrder.start_E2_>=0 && workOrder.end_E2_>0 )
+            if (E2>1 && workOrder.start_E2_ >= 0 && workOrder.end_E2_>0)
             {
-                workOrder.filterE2_partialfourier_.create(E2);
-                Gadgetron::generate_asymmetric_filter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_partialfourier_, filterE2_pf_type_, (size_t)std::ceil(filterE2_pf_width_*E2), filterE2_pf_densityComp_);
-                if ( !debugFolder_fullPath_.empty() ) { gt_exporter_.exportArrayComplex(workOrder.filterE2_partialfourier_, debugFolder_fullPath_+"filterE2_partialfourier"); }
+                if (workOrder.start_E2_ == 0 || workOrder.end_E2_ == E2 - 1)
+                {
+                    workOrder.filterE2_partialfourier_.create(E2);
+                    Gadgetron::generate_asymmetric_filter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_partialfourier_, filterE2_pf_type_, (size_t)std::ceil(filterE2_pf_width_*E2), filterE2_pf_densityComp_);
+                }
+                else
+                {
+                    size_t fil_len = workOrder.end_E2_ - workOrder.start_E2_ + 1;
+                    size_t len_end = 2 * (workOrder.end_E2_ - E2 / 2 + 1);
+                    size_t len_start = 2 * (E2 / 2 - workOrder.start_E2_ + 1);
+
+                    if (len_end>len_start)
+                    {
+                        hoNDArray<ValueType> fil(len_end);
+                        Gadgetron::generate_asymmetric_filter(len_end, len_end - fil_len, len_end - 1, fil, filterE2_pf_type_, (size_t)std::ceil(filterE2_pf_width_*len_end), filterE2_pf_densityComp_);
+                        Gadgetron::pad(E2, &fil, &workOrder.filterE2_partialfourier_);
+                    }
+                    else
+                    {
+                        hoNDArray<ValueType> fil(len_start);
+                        Gadgetron::generate_asymmetric_filter(len_start, 0, fil_len - 1, fil, filterE2_pf_type_, (size_t)std::ceil(filterE2_pf_width_*len_start), filterE2_pf_densityComp_);
+                        Gadgetron::pad(E2, &fil, &workOrder.filterE2_partialfourier_);
+                    }
+                }
+
+                if (!debugFolder_fullPath_.empty()) { gt_exporter_.exportArrayComplex(workOrder.filterE2_partialfourier_, debugFolder_fullPath_ + "filterE2_partialfourier"); }
             }
         }
         catch(...)

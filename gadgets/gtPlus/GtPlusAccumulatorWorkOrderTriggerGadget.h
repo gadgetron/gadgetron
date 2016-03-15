@@ -261,20 +261,24 @@ protected:
     // encoding matrix size (the real sampled size)
     size_t matrix_size_encoding_[3];
 
-    // maximal sampled line along E1 and E2
-    size_t max_sampled_E1_;
-    size_t max_sampled_E2_;
+    // minimal sampled line along E1 and E2
+    long long min_sampled_E1_;
+    long long min_sampled_E2_;
 
     // index of center line along E1 and E2
-    size_t center_line_E1_;
-    size_t center_line_E2_;
+    long long center_line_E1_;
+    long long center_line_E2_;
+
+    // maximal sampled line along E1 and E2
+    long long max_sampled_E1_;
+    long long max_sampled_E2_;
 
     // encoding space size (the logic kspace size)
     size_t space_size_[3];
 
     // offset along E1 and E2 directions for incoming readouts
-    size_t space_matrix_offset_E1_;
-    size_t space_matrix_offset_E2_;
+    long long space_matrix_offset_E1_;
+    long long space_matrix_offset_E2_;
 
     // encoding filed of view [mm]
     float field_of_view_encoding_[3];

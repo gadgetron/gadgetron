@@ -18,7 +18,9 @@ namespace Gadgetron {
     {
         if (perform_timing.value()) { gt_timer_.start("GenericReconPartialFourierHandlingFilterGadget, partial_fourier_filter"); }
 
-        long lenRO = endRO_ - startRO_ + 1;
+        // this PF sampling related SNR scaling should be done in the recon step
+        // the PF filter is only a noise level preserving filter
+        /*long lenRO = endRO_ - startRO_ + 1;
         long lenE1 = endE1_ - startE1_ + 1;
         long lenE2 = endE2_ - startE2_ + 1;
 
@@ -26,7 +28,7 @@ namespace Gadgetron {
         size_t E1 = kspace_buf_.get_size(1);
         size_t E2 = kspace_buf_.get_size(2);
 
-        /*real_value_type partialFourierCompensationFactor = 1;
+        real_value_type partialFourierCompensationFactor = 1;
 
         if (lenRO < RO)
         {
@@ -61,6 +63,13 @@ namespace Gadgetron {
             filter_pf_RO_, filter_pf_E1_, filter_pf_E2_, pf_res_), GADGET_FAIL);
 
         if (perform_timing.value()) { gt_timer_.stop(); }
+
+        /*if (!debug_folder_full_path_.empty())
+        {
+            if (filter_pf_RO_.get_number_of_elements()>0) gt_exporter_.exportArrayComplex(filter_pf_RO_, debug_folder_full_path_ + "filter_pf_RO");
+            if (filter_pf_E1_.get_number_of_elements()>0) gt_exporter_.exportArrayComplex(filter_pf_E1_, debug_folder_full_path_ + "filter_pf_E1");
+            if (filter_pf_E2_.get_number_of_elements()>0) gt_exporter_.exportArrayComplex(filter_pf_E2_, debug_folder_full_path_ + "filter_pf_E2");
+        }*/
 
         return GADGET_OK;
     }
