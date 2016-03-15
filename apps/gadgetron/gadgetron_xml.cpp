@@ -5,7 +5,6 @@
 
 namespace GadgetronXML
 {
-
   void deserialize(const char* xml_config, GadgetronConfiguration& h)
   {
     pugi::xml_document doc;
@@ -40,6 +39,10 @@ namespace GadgetronXML
       if ((cb.relayAddress.size() == 0) || (cb.port == 0))
       {
         throw std::runtime_error("Invalid CloudBus configuration.");
+      }
+      pugi::xml_node lbn = b.child("loadBalancedEndpoint");
+      if (lbn) {
+          cb.lbEndpoint = b.child_value("loadBalancedEndpoint");
       }
       h.cloudBus = cb;
     }

@@ -73,10 +73,12 @@ namespace GadgetronXML
     std::string value;
   };
 
+  
   struct CloudBus
   {
     std::string relayAddress;
     unsigned int port;
+    Optional<std::string> lbEndpoint;
   };
 
 
