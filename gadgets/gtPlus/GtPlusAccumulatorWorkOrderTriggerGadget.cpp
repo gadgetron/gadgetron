@@ -448,7 +448,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
             GADGET_CHECK_RETURN_FALSE(workOrder_.start_E1_ < matrix_size_encoding_[1]);
 
             GADGET_CHECK_RETURN_FALSE(workOrder_.end_E1_ >= 0);
-            GADGET_CHECK_RETURN_FALSE(workOrder_.end_E1_ < matrix_size_encoding_[1]);
+            GADGET_CHECK_RETURN_FALSE(workOrder_.end_E1_ >= workOrder_.start_E1_);
         }
 
         // -------------------------------------------------------------------------
@@ -467,7 +467,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
             GADGET_CHECK_RETURN_FALSE(workOrder_.start_E2_ < matrix_size_encoding_[2]);
 
             GADGET_CHECK_RETURN_FALSE(workOrder_.end_E2_ >= 0);
-            GADGET_CHECK_RETURN_FALSE(workOrder_.end_E2_ < matrix_size_encoding_[2]);
+            GADGET_CHECK_RETURN_FALSE(workOrder_.end_E2_ >= workOrder_.start_E2_);
         }
 
         first_kspace_scan_ = false;
@@ -1219,6 +1219,11 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
         idx.kspace_encode_step_2 += space_matrix_offset_E2_;
 
         if ( idx.kspace_encode_step_1 >= dimensions_[1] )
+        {
+            return true;
+        }
+
+        if ( idx.kspace_encode_step_2 >= dimensions_[4] )
         {
             return true;
         }
