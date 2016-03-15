@@ -90,6 +90,13 @@ namespace Gadgetron
     rest_port_ = port;
   }
 
+  void CloudBus::set_lb_endpoint(std::string addr, uint32_t port)
+  {
+      lb_address_ = addr;
+      lb_port_ = port;
+      use_lb_endpoint_ = true;
+  }
+  
   void CloudBus::set_compute_capability(uint32_t c)
   {
     node_info_.compute_capability = c;
@@ -250,10 +257,22 @@ namespace Gadgetron
   
   void CloudBus::get_node_info(std::vector<GadgetronNodeInfo>& nodes)
   {
-    update_node_info();
-    mtx_.acquire();
-    nodes = nodes_;
-    mtx_.release();
+    if (use_lb_endpoint_) {
+        GadgetronNodeInfo n;
+        n.port = lb_port_;
+        n.address = lb_address_;
+        n.rest_port = 9080;
+        n.compute_capability = 1;
+        n.active_reconstructions = 0;
+        n.last_recon = 0;
+        nodes.clear();
+        nodes.push_back(n);
+    } else {
+        update_node_info();
+        mtx_.acquire();
+        nodes = nodes_;
+        mtx_.release();
+    }
   }
   
   size_t CloudBus::get_number_of_nodes()
@@ -273,6 +292,7 @@ namespace Gadgetron
     , uuid_(boost::uuids::random_generator()())
     , connected_(false)
     , reader_task_(0)
+    , use_lb_endpoint_(false)
   {
     node_info_.port = gadgetron_port_;
     node_info_.rest_port = rest_port_;

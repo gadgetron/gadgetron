@@ -77,6 +77,8 @@ namespace Gadgetron
     static void set_query_only(bool m = true);
     static void set_gadgetron_port(uint32_t port);
     static void set_rest_port(uint32_t port);
+
+    void set_lb_endpoint(std::string addr, uint32_t port);
     
     void set_compute_capability(uint32_t c);
 
@@ -104,7 +106,11 @@ namespace Gadgetron
     static bool query_mode_; //Listen only
     static int gadgetron_port_;
     static int rest_port_;
-    
+
+    bool use_lb_endpoint_;
+    std::string lb_address_;
+    uint32_t lb_port_;
+
     GadgetronNodeInfo node_info_;
     std::vector<GadgetronNodeInfo> nodes_;
     
