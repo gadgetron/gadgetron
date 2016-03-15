@@ -61,6 +61,8 @@ class GadgetronResource(resource.Resource):
     gadgetron_port = 9002
     relay_host = "localhost"
     relay_port = 8002
+    rest_port = 9080
+    lb_endpoint = "None"
     local_relay_port = 8002
     check_thread = 0
     run_gadgetron_check = True
@@ -75,8 +77,10 @@ class GadgetronResource(resource.Resource):
         self.gadgetron_port = config.get('GADGETRON','port')
         self.relay_host = config.get('GADGETRON','relay_host')
         self.relay_port = config.get('GADGETRON','relay_port')
+        self.rest_port = config.get('GADGETRON','rest_port')
         self.relay_log_filename = config.get('RELAY','logfile')
         self.local_relay_port = config.get('RELAY','port')
+        self.lb_endpoint = config.get('GADGETRON','lb_endpoint')
 
         gf = self.open_log_file(self.gadgetron_log_filename)
         rf = self.open_log_file(self.relay_log_filename)
@@ -99,7 +103,13 @@ class GadgetronResource(resource.Resource):
             self.environment[libpath] += os.environ[libpath]
 
         #self.process_lock.acquire()
-        self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port,"-r",self.relay_host, "-l", self.relay_port], env=self.environment,stdout=gf,stderr=gf)
+        if self.lb_endpoint != "None":
+            gtcmd = ["gadgetron","-p",self.gadgetron_port,"-r",self.relay_host, "-l", self.relay_port,'-R', self.rest_port, '-e',self.lb_endpoint]
+        else:
+            gtcmd = ["gadgetron","-p",self.gadgetron_port,"-r",self.relay_host, "-l", self.relay_port, '-R', self.rest_port]
+
+        self.gadgetron_process = subprocess.Popen(gtcmd, env=self.environment,stdout=gf,stderr=gf)
+
         self.relay_process = subprocess.Popen(["gadgetron_cloudbus_relay", self.local_relay_port], env=self.environment,stdout=rf,stderr=rf)
         #self.process_lock.release()
         resource.Resource.__init__(self)
