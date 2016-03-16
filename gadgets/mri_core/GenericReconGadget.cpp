@@ -113,15 +113,15 @@ namespace Gadgetron {
 
         // ---------------------------------------------------------------------------------------------------------
 
-        if (!debug_folder.value().empty())
-        {
-            Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        }
-        else
-        {
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        }
+        //if (!debug_folder.value().empty())
+        //{
+        //    Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
+        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
+        //}
+        //else
+        //{
+        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
+        //}
 
         return GADGET_OK;
     }
@@ -519,13 +519,13 @@ namespace Gadgetron {
                 Gadgetron::hoNDFFT<float>::instance()->ifft2c(ref_coil_map, complex_im_recon_buf_);
             }
 
-            if (!debug_folder_full_path_.empty())
+            /*if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
                 os << "encoding_" << e;
 
                 gt_exporter_.exportArrayComplex(complex_im_recon_buf_, debug_folder_full_path_ + "complex_im_for_coil_map_" + os.str());
-            }
+            }*/
 
             if (coil_map_algorithm.value() == "Inati")
             {
@@ -545,13 +545,13 @@ namespace Gadgetron {
                 Gadgetron::coil_map_Inati_Iter(complex_im_recon_buf_, coil_map, ks, kz, iterNum, thres);
             }
 
-            if (!debug_folder_full_path_.empty())
+            /*if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
                 os << "encoding_" << e;
 
                 gt_exporter_.exportArrayComplex(coil_map, debug_folder_full_path_ + "coil_map_" + os.str());
-            }
+            }*/
         }
         catch (...)
         {

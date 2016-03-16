@@ -95,15 +95,15 @@ namespace Gadgetron {
 
         // ---------------------------------------------------------------------------------------------------------
 
-        if (!debug_folder.value().empty())
-        {
-            Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        }
-        else
-        {
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        }
+        //if (!debug_folder.value().empty())
+        //{
+        //    Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
+        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
+        //}
+        //else
+        //{
+        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
+        //}
 
         return GADGET_OK;
 
@@ -164,10 +164,10 @@ namespace Gadgetron {
 
             if (!rbit.ref_) continue;
 
-            if (!debug_folder_full_path_.empty())
+            /*if (!debug_folder_full_path_.empty())
             {
                 this->gt_exporter_.exportArrayComplex(rbit.ref_->data_, debug_folder_full_path_ + "ref_data" + os.str());
-            }
+            }*/
 
             // useful variables
             hoNDArray< std::complex<float> >& ref = (*rbit.ref_).data_;
@@ -200,10 +200,10 @@ namespace Gadgetron {
             bool count_sampling_freq = (calib_mode_[e] == ISMRMRD_interleaved);
             GADGET_CHECK_EXCEPTION_RETURN(Gadgetron::compute_averaged_data_N_S(ref, average_all_ref_N.value(), average_all_ref_S.value(), count_sampling_freq, ref_calib), GADGET_FAIL);
 
-            if (!debug_folder_full_path_.empty())
+            /*if (!debug_folder_full_path_.empty())
             {
                 this->gt_exporter_.exportArrayComplex(ref_calib, debug_folder_full_path_ + "ref_calib" + os.str());
-            }
+            }*/
 
             // step 2, detect sampled region in ref, along E1 and E2
             size_t start_E1(0), end_E1(0);
@@ -248,10 +248,10 @@ namespace Gadgetron {
             Gadgetron::crop(crop_offset, crop_size, &ref_calib, &ref_recon_buf);
             ref_calib = ref_recon_buf;
 
-            if (!debug_folder_full_path_.empty())
+            /*if (!debug_folder_full_path_.empty())
             {
                 this->gt_exporter_.exportArrayComplex(ref_calib, debug_folder_full_path_ + "ref_calib_after_crop" + os.str());
-            }
+            }*/
 
             // step 3, update the sampling limits
             sampling_limits[0].center_ = (uint16_t)(RO/2);
@@ -286,10 +286,10 @@ namespace Gadgetron {
             for (int i = 0; i < 3; i++)
                 (*rbit.ref_).sampling_.sampling_limits_[i] = sampling_limits[i];
 
-            if (!debug_folder_full_path_.empty())
+            /*if (!debug_folder_full_path_.empty())
             {
                 this->gt_exporter_.exportArrayComplex(rbit.ref_->data_, debug_folder_full_path_ + "ref_calib_final" + os.str());
-            }
+            }*/
         }
 
         if (this->next()->putq(m1) < 0)

@@ -43,7 +43,7 @@
     <gadget>
         <name>BucketToBuffer</name>
         <dll>gadgetron_mricore</dll>
-        <classname>GenericReconBucketToBufferGadget</classname>
+        <classname>BucketToBufferGadget</classname>
         <property><name>N_dimension</name><value>repetition</value></property>
         <property><name>S_dimension</name><value>set</value></property>
         <property><name>split_slices</name><value>true</value></property>
