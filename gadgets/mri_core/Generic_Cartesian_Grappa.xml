@@ -40,9 +40,9 @@
     </gadget>
 
     <gadget>
-        <name>Buff</name>
+        <name>BucketToBuffer</name>
         <dll>gadgetron_mricore</dll>
-        <classname>BucketToBufferGadget</classname>
+        <classname>GenericReconBucketToBufferGadget</classname>
         <property><name>N_dimension</name><value>contrast</value></property>
         <property><name>S_dimension</name><value>set</value></property>
         <property><name>split_slices</name><value>true</value></property>

@@ -85,6 +85,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     SimpleReconGadget.h 
                                     ImageSortGadget.h 
                                     GenericReconGadget.h 
+                                    GenericReconBucketToBufferGadget.h 
                                     GenericReconCartesianGrappaGadget.h 
                                     GenericReconCartesianReferencePrepGadget.h 
                                     GenericReconPartialFourierHandlingGadget.h 
@@ -129,6 +130,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 SimpleReconGadget.cpp
                                 ImageSortGadget.cpp
                                 GenericReconGadget.cpp 
+                                GenericReconBucketToBufferGadget.cpp 
                                 GenericReconCartesianGrappaGadget.cpp 
                                 GenericReconCartesianReferencePrepGadget.cpp 
                                 GenericReconPartialFourierHandlingGadget.cpp 
