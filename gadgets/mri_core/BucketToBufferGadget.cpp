@@ -620,39 +620,25 @@ namespace Gadgetron{
             space_matrix_offset_E2 = (int16_t)encoding.encodedSpace.matrixSize.z / 2 - (int16_t)encoding.encodingLimits.kspace_encoding_step_2->center;
         }
 
-        {
-            sampling.sampling_limits_[1].min_ = encoding.encodingLimits.kspace_encoding_step_1->minimum + space_matrix_offset_E1;
-            sampling.sampling_limits_[1].max_ = encoding.encodingLimits.kspace_encoding_step_1->maximum + space_matrix_offset_E1;
-            sampling.sampling_limits_[1].center_ = sampling.encoded_matrix_[1] / 2;
+        // E1
+        sampling.sampling_limits_[1].min_ = encoding.encodingLimits.kspace_encoding_step_1->minimum + space_matrix_offset_E1;
+        sampling.sampling_limits_[1].max_ = encoding.encodingLimits.kspace_encoding_step_1->maximum + space_matrix_offset_E1;
+        sampling.sampling_limits_[1].center_ = sampling.encoded_matrix_[1] / 2;
 
-            if (sampling.sampling_limits_[1].min_ < 0) sampling.sampling_limits_[1].min_ = 0;
-            if (sampling.sampling_limits_[1].min_ >= encoding.encodedSpace.matrixSize.y) sampling.sampling_limits_[1].min_ = encoding.encodedSpace.matrixSize.y - 1;
+        GADGET_CHECK_THROW(sampling.sampling_limits_[1].min_ < encoding.encodedSpace.matrixSize.y);
+        GADGET_CHECK_THROW(sampling.sampling_limits_[1].max_ >= sampling.sampling_limits_[1].min_);
+        GADGET_CHECK_THROW(sampling.sampling_limits_[1].center_ >= sampling.sampling_limits_[1].min_);
+        GADGET_CHECK_THROW(sampling.sampling_limits_[1].center_ <= sampling.sampling_limits_[1].max_);
 
-            if (sampling.sampling_limits_[1].max_ < 0) sampling.sampling_limits_[1].max_ = 0;
-            if (sampling.sampling_limits_[1].max_ >= encoding.encodedSpace.matrixSize.y) sampling.sampling_limits_[1].max_ = encoding.encodedSpace.matrixSize.y - 1;
+        // E2
+        sampling.sampling_limits_[2].min_ = encoding.encodingLimits.kspace_encoding_step_2->minimum + space_matrix_offset_E2;
+        sampling.sampling_limits_[2].max_ = encoding.encodingLimits.kspace_encoding_step_2->maximum + space_matrix_offset_E2;
+        sampling.sampling_limits_[2].center_ = sampling.encoded_matrix_[2] / 2;
 
-            if (sampling.sampling_limits_[1].min_ > sampling.sampling_limits_[1].max_) sampling.sampling_limits_[1].min_ = sampling.sampling_limits_[1].max_;
-
-            if (sampling.sampling_limits_[1].center_ < sampling.sampling_limits_[1].min_) sampling.sampling_limits_[1].center_ = sampling.sampling_limits_[1].min_;
-            if (sampling.sampling_limits_[1].center_ > sampling.sampling_limits_[1].max_) sampling.sampling_limits_[1].center_ = sampling.sampling_limits_[1].max_;
-        }
-
-        {
-            sampling.sampling_limits_[2].min_ = encoding.encodingLimits.kspace_encoding_step_2->minimum + space_matrix_offset_E2;
-            sampling.sampling_limits_[2].max_ = encoding.encodingLimits.kspace_encoding_step_2->maximum + space_matrix_offset_E2;
-            sampling.sampling_limits_[2].center_ = sampling.encoded_matrix_[2] / 2;
-
-            if (sampling.sampling_limits_[2].min_ < 0) sampling.sampling_limits_[2].min_ = 0;
-            if (sampling.sampling_limits_[2].min_ >= encoding.encodedSpace.matrixSize.z) sampling.sampling_limits_[2].min_ = encoding.encodedSpace.matrixSize.z - 1;
-
-            if (sampling.sampling_limits_[2].max_ < 0) sampling.sampling_limits_[2].max_ = 0;
-            if (sampling.sampling_limits_[2].max_ >= encoding.encodedSpace.matrixSize.z) sampling.sampling_limits_[2].max_ = encoding.encodedSpace.matrixSize.z - 1;
-
-            if (sampling.sampling_limits_[2].min_ > sampling.sampling_limits_[2].max_) sampling.sampling_limits_[2].min_ = sampling.sampling_limits_[2].max_;
-
-            if (sampling.sampling_limits_[2].center_ < sampling.sampling_limits_[2].min_) sampling.sampling_limits_[2].center_ = sampling.sampling_limits_[2].min_;
-            if (sampling.sampling_limits_[2].center_ > sampling.sampling_limits_[2].max_) sampling.sampling_limits_[2].center_ = sampling.sampling_limits_[2].max_;
-        }
+        GADGET_CHECK_THROW(sampling.sampling_limits_[2].min_ < encoding.encodedSpace.matrixSize.y);
+        GADGET_CHECK_THROW(sampling.sampling_limits_[2].max_ >= sampling.sampling_limits_[2].min_);
+        GADGET_CHECK_THROW(sampling.sampling_limits_[2].center_ >= sampling.sampling_limits_[2].min_);
+        GADGET_CHECK_THROW(sampling.sampling_limits_[2].center_ <= sampling.sampling_limits_[2].max_);
     }
     else
     {
@@ -719,6 +705,7 @@ namespace Gadgetron{
       }
 
     std::complex<float> *dataptr;
+    uint16_t NE0 = (uint16_t)dataBuffer.data_.get_size(0);
     uint16_t NE1 = (uint16_t)dataBuffer.data_.get_size(1);
     uint16_t NE2 = (uint16_t)dataBuffer.data_.get_size(2);
     uint16_t NCHA = (uint16_t)dataBuffer.data_.get_size(3);
@@ -757,17 +744,30 @@ namespace Gadgetron{
             e2 = (int16_t)acqhdr.idx.kspace_encode_step_2 + space_matrix_offset_E2;
         }
 
-        if (e1 < 0) e1 = 0;
-        if (e1 >= NE1) e1 = NE1 - 1;
+        if (e1 < 0 || e1 >= (int16_t)NE1)
+        {
+            // if the incoming line is outside the encoding limits, something is wrong
+            GADGET_CHECK_THROW(acqhdr.idx.kspace_encode_step_1>=encoding.encodingLimits.kspace_encoding_step_1->minimum && acqhdr.idx.kspace_encode_step_1 <= encoding.encodingLimits.kspace_encoding_step_1->maximum);
 
-        if (e2 < 0) e2 = 0;
-        if (e2 >= NE2) e2 = NE2 - 1;
+            // if the incoming line is inside encoding limits but outside the encoded matrix, do not include the data
+            GWARN_STREAM("incoming readout " << acqhdr.scan_counter << " is inside the encoding limits, but outside the encoded matrix for kspace_encode_step_1 : " << e1 << " out of " << NE1);
+            return;
+        }
+
+        if (e2 < 0 || e2 >= (int16_t)NE2)
+        {
+            GADGET_CHECK_THROW(acqhdr.idx.kspace_encode_step_2 >= encoding.encodingLimits.kspace_encoding_step_2->minimum && acqhdr.idx.kspace_encode_step_2 <= encoding.encodingLimits.kspace_encoding_step_2->maximum);
+
+            GWARN_STREAM("incoming readout " << acqhdr.scan_counter << " is inside the encoding limits, but outside the encoded matrix for kspace_encode_step_2 : " << e2 << " out of " << NE2);
+            return;
+        }
     }
+
+    std::complex<float>* pData = &dataBuffer.data_(offset, e1, e2, 0, NUsed, SUsed, slice_loc);
 
     for (uint16_t cha = 0; cha < NCHA; cha++)
     {
-        dataptr = &dataBuffer.data_(offset, e1, e2, cha, NUsed, SUsed, slice_loc);
-
+        dataptr = pData + cha*NE0*NE1*NE2;
         memcpy(dataptr, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
     }
 
