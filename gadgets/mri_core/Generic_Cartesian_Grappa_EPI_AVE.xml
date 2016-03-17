@@ -60,7 +60,7 @@
     </gadget>
 
     <gadget>
-        <name>Buff</name>
+        <name>BucketToBuffer</name>
         <dll>gadgetron_mricore</dll>
         <classname>BucketToBufferGadget</classname>
         <property><name>N_dimension</name><value>average</value></property>
@@ -101,8 +101,10 @@
 
         <property><name>average_all_ref_N</name><value>true</value></property>
         <property><name>average_all_ref_S</name><value>true</value></property>
+
+        <!-- Up stream coil compression -->
         <property><name>upstream_coil_compression</name><value>true</value></property>
-        <property><name>upstream_coil_compression_thres</name><value>0.002</value></property>
+        <property><name>upstream_coil_compression_thres</name><value>-1</value></property>
         <property><name>upstream_coil_compression_num_modesKept</name><value>0</value></property>
     </gadget>
 
@@ -114,6 +116,14 @@
 
         <!-- image series -->
         <property><name>image_series</name><value>0</value></property>
+
+        <!-- Coil map estimation, Inati or Inati_Iter -->
+        <property><name>coil_map_algorithm</name><value>Inati</value></property>
+
+        <!-- Down stream coil compression -->
+        <property><name>downstream_coil_compression</name><value>true</value></property>
+        <property><name>downstream_coil_compression_thres</name><value>0.002</value></property>
+        <property><name>downstream_coil_compression_num_modesKept</name><value>0</value></property>
 
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value>DebugFolder</value></property>

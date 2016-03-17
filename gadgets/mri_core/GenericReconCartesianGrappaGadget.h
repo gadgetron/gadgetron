@@ -30,11 +30,13 @@ namespace Gadgetron {
         // ------------------------------------
         /// buffers used in the recon
         // ------------------------------------
-        /// [RO E1 E2 CHA Nor1 Sor1 SLC]
+        /// [RO E1 E2 srcCHA Nor1 Sor1 SLC]
         hoNDArray<T> ref_calib_;
+        /// [RO E1 E2 dstCHA Nor1 Sor1 SLC]
+        hoNDArray<T> ref_calib_dst_;
 
         /// reference data ready for coil map estimation
-        /// [RO E1 E2 CHA Nor1 Sor1 SLC]
+        /// [RO E1 E2 dstCHA Nor1 Sor1 SLC]
         hoNDArray<T> ref_coil_map_;
 
         /// for combined imgae channel
@@ -80,6 +82,15 @@ namespace Gadgetron {
         GADGET_PROPERTY(grappa_reg_lamda, double, "Grappa regularization threshold", 0.0005);
         GADGET_PROPERTY(grappa_calib_over_determine_ratio, double, "Grappa calibration overdermination ratio", 45);
 
+        /// ------------------------------------------------------------------------------------
+        /// down stream coil compression
+        /// if downstream_coil_compression==true, down stream coil compression is used
+        /// if downstream_coil_compression_num_modesKept > 0, this number of channels will be used as the dst channels
+        /// if downstream_coil_compression_num_modesKept==0 and downstream_coil_compression_thres>0, the number of dst channels will be determined  by this threshold
+        GADGET_PROPERTY(downstream_coil_compression, bool, "Whether to perform downstream coil compression", true);
+        GADGET_PROPERTY(downstream_coil_compression_thres, double, "Threadhold for downstream coil compression", 0.002);
+        GADGET_PROPERTY(downstream_coil_compression_num_modesKept, size_t, "Number of modes to keep for downstream coil compression", 0);
+
     protected:
 
         // --------------------------------------------------
@@ -99,10 +110,16 @@ namespace Gadgetron {
         // recon step functions
         // --------------------------------------------------
 
+        // if downstream coil compression is used, determine number of channels used and prepare the ref_calib_dst_
+        virtual void prepare_down_stream_coil_compression_ref_data(const hoNDArray< std::complex<float> >& ref_src, hoNDArray< std::complex<float> >& ref_coil_map, hoNDArray< std::complex<float> >& ref_dst);
+
         // calibration, if only one dst channel is prescribed, the GrappaOne is used
         virtual void perform_calib(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
 
         // unwrapping or coil combination
         virtual void perform_unwrapping(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
+
+        // compute snr map
+        virtual void compute_snr_map(ReconObjType& recon_obj, hoNDArray< std::complex<float> >& snr_map);
     };
 }

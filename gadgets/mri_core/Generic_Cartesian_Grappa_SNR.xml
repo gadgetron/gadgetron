@@ -6,9 +6,8 @@
     <!--
         Gadgetron generic recon chain for 2D and 3D cartesian sampling
 
-        T2W imaging
         Triggered by repetition
-        Recon N is repetition and S is set
+        Recon N is contrast and S is set
 
         Author: Hui Xue
         Magnetic Resonance Technology Program, National Heart, Lung and Blood Institute, National Institutes of Health
@@ -36,7 +35,7 @@
         <name>AccTrig</name>
         <dll>gadgetron_mricore</dll>
         <classname>AcquisitionAccumulateTriggerGadget</classname>
-        <property><name>trigger_dimension</name><value>repetition</value></property>
+        <property><name>trigger_dimension</name><value></value></property>
         <property><name>sorting_dimension</name><value>slice</value></property>
     </gadget>
 
@@ -46,7 +45,7 @@
         <classname>BucketToBufferGadget</classname>
         <property><name>N_dimension</name><value>repetition</value></property>
         <property><name>S_dimension</name><value>set</value></property>
-        <property><name>split_slices</name><value>true</value></property>
+        <property><name>split_slices</name><value>false</value></property>
         <property><name>ignore_segment</name><value>true</value></property>
     </gadget>
 
@@ -64,29 +63,9 @@
         <!-- averaging across repetition -->
         <property><name>average_all_ref_N</name><value>true</value></property>
         <!-- every set has its own kernels -->
-        <property><name>average_all_ref_S</name><value>false</value></property>
-        <!-- whether always to prepare ref if no acceleration is used -->
-        <property><name>prepare_ref_always_no_acceleration</name><value>true</value></property>
-    </gadget>
-
-    <!-- Coil compression -->
-    <gadget>
-        <name>CoilCompression</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>GenericReconEigenChannelGadget</classname>
-
-        <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
-        <property><name>perform_timing</name><value>true</value></property>
-        <property><name>verbose</name><value>true</value></property>
-
-        <property><name>average_all_ref_N</name><value>true</value></property>
         <property><name>average_all_ref_S</name><value>true</value></property>
-
-        <!-- Up stream coil compression -->
-        <property><name>upstream_coil_compression</name><value>true</value></property>
-        <property><name>upstream_coil_compression_thres</name><value>-1</value></property>
-        <property><name>upstream_coil_compression_num_modesKept</name><value>0</value></property>
+        <!-- whether always to prepare ref if no acceleration is used -->
+        <property><name>prepare_ref_always_no_acceleration</name><value>false</value></property>
     </gadget>
 
     <!-- Recon -->
@@ -101,11 +80,6 @@
         <!-- Coil map estimation, Inati or Inati_Iter -->
         <property><name>coil_map_algorithm</name><value>Inati</value></property>
 
-        <!-- Down stream coil compression -->
-        <property><name>downstream_coil_compression</name><value>true</value></property>
-        <property><name>downstream_coil_compression_thres</name><value>0.002</value></property>
-        <property><name>downstream_coil_compression_num_modesKept</name><value>0</value></property>
-
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value>DebugFolder</value></property>
         <property><name>perform_timing</name><value>true</value></property>
@@ -113,6 +87,7 @@
 
         <!-- whether to send out gfactor -->
         <property><name>send_out_gfactor</name><value>true</value></property>
+        <property><name>send_out_snr_map</name><value>true</value></property>
     </gadget>
 
     <!-- Partial fourier handling -->
@@ -124,7 +99,7 @@
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value>DebugFolder</value></property>
         <property><name>perform_timing</name><value>false</value></property>
-        <property><name>verbose</name><value>false</value></property>
+        <property><name>verbose</name><value>true</value></property>
 
         <!-- if incoming images have this meta field, it will not be processed -->
         <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>
@@ -145,7 +120,7 @@
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value>DebugFolder</value></property>
         <property><name>perform_timing</name><value>false</value></property>
-        <property><name>verbose</name><value>false</value></property>
+        <property><name>verbose</name><value>true</value></property>
 
         <!-- if incoming images have this meta field, it will not be processed -->
         <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>
@@ -173,7 +148,19 @@
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value>DebugFolder</value></property>
         <property><name>perform_timing</name><value>false</value></property>
-        <property><name>verbose</name><value>false</value></property>
+        <property><name>verbose</name><value>true</value></property>
+    </gadget>
+
+    <!-- Noise std map -->
+    <gadget>
+        <name>StdMap</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>GenericReconNoiseStdMapComputingGadget</classname>
+
+        <!-- parameters for debug and timing -->
+        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>perform_timing</name><value>false</value></property>
+        <property><name>verbose</name><value>true</value></property>
     </gadget>
 
     <!-- Image Array Scaling -->
@@ -184,14 +171,14 @@
 
         <!-- parameters for debug and timing -->
         <property><name>perform_timing</name><value>false</value></property>
-        <property><name>verbose</name><value>false</value></property>
+        <property><name>verbose</name><value>true</value></property>
 
         <property><name>min_intensity_value</name><value>64</value></property>
         <property><name>max_intensity_value</name><value>4095</value></property>
         <property><name>scalingFactor</name><value>10.0</value></property>
         <property><name>use_constant_scalingFactor</name><value>true</value></property>
         <property><name>auto_scaling_only_once</name><value>true</value></property>
-        <property><name>scalingFactor_dedicated</name><value>100.0</value></property>
+        <property><name>scalingFactor_dedicated</name><value>1000.0</value></property>
     </gadget>
 
     <!-- ImageArray to images -->
@@ -199,6 +186,22 @@
         <name>ImageArraySplit</name>
         <dll>gadgetron_mricore</dll>
         <classname>ImageArraySplitGadget</classname>
+    </gadget>
+
+    <!-- Noise variance plot add-on -->
+    <gadget>
+        <name>NoiseCovariancePlotting</name>
+        <dll>gadgetron_plplot</dll>
+        <classname>NoiseCovariancePlottingGadget</classname>
+
+        <property><name>xlabel</name><value>Channel</value></property>
+        <property><name>ylabel</name><value>SD</value></property>
+        <property><name>title</name><value>Gadgetron</value></property>
+
+        <property><name>xsize</name><value>768</value></property>
+        <property><name>ysize</name><value>768</value></property>
+
+        <property><name>series_num</name><value>1000</value></property>
     </gadget>
 
     <!-- after recon processing -->
@@ -212,6 +215,10 @@
         <name>FloatToShortAttrib</name>
         <dll>gadgetron_mricore</dll>
         <classname>FloatToUShortGadget</classname>
+
+        <property><name>max_intensity</name><value>32767</value></property>
+        <property><name>min_intensity</name><value>0</value></property>
+        <property><name>intensity_offset</name><value>0</value></property>
     </gadget>
 
     <gadget>
