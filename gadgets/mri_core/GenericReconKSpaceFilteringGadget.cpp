@@ -457,7 +457,9 @@ namespace Gadgetron {
 
         size_t hmin = len / 2 - min;
         size_t hmax = max - len / 2;
-        r = (hmax>hmin) ? 2*hmax : 2*hmin;
+        r = (hmax>hmin) ? 2*hmax+1 : 2*hmin+1;
+
+        if (r > len) r = len;
     }
 
     int GenericReconKSpaceFilteringGadget::close(unsigned long flags)

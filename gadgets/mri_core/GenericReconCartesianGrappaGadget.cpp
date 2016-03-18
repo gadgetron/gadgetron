@@ -125,7 +125,7 @@ namespace Gadgetron {
                 // ---------------------------------------------------------------
                 // after this step, the recon_obj_[e].ref_calib_dst_ and recon_obj_[e].ref_coil_map_ are modified
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::make_ref_coil_map"); }
-                this->prepare_down_stream_coil_compression_ref_data(recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, recon_obj_[e].ref_calib_dst_);
+                this->prepare_down_stream_coil_compression_ref_data(recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, recon_obj_[e].ref_calib_dst_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
                 // ---------------------------------------------------------------
@@ -252,7 +252,7 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
-    void GenericReconCartesianGrappaGadget::prepare_down_stream_coil_compression_ref_data(const hoNDArray< std::complex<float> >& ref_src, hoNDArray< std::complex<float> >& ref_coil_map, hoNDArray< std::complex<float> >& ref_dst)
+    void GenericReconCartesianGrappaGadget::prepare_down_stream_coil_compression_ref_data(const hoNDArray< std::complex<float> >& ref_src, hoNDArray< std::complex<float> >& ref_coil_map, hoNDArray< std::complex<float> >& ref_dst, size_t e)
     {
         try
         {
@@ -530,7 +530,6 @@ namespace Gadgetron {
             size_t SLC = recon_bit.data_.data_.get_size(6);
 
             hoNDArray< std::complex<float> >& src = recon_obj.ref_calib_;
-            hoNDArray< std::complex<float> >& dst = recon_obj.ref_calib_;
 
             size_t ref_RO = src.get_size(0);
             size_t ref_E1 = src.get_size(1);
@@ -539,6 +538,8 @@ namespace Gadgetron {
             size_t ref_N = src.get_size(4);
             size_t ref_S = src.get_size(5);
             size_t ref_SLC = src.get_size(6);
+
+            size_t unmixingCoeff_CHA = recon_obj.unmixing_coeff_.get_size(3);
 
             size_t convkRO = recon_obj.kernel_.get_size(0);
             size_t convkE1 = recon_obj.kernel_.get_size(1);
@@ -639,7 +640,7 @@ namespace Gadgetron {
 
             long long ii;
 
-#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, E2, srcCHA, convkRO, convkE1, convkE2, ref_N, ref_S, recon_obj, dstCHA, e) if(num>1)
+#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, E2, srcCHA, convkRO, convkE1, convkE2, ref_N, ref_S, recon_obj, dstCHA, unmixingCoeff_CHA, e) if(num>1)
             {
 #pragma omp for 
                 for (ii = 0; ii < num; ii++)
@@ -650,7 +651,6 @@ namespace Gadgetron {
 
                     // combined channels
                     T* pIm = &(complex_im_recon_buf_(0, 0, 0, 0, n, s, slc));
-                    hoNDArray< std::complex<float> > aliasedIm(RO, E1, E2, srcCHA, 1, pIm);
 
                     size_t usedN = n;
                     if (n >= ref_N) usedN = ref_N - 1;
@@ -659,11 +659,12 @@ namespace Gadgetron {
                     if (s >= ref_S) usedS = ref_S - 1;
 
                     T* pUnmix = &(recon_obj.unmixing_coeff_(0, 0, 0, 0, usedN, usedS, slc));
-                    hoNDArray< std::complex<float> > unmixing(RO, E1, E2, srcCHA, pUnmix);
 
                     T* pRes = &(recon_obj.recon_res_.data_(0, 0, 0, 0, n, s, slc));
                     hoNDArray< std::complex<float> > res(RO, E1, E2, 1, pRes);
 
+                    hoNDArray< std::complex<float> > unmixing(RO, E1, E2, unmixingCoeff_CHA, pUnmix);
+                    hoNDArray< std::complex<float> > aliasedIm(RO, E1, E2, ((unmixingCoeff_CHA<=srcCHA) ? unmixingCoeff_CHA : srcCHA), 1, pIm);
                     Gadgetron::apply_unmix_coeff_aliased_image_3D(aliasedIm, unmixing, res);
                 }
             }

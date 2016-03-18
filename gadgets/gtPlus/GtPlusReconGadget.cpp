@@ -1020,10 +1020,10 @@ namespace Gadgetron
                 // set up the filter lengh along E1
                 if (max_E1_>0 && center_E1_>0)
                 {
-                    long long len = 2 * (center_E1_ - min_E1_);
-                    if (len < 2 * (max_E1_ + 1 - center_E1_))
+                    long long len = 2 * (center_E1_ - min_E1_) + 1;
+                    if (len < 2 * (max_E1_ - center_E1_) + 1)
                     {
-                        len = 2 * (max_E1_ + 1 - center_E1_);
+                        len = 2 * (max_E1_ - center_E1_) + 1;
                     }
 
                     if (E1>len)
@@ -1052,10 +1052,10 @@ namespace Gadgetron
             {
                 if (max_E2_>0 && center_E2_>0)
                 {
-                    long long len = 2 * (center_E2_ - min_E2_);
-                    if (len < 2 * (max_E2_ + 1 - center_E2_))
+                    long long len = 2 * (center_E2_ - min_E2_) + 1;
+                    if (len < 2 * (max_E2_ - center_E2_) + 1)
                     {
-                        len = 2 * (max_E2_ + 1 - center_E2_);
+                        len = 2 * (max_E2_ - center_E2_) + 1;
                     }
 
                     if (E2>len)
