@@ -39,6 +39,12 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
         print("Missing siemens configuration parameter(s), assuming no conversion to ISMRMRD needed")
         need_siemens_conversion = False
 
+    need_siemens_conversion_flag = True
+    try:
+        siemens_data_conversion_flag = config.getint('FILES', 'siemens_data_conversion_flag')
+    except ConfigParser.NoOptionError:
+        need_siemens_conversion_flag = False
+
     # if siemens_dat config parameter found but empty, assume no conversion to ISMRMRD intended
     if not siemens_dat:
         need_siemens_conversion = False
@@ -256,9 +262,14 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
 
             # conversion of primary Siemens .dat file
             print("Converting Siemens .dat file to ISMRMRD for data measurement.")
-            cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
-                   siemens_parameter_xml, "-x", siemens_parameter_xsl,
-                   "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1)]
+            if need_siemens_conversion_flag:
+                cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
+                       siemens_parameter_xml, "-x", siemens_parameter_xsl,
+                       "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1), siemens_data_conversion_flag]
+            else:
+                cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
+                       siemens_parameter_xml, "-x", siemens_parameter_xsl,
+                       "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1)]
 
             r = subprocess.call(cmd, env=environment, stdout=cf, stderr=cf)
             if r != 0:
