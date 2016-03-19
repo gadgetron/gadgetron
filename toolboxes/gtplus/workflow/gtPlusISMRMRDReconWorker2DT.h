@@ -438,6 +438,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                 crop_size[3] = refRecon.get_size(3);
 
                 refCoilMap.create(RO, E1, srcCHA, refRecon.get_size(3), S);
+                Gadgetron::clear(refCoilMap);
                 GADGET_CHECK_RETURN_FALSE(setSubArrayUpTo11DArray(refRecon, refCoilMap, crop_offset, crop_size));
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(refCoilMap, debugFolder_+"refCoilMap"); }
 
