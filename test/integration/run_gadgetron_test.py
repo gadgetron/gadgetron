@@ -41,7 +41,7 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
 
     need_siemens_conversion_flag = True
     try:
-        siemens_data_conversion_flag = config.getint('FILES', 'siemens_data_conversion_flag')
+        siemens_data_conversion_flag = config.get('FILES', 'siemens_data_conversion_flag')
     except ConfigParser.NoOptionError:
         need_siemens_conversion_flag = False
 
@@ -265,7 +265,7 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
             if need_siemens_conversion_flag:
                 cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
                        siemens_parameter_xml, "-x", siemens_parameter_xsl,
-                       "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1), siemens_data_conversion_flag]
+                       "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1), " ", siemens_data_conversion_flag]
             else:
                 cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
                        siemens_parameter_xml, "-x", siemens_parameter_xsl,
