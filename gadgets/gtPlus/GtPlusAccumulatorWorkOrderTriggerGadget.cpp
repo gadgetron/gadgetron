@@ -448,7 +448,6 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
             GADGET_CHECK_RETURN_FALSE(workOrder_.start_E1_ < matrix_size_encoding_[1]);
 
             GADGET_CHECK_RETURN_FALSE(workOrder_.end_E1_ >= 0);
-            GADGET_CHECK_RETURN_FALSE(workOrder_.end_E1_ >= workOrder_.start_E1_);
         }
 
         // -------------------------------------------------------------------------
@@ -467,7 +466,6 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
             GADGET_CHECK_RETURN_FALSE(workOrder_.start_E2_ < matrix_size_encoding_[2]);
 
             GADGET_CHECK_RETURN_FALSE(workOrder_.end_E2_ >= 0);
-            GADGET_CHECK_RETURN_FALSE(workOrder_.end_E2_ >= workOrder_.start_E2_);
         }
 
         first_kspace_scan_ = false;
@@ -1394,15 +1392,8 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
         // if necessary, shift the E1/E2 indexes
         if ( workOrder_.CalibMode_ == ISMRMRD_embedded )
         {
-            if ( workOrder_.start_E1_ > 0 )
-            {
-                idx.kspace_encode_step_1 += workOrder_.start_E1_;
-            }
-
-            if ( workOrder_.start_E2_ > 0 )
-            {
-                idx.kspace_encode_step_2 += workOrder_.start_E2_;
-            }
+            idx.kspace_encode_step_1 += space_matrix_offset_E1_;
+            idx.kspace_encode_step_2 += space_matrix_offset_E2_;
         }
 
         // for the seperate or external mode, store the maximal idx

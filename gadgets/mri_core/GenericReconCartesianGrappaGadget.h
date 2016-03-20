@@ -111,7 +111,7 @@ namespace Gadgetron {
         // --------------------------------------------------
 
         // if downstream coil compression is used, determine number of channels used and prepare the ref_calib_dst_
-        virtual void prepare_down_stream_coil_compression_ref_data(const hoNDArray< std::complex<float> >& ref_src, hoNDArray< std::complex<float> >& ref_coil_map, hoNDArray< std::complex<float> >& ref_dst);
+        virtual void prepare_down_stream_coil_compression_ref_data(const hoNDArray< std::complex<float> >& ref_src, hoNDArray< std::complex<float> >& ref_coil_map, hoNDArray< std::complex<float> >& ref_dst, size_t encoding);
 
         // calibration, if only one dst channel is prescribed, the GrappaOne is used
         virtual void perform_calib(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t encoding);
