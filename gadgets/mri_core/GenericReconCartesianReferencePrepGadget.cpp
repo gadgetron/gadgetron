@@ -136,30 +136,27 @@ namespace Gadgetron {
             // no acceleration mode
             // check the availability of ref data
             // -----------------------------------------
-            if (calib_mode_[e] == Gadgetron::ISMRMRD_noacceleration)
+            if (prepare_ref_always.value() || !ref_prepared_[e])
             {
-                if (prepare_ref_always_no_acceleration.value() || !ref_prepared_[e])
+                // if no ref data is set, make copy the ref point from the  data
+                if (!rbit.ref_)
                 {
-                    // if no ref data is set, make copy the ref point from the  data
-                    if (!rbit.ref_)
+                    rbit.ref_ = rbit.data_;
+                    ref_prepared_[e] = true;
+                }
+            }
+            else
+            {
+                if (ref_prepared_[e])
+                {
+                    if (rbit.ref_)
                     {
-                        rbit.ref_ = rbit.data_;
-                        ref_prepared_[e] = true;
+                        // remove the ref
+                        rbit.ref_ = boost::none;
                     }
                 }
-                else
-                {
-                    if (ref_prepared_[e])
-                    {
-                        if (rbit.ref_)
-                        {
-                            // remove the ref
-                            rbit.ref_ = boost::none;
-                        }
-                    }
 
-                    continue;
-                }
+                continue;
             }
 
             if (!rbit.ref_) continue;

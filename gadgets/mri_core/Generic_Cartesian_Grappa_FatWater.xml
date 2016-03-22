@@ -4,11 +4,12 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <!--
-        Gadgetron generic recon chain for 2D cartesian EPI sampling
+        Gadgetron generic recon chain for 2D and 3D cartesian sampling
 
-        EPI imaging
-        Triggered by average
+        Fat water imaging
+        Triggered by slice
         Recon N is repetition and S is set
+        The ref will only be prepared once on the first contrast data, and applied to all other contrasts
 
         Author: Hui Xue
         Magnetic Resonance Technology Program, National Heart, Lung and Blood Institute, National Institutes of Health
@@ -25,47 +26,28 @@
     <!-- Noise prewhitening -->
     <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname></gadget>
 
-    <!-- EPI correction -->
-    <gadget>
-        <name>ReconX</name>
-        <dll>gadgetron_epi</dll>
-        <classname>EPIReconXGadget</classname>
-    </gadget>
+    <!-- RO asymmetric echo handling -->
+    <gadget><name>AsymmetricEcho</name><dll>gadgetron_mricore</dll><classname>AsymmetricEchoAdjustROGadget</classname></gadget>
 
-    <gadget>
-        <name>EPICorr</name>
-        <dll>gadgetron_epi</dll>
-        <classname>EPICorrGadget</classname>
-    </gadget>
-
-    <gadget>
-        <name>FFTX</name>
-        <dll>gadgetron_epi</dll>
-        <classname>FFTXGadget</classname>
-    </gadget>
-
-    <gadget>
-        <name>OneEncodingSpace</name>
-        <dll>gadgetron_epi</dll>
-        <classname>OneEncodingGadget</classname>
-    </gadget>
+    <!-- RO oversampling removal -->
+    <gadget><name>RemoveROOversampling</name><dll>gadgetron_mricore</dll><classname>RemoveROOversamplingGadget</classname></gadget>
 
     <!-- Data accumulation and trigger gadget -->
     <gadget>
         <name>AccTrig</name>
         <dll>gadgetron_mricore</dll>
         <classname>AcquisitionAccumulateTriggerGadget</classname>
-        <property><name>trigger_dimension</name><value>average</value></property>
-        <property><name>sorting_dimension</name><value>repetition</value></property>
+        <property><name>trigger_dimension</name><value>slice</value></property>
+        <property><name>sorting_dimension</name><value>contrast</value></property>
     </gadget>
 
     <gadget>
         <name>BucketToBuffer</name>
         <dll>gadgetron_mricore</dll>
         <classname>BucketToBufferGadget</classname>
-        <property><name>N_dimension</name><value>average</value></property>
-        <property><name>S_dimension</name><value>repetition</value></property>
-        <property><name>split_slices</name><value>false</value></property>
+        <property><name>N_dimension</name><value>repetition</value></property>
+        <property><name>S_dimension</name><value>set</value></property>
+        <property><name>split_slices</name><value>true</value></property>
         <property><name>ignore_segment</name><value>true</value></property>
     </gadget>
 
@@ -131,7 +113,7 @@
         <property><name>verbose</name><value>true</value></property>
 
         <!-- whether to send out gfactor -->
-        <property><name>send_out_gfactor</name><value>false</value></property>
+        <property><name>send_out_gfactor</name><value>true</value></property>
     </gadget>
 
     <!-- Partial fourier handling -->
@@ -207,8 +189,8 @@
 
         <property><name>min_intensity_value</name><value>64</value></property>
         <property><name>max_intensity_value</name><value>4095</value></property>
-        <property><name>scalingFactor</name><value>4.0</value></property>
-        <property><name>use_constant_scalingFactor</name><value>false</value></property>
+        <property><name>scalingFactor</name><value>10.0</value></property>
+        <property><name>use_constant_scalingFactor</name><value>true</value></property>
         <property><name>auto_scaling_only_once</name><value>true</value></property>
         <property><name>scalingFactor_dedicated</name><value>100.0</value></property>
     </gadget>

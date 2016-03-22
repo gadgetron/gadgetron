@@ -124,7 +124,7 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
                 // after this step, the recon_obj_[e].ref_calib_dst_ and recon_obj_[e].ref_coil_map_ are modified
-                if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::make_ref_coil_map"); }
+                if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::prepare_down_stream_coil_compression_ref_data"); }
                 this->prepare_down_stream_coil_compression_ref_data(recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, recon_obj_[e].ref_calib_dst_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
