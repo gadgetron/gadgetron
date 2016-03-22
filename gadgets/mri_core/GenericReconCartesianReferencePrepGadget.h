@@ -55,9 +55,9 @@ namespace Gadgetron {
         GADGET_PROPERTY(average_all_ref_N, bool, "Whether to average all N for ref generation", true);
         /// whether to average all S for ref generation
         GADGET_PROPERTY(average_all_ref_S, bool, "Whether to average all S for ref generation", false);
-        /// if no acceleration is used, whether to update ref for every incoming IsmrmrdReconData
+        /// whether to update ref for every incoming IsmrmrdReconData; for some applications, we may want to only compute ref data once
         /// if false, the ref will only be prepared for the first incoming IsmrmrdReconData
-        GADGET_PROPERTY(prepare_ref_always_no_acceleration, bool, "Whether to prepare ref for every incoming IsmrmrdReconData if the no acceleration is used", true);
+        GADGET_PROPERTY(prepare_ref_always, bool, "Whether to prepare ref for every incoming IsmrmrdReconData", true);
 
     protected:
 

@@ -66,7 +66,7 @@
         <!-- every set has its own kernels -->
         <property><name>average_all_ref_S</name><value>false</value></property>
         <!-- whether always to prepare ref if no acceleration is used -->
-        <property><name>prepare_ref_always_no_acceleration</name><value>true</value></property>
+        <property><name>prepare_ref_always</name><value>true</value></property>
     </gadget>
 
     <!-- Coil compression -->
