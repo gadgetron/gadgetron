@@ -13,10 +13,8 @@
 
 namespace Gadgetron {
 
-    GenericReconFieldOfViewAdjustmentGadget::GenericReconFieldOfViewAdjustmentGadget()
+    GenericReconFieldOfViewAdjustmentGadget::GenericReconFieldOfViewAdjustmentGadget() : BaseClass()
     {
-        num_encoding_spaces_ = 1;
-        process_called_times_ = 0;
     }
 
     GenericReconFieldOfViewAdjustmentGadget::~GenericReconFieldOfViewAdjustmentGadget()
@@ -25,6 +23,8 @@ namespace Gadgetron {
 
     int GenericReconFieldOfViewAdjustmentGadget::process_config(ACE_Message_Block* mb)
     {
+        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+
         ISMRMRD::IsmrmrdHeader h;
         try
         {
@@ -77,18 +77,6 @@ namespace Gadgetron {
             GDEBUG_CONDITION_STREAM(verbose.value(), "Encoding space : " << e << " - recon    FOV : [" << recon_FOV_[e][0]    << " " << recon_FOV_[e][1]    << " " << recon_FOV_[e][2] << " ]");
             GDEBUG_CONDITION_STREAM(verbose.value(), "Encoding space : " << e << " - recon    size : [" << recon_size_[e][0] << " " << recon_size_[e][1] << " " << recon_size_[e][2] << " ]");
         }
-
-        // ---------------------------------------------------------------------------------------------------------
-        // generate the destination folder
-        /*if (!debug_folder.value().empty())
-        {
-            Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        }
-        else
-        {
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        }*/
 
         return GADGET_OK;
     }

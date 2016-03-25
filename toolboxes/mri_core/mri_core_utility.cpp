@@ -435,7 +435,14 @@ namespace Gadgetron
                         }
                         else
                         {
-                            KLT[slc][s][n].prepare(dataUsed, 3, KLT[0][0][0].output_length());
+                            if(n>=dataAveN && s>=dataAveS)
+                            {
+                                KLT[slc][s][n] = KLT[slc][dataAveS - 1][dataAveN-1];
+                            }
+                            else
+                            {
+                                KLT[slc][s][n].prepare(dataUsed, 3, KLT[0][0][0].output_length());
+                            }
                         }
                     }
                 }

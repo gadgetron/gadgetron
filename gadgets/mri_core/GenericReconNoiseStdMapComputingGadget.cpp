@@ -11,11 +11,8 @@
 
 namespace Gadgetron {
 
-    GenericReconNoiseStdMapComputingGadget::GenericReconNoiseStdMapComputingGadget()
+    GenericReconNoiseStdMapComputingGadget::GenericReconNoiseStdMapComputingGadget() : BaseClass()
     {
-        num_encoding_spaces_ = 1;
-
-        process_called_times_ = 0;
     }
 
     GenericReconNoiseStdMapComputingGadget::~GenericReconNoiseStdMapComputingGadget()
@@ -24,6 +21,8 @@ namespace Gadgetron {
 
     int GenericReconNoiseStdMapComputingGadget::process_config(ACE_Message_Block* mb)
     {
+        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+
         ISMRMRD::IsmrmrdHeader h;
         try
         {
@@ -47,18 +46,6 @@ namespace Gadgetron {
         num_encoding_spaces_ = NE;
 
         GDEBUG_CONDITION_STREAM(verbose.value(), "Number of encoding spaces: " << NE);
-
-        // ---------------------------------------------------------------------------------------------------------
-        // generate the destination folder
-        //if (!debug_folder.value().empty())
-        //{
-        //    Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        //}
-        //else
-        //{
-        //    GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        //}
 
         return GADGET_OK;
     }

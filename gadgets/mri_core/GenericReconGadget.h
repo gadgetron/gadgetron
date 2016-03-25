@@ -6,38 +6,22 @@
 
 #pragma once
 
-#include <complex>
-#include "gadgetron_mricore_export.h"
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "ismrmrd/ismrmrd.h"
-#include "ismrmrd/xml.h"
-#include "ismrmrd/meta.h"
-#include "GadgetronTimer.h"
-
-#include "hoNDArray_utils.h"
-
-//#include "gtPlusIOAnalyze.h"
-
-#include "GadgetStreamController.h"
+#include "GenericReconBase.h"
 
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDFFT.h"
 
-#include "mri_core_def.h"
-#include "mri_core_data.h"
-#include "mri_core_utility.h"
 #include "mri_core_coil_map_estimation.h"
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconGadget : public Gadget1<IsmrmrdReconData>
+    class EXPORTGADGETSMRICORE GenericReconGadget : public GenericReconDataBase
     {
     public:
         GADGET_DECLARE(GenericReconGadget);
 
-        typedef Gadget1<IsmrmrdReconData> BaseClass;
+        typedef GenericReconDataBase BaseClass;
 
         GenericReconGadget();
         ~GenericReconGadget();
@@ -53,20 +37,11 @@ namespace Gadgetron {
         GADGET_PROPERTY_LIMITS(coil_map_algorithm, std::string, "Method for coil map estimation", "Inati",
             GadgetPropertyLimitsEnumeration, "Inati", "Inati_Iter");
 
-        /// ------------------------------------------------------------------------------------
-        /// debug and timing
-        GADGET_PROPERTY(verbose, bool, "Whether to print more information", false);
-        GADGET_PROPERTY(debug_folder, std::string, "If set, the debug output will be written out", "");
-        GADGET_PROPERTY(perform_timing, bool, "Whether to perform timing on some computational steps", false);
-
     protected:
 
         // --------------------------------------------------
         // variables for protocol
         // --------------------------------------------------
-
-        // number of encoding spaces in the protocol
-        size_t num_encoding_spaces_;
 
         // for every encoding space
 
@@ -83,8 +58,6 @@ namespace Gadgetron {
         // --------------------------------------------------
         // variable for recon
         // --------------------------------------------------
-        // number of times the process function is called
-        size_t process_called_times_;
 
         /// buffers used during recon
         hoNDArray< std::complex<float> > complex_im_recon_buf_;
@@ -94,20 +67,6 @@ namespace Gadgetron {
         hoNDArray< std::complex<float> > filter_RO_ref_coi_map_;
         hoNDArray< std::complex<float> > filter_E1_ref_coi_map_;
         hoNDArray< std::complex<float> > filter_E2_ref_coi_map_;
-
-        // --------------------------------------------------
-        // variables for debug and timing
-        // --------------------------------------------------
-
-        // clock for timing
-        Gadgetron::GadgetronTimer gt_timer_local_;
-        Gadgetron::GadgetronTimer gt_timer_;
-
-        //// debug folder
-        //std::string debug_folder_full_path_;
-
-        //// exporter
-        //Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
 
         // --------------------------------------------------
         // gadget functions
