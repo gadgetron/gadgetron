@@ -35,8 +35,8 @@
         <name>AccTrig</name>
         <dll>gadgetron_mricore</dll>
         <classname>AcquisitionAccumulateTriggerGadget</classname>
-        <property><name>trigger_dimension</name><value>repetition</value></property>
-        <property><name>sorting_dimension</name><value>slice</value></property>
+        <property><name>trigger_dimension</name><value></value></property>
+        <property><name>sorting_dimension</name><value></value></property>
     </gadget>
 
     <gadget>
@@ -44,8 +44,8 @@
         <dll>gadgetron_mricore</dll>
         <classname>BucketToBufferGadget</classname>
         <property><name>N_dimension</name><value>contrast</value></property>
-        <property><name>S_dimension</name><value>set</value></property>
-        <property><name>split_slices</name><value>true</value></property>
+        <property><name>S_dimension</name><value>average</value></property>
+        <property><name>split_slices</name><value>false</value></property>
         <property><name>ignore_segment</name><value>true</value></property>
     </gadget>
 
@@ -56,7 +56,7 @@
         <classname>GenericReconCartesianReferencePrepGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
@@ -66,6 +66,26 @@
         <property><name>average_all_ref_S</name><value>true</value></property>
         <!-- whether always to prepare ref if no acceleration is used -->
         <property><name>prepare_ref_always</name><value>true</value></property>
+    </gadget>
+
+    <!-- Coil compression -->
+    <gadget>
+        <name>CoilCompression</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>GenericReconEigenChannelGadget</classname>
+
+        <!-- parameters for debug and timing -->
+        <property><name>debug_folder</name><value></value></property>
+        <property><name>perform_timing</name><value>true</value></property>
+        <property><name>verbose</name><value>true</value></property>
+
+        <property><name>average_all_ref_N</name><value>true</value></property>
+        <property><name>average_all_ref_S</name><value>true</value></property>
+
+        <!-- Up stream coil compression -->
+        <property><name>upstream_coil_compression</name><value>true</value></property>
+        <property><name>upstream_coil_compression_thres</name><value>0.002</value></property>
+        <property><name>upstream_coil_compression_num_modesKept</name><value>0</value></property>
     </gadget>
 
     <!-- Recon -->
@@ -80,13 +100,18 @@
         <!-- Coil map estimation, Inati or Inati_Iter -->
         <property><name>coil_map_algorithm</name><value>Inati</value></property>
 
+        <!-- Down stream coil compression -->
+        <property><name>downstream_coil_compression</name><value>true</value></property>
+        <property><name>downstream_coil_compression_thres</name><value>0.01</value></property>
+        <property><name>downstream_coil_compression_num_modesKept</name><value>0</value></property>
+
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
         <!-- whether to send out gfactor -->
-        <property><name>send_out_gfactor</name><value>true</value></property>
+        <property><name>send_out_gfactor</name><value>false</value></property>
     </gadget>
 
     <!-- Partial fourier handling -->
@@ -96,7 +121,7 @@
         <classname>GenericReconPartialFourierHandlingFilterGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
 
@@ -117,7 +142,7 @@
         <classname>GenericReconKSpaceFilteringGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
 
@@ -145,7 +170,7 @@
         <classname>GenericReconFieldOfViewAdjustmentGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
     </gadget>

@@ -535,14 +535,14 @@ namespace Gadgetron{
           NS = 1;
         }
 
-        //GDEBUG_STREAM("Data dimensions:" << std::endl);
-        //GDEBUG_STREAM("   NE0:  " << NE0  << std::endl);
-        //GDEBUG_STREAM("   NE1:  " << NE1  << std::endl);
-        //GDEBUG_STREAM("   NE2:  " << NE2  << std::endl);
-        //GDEBUG_STREAM("   NLOC: " << NLOC << std::endl);
-        //GDEBUG_STREAM("   NCHA: " << NCHA << std::endl);
-        //GDEBUG_STREAM("   NN:   " << NN   << std::endl);
-        //GDEBUG_STREAM("   NS:   " << NS   << std::endl);
+        //GDEBUG_STREAM("Data dimensions:");
+        //GDEBUG_STREAM("   NE0:  " << NE0);
+        //GDEBUG_STREAM("   NE1:  " << NE1);
+        //GDEBUG_STREAM("   NE2:  " << NE2);
+        //GDEBUG_STREAM("   NLOC: " << NLOC);
+        //GDEBUG_STREAM("   NCHA: " << NCHA);
+        //GDEBUG_STREAM("   NN:   " << NN);
+        //GDEBUG_STREAM("   NS:   " << NS);
 
         //Allocate the array for the data
         dataBuffer.data_.create(NE0, NE1, NE2, NCHA, NN, NS, NLOC);

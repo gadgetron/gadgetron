@@ -14,28 +14,16 @@
 
 #pragma once
 
-#include <complex>
-#include "gadgetron_mricore_export.h"
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "ismrmrd/ismrmrd.h"
-#include "ismrmrd/xml.h"
-#include "ismrmrd/meta.h"
-#include "GadgetronTimer.h"
-
-//#include "gtPlusIOAnalyze.h"
-
-#include "GadgetStreamController.h"
-#include "mri_core_data.h"
+#include "GenericReconBase.h"
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconKSpaceFilteringGadget : public Gadget1<IsmrmrdImageArray>
+    class EXPORTGADGETSMRICORE GenericReconKSpaceFilteringGadget : public GenericReconImageBase
     {
     public:
         GADGET_DECLARE(GenericReconKSpaceFilteringGadget);
 
-        typedef Gadget1<IsmrmrdImageArray> BaseClass;
+        typedef GenericReconImageBase BaseClass;
 
         GenericReconKSpaceFilteringGadget();
         ~GenericReconKSpaceFilteringGadget();
@@ -44,12 +32,6 @@ namespace Gadgetron {
         /// parameters to control the reconstruction
         /// ------------------------------------------------------------------------------------
         GADGET_PROPERTY(skip_processing_meta_field, std::string, "If this meta field exists, pass the incoming image array to next gadget without processing", "Skip_processing_after_recon");
-
-        /// ------------------------------------------------------------------------------------
-        /// debug and timing
-        GADGET_PROPERTY(verbose, bool, "Whether to print more information", false);
-        GADGET_PROPERTY(debug_folder, std::string, "If set, the debug output will be written out", "");
-        GADGET_PROPERTY(perform_timing, bool, "Whether to perform timing on some computational steps", false);
 
         /// ------------------------------------------------------------------------------------
         /// kspace filter parameters
@@ -83,9 +65,6 @@ namespace Gadgetron {
         // variables for protocol
         // --------------------------------------------------
 
-        // number of encoding spaces in the protocol
-        size_t num_encoding_spaces_;
-
         // encoding FOV and recon FOV
         std::vector< std::vector<float> > encoding_FOV_;
         std::vector< std::vector<float> > recon_FOV_;
@@ -104,23 +83,6 @@ namespace Gadgetron {
 
         // results of filtering
         hoNDArray< std::complex<float> > filter_res_;
-
-        // number of times the process function is called
-        size_t process_called_times_;
-
-        // --------------------------------------------------
-        // variables for debug and timing
-        // --------------------------------------------------
-
-        // debug folder
-        //std::string debug_folder_full_path_;
-
-        // clock for timing
-        Gadgetron::GadgetronTimer gt_timer_local_;
-        Gadgetron::GadgetronTimer gt_timer_;
-
-        // exporter
-        //Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
 
         // --------------------------------------------------
         // functional functions

@@ -10,13 +10,10 @@
 #define GENERICRECON_DEFAULT_INTENSITY_SCALING_FACTOR 4.0f
 #define GENERICRECON_DEFAULT_INTENSITY_MAX 2048
 
-/// GenericCartesianGrappaReconObj
 namespace Gadgetron {
 
-    GenericReconImageArrayScalingGadget::GenericReconImageArrayScalingGadget()
+    GenericReconImageArrayScalingGadget::GenericReconImageArrayScalingGadget() : BaseClass()
     {
-        num_encoding_spaces_ = 1;
-        process_called_times_ = 0;
     }
 
     GenericReconImageArrayScalingGadget::~GenericReconImageArrayScalingGadget()
@@ -25,6 +22,8 @@ namespace Gadgetron {
 
     int GenericReconImageArrayScalingGadget::process_config(ACE_Message_Block* mb)
     {
+        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+
         ISMRMRD::IsmrmrdHeader h;
         try
         {

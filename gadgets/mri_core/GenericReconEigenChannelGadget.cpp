@@ -7,10 +7,8 @@
 
 namespace Gadgetron {
 
-    GenericReconEigenChannelGadget::GenericReconEigenChannelGadget() : num_encoding_spaces_(1), process_called_times_(0)
+    GenericReconEigenChannelGadget::GenericReconEigenChannelGadget() : BaseClass()
     {
-        gt_timer_.set_timing_in_destruction(false);
-        gt_timer_local_.set_timing_in_destruction(false);
     }
 
     GenericReconEigenChannelGadget::~GenericReconEigenChannelGadget()
@@ -19,6 +17,8 @@ namespace Gadgetron {
 
     int GenericReconEigenChannelGadget::process_config(ACE_Message_Block* mb)
     {
+        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+
         ISMRMRD::IsmrmrdHeader h;
         try
         {
@@ -84,18 +84,6 @@ namespace Gadgetron {
                 }
             }
         }
-
-        // ---------------------------------------------------------------------------------------------------------
-
-        /*if (!debug_folder.value().empty())
-        {
-            Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        }
-        else
-        {
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        }*/
 
         return GADGET_OK;
     }
@@ -207,18 +195,18 @@ namespace Gadgetron {
                 }
             }
 
-            /*if (!debug_folder_full_path_.empty())
-            {
-                gt_exporter_.exportArrayComplex(rbit.data_.data_, debug_folder_full_path_ + "data_before_KLT" + os.str());
-            }*/
+            //if (!debug_folder_full_path_.empty())
+            //{
+            //    gt_exporter_.exportArrayComplex(rbit.data_.data_, debug_folder_full_path_ + "data_before_KLT" + os.str());
+            //}
 
             // apply KL coefficients
             Gadgetron::apply_eigen_channel_coefficients(KLT_[e], rbit.data_.data_);
 
-            /*if (!debug_folder_full_path_.empty())
-            {
-                gt_exporter_.exportArrayComplex(rbit.data_.data_, debug_folder_full_path_ + "data_after_KLT" + os.str());
-            }*/
+            //if (!debug_folder_full_path_.empty())
+            //{
+            //    gt_exporter_.exportArrayComplex(rbit.data_.data_, debug_folder_full_path_ + "data_after_KLT" + os.str());
+            //}
 
             if (rbit.ref_)
             {
