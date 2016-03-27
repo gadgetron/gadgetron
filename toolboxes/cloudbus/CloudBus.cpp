@@ -44,9 +44,13 @@ namespace Gadgetron
 	  GERROR("Unexpected message id = %d\n", msg_id);
 	  return -1;
 	}
-	deserialize(cloud_bus_->nodes_, buffer+4, msg_size-4);
+	{
+	  std::unique_lock<std::mutex> lk(cloud_bus_->mtx_);
+	  deserialize(cloud_bus_->nodes_, buffer+4, msg_size-4);
+	  lk.unlock();
+	  cloud_bus_->node_list_condition_.notify_all();
+	}
 	delete [] buffer;
-	cloud_bus_->node_list_condition_.broadcast();
 
       }
     return 0;
@@ -119,21 +123,17 @@ namespace Gadgetron
   
   void CloudBus::report_recon_start()
   {
-    mtx_.acquire();
     node_info_.active_reconstructions++;
     auto t = std::chrono::system_clock::now();
     node_info_.last_recon = std::chrono::system_clock::to_time_t(t);
-    mtx_.release();
     send_node_info();
   }
   
   void CloudBus::report_recon_end()
   {
-    mtx_.acquire();
     if (node_info_.active_reconstructions > 0) node_info_.active_reconstructions--;
     auto t = std::chrono::system_clock::now();
     node_info_.last_recon = std::chrono::system_clock::to_time_t(t);
-    mtx_.release();
     send_node_info();
   }
 
@@ -153,7 +153,6 @@ namespace Gadgetron
     this->peer().close_writer(); 
     this->peer().close();
     connected_ = false;
-    GDEBUG("Really closed\n");
     if (reader_task_) {
       delete reader_task_;
       reader_task_ = 0;
@@ -193,9 +192,7 @@ namespace Gadgetron
                       reader_task_ = new CloudBusReaderTask(this);
                       reader_task_->open();
                       
-                      mtx_.acquire();
                       connected_ = true;
-                      mtx_.release();
                       if (!query_mode_) {
                           send_node_info();
                       }
@@ -230,17 +227,17 @@ namespace Gadgetron
 
   void CloudBus::update_node_info()
   {
-    mtx_.acquire();
     if (connected_) {
       uint32_t req[2];
       req[0] = 4;
       req[1] = GADGETRON_CLOUDBUS_NODE_LIST_QUERY;
 
       this->peer().send_n((char*)(&req),8);
-      ACE_Time_Value t(0, 100000); //As a safety, we will wait a maximum of 100ms for this request and then move on.
-      node_list_condition_.wait(&t);
+      {
+	std::unique_lock<std::mutex> lk(mtx_);
+	node_list_condition_.wait_for(lk, std::chrono::milliseconds(100));
+      }
     }
-    mtx_.release();
   }
   
   void CloudBus::print_nodes()
@@ -269,9 +266,10 @@ namespace Gadgetron
         nodes.push_back(n);
     } else {
         update_node_info();
-        mtx_.acquire();
-        nodes = nodes_;
-        mtx_.release();
+	{
+	  std::lock_guard<std::mutex> lk(mtx_);
+	  nodes = nodes_;
+	}
     }
   }
   
@@ -279,17 +277,15 @@ namespace Gadgetron
   {
     update_node_info();
     size_t nodes;
-    mtx_.acquire();
-    nodes = nodes_.size();
-    mtx_.release();
+    {
+      std::lock_guard<std::mutex> lk(mtx_);
+      nodes = nodes_.size();
+    }
     return nodes;
   }
 
   CloudBus::CloudBus(int port, const char* addr)
-    : mtx_("CLOUDBUSMTX")
-    , mtx_node_list_("CLOUDBUSMTXNODELIST")
-    , node_list_condition_(mtx_node_list_)
-    , uuid_(boost::uuids::random_generator()())
+    : uuid_(boost::uuids::random_generator()())
     , connected_(false)
     , reader_task_(0)
     , use_lb_endpoint_(false)
