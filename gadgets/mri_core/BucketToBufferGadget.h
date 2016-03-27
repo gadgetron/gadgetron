@@ -31,39 +31,48 @@ namespace Gadgetron{
       virtual ~BucketToBufferGadget();
 
       int close(unsigned long flags);
-      
+
     protected:
       GADGET_PROPERTY_LIMITS(N_dimension, std::string, "N-Dimensions", "", 
-			     GadgetPropertyLimitsEnumeration,
-			     "average",
-			     "contrast",
-			     "phase",
-			     "repetition",
-			     "set",
-			     "segment",
-			     "slice",
-			     "");
+                 GadgetPropertyLimitsEnumeration,
+                 "average",
+                 "contrast",
+                 "phase",
+                 "repetition",
+                 "set",
+                 "segment",
+                 "slice",
+                 "");
 
       GADGET_PROPERTY_LIMITS(S_dimension, std::string, "S-Dimensions", "", 
-			     GadgetPropertyLimitsEnumeration,
-			     "average",
-			     "contrast",
-			     "phase",
-			     "repetition",
-			     "set",
-			     "segment",
-			     "slice",
-			     "");
+                 GadgetPropertyLimitsEnumeration,
+                 "average",
+                 "contrast",
+                 "phase",
+                 "repetition",
+                 "set",
+                 "segment",
+                 "slice",
+                 "");
 
       GADGET_PROPERTY(split_slices, bool, "Split slices", false);
       GADGET_PROPERTY(ignore_segment, bool, "Ignore segment", false);
+      GADGET_PROPERTY(predict_N_S, bool, "Whether to predict dimension N and S, if they are not set", false);
+      GADGET_PROPERTY(verbose, bool, "Whether to print more information", false);
 
       IsmrmrdCONDITION N_;
       IsmrmrdCONDITION S_;
       bool split_slices_;
       bool ignore_segment_;
       ISMRMRD::IsmrmrdHeader hdr_;
-      
+
+      size_t num_encoding_spaces_;
+      std::vector<double> acceFactorE1_;
+      std::vector<double> acceFactorE2_;
+      std::vector<Gadgetron::ismrmrdCALIBMODE> calib_mode_;
+      std::vector<std::string> interleaving_dimension_;
+      std::vector<ISMRMRD::EncodingCounters> meas_max_idx_;
+
       virtual int process_config(ACE_Message_Block* mb);
       virtual int process(GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1);
       size_t getKey(ISMRMRD::ISMRMRD_EncodingCounters idx);
@@ -71,13 +80,14 @@ namespace Gadgetron{
       size_t getN(ISMRMRD::ISMRMRD_EncodingCounters idx);
       size_t getS(ISMRMRD::ISMRMRD_EncodingCounters idx);
 
+      // if both N and S dimensions are not set, try to predict from the protocol for encoding space
+      void predict_N_S_dimension(size_t e);
+
       IsmrmrdReconBit & getRBit(std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > & recon_data_buffers, size_t key, uint16_t espace);
       virtual void allocateDataArrays(IsmrmrdDataBuffered &  dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref);
       virtual void fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader & acqhdr, bool forref);
       virtual void stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, bool forref);
-
     };
-
-  
 }
+
 #endif //BUCKETTOBUFFER_H

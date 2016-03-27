@@ -58,17 +58,17 @@ namespace Gadgetron {
             GDEBUG_CONDITION_STREAM(verbose.value(), "Recon field_of_view :  " << r_space.fieldOfView_mm.x << " " << r_space.fieldOfView_mm.y << " " << r_space.fieldOfView_mm.z);
 
             meas_max_idx_[e].kspace_encode_step_1 = (uint16_t)e_space.matrixSize.y - 1;
-            meas_max_idx_[e].set = (e_limits.set && (e_limits.set->maximum > 0)) ? e_limits.set->maximum : 0;
-            meas_max_idx_[e].phase = (e_limits.phase && (e_limits.phase->maximum > 0)) ? e_limits.phase->maximum : 0;
+            meas_max_idx_[e].set                  = (e_limits.set) ? e_limits.set->maximum : 0;
+            meas_max_idx_[e].phase                = (e_limits.phase) ? e_limits.phase->maximum : 0;
 
             meas_max_idx_[e].kspace_encode_step_2 = (uint16_t)e_space.matrixSize.z - 1;
 
-            meas_max_idx_[e].contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum : 0;
-            meas_max_idx_[e].slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
-            meas_max_idx_[e].repetition = e_limits.repetition ? e_limits.repetition->maximum : 0;
-            meas_max_idx_[e].slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
-            meas_max_idx_[e].average = e_limits.average ? e_limits.average->maximum : 0;
-            meas_max_idx_[e].segment = 0;
+            meas_max_idx_[e].contrast             = (e_limits.contrast) ? e_limits.contrast->maximum : 0;
+            meas_max_idx_[e].slice                = (e_limits.slice) ? e_limits.slice->maximum : 0;
+            meas_max_idx_[e].repetition           = (e_limits.repetition) ? e_limits.repetition->maximum : 0;
+            meas_max_idx_[e].slice                = (e_limits.slice) ? e_limits.slice->maximum : 0;
+            meas_max_idx_[e].average              = (e_limits.average) ? e_limits.average->maximum : 0;
+            meas_max_idx_[e].segment              = 0;
 
             if (!h.encoding[e].parallelImaging)
             {

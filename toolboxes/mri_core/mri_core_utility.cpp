@@ -516,6 +516,133 @@ namespace Gadgetron
 
     // ------------------------------------------------------------------------
 
+    std::string get_name_from_ismrmrd_dimension(IsmrmrdCONDITION dim)
+    {
+        std::string name;
+
+        switch(dim)
+        {
+        case KSPACE_ENCODE_STEP_1:
+            name = "e1";
+            break;
+
+        case KSPACE_ENCODE_STEP_2:
+            name = "e2";
+            break;
+
+        case AVERAGE:
+            name = "average";
+            break;
+
+        case SLICE:
+            name = "slice";
+            break;
+
+        case CONTRAST:
+            name = "contrast";
+            break;
+
+        case PHASE:
+            name = "phase";
+            break;
+
+        case REPETITION:
+            name = "repetition";
+            break;
+
+        case SET:
+            name = "set";
+            break;
+
+        case SEGMENT:
+            name = "segment";
+            break;
+
+        case USER_0:
+            name = "user_0";
+            break;
+
+        case USER_1:
+            name = "user_1";
+            break;
+
+        case USER_2:
+            name = "user_2";
+            break;
+
+        case USER_3:
+            name = "user_3";
+            break;
+
+        case USER_4:
+            name = "user_4";
+            break;
+
+        case USER_5:
+            name = "user_5";
+            break;
+
+        case USER_6:
+            name = "user_6";
+            break;
+
+        case USER_7:
+            name = "user_4";
+            break;
+
+        case NONE:
+            name = "none";
+            break;
+
+        otherwise:
+            name = "unknown";
+        }
+
+        return name;
+    }
+
+    IsmrmrdCONDITION get_ismrmrd_dimension_from_name(const std::string& name)
+    {
+        if (name == "e1")
+            return KSPACE_ENCODE_STEP_1;
+        else if (name == "e2")
+            return KSPACE_ENCODE_STEP_2;
+        else if (name == "average")
+            return AVERAGE;
+        else if (name == "slice")
+            return SLICE;
+        else if (name == "contrast")
+            return CONTRAST;
+        else if (name == "phase")
+            return PHASE;
+        else if (name == "repetition")
+            return REPETITION;
+        else if (name == "set")
+            return SET;
+        else if (name == "segment")
+            return SEGMENT;
+        else if (name == "user_0")
+            return USER_0;
+        else if (name == "user_1")
+            return USER_1;
+        else if (name == "user_2")
+            return USER_2;
+        else if (name == "user_3")
+            return USER_3;
+        else if (name == "user_4")
+            return USER_4;
+        else if (name == "user_5")
+            return USER_5;
+        else if (name == "user_6")
+            return USER_6;
+        else if (name == "user_7")
+            return USER_7;
+        else
+            return NONE;
+    }
+
+    // ------------------------------------------------------------------------
+
 //    void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath)
 //    {
 //        char* v = std::getenv("GADGETRON_DEBUG_FOLDER");

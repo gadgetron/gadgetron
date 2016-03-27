@@ -46,6 +46,10 @@ namespace Gadgetron
     /// apply KLT coefficients to data for every N, S, and SLC
     template <typename T> EXPORTMRICORE void apply_eigen_channel_coefficients(const std::vector< std::vector< std::vector< hoNDKLT<T> > > >& KLT, hoNDArray<T>& data);
 
+    /// ismrmrd dimension from/to its string name
+    EXPORTMRICORE std::string get_name_from_ismrmrd_dimension(IsmrmrdCONDITION dim);
+    EXPORTMRICORE IsmrmrdCONDITION get_ismrmrd_dimension_from_name(const std::string& name);
+
     /// get the path of debug folder
     // environmental variable GADGETRON_DEBUG_FOLDER is used 
     // EXPORTMRICORE void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath);
