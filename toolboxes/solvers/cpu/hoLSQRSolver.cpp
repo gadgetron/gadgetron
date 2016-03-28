@@ -30,7 +30,7 @@ namespace Gadgetron{
             if (this->x0_!=NULL)
             {
                 GADGET_CHECK_THROW(this->x0_->dimensions_equal(image_dims.get()));
-                *x = *x0_;
+                *x = *(this->x0_);
             }
             else
             {
