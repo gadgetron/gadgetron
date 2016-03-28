@@ -43,10 +43,12 @@
         <name>BucketToBuffer</name>
         <dll>gadgetron_mricore</dll>
         <classname>BucketToBufferGadget</classname>
-        <property><name>N_dimension</name><value>contrast</value></property>
-        <property><name>S_dimension</name><value>average</value></property>
+        <property><name>N_dimension</name><value></value></property>
+        <property><name>S_dimension</name><value></value></property>
         <property><name>split_slices</name><value>false</value></property>
         <property><name>ignore_segment</name><value>true</value></property>
+        <property><name>predict_N_S</name><value>true</value></property>
+        <property><name>verbose</name><value>true</value></property>
     </gadget>
 
     <!-- Prep ref -->

@@ -1,8 +1,10 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "BucketToBufferGadget.h"
 #include "mri_core_data.h"
+#include "mri_core_utility.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
+
 namespace Gadgetron{
 
     BucketToBufferGadget::BucketToBufferGadget()
@@ -12,6 +14,101 @@ namespace Gadgetron{
   BucketToBufferGadget::~BucketToBufferGadget()
   {
     //The buckets array should be empty but just in case, let's make sure all the stuff is released.
+  }
+
+  struct dimCompObj
+  {
+      dimCompObj() {}
+      ~dimCompObj() {}
+
+      bool operator()(const std::pair<Gadgetron::IsmrmrdCONDITION, size_t>& a, const std::pair<Gadgetron::IsmrmrdCONDITION, size_t>& b) const
+      {
+          return (a.second > b.second);
+      }
+  };
+
+  void BucketToBufferGadget::predict_N_S_dimension(size_t e)
+  {
+      if (calib_mode_[e] == ISMRMRD_interleaved)
+      {
+          std::vector< std::pair<Gadgetron::IsmrmrdCONDITION, size_t> > dimSizes(5);
+
+          dimSizes[0].first = SET;
+          dimSizes[0].second = meas_max_idx_[e].set;
+
+          dimSizes[1].first = AVERAGE;
+          dimSizes[1].second = meas_max_idx_[e].average;
+
+          Gadgetron::IsmrmrdCONDITION dim2, dim3;
+          size_t idx2, idx3;
+
+          if (interleaving_dimension_[e] == "phase")
+          {
+              N_ = PHASE;
+
+              dim2 = REPETITION;
+              idx2 = meas_max_idx_[e].repetition;
+
+              dim3 = CONTRAST;
+              idx3 = meas_max_idx_[e].contrast;
+          }
+
+          if (interleaving_dimension_[e] == "repetition")
+          {
+              N_ = REPETITION;
+
+              dim2 = PHASE;
+              idx2 = meas_max_idx_[e].phase;
+
+              dim3 = CONTRAST;
+              idx3 = meas_max_idx_[e].contrast;
+          }
+
+          if (interleaving_dimension_[e] == "contrast")
+          {
+              N_ = CONTRAST;
+
+              dim2 = PHASE;
+              idx2 = meas_max_idx_[e].phase;
+
+              dim3 = REPETITION;
+              idx3 = meas_max_idx_[e].repetition;
+          }
+
+          dimSizes[2].first = dim2;
+          dimSizes[2].second = idx2;
+
+          dimSizes[3].first = dim3;
+          dimSizes[3].second = idx3;
+
+          std::sort(dimSizes.begin(), dimSizes.end(), dimCompObj());
+
+          S_ = dimSizes[0].first;
+      }
+      else if ((calib_mode_[e] == ISMRMRD_embedded)
+          || (calib_mode_[e] == ISMRMRD_separate)
+          || (calib_mode_[e] == ISMRMRD_noacceleration))
+      {
+          std::vector< std::pair<Gadgetron::IsmrmrdCONDITION, size_t> > dimSizes(4);
+          dimSizes[0].first = CONTRAST;
+          dimSizes[0].second = meas_max_idx_[e].contrast;
+
+          dimSizes[1].first = PHASE;
+          dimSizes[1].second = meas_max_idx_[e].phase;
+
+          dimSizes[2].first = REPETITION;
+          dimSizes[2].second = meas_max_idx_[e].repetition;
+
+          dimSizes[3].first = SET;
+          dimSizes[3].second = meas_max_idx_[e].set;
+
+          std::sort(dimSizes.begin(), dimSizes.end(), dimCompObj());
+
+          N_ = dimSizes[0].first;
+          S_ = dimSizes[1].first;
+      }
+
+      GDEBUG_CONDITION_STREAM(verbose.value(), "predict N and S : " << Gadgetron::get_name_from_ismrmrd_dimension(N_) << " - " << Gadgetron::get_name_from_ismrmrd_dimension(S_));
   }
 
   int BucketToBufferGadget
@@ -38,7 +135,7 @@ namespace Gadgetron{
       N_ = NONE;
     }
 
-    GDEBUG("N DIMENSION IS: %s (%d)\n", N_dimension.value().c_str(), N_);
+    GDEBUG_STREAM("N DIMENSION IS: ", Gadgetron::get_name_from_ismrmrd_dimension(N_));
 
     if (S_dimension.value().size() == 0) {
         S_ = NONE;
@@ -61,7 +158,7 @@ namespace Gadgetron{
         S_ = NONE;
     }
 
-    GDEBUG("S DIMENSION IS: %s (%d)\n", S_dimension.value().c_str(), S_);
+    GDEBUG_STREAM("S DIMENSION IS: ", Gadgetron::get_name_from_ismrmrd_dimension(S_));
 
     split_slices_  = split_slices.value();
     GDEBUG("SPLIT SLICES IS: %b\n", split_slices_);
@@ -71,6 +168,88 @@ namespace Gadgetron{
 
     // keep a copy of the deserialized ismrmrd xml header for runtime
     ISMRMRD::deserialize(mb->rd_ptr(), hdr_);
+
+    if (S_ == NONE || N_ == NONE)
+    {
+        size_t NE = hdr_.encoding.size();
+        num_encoding_spaces_ = NE;
+
+        acceFactorE1_.resize(NE, 1);
+        acceFactorE2_.resize(NE, 1);
+        calib_mode_.resize(NE, ISMRMRD_noacceleration);
+        interleaving_dimension_.resize(NE);
+        meas_max_idx_.resize(NE);
+
+        size_t e;
+        for (e = 0; e < hdr_.encoding.size(); e++)
+        {
+            ISMRMRD::EncodingSpace e_space = hdr_.encoding[e].encodedSpace;
+            ISMRMRD::EncodingLimits e_limits = hdr_.encoding[e].encodingLimits;
+
+            if (!hdr_.encoding[e].parallelImaging)
+            {
+                GDEBUG_STREAM("Parallel Imaging section not found in header for encoding space " << e);
+                calib_mode_[e] = ISMRMRD_noacceleration;
+                acceFactorE1_[e] = 1;
+                acceFactorE2_[e] = 1;
+            }
+            else
+            {
+                ISMRMRD::ParallelImaging p_imaging = *hdr_.encoding[0].parallelImaging;
+
+                acceFactorE1_[e] = p_imaging.accelerationFactor.kspace_encoding_step_1;
+                acceFactorE2_[e] = p_imaging.accelerationFactor.kspace_encoding_step_2;
+
+                std::string calib = *p_imaging.calibrationMode;
+
+                bool separate = (calib.compare("separate") == 0);
+                bool embedded = (calib.compare("embedded") == 0);
+                bool external = (calib.compare("external") == 0);
+                bool interleaved = (calib.compare("interleaved") == 0);
+                bool other = (calib.compare("other") == 0);
+
+                calib_mode_[e] = Gadgetron::ISMRMRD_noacceleration;
+                if (acceFactorE1_[e] > 1 || acceFactorE2_[e] > 1)
+                {
+                    if (interleaved)
+                    {
+                        calib_mode_[e] = Gadgetron::ISMRMRD_interleaved;
+                        if (p_imaging.interleavingDimension.is_present())
+                        {
+                            interleaving_dimension_[e] = *p_imaging.interleavingDimension;
+                        }
+                    }
+                    else if (embedded)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_embedded;
+                    else if (separate)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_separate;
+                    else if (external)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_external;
+                    else if (other)
+                        calib_mode_[e] = Gadgetron::ISMRMRD_other;
+                }
+
+                meas_max_idx_[e].kspace_encode_step_1 = (uint16_t)e_space.matrixSize.y - 1;
+                meas_max_idx_[e].set                  = (e_limits.set) ? e_limits.set->maximum : 0;
+                meas_max_idx_[e].phase                = (e_limits.phase) ? e_limits.phase->maximum : 0;
+
+                meas_max_idx_[e].kspace_encode_step_2 = (uint16_t)e_space.matrixSize.z - 1;
+
+                meas_max_idx_[e].contrast             = (e_limits.contrast) ? e_limits.contrast->maximum : 0;
+                meas_max_idx_[e].slice                = (e_limits.slice) ? e_limits.slice->maximum : 0;
+                meas_max_idx_[e].repetition           = (e_limits.repetition) ? e_limits.repetition->maximum : 0;
+                meas_max_idx_[e].slice                = (e_limits.slice) ? e_limits.slice->maximum : 0;
+                meas_max_idx_[e].average              = (e_limits.average) ? e_limits.average->maximum : 0;
+                meas_max_idx_[e].segment              = 0;
+            }
+        }
+
+        // use the first encoding space to predict N_ and S_
+        if (predict_N_S.value())
+        {
+            this->predict_N_S_dimension(0);
+        }
+    }
 
     return GADGET_OK;
   }
@@ -535,14 +714,7 @@ namespace Gadgetron{
           NS = 1;
         }
 
-        //GDEBUG_STREAM("Data dimensions:");
-        //GDEBUG_STREAM("   NE0:  " << NE0);
-        //GDEBUG_STREAM("   NE1:  " << NE1);
-        //GDEBUG_STREAM("   NE2:  " << NE2);
-        //GDEBUG_STREAM("   NLOC: " << NLOC);
-        //GDEBUG_STREAM("   NCHA: " << NCHA);
-        //GDEBUG_STREAM("   NN:   " << NN);
-        //GDEBUG_STREAM("   NS:   " << NS);
+        GDEBUG_CONDITION_STREAM(verbose.value(), "Data dimensions [RO E1 E2 CHA N S SLC] : [" << NE0 << " " << NE1 << " " << NE2 << " " << NCHA << " " << NN << " " << NS << " " << NLOC);
 
         //Allocate the array for the data
         dataBuffer.data_.create(NE0, NE1, NE2, NCHA, NN, NS, NLOC);
@@ -649,6 +821,18 @@ namespace Gadgetron{
         sampling.sampling_limits_[2].min_ = encoding.encodingLimits.kspace_encoding_step_2->minimum;
         sampling.sampling_limits_[2].max_ = encoding.encodingLimits.kspace_encoding_step_2->maximum;
         sampling.sampling_limits_[2].center_ = encoding.encodingLimits.kspace_encoding_step_2->center;
+    }
+
+    if(verbose.value())
+    {
+        GDEBUG_STREAM("Encoding space : " << encoding.trajectory 
+            << " - FOV : [ " << encoding.encodedSpace.fieldOfView_mm.x << " " << encoding.encodedSpace.fieldOfView_mm.y << " " << encoding.encodedSpace.fieldOfView_mm.z << " ] "
+            << " - Matris size : [ " << encoding.encodedSpace.matrixSize.x << " " << encoding.encodedSpace.matrixSize.y << " " << encoding.encodedSpace.matrixSize.z << " ] ");
+
+        GDEBUG_STREAM("Sampling limits : " 
+            << "- RO : [ " << sampling.sampling_limits_[0].min_ << " " << sampling.sampling_limits_[0].center_ << " " << sampling.sampling_limits_[0].max_ 
+            << "- E1 : [ " << sampling.sampling_limits_[1].min_ << " " << sampling.sampling_limits_[1].center_ << " " << sampling.sampling_limits_[1].max_ 
+            << "- E2 : [ " << sampling.sampling_limits_[2].min_ << " " << sampling.sampling_limits_[2].center_ << " " << sampling.sampling_limits_[2].max_);
     }
   }
 

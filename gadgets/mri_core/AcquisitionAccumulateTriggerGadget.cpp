@@ -1,6 +1,7 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "AcquisitionAccumulateTriggerGadget.h"
 #include "mri_core_data.h"
+#include "mri_core_utility.h"
 #include "log.h"
 
 namespace Gadgetron{
@@ -298,7 +299,7 @@ namespace Gadgetron{
       case NONE:
 	break;	
       default:
-	GDEBUG("Unknown trigger condition %d\n", trigger_);
+	GDEBUG("Unknown trigger condition %d\n", Gadgetron::get_name_from_ismrmrd_dimension(trigger_));
 	return GADGET_FAIL;	
       }
     }

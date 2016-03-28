@@ -1,6 +1,7 @@
 #ifndef MRI_CORE_DATA_H
 #define MRI_CORE_DATA_H
 
+#include "mri_core_export.h"
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/meta.h"
 #include <vector>
