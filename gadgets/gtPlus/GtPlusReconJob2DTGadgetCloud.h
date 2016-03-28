@@ -28,7 +28,6 @@
 #include "gtPlusISMRMRDReconWorker2DTGRAPPA.h"
 #include "gtPlusISMRMRDReconWorker2DTNoAcceleration.h"
 #include "gtPlusISMRMRDReconWorker2DTSPIRIT.h"
-#include "gtPlusISMRMRDReconWorker2DTL1SPIRITNCG.h"
 
 #include "GtPlusRecon2DTCloudPackage.h"
 #include "GtPlusReconGadgetUtil.h"
@@ -252,7 +251,6 @@ protected:
     Gadgetron::gtPlus::gtPlusReconWorker2DTGRAPPA<ValueType> worker_grappa_;
     Gadgetron::gtPlus::gtPlusReconWorker2DTNoAcceleration<ValueType> worker_noacceleration_;
     Gadgetron::gtPlus::gtPlusReconWorker2DTSPIRIT<ValueType> worker_spirit_;
-    Gadgetron::gtPlus::gtPlusReconWorker2DTL1SPIRITNCG<ValueType> worker_spirit_L1_ncg_;
 
     // workOrder for recon
     WorkOrder2DTType workOrder_recon_;

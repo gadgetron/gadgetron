@@ -19,12 +19,6 @@
 #include "gtPlusISMRMRDReconWorker3DTSPIRIT.h"
 #include "gtPlusISMRMRDReconWorkFlowCartesian2DT.h"
 #include "gtPlusISMRMRDReconWorkFlowCartesian3DT.h"
-#include "gtPlusSPIRIT2DOperator.h"
-#include "gtPlusSPIRIT2DTOperator.h"
-#include "gtPlusSPIRIT3DOperator.h"
-#include "gtPlusSPIRITNoNullSpace2DOperator.h"
-#include "gtPlusSPIRITNoNullSpace2DTOperator.h"
-#include "gtPlusSPIRITNoNullSpace3DOperator.h"
 #include "gtPlusNCGSolver.h"
 
 #include "GadgetronTimer.h"

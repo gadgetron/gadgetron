@@ -104,9 +104,6 @@ int GtPlusReconJob2DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
     worker_spirit_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
 
-    worker_spirit_L1_ncg_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
-
     if ( verboseMode_ )
     {
         job->workOrder2DT.print(std::cout);
@@ -115,7 +112,7 @@ int GtPlusReconJob2DTGadget::process(Gadgetron::GadgetContainerMessage< int >* m
     bool succeed = true;
     if ( performTiming_ ) { gt_timer1_.start("Recon 2DT job ... "); }
 
-    succeed = worker_spirit_L1_ncg_.performUnwarppingImpl(*job);
+    succeed = worker_spirit_.performUnwarppingImpl(*job);
 
     if ( performTiming_ ) { gt_timer1_.stop(); }
 

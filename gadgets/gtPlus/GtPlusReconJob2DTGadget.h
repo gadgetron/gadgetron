@@ -29,7 +29,6 @@
 #include "gtPlusISMRMRDReconWorker2DTGRAPPA.h"
 #include "gtPlusISMRMRDReconWorker2DTNoAcceleration.h"
 #include "gtPlusISMRMRDReconWorker2DTSPIRIT.h"
-#include "gtPlusISMRMRDReconWorker2DTL1SPIRITNCG.h"
 #include "GtPlusReconGadgetUtil.h"
 
 #ifdef USE_OMP
@@ -87,7 +86,6 @@ protected:
     Gadgetron::gtPlus::gtPlusReconWorker2DTGRAPPA<ValueType> worker_grappa_;
     Gadgetron::gtPlus::gtPlusReconWorker2DTNoAcceleration<ValueType> worker_noacceleration_;
     Gadgetron::gtPlus::gtPlusReconWorker2DTSPIRIT<ValueType> worker_spirit_;
-    Gadgetron::gtPlus::gtPlusReconWorker2DTL1SPIRITNCG<ValueType> worker_spirit_L1_ncg_;
 
     Gadgetron::gtPlus::gtPlusISMRMRDReconUtil<ValueType> gtPlus_util_;
     Gadgetron::gtPlus::gtPlusISMRMRDReconUtilComplex<ValueType> gtPlus_util_complex_;

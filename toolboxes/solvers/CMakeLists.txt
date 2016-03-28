@@ -5,7 +5,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   )
 
-install(FILES 	
+install(FILES 
   solver.h
   linearOperatorSolver.h
   cgSolver.h
@@ -13,11 +13,10 @@ install(FILES
   lbfgsSolver.h
   sbSolver.h
   sbcSolver.h
-  cgCallback.h	
+  cgCallback.h
   cgPreconditioner.h
   lwSolver.h
   lbfgsSolver.h
-  lsqrSolver.h
   gpSolver.h
   gpBbSolver.h
   eigenTester.h
@@ -26,9 +25,7 @@ install(FILES
   osLALMSolver.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-IF(ARMADILLO_FOUND)
-  add_subdirectory(cpu)
-ENDIF(ARMADILLO_FOUND)
+add_subdirectory(cpu)
 
 IF( CUDA_FOUND)
   add_subdirectory(gpu)

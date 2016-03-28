@@ -299,10 +299,6 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     worker_spirit_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
 
-    worker_spirit_L1_ncg_.verbose_ = verboseMode_;
-    worker_spirit_L1_ncg_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
-
     if ( !debugFolder_fullPath_.empty() ) workflow_.debugFolder_ = debugFolder_fullPath_;
 
     // if 'other' data is coming in
@@ -380,10 +376,6 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_SPIRIT )
         {
             workflow_.worker_ = &worker_spirit_;
-        }
-        else if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_L1SPIRIT )
-        {
-            workflow_.worker_ = &worker_spirit_L1_ncg_;
         }
         else
         {

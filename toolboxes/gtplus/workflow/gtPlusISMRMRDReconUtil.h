@@ -96,7 +96,6 @@ namespace Gadgetron {
         ISMRMRD_GRAPPA = 64,
         ISMRMRD_SENSE,
         ISMRMRD_SPIRIT,
-        ISMRMRD_L1SPIRIT,
         ISMRMRD_SOFTSENSE,
         ISMRMRD_L1SOFTSENSE,
         ISMRMRD_2DTBINNING,

@@ -96,11 +96,11 @@ if ( HAS_64_BIT )
             workflow/gtPlusISMRMRDReconWorker3DT.h
             workflow/gtPlusISMRMRDReconWorker2DTGRAPPA.h
             workflow/gtPlusISMRMRDReconWorker2DTSPIRIT.h
-            workflow/gtPlusISMRMRDReconWorker2DTL1SPIRITNCG.h
+            # workflow/gtPlusISMRMRDReconWorker2DTL1SPIRITNCG.h
             workflow/gtPlusISMRMRDReconWorker2DTNoAcceleration.h
             workflow/gtPlusISMRMRDReconWorker3DTGRAPPA.h
             workflow/gtPlusISMRMRDReconWorker3DTSPIRIT.h
-            workflow/gtPlusISMRMRDReconWorker3DTL1SPIRITNCG.h
+            # workflow/gtPlusISMRMRDReconWorker3DTL1SPIRITNCG.h
             workflow/gtPlusISMRMRDReconWorker3DTNoAcceleration.h
             workflow/gtPlusCloudScheduler.h )
 
@@ -113,19 +113,19 @@ if ( HAS_64_BIT )
             algorithm/gtPlusGRAPPA.h 
             algorithm/gtPlusSPIRIT.h
             algorithm/gtPlusOperator.h 
-            algorithm/gtPlusSPIRITOperator.h 
-            algorithm/gtPlusSPIRIT2DOperator.h 
-            algorithm/gtPlusSPIRIT3DOperator.h 
-            algorithm/gtPlusSPIRIT2DTOperator.h 
-            algorithm/gtPlusSPIRITNoNullSpaceOperator.h 
-            algorithm/gtPlusSPIRITNoNullSpace2DOperator.h 
-            algorithm/gtPlusSPIRITNoNullSpace3DOperator.h 
-            algorithm/gtPlusSPIRITNoNullSpace2DTOperator.h 
-            algorithm/gtPlusWaveletOperator.h 
-            algorithm/gtPlusWavelet2DOperator.h 
-            algorithm/gtPlusWavelet3DOperator.h 
-            algorithm/gtPlusWaveletNoNullSpace2DOperator.h 
-            algorithm/gtPlusWaveletNoNullSpace3DOperator.h 
+            #algorithm/gtPlusSPIRITOperator.h 
+            #algorithm/gtPlusSPIRIT2DOperator.h 
+            #algorithm/gtPlusSPIRIT3DOperator.h 
+            #algorithm/gtPlusSPIRIT2DTOperator.h 
+            #algorithm/gtPlusSPIRITNoNullSpaceOperator.h 
+            #algorithm/gtPlusSPIRITNoNullSpace2DOperator.h 
+            #algorithm/gtPlusSPIRITNoNullSpace3DOperator.h 
+            #algorithm/gtPlusSPIRITNoNullSpace2DTOperator.h 
+            #algorithm/gtPlusWaveletOperator.h 
+            #algorithm/gtPlusWavelet2DOperator.h 
+            #algorithm/gtPlusWavelet3DOperator.h 
+            #algorithm/gtPlusWaveletNoNullSpace2DOperator.h 
+            #algorithm/gtPlusWaveletNoNullSpace3DOperator.h 
             algorithm/gtPlusDataFidelityOperator.h 
             algorithm/FreeFormDeformation/gtplusFFDBase.h
             algorithm/FreeFormDeformation/gtplusBSplineFFD.h
@@ -138,9 +138,9 @@ if ( HAS_64_BIT )
 
         set( solver_header_files 
             solver/gtPlusSolver.h 
-            solver/gtPlusLinearSolver.h 
+            #solver/gtPlusLinearSolver.h 
             solver/gtPlusNonLinearSolver.h
-            solver/gtPlusLSQRSolver.h 
+            #solver/gtPlusLSQRSolver.h 
             solver/gtPlusNCGSolver.h )
 
         set( solver_src_files )
@@ -213,7 +213,8 @@ if ( HAS_64_BIT )
                           gadgetron_toolbox_mri_core
                           gadgetron_toolbox_gtplus_io 
                           gadgetron_toolbox_cpucore_math 
-                          gadgetron_toolbox_mri_core )
+                          gadgetron_toolbox_mri_core 
+                          gadgetron_toolbox_cpu_solver )
 
     install(TARGETS gadgetron_toolbox_gtplus DESTINATION lib COMPONENT main)
     install(TARGETS gadgetron_toolbox_gtplus_io DESTINATION lib COMPONENT main)

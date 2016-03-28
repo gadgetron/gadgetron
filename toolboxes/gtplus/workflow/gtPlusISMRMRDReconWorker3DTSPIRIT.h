@@ -10,8 +10,7 @@
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconWorker3DT.h"
 #include "gtPlusSPIRIT.h"
-#include "gtPlusSPIRIT2DTOperator.h"
-#include "gtPlusLSQRSolver.h"
+#include "hoLSQRSolver.h"
 #include "hoSPIRIT2DOperator.h"
 
 #include "GadgetCloudController.h"
@@ -784,29 +783,25 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
         #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, NUM, kspace_Shifted, ker_Shifted, res) if ( NUM > 1 ) num_threads( numThreads )
         {
-            /*gtPlusSPIRIT2DOperator<T> spirit;
-            spirit.use_symmetric_spirit_ = false;
-            spirit.use_non_centered_fft_ = true;*/
+            std::vector<size_t> dim(3, 1);
+            dim[0] = E1;
+            dim[1] = E2;
+            dim[2] = srcCHA;
 
-            std::vector<size_t> dim(2, 1);
-            hoSPIRIT2DOperator<T> spirit(&dim);
+            boost::shared_ptr< hoSPIRIT2DOperator<T> > oper(new hoSPIRIT2DOperator<T>(&dim));
+            hoSPIRIT2DOperator<T>& spirit = *oper;
+
             spirit.use_non_centered_fft_ = true;
             spirit.no_null_space_ = false;
 
             hoNDArray<T> x0(E1, E2, srcCHA);
             Gadgetron::clear(x0);
 
-            gtPlusLinearSolver<hoNDArray<T>, hoNDArray<T>, hoSPIRIT2DOperator<T> >* pCGSolver;
-
-            pCGSolver = new gtPlusLSQRSolver<hoNDArray<T>, hoNDArray<T>, hoSPIRIT2DOperator<T> >();
-
-            gtPlusLinearSolver<hoNDArray<T>, hoNDArray<T>, hoSPIRIT2DOperator<T> >& cgSolver = *pCGSolver;
-
-            cgSolver.iterMax_ = workOrder3DT->spirit_iter_max_;
-            cgSolver.thres_ = (value_type)workOrder3DT->spirit_iter_thres_;
-            cgSolver.printIter_ = workOrder3DT->spirit_print_iter_;
-
-            cgSolver.set(spirit);
+            hoLSQRSolver< hoNDArray<T> > cgSolver;
+            cgSolver.set_tc_tolerance((value_type)workOrder3DT->spirit_iter_thres_);
+            cgSolver.set_max_iterations(workOrder3DT->spirit_iter_max_);
+            cgSolver.set_verbose(workOrder3DT->spirit_print_iter_);
+            cgSolver.set_encoding_operator(oper);
 
             hoNDArray<T> b(E1, E2, srcCHA);
 
@@ -823,24 +818,21 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
                 boost::shared_ptr<hoNDArray<T> > kerCurr(new hoNDArray<T>(E1, E2, srcCHA, dstCHA, ker_Shifted.begin()+ro*E1*E2*srcCHA*dstCHA));
 
-                // spirit.setForwardKernel(kerCurr, false);
                 spirit.set_forward_kernel(*kerCurr, false);
 
                 boost::shared_ptr<hoNDArray<T> > acq(new hoNDArray<T>(E1, E2, srcCHA, kspaceCurr.begin()));
-                // spirit.setAcquiredPoints(acq);
                 spirit.set_acquired_points(*acq);
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*kerCurr, debugFolder_+"spirit3D_ker"); }
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*acq, debugFolder_+"spirit3D_kspace"); }
 
-                cgSolver.x0_ = acq.get();
+                cgSolver.set_x0(acq.get());
 
                 // compute rhs
-                // spirit.computeRighHandSide(*acq, b);
                 spirit.compute_righ_hand_side(*acq, b);
 
                 // solve
-                cgSolver.solve(b, resCurr);
+                cgSolver.solve(&resCurr, &b);
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(resCurr, debugFolder_+"unwarppedKSpace_t"); }
 
@@ -849,8 +841,6 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(resCurr, debugFolder_+"unwarppedKSpace_t_setAcq"); }
             }
-
-            delete pCGSolver;
         }
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(res, debugFolder_+"res_Shifted"); }
@@ -918,25 +908,23 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
             hoNDArray<T> adjForG_I_Decoupled(E1, E2, srcCHA, dstCHA);
             T* pDecoupledG_I = adjForG_I_Decoupled.begin();
 
-            /*gtPlusSPIRIT2DOperator<T> spirit;
-            spirit.use_symmetric_spirit_ = false;*/
+            std::vector<size_t> dim(3, 1);
+            dim[0] = E1;
+            dim[1] = E2;
+            dim[2] = srcCHA;
 
-            std::vector<size_t> dim(2, 1);
-            hoSPIRIT2DOperator<T> spirit(&dim);
+            boost::shared_ptr< hoSPIRIT2DOperator<T> > oper(new hoSPIRIT2DOperator<T>(&dim));
+            hoSPIRIT2DOperator<T>& spirit = *oper;
             spirit.no_null_space_ = false;
 
             hoNDArray<T> x0(E1, E2, srcCHA);
             Gadgetron::clear(x0);
 
-            gtPlusLinearSolver<hoNDArray<T>, hoNDArray<T>, hoSPIRIT2DOperator<T> >* pCGSolver;
-            pCGSolver = new gtPlusLSQRSolver<hoNDArray<T>, hoNDArray<T>, hoSPIRIT2DOperator<T> >();
-            gtPlusLinearSolver<hoNDArray<T>, hoNDArray<T>, hoSPIRIT2DOperator<T> >& cgSolver = *pCGSolver;
-
-            cgSolver.iterMax_ = workOrder3DT->spirit_iter_max_;
-            cgSolver.thres_ = (value_type)workOrder3DT->spirit_iter_thres_;
-            cgSolver.printIter_ = workOrder3DT->spirit_print_iter_;
-
-            cgSolver.set(spirit);
+            hoLSQRSolver< hoNDArray<T> > cgSolver;
+            cgSolver.set_tc_tolerance((value_type)workOrder3DT->spirit_iter_thres_);
+            cgSolver.set_max_iterations(workOrder3DT->spirit_iter_max_);
+            cgSolver.set_verbose(workOrder3DT->spirit_print_iter_);
+            cgSolver.set_encoding_operator(oper);
 
             hoNDArray<T> b(E1, E2, srcCHA);
 
@@ -975,13 +963,13 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*ker, debugFolder_+"spirit3D_ker"); }
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*acq, debugFolder_+"spirit3D_kspace"); }
 
-                cgSolver.x0_ = acq.get();
+                cgSolver.set_x0(acq.get());
 
                 // compute rhs
                 spirit.compute_righ_hand_side(*acq, b);
 
                 // solve
-                cgSolver.solve(b, resCurr);
+                cgSolver.solve(&resCurr, &b);
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(resCurr, debugFolder_+"unwarppedKSpace_t"); }
 
@@ -990,8 +978,6 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(resCurr, debugFolder_+"unwarppedKSpace_t_setAcq"); }
             }
-
-            delete pCGSolver;
         }
 
         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(resDecoupled, debugFolder_+"resDecoupled"); }
