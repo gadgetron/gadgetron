@@ -33,8 +33,6 @@ namespace Gadgetron{
         virtual void set_max_iterations(unsigned int iterations) { iterations_ = iterations; }
         virtual unsigned int get_max_iterations() { return iterations_; }
 
-        void set_x0(ARRAY_TYPE* x0) { x0_ = x0; }
-
         void set_verbose(bool v) { verbose_ = v; }
         bool get_verbose() { return verbose_; }
 
@@ -47,10 +45,6 @@ namespace Gadgetron{
     protected:
 
         using BaseClass::encoding_operator_;
-
-        // initial guess for x
-        // if not set, the all zeros are used
-        ARRAY_TYPE* x0_;
 
         bool verbose_;
 

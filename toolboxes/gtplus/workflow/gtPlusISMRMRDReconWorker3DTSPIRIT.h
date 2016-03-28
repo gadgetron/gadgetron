@@ -826,7 +826,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*kerCurr, debugFolder_+"spirit3D_ker"); }
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*acq, debugFolder_+"spirit3D_kspace"); }
 
-                cgSolver.set_x0(acq.get());
+                cgSolver.set_x0(acq);
 
                 // compute rhs
                 spirit.compute_righ_hand_side(*acq, b);
@@ -963,7 +963,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*ker, debugFolder_+"spirit3D_ker"); }
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*acq, debugFolder_+"spirit3D_kspace"); }
 
-                cgSolver.set_x0(acq.get());
+                cgSolver.set_x0(acq);
 
                 // compute rhs
                 spirit.compute_righ_hand_side(*acq, b);

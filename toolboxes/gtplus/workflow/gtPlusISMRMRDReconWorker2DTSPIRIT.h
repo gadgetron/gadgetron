@@ -318,11 +318,11 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                 if ( hasInitial )
                 {
                     initialAcq = boost::shared_ptr< hoNDArray<T> >(new hoNDArray<T>(RO, E1, srcCHA, kspace_initial_Shifted.begin()+n*RO*E1*srcCHA));
-                    cgSolver.set_x0(initialAcq.get());
+                    cgSolver.set_x0(initialAcq);
                 }
                 else
                 {
-                    cgSolver.set_x0(acq.get());
+                    cgSolver.set_x0(acq);
                 }
 
                 if ( refN > 1 )

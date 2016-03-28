@@ -6,7 +6,7 @@
 namespace Gadgetron{
 
     template <typename ARRAY_TYPE>
-    hoLSQRSolver<ARRAY_TYPE>::hoLSQRSolver() : BaseClass(), x0_(NULL), verbose_(false), iterations_(70), tc_tolerance_( (REAL)1e-4 )
+    hoLSQRSolver<ARRAY_TYPE>::hoLSQRSolver() : BaseClass(), verbose_(false), iterations_(70), tc_tolerance_( (REAL)1e-4 )
     {
     }
 
@@ -27,9 +27,9 @@ namespace Gadgetron{
 
             GADGET_CHECK_THROW(b->dimensions_equal(image_dims.get()));
 
-            if (x0_ != NULL)
+            if (this->x0_!=NULL)
             {
-                GADGET_CHECK_THROW(x0_->dimensions_equal(image_dims.get()));
+                GADGET_CHECK_THROW(this->x0_->dimensions_equal(image_dims.get()));
                 *x = *x0_;
             }
             else
