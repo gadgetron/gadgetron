@@ -137,11 +137,12 @@ if ( HAS_64_BIT )
         set( algorithm_src_files )
 
         set( solver_header_files 
-            solver/gtPlusSolver.h 
+            #solver/gtPlusSolver.h 
             #solver/gtPlusLinearSolver.h 
-            solver/gtPlusNonLinearSolver.h
+            #solver/gtPlusNonLinearSolver.h
             #solver/gtPlusLSQRSolver.h 
-            solver/gtPlusNCGSolver.h )
+            #solver/gtPlusNCGSolver.h 
+            )
 
         set( solver_src_files )
 

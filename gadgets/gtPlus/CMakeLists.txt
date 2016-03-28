@@ -61,12 +61,10 @@ set( config_files
     config/GT_2DT_Cartesian.xml
     config/GT_2DT_Cartesian_CloudNode.xml
     config/GT_2DT_Cartesian_Dicom.xml
-    config/GT_2DT_Cartesian_DualLayer_Gateway_L1SPIRIT.xml
     config/GT_2DT_Cartesian_DualLayer_Gateway_SPIRIT.xml
     config/GT_2DT_Cartesian_FirstLayer_CloudNode.xml
     config/GT_2DT_Cartesian_GFactor.xml
     config/GT_2DT_Cartesian_ImageTrigger_Dicom.xml
-    config/GT_2DT_Cartesian_L1SPIRIT.xml
     config/GT_2DT_Cartesian_PseudoReplica_SNRUnitRecon.xml
     config/GT_2DT_Cartesian_SingleLayer_CloudNode.xml
     config/GT_2DT_Cartesian_SPIRIT.xml
@@ -89,14 +87,10 @@ set( config_files
     config/GT_2DT_RealTimeCine.xml
     config/GT_2DT_RealTimeFlow.xml
 
-    config/GT_2DT_RTCine_L1SPIRIT_PhysioInterp.xml
-    config/GT_2DT_RTCine_L1SPIRIT_PhysioInterp_DualLayer_Gateway.xml
-
     config/GT_3DT_Cartesian.xml
     config/GT_3DT_Cartesian_CloudNode.xml
     config/GT_3DT_Cartesian_GFactor.xml
-    config/GT_3DT_Cartesian_L1SPIRIT.xml
-    config/GT_3DT_Cartesian_SingleLayer_L1SPIRIT.xml )
+    )
 
 set( gadgetronPlus_header_files GtPlusGadgetImageArray.h
                                 GtPlusAccumulatorWorkOrderTriggerGadget.h

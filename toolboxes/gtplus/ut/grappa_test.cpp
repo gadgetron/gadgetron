@@ -13,13 +13,11 @@
 
 #include "gtPlusIOAnalyze.h"
 #include "gtPlusISMRMRDReconUtil.h"
-// #include "gtPlusISMRMRDReconWorkOrder.h"
 #include "gtPlusISMRMRDReconWorker2DTGRAPPA.h"
 #include "gtPlusISMRMRDReconWorker2DTSPIRIT.h"
 #include "gtPlusISMRMRDReconWorker3DTSPIRIT.h"
 #include "gtPlusISMRMRDReconWorkFlowCartesian2DT.h"
 #include "gtPlusISMRMRDReconWorkFlowCartesian3DT.h"
-#include "gtPlusNCGSolver.h"
 
 #include "GadgetronTimer.h"
 
