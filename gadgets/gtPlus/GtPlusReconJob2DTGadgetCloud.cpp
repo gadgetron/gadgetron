@@ -421,9 +421,6 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
     worker_spirit_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
 
-    worker_spirit_L1_ncg_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
-
     if ( !debugFolder_fullPath_.empty() ) workflow_.debugFolder_ = debugFolder_fullPath_;
 
     // perform the recon
@@ -459,10 +456,6 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
         if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_SPIRIT )
         {
             workflow_.worker_ = &worker_spirit_;
-        }
-        else if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::ISMRMRD_L1SPIRIT )
-        {
-            workflow_.worker_ = &worker_spirit_L1_ncg_;
         }
         else
         {

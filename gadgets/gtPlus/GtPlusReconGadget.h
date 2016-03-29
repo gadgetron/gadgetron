@@ -311,7 +311,7 @@ public:
     /// ------------------------------------------------------------------------------------
     /// recon parameters
     GADGET_PROPERTY_LIMITS(recon_algorithm, std::string, "Reconstruction algorithm", "ISMRMRD_GRAPPA",
-        GadgetPropertyLimitsEnumeration, "ISMRMRD_GRAPPA", "ISMRMRD_SENSE", "ISMRMRD_SPIRIT", "ISMRMRD_L1SPIRIT", 
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_GRAPPA", "ISMRMRD_SENSE", "ISMRMRD_SPIRIT", 
                             "ISMRMRD_SOFTSENSE", "ISMRMRD_L1SOFTSENSE", "ISMRMRD_2DTBINNING", "ISMRMRD_2DTBINNING_FLOW", 
                             "ISMRMRD_L1SPIRIT_SLEP", "ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP", "ISMRMRD_NONE");
 

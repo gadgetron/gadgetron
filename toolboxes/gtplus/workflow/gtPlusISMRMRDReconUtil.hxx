@@ -1232,7 +1232,6 @@ ISMRMRDALGO gtPlusISMRMRDReconUtil<T>::getISMRMRDReconAlgoFromName(const std::st
     if ( name == "ISMRMRD_GRAPPA" ) return ISMRMRD_GRAPPA;
     if ( name == "ISMRMRD_SENSE" ) return ISMRMRD_SENSE;
     if ( name == "ISMRMRD_SPIRIT" ) return ISMRMRD_SPIRIT;
-    if ( name == "ISMRMRD_L1SPIRIT" ) return ISMRMRD_L1SPIRIT;
     if ( name == "ISMRMRD_SOFTSENSE" ) return ISMRMRD_SOFTSENSE;
     if ( name == "ISMRMRD_L1SOFTSENSE" ) return ISMRMRD_L1SOFTSENSE;
     if ( name == "ISMRMRD_2DTBINNING" ) return ISMRMRD_2DTBINNING;

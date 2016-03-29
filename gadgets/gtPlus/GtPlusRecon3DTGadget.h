@@ -10,7 +10,6 @@
 #include "gtPlusISMRMRDReconWorker3DTGRAPPA.h"
 #include "gtPlusISMRMRDReconWorker3DTNoAcceleration.h"
 #include "gtPlusISMRMRDReconWorker3DTSPIRIT.h"
-#include "gtPlusISMRMRDReconWorker3DTL1SPIRITNCG.h"
 
 namespace Gadgetron
 {
@@ -120,7 +119,6 @@ protected:
     Gadgetron::gtPlus::gtPlusReconWorker3DTGRAPPA<ValueType> worker_grappa_;
     Gadgetron::gtPlus::gtPlusReconWorker3DTNoAcceleration<ValueType> worker_noacceleration_;
     Gadgetron::gtPlus::gtPlusReconWorker3DTSPIRIT<ValueType> worker_spirit_;
-    Gadgetron::gtPlus::gtPlusReconWorker3DTL1SPIRITNCG<ValueType> worker_spirit_L1_ncg_;
 
     // workOrder for recon
     WorkOrder3DTType workOrder_recon_;
