@@ -112,7 +112,7 @@ if ( HAS_64_BIT )
             algorithm/gtPlusAlgorithmBase.h 
             algorithm/gtPlusGRAPPA.h 
             algorithm/gtPlusSPIRIT.h
-            algorithm/gtPlusOperator.h 
+            #algorithm/gtPlusOperator.h 
             #algorithm/gtPlusSPIRITOperator.h 
             #algorithm/gtPlusSPIRIT2DOperator.h 
             #algorithm/gtPlusSPIRIT3DOperator.h 
@@ -126,7 +126,7 @@ if ( HAS_64_BIT )
             #algorithm/gtPlusWavelet3DOperator.h 
             #algorithm/gtPlusWaveletNoNullSpace2DOperator.h 
             #algorithm/gtPlusWaveletNoNullSpace3DOperator.h 
-            algorithm/gtPlusDataFidelityOperator.h 
+            #algorithm/gtPlusDataFidelityOperator.h 
             algorithm/FreeFormDeformation/gtplusFFDBase.h
             algorithm/FreeFormDeformation/gtplusBSplineFFD.h
             algorithm/FreeFormDeformation/gtplusMLFFD.h

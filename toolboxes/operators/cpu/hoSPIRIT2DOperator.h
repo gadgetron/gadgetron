@@ -45,6 +45,8 @@ protected:
     using BaseClass::kspace_dst_;
     using BaseClass::res_after_apply_kernel_;
     using BaseClass::res_after_apply_kernel_sum_over_;
+    using BaseClass::fft_im_buffer_;
+    using BaseClass::fft_kspace_buffer_;
 
     //using BaseClass::gt_timer1_;
     //using BaseClass::gt_timer2_;
