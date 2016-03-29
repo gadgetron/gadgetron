@@ -11,6 +11,7 @@ install(FILES
   cgSolver.h
   nlcgSolver.h
   lbfgsSolver.h
+  lsqrSolver.h
   sbSolver.h
   sbcSolver.h
   cgCallback.h

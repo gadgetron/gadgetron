@@ -10,28 +10,24 @@
 
 #pragma once
 
-#include "linearOperatorSolver.h"
 #include "cpusolver_export.h"
+#include "hoNDArray_elemwise.h"
+#include "hoNDArray_reductions.h"
+#include "lsqrSolver.h"
 
 namespace Gadgetron{
 
-    template <class ARRAY_TYPE> class EXPORTCPUSOLVER hoLSQRSolver : public linearOperatorSolver<ARRAY_TYPE>
+    template <class ARRAY_TYPE> class EXPORTCPUSOLVER hoLSQRSolver : public lsqrSolver<ARRAY_TYPE>
     {
     public:
 
         typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
         typedef typename realType<ELEMENT_TYPE>::Type REAL;
 
-        typedef linearOperatorSolver<ARRAY_TYPE> BaseClass;
+        typedef lsqrSolver<ARRAY_TYPE> BaseClass;
 
         hoLSQRSolver();
         virtual ~hoLSQRSolver();
-
-        virtual void set_tc_tolerance(REAL tolerance) { tc_tolerance_ = tolerance; }
-        virtual REAL get_tc_tolerance() { return tc_tolerance_; }
-
-        virtual void set_max_iterations(unsigned int iterations) { iterations_ = iterations; }
-        virtual unsigned int get_max_iterations() { return iterations_; }
 
         void set_verbose(bool v) { verbose_ = v; }
         bool get_verbose() { return verbose_; }
@@ -45,10 +41,9 @@ namespace Gadgetron{
     protected:
 
         using BaseClass::encoding_operator_;
+        using BaseClass::iterations_;
+        using BaseClass::tc_tolerance_;
 
         bool verbose_;
-
-        unsigned int iterations_;
-        REAL tc_tolerance_;
     };
 }

@@ -656,15 +656,15 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDAr
  * @param[in] x Array
  * @param[in,out] y Array
  */
-template<class T> EXPORTCPUCOREMATH void axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y );
+template<class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray<T> *x, hoNDArray<T> *y );
+template<class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray< std::complex<T> > *x, hoNDArray< std::complex<T> > *y);
+template<class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray< complext<T> > *x, hoNDArray< complext<T> > *y );
 
-template <class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray< complext<T> > *x, hoNDArray< complext<T> > *y );
-
-	
 /**
 * @brief compute r = a*x + y
 */
 template <typename T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+template <typename T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray< std::complex<T> >& x, const hoNDArray< std::complex<T> >& y, hoNDArray< std::complex<T> >& r);
 
 /**
 * @brief compute x *= a

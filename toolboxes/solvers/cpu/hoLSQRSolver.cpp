@@ -1,12 +1,10 @@
 
 #include "hoLSQRSolver.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_reductions.h"
 
 namespace Gadgetron{
 
     template <typename ARRAY_TYPE>
-    hoLSQRSolver<ARRAY_TYPE>::hoLSQRSolver() : BaseClass(), verbose_(false), iterations_(70), tc_tolerance_( (REAL)1e-4 )
+    hoLSQRSolver<ARRAY_TYPE>::hoLSQRSolver() : BaseClass(), verbose_(false)
     {
     }
 
