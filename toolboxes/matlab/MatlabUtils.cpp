@@ -38,7 +38,8 @@ template<class T> struct MatlabConverter {
 
 		T* raw_data = (T*) mxCalloc(input->get_number_of_elements(),sizeof(T));
 		memcpy(raw_data,input->get_data_ptr(),input->get_number_of_bytes());
-		auto result =  mxCreateNumericArray(ndim,dims,MatlabClassID<T>::value,isComplex<T>::value);
+		auto result =  mxCreateNumericMatrix(0,0,MatlabClassID<T>::value,isComplex<T>::value);
+		mxSetDimensions(result,dims,ndim);
 		mxSetData(result,raw_data);
 		return result;
 
@@ -160,7 +161,8 @@ template<class REAL> struct MatlabConverter<complext<REAL>> {
 			imag_data[i] = imag(raw_data[i]);
 		}
 
-		auto result  =  mxCreateNumericArray(ndim,dims,MatlabClassID<REAL>::value,isComplex<complext<REAL>>::value);
+		auto result  =  mxCreateNumericMatrix(0,0,MatlabClassID<REAL>::value,isComplex<complext<REAL>>::value);
+		mxSetDimensions(result,dims,ndim);
 		mxSetData(result,real_data);
 		mxSetImagData(result,imag_data);
 
