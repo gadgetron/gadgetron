@@ -73,9 +73,7 @@ if ( HAS_64_BIT )
         util/gtPlusIOBase.cpp
         util/gtPlusIOAnalyze.cpp)
 
-    set( util_header_files 
-        util/gtPlusUtil.h 
-        util/gtPlusUtil.hxx )
+    set( util_header_files )
 
     set( util_src_files )
 
