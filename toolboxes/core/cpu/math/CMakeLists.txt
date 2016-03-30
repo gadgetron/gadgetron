@@ -22,12 +22,12 @@ set(cpucore_math_header_files
     hoNDArray_math.h
     hoNDImage_util.h
     hoNDImage_util.hxx
-    hoNDImage_util_instantiate.hxx 
+    # hoNDImage_util_instantiate.hxx 
     hoNDArray_linalg.h )
 
 set(cpucore_math_src_files 
     # hoNDArray_math_util.cpp
-    hoNDImage_util.cpp 
+    # hoNDImage_util.cpp 
     hoNDArray_linalg.cpp )
 
 if (ARMADILLO_FOUND)

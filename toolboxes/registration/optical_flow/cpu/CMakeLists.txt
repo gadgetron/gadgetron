@@ -32,6 +32,7 @@
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+        ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
         ${Boost_INCLUDE_DIR}
         ${ARMADILLO_INCLUDE_DIR} 
         ${ACE_INCLUDE_DIR}

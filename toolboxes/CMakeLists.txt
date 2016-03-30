@@ -22,6 +22,10 @@ if (FFTW3_FOUND)
   if (NOT(WIN32))
     add_subdirectory(ct)
   endif()
+
+  if (ISMRMRD_FOUND)
+    add_subdirectory(mri_image)
+  endif(ISMRMRD_FOUND)
 endif()
 
 add_subdirectory(klt)
@@ -41,7 +45,6 @@ add_subdirectory(image_io)
 
 find_package(BLAS)
 find_package(LAPACK)
-
 
 
 if (MATLAB_FOUND)
