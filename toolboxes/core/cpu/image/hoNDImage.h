@@ -14,6 +14,7 @@
 
 #include "hoNDPoint.h"
 #include "hoMatrix.h"
+#include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/meta.h"
 
 namespace Gadgetron
@@ -474,6 +475,9 @@ namespace Gadgetron
 
         /// get the sub image
         void get_sub_image(const std::vector<size_t>& start, std::vector<size_t>& size, Self& out);
+
+        /// ismrmrd image header structure
+        ISMRMRD::ISMRMRD_ImageHeader header_;
 
         /// meta attributes
         ISMRMRD::MetaContainer attrib_;
