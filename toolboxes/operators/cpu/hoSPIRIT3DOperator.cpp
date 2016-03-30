@@ -26,12 +26,12 @@ void hoSPIRIT3DOperator<T>::convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& im
         }
         else
         {
-            if (!complexIm_.dimensions_equal(&x))
+            if (!fft_im_buffer_.dimensions_equal(&x))
             {
-                complexIm_.create(x.get_dimensions());
+                fft_im_buffer_.create(x.get_dimensions());
             }
 
-            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(x, im, complexIm_);
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(x, im, fft_im_buffer_);
         }
     }
     catch (...)
@@ -51,12 +51,12 @@ void hoSPIRIT3DOperator<T>::convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE& 
         }
         else
         {
-            if (!kspace_.dimensions_equal(&im))
+            if (!fft_kspace_buffer_.dimensions_equal(&im))
             {
-                kspace_.create(im.get_dimensions());
+                fft_kspace_buffer_.create(im.get_dimensions());
             }
 
-            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(im, x, kspace_);
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(im, x, fft_kspace_buffer_);
         }
     }
     catch (...)

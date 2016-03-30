@@ -91,10 +91,12 @@ void hoSPIRIT2DTOperator<T>::apply_forward_kernel(ARRAY_TYPE& x)
         size_t dstCHA = this->forward_kernel_.get_size(3);
         size_t kernelN = this->forward_kernel_.get_size(4);
 
+        this->res_after_apply_kernel_sum_over_.create(RO, E1, dstCHA, N);
+
         long long n;
-        for (n = 0; n < (long long)N; N++)
+        for (n = 0; n < (long long)N; n++)
         {
-            hoNDArray<T> currComplexIm(RO, E1, srcCHA, this->complexIm_.begin() + n*RO*E1*srcCHA);
+            hoNDArray<T> currComplexIm(RO, E1, srcCHA, x.begin() + n*RO*E1*srcCHA);
 
             hoNDArray<T> curr_forward_kernel;
 
@@ -172,10 +174,12 @@ void hoSPIRIT2DTOperator<T>::apply_adjoint_kernel(ARRAY_TYPE& x)
         size_t srcCHA = this->adjoint_kernel_.get_size(3);
         size_t kernelN = this->adjoint_kernel_.get_size(4);
 
+        this->res_after_apply_kernel_sum_over_dst_.create(RO, E1, srcCHA, N);
+
         long long n;
-        for (n = 0; n < (long long)N; N++)
+        for (n = 0; n < (long long)N; n++)
         {
-            hoNDArray<T> currComplexIm(RO, E1, dstCHA, this->complexIm_dst_.begin() + n*RO*E1*dstCHA);
+            hoNDArray<T> currComplexIm(RO, E1, dstCHA, x.begin() + n*RO*E1*dstCHA);
 
             hoNDArray<T> curr_adjoint_kernel;
 
@@ -412,21 +416,21 @@ void hoSPIRIT2DTOperator<T>::convert_to_image(const ARRAY_TYPE& x, ARRAY_TYPE& i
         }
         else
         {
-            bool inSrc = complexIm_.dimensions_equal(&x);
-            bool inDst = complexIm_dst_.dimensions_equal(&x);
+            bool inSrc = fft_im_buffer_.dimensions_equal(&x);
+            bool inDst = fft_im_buffer_dst_.dimensions_equal(&x);
 
             if (inSrc)
             {
-                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_);
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, fft_im_buffer_);
             }
             else if(inDst)
             {
-                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_dst_);
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, fft_im_buffer_dst_);
             }
             else
             {
-                complexIm_.create(x.get_dimensions());
-                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_);
+                fft_im_buffer_.create(x.get_dimensions());
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, fft_im_buffer_);
             }
         }
     }
@@ -447,26 +451,21 @@ void hoSPIRIT2DTOperator<T>::convert_to_kspace(const ARRAY_TYPE& im, ARRAY_TYPE&
         }
         else
         {
-            bool inSrc = kspace_.dimensions_equal(&x);
-            bool inDst = kspace_dst_.dimensions_equal(&x);
-
-            if (!kspace_.dimensions_equal(&im))
-            {
-                kspace_.create(im.get_dimensions());
-            }
+            bool inSrc = fft_kspace_buffer_.dimensions_equal(&x);
+            bool inDst = fft_kspace_buffer_dst_.dimensions_equal(&x);
 
             if (inSrc)
             {
-                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_);
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, fft_kspace_buffer_);
             }
             else if(inDst)
             {
-                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_dst_);
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, fft_kspace_buffer_dst_);
             }
             else
             {
-                kspace_.create(x.get_dimensions());
-                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_);
+                fft_kspace_buffer_.create(x.get_dimensions());
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, fft_kspace_buffer_);
             }
         }
     }
