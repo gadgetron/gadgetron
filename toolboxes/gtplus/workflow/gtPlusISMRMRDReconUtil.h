@@ -142,38 +142,32 @@ namespace Gadgetron {
         ISMRMRD_INTERP_RETRO_GATING_BSPLINE
     };
 
-    /// data flow tag
-    /// if this flag is set to be 1 for a image, the image is immediately passed to the next gadget
-    /// if this flag is 0, this image is a stored image by the accummulator
-    /// whether to pass a stored image to the next gadget is determined by the processing gadget itself
-    #define GADGETRON_PASS_IMMEDIATE                       "GT_PASSIMAGE_IMMEDIATE"
-
     /// ISMRMRD Image fields
-    #define ISMRMRD_IMAGE_version                       "ISMRMRD_IMAGE_version"
-    #define ISMRMRD_IMAGE_flags                         "ISMRMRD_IMAGE_flags"
-    #define ISMRMRD_IMAGE_measurement_uid               "ISMRMRD_IMAGE_measurement_uid"
-    #define ISMRMRD_IMAGE_matrix_size                   "ISMRMRD_IMAGE_matrix_size"
-    #define ISMRMRD_IMAGE_field_of_view                 "ISMRMRD_IMAGE_field_of_view"
-    #define ISMRMRD_IMAGE_channels                      "ISMRMRD_IMAGE_channels"
-    #define ISMRMRD_IMAGE_position                      "ISMRMRD_IMAGE_position"
-    #define ISMRMRD_IMAGE_read_dir                      "ISMRMRD_IMAGE_read_dir"
-    #define ISMRMRD_IMAGE_phase_dir                     "ISMRMRD_IMAGE_phase_dir"
-    #define ISMRMRD_IMAGE_slice_dir                     "ISMRMRD_IMAGE_slice_dir"
-    #define ISMRMRD_IMAGE_patient_table_position        "ISMRMRD_IMAGE_patient_table_position"
-    #define ISMRMRD_IMAGE_average                       "ISMRMRD_IMAGE_average"
-    #define ISMRMRD_IMAGE_slice                         "ISMRMRD_IMAGE_slice"
-    #define ISMRMRD_IMAGE_contrast                      "ISMRMRD_IMAGE_contrast"
-    #define ISMRMRD_IMAGE_phase                         "ISMRMRD_IMAGE_phase"
-    #define ISMRMRD_IMAGE_repetition                    "ISMRMRD_IMAGE_repetition"
-    #define ISMRMRD_IMAGE_set                           "ISMRMRD_IMAGE_set"
-    #define ISMRMRD_IMAGE_acquisition_time_stamp        "ISMRMRD_IMAGE_acquisition_time_stamp"
-    #define ISMRMRD_IMAGE_physiology_time_stamp         "ISMRMRD_IMAGE_physiology_time_stamp"
-    #define ISMRMRD_IMAGE_image_data_type               "ISMRMRD_IMAGE_image_data_type"
-    #define ISMRMRD_IMAGE_image_type                    "ISMRMRD_IMAGE_image_type"
-    #define ISMRMRD_IMAGE_image_index                   "ISMRMRD_IMAGE_image_index"
-    #define ISMRMRD_IMAGE_image_series_index            "ISMRMRD_IMAGE_image_series_index"
-    #define ISMRMRD_IMAGE_user_int                      "ISMRMRD_IMAGE_user_int"
-    #define ISMRMRD_IMAGE_user_float                    "ISMRMRD_IMAGE_user_float"
+    //#define ISMRMRD_IMAGE_version                       "ISMRMRD_IMAGE_version"
+    //#define ISMRMRD_IMAGE_flags                         "ISMRMRD_IMAGE_flags"
+    //#define ISMRMRD_IMAGE_measurement_uid               "ISMRMRD_IMAGE_measurement_uid"
+    //#define ISMRMRD_IMAGE_matrix_size                   "ISMRMRD_IMAGE_matrix_size"
+    //#define ISMRMRD_IMAGE_field_of_view                 "ISMRMRD_IMAGE_field_of_view"
+    //#define ISMRMRD_IMAGE_channels                      "ISMRMRD_IMAGE_channels"
+    //#define ISMRMRD_IMAGE_position                      "ISMRMRD_IMAGE_position"
+    //#define ISMRMRD_IMAGE_read_dir                      "ISMRMRD_IMAGE_read_dir"
+    //#define ISMRMRD_IMAGE_phase_dir                     "ISMRMRD_IMAGE_phase_dir"
+    //#define ISMRMRD_IMAGE_slice_dir                     "ISMRMRD_IMAGE_slice_dir"
+    //#define ISMRMRD_IMAGE_patient_table_position        "ISMRMRD_IMAGE_patient_table_position"
+    //#define ISMRMRD_IMAGE_average                       "ISMRMRD_IMAGE_average"
+    //#define ISMRMRD_IMAGE_slice                         "ISMRMRD_IMAGE_slice"
+    //#define ISMRMRD_IMAGE_contrast                      "ISMRMRD_IMAGE_contrast"
+    //#define ISMRMRD_IMAGE_phase                         "ISMRMRD_IMAGE_phase"
+    //#define ISMRMRD_IMAGE_repetition                    "ISMRMRD_IMAGE_repetition"
+    //#define ISMRMRD_IMAGE_set                           "ISMRMRD_IMAGE_set"
+    //#define ISMRMRD_IMAGE_acquisition_time_stamp        "ISMRMRD_IMAGE_acquisition_time_stamp"
+    //#define ISMRMRD_IMAGE_physiology_time_stamp         "ISMRMRD_IMAGE_physiology_time_stamp"
+    //#define ISMRMRD_IMAGE_image_data_type               "ISMRMRD_IMAGE_image_data_type"
+    //#define ISMRMRD_IMAGE_image_type                    "ISMRMRD_IMAGE_image_type"
+    //#define ISMRMRD_IMAGE_image_index                   "ISMRMRD_IMAGE_image_index"
+    //#define ISMRMRD_IMAGE_image_series_index            "ISMRMRD_IMAGE_image_series_index"
+    //#define ISMRMRD_IMAGE_user_int                      "ISMRMRD_IMAGE_user_int"
+    //#define ISMRMRD_IMAGE_user_float                    "ISMRMRD_IMAGE_user_float"
 
     /// dimension string
     #define GADGETRON_RO                                    "RO"
@@ -407,10 +401,10 @@ public:
     // ISMRMRD image header
     // ------------------------------------------------------------------------
     // set the meta attributes from the ISMRMRD image header
-    bool setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, ISMRMRD::MetaContainer& attrib);
+    // bool setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, ISMRMRD::MetaContainer& attrib);
 
     // compute the image geometry for two acquisition header
-    bool setImageHeaderISMRMRDFromMetaAttributes(const ISMRMRD::MetaContainer& attrib, ISMRMRD::ImageHeader& imgHeader);
+    // bool setImageHeaderISMRMRDFromMetaAttributes(const ISMRMRD::MetaContainer& attrib, ISMRMRD::ImageHeader& imgHeader);
 
     // ------------------------------------------------------------------------
     // utility functions for various things

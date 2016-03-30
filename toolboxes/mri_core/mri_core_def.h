@@ -97,4 +97,9 @@ namespace Gadgetron
     /// if set, skip the processing steps after the recon, e.g. partial fourier handling and kspace filter
     #define GADGETRON_SKIP_PROCESSING_AFTER_RECON           "Skip_processing_after_recon"
     #define GADGETRON_USE_DEDICATED_SCALING_FACTOR          "Use_dedicated_scaling_factor"
+
+    /// if this flag is set to be 1 for a image, the image is immediately passed to the next gadget
+    /// if this flag is 0, this image is a stored image by the accummulator
+    /// whether to pass a stored image to the next gadget is determined by the processing gadget itself
+    #define GADGETRON_PASS_IMMEDIATE                       "GT_PASSIMAGE_IMMEDIATE"
 }

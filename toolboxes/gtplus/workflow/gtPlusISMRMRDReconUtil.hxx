@@ -1617,235 +1617,235 @@ void gtPlusISMRMRDReconUtil<T>::findStartEndROAfterZeroFilling(size_t centre_col
     return;
 }
 
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, ISMRMRD::MetaContainer& attrib)
-{
-    try
-    {
-        unsigned int ii;
-
-        attrib.set(ISMRMRD_IMAGE_version,                 (long)imgHeader.version);
-        attrib.set(ISMRMRD_IMAGE_flags,                   (long)imgHeader.flags);
-        attrib.set(ISMRMRD_IMAGE_measurement_uid,         (long)imgHeader.measurement_uid);
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_matrix_size, (long)imgHeader.matrix_size[0]);
-        attrib.append(ISMRMRD_IMAGE_matrix_size, (long)imgHeader.matrix_size[1]);
-        attrib.append(ISMRMRD_IMAGE_matrix_size, (long)imgHeader.matrix_size[2]);
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_field_of_view, (double)imgHeader.field_of_view[0]);
-        attrib.append(ISMRMRD_IMAGE_field_of_view, (double)imgHeader.field_of_view[1]);
-        attrib.append(ISMRMRD_IMAGE_field_of_view, (double)imgHeader.field_of_view[2]);
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_channels, (long)imgHeader.channels);
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_position, (double)imgHeader.position[0]);
-        for ( ii=1; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
-        {
-            attrib.append(ISMRMRD_IMAGE_position, (double)imgHeader.position[ii]);
-        }
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_read_dir, (double)imgHeader.read_dir[0]);
-        for ( ii=1; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
-        {
-            attrib.append(ISMRMRD_IMAGE_read_dir, (double)imgHeader.read_dir[ii]);
-        }
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_phase_dir, (double)imgHeader.phase_dir[0]);
-        for ( ii=1; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
-        {
-            attrib.append(ISMRMRD_IMAGE_phase_dir, (double)imgHeader.phase_dir[ii]);
-        }
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_slice_dir, (double)imgHeader.slice_dir[0]);
-        for ( ii=1; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
-        {
-            attrib.append(ISMRMRD_IMAGE_slice_dir, (double)imgHeader.slice_dir[ii]);
-        }
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_patient_table_position, (double)imgHeader.patient_table_position[0]);
-        for ( ii=1; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
-        {
-            attrib.append(ISMRMRD_IMAGE_patient_table_position, (double)imgHeader.patient_table_position[ii]);
-        }
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_average,       (long)imgHeader.average);
-        attrib.set(ISMRMRD_IMAGE_slice,         (long)imgHeader.slice);
-        attrib.set(ISMRMRD_IMAGE_contrast,      (long)imgHeader.contrast);
-        attrib.set(ISMRMRD_IMAGE_phase,         (long)imgHeader.phase);
-        attrib.set(ISMRMRD_IMAGE_repetition,    (long)imgHeader.repetition);
-        attrib.set(ISMRMRD_IMAGE_set,           (long)imgHeader.set);
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_acquisition_time_stamp, (long)imgHeader.acquisition_time_stamp);
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_physiology_time_stamp, (long)imgHeader.physiology_time_stamp[0]);
-        for ( ii=1; ii<ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++ )
-        {
-            attrib.append(ISMRMRD_IMAGE_physiology_time_stamp, (long)imgHeader.physiology_time_stamp[ii]);
-        }
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_image_data_type,       (long)imgHeader.data_type);
-        attrib.set(ISMRMRD_IMAGE_image_type,            (long)imgHeader.image_type);
-        attrib.set(ISMRMRD_IMAGE_image_series_index,    (long)imgHeader.image_series_index);
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_user_int, (long)imgHeader.user_int[0]);
-        for ( ii=1; ii<ISMRMRD::ISMRMRD_USER_INTS; ii++ )
-        {
-            attrib.append(ISMRMRD_IMAGE_user_int, (long)imgHeader.user_int[ii]);
-        }
-
-        // ----------------------------------------
-
-        attrib.set(ISMRMRD_IMAGE_user_float, (double)imgHeader.user_float[0]);
-        for ( ii=1; ii<ISMRMRD::ISMRMRD_USER_FLOATS; ii++ )
-        {
-            attrib.append(ISMRMRD_IMAGE_user_float, (double)imgHeader.user_float[ii]);
-        }
-    }
-    catch(...)
-    {
-        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, ISMRMRD::MetaContainer& attrib) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const ISMRMRD::MetaContainer& attrib, ISMRMRD::ImageHeader& imgHeader)
-{
-    try
-    {
-        unsigned int ii;
-
-        imgHeader.version = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_version, 0);
-        imgHeader.flags = (uint64_t)attrib.as_long(ISMRMRD_IMAGE_flags, 0);
-        imgHeader.measurement_uid = (uint32_t)attrib.as_long(ISMRMRD_IMAGE_measurement_uid, 0);
-
-        // ----------------------------------------
-
-        imgHeader.matrix_size[0] = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_matrix_size, 0);
-        imgHeader.matrix_size[1] = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_matrix_size, 1);
-        imgHeader.matrix_size[2] = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_matrix_size, 2);
-
-        // ----------------------------------------
-
-        imgHeader.field_of_view[0] = (float)attrib.as_double(ISMRMRD_IMAGE_field_of_view, 0);
-        imgHeader.field_of_view[1] = (float)attrib.as_double(ISMRMRD_IMAGE_field_of_view, 1);
-        imgHeader.field_of_view[2] = (float)attrib.as_double(ISMRMRD_IMAGE_field_of_view, 2);
-
-        // ----------------------------------------
-
-        imgHeader.channels = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_channels, 0);;
-
-        // ----------------------------------------
-
-        for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
-        {
-            imgHeader.position[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_position, ii);
-        }
-
-        // ----------------------------------------
-
-        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
-        {
-            imgHeader.read_dir[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_read_dir, ii);
-        }
-
-        // ----------------------------------------
-
-        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
-        {
-            imgHeader.phase_dir[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_phase_dir, ii);
-        }
-
-        // ----------------------------------------
-
-        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
-        {
-            imgHeader.slice_dir[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_slice_dir, ii);
-        }
-
-        // ----------------------------------------
-
-        for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
-        {
-            imgHeader.patient_table_position[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_patient_table_position, ii);
-        }
-
-        // ----------------------------------------
-
-        imgHeader.average = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_average, 0);
-        imgHeader.slice = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_slice, 0);
-        imgHeader.contrast = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_contrast, 0);
-        imgHeader.phase = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_phase, 0);
-        imgHeader.repetition = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_repetition, 0);
-        imgHeader.set = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_set, 0);
-
-        // ----------------------------------------
-
-        imgHeader.acquisition_time_stamp = (uint32_t)attrib.as_long(ISMRMRD_IMAGE_acquisition_time_stamp, 0);
-
-        // ----------------------------------------
-
-        for ( ii=0; ii<ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++ )
-        {
-            imgHeader.physiology_time_stamp[ii] = (uint32_t)attrib.as_long(ISMRMRD_IMAGE_physiology_time_stamp, ii);
-        }
-
-        // ----------------------------------------
-
-        imgHeader.data_type = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_image_data_type, 0);
-        imgHeader.image_type = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_image_type, 0);
-        imgHeader.image_series_index = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_image_series_index, 0);
-
-        // ----------------------------------------
-
-        for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_INTS; ii++ )
-        {
-            imgHeader.user_int[ii] = (int32_t)attrib.as_long(ISMRMRD_IMAGE_user_int, ii);
-        }
-
-        // ----------------------------------------
-
-        for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_FLOATS; ii++ )
-        {
-            imgHeader.user_float[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_user_float, ii);
-        }
-    }
-    catch(...)
-    {
-        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const ISMRMRD::MetaContainer& attrib, ISMRMRD::ImageHeader& imgHeader) ... ");
-        return false;
-    }
-
-    return true;
-}
+//template <typename T> 
+//bool gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, ISMRMRD::MetaContainer& attrib)
+//{
+//    try
+//    {
+//        unsigned int ii;
+//
+//        attrib.set(ISMRMRD_IMAGE_version,                 (long)imgHeader.version);
+//        attrib.set(ISMRMRD_IMAGE_flags,                   (long)imgHeader.flags);
+//        attrib.set(ISMRMRD_IMAGE_measurement_uid,         (long)imgHeader.measurement_uid);
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_matrix_size, (long)imgHeader.matrix_size[0]);
+//        attrib.append(ISMRMRD_IMAGE_matrix_size, (long)imgHeader.matrix_size[1]);
+//        attrib.append(ISMRMRD_IMAGE_matrix_size, (long)imgHeader.matrix_size[2]);
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_field_of_view, (double)imgHeader.field_of_view[0]);
+//        attrib.append(ISMRMRD_IMAGE_field_of_view, (double)imgHeader.field_of_view[1]);
+//        attrib.append(ISMRMRD_IMAGE_field_of_view, (double)imgHeader.field_of_view[2]);
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_channels, (long)imgHeader.channels);
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_position, (double)imgHeader.position[0]);
+//        for ( ii=1; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
+//        {
+//            attrib.append(ISMRMRD_IMAGE_position, (double)imgHeader.position[ii]);
+//        }
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_read_dir, (double)imgHeader.read_dir[0]);
+//        for ( ii=1; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
+//        {
+//            attrib.append(ISMRMRD_IMAGE_read_dir, (double)imgHeader.read_dir[ii]);
+//        }
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_phase_dir, (double)imgHeader.phase_dir[0]);
+//        for ( ii=1; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
+//        {
+//            attrib.append(ISMRMRD_IMAGE_phase_dir, (double)imgHeader.phase_dir[ii]);
+//        }
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_slice_dir, (double)imgHeader.slice_dir[0]);
+//        for ( ii=1; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
+//        {
+//            attrib.append(ISMRMRD_IMAGE_slice_dir, (double)imgHeader.slice_dir[ii]);
+//        }
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_patient_table_position, (double)imgHeader.patient_table_position[0]);
+//        for ( ii=1; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
+//        {
+//            attrib.append(ISMRMRD_IMAGE_patient_table_position, (double)imgHeader.patient_table_position[ii]);
+//        }
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_average,       (long)imgHeader.average);
+//        attrib.set(ISMRMRD_IMAGE_slice,         (long)imgHeader.slice);
+//        attrib.set(ISMRMRD_IMAGE_contrast,      (long)imgHeader.contrast);
+//        attrib.set(ISMRMRD_IMAGE_phase,         (long)imgHeader.phase);
+//        attrib.set(ISMRMRD_IMAGE_repetition,    (long)imgHeader.repetition);
+//        attrib.set(ISMRMRD_IMAGE_set,           (long)imgHeader.set);
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_acquisition_time_stamp, (long)imgHeader.acquisition_time_stamp);
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_physiology_time_stamp, (long)imgHeader.physiology_time_stamp[0]);
+//        for ( ii=1; ii<ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++ )
+//        {
+//            attrib.append(ISMRMRD_IMAGE_physiology_time_stamp, (long)imgHeader.physiology_time_stamp[ii]);
+//        }
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_image_data_type,       (long)imgHeader.data_type);
+//        attrib.set(ISMRMRD_IMAGE_image_type,            (long)imgHeader.image_type);
+//        attrib.set(ISMRMRD_IMAGE_image_series_index,    (long)imgHeader.image_series_index);
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_user_int, (long)imgHeader.user_int[0]);
+//        for ( ii=1; ii<ISMRMRD::ISMRMRD_USER_INTS; ii++ )
+//        {
+//            attrib.append(ISMRMRD_IMAGE_user_int, (long)imgHeader.user_int[ii]);
+//        }
+//
+//        // ----------------------------------------
+//
+//        attrib.set(ISMRMRD_IMAGE_user_float, (double)imgHeader.user_float[0]);
+//        for ( ii=1; ii<ISMRMRD::ISMRMRD_USER_FLOATS; ii++ )
+//        {
+//            attrib.append(ISMRMRD_IMAGE_user_float, (double)imgHeader.user_float[ii]);
+//        }
+//    }
+//    catch(...)
+//    {
+//        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, ISMRMRD::MetaContainer& attrib) ... ");
+//        return false;
+//    }
+//
+//    return true;
+//}
+//
+//template <typename T> 
+//bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const ISMRMRD::MetaContainer& attrib, ISMRMRD::ImageHeader& imgHeader)
+//{
+//    try
+//    {
+//        unsigned int ii;
+//
+//        imgHeader.version = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_version, 0);
+//        imgHeader.flags = (uint64_t)attrib.as_long(ISMRMRD_IMAGE_flags, 0);
+//        imgHeader.measurement_uid = (uint32_t)attrib.as_long(ISMRMRD_IMAGE_measurement_uid, 0);
+//
+//        // ----------------------------------------
+//
+//        imgHeader.matrix_size[0] = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_matrix_size, 0);
+//        imgHeader.matrix_size[1] = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_matrix_size, 1);
+//        imgHeader.matrix_size[2] = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_matrix_size, 2);
+//
+//        // ----------------------------------------
+//
+//        imgHeader.field_of_view[0] = (float)attrib.as_double(ISMRMRD_IMAGE_field_of_view, 0);
+//        imgHeader.field_of_view[1] = (float)attrib.as_double(ISMRMRD_IMAGE_field_of_view, 1);
+//        imgHeader.field_of_view[2] = (float)attrib.as_double(ISMRMRD_IMAGE_field_of_view, 2);
+//
+//        // ----------------------------------------
+//
+//        imgHeader.channels = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_channels, 0);;
+//
+//        // ----------------------------------------
+//
+//        for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
+//        {
+//            imgHeader.position[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_position, ii);
+//        }
+//
+//        // ----------------------------------------
+//
+//        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
+//        {
+//            imgHeader.read_dir[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_read_dir, ii);
+//        }
+//
+//        // ----------------------------------------
+//
+//        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
+//        {
+//            imgHeader.phase_dir[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_phase_dir, ii);
+//        }
+//
+//        // ----------------------------------------
+//
+//        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
+//        {
+//            imgHeader.slice_dir[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_slice_dir, ii);
+//        }
+//
+//        // ----------------------------------------
+//
+//        for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
+//        {
+//            imgHeader.patient_table_position[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_patient_table_position, ii);
+//        }
+//
+//        // ----------------------------------------
+//
+//        imgHeader.average = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_average, 0);
+//        imgHeader.slice = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_slice, 0);
+//        imgHeader.contrast = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_contrast, 0);
+//        imgHeader.phase = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_phase, 0);
+//        imgHeader.repetition = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_repetition, 0);
+//        imgHeader.set = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_set, 0);
+//
+//        // ----------------------------------------
+//
+//        imgHeader.acquisition_time_stamp = (uint32_t)attrib.as_long(ISMRMRD_IMAGE_acquisition_time_stamp, 0);
+//
+//        // ----------------------------------------
+//
+//        for ( ii=0; ii<ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++ )
+//        {
+//            imgHeader.physiology_time_stamp[ii] = (uint32_t)attrib.as_long(ISMRMRD_IMAGE_physiology_time_stamp, ii);
+//        }
+//
+//        // ----------------------------------------
+//
+//        imgHeader.data_type = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_image_data_type, 0);
+//        imgHeader.image_type = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_image_type, 0);
+//        imgHeader.image_series_index = (uint16_t)attrib.as_long(ISMRMRD_IMAGE_image_series_index, 0);
+//
+//        // ----------------------------------------
+//
+//        for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_INTS; ii++ )
+//        {
+//            imgHeader.user_int[ii] = (int32_t)attrib.as_long(ISMRMRD_IMAGE_user_int, ii);
+//        }
+//
+//        // ----------------------------------------
+//
+//        for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_FLOATS; ii++ )
+//        {
+//            imgHeader.user_float[ii] = (float)attrib.as_double(ISMRMRD_IMAGE_user_float, ii);
+//        }
+//    }
+//    catch(...)
+//    {
+//        GERROR_STREAM("Errors in gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const ISMRMRD::MetaContainer& attrib, ISMRMRD::ImageHeader& imgHeader) ... ");
+//        return false;
+//    }
+//
+//    return true;
+//}
 
 //#ifdef USE_CUDA
 //
