@@ -1,10 +1,83 @@
 #include "WhiteNoiseInjectorGadget.h"
-#include "gtPlusUtil.h"
+#include "hoNDArray_elemwise.h"
 #include <array>
 #include "ismrmrd/xml.h"
 
 namespace Gadgetron
 {
+
+template <typename T>
+RandNormGenerator<T>::RandNormGenerator()
+{
+    rng_.seed();
+    this->setPara(0, 1);
+}
+
+template <typename T>
+RandNormGenerator<T>::RandNormGenerator(long long s, T mean, T sigma)
+{
+    this->seed(s);
+    this->setPara(mean, sigma);
+}
+
+template <typename T>
+RandNormGenerator<T>::~RandNormGenerator()
+{
+}
+
+template <typename T>
+void RandNormGenerator<T>::seed(unsigned long s)
+{
+    rng_.seed(s);
+}
+
+template <typename T>
+void RandNormGenerator<T>::setPara(T mean, T sigma)
+{
+    typename std::normal_distribution<T>::param_type para(mean, sigma);
+    dist_norm_.param(para);
+}
+
+template <typename T>
+inline void RandNormGenerator<T>::gen(hoNDArray<T>& randNum)
+{
+    try
+    {
+        size_t N = randNum.get_number_of_elements();
+        size_t n;
+        for (n = 0; n<N; n++)
+        {
+            randNum(n) = dist_norm_(rng_);
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in RandNormGenerator<T>::gen(hoNDArray<T>& randNum) ... ");
+    }
+}
+
+template <typename T>
+inline void RandNormGenerator<T>::gen(hoNDArray< std::complex<T> >& randNum)
+{
+    try
+    {
+        size_t N = randNum.get_number_of_elements();
+        size_t n;
+
+        T real, imag;
+        for (n = 0; n<N; n++)
+        {
+            real = dist_norm_(rng_);
+            imag = dist_norm_(rng_);
+
+            randNum(n) = std::complex<T>(real, imag);
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in RandNormGenerator<T>::gen(hoNDArray< std::complex<T> >& randNum) ... ");
+    }
+}
 
 WhiteNoiseInjectorGadget::WhiteNoiseInjectorGadget() : noise_mean_(0), noise_std_(1.0f)
 {
@@ -66,7 +139,7 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
 
     randn_->seed( (unsigned long)seed );
 
-// ---------------------------------------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------------------
     ISMRMRD::IsmrmrdHeader h;
     try {
       deserialize(mb->rd_ptr(),h);
@@ -158,7 +231,11 @@ int WhiteNoiseInjectorGadget::process(GadgetContainerMessage<ISMRMRD::Acquisitio
                 noise_fl_.create(m2->getObjectPtr()->get_dimensions());
             }
 
-            if ( !randn_->gen(noise_) )
+            try
+            {
+                randn_->gen(noise_);
+            }
+            catch(...)
             {
                 GERROR_STREAM("WhiteNoiseInjectorGadget, randn_->gen(noise_) failed ... ");
                 return GADGET_FAIL;

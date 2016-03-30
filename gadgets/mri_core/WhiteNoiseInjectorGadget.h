@@ -6,13 +6,36 @@
 #include "ismrmrd/ismrmrd.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "gadgetron_mricore_export.h"
-
-namespace Gadgetron { namespace gtPlus {
-    template <typename T> class gtPlusRandNorm;
-}}
+#include <random>
 
 namespace Gadgetron
 {
+
+template <typename T>
+class RandNormGenerator
+{
+public:
+
+    typedef std::mt19937 RandomGeneratorType;
+
+    RandNormGenerator();
+    RandNormGenerator(long long seed, T mean = 0, T sigma = 1);
+    ~RandNormGenerator();
+
+    void seed(unsigned long seed);
+    void setPara(T mean = 0, T sigma = 1);
+
+    RandomGeneratorType& getRandomer() { return rng_; }
+    const RandomGeneratorType& getRandomer() const { return rng_; }
+
+    void gen(hoNDArray<T>& randNum);
+    void gen(hoNDArray< std::complex<T> >& randNum);
+
+protected:
+
+    RandomGeneratorType rng_;
+    std::normal_distribution<T> dist_norm_;
+};
 
 /// add white noise to the kspace data
 class EXPORTGADGETSMRICORE WhiteNoiseInjectorGadget : public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
@@ -21,7 +44,7 @@ public:
 
     GADGET_DECLARE(WhiteNoiseInjectorGadget);
 
-    typedef Gadgetron::gtPlus::gtPlusRandNorm<double> RandGenType;
+    typedef Gadgetron::RandNormGenerator<double> RandGenType;
 
     WhiteNoiseInjectorGadget();
     virtual ~WhiteNoiseInjectorGadget();
