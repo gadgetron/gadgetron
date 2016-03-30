@@ -1,6 +1,5 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "DependencyQueryGadget.h"
-#include "gtPlusUtil.h"
 
 #include <boost/version.hpp>
 #include <boost/filesystem.hpp>
@@ -103,8 +102,6 @@ namespace Gadgetron
 
                         if ( clean_storage_while_query_ )
                         {
-                            Gadgetron::gtPlus::gtPlusUtil<ValueType> gt_util;
-
                             for (vec::const_iterator it (v.begin()); it != v.end(); ++it)
                             {
                                 filename = it->string();
