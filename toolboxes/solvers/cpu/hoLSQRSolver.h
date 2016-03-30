@@ -11,39 +11,24 @@
 #pragma once
 
 #include "cpusolver_export.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_reductions.h"
 #include "lsqrSolver.h"
+#include "hoNDArray_math.h"
 
 namespace Gadgetron{
 
-    template <class ARRAY_TYPE> class EXPORTCPUSOLVER hoLSQRSolver : public lsqrSolver<ARRAY_TYPE>
+    template <class T> class EXPORTCPUSOLVER hoLSQRSolver : public lsqrSolver< hoNDArray<T> >
     {
     public:
 
-        typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
-        typedef typename realType<ELEMENT_TYPE>::Type REAL;
-
-        typedef lsqrSolver<ARRAY_TYPE> BaseClass;
+        typedef lsqrSolver< hoNDArray<T> > BaseClass;
 
         hoLSQRSolver();
         virtual ~hoLSQRSolver();
-
-        void set_verbose(bool v) { verbose_ = v; }
-        bool get_verbose() { return verbose_; }
-
-        // solve the linear equation and results are stored in x
-        virtual void solve(ARRAY_TYPE* x, ARRAY_TYPE* b);
-
-        // return the results as a shared array
-        virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE *b);
 
     protected:
 
         using BaseClass::encoding_operator_;
         using BaseClass::iterations_;
         using BaseClass::tc_tolerance_;
-
-        bool verbose_;
     };
 }

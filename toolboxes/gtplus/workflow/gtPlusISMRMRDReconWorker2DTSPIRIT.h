@@ -278,10 +278,10 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                 spirit.set_forward_kernel(*ker, false);
             }
 
-            hoLSQRSolver< hoNDArray<T> > cgSolver;
+            hoLSQRSolver< T > cgSolver;
             cgSolver.set_tc_tolerance((value_type)workOrder2DT->spirit_iter_thres_ );
             cgSolver.set_max_iterations(workOrder2DT->spirit_iter_max_);
-            cgSolver.set_verbose(workOrder2DT->spirit_print_iter_);
+            cgSolver.set_output_mode(workOrder2DT->spirit_print_iter_ ? hoLSQRSolver< T >::OUTPUT_VERBOSE : hoLSQRSolver< T >::OUTPUT_SILENT);
             cgSolver.set_encoding_operator(oper);
 
             hoNDArray<T> b(RO, E1, srcCHA);
