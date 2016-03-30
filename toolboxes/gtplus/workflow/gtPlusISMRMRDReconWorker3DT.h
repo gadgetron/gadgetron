@@ -222,7 +222,6 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
         {
             if ( workOrder3DT->coil_compression_ 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT 
-                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
             {
@@ -239,7 +238,6 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
         {
             if ( workOrder3DT->coil_compression_ 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT 
-                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP 
                 && (workOrder3DT->acceFactorE1_>1 || workOrder3DT->acceFactorE2_>1) )
@@ -276,7 +274,6 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
 
                 if ( !workOrder3DT->downstream_coil_compression_ 
                     || workOrder3DT->recon_algorithm_==ISMRMRD_SPIRIT 
-                    || workOrder3DT->recon_algorithm_==ISMRMRD_L1SPIRIT 
                     || workOrder3DT->recon_algorithm_==ISMRMRD_L1SPIRIT_SLEP 
                     || workOrder3DT->recon_algorithm_==ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
                 {
@@ -797,7 +794,6 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(croppedRef, debugFolder_+"refRecon_afterCrop"); }
 
                 if ( workOrder3DT->recon_algorithm_ == ISMRMRD_SPIRIT 
-                    || workOrder3DT->recon_algorithm_ == ISMRMRD_L1SPIRIT 
                     || workOrder3DT->recon_algorithm_ == ISMRMRD_L1SPIRIT_SLEP 
                     || workOrder3DT->recon_algorithm_ == ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
                 {
@@ -1043,7 +1039,6 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
         // compute coil compression coeff
         if ( workOrder3DT->coil_compression_ 
             && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT 
-            && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT 
             && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
             && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
         {
@@ -1551,7 +1546,6 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
             hoNDArray<T> ref_dst;
             if ( workOrder3DT->coil_compression_ 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT 
-                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
             {
@@ -1598,7 +1592,8 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
             {
                 if ( workOrder3DT->workFlow_use_BufferedKernel_ )
                 {
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                    Gadgetron::coil_combine(buffer3DT, *workOrder3DT->coilMap_, 3, workOrder3DT->complexIm_);
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexImCombined"); }
                 }
                 else
@@ -1628,7 +1623,8 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                     }
 
                     if ( performTiming_ ) { gt_timer2_.start("full res coil map : coil combine 3D ...  "); }
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                    Gadgetron::coil_combine(buffer3DT, *workOrder3DT->coilMap_, 3, workOrder3DT->complexIm_);
                     if ( performTiming_ ) { gt_timer2_.stop(); }
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexImCombined"); }
                 }
@@ -1637,7 +1633,8 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
             {
                 if ( workOrder3DT->workFlow_use_BufferedKernel_ )
                 {
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                    Gadgetron::coil_combine(buffer3DT, *workOrder3DT->coilMap_, 3, workOrder3DT->complexIm_);
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_"); }
                 }
                 else
@@ -1659,7 +1656,8 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(*workOrder3DT->coilMap_, debugFolder_+"coilMap_fullres"); }
                     }
 
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                    Gadgetron::coil_combine(buffer3DT, *workOrder3DT->coilMap_, 3, workOrder3DT->complexIm_);
                     if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_"); }
                 }
             }
@@ -1695,7 +1693,8 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                     {
                         hoNDArray<T> buffer3DT_Two(workOrder3DT->data_.get_dimensions());
                         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->data_, buffer3DT, buffer3DT_Two);
-                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                        // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                        Gadgetron::coil_combine(buffer3DT, *workOrder3DT->coilMap_, 2, workOrder3DT->complexIm_);
                         if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_noFullResCoilMap_"); }
                     }
                     else if ( workOrder3DT->fullkspace_.get_number_of_elements() > 0 )
@@ -1704,7 +1703,8 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                         {
                             hoNDArray<T> buffer3DT_Two(workOrder3DT->fullkspace_.get_dimensions());
                             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->fullkspace_, buffer3DT, buffer3DT_Two);
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                            // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                            Gadgetron::coil_combine(buffer3DT, *workOrder3DT->coilMap_, 2, workOrder3DT->complexIm_);
                             if ( !debugFolder_.empty() ) { gt_exporter_.exportArrayComplex(workOrder3DT->complexIm_, debugFolder_+"complexIm_noFullResCoilMap_"); }
                         }
                         else
@@ -1772,13 +1772,13 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
 {
     try
     {
-        value_type partialFourierCompensationFactor = 1;
+        // value_type partialFourierCompensationFactor = 1;
 
         size_t RO = workOrder3DT->data_.get_size(0);
         size_t E1 = workOrder3DT->data_.get_size(1);
         size_t E2 = workOrder3DT->data_.get_size(2);
 
-        if ( !( workOrder3DT->start_RO_<0 || workOrder3DT->end_RO_<0 || (workOrder3DT->end_RO_-workOrder3DT->start_RO_+1==RO) ) )
+        /*if ( !( workOrder3DT->start_RO_<0 || workOrder3DT->end_RO_<0 || (workOrder3DT->end_RO_-workOrder3DT->start_RO_+1==RO) ) )
         {
             partialFourierCompensationFactor *= (value_type)(RO)/(value_type)(workOrder3DT->end_RO_-workOrder3DT->start_RO_+1);
         }
@@ -1800,16 +1800,16 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
         }
 
         partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
-        if ( performTiming_ ) { GDEBUG_STREAM("Partial fourier scaling factor : " << partialFourierCompensationFactor); }
+        if ( performTiming_ ) { GDEBUG_STREAM("Partial fourier scaling factor : " << partialFourierCompensationFactor); }*/
 
         // if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING ) return true;
 
         if (workOrder3DT->CalibMode_ == ISMRMRD_noacceleration)
         {
-            if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
-            {
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->data_));
-            }
+            //if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
+            //{
+            //    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->data_));
+            //}
 
             if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {
@@ -1828,10 +1828,10 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
         }
         else if ( workOrder3DT->fullkspace_.get_number_of_elements() > 0 )
         {
-            if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
-            {
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->fullkspace_));
-            }
+            //if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
+            //{
+            //    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->fullkspace_));
+            //}
 
             if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {
@@ -1854,10 +1854,10 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
             hoNDArray<T> kspace(workOrder3DT->complexIm_.get_dimensions());
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(workOrder3DT->complexIm_, kspace);
 
-            if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
-            {
-                GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
-            }
+            //if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (std::abs(partialFourierCompensationFactor-1)>FLT_EPSILON) )
+            //{
+            //    GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
+            //}
 
             if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {

@@ -74,7 +74,9 @@ namespace Gadgetron{
     }
 
     //At this point, the node index is positive, so we need to find a suitable connector.
+    mtx_.acquire();
     auto n = node_map_.find(node_index);
+    mtx_.release();
     GadgetronConnector* con = 0;
     if (n != node_map_.end()) { //We have a suitable connection already.
       con = n->second;
@@ -154,7 +156,10 @@ namespace Gadgetron{
         GERROR("Failed to send XML parameters to compute node\n");
         return GADGET_FAIL;
       }
+      
+      mtx_.acquire();
       node_map_[node_index] = con;
+      mtx_.release();
     }
 
 
@@ -178,7 +183,6 @@ namespace Gadgetron{
 
     } else {
       //We have a valid connector
-
       auto m1 = new GadgetContainerMessage<GadgetMessageIdentifier>();
       m1->getObjectPtr()->id = message_id(m);
 

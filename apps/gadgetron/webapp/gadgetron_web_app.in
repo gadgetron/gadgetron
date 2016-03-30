@@ -8,6 +8,8 @@ ISMRMRD_HOME=@ISMRMRD_INCLUDE_DIR@/..
 logfile=/tmp/gadgetron.log
 relay_host=localhost
 relay_port=8002
+rest_port=9080
+lb_endpoint=None
 
 [RELAY]
 port=8002

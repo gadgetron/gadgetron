@@ -1,6 +1,11 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "IsmrmrdDumpGadget.h"
 #include <iomanip>
+#include <boost/filesystem.hpp>
+#include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/xml.h>
+
+namespace bf = boost::filesystem;
 
 namespace Gadgetron
 {
@@ -27,35 +32,67 @@ namespace Gadgetron
 
     IsmrmrdDumpGadget::IsmrmrdDumpGadget()
                     : Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >()
-                    , file_prefix_("ISMRMRD_DUMP")
-                    , ismrmrd_file_name_("ISMRMRD_DUMP.h5") //This will be reset during configuration
-                    , append_timestamp_(true)
     {
-        file_prefix_ = "ISMRMRD_DUMP";
-        append_timestamp_ = true;
     }
 
     int IsmrmrdDumpGadget::process_config(ACE_Message_Block* mb)
     {
-        file_prefix_ = file_prefix.value();
-        if ( file_prefix_.empty() )
-        {
-            file_prefix_ = "ISMRMRD_DUMP";
+        
+        ISMRMRD::IsmrmrdHeader ismrmrd_header;
+        ISMRMRD::deserialize(mb->rd_ptr(), ismrmrd_header);
+
+        std::string measurement_id = "";
+        std::string ismrmrd_filename = "";
+        
+        if ( ismrmrd_header.measurementInformation ) {
+            if ( ismrmrd_header.measurementInformation->measurementID ) {
+                measurement_id = *ismrmrd_header.measurementInformation->measurementID;
+            }
         }
 
-        append_timestamp_ = append_timestamp.value();
+        GDEBUG("Measurement ID: %s\n", measurement_id.c_str());
+        
+        bf::path p(folder.value());
 
+        if (!exists(p)) {
+            try {
+                bf::create_directory(p);
+            } catch(...) {
+                GERROR("Error caught trying to create folder %s\n", folder.value().c_str());
+                return GADGET_FAIL;
+            }
+        } else {
+            if (!is_directory(p)) {
+                GERROR("Specified path is not a directory\n");
+                return GADGET_FAIL;
+            }
+        }
+        
+        if ( file_prefix.value().empty() )
+        {
+            ismrmrd_filename = "ISMRMRD_DUMP";
+        } else {
+            ismrmrd_filename = file_prefix.value();
+        }
+
+        if (append_id.value() && measurement_id.size()) {
+            ismrmrd_filename.append("_");
+            ismrmrd_filename.append(measurement_id);
+        }
+        
         //Generate filename
-        if (append_timestamp_)
+        if (append_timestamp.value())
         {
-            ismrmrd_file_name_ = file_prefix_ + std::string("_") + get_date_time_string() + std::string(".h5");
-        }
-        else
-        {
-            ismrmrd_file_name_ = file_prefix_ + std::string(".h5");
+            ismrmrd_filename.append("_");
+            ismrmrd_filename.append(get_date_time_string());
         }
 
-        ismrmrd_dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(ismrmrd_file_name_.c_str(), "dataset"));
+        ismrmrd_filename.append(".h5");
+
+        p /= ismrmrd_filename;
+
+        ismrmrd_filename = p.string();
+        ismrmrd_dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(ismrmrd_filename.c_str(), "dataset"));
 
         std::string xml_config(mb->rd_ptr());
 

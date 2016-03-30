@@ -275,7 +275,7 @@ int main(int argc, char** argv)
   }
 
   if (argc > 2) {
-    port_no = std::atoi(argv[2]);
+    rest_port = std::atoi(argv[2]);
   }
 
   

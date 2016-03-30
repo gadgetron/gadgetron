@@ -39,6 +39,12 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
         print("Missing siemens configuration parameter(s), assuming no conversion to ISMRMRD needed")
         need_siemens_conversion = False
 
+    need_siemens_conversion_flag = True
+    try:
+        siemens_data_conversion_flag = config.get('FILES', 'siemens_data_conversion_flag')
+    except ConfigParser.NoOptionError:
+        need_siemens_conversion_flag = False
+
     # if siemens_dat config parameter found but empty, assume no conversion to ISMRMRD intended
     if not siemens_dat:
         need_siemens_conversion = False
@@ -110,21 +116,22 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
     #Start the Gadgetron if needed
     if start_gadgetron:
         with open(gadgetron_log_filename, "w") as gf:
-            gp = subprocess.Popen(["gadgetron", "-p", port, "-R", "19080"], env=environment, stdout=gf, stderr=gf)
+            gp = subprocess.Popen(["gadgetron", "-p", port, "-R", "19080", "-l", "8004"], env=environment, stdout=gf, stderr=gf)
 
             node_p = list()
             if nodes > 0:
                 #start the cloudbus relay
                 relay_log_filename = os.path.join(pwd, out_folder, "gadgetron_cloudbus_relay.log")
                 with open(relay_log_filename, "w") as lgf:
-                    p_relay = subprocess.Popen(["gadgetron_cloudbus_relay"], env=environment, stdout=lgf, stderr=lgf)
+                    p_relay = subprocess.Popen(["gadgetron_cloudbus_relay", "8004", "18004"], env=environment, stdout=lgf, stderr=lgf)
 
+                base_rest_port = 19080
                 for pi in range(nodes):
                     node_log_filename = "gadgetron_node_" + str(pi) + ".log"
                     node_log_filename = os.path.join(pwd, out_folder, node_log_filename)
 
                     with open(node_log_filename, "w") as ngf:
-                        pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1), "-R", "0"], env=environment, stdout=ngf, stderr=ngf)
+                        pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1), "-R", str(base_rest_port+pi+1), "-l", "8004"], env=environment, stdout=ngf, stderr=ngf)
                         node_p.append(pn)
 
             time.sleep(2)
@@ -256,9 +263,14 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
 
             # conversion of primary Siemens .dat file
             print("Converting Siemens .dat file to ISMRMRD for data measurement.")
-            cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
-                   siemens_parameter_xml, "-x", siemens_parameter_xsl,
-                   "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1)]
+            if need_siemens_conversion_flag:
+                cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
+                       siemens_parameter_xml, "-x", siemens_parameter_xsl,
+                       "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1), " ", siemens_data_conversion_flag]
+            else:
+                cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
+                       siemens_parameter_xml, "-x", siemens_parameter_xsl,
+                       "-o", ismrmrd_result, "-z", str(siemens_data_measurement+1)]
 
             r = subprocess.call(cmd, env=environment, stdout=cf, stderr=cf)
             if r != 0:

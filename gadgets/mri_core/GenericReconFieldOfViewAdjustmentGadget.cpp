@@ -13,10 +13,8 @@
 
 namespace Gadgetron {
 
-    GenericReconFieldOfViewAdjustmentGadget::GenericReconFieldOfViewAdjustmentGadget()
+    GenericReconFieldOfViewAdjustmentGadget::GenericReconFieldOfViewAdjustmentGadget() : BaseClass()
     {
-        num_encoding_spaces_ = 1;
-        process_called_times_ = 0;
     }
 
     GenericReconFieldOfViewAdjustmentGadget::~GenericReconFieldOfViewAdjustmentGadget()
@@ -25,6 +23,8 @@ namespace Gadgetron {
 
     int GenericReconFieldOfViewAdjustmentGadget::process_config(ACE_Message_Block* mb)
     {
+        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+
         ISMRMRD::IsmrmrdHeader h;
         try
         {
@@ -78,23 +78,13 @@ namespace Gadgetron {
             GDEBUG_CONDITION_STREAM(verbose.value(), "Encoding space : " << e << " - recon    size : [" << recon_size_[e][0] << " " << recon_size_[e][1] << " " << recon_size_[e][2] << " ]");
         }
 
-        // ---------------------------------------------------------------------------------------------------------
-        // generate the destination folder
-        /*if (!debug_folder.value().empty())
-        {
-            Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        }
-        else
-        {
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        }*/
-
         return GADGET_OK;
     }
 
     int GenericReconFieldOfViewAdjustmentGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1)
     {
+        if (perform_timing.value()) { gt_timer_.start("GenericReconFieldOfViewAdjustmentGadget::process"); }
+
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconFieldOfViewAdjustmentGadget::process(...) starts ... ");
 
         process_called_times_++;
@@ -138,6 +128,8 @@ namespace Gadgetron {
             GERROR("GenericReconFieldOfViewAdjustmentGadget::process, passing data on to next gadget");
             return GADGET_FAIL;
         }
+
+        if (perform_timing.value()) { gt_timer_.stop(); }
 
         return GADGET_OK;
     }

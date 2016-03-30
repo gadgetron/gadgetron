@@ -311,7 +311,7 @@ public:
     /// ------------------------------------------------------------------------------------
     /// recon parameters
     GADGET_PROPERTY_LIMITS(recon_algorithm, std::string, "Reconstruction algorithm", "ISMRMRD_GRAPPA",
-        GadgetPropertyLimitsEnumeration, "ISMRMRD_GRAPPA", "ISMRMRD_SENSE", "ISMRMRD_SPIRIT", "ISMRMRD_L1SPIRIT", 
+        GadgetPropertyLimitsEnumeration, "ISMRMRD_GRAPPA", "ISMRMRD_SENSE", "ISMRMRD_SPIRIT", 
                             "ISMRMRD_SOFTSENSE", "ISMRMRD_L1SOFTSENSE", "ISMRMRD_2DTBINNING", "ISMRMRD_2DTBINNING_FLOW", 
                             "ISMRMRD_L1SPIRIT_SLEP", "ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP", "ISMRMRD_NONE");
 
@@ -410,6 +410,16 @@ public:
 
     // encoding filed of view [mm]
     float field_of_view_encoding_[3];
+
+    // encoding limits for E1 and E2
+    // used to set up kspace filter
+    size_t min_E1_;
+    size_t max_E1_;
+    size_t center_E1_;
+
+    size_t min_E2_;
+    size_t max_E2_;
+    size_t center_E2_;
 
     // recon matrix size (the final image size)
     size_t matrix_size_recon_[3];

@@ -14,8 +14,9 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
-#include "gtPlusISMRMRDReconUtil.h"
-#include "GtPrepUtil.h"
+
+#include "GadgetronTimer.h"
+#include "gtPlusIOAnalyze.h"
 
 #ifdef USE_OMP
     #include <omp.h>

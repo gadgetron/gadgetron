@@ -1232,7 +1232,6 @@ ISMRMRDALGO gtPlusISMRMRDReconUtil<T>::getISMRMRDReconAlgoFromName(const std::st
     if ( name == "ISMRMRD_GRAPPA" ) return ISMRMRD_GRAPPA;
     if ( name == "ISMRMRD_SENSE" ) return ISMRMRD_SENSE;
     if ( name == "ISMRMRD_SPIRIT" ) return ISMRMRD_SPIRIT;
-    if ( name == "ISMRMRD_L1SPIRIT" ) return ISMRMRD_L1SPIRIT;
     if ( name == "ISMRMRD_SOFTSENSE" ) return ISMRMRD_SOFTSENSE;
     if ( name == "ISMRMRD_L1SOFTSENSE" ) return ISMRMRD_L1SOFTSENSE;
     if ( name == "ISMRMRD_2DTBINNING" ) return ISMRMRD_2DTBINNING;
@@ -2661,125 +2660,7 @@ coilCombine(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, hoNDArray<T>&
 {
     try
     {
-        size_t NDim = data.get_number_of_dimensions();
-        size_t NDimCoil = coilMap.get_number_of_dimensions();
-
-        // GADGET_CHECK_RETURN_FALSE(NDimCoil<=NDim);
-        GADGET_CHECK_RETURN_FALSE(data.get_number_of_elements()>=coilMap.get_number_of_elements());
-
-        size_t n;
-        for ( n=0; n<NDimCoil; n++ )
-        {
-            if ( n<NDim && coilMap.get_size(n)>1 )
-            {
-                GADGET_CHECK_RETURN_FALSE(data.get_size(n)==coilMap.get_size(n));
-            }
-        }
-
-        boost::shared_ptr< std::vector<size_t> > dim = data.get_dimensions();
-        boost::shared_ptr< std::vector<size_t> > dimCoil = coilMap.get_dimensions();
-
-        std::vector<size_t> dimCombined(*dim);
-        dimCombined.erase(dimCombined.begin()+2);
-        combined.create(&dimCombined);
-
-        size_t RO = data.get_size(0);
-        size_t E1 = data.get_size(1);
-        size_t CHA = data.get_size(2);
-        size_t N = data.get_size(3);
-
-        size_t coilN = coilMap.get_size(3);
-
-        if ( coilN < N )
-        {
-            size_t NCombined = data.get_number_of_elements()/(RO*E1*CHA);
-
-            std::vector<size_t> dataInd, coilMapInd(NDimCoil, 0), coimbinedInd(dimCombined.size(), 0);
-
-            size_t nn;
-            size_t d;
-            hoNDArray<T> dataTmp(RO, E1, CHA);
-            hoNDArray<T> combinedCurr(RO, E1, 1);
-
-            for ( nn=0; nn<NCombined; nn++ )
-            {
-                size_t offsetData = nn*RO*E1*CHA;
-                dataInd = data.calculate_index(offsetData);
-
-                for ( d=0; d<NDimCoil; d++ )
-                {
-                    if ( dataInd[d]<coilMap.get_size(d) )
-                    {
-                        coilMapInd[d] = dataInd[d];
-                    }
-                    else
-                    {
-                        coilMapInd[d] = 0;
-                    }
-                }
-
-                for ( d=3; d<NDim; d++ )
-                {
-                    coimbinedInd[d-1] = dataInd[d];
-                }
-
-                size_t offsetCoilMap = coilMap.calculate_offset(coilMapInd);
-                size_t offsetCombined = combined.calculate_offset(coimbinedInd);
-
-                hoNDArray<T> dataCurr(RO, E1, CHA, const_cast<T*>(data.begin())+offsetData);
-                hoNDArray<T> coilMapCurr(RO, E1, CHA, const_cast<T*>(coilMap.begin())+offsetCoilMap);
-
-                Gadgetron::multiplyConj(dataCurr, coilMapCurr, dataTmp);
-                GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(dataTmp, combinedCurr, 2));
-
-                memcpy(combined.begin()+offsetCombined, combinedCurr.begin(), sizeof(T)*RO*E1);
-            }
-        }
-        else
-        {
-            size_t NCombined = data.get_number_of_elements()/(RO*E1*CHA*N);
-
-            std::vector<size_t> dataInd, coilMapInd(NDimCoil, 0), coimbinedInd(dimCombined.size(), 0);
-
-            size_t nn;
-            size_t d;
-            hoNDArray<T> dataTmp(RO, E1, CHA, N);
-            hoNDArray<T> combinedCurr(RO, E1, 1, N);
-
-            for ( nn=0; nn<NCombined; nn++ )
-            {
-                size_t offsetData = nn*RO*E1*CHA*N;
-                dataInd = data.calculate_index(offsetData);
-
-                for ( d=0; d<NDimCoil; d++ )
-                {
-                    if ( dataInd[d]<coilMap.get_size(d) )
-                    {
-                        coilMapInd[d] = dataInd[d];
-                    }
-                    else
-                    {
-                        coilMapInd[d] = 0;
-                    }
-                }
-
-                for ( d=3; d<NDim; d++ )
-                {
-                    coimbinedInd[d-1] = dataInd[d];
-                }
-
-                size_t offsetCoilMap = coilMap.calculate_offset(coilMapInd);
-                size_t offsetCombined = combined.calculate_offset(coimbinedInd);
-
-                hoNDArray<T> dataCurr(RO, E1, CHA, N, const_cast<T*>(data.begin())+offsetData);
-                hoNDArray<T> coilMapCurr(RO, E1, CHA, N, const_cast<T*>(coilMap.begin())+offsetCoilMap);
-
-                Gadgetron::multiplyConj(dataCurr, coilMapCurr, dataTmp);
-                GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(dataTmp, combinedCurr, 2));
-
-                memcpy(combined.begin()+offsetCombined, combinedCurr.begin(), sizeof(T)*RO*E1*N);
-            }
-        }
+        Gadgetron::coil_combine(data, coilMap, 2, combined);
     }
     catch(...)
     {
@@ -2796,53 +2677,7 @@ coilCombine3D(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, hoNDArray<T
 {
     try
     {
-        size_t NDim = data.get_number_of_dimensions();
-        size_t NDimCoil = coilMap.get_number_of_dimensions();
-
-        // GADGET_CHECK_RETURN_FALSE(NDimCoil<=NDim);
-        GADGET_CHECK_RETURN_FALSE(data.get_number_of_elements()>=coilMap.get_number_of_elements());
-
-        /*size_t n;
-        for ( n=0; n<NDimCoil; n++ )
-        {
-            GADGET_CHECK_RETURN_FALSE(data.get_size(n)==coilMap.get_size(n));
-        }*/
-
-        GADGET_CHECK_RETURN_FALSE(data.get_size(0)==coilMap.get_size(0));
-        GADGET_CHECK_RETURN_FALSE(data.get_size(1)==coilMap.get_size(1));
-        GADGET_CHECK_RETURN_FALSE(data.get_size(2)==coilMap.get_size(2));
-        GADGET_CHECK_RETURN_FALSE(data.get_size(3)==coilMap.get_size(3));
-
-        boost::shared_ptr< std::vector<size_t> > dim = data.get_dimensions();
-        boost::shared_ptr< std::vector<size_t> > dimCoil = coilMap.get_dimensions();
-
-        size_t N = coilMap.get_number_of_elements();
-        size_t num = data.get_number_of_elements()/coilMap.get_number_of_elements();
-
-        std::vector<size_t> dimCombined(*dim);
-        dimCombined.erase(dimCombined.begin()+3);
-        combined.create(&dimCombined);
-
-        std::vector<size_t> dimCombinedCurr(*dimCoil);
-        dimCombinedCurr[3] = 1;
-
-        size_t NCombined = combined.get_number_of_elements()/num;
-
-        long long nn;
-        #pragma omp parallel default(none) private(nn) shared(data, coilMap, num, dimCoil, dimCombinedCurr, combined, N, NCombined) if (num>=6)
-        {
-            hoNDArray<T> dataTmp(coilMap);
-
-            #pragma omp for
-            for ( nn=0; nn<(long long)num; nn++ )
-            {
-                hoNDArray<T> dataCurr(dimCoil.get(), const_cast<T*>(data.begin()+nn*N));
-                Gadgetron::multiplyConj(dataCurr, coilMap, dataTmp);
-
-                hoNDArray<T> dataCombinedCurr(&dimCombinedCurr, const_cast<T*>(combined.begin()+nn*NCombined));
-                Gadgetron::sum_over_dimension(dataTmp, dataCombinedCurr, 3);
-            }
-        }
+        Gadgetron::coil_combine(data, coilMap, 3, combined);
     }
     catch(...)
     {

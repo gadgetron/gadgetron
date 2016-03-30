@@ -113,6 +113,9 @@ protected:
     ARRAY_TYPE res_after_apply_kernel_;
     ARRAY_TYPE res_after_apply_kernel_sum_over_;
 
+    ARRAY_TYPE fft_im_buffer_;
+    ARRAY_TYPE fft_kspace_buffer_;
+
     //// clock for timing
     //Gadgetron::GadgetronTimer gt_timer1_;
     //Gadgetron::GadgetronTimer gt_timer2_;

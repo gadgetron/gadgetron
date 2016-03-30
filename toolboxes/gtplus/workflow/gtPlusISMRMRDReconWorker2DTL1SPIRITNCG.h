@@ -6,14 +6,7 @@
 #pragma once
 
 #include "gtPlusISMRMRDReconWorker2DTSPIRIT.h"
-#include "gtPlusSPIRIT2DTOperator.h"
-#include "gtPlusSPIRITNoNullSpace2DOperator.h"
-#include "gtPlusSPIRITNoNullSpace2DTOperator.h"
 #include "gtPlusNCGSolver.h"
-#include "gtPlusWavelet2DOperator.h"
-#include "gtPlusWavelet3DOperator.h"
-#include "gtPlusWaveletNoNullSpace2DOperator.h"
-#include "gtPlusWaveletNoNullSpace3DOperator.h"
 #include "gtPlusDataFidelityOperator.h"
 
 namespace Gadgetron { namespace gtPlus {

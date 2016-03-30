@@ -44,9 +44,13 @@ namespace Gadgetron
 	  GERROR("Unexpected message id = %d\n", msg_id);
 	  return -1;
 	}
-	deserialize(cloud_bus_->nodes_, buffer+4, msg_size-4);
+	{
+	  std::unique_lock<std::mutex> lk(cloud_bus_->mtx_);
+	  deserialize(cloud_bus_->nodes_, buffer+4, msg_size-4);
+	  lk.unlock();
+	  cloud_bus_->node_list_condition_.notify_all();
+	}
 	delete [] buffer;
-	cloud_bus_->node_list_condition_.broadcast();
 
       }
     return 0;
@@ -60,6 +64,7 @@ namespace Gadgetron
 	instance_ = new CloudBus(relay_port_, relay_inet_addr_);
 	instance_->open();
       }
+    instance_->update_node_info();
     return instance_;
   }
 
@@ -89,6 +94,13 @@ namespace Gadgetron
     rest_port_ = port;
   }
 
+  void CloudBus::set_lb_endpoint(std::string addr, uint32_t port)
+  {
+      lb_address_ = addr;
+      lb_port_ = port;
+      use_lb_endpoint_ = true;
+  }
+  
   void CloudBus::set_compute_capability(uint32_t c)
   {
     node_info_.compute_capability = c;
@@ -111,21 +123,17 @@ namespace Gadgetron
   
   void CloudBus::report_recon_start()
   {
-    mtx_.acquire();
     node_info_.active_reconstructions++;
     auto t = std::chrono::system_clock::now();
     node_info_.last_recon = std::chrono::system_clock::to_time_t(t);
-    mtx_.release();
     send_node_info();
   }
   
   void CloudBus::report_recon_end()
   {
-    mtx_.acquire();
     if (node_info_.active_reconstructions > 0) node_info_.active_reconstructions--;
     auto t = std::chrono::system_clock::now();
     node_info_.last_recon = std::chrono::system_clock::to_time_t(t);
-    mtx_.release();
     send_node_info();
   }
 
@@ -141,6 +149,8 @@ namespace Gadgetron
   int CloudBus::handle_close (ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
   {
     GDEBUG("Cloud bus connection closed\n");
+    this->peer().close_reader();
+    this->peer().close_writer(); 
     this->peer().close();
     connected_ = false;
     if (reader_task_) {
@@ -182,9 +192,7 @@ namespace Gadgetron
                       reader_task_ = new CloudBusReaderTask(this);
                       reader_task_->open();
                       
-                      mtx_.acquire();
                       connected_ = true;
-                      mtx_.release();
                       if (!query_mode_) {
                           send_node_info();
                       }
@@ -219,17 +227,17 @@ namespace Gadgetron
 
   void CloudBus::update_node_info()
   {
-    mtx_.acquire();
     if (connected_) {
       uint32_t req[2];
       req[0] = 4;
       req[1] = GADGETRON_CLOUDBUS_NODE_LIST_QUERY;
 
       this->peer().send_n((char*)(&req),8);
-      ACE_Time_Value t(0, 100000); //As a safety, we will wait a maximum of 100ms for this request and then move on.
-      node_list_condition_.wait(&t);
+      {
+	std::unique_lock<std::mutex> lk(mtx_);
+	node_list_condition_.wait_for(lk, std::chrono::milliseconds(100));
+      }
     }
-    mtx_.release();
   }
   
   void CloudBus::print_nodes()
@@ -246,29 +254,41 @@ namespace Gadgetron
   
   void CloudBus::get_node_info(std::vector<GadgetronNodeInfo>& nodes)
   {
-    update_node_info();
-    mtx_.acquire();
-    nodes = nodes_;
-    mtx_.release();
+    if (use_lb_endpoint_) {
+        GadgetronNodeInfo n;
+        n.port = lb_port_;
+        n.address = lb_address_;
+        n.rest_port = 9080;
+        n.compute_capability = 1;
+        n.active_reconstructions = 0;
+        n.last_recon = 0;
+        nodes.clear();
+        nodes.push_back(n);
+    } else {
+        update_node_info();
+	{
+	  std::lock_guard<std::mutex> lk(mtx_);
+	  nodes = nodes_;
+	}
+    }
   }
   
   size_t CloudBus::get_number_of_nodes()
   {
     update_node_info();
     size_t nodes;
-    mtx_.acquire();
-    nodes = nodes_.size();
-    mtx_.release();
+    {
+      std::lock_guard<std::mutex> lk(mtx_);
+      nodes = nodes_.size();
+    }
     return nodes;
   }
 
   CloudBus::CloudBus(int port, const char* addr)
-    : mtx_("CLOUDBUSMTX")
-    , mtx_node_list_("CLOUDBUSMTXNODELIST")
-    , node_list_condition_(mtx_node_list_)
-    , uuid_(boost::uuids::random_generator()())
+    : uuid_(boost::uuids::random_generator()())
     , connected_(false)
     , reader_task_(0)
+    , use_lb_endpoint_(false)
   {
     node_info_.port = gadgetron_port_;
     node_info_.rest_port = rest_port_;
@@ -279,7 +299,7 @@ namespace Gadgetron
     listener.get_local_addr (local_addr);
     node_info_.address = std::string(local_addr.get_host_name());
     node_info_.active_reconstructions = 0;
-    auto t = std::chrono::system_clock::now();
+    auto t = std::chrono::system_clock::now() - std::chrono::seconds(5*60);
     node_info_.last_recon = std::chrono::system_clock::to_time_t(t);
   }
 

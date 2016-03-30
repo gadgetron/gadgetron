@@ -8,11 +8,8 @@
 
 namespace Gadgetron { 
 
-    GenericReconPartialFourierHandlingGadget::GenericReconPartialFourierHandlingGadget()
+    GenericReconPartialFourierHandlingGadget::GenericReconPartialFourierHandlingGadget() : BaseClass()
     {
-        num_encoding_spaces_ = 1;
-        process_called_times_ = 0;
-
         startRO_ = 0;
         endRO_ = 0;
 
@@ -29,6 +26,8 @@ namespace Gadgetron {
 
     int GenericReconPartialFourierHandlingGadget::process_config(ACE_Message_Block* mb)
     {
+        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+
         ISMRMRD::IsmrmrdHeader h;
         try
         {
@@ -61,7 +60,7 @@ namespace Gadgetron {
         {
             if (!h.encoding[e].parallelImaging)
             {
-                GDEBUG_STREAM("Parallel Imaging section not found in header");
+                GDEBUG_STREAM("Parallel Imaging section not found in header for encoding " << e);
                 acceFactorE1_[e] = 1;
                 acceFactorE2_[e] = 1;
             }
@@ -76,23 +75,13 @@ namespace Gadgetron {
             }
         }
 
-        // ---------------------------------------------------------------------------------------------------------
-        // generate the destination folder
-        /*if (!debug_folder.value().empty())
-        {
-            Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
-        }
-        else
-        {
-            GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        }*/
-
         return GADGET_OK;
     }
 
     int GenericReconPartialFourierHandlingGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1)
     {
+        if (perform_timing.value()) { gt_timer_local_.start("GenericReconPartialFourierHandlingGadget::process"); }
+
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconPartialFourierHandlingGadget::process(...) starts ... ");
 
         process_called_times_++;
@@ -117,6 +106,8 @@ namespace Gadgetron {
                 return GADGET_FAIL;
             }
 
+            if (perform_timing.value()) { gt_timer_local_.stop(); }
+
             return GADGET_OK;
         }
 
@@ -125,28 +116,64 @@ namespace Gadgetron {
         size_t encoding = (size_t)recon_res_->meta_[0].as_long("encoding", 0);
         GADGET_CHECK_RETURN(encoding<num_encoding_spaces_, GADGET_FAIL);
 
+        std::string dataRole = std::string(recon_res_->meta_[0].as_str(GADGETRON_DATA_ROLE));
+
+        std::stringstream os;
+        os << "encoding_" << encoding << "_" << dataRole;
+        std::string str = os.str();
+
+        size_t RO = recon_res_->data_.get_size(0);
+        size_t E1 = recon_res_->data_.get_size(1);
+        size_t E2 = recon_res_->data_.get_size(2);
+        size_t CHA = recon_res_->data_.get_size(3);
+        size_t N = recon_res_->data_.get_size(4);
+        size_t S = recon_res_->data_.get_size(5);
+        size_t SLC = recon_res_->data_.get_size(6);
+
         // perform SNR unit scaling
         SamplingLimit sampling_limits[3];
 
-        sampling_limits[0].min_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 0);
-        sampling_limits[0].center_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 1);
-        sampling_limits[0].max_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 2);
+        if (recon_res_->meta_[0].length("sampling_limits_RO")>0)
+        {
+            sampling_limits[0].min_     = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 0);
+            sampling_limits[0].center_  = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 1);
+            sampling_limits[0].max_     = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_RO", 2);
+        }
 
-        sampling_limits[1].min_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 0);
-        sampling_limits[1].center_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 1);
-        sampling_limits[1].max_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 2);
+        if (!((sampling_limits[0].min_ >= 0) && (sampling_limits[0].max_ < RO) && (sampling_limits[0].min_ <= sampling_limits[0].max_)))
+        {
+            sampling_limits[0].min_     = 0;
+            sampling_limits[0].center_  = RO / 2;
+            sampling_limits[0].max_     = RO - 1;
+        }
 
-        sampling_limits[2].min_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 0);
-        sampling_limits[2].center_ = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 1);
-        sampling_limits[2].max_    = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 2);
+        if (recon_res_->meta_[0].length("sampling_limits_E1") > 0)
+        {
+            sampling_limits[1].min_     = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 0);
+            sampling_limits[1].center_  = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 1);
+            sampling_limits[1].max_     = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E1", 2);
+        }
 
-        size_t RO  = recon_res_->data_.get_size(0);
-        size_t E1  = recon_res_->data_.get_size(1);
-        size_t E2  = recon_res_->data_.get_size(2);
-        size_t CHA = recon_res_->data_.get_size(3);
-        size_t N   = recon_res_->data_.get_size(4);
-        size_t S   = recon_res_->data_.get_size(5);
-        size_t SLC = recon_res_->data_.get_size(6);
+        if (!((sampling_limits[1].min_ >= 0) && (sampling_limits[1].max_ < E1) && (sampling_limits[1].min_ <= sampling_limits[1].max_)))
+        {
+            sampling_limits[1].min_     = 0;
+            sampling_limits[1].center_  = E1 / 2;
+            sampling_limits[1].max_     = E1 - 1;
+        }
+
+        if (recon_res_->meta_[0].length("sampling_limits_E2") > 0)
+        {
+            sampling_limits[2].min_     = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 0);
+            sampling_limits[2].center_  = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 1);
+            sampling_limits[2].max_     = (uint16_t)recon_res_->meta_[0].as_long("sampling_limits_E2", 2);
+        }
+
+        if (!((sampling_limits[2].min_ >= 0) && (sampling_limits[2].max_ < E2) && (sampling_limits[2].min_ <= sampling_limits[2].max_)))
+        {
+            sampling_limits[2].min_     = 0;
+            sampling_limits[2].center_  = E2 / 2;
+            sampling_limits[2].max_     = E2 - 1;
+        }
 
         // ----------------------------------------------------------
         // pf kspace sampling range
@@ -187,6 +214,8 @@ namespace Gadgetron {
                 GERROR("GenericReconPartialFourierHandlingGadget::process, passing data on to next gadget");
                 return GADGET_FAIL;
             }
+
+            if (perform_timing.value()) { gt_timer_local_.stop(); }
 
             return GADGET_OK;
         }
@@ -245,6 +274,8 @@ namespace Gadgetron {
             GERROR("GenericReconPartialFourierHandlingGadget::process, passing data on to next gadget");
             return GADGET_FAIL;
         }
+
+        if (perform_timing.value()) { gt_timer_local_.stop(); }
 
         return GADGET_OK;
     }

@@ -435,6 +435,41 @@ namespace Gadgetron
     // ------------------------------------------------------------------------
 
     template <typename T>
+    void compute_partial_fourier_filter(size_t len, size_t start, size_t end, double filter_pf_width, bool filter_pf_density_comp, hoNDArray<T>& filter_pf)
+    {
+        try
+        {
+            if (start == 0 || end == len - 1)
+            {
+                Gadgetron::generate_asymmetric_filter(len, start, end, filter_pf, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(len*filter_pf_width), filter_pf_density_comp);
+            }
+            else
+            {
+                size_t fil_len = end - start + 1;
+                size_t len_end = 2 * (end - len / 2 + 1);
+                size_t len_start = 2 * (len / 2 - start + 1);
+
+                if (len_end > len_start)
+                {
+                    hoNDArray<T> fil(len_end);
+                    Gadgetron::generate_asymmetric_filter(len_end, len_end - fil_len, len_end - 1, fil, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(len_end*filter_pf_width), filter_pf_density_comp);
+                    Gadgetron::pad(len, &fil, &filter_pf);
+                }
+                else
+                {
+                    hoNDArray<T> fil(len_start);
+                    Gadgetron::generate_asymmetric_filter(len_start, 0, fil_len - 1, fil, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(len_start*filter_pf_width), filter_pf_density_comp);
+                    Gadgetron::pad(len, &fil, &filter_pf);
+                }
+            }
+        }
+        catch (...)
+        {
+
+        }
+    }
+
+    template <typename T>
     void partial_fourier_filter(const hoNDArray<T>& kspace,
                                 size_t startRO, size_t endRO, 
                                 size_t startE1, size_t endE1, 
@@ -457,13 +492,13 @@ namespace Gadgetron
             size_t lenRO = endRO - startRO + 1;
             if (filter_pf_RO.get_size(0) != RO && lenRO<RO)
             {
-                Gadgetron::generate_asymmetric_filter(RO, startRO, endRO, filter_pf_RO, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(RO*filter_pf_width_RO), filter_pf_density_comp);
+                Gadgetron::compute_partial_fourier_filter(RO, startRO, endRO, filter_pf_width_RO, filter_pf_density_comp, filter_pf_RO);
             }
 
             size_t lenE1 = endE1 - startE1 + 1;
             if (filter_pf_E1.get_size(0) != E1 && lenE1<E1)
             {
-                Gadgetron::generate_asymmetric_filter(E1, startE1, endE1, filter_pf_E1, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(E1*filter_pf_width_E1), filter_pf_density_comp);
+                Gadgetron::compute_partial_fourier_filter(E1, startE1, endE1, filter_pf_width_E1, filter_pf_density_comp, filter_pf_E1);
             }
 
             res = kspace;
@@ -474,7 +509,7 @@ namespace Gadgetron
             {
                 if (filter_pf_E2.get_size(0) != E2 && lenE2 < E2)
                 {
-                    Gadgetron::generate_asymmetric_filter(E2, startE2, endE2, filter_pf_E2, ISMRMRD_FILTER_TAPERED_HANNING, (size_t)(E2*filter_pf_width_E2), filter_pf_density_comp);
+                    Gadgetron::compute_partial_fourier_filter(E2, startE2, endE2, filter_pf_width_E2, filter_pf_density_comp, filter_pf_E2);
                 }
 
                 if ((filter_pf_RO.get_number_of_elements() == RO) && (filter_pf_E1.get_number_of_elements() == E1) && (filter_pf_E2.get_number_of_elements() == E2))

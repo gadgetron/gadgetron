@@ -10,13 +10,10 @@
 #define GENERICRECON_DEFAULT_INTENSITY_SCALING_FACTOR 4.0f
 #define GENERICRECON_DEFAULT_INTENSITY_MAX 2048
 
-/// GenericCartesianGrappaReconObj
 namespace Gadgetron {
 
-    GenericReconImageArrayScalingGadget::GenericReconImageArrayScalingGadget()
+    GenericReconImageArrayScalingGadget::GenericReconImageArrayScalingGadget() : BaseClass()
     {
-        num_encoding_spaces_ = 1;
-        process_called_times_ = 0;
     }
 
     GenericReconImageArrayScalingGadget::~GenericReconImageArrayScalingGadget()
@@ -25,6 +22,8 @@ namespace Gadgetron {
 
     int GenericReconImageArrayScalingGadget::process_config(ACE_Message_Block* mb)
     {
+        GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+
         ISMRMRD::IsmrmrdHeader h;
         try
         {
@@ -62,6 +61,8 @@ namespace Gadgetron {
 
     int GenericReconImageArrayScalingGadget::process(Gadgetron::GadgetContainerMessage< IsmrmrdImageArray >* m1)
     {
+        if (perform_timing.value()) { gt_timer_.start("GenericReconImageArrayScalingGadget::process"); }
+
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconImageArrayScalingGadget::process(...) starts ... ");
 
         process_called_times_++;
@@ -71,9 +72,41 @@ namespace Gadgetron {
         size_t encoding = (size_t)recon_res_->meta_[0].as_long("encoding", 0);
         GADGET_CHECK_RETURN(encoding<num_encoding_spaces_, GADGET_FAIL);
 
+        std::string dataRole = std::string(recon_res_->meta_[0].as_str(GADGETRON_DATA_ROLE));
+
         std::string imageInfo;
 
-        if (recon_res_->meta_[0].length(use_dedicated_scalingFactor_meta_field.value().c_str())>0)
+        // ----------------------------------------------------
+        // apply scaling
+        // ----------------------------------------------------
+        // snr map
+        if (dataRole == GADGETRON_IMAGE_SNR_MAP)
+        {
+            Gadgetron::scal((real_value_type)(this->scalingFactor_snr_map.value()), recon_res_->data_);
+
+            std::ostringstream ostr_image;
+            ostr_image << "x" << std::setprecision(4) << this->scalingFactor_snr_map.value();
+            imageInfo = ostr_image.str();
+        }
+        // gfactor
+        else if (dataRole == GADGETRON_IMAGE_GFACTOR)
+        {
+            Gadgetron::scal((real_value_type)(this->scalingFactor_gfactor_map.value()), recon_res_->data_);
+
+            std::ostringstream ostr_image;
+            ostr_image << "x" << std::setprecision(4) << this->scalingFactor_gfactor_map.value();
+            imageInfo = ostr_image.str();
+        }
+        // snr std map
+        else if (dataRole == GADGETRON_IMAGE_STD_MAP)
+        {
+            Gadgetron::scal((real_value_type)(this->scalingFactor_snr_std_map.value()), recon_res_->data_);
+
+            std::ostringstream ostr_image;
+            ostr_image << "x" << std::setprecision(4) << this->scalingFactor_snr_std_map.value();
+            imageInfo = ostr_image.str();
+        }
+        else if (recon_res_->meta_[0].length(use_dedicated_scalingFactor_meta_field.value().c_str())>0)
         {
             Gadgetron::scal((real_value_type)(this->scalingFactor_dedicated.value()), recon_res_->data_);
 
@@ -93,7 +126,9 @@ namespace Gadgetron {
             imageInfo = ostr_image.str();
         }
 
+        // ----------------------------------------------------
         // update the image comment
+        // ----------------------------------------------------
         size_t num = recon_res_->meta_.size();
         for (size_t n = 0; n < num; n++)
         {
@@ -107,6 +142,8 @@ namespace Gadgetron {
             GERROR("GenericReconImageArrayScalingGadget::process, passing data on to next gadget");
             return GADGET_FAIL;
         }
+
+        if (perform_timing.value()) { gt_timer_.stop(); }
 
         return GADGET_OK;
     }

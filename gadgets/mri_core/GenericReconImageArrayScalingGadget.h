@@ -6,33 +6,23 @@
 
 #pragma once
 
-#include <complex>
-#include "gadgetron_mricore_export.h"
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "ismrmrd/ismrmrd.h"
-#include "ismrmrd/xml.h"
-#include "ismrmrd/meta.h"
-#include "GadgetronTimer.h"
-
-#include "GadgetStreamController.h"
+#include "GenericReconBase.h"
 
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
-#include "mri_core_data.h"
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconImageArrayScalingGadget : public Gadget1<IsmrmrdImageArray>
+    class EXPORTGADGETSMRICORE GenericReconImageArrayScalingGadget : public GenericReconImageBase
     {
     public:
-        GADGET_DECLARE(GenericCartesianGrappaReconGadget);
+        GADGET_DECLARE(GenericReconImageArrayScalingGadget);
 
         typedef float real_value_type;
         typedef std::complex<real_value_type> ValueType;
         typedef ValueType T;
 
-        typedef Gadget1<IsmrmrdImageArray> BaseClass;
+        typedef GenericReconImageBase BaseClass;
 
         GenericReconImageArrayScalingGadget();
         ~GenericReconImageArrayScalingGadget();
@@ -49,11 +39,9 @@ namespace Gadgetron {
 
         GADGET_PROPERTY(use_dedicated_scalingFactor_meta_field, std::string, "If this meta field exists, scale the images with the dedicated scaling factor", "Use_dedicated_scaling_factor");
         GADGET_PROPERTY(scalingFactor_dedicated, float, "Dedicated scaling ratio", 100.0);
-
-        /// ------------------------------------------------------------------------------------
-        /// debug and timing
-        GADGET_PROPERTY(verbose, bool, "Whether to print more information", false);
-        GADGET_PROPERTY(perform_timing, bool, "Whether to perform timing on some computational steps", false);
+        GADGET_PROPERTY(scalingFactor_gfactor_map, float, "Scaling ratio for gfactor map", 100.0);
+        GADGET_PROPERTY(scalingFactor_snr_map, float, "Scaling ratio for snr map", 10.0);
+        GADGET_PROPERTY(scalingFactor_snr_std_map, float, "Scaling ratio for snr standard deviation map", 1000.0);
 
     protected:
 
@@ -61,28 +49,12 @@ namespace Gadgetron {
         // variables for protocol
         // --------------------------------------------------
 
-        // number of encoding spaces in the protocol
-        size_t num_encoding_spaces_;
-
         // --------------------------------------------------
         // variable for recon
         // --------------------------------------------------
 
-        // number of times the process function is called
-        size_t process_called_times_;
-
         // scaling factor used for every encoding space
         std::vector<double> scaling_factor_;
-
-        // --------------------------------------------------
-        // variables for debug and timing
-        // --------------------------------------------------
-
-        // clock for timing
-        Gadgetron::GadgetronTimer gt_timer_;
-
-        // in verbose mode, more info is printed out
-        bool verbose_;
 
         // --------------------------------------------------
         // functional functions

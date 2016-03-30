@@ -35,6 +35,9 @@ namespace Gadgetron{
       EPI::EPIReconXObjectTrapezoid<std::complex<float> > reconx;
       EPI::EPIReconXObjectFlat<std::complex<float> > reconx_other;
 
+      // readout oversampling for reconx_other
+      float oversamplng_ratio2_;
+
     };
 }
 #endif //EPIRECONXGADGET_H

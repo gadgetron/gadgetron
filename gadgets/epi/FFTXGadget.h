@@ -20,6 +20,9 @@ namespace Gadgetron{
     protected:
       virtual int process( GadgetContainerMessage< ISMRMRD::AcquisitionHeader>* m1,
                        GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+
+      hoNDArray< std::complex<float> > r_;
+      hoNDArray< std::complex<float> > buf_;
   };
 }
 #endif //FFTXGADGET_H

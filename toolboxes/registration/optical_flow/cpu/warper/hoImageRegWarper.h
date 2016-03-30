@@ -16,7 +16,6 @@
 
 #include "hoImageRegTransformation.h"
 #include "hoImageRegDeformationField.h"
-#include "GtPrepUtil.h"
 
 #ifdef USE_OMP
     #include <omp.h>

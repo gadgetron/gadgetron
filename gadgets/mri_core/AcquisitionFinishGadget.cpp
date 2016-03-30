@@ -16,7 +16,7 @@ int AcquisitionFinishGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
   GadgetContainerMessage<GadgetMessageIdentifier>* mb =
     new GadgetContainerMessage<GadgetMessageIdentifier>();
 
-  mb->getObjectPtr()->id = GADGET_MESSAGE_ACQUISITION;
+  mb->getObjectPtr()->id = GADGET_MESSAGE_ISMRMRD_ACQUISITION;
 
   mb->cont(m1);
   return controller_->output_ready(mb);

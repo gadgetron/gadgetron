@@ -166,9 +166,17 @@ bool NoiseCovariancePlottingGadget::loadNoiseCovariance()
     return true;
 }
 
-int NoiseCovariancePlottingGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+int NoiseCovariancePlottingGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
-    m1->release();
+    curr_image_header_ = *m1->getObjectPtr();
+
+    if (this->next()->putq(m1) == -1)
+    {
+        m1->release();
+        GDEBUG("NoiseCovariancePlottingGadget, Unable to put image on next gadgets queue");
+        return GADGET_FAIL;
+    }
+
     return GADGET_OK;
 }
 
@@ -208,14 +216,16 @@ int NoiseCovariancePlottingGadget::close(unsigned long flags)
                 Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
                 Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* cm3 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
 
+                *cm1->getObjectPtr() = curr_image_header_;
+
                 cm1->getObjectPtr()->flags = 0;
-                cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_FLOAT;
+                cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
                 cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
                 cm1->getObjectPtr()->image_index = 1;
                 cm1->getObjectPtr()->image_series_index = series_num.value();
 
-                Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray<float> >* cm2 = new Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray<float> >();
+                Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray< std::complex<float> > >* cm2 = new Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray< std::complex<float> > >();
                 cm1->cont(cm2);
                 cm2->cont(cm3);
 
@@ -238,33 +248,9 @@ int NoiseCovariancePlottingGadget::close(unsigned long flags)
                 cm1->getObjectPtr()->matrix_size[2] = 1;
                 cm1->getObjectPtr()->channels = 1;
 
-                cm1->getObjectPtr()->field_of_view[0] = 400;
-                cm1->getObjectPtr()->field_of_view[1] = 400;
-                cm1->getObjectPtr()->field_of_view[2] = 8;
-
-                cm1->getObjectPtr()->position[0] = 0;
-                cm1->getObjectPtr()->position[1] = 0;
-                cm1->getObjectPtr()->position[2] = 0;
-
-                cm1->getObjectPtr()->patient_table_position[0] = 0;
-                cm1->getObjectPtr()->patient_table_position[1] = 0;
-                cm1->getObjectPtr()->patient_table_position[2] = 0;
-
-                cm1->getObjectPtr()->read_dir[0] = 1;
-                cm1->getObjectPtr()->read_dir[1] = 0;
-                cm1->getObjectPtr()->read_dir[2] = 0;
-
-                cm1->getObjectPtr()->phase_dir[0] = 0;
-                cm1->getObjectPtr()->phase_dir[1] = 1;
-                cm1->getObjectPtr()->phase_dir[2] = 0;
-
-                cm1->getObjectPtr()->slice_dir[0] = 0;
-                cm1->getObjectPtr()->slice_dir[1] = 0;
-                cm1->getObjectPtr()->slice_dir[2] = 1;
-
-                // give arbitrary time for the figure
-                cm1->getObjectPtr()->acquisition_time_stamp = 21937963;
-                cm1->getObjectPtr()->physiology_time_stamp[0] = 2;
+                // make sure pixel is squared in size
+                float dx = cm1->getObjectPtr()->field_of_view[0] / cm1->getObjectPtr()->matrix_size[0];
+                cm1->getObjectPtr()->field_of_view[1] = dx * cm1->getObjectPtr()->matrix_size[1];
 
                 try
                 {
@@ -277,7 +263,7 @@ int NoiseCovariancePlottingGadget::close(unsigned long flags)
                     return false;
                 }
 
-                memcpy(cm2->getObjectPtr()->begin(), plotIm.begin(), sizeof(float)*plotIm.get_size(0)*plotIm.get_size(1));
+                Gadgetron::real_to_complex(plotIm, *cm2->getObjectPtr());
 
                 // send out the images
                 if (this->next()->putq(cm1) < 0)

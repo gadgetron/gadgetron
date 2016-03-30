@@ -782,7 +782,7 @@ namespace Gadgetron
         size_t offset = this->deform_field_[0].calculate_offset(idx);
 
         unsigned int ii;
-        for ( ii<0; ii<D; ii++ )
+        for ( ii=0; ii<D; ii++ )
         {
             this->deform_field_[ii](offset) = deform[ii];
         }

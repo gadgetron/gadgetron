@@ -2,6 +2,7 @@
 #pragma once
 
 #include "cpucore_math_export.h"
+#include "hoNDArray.h"
 
 #ifdef USE_ARMADILLO
     #include "hoArmadillo.h"

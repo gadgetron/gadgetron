@@ -276,4 +276,264 @@ namespace Gadgetron
     template EXPORTMRICORE void zero_pad_resize(const hoNDArray< std::complex<double> >& complexIm, size_t sizeRO, size_t sizeE1, size_t sizeE2, hoNDArray< std::complex<double> >& complexImResized);
 
     // ------------------------------------------------------------------------
+
+    template <typename T> 
+    void compute_averaged_data_N_S(const hoNDArray<T>& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray<T>& res)
+    {
+        try
+        {
+            size_t RO = data.get_size(0);
+            size_t E1 = data.get_size(1);
+            size_t E2 = data.get_size(2);
+            size_t CHA = data.get_size(3);
+            size_t N = data.get_size(4);
+            size_t S = data.get_size(5);
+            size_t SLC = data.get_size(6);
+
+            typedef typename realType<T>::Type value_type;
+
+            if (average_N)
+            {
+                if (N > 1)
+                {
+                    if (count_sampling_freq)
+                    {
+                        hoNDArray<bool> sampled = Gadgetron::detect_readout_sampling_status(data);
+                        Gadgetron::sum_over_dimension(data, res, 4);
+
+                        // for every E1/E2 location, count how many times it is sampled for all N
+                        size_t ro, e1, e2, cha, n, s, slc;
+                        for (slc = 0; slc < SLC; slc++)
+                        {
+                            for (cha = 0; cha < CHA; cha++)
+                            {
+                                for (e2 = 0; e2 < E2; e2++)
+                                {
+                                    for (e1 = 0; e1 < E1; e1++)
+                                    {
+                                        float freq = 0;
+
+                                        for (s = 0; s < S; s++)
+                                        {
+                                            for (n = 0; n < N; n++)
+                                            {
+                                                if (sampled(e1, e2, n, s, slc)) freq += 1;
+                                            }
+
+                                            if (freq > 1)
+                                            {
+                                                value_type freq_reciprocal = (value_type)(1.0 / freq);
+                                                T* pAve = &(res(0, e1, e2, cha, 0, s, slc));
+                                                for (ro = 0; ro < RO; ro++) pAve[ro] *= freq_reciprocal;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Gadgetron::sum_over_dimension(data, res, (size_t)4);
+                        Gadgetron::scal((value_type)(1.0 / N), res);
+                    }
+                }
+                else
+                {
+                    res = data;
+                }
+            }
+            else
+            {
+                res = data;
+            }
+
+            if (average_S)
+            {
+                if (S > 1)
+                {
+                    hoNDArray<T> dataTmp;
+                    Gadgetron::sum_over_dimension(res, dataTmp, 5);
+                    Gadgetron::scal((value_type)(1.0 / S), dataTmp);
+                    res = dataTmp;
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Errors in compute_averaged_data_N_S(...) ... ");
+        }
+    }
+
+    template EXPORTMRICORE void compute_averaged_data_N_S(const hoNDArray< std::complex<float> >& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray< std::complex<float> >& res);
+    template EXPORTMRICORE void compute_averaged_data_N_S(const hoNDArray< std::complex<double> >& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray< std::complex<double> >& res);
+
+    // ------------------------------------------------------------------------
+
+    template <typename T> 
+    void compute_eigen_channel_coefficients(const hoNDArray<T>& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT<T> > > >& KLT)
+    {
+        try
+        {
+            size_t RO = data.get_size(0);
+            size_t E1 = data.get_size(1);
+            size_t E2 = data.get_size(2);
+            size_t CHA = data.get_size(3);
+            size_t dataN = data.get_size(4);
+            size_t dataS = data.get_size(5);
+            size_t SLC = data.get_size(6);
+
+            typedef typename realType<T>::Type value_type;
+
+            size_t n, s, slc;
+
+            hoNDArray<T> dataAve;
+            GADGET_CATCH_THROW( Gadgetron::compute_averaged_data_N_S(data, average_N, average_S, count_sampling_freq, dataAve) );
+
+            size_t dataAveN = dataAve.get_size(4);
+            size_t dataAveS = dataAve.get_size(5);
+
+            if(KLT.size()!=SLC) KLT.resize(SLC);
+            for (slc = 0; slc < SLC; slc++)
+            {
+                if (KLT[slc].size() != S) KLT[slc].resize(S);
+                for (s = 0; s < S; s++)
+                {
+                    if (KLT[slc][s].size() != N) KLT[slc][s].resize(N);
+                }
+            }
+
+            for (slc = 0; slc < SLC; slc++)
+            {
+                for (s = 0; s < S; s++)
+                {
+                    size_t s_used = s;
+                    if (s_used >= dataAveS) s_used = dataAveS - 1;
+
+                    for (n = 0; n < N; n++)
+                    {
+                        size_t n_used = n;
+                        if (n_used >= dataAveN) n_used = dataAveN - 1;
+
+                        T* pDataAve = &(dataAve(0, 0, 0, 0, n_used, s_used, slc));
+                        hoNDArray<T> dataUsed(RO, E1, E2, CHA, pDataAve);
+
+                        if (slc == 0 && n == 0 && s == 0)
+                        {
+                            if (compression_num_modesKept > 0)
+                            {
+                                KLT[slc][s][n].prepare(dataUsed, 3, compression_num_modesKept);
+                            }
+                            else if (coil_compression_thres > 0)
+                            {
+                                KLT[slc][s][n].prepare(dataUsed, 3, (value_type)(coil_compression_thres));
+                            }
+                            else
+                            {
+                                KLT[slc][s][n].prepare(dataUsed, 3, (size_t)(0));
+                            }
+                        }
+                        else
+                        {
+                            if(n>=dataAveN && s>=dataAveS)
+                            {
+                                KLT[slc][s][n] = KLT[slc][dataAveS - 1][dataAveN-1];
+                            }
+                            else
+                            {
+                                KLT[slc][s][n].prepare(dataUsed, 3, KLT[0][0][0].output_length());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Errors in compute_eigen_channel_coefficients(...) ... ");
+        }
+    }
+
+    template EXPORTMRICORE void compute_eigen_channel_coefficients(const hoNDArray< std::complex<float> >& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT< std::complex<float> > > > >& KLT);
+    template EXPORTMRICORE void compute_eigen_channel_coefficients(const hoNDArray< std::complex<double> >& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT< std::complex<double> > > > >& KLT);
+
+    // ------------------------------------------------------------------------
+
+    template <typename T> 
+    void apply_eigen_channel_coefficients(const std::vector< std::vector< std::vector< hoNDKLT<T> > > >& KLT, hoNDArray<T>& data)
+    {
+        try
+        {
+            size_t RO = data.get_size(0);
+            size_t E1 = data.get_size(1);
+            size_t E2 = data.get_size(2);
+            size_t CHA = data.get_size(3);
+            size_t N = data.get_size(4);
+            size_t S = data.get_size(5);
+            size_t SLC = data.get_size(6);
+
+            GADGET_CHECK_THROW(KLT.size() == SLC);
+
+            size_t dstCHA = KLT[0][0][0].output_length();
+
+            hoNDArray<T> dstData;
+            dstData.create(RO, E1, E2, dstCHA, N, S, SLC);
+
+            size_t n, s, slc;
+            for (slc = 0; slc < SLC; slc++)
+            {
+                for (s = 0; s < S; s++)
+                {
+                    size_t s_KLT = s;
+                    if (s_KLT >= KLT[slc].size()) s_KLT = KLT[slc].size()-1;
+
+                    for (n = 0; n < N; n++)
+                    {
+                        size_t n_KLT = n;
+                        if (n_KLT >= KLT[slc][s_KLT].size()) n_KLT = KLT[slc][s_KLT].size()-1;
+
+                        T* pData = &(data(0, 0, 0, 0, n, s, slc));
+                        hoNDArray<T> data_in(RO, E1, E2, CHA, pData);
+
+                        T* pDstData = &(dstData(0, 0, 0, 0, n, s, slc));
+                        hoNDArray<T> data_out(RO, E1, E2, dstCHA, pDstData);
+
+                        KLT[slc][s_KLT][n_KLT].transform(data_in, data_out, 3);
+                    }
+                }
+            }
+
+            data = dstData;
+        }
+        catch (...)
+        {
+            GADGET_THROW("Errors in apply_eigen_channel_coefficients(...) ... ");
+        }
+    }
+
+    template EXPORTMRICORE void apply_eigen_channel_coefficients(const std::vector< std::vector< std::vector< hoNDKLT< std::complex<float> > > > >& KLT, hoNDArray< std::complex<float> >& data);
+    template EXPORTMRICORE void apply_eigen_channel_coefficients(const std::vector< std::vector< std::vector< hoNDKLT< std::complex<double> > > > >& KLT, hoNDArray< std::complex<double> >& data);
+
+    // ------------------------------------------------------------------------
+
+//    void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath)
+//    {
+//        char* v = std::getenv("GADGETRON_DEBUG_FOLDER");
+//        if (v == NULL)
+//        {
+//#ifdef _WIN32
+//            debugFolderPath = "c:/temp/gadgetron";
+//#else
+//            debugFolderPath = "/tmp/gadgetron";
+//#endif // _WIN32
+//        }
+//        else
+//        {
+//            debugFolderPath = std::string(v);
+//        }
+//
+//        debugFolderPath.append("/");
+//        debugFolderPath.append(debugFolder);
+//        debugFolderPath.append("/");
+//    }
 }

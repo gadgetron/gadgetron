@@ -17,12 +17,17 @@ namespace Gadgetron{
     // TODO the ignore_segment_ flag is a hack for some EPI sequences
     // should be fixed on the converter side.
 
+    // This gadget fills the IsmrmrdReconData structures with kspace readouts and sets up the sampling limits
+    // For the cartesian sampling, the filled kspace ensures its center (N/2) is aligned with the specified center in the encoding limits
+    // For the non-cartesian sampling, this "center alignment" constraint is not applied and kspace lines are filled as their E1 and E2 indexes
+
   class EXPORTGADGETSMRICORE BucketToBufferGadget : 
   public Gadget1<IsmrmrdAcquisitionBucket>
     {
     public:
       GADGET_DECLARE(BucketToBufferGadget);
 
+      BucketToBufferGadget();
       virtual ~BucketToBufferGadget();
 
       int close(unsigned long flags);
@@ -67,9 +72,9 @@ namespace Gadgetron{
       size_t getS(ISMRMRD::ISMRMRD_EncodingCounters idx);
 
       IsmrmrdReconBit & getRBit(std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > & recon_data_buffers, size_t key, uint16_t espace);
-      void allocateDataArrays(IsmrmrdDataBuffered &  dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref);
-      void fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader & acqhdr);
-      void stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding);
+      virtual void allocateDataArrays(IsmrmrdDataBuffered &  dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref);
+      virtual void fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader & acqhdr, bool forref);
+      virtual void stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, bool forref);
 
     };
 

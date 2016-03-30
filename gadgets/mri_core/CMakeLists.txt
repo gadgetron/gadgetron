@@ -35,13 +35,11 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
-)
+    ${Boost_INCLUDE_DIR}
+)   
 
 if (ARMADILLO_FOUND)
     list(APPEND OPTIMIZED_GADGETS NoiseAdjustGadget.cpp)
@@ -79,21 +77,25 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     CplxDumpGadget.h 
                                     DependencyQueryGadget.h 
                                     DependencyQueryWriter.h 
-                                    ComplexToFloatGadget.h
-                                    AcquisitionAccumulateTriggerGadget.h
+                                    ComplexToFloatGadget.h 
+                                    AcquisitionAccumulateTriggerGadget.h 
                                     BucketToBufferGadget.h 
-                                    ImageArraySplitGadget.h
-                                    PseudoReplicatorGadget.h
-                                    SimpleReconGadget.h
-                                    ImageSortGadget.h
-                                    GenericCartesianGrappaReconGadget.h 
-                                    GenericCartesianReconReferencePrepGadget.h 
+                                    ImageArraySplitGadget.h 
+                                    PseudoReplicatorGadget.h 
+                                    SimpleReconGadget.h 
+                                    ImageSortGadget.h 
+                                    GenericReconBase.h 
+                                    GenericReconGadget.h 
+                                    GenericReconCartesianGrappaGadget.h 
+                                    GenericReconCartesianReferencePrepGadget.h 
                                     GenericReconPartialFourierHandlingGadget.h 
                                     GenericReconPartialFourierHandlingFilterGadget.h 
                                     GenericReconPartialFourierHandlingPOCSGadget.h 
                                     GenericReconKSpaceFilteringGadget.h 
                                     GenericReconFieldOfViewAdjustmentGadget.h 
-                                    GenericReconImageArrayScalingGadget.h )
+                                    GenericReconImageArrayScalingGadget.h 
+                                    GenericReconEigenChannelGadget.h 
+                                    GenericReconNoiseStdMapComputingGadget.h )
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -127,14 +129,18 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 PseudoReplicatorGadget.cpp
                                 SimpleReconGadget.cpp
                                 ImageSortGadget.cpp
-                                GenericCartesianGrappaReconGadget.cpp 
-                                GenericCartesianReconReferencePrepGadget.cpp 
+                                GenericReconBase.cpp 
+                                GenericReconGadget.cpp 
+                                GenericReconCartesianGrappaGadget.cpp 
+                                GenericReconCartesianReferencePrepGadget.cpp 
                                 GenericReconPartialFourierHandlingGadget.cpp 
                                 GenericReconPartialFourierHandlingFilterGadget.cpp 
                                 GenericReconPartialFourierHandlingPOCSGadget.cpp 
                                 GenericReconKSpaceFilteringGadget.cpp 
                                 GenericReconFieldOfViewAdjustmentGadget.cpp 
-                                GenericReconImageArrayScalingGadget.cpp )
+                                GenericReconImageArrayScalingGadget.cpp 
+                                GenericReconEigenChannelGadget.cpp 
+                                GenericReconNoiseStdMapComputingGadget.cpp )
 
 if (WIN32)
     set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )
@@ -146,11 +152,16 @@ set( gadgetron_mricore_config_files
     default_short.xml
     default_optimized.xml
     default_measurement_dependencies.xml
+    default_measurement_dependencies_ismrmrd_storage.xml
     isalive.xml
     gtquery.xml
     Generic_Cartesian_Grappa.xml
+    Generic_Cartesian_Grappa_SNR.xml
     Generic_Cartesian_Grappa_T2W.xml
+    Generic_Cartesian_Grappa_FatWater.xml
     Generic_Cartesian_Grappa_RealTimeCine.xml
+    Generic_Cartesian_Grappa_EPI.xml
+    Generic_Cartesian_Grappa_EPI_AVE.xml
 )
 
 add_library(gadgetron_mricore SHARED 
@@ -176,6 +187,7 @@ target_link_libraries(gadgetron_mricore
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
     ${OPTIMIZED_GADGET_LIBS}
+    ${Boost_LIBRARIES}
 )
 
 install(FILES 

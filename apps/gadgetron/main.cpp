@@ -114,7 +114,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   ACE_TCHAR relay_host[1024];
   uint16_t  relay_port = 0;
   uint16_t  rest_port = 0;
-
+  std::string lb_endpoint = "";
+  
   ACE_OS_String::strncpy(relay_host, "localhost", 1024);
 
   std::map<std::string, std::string> gadget_parameters;
@@ -135,6 +136,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
       if (c.cloudBus) {
 	ACE_OS_String::strncpy(relay_host, c.cloudBus->relayAddress.c_str(), 1024);
 	relay_port = c.cloudBus->port;
+        if (c.cloudBus->lbEndpoint) {
+            lb_endpoint = *c.cloudBus->lbEndpoint;
+        }
       }
 
       if (c.rest) {
@@ -158,7 +162,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     return -1;
   }
 
-  static const ACE_TCHAR options[] = ACE_TEXT(":p:r:l:R:");
+  static const ACE_TCHAR options[] = ACE_TEXT(":p:r:l:R:e:");
   ACE_Get_Opt cmd_opts(argc, argv, options);
 
   int option;
@@ -176,6 +180,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     case 'R':
       rest_port = std::atoi(cmd_opts.opt_arg());
       break;
+    case 'e':
+      lb_endpoint = std::string(cmd_opts.opt_arg());
+      break;  
     case ':':
       print_usage();
       GERROR("-%c requires an argument.\n", cmd_opts.opt_opt());
@@ -208,6 +215,18 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     Gadgetron::CloudBus::set_gadgetron_port(std::atoi(port_no));
     Gadgetron::CloudBus::set_rest_port(rest_port);
     Gadgetron::CloudBus* cb = Gadgetron::CloudBus::instance();//This actually starts the bus.
+    if (lb_endpoint.size()) {
+        size_t colon_pos = lb_endpoint.find(":");
+        if (colon_pos == std::string::npos) {
+            GERROR("Malformed load balanced endpoint entry: %s\n", lb_endpoint.c_str());
+            exit(1);
+        }
+        std::string lb_addr = lb_endpoint.substr(0,colon_pos);
+        std::string lb_port = lb_endpoint.substr(colon_pos+1);
+        uint32_t lb_port_uint = std::atoi(lb_port.c_str());
+        GINFO("Setting load balanced endpoint for CloudBus: %s:%d\n", lb_addr.c_str(), lb_port_uint);
+        Gadgetron::CloudBus::instance()->set_lb_endpoint(lb_addr,lb_port_uint);
+    }
     gadget_parameters["using_cloudbus"] = std::string("true"); //This is our message to the Gadgets that we have activated the bus
     if (rest_port) {
       Gadgetron::ReST::instance()->server()

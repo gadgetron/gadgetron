@@ -13,7 +13,6 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
-#include "gtPlusISMRMRDReconUtil.h"
 
 // transformation
 #include "hoImageRegTransformation.h"
@@ -38,7 +37,6 @@
 #include "hoImageRegDissimilarityLocalCCR.h"
 #include "hoImageRegDissimilarityMutualInformation.h"
 #include "hoImageRegDissimilarityNormalizedMutualInformation.h"
-#include "GtPrepUtil.h"
 
 namespace Gadgetron
 {

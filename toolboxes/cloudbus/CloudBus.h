@@ -22,6 +22,9 @@
 #include <utility>
 #include <time.h>
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #define GADGETRON_DEFAULT_RELAY_ADDR "localhost"
 #define GADGETRON_DEFAULT_RELAY_PORT 8002
@@ -77,6 +80,8 @@ namespace Gadgetron
     static void set_query_only(bool m = true);
     static void set_gadgetron_port(uint32_t port);
     static void set_rest_port(uint32_t port);
+
+    void set_lb_endpoint(std::string addr, uint32_t port);
     
     void set_compute_capability(uint32_t c);
 
@@ -104,14 +109,23 @@ namespace Gadgetron
     static bool query_mode_; //Listen only
     static int gadgetron_port_;
     static int rest_port_;
-    
+
+    bool use_lb_endpoint_;
+    std::string lb_address_;
+    uint32_t lb_port_;
+
     GadgetronNodeInfo node_info_;
     std::vector<GadgetronNodeInfo> nodes_;
     
+    std::mutex mtx_;
+    std::condition_variable node_list_condition_;
+  
+    /*
     ACE_Thread_Mutex mtx_;
     ACE_Thread_Mutex mtx_node_list_;
     ACE_Condition<ACE_Thread_Mutex> node_list_condition_;
-    
+    */
+
     boost::uuids::uuid uuid_;
     bool connected_;
     ACE_SOCK_Stream socket_;

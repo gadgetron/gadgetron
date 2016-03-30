@@ -72,6 +72,12 @@ protected:
     using BaseClass::res_after_apply_kernel_sum_over_;
     ARRAY_TYPE res_after_apply_kernel_sum_over_dst_;
 
+    using BaseClass::fft_im_buffer_;
+    using BaseClass::fft_kspace_buffer_;
+
+    ARRAY_TYPE fft_im_buffer_dst_;
+    ARRAY_TYPE fft_kspace_buffer_dst_;
+
     //using BaseClass::gt_timer1_;
     //using BaseClass::gt_timer2_;
     //using BaseClass::gt_timer3_;
