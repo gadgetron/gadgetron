@@ -10,7 +10,7 @@
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconWorker3DT.h"
 #include "gtPlusSPIRIT.h"
-#include "hoLSQRSolver.h"
+#include "hoLsqrSolver.h"
 #include "hoSPIRIT2DOperator.h"
 
 #include "GadgetCloudController.h"
@@ -797,10 +797,10 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
             hoNDArray<T> x0(E1, E2, srcCHA);
             Gadgetron::clear(x0);
 
-            hoLSQRSolver< T > cgSolver;
+            hoLsqrSolver< T > cgSolver;
             cgSolver.set_tc_tolerance((value_type)workOrder3DT->spirit_iter_thres_);
             cgSolver.set_max_iterations(workOrder3DT->spirit_iter_max_);
-            cgSolver.set_output_mode(workOrder3DT->spirit_print_iter_ ? hoLSQRSolver< T >::OUTPUT_VERBOSE : hoLSQRSolver< T >::OUTPUT_SILENT);
+            cgSolver.set_output_mode(workOrder3DT->spirit_print_iter_ ? hoLsqrSolver< T >::OUTPUT_VERBOSE : hoLsqrSolver< T >::OUTPUT_SILENT);
             cgSolver.set_encoding_operator(oper);
 
             hoNDArray<T> b(E1, E2, srcCHA);
@@ -920,10 +920,10 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
             hoNDArray<T> x0(E1, E2, srcCHA);
             Gadgetron::clear(x0);
 
-            hoLSQRSolver< T > cgSolver;
+            hoLsqrSolver< T > cgSolver;
             cgSolver.set_tc_tolerance((value_type)workOrder3DT->spirit_iter_thres_);
             cgSolver.set_max_iterations(workOrder3DT->spirit_iter_max_);
-            cgSolver.set_output_mode(workOrder3DT->spirit_print_iter_ ? hoLSQRSolver< T >::OUTPUT_VERBOSE : hoLSQRSolver< T >::OUTPUT_SILENT);
+            cgSolver.set_output_mode(workOrder3DT->spirit_print_iter_ ? hoLsqrSolver< T >::OUTPUT_VERBOSE : hoLsqrSolver< T >::OUTPUT_SILENT);
             cgSolver.set_encoding_operator(oper);
 
             hoNDArray<T> b(E1, E2, srcCHA);

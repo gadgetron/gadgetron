@@ -1,4 +1,4 @@
-/** \file   hoLSQRSolver.h
+/** \file   hoLsqrSolver.h
     \brief  Implementation a cpu version LSQR solver
     \author Hui Xue
 
@@ -16,14 +16,14 @@
 
 namespace Gadgetron{
 
-    template <class T> class EXPORTCPUSOLVER hoLSQRSolver : public lsqrSolver< hoNDArray<T> >
+    template <class T> class EXPORTCPUSOLVER hoLsqrSolver : public lsqrSolver< hoNDArray<T> >
     {
     public:
 
         typedef lsqrSolver< hoNDArray<T> > BaseClass;
 
-        hoLSQRSolver();
-        virtual ~hoLSQRSolver();
+        hoLsqrSolver();
+        virtual ~hoLsqrSolver();
 
     protected:
 
