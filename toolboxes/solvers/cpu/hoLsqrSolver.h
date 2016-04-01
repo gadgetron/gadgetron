@@ -11,8 +11,8 @@
 #pragma once
 
 #include "cpusolver_export.h"
-#include "lsqrSolver.h"
 #include "hoNDArray_math.h"
+#include "lsqrSolver.h"
 
 namespace Gadgetron{
 
