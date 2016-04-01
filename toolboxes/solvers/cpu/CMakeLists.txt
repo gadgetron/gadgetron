@@ -9,16 +9,34 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu )
 
 set( cpu_solver_header_files
+        ../cgCallback.h
+        ../cgPreconditioner.h
+        ../cgSolver.h
+        ../eigenTester.h
+        ../gpBbSolver.h
+        ../gpSolver.h
+        ../lbfgsSolver.h
+        ../linearOperatorSolver.h
+        ../lsqrSolver.h
+        ../lwSolver.h
+        ../nlcgSolver.h
+        ../osLALMSolver.h
+        ../osMOMSolver.h
+        ../osSPSSolver.h
+        ../sbcSolver.h
+        ../sbSolver.h
+        ../solver.h
+
         cpusolver_export.h
         hoCgPreconditioner.h 
         hoCgSolver.h 
-        hoLSQRSolver.h 
+        hoLsqrSolver.h 
         hoGpBbSolver.h 
         hoSbCgSolver.h 
         hoSolverUtils.h )
 
 set( cpu_solver_source_files
-        hoLSQRSolver.cpp )
+        hoLsqrSolver.cpp )
 
 add_library(gadgetron_toolbox_cpu_solver SHARED ${cpu_solver_header_files} ${cpu_solver_source_files} )
 
