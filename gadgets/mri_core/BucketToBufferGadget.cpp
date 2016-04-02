@@ -471,13 +471,22 @@ namespace Gadgetron{
         uint16_t NCHA = acqhdr.active_channels;
 
         uint16_t NLOC;
-        if (split_slices_) {
+        if (split_slices_)
+        {
             NLOC = 1;
-        } else {
-            if (encoding.encodingLimits.slice.is_present()) {
+        }
+        else
+        {
+            if (encoding.encodingLimits.slice.is_present())
+            {
                 NLOC = encoding.encodingLimits.slice->maximum - encoding.encodingLimits.slice->minimum + 1;
-            } else {
-                NLOC = *stats.slice.rbegin() - *stats.slice.begin() + 1;
+            }
+
+            // if the AcquisitionAccumulateTriggerGadget sort by SLC, then the stats should be used to determine NLOC
+            size_t NLOC_received = *stats.slice.rbegin() - *stats.slice.begin() + 1;
+            if (NLOC_received < NLOC)
+            {
+                NLOC = NLOC_received;
             }
         }
 
@@ -535,14 +544,7 @@ namespace Gadgetron{
           NS = 1;
         }
 
-        //GDEBUG_STREAM("Data dimensions:");
-        //GDEBUG_STREAM("   NE0:  " << NE0);
-        //GDEBUG_STREAM("   NE1:  " << NE1);
-        //GDEBUG_STREAM("   NE2:  " << NE2);
-        //GDEBUG_STREAM("   NLOC: " << NLOC);
-        //GDEBUG_STREAM("   NCHA: " << NCHA);
-        //GDEBUG_STREAM("   NN:   " << NN);
-        //GDEBUG_STREAM("   NS:   " << NS);
+        GDEBUG_CONDITION_STREAM(verbose.value(), "Data dimensions [RO E1 E2 CHA N S SLC] : [" << NE0 << " " << NE1 << " " << NE2 << " " << NCHA << " " << NN << " " << NS << " " << NLOC);
 
         //Allocate the array for the data
         dataBuffer.data_.create(NE0, NE1, NE2, NCHA, NN, NS, NLOC);
@@ -650,6 +652,18 @@ namespace Gadgetron{
         sampling.sampling_limits_[2].max_ = encoding.encodingLimits.kspace_encoding_step_2->maximum;
         sampling.sampling_limits_[2].center_ = encoding.encodingLimits.kspace_encoding_step_2->center;
     }
+
+    if (verbose.value())
+    {
+        GDEBUG_STREAM("Encoding space : " << encoding.trajectory
+            << " - FOV : [ " << encoding.encodedSpace.fieldOfView_mm.x << " " << encoding.encodedSpace.fieldOfView_mm.y << " " << encoding.encodedSpace.fieldOfView_mm.z << " ] "
+            << " - Matris size : [ " << encoding.encodedSpace.matrixSize.x << " " << encoding.encodedSpace.matrixSize.y << " " << encoding.encodedSpace.matrixSize.z << " ] ");
+
+        GDEBUG_STREAM("Sampling limits : "
+                << "- RO : [ " << sampling.sampling_limits_[0].min_ << " " << sampling.sampling_limits_[0].center_ << " " << sampling.sampling_limits_[0].max_
+                << "- E1 : [ " << sampling.sampling_limits_[1].min_ << " " << sampling.sampling_limits_[1].center_ << " " << sampling.sampling_limits_[1].max_
+                << "- E2 : [ " << sampling.sampling_limits_[2].min_ << " " << sampling.sampling_limits_[2].center_ << " " << sampling.sampling_limits_[2].max_);
+    }
   }
 
   void BucketToBufferGadget::stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, bool forref)
@@ -660,8 +674,16 @@ namespace Gadgetron{
     hoNDArray< std::complex<float> > & acqdata = *it->data_->getObjectPtr();
     // we make one for the trajectory down below if we need it
 
+    uint16_t NE0  = (uint16_t)dataBuffer.data_.get_size(0);
+    uint16_t NE1  = (uint16_t)dataBuffer.data_.get_size(1);
+    uint16_t NE2  = (uint16_t)dataBuffer.data_.get_size(2);
+    uint16_t NCHA = (uint16_t)dataBuffer.data_.get_size(3);
+    uint16_t NN   = (uint16_t)dataBuffer.data_.get_size(4);
+    uint16_t NS   = (uint16_t)dataBuffer.data_.get_size(5);
+    uint16_t NLOC = (uint16_t)dataBuffer.data_.get_size(6);
+
     size_t slice_loc;
-    if (split_slices_)
+    if (split_slices_ || NLOC==1)
       {
         slice_loc = 0;
       }
@@ -705,12 +727,6 @@ namespace Gadgetron{
       }
 
     std::complex<float> *dataptr;
-    uint16_t NE0 = (uint16_t)dataBuffer.data_.get_size(0);
-    uint16_t NE1 = (uint16_t)dataBuffer.data_.get_size(1);
-    uint16_t NE2 = (uint16_t)dataBuffer.data_.get_size(2);
-    uint16_t NCHA = (uint16_t)dataBuffer.data_.get_size(3);
-    uint16_t NN = (uint16_t)dataBuffer.data_.get_size(4);
-    uint16_t NS = (uint16_t)dataBuffer.data_.get_size(5);
 
     uint16_t NUsed = (uint16_t)getN(acqhdr.idx);
     if (NUsed >= NN) NUsed = NN - 1;

@@ -34,29 +34,30 @@ namespace Gadgetron{
       
     protected:
       GADGET_PROPERTY_LIMITS(N_dimension, std::string, "N-Dimensions", "", 
-			     GadgetPropertyLimitsEnumeration,
-			     "average",
-			     "contrast",
-			     "phase",
-			     "repetition",
-			     "set",
-			     "segment",
-			     "slice",
-			     "");
+                 GadgetPropertyLimitsEnumeration,
+                 "average",
+                 "contrast",
+                 "phase",
+                 "repetition",
+                 "set",
+                 "segment",
+                 "slice",
+                 "");
 
       GADGET_PROPERTY_LIMITS(S_dimension, std::string, "S-Dimensions", "", 
-			     GadgetPropertyLimitsEnumeration,
-			     "average",
-			     "contrast",
-			     "phase",
-			     "repetition",
-			     "set",
-			     "segment",
-			     "slice",
-			     "");
+                 GadgetPropertyLimitsEnumeration,
+                 "average",
+                 "contrast",
+                 "phase",
+                 "repetition",
+                 "set",
+                 "segment",
+                 "slice",
+                 "");
 
       GADGET_PROPERTY(split_slices, bool, "Split slices", false);
       GADGET_PROPERTY(ignore_segment, bool, "Ignore segment", false);
+      GADGET_PROPERTY(verbose, bool, "Whether to print more information", false);
 
       IsmrmrdCONDITION N_;
       IsmrmrdCONDITION S_;
@@ -75,9 +76,6 @@ namespace Gadgetron{
       virtual void allocateDataArrays(IsmrmrdDataBuffered &  dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref);
       virtual void fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader & acqhdr, bool forref);
       virtual void stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, bool forref);
-
     };
-
-  
 }
 #endif //BUCKETTOBUFFER_H

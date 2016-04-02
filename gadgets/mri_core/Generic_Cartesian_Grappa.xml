@@ -47,6 +47,7 @@
         <property><name>S_dimension</name><value>average</value></property>
         <property><name>split_slices</name><value>false</value></property>
         <property><name>ignore_segment</name><value>true</value></property>
+        <property><name>verbose</name><value>true</value></property>
     </gadget>
 
     <!-- Prep ref -->
