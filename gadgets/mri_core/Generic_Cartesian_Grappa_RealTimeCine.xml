@@ -37,7 +37,7 @@
         <dll>gadgetron_mricore</dll>
         <classname>AcquisitionAccumulateTriggerGadget</classname>
         <property><name>trigger_dimension</name><value>slice</value></property>
-        <property><name>sorting_dimension</name><value>slice</value></property>
+        <property><name>sorting_dimension</name><value></value></property>
     </gadget>
 
     <gadget>
