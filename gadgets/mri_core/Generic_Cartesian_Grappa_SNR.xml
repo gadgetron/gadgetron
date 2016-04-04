@@ -36,7 +36,7 @@
         <dll>gadgetron_mricore</dll>
         <classname>AcquisitionAccumulateTriggerGadget</classname>
         <property><name>trigger_dimension</name><value></value></property>
-        <property><name>sorting_dimension</name><value>slice</value></property>
+        <property><name>sorting_dimension</name><value></value></property>
     </gadget>
 
     <gadget>
@@ -47,6 +47,7 @@
         <property><name>S_dimension</name><value>set</value></property>
         <property><name>split_slices</name><value>false</value></property>
         <property><name>ignore_segment</name><value>true</value></property>
+        <property><name>verbose</name><value>true</value></property>
     </gadget>
 
     <!-- Prep ref -->

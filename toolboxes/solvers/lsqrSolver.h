@@ -63,7 +63,7 @@ public:
             REAL tolb = tc_tolerance_ * n2b;
             ARRAY_TYPE u(*b);
 
-            encoding_operator_->mult_M(x, &u);
+            this->encoding_operator_->mult_M(x, &u);
             Gadgetron::subtract(*b, u, u);
 
             REAL beta = Gadgetron::nrm2(&u);
@@ -79,7 +79,7 @@ public:
             REAL phibar = beta;
 
             ARRAY_TYPE v(x);
-            encoding_operator_->mult_MH(&u, &v);
+            this->encoding_operator_->mult_MH(&u, &v);
 
             REAL alpha = Gadgetron::nrm2(&v);
             if (std::abs(alpha)>0)
@@ -116,7 +116,7 @@ public:
             {
                 z = v;
 
-                encoding_operator_->mult_M(&z, &utmp);
+                this->encoding_operator_->mult_M(&z, &utmp);
                 Gadgetron::scal(alpha, u);
                 Gadgetron::subtract(utmp, u, u);
 
@@ -190,7 +190,7 @@ public:
 
                 normr = (REAL)(std::abs((double)s) * normr);
 
-                encoding_operator_->mult_MH(&u, &vt);
+                this->encoding_operator_->mult_MH(&u, &vt);
 
                 Gadgetron::scal(beta, v);
                 Gadgetron::subtract(vt, v, v);

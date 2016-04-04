@@ -30,13 +30,13 @@ set( cpu_solver_header_files
         cpusolver_export.h
         hoCgPreconditioner.h 
         hoCgSolver.h 
-        hoLSQRSolver.h 
+        hoLsqrSolver.h 
         hoGpBbSolver.h 
         hoSbCgSolver.h 
         hoSolverUtils.h )
 
 set( cpu_solver_source_files
-        hoLSQRSolver.cpp )
+        hoLsqrSolver.cpp )
 
 add_library(gadgetron_toolbox_cpu_solver SHARED ${cpu_solver_header_files} ${cpu_solver_source_files} )
 
