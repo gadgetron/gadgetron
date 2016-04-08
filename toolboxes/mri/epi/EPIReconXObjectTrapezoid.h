@@ -199,17 +199,11 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::apply(ISMRMRD::Acquisitio
     //Qn.print("Qn =");
 
     // recon operators
-    arma::cx_mat Mp(reconNx_,numSamples_);
-    arma::cx_mat Mn(reconNx_,numSamples_);
+    arma::cx_mat Mp = as_arma_matrix( &Mpos_ );
+    arma::cx_mat Mn = as_arma_matrix( &Mneg_ );
     Mp = F * arma::pinv(Qp);
     Mn = F * arma::pinv(Qn);
-    for (p=0; p<reconNx_; p++) {
-      for (q=0; q<numSamples_; q++) {
-        Mpos_(p,q) = Mp(p,q);
-        Mneg_(p,q) = Mn(p,q);
-      }
-    }
-    
+
     //Mp.print("Mp =");
     //Mn.print("Mn =");
 
