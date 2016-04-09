@@ -30,6 +30,8 @@ namespace Gadgetron
         image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
+
+        memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
     }
 
     template <typename T, unsigned int D> 
@@ -331,6 +333,7 @@ namespace Gadgetron
         this->image_orientation_patient_[1] = rhs.image_orientation_patient_[1];
         this->image_orientation_patient_[2] = rhs.image_orientation_patient_[2];
 
+        this->header_ = rhs.header_;
         this->attrib_ = rhs.attrib_;
 
         return *this;
@@ -378,6 +381,7 @@ namespace Gadgetron
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
 
+        memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
         this->attrib_ = ISMRMRD::MetaContainer();
     }
 
@@ -418,6 +422,8 @@ namespace Gadgetron
         image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
+
+        memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
     }
 
     template <typename T, unsigned int D> 
@@ -463,6 +469,8 @@ namespace Gadgetron
         image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
+
+        memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
     }
 
     template <typename T, unsigned int D> 
@@ -518,6 +526,8 @@ namespace Gadgetron
         image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
+
+        memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
     }
 
     template <typename T, unsigned int D> 
@@ -576,6 +586,8 @@ namespace Gadgetron
             image_orientation_patient_[1][0] = axis[1][0]; image_orientation_patient_[1][1] = axis[1][1]; image_orientation_patient_[1][2] = axis[1][2];
             image_orientation_patient_[2][0] = axis[2][0]; image_orientation_patient_[2][1] = axis[2][1]; image_orientation_patient_[2][2] = axis[2][2];
         }
+
+        memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
     }
 
     template <typename T, unsigned int D> 
@@ -627,6 +639,8 @@ namespace Gadgetron
         image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
+
+        memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
     }
 
     template <typename T, unsigned int D> 
@@ -678,6 +692,8 @@ namespace Gadgetron
         image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
+
+        memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
     }
 
     template <typename T, unsigned int D> 
@@ -745,6 +761,8 @@ namespace Gadgetron
         image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
+
+        memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
     }
 
     template <typename T, unsigned int D> 
@@ -815,6 +833,8 @@ namespace Gadgetron
             image_orientation_patient_[1][0] = axis[1][0]; image_orientation_patient_[1][1] = axis[1][1]; image_orientation_patient_[1][2] = axis[1][2];
             image_orientation_patient_[2][0] = axis[2][0]; image_orientation_patient_[2][1] = axis[2][1]; image_orientation_patient_[2][2] = axis[2][2];
         }
+
+        memset(&this->header_, 0, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
     }
 
     template <typename T, unsigned int D> 

@@ -145,10 +145,10 @@ namespace Gadgetron {
 
             if (!rbit.ref_) continue;
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    this->gt_exporter_.exportArrayComplex(rbit.ref_->data_, debug_folder_full_path_ + "ref_data" + os.str());
-            //}
+            /*if (!debug_folder_full_path_.empty())
+            {
+                this->gt_exporter_.exportArrayComplex(rbit.ref_->data_, debug_folder_full_path_ + "ref_data" + os.str());
+            }*/
 
             // useful variables
             hoNDArray< std::complex<float> >& ref = (*rbit.ref_).data_;
@@ -229,10 +229,10 @@ namespace Gadgetron {
             Gadgetron::crop(crop_offset, crop_size, &ref_calib, &ref_recon_buf);
             ref_calib = ref_recon_buf;
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    this->gt_exporter_.exportArrayComplex(ref_calib, debug_folder_full_path_ + "ref_calib_after_crop" + os.str());
-            //}
+            /*if (!debug_folder_full_path_.empty())
+            {
+                this->gt_exporter_.exportArrayComplex(ref_calib, debug_folder_full_path_ + "ref_calib_after_crop" + os.str());
+            }*/
 
             // step 3, update the sampling limits
             sampling_limits[0].center_ = (uint16_t)(RO/2);
@@ -267,10 +267,10 @@ namespace Gadgetron {
             for (int i = 0; i < 3; i++)
                 (*rbit.ref_).sampling_.sampling_limits_[i] = sampling_limits[i];
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    this->gt_exporter_.exportArrayComplex(rbit.ref_->data_, debug_folder_full_path_ + "ref_calib_final" + os.str());
-            //}
+            /*if (!debug_folder_full_path_.empty())
+            {
+                this->gt_exporter_.exportArrayComplex(rbit.ref_->data_, debug_folder_full_path_ + "ref_calib_final" + os.str());
+            }*/
         }
 
         if (this->next()->putq(m1) < 0)

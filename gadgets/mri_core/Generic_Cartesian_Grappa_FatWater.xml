@@ -4,12 +4,13 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <!--
-        Gadgetron generic recon chain for 2D and 3D cartesian sampling
+        Gadgetron generic recon chain for 2D and 3D fat water separation
 
         Fat water imaging
         Triggered by slice
-        Recon N is repetition and S is set
-        The ref will only be prepared once on the first contrast data, and applied to all other contrasts
+        Recon N is repetition and S is contrast
+
+        Ref data is only prepared for the first repetition and all other repetition will be reconstructed with the same coefficients
 
         Author: Hui Xue
         Magnetic Resonance Technology Program, National Heart, Lung and Blood Institute, National Institutes of Health
@@ -38,7 +39,7 @@
         <dll>gadgetron_mricore</dll>
         <classname>AcquisitionAccumulateTriggerGadget</classname>
         <property><name>trigger_dimension</name><value>slice</value></property>
-        <property><name>sorting_dimension</name><value>contrast</value></property>
+        <property><name>sorting_dimension</name><value></value></property>
     </gadget>
 
     <gadget>
@@ -46,8 +47,8 @@
         <dll>gadgetron_mricore</dll>
         <classname>BucketToBufferGadget</classname>
         <property><name>N_dimension</name><value>repetition</value></property>
-        <property><name>S_dimension</name><value>set</value></property>
-        <property><name>split_slices</name><value>true</value></property>
+        <property><name>S_dimension</name><value>contrast</value></property>
+        <property><name>split_slices</name><value>false</value></property>
         <property><name>ignore_segment</name><value>true</value></property>
     </gadget>
 
@@ -195,11 +196,49 @@
         <property><name>scalingFactor_dedicated</name><value>100.0</value></property>
     </gadget>
 
-    <!-- ImageArray to images -->
+    <!-- Image recon accummulator -->
     <gadget>
-        <name>ImageArraySplit</name>
+        <name>ImageAcc</name>
         <dll>gadgetron_mricore</dll>
-        <classname>ImageArraySplitGadget</classname>
+        <classname>GenericReconAccumulateImage3DTriggerGadget</classname>
+
+        <!-- triggered dimensions -->
+        <property><name>trigger_channel</name><value>false</value></property>
+        <property><name>trigger_slice</name><value>false</value></property>
+        <property><name>trigger_contrast</name><value>true</value></property>
+        <property><name>trigger_phase</name><value>false</value></property>
+        <property><name>trigger_repetition</name><value>true</value></property>
+        <property><name>trigger_set</name><value>true</value></property>
+        <property><name>trigger_average</name><value>true</value></property>
+
+        <!-- work flow -->
+        <property><name>pass_image_immediately</name><value>false</value></property>
+
+        <!-- debug and info mode -->
+        <property><name>verbose</name><value>true</value></property>
+    </gadget>
+
+    <gadget>
+        <name>FatWater</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>FatWaterSeparationGadget</classname>
+
+        <property><name>send_multi_echo_images</name><value>true</value></property>
+        <property><name>send_water_images</name><value>true</value></property>
+        <property><name>send_fat_images</name><value>true</value></property>
+        <property><name>send_t2_star_map</name><value>true</value></property>
+        <property><name>send_field_map</name><value>true</value></property>
+
+        <property><name>t2_star_color_map</name><value>MicroDeltaHotMetal.pal</value></property>
+        <property><name>t2_star_scaling_factor</name><value>10.0</value></property>
+        <property><name>t2_star_window_center</name><value>25.0</value></property>
+        <property><name>t2_star_window_width</name><value>50.0</value></property>
+
+        <property><name>field_map_color_map</name><value>MicroDeltaHotMetal.pal</value></property>
+        <property><name>field_map_scaling_factor</name><value>10.0</value></property>
+        <property><name>field_map_window_center</name><value>0.0</value></property>
+        <property><name>field_map_window_width</name><value>200.0</value></property>
+        <property><name>field_map_offset</name><value>4096.0</value></property>
     </gadget>
 
     <!-- after recon processing -->
@@ -213,6 +252,9 @@
         <name>FloatToShortAttrib</name>
         <dll>gadgetron_mricore</dll>
         <classname>FloatToUShortGadget</classname>
+        <property><name>max_intensity</name><value>32767</value></property>
+        <property><name>min_intensity</name><value>0</value></property>
+        <property><name>intensity_offset</name><value>0</value></property>
     </gadget>
 
     <gadget>

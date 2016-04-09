@@ -547,13 +547,13 @@ namespace Gadgetron {
 
             recon_obj.recon_res_.data_.create(RO, E1, E2, 1, N, S, SLC);
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    std::stringstream os;
-            //    os << "encoding_" << e;
-            //    std::string suffix = os.str();
-            //    gt_exporter_.exportArrayComplex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix);
-            //}
+            /*if (!debug_folder_full_path_.empty())
+            {
+                std::stringstream os;
+                os << "encoding_" << e;
+                std::string suffix = os.str();
+                gt_exporter_.exportArrayComplex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix);
+            }*/
 
             // compute aliased images
             data_recon_buf_.create(RO, E1, E2, dstCHA, N, S, SLC);
@@ -596,7 +596,7 @@ namespace Gadgetron {
 
                 if ( (start_RO>=0 && start_RO<RO) && (end_RO>=0 && end_RO<RO) && (end_RO - start_RO + 1 < RO) )
                 {
-                    lenRO = (end_RO - start_RO + 1);
+                    lenRO = (double)(end_RO - start_RO + 1);
                 }
                 if (this->verbose.value()) GDEBUG_STREAM("GenericReconCartesianGrappaGadget, length for RO : " << lenRO << " - " << lenRO / RO);
 
