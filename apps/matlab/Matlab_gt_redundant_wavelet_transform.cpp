@@ -1,17 +1,18 @@
 
 #include <matrix.h>
 #include <mat.h>
-#ifdef _WIN32
-    #include <mexGT.h>
-#else
-    #include <mex.h>
-#endif // _WIN32
+
+#ifdef MATLAB_DLL_EXPORT_SYM
+    #define DLL_EXPORT_SYM extern "C" __declspec(dllexport)
+#endif // MATLAB_DLL_EXPORT_SYM
+#include <mex.h>
 
 // Gadgetron includes
 #include "gtMatlab.h"
-#include "gtPlusISMRMRDReconUtil.h"
+#include "hoNDArray.h"
 #include "hoNDRedundantWavelet.h"
 #include "hoNDHarrWavelet.h"
+#include "GadgetronTimer.h"
 
 #include "gtMatlabConverter.h"
 #include "gtMatlabConverterComplex.h"
@@ -74,7 +75,6 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         }
 
         using namespace Gadgetron;
-        using namespace Gadgetron::gtPlus;
 
         Gadgetron::GadgetronTimer timer("Running gadgetron wavelet transform");
 

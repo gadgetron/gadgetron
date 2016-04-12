@@ -7,13 +7,28 @@ if (MATLAB_FOUND)
     SET(CMAKE_DEBUG_POSTFIX)
 
     include_directories( 
+        ${CMAKE_SOURCE_DIR}/toolboxes/core
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
+        ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
+        ${CMAKE_SOURCE_DIR}/toolboxes/matlab
         ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/dwt/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/matlab
         ${ACE_INCLUDE_DIR}
         ${MATLAB_INCLUDE_DIR}  
         ${ISMRMRD_INCLUDE_DIR} 
+        ${Boost_INCLUDE_DIR} 
+        ${ARMADILLO_INCLUDE_DIRS} 
+        ${FFTW3_INCLUDE_DIR} 
     )
 
     link_directories(${Boost_LIBRARY_DIRS})
@@ -33,6 +48,9 @@ if (MATLAB_FOUND)
         else ( HAS_64_BIT )
             SET(MATLAB_SUFFIX ".mexw32")
         endif ( HAS_64_BIT )
+
+        # windows matlab mex requires export
+        add_definitions(-DMATLAB_DLL_EXPORT_SYM)
     endif (WIN32)
 
     if (UNIX)

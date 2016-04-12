@@ -1,11 +1,11 @@
 
 #include <matrix.h>
 #include <mat.h>
-#ifdef _WIN32
-    #include <mexGT.h>
-#else
-    #include <mex.h>
-#endif // _WIN32
+
+#ifdef MATLAB_DLL_EXPORT_SYM
+    #define DLL_EXPORT_SYM extern "C" __declspec(dllexport)
+#endif // MATLAB_DLL_EXPORT_SYM
+#include <mex.h>
 
 // Gadgetron includes
 #include "gtMatlab.h"

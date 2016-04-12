@@ -4,3 +4,4 @@ ENDIF (ACE_FOUND )
 
 add_subdirectory(clients)
 add_subdirectory(standalone)
+add_subdirectory(matlab)

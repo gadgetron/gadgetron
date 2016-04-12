@@ -1,7 +1,12 @@
 
 #include <matrix.h>
 #include <mat.h>
-#include <mexGT.h>
+
+#ifdef MATLAB_DLL_EXPORT_SYM
+    #define DLL_EXPORT_SYM extern "C" __declspec(dllexport)
+#endif // MATLAB_DLL_EXPORT_SYM
+#include <mex.h>
+
 #include <cmath>
 #include <vector>
 #include <iostream>
