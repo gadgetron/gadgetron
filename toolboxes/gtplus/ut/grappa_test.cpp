@@ -593,7 +593,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
 
     // unwarpping
     hoNDArray<T> res;
-    grappa.applyImageDomainKernel(kspace, kIm, res);
+    Gadgetron::grappa2d_image_domain_unwrapping(kspace, kIm, res);
     gt_io.export3DArrayComplex(res, this->gt_ut_res_folder_ + "grappa2D_res");
 
     Gadgetron::apply_unmix_coeff_kspace(kspace, unmixC, res);

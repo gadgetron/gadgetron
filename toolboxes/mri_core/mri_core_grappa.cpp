@@ -341,7 +341,7 @@ void grappa2d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
 
         size_t startRO(0), endRO(0), startE1(0), endE1(0);
 
-        size_t ro, e1, scha, dcha;
+        size_t ro, e1;
 
         for (e1 = 0; e1 < E1; e1++)
         {
@@ -481,6 +481,92 @@ void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coil
 
 template EXPORTMRICORE void grappa2d_unmixing_coeff(const hoNDArray< std::complex<float> >& kerIm, const hoNDArray< std::complex<float> >& coilMap, size_t acceFactorE1, hoNDArray< std::complex<float> >& unmixCoeff, hoNDArray<float>& gFactor);
 template EXPORTMRICORE void grappa2d_unmixing_coeff(const hoNDArray< std::complex<double> >& kerIm, const hoNDArray< std::complex<double> >& coilMap, size_t acceFactorE1, hoNDArray< std::complex<double> >& unmixCoeff, hoNDArray<double>& gFactor);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void grappa2d_image_domain_unwrapping(const hoNDArray<T>& kspace, const hoNDArray<T>& kerIm, hoNDArray<T>& complexIm)
+{
+    try
+    {
+        hoNDArray<T> aliasedIm(kspace);
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kspace, aliasedIm);
+
+        Gadgetron::grappa2d_image_domain_unwrapping_aliased_image(aliasedIm, kerIm, complexIm);
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa2d_image_domain_unwrapping(const hoNDArray<T>& kspace, const hoNDArray<T>& kerIm, hoNDArray<T>& complexIm) ... ");
+    }
+}
+
+template EXPORTMRICORE void grappa2d_image_domain_unwrapping(const hoNDArray< std::complex<float> >& kspace, const hoNDArray< std::complex<float> >& kerIm, hoNDArray< std::complex<float> >& complexIm);
+template EXPORTMRICORE void grappa2d_image_domain_unwrapping(const hoNDArray< std::complex<double> >& kspace, const hoNDArray< std::complex<double> >& kerIm, hoNDArray< std::complex<double> >& complexIm);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDArray<T>& kerIm, hoNDArray<T>& complexIm)
+{
+    try
+    {
+        size_t RO = kerIm.get_size(0);
+        size_t E1 = kerIm.get_size(1);
+        size_t srcCHA = kerIm.get_size(2);
+        size_t dstCHA = kerIm.get_size(3);
+
+        GADGET_CHECK_THROW(aliasedIm.get_size(0) == RO);
+        GADGET_CHECK_THROW(aliasedIm.get_size(1) == E1);
+        GADGET_CHECK_THROW(aliasedIm.get_size(2) == srcCHA);
+
+        std::vector<size_t> dim;
+        aliasedIm.get_dimensions(dim);
+
+        std::vector<size_t> dimIm(dim);
+        dimIm[2] = dstCHA;
+
+        if (!complexIm.dimensions_equal(&dimIm))
+        {
+            complexIm.create(&dimIm);
+        }
+
+        size_t num = aliasedIm.get_number_of_elements() / (RO*E1*srcCHA);
+
+        long long n;
+
+#pragma omp parallel default(none) private(n) shared(kerIm, num, aliasedIm, RO, E1, srcCHA, dstCHA, complexIm) if(num>=16)
+        {
+            hoNDArray<T> unwrappedBuffer;
+            unwrappedBuffer.create(RO, E1, srcCHA);
+
+            hoNDArray<T> unwrappedIm2D;
+            unwrappedIm2D.create(RO, E1, 1);
+
+#pragma omp for 
+            for (n = 0; n < (long long)num; n++)
+            {
+                hoNDArray<T> bufIm(RO, E1, srcCHA, const_cast<T*>(aliasedIm.begin() + n*RO*E1*srcCHA));
+
+                for (size_t dcha = 0; dcha < dstCHA; dcha++)
+                {
+                    hoNDArray<T> kerSrcCha(RO, E1, srcCHA, const_cast<T*>(kerIm.begin() + dcha*RO*E1*srcCHA));
+
+                    Gadgetron::multiply(kerSrcCha, bufIm, unwrappedBuffer);
+                    Gadgetron::sum_over_dimension(unwrappedBuffer, unwrappedIm2D, 2);
+
+                    memcpy(complexIm.begin() + n*RO*E1*dstCHA + dcha*RO*E1, unwrappedIm2D.begin(), sizeof(T)*RO*E1);
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDArray<T>& kerIm, hoNDArray<T>& complexIm) ... ");
+    }
+}
+
+template EXPORTMRICORE void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray< std::complex<float> >& aliasedIm, const hoNDArray< std::complex<float> >& kerIm, hoNDArray< std::complex<float> >& complexIm);
+template EXPORTMRICORE void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray< std::complex<double> >& aliasedIm, const hoNDArray< std::complex<double> >& kerIm, hoNDArray< std::complex<double> >& complexIm);
 
 // ------------------------------------------------------------------------
 
@@ -975,7 +1061,7 @@ void grappa3d_calib_convolution_kernel(const hoNDArray<T>& dataSrc, const hoNDAr
 
         size_t startRO(0), endRO(0), startE1(0), endE1(0), startE2(0), endE2(0);
 
-        size_t ro, e1, e2, scha, dcha;
+        size_t ro, e1, e2;
 
         for (e2 = 0; e2 < E2; e2++)
         {
@@ -1044,7 +1130,7 @@ void grappa3d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t
             hoNDArray<T> kImRes(RO, E1, E2);
 
     #pragma omp for 
-            for (n = 0; n < srcCHA*dstCHA; n++)
+            for (n = 0; n < (long long)srcCHA*dstCHA; n++)
             {
                 long long d = n / srcCHA;
                 long long s = n - d*srcCHA;
@@ -1124,7 +1210,7 @@ void grappa3d_unmixing_coeff(const hoNDArray<T>& convKer, const hoNDArray<T>& co
             kImTmp.create(RO, E1, E2);
 
             #pragma omp for 
-            for (scha = 0; scha < srcCHA; scha++)
+            for (scha = 0; scha < (long long)srcCHA; scha++)
             {
                 hoNDArray<T> unmixCha;
                 unmixCha.create(RO, E1, E2, unmixCoeff.begin() + scha*RO*E1*E2);
@@ -1236,7 +1322,7 @@ void grappa3d_image_domain_unwrapping(const hoNDArray<T>& convKer, const hoNDArr
             hoNDArray<T> complexImCha;
 
 #pragma omp for 
-            for (dcha = 0; dcha < dstCHA; dcha++)
+            for (dcha = 0; dcha < (long long)dstCHA; dcha++)
             {
                 for (size_t scha = 0; scha < srcCHA; scha++)
                 {
@@ -1322,7 +1408,7 @@ void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray<T>& convKer, 
             hoNDArray<T> complexImCha;
 
 #pragma omp for 
-            for (dcha = 0; dcha < dstCHA; dcha++)
+            for (dcha = 0; dcha < (long long)dstCHA; dcha++)
             {
                 for (size_t scha = 0; scha < srcCHA; scha++)
                 {
