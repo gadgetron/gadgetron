@@ -41,6 +41,14 @@ namespace Gadgetron {
     /// gFactor: [RO E1], gfactor
     template <typename T> EXPORTMRICORE void grappa2d_unmixing_coeff(const hoNDArray<T>& kerIm, const hoNDArray<T>& coilMap, size_t acceFactorE1, hoNDArray<T>& unmixCoeff, hoNDArray< typename realType<T>::Type >& gFactor);
 
+    ///  apply kspace domain kernel to unwarp multi-channel images
+    /// kspace: [RO E1 srcCHA ... ]
+    /// kerIm: [RO E1 srcCHA dstCHA]
+    /// complexIm: [RO E1 dstCHA ... ]
+    template <typename T> EXPORTMRICORE void grappa2d_image_domain_unwrapping(const hoNDArray<T>& kspace, const hoNDArray<T>& kerIm, hoNDArray<T>& complexIm);
+    /// aliasedIm : [RO E1 srcCHA ...]
+    template <typename T> EXPORTMRICORE void grappa2d_image_domain_unwrapping_aliased_image(const hoNDArray<T>& aliasedIm, const hoNDArray<T>& kerIm, hoNDArray<T>& complexIm);
+
     /// apply unmixing coefficient on undersampled kspace
     /// kspace: [RO E1 srcCHA ...]
     /// unmixCoeff : [RO E1 srcCHA]

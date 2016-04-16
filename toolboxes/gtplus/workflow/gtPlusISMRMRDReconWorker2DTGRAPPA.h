@@ -343,7 +343,7 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
         {
             workOrder2DT->fullkspace_ = data_dst;
 
-            buffer2DT_unwrapping_.create(RO, E1, srcCHA, dstCHA);
+            // buffer2DT_unwrapping_.create(RO, E1, srcCHA, dstCHA);
 
             size_t usedS;
             for ( usedS=0; usedS<S; usedS++ )
@@ -354,7 +354,8 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     hoNDArray<T> aliasedIm(RO, E1, srcCHA, N, buffer2DT_.begin()+usedS*RO*E1*srcCHA*N);
                     hoNDArray<T> unwarppedIm(RO, E1, dstCHA, N, workOrder2DT->fullkspace_.begin()+usedS*RO*E1*dstCHA*N);
 
-                    this->applyImageDomainKernelImage(aliasedIm, kIm, buffer2DT_unwrapping_, unwarppedIm);
+                    // this->applyImageDomainKernelImage(aliasedIm, kIm, buffer2DT_unwrapping_, unwarppedIm);
+                    this->applyImageDomainKernelImage(aliasedIm, kIm, unwarppedIm);
 
                     if ( !debugFolder_.empty() )
                     {
