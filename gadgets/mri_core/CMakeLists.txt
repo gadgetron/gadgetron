@@ -161,6 +161,10 @@ set( gadgetron_mricore_config_files
     Generic_Cartesian_Grappa_EPI_AVE.xml
 )
 
+if(ARMADILLO_FOUND AND Boost_FOUND AND PLPLOT_FOUND)
+    set( gadgetron_mricore_config_files ${gadgetron_mricore_config_files} Generic_Cartesian_Grappa_SNR_CoilQA.xml )
+endif(ARMADILLO_FOUND AND Boost_FOUND AND PLPLOT_FOUND)
+
 add_library(gadgetron_mricore SHARED 
     gadgetron_mricore_export.h 
     ${gadgetron_mricore_header_files} 
