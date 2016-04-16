@@ -33,6 +33,8 @@
 
 #include "mri_core_kspace_filter.h"
 #include "mri_core_partial_fourier.h"
+#include "mri_core_grappa.h"
+#include "mri_core_spirit.h"
 
 namespace Gadgetron { namespace gtPlus {
 

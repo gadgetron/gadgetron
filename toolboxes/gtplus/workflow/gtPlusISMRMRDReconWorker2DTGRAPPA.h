@@ -10,7 +10,6 @@
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconCoilMapEstimation.h"
 #include "gtPlusISMRMRDReconWorker2DT.h"
-#include "mri_core_grappa.h"
 
 namespace Gadgetron { namespace gtPlus {
 

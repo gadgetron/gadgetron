@@ -9,7 +9,6 @@
 #include "GadgetronTimer.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconWorker2DT.h"
-#include "mri_core_spirit.h"
 #include "hoSPIRIT2DOperator.h"
 #include "hoLsqrSolver.h"
 
