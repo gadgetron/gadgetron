@@ -7,9 +7,6 @@
 
 #pragma once
 
-#include <matrix.h>
-#include <mat.h>
-#include <mexGT.h>
 #include <cmath>
 #include <vector>
 #include <string>
