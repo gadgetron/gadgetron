@@ -27,7 +27,7 @@ include_directories(
 
 set( header_files NoiseCovariancePlottingGadget.h )
 set( src_files NoiseCovariancePlottingGadget.cpp )
-set( config_files GT_2DT_Cartesian_GFactor_NoiseStd.xml )
+set( config_files Generic_Cartesian_Grappa_SNR_CoilQA.xml )
 
 source_group(config FILES ${config_files})
 
