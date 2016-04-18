@@ -32,7 +32,13 @@ namespace Gadgetron
     {
         std::vector<ChemicalSpecies> species_;
     };
-    
+
+    /**
+       Main interface for water fat separation.
+
+       data array is assumed to be a 7D array [X, Y, Z, CHA, N, S, LOC]
+
+     */
     EXPORTFATWATER hoNDArray< std::complex<float> > fatwater_separation(hoNDArray< std::complex<float> >& data, FatWaterParameters p, FatWaterAlgorithm a);
 
 }
