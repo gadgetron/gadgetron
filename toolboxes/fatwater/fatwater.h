@@ -10,7 +10,7 @@
 namespace Gadgetron
 {
 
-    struct FatWaterParameters
+    struct FatWaterParameters  
     {
         FatWaterParameters()
         : fieldStrengthT_(0)
@@ -23,8 +23,16 @@ namespace Gadgetron
     };
 
 
-    struct ChemicalSpecies
+    /**
+       Amplitudes and frequences (in ppm)
+     */ 
+    struct ChemicalSpecies 
     {
+        ChemicalSpecies(std::string name)
+        : name_(name)
+        {}
+        
+        std::string name_;
         std::vector< std::pair<float,float> > ampFreq_;
     };
     

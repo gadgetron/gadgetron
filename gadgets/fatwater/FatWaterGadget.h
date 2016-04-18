@@ -1,5 +1,5 @@
-#ifndef FATWATER_H
-#define FATWATER_H
+#ifndef FATWATERGADGET_H
+#define FATWATERGADGET_H
 
 #include "Gadget.h"
 #include "hoNDArray.h"
@@ -18,6 +18,14 @@ namespace Gadgetron{
 	
     protected:
       virtual int process(GadgetContainerMessage<IsmrmrdImageArray>* m1);
+      virtual int process_config(ACE_Message_Block* mb);
+      
+
+    private:
+      std::vector<float> echoTimes_;
+      float fieldStrength_;
+      
+      
     };
 }
-#endif //FATWATER_H
+#endif //FATWATERGADGET_H

@@ -11,6 +11,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+  ${CMAKE_SOURCE_DIR}/toolboxes/fatwater
 )
 
 add_library(gadgetron_fatwater SHARED 
