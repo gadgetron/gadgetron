@@ -732,6 +732,92 @@ template EXPORTMRICORE void spirit3d_image_domain_kernel(const hoNDArray< std::c
 
 // ------------------------------------------------------------------------
 
+template <typename T>
+void spirit3d_kspace_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, hoNDArray<T>& kIm)
+{
+    try
+    {
+        size_t kRO = convKer.get_size(0);
+        size_t kE1 = convKer.get_size(1);
+        size_t kE2 = convKer.get_size(2);
+
+        size_t srcCHA = convKer.get_size(3);
+        size_t dstCHA = convKer.get_size(4);
+
+        if (kIm.get_size(0) != kE1 || kIm.get_size(1) != kE2 || kIm.get_size(2) != srcCHA || kIm.get_size(3) != dstCHA || kIm.get_size(5) != RO)
+        {
+            kIm.create(kE1, kE2, srcCHA, dstCHA, RO);
+        }
+
+        hoNDArray<T> convKerScaled;
+        convKerScaled = convKer;
+
+        // since only RO is converted to image domain
+        Gadgetron::scal((typename realType<T>::Type)(std::sqrt((double)(RO))), convKerScaled);
+
+        // pad the kernel and go to image domain
+        hoNDArray<T> kImRO(RO, kE1, kE2, srcCHA, dstCHA);
+        Gadgetron::clear(kImRO);
+        Gadgetron::pad(RO, kE1, kE2, const_cast< hoNDArray<T>* >(&convKer), &kImRO, false);
+
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(kImRO);
+
+        // go to the required dimension order
+        std::vector<size_t> dim_order(5);
+        dim_order[0] = 1;
+        dim_order[1] = 2;
+        dim_order[2] = 3;
+        dim_order[3] = 4;
+        dim_order[4] = 0;
+
+        Gadgetron::permute(&kImRO, &kIm, &dim_order);
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in spirit3d_image_domain_kernel_E1E2RO(...) ... ");
+    }
+
+    return;
+}
+
+template EXPORTMRICORE void spirit3d_kspace_image_domain_kernel(const hoNDArray< std::complex<float> >& convKer, size_t RO, hoNDArray< std::complex<float> >& kIm);
+template EXPORTMRICORE void spirit3d_kspace_image_domain_kernel(const hoNDArray< std::complex<double> >& convKer, size_t RO, hoNDArray< std::complex<double> >& kIm);
+
+// ------------------------------------------------------------------------
+
+template<typename T> 
+void spirit3d_image_domain_kernel(const hoNDArray<T>& kImRO, size_t E1, size_t E2, hoNDArray<T>& kIm)
+{
+    try
+    {
+        std::vector<size_t> dim;
+        kImRO.get_dimensions(dim);
+
+        std::vector<size_t> dimR(dim);
+        dimR[0] = E1;
+        dimR[1] = E2;
+
+        kIm.create(&dimR);
+        Gadgetron::clear(kIm);
+
+        hoNDArray<T> kImROScaled(kImRO);
+        Gadgetron::scal((typename realType<T>::Type)(std::sqrt((double)(E1*E2))), kImROScaled);
+        Gadgetron::pad(E1, E2, dimR[2], &kImROScaled, &kIm, false);
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm);
+    }
+    catch (...)
+    {
+        GADGET_THROW("Errors in spirit3d_image_domain_kernel(const hoNDArray<T>& kImRO, size_t E1, size_t E2, hoNDArray<T>& kIm) ... ");
+    }
+
+    return;
+}
+
+template EXPORTMRICORE void spirit3d_image_domain_kernel(const hoNDArray< std::complex<float> >& kImRO, size_t E1, size_t E2, hoNDArray< std::complex<float> >& kIm);
+template EXPORTMRICORE void spirit3d_image_domain_kernel(const hoNDArray< std::complex<double> >& kImRO, size_t E1, size_t E2, hoNDArray< std::complex<double> >& kIm);
+
+// ------------------------------------------------------------------------
+
 template <typename T> 
 void spirit_image_domain_adjoint_kernel(const hoNDArray<T>& kIm, hoNDArray<T>& adjkIm)
 {

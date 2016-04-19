@@ -84,11 +84,21 @@ namespace Gadgetron {
                                                                             size_t oRO, size_t oE1, size_t oE2,
                                                                             hoNDArray<T>& convKer, bool minusI = false);
 
-    /// compute image domain kernel from 3d grappd convolution kernel
+    /// compute image domain kernel from 3d spirit convolution kernel
     /// RO, E1, E2: the size of image domain kernel
     /// kIm: image domain kernel [RO E1 E2 srcCHA dstCHA]
     /// if preset_kIm_with_zeros==false, caller should make sure the kIm is cleared with zeros
     template <typename T> EXPORTMRICORE void spirit3d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t E1, size_t E2, hoNDArray<T>& kIm, bool preset_kIm_with_zeros=true);
+
+    /// compute image domain kernel from 3d spirit convolution kernel
+    // E1 and E2 stays in the kspace domain
+    // kImRO: kspace-image hybrid kernel [convE1 convE2 srcCHA dstCHA RO]
+    template <typename T> EXPORTMRICORE void spirit3d_kspace_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, hoNDArray<T>& kImRO);
+
+    /// convert kspace-image hybrid kernel to image domain
+    // kImRO : kspace-image hybrid kernel [convE1 convE2 srcCHA dstCHA RO]
+    // kIm: image domain kernel [E1 E2 srcCHA dstCHA RO]
+    template <typename T> EXPORTMRICORE void spirit3d_image_domain_kernel(const hoNDArray<T>& kImRO, size_t E1, size_t E2, hoNDArray<T>& kIm);
 
     /// perform spirit calibration, get the mulitplication kernel
     /// ker: [kRO kE1 kE2 srcCHA dstCHA oRO oE1 oE2]
