@@ -136,8 +136,8 @@ namespace Gadgetron {
 		psiMatrix(k1,k2) = phiMatrix(k1,k2)*curModulation;
 	      }
 	    }
-	    
-	    herk( tempM1, psiMatrix, "L", true );
+
+	    herk( tempM1, psiMatrix, 'L', true );
 	    tempM1.copyLowerTriToUpper();
 
 	    potri(tempM1);
@@ -236,7 +236,9 @@ namespace Gadgetron {
 	    
 	    // Solve for water and fat
 	    gemm( curWaterFat, psiMatrix, true, tempSignal, false );
-	    gemm( AhA, psiMatrix, true, psiMatrix, false );
+	    herk( AhA, psiMatrix, 'L', true );
+	    AhA.copyLowerTriToUpper();
+
 	    hesv(AhA,curWaterFat);
 	    for ( int k4=0;k4<N;k4++ ) {
 	      for ( int k5=0;k5<2;k5++ ) { // 2 elements for water and fat currently
