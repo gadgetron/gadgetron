@@ -102,7 +102,7 @@ namespace Gadgetron{
             //Now let's make an image array to return the f/w images + any additional recon products
             //Right now, we will be using a copy of the original data
             //TODO: Remove this data copy
-            wfimages = imagearr.data_;
+            //wfimages = imagearr.data_;
 
             uint16_t n_images = wfimages.get_size(4); 
             uint16_t s_images = wfimages.get_size(5); //S-dimention is the image dimension

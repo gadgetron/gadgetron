@@ -5,7 +5,7 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
-
+#include "hoArmadillo.h"
 
 #define GAMMABAR 42.576 // MHz/T
 #define PI 3.141592
@@ -86,7 +86,10 @@ namespace Gadgetron {
 	    GDEBUG("Cur value phiMatrix = (%f,%f) \n", phiMatrix(k1,k2).real(), phiMatrix(k1,k2).imag());
 	  }
 	}
-	
+	//auto a_phiMatrix = as_arma_matrix(&phiMatrix);
+	//auto mymat2 = mymat.t()*mymat;
+
+
 	hoMatrix< std::complex<float> > IdentMat(nte,nte);
 	for( int k1=0;k1<nte;k1++) {
 	  for( int k2=0;k2<nte;k2++) {
@@ -97,6 +100,7 @@ namespace Gadgetron {
 	    }
 	  }
 	}
+	auto a_phiMatrix = as_arma_matrix(&IdentMat);
 
 	float fm;
 	float fms[num_fm];
@@ -133,8 +137,9 @@ namespace Gadgetron {
 	      }
 	    }
 	    
-	    gemm( tempM1, psiMatrix, true, psiMatrix, false );
-	    
+	    herk( tempM1, psiMatrix, "L", true );
+	    tempM1.copyLowerTriToUpper();
+
 	    potri(tempM1);
 
 	    gemm( tempM2, tempM1, false, psiMatrix, true );
