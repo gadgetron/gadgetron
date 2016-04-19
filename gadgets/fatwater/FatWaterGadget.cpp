@@ -1,5 +1,6 @@
 #include "FatWaterGadget.h"
 #include "fatwater.h"
+#include "mri_core_def.h"
 #include <ismrmrd/xml.h>
 
 namespace Gadgetron{
@@ -94,8 +95,59 @@ namespace Gadgetron{
         a.species_.push_back(w);
         a.species_.push_back(f);
 
-        try {
+        try {            
+            //This should return the images
             hoNDArray< std::complex<float> > wfimages = Gadgetron::fatwater_separation(imagearr.data_, p, a);
+
+            //Now let's make an image array to return the f/w images + any additional recon products
+            //Right now, we will be using a copy of the original data
+            //TODO: Remove this data copy
+            wfimages = imagearr.data_;
+
+            uint16_t n_images = wfimages.get_size(4); 
+            uint16_t s_images = wfimages.get_size(5); //S-dimention is the image dimension
+            uint16_t loc_images = wfimages.get_size(6);
+
+            if (n_images != N || loc_images != LOC) {
+                GERROR("Wrong number of N or LOC images received from fat water seperation\n");
+                m1->release();
+                return GADGET_FAIL;
+            }
+
+            
+            auto m2 = new GadgetContainerMessage<IsmrmrdImageArray>();
+            m2->getObjectPtr()->data_ = wfimages; //It is a copy, but worth it for simplicty
+            m2->getObjectPtr()->headers_.create(n_images, s_images, loc_images);
+            for (uint16_t loc = 0; loc < loc_images; loc++) {
+                for (uint16_t s = 0; s < s_images; s++) {
+                    for (uint16_t n = 0; n < n_images; n++) {
+                        m2->getObjectPtr()->headers_[loc*s_images*n_images + s*n_images + n] = m1->getObjectPtr()->headers_[loc*s_images*n_images + 0*n_images + n];
+
+                        m2->getObjectPtr()->headers_[loc*s_images*n_images + s*n_images + n].image_series_index =
+                            m2->getObjectPtr()->headers_[loc*s_images*n_images + s*n_images + n].image_series_index + 100;
+                        
+                        ISMRMRD::MetaContainer meta = m1->getObjectPtr()->meta_[loc*n_images*s_images + n];
+                        //TODO: These sepcies and image type specifiers should come from the toolbox
+                        if (s < a.species_.size()) {
+                            if (a.species_[s].name_ == "water") {
+                                meta.set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_WATER);
+                            } else if (a.species_[s].name_ == "fat") {
+                                meta.set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_FAT);
+                            }
+                        } else {
+                            //TODO: What to call these images
+                        }
+                        m2->getObjectPtr()->meta_.push_back(meta);
+                    }
+                }
+            }
+            
+            if (this->next()->putq(m2) < 0) {
+                m1->release();
+                m2->release();
+                return GADGET_FAIL;
+            }
+            
         } catch (...) {
             GERROR("Error caught while doing water fat separation\n");
             m1->release();
