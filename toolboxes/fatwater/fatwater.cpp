@@ -7,6 +7,9 @@
 #include "hoNDArray_reductions.h"
 #include "hoArmadillo.h"
 
+#include "boost/graph/push_relabel_max_flow.hpp"
+
+
 #define GAMMABAR 42.576 // MHz/T
 #define PI 3.141592
 
@@ -54,7 +57,7 @@ namespace Gadgetron {
 	// These will have to be specified in the XML file eventually
 	std::pair<float,float> range_r2star = std::make_pair(0.0,0.0);
 	uint16_t num_r2star = 1;
-	std::pair<float,float> range_fm = std::make_pair(-200.0,200.0);
+	std::pair<float,float> range_fm = std::make_pair(-80.0,80.0);
 	uint16_t num_fm = 101;
 	uint16_t num_iterations = 40;
 	uint16_t subsample = 1;
@@ -76,7 +79,7 @@ namespace Gadgetron {
 	hoMatrix< std::complex<float> > phiMatrix(nte,nspecies);
 	for( int k1=0;k1<nte;k1++) {
 	  for( int k2=0;k2<nspecies;k2++) {
-	    phiMatrix[k1,k2] = std::complex<float>(0.0,0.0);
+	    phiMatrix(k1,k2) = 0.0;
 	    npeaks = a.species_[k2].ampFreq_.size();
 	    for( int k3=0;k3<npeaks;k3++) {
 	      relAmp = a.species_[k2].ampFreq_[k3].first;
@@ -89,6 +92,14 @@ namespace Gadgetron {
 	//auto a_phiMatrix = as_arma_matrix(&phiMatrix);
 	//auto mymat2 = mymat.t()*mymat;
 
+	for(int ka=0;ka<phiMatrix.get_size(0);ka++) {
+	  for(int kb=0;kb<phiMatrix.get_size(1);kb++) {
+	    GDEBUG("Check phiMatrix(%d,%d) = %f + i %f \n", ka,kb,phiMatrix(ka,kb).real(),phiMatrix(ka,kb).imag());
+	  }
+	}
+    
+
+
 
 	hoMatrix< std::complex<float> > IdentMat(nte,nte);
 	for( int k1=0;k1<nte;k1++) {
@@ -100,7 +111,7 @@ namespace Gadgetron {
 	    }
 	  }
 	}
-	auto a_phiMatrix = as_arma_matrix(&IdentMat);
+	//	auto a_phiMatrix = as_arma_matrix(&IdentMat);
 
 	float fm;
 	float fms[num_fm];
@@ -130,6 +141,7 @@ namespace Gadgetron {
 	  for(int k4=0;k4<num_r2star;k4++) {
 	    r2star = r2stars[k4];
 
+
 	    for( int k1=0;k1<nte;k1++) {
 	      curModulation = exp(-r2star*echoTimes[k1])*std::complex<float>(cos(2*PI*echoTimes[k1]*fm),sin(2*PI*echoTimes[k1]*fm));
 	      for( int k2=0;k2<nspecies;k2++) {
@@ -138,15 +150,74 @@ namespace Gadgetron {
 	    }
 
 	    herk( tempM1, psiMatrix, 'L', true );
-	    tempM1.copyLowerTriToUpper();
+	    //	    tempM1.copyLowerTriToUpper();
+	    for (int ka=0;ka<tempM1.get_size(0);ka++ ) {
+	      for (int kb=ka+1;kb<tempM1.get_size(1);kb++ ) {
+		tempM1(ka,kb) = conj(tempM1(kb,ka));
+	      }
+	    }
+
+	    if(k3==50) {
+	      for(int ka=0;ka<tempM1.get_size(0);ka++) {
+		for(int kb=0;kb<tempM1.get_size(1);kb++) {
+		  GDEBUG(" tempM1(%d,%d) = %f + i %f \n", ka,kb,tempM1(ka,kb).real(),tempM1(ka,kb).imag());
+		}
+	      }
+	    }
+
 
 	    potri(tempM1);
+	    for (int ka=0;ka<tempM1.get_size(0);ka++ ) {
+	      for (int kb=ka+1;kb<tempM1.get_size(1);kb++ ) {
+		tempM1(ka,kb) = conj(tempM1(kb,ka));
+	      }
+	    }
 
+	    if(k3==50) {
+	      for(int ka=0;ka<tempM1.get_size(0);ka++) {
+		for(int kb=0;kb<tempM1.get_size(1);kb++) {
+		  GDEBUG(" inv tempM1(%d,%d) = %f + i %f \n", ka,kb,tempM1(ka,kb).real(),tempM1(ka,kb).imag());
+		}
+	      }
+	    }
+
+
+	    //GDEBUG(" (%d,%d) = (%d,%d) X (%d,%d) \n", tempM2.get_size(0),tempM2.get_size(1),tempM1.get_size(0),tempM1.get_size(1),psiMatrix.get_size(1),psiMatrix.get_size(0));
 	    gemm( tempM2, tempM1, false, psiMatrix, true );
 
-	    gemm( P1, psiMatrix, false, tempM2, true );
+	    if(k3==50) {
+	      for(int ka=0;ka<tempM2.get_size(0);ka++) {
+		for(int kb=0;kb<tempM2.get_size(1);kb++) {
+		  GDEBUG(" tempM2(%d,%d) = %f + i %f \n", ka,kb,tempM2(ka,kb).real(),tempM2(ka,kb).imag());
+		}
+	      }
+	    }
+
+	    //GDEBUG(" (%d,%d) = (%d,%d) X (%d,%d) \n", P1.get_size(0),P1.get_size(1),psiMatrix.get_size(0),psiMatrix.get_size(1),tempM2.get_size(0),tempM2.get_size(1));
+	    gemm( P1, psiMatrix, false, tempM2, false );
+
+	    if(k3==50) {
+	      for(int ka=0;ka<P1.get_size(0);ka++) {
+		for(int kb=0;kb<P1.get_size(1);kb++) {
+		  GDEBUG(" P1(%d,%d) = %f + i %f \n", ka,kb,P1(ka,kb).real(),P1(ka,kb).imag());
+		}
+	      }
+	    }
+
 	    
 	    subtract(IdentMat,P1,P);
+
+	    if(k3==50) {
+	      for(int ka=0;ka<P.get_size(0);ka++) {
+		for(int kb=0;kb<P.get_size(1);kb++) {
+		  GDEBUG(" P(%d,%d) = %f + i %f \n", ka,kb,P(ka,kb).real(),P(ka,kb).imag());
+		}
+	      }
+
+	    }
+	      
+	    
+
 	    
 	    
 	    // Keep all projector matrices together
@@ -173,6 +244,11 @@ namespace Gadgetron {
 	    for( int k4=0;k4<N;k4++) {
 	      for( int k5=0;k5<S;k5++) {
 		tempSignal(k5,k4) = data(k1,k2,0,0,k4,k5,0); 
+		if (k1==107 && k2==144) {
+		  tempSignal(k5,k4) = std::complex<float>(1000.0,0.0);;
+		  GDEBUG(" (%d,%d) -->  %f + i %f \n",k5,k4, tempSignal(k5,k4).real(),tempSignal(k5,k4).imag());
+		}
+		
 	      }
 	    }
 
@@ -206,7 +282,10 @@ namespace Gadgetron {
 		minResidual2 = minResidual;
 		fmIndex(k1,k2) = k3;
 	      }
-	      
+	     
+	      if (k1==107 && k2==144) {
+		GDEBUG(" %f -->  %f \n",fms[k3],minResidual);
+	      }
 	    }
 	  }	
 	}
@@ -237,7 +316,12 @@ namespace Gadgetron {
 	    // Solve for water and fat
 	    gemm( curWaterFat, psiMatrix, true, tempSignal, false );
 	    herk( AhA, psiMatrix, 'L', true );
-	    AhA.copyLowerTriToUpper();
+	    //	    AhA.copyLowerTriToUpper();
+	    for (int ka=0;ka<AhA.get_size(0);ka++ ) {
+	      for (int kb=ka+1;kb<AhA.get_size(1);kb++ ) {
+		AhA(ka,kb) = conj(AhA(kb,ka));
+	      }
+	    }
 
 	    hesv(AhA,curWaterFat);
 	    for ( int k4=0;k4<N;k4++ ) {
