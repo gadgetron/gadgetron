@@ -21,9 +21,11 @@ add_library(gadgetron_toolbox_fatwater SHARED
 set_target_properties(gadgetron_toolbox_fatwater PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_toolbox_fatwater
-                    gadgetron_toolbox_log
-                    gadgetron_toolbox_cpucore_math
-                    )
+  gadgetron_toolbox_log
+  gadgetron_toolbox_cpucore 
+  gadgetron_toolbox_cpucore_math 
+  ${ARMADILLO_LIBRARIES} 
+  )
 
 install(TARGETS gadgetron_toolbox_fatwater DESTINATION lib COMPONENT main)
 
