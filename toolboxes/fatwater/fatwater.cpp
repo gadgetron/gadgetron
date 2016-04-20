@@ -21,7 +21,7 @@
 namespace Gadgetron {
     hoNDArray< std::complex<float> > fatwater_separation(hoNDArray< std::complex<float> >& data, FatWaterParameters p, FatWaterAlgorithm a)
     {
-		
+
 	//Get some data parameters
 	//7D, fixed order [X, Y, Z, CHA, N, S, LOC]
         uint16_t X = data.get_size(0);
@@ -31,7 +31,7 @@ namespace Gadgetron {
         uint16_t N = data.get_size(4);
         uint16_t S = data.get_size(5);
         uint16_t LOC = data.get_size(6);
-	
+
 	GDEBUG("Size of my array: %d, %d, %d .\n", X,Y,Z);
 
 	hoNDArray< std::complex<float> > out(X,Y,Z,CHA,N,2,LOC); // S dimension gets replaced by water/fat stuff
@@ -55,7 +55,7 @@ namespace Gadgetron {
 
 	//	GDEBUG("In toolbox - Fat peaks: %f  \n", f.ampFreq_[0].first);
 	//	GDEBUG("In toolbox - Fat peaks 2: %f  \n", f.ampFreq_[0].second);
-	
+
 	// Set some initial parameters so we can get going
 	// These will have to be specified in the XML file eventually
 	std::pair<float,float> range_r2star = std::make_pair(0.0,0.0);
@@ -70,7 +70,7 @@ namespace Gadgetron {
 
 	//Check that we have reasonable data for fat-water separation
 
-	
+
 	//Calculate residual
 	//
 	float relAmp, freq_hz;
@@ -100,7 +100,7 @@ namespace Gadgetron {
 	    GDEBUG("Check phiMatrix(%d,%d) = %f + i %f \n", ka,kb,phiMatrix(ka,kb).real(),phiMatrix(ka,kb).imag());
 	  }
 	}
-    
+
 
 
 
@@ -117,20 +117,20 @@ namespace Gadgetron {
 	//	auto a_phiMatrix = as_arma_matrix(&IdentMat);
 
 	float fm;
-	float fms[num_fm];
+	std::vector<float> fms(num_fm);
 	fms[0] = range_fm.first;
 	for(int k1=1;k1<num_fm;k1++) {
 	  fms[k1] = range_fm.first + k1*(range_fm.second-range_fm.first)/(num_fm-1);
 	}
 
 	float r2star;
-	float r2stars[num_r2star];
+    std::vector<float> r2stars(num_r2star);
 	r2stars[0] = range_r2star.first;
 	for(int k2=1;k2<num_r2star;k2++) {
 	  r2stars[k2] = range_r2star.first + k2*(range_r2star.second-range_r2star.first)/(num_r2star-1);
 	}
-	
-	
+
+
 	std::complex<float> curModulation;
 	hoMatrix< std::complex<float> > tempM1(nspecies,nspecies);
 	hoMatrix< std::complex<float> > tempM2(nspecies,nte);
@@ -138,7 +138,7 @@ namespace Gadgetron {
 	hoNDArray< std::complex<float> > Ps(nte,nte,num_fm,num_r2star);
 	hoMatrix< std::complex<float> > P1(nte,nte);
 	hoMatrix< std::complex<float> > P(nte,nte);
-	
+
 	for(int k3=0;k3<num_fm;k3++) {
 	  fm = fms[k3];
 	  for(int k4=0;k4<num_r2star;k4++) {
@@ -207,7 +207,7 @@ namespace Gadgetron {
 	      }
 	    }
 
-	    
+
 	    subtract(IdentMat,P1,P);
 
 	    if(k3==50) {
@@ -218,21 +218,21 @@ namespace Gadgetron {
 	      }
 
 	    }
-	      
-	    
 
-	    
-	    
+
+
+
+
 	    // Keep all projector matrices together
 	    for( int k1=0;k1<nte;k1++) {
 	      for( int k2=0;k2<nte;k2++) {
 		Ps(k1,k2,k3,k4) = P(k1,k2);
 	      }
-	    }	    
+	    }
 	  }
 	}
-	
-	
+
+
 	// Need to check that S = nte
 	// N should be the number of contrasts (eg: for PSIR)
 	hoMatrix< std::complex<float> > tempResVector(S,N);
@@ -246,17 +246,17 @@ namespace Gadgetron {
 	    // Get current signal
 	    for( int k4=0;k4<N;k4++) {
 	      for( int k5=0;k5<S;k5++) {
-		tempSignal(k5,k4) = data(k1,k2,0,0,k4,k5,0); 
+		tempSignal(k5,k4) = data(k1,k2,0,0,k4,k5,0);
 		if (k1==107 && k2==144) {
 		  tempSignal(k5,k4) = std::complex<float>(1000.0,0.0);;
 		  GDEBUG(" (%d,%d) -->  %f + i %f \n",k5,k4, tempSignal(k5,k4).real(),tempSignal(k5,k4).imag());
 		}
-		
+
 	      }
 	    }
 
 	    minResidual2 = 1.0 + nrm2(&tempSignal);
-	    
+
 	    for(int k3=0;k3<num_fm;k3++) {
 
 	      minResidual = 1.0 + nrm2(&tempSignal);
@@ -267,8 +267,8 @@ namespace Gadgetron {
 		  for( int k6=0;k6<nte;k6++) {
 		    P(k5,k6) = Ps(k5,k6,k3,k4);
 		  }
-		}	    
-		
+		}
+
 		// Apply projector
 		gemm( tempResVector, P, false, tempSignal, false );
 
@@ -280,24 +280,24 @@ namespace Gadgetron {
 		}
 	      }
 	      residual(k3,k1,k2) = minResidual;
-	      
+
 	      if (minResidual < minResidual2) {
 		minResidual2 = minResidual;
 		fmIndex(k1,k2) = k3;
 	      }
-	     
+
 	      if (k1==107 && k2==144) {
 		GDEBUG(" %f -->  %f \n",fms[k3],minResidual);
 	      }
 	    }
-	  }	
+	  }
 	}
-	
-	
-	
-	//arma::Mat< std::complex<float> > arma_phiMatrix = as_arma_matrix( phiMatrix ); 
 
-	
+
+
+	//arma::Mat< std::complex<float> > arma_phiMatrix = as_arma_matrix( phiMatrix );
+
+
 	//Do graph cut iterations
 	using namespace boost;
 
@@ -311,21 +311,21 @@ namespace Gadgetron {
 
 	// writing out the edges in the graph
 	typedef std::pair<int, int> Edge;
-	Edge edge_array[] = 
+	Edge edge_array[] =
 	  { Edge(A,B), Edge(A,D), Edge(C,A), Edge(D,C),
 	    Edge(C,E), Edge(B,D), Edge(D,E) };
 	const int num_edges = sizeof(edge_array)/sizeof(edge_array[0]);
-	
+
 	// declare a graph object
 	Graph g(edge_array, edge_array + sizeof(edge_array) / sizeof(Edge), num_vertices);
 
 
 	/*
-	property_map<Graph, edge_capacity_t>::type 
+	property_map<Graph, edge_capacity_t>::type
 	  capacity = get(edge_capacity, g);
-	property_map<Graph, edge_reverse_t>::type 
+	property_map<Graph, edge_reverse_t>::type
 	  rev = get(edge_reverse, g);
-	property_map<Graph, edge_residual_capacity_t>::type 
+	property_map<Graph, edge_residual_capacity_t>::type
 	  residual_capacity = get(edge_residual_capacity, g);
 
 	Traits::vertex_descriptor s, t;
@@ -334,7 +334,7 @@ namespace Gadgetron {
 	long flow;
 #if defined(BOOST_MSVC) && BOOST_MSVC <= 1300
 	// Use non-named parameter version
-	property_map<Graph, vertex_index_t>::type 
+	property_map<Graph, vertex_index_t>::type
 	  indexmap = get(vertex_index, g);
 	flow = push_relabel_max_flow(g, s, t, capacity, residual_capacity, rev, indexmap);
 #else
@@ -350,26 +350,26 @@ namespace Gadgetron {
 	for (boost::tie(u_iter, u_end) = vertices(g); u_iter != u_end; ++u_iter)
 	  for (boost::tie(ei, e_end) = out_edges(*u_iter, g); ei != e_end; ++ei)
 	    if (capacity[*ei] > 0)
-	      std::cout << "f " << *u_iter << " " << target(*ei, g) << " " 
+	      std::cout << "f " << *u_iter << " " << target(*ei, g) << " "
 			<< (capacity[*ei] - residual_capacity[*ei]) << std::endl;
-  
+
 	*/
 
 
-	
 
-	
+
+
 	//Do final calculations once the field map is done
 	hoMatrix< std::complex<float> > curWaterFat(2,N);
 	hoMatrix< std::complex<float> > AhA(2,2);
 	// Do fat-water separation with current field map and R2* estimates
 	for( int k1=0;k1<X;k1++) {
 	  for( int k2=0;k2<Y;k2++) {
-	    
+
 	    // Get current signal
 	    for( int k4=0;k4<N;k4++) {
 	      for( int k5=0;k5<S;k5++) {
-		tempSignal(k5,k4) = data(k1,k2,0,0,k4,k5,0); 
+		tempSignal(k5,k4) = data(k1,k2,0,0,k4,k5,0);
 	      }
 	    }
 	    // Get current Psi matrix
@@ -381,7 +381,7 @@ namespace Gadgetron {
 		psiMatrix(k3,k4) = phiMatrix(k3,k4)*curModulation;
 	      }
 	    }
-	    
+
 	    // Solve for water and fat
 	    gemm( curWaterFat, psiMatrix, true, tempSignal, false );
 	    herk( AhA, psiMatrix, 'L', true );
@@ -398,15 +398,15 @@ namespace Gadgetron {
 		out(k1,k2,0,0,k4,k5,0) = curWaterFat(k5,k4);
 	      }
 	    }
-	    
+
 	  }
 	}
 
-	
-	
+
+
 	//Clean up as needed
 
-	
+
         return out;
     }
 }
