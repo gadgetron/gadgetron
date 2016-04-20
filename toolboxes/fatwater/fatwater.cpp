@@ -49,7 +49,6 @@ namespace Gadgetron {
         }
 	GDEBUG("In toolbox - PrecessionIsClockwise: %d \n", precessionIsClockwise);
 
-
 	//Get or set some algorithm parameters
 	//Gadgetron::ChemicalSpecies w = a.species_[0];
 	//Gadgetron::ChemicalSpecies f = a.species_[1];
@@ -302,16 +301,24 @@ namespace Gadgetron {
 	//Do graph cut iterations
 	using namespace boost;
 
-	typedef adjacency_list_traits<vecS, vecS, directedS> Traits;
-	typedef adjacency_list<listS, vecS, directedS, 
-			       property<vertex_name_t, std::string>,
-			       property<edge_capacity_t, long,
-					property<edge_residual_capacity_t, long,
-						 property<edge_reverse_t, Traits::edge_descriptor> > >
-			       > Graph;
+	// create a typedef for the Graph type
+	typedef adjacency_list<vecS, vecS, bidirectionalS> Graph;
 
-	Graph g;
+	// Make convenient labels for the vertices
+	enum { A, B, C, D, E };
+	const int num_vertices = 5;
+	const char* name = "ABCDE";
+
+	// writing out the edges in the graph
+	typedef std::pair<int, int> Edge;
+	Edge edge_array[] = 
+	  { Edge(A,B), Edge(A,D), Edge(C,A), Edge(D,C),
+	    Edge(C,E), Edge(B,D), Edge(D,E) };
+	const int num_edges = sizeof(edge_array)/sizeof(edge_array[0]);
 	
+	// declare a graph object
+	Graph g(edge_array, edge_array + sizeof(edge_array) / sizeof(Edge), num_vertices);
+
 
 	/*
 	property_map<Graph, edge_capacity_t>::type 
