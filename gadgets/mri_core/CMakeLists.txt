@@ -27,6 +27,10 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/operators
+    ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/solvers 
+    ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
@@ -87,6 +91,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     GenericReconBase.h 
                                     GenericReconGadget.h 
                                     GenericReconCartesianGrappaGadget.h 
+                                    GenericReconCartesianSpiritGadget.h 
                                     GenericReconCartesianReferencePrepGadget.h 
                                     GenericReconPartialFourierHandlingGadget.h 
                                     GenericReconPartialFourierHandlingFilterGadget.h 
@@ -133,6 +138,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 GenericReconBase.cpp 
                                 GenericReconGadget.cpp 
                                 GenericReconCartesianGrappaGadget.cpp 
+                                GenericReconCartesianSpiritGadget.cpp 
                                 GenericReconCartesianReferencePrepGadget.cpp 
                                 GenericReconPartialFourierHandlingGadget.cpp 
                                 GenericReconPartialFourierHandlingFilterGadget.cpp 
@@ -159,6 +165,7 @@ set( gadgetron_mricore_config_files
     Generic_Cartesian_Grappa_RealTimeCine.xml
     Generic_Cartesian_Grappa_EPI.xml
     Generic_Cartesian_Grappa_EPI_AVE.xml
+    Generic_Cartesian_Spirit.xml
 )
 
 add_library(gadgetron_mricore SHARED 
@@ -179,6 +186,8 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_cpufft
     gadgetron_toolbox_cpuklt
     gadgetron_toolbox_mri_core
+    gadgetron_toolbox_cpuoperator
+    gadgetron_toolbox_cpu_solver
     # gadgetron_toolbox_gtplus_io
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
