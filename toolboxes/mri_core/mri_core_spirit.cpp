@@ -744,7 +744,7 @@ void spirit3d_kspace_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO,
         size_t srcCHA = convKer.get_size(3);
         size_t dstCHA = convKer.get_size(4);
 
-        if (kIm.get_size(0) != kE1 || kIm.get_size(1) != kE2 || kIm.get_size(2) != srcCHA || kIm.get_size(3) != dstCHA || kIm.get_size(5) != RO)
+        if (kIm.get_size(0) != kE1 || kIm.get_size(1) != kE2 || kIm.get_size(2) != srcCHA || kIm.get_size(3) != dstCHA || kIm.get_size(4) != RO)
         {
             kIm.create(kE1, kE2, srcCHA, dstCHA, RO);
         }
