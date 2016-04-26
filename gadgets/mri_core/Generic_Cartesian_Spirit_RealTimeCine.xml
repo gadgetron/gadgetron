@@ -68,8 +68,6 @@
         <property><name>average_all_ref_S</name><value>true</value></property>
         <!-- whether always to prepare ref if no acceleration is used -->
         <property><name>prepare_ref_always</name><value>true</value></property>
-        <!-- whether to fill ref readouts into the data array for the embeded mode -->
-        <property><name>ref_fill_into_data_embedded</name><value>true</value></property>
     </gadget>
 
     <!-- Coil compression -->
