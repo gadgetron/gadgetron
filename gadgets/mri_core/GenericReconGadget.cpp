@@ -752,7 +752,7 @@ namespace Gadgetron {
                 size_t start_RO = recon_bit.data_.sampling_.sampling_limits_[0].min_;
                 size_t end_RO = recon_bit.data_.sampling_.sampling_limits_[0].max_;
 
-                if ((start_RO >= 0 && start_RO<RO) && (end_RO >= 0 && end_RO<RO) && (end_RO - start_RO + 1 < RO))
+                if ((start_RO<RO) && (end_RO<RO) && (end_RO - start_RO + 1 < RO))
                 {
                     lenRO = (end_RO - start_RO + 1);
                 }
