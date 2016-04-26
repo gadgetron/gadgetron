@@ -143,7 +143,7 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
 
-                recon_bit_->rbit_[e].ref_ = boost::none;
+                // recon_bit_->rbit_[e].ref_ = boost::none;
             }
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
@@ -169,6 +169,7 @@ namespace Gadgetron {
                 if (perform_timing.value()) { gt_timer_.stop(); }
             }
 
+            recon_bit_->rbit_[e].ref_ = boost::none;
             recon_obj_[e].recon_res_.data_.clear();
             recon_obj_[e].recon_res_.headers_.clear();
             recon_obj_[e].recon_res_.meta_.clear();
@@ -209,6 +210,10 @@ namespace Gadgetron {
                 size_t kE1 = spirit_kSize_E1.value();
                 size_t kE2 = spirit_kSize_E2.value();
 
+                GDEBUG_CONDITION_STREAM(this->verbose.value(), "spirit, kRO : " << kRO);
+                GDEBUG_CONDITION_STREAM(this->verbose.value(), "spirit, kE1 : " << kE1);
+                GDEBUG_CONDITION_STREAM(this->verbose.value(), "spirit, kE2 : " << kE2);
+
                 size_t convKRO = 2 * kRO - 1;
                 size_t convKE1 = 2 * kE1 - 1;
                 size_t convKE2 = 2 * kE2 - 1;
@@ -232,6 +237,9 @@ namespace Gadgetron {
 
                 double reg_lamda = this->spirit_reg_lamda.value();
                 double over_determine_ratio = this->spirit_calib_over_determine_ratio.value();
+
+                GDEBUG_CONDITION_STREAM(this->verbose.value(), "spirit, reg_lamda : " << reg_lamda);
+                GDEBUG_CONDITION_STREAM(this->verbose.value(), "spirit, over_determine_ratio : " << over_determine_ratio);
 
                 long long ii;
 
@@ -324,52 +332,11 @@ namespace Gadgetron {
             // ------------------------------------------------------------------
             // compute effective acceleration factor
             // ------------------------------------------------------------------
-            size_t e1, e2, n, s;
-            size_t num_readout_lines = 0;
-            for (s = 0; s < S; s++)
+            float effective_acce_factor(1), snr_scaling_ratio(1);
+            this->compute_snr_scaling_factor(recon_bit, effective_acce_factor, snr_scaling_ratio);
+            if (effective_acce_factor > 1)
             {
-                for (n = 0; n < N; n++)
-                {
-                    for (e2 = 0; e2 < E2; e2++)
-                    {
-                        for (e1 = 0; e1 < E1; e1++)
-                        {
-                            if (std::abs(recon_bit.data_.data_(RO / 2, e1, e2, 0, n)) > 0)
-                            {
-                                num_readout_lines++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (num_readout_lines > 0)
-            {
-                double lenRO = RO;
-
-                size_t start_RO = recon_bit.data_.sampling_.sampling_limits_[0].min_;
-                size_t end_RO = recon_bit.data_.sampling_.sampling_limits_[0].max_;
-
-                if ( (start_RO>=0 && start_RO<RO) && (end_RO>=0 && end_RO<RO) && (end_RO - start_RO + 1 < RO) )
-                {
-                    lenRO = (end_RO - start_RO + 1);
-                }
-                if (this->verbose.value()) GDEBUG_STREAM("length for RO : " << lenRO << " - " << lenRO / RO);
-
-                double effectiveAcceFactor = (double)(S*N*E1*E2) / (num_readout_lines);
-                if (this->verbose.value()) GDEBUG_STREAM("effectiveAcceFactor : " << effectiveAcceFactor);
-
-                double ROScalingFactor = (double)RO / (double)lenRO;
-
-                float fftCompensationRatio = (float)(std::sqrt(ROScalingFactor*effectiveAcceFactor));
-
-                if (this->verbose.value()) GDEBUG_STREAM("fftCompensationRatio : " << fftCompensationRatio);
-
-                Gadgetron::scal(fftCompensationRatio, recon_bit.data_.data_);
-            }
-            else
-            {
-                GWARN_STREAM("cannot find any sampled lines ... ");
+                Gadgetron::scal(snr_scaling_ratio, recon_bit.data_.data_);
             }
 
             Gadgetron::GadgetronTimer timer(false);
@@ -582,6 +549,28 @@ namespace Gadgetron {
             // compute coil combined images
             // ---------------------------------------------------------------------
             if (this->perform_timing.value()) timer.start("SPIRIT linear, coil combination ... ");
+            this->perform_spirit_coil_combine(recon_obj);
+            if (this->perform_timing.value()) timer.stop();
+
+            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix); }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Errors happened in GenericReconCartesianSpiritGadget::perform_unwrapping(...) ... ");
+        }
+    }
+
+    void GenericReconCartesianSpiritGadget::perform_spirit_coil_combine(ReconObjType& recon_obj)
+    {
+        try
+        {
+            size_t RO = recon_obj.full_kspace_.get_size(0);
+            size_t E1 = recon_obj.full_kspace_.get_size(1);
+            size_t E2 = recon_obj.full_kspace_.get_size(2);
+            size_t dstCHA = recon_obj.full_kspace_.get_size(3);
+            size_t N = recon_obj.full_kspace_.get_size(4);
+            size_t S = recon_obj.full_kspace_.get_size(5);
+            size_t SLC = recon_obj.full_kspace_.get_size(6);
 
             if (E2>1)
             {
@@ -592,7 +581,8 @@ namespace Gadgetron {
                 Gadgetron::hoNDFFT<float>::instance()->ifft2c(recon_obj.full_kspace_, complex_im_recon_buf_);
             }
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(complex_im_recon_buf_, debug_folder_full_path_ + "complex_im_recon_buf_" + suffix); }
+            size_t num = N*S*SLC;
+            long long ii;
 
 #pragma omp parallel default(none) private(ii) shared(num, N, S, recon_obj, RO, E1, E2, dstCHA) if(num>1)
             {
@@ -619,14 +609,10 @@ namespace Gadgetron {
                     Gadgetron::sum_over_dimension(complexImBuf, combined, 3);
                 }
             }
-
-            if (this->perform_timing.value()) timer.stop();
-
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix); }
         }
         catch (...)
         {
-            GADGET_THROW("Errors happened in GenericReconCartesianSpiritGadget::perform_unwrapping(...) ... ");
+            GADGET_THROW("Errors happened in GenericReconCartesianSpiritGadget::perform_spirit_coil_combine(...) ... ");
         }
     }
 
@@ -659,7 +645,12 @@ namespace Gadgetron {
             kspace_Shifted = kspace;
             Gadgetron::hoNDFFT<float>::instance()->ifftshift2D(kspace, kspace_Shifted);
 
-#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, iter_max, iter_thres, print_iter) if(num>1)
+#ifdef USE_OMP
+            int numThreads = (int)num;
+            if (numThreads > omp_get_num_procs()) numThreads = omp_get_num_procs();
+            GDEBUG_CONDITION_STREAM(this->verbose.value(), "numThreads : " << numThreads);
+#endif // USE_OMP
+#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1) 
             {
                 std::vector<size_t> dim(3, 1);
                 dim[0] = RO;
@@ -717,7 +708,7 @@ namespace Gadgetron {
                     long long kernelN = n;
                     if (kernelN >= (long long)ref_N) kernelN = (long long)ref_N - 1;
 
-                    long long kernelS = n;
+                    long long kernelS = s;
                     if (kernelS >= (long long)ref_S) kernelS = (long long)ref_S - 1;
 
                     boost::shared_ptr< hoNDArray< std::complex<float> > > acq(new hoNDArray< std::complex<float> >(RO, E1, CHA, pKpaceShifted));
