@@ -6,8 +6,9 @@
     <!--
         Gadgetron generic recon chain for 2D and 3D cartesian sampling with the SPIRIT reconstruction
 
-        Triggered by repetition
-        Recon N is contrast and S is set
+        RealTime Cine imaging
+        Triggered by slice
+        Recon N is phase and S is set
 
         Author: Hui Xue
         Magnetic Resonance Technology Program, National Heart, Lung and Blood Institute, National Institutes of Health
@@ -35,7 +36,7 @@
         <name>AccTrig</name>
         <dll>gadgetron_mricore</dll>
         <classname>AcquisitionAccumulateTriggerGadget</classname>
-        <property><name>trigger_dimension</name><value></value></property>
+        <property><name>trigger_dimension</name><value>slice</value></property>
         <property><name>sorting_dimension</name><value></value></property>
     </gadget>
 
@@ -43,8 +44,8 @@
         <name>BucketToBuffer</name>
         <dll>gadgetron_mricore</dll>
         <classname>BucketToBufferGadget</classname>
-        <property><name>N_dimension</name><value>contrast</value></property>
-        <property><name>S_dimension</name><value>average</value></property>
+        <property><name>N_dimension</name><value>phase</value></property>
+        <property><name>S_dimension</name><value>set</value></property>
         <property><name>split_slices</name><value>false</value></property>
         <property><name>ignore_segment</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
@@ -114,21 +115,21 @@
     <gadget>
         <name>PartialFourierHandling</name>
         <dll>gadgetron_mricore</dll>
-        <classname>GenericReconPartialFourierHandlingFilterGadget</classname>
+        <classname>GenericReconPartialFourierHandlingPOCSGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value></value></property>
+        <property><name>debug_folder</name><value>DebugFolder</value></property>
         <property><name>perform_timing</name><value>false</value></property>
-        <property><name>verbose</name><value>false</value></property>
+        <property><name>verbose</name><value>true</value></property>
 
         <!-- if incoming images have this meta field, it will not be processed -->
         <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>
 
-        <!-- Parfial fourier handling filter parameters -->
-        <property><name>partial_fourier_filter_RO_width</name><value>0.15</value></property>
-        <property><name>partial_fourier_filter_E1_width</name><value>0.15</value></property>
-        <property><name>partial_fourier_filter_E2_width</name><value>0.15</value></property>
-        <property><name>partial_fourier_filter_densityComp</name><value>false</value></property>
+        <!-- Parfial fourier POCS parameters -->
+        <property><name>partial_fourier_POCS_iters</name><value>6</value></property>
+        <property><name>partial_fourier_POCS_thres</name><value>0.01</value></property>
+        <property><name>partial_fourier_POCS_transitBand</name><value>24</value></property>
+        <property><name>partial_fourier_POCS_transitBand_E2</name><value>16</value></property>
     </gadget>
 
     <!-- Kspace filtering -->

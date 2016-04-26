@@ -10,20 +10,19 @@
 
 #pragma once
 
-#include "cpusolver_export.h"
 #include "hoNDArray_math.h"
 #include "lsqrSolver.h"
 
 namespace Gadgetron{
 
-    template <class T> class EXPORTCPUSOLVER hoLsqrSolver : public lsqrSolver< hoNDArray<T> >
+    template <class T> class hoLsqrSolver : public lsqrSolver< hoNDArray<T> >
     {
     public:
 
         typedef lsqrSolver< hoNDArray<T> > BaseClass;
 
-        hoLsqrSolver();
-        virtual ~hoLsqrSolver();
+        hoLsqrSolver() : BaseClass() {}
+        virtual ~hoLsqrSolver() {}
 
     protected:
 

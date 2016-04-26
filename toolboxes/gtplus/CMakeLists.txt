@@ -212,8 +212,7 @@ if ( HAS_64_BIT )
                           gadgetron_toolbox_mri_core
                           gadgetron_toolbox_gtplus_io 
                           gadgetron_toolbox_cpucore_math 
-                          gadgetron_toolbox_mri_core 
-                          gadgetron_toolbox_cpu_solver )
+                          gadgetron_toolbox_mri_core )
 
     install(TARGETS gadgetron_toolbox_gtplus DESTINATION lib COMPONENT main)
     install(TARGETS gadgetron_toolbox_gtplus_io DESTINATION lib COMPONENT main)
