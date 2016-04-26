@@ -26,6 +26,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
+    ${CMAKE_SOURCE_DIR}/toolboxes/dwt/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/operators
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
@@ -37,6 +38,14 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/transformation
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/solver
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/warper
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/dissimilarity
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
     ${ARMADILLO_INCLUDE_DIRS}
@@ -92,6 +101,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     GenericReconGadget.h 
                                     GenericReconCartesianGrappaGadget.h 
                                     GenericReconCartesianSpiritGadget.h 
+                                    GenericReconCartesianNonLinearSpirit2DTGadget.h 
                                     GenericReconCartesianReferencePrepGadget.h 
                                     GenericReconPartialFourierHandlingGadget.h 
                                     GenericReconPartialFourierHandlingFilterGadget.h 
@@ -139,6 +149,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 GenericReconGadget.cpp 
                                 GenericReconCartesianGrappaGadget.cpp 
                                 GenericReconCartesianSpiritGadget.cpp 
+                                GenericReconCartesianNonLinearSpirit2DTGadget.cpp 
                                 GenericReconCartesianReferencePrepGadget.cpp 
                                 GenericReconPartialFourierHandlingGadget.cpp 
                                 GenericReconPartialFourierHandlingFilterGadget.cpp 
@@ -166,6 +177,9 @@ set( gadgetron_mricore_config_files
     Generic_Cartesian_Grappa_EPI.xml
     Generic_Cartesian_Grappa_EPI_AVE.xml
     Generic_Cartesian_Spirit.xml
+    Generic_Cartesian_Spirit_RealTimeCine.xml
+    Generic_Cartesian_Spirit_SASHA.xml
+    Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
 )
 
 add_library(gadgetron_mricore SHARED 
@@ -187,7 +201,6 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_cpuklt
     gadgetron_toolbox_mri_core
     gadgetron_toolbox_cpuoperator
-    gadgetron_toolbox_cpu_solver
     # gadgetron_toolbox_gtplus_io
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 

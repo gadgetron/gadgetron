@@ -38,6 +38,7 @@ set(cpu_operator_header_files
     hoSPIRITOperator.h 
     hoSPIRIT2DOperator.h 
     hoSPIRIT2DTOperator.h 
+    hoSPIRIT2DTDataFidelityOperator.h
     hoSPIRIT3DOperator.h 
     hoWaveletOperator.h 
     hoWavelet1DOperator.h 
@@ -49,6 +50,7 @@ set(cpu_operator_src_files
     hoSPIRITOperator.cpp 
     hoSPIRIT2DOperator.cpp 
     hoSPIRIT2DTOperator.cpp 
+    hoSPIRIT2DTDataFidelityOperator.cpp 
     hoSPIRIT3DOperator.cpp 
     hoWaveletOperator.cpp 
     hoWavelet1DOperator.cpp 

@@ -28,6 +28,7 @@ set( cpu_solver_header_files
         ../solver.h
 
         cpusolver_export.h
+        hoGdSolver.h 
         hoCgPreconditioner.h 
         hoCgSolver.h 
         hoLsqrSolver.h 
@@ -35,8 +36,7 @@ set( cpu_solver_header_files
         hoSbCgSolver.h 
         hoSolverUtils.h )
 
-set( cpu_solver_source_files
-        hoLsqrSolver.cpp )
+set( cpu_solver_source_files )
 
 add_library(gadgetron_toolbox_cpu_solver SHARED ${cpu_solver_header_files} ${cpu_solver_source_files} )
 
@@ -47,7 +47,7 @@ target_link_libraries(gadgetron_toolbox_cpu_solver
                     gadgetron_toolbox_cpucore 
                     gadgetron_toolbox_cpucore_math )
 
-install(TARGETS gadgetron_toolbox_cpu_solver DESTINATION lib COMPONENT main)
+# install(TARGETS gadgetron_toolbox_cpu_solver DESTINATION lib COMPONENT main)
 
 install(FILES ${cpu_solver_header_files} 
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
