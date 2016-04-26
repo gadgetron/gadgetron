@@ -105,5 +105,8 @@ namespace Gadgetron {
         // perform spirit unwrapping
         // kspace, kerIm, full_kspace: [RO E1 CHA N S SLC]
         void perform_spirit_unwrapping(hoNDArray< std::complex<float> >& kspace, hoNDArray< std::complex<float> >& kerIm, hoNDArray< std::complex<float> >& full_kspace);
+
+        // perform coil combination
+        void perform_spirit_coil_combine(ReconObjType& recon_obj);
     };
 }

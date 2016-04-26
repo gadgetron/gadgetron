@@ -118,7 +118,7 @@ namespace Gadgetron {
             size_t S = data.get_size(5);
             size_t SLC = data.get_size(6);
 
-            GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconEigenChannelGadget - incoming data array : [RO E1 E2 CHA N S SLC] - [" << RO << " " << E1 << " " << E2 << " " << CHA << " " << N << " " << S << " " << SLC << "]");
+            GDEBUG_STREAM("GenericReconEigenChannelGadget - incoming data array : [RO E1 E2 CHA N S SLC] - [" << RO << " " << E1 << " " << E2 << " " << CHA << " " << N << " " << S << " " << SLC << "]");
 
             // whether it is needed to update coefficients
             bool recompute_coeff = false;
@@ -152,11 +152,11 @@ namespace Gadgetron {
                 }
             }
 
-            if(recompute_coeff)
-            {
                 bool average_N = average_all_ref_N.value();
                 bool average_S = average_all_ref_S.value();
 
+            if(recompute_coeff)
+            {
                 if(rbit.ref_)
                 {
                     // use ref to compute coefficients
@@ -182,13 +182,56 @@ namespace Gadgetron {
                             {
                                 KLT_[e][slc][s][n].eigen_value(E);
 
-                                GDEBUG_STREAM("Number of modes kept: " << KLT_[e][slc][s][n].output_length() << "; Eigen value, slc - " << slc << ", S - " << s << ", N - " << n << " : [");
+                                GDEBUG_STREAM("GenericReconEigenChannelGadget - Number of modes kept: " << KLT_[e][slc][s][n].output_length() << " out of " << CHA << "; Eigen value, slc - " << slc << ", S - " << s << ", N - " << n << " : [");
 
                                 for (size_t c = 0; c < E.get_size(0); c++)
                                 {
                                     GDEBUG_STREAM("        " << E(c));
                                 }
                                 GDEBUG_STREAM("]");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if(average_N && average_S)
+                    {
+                        for (slc = 0; slc < SLC; slc++)
+                        {
+                            GDEBUG_STREAM("GenericReconEigenChannelGadget - Number of modes kept, SLC : " << slc << " - " << KLT_[e][slc][0][0].output_length() << " out of " << CHA);
+                        }
+                    }
+                    else if(average_N && !average_S)
+                    {
+                        for (slc = 0; slc < SLC; slc++)
+                        {
+                            for (s = 0; s < S; s++)
+                            {
+                                GDEBUG_STREAM("GenericReconEigenChannelGadget - Number of modes kept, [SLC S] : [" << slc << " " << s << "] - " << KLT_[e][slc][s][0].output_length() << " out of " << CHA);
+                            }
+                        }
+                    }
+                    else if(!average_N && average_S)
+                    {
+                        for (slc = 0; slc < SLC; slc++)
+                        {
+                            for (n = 0; n < N; n++)
+                            {
+                                GDEBUG_STREAM("GenericReconEigenChannelGadget - Number of modes kept, [SLC N] : [" << slc << " " << n << "] - " << KLT_[e][slc][0][n].output_length() << " out of " << CHA);
+                            }
+                        }
+                    }
+                    else if(!average_N && !average_S)
+                    {
+                        for (slc = 0; slc < SLC; slc++)
+                        {
+                            for (s = 0; s < S; s++)
+                            {
+                                for (n = 0; n < N; n++)
+                                {
+                                    GDEBUG_STREAM("GenericReconEigenChannelGadget - Number of modes kept, [SLC S N] : [" << slc << " " << s << " " << n << "] - " << KLT_[e][slc][s][n].output_length() << " out of " << CHA);
+                                }
                             }
                         }
                     }

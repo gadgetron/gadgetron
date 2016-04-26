@@ -544,7 +544,7 @@ namespace Gadgetron{
           NS = 1;
         }
 
-        GDEBUG_CONDITION_STREAM(verbose.value(), "Data dimensions [RO E1 E2 CHA N S SLC] : [" << NE0 << " " << NE1 << " " << NE2 << " " << NCHA << " " << NN << " " << NS << " " << NLOC);
+        GDEBUG_CONDITION_STREAM(verbose.value(), "Data dimensions [RO E1 E2 CHA N S SLC] : [" << NE0 << " " << NE1 << " " << NE2 << " " << NCHA << " " << NN << " " << NS << " " << NLOC <<"]");
 
         //Allocate the array for the data
         dataBuffer.data_.create(NE0, NE1, NE2, NCHA, NN, NS, NLOC);
@@ -661,8 +661,8 @@ namespace Gadgetron{
 
         GDEBUG_STREAM("Sampling limits : "
                 << "- RO : [ " << sampling.sampling_limits_[0].min_ << " " << sampling.sampling_limits_[0].center_ << " " << sampling.sampling_limits_[0].max_
-                << "- E1 : [ " << sampling.sampling_limits_[1].min_ << " " << sampling.sampling_limits_[1].center_ << " " << sampling.sampling_limits_[1].max_
-                << "- E2 : [ " << sampling.sampling_limits_[2].min_ << " " << sampling.sampling_limits_[2].center_ << " " << sampling.sampling_limits_[2].max_);
+                << " ] - E1 : [ " << sampling.sampling_limits_[1].min_ << " " << sampling.sampling_limits_[1].center_ << " " << sampling.sampling_limits_[1].max_
+                << " ] - E2 : [ " << sampling.sampling_limits_[2].min_ << " " << sampling.sampling_limits_[2].center_ << " " << sampling.sampling_limits_[2].max_ << " ]");
     }
   }
 

@@ -711,5 +711,72 @@ namespace Gadgetron {
         }
     }
 
+    void GenericReconGadget::compute_snr_scaling_factor(IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio)
+    {
+        try
+        {
+            size_t RO = recon_bit.data_.data_.get_size(0);
+            size_t E1 = recon_bit.data_.data_.get_size(1);
+            size_t E2 = recon_bit.data_.data_.get_size(2);
+            size_t dstCHA = recon_bit.data_.data_.get_size(3);
+            size_t N = recon_bit.data_.data_.get_size(4);
+            size_t S = recon_bit.data_.data_.get_size(5);
+            size_t SLC = recon_bit.data_.data_.get_size(6);
+
+            effective_acce_factor = 1;
+            snr_scaling_ratio = 1;
+
+            size_t e1, e2, n, s;
+            size_t num_readout_lines = 0;
+            for (s = 0; s < S; s++)
+            {
+                for (n = 0; n < N; n++)
+                {
+                    for (e2 = 0; e2 < E2; e2++)
+                    {
+                        for (e1 = 0; e1 < E1; e1++)
+                        {
+                            if (std::abs(recon_bit.data_.data_(RO / 2, e1, e2, 0, n)) > 0)
+                            {
+                                num_readout_lines++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (num_readout_lines > 0)
+            {
+                float lenRO = RO;
+
+                size_t start_RO = recon_bit.data_.sampling_.sampling_limits_[0].min_;
+                size_t end_RO = recon_bit.data_.sampling_.sampling_limits_[0].max_;
+
+                if ((start_RO >= 0 && start_RO<RO) && (end_RO >= 0 && end_RO<RO) && (end_RO - start_RO + 1 < RO))
+                {
+                    lenRO = (end_RO - start_RO + 1);
+                }
+                if (this->verbose.value()) GDEBUG_STREAM("length for RO : " << lenRO << " - " << lenRO / RO);
+
+                effective_acce_factor = (float)(S*N*E1*E2) / (num_readout_lines);
+                if (this->verbose.value()) GDEBUG_STREAM("effective_acce_factor : " << effective_acce_factor);
+
+                float ROScalingFactor = (float)RO / (float)lenRO;
+
+                snr_scaling_ratio = (float)(std::sqrt(ROScalingFactor*effective_acce_factor));
+
+                if (this->verbose.value()) GDEBUG_STREAM("snr_scaling_ratio : " << snr_scaling_ratio);
+            }
+            else
+            {
+                GWARN_STREAM("Cannot find any sampled lines ... ");
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Errors happened in GenericReconGadget::compute_snr_scaling_factor(...) ... ");
+        }
+    }
+
     GADGET_FACTORY_DECLARE(GenericReconGadget)
 }

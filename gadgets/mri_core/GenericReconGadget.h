@@ -91,6 +91,9 @@ namespace Gadgetron {
         // send out the recon results
         virtual int send_out_image_array(IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role);
 
+        // compute snr scaling factor from effective acceleration rate and sampling region
+        void compute_snr_scaling_factor(IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio);
+
         // --------------------------------------------------
         // utility functions
         // --------------------------------------------------

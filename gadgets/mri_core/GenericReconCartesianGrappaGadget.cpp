@@ -568,63 +568,16 @@ namespace Gadgetron {
             }
 
             // SNR unit scaling
-            size_t e1, e2, n, s;
-            size_t num_readout_lines = 0;
-            for (s = 0; s < S; s++)
+            float effective_acce_factor(1), snr_scaling_ratio(1);
+            this->compute_snr_scaling_factor(recon_bit, effective_acce_factor, snr_scaling_ratio);
+            if (effective_acce_factor > 1)
             {
-                for (n = 0; n < N; n++)
-                {
-                    for (e2 = 0; e2 < E2; e2++)
-                    {
-                        for (e1 = 0; e1 < E1; e1++)
-                        {
-                            if (std::abs(recon_bit.data_.data_(RO / 2, e1, e2, 0, n)) > 0)
-                            {
-                                num_readout_lines++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (num_readout_lines > 0)
-            {
-                double lenRO = RO;
-
-                size_t start_RO = recon_bit.data_.sampling_.sampling_limits_[0].min_;
-                size_t end_RO = recon_bit.data_.sampling_.sampling_limits_[0].max_;
-
-                if ( (start_RO>=0 && start_RO<RO) && (end_RO>=0 && end_RO<RO) && (end_RO - start_RO + 1 < RO) )
-                {
-                    lenRO = (end_RO - start_RO + 1);
-                }
-                if (this->verbose.value()) GDEBUG_STREAM("GenericReconCartesianGrappaGadget, length for RO : " << lenRO << " - " << lenRO / RO);
-
-                double effectiveAcceFactor = (double)(S*N*E1*E2) / (num_readout_lines);
-                if (this->verbose.value()) GDEBUG_STREAM("GenericReconCartesianGrappaGadget, effectiveAcceFactor : " << effectiveAcceFactor);
-
-                double ROScalingFactor = (double)RO / (double)lenRO;
-
                 // since the grappa in gadgetron is doing signal preserving scaling, to perserve noise level, we need this compensation factor
                 double grappaKernelCompensationFactor = 1.0 / (acceFactorE1_[e] * acceFactorE2_[e]);
+                Gadgetron::scal((float)(grappaKernelCompensationFactor*snr_scaling_ratio), complex_im_recon_buf_);
 
-                float fftCompensationRatio = (float)(std::sqrt(ROScalingFactor*effectiveAcceFactor) * grappaKernelCompensationFactor);
-
-                if (this->verbose.value()) GDEBUG_STREAM("GenericReconCartesianGrappaGadget, fftCompensationRatio : " << fftCompensationRatio);
-
-                Gadgetron::scal(fftCompensationRatio, complex_im_recon_buf_);
+                if (this->verbose.value()) GDEBUG_STREAM("GenericReconCartesianGrappaGadget, grappaKernelCompensationFactor*snr_scaling_ratio : " << grappaKernelCompensationFactor*snr_scaling_ratio);
             }
-            else
-            {
-                GWARN_STREAM("GenericReconCartesianGrappaGadget, cannot find any sampled lines ... ");
-            }
-
-            //float effectiveAcceFactor = acceFactorE1_[e] * acceFactorE2_[e];
-            //if (effectiveAcceFactor > 1)
-            //{
-            //    float fftCompensationRatio = (float)(1.0 / std::sqrt(effectiveAcceFactor));
-            //    Gadgetron::scal(fftCompensationRatio, complex_im_recon_buf_);
-            //}
 
             /*if (!debug_folder_full_path_.empty())
             {
