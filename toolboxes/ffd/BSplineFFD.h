@@ -1,21 +1,21 @@
-/** \file       gtplusBSplineFFD.h
-    \brief      Class for gtPlus BSpline FreeFormDeformation
+/** \file       BSplineFFD.h
+    \brief      Class for BSpline FreeFormDeformation
     \author     Hui Xue
 */
 
 #pragma once
 
-#include "gtplusFFDBase.h"
+#include "FFDBase.h"
 
-namespace Gadgetron { namespace gtPlus {
+namespace Gadgetron { 
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
-class gtplusBSplineFFD : public gtplusFFDBase<T, CoordType, DIn, DOut>
+class BSplineFFD : public FFDBase<T, CoordType, DIn, DOut>
 {
 public:
 
-    typedef gtplusFFDBase<T, CoordType, DIn, DOut> BaseClass;
-    typedef gtplusBSplineFFD<T, CoordType, DIn, DOut> Self;
+    typedef Gadgetron::FFDBase<T, CoordType, DIn, DOut> BaseClass;
+    typedef BSplineFFD<T, CoordType, DIn, DOut> Self;
 
     typedef typename BaseClass::real_value_type real_value_type;
     typedef real_value_type bspline_float_type;
@@ -36,8 +36,8 @@ public:
     typedef typename BaseClass::ImageType           ImageType;
     typedef typename BaseClass::MaskArrayType       MaskArrayType;
 
-    gtplusBSplineFFD();
-    virtual ~gtplusBSplineFFD();
+    BSplineFFD();
+    virtual ~BSplineFFD();
 
     /// evaluate the FFD at a grid location
     virtual bool evaluateFFD(const CoordType pt[D], T r[DOut]) const = 0;
@@ -252,12 +252,12 @@ public:
 protected:
 
     using BaseClass::ctrl_pt_;
-    using BaseClass::gt_timer1_;
-    using BaseClass::gt_timer2_;
-    using BaseClass::gt_timer3_;
-    using BaseClass::gt_exporter_;
-    using BaseClass::gtPlus_util_;
-    using BaseClass::gtPlus_util_complex_;
+    //using BaseClass::gt_timer1_;
+    //using BaseClass::gt_timer2_;
+    //using BaseClass::gt_timer3_;
+    //using BaseClass::gt_exporter_;
+    //using BaseClass::gtPlus_util_;
+    //using BaseClass::gtPlus_util_complex_;
 
     /// load the look up table for BSpline functions
     virtual bool loadLookUpTable();
@@ -295,18 +295,18 @@ protected:
 };
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-gtplusBSplineFFD<T, CoordType, DIn, DOut>::gtplusBSplineFFD()
+BSplineFFD<T, CoordType, DIn, DOut>::BSplineFFD()
 {
     this->loadLookUpTable();
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-gtplusBSplineFFD<T, CoordType, DIn, DOut>::~gtplusBSplineFFD()
+BSplineFFD<T, CoordType, DIn, DOut>::~BSplineFFD()
 {
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::loadLookUpTable()
+bool BSplineFFD<T, CoordType, DIn, DOut>::loadLookUpTable()
 {
     try
     {
@@ -336,7 +336,7 @@ bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::loadLookUpTable()
     }
     catch(...)
     {
-        GERROR_STREAM("Errors happened in gtplusBSplineFFD<T, CoordType, DIn, DOut>::loadLookUpTable() ...");
+        GERROR_STREAM("Errors happened in BSplineFFD<T, CoordType, DIn, DOut>::loadLookUpTable() ...");
         return false;
     }
 
@@ -344,7 +344,7 @@ bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::loadLookUpTable()
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) const
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) const
 {
     try
     {
@@ -365,7 +365,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(const Coord
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType& px_g, CoordType& py_g) const
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType& px_g, CoordType& py_g) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==2);
 
@@ -385,7 +385,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType p
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g) const
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==3);
 
@@ -406,7 +406,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType p
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType ps_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g, CoordType& ps_g) const
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType ps_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g, CoordType& ps_g) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==4);
 
@@ -428,7 +428,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::world_to_grid(CoordType p
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) const
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) const
 {
     try
     {
@@ -451,7 +451,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(const Coord
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) const
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==2);
 
@@ -471,7 +471,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType p
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) const
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==3);
 
@@ -492,7 +492,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType p
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType ps_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w, CoordType& ps_w) const
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType ps_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w, CoordType& ps_w) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==4);
 
@@ -514,7 +514,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::grid_to_world(CoordType p
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, CoordType gridCtrlPtSpacing[DIn])
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, CoordType gridCtrlPtSpacing[DIn])
 {
     try
     {
@@ -555,7 +555,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, size_t gridCtrlPtNum[DIn])
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, size_t gridCtrlPtNum[DIn])
 {
     try
     {
@@ -598,7 +598,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType gridCtrlPtSpacing[DIn])
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType gridCtrlPtSpacing[DIn])
 {
     try
     {
@@ -642,7 +642,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, size_t gridCtrlPtNum[DIn])
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, size_t gridCtrlPtNum[DIn])
 {
     try
     {
@@ -688,7 +688,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, CoordType dx, CoordType dy)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, CoordType dx, CoordType dy)
 {
     CoordType gridCtrlPtSpacing[2];
     gridCtrlPtSpacing[0] = dx;
@@ -697,7 +697,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, size_t sx, size_t sy)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, size_t sx, size_t sy)
 {
     size_t gridCtrlPtNum[2];
     gridCtrlPtNum[0] = sx;
@@ -706,7 +706,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType dx, CoordType dy)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType dx, CoordType dy)
 {
     CoordType gridCtrlPtSpacing[2];
     gridCtrlPtSpacing[0] = dx;
@@ -715,7 +715,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, size_t sx, size_t sy)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, size_t sx, size_t sy)
 {
     size_t gridCtrlPtNum[2];
     gridCtrlPtNum[0] = sx;
@@ -724,7 +724,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz)
 {
     CoordType gridCtrlPtSpacing[3];
     gridCtrlPtSpacing[0] = dx;
@@ -734,7 +734,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, size_t sx, size_t sy, size_t sz)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, size_t sx, size_t sy, size_t sz)
 {
     size_t gridCtrlPtNum[3];
     gridCtrlPtNum[0] = sx;
@@ -744,7 +744,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz)
 {
     CoordType gridCtrlPtSpacing[3];
     gridCtrlPtSpacing[0] = dx;
@@ -754,7 +754,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, size_t sx, size_t sy, size_t sz)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, size_t sx, size_t sy, size_t sz)
 {
     size_t gridCtrlPtNum[3];
     gridCtrlPtNum[0] = sx;
@@ -764,7 +764,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz, CoordType ds)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz, CoordType ds)
 {
     CoordType gridCtrlPtSpacing[4];
     gridCtrlPtSpacing[0] = dx;
@@ -775,7 +775,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, size_t sx, size_t sy, size_t sz, size_t ss)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const PointType& start, const PointType& end, size_t sx, size_t sy, size_t sz, size_t ss)
 {
     size_t gridCtrlPtNum[4];
     gridCtrlPtNum[0] = sx;
@@ -786,7 +786,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Poin
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz, CoordType ds)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz, CoordType ds)
 {
     CoordType gridCtrlPtSpacing[4];
     gridCtrlPtSpacing[0] = dx;
@@ -797,7 +797,7 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, size_t sx, size_t sy, size_t sz, size_t ss)
+inline bool BSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const ImageType& im, const PointType& start, const PointType& end, size_t sx, size_t sy, size_t sz, size_t ss)
 {
     size_t gridCtrlPtNum[4];
     gridCtrlPtNum[0] = sx;
@@ -808,13 +808,13 @@ inline bool gtplusBSplineFFD<T, CoordType, DIn, DOut>::initializeBFFD(const Imag
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-void gtplusBSplineFFD<T, CoordType, DIn, DOut>::print(std::ostream& os) const
+void BSplineFFD<T, CoordType, DIn, DOut>::print(std::ostream& os) const
 {
     using namespace std;
 
-    os << "---------------------- GTPlus BSpline Free Form Deformation ------------------" << endl;
+    os << "---------------------- BSpline Free Form Deformation ------------------" << endl;
     os << "Define the interface for BSpline Free Form Deformation (BFFD) " << endl;
     os << "------------------------------------------------------------------------------" << endl;
 }
 
-}}
+}

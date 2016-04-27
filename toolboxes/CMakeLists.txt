@@ -29,6 +29,7 @@ add_subdirectory(dwt)
 add_subdirectory(registration)
 add_subdirectory(rest)
 add_subdirectory(fatwater)
+add_subdirectory(ffd)
 
 IF (ACE_FOUND)
   add_subdirectory(gadgettools)
