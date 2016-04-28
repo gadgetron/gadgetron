@@ -34,6 +34,8 @@ namespace Gadgetron{
       "Name of collection Gadget", "Collect");
     GADGET_PROPERTY(single_package_mode, bool,
       "Indicates that only one package is sent to each node", false);
+    GADGET_PROPERTY(nodes_used_sequentially, bool,
+      "Indicates that data is distributed to one node at a time. When new node becomes active, previous receives close message.", true);
     GADGET_PROPERTY(use_this_node_for_compute, bool,
       "This node can also be used for computation", true);
 
@@ -68,6 +70,8 @@ namespace Gadgetron{
     std::string node_xml_config_;
     std::string node_parameters_;
     std::map<int,GadgetronConnector*> node_map_;
+    std::vector<GadgetronConnector*> closed_connectors_;
+    GadgetronConnector* prev_connector_; //Keeps track of previously used connector
 
   };
 }
