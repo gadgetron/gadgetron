@@ -20,6 +20,7 @@ namespace Gadgetron{
   DistributeGadget::DistributeGadget()
   : BasicPropertyGadget()
   , mtx_("distribution_mtx")
+  , prev_connector_(0)
   {
 
   }
@@ -182,6 +183,35 @@ namespace Gadgetron{
       }
 
     } else {
+     
+      //Let's make sure that we did not send a close message to this connector already
+      auto c = std::find(closed_connectors_.begin(),closed_connectors_.end(),con);
+      if (c != closed_connectors_.end()) {
+	//This is a bad situation, we need to bail out. 
+	m->release();
+	GERROR("The valid connection for incoming data has already been closed. Distribute Gadget is not configured properly for this type of data\n");
+	return GADGET_FAIL;
+      }
+
+      //If nodes receive their data sequentially (default), we should see if we should be closing the previos connection
+      if (nodes_used_sequentially.value() && !single_package_mode.value()) {
+	//Is this a new connection, if so, send previous one a close
+	if (prev_connector_ && prev_connector_ != con) {
+	  GDEBUG("Sending close to previous connector, not expecting any more data for this one\n");
+	  auto mc = new GadgetContainerMessage<GadgetMessageIdentifier>();
+	  mc->getObjectPtr()->id = GADGET_MESSAGE_CLOSE;
+	  
+	  if (prev_connector_->putq(mc) == -1) {
+	    GERROR("Unable to put CLOSE package on queue of previous connection\n");
+	    return -1;
+	  }
+	  closed_connectors_.push_back(prev_connector_);
+	}
+      }
+     
+      //Update previous connection
+      prev_connector_ = con;
+
       //We have a valid connector
       auto m1 = new GadgetContainerMessage<GadgetMessageIdentifier>();
       m1->getObjectPtr()->id = message_id(m);
@@ -202,6 +232,7 @@ namespace Gadgetron{
           GERROR("Unable to put CLOSE package on queue\n");
           return -1;
         }
+	closed_connectors_.push_back(con);
       }
     }
 
