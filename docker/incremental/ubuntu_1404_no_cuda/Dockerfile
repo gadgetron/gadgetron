@@ -71,6 +71,7 @@ RUN cd /opt && \
     echo '#!/bin/bash' > start_web.sh && \
     echo '[ -n "${GADGETRON_RELAY_HOST}" ] && { sed -i "s/relay_host=.*/relay_host=${GADGETRON_RELAY_HOST}/g" /usr/local/share/gadgetron/config/gadgetron_web_app.cfg; }' >> start_web.sh && \
     echo '[ -n "${GADGETRON_LB_ENDPOINT}" ] && { sed -i "s/lb_endpoint=.*/lb_endpoint=${GADGETRON_LB_ENDPOINT}/g" /usr/local/share/gadgetron/config/gadgetron_web_app.cfg; }' >> start_web.sh && \
+    echo '[ -n "${GADGETRON_LOG_FILE}" ] && { sed -i "s|logfile=/tmp/gadgetron.log|logfile=${GADGETRON_LOG_FILE}|g" /usr/local/share/gadgetron/config/gadgetron_web_app.cfg; }' >> start_web.sh && \
     echo 'python /usr/local/bin/gadgetron_web_app.py /usr/local/share/gadgetron/config/gadgetron_web_app.cfg' >> start_web.sh && \
     chmod +x start_web.sh
 
