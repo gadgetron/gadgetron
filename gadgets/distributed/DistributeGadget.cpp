@@ -290,22 +290,29 @@ namespace Gadgetron{
     int ret = Gadget::close(flags);
     if (flags) {
       mtx_.acquire();
-      auto it = node_map_.begin();
-      while (it != node_map_.end()) {
-        if (it->second) {
+
+      for (auto n = node_map_.begin(); n != node_map_.end(); n++) {
+        if (n->second) {
           auto m1 = new GadgetContainerMessage<GadgetMessageIdentifier>();
           m1->getObjectPtr()->id = GADGET_MESSAGE_CLOSE;
 
-          if (it->second->putq(m1) == -1) {
+          if (n->second->putq(m1) == -1) {
             GERROR("Unable to put CLOSE package on queue\n");
             return -1;
           }
+	}
+      }
+
+      auto it = node_map_.begin();
+      while (it != node_map_.end()) {
+        if (it->second) {
           it->second->wait();
           delete it->second;
         }
         node_map_.erase(it);
         it = node_map_.begin();
       }
+
       mtx_.release();
       GDEBUG("All connectors closed. Waiting for Gadget to close\n");
     }

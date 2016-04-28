@@ -24,15 +24,6 @@
     <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
     <writer><slot>1008</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdAcquisitionMessageWriter</classname></writer>
 
-    <!-- Distribute slice over nodes -->
-    <gadget>
-      <name>Distribute</name>
-      <dll>gadgetron_distributed</dll>
-      <classname>IsmrmrdAcquisitionDistributeGadget</classname>
-      <property><name>parallel_dimension</name><value>slice</value></property>
-      <property><name>use_this_node_for_compute</name><value>true</value></property>
-    </gadget>
-
     <!-- Noise prewhitening -->
     <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname></gadget>
 
@@ -41,6 +32,15 @@
 
     <!-- RO oversampling removal -->
     <gadget><name>RemoveROOversampling</name><dll>gadgetron_mricore</dll><classname>RemoveROOversamplingGadget</classname></gadget>
+
+    <!-- Distribute slice over nodes -->
+    <gadget>
+      <name>Distribute</name>
+      <dll>gadgetron_distributed</dll>
+      <classname>IsmrmrdAcquisitionDistributeGadget</classname>
+      <property><name>parallel_dimension</name><value>slice</value></property>
+      <property><name>use_this_node_for_compute</name><value>true</value></property>
+    </gadget>
 
     <!-- Data accumulation and trigger gadget -->
     <gadget>
