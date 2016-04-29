@@ -720,7 +720,7 @@ protected:
 
 		for( unsigned int outer_iteration=0; outer_iteration<outer_iterations; outer_iteration++ ) {
 
-			if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
+			if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
 				GDEBUG_STREAM(std::endl << "SB outer loop iteration " << outer_iteration << std::endl << std::endl);
 
 			//
@@ -729,7 +729,7 @@ protected:
 
 			for( unsigned int inner_iteration=0; inner_iteration<inner_iterations; inner_iteration++ ) {
 
-				if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
+				if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
 					GDEBUG_STREAM(std::endl << "SB inner loop iteration " << inner_iteration << std::endl << std::endl);
 
 				{ // Brackets used to free 'data' below as soon as it goes out of scope
