@@ -17,8 +17,7 @@ set(ffd_header_bspline_files
                     BSplineFFD3D.h
                     BSplineFFD4D.h )
 
-set(ffd_header_files cpuffd_export.h 
-                    ${ffd_header_bspline_files}
+set(ffd_header_files ${ffd_header_bspline_files}
                     FFDBase.h
                     MLFFD.h)
 
