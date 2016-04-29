@@ -1,15 +1,16 @@
 
 #include <matrix.h>
 #include <mat.h>
-#ifdef _WIN32
-    #include <mexGT.h>
-#else
-    #include <mex.h>
-#endif // _WIN32
 
-#include "gtPlusISMRMRDReconUtil.h"
-#include "gtMatlabConverter.h"
-#include "gtMatlabConverterComplex.h"
+#ifdef MATLAB_DLL_EXPORT_SYM
+    #define DLL_EXPORT_SYM extern "C" __declspec(dllexport)
+#endif // MATLAB_DLL_EXPORT_SYM
+#include <mex.h>
+
+#include <strstream>
+#include "mri_core_coil_map_estimation.h"
+#include "GadgetronTimer.h"
+#include "MatlabUtils.h"
 
 #define MEXPRINTF(name) mexPrintf(#name);
 
@@ -19,9 +20,9 @@ static void usage()
     std::ostrstream outs;
 
     outs << "==============================================================================================" << endl;
-    outs << "Usage: compute_coil_map_2D \n";
+    outs << "Usage: compute_coil_map \n";
     outs << "6 Input paras:" << endl;
-    outs << '\t' << "complexIm  : RO*E1*CHA*N, 2D complex image array, in complex float" << endl;
+    outs << '\t' << "complexIm  : RO*E1*E2*CHA*N, 2D (if E2==1) or 3D complex image array, in complex float" << endl;
     outs << '\t' << "algo       : ISMRMRD_SOUHEIL or ISMRMRD_SOUHEIL_ITER" << endl;
     outs << '\t' << "ks         : kernel size, used by both methods" << endl;
     outs << '\t' << "power      : number of times to perform power method, used by ISMRMRD_SOUHEIL" << endl;
@@ -29,7 +30,7 @@ static void usage()
     outs << '\t' << "thres      : threshold of iteration, used by ISMRMRD_SOUHEIL_ITER" << endl;
 
     outs << "1 Output para:" << endl;
-    outs << '\t' << "coilMap    : RO*E1*CHA*N coil map" << endl;
+    outs << '\t' << "coilMap    : RO*E1*E2*CHA*N coil map" << endl;
     outs << "==============================================================================================" << endl;
     outs << std::ends; 
 
@@ -61,11 +62,6 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 
         Gadgetron::GadgetronTimer timer("Running coil map estimation");
 
-        Gadgetron::gtMatlabConverter<float> converter;
-        Gadgetron::gtMatlabConverterComplex<ValueType> converterComplex;
-
-        Gadgetron::gtPlus::gtPlusISMRMRDReconUtilComplex<ValueType> gtPlus_util_complex_;
-
         // ---------------------------------------------------------------
         // input parameters
         // ---------------------------------------------------------------    
@@ -76,22 +72,16 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         }
 
         mwSize nDim = mxGetNumberOfDimensions(prhs[0]);
-        if ( nDim!=3 && nDim!=4 )
+        if ( nDim<4 )
         {
-            mexWarnMsgTxt("1st array is not a 3D or 4D array");
+            mexWarnMsgTxt("1st array at least should be a 4D array");
             return;
         }
 
         const mwSize* dims = mxGetDimensions(prhs[0]);
 
         // algo
-        Gadgetron::ISMRMRDCOILMAPALGO algo = Gadgetron::ISMRMRD_SOUHEIL_ITER;
-        std::string algoStr;
-        converter.Matlab2Str(prhs[1], algoStr);
-        if ( algoStr == "ISMRMRD_SOUHEIL" )
-        {
-            algo = Gadgetron::ISMRMRD_SOUHEIL;
-        }
+        std::string algoStr = Gadgetron::MatlabToStdString(prhs[1]);
 
         // ks
         unsigned long long ks = mxGetScalar(prhs[2]);
@@ -109,26 +99,28 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         // perform the computation
         // ---------------------------------------------------------------
         Gadgetron::hoNDArray<ValueType> complexIm;
-        converterComplex.Matlab2hoNDArray(prhs[0], complexIm);
+        Gadgetron::MatlabToHoNDArray( const_cast<mxArray*>(prhs[0]), complexIm);
 
         Gadgetron::hoNDArray<ValueType> coilMap;
 
-        if ( !gtPlus_util_complex_.coilMap2DNIH(complexIm, coilMap, algo, ks, power, iterNum, thres, true) )
+        if(algoStr == "ISMRMRD_SOUHEIL")
         {
-            mexWarnMsgTxt("coilMap2DNIH(...) failed ... ");
-            return;
+            Gadgetron::coil_map_Inati(complexIm, coilMap, ks, ks, power);
+        }
+        else
+        {
+            Gadgetron::coil_map_Inati_Iter(complexIm, coilMap, ks, ks, iterNum, thres);
         }
 
         // ---------------------------------------------------------------
         // output parameter
         // ---------------------------------------------------------------
-        mxArray* coilMapMx = NULL;
-        converterComplex.hoNDArray2Matlab(coilMap, coilMapMx);
+        mxArray* coilMapMx = Gadgetron::hoNDArrayToMatlab(&coilMap);
         plhs[0] = coilMapMx;
    }
     catch(...)
     {
-        mexWarnMsgTxt("Exceptions happened in Matlab compute_coil_map_2D() ...");
+        mexWarnMsgTxt("Exceptions happened in Matlab compute_coil_map() ...");
         return;
     }
 
