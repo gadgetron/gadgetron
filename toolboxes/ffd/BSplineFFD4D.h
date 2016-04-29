@@ -1,21 +1,21 @@
-/** \file       gtplusBSplineFFD4D.h
-    \brief      Implement gtPlus 2D BSpline FreeFormDeformation
+/** \file       BSplineFFD4D.h
+    \brief      Implement 4D BSpline FreeFormDeformation
     \author     Hui Xue
 */
 
 #pragma once
 
-#include "gtplusFFDBase.h"
+#include "FFDBase.h"
 
-namespace Gadgetron { namespace gtPlus {
+namespace Gadgetron { 
 
 template <typename T, typename CoordType, unsigned int DOut>
-class gtplusBSplineFFD4D : public gtplusBSplineFFD<T, CoordType, 4, DOut>
+class BSplineFFD4D : public BSplineFFD<T, CoordType, 4, DOut>
 {
 public:
 
-    typedef gtplusBSplineFFD<T, CoordType, 4, DOut> BaseClass;
-    typedef gtplusBSplineFFD4D<T, CoordType, DOut> Self;
+    typedef BSplineFFD<T, CoordType, 4, DOut> BaseClass;
+    typedef BSplineFFD4D<T, CoordType, DOut> Self;
 
     typedef typename BaseClass::real_value_type real_value_type;
     typedef real_value_type bspline_float_type;
@@ -35,19 +35,19 @@ public:
     typedef typename BaseClass::ImageType           ImageType;
 
     /// constructors
-    gtplusBSplineFFD4D();
+    BSplineFFD4D();
     /// define the FFD over a region with specific control point spacing
-    gtplusBSplineFFD4D(const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz, CoordType ds);
+    BSplineFFD4D(const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz, CoordType ds);
     /// define the FFD over the image region with specific control point spacing
-    gtplusBSplineFFD4D(const ImageType& im, CoordType dx, CoordType dy, CoordType dz, CoordType ds);
+    BSplineFFD4D(const ImageType& im, CoordType dx, CoordType dy, CoordType dz, CoordType ds);
     /// define the FFD over the image region with specific number of control points
-    gtplusBSplineFFD4D(const ImageType& im, size_t sx, size_t sy, size_t sz, size_t ss);
+    BSplineFFD4D(const ImageType& im, size_t sx, size_t sy, size_t sz, size_t ss);
     /// define the FFD over an array region with specific number of control points
-    gtplusBSplineFFD4D(const ArrayType& a, size_t sx, size_t sy, size_t sz, size_t ss);
+    BSplineFFD4D(const ArrayType& a, size_t sx, size_t sy, size_t sz, size_t ss);
     /// copy constructor
-    gtplusBSplineFFD4D(const Self& bffd);
+    BSplineFFD4D(const Self& bffd);
 
-    virtual ~gtplusBSplineFFD4D();
+    virtual ~BSplineFFD4D();
 
     /// evaluate the FFD at a grid location
     virtual bool evaluateFFD(const CoordType pt[D], T r[DOut]) const;
@@ -90,12 +90,12 @@ public:
 protected:
 
     using BaseClass::ctrl_pt_;
-    using BaseClass::gt_timer1_;
-    using BaseClass::gt_timer2_;
-    using BaseClass::gt_timer3_;
-    using BaseClass::gt_exporter_;
-    using BaseClass::gtPlus_util_;
-    using BaseClass::gtPlus_util_complex_;
+    //using BaseClass::gt_timer1_;
+    //using BaseClass::gt_timer2_;
+    //using BaseClass::gt_timer3_;
+    //using BaseClass::gt_exporter_;
+    //using BaseClass::gtPlus_util_;
+    //using BaseClass::gtPlus_util_complex_;
     using BaseClass::LUT_;
     using BaseClass::LUT1_;
     using BaseClass::LUT2_;
@@ -107,18 +107,18 @@ protected:
 };
 
 template <typename T, typename CoordType, unsigned int DOut>
-gtplusBSplineFFD4D<T, CoordType, DOut>::gtplusBSplineFFD4D() : BaseClass()
+BSplineFFD4D<T, CoordType, DOut>::BSplineFFD4D() : BaseClass()
 {
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-gtplusBSplineFFD4D<T, CoordType, DOut>::gtplusBSplineFFD4D(const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz, CoordType ds) : BaseClass()
+BSplineFFD4D<T, CoordType, DOut>::BSplineFFD4D(const PointType& start, const PointType& end, CoordType dx, CoordType dy, CoordType dz, CoordType ds) : BaseClass()
 {
     GADGET_CHECK_THROW(this->initializeBFFD(start, end, dx, dy, dz, ds));
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-gtplusBSplineFFD4D<T, CoordType, DOut>::gtplusBSplineFFD4D(const ImageType& im, CoordType dx, CoordType dy, CoordType dz, CoordType ds) : BaseClass()
+BSplineFFD4D<T, CoordType, DOut>::BSplineFFD4D(const ImageType& im, CoordType dx, CoordType dy, CoordType dz, CoordType ds) : BaseClass()
 {
     PointType start, end;
 
@@ -140,7 +140,7 @@ gtplusBSplineFFD4D<T, CoordType, DOut>::gtplusBSplineFFD4D(const ImageType& im, 
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-gtplusBSplineFFD4D<T, CoordType, DOut>::gtplusBSplineFFD4D(const ImageType& im, size_t sx, size_t sy, size_t sz, size_t ss) : BaseClass()
+BSplineFFD4D<T, CoordType, DOut>::BSplineFFD4D(const ImageType& im, size_t sx, size_t sy, size_t sz, size_t ss) : BaseClass()
 {
     PointType start, end;
 
@@ -162,7 +162,7 @@ gtplusBSplineFFD4D<T, CoordType, DOut>::gtplusBSplineFFD4D(const ImageType& im, 
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-gtplusBSplineFFD4D<T, CoordType, DOut>::gtplusBSplineFFD4D(const ArrayType& a, size_t sx, size_t sy, size_t sz, size_t ss) : BaseClass()
+BSplineFFD4D<T, CoordType, DOut>::BSplineFFD4D(const ArrayType& a, size_t sx, size_t sy, size_t sz, size_t ss) : BaseClass()
 {
     PointType start, end;
 
@@ -180,7 +180,7 @@ gtplusBSplineFFD4D<T, CoordType, DOut>::gtplusBSplineFFD4D(const ArrayType& a, s
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-gtplusBSplineFFD4D<T, CoordType, DOut>::gtplusBSplineFFD4D(const Self& bffd) : BaseClass()
+BSplineFFD4D<T, CoordType, DOut>::BSplineFFD4D(const Self& bffd) : BaseClass()
 {
     unsigned int d;
     for ( d=0; d<DOut; d++ )
@@ -190,12 +190,12 @@ gtplusBSplineFFD4D<T, CoordType, DOut>::gtplusBSplineFFD4D(const Self& bffd) : B
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-gtplusBSplineFFD4D<T, CoordType, DOut>::~gtplusBSplineFFD4D()
+BSplineFFD4D<T, CoordType, DOut>::~BSplineFFD4D()
 {
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFD4D(CoordType px, CoordType py, CoordType pz, CoordType ps, size_t ordx, size_t ordy, size_t ordz, size_t ords, T r[DOut]) const
+bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFD4D(CoordType px, CoordType py, CoordType pz, CoordType ps, size_t ordx, size_t ordy, size_t ordz, size_t ords, T r[DOut]) const
 {
     try
     {
@@ -334,43 +334,43 @@ bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFD4D(CoordType px, CoordTy
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFD(const CoordType pt[D], T r[DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFD(const CoordType pt[D], T r[DOut]) const
 {
     return this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 0, 0, 0, 0, r);
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFD(CoordType px, CoordType py, CoordType pz, CoordType ps, T r[DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFD(CoordType px, CoordType py, CoordType pz, CoordType ps, T r[DOut]) const
 {
     return this->evaluateFFD4D(px, py, pz, ps, 0, 0, 0, 0, r);
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDDX(const CoordType pt[D], T dx[DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFDDX(const CoordType pt[D], T dx[DOut]) const
 {
     return this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 1, 0, 0, 0, dx);
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDDY(const CoordType pt[D], T dy[DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFDDY(const CoordType pt[D], T dy[DOut]) const
 {
     return this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 0, 1, 0, 0, dy);
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDDZ(const CoordType pt[D], T dz[DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFDDZ(const CoordType pt[D], T dz[DOut]) const
 {
     return this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 0, 0, 1, 0, dz);
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDDS(const CoordType pt[D], T ds[DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFDDS(const CoordType pt[D], T ds[DOut]) const
 {
     return this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 0, 0, 0, 1, ds);
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateWorldDX(const CoordType pt[D], T dx[DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateWorldDX(const CoordType pt[D], T dx[DOut]) const
 {
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 1, 0, 0, 0, dx));
     coord_type sx = coord_type(1.0)/this->get_spacing(0);
@@ -383,7 +383,7 @@ inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateWorldDX(const CoordT
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateWorldDY(const CoordType pt[D], T dy[DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateWorldDY(const CoordType pt[D], T dy[DOut]) const
 {
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 0, 1, 0, 0, dy));
     coord_type sy = coord_type(1.0)/this->get_spacing(1);
@@ -396,7 +396,7 @@ inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateWorldDY(const CoordT
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateWorldDZ(const CoordType pt[D], T dz[DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateWorldDZ(const CoordType pt[D], T dz[DOut]) const
 {
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 0, 0, 1, 0, dz));
     coord_type sz = coord_type(1.0)/this->get_spacing(2);
@@ -409,7 +409,7 @@ inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateWorldDZ(const CoordT
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateWorldDS(const CoordType pt[D], T ds[DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateWorldDS(const CoordType pt[D], T ds[DOut]) const
 {
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 0, 0, 0, 1, ds));
     coord_type ss = coord_type(1.0)/this->get_spacing(3);
@@ -422,7 +422,7 @@ inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateWorldDS(const CoordT
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDDerivative(const CoordType pt[D], T deriv[D][DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFDDerivative(const CoordType pt[D], T deriv[D][DOut]) const
 {
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 1, 0, 0, 0, deriv[0]));
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 0, 1, 0, 0, deriv[1]));
@@ -432,7 +432,7 @@ inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDDerivative(const 
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDDerivative(CoordType px, CoordType py, CoordType pz, CoordType ps, T deriv[D][DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFDDerivative(CoordType px, CoordType py, CoordType pz, CoordType ps, T deriv[D][DOut]) const
 {
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD4D(px, py, pz, ps, 1, 0, 0, 0, deriv[0]));
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD4D(px, py, pz, ps, 0, 1, 0, 0, deriv[1]));
@@ -442,7 +442,7 @@ inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDDerivative(CoordT
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDSecondOrderDerivative(const CoordType pt[D], T dderiv[D*D][DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFDSecondOrderDerivative(const CoordType pt[D], T dderiv[D*D][DOut]) const
 {
     // dxx
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD4D(pt[0], pt[1], pt[2], pt[3], 2, 0, 0, 0, dderiv[0]));
@@ -484,7 +484,7 @@ inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDSecondOrderDeriva
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDSecondOrderDerivative(CoordType px, CoordType py, CoordType pz, CoordType ps, T dderiv[D*D][DOut]) const
+inline bool BSplineFFD4D<T, CoordType, DOut>::evaluateFFDSecondOrderDerivative(CoordType px, CoordType py, CoordType pz, CoordType ps, T dderiv[D*D][DOut]) const
 {
     // dxx
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD4D(px, py, pz, ps, 2, 0, 0, 0, dderiv[0]));
@@ -526,7 +526,7 @@ inline bool gtplusBSplineFFD4D<T, CoordType, DOut>::evaluateFFDSecondOrderDeriva
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-bool gtplusBSplineFFD4D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N)
+bool BSplineFFD4D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N)
 {
     try
     {
@@ -691,7 +691,7 @@ bool gtplusBSplineFFD4D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-bool gtplusBSplineFFD4D<T, CoordType, DOut>::refine()
+bool BSplineFFD4D<T, CoordType, DOut>::refine()
 {
     try
     {
@@ -882,11 +882,11 @@ bool gtplusBSplineFFD4D<T, CoordType, DOut>::refine()
 }
 
 template <typename T, typename CoordType, unsigned int DOut>
-void gtplusBSplineFFD4D<T, CoordType, DOut>::print(std::ostream& os) const
+void BSplineFFD4D<T, CoordType, DOut>::print(std::ostream& os) const
 {
     using namespace std;
 
-    os << "---------------------- GTPlus BSpline 4D Free Form Deformation ------------------" << endl;
+    os << "---------------------- BSpline 4D Free Form Deformation ------------------" << endl;
     os << "Implement 4D BSpline Free Form Deformation (BFFD) " << endl;
 
     std::string elemTypeName = std::string( typeid(T).name() );
@@ -902,4 +902,4 @@ void gtplusBSplineFFD4D<T, CoordType, DOut>::print(std::ostream& os) const
     os << "---------------------------------------------------------------------------------" << endl;
 }
 
-}}
+}

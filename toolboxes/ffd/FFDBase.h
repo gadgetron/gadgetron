@@ -1,5 +1,5 @@
-/** \file       gtplusFFDBase.h
-    \brief      Base class for gtPlus FreeFormDeformation package
+/** \file       FFDBase.h
+    \brief      Base class for FreeFormDeformation package
 
                 FreeFormDeformation (FFD) is a general purpose scatter interpolation algorithm. It is widely used in numerical applications, 
                 such as image registration, data inteprolation and geometric modelling etc.
@@ -19,9 +19,12 @@
 
 #include <typeinfo>
 #include <cmath>
+#include <complex>
+#include "hoNDArray.h"
+#include "hoNDImage.h"
 #include "GadgetronTimer.h"
-#include "gtPlusISMRMRDReconUtil.h"
-#include "gtPlusIOAnalyze.h"
+
+// #include "gtPlusIOAnalyze.h"
 
 #ifdef USE_OMP
     #include "omp.h"
@@ -29,14 +32,14 @@
 
 #define FFD_MKINT(a) (((a)>=0)?((int)((a)+0.5)):((int)((a)-0.5)))
 
-namespace Gadgetron { namespace gtPlus {
+namespace Gadgetron { 
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
-class gtplusFFDBase
+class FFDBase
 {
 public:
 
-    typedef gtplusFFDBase<T, CoordType, DIn, DOut> Self;
+    typedef FFDBase<T, CoordType, DIn, DOut> Self;
 
     typedef typename realType<T>::Type real_value_type;
 
@@ -66,8 +69,8 @@ public:
     /// image type
     typedef hoNDImage<T, DIn> ImageType;
 
-    gtplusFFDBase();
-    virtual ~gtplusFFDBase();
+    FFDBase();
+    virtual ~FFDBase();
 
     /// evaluate the FFD at a grid location
     /// the input points are in the FFD grid
@@ -120,7 +123,7 @@ public:
     /// value : the value on input points, DOut by N
     /// residual : the approximation residual after computing FFD, DOut by N
     /// N : the number of points
-    virtual bool ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, T& totalResidual, size_t N) = 0;
+    virtual bool ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N) = 0;
 
     /// compute the FFD approximation with refinement, see ref [2]
     /// numOfRefinement : number of grid refinement
@@ -246,38 +249,34 @@ protected:
     FFDCtrlPtGridType ctrl_pt_[DOut];
 
     /// clock for timing
-    Gadgetron::GadgetronTimer gt_timer1_;
-    Gadgetron::GadgetronTimer gt_timer2_;
-    Gadgetron::GadgetronTimer gt_timer3_;
+    //Gadgetron::GadgetronTimer gt_timer1_;
+    //Gadgetron::GadgetronTimer gt_timer2_;
+    //Gadgetron::GadgetronTimer gt_timer3_;
 
     /// exporter
-    Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
-
-    /// util
-    gtPlusISMRMRDReconUtil<T> gtPlus_util_;
-    gtPlusISMRMRDReconUtilComplex<T> gtPlus_util_complex_;
+    // Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
 };
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-gtplusFFDBase<T, CoordType, DIn, DOut>::gtplusFFDBase()
+FFDBase<T, CoordType, DIn, DOut>::FFDBase()
 {
-    gt_timer1_.set_timing_in_destruction(false);
-    gt_timer2_.set_timing_in_destruction(false);
-    gt_timer3_.set_timing_in_destruction(false);
+    //gt_timer1_.set_timing_in_destruction(false);
+    //gt_timer2_.set_timing_in_destruction(false);
+    //gt_timer3_.set_timing_in_destruction(false);
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-gtplusFFDBase<T, CoordType, DIn, DOut>::~gtplusFFDBase()
+FFDBase<T, CoordType, DIn, DOut>::~FFDBase()
 {
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFD(const CoordType* pt[D], T* r[DOut], size_t N) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFD(const CoordType* pt[D], T* r[DOut], size_t N) const
 {
     try
     {
         long long n;
-        #pragma omp parallel for private(n) shared(N, pt, r)
+#pragma omp parallel for private(n) shared(N, pt, r)
         for ( n=0; n<(long long)N; n++ )
         {
             this->evaluateFFD(pt[n], r[n]);
@@ -293,14 +292,14 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFD(const CoordType*
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFD(const PointType& pt, T r[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFD(const PointType& pt, T r[DOut]) const
 {
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFD(pt.begin(), r));
     return true;
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDArray(const CoordArrayType& pts, ValueArrayType& r) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDArray(const CoordArrayType& pts, ValueArrayType& r) const
 {
     try
     {
@@ -316,7 +315,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDArray(const Coord
         T* pR = r.begin();
 
         long long n;
-        #pragma omp parallel for private(n) shared(N, pPts, pR, r)
+#pragma omp parallel for private(n) shared(N, pPts, pR, r)
         for ( n=0; n<(long long)N; n++ )
         {
             this->evaluateFFD(pPts+n*DIn, pR+n*DOut);
@@ -332,14 +331,14 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDArray(const Coord
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivative(const PointType& pt, T deriv[D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivative(const PointType& pt, T deriv[D][DOut]) const
 {
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDerivative(pt.begin(), deriv));
     return true;
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDX(const CoordType pt[D], T dx[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDX(const CoordType pt[D], T dx[DOut]) const
 {
     T deriv[D][DOut];
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDerivative(pt, deriv));
@@ -348,7 +347,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDX(const CoordTyp
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDY(const CoordType pt[D], T dy[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDY(const CoordType pt[D], T dy[DOut]) const
 {
     T deriv[D][DOut];
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDerivative(pt, deriv));
@@ -357,7 +356,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDY(const CoordTyp
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDZ(const CoordType pt[D], T dz[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDZ(const CoordType pt[D], T dz[DOut]) const
 {
     T deriv[D][DOut];
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDerivative(pt, deriv));
@@ -366,7 +365,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDZ(const CoordTyp
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDS(const CoordType pt[D], T ds[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDS(const CoordType pt[D], T ds[DOut]) const
 {
     T deriv[D][DOut];
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDerivative(pt, deriv));
@@ -375,7 +374,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDS(const CoordTyp
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateWorldDerivative(const CoordType pt[D], T deriv[D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDerivative(const CoordType pt[D], T deriv[D][DOut]) const
 {
     CoordType pt_g[D];
     this->world_to_grid(pt, pt_g);
@@ -397,7 +396,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateWorldDerivative(cons
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateWorldDX(const CoordType pt[D], T dx[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDX(const CoordType pt[D], T dx[DOut]) const
 {
     CoordType pt_g[D];
     this->world_to_grid(pt, pt_g);
@@ -415,7 +414,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateWorldDX(const CoordT
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateWorldDY(const CoordType pt[D], T dy[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDY(const CoordType pt[D], T dy[DOut]) const
 {
     CoordType pt_g[D];
     this->world_to_grid(pt, pt_g);
@@ -433,7 +432,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateWorldDY(const CoordT
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateWorldDZ(const CoordType pt[D], T dz[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDZ(const CoordType pt[D], T dz[DOut]) const
 {
     CoordType pt_g[D];
     this->world_to_grid(pt, pt_g);
@@ -451,7 +450,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateWorldDZ(const CoordT
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateWorldDS(const CoordType pt[D], T ds[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateWorldDS(const CoordType pt[D], T ds[DOut]) const
 {
     CoordType pt_g[D];
     this->world_to_grid(pt, pt_g);
@@ -469,14 +468,14 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateWorldDS(const CoordT
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivative(const PointType& pt, T dderiv[D*D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivative(const PointType& pt, T dderiv[D*D][DOut]) const
 {
     GADGET_CHECK_RETURN_FALSE(this->evaluateFFDDerivative(pt.begin(), dderiv));
     return true;
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(const CoordType pt[D], T r[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(const CoordType pt[D], T r[DOut]) const
 {
     CoordType pg[D];
     this->world_to_grid(pt, pg);
@@ -484,7 +483,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(const CoordType
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(CoordType px, CoordType py, T r[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(CoordType px, CoordType py, T r[DOut]) const
 {
     CoordType pg[2];
     this->world_to_grid(px, py, pg[0], pg[1]);
@@ -492,7 +491,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(CoordType px, C
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(CoordType px, CoordType py, CoordType pz, T r[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(CoordType px, CoordType py, CoordType pz, T r[DOut]) const
 {
     CoordType pg[3];
     this->world_to_grid(px, py, pz, pg[0], pg[1], pg[2]);
@@ -500,7 +499,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(CoordType px, C
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(CoordType px, CoordType py, CoordType pz, CoordType ps, T r[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(CoordType px, CoordType py, CoordType pz, CoordType ps, T r[DOut]) const
 {
     CoordType pg[4];
     this->world_to_grid(px, py, pz, ps, pg[0], pg[1], pg[2], pg[3]);
@@ -508,7 +507,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDW(CoordType px, C
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(const CoordType pt[D], T deriv[D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(const CoordType pt[D], T deriv[D][DOut]) const
 {
     CoordType pg[D];
     this->world_to_grid(pt, pg);
@@ -516,7 +515,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(const
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(CoordType px, CoordType py, T deriv[D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(CoordType px, CoordType py, T deriv[D][DOut]) const
 {
     CoordType pg[2];
     this->world_to_grid(px, py, pg[0], pg[1]);
@@ -524,7 +523,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(Coord
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(CoordType px, CoordType py, CoordType pz, T deriv[D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(CoordType px, CoordType py, CoordType pz, T deriv[D][DOut]) const
 {
     CoordType pg[3];
     this->world_to_grid(px, py, pz, pg[0], pg[1], pg[2]);
@@ -532,7 +531,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(Coord
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(CoordType px, CoordType py, CoordType pz, CoordType ps, T deriv[D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(CoordType px, CoordType py, CoordType pz, CoordType ps, T deriv[D][DOut]) const
 {
     CoordType pg[4];
     this->world_to_grid(px, py, pz, ps, pg[0], pg[1], pg[2], pg[3]);
@@ -540,7 +539,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDDerivativeW(Coord
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivativeW(const CoordType pt[D], T dderiv[D*D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivativeW(const CoordType pt[D], T dderiv[D*D][DOut]) const
 {
     CoordType pg[D];
     this->world_to_grid(pt, pg);
@@ -548,7 +547,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDeriva
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivativeW(CoordType px, CoordType py, T dderiv[D*D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivativeW(CoordType px, CoordType py, T dderiv[D*D][DOut]) const
 {
     CoordType pg[2];
     this->world_to_grid(px, py, pg[0], pg[1]);
@@ -556,7 +555,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDeriva
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivativeW(CoordType px, CoordType py, CoordType pz, T dderiv[D*D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivativeW(CoordType px, CoordType py, CoordType pz, T dderiv[D*D][DOut]) const
 {
     CoordType pg[3];
     this->world_to_grid(px, py, pz, pg[0], pg[1], pg[2]);
@@ -564,7 +563,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDeriva
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivativeW(CoordType px, CoordType py, CoordType pz, CoordType ps, T dderiv[D*D][DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivativeW(CoordType px, CoordType py, CoordType pz, CoordType ps, T dderiv[D*D][DOut]) const
 {
     CoordType pg[4];
     this->world_to_grid(px, py, pz, ps, pg[0], pg[1], pg[2], pg[3]);
@@ -572,7 +571,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDeriva
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(const CoordArrayType& pt_w, CoordArrayType& pt_g) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::world_to_grid(const CoordArrayType& pt_w, CoordArrayType& pt_g) const
 {
     try
     {
@@ -590,7 +589,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(const CoordArr
 
         long long n;
 
-        #pragma omp parallel for default(none) private(n) shared(N, pW, pG)
+#pragma omp parallel for default(none) private(n) shared(N, pW, pG)
         for ( n=0; n<(long long)N; n++ )
         {
             this->world_to_grid(pW+n*DIn, pG+n*DIn);
@@ -606,7 +605,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(const CoordArr
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::world_to_grid(const CoordType pt_w[D], CoordType pt_g[D]) const
 {
     try
     {
@@ -622,7 +621,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(const CoordTyp
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType& px_g, CoordType& py_g) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType& px_g, CoordType& py_g) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==2);
 
@@ -640,7 +639,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==3);
 
@@ -658,7 +657,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType ps_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g, CoordType& ps_g) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w, CoordType py_w, CoordType pz_w, CoordType ps_w, CoordType& px_g, CoordType& py_g, CoordType& pz_g, CoordType& ps_g) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==4);
 
@@ -676,7 +675,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::world_to_grid(CoordType px_w
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordArrayType& pt_g, CoordArrayType& pt_w) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordArrayType& pt_g, CoordArrayType& pt_w) const
 {
     try
     {
@@ -694,7 +693,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordArr
 
         long long n;
 
-        #pragma omp parallel for default(none) private(n) shared(N, pG, pW)
+#pragma omp parallel for default(none) private(n) shared(N, pG, pW)
         for ( n=0; n<(long long)N; n++ )
         {
             this->grid_to_world(pG+n*DIn, pW+n*DIn);
@@ -710,7 +709,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordArr
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordType pt_g[D], CoordType pt_w[D]) const
 {
     try
     {
@@ -726,7 +725,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(const CoordTyp
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType& px_w, CoordType& py_w) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==2);
 
@@ -744,7 +743,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g, CoordType py_g, CoordType pz_g, CoordType& px_w, CoordType& py_w, CoordType& pz_w) const
 {
     GADGET_CHECK_RETURN_FALSE(DIn==3);
 
@@ -762,14 +761,14 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::grid_to_world(CoordType px_g
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t numOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t numOfRefinement)
 {
     size_t num;
     return this->ffdApprox(pos, value, residual, totalResidual, N, num, FLT_EPSILON, numOfRefinement);
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
 {
     try
     {
@@ -824,14 +823,14 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayTy
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxW(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t numOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxW(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t numOfRefinement)
 {
     size_t num;
     return this->ffdApproxW(pos, value, residual, totalResidual, N, num, FLT_EPSILON, numOfRefinement);
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxW(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxW(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
 {
     try
     {
@@ -885,14 +884,14 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxW(const CoordArrayT
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnImage(ImageType& target) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnImage(ImageType& target) const
 {
     GADGET_CHECK_RETURN_FALSE(DOut==1);
     return this->evaluateFFDOnImage(&target);
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnImage(ImageType target[DOut]) const
+inline bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnImage(ImageType target[DOut]) const
 {
     try
     {
@@ -903,13 +902,13 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnImage(ImageType
 
             long long y;
 
-            #pragma omp parallel private(y) shared(sx, sy, target)
+#pragma omp parallel private(y) shared(sx, sy, target)
             {
                 coord_type px, py, pg[2];
                 T v[DOut];
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( y=0; y<(long long)sy; y++ )
                 {
                     for ( size_t x=0; x<sx; x++ )
@@ -959,13 +958,13 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnImage(ImageType
 
             long long z;
 
-            #pragma omp parallel private(z) shared(sx, sy, sz, target)
+#pragma omp parallel private(z) shared(sx, sy, sz, target)
             {
                 coord_type px, py, pz, pg[3];
                 T v[DOut];
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( z=0; z<(long long)sz; z++ )
                 {
                     for ( size_t y=0; y<sy; y++ )
@@ -1016,7 +1015,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnImage(ImageType
 
             long long n;
 
-            #pragma omp parallel private(n) shared(numOfPixels, target)
+#pragma omp parallel private(n) shared(numOfPixels, target)
             {
                 size_t ind_target[DIn];
                 coord_type pt_target[DIn];
@@ -1024,7 +1023,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnImage(ImageType
                 T v[DOut];
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( n=0; n<(long long)numOfPixels; n++ )
                 {
                     // target to world
@@ -1074,14 +1073,14 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnImage(ImageType
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnArray(ArrayType& target) const
+bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnArray(ArrayType& target) const
 {
     GADGET_CHECK_RETURN_FALSE(DOut==1);
     return this->evaluateFFDOnArray(&target);
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnArray(ArrayType target[DOut]) const
+bool FFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnArray(ArrayType target[DOut]) const
 {
     try
     {
@@ -1092,13 +1091,13 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnArray(ArrayType target
 
             long long y;
 
-            #pragma omp parallel private(y) shared(sx, sy, target)
+#pragma omp parallel private(y) shared(sx, sy, target)
             {
                 coord_type pg[2];
                 T v[DOut];
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( y=0; y<(long long)sy; y++ )
                 {
                     for ( size_t x=0; x<sx; x++ )
@@ -1144,13 +1143,13 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnArray(ArrayType target
 
             long long z;
 
-            #pragma omp parallel private(z) shared(sx, sy, sz, target)
+#pragma omp parallel private(z) shared(sx, sy, sz, target)
             {
                 coord_type pg[3];
                 T v[DOut];
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( z=0; z<(long long)sz; z++ )
                 {
                     for ( size_t y=0; y<sy; y++ )
@@ -1197,7 +1196,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnArray(ArrayType target
 
             long long n;
 
-            #pragma omp parallel private(n) shared(numOfPixels, target)
+#pragma omp parallel private(n) shared(numOfPixels, target)
             {
                 std::vector<size_t> ind_target(DIn);
                 coord_type pt_target[DIn];
@@ -1205,7 +1204,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnArray(ArrayType target
                 T v[DOut];
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( n=0; n<(long long)numOfPixels; n++ )
                 {
                     ind_target = target[0].calculate_index( size_t(n) );
@@ -1256,7 +1255,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::evaluateFFDOnArray(ArrayType target
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-bool gtplusFFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[DOut], CoordArrayType& pos, ValueArrayType& value)
+bool FFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[DOut], CoordArrayType& pos, ValueArrayType& value)
 {
     try
     {
@@ -1270,13 +1269,13 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[
             size_t sy = target[0].get_size(1);
 
             long long y;
- 
-            #pragma omp parallel private(y) shared(sx, sy, target, pos, value)
+
+#pragma omp parallel private(y) shared(sx, sy, target, pos, value)
             {
                 coord_type px, py;
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( y=0; y<(long long)sy; y++ )
                 {
                     for ( size_t x=0; x<sx; x++ )
@@ -1323,12 +1322,12 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[
 
             long long z;
 
-            #pragma omp parallel private(z) shared(sx, sy, sz, target, pos, value)
+#pragma omp parallel private(z) shared(sx, sy, sz, target, pos, value)
             {
                 coord_type px, py, pz;
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( z=0; z<(long long)sz; z++ )
                 {
                     for ( size_t y=0; y<sy; y++ )
@@ -1375,13 +1374,13 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[
         {
             long long n;
 
-            #pragma omp parallel private(n) shared(N, target)
+#pragma omp parallel private(n) shared(N, target)
             {
                 size_t ind_target[DIn];
                 coord_type pt_target[DIn];
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( n=0; n<(long long)N; n++ )
                 {
                     // target to world
@@ -1430,7 +1429,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-bool gtplusFFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[DOut], const MaskArrayType& mask, CoordArrayType& pos, ValueArrayType& value)
+bool FFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[DOut], const MaskArrayType& mask, CoordArrayType& pos, ValueArrayType& value)
 {
     try
     {
@@ -1496,7 +1495,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::imageToFFDInputsW(ImageType target[
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-bool gtplusFFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[DOut], CoordArrayType& pos, ValueArrayType& value)
+bool FFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[DOut], CoordArrayType& pos, ValueArrayType& value)
 {
     try
     {
@@ -1510,12 +1509,12 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[
             size_t sy = target[0].get_size(1);
 
             long long y;
- 
-            #pragma omp parallel private(y) shared(sx, sy, target, pos, value)
+
+#pragma omp parallel private(y) shared(sx, sy, target, pos, value)
             {
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( y=0; y<(long long)sy; y++ )
                 {
                     for ( size_t x=0; x<sx; x++ )
@@ -1559,11 +1558,11 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[
 
             long long z;
 
-            #pragma omp parallel private(z) shared(sx, sy, sz, target, pos, value)
+#pragma omp parallel private(z) shared(sx, sy, sz, target, pos, value)
             {
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( z=0; z<(long long)sz; z++ )
                 {
                     for ( size_t y=0; y<sy; y++ )
@@ -1607,12 +1606,12 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[
         {
             long long n;
 
-            #pragma omp parallel private(n) shared(N, target)
+#pragma omp parallel private(n) shared(N, target)
             {
                 std::vector<size_t> ind_target(DIn);
                 unsigned int d;
 
-                #pragma omp for 
+#pragma omp for 
                 for ( n=0; n<(long long)N; n++ )
                 {
                     ind_target = target[0].calculate_index( size_t(n) );
@@ -1658,7 +1657,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-bool gtplusFFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[DOut], const MaskArrayType& mask, CoordArrayType& pos, ValueArrayType& value)
+bool FFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[DOut], const MaskArrayType& mask, CoordArrayType& pos, ValueArrayType& value)
 {
     try
     {
@@ -1724,7 +1723,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::arrayToFFDInputsW(ArrayType target[
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType target[DOut], real_value_type& totalResidual, size_t numOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType target[DOut], real_value_type& totalResidual, size_t numOfRefinement)
 {
     try
     {
@@ -1747,7 +1746,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType tar
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType target[DOut], real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType target[DOut], real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
 {
     try
     {
@@ -1770,21 +1769,21 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType tar
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType& target, real_value_type& totalResidual, size_t numOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType& target, real_value_type& totalResidual, size_t numOfRefinement)
 {
     GADGET_CHECK_RETURN_FALSE(DOut==1);
     return this->ffdApproxImage(&target, totalResidual, numOfRefinement);
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType& target, real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType& target, real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
 {
     GADGET_CHECK_RETURN_FALSE(DOut==1);
     return this->ffdApproxImage(&target, totalResidual, numOfRefinement, thresResidual, maxNumOfRefinement);
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t numOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t numOfRefinement)
 {
     try
     {
@@ -1807,7 +1806,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType tar
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
 {
     try
     {
@@ -1830,7 +1829,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxImage(ImageType tar
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType target[DOut], real_value_type& totalResidual, size_t numOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType target[DOut], real_value_type& totalResidual, size_t numOfRefinement)
 {
     try
     {
@@ -1853,7 +1852,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType tar
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType target[DOut], real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType target[DOut], real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
 {
     try
     {
@@ -1876,21 +1875,21 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType tar
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType& target, real_value_type& totalResidual, size_t numOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType& target, real_value_type& totalResidual, size_t numOfRefinement)
 {
     GADGET_CHECK_RETURN_FALSE(DOut==1);
     return this->ffdApproxArray(&target, totalResidual, numOfRefinement);
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType& target, real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType& target, real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
 {
     GADGET_CHECK_RETURN_FALSE(DOut==1);
     return this->ffdApproxArray(&target, totalResidual, numOfRefinement, thresResidual, maxNumOfRefinement);
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t numOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t numOfRefinement)
 {
     try
     {
@@ -1913,7 +1912,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType tar
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
+inline bool FFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType target[DOut], const MaskArrayType& mask, real_value_type& totalResidual, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
 {
     try
     {
@@ -1935,7 +1934,7 @@ inline bool gtplusFFDBase<T, CoordType, DIn, DOut>::ffdApproxArray(ArrayType tar
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-bool gtplusFFDBase<T, CoordType, DIn, DOut>::clear(T v)
+bool FFDBase<T, CoordType, DIn, DOut>::clear(T v)
 {
     try
     {
@@ -1958,7 +1957,7 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::clear(T v)
     }
     catch(...)
     {
-        GERROR_STREAM("Error happened in gtplusFFDBase<T, CoordType, DIn, DOut>::clear(T v) ... ");
+        GERROR_STREAM("Error happened in FFDBase<T, CoordType, DIn, DOut>::clear(T v) ... ");
         return false;
     }
 
@@ -1966,13 +1965,13 @@ bool gtplusFFDBase<T, CoordType, DIn, DOut>::clear(T v)
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-void gtplusFFDBase<T, CoordType, DIn, DOut>::print(std::ostream& os) const
+void FFDBase<T, CoordType, DIn, DOut>::print(std::ostream& os) const
 {
     using namespace std;
 
-    os << "---------------------- GTPlus Free Form Deformation ------------------" << endl;
+    os << "---------------------- Free Form Deformation -------------------------" << endl;
     os << "Define the interface for Free Form Deformation (FFD) " << endl;
     os << "----------------------------------------------------------------------" << endl;
 }
 
-}}
+}

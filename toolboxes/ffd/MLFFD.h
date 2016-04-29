@@ -1,6 +1,5 @@
-/** \file       gtplusMLFFD.h
-
-    \brief      Implement gtPlus multi-level FreeFormDeformation
+/** \file       MLFFD.h
+    \brief      Implement multi-level FreeFormDeformation
                 For every level, the fitting residual from previous level will be approximated
                 The final fitted value is the sum of all levels
 
@@ -9,17 +8,17 @@
 
 #pragma once
 
-#include "gtplusFFDBase.h"
+#include "FFDBase.h"
 
-namespace Gadgetron { namespace gtPlus {
+namespace Gadgetron { 
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut>
-class gtplusMLFFD : public gtplusFFDBase<T, CoordType, DIn, DOut>
+class MLFFD : public FFDBase<T, CoordType, DIn, DOut>
 {
 public:
 
-    typedef gtplusFFDBase<T, CoordType, DIn, DOut> BaseClass;
-    typedef gtplusFFDBase<T, CoordType, DIn, DOut> Self;
+    typedef FFDBase<T, CoordType, DIn, DOut> BaseClass;
+    typedef FFDBase<T, CoordType, DIn, DOut> Self;
 
     typedef typename BaseClass::bspline_float_type real_value_type;
     typedef real_value_type bspline_float_type;
@@ -37,11 +36,11 @@ public:
 
     typedef std::vector<BaseClass*> FFDArrayType;
 
-    gtplusMLFFD(bool delete_data_on_destruct=false);
-    gtplusMLFFD(const FFDArrayType& a, bool delete_data_on_destruct=false);
-    gtplusMLFFD(const Self& a);
+    MLFFD(bool delete_data_on_destruct=false);
+    MLFFD(const FFDArrayType& a, bool delete_data_on_destruct=false);
+    MLFFD(const Self& a);
 
-    virtual ~gtplusMLFFD();
+    virtual ~MLFFD();
 
     size_t get_size() const { return ml_ffd_.size(); }
 
@@ -94,12 +93,12 @@ protected:
 };
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-gtplusMLFFD<T, CoordType, DIn, DOut>::gtplusMLFFD(bool delete_data_on_destruct) : delete_data_on_destruct_(delete_data_on_destruct)
+MLFFD<T, CoordType, DIn, DOut>::MLFFD(bool delete_data_on_destruct) : delete_data_on_destruct_(delete_data_on_destruct)
 {
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-gtplusMLFFD<T, CoordType, DIn, DOut>::gtplusMLFFD(const FFDArrayType& a, bool delete_data_on_destruct) : delete_data_on_destruct_(delete_data_on_destruct)
+MLFFD<T, CoordType, DIn, DOut>::MLFFD(const FFDArrayType& a, bool delete_data_on_destruct) : delete_data_on_destruct_(delete_data_on_destruct)
 {
     ml_ffd_.resize(a.size());
     for ( size_t ii=0; ii<a.size(); ii++ )
@@ -112,15 +111,15 @@ gtplusMLFFD<T, CoordType, DIn, DOut>::gtplusMLFFD(const FFDArrayType& a, bool de
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-gtplusMLFFD<T, CoordType, DIn, DOut>::
-gtplusMLFFD(const Self& a)
+MLFFD<T, CoordType, DIn, DOut>::
+MLFFD(const Self& a)
 {
     delete_data_on_destruct_ = false;
     ml_ffd_ = a.getFFDArray();
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-gtplusMLFFD<T, CoordType, DIn, DOut>::~gtplusMLFFD()
+MLFFD<T, CoordType, DIn, DOut>::~MLFFD()
 {
     if ( delete_data_on_destruct_ )
     {
@@ -136,7 +135,7 @@ gtplusMLFFD<T, CoordType, DIn, DOut>::~gtplusMLFFD()
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFD(const CoordType pt[D], T r[DOut]) const
+inline bool MLFFD<T, CoordType, DIn, DOut>::evaluateFFD(const CoordType pt[D], T r[DOut]) const
 {
     unsigned int d;
     for ( d=0; d<DOut; d++ )
@@ -162,7 +161,7 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFD(const CoordType pt
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDDerivative(const CoordType pt[D], T deriv[D][DOut]) const
+inline bool MLFFD<T, CoordType, DIn, DOut>::evaluateFFDDerivative(const CoordType pt[D], T deriv[D][DOut]) const
 {
     unsigned int d, d2;
     for ( d=0; d<D; d++ )
@@ -195,7 +194,7 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDDerivative(const Co
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDDX(const CoordType pt[D], T dx[DOut]) const
+inline bool MLFFD<T, CoordType, DIn, DOut>::evaluateFFDDX(const CoordType pt[D], T dx[DOut]) const
 {
     unsigned int d;
     for ( d=0; d<DOut; d++ )
@@ -222,7 +221,7 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDDX(const CoordType 
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDDY(const CoordType pt[D], T dy[DOut]) const
+inline bool MLFFD<T, CoordType, DIn, DOut>::evaluateFFDDY(const CoordType pt[D], T dy[DOut]) const
 {
     unsigned int d;
     for ( d=0; d<DOut; d++ )
@@ -250,7 +249,7 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDDY(const CoordType 
 
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDDZ(const CoordType pt[D], T dz[DOut]) const
+inline bool MLFFD<T, CoordType, DIn, DOut>::evaluateFFDDZ(const CoordType pt[D], T dz[DOut]) const
 {
     unsigned int d;
     for ( d=0; d<DOut; d++ )
@@ -278,7 +277,7 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDDZ(const CoordType 
 
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDDS(const CoordType pt[D], T ds[DOut]) const
+inline bool MLFFD<T, CoordType, DIn, DOut>::evaluateFFDDS(const CoordType pt[D], T ds[DOut]) const
 {
     unsigned int d;
     for ( d=0; d<DOut; d++ )
@@ -305,7 +304,7 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDDS(const CoordType 
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivative(const CoordType pt[D], T dderiv[D*D][DOut]) const
+inline bool MLFFD<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivative(const CoordType pt[D], T dderiv[D*D][DOut]) const
 {
     unsigned int d, d2;
     for ( d=0; d<D*D; d++ )
@@ -338,7 +337,7 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::evaluateFFDSecondOrderDerivati
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, T& totalResidual, size_t N)
+inline bool MLFFD<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, T& totalResidual, size_t N)
 {
     ValueArrayType valueLevel(value);
 
@@ -355,7 +354,7 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
+inline bool MLFFD<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType& pos, ValueArrayType& value, ValueArrayType& residual, real_value_type& totalResidual, size_t N, size_t& numOfRefinement, real_value_type thresResidual, size_t maxNumOfRefinement)
 {
     try
     {
@@ -396,7 +395,7 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::ffdApprox(const CoordArrayType
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::refine()
+inline bool MLFFD<T, CoordType, DIn, DOut>::refine()
 {
     size_t ii;
     for (ii=0; ii<ml_ffd_.size(); ii++)
@@ -410,11 +409,11 @@ inline bool gtplusMLFFD<T, CoordType, DIn, DOut>::refine()
 }
 
 template <typename T, typename CoordType, unsigned int DIn, unsigned int DOut> 
-void gtplusMLFFD<T, CoordType, DIn, DOut>::print(std::ostream& os) const
+void MLFFD<T, CoordType, DIn, DOut>::print(std::ostream& os) const
 {
     using namespace std;
 
-    os << "---------------------- GTPlus Multi-level Free Form Deformation ------------------" << endl;
+    os << "---------------------- Multi-level Free Form Deformation ------------------" << endl;
     os << "Number of level is : " << ml_ffd_.size() << endl;
 
     size_t ii;
@@ -433,4 +432,4 @@ void gtplusMLFFD<T, CoordType, DIn, DOut>::print(std::ostream& os) const
     os << "------------------------------------------------------------------------------" << endl;
 }
 
-}}
+}
