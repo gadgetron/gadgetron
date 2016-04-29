@@ -2,7 +2,7 @@
 
 #include "hoNDArray_math.h"
 
-using namespace Gadgetron;
+namespace Gadgetron{
 
 template<class T> struct isComplex { static constexpr mxComplexity value = mxREAL;};
 template<class REAL> struct isComplex<complext<REAL>> { static constexpr mxComplexity value = mxCOMPLEX;};
@@ -27,6 +27,10 @@ template<>	struct MatlabClassID<uint32_t>{ static constexpr mxClassID value =  m
 template<>	struct MatlabClassID<int64_t>{ static constexpr mxClassID value =  mxINT64_CLASS;};
 template<>	struct MatlabClassID<unsigned long>{ static constexpr mxClassID value =  mxUINT64_CLASS;};
 template<>	struct MatlabClassID<unsigned long long>{ static constexpr mxClassID value =  mxUINT64_CLASS;};
+
+// ------------------------
+// hoNDArray
+// ------------------------
 
 template<class T> struct MatlabConverter {
 	static mxArray* convert(hoNDArray<T>* input){
@@ -252,14 +256,291 @@ template<class REAL> struct MatlabConverter<std::complex<REAL>> {
 };
 
 template<class T> mxArray* Gadgetron::hoNDArrayToMatlab(hoNDArray<T> * input){
-	return MatlabConverter<T>::convert(input);
+    return MatlabConverter<T>::convert(input);
 
 }
 
 
 template<class T> hoNDArray<T> Gadgetron::MatlabToHoNDArray(mxArray* data){
-	return MatlabConverter<T>::convert(data);
+    return MatlabConverter<T>::convert(data);
 }
+
+template<class T> void Gadgetron::MatlabToHoNDArray(mxArray* data, hoNDArray<T>& a)
+{
+    a = MatlabConverter<T>::convert(data);
+}
+
+// ------------------------
+// for hoNDImage
+// ------------------------
+
+template <typename T, unsigned int D>
+class matlab_hoImage_header
+{
+public:
+
+    typedef hoNDImage<T, D> ImageType;
+
+    typedef typename ImageType::value_type value_type;
+    typedef typename ImageType::coord_type coord_type;
+    typedef typename ImageType::a_axis_type a_axis_type;
+    typedef typename ImageType::axis_type axis_type;
+
+    coord_type pixelSize_[D];
+    coord_type origin_[D];
+    hoNDPoint<coord_type, D> axis_[D];
+
+    matlab_hoImage_header();
+    matlab_hoImage_header(const ImageType& im);
+    virtual ~matlab_hoImage_header();
+
+    /// for the axis, it will be a D*D rotation matrix
+    /// every column is a oritentation vector for a dimension
+    virtual void toMatlab(mxArray*& header);
+    virtual void fromMatlab(const mxArray* header);
+
+protected:
+
+    // the header field names
+    std::vector<char*> header_fields_;
+
+    void set_header_fields()
+    {
+        size_t num = 3; // origin, pixelSize, axis
+        header_fields_.resize(3);
+        header_fields_[0] = "origin";
+        header_fields_[1] = "pixelSize";
+        header_fields_[2] = "axis";
+    }
+};
+
+template <typename T, unsigned int D>
+matlab_hoImage_header<T, D>::matlab_hoImage_header()
+{
+    unsigned int ii;
+    for (ii=0;ii<D; ii++)
+    {
+        pixelSize_[ii] = 1;
+        origin_[ii] = 0;
+        axis_[ii].fill(0);
+        axis_[ii][ii] = coord_type(1.0);
+    }
+
+    this->set_header_fields();
+}
+
+template <typename T, unsigned int D>
+matlab_hoImage_header<T, D>::matlab_hoImage_header(const ImageType& im)
+{
+    std::vector<coord_type> pixelSize;
+    im.get_pixel_size(pixelSize);
+
+    std::vector<coord_type> origin;
+    im.get_origin(origin);
+
+    axis_type axis;
+    im.get_axis(axis);
+
+    unsigned int ii;
+    for (ii=0;ii<D; ii++)
+    {
+        pixelSize_[ii] = pixelSize[ii];
+        origin_[ii] = origin[ii];
+        axis_[ii] = axis[ii];
+    }
+
+    this->set_header_fields();
+}
+
+template <typename T, unsigned int D>
+matlab_hoImage_header<T, D>::~matlab_hoImage_header()
+{
+
+}
+
+template <typename T, unsigned int D>
+void matlab_hoImage_header<T, D>::toMatlab(mxArray*& header)
+{
+    try
+    {
+        unsigned int ii, jj;
+
+        mwSize num[2] = {1, 1};
+        header = mxCreateStructArray(2, num, (int)header_fields_.size(), const_cast<const char**>(&header_fields_[0]));
+
+        mwSize dims[1];
+        dims[0] = D;
+
+        mxArray* aMx = mxCreateNumericArray(1, dims, mxSINGLE_CLASS, mxREAL);
+        float* pr = static_cast<float*>(mxGetData(aMx));
+        for ( ii=0; ii<D; ii++ )
+        {
+            pr[ii] = origin_[ii];
+        }
+
+        mxSetField(header, 0, header_fields_[0], aMx);
+
+        aMx = mxCreateNumericArray(1, dims, mxSINGLE_CLASS, mxREAL);
+        pr = static_cast<float*>(mxGetData(aMx));
+        for ( ii=0; ii<D; ii++ )
+        {
+            pr[ii] = pixelSize_[ii];
+        }
+
+        mxSetField(header, 0, header_fields_[1], aMx);
+
+        mwSize dimsAxis[2];
+        dimsAxis[0] = D;
+        dimsAxis[1] = D;
+
+        aMx = mxCreateNumericMatrix(D, D, mxSINGLE_CLASS, mxREAL);
+        pr = static_cast<float*>(mxGetData(aMx));
+        for ( jj=0; jj<D; jj++ )
+        {
+            for ( ii=0; ii<D; ii++ )
+            {
+                pr[jj + ii*D] = axis_[jj][ii]; // stored in column-wise
+            }
+        }
+
+        mxSetField(header, 0, header_fields_[2], aMx);
+    }
+    catch(...)
+    {
+        GERROR_STREAM("Error happened in matlab_hoImage_header<T, D>::toMatlab(mxArray*& header) ... ");
+    }
+}
+
+template <typename T, unsigned int D>
+void matlab_hoImage_header<T, D>::fromMatlab(const mxArray* header)
+{
+    try
+    {
+        GADGET_CHECK_THROW(mxIsStruct(header));
+
+        size_t ii, jj;
+
+        mxArray* aMx = mxGetField(header, 0, header_fields_[0]);
+        size_t N = mxGetNumberOfElements(aMx);
+
+        size_t minDN = ( (D<N) ? D : N );
+
+        if ( mxIsSingle(aMx) )
+        {
+            float* pr = static_cast<float*>(mxGetData(aMx));
+
+            for ( ii=0; ii<minDN; ii++ )
+            {
+                origin_[ii] = (coord_type)pr[ii];
+            }
+        }
+        else
+        {
+            double* pr = static_cast<double*>(mxGetData(aMx));
+
+            for ( ii=0; ii<minDN; ii++ )
+            {
+                origin_[ii] = (coord_type)pr[ii];
+            }
+        }
+
+        aMx = mxGetField(header, 0, header_fields_[1]);
+        N = mxGetNumberOfElements(aMx);
+
+        if ( mxIsSingle(aMx) )
+        {
+            float* pr = static_cast<float*>(mxGetData(aMx));
+
+            for ( ii=0; ii<minDN; ii++ )
+            {
+                pixelSize_[ii] = (coord_type)pr[ii];
+            }
+        }
+        else
+        {
+            double* pr = static_cast<double*>(mxGetData(aMx));
+
+            for ( ii=0; ii<minDN; ii++ )
+            {
+                pixelSize_[ii] = (coord_type)pr[ii];
+            }
+        }
+
+        aMx = mxGetField(header, 0, header_fields_[2]);
+
+        if ( mxIsSingle(aMx) )
+        {
+            float* pr = static_cast<float*>(mxGetData(aMx));
+
+            for ( jj=0; jj<minDN; jj++ )
+            {
+                for ( ii=0; ii<minDN; ii++ )
+                {
+                    axis_[jj][ii] = (coord_type)pr[jj + ii*D];
+                }
+            }
+        }
+        else
+        {
+            double* pr = static_cast<double*>(mxGetData(aMx));
+
+            for ( jj=0; jj<minDN; jj++ )
+            {
+                for ( ii=0; ii<minDN; ii++ )
+                {
+                    axis_[jj][ii] = (coord_type)pr[jj + ii*D];
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        GERROR_STREAM("Error happened in matlab_hoImage_header<T, D>::fromMatlab(const mxArray* header) ... ");
+    }
+}
+
+// ------------------------
+
+
+template<class T, unsigned int D> 
+mxArray* hoNDImageToMatlab(const hoNDImage<T, D>* a, mxArray*& h )
+{
+    std::vector<size_t> dim(D);
+    a->get_dimensions(dim);
+
+    hoNDArray<T> buf(dim, const_cast<T*>(a->get_data_ptr()), false);
+    mxArray* m = MatlabConverter<T>::convert(&buf);
+
+    matlab_hoImage_header<T, D> header(*a);
+    header.toMatlab(h);
+
+    return m;
+}
+
+template<class T, unsigned int D> 
+void MatlabToHoNDImage(const mxArray* m, const mxArray* h, hoNDImage<T, D>& a)
+{
+    mwSize ndim = mxGetNumberOfDimensions(m);
+    GADGET_CHECK_THROW( ndim == D );
+
+    hoNDArray<T> buf = MatlabConverter<T>::convert(const_cast<mxArray*>(m));
+    a.from_NDArray(buf);
+
+    matlab_hoImage_header<T, D> header;
+    header.fromMatlab(h);
+
+    unsigned int ii;
+    for ( ii=0; ii<D; ii++ )
+    {
+        a.set_pixel_size(ii, header.pixelSize_[ii]);
+        a.set_origin(ii, header.origin_[ii]);
+        a.set_axis(ii, header.axis_[ii]);
+    }
+}
+
+// ------------------------
+// IsmrmrdDataBuffered
+// ------------------------
 
 mxArray* Gadgetron::BufferToMatlabStruct(IsmrmrdDataBuffered* buffer){
 
@@ -387,7 +668,46 @@ mxArray* Gadgetron::samplingdescriptionToMatlabStruct(SamplingDescription* samp)
 	return sampStruct;
 }
 
+// ------------------------
+// std vector
+// ------------------------
 
+template<class T> 
+mxArray* StdVecToMatlab(const std::vector<T>* a)
+{
+    hoNDArray<T> t(a->size(), const_cast<T*>(&(*a)[0]));
+    return MatlabConverter<T>::convert(&t);
+}
+
+template<class T> 
+void MatlabToStdVec(const mxArray* m, std::vector<T>& a)
+{
+    hoNDArray<T> t = MatlabConverter<T>::convert(const_cast<mxArray*>(m));
+    a.resize(t.get_number_of_elements());
+    memcpy(&(a[0]), t.get_data_ptr(), t.get_number_of_bytes());
+}
+
+// ------------------------
+// std string
+// ------------------------
+
+mxArray* StdStringToMatlab(const std::string* a)
+{
+    return mxCreateString(a->c_str());
+}
+
+std::string MatlabToStdString(const mxArray* a)
+{
+    mwSize N = mxGetNumberOfElements(a) + 1;
+
+    std::vector<char> buf(N, '\0');
+    mxGetString(a, &buf[0], N);
+    return std::string(&buf[0]);
+}
+
+// ------------------------
+// Instantiation
+// ------------------------
 
 template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<float>(hoNDArray<float> *);
 template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<double>(hoNDArray<double> *);
@@ -408,13 +728,129 @@ template EXPORTMATLAB hoNDArray<double_complext> Gadgetron::MatlabToHoNDArray<do
 template EXPORTMATLAB hoNDArray<std::complex<double>> Gadgetron::MatlabToHoNDArray<std::complex<double>>(mxArray *);
 template EXPORTMATLAB hoNDArray<std::complex<float>> Gadgetron::MatlabToHoNDArray<std::complex<float>>(mxArray *);
 
+template EXPORTMATLAB void Gadgetron::MatlabToHoNDArray(mxArray * data, hoNDArray<float>& a);
+template EXPORTMATLAB void Gadgetron::MatlabToHoNDArray(mxArray * data, hoNDArray<double>& a);
+template EXPORTMATLAB void Gadgetron::MatlabToHoNDArray(mxArray * data, hoNDArray<float_complext>& a);
+template EXPORTMATLAB void Gadgetron::MatlabToHoNDArray(mxArray * data, hoNDArray<double_complext>& a);
+template EXPORTMATLAB void Gadgetron::MatlabToHoNDArray(mxArray * data, hoNDArray<std::complex<float> >& a);
+template EXPORTMATLAB void Gadgetron::MatlabToHoNDArray(mxArray * data, hoNDArray<std::complex<double> >& a);
+
 template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,1>>(hoNDArray<vector_td<float,1>> *);
 template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,2>>(hoNDArray<vector_td<float,2>> *);
 template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,3>>(hoNDArray<vector_td<float,3>> *);
 template EXPORTMATLAB mxArray* Gadgetron::hoNDArrayToMatlab<vector_td<float,4>>(hoNDArray<vector_td<float,4>> *);
 
 
-template EXPORTMATLAB hoNDArray<vector_td<float,1>> Gadgetron::MatlabToHoNDArray<vector_td<float,1>>(mxArray *);
-template EXPORTMATLAB hoNDArray<vector_td<float,2>> Gadgetron::MatlabToHoNDArray<vector_td<float,2>>(mxArray *);
-template EXPORTMATLAB hoNDArray<vector_td<float,3>> Gadgetron::MatlabToHoNDArray<vector_td<float,3>>(mxArray *);
-template EXPORTMATLAB hoNDArray<vector_td<float,4>> Gadgetron::MatlabToHoNDArray<vector_td<float,4>>(mxArray *);
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<short, 1>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<short, 2>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<short, 3>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<short, 4>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<short, 5>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<short, 6>* a, mxArray*& header );
+
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float, 1>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float, 2>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float, 3>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float, 4>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float, 5>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float, 6>* a, mxArray*& header );
+
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double, 1>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double, 2>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double, 3>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double, 4>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double, 5>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double, 6>* a, mxArray*& header );
+
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float_complext, 1>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float_complext, 2>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float_complext, 3>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float_complext, 4>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float_complext, 5>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<float_complext, 6>* a, mxArray*& header );
+
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double_complext, 1>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double_complext, 2>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double_complext, 3>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double_complext, 4>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double_complext, 5>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<double_complext, 6>* a, mxArray*& header );
+
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<float>, 1>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<float>, 2>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<float>, 3>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<float>, 4>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<float>, 5>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<float>, 6>* a, mxArray*& header );
+
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<double>, 1>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<double>, 2>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<double>, 3>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<double>, 4>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<double>, 5>* a, mxArray*& header );
+template EXPORTMATLAB mxArray* hoNDImageToMatlab(const hoNDImage<std::complex<double>, 6>* a, mxArray*& header );
+
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<short, 1>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<short, 2>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<short, 3>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<short, 4>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<short, 5>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<short, 6>& a);
+
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float, 1>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float, 2>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float, 3>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float, 4>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float, 5>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float, 6>& a);
+
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double, 1>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double, 2>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double, 3>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double, 4>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double, 5>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double, 6>& a);
+
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float_complext, 1>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float_complext, 2>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float_complext, 3>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float_complext, 4>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float_complext, 5>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<float_complext, 6>& a);
+
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double_complext, 1>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double_complext, 2>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double_complext, 3>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double_complext, 4>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double_complext, 5>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<double_complext, 6>& a);
+
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<float>, 1>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<float>, 2>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<float>, 3>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<float>, 4>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<float>, 5>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<float>, 6>& a);
+
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<double>, 1>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<double>, 2>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<double>, 3>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<double>, 4>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<double>, 5>& a);
+template EXPORTMATLAB void MatlabToHoNDImage(const mxArray* m, const mxArray* header, hoNDImage<std::complex<double>, 6>& a);
+
+template EXPORTMATLAB mxArray* StdVecToMatlab(const std::vector<float>* a);
+template EXPORTMATLAB mxArray* StdVecToMatlab(const std::vector<double>* a);
+template EXPORTMATLAB mxArray* StdVecToMatlab(const std::vector<float_complext>* a);
+template EXPORTMATLAB mxArray* StdVecToMatlab(const std::vector<double_complext>* a);
+template EXPORTMATLAB mxArray* StdVecToMatlab(const std::vector<std::complex<float> >* a);
+template EXPORTMATLAB mxArray* StdVecToMatlab(const std::vector<std::complex<double> >* a);
+
+template EXPORTMATLAB void MatlabToStdVec(const mxArray* m, std::vector<float>& a);
+template EXPORTMATLAB void MatlabToStdVec(const mxArray* m, std::vector<double>& a);
+template EXPORTMATLAB void MatlabToStdVec(const mxArray* m, std::vector<float_complext>& a);
+template EXPORTMATLAB void MatlabToStdVec(const mxArray* m, std::vector<double_complext>& a);
+template EXPORTMATLAB void MatlabToStdVec(const mxArray* m, std::vector<std::complex<float> >& a);
+template EXPORTMATLAB void MatlabToStdVec(const mxArray* m, std::vector<std::complex<double> >& a);
+
+}

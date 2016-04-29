@@ -145,21 +145,6 @@ if ( HAS_64_BIT )
 
     endif (MKL_FOUND OR ARMADILLO_FOUND)
 
-    # matlab
-    if (MATLAB_FOUND)
-        message("MATLAB FOUND: ${MATLAB_INCLUDE_DIR}, Matlab gt interface is being compiled.")
-        SET(CMAKE_DEBUG_POSTFIX)
-        include_directories( ${MATLAB_INCLUDE_DIR} )
-        set( matlab_files matlab/gtMatlab.h 
-                          matlab/gtMatlabConverter.h
-                          matlab/gtMatlabConverterComplex.h 
-                          matlab/gtMatlabImage.h )
-
-    else(MATLAB_FOUND)
-        message("MATLAB NOT FOUND ...")
-        set( matlab_files )
-    endif(MATLAB_FOUND)
-
     set(gtplus_files GtPlusExport.h 
                 ${util_header_files} 
                 ${util_src_files} )
@@ -175,17 +160,13 @@ if ( HAS_64_BIT )
                 ${solver_header_files} 
                 ${solver_src_files} 
                 ${application_header_files} 
-                ${application_src_files} 
-                ${matlab_files} )
+                ${application_src_files} )
 
         source_group(workflow FILES     ${workflow_header_files}    ${workflow_src_files})
         source_group(algorithm FILES    ${algorithm_header_files}   ${algorithm_src_files})
         source_group(solver FILES       ${solver_header_files}      ${solver_src_files})
         source_group(application FILES  ${application_header_files} ${application_src_files})
 
-        if (MATLAB_FOUND)
-            source_group(matlab FILES ${matlab_files})
-        endif(MATLAB_FOUND)
     endif (MKL_FOUND OR ARMADILLO_FOUND)
 
     add_library(gadgetron_toolbox_gtplus_io SHARED ${gtplus_io_header_files} ${gtplus_io_src_files} )
@@ -221,7 +202,6 @@ if ( HAS_64_BIT )
             ${solver_header_files} 
             ${application_header_files} 
             ${gtplus_io_header_files} 
-            ${matlab_files}
             DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
     # This one depends on the gadgets being compiled
