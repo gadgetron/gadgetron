@@ -1,22 +1,19 @@
 
 #include <matrix.h>
 #include <mat.h>
-#ifdef _WIN32
-    #include <mexGT.h>
-#else
-    #include <mex.h>
-#endif // _WIN32
+#ifdef MATLAB_DLL_EXPORT_SYM
+    #define DLL_EXPORT_SYM extern "C" __declspec(dllexport)
+#endif // MATLAB_DLL_EXPORT_SYM
+#include <mex.h>
 
 // Gadgetron includes
-#include "gtMatlab.h"
-#include "gtPlusISMRMRDReconUtil.h"
 #include "hoNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "hoNDPoint.h"
 #include "hoNDImage.h"
+#include "gtPlusIOAnalyze.h"
 
-#include "gtMatlabConverter.h"
-#include "gtMatlabConverterComplex.h"
+#include "MatlabUtils.h"
 
 #define MEXPRINTF(name) mexPrintf(#name);
 
@@ -32,7 +29,6 @@ static void usage()
     outs << "Usage: Matlab_gt_write_analyze \n";
     outs << "Write out the Gadgetron produced Analyze image file" << endl;
     outs << "Support 2D/3D/4D/5D/6D images with short/float/double data types" << endl;
-    printAuthorInfo(outs);
     outs << "3 Input paras:" << endl;
     outs << '\t' << "data       : image data" << endl;
     outs << '\t' << "header     : image header" << endl;
@@ -44,6 +40,21 @@ static void usage()
 
     std::string msg = outs.str();
     mexPrintf("%s\n", msg.c_str() );
+}
+
+template <typename T, unsigned int D> 
+bool convert_from_matlab(const mxArray* aMx, const mxArray* aHeader, Gadgetron::hoNDImage<T, D>& data)
+{
+    try
+    {
+        Gadgetron::MatlabToHoNDImage(aMx, aHeader, data);
+    }
+    catch(...)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
@@ -63,10 +74,6 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         using namespace Gadgetron;
         using namespace Gadgetron::gtPlus;
 
-        Gadgetron::gtMatlabConverter<float> converterFloat;
-        Gadgetron::gtMatlabConverter<double> converterDouble;
-        Gadgetron::gtMatlabConverter<short> converterShort;
-
         // ---------------------------------------------------------------
         // input parameters
         // ---------------------------------------------------------------    
@@ -75,27 +82,26 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         const mxArray* aMx = prhs[0];
         const mxArray* aHeader = prhs[1];
 
-        std::string filename;
-        converterFloat.Matlab2Str(prhs[2], filename);
+        std::string filename = Gadgetron::MatlabToStdString(prhs[2]);
 
         try
         {
             hoNDImage<float, 2> data;
-            if ( converterFloat.Matlab2hoNDImage(aMx, aHeader, data) )
+            if ( convert_from_matlab(aMx, aHeader, data) )
             {
                 gt_io.exportImage(data, filename);
             }
             else
             {
                 hoNDImage<double, 2> data;
-                if ( converterDouble.Matlab2hoNDImage(aMx, aHeader, data) )
+                if ( convert_from_matlab(aMx, aHeader, data) )
                 {
                     gt_io.exportImage(data, filename);
                 }
                 else
                 {
                     hoNDImage<short, 2> data;
-                    if ( converterShort.Matlab2hoNDImage(aMx, aHeader, data) )
+                    if ( convert_from_matlab(aMx, aHeader, data) )
                     {
                         gt_io.exportImage(data, filename);
                     }
@@ -111,21 +117,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
             try
             {
                 hoNDImage<float, 3> data;
-                if ( converterFloat.Matlab2hoNDImage(aMx, aHeader, data) )
+                if ( convert_from_matlab(aMx, aHeader, data) )
                 {
                     gt_io.exportImage(data, filename);
                 }
                 else
                 {
                     hoNDImage<double, 3> data;
-                    if ( converterDouble.Matlab2hoNDImage(aMx, aHeader, data) )
+                    if ( convert_from_matlab(aMx, aHeader, data) )
                     {
                         gt_io.exportImage(data, filename);
                     }
                     else
                     {
                         hoNDImage<short, 3> data;
-                        if ( converterShort.Matlab2hoNDImage(aMx, aHeader, data) )
+                        if ( convert_from_matlab(aMx, aHeader, data) )
                         {
                             gt_io.exportImage(data, filename);
                         }
@@ -141,21 +147,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
                 try
                 {
                     hoNDImage<float, 4> data;
-                    if ( converterFloat.Matlab2hoNDImage(aMx, aHeader, data) )
+                    if ( convert_from_matlab(aMx, aHeader, data) )
                     {
                         gt_io.exportImage(data, filename);
                     }
                     else
                     {
                         hoNDImage<double, 4> data;
-                        if ( converterDouble.Matlab2hoNDImage(aMx, aHeader, data) )
+                        if ( convert_from_matlab(aMx, aHeader, data) )
                         {
                             gt_io.exportImage(data, filename);
                         }
                         else
                         {
                             hoNDImage<short, 4> data;
-                            if ( converterShort.Matlab2hoNDImage(aMx, aHeader, data) )
+                            if ( convert_from_matlab(aMx, aHeader, data) )
                             {
                                 gt_io.exportImage(data, filename);
                             }
@@ -171,21 +177,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
                     try
                     {
                         hoNDImage<float, 5> data;
-                        if ( converterFloat.Matlab2hoNDImage(aMx, aHeader, data) )
+                        if ( convert_from_matlab(aMx, aHeader, data) )
                         {
                             gt_io.exportImage(data, filename);
                         }
                         else
                         {
                             hoNDImage<double, 5> data;
-                            if ( converterDouble.Matlab2hoNDImage(aMx, aHeader, data) )
+                            if ( convert_from_matlab(aMx, aHeader, data) )
                             {
                                 gt_io.exportImage(data, filename);
                             }
                             else
                             {
                                 hoNDImage<short, 5> data;
-                                if ( converterShort.Matlab2hoNDImage(aMx, aHeader, data) )
+                                if ( convert_from_matlab(aMx, aHeader, data) )
                                 {
                                     gt_io.exportImage(data, filename);
                                 }
@@ -201,21 +207,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
                         try
                         {
                             hoNDImage<float, 6> data;
-                            if ( converterFloat.Matlab2hoNDImage(aMx, aHeader, data) )
+                            if ( convert_from_matlab(aMx, aHeader, data) )
                             {
                                 gt_io.exportImage(data, filename);
                             }
                             else
                             {
                                 hoNDImage<double, 6> data;
-                                if ( converterDouble.Matlab2hoNDImage(aMx, aHeader, data) )
+                                if ( convert_from_matlab(aMx, aHeader, data) )
                                 {
                                     gt_io.exportImage(data, filename);
                                 }
                                 else
                                 {
                                     hoNDImage<short, 6> data;
-                                    if ( converterShort.Matlab2hoNDImage(aMx, aHeader, data) )
+                                    if ( convert_from_matlab(aMx, aHeader, data) )
                                     {
                                         gt_io.exportImage(data, filename);
                                     }

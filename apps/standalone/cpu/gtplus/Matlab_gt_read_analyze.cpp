@@ -1,22 +1,19 @@
 
 #include <matrix.h>
 #include <mat.h>
-#ifdef _WIN32
-    #include <mexGT.h>
-#else
-    #include <mex.h>
-#endif // _WIN32
+#ifdef MATLAB_DLL_EXPORT_SYM
+    #define DLL_EXPORT_SYM extern "C" __declspec(dllexport)
+#endif // MATLAB_DLL_EXPORT_SYM
+#include <mex.h>
 
 // Gadgetron includes
-#include "gtMatlab.h"
-#include "gtPlusISMRMRDReconUtil.h"
+#include "gtPlusIOAnalyze.h"
 #include "hoNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "hoNDPoint.h"
 #include "hoNDImage.h"
 
-#include "gtMatlabConverter.h"
-#include "gtMatlabConverterComplex.h"
+#include "MatlabUtils.h"
 
 #define MEXPRINTF(name) mexPrintf(#name);
 
@@ -32,7 +29,6 @@ static void usage()
     outs << "Usage: Matlab_gt_read_analyze \n";
     outs << "Read in the Gadgetron produced Analyze image file" << endl;
     outs << "Support 2D/3D/4D/5D/6D images with short/float/double data types" << endl;
-    printAuthorInfo(outs);
     outs << "1 Input paras:" << endl;
     outs << '\t' << "filename   : file name of the analyze image, no .hdr or .img extension needed" << endl;
 
@@ -70,42 +66,37 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         using namespace Gadgetron;
         using namespace Gadgetron::gtPlus;
 
-        Gadgetron::gtMatlabConverter<float> converterFloat;
-        Gadgetron::gtMatlabConverter<double> converterDouble;
-        Gadgetron::gtMatlabConverter<short> converterShort;
-
         // ---------------------------------------------------------------
         // input parameters
         // ---------------------------------------------------------------    
         // file name
-        std::string filename;
-        converterFloat.Matlab2Str(prhs[0], filename);
-
-        gtPlusIOAnalyze gt_io;
+        std::string filename = Gadgetron::MatlabToStdString(prhs[0]);
 
         mxArray* aMx = NULL;
         mxArray* aHeader = NULL;
+
+        gtPlusIOAnalyze gt_io;
 
         try
         {
             hoNDImage<float, 2> data;
             if ( gt_io.importImage(data, filename) )
             {
-                converterFloat.hoNDImage2Matlab(data, aMx, aHeader);
+                aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
             }
             else
             {
                 hoNDImage<double, 2> data;
                 if ( gt_io.importImage(data, filename) )
                 {
-                    converterDouble.hoNDImage2Matlab(data, aMx, aHeader);
+                    aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                 }
                 else
                 {
                     hoNDImage<short, 2> data;
                     if ( gt_io.importImage(data, filename) )
                     {
-                        converterShort.hoNDImage2Matlab(data, aMx, aHeader);
+                        aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                     }
                     else
                     {
@@ -121,21 +112,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
                 hoNDImage<float, 3> data;
                 if ( gt_io.importImage(data, filename) )
                 {
-                    converterFloat.hoNDImage2Matlab(data, aMx, aHeader);
+                    aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                 }
                 else
                 {
                     hoNDImage<double, 3> data;
                     if ( gt_io.importImage(data, filename) )
                     {
-                        converterDouble.hoNDImage2Matlab(data, aMx, aHeader);
+                        aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                     }
                     else
                     {
                         hoNDImage<short, 3> data;
                         if ( gt_io.importImage(data, filename) )
                         {
-                            converterShort.hoNDImage2Matlab(data, aMx, aHeader);
+                            aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                         }
                         else
                         {
@@ -151,21 +142,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
                     hoNDImage<float, 4> data;
                     if ( gt_io.importImage(data, filename) )
                     {
-                        converterFloat.hoNDImage2Matlab(data, aMx, aHeader);
+                        aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                     }
                     else
                     {
                         hoNDImage<double, 4> data;
                         if ( gt_io.importImage(data, filename) )
                         {
-                            converterDouble.hoNDImage2Matlab(data, aMx, aHeader);
+                            aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                         }
                         else
                         {
                             hoNDImage<short, 4> data;
                             if ( gt_io.importImage(data, filename) )
                             {
-                                converterShort.hoNDImage2Matlab(data, aMx, aHeader);
+                                aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                             }
                             else
                             {
@@ -181,21 +172,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
                         hoNDImage<float, 5> data;
                         if ( gt_io.importImage(data, filename) )
                         {
-                            converterFloat.hoNDImage2Matlab(data, aMx, aHeader);
+                            aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                         }
                         else
                         {
                             hoNDImage<double, 5> data;
                             if ( gt_io.importImage(data, filename) )
                             {
-                                converterDouble.hoNDImage2Matlab(data, aMx, aHeader);
+                                aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                             }
                             else
                             {
                                 hoNDImage<short, 5> data;
                                 if ( gt_io.importImage(data, filename) )
                                 {
-                                    converterShort.hoNDImage2Matlab(data, aMx, aHeader);
+                                    aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                                 }
                                 else
                                 {
@@ -211,21 +202,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
                             hoNDImage<float, 6> data;
                             if ( gt_io.importImage(data, filename) )
                             {
-                                converterFloat.hoNDImage2Matlab(data, aMx, aHeader);
+                                aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                             }
                             else
                             {
                                 hoNDImage<double, 6> data;
                                 if ( gt_io.importImage(data, filename) )
                                 {
-                                    converterDouble.hoNDImage2Matlab(data, aMx, aHeader);
+                                    aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                                 }
                                 else
                                 {
                                     hoNDImage<short, 6> data;
                                     if ( gt_io.importImage(data, filename) )
                                     {
-                                        converterShort.hoNDImage2Matlab(data, aMx, aHeader);
+                                        aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                                     }
                                     else
                                     {

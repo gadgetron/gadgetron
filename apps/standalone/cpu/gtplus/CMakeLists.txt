@@ -10,6 +10,7 @@ if (MATLAB_FOUND)
         ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
+        ${CMAKE_SOURCE_DIR}/toolboxes/matlab
         ${ACE_INCLUDE_DIR}
         ${MATLAB_INCLUDE_DIR}  
         ${ISMRMRD_INCLUDE_DIR} 
@@ -19,9 +20,11 @@ if (MATLAB_FOUND)
     link_libraries(${MATLAB_LIBRARIES} 
                     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
                     ${ISMRMRD_LIBRARIES} 
-                    gadgetron_toolbox_gtplus 
+                    gadgetron_toolbox_matlab 
+                    gadgetron_toolbox_gtplus_io 
                     gadgetron_toolbox_cpucore 
                     gadgetron_toolbox_cpucore_math
+                    gadgetron_toolbox_mri_core
                     gadgetron_toolbox_cpureg )
 
     if (WIN32)
@@ -30,6 +33,8 @@ if (MATLAB_FOUND)
         else ( HAS_64_BIT )
             SET(MATLAB_SUFFIX ".mexw32")
         endif ( HAS_64_BIT )
+
+        add_definitions(-DMATLAB_DLL_EXPORT_SYM)
     endif (WIN32)
 
     if (UNIX)
@@ -56,13 +61,9 @@ if (MATLAB_FOUND)
         SET_TARGET_PROPERTIES(Matlab_gt_write_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
         install(TARGETS Matlab_gt_write_analyze DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
-        add_library(Matlab_compute_coil_map_2D SHARED Matlab_compute_coil_map_2D.cpp)
-        SET_TARGET_PROPERTIES(Matlab_compute_coil_map_2D PROPERTIES SUFFIX ${MATLAB_SUFFIX})
-        install(TARGETS Matlab_compute_coil_map_2D DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
-
-        add_library(Matlab_compute_coil_map_3D SHARED Matlab_compute_coil_map_3D.cpp)
-        SET_TARGET_PROPERTIES(Matlab_compute_coil_map_3D PROPERTIES SUFFIX ${MATLAB_SUFFIX})
-        install(TARGETS Matlab_compute_coil_map_3D DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
+        add_library(Matlab_gt_compute_coil_map SHARED Matlab_compute_coil_map.cpp)
+        SET_TARGET_PROPERTIES(Matlab_gt_compute_coil_map PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+        install(TARGETS Matlab_gt_compute_coil_map DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
     endif ( MKL_FOUND AND FFTW3_FOUND )
 
