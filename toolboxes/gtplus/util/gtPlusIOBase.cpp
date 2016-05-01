@@ -3,7 +3,7 @@
     \author     Hui Xue
 */
 
-#include <gtPlusIOBase.h>
+#include "gtPlusIOBase.h"
 
 namespace Gadgetron { namespace gtPlus {
 
