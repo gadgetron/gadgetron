@@ -6,7 +6,7 @@
     http://eeg.sourceforge.net/ANALYZE75.pdf
 */
 
-#include <gtPlusIOAnalyze.h>
+#include "gtPlusIOAnalyze.h"
 
 // to suppor the ISMRMRD format
 // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]

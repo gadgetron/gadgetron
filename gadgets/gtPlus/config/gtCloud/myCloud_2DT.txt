@@ -1,8 +1,0 @@
-localhost
-9002
-1
-localhost
-9003
-GT_2DT_Cartesian_CloudNode.xml
-1
-0

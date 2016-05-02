@@ -75,10 +75,6 @@ if(ARMADILLO_FOUND)
     target_link_libraries(gadgetron_dicom gadgetron_toolbox_cpucore_math )
 endif(ARMADILLO_FOUND)
 
-if(MKL_FOUND)
-    target_link_libraries(gadgetron_dicom gadgetron_toolbox_gtplus )
-endif(MKL_FOUND)
-
 install(
     FILES DicomFinishGadget.h DicomImageWriter.h gadgetron_dicom_export.h
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
