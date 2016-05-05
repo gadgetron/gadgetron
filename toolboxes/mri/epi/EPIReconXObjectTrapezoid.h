@@ -51,6 +51,7 @@ template <typename T> class EPIReconXObjectTrapezoid : public EPIReconXObject<T>
   hoNDArray <T> Mneg_;
   bool operatorComputed_;
 
+  float calcOffCenterDistance(ISMRMRD::AcquisitionHeader& hdr_in);
 };
 
 template <typename T> EPIReconXObjectTrapezoid<T>::EPIReconXObjectTrapezoid()
@@ -203,6 +204,40 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::apply(ISMRMRD::Acquisitio
     arma::cx_mat Mn(reconNx_,numSamples_);
     Mp = F * arma::pinv(Qp);
     Mn = F * arma::pinv(Qn);
+
+    /////    Compute the off-center correction:     /////
+
+    // Compute the off-center distance in the RO direction:
+    float roOffCenterDistance = calcOffCenterDistance( hdr_in );
+
+    arma::Col<typename realType<T>::Type> my_keven = arma::linspace< arma::Col<typename realType<T>::Type> >(0, numSamples_ -1, numSamples_);
+    // find the offset:
+    // PV: maybe find not just exactly 0, but a very small number?
+    arma::Col<typename realType<T>::Type> trajectoryPosArma = as_arma_col(&trajectoryPos_);
+    arma::uvec n = find( trajectoryPosArma==0, 1, "first");
+    my_keven -= arma::as_scalar(n);
+    // Scale it:
+    // We have to find the maximum k-trajectory (absolute) increment:
+    arma::Col<typename realType<T>::Type> Delta_k = arma::abs( trajectoryPosArma.subvec(1,numSamples_-1) - trajectoryPosArma.subvec(0,numSamples_-2) );
+    my_keven *= Delta_k.max();
+
+    // off-center corrections:
+    arma::Col<T> myExponent = arma::zeros< arma::Col<T> >(numSamples_);
+    myExponent.set_imag( 2*M_PI*roOffCenterDistance/encodeFOV_*(trajectoryPosArma-my_keven) );
+    arma::Col<T> offCenterCorrN = arma::exp( myExponent );
+    myExponent.set_imag( 2*M_PI*roOffCenterDistance/encodeFOV_*(as_arma_col(&trajectoryNeg_)+my_keven) );
+    arma::Col<T> offCenterCorrP = arma::exp( myExponent );
+
+    //    GDEBUG_STREAM("roOffCenterDistance_: " << roOffCenterDistance_ << ";       encodeFOV_: " << encodeFOV_);
+    //    for (q=0; q<numSamples_; q++) {
+    //      GDEBUG_STREAM("keven(" << q << "): " << my_keven(q) << ";       trajectoryPosArma(" << q << "): " << trajectoryPosArma(q) );
+    //      GDEBUG_STREAM("offCenterCorrP(" << q << "):" << offCenterCorrP(q) );
+    //    }
+
+    // Finally, combine the off-center correction with the recon operator:
+    Mp = Mp * diagmat(offCenterCorrP);
+    Mn = Mn * diagmat(offCenterCorrN);
+    // and save it into the NDArray members:
     for (p=0; p<reconNx_; p++) {
       for (q=0; q<numSamples_; q++) {
         Mpos_(p,q) = Mp(p,q);
@@ -240,4 +275,22 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::apply(ISMRMRD::Acquisitio
   return 0;
 }
 
+template <typename T> float EPIReconXObjectTrapezoid<T>::calcOffCenterDistance(ISMRMRD::AcquisitionHeader& hdr_in)
+{
+  // armadillo vectors with the position and readout direction:
+  arma::fvec pos(3);
+  arma::fvec RO_dir(3);
+
+  for (int i=0; i<3; i++) {
+    pos(i)    = hdr_in.position[i];
+    RO_dir(i) = hdr_in.read_dir[i];
+  }
+
+  float roOffCenterDistance = dot(pos, RO_dir);
+  GDEBUG_STREAM("roOffCenterDistance: " << roOffCenterDistance );
+
+  return roOffCenterDistance;
+
+}
+	
 }}
