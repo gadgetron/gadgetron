@@ -11,7 +11,7 @@
 #include "linearOperator.h"
 
 //#include "GadgetronTimer.h"
-//#include "gtPlusIOAnalyze.h"
+//#include "ImageIOAnalyze.h"
 
 namespace Gadgetron { 
 
@@ -122,7 +122,7 @@ protected:
     //Gadgetron::GadgetronTimer gt_timer3_;
 
     //// exporter
-    //Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
+    //Gadgetron::ImageIOAnalyze gt_exporter_;
 };
 
 }

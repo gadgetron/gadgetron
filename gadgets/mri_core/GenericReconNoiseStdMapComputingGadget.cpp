@@ -121,7 +121,7 @@ namespace Gadgetron {
 
         //if (!debug_folder_full_path_.empty())
         //{
-        //    gt_exporter_.exportArrayComplex(cm1->getObjectPtr()->data_, debug_folder_full_path_ + "incoming_SNR_images_" + str);
+        //    gt_exporter_.export_array_complex(cm1->getObjectPtr()->data_, debug_folder_full_path_ + "incoming_SNR_images_" + str);
         //}
 
         // compute std map
@@ -175,7 +175,7 @@ namespace Gadgetron {
 
         //if (!debug_folder_full_path_.empty())
         //{
-        //    gt_exporter_.exportArray(stdMap, debug_folder_full_path_ + "std_map_" + str);
+        //    gt_exporter_.export_array(stdMap, debug_folder_full_path_ + "std_map_" + str);
         //}
 
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconNoiseStdMapComputingGadget::process(...) ends ... ");

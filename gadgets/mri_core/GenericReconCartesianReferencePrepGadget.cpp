@@ -147,7 +147,7 @@ namespace Gadgetron {
 
             //if (!debug_folder_full_path_.empty())
             //{
-            //    this->gt_exporter_.exportArrayComplex(rbit.ref_->data_, debug_folder_full_path_ + "ref_data" + os.str());
+            //    this->gt_exporter_.export_array_complex(rbit.ref_->data_, debug_folder_full_path_ + "ref_data" + os.str());
             //}
 
             // useful variables
@@ -183,7 +183,7 @@ namespace Gadgetron {
 
             //if (!debug_folder_full_path_.empty())
             //{
-            //    this->gt_exporter_.exportArrayComplex(ref_calib, debug_folder_full_path_ + "ref_calib" + os.str());
+            //    this->gt_exporter_.export_array_complex(ref_calib, debug_folder_full_path_ + "ref_calib" + os.str());
             //}
 
             // step 2, detect sampled region in ref, along E1 and E2
@@ -231,7 +231,7 @@ namespace Gadgetron {
 
             //if (!debug_folder_full_path_.empty())
             //{
-            //    this->gt_exporter_.exportArrayComplex(ref_calib, debug_folder_full_path_ + "ref_calib_after_crop" + os.str());
+            //    this->gt_exporter_.export_array_complex(ref_calib, debug_folder_full_path_ + "ref_calib_after_crop" + os.str());
             //}
 
             // step 3, update the sampling limits
@@ -269,7 +269,7 @@ namespace Gadgetron {
 
             //if (!debug_folder_full_path_.empty())
             //{
-            //    this->gt_exporter_.exportArrayComplex(rbit.ref_->data_, debug_folder_full_path_ + "ref_calib_final" + os.str());
+            //    this->gt_exporter_.export_array_complex(rbit.ref_->data_, debug_folder_full_path_ + "ref_calib_final" + os.str());
             //}
         }
 

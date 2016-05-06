@@ -20,7 +20,7 @@
 #include "mri_core_data.h"
 #include "mri_core_utility.h"
 
-// #include "gtPlusIOAnalyze.h"
+// #include "ImageIOAnalyze.h"
 
 namespace Gadgetron {
 
@@ -61,7 +61,7 @@ namespace Gadgetron {
         // std::string debug_folder_full_path_;
 
         // exporter
-        // Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
+        // Gadgetron::ImageIOAnalyze gt_exporter_;
 
         // --------------------------------------------------
         // gadget functions

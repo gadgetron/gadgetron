@@ -36,9 +36,7 @@ IF (ACE_FOUND)
   add_subdirectory(cloudbus)
 ENDIF()
 
-IF (FFTW3_FOUND AND ISMRMRD_FOUND)
-  add_subdirectory(gtplus)
-ENDIF()
+add_subdirectory(image_io)
 
 find_package(BLAS)
 find_package(LAPACK)

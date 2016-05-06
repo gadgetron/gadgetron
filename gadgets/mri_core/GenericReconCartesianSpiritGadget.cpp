@@ -110,11 +110,11 @@ namespace Gadgetron {
             GDEBUG_CONDITION_STREAM(verbose.value(), "Calling " << process_called_times_ << " , encoding space : " << e);
             GDEBUG_CONDITION_STREAM(verbose.value(), "======================================================================");
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str()); }
+            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str()); }
 
             if (recon_bit_->rbit_[e].ref_)
             {
-                // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].ref_->data_, debug_folder_full_path_ + "ref" + os.str()); }
+                // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit_->rbit_[e].ref_->data_, debug_folder_full_path_ + "ref" + os.str()); }
 
                 // after this step, the recon_obj_[e].ref_calib_ and recon_obj_[e].ref_coil_map_ are set
 
@@ -122,8 +122,8 @@ namespace Gadgetron {
                 this->make_ref_coil_map(*recon_bit_->rbit_[e].ref_,*recon_bit_->rbit_[e].data_.data_.get_dimensions(), recon_obj_[e].ref_calib_, recon_obj_[e].ref_coil_map_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.exportArrayComplex(recon_obj_[e].ref_calib_, debug_folder_full_path_ + "ref_calib" + os.str()); }
-                // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.exportArrayComplex(recon_obj_[e].ref_coil_map_, debug_folder_full_path_ + "ref_coil_map" + os.str()); }
+                // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(recon_obj_[e].ref_calib_, debug_folder_full_path_ + "ref_calib" + os.str()); }
+                // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(recon_obj_[e].ref_coil_map_, debug_folder_full_path_ + "ref_coil_map" + os.str()); }
 
                 // ----------------------------------------------------------
 
@@ -132,7 +132,7 @@ namespace Gadgetron {
                 this->perform_coil_map_estimation(recon_obj_[e].ref_coil_map_, recon_obj_[e].coil_map_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.exportArrayComplex(recon_obj_[e].coil_map_, debug_folder_full_path_ + "coil_map_" + os.str()); }
+                // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(recon_obj_[e].coil_map_, debug_folder_full_path_ + "coil_map_" + os.str()); }
 
                 // ---------------------------------------------------------------
 
@@ -148,7 +148,7 @@ namespace Gadgetron {
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
             {
-                // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data_before_unwrapping" + os.str()); }
+                // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data_before_unwrapping" + os.str()); }
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianSpiritGadget::perform_unwrapping"); }
                 this->perform_unwrapping(recon_bit_->rbit_[e], recon_obj_[e], e);
@@ -162,7 +162,7 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
 
-                // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.exportArrayComplex(recon_obj_[e].recon_res_.data_, debug_folder_full_path_ + "recon_res" + os.str()); }
+                // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(recon_obj_[e].recon_res_.data_, debug_folder_full_path_ + "recon_res" + os.str()); }
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianSpiritGadget::send_out_image_array"); }
                 this->send_out_image_array(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
@@ -327,7 +327,7 @@ namespace Gadgetron {
             os << "encoding_" << e;
             std::string suffix = os.str();
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix); }
+            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix); }
 
             // ------------------------------------------------------------------
             // compute effective acceleration factor
@@ -418,7 +418,7 @@ namespace Gadgetron {
                         if (this->perform_timing.value()) timer.start("SPIRIT linear 3D, ifft1c along RO ... ");
                         Gadgetron::hoNDFFT<float>::instance()->ifft1c(kspace3D, kspaceIfftRO);
                         if (this->perform_timing.value()) timer.stop();
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(kspaceIfftRO, debug_folder_full_path_ + "kspaceIfftRO_" + suffix_3D); }
+                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kspaceIfftRO, debug_folder_full_path_ + "kspaceIfftRO_" + suffix_3D); }
 
                         if (this->perform_timing.value()) timer.start("SPIRIT linear 3D, permute along RO ... ");
                         std::complex<float>* pKspaceRO = kspaceIfftRO.begin();
@@ -440,7 +440,7 @@ namespace Gadgetron {
                             }
                         }
                         if (this->perform_timing.value()) timer.stop();
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(kspaceIfftROPermuted, debug_folder_full_path_ + "kspaceIfftROPermuted_" + suffix_3D); }
+                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kspaceIfftROPermuted, debug_folder_full_path_ + "kspaceIfftROPermuted_" + suffix_3D); }
 
                         // ---------------------------------------------------------------------
                         // get the kspace for recon
@@ -478,15 +478,15 @@ namespace Gadgetron {
                             os_ro << "encoding_" << e << "_n" << n << "_s" << s << "_slc" << slc << "_ro" << start_ro << "_" << end_ro;
                             std::string suffix_3D_ro = os_ro.str();
 
-                            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(kspace3D_recon_ro, debug_folder_full_path_ + "kspace3D_recon_ro_" + suffix_3D_ro); }
-                            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(kIm3D_recon_ro, debug_folder_full_path_ + "kIm3D_recon_ro_" + suffix_3D_ro); }
+                            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kspace3D_recon_ro, debug_folder_full_path_ + "kspace3D_recon_ro_" + suffix_3D_ro); }
+                            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kIm3D_recon_ro, debug_folder_full_path_ + "kIm3D_recon_ro_" + suffix_3D_ro); }
 
                             if(num==RO_recon_size)
                             {
                                 if (this->perform_timing.value()) timer.start("SPIRIT linear 3D, image domain kernel along E1 and E2 ... ");
                                 Gadgetron::spirit3d_image_domain_kernel(kIm3D_recon_ro, E1, E2, kIm);
                                 if (this->perform_timing.value()) timer.stop();
-                                // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(kIm, debug_folder_full_path_ + "kIm_" + suffix_3D_ro); }
+                                // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kIm, debug_folder_full_path_ + "kIm_" + suffix_3D_ro); }
 
                                 if (this->perform_timing.value()) timer.start("SPIRIT linear 3D, linear unwrapping ... ");
                                 this->perform_spirit_unwrapping(kspace3D_recon_ro, kIm, res_ro_recon);
@@ -498,14 +498,14 @@ namespace Gadgetron {
                                 hoNDArray< std::complex<float> > kIm_last(E1, E2, srcCHA, dstCHA, num);
                                 Gadgetron::spirit3d_image_domain_kernel(kIm3D_recon_ro, E1, E2, kIm_last);
                                 if (this->perform_timing.value()) timer.stop();
-                                // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(kIm_last, debug_folder_full_path_ + "kIm_last_" + suffix_3D_ro); }
+                                // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kIm_last, debug_folder_full_path_ + "kIm_last_" + suffix_3D_ro); }
 
                                 if (this->perform_timing.value()) timer.start("SPIRIT linear 3D, linear unwrapping ... ");
                                 this->perform_spirit_unwrapping(kspace3D_recon_ro, kIm_last, res_ro_recon);
                                 if (this->perform_timing.value()) timer.stop();
                             }
 
-                            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(res_ro_recon, debug_folder_full_path_ + "res_ro_recon_" + suffix_3D_ro); }
+                            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res_ro_recon, debug_folder_full_path_ + "res_ro_recon_" + suffix_3D_ro); }
 
                             // ---------------------------------------------------------------------
                             // copy the recon results
@@ -532,7 +532,7 @@ namespace Gadgetron {
                         if (this->perform_timing.value()) timer.start("SPIRIT linear 3D, fft along RO for res ... ");
                         Gadgetron::hoNDFFT<float>::instance()->fft1c(res_recon);
                         if (this->perform_timing.value()) timer.stop();
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(res_recon, debug_folder_full_path_ + "res_recon_" + suffix_3D); }
+                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res_recon, debug_folder_full_path_ + "res_recon_" + suffix_3D); }
                     }
                 }
                 else
@@ -541,7 +541,7 @@ namespace Gadgetron {
                     this->perform_spirit_unwrapping(kspace, recon_obj.kernelIm2D_, res);
                     if (this->perform_timing.value()) timer.stop();
 
-                    // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(res, debug_folder_full_path_ + "res_spirit_2D_" + suffix); }
+                    // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res, debug_folder_full_path_ + "res_spirit_2D_" + suffix); }
                 }
             }
 
@@ -552,7 +552,7 @@ namespace Gadgetron {
             this->perform_spirit_coil_combine(recon_obj);
             if (this->perform_timing.value()) timer.stop();
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix); }
+            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix); }
         }
         catch (...)
         {

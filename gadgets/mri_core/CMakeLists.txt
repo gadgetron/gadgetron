@@ -46,8 +46,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/dissimilarity
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
+    ${CMAKE_SOURCE_DIR}/toolboxes/image_io
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
@@ -201,7 +200,7 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_cpuklt
     gadgetron_toolbox_mri_core
     gadgetron_toolbox_cpuoperator
-    # gadgetron_toolbox_gtplus_io
+    # gadgetron_toolbox_image_analyze_io
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 

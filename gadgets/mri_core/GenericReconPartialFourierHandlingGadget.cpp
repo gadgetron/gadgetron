@@ -234,7 +234,7 @@ namespace Gadgetron {
 
         /*if (!debug_folder_full_path_.empty())
         {
-            gt_exporter_.exportArrayComplex(kspace_buf_, debug_folder_full_path_ + "kspace_before_pf");
+            gt_exporter_.export_array_complex(kspace_buf_, debug_folder_full_path_ + "kspace_before_pf");
         }*/
 
         // ----------------------------------------------------------
@@ -244,7 +244,7 @@ namespace Gadgetron {
 
         /*if (!debug_folder_full_path_.empty())
         {
-            gt_exporter_.exportArrayComplex(pf_res_, debug_folder_full_path_ + "kspace_after_pf");
+            gt_exporter_.export_array_complex(pf_res_, debug_folder_full_path_ + "kspace_after_pf");
         }*/
 
         // ----------------------------------------------------------
@@ -261,7 +261,7 @@ namespace Gadgetron {
 
         /*if (!debug_folder_full_path_.empty())
         {
-            gt_exporter_.exportArrayComplex(recon_res_->data_, debug_folder_full_path_ + "data_after_pf");
+            gt_exporter_.export_array_complex(recon_res_->data_, debug_folder_full_path_ + "data_after_pf");
         }*/
 
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconPartialFourierHandlingGadget::process(...) ends ... ");

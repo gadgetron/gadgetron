@@ -66,9 +66,9 @@ namespace Gadgetron {
 
         /*if (!debug_folder_full_path_.empty())
         {
-            if (filter_pf_RO_.get_number_of_elements()>0) gt_exporter_.exportArrayComplex(filter_pf_RO_, debug_folder_full_path_ + "filter_pf_RO");
-            if (filter_pf_E1_.get_number_of_elements()>0) gt_exporter_.exportArrayComplex(filter_pf_E1_, debug_folder_full_path_ + "filter_pf_E1");
-            if (filter_pf_E2_.get_number_of_elements()>0) gt_exporter_.exportArrayComplex(filter_pf_E2_, debug_folder_full_path_ + "filter_pf_E2");
+            if (filter_pf_RO_.get_number_of_elements()>0) gt_exporter_.export_array_complex(filter_pf_RO_, debug_folder_full_path_ + "filter_pf_RO");
+            if (filter_pf_E1_.get_number_of_elements()>0) gt_exporter_.export_array_complex(filter_pf_E1_, debug_folder_full_path_ + "filter_pf_E1");
+            if (filter_pf_E2_.get_number_of_elements()>0) gt_exporter_.export_array_complex(filter_pf_E2_, debug_folder_full_path_ + "filter_pf_E2");
         }*/
 
         return GADGET_OK;
