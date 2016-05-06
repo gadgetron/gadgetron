@@ -257,7 +257,7 @@ public:
 
             std::string filenameReal = filename;
             filenameReal.append("_REAL");
-            GADGET_CHECK_THROW(exportArray(buf, filenameReal));
+            export_array(buf, filenameReal);
 
             #pragma omp parallel for default(none) private(n) shared(num, a, buf)
             for ( n=0; n<num; n++ )
