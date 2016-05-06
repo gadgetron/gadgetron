@@ -225,7 +225,7 @@ namespace Gadgetron
                     std::ostringstream ostr;
                     ostr << "DeformationFieldSolver_deformfield_" << ii;
                     const DeformationFieldType& def = transform->getDeformationField(ii);
-                    gt_exporter_.exportImage(def, debugFolder_+ostr.str());
+                    gt_exporter_.export_image(def, debugFolder_+ostr.str());
                 }
             }
 
@@ -240,7 +240,7 @@ namespace Gadgetron
                 GADGET_CHECK_RETURN_FALSE(warper.warp(*target, *source, use_world_coordinate_, warped));
             }
 
-            if ( !debugFolder_.empty() ) { gt_exporter_.exportImage(warped, debugFolder_+"DeformationFieldSolver_warpped"); }
+            if ( !debugFolder_.empty() ) { gt_exporter_.export_image(warped, debugFolder_+"DeformationFieldSolver_warpped"); }
 
             // evaluate the dissimilarity and get the intensity comparison function
             GADGET_CHECK_RETURN_FALSE(dissimilarity.evaluateDeriv(warped));
@@ -275,19 +275,19 @@ namespace Gadgetron
 
             if ( !debugFolder_.empty() )
             {
-                gt_exporter_.exportImage(deriv, debugFolder_+"DeformationFieldSolver_deriv");
+                gt_exporter_.export_image(deriv, debugFolder_+"DeformationFieldSolver_deriv");
 
                 for ( ii=0; ii<D; ii++ )
                 {
                     std::ostringstream ostr;
                     ostr << "DeformationFieldSolver_gradient_warpped_" << ii;
 
-                    gt_exporter_.exportImage(gradient_warpped[ii], debugFolder_+ostr.str());
+                    gt_exporter_.export_image(gradient_warpped[ii], debugFolder_+ostr.str());
 
                     std::ostringstream ostr2;
                     ostr2 << "DeformationFieldSolver_deform_delta_" << ii;
 
-                    gt_exporter_.exportImage(deform_delta[ii], debugFolder_+ostr2.str());
+                    gt_exporter_.export_image(deform_delta[ii], debugFolder_+ostr2.str());
                 }
             }
 
@@ -313,7 +313,7 @@ namespace Gadgetron
                     std::ostringstream ostr;
                     ostr << "DeformationFieldSolver_deform_delta_filtered_" << ii;
 
-                    gt_exporter_.exportImage(deform_delta[ii], debugFolder_+ostr.str());
+                    gt_exporter_.export_image(deform_delta[ii], debugFolder_+ostr.str());
                 }
             }
 
@@ -549,7 +549,7 @@ namespace Gadgetron
                     {
                         std::ostringstream ostr;
                         ostr << "DeformationFieldSolver_deform_updated_" << ii;
-                        gt_exporter_.exportImage(deform_updated[ii], debugFolder_+ostr.str());
+                        gt_exporter_.export_image(deform_updated[ii], debugFolder_+ostr.str());
                     }
                 }
 
@@ -624,8 +624,8 @@ namespace Gadgetron
 
             if ( !debugFolder_.empty() )
             {
-                gt_exporter_.exportImage(*target_, debugFolder_+"DeformationFieldSolver_target");
-                gt_exporter_.exportImage(*source_, debugFolder_+"DeformationFieldSolver_source");
+                gt_exporter_.export_image(*target_, debugFolder_+"DeformationFieldSolver_target");
+                gt_exporter_.export_image(*source_, debugFolder_+"DeformationFieldSolver_source");
             }
 
             bool stopIteration = false;
