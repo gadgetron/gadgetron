@@ -555,7 +555,7 @@ bool plotNoiseStandardDeviation(const hoNDArray< std::complex<T> >& m, const std
             symbols[n] = gly.c_str();
 
             std::ostringstream ostr;
-            ostr << n << ":" << coilStrings[n];
+            ostr << n+1 << ":" << coilStrings[n];
 
             legends[n] = ostr.str();
 
