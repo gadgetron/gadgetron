@@ -105,25 +105,25 @@ public:
 
     virtual ~ImageIOAnalyze() {}
 
-    virtual void export_array(const hoNDArray<short>& a, const std::string& filename) { return this->export_array_impl(a, filename); }
+    virtual void export_array(const hoNDArray<short>& a, const std::string& filename) { this->export_array_impl(a, filename); }
 
-    virtual void export_array(const hoNDArray<unsigned short>& a, const std::string& filename) { return this->export_array_impl(a, filename); }
-    virtual void export_array(const hoNDArray<int>& a, const std::string& filename) { return this->export_array_impl(a, filename); }
-    virtual void export_array(const hoNDArray<unsigned int>& a, const std::string& filename) { return this->export_array_impl(a, filename); }
-    virtual void export_array(const hoNDArray<size_t>& a, const std::string& filename) { return this->export_array_impl(a, filename); }
-    virtual void export_array(const hoNDArray<float>& a, const std::string& filename) { return this->export_array_impl(a, filename); }
-    virtual void export_array(const hoNDArray<double>& a, const std::string& filename) { return this->export_array_impl(a, filename); }
-    virtual void export_array(const hoNDArray< std::complex<float> >& a, const std::string& filename) { return this->export_array_impl(a, filename); }
-    virtual void export_array(const hoNDArray< std::complex<double> >& a, const std::string& filename) { return this->export_array_impl(a, filename); }
+    virtual void export_array(const hoNDArray<unsigned short>& a, const std::string& filename) { this->export_array_impl(a, filename); }
+    virtual void export_array(const hoNDArray<int>& a, const std::string& filename) { this->export_array_impl(a, filename); }
+    virtual void export_array(const hoNDArray<unsigned int>& a, const std::string& filename) { this->export_array_impl(a, filename); }
+    virtual void export_array(const hoNDArray<size_t>& a, const std::string& filename) { this->export_array_impl(a, filename); }
+    virtual void export_array(const hoNDArray<float>& a, const std::string& filename) { this->export_array_impl(a, filename); }
+    virtual void export_array(const hoNDArray<double>& a, const std::string& filename) { this->export_array_impl(a, filename); }
+    virtual void export_array(const hoNDArray< std::complex<float> >& a, const std::string& filename) { this->export_array_impl(a, filename); }
+    virtual void export_array(const hoNDArray< std::complex<double> >& a, const std::string& filename) { this->export_array_impl(a, filename); }
 
-    virtual void import_array(hoNDArray<short>& a, const std::string& filename) { return this->import_array_impl(a, filename); }
-    virtual void import_array(hoNDArray<unsigned short>& a, const std::string& filename) { return this->import_array_impl(a, filename); }
-    virtual void import_array(hoNDArray<int>& a, const std::string& filename) { return this->import_array_impl(a, filename); }
-    virtual void import_array(hoNDArray<unsigned int>& a, const std::string& filename) { return this->import_array_impl(a, filename); }
-    virtual void import_array(hoNDArray<float>& a, const std::string& filename) { return this->import_array_impl(a, filename); }
-    virtual void import_array(hoNDArray<double>& a, const std::string& filename) { return this->import_array_impl(a, filename); }
-    virtual void import_array(hoNDArray< std::complex<float> >& a, const std::string& filename) { return this->import_array_impl(a, filename); }
-    virtual void import_array(hoNDArray< std::complex<double> >& a, const std::string& filename) { return this->import_array_impl(a, filename); }
+    virtual void import_array(hoNDArray<short>& a, const std::string& filename) { this->import_array_impl(a, filename); }
+    virtual void import_array(hoNDArray<unsigned short>& a, const std::string& filename) { this->import_array_impl(a, filename); }
+    virtual void import_array(hoNDArray<int>& a, const std::string& filename) { this->import_array_impl(a, filename); }
+    virtual void import_array(hoNDArray<unsigned int>& a, const std::string& filename) { this->import_array_impl(a, filename); }
+    virtual void import_array(hoNDArray<float>& a, const std::string& filename) { this->import_array_impl(a, filename); }
+    virtual void import_array(hoNDArray<double>& a, const std::string& filename) { this->import_array_impl(a, filename); }
+    virtual void import_array(hoNDArray< std::complex<float> >& a, const std::string& filename) { this->import_array_impl(a, filename); }
+    virtual void import_array(hoNDArray< std::complex<double> >& a, const std::string& filename) { this->import_array_impl(a, filename); }
 
     template <typename T> 
     void export_array_impl(const hoNDArray<T>& a, const std::string& filename)
@@ -284,10 +284,7 @@ public:
         catch(...)
         {
             GADGET_THROW("Errors in import_image_complex(const hoNDImage<T,D>& a, const std::string& filename) ... ");
-            return false;
         }
-
-        return true;
     }
 
     template <typename T, unsigned int D> 
@@ -322,49 +319,49 @@ public:
     template <typename T> 
     void export_2d_image(const hoNDImage<T,2>& a, const std::string& filename)
     {
-        return export_image(a, filename);
+        export_image(a, filename);
     }
 
     template <typename T> 
     void import_2d_image(hoNDImage<T,2>& a, const std::string& filename)
     {
-        return import_image(a, filename);
+        import_image(a, filename);
     }
 
     template <typename T> 
     void export_2d_image_complex(const hoNDImage<T,2>& a, const std::string& filename)
     {
-        return export_image_complex(a, filename);
+        export_image_complex(a, filename);
     }
 
     template <typename T> 
     void import_2d_image_complex(hoNDImage<T,2>& a, const std::string& filename)
     {
-        return import_image_complex(a, filename);
+        import_image_complex(a, filename);
     }
 
     template <typename T> 
     void export_3d_image(const hoNDImage<T,3>& a, const std::string& filename)
     {
-        return export_image(a, filename);
+        export_image(a, filename);
     }
 
     template <typename T> 
     void import_3d_image(hoNDImage<T,3>& a, const std::string& filename)
     {
-        return import_image(a, filename);
+        import_image(a, filename);
     }
 
     template <typename T> 
     void export_3d_image_complex(const hoNDImage<T,3>& a, const std::string& filename)
     {
-        return export_image_complex(a, filename);
+        export_image_complex(a, filename);
     }
 
     template <typename T> 
     void import_3d_image_complex(hoNDImage<T,3>& a, const std::string& filename)
     {
-        return import_image_complex(a, filename);
+        import_image_complex(a, filename);
     }
 
     template <typename T> 
