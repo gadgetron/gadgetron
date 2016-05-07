@@ -21,8 +21,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/solver
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/transformation
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/warper
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
+    ${CMAKE_SOURCE_DIR}/toolboxes/image_io
   )
 
 set(cpu_operator_header_files 
@@ -70,7 +69,7 @@ target_link_libraries(gadgetron_toolbox_cpuoperator
                     gadgetron_toolbox_cpuklt 
                     gadgetron_toolbox_cpudwt 
                     gadgetron_toolbox_mri_core 
-                    gadgetron_toolbox_gtplus_io )
+                    gadgetron_toolbox_image_analyze_io )
 
 install(TARGETS gadgetron_toolbox_cpuoperator DESTINATION lib COMPONENT main)
 

@@ -7,7 +7,7 @@
 #include <mex.h>
 
 // Gadgetron includes
-#include "gtPlusIOAnalyze.h"
+#include "ImageIOAnalyze.h"
 #include "hoNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "hoNDPoint.h"
@@ -42,6 +42,21 @@ static void usage()
     mexPrintf("%s\n", msg.c_str() );
 }
 
+template <typename T, unsigned int D>
+bool import_image_call(Gadgetron::ImageIOAnalyze& gt_io, Gadgetron::hoNDImage<T, D>& data, std::string& filename)
+{
+    try
+    {
+        gt_io.import_image(data, filename);
+    }
+    catch(...)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
     try
@@ -64,7 +79,6 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         }
 
         using namespace Gadgetron;
-        using namespace Gadgetron::gtPlus;
 
         // ---------------------------------------------------------------
         // input parameters
@@ -75,26 +89,26 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         mxArray* aMx = NULL;
         mxArray* aHeader = NULL;
 
-        gtPlusIOAnalyze gt_io;
+        ImageIOAnalyze gt_io;
 
         try
         {
             hoNDImage<float, 2> data;
-            if ( gt_io.importImage(data, filename) )
+            if ( import_image_call(gt_io, data, filename) )
             {
                 aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
             }
             else
             {
                 hoNDImage<double, 2> data;
-                if ( gt_io.importImage(data, filename) )
+                if ( import_image_call(gt_io, data, filename) )
                 {
                     aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                 }
                 else
                 {
                     hoNDImage<short, 2> data;
-                    if ( gt_io.importImage(data, filename) )
+                    if ( import_image_call(gt_io, data, filename) )
                     {
                         aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                     }
@@ -110,21 +124,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
             try
             {
                 hoNDImage<float, 3> data;
-                if ( gt_io.importImage(data, filename) )
+                if ( import_image_call(gt_io, data, filename) )
                 {
                     aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                 }
                 else
                 {
                     hoNDImage<double, 3> data;
-                    if ( gt_io.importImage(data, filename) )
+                    if ( import_image_call(gt_io, data, filename) )
                     {
                         aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                     }
                     else
                     {
                         hoNDImage<short, 3> data;
-                        if ( gt_io.importImage(data, filename) )
+                        if ( import_image_call(gt_io, data, filename) )
                         {
                             aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                         }
@@ -140,21 +154,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
                 try
                 {
                     hoNDImage<float, 4> data;
-                    if ( gt_io.importImage(data, filename) )
+                    if ( import_image_call(gt_io, data, filename) )
                     {
                         aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                     }
                     else
                     {
                         hoNDImage<double, 4> data;
-                        if ( gt_io.importImage(data, filename) )
+                        if ( import_image_call(gt_io, data, filename) )
                         {
                             aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                         }
                         else
                         {
                             hoNDImage<short, 4> data;
-                            if ( gt_io.importImage(data, filename) )
+                            if ( import_image_call(gt_io, data, filename) )
                             {
                                 aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                             }
@@ -170,21 +184,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
                     try
                     {
                         hoNDImage<float, 5> data;
-                        if ( gt_io.importImage(data, filename) )
+                        if ( import_image_call(gt_io, data, filename) )
                         {
                             aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                         }
                         else
                         {
                             hoNDImage<double, 5> data;
-                            if ( gt_io.importImage(data, filename) )
+                            if ( import_image_call(gt_io, data, filename) )
                             {
                                 aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                             }
                             else
                             {
                                 hoNDImage<short, 5> data;
-                                if ( gt_io.importImage(data, filename) )
+                                if ( import_image_call(gt_io, data, filename) )
                                 {
                                     aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                                 }
@@ -200,21 +214,21 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
                         try
                         {
                             hoNDImage<float, 6> data;
-                            if ( gt_io.importImage(data, filename) )
+                            if ( import_image_call(gt_io, data, filename) )
                             {
                                 aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                             }
                             else
                             {
                                 hoNDImage<double, 6> data;
-                                if ( gt_io.importImage(data, filename) )
+                                if ( import_image_call(gt_io, data, filename) )
                                 {
                                     aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                                 }
                                 else
                                 {
                                     hoNDImage<short, 6> data;
-                                    if ( gt_io.importImage(data, filename) )
+                                    if ( import_image_call(gt_io, data, filename) )
                                     {
                                         aMx = Gadgetron::hoNDImageToMatlab(&data, aHeader);
                                     }

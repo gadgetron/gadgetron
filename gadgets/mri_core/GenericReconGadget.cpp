@@ -141,7 +141,7 @@ namespace Gadgetron {
             {
                 if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
                 {
-                    gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str());
+                    gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str());
                 }
             }
 
@@ -149,7 +149,7 @@ namespace Gadgetron {
             {
                 if (recon_bit_->rbit_[e].ref_->trajectory_->get_number_of_elements() > 0)
                 {
-                    gt_exporter_.exportArray(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_traj" + os.str());
+                    gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_traj" + os.str());
                 }
             }
 **/
@@ -162,14 +162,14 @@ namespace Gadgetron {
             {
                 if (!debug_folder_full_path_.empty())
                 {
-                    gt_exporter_.exportArrayComplex(recon_bit_->rbit_[e].ref_->data_, debug_folder_full_path_ + "ref" + os.str());
+                    gt_exporter_.export_array_complex(recon_bit_->rbit_[e].ref_->data_, debug_folder_full_path_ + "ref" + os.str());
                 }
 
                 if (!debug_folder_full_path_.empty() && recon_bit_->rbit_[e].ref_->trajectory_)
                 {
                     if (recon_bit_->rbit_[e].ref_->trajectory_->get_number_of_elements() > 0)
                     {
-                        gt_exporter_.exportArray(*(recon_bit_->rbit_[e].ref_->trajectory_), debug_folder_full_path_ + "ref_traj" + os.str());
+                        gt_exporter_.export_array(*(recon_bit_->rbit_[e].ref_->trajectory_), debug_folder_full_path_ + "ref_traj" + os.str());
                     }
                 }
             }
@@ -396,7 +396,7 @@ namespace Gadgetron {
                 std::stringstream os;
                 os << "encoding_" << encoding;
 
-                gt_exporter_.exportArrayComplex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map_before_filtering_" + os.str());
+                gt_exporter_.export_array_complex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map_before_filtering_" + os.str());
             }
 **/
 
@@ -411,7 +411,7 @@ namespace Gadgetron {
                     std::stringstream os;
                     os << "encoding_" << encoding;
 
-                    gt_exporter_.exportArrayComplex(filter_RO_ref_coi_map_, debug_folder_full_path_ + "filter_RO_ref_coi_map_" + os.str());
+                    gt_exporter_.export_array_complex(filter_RO_ref_coi_map_, debug_folder_full_path_ + "filter_RO_ref_coi_map_" + os.str());
                 }
 **/
             }
@@ -426,7 +426,7 @@ namespace Gadgetron {
                     std::stringstream os;
                     os << "encoding_" << encoding;
 
-                    gt_exporter_.exportArrayComplex(filter_E1_ref_coi_map_, debug_folder_full_path_ + "filter_E1_ref_coi_map_" + os.str());
+                    gt_exporter_.export_array_complex(filter_E1_ref_coi_map_, debug_folder_full_path_ + "filter_E1_ref_coi_map_" + os.str());
                 }
 **/
             }
@@ -441,7 +441,7 @@ namespace Gadgetron {
                     std::stringstream os;
                     os << "encoding_" << encoding;
 
-                    gt_exporter_.exportArrayComplex(filter_E2_ref_coi_map_, debug_folder_full_path_ + "filter_E2_ref_coi_map_" + os.str());
+                    gt_exporter_.export_array_complex(filter_E2_ref_coi_map_, debug_folder_full_path_ + "filter_E2_ref_coi_map_" + os.str());
                 }
 **/
             }
@@ -463,7 +463,7 @@ namespace Gadgetron {
                 std::stringstream os;
                 os << "encoding_" << encoding;
 
-                gt_exporter_.exportArrayComplex(ref_recon_buf, debug_folder_full_path_ + "ref_coil_map_after_filtering_" + os.str());
+                gt_exporter_.export_array_complex(ref_recon_buf, debug_folder_full_path_ + "ref_coil_map_after_filtering_" + os.str());
             }
 **/
 
@@ -479,8 +479,8 @@ namespace Gadgetron {
                 std::stringstream os;
                 os << "encoding_" << encoding;
 
-                gt_exporter_.exportArrayComplex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map_" + os.str());
-                gt_exporter_.exportArrayComplex(ref_calib, debug_folder_full_path_ + "ref_calib_" + os.str());
+                gt_exporter_.export_array_complex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map_" + os.str());
+                gt_exporter_.export_array_complex(ref_calib, debug_folder_full_path_ + "ref_calib_" + os.str());
             }
 **/
         }
@@ -512,7 +512,7 @@ namespace Gadgetron {
                 std::stringstream os;
                 os << "encoding_" << e;
 
-                gt_exporter_.exportArrayComplex(complex_im_recon_buf_, debug_folder_full_path_ + "complex_im_for_coil_map_" + os.str());
+                gt_exporter_.export_array_complex(complex_im_recon_buf_, debug_folder_full_path_ + "complex_im_for_coil_map_" + os.str());
             }*/
 
             if (coil_map_algorithm.value() == "Inati")
@@ -538,7 +538,7 @@ namespace Gadgetron {
                 std::stringstream os;
                 os << "encoding_" << e;
 
-                gt_exporter_.exportArrayComplex(coil_map, debug_folder_full_path_ + "coil_map_" + os.str());
+                gt_exporter_.export_array_complex(coil_map, debug_folder_full_path_ + "coil_map_" + os.str());
             }*/
         }
         catch (...)

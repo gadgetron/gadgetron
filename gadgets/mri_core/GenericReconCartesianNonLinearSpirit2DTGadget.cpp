@@ -115,7 +115,7 @@ namespace Gadgetron {
             os << "encoding_" << e;
             std::string suffix = os.str();
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix); }
+            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix); }
 
             // ------------------------------------------------------------------
             // compute effective acceleration factor
@@ -201,9 +201,9 @@ namespace Gadgetron {
 
                         // ------------------------------
 
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(kspace2DT, debug_folder_full_path_ + "kspace2DT_nl_spirit_" + suffix_2DT); }
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(kIm2DT, debug_folder_full_path_ + "kIm2DT_nl_spirit_" + suffix_2DT); }
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(ref2DT, debug_folder_full_path_ + "ref2DT_nl_spirit_" + suffix_2DT); }
+                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kspace2DT, debug_folder_full_path_ + "kspace2DT_nl_spirit_" + suffix_2DT); }
+                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kIm2DT, debug_folder_full_path_ + "kIm2DT_nl_spirit_" + suffix_2DT); }
+                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(ref2DT, debug_folder_full_path_ + "ref2DT_nl_spirit_" + suffix_2DT); }
 
                         // ------------------------------
 
@@ -212,7 +212,7 @@ namespace Gadgetron {
                         this->perform_nonlinear_spirit_unwrapping(kspace2DT, kIm2DT, ref2DT, coilMap2DT, res2DT, e);
                         if (this->perform_timing.value()) timer.stop();
 
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(res2DT, debug_folder_full_path_ + "res_nl_spirit_2DT_" + suffix_2DT); }
+                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "res_nl_spirit_2DT_" + suffix_2DT); }
                     }
                 }
             }
@@ -224,7 +224,7 @@ namespace Gadgetron {
             this->perform_spirit_coil_combine(recon_obj);
             if (this->perform_timing.value()) timer.stop();
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix); }
+            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix); }
         }
         catch (...)
         {
@@ -328,7 +328,7 @@ namespace Gadgetron {
                 hoNDArray< std::complex<float> > meanKSpace;
                 Gadgetron::sum_over_dimension(ref2DT, meanKSpace, 4);
 
-                // if (!debug_folder_full_path_.empty()) { gt_exporter_.exportArrayComplex(meanKSpace, debug_folder_full_path_ + "spirit_nl_2DT_meanKSpace"); }
+                // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(meanKSpace, debug_folder_full_path_ + "spirit_nl_2DT_meanKSpace"); }
 
                 hoNDArray< std::complex<float> > acsSrc(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
                 hoNDArray< std::complex<float> > acsDst(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
@@ -343,16 +343,16 @@ namespace Gadgetron {
                 Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t)this->acceFactorE1_[e], grappa_reg_lamda, kRO, kE1, convKer);
                 Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
 
-                // if (!debug_folder_full_path_.empty()) gt_exporter_.exportArrayComplex(kIm, debug_folder_full_path_ + "spirit_nl_2DT_kIm");
+                // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(kIm, debug_folder_full_path_ + "spirit_nl_2DT_kIm");
 
                 Gadgetron::hoNDFFT<float>::instance()->ifft2c(kspace, complex_im_recon_buf_);
-                // if (!debug_folder_full_path_.empty()) gt_exporter_.exportArrayComplex(complex_im_recon_buf_, debug_folder_full_path_ + "spirit_nl_2DT_aliasedImage");
+                // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(complex_im_recon_buf_, debug_folder_full_path_ + "spirit_nl_2DT_aliasedImage");
 
                 hoNDArray< std::complex<float> > resKSpace(RO, E1, CHA, N);
                 hoNDArray< std::complex<float> > aliasedImage(RO, E1, CHA, N, complex_im_recon_buf_.begin());
                 Gadgetron::grappa2d_image_domain_unwrapping_aliased_image(aliasedImage, kIm, resKSpace);
 
-                // if (!debug_folder_full_path_.empty()) gt_exporter_.exportArrayComplex(resKSpace, debug_folder_full_path_ + "spirit_nl_2DT_linearImage");
+                // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(resKSpace, debug_folder_full_path_ + "spirit_nl_2DT_linearImage");
 
                 Gadgetron::hoNDFFT<float>::instance()->fft2c(resKSpace);
 
@@ -361,7 +361,7 @@ namespace Gadgetron {
                 if (this->perform_timing.value()) timer.stop();
             }
 
-            // if (!debug_folder_full_path_.empty()) gt_exporter_.exportArrayComplex(kspaceLinear, debug_folder_full_path_ + "spirit_nl_2DT_kspaceLinear");
+            // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(kspaceLinear, debug_folder_full_path_ + "spirit_nl_2DT_kspaceLinear");
 
             // perform nonlinear reconstruction
             {
@@ -440,7 +440,7 @@ namespace Gadgetron {
                     solver.solve(*acq, res2DT);
                     if (this->perform_timing.value()) timer.stop();
 
-                    // if (!debug_folder_full_path_.empty()) gt_exporter_.exportArrayComplex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_data_fidelity_res");
+                    // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_data_fidelity_res");
                 }
                 else
                 {
@@ -508,11 +508,11 @@ namespace Gadgetron {
                     solver.solve(b, res2DT);
                     if (this->perform_timing.value()) timer.stop();
 
-                    // if (!debug_folder_full_path_.empty()) gt_exporter_.exportArrayComplex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_res");
+                    // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_res");
 
                     spirit.restore_acquired_kspace(kspace, res2DT);
 
-                    // if (!debug_folder_full_path_.empty()) gt_exporter_.exportArrayComplex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_res_restored");
+                    // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_res_restored");
                 }
             }
         }

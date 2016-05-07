@@ -198,7 +198,7 @@ namespace Gadgetron
                 }
             }
 
-            if ( !debugFolder_.empty() ) {  gt_exporter_.exportArray(hist_, debugFolder_+"hist2D"); }
+            if ( !debugFolder_.empty() ) {  gt_exporter_.export_array(hist_, debugFolder_+"hist2D"); }
         }
         catch(...)
         {

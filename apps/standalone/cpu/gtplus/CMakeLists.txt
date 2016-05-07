@@ -11,6 +11,7 @@ if (MATLAB_FOUND)
         ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
         ${CMAKE_SOURCE_DIR}/toolboxes/matlab
+        ${CMAKE_SOURCE_DIR}/toolboxes/image_io
         ${ACE_INCLUDE_DIR}
         ${MATLAB_INCLUDE_DIR}  
         ${ISMRMRD_INCLUDE_DIR} 
@@ -21,7 +22,7 @@ if (MATLAB_FOUND)
                     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
                     ${ISMRMRD_LIBRARIES} 
                     gadgetron_toolbox_matlab 
-                    gadgetron_toolbox_gtplus_io 
+                    gadgetron_toolbox_image_analyze_io 
                     gadgetron_toolbox_cpucore 
                     gadgetron_toolbox_cpucore_math
                     gadgetron_toolbox_mri_core
