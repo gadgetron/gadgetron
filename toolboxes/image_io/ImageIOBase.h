@@ -321,8 +321,6 @@ public:
         {
             GADGET_THROW("Errors in export_array_complex(const hoNDArray<T>& a, const std::string& filename) ... ");
         }
-
-        return true;
     }
 
     template <typename T> 
@@ -387,49 +385,49 @@ public:
     template <typename T> 
     void export_2d_array(const hoNDArray<T>& a, const std::string& filename)
     {
-        return export_array(a, filename);
+        export_array(a, filename);
     }
 
     template <typename T> 
     void import_2d_array(hoNDArray<T>& a, const std::string& filename)
     {
-        return import_array(a, filename);
+        import_array(a, filename);
     }
 
     template <typename T> 
     void export_2d_array_complex(const hoNDArray<T>& a, const std::string& filename)
     {
-        return export_array_complex(a, filename);
+        export_array_complex(a, filename);
     }
 
     template <typename T> 
     void import_2d_array_complex(hoNDArray<T>& a, const std::string& filename)
     {
-        return import_array_complex(a, filename);
+        import_array_complex(a, filename);
     }
 
     template <typename T> 
     void export_3d_array(const hoNDArray<T>& a, const std::string& filename)
     {
-        return export_array(a, filename);
+        export_array(a, filename);
     }
 
     template <typename T> 
     void import_3d_array(hoNDArray<T>& a, const std::string& filename)
     {
-        return import_array(a, filename);
+        import_array(a, filename);
     }
 
     template <typename T> 
     void export_3d_array_complex(const hoNDArray<T>& a, const std::string& filename)
     {
-        return export_array_complex(a, filename);
+        export_array_complex(a, filename);
     }
 
     template <typename T> 
     void import_3d_array_complex(hoNDArray<T>& a, const std::string& filename)
     {
-        return import_array_complex(a, filename);
+        import_array_complex(a, filename);
     }
 
     template <typename T> 
