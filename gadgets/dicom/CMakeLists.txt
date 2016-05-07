@@ -58,11 +58,13 @@ set(gadgetron_dicom_header_files
     gadgetron_dicom_export.h 
     DicomFinishGadget.h 
     DicomImageWriter.h 
+    DicomIsmrmrdImageDumpGadget.h 
     dicom_ismrmrd_utility.h )
 
 set(gadgetron_dicom_src_files 
     DicomFinishGadget.cpp 
     DicomImageWriter.cpp 
+    DicomIsmrmrdImageDumpGadget.cpp 
     dicom_ismrmrd_utility.cpp )
 
 set(gadgetron_dicom_config_files dicom.xml )
