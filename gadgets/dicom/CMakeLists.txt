@@ -54,9 +54,23 @@ include_directories(
         ${ARMADILLO_INCLUDE_DIRS}
         )
 
+set(gadgetron_dicom_header_files 
+    gadgetron_dicom_export.h 
+    DicomFinishGadget.h 
+    DicomImageWriter.h 
+    dicom_ismrmrd_utility.h )
+
+set(gadgetron_dicom_src_files 
+    DicomFinishGadget.cpp 
+    DicomImageWriter.cpp 
+    dicom_ismrmrd_utility.cpp )
+
+set(gadgetron_dicom_config_files dicom.xml )
+
 add_library(gadgetron_dicom SHARED
-    DicomFinishGadget.h DicomFinishGadget.cpp
-    DicomImageWriter.h DicomImageWriter.cpp)
+            ${gadgetron_dicom_header_files}
+            ${gadgetron_dicom_src_files} 
+            ${gadgetron_dicom_config_files} )
 
 set_target_properties(gadgetron_dicom PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
@@ -76,9 +90,9 @@ if(ARMADILLO_FOUND)
 endif(ARMADILLO_FOUND)
 
 install(
-    FILES DicomFinishGadget.h DicomImageWriter.h gadgetron_dicom_export.h
+    FILES ${gadgetron_dicom_header_files} 
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_dicom DESTINATION lib COMPONENT main)
 
-install(FILES dicom.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES ${gadgetron_dicom_config_files}  DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
