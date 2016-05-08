@@ -62,9 +62,10 @@ namespace Gadgetron
 
                 std::string filename;
 
+                ISMRMRD::MetaContainer* img_attrib = NULL;
                 if (m3)
                 {
-                    ISMRMRD::MetaContainer* img_attrib = m3->getObjectPtr();
+                    img_attrib = m3->getObjectPtr();
 
                     size_t n;
 
@@ -157,7 +158,12 @@ namespace Gadgetron
 
                 if(!patient_.empty())
                 {
+                    // patient id
                     key.set(0x0010, 0x0020);
+                    write_dcm_string(dataset, key, patient_.c_str());
+
+                    // patient name
+                    key.set(0x0010, 0x0010);
                     write_dcm_string(dataset, key, patient_.c_str());
                 }
 
@@ -171,10 +177,40 @@ namespace Gadgetron
                     write_dcm_string(dataset, key, studyID.c_str());
                 }
 
-                if(!patient_string_.empty())
+                //if(!patient_string_.empty())
+                //{
+                //    key.set(0x0010, 0x0010);
+                //    write_dcm_string(dataset, key, patient_string_.c_str());
+                //}
+
+                if(!protocol_name_.empty())
                 {
-                    key.set(0x0010, 0x0010);
-                    write_dcm_string(dataset, key, patient_string_.c_str());
+                    if(img_attrib!=NULL)
+                    {
+                        size_t N = img_attrib->length(GADGETRON_SEQUENCEDESCRIPTION);
+                        if(N>0)
+                        {
+                            std::string str(std::string(img_attrib->as_str(GADGETRON_SEQUENCEDESCRIPTION, 0)));
+                            for (size_t n=1; n<N; n++)
+                            {
+                                str.append("_");
+                                str.append( std::string(img_attrib->as_str(GADGETRON_SEQUENCEDESCRIPTION, n)) );
+                            }
+
+                            std::string str_seq_description = protocol_name_ + str;
+
+                            key.set(0x0008, 0x103E);
+                            write_dcm_string(dataset, key, str_seq_description.c_str());
+                        }
+                    }
+                }
+
+                if(!xml.studyInformation.is_present() || xml.studyInformation.get().studyDate.is_present())
+                {
+                    // set current date as study date
+                    key.set(0x0008, 0x0020);
+                    std::string d = this->get_date_string();
+                    write_dcm_string(dataset, key, d.c_str());
                 }
 
                 // --------------------------------------------------
@@ -230,8 +266,13 @@ namespace Gadgetron
         std::string device_;
         std::string patient_;
         std::string patient_string_;
+        std::string patient_position_;
         std::string study_;
         std::string measurement_;
+        std::string protocol_name_;
+
+        std::string get_date_string();
+        std::string get_time_string();
     };
 
 } /* namespace Gadgetron */

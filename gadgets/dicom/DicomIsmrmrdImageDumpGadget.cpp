@@ -37,6 +37,7 @@ namespace Gadgetron {
 
         GDEBUG("Measurement ID: %s\n", measurement_id.c_str());
 
+        // analyze measurement id
         if(measurement_id.size()>0)
         {
             std::string mid = measurement_id;
@@ -59,6 +60,15 @@ namespace Gadgetron {
                         measurement_ = mid.substr(ind+1, std::string::npos);
                     }
                 }
+            }
+        }
+
+        // get the protocol name
+        if ( h.measurementInformation )
+        {
+            if ( h.measurementInformation->protocolName )
+            {
+                protocol_name_ = *h.measurementInformation->protocolName;
             }
         }
 
@@ -141,13 +151,13 @@ namespace Gadgetron {
             GadgetContainerMessage< hoNDArray< unsigned short > >* datamb = AsContainerMessage< hoNDArray< unsigned short > >(m1->cont());
             if (!datamb)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::process, invalid image message objects\n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::process, invalid image message objects");
                 return GADGET_FAIL;
             }
 
             if (this->dump_image(m1, datamb) != GADGET_OK)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::dump_image failed for unsigned short ... \n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::dump_image failed for unsigned short ... ");
             }
         }
         else if (data_type == ISMRMRD::ISMRMRD_SHORT)
@@ -155,13 +165,13 @@ namespace Gadgetron {
             GadgetContainerMessage< hoNDArray< short > >* datamb = AsContainerMessage< hoNDArray< short > >(m1->cont());
             if (!datamb)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::process, invalid image message objects\n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::process, invalid image message objects");
                 return GADGET_FAIL;
             }
 
             if (this->dump_image(m1, datamb) != GADGET_OK)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::dump_image failed for short ... \n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::dump_image failed for short ... ");
             }
         }
         else if (data_type == ISMRMRD::ISMRMRD_UINT)
@@ -169,13 +179,13 @@ namespace Gadgetron {
             GadgetContainerMessage< hoNDArray< unsigned int > >* datamb = AsContainerMessage< hoNDArray< unsigned int > >(m1->cont());
             if (!datamb)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::process, invalid image message objects\n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::process, invalid image message objects");
                 return GADGET_FAIL;
             }
 
             if (this->dump_image(m1, datamb) != GADGET_OK)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::dump_image failed for unsigned int ... \n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::dump_image failed for unsigned int ... ");
             }
         }
         else if (data_type == ISMRMRD::ISMRMRD_INT)
@@ -183,13 +193,13 @@ namespace Gadgetron {
             GadgetContainerMessage< hoNDArray< int > >* datamb = AsContainerMessage< hoNDArray< int > >(m1->cont());
             if (!datamb)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::process, invalid image message objects\n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::process, invalid image message objects");
                 return GADGET_FAIL;
             }
 
             if (this->dump_image(m1, datamb) != GADGET_OK)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::dump_image failed for int ... \n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::dump_image failed for int ... ");
             }
         }
         else if (data_type == ISMRMRD::ISMRMRD_FLOAT)
@@ -197,13 +207,13 @@ namespace Gadgetron {
             GadgetContainerMessage< hoNDArray< float > >* datamb = AsContainerMessage< hoNDArray< float > >(m1->cont());
             if (!datamb)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::process, invalid image message objects\n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::process, invalid image message objects");
                 return GADGET_FAIL;
             }
 
             if (this->dump_image(m1, datamb) != GADGET_OK)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::dump_image failed for float ... \n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::dump_image failed for float ... ");
             }
         }
         else if (data_type == ISMRMRD::ISMRMRD_DOUBLE)
@@ -211,32 +221,70 @@ namespace Gadgetron {
             GadgetContainerMessage< hoNDArray< double > >* datamb = AsContainerMessage< hoNDArray< double > >(m1->cont());
             if (!datamb)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::process, invalid image message objects\n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::process, invalid image message objects");
                 return GADGET_FAIL;
             }
 
             if (this->dump_image(m1, datamb) != GADGET_OK)
             {
-                GERROR("DicomIsmrmrdImageDumpGadget::dump_image failed for double ... \n");
+                GERROR_STREAM("DicomIsmrmrdImageDumpGadget::dump_image failed for double ... ");
             }
         }
         else if (data_type == ISMRMRD::ISMRMRD_CXFLOAT)
         {
-            GERROR("DicomIsmrmrdImageDumpGadget::process, does not supprot ISMRMRD_CXFLOAT data type\n");
+            GERROR_STREAM("DicomIsmrmrdImageDumpGadget::process, does not supprot ISMRMRD_CXFLOAT data type");
         }
         else if (data_type == ISMRMRD::ISMRMRD_CXDOUBLE)
         {
-            GERROR("DicomIsmrmrdImageDumpGadget::process, does not supprot ISMRMRD_CXDOUBLE data type\n");
+            GERROR_STREAM("DicomIsmrmrdImageDumpGadget::process, does not supprot ISMRMRD_CXDOUBLE data type");
+        }
+        else
+        {
+            GERROR_STREAM("DicomIsmrmrdImageDumpGadget::process, does not supprot data type : " << data_type);
         }
 
         if (this->next()->putq(m1) == -1)
         {
             m1->release();
-            GDEBUG("Unable to put ismrmrd image on next gadgets queue");
+            GDEBUG_STREAM("Unable to put ismrmrd image on next gadgets queue");
             return GADGET_FAIL;
         }
 
         return GADGET_OK;
+    }
+
+    std::string DicomIsmrmrdImageDumpGadget::get_date_string()
+    {
+        time_t rawtime;
+        struct tm * timeinfo;
+        time ( &rawtime );
+        timeinfo = localtime ( &rawtime );
+
+        std::stringstream str;
+        str << timeinfo->tm_year+1900
+            << std::setw(2) << std::setfill('0') << timeinfo->tm_mon+1
+            << std::setw(2) << std::setfill('0') << timeinfo->tm_mday;
+
+        std::string ret = str.str();
+
+        return ret;
+    }
+
+    std::string DicomIsmrmrdImageDumpGadget::get_time_string()
+    {
+        time_t rawtime;
+        struct tm * timeinfo;
+        time ( &rawtime );
+        timeinfo = localtime ( &rawtime );
+
+        std::stringstream str;
+        str << std::setw(2) << std::setfill('0') << timeinfo->tm_hour
+            << std::setw(2) << std::setfill('0') << timeinfo->tm_min
+            << std::setw(2) << std::setfill('0') << timeinfo->tm_sec;
+
+        std::string ret = str.str();
+
+        return ret;
     }
 
     GADGET_FACTORY_DECLARE(DicomIsmrmrdImageDumpGadget)
