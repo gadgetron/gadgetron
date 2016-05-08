@@ -233,19 +233,19 @@ public:
 
             std::string filenameReal = filename;
             filenameReal.append("_REAL");
-            GADGET_CHECK_THROW(export_image(rpart, filenameReal));
+            GADGET_CATCH_THROW(export_image(rpart, filenameReal));
 
             std::string filenameImag = filename;
             filenameImag.append("_IMAG");
-            GADGET_CHECK_THROW(export_image(ipart, filenameImag));
+            GADGET_CATCH_THROW(export_image(ipart, filenameImag));
 
             std::string filenameMag = filename;
             filenameMag.append("_MAG");
-            GADGET_CHECK_THROW(export_image(mag, filenameMag));
+            GADGET_CATCH_THROW(export_image(mag, filenameMag));
 
             std::string filenamePhase = filename;
             filenamePhase.append("_PHASE");
-            GADGET_CHECK_THROW(export_image(phs, filenamePhase));
+            GADGET_CATCH_THROW(export_image(phs, filenamePhase));
         }
         catch(...)
         {
@@ -263,11 +263,11 @@ public:
 
             std::string filenameReal = filename;
             filenameReal.append("_REAL");
-            GADGET_CHECK_THROW(import_image(real, filenameReal));
+            GADGET_CATCH_THROW(import_image(real, filenameReal));
 
             std::string filenameImag = filename;
             filenameImag.append("_IMAG");
-            GADGET_CHECK_THROW(import_image(imag, filenameImag));
+            GADGET_CATCH_THROW(import_image(imag, filenameImag));
 
             a.create(real.get_dimensions());
             long long num = (long long)a.get_number_of_elements();
@@ -295,8 +295,8 @@ public:
             typedef typename realType<T>::Type value_type;
             hoNDImage<value_type, D> real, imag;
 
-            GADGET_CHECK_THROW(import_image(real, filename_real));
-            GADGET_CHECK_THROW(import_image(imag, filename_imag));
+            GADGET_CATCH_THROW(import_image(real, filename_real));
+            GADGET_CATCH_THROW(import_image(imag, filename_imag));
 
             a.create(real.get_dimensions());
             long long num = (long long)a.get_number_of_elements();
@@ -386,7 +386,7 @@ public:
 
                 std::ostringstream ostr;
                 ostr << filename << "_" << ii << std::ends;
-                GADGET_CHECK_THROW(export_3d_image(a3D, ostr.str()));
+                GADGET_CATCH_THROW(export_3d_image(a3D, ostr.str()));
             }
         }
         catch(...)
@@ -417,7 +417,7 @@ public:
 
                 std::ostringstream ostr;
                 ostr << filename << "_" << ii << std::ends;
-                GADGET_CHECK_THROW(export_3d_image_complex(a3D, ostr.str()));
+                GADGET_CATCH_THROW(export_3d_image_complex(a3D, ostr.str()));
             }
         }
         catch(...)

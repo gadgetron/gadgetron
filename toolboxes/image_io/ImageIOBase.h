@@ -303,19 +303,19 @@ public:
 
             std::string filenameReal = filename;
             filenameReal.append("_REAL");
-            GADGET_CHECK_THROW(export_array(rpart, filenameReal));
+            GADGET_CATCH_THROW(export_array(rpart, filenameReal));
 
             std::string filenameImag = filename;
             filenameImag.append("_IMAG");
-            GADGET_CHECK_THROW(export_array(ipart, filenameImag));
+            GADGET_CATCH_THROW(export_array(ipart, filenameImag));
 
             std::string filenameMag = filename;
             filenameMag.append("_MAG");
-            GADGET_CHECK_THROW(export_array(mag, filenameMag));
+            GADGET_CATCH_THROW(export_array(mag, filenameMag));
 
             std::string filenamePhase = filename;
             filenamePhase.append("_PHASE");
-            GADGET_CHECK_THROW(export_array(phs, filenamePhase));
+            GADGET_CATCH_THROW(export_array(phs, filenamePhase));
         }
         catch(...)
         {
@@ -333,11 +333,11 @@ public:
 
             std::string filenameReal = filename;
             filenameReal.append("_REAL");
-            GADGET_CHECK_THROW(import_array(real, filenameReal));
+            GADGET_CATCH_THROW(import_array(real, filenameReal));
 
             std::string filenameImag = filename;
             filenameImag.append("_IMAG");
-            GADGET_CHECK_THROW(import_array(imag, filenameImag));
+            GADGET_CATCH_THROW(import_array(imag, filenameImag));
 
             a.create(real.get_dimensions());
             long long num = (long long)real.get_number_of_elements();
@@ -363,8 +363,8 @@ public:
             typedef typename realType<T>::Type value_type;
             hoNDArray<value_type> real, imag;
 
-            GADGET_CHECK_THROW(import_array(real, filename_real));
-            GADGET_CHECK_THROW(import_array(imag, filename_imag));
+            GADGET_CATCH_THROW(import_array(real, filename_real));
+            GADGET_CATCH_THROW(import_array(imag, filename_imag));
 
             a.create(real.get_dimensions());
             long long num = (long long)real.get_number_of_elements();
@@ -453,7 +453,7 @@ public:
 
                 std::ostringstream ostr;
                 ostr << filename << "_" << ii << std::ends;
-                GADGET_CHECK_THROW(export3DArray(a3D, ostr.str()));
+                GADGET_CATCH_THROW(export3DArray(a3D, ostr.str()));
             }
         }
         catch(...)
@@ -485,7 +485,7 @@ public:
 
                 std::ostringstream ostr;
                 ostr << filename << "_" << ii << std::ends;
-                GADGET_CHECK_THROW(export3DArrayComplex(a3D, ostr.str()));
+                GADGET_CATCH_THROW(export3DArrayComplex(a3D, ostr.str()));
             }
         }
         catch(...)
