@@ -613,14 +613,17 @@ namespace Gadgetron
             const T *src = m2.get_data_ptr();
             ACE_INT16 *dst = data.get_data_ptr();
 
-            T min_pix_val, max_pix_val, sum_pix_val = 0;
+            T min_pix_val, max_pix_val = 0;
             if (m2.get_number_of_elements() > 0)
             {
                 min_pix_val = src[0];
                 max_pix_val = src[0];
             }
 
-            for (unsigned long i = 0; i < m2.get_number_of_elements(); i++)
+            size_t numPixel = m2.get_number_of_elements();
+
+            double sum_pix_val = 0;
+            for (unsigned long i = 0; i < numPixel; i++)
             {
                 T pix_val = src[i];
                 // search for minimum and maximum pixel values
@@ -630,7 +633,7 @@ namespace Gadgetron
 
                 dst[i] = static_cast<ACE_INT16>(pix_val);
             }
-            T mean_pix_val = (T)((sum_pix_val * 4) / (T)data.get_number_of_elements());
+            T mean_pix_val = (T)((sum_pix_val * 4) / (T)( (numPixel>1) ? numPixel : 1 ));
 
             unsigned int BUFSIZE = 1024;
             std::vector<char> bufVec(BUFSIZE);

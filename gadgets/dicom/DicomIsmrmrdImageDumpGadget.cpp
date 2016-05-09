@@ -77,14 +77,7 @@ namespace Gadgetron {
         {
             if(h.acquisitionSystemInformation.is_present() && h.acquisitionSystemInformation.get().institutionName.is_present())
             {
-                if ( file_prefix.value().empty() )
-                {
-                    patient_string_ = h.acquisitionSystemInformation.get().institutionName.get() + "_" + device_ + "_" + patient_;
-                }
-                else
-                {
-                    patient_string_ = h.acquisitionSystemInformation.get().institutionName.get() + "_" + device_ + "_" + file_prefix.value() + "_" + patient_;
-                }
+                patient_string_ = h.acquisitionSystemInformation.get().institutionName.get() + "_" + device_ + "_" + patient_;
             }
         }
 

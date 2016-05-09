@@ -162,9 +162,9 @@ namespace Gadgetron
                     key.set(0x0010, 0x0020);
                     write_dcm_string(dataset, key, patient_.c_str());
 
-                    // patient name
-                    key.set(0x0010, 0x0010);
-                    write_dcm_string(dataset, key, patient_.c_str());
+                    //// patient name
+                    //key.set(0x0010, 0x0010);
+                    //write_dcm_string(dataset, key, patient_.c_str());
                 }
 
                 if(!study_.empty())
@@ -177,11 +177,12 @@ namespace Gadgetron
                     write_dcm_string(dataset, key, studyID.c_str());
                 }
 
-                //if(!patient_string_.empty())
-                //{
-                //    key.set(0x0010, 0x0010);
-                //    write_dcm_string(dataset, key, patient_string_.c_str());
-                //}
+                if(!patient_string_.empty())
+                {
+                    // patient name
+                    key.set(0x0010, 0x0010);
+                    write_dcm_string(dataset, key, patient_string_.c_str());
+                }
 
                 if(!protocol_name_.empty())
                 {
