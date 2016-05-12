@@ -78,19 +78,23 @@ namespace Gadgetron {
         // ------------------------------------
         /// time stamp in ms for kspace lines [E1 N S]
         hoNDArray<float> time_stamp_;
-        /// cardiac phase time ratio (CPT) [0 1] for kspace lines, [E1 N S]
+        /// cardiac phase time in ms for kspace lines, [E1 N S]
         hoNDArray<float> cpt_time_stamp_;
+        /// cardiac phase time ratio (CPT) [0 1] for kspace lines, [E1 N S]
+        hoNDArray<float> cpt_time_ratio_;
         /// time stamp for every raw images, [N S]
         hoNDArray<float> phs_time_stamp_;
-        /// cardiac phase time ratio for every raw images, [N S]
+        /// cardiac phase time in ms for every raw images, [N S]
         hoNDArray<float> phs_cpt_time_stamp_;
+        /// cardiac phase time ratio for every raw images, [N S]
+        hoNDArray<float> phs_cpt_time_ratio_;
 
         // buffer to store index of heart beat for every kspace line; the first heart beat has index 0
-        hoNDArray<size_t> ind_heart_beat_;
-        // arrays to store the starting and ending [E1 N] for every heart beat
-        // for every S, one std::vector is created to store starting/ending E1 and PHS of heart beats
-        std::vector< std::vector< std::pair<long long, long long> > > starting_heart_beat_;
-        std::vector< std::vector< std::pair<long long, long long> > > ending_heart_beat_;
+        hoNDArray<int> ind_heart_beat_;
+        // arrays to store the starting and ending [e1 n] indexes for every heart beat
+        // for every S, one std::vector is created to store starting/ending of heart beats
+        std::vector< std::vector< std::pair<size_t, size_t> > > starting_heart_beat_;
+        std::vector< std::vector< std::pair<size_t, size_t> > > ending_heart_beat_;
 
         // output cardiac phases
         std::vector<float> desired_cardiac_phases_;
@@ -108,6 +112,9 @@ namespace Gadgetron {
 
         typedef CmrKSpaceBinning<T> Self;
         typedef hoNDArray< std::complex<T> > ArrayType;
+
+        // for every heart beat, record its staring and ending [e1 n] indexes
+        typedef std::vector< std::pair<size_t, size_t> > HeartBeatIndexType;
 
         CmrKSpaceBinning();
         virtual ~CmrKSpaceBinning();
@@ -151,6 +158,9 @@ namespace Gadgetron {
 
         // time tick for every time stamp unit, in ms (e.g. 2.5ms)
         float time_tick_;
+
+        // index of cardiac trigger time in physilogical time stamp
+        size_t trigger_time_index_;
 
         // if a heart beat RR is not in the range of [ (1-arrhythmiaRejectorFactor)*meanRR (1+arrhythmiaRejectorFactor)*meanRR], it will be rejected
         float arrhythmia_rejector_factor_;
@@ -224,5 +234,20 @@ namespace Gadgetron {
 
         /// reject heart beat with irregular rhythm
         virtual void reject_irregular_heart_beat();
+
+        // ======================================================================================
+        // implementation functions
+        // ======================================================================================
+        /// if the alternativing acqusition is used, detect and flip the time stamps
+        void detect_and_flip_alternating_order(const hoNDArray<float>& time_stamp, const hoNDArray<float>& cpt_time_stamp, hoNDArray<float>& cpt_time_stamp_flipped, std::vector<bool>& ascending);
+
+        /// from the input time_stamp and cpt_time_stamp, compute times for missing lines, find completed heart beat and compute times for every phase (n)
+        /// time_stamp : [E1 N]
+        /// cpt_time_stamp : [E1 N]
+        void process_time_stamps(hoNDArray<float>& time_stamp, hoNDArray<float>& cpt_time_stamp, 
+                                hoNDArray<float>& cpt_time_ratio, hoNDArray<float>& phs_time_stamp, 
+                                hoNDArray<float>& phs_cpt_time_stamp, hoNDArray<float>& phs_cpt_time_ratio, 
+                                hoNDArray<int>& indHeartBeat, HeartBeatIndexType& startingHB, 
+                                HeartBeatIndexType& endingHB, float& meanRRInterval);
     };
 }

@@ -11,6 +11,8 @@
 #include "hoNDArray_elemwise.h"
 #include "mri_core_coil_map_estimation.h"
 
+#include "cmr_time_stamp.h"
+
 namespace Gadgetron { 
 
 template <typename T> 
@@ -26,8 +28,63 @@ KSpaceBinningObj<T>::~KSpaceBinningObj()
 // --------------------------------------------------------------------------
 
 template <typename T> 
+void simple_line_fit(const std::vector<T>& x, const std::vector<T>& y, T& a, T& b)
+{
+    try
+    {
+        size_t num = x.size();
+
+        if(num<2)
+        {
+            a = 0;
+            b = 0;
+            return;
+        }
+
+        T sx(0), sy(0);
+
+        size_t n;
+        for (n=0; n<num; n++)
+        {
+            sx += x[n];
+            sy += y[n];
+        }
+
+        T mx = sx / (T)(num);
+        T syy = 0;
+        b = 0;
+        for (n=0; n<num; n++)
+        {
+            T v = (x[n] - mx);
+            syy += v*v;
+            b += v*y[n];
+        }
+
+        syy = (std::abs(syy) > 0 ? syy : boost::math::sign(syy)*FLT_EPSILON);
+        b /= syy;
+        a = (sy - sx*b) / (T)(num);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Exceptions happened in simple_line_fit ... ");
+    }
+}
+
+template <typename T> 
 CmrKSpaceBinning<T>::CmrKSpaceBinning()
 {
+    time_tick_ = 2.5;
+    trigger_time_index_ = 0;
+
+    arrhythmia_rejector_factor_ = 0.25;
+
+    grappa_kSize_RO_ = 5;
+    grappa_kSize_E1_ = 4;
+    grappa_reg_lamda_ = 0.0005;
+
+    downstream_coil_compression_num_modesKept_ = 0;
+    downstream_coil_compression_thres_ = 0.005;
+
     verbose_ = false;
     perform_timing_ = false;
 
@@ -343,6 +400,144 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
 {
     try
     {
+        hoNDArray< std::complex<T> >& kspace = binning_obj_.data_;
+        size_t RO = kspace.get_size(0);
+        size_t E1 = kspace.get_size(1);
+        size_t CHA = kspace.get_size(2);
+        size_t N = kspace.get_size(3);
+        size_t S = kspace.get_size(4);
+
+        hoNDArray< ISMRMRD::AcquisitionHeader >& header = binning_obj_.headers_;
+        GADGET_CHECK_THROW(header.get_size(0)==E1);
+        GADGET_CHECK_THROW(header.get_size(1)==N);
+        GADGET_CHECK_THROW(header.get_size(2)==S);
+
+        // initialize output arrays
+        binning_obj_.ind_heart_beat_.create(E1, N, S);
+        Gadgetron::clear(binning_obj_.ind_heart_beat_);
+
+        binning_obj_.time_stamp_.create(E1, N, S);
+        Gadgetron::fill(binning_obj_.time_stamp_, (float)-1);
+
+        binning_obj_.cpt_time_stamp_.create(E1, N, S);
+        Gadgetron::fill(binning_obj_.cpt_time_stamp_, (float)-1);
+
+        // fill the time stamp
+        size_t e1, n, s;
+        for (s=0; s<S; s++)
+        {
+            for (n=0; n<N; n++)
+            {
+                for (e1=0; e1<E1; e1++)
+                {
+                    if(header(e1,n,s).number_of_samples>0)
+                    {
+                        binning_obj_.time_stamp_(e1, n, s) = header(e1, n, s).acquisition_time_stamp * this->time_tick_;
+                        binning_obj_.cpt_time_stamp_(e1, n, s) = header(e1, n, s).physiology_time_stamp[this->trigger_time_index_] * this->time_tick_;
+                    }
+                }
+            }
+        }
+
+        if ( !debug_folder_.empty() ) gt_exporter_.export_array(binning_obj_.time_stamp_, debug_folder_+"binning_obj_time_stamp");
+
+        binning_obj_.cpt_time_ratio_.create(E1, N, S);
+        Gadgetron::fill(binning_obj_.cpt_time_ratio_, (float)-1);
+
+        binning_obj_.phs_time_stamp_.create(N, S);
+        binning_obj_.phs_cpt_time_stamp_.create(N, S);
+        binning_obj_.phs_cpt_time_ratio_.create(N, S);
+
+        binning_obj_.starting_heart_beat_.resize(S);
+        binning_obj_.ending_heart_beat_.resize(S);
+
+        hoNDArray<long long> dummy(E1, N);
+
+        for ( s=0; s<S; s++ )
+        {
+            std::stringstream os;
+            os << "_S_" << s;
+
+            // for current S
+            hoNDArray<float> time_stamp(E1, N, binning_obj_.time_stamp_.begin()+s*E1*N);
+
+            hoNDArray<float> cpt_time_stamp(E1, N, binning_obj_.cpt_time_stamp_.begin()+s*E1*N);
+            hoNDArray<float> cpt_time_ratio(E1, N, binning_obj_.cpt_time_ratio_.begin()+s*E1*N);
+
+            hoNDArray<int> ind_heart_beat(E1, N, binning_obj_.ind_heart_beat_.begin()+s*E1*N);
+
+            HeartBeatIndexType startingHB, endingHB;
+
+            hoNDArray<float> phs_time_stamp(N, 1, binning_obj_.phs_time_stamp_.begin()+s*N);
+            hoNDArray<float> phs_cpt_time_stamp(N, 1, binning_obj_.phs_cpt_time_stamp_.begin()+s*N);
+            hoNDArray<float> phs_cpt_time_ratio(N, 1, binning_obj_.phs_cpt_time_ratio_.begin()+s*N);
+
+            // handle alternating sampling
+            hoNDArray<float> cpt_time_stamp_flipped(E1, N);
+            std::vector<bool> ascending;
+
+            this->detect_and_flip_alternating_order(time_stamp, cpt_time_stamp, cpt_time_stamp_flipped, ascending);
+
+            bool hasDescending = false;
+            for ( n=0; n<N; n++ )
+            {
+                if ( ascending[n] == false )
+                {
+                    hasDescending = true;
+                    break;
+                }
+            }
+
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(time_stamp, debug_folder_+"time_stamp" + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp, debug_folder_+"cpt_time_stamp" + os.str());
+
+            float meanRR(0);
+
+            if ( !hasDescending )
+            {
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp, debug_folder_+"cpt_time_stamp" + os.str());
+
+                this->process_time_stamps(time_stamp, cpt_time_stamp, 
+                                cpt_time_ratio, phs_time_stamp, phs_cpt_time_stamp, phs_cpt_time_ratio, 
+                                ind_heart_beat, startingHB, endingHB, meanRR);
+            }
+            else
+            {
+                GDEBUG_STREAM("CmrKSpaceBinning -- Alternating sampling strategy detected ... ");
+
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_stamp_flipped, debug_folder_+"cpt_time_stamp_flipped" + os.str());
+
+                hoNDArray<float> cpt_time_ratio_tmp(E1, N);
+
+                this->process_time_stamps(time_stamp, cpt_time_stamp_flipped, 
+                                cpt_time_ratio_tmp, phs_time_stamp, phs_cpt_time_stamp, phs_cpt_time_ratio, 
+                                ind_heart_beat, startingHB, endingHB, meanRR);
+
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_ratio_tmp, debug_folder_+"cpt_time_ratio_tmp" + os.str());
+
+                cpt_time_stamp = cpt_time_stamp_flipped;
+                cpt_time_ratio = cpt_time_ratio_tmp;
+
+                for ( n=0; n<N; n++ )
+                {
+                    if ( !ascending[n] )
+                    {
+                        for ( e1=0; e1<E1; e1++ )
+                        {
+                            cpt_time_ratio(e1, n) = cpt_time_ratio_tmp(E1-1-e1, n);
+                        }
+                    }
+                }
+            }
+
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(cpt_time_ratio, debug_folder_+"cpt_time_ratio" + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(phs_time_stamp, debug_folder_+"phs_time_stamp" + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(phs_cpt_time_stamp, debug_folder_+"phs_cpt_time_stamp" + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(phs_cpt_time_ratio, debug_folder_+"phs_cpt_time_ratio" + os.str());
+
+            binning_obj_.starting_heart_beat_[s] = startingHB;
+            binning_obj_.ending_heart_beat_[s] = endingHB;
+        }
     }
     catch(...)
     {
@@ -383,6 +578,256 @@ void CmrKSpaceBinning<T>::reject_irregular_heart_beat()
     catch(...)
     {
         GADGET_THROW("Exceptions happened in CmrKSpaceBinning<T>::reject_irregular_heart_beat() ... ");
+    }
+}
+
+template <typename T> 
+void CmrKSpaceBinning<T>::detect_and_flip_alternating_order(const hoNDArray<float>& time_stamp, const hoNDArray<float>& cpt_time_stamp, hoNDArray<float>& cpt_time_stamp_flipped, std::vector<bool>& ascending)
+{
+    try
+    {
+        long long E1 = cpt_time_stamp.get_size(0);
+        long long N = cpt_time_stamp.get_size(1);
+
+        ascending.resize(N, true);
+
+        long long n, lin;
+
+        for ( n=0; n<N; n++ )
+        {
+            float v_first = -1;
+            for ( lin=0; lin<E1; lin++ )
+            {
+                if ( time_stamp(lin, n) > -1 )
+                {
+                    v_first = time_stamp(lin, n);
+                    break;
+                }
+            }
+
+            float v_last = -1;
+            for ( lin=E1-1; lin>=0; lin-- )
+            {
+                if ( time_stamp(lin, n) > -1 )
+                {
+                    v_last = time_stamp(lin, n);
+                    break;
+                }
+            }
+
+            if ( v_last < v_first ) ascending[n] = false;
+        }
+
+        cpt_time_stamp_flipped = cpt_time_stamp;
+        Gadgetron::fill(cpt_time_stamp_flipped, (float)(-1) );
+
+        for ( n=0; n<N; n++ )
+        {
+            if ( !ascending[n] )
+            {
+                for ( lin=E1-1; lin>=0; lin-- )
+                {
+                    if ( cpt_time_stamp(lin, n) > -1 )
+                    {
+                        cpt_time_stamp_flipped(E1-1-lin, n) = cpt_time_stamp(lin, n);
+                    }
+                }
+            }
+            else
+            {
+                for ( lin=0; lin<E1; lin++ )
+                {
+                    if ( cpt_time_stamp(lin, n) > -1 )
+                    {
+                        cpt_time_stamp_flipped(lin, n) = cpt_time_stamp(lin, n);
+                    }
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        GADGET_THROW("Exceptions happened in CmrKSpaceBinning<T>::detect_and_flip_alternating_order() ... ");
+    }
+}
+
+template <typename T> 
+void CmrKSpaceBinning<T>::process_time_stamps(hoNDArray<float>& time_stamp, hoNDArray<float>& cpt_time_stamp, 
+                                            hoNDArray<float>& cpt_time_ratio, hoNDArray<float>& phs_time_stamp, 
+                                            hoNDArray<float>& phs_cpt_time_stamp, hoNDArray<float>& phs_cpt_time_ratio, 
+                                            hoNDArray<int>& indHeartBeat, HeartBeatIndexType& startingHB, 
+                                            HeartBeatIndexType& endingHB, float& meanRRInterval)
+{
+    try
+    {
+        size_t E1 = time_stamp.get_size(0);
+        size_t N = time_stamp.get_size(1);
+
+        size_t e1, n, ind, ii;
+
+        startingHB.resize(1);
+        endingHB.resize(1);
+
+        // --------------------------------------------------------
+        // fit a line along time stamp
+        // --------------------------------------------------------
+
+        size_t num_acq_read_outs = 0;
+        for ( n=0; n<N; n++ )
+        {
+            for ( e1=0; e1<E1; e1++ )
+            {
+                if ( time_stamp(e1, n) > 0 )
+                {
+                    num_acq_read_outs++;
+                }
+            }
+        }
+
+        GDEBUG_CONDITION_STREAM(this->verbose_, " Number of acquired lines : " << num_acq_read_outs);
+
+        Gadgetron::correct_time_stamp_with_fitting(time_stamp);
+
+        // --------------------------------------------------------
+        // cpt time stamps
+        // --------------------------------------------------------
+        std::vector<size_t> start_e1_hb, end_e1_hb, start_n_hb, end_n_hb;
+        Gadgetron::detect_heart_beat_with_time_stamp(cpt_time_stamp, indHeartBeat, start_e1_hb, end_e1_hb, start_n_hb, end_n_hb);
+
+        size_t numOfHB = start_e1_hb.size();
+        GADGET_CHECK_THROW( numOfHB > 1 );
+
+        // --------------------------------------------------------
+        // fill the starting and endingHB
+        // --------------------------------------------------------
+        startingHB.resize(numOfHB);
+        endingHB.resize(numOfHB);
+
+        std::vector<size_t> start, end;
+        for ( ind=0; ind<numOfHB; ind++ )
+        {
+            startingHB[ind].first = start_e1_hb[ind];
+            startingHB[ind].second = start_n_hb[0];
+
+            endingHB[ind].first = end_e1_hb[ind];
+            endingHB[ind].second = end_n_hb[ind];
+
+            GDEBUG_CONDITION_STREAM(verbose_, "Heart beat " << ind 
+                << " - start " << " [" << startingHB[ind].first << " " << startingHB[ind].second 
+                << "] - end  " << " [" << endingHB[ind].first << " " << endingHB[ind].second << "]");
+        }
+
+        // --------------------------------------------------------
+        // correct cpt time stamp
+        // --------------------------------------------------------
+        Gadgetron::correct_heart_beat_time_stamp_with_fitting(cpt_time_stamp, indHeartBeat, start_e1_hb, end_e1_hb, start_n_hb, end_n_hb);
+
+        // --------------------------------------------------------
+        // fill per phase time stamp  and phase cpt time stamp
+        // --------------------------------------------------------
+        Gadgetron::compute_phase_time_stamp(time_stamp, cpt_time_stamp, phs_time_stamp, phs_cpt_time_stamp);
+
+        // --------------------------------------------------------
+        // compute the mean maximal cpt
+        // --------------------------------------------------------
+        std::vector<size_t> ind_HB_start(numOfHB);
+        std::vector<size_t> ind_HB_end(numOfHB);
+
+        for ( ind=0; ind<numOfHB; ind++ )
+        {
+            ind_HB_start[ind] = start_e1_hb[ind] + start_n_hb[ind] * E1;
+            ind_HB_end[ind] = end_e1_hb[ind] + end_n_hb[ind] * E1;
+        }
+
+        float mean_max_cpt = 0;
+        for ( ind=0; ind<numOfHB-1; ind++ )
+        {
+            // find the max and min cpt time for this heart beat
+            float maxCPT = -1e10f;
+            for ( ii=ind_HB_start[ind]; ii<=ind_HB_end[ind]; ii++ )
+            {
+                size_t n = ii / E1;
+                size_t e1 = ii - n*E1;
+
+                float v = cpt_time_stamp(e1, n);
+                if ( v > -1 )
+                {
+                    if ( v > maxCPT )
+                        maxCPT = v;
+                }
+            }
+
+            mean_max_cpt += maxCPT;
+        }
+        mean_max_cpt /= (numOfHB-1);
+
+        // --------------------------------------------------------
+        // fill the cpt time ratio
+        // --------------------------------------------------------
+        for ( ind=0; ind<numOfHB; ind++ )
+        {
+            // find the max and min cpt time for this heart beat
+            float maxCPT = -1e10f;
+            float minCPT = 1e10f;
+            for ( ii=ind_HB_start[ind]; ii<=ind_HB_end[ind]; ii++ )
+            {
+                size_t n = ii / E1;
+                size_t e1 = ii - n*E1;
+
+                float v = cpt_time_stamp(e1, n);
+
+                if ( v > -1 )
+                {
+                    if ( v > maxCPT )
+                        maxCPT = v;
+
+                    if ( v < minCPT )
+                        minCPT = v;
+                }
+            }
+
+            if ( std::abs(maxCPT-minCPT) < FLT_EPSILON )
+            {
+                maxCPT = minCPT + 1.0f;
+            }
+
+            // handle the last heart beat
+            if ( ind == numOfHB-1 )
+            {
+                if ( maxCPT < mean_max_cpt )
+                {
+                    maxCPT = mean_max_cpt;
+                }
+            }
+
+            // fill in the cptTimeRatio
+            for ( ii=ind_HB_start[ind]; ii<=ind_HB_end[ind]; ii++ )
+            {
+                size_t n = ii / E1;
+                size_t e1 = ii - n*E1;
+
+                cpt_time_ratio(e1, n) = (cpt_time_stamp(e1, n) - minCPT) / (maxCPT-minCPT);
+            }
+        }
+
+        // --------------------------------------------------------
+        // fill the phase cpt time ratio
+        // --------------------------------------------------------
+        for ( n=0; n<N; n++ )
+        {
+            std::vector<float> buf(E1);
+            for ( e1=0; e1<E1; e1++ )
+            {
+                buf[e1] = cpt_time_ratio(e1, n);
+            }
+
+            std::sort(buf.begin(), buf.end());
+            phs_cpt_time_ratio(n, 0) = (float)(0.5*(buf[E1/2-1]+buf[E1/2]));
+        }
+    }
+    catch(...)
+    {
+        GADGET_THROW("Exceptions happened in CmrKSpaceBinning<T>::process_time_stamps() ... ");
     }
 }
 

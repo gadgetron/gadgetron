@@ -26,8 +26,12 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/image_io
   )
 
-set(cmr_header_fiels cmr_export.h cmr_kspace_binning.h)
-set(cmr_src_fiels cmr_kspace_binning.cpp)
+set(cmr_header_fiels cmr_export.h 
+                    cmr_kspace_binning.h
+                    cmr_time_stamp.h )
+
+set(cmr_src_fiels cmr_kspace_binning.cpp 
+                cmr_time_stamp.cpp )
 
 add_library(gadgetron_toolbox_cmr SHARED 
             ${cmr_header_fiels} 
