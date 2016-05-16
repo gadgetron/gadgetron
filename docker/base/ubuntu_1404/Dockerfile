@@ -6,7 +6,7 @@ RUN apt-get update --quiet && \
     libboost-all-dev libfftw3-dev h5utils jq \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
-    libgtest-dev liblapack-dev libatlas-base-dev libatlas-dev libplplot-dev \
+    libgtest-dev liblapack-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
     supervisor
 
 #Python stuff
