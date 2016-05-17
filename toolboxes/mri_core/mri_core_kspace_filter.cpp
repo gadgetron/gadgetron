@@ -142,6 +142,9 @@ void generate_symmetric_filter(size_t len, hoNDArray<T>& filter, ISMRMRDKSPACEFI
                 w(ii - 1) = T((0.5 * (1 - std::cos(2.0*M_PI*ii / (2 * width + 1)))));
             }
 
+            // make sure the center of the filter will end up being 1:
+            Gadgetron::fill(filter, T(1.0));
+            
             if (len % 2 == 0)
             {
                 for (ii = 1; ii <= width; ii++)
