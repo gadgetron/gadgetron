@@ -11,6 +11,13 @@
 
 #include "GadgetronTimer.h"
 
+#ifdef min
+#undef min
+#endif // min
+
+#include <algorithm>
+#include "hoMatrix.h"
+
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/xml.h"
 #include "ismrmrd/meta.h"
@@ -20,6 +27,7 @@
 #include "mri_core_utility.h"
 
 #include "ImageIOAnalyze.h"
+#include "hoImageRegContainer2DRegistration.h"
 
 namespace Gadgetron { 
 
@@ -41,7 +49,7 @@ namespace Gadgetron {
         /// raw reconstructed images, headers and meta attributes
         /// [RO E1 dstCHA N S]
         hoNDArray< std::complex<T> > full_kspace_raw_;
-        /// complex images
+        /// complex images, [RO E1 1 N S]
         hoNDArray< std::complex<T> > complex_image_raw_;
         /// coil map, [RO E1 dstCHA]
         hoNDArray< std::complex<T> > coil_map_raw_;
@@ -116,6 +124,16 @@ namespace Gadgetron {
         // for every heart beat, record its staring and ending [e1 n] indexes
         typedef std::vector< std::pair<size_t, size_t> > HeartBeatIndexType;
 
+        // store the respiratory navigator detected ROI
+        typedef std::vector< std::pair< hoNDPoint<float, 2>, hoNDPoint<float, 2> > > NavigatorRoiType;
+
+        // motion correction
+        typedef Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2> RegContainer2DType;
+
+        // image type
+        typedef Gadgetron::hoNDImage<T, 2> ImageType;
+        typedef Gadgetron::hoNDImageContainer2D<ImageType> ImageContinerType;
+
         CmrKSpaceBinning();
         virtual ~CmrKSpaceBinning();
 
@@ -151,6 +169,19 @@ namespace Gadgetron {
         // ======================================================================================
         /// parameter for respiratory navigator estimation
         // ======================================================================================
+
+        // regularization strength of respiratory navigator moco
+        T respiratory_navigator_moco_reg_strength_;
+
+        // number of iterations
+        std::vector<unsigned int> respiratory_navigator_moco_iters_;
+
+        // respiratory detection patch size and step size
+        size_t respiratory_navigator_patch_size_RO_;
+        size_t respiratory_navigator_patch_size_E1_;
+
+        size_t respiratory_navigator_patch_step_size_RO_;
+        size_t respiratory_navigator_patch_step_size_E1_;
 
         // ======================================================================================
         /// parameter for raw image reconstruction
@@ -234,6 +265,12 @@ namespace Gadgetron {
 
         /// reject heart beat with irregular rhythm
         virtual void reject_irregular_heart_beat();
+
+        /// compute RR interval for a heart beat
+        void compute_RRInterval(size_t s, size_t HB, float& RRInterval);
+
+        /// compute navigator metrics for a heart beat
+        void compute_metrics_navigator_heart_beat(size_t s, size_t HB, float& mean_resp, float& var_resp);
 
         // ======================================================================================
         // implementation functions

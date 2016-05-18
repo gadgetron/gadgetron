@@ -4,6 +4,7 @@
 */
 
 #include "cmr_kspace_binning.h"
+#include "log.h"
 #include "hoNDFFT.h"
 #include "mri_core_grappa.h"
 #include "mri_core_kspace_filter.h"
@@ -12,6 +13,7 @@
 #include "mri_core_coil_map_estimation.h"
 
 #include "cmr_time_stamp.h"
+#include "cmr_motion_correction.h"
 
 namespace Gadgetron { 
 
@@ -84,6 +86,19 @@ CmrKSpaceBinning<T>::CmrKSpaceBinning()
 
     downstream_coil_compression_num_modesKept_ = 0;
     downstream_coil_compression_thres_ = 0.005;
+
+    respiratory_navigator_moco_reg_strength_ = 6.0;
+    respiratory_navigator_moco_iters_.resize(4);
+    respiratory_navigator_moco_iters_[0] = 1;
+    respiratory_navigator_moco_iters_[1] = 32;
+    respiratory_navigator_moco_iters_[2] = 100;
+    respiratory_navigator_moco_iters_[3] = 100;
+
+    respiratory_navigator_patch_size_RO_ = 32;
+    respiratory_navigator_patch_size_E1_ = 32;
+
+    respiratory_navigator_patch_step_size_RO_ = 10;
+    respiratory_navigator_patch_step_size_E1_ = 10;
 
     verbose_ = false;
     perform_timing_ = false;
@@ -550,6 +565,201 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
 {
     try
     {
+        // estimate respiratory signal from binning_obj_.complex_image_raw_
+        ArrayType& complex_image = binning_obj_.complex_image_raw_;
+
+        size_t RO = complex_image.get_size(0);
+        size_t E1 = complex_image.get_size(1);
+        size_t CHA = complex_image.get_size(2);
+        size_t N = complex_image.get_size(3);
+        size_t S = complex_image.get_size(4);
+
+        binning_obj_.navigator_.create(E1, N, S);
+        Gadgetron::clear(binning_obj_.navigator_);
+
+        hoNDArray<float>& navigator = binning_obj_.navigator_;
+
+        NavigatorRoiType roi;
+        roi.resize(S);
+
+        Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2> reg;
+
+        size_t s, n, e1;
+        for (s=0; s<S; s++)
+        {
+            std::stringstream os;
+            os << "_S_" << s;
+
+            ArrayType im(RO, E1, N, complex_image.begin()+s*RO*E1*N);
+            hoNDArray<float> navigator_s(E1, N, navigator.begin()+s*E1*N);
+
+            // get the magnitude of image
+            hoNDArray<T> mag;
+            Gadgetron::abs(im, mag);
+
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag, debug_folder_+"navigator_mag" + os.str());
+
+            // detect key frame
+            size_t key_frame;
+            Gadgetron::find_key_frame_SSD_2DT(mag, key_frame);
+            GDEBUG_STREAM("Find key frame " << key_frame << " for S " << s);
+
+            // perform motion correction
+            Gadgetron:: perform_moco_fixed_key_frame_2DT(mag, key_frame, respiratory_navigator_moco_reg_strength_, respiratory_navigator_moco_iters_, false, reg);
+
+            // get the moco results
+            hoNDArray<T> magMoCo(mag);
+            hoNDArray<float> dx, dy;
+
+            reg.warped_container_.to_NDArray(0, magMoCo);
+            reg.deformation_field_[0].to_NDArray(0, dx);
+            reg.deformation_field_[1].to_NDArray(0, dy);
+
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(magMoCo, debug_folder_+"navigator_mag_moco" + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(dx, debug_folder_+"navigator_mag_moco_dx" + os.str());
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(dy, debug_folder_+"navigator_mag_moco_dy" + os.str());
+
+            // select the best region and get the navigator signal
+
+            // generate the region
+            std::vector<long long> starting_pos_RO, starting_pos_E1;
+
+            long long patch_size_RO = respiratory_navigator_patch_size_RO_;
+            long long patch_size_E1 = respiratory_navigator_patch_size_E1_;
+
+            long long patch_step_size_RO = respiratory_navigator_patch_step_size_RO_;
+            long long patch_step_size_E1 = respiratory_navigator_patch_step_size_E1_;
+
+            long long pos = 0;
+            while ( pos <= RO-patch_size_RO )
+            {
+                starting_pos_RO.push_back(pos);
+                pos += patch_step_size_RO;
+            }
+
+            pos = 0;
+            while ( pos <= E1-patch_size_E1 )
+            {
+                starting_pos_E1.push_back(pos);
+                pos += patch_step_size_E1;
+            }
+
+            unsigned long long num_RO = starting_pos_RO.size();
+            unsigned long long num_E1 = starting_pos_E1.size();
+
+            // compute the mean deformation within the region
+            hoNDArray<float> mean_deform_RO(num_RO, num_E1, N);
+            hoNDArray<float> mean_deform_E1(num_RO, num_E1, N);
+            hoNDArray<float> deform_patch(patch_size_RO, patch_size_E1);
+
+            size_t l, c;
+            for ( n=0; n<N; n++ )
+            {
+                for ( l=0; l<num_E1; l++ )
+                {
+                    for ( c=0; c<num_RO; c++ )
+                    {
+                        long long pl, k;
+
+                        // X
+                        // copy deformation to deform_patch
+                        for ( pl=0; pl<patch_size_E1; pl++ )
+                        {
+                            long long offset = dx.calculate_offset( starting_pos_RO[c], starting_pos_E1[l]+pl, n );
+                            memcpy(deform_patch.begin()+pl*patch_size_RO, dx.begin()+offset, sizeof(float)*patch_size_RO);
+                        }
+
+                        // compute the mean deformation
+                        float totalDeform = 0.0f;
+                        for ( k=0; k<patch_size_RO*patch_size_E1; k++ )
+                        {
+                            totalDeform += deform_patch(k);
+                        }
+
+                        mean_deform_RO(c, l, n) = totalDeform/(patch_size_RO*patch_size_E1);
+
+                        // Y
+                        // copy deformation to deform_patch
+                        for ( pl=0; pl<patch_size_E1; pl++ )
+                        {
+                            long long offset = dy.calculate_offset( starting_pos_RO[c], starting_pos_E1[l]+pl, n );
+                            memcpy(deform_patch.begin()+pl*patch_size_RO, dy.begin()+offset, sizeof(float)*patch_size_RO);
+                        }
+
+                        // compute the mean deformation
+                        totalDeform = 0.0f;
+                        for ( k=0; k<patch_size_RO*patch_size_E1; k++ )
+                        {
+                            totalDeform += deform_patch(k);
+                        }
+
+                        mean_deform_E1(c, l, n) = totalDeform/(patch_size_RO*patch_size_E1);
+                    }
+                }
+            }
+
+            // at this moment, do it simply by computing the variance for every region and pick the one with largest variance
+            ho2DArray<float> var_mean_deform_RO(num_RO, num_E1);
+            ho2DArray<float> var_mean_deform_E1(num_RO, num_E1);
+            for ( l=0; l<num_E1; l++ )
+            {
+                for ( c=0; c<num_RO; c++ )
+                {
+                    hoNDArray<float> buf(N);
+
+                    for ( n=0; n<N; n++ )
+                    {
+                        buf(n) = mean_deform_RO(c, l, n);
+                    }
+
+                    var_mean_deform_RO(c, l) = Gadgetron::stddev(&buf);
+
+                    for ( n=0; n<N; n++ )
+                    {
+                        buf(n) = mean_deform_E1(c, l, n);
+                    }
+                    var_mean_deform_E1(c, l) = Gadgetron::stddev(&buf);
+                }
+            }
+
+            // find the region with maximal variance
+            size_t max_var_ind_RO, max_var_ind_E1;
+            float max_var_RO, max_var_E1;
+            Gadgetron::maxAbsolute(var_mean_deform_RO, max_var_RO, max_var_ind_RO);
+            Gadgetron::maxAbsolute(var_mean_deform_E1, max_var_E1, max_var_ind_E1);
+
+            std::vector<size_t> regionInd = var_mean_deform_RO.calculate_index(max_var_ind_RO);
+            if ( max_var_E1 > max_var_RO )
+            {
+                regionInd = var_mean_deform_E1.calculate_index(max_var_ind_E1);
+            }
+
+            roi[s].first[0] = starting_pos_RO[regionInd[0]];
+            roi[s].first[1] = starting_pos_E1[regionInd[1]];
+
+            roi[s].second[0] = starting_pos_RO[regionInd[0]]+patch_size_RO;
+            roi[s].second[1] = starting_pos_E1[regionInd[1]]+patch_size_E1;
+
+            GDEBUG_CONDITION_STREAM(this->verbose_, "Respiratory ROI - RO - E1 [" 
+                << roi[s].first(0) << "," << roi[s].first(1) << "]; [" << roi[s].second(0) << " -- " << roi[s].second(1) << "]");
+
+            for ( n=0; n<N; n++ )
+            {
+                float deformValue = mean_deform_RO(regionInd[0], regionInd[1], n);
+                if ( max_var_E1 > max_var_RO )
+                {
+                    deformValue = mean_deform_E1(regionInd[0], regionInd[1], n);
+                }
+
+                for ( e1=0; e1<E1; e1++ )
+                {
+                    navigator_s(e1, n) =  deformValue;
+                }
+                GDEBUG_CONDITION_STREAM(verbose_, "Respirator navigator - n " << n << ", s " << s << " : " << deformValue);
+            }
+
+            if ( !debug_folder_.empty() ) gt_exporter_.export_array(navigator_s, debug_folder_ + ""  + os.str());
+        }
     }
     catch(...)
     {
@@ -562,6 +772,57 @@ void CmrKSpaceBinning<T>::find_best_heart_beat(std::vector<size_t>& bestHB)
 {
     try
     {
+        ArrayType& complex_image = binning_obj_.complex_image_raw_;
+
+        size_t RO = complex_image.get_size(0);
+        size_t E1 = complex_image.get_size(1);
+        size_t CHA = complex_image.get_size(2);
+        size_t N = complex_image.get_size(3);
+        size_t S = complex_image.get_size(4);
+
+        hoNDArray<float>& navigator = binning_obj_.navigator_;
+        hoNDArray<float>& cpt_time_stamp = binning_obj_.cpt_time_stamp_;
+
+        bestHB.resize(S);
+
+        size_t s, n, e1;
+        for (s=0; s<S; s++)
+        {
+            std::stringstream os;
+            os << "_S_" << s;
+
+            hoNDArray<float> navigator_s(E1, N, navigator.begin()+s*E1*N);
+            hoNDArray<float> cpt_time_stamp_s(E1, N, cpt_time_stamp.begin()+s*E1*N);
+
+            size_t numOfHB = binning_obj_.starting_heart_beat_[s].size();
+            bestHB[s] = 0;
+            float min_var_resp = (float)(1e15);
+
+            size_t HB;
+            for ( HB=1; HB<numOfHB-1; HB++ ) // do not pick the first the last heart beat
+            {
+                // reject irregular heart beat
+                float RRInterval;
+                this->compute_RRInterval(s, HB, RRInterval);
+
+                if ( RRInterval < binning_obj_.mean_RR_ * (1.0-this->arrhythmia_rejector_factor_) )
+                    continue;
+
+                if ( RRInterval > binning_obj_.mean_RR_ * (1.0+this->arrhythmia_rejector_factor_) )
+                    continue;
+
+                float mean_resp, var_resp;
+                this->compute_metrics_navigator_heart_beat(s, HB, mean_resp, var_resp);
+
+                if ( var_resp < min_var_resp )
+                {
+                    min_var_resp = var_resp;
+                    bestHB[s] = HB;
+                }
+            }
+
+            GDEBUG_CONDITION_STREAM(this->verbose_, "find best heart beat : " << bestHB[s] << " for S " << s);
+        }
     }
     catch(...)
     {
@@ -574,6 +835,58 @@ void CmrKSpaceBinning<T>::reject_irregular_heart_beat()
 {
     try
     {
+        ArrayType& complex_image = binning_obj_.complex_image_raw_;
+
+        size_t RO = complex_image.get_size(0);
+        size_t E1 = complex_image.get_size(1);
+        size_t CHA = complex_image.get_size(2);
+        size_t N = complex_image.get_size(3);
+        size_t S = complex_image.get_size(4);
+
+        hoNDArray<float>& cpt_time_stamp = binning_obj_.cpt_time_stamp_;
+        hoNDArray<float>& cpt_time_ratio = binning_obj_.cpt_time_ratio_;
+
+        size_t s, n, e1;
+        for (s=0; s<S; s++)
+        {
+            std::stringstream os;
+            os << "_S_" << s;
+
+            hoNDArray<float> cpt_time_stamp_s(E1, N, cpt_time_stamp.begin()+s*E1*N);
+            hoNDArray<float> cpt_time_ratio_s(E1, N, cpt_time_ratio.begin()+s*E1*N);
+
+            size_t numOfHB = binning_obj_.starting_heart_beat_[s].size();
+
+            size_t HB;
+            for ( HB=0; HB<numOfHB-1; HB++ ) // do not pick the first the last heart beat
+            {
+                float RRInterval;
+                this->compute_RRInterval(s, HB, RRInterval);
+                GDEBUG_CONDITION_STREAM(this->verbose_, "Heart beat " << HB << " - S " << s << " - RRInterval - " << RRInterval);
+
+                bool reject = false;
+                if ( RRInterval < binning_obj_.mean_RR_ * (1.0-this->arrhythmia_rejector_factor_) )
+                    reject = true;
+
+                if ( RRInterval > binning_obj_.mean_RR_ * (1.0+this->arrhythmia_rejector_factor_) )
+                    reject = true;
+
+                if(reject)
+                {
+                    GDEBUG_CONDITION_STREAM(this->verbose_, "Heart beat " << HB << " is rejected due to RR interval - " << RRInterval << " - meanRR " << binning_obj_.mean_RR_);
+
+                    size_t sInd = binning_obj_.starting_heart_beat_[s][HB].second*E1 + binning_obj_.starting_heart_beat_[s][HB].first;
+                    size_t eInd = binning_obj_.ending_heart_beat_[s][HB].second*E1 + binning_obj_.ending_heart_beat_[s][HB].first;
+
+                    size_t ind;
+                    for ( ind=sInd; ind<=eInd; ind++ )
+                    {
+                        cpt_time_stamp_s(ind) = (float)(-1e3);
+                        cpt_time_ratio_s(ind) = (float)(-1e3);
+                    }
+                }
+            }
+        }
     }
     catch(...)
     {
@@ -707,7 +1020,7 @@ void CmrKSpaceBinning<T>::process_time_stamps(hoNDArray<float>& time_stamp, hoND
         for ( ind=0; ind<numOfHB; ind++ )
         {
             startingHB[ind].first = start_e1_hb[ind];
-            startingHB[ind].second = start_n_hb[0];
+            startingHB[ind].second = start_n_hb[ind];
 
             endingHB[ind].first = end_e1_hb[ind];
             endingHB[ind].second = end_n_hb[ind];
@@ -831,11 +1144,72 @@ void CmrKSpaceBinning<T>::process_time_stamps(hoNDArray<float>& time_stamp, hoND
     }
 }
 
+template <typename T> 
+void CmrKSpaceBinning<T>::compute_RRInterval(size_t s, size_t HB, float& RRInterval )
+{
+    try
+    {
+        GADGET_CHECK_THROW(HB<binning_obj_.starting_heart_beat_[s].size());
+
+        size_t E1 = binning_obj_.cpt_time_stamp_.get_size(0);
+        size_t N = binning_obj_.cpt_time_stamp_.get_size(1);
+
+        size_t startOffset = binning_obj_.starting_heart_beat_[s][HB].second*E1 + binning_obj_.starting_heart_beat_[s][HB].first;
+        size_t endOffset = binning_obj_.ending_heart_beat_[s][HB].second*E1 + binning_obj_.ending_heart_beat_[s][HB].first;
+
+        float min_time_stamp = 1e12f;
+        float max_time_stamp = -1;
+
+        size_t ind;
+        for ( ind=startOffset; ind<=endOffset; ind++ )
+        {
+            float v = binning_obj_.cpt_time_stamp_.at(ind);
+            if ( v < min_time_stamp ) min_time_stamp = v;
+            if ( v > max_time_stamp ) max_time_stamp = v;
+        }
+
+        RRInterval = max_time_stamp - min_time_stamp;
+    }
+    catch(...)
+    {
+        GADGET_THROW("Exceptions happened in CmrKSpaceBinning<T>::compute_RRInterval() ... ");
+    }
+}
+
+template <typename T> 
+void CmrKSpaceBinning<T>::compute_metrics_navigator_heart_beat(size_t s, size_t HB, float& mean_resp, float& var_resp)
+{
+    try
+    {
+        GADGET_CHECK_THROW(HB<binning_obj_.starting_heart_beat_[s].size());
+
+        size_t E1 = binning_obj_.navigator_.get_size(0);
+        size_t N = binning_obj_.navigator_.get_size(1);
+
+        size_t sInd = binning_obj_.starting_heart_beat_[s][HB].second*E1 + binning_obj_.starting_heart_beat_[s][HB].first;
+        size_t eInd = binning_obj_.ending_heart_beat_[s][HB].second*E1 + binning_obj_.ending_heart_beat_[s][HB].first;
+
+        hoNDArray<float> nav(eInd-sInd+1);
+
+        size_t ind;
+        for ( ind=sInd; ind<=eInd; ind++ )
+        {
+            nav(ind-sInd) = binning_obj_.navigator_(ind);
+        }
+
+        var_resp = Gadgetron::stddev(&nav);
+        mean_resp = Gadgetron::mean(&nav);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Exceptions happened in CmrKSpaceBinning<T>::compute_metrics_navigator_heart_beat() ... ");
+    }
+}
+
 // ------------------------------------------------------------
 // Instantiation
 // ------------------------------------------------------------
 
 template class EXPORTCMR CmrKSpaceBinning< float >;
-template class EXPORTCMR CmrKSpaceBinning< double >;
 
 }

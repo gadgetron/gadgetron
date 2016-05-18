@@ -18,6 +18,13 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/dissimilarity
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/solver
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/transformation
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/warper
     ${CMAKE_SOURCE_DIR}/toolboxes/operators
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/solvers
@@ -28,10 +35,12 @@ include_directories(
 
 set(cmr_header_fiels cmr_export.h 
                     cmr_kspace_binning.h
-                    cmr_time_stamp.h )
+                    cmr_time_stamp.h 
+                    cmr_motion_correction.h )
 
 set(cmr_src_fiels cmr_kspace_binning.cpp 
-                cmr_time_stamp.cpp )
+                cmr_time_stamp.cpp 
+                cmr_motion_correction.cpp )
 
 add_library(gadgetron_toolbox_cmr SHARED 
             ${cmr_header_fiels} 
