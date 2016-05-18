@@ -14,6 +14,7 @@
 
 #include "cmr_time_stamp.h"
 #include "cmr_motion_correction.h"
+#include <boost/math/special_functions/sign.hpp>
 
 namespace Gadgetron { 
 
