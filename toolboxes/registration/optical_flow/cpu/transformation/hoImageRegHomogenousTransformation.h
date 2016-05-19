@@ -7,6 +7,7 @@
 
 #include "hoImageRegParametricTransformation.h"
 #include "hoMatrix.h"
+#include "hoNDArray_linalg.h"
 
 namespace Gadgetron
 {
