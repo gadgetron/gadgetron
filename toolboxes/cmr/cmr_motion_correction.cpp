@@ -71,28 +71,11 @@ template EXPORTCMR void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<float>
 template EXPORTCMR void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<double>& input, size_t& key_frame);
 
 // ------------------------------------------------------------------------
-
 template <typename T> 
-void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<T>& input, size_t key_frame, T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg)
+void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<T, 2> >& input, const std::vector<unsigned int>& key_frame, T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg)
 {
     try
     {
-        size_t RO = input.get_size(0);
-        size_t E1 = input.get_size(1);
-        size_t N = input.get_size(2);
-
-        GADGET_CHECK_THROW(key_frame<N);
-
-        Gadgetron::hoNDImageContainer2D< hoNDImage<T, 2> > im;
-        std::vector<size_t> cols(1, N);
-
-        std::vector<size_t> dim(3);
-        dim[0] = RO;
-        dim[1] = E1;
-        dim[2] = N;
-
-        im.create(const_cast<T*>(input.begin()), dim);
-
         size_t div_num = 3;
         float dissimilarity_thres = 1e-6;
         size_t inverse_deform_enforce_iter = 10;
@@ -134,8 +117,40 @@ void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<T>& input, size
         reg.div_num_pyramid_level_.clear();
         reg.div_num_pyramid_level_.resize(level, div_num);
 
+        reg.registerOverContainer2DFixedReference(input, key_frame, false, false);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Exceptions happened in perform_moco_fixed_key_frame_2DT(container) ... ");
+    }
+}
+
+template EXPORTCMR void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<float, 2> >& input, const std::vector<unsigned int>& key_frame, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, Gadgetron::hoImageRegContainer2DRegistration<float, float, 2, 2>& reg);
+
+template <typename T> 
+void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<T>& input, size_t key_frame, T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg)
+{
+    try
+    {
+        size_t RO = input.get_size(0);
+        size_t E1 = input.get_size(1);
+        size_t N = input.get_size(2);
+
+        GADGET_CHECK_THROW(key_frame<N);
+
+        Gadgetron::hoNDImageContainer2D< hoNDImage<T, 2> > im;
+        std::vector<size_t> cols(1, N);
+
+        std::vector<size_t> dim(3);
+        dim[0] = RO;
+        dim[1] = E1;
+        dim[2] = N;
+
+        im.create(const_cast<T*>(input.begin()), dim);
+
         std::vector<unsigned int> referenceFrame(1, key_frame);
-        reg.registerOverContainer2DFixedReference(im, referenceFrame, false, false);
+
+        Gadgetron::perform_moco_fixed_key_frame_2DT(im, referenceFrame, reg_strength, iters, bidirectional_moco, reg);
     }
     catch(...)
     {
