@@ -14,6 +14,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/dwt/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
@@ -36,11 +37,13 @@ include_directories(
 set(cmr_header_fiels cmr_export.h 
                     cmr_kspace_binning.h
                     cmr_time_stamp.h 
-                    cmr_motion_correction.h )
+                    cmr_motion_correction.h 
+                    cmr_spirit_recon.h )
 
 set(cmr_src_fiels cmr_kspace_binning.cpp 
                 cmr_time_stamp.cpp 
-                cmr_motion_correction.cpp )
+                cmr_motion_correction.cpp 
+                cmr_spirit_recon.cpp )
 
 add_library(gadgetron_toolbox_cmr SHARED 
             ${cmr_header_fiels} 
@@ -56,7 +59,8 @@ target_link_libraries(gadgetron_toolbox_cmr
                     gadgetron_toolbox_cpuklt 
                     gadgetron_toolbox_image_analyze_io 
                     gadgetron_toolbox_mri_core 
-                    gadgetron_toolbox_cpudwt )
+                    gadgetron_toolbox_cpudwt 
+                    gadgetron_toolbox_cpuoperator )
 
 install(TARGETS gadgetron_toolbox_cmr DESTINATION lib COMPONENT main)
 

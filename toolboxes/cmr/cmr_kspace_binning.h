@@ -51,7 +51,7 @@ namespace Gadgetron {
         hoNDArray< std::complex<T> > full_kspace_raw_;
         /// complex images, [RO E1 1 N S]
         hoNDArray< std::complex<T> > complex_image_raw_;
-        /// coil map, [RO E1 dstCHA]
+        /// coil map, [RO E1 dstCHA S]
         hoNDArray< std::complex<T> > coil_map_raw_;
 
         /// mean RR interval in ms
@@ -90,6 +90,7 @@ namespace Gadgetron {
         hoNDArray<float> cpt_time_stamp_;
         /// cardiac phase time ratio (CPT) [0 1] for kspace lines, [E1 N S]
         hoNDArray<float> cpt_time_ratio_;
+
         /// time stamp for every raw images, [N S]
         hoNDArray<float> phs_time_stamp_;
         /// cardiac phase time in ms for every raw images, [N S]
@@ -104,13 +105,22 @@ namespace Gadgetron {
         std::vector< std::vector< std::pair<size_t, size_t> > > starting_heart_beat_;
         std::vector< std::vector< std::pair<size_t, size_t> > > ending_heart_beat_;
 
-        // output cardiac phases
+        // output cardiac phase time stamp in ms
         std::vector<float> desired_cardiac_phases_;
         // output cardiac phase ratio
         std::vector<float> desired_cpt_;
 
         /// respiratory navigator signal for every kspace line, [E1 N S]
         hoNDArray<float> navigator_;
+
+        /// binned kspace
+        /// [RO E1 1ordstCHA output_N_ S]
+        hoNDArray< std::complex<T> > kspace_binning_;
+        /// image domain averaged kspace, [RO E1 1ordstCHA output_N_ S]
+        hoNDArray< std::complex<T> > kspace_binning_image_domain_average_;
+        /// the number of lines falling into the binned kspace
+        /// [E1 output_N_ S]
+        hoNDArray< float > kspace_binning_hit_count_;
     };
 
     template<typename T> 
@@ -133,6 +143,13 @@ namespace Gadgetron {
         // image type
         typedef Gadgetron::hoNDImage<T, 2> ImageType;
         typedef Gadgetron::hoNDImageContainer2D<ImageType> ImageContinerType;
+
+        // image type
+        typedef Gadgetron::hoNDImage< std::complex<T>, 2> ComplexImageType;
+        typedef Gadgetron::hoNDImageContainer2D<ComplexImageType> ComplexImageContinerType;
+
+        // deformation field
+        typedef hoNDImageContainer2D< hoNDImage<float, 2> > DeformationFieldContinerType;
 
         CmrKSpaceBinning();
         virtual ~CmrKSpaceBinning();
@@ -190,7 +207,7 @@ namespace Gadgetron {
         // time tick for every time stamp unit, in ms (e.g. 2.5ms)
         float time_tick_;
 
-        // index of cardiac trigger time in physilogical time stamp
+        // index of cardiac trigger time in the physilogical time stamp array
         size_t trigger_time_index_;
 
         // if a heart beat RR is not in the range of [ (1-arrhythmiaRejectorFactor)*meanRR (1+arrhythmiaRejectorFactor)*meanRR], it will be rejected
@@ -219,9 +236,52 @@ namespace Gadgetron {
         /// parameter for cardiac binning
         // ======================================================================================
 
+        // whether to interpolate heart beat images; if not, interpolate the deformation fields
+        bool kspace_binning_interpolate_heart_beat_images_;
+
+        // acceptance window for respiratory navigator
+        float kspace_binning_navigator_acceptance_window_;
+
+        // regularization strength of binning moco
+        T kspace_binning_moco_reg_strength_;
+
+        // number of iterations for binning moco
+        std::vector<unsigned int> kspace_binning_moco_iters_;
+
+        // max allowed temporal ratio window
+        float kspace_binning_max_temporal_window_;
+
+        // minimal allowed temporal window in ms
+        float kspace_binning_minimal_cardiac_phase_width_;
+
         // ======================================================================================
         /// parameter for recon after binning
         // ======================================================================================
+
+        // kernel size and calibration regularization threshold on the binned kspace
+        int kspace_binning_kSize_RO_;
+        int kspace_binning_kSize_E1_;
+        double kspace_binning_reg_lamda_;
+
+        // maximal number of iterations for linear recon on binned kspace
+        size_t kspace_binning_linear_iter_max_;
+        // threshold to stop iterations for linear recon on binned kspace
+        double kspace_binning_linear_iter_thres_;
+
+        // maximal number of iterations for non-linear recon on binned kspace
+        size_t kspace_binning_nonlinear_iter_max_;
+        // threshold to stop the non-linear iterations
+        double kspace_binning_nonlinear_iter_thres_;
+        // data fidelity term; if 0, null-space constraint is applied
+        double kspace_binning_nonlinear_data_fidelity_lamda_;
+        // image regularization term
+        double kspace_binning_nonlinear_image_reg_lamda_;
+        // regularization weighting ratio along the N dimension
+        double kspace_binning_nonlinear_reg_N_weighting_ratio_;
+        // whether to use coil map in the image regularization term
+        bool kspace_binning_nonlinear_reg_use_coil_sen_map_;
+        // whether to keep approximation coefficients during regularization
+        bool kspace_binning_nonlinear_reg_with_approx_coeff_;
 
         // ======================================================================================
         /// parameter for debugging
@@ -266,11 +326,11 @@ namespace Gadgetron {
         /// reject heart beat with irregular rhythm
         virtual void reject_irregular_heart_beat();
 
-        /// compute RR interval for a heart beat
-        void compute_RRInterval(size_t s, size_t HB, float& RRInterval);
+        /// compute kspace after binning
+        virtual void compute_kspace_binning(const std::vector<size_t>& bestHB);
 
-        /// compute navigator metrics for a heart beat
-        void compute_metrics_navigator_heart_beat(size_t s, size_t HB, float& mean_resp, float& var_resp);
+        /// perform recon on the binned kspace
+        virtual void perform_recon_binned_kspace();
 
         // ======================================================================================
         // implementation functions
@@ -286,5 +346,32 @@ namespace Gadgetron {
                                 hoNDArray<float>& phs_cpt_time_stamp, hoNDArray<float>& phs_cpt_time_ratio, 
                                 hoNDArray<int>& indHeartBeat, HeartBeatIndexType& startingHB, 
                                 HeartBeatIndexType& endingHB, float& meanRRInterval);
+
+        /// compute RR interval for a heart beat
+        void compute_RRInterval(size_t s, size_t HB, float& RRInterval);
+
+        /// compute navigator metrics for a heart beat
+        void compute_metrics_navigator_heart_beat(size_t s, size_t HB, float& mean_resp, float& var_resp, float& min_resp, float& max_resp);
+
+        /// interpolate the best heart beat images to get images at the desired cardiace phase ration
+        void interpolate_best_HB_images(const std::vector<float>& cpt_time_ratio_bestHB, const hoNDArray<T>& mag_bestHB, const std::vector<float>& desired_cpt, hoNDArray<T>& mag_bestHB_at_desired_cpt);
+
+        /// select images using the navigator and cpt time ratio
+        /// selected: store the selected image n indexes
+        void select_images_with_navigator(float desired_cpt_time_ratio, float accepted_nav[2], size_t n, size_t s, std::vector<size_t>& selected);
+
+        /// perform moco between best heart beat images and selected images
+        void perform_moco_selected_images_with_best_heart_beat(const std::vector < std::vector<size_t> >& selected_images, const hoNDArray<T>& mag_s, const hoNDArray<T>& mag_bestHB_at_desired_cpt, DeformationFieldContinerType& dx, DeformationFieldContinerType& dy);
+
+        /// warp complex images using the moco between best heart beat images and selected images
+        void perform_moco_warp_on_selected_images(const std::vector < std::vector<size_t> >& selected_images, const ArrayType& complex_image, DeformationFieldContinerType deform[2], std::vector<ArrayType>& warpped_complex_images);
+
+        /// fill the binned kspace
+        void fill_binned_kspace(size_t s, size_t dst_n, const std::vector<size_t>& selected_images, const ArrayType& warpped_kspace, ArrayType& kspace_filled, hoNDArray<float>& hit_count);
+
+        /// perform linear recon on binning
+        void perform_linear_recon_on_kspace_binning(const ArrayType& underSampledKspace, const ArrayType& kspaceInitial, const ArrayType& coilMap, ArrayType& resKSpace, ArrayType& resIm, ArrayType& kernel, ArrayType& kernelIm);
+        /// perform nonlinear recon for binning
+        void perform_non_linear_recon_on_kspace_binning(const ArrayType& underSampledKspace, const ArrayType& kspaceLinear, const ArrayType& coilMap, const ArrayType& kernel, const ArrayType& kernelIm, ArrayType& resKSpace, ArrayType& resIm);
     };
 }

@@ -34,6 +34,9 @@ namespace Gadgetron {
     /// reg_strength : regularization strength in the unit of pixel
     template <typename T> EXPORTCMR void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<T>& input, size_t key_frame, 
         T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
+    /// perform 2D moco on input image container
+    template <typename T> EXPORTCMR void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<T, 2> >& input, const std::vector<unsigned int>& key_frame, 
+        T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
 
     /// series a is mocoed to series b
     /// a, b : [RO E1 N]
