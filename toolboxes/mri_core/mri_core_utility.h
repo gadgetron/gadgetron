@@ -48,5 +48,5 @@ namespace Gadgetron
 
     /// get the path of debug folder
     // environmental variable GADGETRON_DEBUG_FOLDER is used 
-    // EXPORTMRICORE void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath);
+    EXPORTMRICORE void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath);
 }
