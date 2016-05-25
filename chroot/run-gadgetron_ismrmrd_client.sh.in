@@ -26,7 +26,13 @@ else
     fi
 
     if hash timeout 2>/dev/null; then
-        timeout $CHROOT_TIMEOUT chroot ${MOUNT_POINT}/chroot-root/gadgetron @CMAKE_INSTALL_PREFIX@/@GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH@/gadgetron_ismrmrd_client.sh $ISMRMRD_FILENAME $CONDIG_XML $GT_HOST $GT_PORT $GT_TIMEOUT
+        ecode=124
+        try_count=0
+        while [ "$ecode" -eq 124 ] && [ "$try_count" -lt  5 ]; do
+            nic=$(timeout $CHROOT_TIMEOUT chroot ${MOUNT_POINT}/chroot-root/gadgetron @CMAKE_INSTALL_PREFIX@/@GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH@/gadgetron_ismrmrd_client.sh $ISMRMRD_FILENAME $CONDIG_XML $GT_HOST $GT_PORT $GT_TIMEOUT)
+            ecode=$?
+            try_count=`expr $try_count + 1`
+        done
     else
         chroot ${MOUNT_POINT}/chroot-root/gadgetron @CMAKE_INSTALL_PREFIX@/@GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH@/gadgetron_ismrmrd_client.sh $ISMRMRD_FILENAME $CONDIG_XML $GT_HOST $GT_PORT $GT_TIMEOUT
     fi

@@ -25,7 +25,13 @@ else
     fi
 
     if hash timeout 2>/dev/null; then
-        timeout $CHROOT_TIME_OUT chroot ${MOUNT_POINT}/chroot-root/gadgetron @CMAKE_INSTALL_PREFIX@/@GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH@/gadgetron-dependency-query.sh $GT_HOST $GT_PORT $QUERY_OUT $TIME_OUT
+        ecode=124
+        try_count=0
+        while [ "$ecode" -eq 124 ] && [ "$try_count" -lt  10 ]; do
+            nic=$(timeout $CHROOT_TIME_OUT chroot ${MOUNT_POINT}/chroot-root/gadgetron @CMAKE_INSTALL_PREFIX@/@GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH@/gadgetron-dependency-query.sh $GT_HOST $GT_PORT $QUERY_OUT $TIME_OUT)
+            ecode=$?
+            try_count=`expr $try_count + 1`
+        done
     else
         chroot ${MOUNT_POINT}/chroot-root/gadgetron @CMAKE_INSTALL_PREFIX@/@GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH@/gadgetron-dependency-query.sh $GT_HOST $GT_PORT $QUERY_OUT $TIME_OUT
     fi
