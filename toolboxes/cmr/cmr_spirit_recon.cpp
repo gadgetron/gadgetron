@@ -19,7 +19,7 @@
 namespace Gadgetron { 
 
     template <typename T> 
-    void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray<T>& kspace, const Gadgetron::hoNDArray<T>& kerIm, 
+    void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray<T>& kspace, size_t startE1, size_t endE1, const Gadgetron::hoNDArray<T>& kerIm, 
                                 const Gadgetron::hoNDArray<T>& kspaceInitial, Gadgetron::hoNDArray<T>& res, size_t iter_max, double iter_thres, bool print_iter)
     {
         try
@@ -32,6 +32,14 @@ namespace Gadgetron {
 
             size_t ref_N = kerIm.get_size(4);
             size_t ref_S = kerIm.get_size(5);
+
+            if(startE1>=E1) startE1 = 0;
+            if(endE1>=E1) startE1 = 0;
+            if(startE1>endE1)
+            {
+                startE1 = 0;
+                endE1 = E1 - 1;
+            }
 
             long long num = N*S;
 
@@ -51,6 +59,8 @@ namespace Gadgetron {
                 hasInitial = true;
             }
 
+            res = kspace;
+
 #ifdef USE_OMP
             int numThreads = (int)num;
             if (numThreads > omp_get_num_procs()) numThreads = omp_get_num_procs();
@@ -59,7 +69,7 @@ namespace Gadgetron {
 
             long long ii;
 
-#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, kspace_initial_Shifted, hasInitial, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1) 
+#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, startE1, endE1, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, kspace_initial_Shifted, hasInitial, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1) 
             {
                 std::vector<size_t> dim(3, 1);
                 dim[0] = RO;
@@ -94,7 +104,7 @@ namespace Gadgetron {
 
                     // check whether the kspace is undersampled
                     bool undersampled = false;
-                    for (size_t e1 = 0; e1 < E1; e1++)
+                    for (size_t e1 = startE1; e1 <= endE1; e1++)
                     {
                         if ((std::abs(kspace(RO / 2, e1, CHA - 1, n, s)) == 0)
                             && (std::abs(kspace(RO / 2, e1, 0, n, s)) == 0))
@@ -163,8 +173,8 @@ namespace Gadgetron {
         }
     }
 
-    template EXPORTCMR void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray< std::complex<float> >& kspace, const Gadgetron::hoNDArray< std::complex<float> >& kerIm, const Gadgetron::hoNDArray< std::complex<float> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<float> >& res, size_t iter_max, double iter_thres, bool print_iter);
-    template EXPORTCMR void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray< std::complex<double> >& kspace, const Gadgetron::hoNDArray< std::complex<double> >& kerIm, const Gadgetron::hoNDArray< std::complex<double> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<double> >& res, size_t iter_max, double iter_thres, bool print_iter);
+    template EXPORTCMR void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray< std::complex<float> >& kspace, size_t startE1, size_t endE1, const Gadgetron::hoNDArray< std::complex<float> >& kerIm, const Gadgetron::hoNDArray< std::complex<float> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<float> >& res, size_t iter_max, double iter_thres, bool print_iter);
+    template EXPORTCMR void perform_spirit_recon_linear_2DT(const Gadgetron::hoNDArray< std::complex<double> >& kspace, size_t startE1, size_t endE1, const Gadgetron::hoNDArray< std::complex<double> >& kerIm, const Gadgetron::hoNDArray< std::complex<double> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<double> >& res, size_t iter_max, double iter_thres, bool print_iter);
 
     // ---------------------------------------------------------------------
 

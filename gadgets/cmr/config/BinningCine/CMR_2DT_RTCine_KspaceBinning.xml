@@ -56,7 +56,7 @@
         <classname>GenericReconCartesianReferencePrepGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
@@ -75,9 +75,9 @@
         <classname>GenericReconEigenChannelGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
-        <property><name>perform_timing</name><value>true</value></property>
-        <property><name>verbose</name><value>true</value></property>
+        <property><name>debug_folder</name><value></value></property>
+        <property><name>perform_timing</name><value>false</value></property>
+        <property><name>verbose</name><value>false</value></property>
 
         <property><name>average_all_ref_N</name><value>true</value></property>
         <property><name>average_all_ref_S</name><value>true</value></property>
@@ -117,10 +117,7 @@
         <property><name>kspace_binning_minimal_cardiac_phase_width</name><value>25.0</value></property>
 
         <property><name>kspace_binning_moco_reg_strength</name><value>12.0</value></property>
-        <property><name>kspace_binning_moco_iters</name><value>16</value></property>
-        <property><name>kspace_binning_moco_iters</name><value>32</value></property>
-        <property><name>kspace_binning_moco_iters</name><value>100</value></property>
-        <property><name>kspace_binning_moco_iters</name><value>100</value></property>
+        <property><name>kspace_binning_moco_iters</name><value>32 100 100 100 100</value></property>
 
         <property><name>kspace_binning_kSize_RO</name><value>7</value></property>
         <property><name>kspace_binning_kSize_E1</name><value>7</value></property>
@@ -134,10 +131,10 @@
         <property><name>kspace_binning_nonlinear_image_reg_lamda</name><value>0.00015</value></property>
         <property><name>kspace_binning_nonlinear_reg_N_weighting_ratio</name><value>10.0</value></property>
         <property><name>kspace_binning_nonlinear_reg_use_coil_sen_map</name><value>false</value></property>
-        <property><name>kspace_binning_nonlinear_reg_with_approx_coeff</name><value>true</value></property>
+        <property><name>kspace_binning_nonlinear_reg_with_approx_coeff</name><value>false</value></property>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
     </gadget>
@@ -149,7 +146,7 @@
         <classname>GenericReconPartialFourierHandlingPOCSGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
 
@@ -170,7 +167,7 @@
         <classname>GenericReconKSpaceFilteringGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
 
@@ -198,7 +195,7 @@
         <classname>GenericReconFieldOfViewAdjustmentGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
     </gadget>

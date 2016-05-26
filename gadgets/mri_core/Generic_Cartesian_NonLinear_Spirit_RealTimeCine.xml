@@ -58,7 +58,7 @@
         <classname>GenericReconCartesianReferencePrepGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
@@ -116,7 +116,7 @@
         <property><name>spirit_print_iter</name><value>true</value></property>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
     </gadget>
@@ -128,7 +128,7 @@
         <classname>GenericReconPartialFourierHandlingPOCSGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>true</value></property>
 

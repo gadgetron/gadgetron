@@ -201,8 +201,8 @@ namespace Gadgetron {
             cpt_time_raw_.create(N, S, SLC);
 
             res_binning_.data_.create(RO, E1, E2, 1, binned_N, S, SLC);
-            acq_time_binning_.create(N, S, SLC);
-            cpt_time_binning_.create(N, S, SLC);
+            acq_time_binning_.create(binned_N, S, SLC);
+            cpt_time_binning_.create(binned_N, S, SLC);
 
             size_t n, s, slc;
             for (slc=0; slc<SLC; slc++)
@@ -288,6 +288,7 @@ namespace Gadgetron {
             size_t binned_N = this->number_of_output_phases.value();
 
             res_binning_.headers_.create(binned_N, S, SLC);
+            res_binning_.meta_.resize(binned_N*S*SLC);
 
             size_t n, s, slc;
             for (slc=0; slc<SLC; slc++)
@@ -297,6 +298,7 @@ namespace Gadgetron {
                     for (n=0; n<binned_N; n++)
                     {
                         res_binning_.headers_(n, s, slc) = res_raw_.headers_(n, s, slc);
+                        res_binning_.meta_[n + s*binned_N + slc*binned_N*S] = res_raw_.meta_[n + s*N + slc*N*S];
                     }
                 }
             }
