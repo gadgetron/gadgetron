@@ -116,6 +116,7 @@ namespace Gadgetron {
         /// binned kspace
         /// [RO E1 1ordstCHA output_N_ S]
         hoNDArray< std::complex<T> > kspace_binning_;
+        hoNDArray< std::complex<T> > kspace_binning_wider_;
         /// image domain averaged kspace, [RO E1 1ordstCHA output_N_ S]
         hoNDArray< std::complex<T> > kspace_binning_image_domain_average_;
         /// the number of lines falling into the binned kspace
