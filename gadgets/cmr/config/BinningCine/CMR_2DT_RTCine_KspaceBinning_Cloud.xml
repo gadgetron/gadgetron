@@ -118,7 +118,7 @@
         <property><name>grappa_kSize_E1</name><value>4</value></property>
         <property><name>grappa_reg_lamda</name><value>0.0005</value></property>
         <property><name>downstream_coil_compression_num_modesKept</name><value>0</value></property>
-        <property><name>downstream_coil_compression_thres</name><value>0.01</value></property>
+        <property><name>downstream_coil_compression_thres</name><value>0.025</value></property>
 
         <!-- parameters for binning recon -->
         <property><name>kspace_binning_interpolate_heart_beat_images</name><value>true</value></property>
@@ -138,7 +138,7 @@
         <property><name>kspace_binning_nonlinear_iter_max</name><value>25</value></property>
         <property><name>kspace_binning_nonlinear_iter_thres</name><value>0.004</value></property>
         <property><name>kspace_binning_nonlinear_data_fidelity_lamda</name><value>1.0</value></property>
-        <property><name>kspace_binning_nonlinear_image_reg_lamda</name><value>0.00015</value></property>
+        <property><name>kspace_binning_nonlinear_image_reg_lamda</name><value>0.00005</value></property>
         <property><name>kspace_binning_nonlinear_reg_N_weighting_ratio</name><value>10.0</value></property>
         <property><name>kspace_binning_nonlinear_reg_use_coil_sen_map</name><value>false</value></property>
         <property><name>kspace_binning_nonlinear_reg_with_approx_coeff</name><value>true</value></property>
@@ -158,7 +158,7 @@
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
-        <property><name>verbose</name><value>false</value></property>
+        <property><name>verbose</name><value>true</value></property>
 
         <!-- if incoming images have this meta field, it will not be processed -->
         <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>

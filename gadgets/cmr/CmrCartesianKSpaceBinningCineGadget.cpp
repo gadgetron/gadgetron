@@ -97,7 +97,7 @@ namespace Gadgetron {
             // ---------------------------------------------------------------
             // export incoming data
 
-            if (!debug_folder_full_path_.empty())
+            /*if (!debug_folder_full_path_.empty())
             {
                 gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str());
             }
@@ -108,13 +108,13 @@ namespace Gadgetron {
                 {
                     gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_traj" + os.str());
                 }
-            }
+            }*/
 
             // ---------------------------------------------------------------
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
             {
-                if (!debug_folder_full_path_.empty())
+                /*if (!debug_folder_full_path_.empty())
                 {
                     gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data_before_unwrapping" + os.str());
                 }
@@ -125,7 +125,7 @@ namespace Gadgetron {
                     {
                         gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_before_unwrapping_traj" + os.str());
                     }
-                }
+                }*/
 
                 // ---------------------------------------------------------------
 
@@ -224,7 +224,7 @@ namespace Gadgetron {
                                                                 && calib_mode_[encoding]!=ISMRMRD_separate 
                                                                 && calib_mode_[encoding]!=ISMRMRD_noacceleration);
 
-                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(binning_reconer_.binning_obj_.data_, debug_folder_full_path_ + "binning_obj_data" + os.str()); }
+                // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(binning_reconer_.binning_obj_.data_, debug_folder_full_path_ + "binning_obj_data" + os.str()); }
 
                 // compute the binning
                 if (perform_timing.value()) { timer.start("compute binning ... "); }

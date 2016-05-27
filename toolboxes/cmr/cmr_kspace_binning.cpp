@@ -232,6 +232,7 @@ void CmrKSpaceBinning<T>::process_binning_recon()
         // all time stamps and raw full kspace is filled now
         // binning can be performed
         this->compute_kspace_binning(bestHB);
+        binning_obj_.full_kspace_raw_.clear();
 
         // -----------------------------------------------------
         // perform recon on the binned kspace 
@@ -256,7 +257,7 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
         }
 
         ArrayType& data = this->binning_obj_.data_;
-        if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(data, debug_folder_ + "raw_data_recon_data");
+        // if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(data, debug_folder_ + "raw_data_recon_data");
 
         ArrayType& full_kspace = this->binning_obj_.full_kspace_raw_;
         ArrayType& complex_image = this->binning_obj_.complex_image_raw_;
@@ -685,6 +686,9 @@ void CmrKSpaceBinning<T>::estimate_time_stamps()
                 binning_obj_.desired_cardiac_phases_[ind] = binning_obj_.desired_cardiac_phases_[ind-1] + step_size_time_stamp;
                 binning_obj_.desired_cpt_[ind] = binning_obj_.desired_cpt_[ind-1] + step_size_time_ratio;
             }
+
+            GDEBUG_STREAM("CmrKSpaceBinning -- desired_cardiac_phases -- " << ind << " - " << binning_obj_.desired_cardiac_phases_[ind]);
+            GDEBUG_STREAM("CmrKSpaceBinning -- desired_cpt            -- " << ind << " - " << binning_obj_.desired_cpt_[ind]);
         }
     }
     catch(...)
@@ -1582,11 +1586,6 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                         gt_exporter_.export_array_complex(warpped_complex_images_multi_channel, debug_folder_ + "warpped_complex_images_multi_channel" + os_local.str());
                     }
 
-                    // go back to kspace
-                    if ( this->perform_timing_ ) { gt_timer_local_.start("go back to kspace ... "); }
-                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(warpped_complex_images_multi_channel);
-                    if ( this->perform_timing_ ) { gt_timer_local_.stop(); }
-
                     // average across all N
                     Gadgetron::sum_over_dimension(warpped_complex_images_multi_channel, warpped_complex_images_multi_channel_image_domain_average, 3);
                     Gadgetron::scal( (T)(1.0/num_selected_image), warpped_complex_images_multi_channel_image_domain_average);
@@ -1599,6 +1598,11 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                         gt_exporter_.export_array_complex(warpped_complex_images_multi_channel_image_domain_average, debug_folder_ + "warpped_complex_images_multi_channel_image_domain_average" + os_local.str());
                     }
 
+                    // go back to kspace
+                    if ( this->perform_timing_ ) { gt_timer_local_.start("go back to kspace ... "); }
+                    Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(warpped_complex_images_multi_channel);
+                    if ( this->perform_timing_ ) { gt_timer_local_.stop(); }
+
                     // fill the binned kspace
                     if ( this->perform_timing_ ) { gt_timer_local_.start("fill the binned kspace ... "); }
                     this->fill_binned_kspace(s, n, selected_images[n], warpped_complex_images_multi_channel, kspace_filled, hit_count);
@@ -1608,7 +1612,13 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                     memcpy(kspace_binning.begin()+n*RO*E1*CHA, kspace_filled.begin(), kspace_filled.get_number_of_bytes());
                     memcpy(kspace_binning_hit_count.begin()+n*E1, hit_count.begin(), hit_count.get_number_of_bytes());
                     memcpy(kspace_binning_image_domain_average.begin()+n*RO*E1*CHA, warpped_complex_images_multi_channel_image_domain_average.begin(), warpped_complex_images_multi_channel_image_domain_average.get_number_of_bytes());
+
+                    GDEBUG_CONDITION_STREAM(this->verbose_, "==================================================================");
                 }
+
+                if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning_image_domain_average, debug_folder_ + "kspace_binning_image_domain_average_IMAGE" + os.str());
+
+                Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(kspace_binning_image_domain_average);
 
                 if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning, debug_folder_ + "kspace_binning" + os.str());
                 if ( !debug_folder_.empty() ) gt_exporter_.export_array_complex(kspace_binning_image_domain_average, debug_folder_ + "kspace_binning_image_domain_average" + os.str());
@@ -1660,6 +1670,12 @@ void CmrKSpaceBinning<T>::interpolate_best_HB_images(const std::vector<float>& c
 
         if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag, debug_folder_ + "mag_bestHB_periodic_condition");
 
+        GDEBUG_CONDITION_STREAM(this->verbose_, "Cpt time ratio used for interpolating best heart beat : ");
+        for ( n=0; n<N+2; n++ )
+        {
+            GDEBUG_CONDITION_STREAM(this->verbose_, " n - " << (long long)(n)-1 << " - cpt time ratio : " << cpt[n]);
+        }
+
         GDEBUG_CONDITION_STREAM(this->verbose_, "Interpolate the best cardiac cycle using bspline ... ");
 
         size_t SplineDegree = 5;
@@ -1689,7 +1705,7 @@ void CmrKSpaceBinning<T>::interpolate_best_HB_images(const std::vector<float>& c
 
                     for ( n=0; n<dstN; n++ )
                     {
-                        float dst_n = (n+1)*(desired_cpt[n]-x[0])/(x[N+1] - x[0]);
+                        float dst_n = (N+1)*(desired_cpt[n]-x[0])/(x[N+1] - x[0]);
                         mag_bestHB_at_desired_cpt(ro, e1, n) = interp.evaluateBSpline(coeff.begin(), N+2, SplineDegree, 0, dst_n);
                     }
                 }
@@ -1716,8 +1732,8 @@ void CmrKSpaceBinning<T>::select_images_with_navigator(float desired_cpt_time_ra
         float cpt_ratio_step_size = binning_obj_.desired_cpt_[1] - binning_obj_.desired_cpt_[0];
 
         float accepted_cpt[2];
-        accepted_cpt[0] = desired_cpt_time_ratio - this->kspace_binning_max_temporal_window_/2*cpt_ratio_step_size;
-        accepted_cpt[1] = desired_cpt_time_ratio + this->kspace_binning_max_temporal_window_/2*cpt_ratio_step_size;
+        accepted_cpt[0] = desired_cpt_time_ratio - this->kspace_binning_max_temporal_window_*cpt_ratio_step_size;
+        accepted_cpt[1] = desired_cpt_time_ratio + this->kspace_binning_max_temporal_window_*cpt_ratio_step_size;
 
         float accepted_cpt_mirror[2];
         accepted_cpt_mirror[0] = accepted_cpt[0];
@@ -1847,7 +1863,7 @@ void CmrKSpaceBinning<T>::perform_moco_selected_images_with_best_heart_beat(cons
             if ( !debug_folder_.empty() )
             {
                 std::ostringstream ostr;
-                ostr << "Picked_images_moco_n" << n;
+                ostr << "Picked_images_before_moco_n" << n;
                 std::string fileNameUsed = ostr.str();
 
                 hoNDArray<T> tmp;
@@ -1867,11 +1883,31 @@ void CmrKSpaceBinning<T>::perform_moco_selected_images_with_best_heart_beat(cons
             GDEBUG_STREAM(this->kspace_binning_moco_iters_[ii]);
         }
 
+        bool warp_image = false;
+        if ( !debug_folder_.empty() ) warp_image = true;
+
         Gadgetron::perform_moco_fixed_key_frame_2DT(input, key_frame, 
-            this->kspace_binning_moco_reg_strength_, this->kspace_binning_moco_iters_, false, false, reg);
+            this->kspace_binning_moco_reg_strength_, this->kspace_binning_moco_iters_, false, warp_image, reg);
 
         dx.copyFrom(reg.deformation_field_[0]);
         dy.copyFrom(reg.deformation_field_[1]);
+
+        if(warp_image && !debug_folder_.empty())
+        {
+            hoNDArray<T> im;
+
+            for ( n=0; n<dstN; n++ )
+            {
+                reg.warped_container_.to_NDArray(n, im);
+                {
+                    std::ostringstream ostr;
+                    ostr << "Picked_images_after_moco_n" << n;
+                    std::string fileNameUsed = ostr.str();
+
+                    gt_exporter_.export_array(im, debug_folder_+fileNameUsed);
+                }
+            }
+        }
     }
     catch(...)
     {
@@ -2324,8 +2360,9 @@ void CmrKSpaceBinning<T>::perform_linear_recon_on_kspace_binning(const ArrayType
         double iter_thres = kspace_binning_linear_iter_thres_;
         bool print_iter = true;
 
+        ArrayType emptyInitial;
         if ( this->perform_timing_ ) { timer.start("spirit linear recon ... "); }
-        Gadgetron::perform_spirit_recon_linear_2DT(kspace, startE1, endE1, kernelIm, kspaceInitial, resKSpace, iter_max, iter_thres, print_iter);
+        Gadgetron::perform_spirit_recon_linear_2DT(kspace, startE1, endE1, kernelIm, emptyInitial, resKSpace, iter_max, iter_thres, print_iter);
         if ( this->perform_timing_ ) { timer.stop(); }
 
         if ( this->perform_timing_ ) { timer.start("coil combination ... "); }
