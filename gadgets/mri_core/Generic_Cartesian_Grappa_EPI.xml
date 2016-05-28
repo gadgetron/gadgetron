@@ -76,7 +76,7 @@
         <classname>GenericReconCartesianReferencePrepGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
@@ -95,7 +95,7 @@
         <classname>GenericReconEigenChannelGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
@@ -126,7 +126,7 @@
         <property><name>downstream_coil_compression_num_modesKept</name><value>0</value></property>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
@@ -141,7 +141,7 @@
         <classname>GenericReconPartialFourierHandlingFilterGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
 
@@ -162,7 +162,7 @@
         <classname>GenericReconKSpaceFilteringGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
 
@@ -190,7 +190,7 @@
         <classname>GenericReconFieldOfViewAdjustmentGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value>DebugFolder</value></property>
+        <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
     </gadget>

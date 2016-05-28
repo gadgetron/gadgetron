@@ -179,6 +179,7 @@ set( gadgetron_mricore_config_files
     Generic_Cartesian_Spirit_RealTimeCine.xml
     Generic_Cartesian_Spirit_SASHA.xml
     Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
+    Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
 )
 
 add_library(gadgetron_mricore SHARED 
@@ -200,7 +201,7 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_cpuklt
     gadgetron_toolbox_mri_core
     gadgetron_toolbox_cpuoperator
-    # gadgetron_toolbox_image_analyze_io
+    gadgetron_toolbox_image_analyze_io
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 

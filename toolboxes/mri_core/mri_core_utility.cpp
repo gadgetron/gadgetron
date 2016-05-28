@@ -516,24 +516,24 @@ namespace Gadgetron
 
     // ------------------------------------------------------------------------
 
-//    void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath)
-//    {
-//        char* v = std::getenv("GADGETRON_DEBUG_FOLDER");
-//        if (v == NULL)
-//        {
-//#ifdef _WIN32
-//            debugFolderPath = "c:/temp/gadgetron";
-//#else
-//            debugFolderPath = "/tmp/gadgetron";
-//#endif // _WIN32
-//        }
-//        else
-//        {
-//            debugFolderPath = std::string(v);
-//        }
-//
-//        debugFolderPath.append("/");
-//        debugFolderPath.append(debugFolder);
-//        debugFolderPath.append("/");
-//    }
+    void get_debug_folder_path(const std::string& debugFolder, std::string& debugFolderPath)
+    {
+        char* v = std::getenv("GADGETRON_DEBUG_FOLDER");
+        if (v == NULL)
+        {
+#ifdef _WIN32
+            debugFolderPath = "c:/temp/gadgetron";
+#else
+            debugFolderPath = "/tmp/gadgetron";
+#endif // _WIN32
+        }
+        else
+        {
+            debugFolderPath = std::string(v);
+        }
+
+        debugFolderPath.append("/");
+        debugFolderPath.append(debugFolder);
+        debugFolderPath.append("/");
+    }
 }

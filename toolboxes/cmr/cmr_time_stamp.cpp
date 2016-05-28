@@ -53,12 +53,13 @@ namespace Gadgetron {
         }
     }
 
-    void correct_time_stamp_with_fitting(hoNDArray<float>& time_stamp)
+    void correct_time_stamp_with_fitting(hoNDArray<float>& time_stamp, size_t startE1, size_t endE1)
     {
         try
         {
             size_t E1 = time_stamp.get_size(0);
             size_t N = time_stamp.get_size(1);
+            size_t rE1 = endE1 - startE1 + 1;
 
             size_t e1, n;
 
@@ -83,12 +84,12 @@ namespace Gadgetron {
                 size_t ind = 0;
                 for ( n=0; n<N; n++ )
                 {
-                    for ( e1=0; e1<E1; e1++ )
+                    for ( e1=startE1; e1<=endE1; e1++ )
                     {
                         float acq_time = time_stamp(e1, n);
                         if ( acq_time > 0 )
                         {
-                            x[ind] = (float)(e1 + n*E1);
+                            x[ind] = (float)(e1-startE1 + n*rE1);
                             y[ind] = acq_time;
                             ind++;
                         }
@@ -100,9 +101,9 @@ namespace Gadgetron {
 
             for ( n=0; n<N; n++ )
             {
-                for ( e1=0; e1<E1; e1++ )
+                for ( e1=startE1; e1<=endE1; e1++ )
                 {
-                    float x_v = (float)(e1 + n*E1);
+                    float x_v = (float)(e1-startE1 + n*rE1);
                     time_stamp(e1, n) = a + b*x_v;
                 }
             }
@@ -129,7 +130,7 @@ namespace Gadgetron {
             {
                 for ( e1=0; e1<E1; e1++ )
                 {
-                    if ( cpt_time_stamp(e1, n) > 0 )
+                    if ( cpt_time_stamp(e1, n) >= 0 )
                     {
                         num_acq_read_outs++;
                     }
@@ -236,7 +237,7 @@ namespace Gadgetron {
         }
     }
 
-    void correct_heart_beat_time_stamp_with_fitting(hoNDArray<float>& cpt_time_stamp, hoNDArray<int>& ind_hb, 
+    void correct_heart_beat_time_stamp_with_fitting(hoNDArray<float>& cpt_time_stamp, hoNDArray<int>& ind_hb, size_t startE1, size_t endE1, 
                                                 const std::vector<size_t>& start_e1_hb, const std::vector<size_t>& end_e1_hb, 
                                                 const std::vector<size_t>& start_n_hb, const std::vector<size_t>& end_n_hb )
     {
@@ -244,6 +245,7 @@ namespace Gadgetron {
         {
             size_t E1 = cpt_time_stamp.get_size(0);
             size_t N = cpt_time_stamp.get_size(1);
+            size_t rE1 = endE1-startE1+1;
 
             size_t e1, n, ind, ii;
 
@@ -252,7 +254,7 @@ namespace Gadgetron {
             {
                 for ( e1=0; e1<E1; e1++ )
                 {
-                    if ( cpt_time_stamp(e1, n) > 0 )
+                    if ( cpt_time_stamp(e1, n) >= 0 )
                     {
                         num_acq_read_outs++;
                     }
@@ -282,10 +284,17 @@ namespace Gadgetron {
                 size_t cpt;
                 for ( cpt=ind_HB_start[ind]; cpt<=ind_HB_end[ind]; cpt++ )
                 {
-                    if ( cpt_time_stamp[cpt] > -1 )
+                    size_t n = cpt / E1;
+                    size_t e1 = cpt - n*E1;
+
+                    if(e1>=startE1 && e1<=endE1)
                     {
-                        x.push_back( (float)cpt );
-                        y.push_back(cpt_time_stamp[cpt]);
+                        if ( cpt_time_stamp[cpt] > -1 )
+                        {
+                            size_t x_ind = (e1-startE1) + n*rE1;
+                            x.push_back( (float)x_ind );
+                            y.push_back(cpt_time_stamp[cpt]);
+                        }
                     }
                 }
 
@@ -306,40 +315,50 @@ namespace Gadgetron {
                 n = ind / E1;
                 e1 = ind - n*E1;
 
-                // find to which heart beat this line belongs
-                bool foundHB = false;
-                for ( ii=0; ii<numOfHB; ii++ )
+                if(e1>=startE1 && e1<=endE1)
                 {
-                    size_t startHB = ind_HB_start[ii];
-                    size_t endHB = ind_HB_end[ii];
-
-                    if ( ii==0 && ind<=startHB )
+                    // find to which heart beat this line belongs
+                    bool foundHB = false;
+                    for ( ii=0; ii<numOfHB; ii++ )
                     {
-                        foundHB = true;
-                        break;
+                        size_t startHB = ind_HB_start[ii];
+                        size_t endHB = ind_HB_end[ii];
+
+                        if ( ii==0 && ind<=startHB )
+                        {
+                            foundHB = true;
+                            break;
+                        }
+
+                        if ( ii==numOfHB-1 && ind>=endHB )
+                        {
+                            foundHB = true;
+                            break;
+                        }
+
+                        if ( ind>=startHB && ind<=endHB )
+                        {
+                            foundHB = true;
+                            break;
+                        }
                     }
 
-                    if ( ii==numOfHB-1 && ind>=endHB )
+                    // if cannot find a heart beat, this kspace line will not be used
+                    if ( foundHB && (std::abs(B[ii])>0) )
                     {
-                        foundHB = true;
-                        break;
-                    }
+                        ind_hb(e1, n) = ii;
 
-                    if ( ind>=startHB && ind<=endHB )
+                        size_t x_ind = (e1-startE1) + n*rE1;
+                        cpt_time_stamp(e1, n) = (float)(A[ii] + B[ii]*x_ind);
+                    }
+                    else
                     {
-                        foundHB = true;
-                        break;
+                        ind_hb(e1, n) = -1;
                     }
-                }
-
-                // if cannot find a heart beat, this kspace line will not be used
-                if ( foundHB && (std::abs(B[ii])>0) )
-                {
-                    ind_hb(e1, n) = ii;
-                    cpt_time_stamp(e1, n) = (float)(A[ii] + B[ii]*ind);
                 }
                 else
                 {
+                    cpt_time_stamp(e1, n) = -1;
                     ind_hb(e1, n) = -1;
                 }
             }
@@ -350,35 +369,45 @@ namespace Gadgetron {
         }
     }
 
-    void compute_phase_time_stamp(const hoNDArray<float>& time_stamp, const hoNDArray<float>& cpt_time_stamp,
+    void compute_phase_time_stamp(const hoNDArray<float>& time_stamp, const hoNDArray<float>& cpt_time_stamp, size_t startE1, size_t endE1, 
         hoNDArray<float>& phs_time_stamp, hoNDArray<float>& phs_cpt_time_stamp)
     {
         try
         {
             size_t E1 = time_stamp.get_size(0);
             size_t N = time_stamp.get_size(1);
+            size_t rE1 = endE1 - startE1 + 1;
 
             size_t e1, n;
 
             for ( n=0; n<N; n++ )
             {
                 // phase time stamp as the mean of all aquired lines
+                size_t num = 0;
                 float tt = 0.0f;
-                for ( e1=0; e1<E1; e1++ )
+                for ( e1=startE1; e1<=endE1; e1++ )
                 {
-                    tt += time_stamp(e1, n);
+                    if(time_stamp(e1, n)>0)
+                    {
+                        tt += time_stamp(e1, n);
+                        num++;
+                    }
                 }
-                phs_time_stamp(n, 0) = tt/E1;
+                phs_time_stamp(n, 0) = tt/((num>0) ? num : 1);
 
-                // phase cpt time as the median of all acquired lines
-                std::vector<float> cpt_buf(E1);
-                for ( e1=0; e1<E1; e1++ )
-                {
-                    cpt_buf[e1] = cpt_time_stamp(e1, n);
-                }
+                //// phase cpt time as the median of all acquired lines
+                //std::vector<float> cpt_buf(rE1, 0);
+                //for ( e1=startE1; e1<=endE1; e1++ )
+                //{
+                //    if(cpt_time_stamp(e1, n)>=0)
+                //        cpt_buf[e1-startE1] = cpt_time_stamp(e1, n);
+                //}
 
-                std::sort(cpt_buf.begin(), cpt_buf.end());
-                phs_cpt_time_stamp(n, 0) = cpt_buf[E1/2];
+                //std::sort(cpt_buf.begin(), cpt_buf.end());
+                //phs_cpt_time_stamp(n, 0) = cpt_buf[E1/2-startE1];
+
+                // phase cpt time as the cpt time of center line
+                phs_cpt_time_stamp(n, 0) = cpt_time_stamp(E1/2, n);
             }
         }
         catch(...)

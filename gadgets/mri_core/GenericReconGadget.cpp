@@ -265,6 +265,14 @@ namespace Gadgetron {
                             res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_SNR_MAP);
                             res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_SNR_MAP);
                         }
+                        else if (data_role == GADGETRON_IMAGE_RETRO)
+                        {
+                            res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+
+                            res.meta_[offset].append(GADGETRON_IMAGECOMMENT, "RETRO");
+                            res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, "RETRO");
+                            res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_RETRO);
+                        }
 
                         if (verbose.value())
                         {

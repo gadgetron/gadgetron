@@ -33,13 +33,13 @@ namespace Gadgetron {
     /// the 2D image series are motion corrected and deformation fields are stored in reg.deformation_field_
     /// reg_strength : regularization strength in the unit of pixel
     template <typename T> EXPORTCMR void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<T>& input, size_t key_frame, 
-        T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
+        T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
     /// perform 2D moco on input image container
     template <typename T> EXPORTCMR void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<T, 2> >& input, const std::vector<unsigned int>& key_frame, 
-        T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
+        T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
 
     /// series a is mocoed to series b
     /// a, b : [RO E1 N]
     template <typename T> EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& a, const Gadgetron::hoNDArray<T>& b, 
-        size_t key_frame, T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
+        size_t key_frame, T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
 }

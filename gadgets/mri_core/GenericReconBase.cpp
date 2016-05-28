@@ -18,7 +18,7 @@ namespace Gadgetron {
     template <typename T> 
     int GenericReconBase<T>::process_config(ACE_Message_Block* mb)
     {
-        /*if (!debug_folder.value().empty())
+        if (!debug_folder.value().empty())
         {
             Gadgetron::get_debug_folder_path(debug_folder.value(), debug_folder_full_path_);
             GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is " << debug_folder_full_path_);
@@ -26,7 +26,7 @@ namespace Gadgetron {
         else
         {
             GDEBUG_CONDITION_STREAM(verbose.value(), "Debug folder is not set ... ");
-        }*/
+        }
 
         return GADGET_OK;
     }
