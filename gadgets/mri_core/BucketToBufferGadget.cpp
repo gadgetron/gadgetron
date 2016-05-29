@@ -481,6 +481,10 @@ namespace Gadgetron{
             {
                 NLOC = encoding.encodingLimits.slice->maximum - encoding.encodingLimits.slice->minimum + 1;
             }
+            else
+            {
+                NLOC = 1;
+            }
 
             // if the AcquisitionAccumulateTriggerGadget sort by SLC, then the stats should be used to determine NLOC
             size_t NLOC_received = *stats.slice.rbegin() - *stats.slice.begin() + 1;
