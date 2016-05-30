@@ -228,7 +228,7 @@ namespace Gadgetron {
                     {
                         ISMRMRD::ImageHeader header = res.headers_(n, s, slc);
 
-                        if (header.measurement_uid == 0) continue;
+                        // if (header.measurement_uid == 0) continue;
 
                         res.headers_(n, s, slc).image_index = (uint16_t)this->compute_image_number(res.headers_(n, s, slc), encoding, CHA, 0, E2);
                         res.headers_(n, s, slc).image_series_index = series_num;
