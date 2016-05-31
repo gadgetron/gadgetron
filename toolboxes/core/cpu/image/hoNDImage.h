@@ -124,6 +124,7 @@ namespace Gadgetron
 
             this->create(dim, pixelSize, origin, axis);
 
+            this->header_ = im.header_;
             this->attrib_ = im.attrib_;
         }
 
@@ -170,6 +171,7 @@ namespace Gadgetron
             this->set_origin(origin);
             this->set_axis(axis);
 
+            this->header_ = im.header_;
             this->attrib_ = im.attrib_;
         }
 
