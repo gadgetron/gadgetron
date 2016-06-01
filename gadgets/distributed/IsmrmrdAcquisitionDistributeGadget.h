@@ -14,6 +14,8 @@ namespace Gadgetron{
   {
   public:
     GADGET_DECLARE(IsmrmrdAcquisitionDistributeGadget);
+    IsmrmrdAcquisitionDistributeGadget() {}
+    virtual ~IsmrmrdAcquisitionDistributeGadget() {}
 
   protected:
     GADGET_PROPERTY_LIMITS(parallel_dimension, std::string,
@@ -43,4 +45,4 @@ namespace Gadgetron{
 
     };
   }
-  #endif //DISTRIBUTEGADGET_H
+#endif //ISMRMRDACQUISITIONDISTRIBUTEGADGET_H

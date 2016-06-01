@@ -17,6 +17,14 @@ namespace Gadgetron{
     }
   }
 
+  CollectGadget::CollectGadget()
+  {
+  }
+
+  CollectGadget::~CollectGadget()
+  {
+  }
+
   int CollectGadget::process(ACE_Message_Block* m)
   {
     if (pass_through_mode.value()) {

@@ -39,7 +39,7 @@
       <dll>gadgetron_distributed</dll>
       <classname>IsmrmrdAcquisitionDistributeGadget</classname>
       <property><name>parallel_dimension</name><value>slice</value></property>
-      <property><name>use_this_node_for_compute</name><value>true</value></property>
+      <property><name>use_this_node_for_compute</name><value>false</value></property>
     </gadget>
 
     <!-- Data accumulation and trigger gadget -->
