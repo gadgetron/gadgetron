@@ -11,7 +11,10 @@ namespace Gadgetron{
   class EXPORTDISTRIBUTEDGADGETS CollectGadget : public BasicPropertyGadget
   {
   public:
-    GADGET_DECLARE(DistributeGadget);
+    GADGET_DECLARE(CollectGadget);
+
+    CollectGadget();
+    virtual ~CollectGadget();
 
   protected:
     GADGET_PROPERTY(pass_through_mode, bool,
@@ -20,4 +23,4 @@ namespace Gadgetron{
     virtual int message_id(ACE_Message_Block* m);
   };
 }
-#endif //DISTRIBUTEGADGET_H
+#endif //COLLECTGADGET_H

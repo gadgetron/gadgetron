@@ -14,6 +14,8 @@ namespace Gadgetron{
   {
   public:
     GADGET_DECLARE(IsmrmrdImageDistributeGadget);
+    IsmrmrdImageDistributeGadget() {}
+    virtual ~IsmrmrdImageDistributeGadget() {}
 
   protected:
     GADGET_PROPERTY_LIMITS(parallel_dimension, std::string,
@@ -30,4 +32,4 @@ namespace Gadgetron{
     virtual int message_id(ACE_Message_Block* m);
   };
 }
-#endif //DISTRIBUTEGADGET_H
+#endif //ISMRMRDIMAGEDISTRIBUTEGADGET_H

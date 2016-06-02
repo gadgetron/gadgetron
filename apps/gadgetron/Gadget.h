@@ -616,6 +616,8 @@ namespace Gadgetron{
           pass_on_undesired_data_ = pass_on_undesired_data.value();
         }
 
+        virtual ~BasicPropertyGadget() {}
+
       protected:
         GADGET_PROPERTY(using_cloudbus,bool,"Indicates whether the cloudbus is in use and available", false);
         GADGET_PROPERTY(pass_on_undesired_data,bool, "If true, data not matching the process function will be passed to next Gadget", false);

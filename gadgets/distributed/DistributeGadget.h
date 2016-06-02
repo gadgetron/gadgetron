@@ -72,6 +72,7 @@ namespace Gadgetron{
     std::map<int,GadgetronConnector*> node_map_;
     std::vector<GadgetronConnector*> closed_connectors_;
     GadgetronConnector* prev_connector_; //Keeps track of previously used connector
+    std::vector<std::string> local_address_;
 
   };
 }

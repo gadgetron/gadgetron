@@ -22,7 +22,6 @@ namespace Gadgetron{
   , mtx_("distribution_mtx")
   , prev_connector_(0)
   {
-
   }
 
 
@@ -61,18 +60,19 @@ namespace Gadgetron{
     }
 
     //If we are not supposed to use this node for compute, add one to make sure we are not on node 0
-    if (!use_this_node_for_compute.value()) {
-      node_index = node_index+1;
-    }
+    //if (!use_this_node_for_compute.value()) {
+    //  node_index = node_index+1;
+    //}
 
-    if (node_index == 0) { //process locally
-      if (this->next()->putq(m) == -1) {
-        m->release();
-        GERROR("DistributeGadget::process, passing data on to next gadget\n");
-        return GADGET_FAIL;
-      }
-      return GADGET_OK;
-    }
+    // instead of sending down the stream, processing is done by making connections
+    //if (node_index == 0) { //process locally
+    //  if (this->next()->putq(m) == -1) {
+    //    m->release();
+    //    GERROR("DistributeGadget::process, passing data on to next gadget\n");
+    //    return GADGET_FAIL;
+    //  }
+    //  return GADGET_OK;
+    //}
 
     //At this point, the node index is positive, so we need to find a suitable connector.
     mtx_.acquire();
@@ -105,6 +105,25 @@ namespace Gadgetron{
 
         //Is this a free node
         if (me.active_reconstructions == 0) break;
+      }
+
+      // first job, send to current node if required
+      if (use_this_node_for_compute.value() && node_index==0)
+      {
+        size_t num_of_ip = local_address_.size();
+
+          for (auto it = nl.begin(); it != nl.end(); it++)
+          {
+              for (size_t ii=0; ii<num_of_ip; ii++)
+              {
+                  if (it->address == local_address_[ii])
+                  {
+                      me = *it;
+                  }
+              }
+          }
+
+          GDEBUG_STREAM("Send first job to current node : " << me.address);
       }
 
       con = new DistributionConnector(this);
@@ -280,6 +299,26 @@ namespace Gadgetron{
       return GADGET_FAIL;
     } else {
       collect_gadget_->set_parameter("pass_through_mode","true");
+    }
+
+    // get current node ip addresses
+    ACE_INET_Addr* the_addr_array = NULL;
+    size_t num_of_ip = 0;
+
+    int rc = ACE::get_ip_interfaces (num_of_ip, the_addr_array);
+    if (rc != 0)
+    {
+        GERROR_STREAM("Retreive local ip addresses failed ... ");
+        num_of_ip = 0;
+    }
+
+    if (the_addr_array!=NULL ) delete [] the_addr_array;
+
+    for (size_t ii=0; ii<num_of_ip; ii++)
+    {
+        std::string ip = std::string(the_addr_array[ii].get_host_addr());
+        local_address_.push_back(ip);
+        GDEBUG_STREAM("--> Local address  : " << ip);
     }
 
     return GADGET_OK;
