@@ -8,8 +8,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
-    ${ARMADILLO_INCLUDE_DIRS} 
-    ${ISMRMRD_INCLUDE_DIR} )
+    ${ARMADILLO_INCLUDE_DIRS} )
 
 if (MKL_FOUND)
     INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
@@ -18,16 +17,12 @@ endif (MKL_FOUND)
 
 set(cpucore_math_header_files
     cpucore_math_export.h
-    # hoNDArray_math_util.h
     hoNDArray_math.h
     hoNDImage_util.h
     hoNDImage_util.hxx
-    # hoNDImage_util_instantiate.hxx 
     hoNDArray_linalg.h )
 
 set(cpucore_math_src_files 
-    # hoNDArray_math_util.cpp
-    # hoNDImage_util.cpp 
     hoNDArray_linalg.cpp )
 
 if (ARMADILLO_FOUND)
@@ -53,18 +48,16 @@ set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGET
 if (MKL_FOUND)
     target_link_libraries(gadgetron_toolbox_cpucore_math 
         gadgetron_toolbox_cpucore
-	gadgetron_toolbox_log
+        gadgetron_toolbox_log
         ${ARMADILLO_LIBRARIES}
-        ${ISMRMRD_LIBRARIES}
         ${FFTW3_LIBRARIES} 
         ${MKL_LIBRARIES}
     )
 else (MKL_FOUND)
     target_link_libraries(gadgetron_toolbox_cpucore_math 
         gadgetron_toolbox_cpucore
-	gadgetron_toolbox_log
+        gadgetron_toolbox_log
         ${ARMADILLO_LIBRARIES}
-        ${ISMRMRD_LIBRARIES}
         ${BLAS_LIBRARIES}
         ${LAPACK_LIBRARIES}
         ${FFTW3_LIBRARIES}
