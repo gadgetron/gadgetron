@@ -2,14 +2,10 @@
 #define _MRI_CORE_EXPORT_H_
 
 #if defined (WIN32)
-    #ifdef BUILD_TOOLBOX_STATIC
-        #define EXPORTMRICORE
+    #if defined (__BUILD_GADGETRON_MRI_CORE__) || defined (gadgetron_toolbox_mri_core_EXPORTS)
+        #define EXPORTMRICORE __declspec(dllexport)
     #else
-        #if defined (__BUILD_GADGETRON_MRI_CORE__) || defined (mri_core_EXPORTS)
-            #define EXPORTMRICORE __declspec(dllexport)
-        #else
-            #define EXPORTMRICORE __declspec(dllimport)
-        #endif
+        #define EXPORTMRICORE __declspec(dllimport)
     #endif
 #else
     #define EXPORTMRICORE

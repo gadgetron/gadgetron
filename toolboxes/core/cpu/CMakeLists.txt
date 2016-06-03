@@ -4,7 +4,6 @@ endif (WIN32)
 
 include_directories(
     ${FFTW3_INCLUDE_DIR}
-    ${ISMRMRD_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu

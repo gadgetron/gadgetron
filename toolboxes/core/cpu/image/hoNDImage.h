@@ -14,7 +14,6 @@
 
 #include "hoNDPoint.h"
 #include "hoMatrix.h"
-#include "ismrmrd/meta.h"
 
 namespace Gadgetron
 {
@@ -122,8 +121,6 @@ namespace Gadgetron
             im.get_axis(axis);
 
             this->create(dim, pixelSize, origin, axis);
-
-            this->attrib_ = im.attrib_;
         }
 
         /// create the image from another image
@@ -168,8 +165,6 @@ namespace Gadgetron
             this->set_pixel_size(pixelSize);
             this->set_origin(origin);
             this->set_axis(axis);
-
-            this->attrib_ = im.attrib_;
         }
 
         virtual void create(const std::vector<size_t>& dimensions,
@@ -475,14 +470,7 @@ namespace Gadgetron
         /// get the sub image
         void get_sub_image(const std::vector<size_t>& start, std::vector<size_t>& size, Self& out);
 
-        /// meta attributes
-        ISMRMRD::MetaContainer attrib_;
-
         /// serialize/deserialize image content
-        virtual bool serializeImage(char*& buf, size_t& len) const;
-        virtual bool deserializeImage(char* buf, size_t& len);
-
-        /// serialize/deserialize image content and meta attributes
         virtual bool serialize(char*& buf, size_t& len) const;
         virtual bool deserialize(char* buf, size_t& len);
 

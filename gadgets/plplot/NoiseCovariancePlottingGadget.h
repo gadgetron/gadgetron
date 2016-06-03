@@ -6,6 +6,7 @@
 #include "GadgetronTimer.h"
 
 #include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/meta.h>
 #include <ismrmrd/xml.h>
 #include <complex>
 

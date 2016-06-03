@@ -14,6 +14,7 @@
 #include <cmath>
 
 #include "float.h"
+#include "log.h"
 
 namespace Gadgetron
 {
