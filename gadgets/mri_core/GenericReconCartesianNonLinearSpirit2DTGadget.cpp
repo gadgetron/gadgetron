@@ -395,7 +395,9 @@ namespace Gadgetron {
                                     << " - proximity across cha : "                     << this->spirit_reg_proximity_across_cha.value()
                                     << " - redundant dimension weighting ratio : "      << this->spirit_reg_N_weighting_ratio.value()
                                     << " - using coil sen map : "                       << this->spirit_reg_use_coil_sen_map.value()
-                                    << " - iter thres : "                               << this->spirit_nl_iter_thres.value());
+                                    << " - iter thres : "                               << this->spirit_nl_iter_thres.value()
+                                    << " - wavelet name : "                             << this->spirit_reg_name.value()
+                                    );
 
                     typedef hoGdSolver< hoNDArray< std::complex<float> >, hoWavelet2DTOperator< std::complex<float> > > SolverType;
                     SolverType solver;
@@ -425,6 +427,7 @@ namespace Gadgetron {
                     wav3DOperator.proximity_across_cha_ = this->spirit_reg_proximity_across_cha.value();
                     wav3DOperator.no_null_space_ = true;
                     wav3DOperator.input_in_kspace_ = true;
+                    wav3DOperator.select_wavelet(this->spirit_reg_name.value());
 
                     if (this->spirit_reg_use_coil_sen_map.value() && hasCoilMap)
                     {
@@ -450,7 +453,9 @@ namespace Gadgetron {
                                     << " - proximity across cha : " << this->spirit_reg_proximity_across_cha.value()
                                     << " - redundant dimension weighting ratio : " << this->spirit_reg_N_weighting_ratio.value()
                                     << " - using coil sen map : " << this->spirit_reg_use_coil_sen_map.value()
-                                    << " - iter thres : " << this->spirit_nl_iter_thres.value());
+                                    << " - iter thres : " << this->spirit_nl_iter_thres.value()
+                                    << " - wavelet name : " << this->spirit_reg_name.value()
+                                    );
 
                     typedef hoGdSolver< hoNDArray< std::complex<float> >, hoWavelet2DTOperator< std::complex<float> > > SolverType;
                     SolverType solver;
@@ -486,6 +491,7 @@ namespace Gadgetron {
                     wav3DOperator.proximity_across_cha_ = this->spirit_reg_proximity_across_cha.value();
                     wav3DOperator.no_null_space_ = true;
                     wav3DOperator.input_in_kspace_ = true;
+                    wav3DOperator.select_wavelet(this->spirit_reg_name.value());
 
                     if (this->spirit_reg_use_coil_sen_map.value() && hasCoilMap)
                     {

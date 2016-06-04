@@ -283,6 +283,8 @@ namespace Gadgetron {
         bool kspace_binning_nonlinear_reg_use_coil_sen_map_;
         // whether to keep approximation coefficients during regularization
         bool kspace_binning_nonlinear_reg_with_approx_coeff_;
+        // wavelet type for nonlinear reg
+        std::string kspace_binning_nonlinear_reg_wav_name_;
 
         // ======================================================================================
         /// parameter for debugging

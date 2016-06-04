@@ -117,7 +117,7 @@
         <property><name>kspace_binning_minimal_cardiac_phase_width</name><value>25.0</value></property>
 
         <property><name>kspace_binning_moco_reg_strength</name><value>12.0</value></property>
-        <property><name>kspace_binning_moco_iters</name><value>32 100 100 100 100</value></property>
+        <property><name>kspace_binning_moco_iters</name><value>32 64 100 100 100</value></property>
 
         <property><name>kspace_binning_kSize_RO</name><value>7</value></property>
         <property><name>kspace_binning_kSize_E1</name><value>7</value></property>
@@ -131,7 +131,8 @@
         <property><name>kspace_binning_nonlinear_image_reg_lamda</name><value>0.00015</value></property>
         <property><name>kspace_binning_nonlinear_reg_N_weighting_ratio</name><value>10.0</value></property>
         <property><name>kspace_binning_nonlinear_reg_use_coil_sen_map</name><value>false</value></property>
-        <property><name>kspace_binning_nonlinear_reg_with_approx_coeff</name><value>false</value></property>
+        <property><name>kspace_binning_nonlinear_reg_with_approx_coeff</name><value>true</value></property>
+        <property><name>kspace_binning_nonlinear_reg_wav_name</name><value>db2</value></property>
 
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value></value></property>

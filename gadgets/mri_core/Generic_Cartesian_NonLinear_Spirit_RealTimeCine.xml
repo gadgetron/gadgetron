@@ -105,7 +105,7 @@
         <!-- parameters for SPIRIT recon -->
         <property><name>spirit_parallel_imaging_lamda</name><value>1.0</value></property>
         <property><name>spirit_data_fidelity_lamda</name><value>1.0</value></property>
-        <property><name>spirit_reg_name</name><value>db1</value></property>
+        <property><name>spirit_reg_name</name><value>db2</value></property>
         <property><name>spirit_reg_level</name><value>1</value></property>
         <property><name>spirit_reg_keep_approx_coeff</name><value>true</value></property>
         <property><name>spirit_reg_keep_redundant_dimension_coeff</name><value>false</value></property>

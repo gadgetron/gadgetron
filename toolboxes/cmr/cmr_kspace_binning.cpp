@@ -130,6 +130,7 @@ CmrKSpaceBinning<T>::CmrKSpaceBinning()
     kspace_binning_nonlinear_reg_N_weighting_ratio_ = 10;
     kspace_binning_nonlinear_reg_use_coil_sen_map_ = false;
     kspace_binning_nonlinear_reg_with_approx_coeff_ = false;
+    kspace_binning_nonlinear_reg_wav_name_ = "db1";
 
     verbose_ = false;
     perform_timing_ = false;
@@ -2493,6 +2494,7 @@ void CmrKSpaceBinning<T>::perform_non_linear_recon_on_kspace_binning(const Array
                                                     kspace_binning_nonlinear_reg_N_weighting_ratio_, 
                                                     kspace_binning_nonlinear_reg_use_coil_sen_map_, 
                                                     kspace_binning_nonlinear_reg_with_approx_coeff_, 
+                                                    kspace_binning_nonlinear_reg_wav_name_, 
                                                     print_iter);
 
         if ( this->perform_timing_ ) { timer.stop(); }
