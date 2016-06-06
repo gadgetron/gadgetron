@@ -144,6 +144,7 @@
         <property><name>kspace_binning_nonlinear_reg_N_weighting_ratio</name><value>10.0</value></property>
         <property><name>kspace_binning_nonlinear_reg_use_coil_sen_map</name><value>false</value></property>
         <property><name>kspace_binning_nonlinear_reg_with_approx_coeff</name><value>true</value></property>
+        <property><name>kspace_binning_nonlinear_reg_wav_name</name><value>db2</value></property>
 
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value></value></property>

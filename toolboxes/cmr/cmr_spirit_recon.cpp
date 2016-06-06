@@ -199,7 +199,7 @@ namespace Gadgetron {
     void perform_spirit_recon_non_linear_2DT(const Gadgetron::hoNDArray<T>& kspace, const Gadgetron::hoNDArray<T>& kerIm, 
                                             const Gadgetron::hoNDArray<T>& coil_map, const Gadgetron::hoNDArray<T>& kspaceLinear, Gadgetron::hoNDArray<T>& res, 
                                             size_t iter_max, double iter_thres, double data_fidelity_lamda, double image_reg_lamda, double reg_N_weighting_ratio, 
-                                            bool reg_use_coil_sen_map, bool reg_with_approx_coeff, bool print_iter)
+                                            bool reg_use_coil_sen_map, bool reg_with_approx_coeff, const std::string& wav_name, bool print_iter)
     {
         size_t RO = kspace.get_size(0);
         size_t E1 = kspace.get_size(1);
@@ -250,7 +250,9 @@ namespace Gadgetron {
                     << " - redundant dimension weighting ratio : "      << reg_N_weighting_ratio
                     << " - using coil sen map : "                       << reg_use_coil_sen_map
                     << " - with approx coeff : "                        << reg_with_approx_coeff
-                    << " - iter thres : "                               << iter_thres);
+                    << " - iter thres : "                               << iter_thres
+                    << " - wavelet name : "                             << wav_name
+                    );
 
                 typedef hoGdSolver< hoNDArray< T >, hoWavelet2DTOperator< T > > SolverType;
                 SolverType solver;
@@ -280,6 +282,7 @@ namespace Gadgetron {
                 wav3DOperator.proximity_across_cha_ = false;
                 wav3DOperator.no_null_space_ = true;
                 wav3DOperator.input_in_kspace_ = true;
+                wav3DOperator.select_wavelet(wav_name);
 
                 if (reg_use_coil_sen_map && hasCoilMap)
                 {
@@ -302,7 +305,9 @@ namespace Gadgetron {
                     << " - redundant dimension weighting ratio : " << reg_N_weighting_ratio
                     << " - using coil sen map : " << reg_use_coil_sen_map
                     << " - with approx coeff : "  << reg_with_approx_coeff
-                    << " - iter thres : " << iter_thres);
+                    << " - iter thres : " << iter_thres
+                    << " - wavelet name : " << wav_name
+                    );
 
                 typedef hoGdSolver< hoNDArray< T >, hoWavelet2DTOperator< T > > SolverType;
                 SolverType solver;
@@ -338,6 +343,7 @@ namespace Gadgetron {
                 wav3DOperator.proximity_across_cha_ = false;
                 wav3DOperator.no_null_space_ = true;
                 wav3DOperator.input_in_kspace_ = true;
+                wav3DOperator.select_wavelet(wav_name);
 
                 if (reg_use_coil_sen_map && hasCoilMap)
                 {
@@ -369,10 +375,10 @@ namespace Gadgetron {
     template EXPORTCMR void perform_spirit_recon_non_linear_2DT(const Gadgetron::hoNDArray< std::complex<float> >& kspace, const Gadgetron::hoNDArray< std::complex<float> >& kerIm, 
         const Gadgetron::hoNDArray< std::complex<float> >& coilMap, const Gadgetron::hoNDArray< std::complex<float> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<float> >& res, 
         size_t iter_max, double iter_thres, double data_fidelity_lamda, double image_reg_lamda, double reg_N_weighting_ratio, 
-        bool reg_use_coil_sen_map, bool reg_with_approx_coeff, bool print_iter);
+        bool reg_use_coil_sen_map, bool reg_with_approx_coeff, const std::string& wav_name, bool print_iter);
 
     template EXPORTCMR void perform_spirit_recon_non_linear_2DT(const Gadgetron::hoNDArray< std::complex<double> >& kspace, const Gadgetron::hoNDArray< std::complex<double> >& kerIm, 
         const Gadgetron::hoNDArray< std::complex<double> >& coilMap, const Gadgetron::hoNDArray< std::complex<double> >& kspaceInitial, Gadgetron::hoNDArray< std::complex<double> >& res, 
         size_t iter_max, double iter_thres, double data_fidelity_lamda, double image_reg_lamda, double reg_N_weighting_ratio, 
-        bool reg_use_coil_sen_map, bool reg_with_approx_coeff, bool print_iter);
+        bool reg_use_coil_sen_map, bool reg_with_approx_coeff, const std::string& wav_name, bool print_iter);
 }

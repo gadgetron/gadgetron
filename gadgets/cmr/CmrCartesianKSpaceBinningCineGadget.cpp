@@ -69,6 +69,7 @@ namespace Gadgetron {
         binning_reconer_.kspace_binning_nonlinear_reg_N_weighting_ratio_ = this->kspace_binning_nonlinear_reg_N_weighting_ratio.value();
         binning_reconer_.kspace_binning_nonlinear_reg_use_coil_sen_map_  = this->kspace_binning_nonlinear_reg_use_coil_sen_map.value();
         binning_reconer_.kspace_binning_nonlinear_reg_with_approx_coeff_ = this->kspace_binning_nonlinear_reg_with_approx_coeff.value();
+        binning_reconer_.kspace_binning_nonlinear_reg_wav_name_          = this->kspace_binning_nonlinear_reg_wav_name.value();
 
         return GADGET_OK;
     }

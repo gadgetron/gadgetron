@@ -91,6 +91,8 @@ namespace Gadgetron {
         GADGET_PROPERTY(kspace_binning_nonlinear_reg_N_weighting_ratio, double, "Binned kspace recon, regularization weighting ratio along the N dimension, non-linear recon", 10.0);
         GADGET_PROPERTY(kspace_binning_nonlinear_reg_use_coil_sen_map, bool, "Binned kspace recon, whether to use coil map, non-linear recon", false);
         GADGET_PROPERTY(kspace_binning_nonlinear_reg_with_approx_coeff, bool, "Binned kspace recon, whether to keep approximal coefficients, non-linear recon", true);
+        GADGET_PROPERTY_LIMITS(kspace_binning_nonlinear_reg_wav_name, std::string, "Binned kspace recon, wavelet name, non-linear recon", "db1", 
+            GadgetPropertyLimitsEnumeration, "db1", "db2", "db3", "db4", "db5");
 
     protected:
 
