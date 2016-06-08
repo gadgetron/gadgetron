@@ -18,6 +18,7 @@
         <property><name>folder</name><value>/tmp/gadgetron_data</value></property>
         <property><name>append_id</name><value>true</value></property>
         <property><name>append_timestamp</name><value>true</value></property>
+        <property><name>use_data_timestamp</name><value>true</value></property>
     </gadget>
 
     <!-- SNR unit noise adjust gadget -->

@@ -7,7 +7,7 @@ namespace bf = boost::filesystem;
 
 namespace Gadgetron
 {
-    std::string get_date_time_string()
+    std::string get_time_string()
     {
         time_t rawtime;
         struct tm * timeinfo;
@@ -15,11 +15,7 @@ namespace Gadgetron
         timeinfo = localtime ( &rawtime );
 
         std::stringstream str;
-        str << timeinfo->tm_year+1900
-            << std::setw(2) << std::setfill('0') << timeinfo->tm_mon+1
-            << std::setw(2) << std::setfill('0') << timeinfo->tm_mday
-            << "-"
-            << std::setw(2) << std::setfill('0') << timeinfo->tm_hour
+        str << std::setw(2) << std::setfill('0') << timeinfo->tm_hour
             << std::setw(2) << std::setfill('0') << timeinfo->tm_min
             << std::setw(2) << std::setfill('0') << timeinfo->tm_sec;
 
@@ -28,7 +24,7 @@ namespace Gadgetron
         return ret;
     }
 
-    std::string get_date_time_string(size_t hours, size_t mins, size_t secs)
+    std::string get_date_string()
     {
         time_t rawtime;
         struct tm * timeinfo;
@@ -38,9 +34,17 @@ namespace Gadgetron
         std::stringstream str;
         str << timeinfo->tm_year+1900
             << std::setw(2) << std::setfill('0') << timeinfo->tm_mon+1
-            << std::setw(2) << std::setfill('0') << timeinfo->tm_mday
-            << "-"
-            << std::setw(2) << std::setfill('0') << hours
+            << std::setw(2) << std::setfill('0') << timeinfo->tm_mday;
+
+        std::string ret = str.str();
+
+        return ret;
+    }
+
+    std::string get_time_string(size_t hours, size_t mins, size_t secs)
+    {
+        std::stringstream str;
+        str << std::setw(2) << std::setfill('0') << hours
             << std::setw(2) << std::setfill('0') << mins
             << std::setw(2) << std::setfill('0') << secs;
 
@@ -139,10 +143,46 @@ namespace Gadgetron
                 ismrmrd_filename.append(measurement_id);
             }
 
+            // check study date
+            std::string study_date, study_time;
+            if ( ismrmrd_header_.studyInformation )
+            {
+                if ( ismrmrd_header_.studyInformation->studyDate )
+                {
+                    study_date = *ismrmrd_header_.studyInformation->studyDate;
+
+                    std::string d(study_date);
+                    d.erase(std::remove(d.begin(), d.end(), '-'), d.end());
+                    study_date = d;
+                }
+
+                if ( ismrmrd_header_.studyInformation->studyTime )
+                {
+                    study_time = *ismrmrd_header_.studyInformation->studyTime;
+
+                    std::string d(study_time);
+                    d.erase(std::remove(d.begin(), d.end(), ':'), d.end());
+                    study_time = d;
+                }
+            }
+
             //Generate filename
             if (append_timestamp.value())
             {
                 ismrmrd_filename.append("_");
+
+                std::string file_time_string;
+                if(study_date.empty())
+                {
+                    file_time_string = get_date_string();
+                }
+                else
+                {
+                    file_time_string = study_date;
+                }
+
+                std::string time_string;
+
                 if(acq!=NULL)
                 {
                     uint32_t time_stamp = acq->acquisition_time_stamp;
@@ -154,13 +194,17 @@ namespace Gadgetron
                     size_t mins =  (size_t)((timeInSeconds - hours*3600) / 60);
                     size_t secs =  (size_t)(timeInSeconds- hours*3600 - mins*60);
 
-                    ismrmrd_filename.append(get_date_time_string(hours, mins, secs));
-
+                    time_string = get_time_string(hours, mins, secs);
                 }
                 else
                 {
-                    ismrmrd_filename.append(get_date_time_string());
+                    time_string = get_time_string();
                 }
+
+                file_time_string.append("-");
+                file_time_string.append(time_string);
+
+                ismrmrd_filename.append(file_time_string);
             }
 
             ismrmrd_filename.append(".h5");
