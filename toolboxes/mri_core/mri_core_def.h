@@ -45,6 +45,7 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_PERF_INTERSITITAL_VOLUME_MAP   "Interstitial_Volume_Map"
     #define GADGETRON_IMAGE_PERF_VASCULAR_VOLUME_MAP       "Vascular_Volume_Map"
     #define GADGETRON_IMAGE_PERF_Gd_Extraction_MAP         "Gd_Extraction_Map"
+    #define GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP "PS_Map"
     #define GADGETRON_IMAGE_PERF_Gd_CONCENTRATION          "Gd"
 
     // other images than the regular reconstruction results
@@ -77,6 +78,7 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_INTERSTITIALVOLUMEMAP          "INTERSTITIALVOLUME"
     #define GADGETRON_IMAGE_VASCULARVOLUMEMAP              "VASCULARVOLUME"
     #define GADGETRON_IMAGE_GD_EXTRACTIONMAP               "EXTRACTIONMAP"
+    #define GADGETRON_IMAGE_PERMEABILITY_SURFACE_AREAMAP   "PSMAP"
 
     //MSH: Interventional MRI (Interactive Real Time, IRT)
     #define GADGETRON_IMAGE_IRT_IMAGE                      "IRT_IMAGE"
