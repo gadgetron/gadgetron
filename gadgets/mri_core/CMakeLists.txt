@@ -3,6 +3,12 @@ IF (WIN32)
 ENDIF (WIN32)
 
 find_package(Ismrmrd REQUIRED)
+find_package(ZFP)
+
+if (ZFP_FOUND)
+   add_definitions(-DGADGETRON_COMPRESSION)
+endif(ZFP_FOUND)
+
 
 if (MKL_FOUND)
     # This is a fix for the bug in SVD when MKL is multi-threaded
@@ -52,6 +58,10 @@ include_directories(
     ${ISMRMRD_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
 )   
+
+if (ZFP_FOUND)
+   include_directories(${ZFP_INCLUDE_DIR})
+endif(ZFP_FOUND)
 
 if (ARMADILLO_FOUND)
     list(APPEND OPTIMIZED_GADGETS NoiseAdjustGadget.cpp)
@@ -162,6 +172,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
 
 set( gadgetron_mricore_config_files
     default.xml
+    default_compression.xml
     default_short.xml
     default_optimized.xml
     default_measurement_dependencies.xml
@@ -208,6 +219,10 @@ target_link_libraries(gadgetron_mricore
     ${OPTIMIZED_GADGET_LIBS}
     ${Boost_LIBRARIES}
 )
+
+if (ZFP_FOUND)
+   target_link_libraries(gadgetron_mricore ${ZFP_LIBRARIES})
+endif(ZFP_FOUND)
 
 install(FILES 
     gadgetron_mricore_export.h

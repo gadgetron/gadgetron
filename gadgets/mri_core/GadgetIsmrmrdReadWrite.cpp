@@ -3,6 +3,9 @@
 namespace Gadgetron{
 
 GADGETRON_READER_FACTORY_DECLARE(GadgetIsmrmrdAcquisitionMessageReader)
-GADGETRON_WRITER_FACTORY_DECLARE(GadgetIsmrmrdAcquisitionMessageWriter)
+#if defined GADGETRON_COMPRESSION
+GADGETRON_READER_FACTORY_DECLARE(GadgetIsmrmrdCompressedAcquisitionMessageReader)
+#endif
 
+GADGETRON_WRITER_FACTORY_DECLARE(GadgetIsmrmrdAcquisitionMessageWriter)
 }

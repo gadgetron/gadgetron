@@ -38,6 +38,10 @@
 #include <chrono>
 #include <condition_variable>
 
+#if defined GADGETRON_COMPRESSION
+#include "zfp/zfp.h"
+#endif
+
 std::string get_date_time_string()
 {
     time_t rawtime;
@@ -58,6 +62,61 @@ std::string get_date_time_string()
     return ret;
 }
 
+#if defined GADGETRON_COMPRESSION
+size_t compress(float* in, size_t samples, size_t coils, double tolerance, char* buffer, size_t buf_size)
+{
+  zfp_type type = zfp_type_float;
+  zfp_field* field = NULL;
+  zfp_stream* zfp = NULL;
+  bitstream* stream = NULL;
+  size_t zfpsize = 0;
+
+  zfp = zfp_stream_open(NULL);
+  field = zfp_field_alloc();
+
+  zfp_field_set_pointer(field, in);
+
+  zfp_field_set_type(field, type);
+  zfp_field_set_size_2d(field, samples, coils);
+  zfp_stream_set_accuracy(zfp, tolerance, type);
+
+  if (zfp_stream_maximum_size(zfp, field) > buf_size) {
+      zfp_field_free(field);
+      zfp_stream_close(zfp);
+      stream_close(stream);
+      throw std::runtime_error("Insufficient buffer space for compression");
+  }
+
+  stream = stream_open(buffer, buf_size);
+  if (!stream) {
+      zfp_field_free(field);
+      zfp_stream_close(zfp);
+      stream_close(stream);
+      throw std::runtime_error("Cannot open compressed stream");
+  }
+  zfp_stream_set_bit_stream(zfp, stream);
+
+  if (!zfp_write_header(zfp, field, ZFP_HEADER_FULL)) {
+      zfp_field_free(field);
+      zfp_stream_close(zfp);
+      stream_close(stream);
+      throw std::runtime_error("Unable to write compression header to stream");
+  }
+
+  zfpsize = zfp_compress(zfp, field);
+  if (zfpsize == 0) {
+      zfp_field_free(field);
+      zfp_stream_close(zfp);
+      stream_close(stream);
+      throw std::runtime_error("Compression failed");
+  }
+  
+  zfp_field_free(field);
+  zfp_stream_close(zfp);
+  stream_close(stream);
+  return zfpsize;
+}
+#endif //GADGETRON_COMPRESSION
 
 namespace po = boost::program_options;
 using boost::asio::ip::tcp;
@@ -95,6 +154,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT     = 1021, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGE                          = 1022,
     GADGET_MESSAGE_RECONDATA                              = 1023,
+    GADGET_MESSAGE_ISMRMRD_COMPRESSED_ACQUISITION         = 1024,
     GADGET_MESSAGE_EXT_ID_MAX                             = 4096
 };
 
@@ -1130,6 +1190,57 @@ public:
         }
     }
 
+#if defined GADGETRON_COMPRESSION    
+    void send_ismrmrd_compressed_acquisition(ISMRMRD::Acquisition& acq, double compression_tolerance) 
+    {
+        if (!socket_) {
+            throw GadgetronClientException("Invalid socket.");
+        }
+
+        GadgetMessageIdentifier id;
+        //TODO: switch data type
+        id.id = GADGET_MESSAGE_ISMRMRD_COMPRESSED_ACQUISITION;
+
+        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        boost::asio::write(*socket_, boost::asio::buffer(&acq.getHead(), sizeof(ISMRMRD::AcquisitionHeader)));
+
+        unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
+        unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
+
+        if (trajectory_elements) {
+            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+        }
+
+
+        if (data_elements) {
+            size_t comp_buffer_size = 4*sizeof(float)*data_elements;
+            char* comp_buffer = new char[comp_buffer_size];
+            size_t compressed_size = 0;
+            try {
+                compressed_size = compress((float*)&acq.getDataPtr()[0],
+                                           acq.getHead().number_of_samples*2, acq.getHead().active_channels,
+                                           compression_tolerance, comp_buffer, comp_buffer_size);
+
+                float compression_ratio = (1.0*data_elements*2*sizeof(float))/(float)compressed_size;
+                //std::cout << "Compression ratio: " << compression_ratio << std::endl;
+                
+            } catch (...) {
+                delete [] comp_buffer;
+                std::cout << "Compression failure caught" << std::endl;
+                throw;
+            }
+
+
+            //TODO: Write compressed buffer
+            uint32_t bs = (uint32_t)compressed_size;
+            boost::asio::write(*socket_, boost::asio::buffer(&bs, sizeof(uint32_t)));
+            boost::asio::write(*socket_, boost::asio::buffer(comp_buffer, compressed_size));
+
+            delete [] comp_buffer;
+        }
+    }
+#endif //GADGETRON_COMPRESSION
+    
     void register_reader(unsigned short slot, boost::shared_ptr<GadgetronClientMessageReader> r) {
         readers_[slot] = r;
     }
@@ -1177,6 +1288,10 @@ int main(int argc, char **argv)
     std::string out_fileformat;
     bool open_input_file = true;
 
+#if defined GADGETRON_COMPRESSION
+    double compression_tolerance = 0.0;
+#endif //GADGETRON_COMPRESSION
+    
     po::options_description desc("Allowed options");
 
     desc.add_options()
@@ -1193,6 +1308,7 @@ int main(int argc, char **argv)
         ("loops,l", po::value<unsigned int>(&loops)->default_value(1), "Loops")
         ("timeout,t", po::value<unsigned int>(&timeout_ms)->default_value(10000), "Timeout [ms]")
         ("outformat,F", po::value<std::string>(&out_fileformat)->default_value("h5"), "Out format, h5 for hdf5 and hdr for analyze image")
+        ("tolerance,T", po::value<double>(&compression_tolerance)->default_value(0.0), "Compression tolerance")
         ;
 
     po::variables_map vm;
@@ -1298,7 +1414,17 @@ int main(int argc, char **argv)
 		boost::mutex::scoped_lock scoped_lock(mtx);
 		ismrmrd_dataset->readAcquisition(i, acq_tmp);
 	      }
-	      con.send_ismrmrd_acquisition(acq_tmp);
+
+#if defined GADGETRON_COMPRESSION
+              if (compression_tolerance > 0.0) {
+                  con.send_ismrmrd_compressed_acquisition(acq_tmp,compression_tolerance);
+              } else {
+                  con.send_ismrmrd_acquisition(acq_tmp);              
+              }
+#else
+	      con.send_ismrmrd_acquisition(acq_tmp);              
+#endif
+        
             }
 	  }
 	}
