@@ -63,7 +63,7 @@ std::string get_date_time_string()
 }
 
 #if defined GADGETRON_COMPRESSION
-size_t compress(float* in, size_t samples, size_t coils, double tolerance, char* buffer, size_t buf_size)
+size_t compress(float* in, size_t samples, size_t coils, uint precision, char* buffer, size_t buf_size)
 {
   zfp_type type = zfp_type_float;
   zfp_field* field = NULL;
@@ -78,7 +78,7 @@ size_t compress(float* in, size_t samples, size_t coils, double tolerance, char*
 
   zfp_field_set_type(field, type);
   zfp_field_set_size_2d(field, samples, coils);
-  zfp_stream_set_accuracy(zfp, tolerance, type);
+  zfp_stream_set_precision(zfp, precision, type);
 
   if (zfp_stream_maximum_size(zfp, field) > buf_size) {
       zfp_field_free(field);
@@ -1202,7 +1202,7 @@ public:
     }
 
 #if defined GADGETRON_COMPRESSION    
-    void send_ismrmrd_compressed_acquisition(ISMRMRD::Acquisition& acq, double compression_tolerance) 
+    void send_ismrmrd_compressed_acquisition(ISMRMRD::Acquisition& acq, uint compression_precision) 
     {
         
         if (!socket_) {
@@ -1231,7 +1231,7 @@ public:
             try {
                 compressed_size = compress((float*)&acq.getDataPtr()[0],
                                            acq.getHead().number_of_samples*2, acq.getHead().active_channels,
-                                           compression_tolerance, comp_buffer, comp_buffer_size);
+                                           compression_precision, comp_buffer, comp_buffer_size);
 
                 compressed_bytes_sent_ += compressed_size;
                 uncompressed_bytes_sent_ += data_elements*2*sizeof(float);
@@ -1303,7 +1303,7 @@ int main(int argc, char **argv)
     bool open_input_file = true;
 
 #if defined GADGETRON_COMPRESSION
-    double compression_tolerance = 0.0;
+    uint compression_precision = 0;
 #endif //GADGETRON_COMPRESSION
     
     po::options_description desc("Allowed options");
@@ -1322,7 +1322,7 @@ int main(int argc, char **argv)
         ("loops,l", po::value<unsigned int>(&loops)->default_value(1), "Loops")
         ("timeout,t", po::value<unsigned int>(&timeout_ms)->default_value(10000), "Timeout [ms]")
         ("outformat,F", po::value<std::string>(&out_fileformat)->default_value("h5"), "Out format, h5 for hdf5 and hdr for analyze image")
-        ("tolerance,T", po::value<double>(&compression_tolerance)->default_value(0.0), "Compression tolerance")
+        ("precision,P", po::value<uint>(&compression_precision)->default_value(0), "Compression precision (bits)")
         ;
 
     po::variables_map vm;
@@ -1430,8 +1430,8 @@ int main(int argc, char **argv)
 	      }
 
 #if defined GADGETRON_COMPRESSION
-              if (compression_tolerance > 0.0) {
-                  con.send_ismrmrd_compressed_acquisition(acq_tmp,compression_tolerance);
+              if (compression_precision > 0) {
+                  con.send_ismrmrd_compressed_acquisition(acq_tmp,compression_precision);
               } else {
                   con.send_ismrmrd_acquisition(acq_tmp);              
               }
@@ -1444,7 +1444,7 @@ int main(int argc, char **argv)
 	}
 
 #if defined GADGETRON_COMPRESSION
-        if (compression_tolerance > 0) {
+        if (compression_precision > 0) {
             std::cout << "Compression ratio: " << con.compression_ratio() << std::endl;
         }
 #endif
