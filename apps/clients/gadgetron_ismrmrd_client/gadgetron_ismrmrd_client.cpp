@@ -1004,6 +1004,8 @@ public:
     GadgetronClientConnector() 
         : socket_(0)
         , timeout_ms_(10000)
+        , uncompressed_bytes_sent_(0)
+        , compressed_bytes_sent_(0)
     {
 
     }
@@ -1016,6 +1018,15 @@ public:
         }
     }
 
+    double compression_ratio()
+    {
+        if (compressed_bytes_sent_ <= 0) {
+            return 1.0;
+        }
+
+        return uncompressed_bytes_sent_/compressed_bytes_sent_;
+    }
+    
     void set_timeout(unsigned int t)
     {
         timeout_ms_ = t;
@@ -1193,6 +1204,7 @@ public:
 #if defined GADGETRON_COMPRESSION    
     void send_ismrmrd_compressed_acquisition(ISMRMRD::Acquisition& acq, double compression_tolerance) 
     {
+        
         if (!socket_) {
             throw GadgetronClientException("Invalid socket.");
         }
@@ -1221,6 +1233,8 @@ public:
                                            acq.getHead().number_of_samples*2, acq.getHead().active_channels,
                                            compression_tolerance, comp_buffer, comp_buffer_size);
 
+                compressed_bytes_sent_ += compressed_size;
+                uncompressed_bytes_sent_ += data_elements*2*sizeof(float);
                 float compression_ratio = (1.0*data_elements*2*sizeof(float))/(float)compressed_size;
                 //std::cout << "Compression ratio: " << compression_ratio << std::endl;
                 
@@ -1266,8 +1280,8 @@ protected:
     boost::thread reader_thread_;
     maptype readers_;
     unsigned int timeout_ms_;
-
-
+    double uncompressed_bytes_sent_;
+    double compressed_bytes_sent_;
 };
 
 
@@ -1429,6 +1443,11 @@ int main(int argc, char **argv)
 	  }
 	}
 
+#if defined GADGETRON_COMPRESSION
+        if (compression_tolerance > 0) {
+            std::cout << "Compression ratio: " << con.compression_ratio() << std::endl;
+        }
+#endif
         con.send_gadgetron_close();
         con.wait();
 
