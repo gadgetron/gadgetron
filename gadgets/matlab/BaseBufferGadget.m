@@ -26,15 +26,16 @@ classdef BaseBufferGadget < handle
         function [imageQ,bufferQ] = run_process(g, recon_data)
             g.emptyQ();
             %% Convert headers
-            for n = 1:numel(recon_data)
-                recon_data(n).data.headers = ismrmrd.AcquisitionHeader(recon_data(n).data.headers);
-                if isfield(recon_data(n),'reference')
-                    if isstruct(recon_data(n).reference)
-                        recon_data(n).reference.headers = ismrmrd.AcquisitionHeader(recon_data(n).reference.headers);
-                    end
-                end
-            end
-            
+% % % % % % %             tic
+% % % % % % %             for n = 1:numel(recon_data)
+% % % % % % %                 recon_data(n).data.headers = ismrmrd.AcquisitionHeader(recon_data(n).data.headers);
+% % % % % % %                 if isfield(recon_data(n),'reference')
+% % % % % % %                     if isstruct(recon_data(n).reference)
+% % % % % % %                         recon_data(n).reference.headers = ismrmrd.AcquisitionHeader(recon_data(n).reference.headers);
+% % % % % % %                     end
+% % % % % % %                 end
+% % % % % % %             end
+% % % % % % %             fprintf(2,'%f',toc);
             %% Process data
             g.process(recon_data);
             
@@ -59,7 +60,7 @@ classdef BaseBufferGadget < handle
         
          function putBufferQ(g,data,reference)
              idx = length(g.bufferQ)+1;
-             g.bufferQ(idx).data = data;
+             g.bufferQ(idx).data = data.data;
              g.bufferQ(idx).data.headers = g.bufferQ(idx).data.headers.toBytes();
              if (exist('reference','var'))
                  g.bufferQ(idx).reference = reference;

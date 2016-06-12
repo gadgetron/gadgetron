@@ -740,7 +740,6 @@ template EXPORTMATLAB hoNDArray<vector_td<float,2> > MatlabToHoNDArray<vector_td
 template EXPORTMATLAB hoNDArray<vector_td<float,3> > MatlabToHoNDArray<vector_td<float,3> >(mxArray *);
 template EXPORTMATLAB hoNDArray<vector_td<float,4> > MatlabToHoNDArray<vector_td<float,4> >(mxArray *);
 
-
 template EXPORTMATLAB mxArray* hoNDArrayToMatlab<vector_td<float,1> >(hoNDArray<vector_td<float,1> > *);
 template EXPORTMATLAB mxArray* hoNDArrayToMatlab<vector_td<float,2> >(hoNDArray<vector_td<float,2> > *);
 template EXPORTMATLAB mxArray* hoNDArrayToMatlab<vector_td<float,3> >(hoNDArray<vector_td<float,3> > *);

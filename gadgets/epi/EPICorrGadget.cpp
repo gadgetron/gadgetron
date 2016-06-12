@@ -285,7 +285,7 @@ int EPICorrGadget::process(
         RefNav_to_Echo0_time_ES_ = 0;
     }
 
-     // Apply the correction
+    // Apply the correction
     // We use the armadillo notation that loops over all the columns
     if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE)) {
       // Negative readout
