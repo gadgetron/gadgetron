@@ -181,6 +181,7 @@ set( gadgetron_mricore_config_files
     gtquery.xml
     Generic_Cartesian_Grappa.xml
     Generic_Cartesian_Grappa_SNR.xml
+    Generic_Cartesian_Grappa_SNR_Compression.xml
     Generic_Cartesian_Grappa_T2W.xml
     Generic_Cartesian_Grappa_FatWater.xml
     Generic_Cartesian_Grappa_RealTimeCine.xml
