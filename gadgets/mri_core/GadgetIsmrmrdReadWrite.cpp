@@ -1,11 +1,6 @@
 #include "GadgetIsmrmrdReadWrite.h"
 
 namespace Gadgetron{
-
-GADGETRON_READER_FACTORY_DECLARE(GadgetIsmrmrdAcquisitionMessageReader)
-#if defined GADGETRON_COMPRESSION
-GADGETRON_READER_FACTORY_DECLARE(GadgetIsmrmrdCompressedAcquisitionMessageReader)
-#endif
-
-GADGETRON_WRITER_FACTORY_DECLARE(GadgetIsmrmrdAcquisitionMessageWriter)
+    GADGETRON_READER_FACTORY_DECLARE(GadgetIsmrmrdAcquisitionMessageReader)
+    GADGETRON_WRITER_FACTORY_DECLARE(GadgetIsmrmrdAcquisitionMessageWriter)
 }

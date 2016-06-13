@@ -11,7 +11,7 @@
 
     <reader>
       <slot>1024</slot>
-      <dll>gadgetron_mricore</dll>
+      <dll>gadgetron_compression</dll>
       <classname>GadgetIsmrmrdCompressedAcquisitionMessageReader</classname>
     </reader>
   
