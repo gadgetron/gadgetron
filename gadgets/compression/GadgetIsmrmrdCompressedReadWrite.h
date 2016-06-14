@@ -131,9 +131,9 @@ namespace Gadgetron{
                 return 0;
             }
             
-            size_t nx = MAX(field->nx, 1u);
-            size_t ny = MAX(field->ny, 1u);
-            size_t nz = MAX(field->nz, 1u);
+            size_t nx = std::max(field->nx, 1u);
+            size_t ny = std::max(field->ny, 1u);
+            size_t nz = std::max(field->nz, 1u);
 
             if (nx*ny*nz != (m1->getObjectPtr()->number_of_samples*2*m1->getObjectPtr()->active_channels)) {
                 GERROR("Size of decompressed stream does not match the acquisition header\n");
