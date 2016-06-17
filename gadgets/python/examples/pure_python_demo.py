@@ -61,7 +61,7 @@ g3.process_config(dset.read_xml_header())
 # Loop through the rest of the acquisitions and stuff
 for acqnum in range(0,dset.number_of_acquisitions()):
     acq = dset.read_acquisition(acqnum)
-    g1.process(acq.getHead(),acq.data)
+    g1.process(acq.getHead(),np.transpose(acq.data))
     
 #%%
 #Get result and display    

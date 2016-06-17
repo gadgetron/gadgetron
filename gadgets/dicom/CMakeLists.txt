@@ -47,22 +47,30 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
         ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
         ${CMAKE_SOURCE_DIR}/apps/gadgetron
         ${CMAKE_SOURCE_DIR}/apps/matlab
         ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
-        ${CMAKE_SOURCE_DIR}/gadgets/gtPlus
         ${ARMADILLO_INCLUDE_DIRS}
         )
 
+set(gadgetron_dicom_header_files 
+    gadgetron_dicom_export.h 
+    DicomFinishGadget.h 
+    DicomImageWriter.h 
+    dicom_ismrmrd_utility.h )
+
+set(gadgetron_dicom_src_files 
+    DicomFinishGadget.cpp 
+    DicomImageWriter.cpp 
+    dicom_ismrmrd_utility.cpp )
+
+set(gadgetron_dicom_config_files dicom.xml )
+
 add_library(gadgetron_dicom SHARED
-    DicomFinishGadget.h DicomFinishGadget.cpp
-    DicomImageWriter.h DicomImageWriter.cpp)
+            ${gadgetron_dicom_header_files}
+            ${gadgetron_dicom_src_files} 
+            ${gadgetron_dicom_config_files} )
 
 set_target_properties(gadgetron_dicom PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
@@ -81,14 +89,10 @@ if(ARMADILLO_FOUND)
     target_link_libraries(gadgetron_dicom gadgetron_toolbox_cpucore_math )
 endif(ARMADILLO_FOUND)
 
-if(MKL_FOUND)
-    target_link_libraries(gadgetron_dicom gadgetron_toolbox_gtplus )
-endif(MKL_FOUND)
-
 install(
-    FILES DicomFinishGadget.h DicomImageWriter.h gadgetron_dicom_export.h
+    FILES ${gadgetron_dicom_header_files} 
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_dicom DESTINATION lib COMPONENT main)
 
-install(FILES dicom.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES ${gadgetron_dicom_config_files}  DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)

@@ -27,21 +27,29 @@ namespace Gadgetron
 
     /// role of image data
     #define GADGETRON_DATA_ROLE                            "GADGETRON_DataRole"
-    #define GADGETRON_IMAGE_REGULAR                        "GADGETRON_Image"
-    #define GADGETRON_IMAGE_RETRO                          "GADGETRON_ImageRetro"
-    #define GADGETRON_IMAGE_MOCORECON                      "GADGETRON_ImageMoCo"
-    #define GADGETRON_IMAGE_GFACTOR                        "GADGETRON_Gfactor"
-    #define GADGETRON_IMAGE_SNR_MAP                        "GADGETRON_SNR_MAP"
-    #define GADGETRON_IMAGE_STD_MAP                        "GADGETRON_STD_MAP"
-    #define GADGETRON_IMAGE_WRAPAROUNDMAP                  "GADGETRON_WrapAround_MAP"
-    #define GADGETRON_IMAGE_PHASE                          "GADGETRON_Phase"
-    #define GADGETRON_IMAGE_INTENSITY_UNCHANGED            "GADGETRON_Image_Intensity_Unchanged"
-    #define GADGETRON_IMAGE_AIF                            "GADGETRON_AIF"
-    #define GADGETRON_IMAGE_AIF_LV_MASK                    "GADGETRON_AIFLVMASK"
-    #define GADGETRON_IMAGE_PERF_FLOW_MAP                  "GADGETRON_Perf_Flow_Map"
+    #define GADGETRON_IMAGE_REGULAR                        "Image"
+    #define GADGETRON_IMAGE_RETRO                          "ImageRetro"
+    #define GADGETRON_IMAGE_MOCORECON                      "ImageMoCo"
+    #define GADGETRON_IMAGE_GFACTOR                        "Gfactor"
+    #define GADGETRON_IMAGE_SNR_MAP                        "SNR_MAP"
+    #define GADGETRON_IMAGE_STD_MAP                        "STD_MAP"
+    #define GADGETRON_IMAGE_WRAPAROUNDMAP                  "WrapAround_MAP"
+    #define GADGETRON_IMAGE_PHASE                          "Phase"
+    #define GADGETRON_IMAGE_INTENSITY_UNCHANGED            "Image_Intensity_Unchanged"
+    #define GADGETRON_IMAGE_AIF                            "AIF"
+    #define GADGETRON_IMAGE_AIF_LV_MASK                    "AIFMASK"
+    #define GADGETRON_IMAGE_AIF_Gd_CONCENTRATION           "Gd"
+    #define GADGETRON_IMAGE_PERF_FLOW_MAP                  "Flow_Map"
+    #define GADGETRON_IMAGE_PERF_MAP                       "Perf_Map"
+    #define GADGETRON_IMAGE_PERF_MEANTRANSITTIME_MAP       "MTT_Map"
+    #define GADGETRON_IMAGE_PERF_INTERSITITAL_VOLUME_MAP   "Interstitial_Volume_Map"
+    #define GADGETRON_IMAGE_PERF_VASCULAR_VOLUME_MAP       "Vascular_Volume_Map"
+    #define GADGETRON_IMAGE_PERF_Gd_Extraction_MAP         "Gd_Extraction_Map"
+    #define GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP "PS_Map"
+    #define GADGETRON_IMAGE_PERF_Gd_CONCENTRATION          "Gd"
 
     // other images than the regular reconstruction results
-    #define GADGETRON_IMAGE_OTHER                          "GADGETRON_Image_Other"
+    #define GADGETRON_IMAGE_OTHER                          "Image_Other"
     // other data roles
     #define GADGETRON_IMAGE_T2W                            "T2W"
     #define GADGETRON_IMAGE_PD                             "PD"
@@ -65,6 +73,12 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_B1MAP                          "B1MAP"
     #define GADGETRON_IMAGE_FLIPANGLEMAP                   "FLIPANGLEMAP"
     #define GADGETRON_IMAGE_FLOWMAP                        "FLOWMAP"
+    #define GADGETRON_IMAGE_PERFUSIONMAP                   "PERFUSIONMAP"
+    #define GADGETRON_IMAGE_MEANTRANSITTIMEMAP             "MTT"
+    #define GADGETRON_IMAGE_INTERSTITIALVOLUMEMAP          "INTERSTITIALVOLUME"
+    #define GADGETRON_IMAGE_VASCULARVOLUMEMAP              "VASCULARVOLUME"
+    #define GADGETRON_IMAGE_GD_EXTRACTIONMAP               "EXTRACTIONMAP"
+    #define GADGETRON_IMAGE_PERMEABILITY_SURFACE_AREAMAP   "PSMAP"
 
     //MSH: Interventional MRI (Interactive Real Time, IRT)
     #define GADGETRON_IMAGE_IRT_IMAGE                      "IRT_IMAGE"
@@ -79,5 +93,10 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_AVE                             "AVE"
 
     /// figures created during reconstruction
-    #define GADGETRON_IMAGE_RECON_FIGURE                   "FIG"
+    #define GADGETRON_IMAGE_RECON_FIGURE                    "FIG"
+
+    /// control flags for image recon and other processing
+    /// if set, skip the processing steps after the recon, e.g. partial fourier handling and kspace filter
+    #define GADGETRON_SKIP_PROCESSING_AFTER_RECON           "Skip_processing_after_recon"
+    #define GADGETRON_USE_DEDICATED_SCALING_FACTOR          "Use_dedicated_scaling_factor"
 }

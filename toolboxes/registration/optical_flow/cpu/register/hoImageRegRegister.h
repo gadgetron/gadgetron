@@ -13,7 +13,6 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
-#include "gtPlusISMRMRDReconUtil.h"
 
 // transformation
 #include "hoImageRegTransformation.h"
@@ -38,7 +37,6 @@
 #include "hoImageRegDissimilarityLocalCCR.h"
 #include "hoImageRegDissimilarityMutualInformation.h"
 #include "hoImageRegDissimilarityNormalizedMutualInformation.h"
-#include "GtPrepUtil.h"
 
 namespace Gadgetron
 {
@@ -180,7 +178,7 @@ namespace Gadgetron
         bool performTiming_;
 
         // exporter
-        Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
+        Gadgetron::ImageIOAnalyze gt_exporter_;
 
         // debug folder
         std::string debugFolder_;
@@ -534,12 +532,12 @@ namespace Gadgetron
                     std::ostringstream ostr_t;
                     ostr_t << "target_" << ii;
 
-                    gt_exporter_.exportImage(target_pyramid_[ii], debugFolder_+ostr_t.str());
+                    gt_exporter_.export_image(target_pyramid_[ii], debugFolder_+ostr_t.str());
 
                     std::ostringstream ostr_s;
                     ostr_s << "source_" << ii;
 
-                    gt_exporter_.exportImage(source_pyramid_[ii], debugFolder_+ostr_s.str());
+                    gt_exporter_.export_image(source_pyramid_[ii], debugFolder_+ostr_s.str());
                 }
             }
         }

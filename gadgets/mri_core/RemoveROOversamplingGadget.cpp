@@ -124,6 +124,8 @@ namespace Gadgetron{
         m1->cont(m3);
         m1->getObjectPtr()->number_of_samples = data_out_dims[0];
         m1->getObjectPtr()->center_sample = (uint16_t)(m1->getObjectPtr()->center_sample/ratioFOV);
+        m1->getObjectPtr()->discard_pre = (uint16_t)(m1->getObjectPtr()->discard_pre / ratioFOV);
+        m1->getObjectPtr()->discard_post = (uint16_t)(m1->getObjectPtr()->discard_post / ratioFOV);
 
       } // end if (dowork_)
 

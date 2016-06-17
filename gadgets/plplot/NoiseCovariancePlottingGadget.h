@@ -6,18 +6,18 @@
 #include "GadgetronTimer.h"
 
 #include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/meta.h>
 #include <ismrmrd/xml.h>
 #include <complex>
 
 namespace Gadgetron {
 
-    class EXPORTPLPLOTGADGET NoiseCovariancePlottingGadget :
-        public Gadget2 < ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+    class EXPORTPLPLOTGADGET NoiseCovariancePlottingGadget : public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
     {
     public:
         GADGET_DECLARE(NoiseCovariancePlottingGadget);
 
-        typedef Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > > BaseClass;
+        typedef Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > > BaseClass;
 
         NoiseCovariancePlottingGadget();
         virtual ~NoiseCovariancePlottingGadget();
@@ -48,7 +48,7 @@ namespace Gadgetron {
 
         virtual int process_config(ACE_Message_Block* mb);
 
-        virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
+        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
             GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
         std::string generateNoiseDependencyFilename(const std::string& measurement_id);
@@ -59,5 +59,7 @@ namespace Gadgetron {
 
         ISMRMRD::IsmrmrdHeader current_ismrmrd_header_;
         ISMRMRD::IsmrmrdHeader noise_ismrmrd_header_;
+
+        ISMRMRD::ImageHeader curr_image_header_;
     };
 }

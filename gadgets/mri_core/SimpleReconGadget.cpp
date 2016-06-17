@@ -112,11 +112,7 @@ int SimpleReconGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
                     hoNDArray<std::complex<float> > chunk = hoNDArray<std::complex<float> >(chunk_dims, &dbuff.data_(0,0,0,0,n,s,loc));
 
                     //Do the FFTs in place
-                    hoNDFFT<float>::instance()->ifft(&chunk,0);
-                    hoNDFFT<float>::instance()->ifft(&chunk,1);
-                    if (E2>1) {
-                        hoNDFFT<float>::instance()->ifft(&chunk,2);
-                    }
+                    hoNDFFT<float>::instance()->ifft3c(chunk);
 
                     //Square root of the sum of squares
                     //Each image will be [E0,E1,E2,1] big
@@ -142,10 +138,13 @@ int SimpleReconGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
 
         //Pass the image array down the chain
         if (this->next()->putq(cm1) < 0) {
-            return GADGET_FAIL;
+	  m1->release();
+          return GADGET_FAIL;
         }
 
     }
+
+    m1->release();
     return GADGET_OK;  
 
 }

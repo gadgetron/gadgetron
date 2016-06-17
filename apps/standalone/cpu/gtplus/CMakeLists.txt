@@ -8,7 +8,10 @@ if (MATLAB_FOUND)
 
     include_directories( 
         ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
+        ${CMAKE_SOURCE_DIR}/toolboxes/matlab
+        ${CMAKE_SOURCE_DIR}/toolboxes/image_io
         ${ACE_INCLUDE_DIR}
         ${MATLAB_INCLUDE_DIR}  
         ${ISMRMRD_INCLUDE_DIR} 
@@ -18,9 +21,11 @@ if (MATLAB_FOUND)
     link_libraries(${MATLAB_LIBRARIES} 
                     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
                     ${ISMRMRD_LIBRARIES} 
-                    gadgetron_toolbox_gtplus 
+                    gadgetron_toolbox_matlab 
+                    gadgetron_toolbox_image_analyze_io 
                     gadgetron_toolbox_cpucore 
                     gadgetron_toolbox_cpucore_math
+                    gadgetron_toolbox_mri_core
                     gadgetron_toolbox_cpureg )
 
     if (WIN32)
@@ -29,6 +34,8 @@ if (MATLAB_FOUND)
         else ( HAS_64_BIT )
             SET(MATLAB_SUFFIX ".mexw32")
         endif ( HAS_64_BIT )
+
+        add_definitions(-DMATLAB_DLL_EXPORT_SYM)
     endif (WIN32)
 
     if (UNIX)

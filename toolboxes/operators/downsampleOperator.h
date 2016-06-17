@@ -43,9 +43,5 @@ namespace Gadgetron{
         upsample<T,D>(in,out);
     }
 
-    virtual boost::shared_ptr< linearOperator< ARRAY_TYPE > > clone()
-    {
-      return linearOperator<ARRAY_TYPE>::clone(this);
-    }    
   };
 }

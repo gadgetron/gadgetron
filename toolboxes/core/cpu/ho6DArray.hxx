@@ -66,7 +66,7 @@ ho6DArray<T>::ho6DArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* 
 template <typename T> 
 ho6DArray<T>::~ho6DArray()
 {
-    GADGET_CHECK_THROW(release_accesser());
+    release_accesser();
 }
 
 template <typename T> 

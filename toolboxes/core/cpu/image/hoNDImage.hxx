@@ -160,25 +160,25 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
     {
         this->create(dimensions, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, origin, data, delete_data_on_destruct);
     }
 
     template <typename T, unsigned int D> 
-    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis, T* data, bool delete_data_on_destruct) : BaseClass(dimensions, data, delete_data_on_destruct)
+    hoNDImage<T, D>::hoNDImage (const std::vector<size_t>& dimensions, const std::vector<coord_type>& pixelSize, const std::vector<coord_type>& origin, const axis_type& axis, T* data, bool delete_data_on_destruct) : BaseClass(const_cast<std::vector<size_t>*>(&dimensions), data, delete_data_on_destruct)
     {
         this->create(dimensions, pixelSize, origin, axis, data, delete_data_on_destruct);
     }
@@ -331,8 +331,6 @@ namespace Gadgetron
         this->image_orientation_patient_[1] = rhs.image_orientation_patient_[1];
         this->image_orientation_patient_[2] = rhs.image_orientation_patient_[2];
 
-        this->attrib_ = rhs.attrib_;
-
         return *this;
     }
 
@@ -377,8 +375,6 @@ namespace Gadgetron
         image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
-
-        this->attrib_ = ISMRMRD::MetaContainer();
     }
 
     template <typename T, unsigned int D> 
@@ -1303,10 +1299,10 @@ namespace Gadgetron
         unsigned int i;
         for( i=D-1; i>0; i-- )
         {
-            index[i] = offset / (*offsetFactors_)[i];
+            index[i] =(coord_type)( offset / (*offsetFactors_)[i] );
             offset %= (*offsetFactors_)[i];
         }
-        index[0] = offset;
+        index[0] = (coord_type)offset;
     }
 
     template <typename T, unsigned int D> 
@@ -1678,7 +1674,7 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::image_to_world(const std::vector<coord_type>& ind, std::vector<coord_type>& coord) const
     {
-        GADGET_DEBUG_CHECK_THROW(ind.size >= D);
+        GADGET_DEBUG_CHECK_THROW(ind.size() >= D);
 
         if ( coord.size() < D ) coord.resize(D);
 
@@ -2184,7 +2180,7 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::image_to_world(const std::vector<size_t>& ind, std::vector<coord_type>& coord) const
     {
-        GADGET_DEBUG_CHECK_THROW(ind.size >= D);
+        GADGET_DEBUG_CHECK_THROW(ind.size() >= D);
 
         if ( coord.size() < D ) coord.resize(D);
 
@@ -2218,61 +2214,13 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::image_to_world(size_t x, size_t y, size_t z, coord_type& cx, coord_type& cy, coord_type& cz) const
     {
-        GADGET_DEBUG_CHECK_THROW(D==3);
-
-        coord_type sx = x*this->pixelSize_[0];
-        coord_type sy = y*this->pixelSize_[1];
-        coord_type sz = z*this->pixelSize_[2];
-
-        cx =    (this->axis_[0][0] * sx 
-              + this->axis_[1][0] * sy) 
-              + (this->axis_[2][0] * sz 
-              + this->origin_[0]);
-
-        cy =    (this->axis_[0][1] * sx 
-              + this->axis_[1][1] * sy) 
-              + (this->axis_[2][1] * sz 
-              + this->origin_[1]);
-
-        cz =    (this->axis_[0][2] * sx 
-              + this->axis_[1][2] * sy) 
-              + (this->axis_[2][2] * sz 
-              + this->origin_[2]);
+        this->image_to_world(static_cast<coord_type>(x), static_cast<coord_type>(y), static_cast<coord_type>(z), cx, cy, cz);
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::image_to_world(size_t x, size_t y, size_t z, size_t s, coord_type& cx, coord_type& cy, coord_type& cz, coord_type& cs) const
     {
-        GADGET_DEBUG_CHECK_THROW(D==4);
-
-        coord_type sx = x*this->pixelSize_[0];
-        coord_type sy = y*this->pixelSize_[1];
-        coord_type sz = z*this->pixelSize_[2];
-        coord_type ss = s*this->pixelSize_[3];
-
-        cx =    (this->axis_[0][0] * sx 
-              + this->axis_[1][0] * sy) 
-              + (this->axis_[2][0] * sz 
-              + this->axis_[3][0] * ss) 
-              + this->origin_[0];
-
-        cy =    (this->axis_[0][1] * sx 
-              + this->axis_[1][1] * sy) 
-              + (this->axis_[2][1] * sz 
-              + this->axis_[3][1] * ss) 
-              + this->origin_[1];
-
-        cz =    (this->axis_[0][2] * sx 
-              + this->axis_[1][2] * sy) 
-              + (this->axis_[2][2] * sz 
-              + this->axis_[3][2] * ss) 
-              + this->origin_[2];
-
-        cs =    (this->axis_[0][3] * sx 
-              + this->axis_[1][3] * sy) 
-              + (this->axis_[2][3] * sz 
-              + this->axis_[3][3] * ss) 
-              + this->origin_[3];
+        this->image_to_world(static_cast<coord_type>(x), static_cast<coord_type>(y), static_cast<coord_type>(z), static_cast<coord_type>(s), cx, cy, cz, cs);
     }
 
     template <typename T, unsigned int D> 
@@ -2353,7 +2301,7 @@ namespace Gadgetron
     inline void hoNDImage<T, D>::set_image_to_world_matrix(const hoMatrix<coord_type>& image2world)
     {
         GADGET_DEBUG_CHECK_THROW(D+1==image2world.rows());
-        GADGET_DEBUG_CHECK_THROW(D+1==image2world.cols);
+        GADGET_DEBUG_CHECK_THROW(D+1==image2world.cols());
 
         // origin
         hoMatrix<coord_type> pt(D+1, 1);
@@ -2667,9 +2615,9 @@ namespace Gadgetron
             std::vector<size_t> indOut(D), ind(D);
 
             #pragma omp for
-            for ( t=0; t<N; t++ )
+            for ( t=0; t<(long long)N; t++ )
             {
-                out->calculate_index(t*size[0], indOut);
+                out.calculate_index( (size_t)(t*size[0]), indOut);
 
                 unsigned int ii;
                 for ( ii=0; ii<D; ii++ )
@@ -2690,7 +2638,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    bool hoNDImage<T, D>::serializeImage(char*& buf, size_t& len) const 
+    bool hoNDImage<T, D>::serialize(char*& buf, size_t& len) const 
     {
         try
         {
@@ -2733,7 +2681,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoNDImage<T, D>::serializeImage(...) ... ");
+            GERROR_STREAM("Errors happened in hoNDImage<T, D>::serialize(...) ... ");
             return false;
         }
 
@@ -2741,7 +2689,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    bool hoNDImage<T, D>::deserializeImage(char* buf, size_t& len)
+    bool hoNDImage<T, D>::deserialize(char* buf, size_t& len)
     {
         try
         {
@@ -2796,100 +2744,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoNDImage<T, D>::deserializeImage(...) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
-    bool hoNDImage<T, D>::serialize(char*& buf, size_t& len) const 
-    {
-        char* bufImage = NULL;
-        char* bufAttrib = NULL;
-
-        try
-        {
-            size_t lenImage(0);
-            GADGET_CHECK_THROW(this->serializeImage(bufImage, lenImage));
-
-            unsigned long long lenAttrib(0);
-
-            std::stringstream str;
-            ISMRMRD::serialize( const_cast<ISMRMRD::MetaContainer&>(attrib_), str);
-            std::string attribContent = str.str();
-            lenAttrib = attribContent.length()+1;
-
-            bufAttrib = new char[lenAttrib];
-            GADGET_CHECK_THROW(bufAttrib != NULL);
-
-            memset(bufAttrib, '\0', sizeof(char)*lenAttrib);
-            memcpy(bufAttrib, attribContent.c_str(), lenAttrib-1);
-
-            len = sizeof(unsigned long long) + lenImage + sizeof(unsigned long long) + lenAttrib;
-
-            if ( buf != NULL )
-            {
-                delete [] buf;
-                buf = NULL;
-            }
-
-            buf = new char[len];
-            GADGET_CHECK_THROW(buf != NULL);
-
-            size_t offset = 0;
-            memcpy(buf, &lenImage, sizeof(size_t));
-            offset += sizeof(size_t);
-
-            memcpy(buf+offset, bufImage, lenImage);
-            offset += lenImage;
-
-            memcpy(buf+offset, &lenAttrib, sizeof(size_t));
-            offset += sizeof(size_t);
-
-            memcpy(buf+offset, bufAttrib, lenAttrib);
-            offset += lenAttrib;
-
-            if ( bufImage != NULL ) delete [] bufImage;
-            if ( bufAttrib != NULL ) delete [] bufAttrib;
-        }
-        catch(...)
-        {
-            if ( bufImage != NULL ) delete [] bufImage;
-            if ( bufAttrib != NULL ) delete [] bufAttrib;
-
-            GERROR_STREAM("Errors happened in hoNDImage<T, D>::serialize(char*& buf, size_t& len) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
-    bool hoNDImage<T, D>::deserialize(char* buf, size_t& len)
-    {
-        try
-        {
-            size_t lenImage(0);
-            unsigned long long lenAttrib(0);
-
-            size_t offset = 0;
-            memcpy(&lenImage, buf, sizeof(size_t));
-            offset += sizeof(size_t);
-
-            GADGET_CHECK_RETURN_FALSE(this->deserializeImage(buf+offset, lenImage));
-            offset += lenImage;
-
-            memcpy(&lenAttrib, buf+offset, sizeof(size_t));
-            offset += sizeof(size_t);
-
-            ISMRMRD::deserialize(buf+offset, attrib_);
-            offset += lenAttrib;
-        }
-        catch(...)
-        {
-            GERROR_STREAM("Errors happened in hoNDImage<T, D>::deserialize(char* buf, size_t& len) ... ");
+            GERROR_STREAM("Errors happened in hoNDImage<T, D>::deserialize(...) ... ");
             return false;
         }
 
@@ -2949,7 +2804,5 @@ namespace Gadgetron
             os << "] " << endl;
         }
         os << endl << ends;
-
-        ISMRMRD::serialize( const_cast<ISMRMRD::MetaContainer&>(this->attrib_), os);
     }
 }

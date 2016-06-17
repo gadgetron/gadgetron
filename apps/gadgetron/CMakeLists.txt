@@ -1,9 +1,14 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
+if (WIN32)
+  ADD_DEFINITIONS(-DCROW_MSVC_WORKAROUND)
+endif(WIN32)
+
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/toolboxes/cloudbus
+  ${CMAKE_SOURCE_DIR}/toolboxes/rest
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
@@ -33,6 +38,7 @@ add_executable(gadgetron
 target_link_libraries(gadgetron 
   gadgetron_gadgetbase
   gadgetron_toolbox_log
+  gadgetron_toolbox_rest
   gadgetron_toolbox_gadgettools gadgetron_toolbox_cloudbus 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
@@ -57,6 +63,7 @@ target_link_libraries(gadgetron_info
 
 if (CUDA_FOUND)
   target_link_libraries(gadgetron_info ${CUDA_LIBRARIES})
+  target_link_libraries(gadgetron ${CUDA_LIBRARIES})
 endif(CUDA_FOUND)
 
 add_library(gadgetron_gadgetbase SHARED
@@ -69,6 +76,7 @@ add_library(gadgetron_gadgetbase SHARED
 target_link_libraries(gadgetron_gadgetbase
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   gadgetron_toolbox_gadgettools
+  gadgetron_toolbox_cloudbus
   gadgetron_toolbox_log
 )
 

@@ -14,8 +14,9 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
-#include "gtPlusISMRMRDReconUtil.h"
-#include "GtPrepUtil.h"
+
+#include "GadgetronTimer.h"
+#include "ImageIOAnalyze.h"
 
 #ifdef USE_OMP
     #include <omp.h>
@@ -204,7 +205,7 @@ namespace Gadgetron
         bool performTiming_;
 
         // exporter
-        Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
+        Gadgetron::ImageIOAnalyze gt_exporter_;
 
         // debug folder
         std::string debugFolder_;

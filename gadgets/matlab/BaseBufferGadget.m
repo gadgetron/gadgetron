@@ -24,6 +24,7 @@ classdef BaseBufferGadget < handle
         
            % Process function
         function [imageQ,bufferQ] = run_process(g, recon_data)
+            g.emptyQ();
             %% Convert headers
             for n = 1:numel(recon_data)
                 recon_data(n).data.headers = ismrmrd.AcquisitionHeader(recon_data(n).data.headers);
@@ -44,12 +45,12 @@ classdef BaseBufferGadget < handle
           % Q related functions
         function emptyQ(g)
            g.bufferQ = struct([]);
-           g.imageQ = [];
+           g.imageQ = struct([]);
         end
 
         
          function putImageQ(g, header, image)
-             disp('Putting Image on Q')
+             %disp('Putting Image on Q')
              idx = length(g.imageQ) + 1;
              header.check(); 
              g.imageQ(idx).bytes = header.toBytes();

@@ -7,10 +7,11 @@
 
 #include "PCACoilGadget.h"
 #include "GadgetIsmrmrdReadWrite.h"
-#include "hoArmadillo.h"
 #include "hoNDArray_elemwise.h"
 #include "ismrmrd/xml.h"
 #include "hoNDArray_fileio.h"
+#include "hoNDKLT.h"
+#include "hoNDArray_linalg.h"
 
 #include <ace/OS_NS_stdlib.h>
 #include <boost/algorithm/string.hpp>
@@ -26,7 +27,7 @@ namespace Gadgetron {
 
     PCACoilGadget::~PCACoilGadget()
     {
-        std::map<int, hoNDArray<std::complex<float> >* >::iterator it;
+        std::map<int, hoNDKLT<std::complex<float> >* >::iterator it;
         it = pca_coefficients_.begin();
         while (it != pca_coefficients_.end()) {
             if (it->second) {
@@ -39,42 +40,46 @@ namespace Gadgetron {
 
     int PCACoilGadget::process_config(ACE_Message_Block *mb)
     {
-      ISMRMRD::IsmrmrdHeader h;
-      ISMRMRD::deserialize(mb->rd_ptr(),h);
+        ISMRMRD::IsmrmrdHeader h;
+        ISMRMRD::deserialize(mb->rd_ptr(), h);
 
-      std::string uncomb_str = uncombined_channels_by_name.value();
-      std::vector<std::string> uncomb;
-      if (uncomb_str.size()) {
-	GDEBUG("uncomb_str: %s\n",  uncomb_str.c_str());
-	boost::split(uncomb, uncomb_str, boost::is_any_of(","));
-	for (unsigned int i = 0; i < uncomb.size(); i++) {
-	  std::string ch = boost::algorithm::trim_copy(uncomb[i]);
-	  if (h.acquisitionSystemInformation) {
-	    for (size_t i = 0; i < h.acquisitionSystemInformation->coilLabel.size(); i++) {
-	      if (ch == h.acquisitionSystemInformation->coilLabel[i].coilName) {
-		uncombined_channels_.push_back(i);//This assumes that the channels are sorted in the header
-		break;
-	      }
-	    }
-	  }
-	}
-      }
+        std::string uncomb_str = uncombined_channels_by_name.value();
+        std::vector<std::string> uncomb;
+        if (uncomb_str.size()) {
+            GDEBUG("uncomb_str: %s\n", uncomb_str.c_str());
+            boost::split(uncomb, uncomb_str, boost::is_any_of(","));
+            for (unsigned int i = 0; i < uncomb.size(); i++) {
+                std::string ch = boost::algorithm::trim_copy(uncomb[i]);
+                if (h.acquisitionSystemInformation) {
+                    for (size_t i = 0; i < h.acquisitionSystemInformation->coilLabel.size(); i++) {
+                        if (ch == h.acquisitionSystemInformation->coilLabel[i].coilName) {
+                            uncombined_channels_.push_back(i);//This assumes that the channels are sorted in the header
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
-      present_uncombined_channels.value((int)uncombined_channels_.size());
-      GDEBUG("Number of uncombined channels (present_uncombined_channels) set to %d\n", uncombined_channels_.size());
+        present_uncombined_channels.value((int)uncombined_channels_.size());
+        GDEBUG("Number of uncombined channels (present_uncombined_channels) set to %d\n", uncombined_channels_.size());
 
-      return GADGET_OK;
+#ifdef USE_OMP
+        omp_set_num_threads(1);
+#endif // USE_OMP
+
+        return GADGET_OK;
     }
 
     int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
     {
-      bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
+        bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
 
-      //We should not be receiving noise here
-      if (is_noise) {
-	m1->release();
-	return GADGET_OK;
-      }
+        //We should not be receiving noise here
+        if (is_noise) {
+            m1->release();
+            return GADGET_OK;
+        }
 
 
         std::map<int, bool>::iterator it;
@@ -89,17 +94,20 @@ namespace Gadgetron {
         //Do we have an entry for this location
         if (it != buffering_mode_.end()) {
             is_buffering = it->second;
-        } else {
+        }
+        else {
             //else make an entry. We will always start in buffering mode for a given location.
             buffering_mode_[location] = is_buffering;
         }
 
-        if (is_buffering) {
+        if (is_buffering)
+        {
             buffer_[location].push_back(m1);
             int profiles_available = buffer_[location].size();
 
             //Are we ready for calculating PCA
-            if (is_last_scan_in_slice || (profiles_available >= max_buffered_profiles_)) {
+            if (is_last_scan_in_slice || (profiles_available >= max_buffered_profiles_))
+            {
 
                 //GDEBUG("Calculating PCA coefficients with %d profiles for %d coils\n", profiles_available, channels);
                 int samples_to_use = samples_per_profile > samples_to_use_ ? samples_to_use_ : samples_per_profile;
@@ -112,7 +120,7 @@ namespace Gadgetron {
                 int total_samples = samples_to_use*profiles_available;
 
                 std::vector<size_t> dims(2);
-                dims[0] = channels;dims[1] = total_samples;
+                dims[0] = total_samples; dims[1] = channels;
 
                 hoNDArray< std::complex<float> > A;
                 try{ A.create(&dims); }
@@ -125,8 +133,8 @@ namespace Gadgetron {
                 size_t sample_counter = 0;
 
                 size_t data_offset = 0;
-                if (m1->getObjectPtr()->center_sample >= (samples_to_use>>1)) {
-                    data_offset = m1->getObjectPtr()->center_sample - (samples_to_use>>1);
+                if (m1->getObjectPtr()->center_sample >= (samples_to_use >> 1)) {
+                    data_offset = m1->getObjectPtr()->center_sample - (samples_to_use >> 1);
                 }
 
                 //GDEBUG("Data offset = %d\n", data_offset);
@@ -134,15 +142,16 @@ namespace Gadgetron {
                 hoNDArray<std::complex<float> > means;
                 std::vector<size_t> means_dims; means_dims.push_back(channels);
 
-                try{means.create(&means_dims);}
+                try{ means.create(&means_dims); }
                 catch (std::runtime_error& err){
                     GDEBUG("Unable to create temporary stoorage for mean values\n");
                     return GADGET_FAIL;
                 }
 
-                means.fill(std::complex<float>(0.0f,0.0f));
+                means.fill(std::complex<float>(0.0f, 0.0f));
 
                 std::complex<float>* means_ptr = means.get_data_ptr();
+
                 for (size_t p = 0; p < profiles_available; p++) {
                     GadgetContainerMessage<hoNDArray<std::complex<float> > >* m_tmp =
                         AsContainerMessage<hoNDArray< std::complex<float> > >(buffer_[location][p]->cont());
@@ -154,27 +163,27 @@ namespace Gadgetron {
 
                     std::complex<float>* d = m_tmp->getObjectPtr()->get_data_ptr();
 
-		      for (unsigned s = 0; s < samples_to_use; s++) {
-			for (size_t c = 0; c < channels; c++) {
-			  bool uncombined_channel = std::find(uncombined_channels_.begin(),uncombined_channels_.end(), c) != uncombined_channels_.end();
-			  //We use the conjugate of the data so that the output VT of the SVD is the actual PCA coefficient matrix
-			  if (uncombined_channel) {
-			    A_ptr[c + sample_counter*channels] = std::complex<float>(0.0,0.0);
-			  } else {
-			    A_ptr[c + sample_counter*channels] = d[c*samples_per_profile + data_offset + s];
-			    means_ptr[c] += d[c*samples_per_profile + data_offset + s];
-			  }
-			}
-			
-			sample_counter++;
-			//GDEBUG("Sample counter = %d/%d\n", sample_counter, total_samples);
-		      }
+                    for (unsigned s = 0; s < samples_to_use; s++) {
+                        for (size_t c = 0; c < channels; c++) {
+                            bool uncombined_channel = std::find(uncombined_channels_.begin(), uncombined_channels_.end(), c) != uncombined_channels_.end();
+                            if (uncombined_channel) {
+                                A_ptr[sample_counter + c *total_samples] = std::complex<float>(0.0, 0.0);
+                            }
+                            else {
+                                A_ptr[sample_counter + c *total_samples] = d[c*samples_per_profile + data_offset + s];
+                                means_ptr[c] += d[c*samples_per_profile + data_offset + s];
+                            }
+                        }
+
+                        sample_counter++;
+                        //GDEBUG("Sample counter = %d/%d\n", sample_counter, total_samples);
+                    }
                 }
 
                 //Subtract off mean
                 for (size_t c = 0; c < channels; c++) {
                     for (size_t s = 0; s < total_samples; s++) {
-                        A_ptr[c + s*channels] -=  means_ptr[c]/std::complex<float>(total_samples,0);
+                        A_ptr[s + c *total_samples] -= means_ptr[c] / std::complex<float>(total_samples, 0);
                     }
                 }
 
@@ -183,69 +192,25 @@ namespace Gadgetron {
                 std::vector<size_t> VT_dims;
                 VT_dims.push_back(channels);
                 VT_dims.push_back(channels);
-                pca_coefficients_[location] = new hoNDArray< std::complex<float> >;
-                hoNDArray< std::complex<float> >* VT = pca_coefficients_[location];
-		
-                try {VT->create(&VT_dims);}
-                catch (std::runtime_error& err){
-                    GEXCEPTION(err,"Failed to create array for VT\n");
-                    return GADGET_FAIL;
+                pca_coefficients_[location] = new hoNDKLT < std::complex<float> > ;
+                hoNDKLT< std::complex<float> >* VT = pca_coefficients_[location];
+
+                //We will create a new matrix that explicitly preserves the uncombined channels
+                if (uncombined_channels_.size())
+                {
+                    std::vector<size_t> untransformed(uncombined_channels_.size());
+                    for (size_t un = 0; un < uncombined_channels_.size(); un++)
+                    {
+                        untransformed[un] = uncombined_channels_[un];
+                    }
+
+                    VT->prepare(A, (size_t)1, untransformed, (size_t)0, false);
+
                 }
-
-                arma::cx_fmat Am = as_arma_matrix(&A);
-                arma::cx_fmat Vm = as_arma_matrix(VT);
-                arma::cx_fmat Um;
-                arma::fvec Sv;
-
-
-                if( !arma::svd_econ(Um,Sv,Vm,Am.st(),'r') ){
-                    GDEBUG("Failed to compute SVD\n");
-                    return GADGET_FAIL;
+                else
+                {
+                    VT->prepare(A, (size_t)1, (size_t)0, false);
                 }
-		
-		//We will create a new matrix that explicitly preserves the uncombined channels
-		if (uncombined_channels_.size()) {
-		  hoNDArray< std::complex<float> >* VT_new = new hoNDArray< std::complex<float> >;
-		  try {VT_new->create(&VT_dims);}
-		  catch (std::runtime_error& err){
-                    GEXCEPTION(err,"Failed to create array for VT (new)\n");
-                    return GADGET_FAIL;
-		  }
-
-		  arma::cx_fmat Vm_new = as_arma_matrix(VT_new);
-
-		  size_t uncomb_count = 0;
-		  size_t comb_count = 0;
-		  for (size_t c = 0; c < Vm_new.n_cols; c++) {
-		    bool uncombined_channel = std::find(uncombined_channels_.begin(),uncombined_channels_.end(), c) != uncombined_channels_.end();
-		    if (uncombined_channel) {
-		      for (size_t r = 0; r < Vm_new.n_rows; r++) {
-			if (r == c) {
-			  Vm_new(r,uncomb_count) = 1;
-			} else {
-			  Vm_new(r,uncomb_count) = 0;
-			}
-		      }
-		      uncomb_count++;
-		    } else {
-		      for (size_t r = 0; r < Vm_new.n_rows; r++) { 
-			bool uncombined_channel_row = std::find(uncombined_channels_.begin(),uncombined_channels_.end(), r) != uncombined_channels_.end();
-			if (uncombined_channel_row) {
-			  Vm_new(r,comb_count+uncombined_channels_.size()) = 0;
-			} else {
-			  Vm_new(r,comb_count+uncombined_channels_.size()) = Vm(r,c);
-			}
-		      }
-		      comb_count++;
-		    }
-		  } 
-		  GDEBUG("uncomb_count = %d, comb_count = %d\n", uncomb_count, comb_count);
-
-		  //Delete the old one and set the new one
-		  delete pca_coefficients_[location];
-		  pca_coefficients_[location] = VT_new;
-		}
-
 
                 //Switch off buffering for this slice
                 buffering_mode_[location] = false;
@@ -261,23 +226,22 @@ namespace Gadgetron {
                 //Remove references in this buffer
                 buffer_[location].clear();
             }
-        } else {
+        }
+        else {
             //GDEBUG("Not buffering anymore\n");
             GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
-                new GadgetContainerMessage< hoNDArray< std::complex<float> > >;
+                new GadgetContainerMessage < hoNDArray< std::complex<float> > > ;
 
-            try{m3->getObjectPtr()->create(m2->getObjectPtr()->get_dimensions().get()); }
+            try{ m3->getObjectPtr()->create(m2->getObjectPtr()->get_dimensions().get()); }
             catch (std::runtime_error& err){
-                GEXCEPTION(err,"Unable to create storage for PCA coils\n");
+                GEXCEPTION(err, "Unable to create storage for PCA coils\n");
                 m3->release();
                 return GADGET_FAIL;
             }
 
-            if (pca_coefficients_[location] != 0) {	
-                arma::cx_fmat am3 = as_arma_matrix(m3->getObjectPtr());
-                arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
-                arma::cx_fmat aPca = as_arma_matrix(pca_coefficients_[location]);
-                am3 = am2*aPca;
+            if (pca_coefficients_[location] != 0)
+            {
+                pca_coefficients_[location]->transform(*(m2->getObjectPtr()), *(m3->getObjectPtr()), 1);
             }
 
             m1->cont(m3);

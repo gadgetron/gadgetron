@@ -73,18 +73,26 @@ namespace GadgetronXML
     std::string value;
   };
 
+  
   struct CloudBus
   {
-    std::string multiCastAddress;
+    std::string relayAddress;
     unsigned int port;
+    Optional<std::string> lbEndpoint;
   };
 
 
+  struct ReST
+  {
+    unsigned int port;
+  };
+  
   struct GadgetronConfiguration
   {
     std::string port;
     std::vector<GadgetronParameter> globalGadgetParameter;
-    Optional<CloudBus> cloudBus;    
+    Optional<CloudBus> cloudBus;
+    Optional<ReST> rest;
   };
 
   void EXPORTGADGETBASE deserialize(const char* xml_config, GadgetronConfiguration& h);
@@ -114,6 +122,7 @@ namespace GadgetronXML
   };
 
   void EXPORTGADGETBASE deserialize(const char* xml, GadgetStreamConfiguration& cfg);
+  void EXPORTGADGETBASE serialize(const GadgetStreamConfiguration& cfg, std::ostream& o);
 
 };
 

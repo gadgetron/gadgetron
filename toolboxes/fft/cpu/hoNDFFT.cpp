@@ -78,7 +78,7 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
 
        //Allocate storage and make plan
        {
-           mutex_.lock();
+           std::lock_guard<std::mutex> guard(mutex_);
            fft_storage = (ComplexType*)fftw_malloc_(sizeof(T)*length*2);
            if (fft_storage == 0)
            {
@@ -97,16 +97,15 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
                GDEBUG_STREAM("Failed to create plan for FFT" << std::endl);
                return;
            }
-           mutex_.unlock();
        }
 
        //Grab address of data
        data_ptr = input->get_data_ptr();
 
-       register int idx1_max = chunks*chunk_size;
-       register int idx1, idx2;       //Index variables
-       register int idx2_limit;
-       register int middle_point = ((length+1)/2);
+       int idx1_max = chunks*chunk_size;
+       int idx1, idx2;       //Index variables
+       int idx2_limit;
+       int middle_point = ((length+1)/2);
 
        for (idx1 = 0; idx1 < idx1_max; idx1+=chunk_size) //Loop over all chunks
        {
@@ -115,7 +114,7 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
            {
                ///Copy data to buffer.
                {
-                   register int j, idx3 = idx2;
+                   int j, idx3 = idx2;
                    for (j = middle_point; j < length; idx3+=stride)
                    {
                        fft_buffer[j++] = data_ptr[idx3  ];
@@ -129,7 +128,7 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
                fftw_execute_(fft_plan);
 
                {
-                   register int j, idx3 = idx2;
+                   int j, idx3 = idx2;
 
                    for (j = middle_point; j < length; idx3+=stride)
                    {
@@ -147,7 +146,7 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
 
        //clean up
        {
-           mutex_.lock();
+           std::lock_guard<std::mutex> guard(mutex_);
            if (fft_plan != 0)
            {
                fftw_destroy_plan_(fft_plan);
@@ -157,7 +156,6 @@ template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* inpu
            {
                fftw_free_(fft_storage);
            }
-           mutex_.unlock();
        }
    }
 
@@ -223,17 +221,14 @@ template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size
 
 	//Allocate storage and make plan
 	{
-		mutex_.lock();
-
-		unsigned planner_flags = FFTW_ESTIMATE;
-		fft_plan = fftw_plan_many_dft_(1,&length,trafos,data_ptr,&length,stride,dist,data_ptr,&length,stride,dist,sign,planner_flags);
-		//fftw_print_plan_(fft_plan);
-		if (fft_plan == NULL)
-		{
-			throw std::runtime_error("hoNDFFT: failed to create fft plan");
-		}
-		mutex_.unlock();
-
+            std::lock_guard<std::mutex> guard(mutex_);
+            unsigned planner_flags = FFTW_ESTIMATE;
+            fft_plan = fftw_plan_many_dft_(1,&length,trafos,data_ptr,&length,stride,dist,data_ptr,&length,stride,dist,sign,planner_flags);
+            //fftw_print_plan_(fft_plan);
+            if (fft_plan == NULL)
+	    {
+                throw std::runtime_error("hoNDFFT: failed to create fft plan");
+            }
 	}
 
 #pragma omp parallel for
@@ -247,13 +242,11 @@ template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size
 
 	//clean up
 	{
-		mutex_.lock();
-		if (fft_plan != 0)
-		{
-			fftw_destroy_plan_(fft_plan);
-		}
-
-		mutex_.unlock();
+            std::lock_guard<std::mutex> guard(mutex_);
+            if (fft_plan != 0)
+	    {
+                fftw_destroy_plan_(fft_plan);
+            }
 	}
 
 
@@ -1033,7 +1026,7 @@ void hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, 
 	if( num_thr > 1 )
 	{
 		{
-			mutex_.lock();
+                        std::lock_guard<std::mutex> guard(mutex_);
 			if ( forward )
 			{
 				p = fftw_plan_dft_1d_(n0,a.get_data_ptr(),r.get_data_ptr(),FFTW_FORWARD,FFTW_ESTIMATE);
@@ -1042,7 +1035,6 @@ void hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, 
 			{
 				p = fftw_plan_dft_1d_(n0,a.get_data_ptr(),r.get_data_ptr(),FFTW_BACKWARD,FFTW_ESTIMATE);
 			}
-			mutex_.unlock();
 		}
 
 #pragma omp parallel for private(n) shared(num, p, a, n0, r) num_threads(num_thr)
@@ -1053,16 +1045,15 @@ void hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, 
 		}
 
 		{
-			mutex_.lock();
+                        std::lock_guard<std::mutex> guard(mutex_);
 			fftw_destroy_plan_(p);
-			mutex_.unlock();
 		}
 	}
 	else
 	{
 		// multiple fft interface
 		{
-			mutex_.lock();
+                        std::lock_guard<std::mutex> guard(mutex_);
 			if ( forward )
 			{
 				p = fftw_plan_many_dft_(1, &n0, num,
@@ -1081,15 +1072,13 @@ void hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, 
 						1, n0,
 						FFTW_BACKWARD, FFTW_ESTIMATE);
 			}
-			mutex_.unlock();
 		}
 
 		fftw_execute_(p);
 
 		{
-			mutex_.lock();
+                        std::lock_guard<std::mutex> guard(mutex_);
 			fftw_destroy_plan_(p);
-			mutex_.unlock();
 		}
 	}
 
@@ -1117,12 +1106,11 @@ void hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, 
 	if ( num_thr > 1 )
 	{
 		{
-			mutex_.lock();
+                        std::lock_guard<std::mutex> guard(mutex_);
 			p = fftw_plan_dft_2d_(n0, n1,
 					a.begin(),
 					r.begin(),
 					forward ? FFTW_FORWARD : FFTW_BACKWARD, FFTW_ESTIMATE);
-			mutex_.unlock();
 		}
 
 #pragma omp parallel for private(n) shared(num, p, a, n0, n1, r) num_threads(num_thr)
@@ -1133,9 +1121,8 @@ void hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, 
 		}
 
 		{
-			mutex_.lock();
+                        std::lock_guard<std::mutex> guard(mutex_);
 			fftw_destroy_plan_(p);
-			mutex_.unlock();
 		}
 	}
 	else
@@ -1147,8 +1134,7 @@ void hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, 
 		int odist = n0*n1;
 
 		{
-			mutex_.lock();
-
+                        std::lock_guard<std::mutex> guard(mutex_);
 			p = fftw_plan_many_dft_(2, n, num,
 					a.begin(), NULL,
 					1, idist,
@@ -1156,15 +1142,13 @@ void hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, 
 					1, odist,
 					forward ? FFTW_FORWARD : FFTW_BACKWARD, FFTW_ESTIMATE);
 
-			mutex_.unlock();
 		}
 
 		fftw_execute_(p);
 
 		{
-			mutex_.lock();
+                        std::lock_guard<std::mutex> guard(mutex_);
 			fftw_destroy_plan_(p);
-			mutex_.unlock();
 		}
 	}
 
@@ -1191,14 +1175,12 @@ void hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, 
 	typename fftw_types<T>::plan * p;
 
 	{
-		mutex_.lock();
-
+                std::lock_guard<std::mutex> guard(mutex_);
 		p = fftw_plan_dft_3d_(n0, n1, n2,
 				a.get_data_ptr(),
 				r.get_data_ptr(),
 				forward ? FFTW_FORWARD : FFTW_BACKWARD, FFTW_ESTIMATE);
 
-		mutex_.unlock();
 	}
 
 #pragma omp parallel for private(n) shared(num, p, a, n0, n1, n2, r) if (num_thr > 1) num_threads(num_thr)
@@ -1209,9 +1191,8 @@ void hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, 
 	}
 
 	{
-		mutex_.lock();
+                std::lock_guard<std::mutex> guard(mutex_);
 		fftw_destroy_plan_(p);
-		mutex_.unlock();
 	}
 
 	r *= fftRatio;

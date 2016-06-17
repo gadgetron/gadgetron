@@ -4,9 +4,14 @@
 #include "cloudbus_export.h"
 #include <ace/Task.h>
 #include <ace/INET_Addr.h>
-#include <ace/SOCK_Dgram_Mcast.h>
 #include <ace/OS_NS_unistd.h>
+#include <ace/SOCK_Connector.h>
+#include <ace/SOCK_Stream.h>
 #include <ace/SOCK_Acceptor.h>
+#include <ace/Svc_Handler.h>
+#include <ace/Condition_T.h>
+
+#include "log.h"
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -17,101 +22,116 @@
 #include <utility>
 #include <time.h>
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
-#define GADGETRON_DEFAULT_MULTICAST_ADDR "224.9.9.2"
-#define GADGETRON_DEFAULT_MULTICAST_PORT 4148
-#define GADGETRON_NODE_INFO_MESSAGE_LENGTH 16+sizeof(uint32_t)*2 //16 bytes for uuid + 2 ints
+#define GADGETRON_DEFAULT_RELAY_ADDR "localhost"
+#define GADGETRON_DEFAULT_RELAY_PORT 8002
+#define MAXHOSTNAMELENGTH 1024
+
+#include "cloudbus_io.h"
 
 namespace Gadgetron
-{
+{  
 
-  struct GadgetronNodeInfo
-  {
-    std::string uuid;
-    std::string address;
-    uint32_t port;
-    uint32_t compute_capability;
-  };
+  class CloudBus;
   
-  class CloudBusTask : public ACE_Task<ACE_MT_SYNCH>
+  class CloudBusReaderTask : public ACE_Task<ACE_MT_SYNCH>
   {
+    
   public:
-    typedef ACE_Task<ACE_MT_SYNCH> inherited;    
-    CloudBusTask(int port, const char* addr);
-    CloudBusTask();
-    virtual int open(void* = 0);
+    typedef ACE_Task<ACE_MT_SYNCH> inherited;
+    
+  CloudBusReaderTask(CloudBus* cloudbus)
+    : inherited()
+    , cloud_bus_(cloudbus)
+    {
+      
+    }
+    
+    virtual int open(void*);
+    virtual int close(unsigned long flags);
+    virtual int svc(void);
 
   protected:
-    ACE_SOCK_Dgram_Mcast mcast_dgram_;
-    ACE_INET_Addr mcast_addr_;
+    ACE_SOCK_Stream* socket_;
+    CloudBus* cloud_bus_;
   };
 
-  class CloudBusReceiverTask : public CloudBusTask
+
+  
+  class EXPORTCLOUDBUS CloudBus : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH>
   {
+    friend CloudBusReaderTask;
+    
   public:
-    CloudBusReceiverTask(int port, const char* addr);
+    typedef ACE_Task<ACE_MT_SYNCH> inherited;
+
     virtual int open(void* = 0);
-    virtual int close(u_long flags = 0);
+    virtual int handle_close (ACE_HANDLE handle, ACE_Reactor_Mask close_mask);
+
+    virtual int handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE);
     virtual int svc(void);
-  };
 
-
-  class CloudBusSenderTask : public CloudBusTask
-  {
-  public:
-    CloudBusSenderTask(int port, const char* addr);
-    virtual int open(void* = 0);
-    virtual int svc(void);
-  };
-
-  class EXPORTCLOUDBUS CloudBus
-  {
-    friend class CloudBusReceiverTask;
-    friend class CloudBusSenderTask;
-
-    typedef std::map<std::string, std::pair<GadgetronNodeInfo, time_t> > map_type_;
-
-  public:
     static CloudBus* instance();
-    static void set_mcast_address(const char* addr);
-    static void set_mcast_port(int port);
+    static void set_relay_address(const char* addr);
+    static void set_relay_port(int port);
     static void set_query_only(bool m = true);
     static void set_gadgetron_port(uint32_t port);
+    static void set_rest_port(uint32_t port);
 
-    void set_compute_capability(uint32_t c)
-    {
-      node_info_.compute_capability = c;
-    }
+    void set_lb_endpoint(std::string addr, uint32_t port);
+    
+    void set_compute_capability(uint32_t c);
 
-    void wait();
-
+    void send_node_info();    
+    void update_node_info();
     void get_node_info(std::vector<GadgetronNodeInfo>& nodes);
+    void print_nodes();
     size_t get_number_of_nodes();
 
+    unsigned int active_reconstructions();
+    unsigned int port();
+    const char* uuid();
+    
+    void report_recon_start();
+    void report_recon_end();
+    
   protected:
     ///Protected constructor. 
     CloudBus(int port, const char* addr);
+    CloudBus(); 
 
-    void update_node(const char* a, GadgetronNodeInfo& info);
-    void remove_stale_nodes();
-    
     static CloudBus* instance_;
-    static const char* mcast_inet_addr_;
-    static int mcast_port_;
+    static const char* relay_inet_addr_;
+    static int relay_port_;
     static bool query_mode_; //Listen only
     static int gadgetron_port_;
+    static int rest_port_;
+
+    bool use_lb_endpoint_;
+    std::string lb_address_;
+    uint32_t lb_port_;
 
     GadgetronNodeInfo node_info_;
-    map_type_ nodes_;
+    std::vector<GadgetronNodeInfo> nodes_;
     
-    CloudBusReceiverTask receiver_;
-    CloudBusSenderTask   sender_;
+    std::mutex mtx_;
+    std::condition_variable node_list_condition_;
+  
+    /*
     ACE_Thread_Mutex mtx_;
+    ACE_Thread_Mutex mtx_node_list_;
+    ACE_Condition<ACE_Thread_Mutex> node_list_condition_;
+    */
 
     boost::uuids::uuid uuid_;
+    bool connected_;
+    ACE_SOCK_Stream socket_;
+
+    CloudBusReaderTask* reader_task_;
   };
-
-
 }
 
 #endif

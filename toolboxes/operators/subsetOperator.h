@@ -29,14 +29,14 @@ public:
 		this->mult_MH(&tmp,out,subset,accumulate);
 	}
 
-	virtual void mult_M(ARRAY_TYPE* in, ARRAY_TYPE* out,bool accumulate){
+	virtual void mult_M(ARRAY_TYPE* in, ARRAY_TYPE* out,bool accumulate=false){
 		if (!accumulate) clear(out);
 		std::vector<boost::shared_ptr<ARRAY_TYPE> > projections = projection_subsets(out);
 
 		for (int i = 0; i < this->get_number_of_subsets(); i++) mult_M(in,projections[i].get(),i,true);
 	}
 
-	virtual void mult_MH(ARRAY_TYPE* in, ARRAY_TYPE* out,bool accumulate){
+	virtual void mult_MH(ARRAY_TYPE* in, ARRAY_TYPE* out,bool accumulate=false){
 			if (!accumulate) clear(out);
 			std::vector<boost::shared_ptr<ARRAY_TYPE> > projections = projection_subsets(in);
 			for (int i = 0; i < this->get_number_of_subsets(); i++) mult_MH(projections[i].get(),out,i,true);
@@ -64,8 +64,6 @@ public:
 		return res;
 	}
 protected:
-	virtual void set_number_of_subsets(int nsubsets){ number_of_subsets=nsubsets;}
-private:
 	int number_of_subsets;
 
 };

@@ -18,7 +18,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core
     ${HDF5_INCLUDE_DIR}
     ${HDF5_INCLUDE_DIR}/cpp
@@ -50,6 +49,6 @@ install(FILES
     DeviceChannelSplitterGadget.h
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-install(FILES grappa_device.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES grappa_device.xml grappa_device_cpu.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_interventional_mri DESTINATION lib COMPONENT main)

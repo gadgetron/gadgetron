@@ -15,39 +15,39 @@
     <classname>MRIImageWriter</classname>
   </writer>
 
-  <gadget>
-    <name>MatlabAcquisition</name>
-    <dll>gadgetron_matlab</dll>
-    <classname>AcquisitionMatlabGadget</classname>
-    <property><name>debug_mode</name><value>false</value></property>
-    <property><name>matlab_path</name><value></value></property>
-    <property><name>matlab_classname</name><value>scale</value></property>
-    <property><name>matlab_port</name><value>3000</value></property>
-  </gadget>
+    <gadget>
+        <name>RemoveROOversampling</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>RemoveROOversamplingGadget</classname>
+    </gadget>
+
+    <gadget>
+        <name>AccTrig</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>AcquisitionAccumulateTriggerGadget</classname>
+    </gadget>
+    
+     <gadget>
+        <name>Buff</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>BucketToBufferGadget</classname>
+        <property>
+          <name>split_slices</name>
+          <value>true</value>
+        </property>
+    </gadget>
+
 
   <gadget>
-    <name>MatlabAcquisition</name>
+    <name>MatlabBuffer</name>
     <dll>gadgetron_matlab</dll>
-    <classname>AcquisitionMatlabGadget</classname>
+    <classname>MatlabBufferGadget</classname>
+    <property><name>debug_mode</name><value>true</value></property>
     <property><name>matlab_path</name><value></value></property>
-    <property><name>matlab_classname</name><value>accumulate_and_recon</value></property>
-    <property><name>matlab_port</name><value>3001</value></property>
+    <property><name>matlab_classname</name><value>bufferRecon</value></property>
   </gadget>
 
-  <gadget>
-    <name>CropCombine</name>
-    <dll>gadgetron_mricore</dll>
-    <classname>CropAndCombineGadget</classname>
-  </gadget>
 
-  <gadget>
-    <name>MatlabImage</name>
-    <dll>gadgetron_matlab</dll>
-    <classname>ImageMatlabGadget</classname>
-    <property><name>matlab_path</name><value></value></property>
-    <property><name>matlab_classname</name><value>mask_image</value></property>
-    <property><name>matlab_port</name><value>3002</value></property>
-  </gadget>
 
   <gadget>
     <name>Extract</name>

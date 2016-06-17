@@ -1,3 +1,5 @@
+set(CUDA_USE_STATIC_CUDA_RUNTIME OFF CACHE BOOL "")
+
 find_package(CUDA 5.5)
 
 # Check for GPUs present and their compute capability
@@ -6,6 +8,8 @@ if(CUDA_FOUND)
     set(CUDA_NVCC_FLAGS2 "-gencode arch=compute_20,code=sm_20")
     set(CUDA_NVCC_FLAGS3 "-gencode arch=compute_30,code=sm_30") 
     set(CUDA_NVCC_FLAGS4 "-gencode arch=compute_35,code=sm_35")   
+    set(CUDA_NVCC_FLAGS5 "-gencode arch=compute_50,code=sm_50")
+    set(CUDA_NVCC_FLAGS52 "-gencode arch=compute_52,code=sm_52")   
   cuda_find_helper_file(cuda_compute_capability c)
   try_run(RUN_RESULT_VAR COMPILE_RESULT_VAR
     ${CMAKE_BINARY_DIR} 
@@ -29,7 +33,11 @@ if(CUDA_FOUND)
 find_cuda_helper_libs(cusparse)
 set(CUDA_CUSPARSE_LIBRARIES ${CUDA_cusparse_LIBRARY})
 if( "${CUDA_COMPUTE_CAPABILITY}" MATCHES ALL)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3} ${CUDA_NVCC_FLAGS4} ${CUDA_NVCC_FLAGS5})
+  if (${CUDA_VERSION_MAJOR} VERSION_GREATER "6")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS3} ${CUDA_NVCC_FLAGS4} ${CUDA_NVCC_FLAGS5} ${CUDA_NVCC_FLAGS52})
+  else()
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3} ${CUDA_NVCC_FLAGS4})
+  endif()
 else()
 	foreach(code ${CUDA_COMPUTE_CAPABILITY})
 	   set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_${code},code=sm_${code} ")

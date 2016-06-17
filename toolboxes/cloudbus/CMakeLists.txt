@@ -1,13 +1,20 @@
 find_package(ACE REQUIRED)
 find_package(Boost REQUIRED)
 
+if (WIN32)
+  ADD_DEFINITIONS(-DCROW_MSVC_WORKAROUND)
+endif(WIN32)
+
 include_directories(${ACE_INCLUDE_DIR}
-                    ${Boost_INCLUDE_DIR} 
+                    ${Boost_INCLUDE_DIR}
+		    ${CMAKE_SOURCE_DIR}/toolboxes/rest
                     )
 
 add_library(gadgetron_toolbox_cloudbus SHARED
   CloudBus.cpp
   CloudBus.h
+  cloudbus_io.h 
+  cloudbus_io.cpp 
   cloudbus_export.h
 )
 
@@ -24,10 +31,21 @@ target_link_libraries(gadgetron_cloudbus
 		     gadgetron_toolbox_log
                      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 
+add_executable(gadgetron_cloudbus_relay cloudbus_relay.cpp)
+
+target_link_libraries(gadgetron_cloudbus_relay 
+                     gadgetron_toolbox_cloudbus 
+		     gadgetron_toolbox_log
+		     gadgetron_toolbox_rest
+                     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
+
+
 install(TARGETS gadgetron_toolbox_cloudbus DESTINATION lib COMPONENT main)
 install(TARGETS gadgetron_cloudbus DESTINATION bin COMPONENT main)
+install(TARGETS gadgetron_cloudbus_relay DESTINATION bin COMPONENT main)
 
 install(FILES 
   CloudBus.h
+  cloudbus_io.h 
   cloudbus_export.h
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

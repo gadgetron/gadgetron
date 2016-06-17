@@ -34,7 +34,9 @@
 #include <iostream>
 #include <exception>
 #include <map>
-
+#include <thread>
+#include <chrono>
+#include <condition_variable>
 
 std::string get_date_time_string()
 {
@@ -67,6 +69,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_CONFIG_SCRIPT                          =   2,
     GADGET_MESSAGE_PARAMETER_SCRIPT                       =   3,
     GADGET_MESSAGE_CLOSE                                  =   4,
+    GADGET_MESSAGE_TEXT                                   =   5,
     GADGET_MESSAGE_INT_ID_MAX                             = 999,
     GADGET_MESSAGE_EXT_ID_MIN                             = 1000,
     GADGET_MESSAGE_ACQUISITION                            = 1001, /**< DEPRECATED */
@@ -91,6 +94,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_SHORT               = 1020, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT     = 1021, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGE                          = 1022,
+    GADGET_MESSAGE_RECONDATA                              = 1023,
     GADGET_MESSAGE_EXT_ID_MAX                             = 4096
 };
 
@@ -143,6 +147,111 @@ public:
     virtual void read(tcp::socket* s) = 0;
 
 };
+
+class GadgetronClientTextReader : public GadgetronClientMessageReader
+{
+  
+public:
+  GadgetronClientTextReader()
+  {
+    
+  }
+
+  virtual ~GadgetronClientTextReader()
+  {
+    
+  }
+
+  virtual void read(tcp::socket* stream)
+  {
+    size_t recv_count = 0;
+    
+    typedef unsigned long long size_t_type;
+    uint32_t len(0);
+    boost::asio::read(*stream, boost::asio::buffer(&len, sizeof(uint32_t)));
+
+    
+    char* buf = NULL;
+    try {
+      buf = new char[len+1];
+      memset(buf, '\0', len+1);
+    } catch (std::runtime_error &err) {
+      std::cerr << "TextReader, failed to allocate buffer" << std::endl;
+      throw;
+    }
+       
+    if (boost::asio::read(*stream, boost::asio::buffer(buf, len)) != len)
+    {
+      delete [] buf;
+      throw GadgetronClientException("Incorrect number of bytes read for dependency query");  
+    }
+
+    std::string s(buf);
+    std::cout << s;
+    delete[] buf;
+  }  
+};
+
+
+class GadgetronClientDependencyQueryReader : public GadgetronClientMessageReader
+{
+  
+public:
+  GadgetronClientDependencyQueryReader(std::string filename) : number_of_calls_(0) , filename_(filename)
+  {
+    
+  }
+
+  virtual ~GadgetronClientDependencyQueryReader()
+  {
+    
+  }
+
+  virtual void read(tcp::socket* stream)
+  {
+    size_t recv_count = 0;
+    
+    typedef unsigned long long size_t_type;
+    size_t_type len(0);
+    boost::asio::read(*stream, boost::asio::buffer(&len, sizeof(size_t_type)));
+
+    char* buf = NULL;
+    try {
+      buf = new char[len];
+      memset(buf, '\0', len);
+      memcpy(buf, &len, sizeof(size_t_type));
+    } catch (std::runtime_error &err) {
+      std::cerr << "DependencyQueryReader, failed to allocate buffer" << std::endl;
+      throw;
+    }
+    
+    
+    if (boost::asio::read(*stream, boost::asio::buffer(buf, len)) != len)
+    {
+      delete [] buf;
+      throw GadgetronClientException("Incorrect number of bytes read for dependency query");  
+    }
+    
+    std::ofstream outfile;
+    outfile.open (filename_.c_str(), std::ios::out|std::ios::binary);
+
+    if (outfile.good()) {
+      outfile.write(buf, len);
+      outfile.close();
+      number_of_calls_++;
+    } else {
+      delete[] buf;
+      throw GadgetronClientException("Unable to write dependency query to file");  
+    }
+    
+    delete[] buf;
+  }
+  
+  protected:
+    size_t number_of_calls_;
+    std::string filename_;
+};
+
 
 class GadgetronClientImageMessageReader : public GadgetronClientMessageReader
 {
@@ -519,19 +628,19 @@ public:
 
             // since the NDArray does not carry the pixel spacing
             header.dime.pixdim[0] = 0;
-            if ( pixelSize.size() > 1 )
+            if ( pixelSize.size() > 0 )
                 header.dime.pixdim[1] = pixelSize[0];
-            if ( pixelSize.size() > 2 )
+            if ( pixelSize.size() > 1 )
                 header.dime.pixdim[2] = pixelSize[1];
-            if ( pixelSize.size() > 3 )
+            if ( pixelSize.size() > 2 )
                 header.dime.pixdim[3] = pixelSize[2];
-            if ( pixelSize.size() > 4 )
+            if ( pixelSize.size() > 3 )
                 header.dime.pixdim[4] = pixelSize[3];
-            if ( pixelSize.size() > 5 )
+            if ( pixelSize.size() > 4 )
                 header.dime.pixdim[5] = pixelSize[4];
-            if ( pixelSize.size() > 6 )
+            if ( pixelSize.size() > 5 )
                 header.dime.pixdim[6] = pixelSize[5];
-            if ( pixelSize.size() > 7 )
+            if ( pixelSize.size() > 6 )
                 header.dime.pixdim[7] = pixelSize[6];
 
             header.dime.vox_offset = 0;
@@ -643,12 +752,13 @@ public:
         st1 << filename << ".hdr";
         std::string head_varname = st1.str();
 
-        std::vector<size_t> dim(3);
+        std::vector<size_t> dim(4, 1);
         dim[0] = h.matrix_size[0];
         dim[1] = h.matrix_size[1];
         dim[2] = h.matrix_size[2];
+        dim[3] = h.channels;
 
-        std::vector<float> pixelSize(3);
+        std::vector<float> pixelSize(4, 1);
         pixelSize[0] = h.field_of_view[0] / h.matrix_size[0];
         pixelSize[1] = h.field_of_view[1] / h.matrix_size[1];
         pixelSize[2] = h.field_of_view[2] / h.matrix_size[2];
@@ -669,7 +779,7 @@ public:
 
         std::ofstream outfileData;
         outfileData.open(img_varname.c_str(), std::ios::out | std::ios::binary);
-        outfileData.write(reinterpret_cast<const char*>(im.getDataPtr()), sizeof(T)*dim[0] * dim[1] * dim[2]);
+        outfileData.write(reinterpret_cast<const char*>(im.getDataPtr()), sizeof(T)*dim[0] * dim[1] * dim[2] * dim[3]);
         outfileData.close();
     }
 
@@ -833,6 +943,7 @@ class GadgetronClientConnector
 public:
     GadgetronClientConnector() 
         : socket_(0)
+        , timeout_ms_(10000)
     {
 
     }
@@ -845,6 +956,11 @@ public:
         }
     }
 
+    void set_timeout(unsigned int t)
+    {
+        timeout_ms_ = t;
+    }
+    
     void read_task()
     {
         if (!socket_) {
@@ -853,20 +969,25 @@ public:
 
         GadgetMessageIdentifier id;
         while (socket_->is_open()) {
+	  try {
             boost::asio::read(*socket_, boost::asio::buffer(&id,sizeof(GadgetMessageIdentifier)));
-
+	    
             if (id.id == GADGET_MESSAGE_CLOSE) {
-                break;
+	      break;
             }
-
+	    
             GadgetronClientMessageReader* r = find_reader(id.id);
-
+	    
             if (!r) {
-                std::cout << "Message received with ID: " << id.id << std::endl;
-                throw GadgetronClientException("Unknown Message ID");
+	      std::cout << "Message received with ID: " << id.id << std::endl;
+	      throw GadgetronClientException("Unknown Message ID");
             } else {
-                r->read(socket_);
+	      r->read(socket_);
             }
+	  } catch (...) {
+	    std::cout << "Input stream has terminated" << std::endl;
+	    return;	    
+	  }
         }
     }
 
@@ -882,24 +1003,40 @@ public:
         tcp::resolver::query query(tcp::v4(), hostname.c_str(), port.c_str());
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
         tcp::resolver::iterator end;
-
+        
         socket_ = new tcp::socket(io_service);
-
         if (!socket_) {
             throw GadgetronClientException("Unable to create socket.");
         }
 
-        //TODO:
-        //For newer versions of Boost, we should use
-        //   boost::asio::connect(*socket_, iterator);
-
+        std::condition_variable cv;
+        std::mutex cv_m;
+        
         boost::system::error_code error = boost::asio::error::host_not_found;
-        while (error && endpoint_iterator != end) {
-            socket_->close();
-            socket_->connect(*endpoint_iterator++, error);
+        std::thread t([&](){
+                //TODO:
+                //For newer versions of Boost, we should use
+                //   boost::asio::connect(*socket_, iterator);
+                while (error && endpoint_iterator != end) {
+                    socket_->close();
+                    socket_->connect(*endpoint_iterator++, error);
+                }
+                cv.notify_all();
+            });
+
+        {
+            std::unique_lock<std::mutex> lk(cv_m);
+            if (std::cv_status::timeout == cv.wait_until(lk, std::chrono::system_clock::now() +std::chrono::milliseconds(timeout_ms_)) ) {
+                socket_->close();
+             }
         }
+
+        t.join();
+        
         if (error)
             throw GadgetronClientException("Error connecting using socket.");
+                               
+
 
         reader_thread_ = boost::thread(boost::bind(&GadgetronClientConnector::read_task, this));
 
@@ -1017,6 +1154,7 @@ protected:
     tcp::socket* socket_;
     boost::thread reader_thread_;
     maptype readers_;
+    unsigned int timeout_ms_;
 
 
 };
@@ -1035,12 +1173,15 @@ int main(int argc, char **argv)
     std::string config_file_local;
     std::string config_xml_local;
     unsigned int loops;
+    unsigned int timeout_ms;
     std::string out_fileformat;
+    bool open_input_file = true;
 
     po::options_description desc("Allowed options");
 
     desc.add_options()
         ("help,h", "produce help message")
+        ("query,q", "Dependency query mode")
         ("port,p", po::value<std::string>(&port)->default_value("9002"), "Port")
         ("address,a", po::value<std::string>(&host_name)->default_value("localhost"), "Address (hostname) of Gadgetron host")
         ("filename,f", po::value<std::string>(&in_filename), "Input file")
@@ -1050,6 +1191,7 @@ int main(int argc, char **argv)
         ("config,c", po::value<std::string>(&config_file)->default_value("default.xml"), "Configuration file (remote)")
         ("config-local,C", po::value<std::string>(&config_file_local), "Configuration file (local)")
         ("loops,l", po::value<unsigned int>(&loops)->default_value(1), "Loops")
+        ("timeout,t", po::value<unsigned int>(&timeout_ms)->default_value(10000), "Timeout [ms]")
         ("outformat,F", po::value<std::string>(&out_fileformat)->default_value("h5"), "Out format, h5 for hdf5 and hdr for analyze image")
         ;
 
@@ -1062,12 +1204,16 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if (!vm.count("filename")) {
+    if (!vm.count("filename") && !vm.count("query")) {
         std::cout << std::endl << std::endl << "\tYou must supply a filename" << std::endl << std::endl;
         std::cout << desc << std::endl;
         return -1;
     }
 
+    if (vm.count("query")) {
+      open_input_file = false;
+    }
+    
     if (vm.count("config-local")) {
         std::ifstream t(config_file_local.c_str());
         if (t) {
@@ -1080,7 +1226,6 @@ int main(int argc, char **argv)
         }
     }
 
-    std::cout << "Gadgetron ISMRMRD client" << std::endl;
 
     //Let's check if the files exist:
     std::string hdf5_xml_varname = std::string(hdf5_in_group) + std::string("/xml");
@@ -1091,24 +1236,29 @@ int main(int argc, char **argv)
     // Add check to see if input file exists
 
     //Let's open the input file
-    ISMRMRD::Dataset ismrmrd_dataset(in_filename.c_str(), hdf5_in_group.c_str(), false);
-    // Read the header
+    boost::shared_ptr<ISMRMRD::Dataset> ismrmrd_dataset;
     std::string xml_config;
-    ismrmrd_dataset.readHeader(xml_config);
+    if (open_input_file) {
+      ismrmrd_dataset = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(in_filename.c_str(), hdf5_in_group.c_str(), false));
+      // Read the header
+      ismrmrd_dataset->readHeader(xml_config);
+    }
 
-
-    std::cout << "  -- host            :      " << host_name << std::endl;
-    std::cout << "  -- port            :      " << port << std::endl;
-    std::cout << "  -- hdf5 file  in   :      " << in_filename << std::endl;
-    std::cout << "  -- hdf5 group in   :      " << hdf5_in_group << std::endl;
-    std::cout << "  -- conf            :      " << config_file << std::endl;
-    std::cout << "  -- loop            :      " << loops << std::endl;
-    std::cout << "  -- hdf5 file out   :      " << out_filename << std::endl;
-    std::cout << "  -- hdf5 group out  :      " << hdf5_out_group << std::endl;
-
+    if (!vm.count("query")) {
+      std::cout << "Gadgetron ISMRMRD client" << std::endl;
+      std::cout << "  -- host            :      " << host_name << std::endl;
+      std::cout << "  -- port            :      " << port << std::endl;
+      std::cout << "  -- hdf5 file  in   :      " << in_filename << std::endl;
+      std::cout << "  -- hdf5 group in   :      " << hdf5_in_group << std::endl;
+      std::cout << "  -- conf            :      " << config_file << std::endl;
+      std::cout << "  -- loop            :      " << loops << std::endl;
+      std::cout << "  -- hdf5 file out   :      " << out_filename << std::endl;
+      std::cout << "  -- hdf5 group out  :      " << hdf5_out_group << std::endl;
+    }
 
     GadgetronClientConnector con;
-
+    con.set_timeout(timeout_ms);
+    
     if ( out_fileformat == "hdr" )
     {
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader(hdf5_out_group)));
@@ -1120,6 +1270,9 @@ int main(int argc, char **argv)
 
     con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
 
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));			
+    con.register_reader(GADGET_MESSAGE_TEXT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientTextReader()));
+			
     try {
         con.connect(host_name,port);
         if (vm.count("config-local")) {
@@ -1127,31 +1280,35 @@ int main(int argc, char **argv)
         } else {
             con.send_gadgetron_configuration_file(config_file);
         }
-        con.send_gadgetron_parameters(xml_config);
 
-        uint32_t acquisitions = 0;
-        {
-            mtx.lock();
-            acquisitions = ismrmrd_dataset.getNumberOfAcquisitions();
+	if (open_input_file) {
+	  con.send_gadgetron_parameters(xml_config);
+	  
+	  uint32_t acquisitions = 0;
+	  {
+	    mtx.lock();
+            acquisitions = ismrmrd_dataset->getNumberOfAcquisitions();
             mtx.unlock();
-        }
-
-        ISMRMRD::Acquisition acq_tmp;
-        for (uint32_t i = 0; i < acquisitions; i++) {
+	  }
+	  
+	  ISMRMRD::Acquisition acq_tmp;
+	  for (uint32_t i = 0; i < acquisitions; i++) {
             {
-                {
-                    boost::mutex::scoped_lock scoped_lock(mtx);
-                    ismrmrd_dataset.readAcquisition(i, acq_tmp);
-                }
-                con.send_ismrmrd_acquisition(acq_tmp);
+	      {
+		boost::mutex::scoped_lock scoped_lock(mtx);
+		ismrmrd_dataset->readAcquisition(i, acq_tmp);
+	      }
+	      con.send_ismrmrd_acquisition(acq_tmp);
             }
-        }
+	  }
+	}
 
         con.send_gadgetron_close();
         con.wait();
 
     } catch (std::exception& ex) {
         std::cout << "Error caught: " << ex.what() << std::endl;
+	return -1;
     }
 
     return 0;

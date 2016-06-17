@@ -15,18 +15,17 @@
 
 namespace Gadgetron {
 
-class gpuCSICoilEstimationGadget: public Gadgetron::Gadget1<IsmrmrdAcquisitionBucket> {
+class gpuCSICoilEstimationGadget: public Gadgetron::Gadget1<IsmrmrdReconData> {
 public:
 	gpuCSICoilEstimationGadget();
 	virtual ~gpuCSICoilEstimationGadget();
 	virtual int process_config(ACE_Message_Block* mb);
 
-    virtual int process(GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1);
+    virtual int process(GadgetContainerMessage<IsmrmrdReconData>* m1);
 
 protected:
 
-    static  std::tuple<hoNDArray<std::complex<float>>*, hoNDArray<float>*> combine_data(std::vector<IsmrmrdAcquisitionData>& aquisitions);
-
+    template<class T> std::tuple<boost::shared_ptr<hoNDArray<T>>, boost::shared_ptr<hoNDArray<T>>> split_calibration_lines(hoNDArray<T>& data, int calibration_lines, int dim);
     boost::shared_ptr<cuNDArray<float_complext>> calculate_CSM(cuNDArray<float_complext>* data,cuNDArray<floatd2>* traj, cuNDArray<float>* dcw );
 /**
  * Separates trajectory and dcw

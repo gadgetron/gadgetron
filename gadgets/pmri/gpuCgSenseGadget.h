@@ -31,6 +31,7 @@ namespace Gadgetron{
   protected:
     GADGET_PROPERTY(kappa, float, "Regularization factor kappa", 0.3);
     GADGET_PROPERTY(number_of_iterations, int, "Max number of iterations in CG solver", 5);
+    GADGET_PROPERTY(cg_limit, float, "Residual limit for CG convergence", 1e-6);
 
     virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader > *m1, GadgetContainerMessage< GenericReconJob > *m2 );
     virtual int process_config( ACE_Message_Block* mb );

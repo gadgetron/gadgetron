@@ -16,7 +16,6 @@
 
 #include "hoImageRegTransformation.h"
 #include "hoImageRegDeformationField.h"
-#include "GtPrepUtil.h"
 
 #ifdef USE_OMP
     #include <omp.h>
@@ -91,7 +90,7 @@ namespace Gadgetron
         bool performTiming_;
 
         // exporter
-        Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
+        Gadgetron::ImageIOAnalyze gt_exporter_;
 
         // debug folder
         std::string debugFolder_;

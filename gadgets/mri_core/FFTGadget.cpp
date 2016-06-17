@@ -90,11 +90,7 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
                     memcpy(cm2->getObjectPtr()->get_data_ptr(), &dbuff.data_(0,0,0,0,n,s,loc), E0*E1*E2*CHA*sizeof(std::complex<float>));
 
                     //Do the FFTs in place
-                    hoNDFFT<float>::instance()->ifft(cm2->getObjectPtr(),0);
-                    hoNDFFT<float>::instance()->ifft(cm2->getObjectPtr(),1);
-                    if (E2>1) {
-                        hoNDFFT<float>::instance()->ifft(cm2->getObjectPtr(),2);
-                    }
+                    hoNDFFT<float>::instance()->ifft3c( *cm2->getObjectPtr() );
 
                     //Pass the image down the chain
                     if (this->next()->putq(cm1) < 0) {

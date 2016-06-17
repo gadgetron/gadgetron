@@ -225,7 +225,8 @@ void inv(const hoNDArray<T>& x, hoNDArray<T>& r);
 template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs( hoNDArray<T> *x );
 template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray<T>& x, hoNDArray<typename realType<T>::Type>& r);
 template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray< std::complex<T> >& x, hoNDArray< std::complex<T> >& r);
-
+template <typename T> EXPORTCPUCOREMATH void abs(const hoNDArray< complext<T> >& x, hoNDArray< complext<T> >& r);
+ 
 /**
  * @brief Calculates the element-wise absolute values (l2 norm) of the array entries (in place).
  * @param[in,out] x Input and output array.
@@ -655,12 +656,15 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDAr
  * @param[in] x Array
  * @param[in,out] y Array
  */
-template<class T> EXPORTCPUCOREMATH void axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y );
+template<class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray<T> *x, hoNDArray<T> *y );
+template<class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray< std::complex<T> > *x, hoNDArray< std::complex<T> > *y);
+template<class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray< complext<T> > *x, hoNDArray< complext<T> > *y );
 
 /**
 * @brief compute r = a*x + y
 */
 template <typename T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+template <typename T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray< std::complex<T> >& x, const hoNDArray< std::complex<T> >& y, hoNDArray< std::complex<T> >& r);
 
 /**
 * @brief compute x *= a
@@ -690,5 +694,29 @@ void conv3(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& z);
 */
 template <typename T> EXPORTCPUCOREMATH
 void sum_over_dimension(const hoNDArray<T>& x, hoNDArray<T>& y, size_t dim);
+
+
+
+/**
+ * @brief Implementation of element-wise operator&= on two hoNDArrays.
+ * @param[in,out] x Input and output array.
+ * @param[in] y Input array.
+
+ * Let y be an n-dimensional array.
+ * Then the sizes of the first n array dimensions must match between x and y.
+ * If x contains further dimensions the operator is batched across those dimensions.
+ */
+ hoNDArray<bool>& operator&= (hoNDArray<bool> &x, const hoNDArray<bool> &y);
+
+/**
+ * @brief Implementation of element-wise operator&= on two hoNDArrays.
+ * @param[in,out] x Input and output array.
+ * @param[in] y Input array.
+
+ * Let y be an n-dimensional array.
+ * Then the sizes of the first n array dimensions must match between x and y.
+ * If x contains further dimensions the operator is batched across those dimensions.
+ */
+ hoNDArray<bool>& operator|= (hoNDArray<bool> &x, const hoNDArray<bool> &y);
 
 }

@@ -53,7 +53,7 @@ namespace Gadgetron{
 
       for( unsigned int outer_iteration=0; outer_iteration<this->outer_iterations_; outer_iteration++ ) {
       
-	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
+	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
 	  GDEBUG_STREAM(std::endl << "SBC outer loop iteration " << outer_iteration << std::endl << std::endl);
 	
 	// Invoke the core solver

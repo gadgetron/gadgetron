@@ -17,6 +17,7 @@
 #include "cuNDArray_fileio.h"
 #include "trajectory_utils.h"
 #include <boost/make_shared.hpp>
+#include "hoNDArray_math.h"
 
 namespace Gadgetron {
 
@@ -45,35 +46,31 @@ int gpuCSICoilEstimationGadget::process_config(ACE_Message_Block* mb) {
 }
 
 int gpuCSICoilEstimationGadget::process(
-		GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1) {
-	IsmrmrdAcquisitionBucket* bucket = m1->getObjectPtr();
+		GadgetContainerMessage<IsmrmrdReconData>* m1) {
+	IsmrmrdReconData* bucket = m1->getObjectPtr();
 
 	auto cm1 = new GadgetContainerMessage<cuSenseData>();
 	auto senseData = cm1->getObjectPtr();
 
-	coils = bucket->data_.front().head_->getObjectPtr()->active_channels;
+	coils = bucket->rbit_.front().data_.headers_[0].active_channels;
 	GDEBUG("Active channels %i \n",coils);
 
 
 	{
 
-		hoNDArray<std::complex<float>> * ho_data;
-		hoNDArray<float>* ho_traj;
+		hoNDArray<std::complex<float>> * ho_data = &bucket->rbit_.front().data_.data_;
+		hoNDArray<float>* ho_traj = bucket->rbit_.front().data_.trajectory_.get_ptr();
 
-		std::tie(ho_data,ho_traj) = combine_data(bucket->data_);
 
 		if (skip_lines_ > 0){
-			auto cal_dims = *ho_data->get_dimensions();
-			cal_dims.back() = skip_lines_;
-			auto data_dims = *ho_data->get_dimensions();
-			data_dims.back() -= skip_lines_;
 
 
-			hoNDArray<float_complext> cal_view(cal_dims,(float_complext*) ho_data->get_data_ptr());
-			senseData->freq_calibration = boost::make_shared<cuNDArray<float_complext>>(cal_view);
+
+			auto seperated = split_calibration_lines<std::complex<float>>(*ho_data,skip_lines_,1);
+
+			senseData->freq_calibration = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<0>(seperated).get());
 			senseData->freq_calibration->squeeze();
-			hoNDArray<float_complext> data_view(data_dims,(float_complext*)ho_data->get_data_ptr()+cal_view.get_number_of_elements());
-			senseData->data = boost::make_shared<cuNDArray<float_complext>>(data_view);
+			senseData->data = boost::make_shared<cuNDArray<float_complext>>((hoNDArray<float_complext>*)std::get<1>(seperated).get());
 		} else {
 
 			senseData->data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
@@ -91,8 +88,6 @@ int gpuCSICoilEstimationGadget::process(
 			senseData->traj = boost::make_shared<cuNDArray<floatd2>>(tmp);
 		}
 
-		delete ho_data;
-		delete ho_traj;
 	}
 
 
@@ -103,15 +98,18 @@ int gpuCSICoilEstimationGadget::process(
 	boost::shared_ptr<cuNDArray<float> > ref_dcw;
 
 
-	if (bucket->ref_.empty()){
+
+	if (!bucket->rbit_.front().ref_){
+		GDEBUG("Setting reference data to real data\n");
 		ref_data = senseData->data;
 		ref_traj = senseData->traj;
 		ref_dcw = senseData->dcw;
 	} else {
 
-		hoNDArray<std::complex<float>> * ho_data;
-		hoNDArray<float>* ho_traj;
-		std::tie(ho_data,ho_traj) = combine_data(bucket->ref_);
+		auto & ref = *bucket->rbit_.front().ref_;
+
+		hoNDArray<std::complex<float>> * ho_data = &ref.data_;
+		hoNDArray<float>* ho_traj = ref.trajectory_.get_ptr();
 
 		ref_data = boost::make_shared<cuNDArray<float_complext>>(reinterpret_cast<hoNDArray<float_complext>*>(ho_data));
 		if (ho_traj->get_size(0) > 2){
@@ -124,13 +122,11 @@ int gpuCSICoilEstimationGadget::process(
 			hoNDArray<floatd2> tmp(tmp_dim,reinterpret_cast<floatd2*>(ho_traj->get_data_ptr()));
 			ref_traj = boost::make_shared<cuNDArray<floatd2>>(tmp);
 		}
-		delete ho_data;
-		delete ho_traj;
-
-
 	}
 
+
 	senseData->csm = calculate_CSM(ref_data.get(),ref_traj.get(),ref_dcw.get());
+
 
 
 	if (this->next()->putq(cm1) == GADGET_FAIL){
@@ -143,61 +139,25 @@ int gpuCSICoilEstimationGadget::process(
 
 }
 
-std::tuple<hoNDArray<std::complex<float>>*, hoNDArray<float>*> gpuCSICoilEstimationGadget::combine_data(
-		std::vector<IsmrmrdAcquisitionData>& acquisitions) {
-
-
-	std::vector<size_t> data_dims = *acquisitions.front().data_->getObjectPtr()->get_dimensions();
-	std::vector<size_t> traj_dims = *acquisitions.front().traj_->getObjectPtr()->get_dimensions();
-	std::vector<size_t> base_dim = data_dims;
-	data_dims.push_back(acquisitions.size());
-	if (acquisitions.size() == 1 ||  acquisitions[2].traj_) //Trajectory present on all acquisitions
-		traj_dims.push_back(acquisitions.size());
-
-
-	auto result = new hoNDArray<std::complex<float> >(data_dims);
-	auto traj = new hoNDArray<float>(traj_dims);
-
-	std::complex<float>* ptr = result->get_data_ptr();
-	float* traj_ptr = traj->get_data_ptr();
-	for (const IsmrmrdAcquisitionData & data : acquisitions){
-		hoNDArray<std::complex<float>>* array = data.data_->getObjectPtr();
-		if (data.traj_) { //Only copy if trajectory is present
-			hoNDArray<float>* array_traj = data.traj_->getObjectPtr();
-			memcpy(traj_ptr,array_traj->get_data_ptr(),array_traj->get_number_of_bytes());
-			traj_ptr += array_traj->get_number_of_elements();
-		}
-		if (!array->dimensions_equal(&base_dim)){
-			return std::tuple<hoNDArray<std::complex<float>>*, hoNDArray<float>*>(nullptr,nullptr);
-		}
-		memcpy(ptr,array->get_data_ptr(),array->get_number_of_bytes());
-		ptr += array->get_number_of_elements();
-
-	}
-
-	return std::make_tuple(result,traj);
-
-}
 
 boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calculate_CSM(
 		cuNDArray<float_complext>* data, cuNDArray<floatd2>* traj, cuNDArray<float>* dcw ) {
 
-
+	std::vector<size_t> csm_dims = img_size;
+	csm_dims.push_back(coils);
+	std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
+	cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
+	std::vector<size_t> spiral_dims{data->get_size(0)*data->get_size(1)*data->get_size(2),data->get_size(3)}; //Trajectories, coils
+	cuNDArray<complext<float>> second_spiral(spiral_dims,data->get_data_ptr());
+	std::vector<size_t> spiral_traj_dims{spiral_dims[0]};
+	cuNDArray<floatd2> spiral_traj(spiral_traj_dims,traj->get_data_ptr());
 	if (dcw) { //We have density compensation, so we can get away with gridding
 
 		cuNFFT_plan<float,2> plan(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width_);
-		std::vector<size_t> csm_dims = img_size;
-		csm_dims.push_back(coils);
 		cuNDArray<float_complext> tmp(csm_dims);
 		GDEBUG("Coils %i \n\n",tmp.get_size(2));
-		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
-		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
 
-		std::vector<size_t> spiral_dims{data->get_size(0),data->get_size(1)}; //Trajectories, coils
-		cuNDArray<complext<float>> second_spiral(spiral_dims,data->get_data_ptr()+spiral_dims[0]*spiral_dims[1]*0);
-		std::vector<size_t> spiral_traj_dims{spiral_dims[0]};
-		cuNDArray<floatd2> spiral_traj(spiral_traj_dims,traj->get_data_ptr()+spiral_dims[0]*0);
-		cuNDArray<float> spiral_dcw(spiral_traj_dims,dcw->get_data_ptr()+spiral_dims[0]*0);
+		cuNDArray<float> spiral_dcw(spiral_traj_dims,dcw->get_data_ptr());
 
 		GDEBUG("Preprocessing\n\n");
 		plan.preprocess(&spiral_traj,cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
@@ -208,27 +168,23 @@ boost::shared_ptr<cuNDArray<float_complext> > gpuCSICoilEstimationGadget::calcul
 		return estimate_b1_map<float,2>(&tmp);
 
 	} else { //No density compensation, we have to do iterative reconstruction.
-		std::vector<size_t> csm_dims = img_size;
-		csm_dims.push_back(coils);
+
 
 		auto E = boost::make_shared<cuNFFTOperator<float,2>>();
 
 		E->setup(from_std_vector<size_t,2>(img_size),from_std_vector<size_t,2>(img_size)*size_t(2),kernel_width_);
-		std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
-		cuNDArray<floatd2> flat_traj(flat_dims,traj->get_data_ptr());
 
+		E->set_codomain_dimensions(&spiral_dims);
 		E->set_domain_dimensions(&csm_dims);
 		cuCgSolver<float_complext> solver;
 		solver.set_max_iterations(20);
 		solver.set_encoding_operator(E);
-		std::vector<size_t> spiral_dims{data->get_size(0),data->get_size(1)}; //Trajectories, coils
-		cuNDArray<complext<float>> second_spiral(spiral_dims,data->get_data_ptr()+spiral_dims[0]*spiral_dims[1]*0);
-		E->set_codomain_dimensions(&spiral_dims);
-		std::vector<size_t> spiral_traj_dims{spiral_dims[0]};
-		cuNDArray<floatd2> spiral_traj(spiral_traj_dims,traj->get_data_ptr()+spiral_dims[0]*0);
+
 		E->preprocess(&spiral_traj);
+
 		auto tmp = solver.solve(&second_spiral);
 		auto tmp_abs = abs(tmp.get());
+
 
 
 		auto res = estimate_b1_map<float,2>(tmp.get());
@@ -264,6 +220,55 @@ std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<
 
 }
 
+
+template<class T> std::tuple<boost::shared_ptr<hoNDArray<T>>, boost::shared_ptr<hoNDArray<T>> > gpuCSICoilEstimationGadget::split_calibration_lines(hoNDArray<T>& data, int ncal_lines, int dim){
+
+	auto dimensions = *data.get_dimensions();
+
+	size_t cal_dim = dimensions[dim];
+	if (ncal_lines >= dimensions[dim]){
+		throw std::runtime_error("Number of calibration lines is longer or equal to data size. No data left for reconstruction!");
+	}
+	auto cal_dims = dimensions;
+	cal_dims[dim] = ncal_lines;
+	dimensions[dim] -= ncal_lines;
+
+	auto calibration_data = boost::make_shared<hoNDArray<T>>(cal_dims);
+	auto recon_data = boost::make_shared<hoNDArray<T>>(dimensions);
+
+	size_t smaller_dims = 1;
+	for (auto i = 0u; i < dim;i++)
+		smaller_dims *= dimensions[i];
+
+	size_t larger_dims = 1;
+	for (auto i = dim+1; i < dimensions.size(); i++)
+		larger_dims *= dimensions[i];
+
+
+	auto cal_ptr = calibration_data->get_data_ptr();
+	auto recon_ptr = recon_data->get_data_ptr();
+	auto data_ptr = data.get_data_ptr();
+
+	for (auto k = 0u; k < larger_dims; k++){
+		for (auto n = 0u; n < ncal_lines; n++){
+			for (auto m = 0u; m < smaller_dims; m++){
+				cal_ptr[m+n*smaller_dims+k*ncal_lines*smaller_dims] = data_ptr[m+n*smaller_dims+k*smaller_dims*cal_dim];
+			}
+		}
+		for (auto n = 0u; n < dimensions[dim]; n++){
+			for (auto m = 0u; m < smaller_dims; m++){
+				recon_ptr[m+n*smaller_dims+k*dimensions[dim]*smaller_dims] = data_ptr[m+(n+ncal_lines)*smaller_dims+k*smaller_dims*cal_dim];
+			}
+		}
+	}
+
+
+	return std::make_tuple(calibration_data,recon_data);
+
+
+
+
+}
 
 
 GADGET_FACTORY_DECLARE(gpuCSICoilEstimationGadget)

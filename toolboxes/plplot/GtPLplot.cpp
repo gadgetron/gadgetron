@@ -471,7 +471,8 @@ bool plotNoiseStandardDeviation(const hoNDArray< std::complex<T> >& m, const std
         std::sort(yd2.begin(), yd2.end());
         double medY = yd2(CHA / 2);
 
-        double medRange = 0.2;
+        // increase dot line to be 1 sigma ~= 33%
+        double medRange = 0.33;
 
         if (maxY < medY*(1 + medRange))
         {
@@ -554,7 +555,7 @@ bool plotNoiseStandardDeviation(const hoNDArray< std::complex<T> >& m, const std
             symbols[n] = gly.c_str();
 
             std::ostringstream ostr;
-            ostr << n << ":" << coilStrings[n];
+            ostr << n+1 << ":" << coilStrings[n];
 
             legends[n] = ostr.str();
 

@@ -43,6 +43,7 @@ namespace Gadgetron{
     GADGET_PROPERTY(number_of_iterations, int, "Number of solver iterations", 0);
     GADGET_PROPERTY(exclusive_access, bool,"Forces 1 gadget per GPU",false);
     GADGET_PROPERTY(coils_per_subset, int,"Number of coils to use for each subset",1);
+    GADGET_PROPERTY(damping,float,"Relative step size. Reduce if solver fails to converge",1);
     
     virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< GenericReconJob > * m2 );
     virtual int process_config( ACE_Message_Block* mb );
@@ -60,6 +61,7 @@ namespace Gadgetron{
     double lambda_;
     double alpha_;
     double kappa_;
+    double damping_;
 
     bool is_configured_;
     bool prepared_;

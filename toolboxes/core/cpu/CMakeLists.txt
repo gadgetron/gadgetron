@@ -4,7 +4,7 @@ endif (WIN32)
 
 include_directories(
     ${FFTW3_INCLUDE_DIR}
-    ${ISMRMRD_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
@@ -75,7 +75,7 @@ set_target_properties(gadgetron_toolbox_cpucore  PROPERTIES VERSION ${GADGETRON_
 target_link_libraries(
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
-  ${Boost_LIBRARIES})
+  )
 
 install(TARGETS gadgetron_toolbox_cpucore DESTINATION lib COMPONENT main)
 

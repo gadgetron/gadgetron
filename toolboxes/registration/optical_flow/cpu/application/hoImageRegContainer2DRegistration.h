@@ -14,7 +14,7 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
-#include "gtPlusISMRMRDReconUtil.h"
+// #include "gtPlusISMRMRDReconUtil.h"
 
 // transformation
 #include "hoImageRegTransformation.h"
@@ -405,7 +405,7 @@ namespace Gadgetron
         bool performTiming_;
 
         // exporter
-        Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
+        Gadgetron::ImageIOAnalyze gt_exporter_;
 
         // debug folder
         std::string debugFolder_;

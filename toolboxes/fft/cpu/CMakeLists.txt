@@ -35,7 +35,6 @@ target_link_libraries(gadgetron_toolbox_cpufft
   gadgetron_toolbox_log
   gadgetron_toolbox_cpucore_math
   ${FFTW3_LIBRARIES} 
-  ${Boost_LIBRARIES} 
   )
 endif (MKL_FOUND)
 

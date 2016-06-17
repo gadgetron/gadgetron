@@ -26,21 +26,32 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
+    ${CMAKE_SOURCE_DIR}/toolboxes/dwt/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/operators
+    ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/solvers 
+    ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
-    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/transformation
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/solver
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/warper
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/dissimilarity
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
+    ${CMAKE_SOURCE_DIR}/toolboxes/image_io
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
-)
+    ${Boost_INCLUDE_DIR}
+)   
 
 if (ARMADILLO_FOUND)
     list(APPEND OPTIMIZED_GADGETS NoiseAdjustGadget.cpp)
@@ -61,7 +72,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     CombineGadget.h
                                     CropAndCombineGadget.h  
                                     ImageWriterGadget.h 
-                                    MRIImageWriter.h 
+                                    MRIImageWriter.h
+                                    MRIImageReader.h
                                     NoiseAdjustGadget_unoptimized.h 
                                     ExtractGadget.h 
                                     FloatToFixPointGadget.h 
@@ -77,11 +89,28 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     CplxDumpGadget.h 
                                     DependencyQueryGadget.h 
                                     DependencyQueryWriter.h 
-                                    ComplexToFloatGadget.h
-                                    AcquisitionAccumulateTriggerGadget.h
+                                    ComplexToFloatGadget.h 
+                                    AcquisitionAccumulateTriggerGadget.h 
                                     BucketToBufferGadget.h 
-                                    ImageArraySplitGadget.h
-                                    SimpleReconGadget.h)
+                                    ImageArraySplitGadget.h 
+                                    PseudoReplicatorGadget.h 
+                                    SimpleReconGadget.h 
+                                    ImageSortGadget.h 
+                                    GenericReconBase.h 
+                                    GenericReconGadget.h 
+                                    GenericReconCartesianGrappaGadget.h 
+                                    GenericReconCartesianSpiritGadget.h 
+                                    GenericReconCartesianNonLinearSpirit2DTGadget.h 
+                                    GenericReconCartesianReferencePrepGadget.h 
+                                    GenericReconPartialFourierHandlingGadget.h 
+                                    GenericReconPartialFourierHandlingFilterGadget.h 
+                                    GenericReconPartialFourierHandlingPOCSGadget.h 
+                                    GenericReconKSpaceFilteringGadget.h 
+                                    GenericReconFieldOfViewAdjustmentGadget.h 
+                                    GenericReconImageArrayScalingGadget.h 
+                                    GenericReconEigenChannelGadget.h 
+                                    GenericReconNoiseStdMapComputingGadget.h 
+                                    WhiteNoiseInjectorGadget.h )
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -91,7 +120,8 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 CombineGadget.cpp 
                                 CropAndCombineGadget.cpp 
                                 ImageWriterGadget.cpp 
-                                MRIImageWriter.cpp 
+                                MRIImageWriter.cpp
+                                MRIImageReader.cpp
                                 NoiseAdjustGadget_unoptimized.cpp 
                                 ExtractGadget.cpp 
                                 FloatToFixPointGadget.cpp 
@@ -111,18 +141,45 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 AcquisitionAccumulateTriggerGadget.cpp
                                 BucketToBufferGadget.cpp
                                 ImageArraySplitGadget.cpp
-                                SimpleReconGadget.cpp  )
-
-if (WIN32)
-    set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )
-    set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} WhiteNoiseInjectorGadget.cpp )
-endif (WIN32)
+                                PseudoReplicatorGadget.cpp
+                                SimpleReconGadget.cpp
+                                ImageSortGadget.cpp
+                                GenericReconBase.cpp 
+                                GenericReconGadget.cpp 
+                                GenericReconCartesianGrappaGadget.cpp 
+                                GenericReconCartesianSpiritGadget.cpp 
+                                GenericReconCartesianNonLinearSpirit2DTGadget.cpp 
+                                GenericReconCartesianReferencePrepGadget.cpp 
+                                GenericReconPartialFourierHandlingGadget.cpp 
+                                GenericReconPartialFourierHandlingFilterGadget.cpp 
+                                GenericReconPartialFourierHandlingPOCSGadget.cpp 
+                                GenericReconKSpaceFilteringGadget.cpp 
+                                GenericReconFieldOfViewAdjustmentGadget.cpp 
+                                GenericReconImageArrayScalingGadget.cpp 
+                                GenericReconEigenChannelGadget.cpp 
+                                GenericReconNoiseStdMapComputingGadget.cpp 
+                                WhiteNoiseInjectorGadget.cpp )
 
 set( gadgetron_mricore_config_files
     default.xml
     default_short.xml
     default_optimized.xml
     default_measurement_dependencies.xml
+    default_measurement_dependencies_ismrmrd_storage.xml
+    isalive.xml
+    gtquery.xml
+    Generic_Cartesian_Grappa.xml
+    Generic_Cartesian_Grappa_SNR.xml
+    Generic_Cartesian_Grappa_T2W.xml
+    Generic_Cartesian_Grappa_FatWater.xml
+    Generic_Cartesian_Grappa_RealTimeCine.xml
+    Generic_Cartesian_Grappa_EPI.xml
+    Generic_Cartesian_Grappa_EPI_AVE.xml
+    Generic_Cartesian_Spirit.xml
+    Generic_Cartesian_Spirit_RealTimeCine.xml
+    Generic_Cartesian_Spirit_SASHA.xml
+    Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
+    Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
 )
 
 add_library(gadgetron_mricore SHARED 
@@ -141,11 +198,15 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_log
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpufft
+    gadgetron_toolbox_cpuklt
+    gadgetron_toolbox_mri_core
+    gadgetron_toolbox_cpuoperator
+    gadgetron_toolbox_image_analyze_io
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-    ${BOOST_LIBRARIES}
     ${OPTIMIZED_GADGET_LIBS}
+    ${Boost_LIBRARIES}
 )
 
 install(FILES 

@@ -12,10 +12,12 @@ namespace Gadgetron {
 EXPORTPYTHON int NumPyArray_NDIM(PyObject* obj);
 EXPORTPYTHON npy_intp NumPyArray_DIM(PyObject* obj, int i);
 EXPORTPYTHON void *NumPyArray_DATA(PyObject* obj);
+EXPORTPYTHON npy_intp *NumPyArray_STRIDES(PyObject* obj);
 EXPORTPYTHON int NumPyArray_ITEMSIZE(PyObject* obj);
 EXPORTPYTHON npy_intp NumPyArray_SIZE(PyObject* obj);
 EXPORTPYTHON PyObject *NumPyArray_SimpleNew(int nd, npy_intp* dims, int typenum);
-
+EXPORTPYTHON PyObject *NumPyArray_EMPTY(int nd, npy_intp* dims, int typenum, int fortran);
+EXPORTPYTHON PyObject* NumPyArray_FromAny(PyObject* op, PyArray_Descr* dtype, int min_depth, int max_depth, int requirements, PyObject* context);
 /// return the enumerated numpy type for a given C++ type
 template <typename T> int get_numpy_type() { return NPY_VOID; }
 template <> inline int get_numpy_type< bool >() { return NPY_BOOL; }
@@ -31,6 +33,7 @@ template <> inline int get_numpy_type< float >() { return NPY_FLOAT32; }
 template <> inline int get_numpy_type< double >() { return NPY_FLOAT64; }
 template <> inline int get_numpy_type< std::complex<float> >() { return NPY_COMPLEX64; }
 template <> inline int get_numpy_type< std::complex<double> >() { return NPY_COMPLEX128; }
+template <> inline int get_numpy_type< ISMRMRD::AcquisitionHeader>() { return NPY_OBJECT;}
 /* Don't define these for now */
 /* template <> inline int get_numpy_type< char* >() { return NPY_STRING; } */
 /* template <> inline int get_numpy_type< std::string >() { return NPY_STRING; } */

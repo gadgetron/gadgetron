@@ -21,6 +21,7 @@
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/image_io
         ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
         ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
         ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
@@ -31,6 +32,7 @@
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+        ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
         ${Boost_INCLUDE_DIR}
         ${ARMADILLO_INCLUDE_DIR} 
         ${ACE_INCLUDE_DIR}

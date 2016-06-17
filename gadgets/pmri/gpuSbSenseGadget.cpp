@@ -37,6 +37,7 @@ namespace Gadgetron{
     cg_limit_ = cg_limit.value();
     mu_ = mu.value();
     lambda_ = lambda.value();
+    lambdaT_ = lambdaT.value();
     alpha_ = alpha.value();
     gamma_ = gamma.value();
     exclusive_access_ = exclusive_access.value();
@@ -85,12 +86,12 @@ namespace Gadgetron{
 
       Rz1_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
         ( new cuPartialDerivativeOperator<float_complext,3>(2) );
-      Rz1_->set_weight( (1.0-alpha_)*lambda_ );
+      Rz1_->set_weight( (1.0-alpha_)*lambda_*lambdaT_ );
 
 
       Rt1_ = boost::shared_ptr< cuPartialDerivativeOperator2<float_complext,3> >
               ( new cuPartialDerivativeOperator2<float_complext,3>() );
-      Rt1_->set_weight( (1.0-alpha_)*lambda_ );
+      Rt1_->set_weight( (1.0-alpha_)*lambda_ *lambdaT_ );
 
       Rx2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
         ( new cuPartialDerivativeOperator<float_complext,3>(0) );
@@ -102,11 +103,11 @@ namespace Gadgetron{
 
       Rz2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
         ( new cuPartialDerivativeOperator<float_complext,3>(2) );
-      Rz2_->set_weight( alpha_*lambda_ );
+      Rz2_->set_weight( alpha_*lambda_*lambdaT_ );
 
       Rt2_ = boost::shared_ptr< cuPartialDerivativeOperator2<float_complext,3> >
               ( new cuPartialDerivativeOperator2<float_complext,3>() );
-      Rt2_->set_weight( alpha_*lambda_ );
+      Rt2_->set_weight( alpha_*lambda_*lambdaT_  );
 
       W_ = boost::make_shared<cuDWTOperator<float_complext,3>>();
       W_->set_weight(gamma_);

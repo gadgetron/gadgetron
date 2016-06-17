@@ -160,6 +160,18 @@ namespace Gadgetron{
     return x;
   }
 
+
+  cuNDArray<bool>& operator&= (cuNDArray<bool> &x , cuNDArray<bool> &y){
+
+    equals_transform< bool,bool,thrust::logical_and<bool> >(x,y);
+    return x;
+  }
+  cuNDArray<bool>& operator|= (cuNDArray<bool> &x , cuNDArray<bool> &y){
+
+    equals_transform< bool,bool,thrust::logical_or<bool> >(x,y);
+    return x;
+  }
+
   //
   // Instantiation
   //

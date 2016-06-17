@@ -22,6 +22,7 @@ public:
 		inner_iterations=1;
 		alpha = 0;
 		t = 1;
+		tau0 = 0.1;
 	}
 	virtual ~osLALMSolver(){};
 
@@ -49,7 +50,6 @@ public:
 	}
 
 
-	void set_reg_steps(unsigned int reg_steps){ reg_steps_ = reg_steps;}
 
 	boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in){
 		//boost::shared_ptr<ARRAY_TYPE> rhs = compute_rhs(in);
@@ -85,9 +85,13 @@ public:
 			precon_image = boost::make_shared<ARRAY_TYPE>(image_dims.get());
 			fill(precon_image.get(),ELEMENT_TYPE(1));
 			this->encoding_operator_->mult_M(precon_image.get(),&tmp_projection,false);
+			std::cout << "Tmp proj norm " << asum(&tmp_projection) <<  std::endl;
 			this->encoding_operator_->mult_MH(&tmp_projection,precon_image.get(),false);
+			std::cout << "Precon Image norm " << asum(precon_image.get()) <<  std::endl;
 			clamp_min(precon_image.get(),REAL(1e-6));
+			std::cout << "Precon Image norm " << asum(precon_image.get()) <<  std::endl;
 			reciprocal_inplace(precon_image.get());
+			std::cout << "Precon Image norm " << asum(precon_image.get()) <<  std::endl;
 			//ones_image *= (ELEMENT_TYPE) this->encoding_operator_->get_number_of_subsets();
 		}
 		ARRAY_TYPE s(image_dims.get());
@@ -176,6 +180,10 @@ public:
 	}
 
 
+	virtual void set_tau(REAL tau){
+		tau0 = tau;
+	}
+
 
 protected:
 
@@ -187,9 +195,10 @@ protected:
 	 * @param scaling
 	 */
 	void denoise(ARRAY_TYPE& x, ARRAY_TYPE& s, ARRAY_TYPE& precon,REAL scaling,REAL avg_lambda ){
-		REAL tau=1.0;
 		REAL gam=0.35/(scaling*avg_lambda)/(precon.get_number_of_elements()/asum(&precon));
-		REAL sigma = 1;
+		REAL L = 4; //Hmm.. this seems a little..well... guessy?
+		REAL tau = tau0;
+		REAL sigma = 1/(tau*L*L);
 		ARRAY_TYPE g(x.get_dimensions());
 
 		for (auto it = 0u; it < inner_iterations; it++){
@@ -207,11 +216,15 @@ protected:
 			for (auto & reg_group : regularization_groups){
 				std::vector<ARRAY_TYPE> datas(reg_group.size());
 				REAL val = 0;
+				REAL reg_val = 0;
 				for (auto i = 0u; i < reg_group.size(); i++){
 					datas[i] = ARRAY_TYPE(reg_group[i]->get_codomain_dimensions());
 					reg_group[i]->mult_M(&x,&datas[i]);
+					reg_val += asum(&datas[i])*reg_group[i]->get_weight();
 					datas[i] *= sigma*reg_group[i]->get_weight()/avg_lambda;
 				}
+
+				std::cout << "Reg val: " << reg_val << " Scaling " << scaling*avg_lambda  << std::endl;
 				//updateFgroup is the resolvent operators on the group
 				updateFgroup(datas,alpha,sigma);
 
@@ -273,6 +286,7 @@ protected:
 	bool non_negativity_;
 	unsigned int reg_steps_;
 	REAL alpha,t;
+	REAL tau0;
 	boost::shared_ptr<subsetOperator<ARRAY_TYPE> > encoding_operator_;
 	boost::shared_ptr<ARRAY_TYPE> preconditioning_image_;
 	std::vector<std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE>>>> regularization_groups;

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "linearOperator.h"
 #include "linearOperatorSolver.h"
 #include "cgPreconditioner.h"
@@ -11,163 +10,233 @@
 #include "encodingOperatorContainer.h"
 
 namespace Gadgetron {
+
 template <class ARRAY_TYPE> class lsqrSolver: public linearOperatorSolver<ARRAY_TYPE>
 {
 protected:
-	typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
-	typedef typename realType<ELEMENT_TYPE>::Type REAL;
+
+    typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
+    typedef typename realType<ELEMENT_TYPE>::Type REAL;
+
 public:
 
-	lsqrSolver()  {
-		iterations_ = 10;
-		tc_tolerance_ = (REAL)1e-3;
+    lsqrSolver()
+    {
+        iterations_ = 10;
+        tc_tolerance_ = (REAL)1e-3;
+    }
 
-	}
+    virtual ~lsqrSolver() {}
 
-	virtual ~lsqrSolver() {}
-/*
-	virtual int set_preconditioner( boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond ) {
-		precond_ = precond;
-		return 0;
-	}
-*/
-	virtual void set_tc_tolerance( REAL tolerance ) { tc_tolerance_ = tolerance; }
-	virtual REAL get_tc_tolerance() { return tc_tolerance_; }
+    virtual void set_tc_tolerance( REAL tolerance ) { tc_tolerance_ = tolerance; }
+    virtual REAL get_tc_tolerance() { return tc_tolerance_; }
 
-	virtual void set_max_iterations( unsigned int iterations ) { iterations_ = iterations; }
-	virtual unsigned int get_max_iterations() { return iterations_; }
+    virtual void set_max_iterations( unsigned int iterations ) { iterations_ = iterations; }
+    virtual unsigned int get_max_iterations() { return iterations_; }
 
+    virtual void solve(ARRAY_TYPE* x, ARRAY_TYPE* b)
+    {
+        try
+        {
+            boost::shared_ptr< std::vector<size_t> > image_dims = this->encoding_operator_->get_domain_dimensions();
 
+            GADGET_CHECK_THROW(x != NULL);
+            GADGET_CHECK_THROW(b != NULL);
 
+            GADGET_CHECK_THROW(b->dimensions_equal(image_dims.get()));
 
+            if (this->x0_ != NULL)
+            {
+                GADGET_CHECK_THROW(this->x0_->dimensions_equal(image_dims.get()));
+                *x = *(this->x0_);
+            }
+            else
+            {
+                x->create(*image_dims);
+                Gadgetron::clear(*x);
+            }
 
-	virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *b )
-  {
+            REAL n2b = Gadgetron::nrm2(b);
 
-		boost::shared_ptr< std::vector<size_t> > image_dims = this->encoding_operator_->get_domain_dimensions();
-		if( image_dims->size() == 0 ){
-			throw std::runtime_error( "Error: cgSolver::compute_rhs : encoding operator has not set domain dimension" );
-		}
+            int flag = 1;
 
+            REAL tolb = tc_tolerance_ * n2b;
+            ARRAY_TYPE u(*b);
 
+            this->encoding_operator_->mult_M(x, &u);
+            Gadgetron::subtract(*b, u, u);
 
+            REAL beta = Gadgetron::nrm2(&u);
 
-		ARRAY_TYPE * x = new ARRAY_TYPE(image_dims);
-		clear(x);
+            REAL normr(beta);
+            if (std::abs(beta)>0)
+            {
+                Gadgetron::scal(REAL(1.0) / beta, u);
+            }
 
+            REAL c = 1;
+            REAL s = 0;
+            REAL phibar = beta;
 
-		encodingOperatorContainer<ARRAY_TYPE> enc_op;
-		boost::shared_ptr<ARRAY_TYPE> u;
+            ARRAY_TYPE v(x);
+            this->encoding_operator_->mult_MH(&u, &v);
 
-		{
-			enc_op.add_operator(this->encoding_operator_);
-			for (unsigned int i =0; i < this->regularization_operators_.size(); i++)
-				enc_op.add_operator(this->regularization_operators_[i]);
-			std::vector<ARRAY_TYPE*> encspace(this->regularization_operators_.size()+1,NULL);
-			encspace[0] = b;
-			u = enc_op.create_codomain(encspace);
-		}
+            REAL alpha = Gadgetron::nrm2(&v);
+            if (std::abs(alpha)>0)
+            {
+                Gadgetron::scal(REAL(1.0) / alpha, v);
+            }
 
+            ARRAY_TYPE d(x);
+            Gadgetron::clear(d);
 
+            REAL normar;
+            normar = alpha * beta;
 
-		//Initialise u vector
-		REAL beta = 0;
+            // Check for all zero solution
+            if (std::abs(normar) < DBL_EPSILON)
+            {
+                Gadgetron::clear(x);
+                return;
+            }
 
-		beta = nrm2(u.get());
-		*u *= REAL(1)/beta;
+            REAL norma(0);
+            REAL sumnormd2 = 0;
+            size_t stag = 0;
+            size_t iter = iterations_;
+            size_t  maxstagsteps = 3;
 
-		//Initialise v vector
-		REAL alpha = 0;
-		ARRAY_TYPE v(*x); //v vector is in image space
+            ARRAY_TYPE z(v), dtmp(d), ztmp(v), vt(v), utmp(u);
+            ARRAY_TYPE normaVec(3);
 
-		clear(&v);
+            REAL thet, rhot, rho, phi, tmp, tmp2;
 
+            size_t ii;
+            for (ii = 0; ii<iterations_; ii++)
+            {
+                z = v;
 
-		enc_op.mult_MH(u.get(),&v);
+                this->encoding_operator_->mult_M(&z, &utmp);
+                Gadgetron::scal(alpha, u);
+                Gadgetron::subtract(utmp, u, u);
 
+                beta = Gadgetron::nrm2(&u);
+                Gadgetron::scal(REAL(1.0) / beta, u);
 
-		alpha = nrm2(&v);
+                normaVec(0) = norma;
+                normaVec(1) = alpha;
+                normaVec(2) = beta;
+                norma = Gadgetron::nrm2(&normaVec);
 
-		v *= REAL(1)/alpha;
+                thet = -s * alpha;
+                rhot = c * alpha;
+                rho = (REAL)(std::sqrt((double)(rhot*rhot + beta*beta)));
+                c = rhot / rho;
+                s = -beta / rho;
+                phi = c * phibar;
+                if (std::abs(phi)< DBL_EPSILON)
+                {
+                    stag = 1;
+                }
 
-		//Initialise w vector
-		ARRAY_TYPE w(v);
+                phibar = s * phibar;
 
-		//Initialise phibar
-		REAL phibar = beta;
-		REAL phibar0 = phibar;
+                dtmp = d;
+                Gadgetron::scal(thet, dtmp);
+                Gadgetron::subtract(z, dtmp, ztmp);
+                Gadgetron::scal(REAL(1.0) / rho, ztmp);
 
-		//Initialise rhobar
-		REAL rhobar = alpha;
-		REAL rhobar0 = alpha;
+                d = ztmp;
+                tmp = Gadgetron::nrm2(&d);
+                sumnormd2 += (tmp*tmp);
 
-		REAL cg_res = alpha;
+                // Check for stagnation of the method
+                tmp2 = Gadgetron::nrm2(x);
 
-		REAL rnorm = beta;
+                if (std::abs(phi)*std::abs(tmp) < DBL_EPSILON*std::abs(tmp2))
+                {
+                    stag++;
+                }
+                else
+                {
+                    stag = 0;
+                }
 
-		REAL xnorm = 0;
-		REAL anorm = 0;
-		REAL arnorm = alpha*beta;
+                // check for convergence in min{|b-A*x|}
+                if (std::abs(normar / (norma*normr)) <= tc_tolerance_)
+                {
+                    flag = 0;
+                    break;
+                }
 
+                // check for convergence in A*x=b
+                if (std::abs(normr) <= std::abs(tolb))
+                {
+                    flag = 0;
+                    break;
+                }
 
-		for (int it = 0; it < iterations_; it ++){
-			beta = REAL(0);
+                if (stag >= maxstagsteps)
+                {
+                    flag = 3;
+                    break;
+                }
 
-			*u *= -alpha;
+                // memcpy(dtmp.begin(), d.begin(), d.get_number_of_bytes());
+                dtmp = d;
 
-			enc_op.mult_M(&v,u.get(),true);
+                Gadgetron::scal(phi, dtmp);
+                Gadgetron::add(*x, dtmp, *x);
 
-			beta =nrm2(u.get());
-			*u *= REAL(1)/beta;
+                normr = (REAL)(std::abs((double)s) * normr);
 
-			v *= -beta;
+                this->encoding_operator_->mult_MH(&u, &vt);
 
-			enc_op.mult_MH(u.get(),&v,true);
-			alpha = nrm2(&v);
+                Gadgetron::scal(beta, v);
+                Gadgetron::subtract(vt, v, v);
 
-			v *= REAL(1)/alpha;
+                alpha = Gadgetron::nrm2(&v);
 
+                Gadgetron::scal(REAL(1.0) / alpha, v);
 
-			//Construct and apply next orthogonal transformation
-			REAL rho = std::sqrt(norm(rhobar)+norm(beta));
-			REAL c = rhobar/rho;
-			REAL s = beta/rho;
-			REAL theta = s*alpha;
-			rhobar = -c*alpha;
-			REAL phi = c*phibar;
-			phibar *= s;
+                normar = alpha * std::abs((REAL)s * phi);
+            }
 
+            if (this->output_mode_ >= solver<ARRAY_TYPE, ARRAY_TYPE>::OUTPUT_VERBOSE)
+            {
+                GDEBUG_STREAM("Total iteration number is  " << ii << " - relative norm is " << std::abs(normar / (norma*normr)) << " ... ");
+            }
 
-			//Update x, w
-			axpy(phi/rho,&w,x);  //x = x + phi/rho * w
+            if (flag == 1)
+            {
+                if (normar / (norma*normr) <= tc_tolerance_)
+                {
+                    flag = 0;
+                }
 
-			w *= -theta/rho;
-			w += v;
+                if (std::abs(normr) <= std::abs(tolb))
+                {
+                    flag = 0;
+                }
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors happened in lsqrSolver<ARRAY_TYPE>::solve(x, b) ... ");
+        }
+    }
 
-			//Check for convergence
-
-			//rhobar is a good approximation of the euclidian norm of the residual, so we check for that
-
-			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-				GDEBUG_STREAM("Iteration " <<it << ". Relative residual: " <<  rhobar/rhobar0 << std::endl);
-			}
-
-		}
-
-
-
-		return boost::shared_ptr<ARRAY_TYPE>(x);
-
-}
-
-
+    virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE *b)
+    {
+        boost::shared_ptr<ARRAY_TYPE> x = boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE());
+        this->solve(x.get(), b);
+        return x;
+    }
 
 protected:
 
-	//boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond_;
-	unsigned int iterations_;
-	REAL tc_tolerance_;
-
+    unsigned int iterations_;
+    REAL tc_tolerance_;
 };
 
 }

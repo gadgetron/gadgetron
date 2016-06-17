@@ -10,11 +10,9 @@
 
 #include "hoNDArray_utils.h"
 
-#include "gtPlusIOAnalyze.h"
+#include "ImageIOAnalyze.h"
 
 #include "GadgetronTimer.h"
-
-#include <boost/thread/mutex.hpp>
 
 #include "GtPLplot.h"
 
@@ -23,7 +21,6 @@
 #endif // max
 
 using namespace Gadgetron;
-using namespace Gadgetron::gtPlus;
 using testing::Types;
 
 template <typename T> class gt_plplot_Test : public ::testing::Test 
@@ -60,7 +57,7 @@ protected:
     std::string gt_ut_data_folder_;
     std::string gt_ut_res_folder_;
 
-    gtPlusIOAnalyze gt_io_;
+    ImageIOAnalyze gt_io_;
     GadgetronTimer timer_;
 };
 
@@ -78,7 +75,7 @@ TYPED_TEST(gt_plplot_Test, plplot_noise_covariance_test)
 {
     typedef std::complex<float> T;
 
-    gtPlusIOAnalyze gt_io;
+    ImageIOAnalyze gt_io;
 
     float v;
 
@@ -107,5 +104,5 @@ TYPED_TEST(gt_plplot_Test, plplot_noise_covariance_test)
 
     Gadgetron::plotNoiseStandardDeviation(m, coilStrings, xlabel, ylabel, title, xsize, ysize, trueColor, plotIm);
 
-    gt_io.exportArray(plotIm, this->gt_ut_res_folder_ + "plplot_trueColor_NoiseSTD");
+    gt_io.export_array(plotIm, this->gt_ut_res_folder_ + "plplot_trueColor_NoiseSTD");
 }

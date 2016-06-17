@@ -25,6 +25,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/ct/xray/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
     ${CUDA_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
     ${ARMADILLO_INCLUDE_DIRS}
@@ -53,6 +55,10 @@ target_link_libraries(CBCT_reconstruct_SB gadgetron_toolbox_gpuxray gadgetron_to
 
 add_executable(CBCT_forwards_projection CBCT_forwards_projection.cpp)
 target_link_libraries(CBCT_forwards_projection gadgetron_toolbox_gpuxray gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math gadgetron_toolbox_gpucore gadgetron_toolbox_hostutils ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(CBCT_OF_reconstruct CBCT_OF_reconstruct.cpp)
+target_link_libraries(CBCT_OF_reconstruct gadgetron_toolbox_gpuxray gadgetron_toolbox_cpucore gadgetron_toolbox_cpucore_math gadgetron_toolbox_gpureg gadgetron_toolbox_cpureg gadgetron_toolbox_gpucore gadgetron_toolbox_hostutils ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
+
 
 install(TARGETS 
   CBCT_reconstruct_FDK_3d

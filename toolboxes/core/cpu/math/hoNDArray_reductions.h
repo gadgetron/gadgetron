@@ -38,6 +38,11 @@ namespace Gadgetron{
     */
     template<class T> EXPORTCPUCOREMATH T stddev(hoNDArray<T>* data);
 
+    /***
+     * Calulates the median of the array
+     */
+    template<class T> EXPORTCPUCOREMATH T median(hoNDArray<T>* data);
+
     /**
     * @brief Calculates the dot product of two arrays (as vectors).
     * @param[in] x Array 1. For complex arrays the complex conjugate of x is used.
@@ -163,8 +168,8 @@ namespace Gadgetron{
     typename realType<T>::Type norm1(const hoNDArray<T>& x);
 
     /**
-    * @brief dot product of conj(x) and y
-    r = conj(x) dot y
+    * @brief dot product of x and conj(y)
+    r = x dot conj(y)
     */
     template <typename T> EXPORTCPUCOREMATH 
     void dotc(const hoNDArray<T>& x, const hoNDArray<T>& y, T& r);
