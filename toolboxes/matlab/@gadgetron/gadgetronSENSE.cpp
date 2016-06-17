@@ -8,7 +8,7 @@
 #include "cuCgSolver.h"
 namespace Gadgetron{
 template<unsigned int N> static boost::shared_ptr<hoNDArray<float_complext> > gadgetronSENSE_instance(hoNDArray<float_complext> * input_data, hoNDArray<vector_td<float,N> >* trajectory,
-		vector_td<uint64_t,N> matrix_size, float W, hoNDArray<float_complext>* csm, hoNDArray<float>* dcw = nullptr){
+		vector_td<size_t,N> matrix_size, float W, hoNDArray<float_complext>* csm, hoNDArray<float>* dcw = nullptr){
 
 	cuNDArray<float_complext> cuInput(*input_data);
 	cuNDArray<vector_td<float,N> > cu_traj(*trajectory);
@@ -50,11 +50,11 @@ static mxArray* gadgetronSENSE_internal(mxArray* input_data,mxArray* input_traje
 	boost::shared_ptr<hoNDArray<float_complext> > output;
 	if (traj_dims[0] == 2){
 		auto g_traj = MatlabToHoNDArray<vector_td<float,2 >>(input_trajectory);
-		vector_td<uint64_t,2> matrix_size((g_dimensions)[0],(g_dimensions)[1]);
+		vector_td<size_t,2> matrix_size((g_dimensions)[0],(g_dimensions)[1]);
 		output = gadgetronSENSE_instance(&g_input_data,&g_traj,matrix_size,W,&g_csm,g_dcw.get());
 	} else if (traj_dims[1]){
 		auto g_traj = MatlabToHoNDArray<vector_td<float,3 >>(input_trajectory);
-		vector_td<uint64_t,3> matrix_size((g_dimensions)[0],(g_dimensions)[1],(g_dimensions)[2]);
+		vector_td<size_t,3> matrix_size((g_dimensions)[0],(g_dimensions)[1],(g_dimensions)[2]);
 		output = gadgetronSENSE_instance(&g_input_data,&g_traj,matrix_size,W,&g_csm,g_dcw.get());
 	}
 
