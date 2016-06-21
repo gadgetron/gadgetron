@@ -1322,7 +1322,9 @@ int main(int argc, char **argv)
         ("loops,l", po::value<unsigned int>(&loops)->default_value(1), "Loops")
         ("timeout,t", po::value<unsigned int>(&timeout_ms)->default_value(10000), "Timeout [ms]")
         ("outformat,F", po::value<std::string>(&out_fileformat)->default_value("h5"), "Out format, h5 for hdf5 and hdr for analyze image")
+#if defined GADGETRON_COMPRESSION
         ("precision,P", po::value<uint>(&compression_precision)->default_value(0), "Compression precision (bits)")
+#endif //GADGETRON_COMPRESSION
         ;
 
     po::variables_map vm;
