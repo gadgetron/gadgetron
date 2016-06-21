@@ -7,6 +7,12 @@ endif (WIN32)
 find_package(ACE)
 find_package(FFTW3 COMPONENTS single double)
 find_package(Ismrmrd)
+find_package(ZFP)
+if (ZFP_FOUND)
+    message("ZFP Found")
+else (ZFP_FOUND)
+    message("ZFP NOT Found")
+endif (ZFP_FOUND)
 
 include_directories(
   ${CMAKE_BINARY_DIR}/apps/gadgetron
@@ -44,6 +50,10 @@ if (CUDA_FOUND)
 else (CUDA_FOUND)
   message("Cuda NOT found, NOT compiling gpu accelerated gadgets")
 endif(CUDA_FOUND)
+
+if (ZFP_FOUND)
+   add_subdirectory(compression)
+endif(ZFP_FOUND)
 
 add_subdirectory(grappa)
 add_subdirectory(distributed)

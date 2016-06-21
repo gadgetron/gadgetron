@@ -1,5 +1,11 @@
 find_package(Ismrmrd REQUIRED)
 
+find_package(ZFP)
+
+if (ZFP_FOUND)
+   add_definitions(-DGADGETRON_COMPRESSION)
+endif(ZFP_FOUND)
+
 set(Boost_NO_BOOST_CMAKE ON)
 
 if(WIN32)
@@ -17,8 +23,16 @@ include_directories(
   ${ISMRMRD_INCLUDE_DIR}
   )
 
+if (ZFP_FOUND)
+   include_directories(${ZFP_INCLUDE_DIR})
+endif(ZFP_FOUND)
+
 add_executable(gadgetron_ismrmrd_client gadgetron_ismrmrd_client.cpp)
 
 target_link_libraries(gadgetron_ismrmrd_client ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
+
+if (ZFP_FOUND)
+   target_link_libraries(gadgetron_ismrmrd_client ${ZFP_LIBRARIES})
+endif (ZFP_FOUND)
 
 install(TARGETS gadgetron_ismrmrd_client DESTINATION bin COMPONENT main)
