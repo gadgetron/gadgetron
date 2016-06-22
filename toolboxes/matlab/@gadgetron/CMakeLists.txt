@@ -54,12 +54,38 @@ target_link_libraries(
 
 set(CMAKE_CXX_FLAGS "-O3 -DMX_COMPAT_32   -D_GNU_SOURCE  -DMATLAB_MEX_FILE  -DNDEBUG  -ansi -fPIC -fexceptions  -fno-omit-frame-pointer -std=c++11  -pthread  -Wl,--no-undefined  -Wl,-rpath,${MATLAB_LIB_PATHS}:${CMAKE_INSTALL_PREFIX}/lib:${CUDA_TOOLKIT_ROOT_DIR}/lib64" )
 
+
+if (WIN32)
+    if ( HAS_64_BIT )
+        SET(MATLAB_SUFFIX ".mexw64")
+    else ( HAS_64_BIT )
+        SET(MATLAB_SUFFIX ".mexw32")
+    endif ( HAS_64_BIT )
+
+    add_definitions(-DMATLAB_DLL_EXPORT_SYM)
+endif (WIN32)
+
+if (UNIX)
+    if ( HAS_64_BIT )
+        SET(MATLAB_SUFFIX ".mexa64")
+    else ( HAS_64_BIT )
+        SET(MATLAB_SUFFIX ".mexglx")
+    endif ( HAS_64_BIT )
+endif (UNIX)
+
+if (APPLE)
+    if ( HAS_64_BIT )
+        SET(MATLAB_SUFFIX ".mexmaci64")
+    endif ( HAS_64_BIT )
+endif(APPLE)
+
+
 MESSAGE("Matlab CXX flags: ${CMAKE_CXX_FLAGS}")
 set_target_properties(gadgetronNFFT PROPERTIES PREFIX "" )
-set_target_properties(gadgetronNFFT PROPERTIES SUFFIX .mexa64 LINKER_LANGUAGE CXX)
+set_target_properties(gadgetronNFFT PROPERTIES SUFFIX ${MATLAB_SUFFIX} LINKER_LANGUAGE CXX)
 
 set_target_properties(gadgetronSENSE PROPERTIES PREFIX "" )
-set_target_properties(gadgetronSENSE PROPERTIES SUFFIX .mexa64 LINKER_LANGUAGE CXX)
+set_target_properties(gadgetronSENSE PROPERTIES SUFFIX ${MATLAB_SUFFIX} LINKER_LANGUAGE CXX)
 
 
 SET(MATLAB_OUTPUT_DIR ${CMAKE_INSTALL_PREFIX}/matlab CACHE PATH "" )
