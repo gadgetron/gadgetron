@@ -151,6 +151,8 @@ int EPICorrGadget::process(
     epiEchoNumber_ += 1;
     // TODO: use this to apply the B0 correction
 
+// OJ Delete
+/*
     // Apply the correction
     // We use the armadillo notation that loops over all the columns
     if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE)) {
@@ -167,6 +169,17 @@ int EPICorrGadget::process(
     adata.col(p) %= corrpos_;
       }
     }
+*/
+
+
+// OJ Hack
+if(epiEchoNumber_ < numNavigators_)
+{
+	adata=1.0e2*adata+arma::round(1.0e6*navdata_.slice(epiEchoNumber_));
+//   GDEBUG_STREAM("Dat: " << adata.at(0) << "    " << "Echo: " << epiEchoNumber_ << std::endl);
+
+}
+
   }
 
   // Pass on the imaging data

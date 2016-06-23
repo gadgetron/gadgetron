@@ -465,6 +465,20 @@ namespace Gadgetron{
     T max_;
     std::string limits_desc_;
   };
+
+
+
+
+	template<typename T> inline void GadgetProperty_extract_value(const char* val, T& tmp)
+{
+      std::stringstream(val) >> std::boolalpha >> tmp;
+}
+
+	template<> inline void GadgetProperty_extract_value(const char* val, std::string& tmp)
+{
+     tmp = std::string(val);
+}
+
   template <typename T, typename L> class GadgetProperty
   : public GadgetPropertyBase
   {
@@ -508,11 +522,11 @@ namespace Gadgetron{
         if (!is_reference_)
         {
           T tmp;
-          std::stringstream(val) >> std::boolalpha >> tmp;
-          this->value(tmp);
+//          std::stringstream(val) >> std::boolalpha >> tmp;
+      	  GadgetProperty_extract_value(val,tmp);
+	  this->value(tmp);
         }
       }
-
 
       bool operator==(const T &v) const
       {
@@ -524,11 +538,12 @@ namespace Gadgetron{
         return limits_.limits_description();
       }
 
-    protected:
+   protected:
       T value_;
       L limits_;
       Gadget* g_;
     };
+
     template <typename T, typename L> class GadgetProperty<std::vector<T>,L >
     : public GadgetPropertyBase
     {
