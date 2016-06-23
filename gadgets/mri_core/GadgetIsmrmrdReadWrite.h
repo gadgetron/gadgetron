@@ -151,7 +151,6 @@ namespace Gadgetron{
             return m1;
         }
 
-    };
-
+    };    
 }
 #endif //GADGETISMRMRDREADWRITE_H

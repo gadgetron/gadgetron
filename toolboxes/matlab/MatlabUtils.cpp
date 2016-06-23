@@ -5,8 +5,8 @@
 namespace Gadgetron{
 
 template<class T> struct isComplex { static constexpr mxComplexity value = mxREAL;};
-template<class REAL> struct isComplex<complext<REAL>> { static constexpr mxComplexity value = mxCOMPLEX;};
-template<class REAL> struct isComplex<std::complex<REAL>>{ static constexpr mxComplexity value = mxCOMPLEX;};
+template<class REAL> struct isComplex<complext<REAL> > { static constexpr mxComplexity value = mxCOMPLEX;};
+template<class REAL> struct isComplex<std::complex<REAL> >{ static constexpr mxComplexity value = mxCOMPLEX;};
 
 
 
@@ -15,8 +15,8 @@ template<class T>  struct  MatlabClassID {};
 template<>	struct MatlabClassID<double>{ static constexpr mxClassID value =  mxDOUBLE_CLASS;};
 template<>	struct MatlabClassID<float>{ static constexpr mxClassID value =  mxSINGLE_CLASS;};
 
-template<class REAL> struct MatlabClassID<complext<REAL>>{ static constexpr mxClassID value =  MatlabClassID<REAL>::value;};
-template<class REAL> struct MatlabClassID<std::complex<REAL>>{ static constexpr mxClassID value =  MatlabClassID<REAL>::value;};
+template<class REAL> struct MatlabClassID<complext<REAL> >{ static constexpr mxClassID value =  MatlabClassID<REAL>::value;};
+template<class REAL> struct MatlabClassID<std::complex<REAL> >{ static constexpr mxClassID value =  MatlabClassID<REAL>::value;};
 
 template<>	struct MatlabClassID<int8_t>{ static constexpr mxClassID value =  mxINT8_CLASS;};
 template<>	struct MatlabClassID<uint8_t>{ static constexpr mxClassID value =  mxUINT8_CLASS;};
@@ -727,11 +727,6 @@ template EXPORTMATLAB hoNDArray<double_complext> MatlabToHoNDArray<double_comple
 
 template EXPORTMATLAB hoNDArray<std::complex<double> > MatlabToHoNDArray<std::complex<double> >(mxArray *);
 template EXPORTMATLAB hoNDArray<std::complex<float> > MatlabToHoNDArray<std::complex<float> >(mxArray *);
-
-template EXPORTMATLAB hoNDArray<vector_td<float,1> > MatlabToHoNDArray<vector_td<float,1> >(mxArray *);
-template EXPORTMATLAB hoNDArray<vector_td<float,2> > MatlabToHoNDArray<vector_td<float,2> >(mxArray *);
-template EXPORTMATLAB hoNDArray<vector_td<float,3> > MatlabToHoNDArray<vector_td<float,3> >(mxArray *);
-template EXPORTMATLAB hoNDArray<vector_td<float,4> > MatlabToHoNDArray<vector_td<float,4> >(mxArray *);
 
 template EXPORTMATLAB void MatlabToHoNDArray(mxArray * data, hoNDArray<float>& a);
 template EXPORTMATLAB void MatlabToHoNDArray(mxArray * data, hoNDArray<double>& a);
