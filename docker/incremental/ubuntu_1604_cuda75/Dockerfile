@@ -1,13 +1,4 @@
-FROM gadgetron/ubuntu1404_base
-
-#ZFP
-RUN cd /opt && \
-    git clone https://github.com/hansenms/ZFP.git && \
-    cd ZFP && \
-    mkdir lib && \
-    make && \
-    make shared && \
-    make install
+FROM gadgetron/ubuntu1604_cuda75_base
 
 #ISMRMRD
 RUN mkdir /opt/code
@@ -19,6 +10,10 @@ RUN cd /opt/code && \
     cmake ../ && \
     make -j $(nproc) && \
     make install
+
+#Fix compiler error with CUDA for now
+RUN sed -i "s;#error -- unsupported GNU version! gcc versions later than 4.9 are not supported!;//#error -- unsupported GNU version! gcc versions later than 4.9 are not supported!;g" /usr/local/cuda/include/host_config.h
+
 
 #GADGETRON
 RUN cd /opt/code && \
@@ -40,7 +35,7 @@ RUN cd /opt/code/ismrmrd && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python.git &&  \
     cd ismrmrd-python && \
-    sudo python setup.py install && \
+    python setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpython.sha1 --value `git rev-parse HEAD` 
 
 
@@ -48,7 +43,7 @@ RUN cd /opt/code && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python-tools.git &&  \
     cd ismrmrd-python-tools && \
-    sudo python setup.py install && \
+    python setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpythontools.sha1 --value `git rev-parse HEAD` 
 
 #SIEMENS_TO_ISMRMRD
