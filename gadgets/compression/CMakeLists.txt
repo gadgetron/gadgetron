@@ -1,5 +1,5 @@
 find_package(ZFP REQUIRED)
-find_package(ISMRMRD REQUIRED)
+find_package(Ismrmrd REQUIRED)
 
 IF (WIN32)
     ADD_DEFINITIONS(-D__BUILD_GADGETRON_COMPRESSION_GADGETS__)
