@@ -5,8 +5,6 @@ if (WIN32)
   SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /FORCE:MULTIPLE") 
 endif (WIN32)
 
-find_package(Ismrmrd REQUIRED)
-
 include_directories(   
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu

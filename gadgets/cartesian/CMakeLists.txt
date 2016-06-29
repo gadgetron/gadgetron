@@ -2,8 +2,6 @@ IF (WIN32)
   ADD_DEFINITIONS(-D__BUILD_GADGETRON_CARTESIAN__)
 ENDIF (WIN32)
 
-find_package(Ismrmrd REQUIRED)
-
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   )

@@ -2,8 +2,6 @@ IF (WIN32)
     ADD_DEFINITIONS(-D__BUILD_GADGETRON_PLPLOT__)
 ENDIF (WIN32)
 
-find_package(Ismrmrd REQUIRED)
-
 include_directories(${PLPLOT_INCLUDE_DIR})
 link_directories(${PLPLOT_LIB_DIR})
 

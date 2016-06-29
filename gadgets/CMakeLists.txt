@@ -6,7 +6,6 @@ endif (WIN32)
 # These dependencies should have been found already to even get in here, but we play safe
 find_package(ACE)
 find_package(FFTW3 COMPONENTS single double)
-find_package(Ismrmrd)
 find_package(ZFP)
 if (ZFP_FOUND)
     message("ZFP Found")

@@ -2,8 +2,6 @@ IF (WIN32)
     ADD_DEFINITIONS(-D__BUILD_GADGETRON_MRICORE__)
 ENDIF (WIN32)
 
-find_package(Ismrmrd REQUIRED)
-
 if (MKL_FOUND)
     # This is a fix for the bug in SVD when MKL is multi-threaded
     MESSAGE("MKL Found, enabling MKL for mri_core gadgets.")

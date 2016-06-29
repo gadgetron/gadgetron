@@ -1,5 +1,3 @@
-find_package(Ismrmrd REQUIRED)
-
 find_package(ZFP)
 
 if (ZFP_FOUND)

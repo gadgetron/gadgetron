@@ -2,8 +2,6 @@ IF (WIN32)
   ADD_DEFINITIONS(-D__BUILD_GADGETRON_HYPER__)
 ENDIF (WIN32)
 
-find_package(Ismrmrd REQUIRED)
-
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu

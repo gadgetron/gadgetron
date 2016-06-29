@@ -2,8 +2,6 @@ if (WIN32)
   ADD_DEFINITIONS(-D__BUILD_GADGETRON_MOCO__)
 endif (WIN32)
 
-find_package(Ismrmrd REQUIRED)
-
 set( CPU_REG 0)
 set( GPU_REG 0)
 
