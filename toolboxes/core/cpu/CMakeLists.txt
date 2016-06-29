@@ -1,5 +1,5 @@
 if (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE__)
+    add_definitions(-D__BUILD_GADGETRON_CPUCORE__)
 endif (WIN32)
 
 include_directories(
@@ -19,8 +19,8 @@ if(WIN32)
 endif(WIN32)
 
 #if (MKL_FOUND)
-#    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-#    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+#    include_directories( ${MKL_INCLUDE_DIR} )
+#    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
 #endif (MKL_FOUND)
 
 set(header_files ../NDArray.h

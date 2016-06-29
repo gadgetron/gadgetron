@@ -1,5 +1,5 @@
 if (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUFFD__)
+  add_definitions(-D__BUILD_GADGETRON_CPUFFD__)
 endif (WIN32)
 
 include_directories(

@@ -1,5 +1,5 @@
 if (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_MOCO__)
+  add_definitions(-D__BUILD_GADGETRON_MOCO__)
 endif (WIN32)
 
 set( CPU_REG 0)
@@ -13,10 +13,10 @@ if(ARMADILLO_FOUND)
     list(APPEND CPU_LIBS gadgetron_toolbox_cpucore_math gadgetron_toolbox_cpureg)
     
   elseif(ARMADILLO_VERSION_STRING VERSION_GREATER "3.819" )
-    MESSAGE("Armadillo of at least version 3.820 not found, not compiling cpu-based registration gadgets")
+    message("Armadillo of at least version 3.820 not found, not compiling cpu-based registration gadgets")
   endif(ARMADILLO_VERSION_STRING VERSION_GREATER "3.819" )
 elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found, not compiling cpu-based registration gadgets")
+  message("Armadillo not found, not compiling cpu-based registration gadgets")
 endif (ARMADILLO_FOUND)
 
 if(CUDA_FOUND)
@@ -24,7 +24,7 @@ if(CUDA_FOUND)
   list(APPEND GPU_GADGETS gpuRegistrationAveragingGadget.cpp gpuRegistrationScatteringGadget.cpp)
   list(APPEND GPU_LIBS gadgetron_toolbox_gpucore gadgetron_toolbox_gpureg ${CUDA_LIBRARIES})
 elseif (CUDA_FOUND)
-  MESSAGE("Cuda not found, not compiling gpu-based registration gadgets")
+  message("Cuda not found, not compiling gpu-based registration gadgets")
 endif (CUDA_FOUND)
 
 include_directories(   

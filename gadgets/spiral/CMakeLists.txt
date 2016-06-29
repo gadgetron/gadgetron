@@ -1,6 +1,6 @@
-IF (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_SPIRAL__)
-ENDIF (WIN32)
+if (WIN32)
+  add_definitions(-D__BUILD_GADGETRON_SPIRAL__)
+endif (WIN32)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core

@@ -22,7 +22,7 @@ configure_file("start-gadgetron-from-image.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/st
 set (LIBRARY_PATHS ${ISMRMRD_LIB_DIR})
 set (LIBRARY_PATHS ${LIBRARY_PATHS}:${MKL_LIB_DIR})
 
-FIND_LIBRARY( CUDA_LIBRARY NAMES libcuda.so )
+find_library( CUDA_LIBRARY NAMES libcuda.so )
 
 string(FIND "${CUDA_LIBRARIES}" "libcudart.so" LIBCUDART_LOC)
 string(FIND "${CUDA_LIBRARIES}" "libcuda.so" LIBCUDA_LOC)

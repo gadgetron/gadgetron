@@ -12,13 +12,13 @@ ${CMAKE_SOURCE_DIR}/toolboxes/matlab/
 ${ISMRMRD_INCLUDE_DIR}
 ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/ )
 
-FIND_LIBRARY(MATLAB_MEX_LIBRARY libmex.so ${MATLAB_LIB_PATHS} NO_DEFAULT_PATH)
-FIND_LIBRARY(MATLAB_MX_LIBRARY libmx.so ${MATLAB_LIB_PATHS} NO_DEFAULT_PATH)
-FIND_LIBRARY(MATLAB_ENG_LIBRARY libeng.so ${MATLAB_LIB_PATHS} NO_DEFAULT_PATH)
+find_library(MATLAB_MEX_LIBRARY libmex.so ${MATLAB_LIB_PATHS} NO_DEFAULT_PATH)
+find_library(MATLAB_MX_LIBRARY libmx.so ${MATLAB_LIB_PATHS} NO_DEFAULT_PATH)
+find_library(MATLAB_ENG_LIBRARY libeng.so ${MATLAB_LIB_PATHS} NO_DEFAULT_PATH)
 
 
 add_library(gadgetronNFFT SHARED gadgetronNFFT.cpp)
-MESSAGE(STATUS "Matlab libraries: ${MATLAB_LIBRARIES}")
+message(STATUS "Matlab libraries: ${MATLAB_LIBRARIES}")
 target_link_libraries(
 	gadgetronNFFT
     gadgetron_toolbox_matlab
@@ -57,9 +57,9 @@ set(CMAKE_CXX_FLAGS "-O3 -DMX_COMPAT_32   -D_GNU_SOURCE  -DMATLAB_MEX_FILE  -DND
 
 if (WIN32)
     if ( HAS_64_BIT )
-        SET(MATLAB_SUFFIX ".mexw64")
+        set(MATLAB_SUFFIX ".mexw64")
     else ( HAS_64_BIT )
-        SET(MATLAB_SUFFIX ".mexw32")
+        set(MATLAB_SUFFIX ".mexw32")
     endif ( HAS_64_BIT )
 
     add_definitions(-DMATLAB_DLL_EXPORT_SYM)
@@ -67,20 +67,20 @@ endif (WIN32)
 
 if (UNIX)
     if ( HAS_64_BIT )
-        SET(MATLAB_SUFFIX ".mexa64")
+        set(MATLAB_SUFFIX ".mexa64")
     else ( HAS_64_BIT )
-        SET(MATLAB_SUFFIX ".mexglx")
+        set(MATLAB_SUFFIX ".mexglx")
     endif ( HAS_64_BIT )
 endif (UNIX)
 
 if (APPLE)
     if ( HAS_64_BIT )
-        SET(MATLAB_SUFFIX ".mexmaci64")
+        set(MATLAB_SUFFIX ".mexmaci64")
     endif ( HAS_64_BIT )
 endif(APPLE)
 
 
-MESSAGE("Matlab CXX flags: ${CMAKE_CXX_FLAGS}")
+message("Matlab CXX flags: ${CMAKE_CXX_FLAGS}")
 set_target_properties(gadgetronNFFT PROPERTIES PREFIX "" )
 set_target_properties(gadgetronNFFT PROPERTIES SUFFIX ${MATLAB_SUFFIX} LINKER_LANGUAGE CXX)
 
@@ -88,7 +88,7 @@ set_target_properties(gadgetronSENSE PROPERTIES PREFIX "" )
 set_target_properties(gadgetronSENSE PROPERTIES SUFFIX ${MATLAB_SUFFIX} LINKER_LANGUAGE CXX)
 
 
-SET(MATLAB_OUTPUT_DIR ${CMAKE_INSTALL_PREFIX}/matlab CACHE PATH "" )
+set(MATLAB_OUTPUT_DIR ${CMAKE_INSTALL_PREFIX}/matlab CACHE PATH "" )
 
 install(TARGETS gadgetronNFFT DESTINATION ${MATLAB_OUTPUT_DIR} COMPONENT main)
 install(TARGETS gadgetronSENSE DESTINATION ${MATLAB_OUTPUT_DIR} COMPONENT main)

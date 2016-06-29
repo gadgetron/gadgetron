@@ -1,7 +1,7 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
 if (WIN32)
-  ADD_DEFINITIONS(-DCROW_MSVC_WORKAROUND)
+  add_definitions(-DCROW_MSVC_WORKAROUND)
 endif(WIN32)
 
 include_directories(

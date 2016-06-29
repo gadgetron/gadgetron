@@ -1,6 +1,6 @@
-IF (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_CMR__)
-ENDIF (WIN32)
+if (WIN32)
+    add_definitions(-D__BUILD_GADGETRON_CMR__)
+endif (WIN32)
 
 if (MKL_FOUND)
     add_definitions(-DHAVE_MKL)
@@ -8,7 +8,7 @@ if (MKL_FOUND)
     # MKL is installed, but Armadillo is NOT using it.
     list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
     list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
-    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
 endif (MKL_FOUND)
 
 include_directories(

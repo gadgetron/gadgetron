@@ -1,6 +1,6 @@
-IF (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_PYTHON__)
-ENDIF (WIN32)
+if (WIN32)
+  add_definitions(-D__BUILD_GADGETRON_PYTHON__)
+endif (WIN32)
 
 # TODO: The Gadgetron Python code uses Numpy C-API code
 # from Numpy versions < 1.7. If Numpy version is >= 1.7
@@ -57,10 +57,10 @@ target_link_libraries(GadgetronPythonMRI
     ${Boost_LIBRARIES}
     ${MKL_LIBRARIES})
 
-IF (WIN32)
-    SET_TARGET_PROPERTIES(GadgetronPythonMRI PROPERTIES SUFFIX .pyd)
-    SET_TARGET_PROPERTIES(gadgetron_python PROPERTIES LINK_FLAGS "/LIBPATH:${PYTHON_INCLUDE_DIR}/../libs" )
-ENDIF(WIN32)
+if (WIN32)
+    set_target_properties(GadgetronPythonMRI PROPERTIES SUFFIX .pyd)
+    set_target_properties(gadgetron_python PROPERTIES LINK_FLAGS "/LIBPATH:${PYTHON_INCLUDE_DIR}/../libs" )
+endif(WIN32)
 
 set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 

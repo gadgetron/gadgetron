@@ -1,5 +1,5 @@
 if (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_GADGETTOOLS__)
+    add_definitions(-D__BUILD_GADGETRON_GADGETTOOLS__)
 endif (WIN32)
 
 include_directories(
@@ -16,7 +16,7 @@ include_directories(
  )
 
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image )
+include_directories( ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image )
 
 if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})

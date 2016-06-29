@@ -1,10 +1,10 @@
-IF (ACE_FOUND )
+if (ACE_FOUND )
   add_subdirectory(gadgetron)
-ENDIF (ACE_FOUND )
+endif (ACE_FOUND )
 
 add_subdirectory(clients)
 add_subdirectory(standalone)
 
-IF (MATLAB_FOUND )
+if (MATLAB_FOUND )
   add_subdirectory(matlab)
-ENDIF (MATLAB_FOUND )
+endif (MATLAB_FOUND )

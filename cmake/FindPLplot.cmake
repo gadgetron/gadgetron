@@ -14,10 +14,10 @@ else ( WIN32 )
 endif ( WIN32 )
 
 if (EXISTS ${PLPLOT_PATH}/plplot)
-    SET(PLPLOT_FOUND TRUE)
+    set(PLPLOT_FOUND TRUE)
     message("PLplot is found at ${PLPLOT_PATH}/plplot")
 else (EXISTS ${PLPLOT_PATH}/plplot)
-    SET(PLPLOT_FOUND FALSE)
+    set(PLPLOT_FOUND FALSE)
     message("PLplot is NOT found ... ")
 endif (EXISTS ${PLPLOT_PATH}/plplot)
 
@@ -36,6 +36,6 @@ if (PLPLOT_FOUND)
         set(PLPLOT_LIBRARIES ${PLPLOT_LIBRARIES} plplotcxxd)
     endif ( WIN32 )
 
-    ADD_DEFINITIONS(-DUSE_PLPLOT)
+    add_definitions(-DUSE_PLPLOT)
 
 endif (PLPLOT_FOUND)

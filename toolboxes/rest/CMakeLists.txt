@@ -2,7 +2,7 @@ find_package(Boost COMPONENTS date_time filesystem system thread regex REQUIRED)
 find_package( Threads )
 
 if (WIN32)
-  ADD_DEFINITIONS(-DCROW_MSVC_WORKAROUND)
+  add_definitions(-DCROW_MSVC_WORKAROUND)
 endif(WIN32)
 
 include_directories(${Boost_INCLUDE_DIR})

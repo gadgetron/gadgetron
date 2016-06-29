@@ -19,7 +19,7 @@ if (ARMADILLO_FOUND)
     spirit.xml
     DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found, only unoptimized radial config files will be available")
+  message("Armadillo not found, only unoptimized radial config files will be available")
 endif (ARMADILLO_FOUND)
 
 install (FILES 

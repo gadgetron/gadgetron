@@ -1,3 +1,3 @@
-IF(CUDA_FOUND)
+if(CUDA_FOUND)
   add_subdirectory(xray)
-ENDIF(CUDA_FOUND)
+endif(CUDA_FOUND)

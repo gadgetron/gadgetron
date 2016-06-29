@@ -2,7 +2,7 @@ find_package(ACE REQUIRED)
 find_package(Boost REQUIRED)
 
 if (WIN32)
-  ADD_DEFINITIONS(-DCROW_MSVC_WORKAROUND)
+  add_definitions(-DCROW_MSVC_WORKAROUND)
 endif(WIN32)
 
 include_directories(${ACE_INCLUDE_DIR}

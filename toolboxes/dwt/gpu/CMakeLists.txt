@@ -1,5 +1,5 @@
 if (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUDWT__)
+  add_definitions(-D__BUILD_GADGETRON_GPUDWT__)
 endif (WIN32)
 
 if(WIN32)

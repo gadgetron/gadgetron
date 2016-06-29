@@ -2,13 +2,13 @@ include_directories(${MATLAB_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
 
 if (UNIX)
     if (APPLE)
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-        SET(MATLAB_SUFFIX ".mexmaci64")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+        set(MATLAB_SUFFIX ".mexmaci64")
     else(APPLE)
-        SET(MATLAB_SUFFIX ".mexglnxa64")
+        set(MATLAB_SUFFIX ".mexglnxa64")
     endif(APPLE)
 else(UNIX)
-    SET(MATLAB_SUFFIX ".dll")
+    set(MATLAB_SUFFIX ".dll")
 endif(UNIX)
 
 if (UNIX)

@@ -1,5 +1,5 @@
 if (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE_MATH__)
+    add_definitions(-D__BUILD_GADGETRON_CPUCORE_MATH__)
 endif (WIN32)
 
 include_directories(
@@ -11,8 +11,8 @@ include_directories(
     ${ARMADILLO_INCLUDE_DIRS} )
 
 if (MKL_FOUND)
-    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+    include_directories( ${MKL_INCLUDE_DIR} )
+    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
 endif (MKL_FOUND)
 
 set(cpucore_math_header_files

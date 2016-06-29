@@ -1,10 +1,10 @@
 if (WIN32)
-    ADD_DEFINITIONS(-DTIXML_USE_STL)
+    add_definitions(-DTIXML_USE_STL)
 endif (WIN32)
 
 if (MKL_FOUND)
-    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+    include_directories( ${MKL_INCLUDE_DIR} )
+    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
     link_libraries(${MKL_LIBRARIES})
 endif (MKL_FOUND)
 
@@ -36,10 +36,10 @@ add_subdirectory(rest)
 add_subdirectory(fatwater)
 add_subdirectory(ffd)
 
-IF (ACE_FOUND)
+if (ACE_FOUND)
   add_subdirectory(gadgettools)
   add_subdirectory(cloudbus)
-ENDIF()
+endif()
 
 add_subdirectory(image_io)
 

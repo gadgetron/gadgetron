@@ -1,4 +1,4 @@
-ENABLE_TESTING()
+enable_testing()
 
 if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})

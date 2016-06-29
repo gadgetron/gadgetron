@@ -1,7 +1,7 @@
-IF(ACE_FOUND)
+if(ACE_FOUND)
   add_subdirectory(utilities)
-ENDIF()
+endif()
 
-IF(ISMRMRD_FOUND AND HDF5_FOUND)
+if(ISMRMRD_FOUND AND HDF5_FOUND)
   add_subdirectory(gadgetron_ismrmrd_client)
-ENDIF()
+endif()

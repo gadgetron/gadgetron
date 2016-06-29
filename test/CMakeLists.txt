@@ -1,6 +1,6 @@
 if (GTEST_FOUND AND ARMADILLO_FOUND)
 
-ENABLE_TESTING()
+enable_testing()
 
 if(WIN32)
 link_directories(${Boost_LIBRARY_DIRS})

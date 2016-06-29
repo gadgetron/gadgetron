@@ -1,5 +1,5 @@
 if (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_HOSTUTILS__)
+  add_definitions(-D__BUILD_GADGETRON_HOSTUTILS__)
 endif (WIN32)
 
 add_library(gadgetron_toolbox_hostutils SHARED 

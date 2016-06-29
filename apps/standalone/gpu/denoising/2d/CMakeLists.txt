@@ -1,5 +1,5 @@
 if (WIN32)
-ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
+add_definitions(-D_USE_MATH_DEFINES)
 endif (WIN32)
 
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/dwt/gpu)

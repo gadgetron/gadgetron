@@ -1,5 +1,5 @@
     if (WIN32)
-        ADD_DEFINITIONS(-D__BUILD_GADGETRON_EPI__)
+        add_definitions(-D__BUILD_GADGETRON_EPI__)
         link_directories(${Boost_LIBRARY_DIRS})
     endif (WIN32)
 

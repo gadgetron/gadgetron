@@ -4,5 +4,5 @@ if(DOXYGEN_FOUND)
 	${CMAKE_CURRENT_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		COMMENT "Generating API documentation with Doxygen" VERBATIM)
 else(DOXYGEN_FOUND)
-	MESSAGE("Doxygen not found. Will not be able to build documentation")
+	message("Doxygen not found. Will not be able to build documentation")
 endif(DOXYGEN_FOUND)

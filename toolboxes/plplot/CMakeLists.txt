@@ -1,7 +1,7 @@
 # gadgetron_toolbox_plplot is a toolbox for plotting gadgetron data structures using PLplot
 
 if (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_TOOLBOX_PLPLOT__)
+    add_definitions(-D__BUILD_GADGETRON_TOOLBOX_PLPLOT__)
 endif (WIN32)
 
 include_directories(${PLPLOT_INCLUDE_DIR})
