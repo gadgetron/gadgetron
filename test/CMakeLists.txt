@@ -4,7 +4,7 @@ enable_testing()
 
 if(WIN32)
 link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -25,7 +25,7 @@ include_directories(
 
 if (CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
-endif (CUDA_FOUND)
+endif ()
 
 link_libraries(
     gadgetron_toolbox_cpucore 
@@ -58,7 +58,7 @@ if ( CUDA_FOUND )
       cuVector_td_test_kernels.cu 
       cuNDFFT_test.cpp
       )
-else ( CUDA_FOUND )
+else ()
     add_executable(test_all 
       tests.cpp 
       hoNDArray_elemwise_test.cpp 
@@ -67,17 +67,17 @@ else ( CUDA_FOUND )
       hoNDFFT_test.cpp
       hoNDWavelet_test.cpp
       )
-endif ( CUDA_FOUND )
+endif ()
 
 if ( CUDA_FOUND )
   target_link_libraries(test_all 
     gadgetron_toolbox_gpucore
     gadgetron_toolbox_gpufft
     )
-endif( CUDA_FOUND )
+endif()
 
 add_test(test_all test_all)
 
-endif (GTEST_FOUND AND ARMADILLO_FOUND)
+endif ()
 
 add_subdirectory(integration)

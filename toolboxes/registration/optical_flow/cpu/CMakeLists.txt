@@ -1,10 +1,10 @@
     if (WIN32)
         add_definitions(-D__BUILD_GADGETRON_CPUREG__)
-    endif (WIN32)
+    endif ()
 
     if(WIN32)
         link_directories(${Boost_LIBRARY_DIRS})
-    endif(WIN32)
+    endif()
 
     include_directories(
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
@@ -103,14 +103,14 @@
                 ${ARMADILLO_LIBRARIES}
                 optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 
-    else ( BUILD_CPU_OPTIMAL_FLOW_REG )
+    else ()
         message("cpureg library will not be built ... ")
-    endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
+    endif ()
 
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
         source_group(opticalflow FILES ${opticalflow_files})
         install(FILES ${opticalflow_files} DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
-    endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
+    endif ()
 
     source_group(transformation FILES ${transformation_files})
     source_group(solver FILES ${solver_files})
@@ -121,7 +121,7 @@
 
     if ( BUILD_CPU_OPTIMAL_FLOW_REG )
         install(TARGETS gadgetron_toolbox_cpureg DESTINATION lib COMPONENT main)
-    endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
+    endif ()
 
     install(FILES
         ${transformation_files}

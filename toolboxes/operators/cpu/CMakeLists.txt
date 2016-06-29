@@ -1,6 +1,6 @@
 if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CPUOPERATORS__)
-endif (WIN32)
+endif ()
 
 include_directories(
     ${ISMRMRD_INCLUDE_DIR}

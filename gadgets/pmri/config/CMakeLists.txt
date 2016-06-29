@@ -8,7 +8,7 @@ if (ARMADILLO_FOUND)
     DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 elseif (ARMADILLO_FOUND)
   message("Armadillo not found, only unoptimized generic trajectory config files will be available")
-endif (ARMADILLO_FOUND)
+endif ()
 
 #install (FILES 
 #  generic_gpusense_cg_unoptimized.xml 

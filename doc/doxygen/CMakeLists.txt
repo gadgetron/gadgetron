@@ -3,6 +3,6 @@ if(DOXYGEN_FOUND)
 	add_custom_target(apidoc ${DOXYGEN_EXECUTABLE}
 	${CMAKE_CURRENT_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		COMMENT "Generating API documentation with Doxygen" VERBATIM)
-else(DOXYGEN_FOUND)
+else()
 	message("Doxygen not found. Will not be able to build documentation")
-endif(DOXYGEN_FOUND)
+endif()

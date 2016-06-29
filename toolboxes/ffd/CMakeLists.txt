@@ -1,6 +1,6 @@
 if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_CPUFFD__)
-endif (WIN32)
+endif ()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core

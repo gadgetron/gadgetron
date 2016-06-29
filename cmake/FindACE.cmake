@@ -19,9 +19,9 @@ if(PKGCONFIG_EXECUTABLE)
 	PKGCONFIG(ace ACE_INCLUDE_DIR_GUESS ACE_LIBRARY_DIR_GUESS ACE_LINK_FLAGS ACE_C_FLAGS) 
 	if (NOT ACE_LINK_FLAGS) 
 		PKGCONFIG(ACE ACE_INCLUDE_DIR_GUESS ACE_LIBRARY_DIR_GUESS ACE_LINK_FLAGS ACE_C_FLAGS) 
-	endif (NOT ACE_LINK_FLAGS) 
+	endif () 
 	add_definitions(${ACE_C_FLAGS}) 
-endif(PKGCONFIG_EXECUTABLE) 
+endif() 
  
 set(ACE_LINK_FLAGS "${ACE_LINK_FLAGS}" CACHE INTERNAL "ace link flags") 
  
@@ -39,7 +39,7 @@ find_library(ACE_LIBRARY NAMES ACE ace PATHS ${CMAKE_SOURCE_DIR}/../ACE_wrappers
 if (WIN32 AND NOT CYGWIN) 
 	set(CMAKE_DEBUG_POSTFIX "d") 
 	find_library(ACE_DEBUG_LIBRARY NAMES ACE${CMAKE_DEBUG_POSTFIX} ace${CMAKE_DEBUG_POSTFIX} PATHS ${CMAKE_SOURCE_DIR}/../ACE_wrappers/lib/ /usr/lib /usr/local/lib $ENV{ACE_ROOT}/lib $ENV{ACE_ROOT} DOC "ACE library file (debug version)") 
-endif (WIN32 AND NOT CYGWIN) 
+endif () 
  
  
 ######################################################################## 
@@ -50,14 +50,14 @@ if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
   #message(STATUS "need to link solaris-specific libraries") 
   #  link_libraries(socket rt) 
   set(ACE_LIBRARY ${ACE_LIBRARY} socket rt nsl) 
-endif(CMAKE_SYSTEM_NAME STREQUAL "SunOS") 
+endif() 
  
 # Windows needs some extra libraries 
 if (WIN32 AND NOT CYGWIN) 
   #message(STATUS "need to link windows-specific libraries") 
   #link_libraries(winmm) 
   set(ACE_LIBRARY ${ACE_LIBRARY} winmm) 
-endif (WIN32 AND NOT CYGWIN) 
+endif () 
  
  
 ######################################################################## 
@@ -65,26 +65,26 @@ endif (WIN32 AND NOT CYGWIN)
  
 if (ACE_INCLUDE_DIR AND ACE_LIBRARY) 
 	set(ACE_FOUND TRUE) 
-else (ACE_INCLUDE_DIR AND ACE_LIBRARY) 
+else () 
 	set(ACE_FOUND FALSE) 
-endif (ACE_INCLUDE_DIR AND ACE_LIBRARY) 
+endif () 
  
 if (ACE_DEBUG_LIBRARY) 
 	set(ACE_DEBUG_FOUND TRUE) 
-else (ACE_DEBUG_LIBRARY)
+else ()
   set(ACE_DEBUG_LIBRARY ${ACE_LIBRARY})
-endif (ACE_DEBUG_LIBRARY) 
+endif () 
  
 if (ACE_FOUND) 
 	if (NOT Ace_FIND_QUIETLY) 
 		message(STATUS "Found ACE library: ${ACE_LIBRARY}") 
 		message(STATUS "Found ACE include: ${ACE_INCLUDE_DIR}") 
-	endif (NOT Ace_FIND_QUIETLY) 
-else (ACE_FOUND) 
+	endif () 
+else () 
 	if (Ace_FIND_REQUIRED) 
 		message(FATAL_ERROR "Could not find ACE") 
-	endif (Ace_FIND_REQUIRED) 
-endif (ACE_FOUND) 
+	endif () 
+endif () 
 
 # TSS: backwards compatibility
 set(ACE_LIBRARIES ${ACE_LIBRARY}) 

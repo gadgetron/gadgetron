@@ -7,8 +7,8 @@ if(UNIX)
   find_program(DPKG_PROGRAM dpkg)
   if(EXISTS ${DPKG_PROGRAM})
     list(APPEND CPACK_GENERATOR "DEB")
-  endif(EXISTS ${DPKG_PROGRAM})
-endif(UNIX)
+  endif()
+endif()
 
 # Enable/Disable automatic search for dependencies:
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
@@ -30,7 +30,7 @@ message("CPACK_PACKAGING_INSTALL_PREFIX: " ${CPACK_PACKAGING_INSTALL_PREFIX})
 if(WIN32)
   # NSLS
   list(APPEND CPACK_GENERATOR "NSIS")    
-endif(WIN32)
+endif()
 
 list(APPEND CPACK_SOURCE_GENERATOR "TGZ")
 list(APPEND CPACK_SOURCE_GENERATOR "ZIP")

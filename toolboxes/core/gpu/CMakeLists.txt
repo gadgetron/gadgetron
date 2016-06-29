@@ -1,10 +1,10 @@
 if (WIN32)
   add_definitions(-D__BUILD_GADGETRON_GPUCORE__)
-endif (WIN32)
+endif ()
 
 if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 include_directories( 
   ${CUDA_INCLUDE_DIRS}

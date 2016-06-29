@@ -3,11 +3,11 @@ if(CUDA_FOUND)
     install (FILES 
       cpureg_cartesian_averaging.xml
       DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
-  endif(CPU_REG)
+  endif()
   
   if(GPU_REG)
     install (FILES 
       gpureg_cartesian_averaging.xml
       DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
-  endif(GPU_REG)
-endif(CUDA_FOUND)
+  endif()
+endif()

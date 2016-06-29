@@ -3,7 +3,7 @@ if (WIN32)
   # The two flags below is to fix Windows problems in relation to multiple defined constructors in our headers
   set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") 
   set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /FORCE:MULTIPLE") 
-endif (WIN32)
+endif ()
 
 include_directories(   
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core

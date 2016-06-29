@@ -1,6 +1,6 @@
 if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CPUCORE_MATH__)
-endif (WIN32)
+endif ()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -13,7 +13,7 @@ include_directories(
 if (MKL_FOUND)
     include_directories( ${MKL_INCLUDE_DIR} )
     link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-endif (MKL_FOUND)
+endif ()
 
 set(cpucore_math_header_files
     cpucore_math_export.h
@@ -40,7 +40,7 @@ if (ARMADILLO_FOUND)
         hoNDArray_elemwise.cpp
         )
 
-endif (ARMADILLO_FOUND)
+endif ()
 
 add_library(gadgetron_toolbox_cpucore_math SHARED ${cpucore_math_header_files} ${cpucore_math_src_files})
 set_target_properties(gadgetron_toolbox_cpucore_math PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -53,7 +53,7 @@ if (MKL_FOUND)
         ${FFTW3_LIBRARIES} 
         ${MKL_LIBRARIES}
     )
-else (MKL_FOUND)
+else ()
     target_link_libraries(gadgetron_toolbox_cpucore_math 
         gadgetron_toolbox_cpucore
         gadgetron_toolbox_log
@@ -62,7 +62,7 @@ else (MKL_FOUND)
         ${LAPACK_LIBRARIES}
         ${FFTW3_LIBRARIES}
     )
-endif (MKL_FOUND)
+endif ()
 
 install(TARGETS gadgetron_toolbox_cpucore_math DESTINATION lib COMPONENT main)
 

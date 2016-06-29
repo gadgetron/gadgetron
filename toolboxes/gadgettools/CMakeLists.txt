@@ -1,6 +1,6 @@
 if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_GADGETTOOLS__)
-endif (WIN32)
+endif ()
 
 include_directories(
                     ${CMAKE_BINARY_DIR}/apps/gadgetron
@@ -20,11 +20,11 @@ include_directories( ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image )
 
 if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 add_library(gadgetron_toolbox_gadgettools SHARED
   gadgettools_export.h 
@@ -53,4 +53,4 @@ install (FILES
 
 if(ISMRMRD_FOUND)
   add_subdirectory(ismrmrd)
-endif(ISMRMRD_FOUND)
+endif()

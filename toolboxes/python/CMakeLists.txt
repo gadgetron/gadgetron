@@ -27,7 +27,7 @@ set_target_properties(gadgetron_toolbox_python PROPERTIES VERSION ${GADGETRON_VE
 if (WIN32)
     # only add this definition to the library, not the example binaries
     set_target_properties(gadgetron_toolbox_python PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_TOOLBOX_PYTHON__")
-endif (WIN32)
+endif ()
 
 install(TARGETS gadgetron_toolbox_python DESTINATION lib COMPONENT main)
 

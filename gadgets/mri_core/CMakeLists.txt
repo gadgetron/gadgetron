@@ -1,6 +1,6 @@
 if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_MRICORE__)
-endif (WIN32)
+endif ()
 
 if (MKL_FOUND)
     # This is a fix for the bug in SVD when MKL is multi-threaded
@@ -12,7 +12,7 @@ if (MKL_FOUND)
     list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
     include_directories( ${MKL_INCLUDE_DIR} )
     link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-endif (MKL_FOUND)
+endif ()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
@@ -59,7 +59,7 @@ if (ARMADILLO_FOUND)
     list(APPEND OPTIMIZED_GADGET_LIBS gadgetron_toolbox_cpucore_math ${ARMADILLO_LIBRARIES})
 elseif (ARMADILLO_FOUND)
     message("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
-endif (ARMADILLO_FOUND)
+endif ()
 
 set( gadgetron_mricore_header_files GadgetMRIHeaders.h 
                                     AcquisitionPassthroughGadget.h 
@@ -215,7 +215,7 @@ install(FILES
 
 if (ARMADILLO_FOUND)
     install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
-endif (ARMADILLO_FOUND)
+endif ()
 
 install(FILES ismrmrd_dump.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 

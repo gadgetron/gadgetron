@@ -3,7 +3,7 @@ find_package( Threads )
 
 if (WIN32)
   add_definitions(-DCROW_MSVC_WORKAROUND)
-endif(WIN32)
+endif()
 
 include_directories(${Boost_INCLUDE_DIR})
 

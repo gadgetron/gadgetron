@@ -29,8 +29,8 @@ install(FILES ${operator_header_files}
 
 if (ARMADILLO_FOUND)
   add_subdirectory(cpu)
-endif (ARMADILLO_FOUND)
+endif ()
 
 if (CUDA_FOUND)
   add_subdirectory(gpu)
-endif (CUDA_FOUND)
+endif ()

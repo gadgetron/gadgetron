@@ -1,6 +1,6 @@
 if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CMR__)
-endif (WIN32)
+endif ()
 
 if (MKL_FOUND)
     add_definitions(-DHAVE_MKL)
@@ -9,7 +9,7 @@ if (MKL_FOUND)
     list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
     list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
     link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-endif (MKL_FOUND)
+endif ()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math

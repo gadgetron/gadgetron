@@ -2,19 +2,19 @@ find_package(ZFP)
 
 if (ZFP_FOUND)
    add_definitions(-DGADGETRON_COMPRESSION)
-endif(ZFP_FOUND)
+endif()
 
 set(Boost_NO_BOOST_CMAKE ON)
 
 if(WIN32)
   find_package(Boost COMPONENTS program_options thread system date_time chrono REQUIRED)
-else(WIN32)
+else()
   find_package(Boost COMPONENTS program_options thread system REQUIRED)
-endif(WIN32)
+endif()
 
 if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 include_directories(
   ${Boost_INCLUDE_DIR} 
@@ -23,7 +23,7 @@ include_directories(
 
 if (ZFP_FOUND)
    include_directories(${ZFP_INCLUDE_DIR})
-endif(ZFP_FOUND)
+endif()
 
 add_executable(gadgetron_ismrmrd_client gadgetron_ismrmrd_client.cpp)
 
@@ -31,6 +31,6 @@ target_link_libraries(gadgetron_ismrmrd_client ${ISMRMRD_LIBRARIES} ${Boost_LIBR
 
 if (ZFP_FOUND)
    target_link_libraries(gadgetron_ismrmrd_client ${ZFP_LIBRARIES})
-endif (ZFP_FOUND)
+endif ()
 
 install(TARGETS gadgetron_ismrmrd_client DESTINATION bin COMPONENT main)

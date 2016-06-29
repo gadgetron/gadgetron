@@ -1,6 +1,6 @@
 if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_MRI_IMAGE__)
-endif (WIN32)
+endif ()
 
 include_directories(
     ${Boost_INCLUDE_DIR} 

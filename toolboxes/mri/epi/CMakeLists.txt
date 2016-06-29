@@ -1,7 +1,7 @@
     if (WIN32)
         add_definitions(-D__BUILD_GADGETRON_EPI__)
         link_directories(${Boost_LIBRARY_DIRS})
-    endif (WIN32)
+    endif ()
 
     add_library(gadgetron_toolbox_epi SHARED
      EPIExport.h
@@ -25,5 +25,5 @@
 
     #if (GTEST_FOUND)
     #    add_subdirectory(ut)
-    #endif (GTEST_FOUND)
+    #endif ()
 
