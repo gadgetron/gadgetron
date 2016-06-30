@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.7) #Currently targeting to TRAVIS CI cmake version from 2011
 foreach(p
     CMP0025 # CMake 3.0 Compiler id for Apple Clang is now ``AppleClang``.
     CMP0042 # CMake 3.0 ``MACOSX_RPATH`` is enabled by default.
@@ -12,6 +12,21 @@ foreach(p
   endif()
 endforeach()
 project(GADGETRON)
+
+# --- Provide good defaults for searching for packages (i.e. ismrmrd)
+set(CMAKE_PREFIX_PATH "")
+if(CMAKE_PREFIX_PATH)
+  list(APPEND CMAKE_PREFIX_PATH "/usr/local")
+endif()
+if(EXISTS $ENV{CMAKE_PREFIX_PATH})
+  list(APPEND CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
+endif()
+if(EXISTS $ENV{ISMRMRD_HOME})
+  list(APPEND CMAKE_PREFIX_PATH $ENV{ISMRMRD_HOME})
+endif()
+list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+message(STATUS "Looking for packages in : ${CMAKE_PREFIX_PATH}")
+# ---
 
 # check the compiler version
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
