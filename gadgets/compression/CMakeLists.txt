@@ -22,6 +22,7 @@ set( config_files
     config/Generic_Cartesian_Grappa_SNR_Compression.xml
     config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Compression_Cloud.xml
     config/ismrmrd_dump_compressed.xml 
+    config/CMR_2DT_RTCine_KspaceBinning_Cloud_Compression.xml
 )
 
 add_library(gadgetron_compression SHARED 
