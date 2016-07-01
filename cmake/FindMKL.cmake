@@ -117,7 +117,24 @@ IF (MKL_FOUND)
         string(REGEX REPLACE ".*#define __INTEL_MKL_UPDATE__ ([0-9]+).*" "\\1" INTEL_MKL_VERSION_UPDATE "${_mkl_HEADER_CONTENTS}")
 
         unset(_mkl_HEADER_CONTENTS)
-    endif()
+    else (EXISTS "${MKL_INCLUDE_DIR}/mkl.h")
+        if(EXISTS "${MKL_INCLUDE_DIR}/mkl_version.h")
+
+            # Read and parse header file for version number
+            file(STRINGS "${MKL_INCLUDE_DIR}/mkl_version.h" _mkl_HEADER_CONTENTS REGEX "#define __INTEL_MKL__ ")
+            string(REGEX REPLACE ".*#define __INTEL_MKL__ ([0-9]+).*" "\\1" INTEL_MKL_VERSION_MAJOR "${_mkl_HEADER_CONTENTS}")
+            unset(_mkl_HEADER_CONTENTS)
+            
+            file(STRINGS "${MKL_INCLUDE_DIR}/mkl_version.h" _mkl_HEADER_CONTENTS REGEX "#define __INTEL_MKL_MINOR__ ")
+            string(REGEX REPLACE ".*#define __INTEL_MKL_MINOR__ ([0-9]+).*" "\\1" INTEL_MKL_VERSION_MINOR "${_mkl_HEADER_CONTENTS}")
+            unset(_mkl_HEADER_CONTENTS)
+            
+            file(STRINGS "${MKL_INCLUDE_DIR}/mkl_version.h" _mkl_HEADER_CONTENTS REGEX "#define __INTEL_MKL_UPDATE__ ")
+            string(REGEX REPLACE ".*#define __INTEL_MKL_UPDATE__ ([0-9]+).*" "\\1" INTEL_MKL_VERSION_UPDATE "${_mkl_HEADER_CONTENTS}")
+
+            unset(_mkl_HEADER_CONTENTS)
+        endif (EXISTS "${MKL_INCLUDE_DIR}/mkl_version.h")
+    endif (EXISTS "${MKL_INCLUDE_DIR}/mkl.h")
 
     set(MKL_VERSION_STRING "${INTEL_MKL_VERSION_MAJOR}.${INTEL_MKL_VERSION_MINOR}.${INTEL_MKL_VERSION_UPDATE}")
     message("find MKL version : ${MKL_VERSION_STRING}")
