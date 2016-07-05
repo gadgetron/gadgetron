@@ -63,7 +63,62 @@ std::string get_date_time_string()
 }
 
 #if defined GADGETRON_COMPRESSION
-size_t compress(float* in, size_t samples, size_t coils, uint precision, char* buffer, size_t buf_size)
+size_t compress_tolerance(float* in, size_t samples, size_t coils, double tolerance, char* buffer, size_t buf_size)
+{
+    zfp_type type = zfp_type_float;
+    zfp_field* field = NULL;
+    zfp_stream* zfp = NULL;
+    bitstream* stream = NULL;
+    size_t zfpsize = 0;
+
+    zfp = zfp_stream_open(NULL);
+    field = zfp_field_alloc();
+
+    zfp_field_set_pointer(field, in);
+
+    zfp_field_set_type(field, type);
+    zfp_field_set_size_2d(field, samples, coils);
+    zfp_stream_set_accuracy(zfp, tolerance, type);
+
+    if (zfp_stream_maximum_size(zfp, field) > buf_size) {
+        zfp_field_free(field);
+        zfp_stream_close(zfp);
+        stream_close(stream);
+        throw std::runtime_error("Insufficient buffer space for compression");
+    }
+
+    stream = stream_open(buffer, buf_size);
+    if (!stream) {
+        zfp_field_free(field);
+        zfp_stream_close(zfp);
+        stream_close(stream);
+        throw std::runtime_error("Cannot open compressed stream");
+    }
+    zfp_stream_set_bit_stream(zfp, stream);
+
+    if (!zfp_write_header(zfp, field, ZFP_HEADER_FULL)) {
+        zfp_field_free(field);
+        zfp_stream_close(zfp);
+        stream_close(stream);
+        throw std::runtime_error("Unable to write compression header to stream");
+    }
+
+    zfpsize = zfp_compress(zfp, field);
+    if (zfpsize == 0) {
+        zfp_field_free(field);
+        zfp_stream_close(zfp);
+        stream_close(stream);
+        throw std::runtime_error("Compression failed");
+    }
+
+    zfp_field_free(field);
+    zfp_stream_close(zfp);
+    stream_close(stream);
+    return zfpsize;
+}
+
+
+size_t compress_precision(float* in, size_t samples, size_t coils, uint precision, char* buffer, size_t buf_size)
 {
   zfp_type type = zfp_type_float;
   zfp_field* field = NULL;
@@ -1202,7 +1257,7 @@ public:
     }
 
 #if defined GADGETRON_COMPRESSION    
-    void send_ismrmrd_compressed_acquisition(ISMRMRD::Acquisition& acq, uint compression_precision) 
+    void send_ismrmrd_compressed_acquisition_precision(ISMRMRD::Acquisition& acq, uint compression_precision) 
     {
         
         if (!socket_) {
@@ -1229,9 +1284,61 @@ public:
             char* comp_buffer = new char[comp_buffer_size];
             size_t compressed_size = 0;
             try {
-                compressed_size = compress((float*)&acq.getDataPtr()[0],
+                compressed_size = compress_precision((float*)&acq.getDataPtr()[0],
                                            acq.getHead().number_of_samples*2, acq.getHead().active_channels,
                                            compression_precision, comp_buffer, comp_buffer_size);
+
+                compressed_bytes_sent_ += compressed_size;
+                uncompressed_bytes_sent_ += data_elements*2*sizeof(float);
+                float compression_ratio = (1.0*data_elements*2*sizeof(float))/(float)compressed_size;
+                //std::cout << "Compression ratio: " << compression_ratio << std::endl;
+                
+            } catch (...) {
+                delete [] comp_buffer;
+                std::cout << "Compression failure caught" << std::endl;
+                throw;
+            }
+
+
+            //TODO: Write compressed buffer
+            uint32_t bs = (uint32_t)compressed_size;
+            boost::asio::write(*socket_, boost::asio::buffer(&bs, sizeof(uint32_t)));
+            boost::asio::write(*socket_, boost::asio::buffer(comp_buffer, compressed_size));
+
+            delete [] comp_buffer;
+        }
+    }
+
+    void send_ismrmrd_compressed_acquisition_tolerance(ISMRMRD::Acquisition& acq, float compression_tolerance) 
+    {
+        
+        if (!socket_) {
+            throw GadgetronClientException("Invalid socket.");
+        }
+
+        GadgetMessageIdentifier id;
+        //TODO: switch data type
+        id.id = GADGET_MESSAGE_ISMRMRD_COMPRESSED_ACQUISITION;
+
+        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        boost::asio::write(*socket_, boost::asio::buffer(&acq.getHead(), sizeof(ISMRMRD::AcquisitionHeader)));
+
+        unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
+        unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
+
+        if (trajectory_elements) {
+            boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
+        }
+
+
+        if (data_elements) {
+            size_t comp_buffer_size = 4*sizeof(float)*data_elements;
+            char* comp_buffer = new char[comp_buffer_size];
+            size_t compressed_size = 0;
+            try {
+                compressed_size = compress_tolerance((float*)&acq.getDataPtr()[0],
+                                           acq.getHead().number_of_samples*2, acq.getHead().active_channels,
+                                           compression_tolerance, comp_buffer, comp_buffer_size);
 
                 compressed_bytes_sent_ += compressed_size;
                 uncompressed_bytes_sent_ += data_elements*2*sizeof(float);
@@ -1304,6 +1411,7 @@ int main(int argc, char **argv)
 
 #if defined GADGETRON_COMPRESSION
     uint compression_precision = 0;
+    float compression_tolerance = 0.0;
 #endif //GADGETRON_COMPRESSION
     
     po::options_description desc("Allowed options");
@@ -1324,6 +1432,7 @@ int main(int argc, char **argv)
         ("outformat,F", po::value<std::string>(&out_fileformat)->default_value("h5"), "Out format, h5 for hdf5 and hdr for analyze image")
 #if defined GADGETRON_COMPRESSION
         ("precision,P", po::value<uint>(&compression_precision)->default_value(0), "Compression precision (bits)")
+        ("tolerance,T", po::value<float>(&compression_tolerance)->default_value(0.0), "Compression tolerance (absolute error)")
 #endif //GADGETRON_COMPRESSION
         ;
 
@@ -1359,6 +1468,11 @@ int main(int argc, char **argv)
     }
 
 
+    if (compression_precision > 0 && compression_tolerance > 0.0) {
+       std::cout << "You cannot supply both compression precision (P) and compression tolerance (T) at the same time" << std::endl;
+       return -1;
+    }
+    
     //Let's check if the files exist:
     std::string hdf5_xml_varname = std::string(hdf5_in_group) + std::string("/xml");
     std::string hdf5_data_varname = std::string(hdf5_in_group) + std::string("/data");
@@ -1433,7 +1547,9 @@ int main(int argc, char **argv)
 
 #if defined GADGETRON_COMPRESSION
               if (compression_precision > 0) {
-                  con.send_ismrmrd_compressed_acquisition(acq_tmp,compression_precision);
+                 con.send_ismrmrd_compressed_acquisition_precision(acq_tmp,compression_precision);
+              } else if (compression_tolerance > 0.0) {
+                 con.send_ismrmrd_compressed_acquisition_tolerance(acq_tmp,compression_tolerance);
               } else {
                   con.send_ismrmrd_acquisition(acq_tmp);              
               }
@@ -1446,7 +1562,7 @@ int main(int argc, char **argv)
 	}
 
 #if defined GADGETRON_COMPRESSION
-        if (compression_precision > 0) {
+        if (compression_precision > 0 || compression_tolerance > 0.0) {
             std::cout << "Compression ratio: " << con.compression_ratio() << std::endl;
         }
 #endif
