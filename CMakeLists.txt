@@ -289,6 +289,12 @@ find_package(PLplot)
 add_subdirectory(toolboxes)
 add_subdirectory(apps)
 
+if (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND AND HDF5_FOUND)
+  add_subdirectory(gadgets)
+else()
+  message("Required dependencies for gadget compilation not found (ACE, ISMRMRD, FFTW3, HDF5).")
+endif()
+
 add_subdirectory(test)
 add_subdirectory(cmake)
 add_subdirectory(doc)
