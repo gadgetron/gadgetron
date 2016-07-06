@@ -3,7 +3,7 @@
 # CUDA_FOUND, MKL_FOUND, WIN32, UNIX, APPLE, PYTHONLIBS_FOUND
 
 # read in what will be tested for any environment
-FILE(GLOB TEST_CASE_ALWAYS RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/*.cfg  )
+file(GLOB TEST_CASE_ALWAYS RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/*.cfg  )
 
 set(TEST_CASE ${TEST_CASE_ALWAYS})
 

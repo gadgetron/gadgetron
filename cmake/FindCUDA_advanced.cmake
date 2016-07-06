@@ -44,5 +44,5 @@ else()
 	endforeach()
 endif()
 
-endif(CUDA_FOUND)
+endif()
 

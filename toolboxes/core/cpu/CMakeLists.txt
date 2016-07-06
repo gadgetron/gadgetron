@@ -1,6 +1,6 @@
 if (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE__)
-endif (WIN32)
+    add_definitions(-D__BUILD_GADGETRON_CPUCORE__)
+endif ()
 
 include_directories(
     ${FFTW3_INCLUDE_DIR}
@@ -16,12 +16,12 @@ include_directories(
 
 if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 #if (MKL_FOUND)
-#    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-#    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-#endif (MKL_FOUND)
+#    include_directories( ${MKL_INCLUDE_DIR} )
+#    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+#endif ()
 
 set(header_files ../NDArray.h
                 ../complext.h

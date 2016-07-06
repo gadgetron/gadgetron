@@ -1,11 +1,11 @@
 if (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUPMRI__)
-  ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN)
-endif (WIN32)
+  add_definitions(-D__BUILD_GADGETRON_GPUPMRI__)
+  add_definitions(-DWIN32_LEAN_AND_MEAN)
+endif ()
 
 if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 include_directories(  
   ${CMAKE_SOURCE_DIR}/toolboxes/core

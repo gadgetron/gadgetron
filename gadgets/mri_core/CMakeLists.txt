@@ -1,20 +1,18 @@
-IF (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_MRICORE__)
-ENDIF (WIN32)
-
-find_package(Ismrmrd REQUIRED)
+if (WIN32)
+    add_definitions(-D__BUILD_GADGETRON_MRICORE__)
+endif ()
 
 if (MKL_FOUND)
     # This is a fix for the bug in SVD when MKL is multi-threaded
-    MESSAGE("MKL Found, enabling MKL for mri_core gadgets.")
+    message("MKL Found, enabling MKL for mri_core gadgets.")
     add_definitions(-DHAVE_MKL)
     # These are needed to get the linking to work properly when
     # MKL is installed, but Armadillo is NOT using it.
     list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
     list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
-    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-endif (MKL_FOUND)
+    include_directories( ${MKL_INCLUDE_DIR} )
+    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+endif ()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
@@ -60,8 +58,8 @@ if (ARMADILLO_FOUND)
     list(APPEND OPTIMIZED_GADGET_HEADERS PCACoilGadget.h)
     list(APPEND OPTIMIZED_GADGET_LIBS gadgetron_toolbox_cpucore_math ${ARMADILLO_LIBRARIES})
 elseif (ARMADILLO_FOUND)
-    MESSAGE("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
-endif (ARMADILLO_FOUND)
+    message("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
+endif ()
 
 set( gadgetron_mricore_header_files GadgetMRIHeaders.h 
                                     AcquisitionPassthroughGadget.h 
@@ -217,7 +215,7 @@ install(FILES
 
 if (ARMADILLO_FOUND)
     install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
-endif (ARMADILLO_FOUND)
+endif ()
 
 install(FILES ismrmrd_dump.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 

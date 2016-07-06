@@ -52,7 +52,7 @@ if(WIN32)
         HINTS ${MATLAB_ROOT}
         PATH_SUFFIXES extern/include
     )
-else(WIN32)
+else()
     find_path(
         MATLAB_ROOT extern/include/mex.h
         HINTS $ENV{MATLAB_HOME} $ENV{MATLAB_ROOT}
@@ -65,7 +65,7 @@ else(WIN32)
         HINTS ${MATLAB_ROOT}
         PATH_SUFFIXES extern/include
     )
-endif(WIN32)
+endif()
 
 # find each library
 # give it it's own cmake variable

@@ -28,6 +28,6 @@ install(FILES
 
 add_subdirectory(cpu)
 
-IF( CUDA_FOUND)
+if( CUDA_FOUND)
   add_subdirectory(gpu)
-ENDIF (CUDA_FOUND)
+endif ()

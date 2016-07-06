@@ -7,8 +7,8 @@ if (ARMADILLO_FOUND)
     spiral_interactive.xml 
     DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found, only unoptimized spiral config files will be available")
-endif (ARMADILLO_FOUND)
+  message("Armadillo not found, only unoptimized spiral config files will be available")
+endif ()
 
 install (FILES 
   spiral_flow_gpusense_cg_unoptimized.xml 

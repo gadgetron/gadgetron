@@ -1,8 +1,6 @@
-IF (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUGADGET__)
-ENDIF (WIN32)
-
-find_package(Ismrmrd REQUIRED)
+if (WIN32)
+  add_definitions(-D__BUILD_GADGETRON_GPUGADGET__)
+endif ()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core

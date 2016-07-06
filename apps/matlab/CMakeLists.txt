@@ -4,7 +4,7 @@ if (MATLAB_FOUND)
 
     message("MATLAB FOUND: matlab wrapper for toolbox will be compiled.")
 
-    SET(CMAKE_DEBUG_POSTFIX)
+    set(CMAKE_DEBUG_POSTFIX)
 
     include_directories( 
         ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -35,32 +35,32 @@ if (MATLAB_FOUND)
 
     if (WIN32)
         if ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexw64")
-        else ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexw32")
-        endif ( HAS_64_BIT )
+            set(MATLAB_SUFFIX ".mexw64")
+        else ()
+            set(MATLAB_SUFFIX ".mexw32")
+        endif ()
 
         add_definitions(-DMATLAB_DLL_EXPORT_SYM)
-    endif (WIN32)
+    endif ()
 
     if (UNIX)
         if ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexa64")
-        else ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexglx")
-        endif ( HAS_64_BIT )
-    endif (UNIX)
+            set(MATLAB_SUFFIX ".mexa64")
+        else ()
+            set(MATLAB_SUFFIX ".mexglx")
+        endif ()
+    endif ()
 
     if (APPLE)
         if ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexmaci64")
-        endif ( HAS_64_BIT )
-    endif(APPLE)
+            set(MATLAB_SUFFIX ".mexmaci64")
+        endif ()
+    endif()
 
     add_library(Matlab_gt_compute_coil_map SHARED Matlab_gt_compute_coil_map.cpp)
-    SET_TARGET_PROPERTIES(Matlab_gt_compute_coil_map PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+    set_target_properties(Matlab_gt_compute_coil_map PROPERTIES SUFFIX ${MATLAB_SUFFIX})
     install(TARGETS Matlab_gt_compute_coil_map DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
-else(MATLAB_FOUND)
+else()
     message("MATLAB NOT FOUND: matlab wrapper for toolbox will not be compiled.")
-endif(MATLAB_FOUND)
+endif()

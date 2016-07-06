@@ -1,9 +1,8 @@
 find_package(ZFP REQUIRED)
-find_package(Ismrmrd REQUIRED)
 
-IF (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_COMPRESSION_GADGETS__)
-ENDIF (WIN32)
+if (WIN32)
+    add_definitions(-D__BUILD_GADGETRON_COMPRESSION_GADGETS__)
+endif ()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core
