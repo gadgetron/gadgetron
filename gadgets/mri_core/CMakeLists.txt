@@ -108,7 +108,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     GenericReconImageArrayScalingGadget.h 
                                     GenericReconEigenChannelGadget.h 
                                     GenericReconNoiseStdMapComputingGadget.h 
-                                    WhiteNoiseInjectorGadget.h )
+                                    WhiteNoiseInjectorGadget.h
+                                    NoiseSummaryGadget.h )
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -156,28 +157,31 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 GenericReconImageArrayScalingGadget.cpp 
                                 GenericReconEigenChannelGadget.cpp 
                                 GenericReconNoiseStdMapComputingGadget.cpp 
-                                WhiteNoiseInjectorGadget.cpp )
+                                WhiteNoiseInjectorGadget.cpp
+                                NoiseSummaryGadget.cpp )
 
 set( gadgetron_mricore_config_files
-    default.xml
-    default_short.xml
-    default_optimized.xml
-    default_measurement_dependencies.xml
-    default_measurement_dependencies_ismrmrd_storage.xml
-    isalive.xml
-    gtquery.xml
-    Generic_Cartesian_Grappa.xml
-    Generic_Cartesian_Grappa_SNR.xml
-    Generic_Cartesian_Grappa_T2W.xml
-    Generic_Cartesian_Grappa_FatWater.xml
-    Generic_Cartesian_Grappa_RealTimeCine.xml
-    Generic_Cartesian_Grappa_EPI.xml
-    Generic_Cartesian_Grappa_EPI_AVE.xml
-    Generic_Cartesian_Spirit.xml
-    Generic_Cartesian_Spirit_RealTimeCine.xml
-    Generic_Cartesian_Spirit_SASHA.xml
-    Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
-    Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
+    config/default.xml
+    config/default_short.xml
+    config/default_optimized.xml
+    config/default_measurement_dependencies.xml
+    config/default_measurement_dependencies_ismrmrd_storage.xml
+    config/isalive.xml
+    config/gtquery.xml
+    config/Generic_Cartesian_Grappa.xml
+    config/Generic_Cartesian_Grappa_SNR.xml
+    config/Generic_Cartesian_Grappa_T2W.xml
+    config/Generic_Cartesian_Grappa_FatWater.xml
+    config/Generic_Cartesian_Grappa_RealTimeCine.xml
+    config/Generic_Cartesian_Grappa_EPI.xml
+    config/Generic_Cartesian_Grappa_EPI_AVE.xml
+    config/Generic_Cartesian_Spirit.xml
+    config/Generic_Cartesian_Spirit_RealTimeCine.xml
+    config/Generic_Cartesian_Spirit_SASHA.xml
+    config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
+    config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
+    config/NoiseSummary.xml
+    config/ismrmrd_dump.xml
 )
 
 add_library(gadgetron_mricore SHARED 
@@ -216,7 +220,5 @@ install(FILES
 if (ARMADILLO_FOUND)
     install(FILES ${gadgetron_mricore_config_files} DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 endif ()
-
-install(FILES ismrmrd_dump.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_mricore DESTINATION lib COMPONENT main)
