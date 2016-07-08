@@ -25,6 +25,7 @@
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/dataset.h>
 #include <ismrmrd/meta.h>
+#include <ismrmrd/xml.h>
 
 #include <fstream>
 #include <streambuf>
@@ -61,6 +62,16 @@ std::string get_date_time_string()
 
     return ret;
 }
+
+struct NoiseStatistics
+{
+    bool status;
+    uint16_t channels;
+    float sigma_min;
+    float sigma_max;
+    float sigma_mean;
+    float noise_dwell_time_us;
+};
 
 #if defined GADGETRON_COMPRESSION
 size_t compress_tolerance(float* in, size_t samples, size_t coils, double tolerance, char* buffer, size_t buf_size)
@@ -1309,7 +1320,7 @@ public:
         }
     }
 
-    void send_ismrmrd_compressed_acquisition_tolerance(ISMRMRD::Acquisition& acq, float compression_tolerance) 
+    void send_ismrmrd_compressed_acquisition_tolerance(ISMRMRD::Acquisition& acq, float compression_tolerance, NoiseStatistics& stat) 
     {
         
         if (!socket_) {
@@ -1330,6 +1341,11 @@ public:
             boost::asio::write(*socket_, boost::asio::buffer(&acq.getTrajPtr()[0], sizeof(float)*trajectory_elements));
         }
 
+        float local_tolerance = compression_tolerance;
+        float sigma = stat.sigma_min; //We use the minimum sigma of all channels to "cap" the error
+        if (stat.status && sigma > 0 && stat.noise_dwell_time_us && acq.getHead().sample_time_us) {
+            local_tolerance = local_tolerance*stat.sigma_min*acq.getHead().sample_time_us*std::sqrt(stat.noise_dwell_time_us/acq.getHead().sample_time_us);
+        }
 
         if (data_elements) {
             size_t comp_buffer_size = 4*sizeof(float)*data_elements;
@@ -1338,7 +1354,7 @@ public:
             try {
                 compressed_size = compress_tolerance((float*)&acq.getDataPtr()[0],
                                            acq.getHead().number_of_samples*2, acq.getHead().active_channels,
-                                           compression_tolerance, comp_buffer, comp_buffer_size);
+                                           local_tolerance, comp_buffer, comp_buffer_size);
 
                 compressed_bytes_sent_ += compressed_size;
                 uncompressed_bytes_sent_ += data_elements*2*sizeof(float);
@@ -1392,6 +1408,121 @@ protected:
 };
 
 
+class GadgetronClientQueryToStringReader : public GadgetronClientMessageReader
+{
+  
+public:
+  GadgetronClientQueryToStringReader(std::string* result) : result_(result)
+  {
+    
+  }
+
+  virtual ~GadgetronClientQueryToStringReader()
+  {
+    
+  }
+
+  virtual void read(tcp::socket* stream)
+  {
+    size_t recv_count = 0;
+    
+    typedef unsigned long long size_t_type;
+    size_t_type len(0);
+    boost::asio::read(*stream, boost::asio::buffer(&len, sizeof(size_t_type)));
+
+    char* buf = NULL;
+    try {
+      buf = new char[len];
+      memset(buf, '\0', len);
+      memcpy(buf, &len, sizeof(size_t_type));
+    } catch (std::runtime_error &err) {
+      std::cerr << "DependencyQueryReader, failed to allocate buffer" << std::endl;
+      throw;
+    }
+    
+    
+    if (boost::asio::read(*stream, boost::asio::buffer(buf, len)) != len)
+    {
+      delete [] buf;
+      throw GadgetronClientException("Incorrect number of bytes read for dependency query");  
+    }
+    
+    if (!result_) {
+      delete [] buf;
+      throw GadgetronClientException("Result pointer is NULL");  
+    }
+    
+    *result_ = std::string(buf);
+
+    delete[] buf;
+  }
+  
+  protected:
+    std::string* result_;
+};
+
+
+NoiseStatistics get_noise_statistics(std::string dependency_name, std::string host_name, std::string port, uint timeout_ms)
+{
+    GadgetronClientConnector con;
+    con.set_timeout(timeout_ms);
+    std::string result;
+    NoiseStatistics stat;
+
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientQueryToStringReader(&result)));
+    
+    std::string xml_config;
+    
+    xml_config += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    xml_config += "      <gadgetronStreamConfiguration xsi:schemaLocation=\"http://gadgetron.sf.net/gadgetron gadgetron.xsd\"\n";
+    xml_config += "        xmlns=\"http://gadgetron.sf.net/gadgetron\"\n";
+    xml_config += "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n";
+    xml_config += "\n";
+    xml_config += "    <writer>\n";
+    xml_config += "      <slot>1019</slot>\n";
+    xml_config += "      <dll>gadgetron_mricore</dll>\n";
+    xml_config += "      <classname>DependencyQueryWriter</classname>\n";
+    xml_config += "    </writer>\n";
+    xml_config += "\n";
+    xml_config += "    <gadget>\n";
+    xml_config += "      <name>NoiseSummary</name>\n";
+    xml_config += "      <dll>gadgetron_mricore</dll>\n";
+    xml_config += "      <classname>NoiseSummaryGadget</classname>\n";
+    xml_config += "\n";
+    xml_config += "      <property>\n";
+    xml_config += "         <name>noise_file</name>\n";
+    xml_config += "         <value>" + dependency_name + "</value>\n";
+    xml_config += "      </property>\n";
+    xml_config += "    </gadget>\n";
+    xml_config += "\n";
+    xml_config += "</gadgetronStreamConfiguration>\n";
+
+    try {
+        con.connect(host_name,port);
+        con.send_gadgetron_configuration_script(xml_config);       
+        con.send_gadgetron_close();
+        con.wait();
+    } catch (...) {
+        std::cerr << "Unable to retrive noise statistics from server" << std::endl;
+        stat.status = false;
+    }
+
+    try {
+        ISMRMRD::MetaContainer meta;
+        ISMRMRD::deserialize(result.c_str(), meta);
+        stat.status = meta.as_str("status") == std::string("success");
+        stat.channels = meta.as_long("channels");
+        stat.sigma_min = meta.as_double("min_sigma");
+        stat.sigma_max = meta.as_double("max_sigma");
+        stat.sigma_mean = meta.as_double("mean_sigma");
+        stat.noise_dwell_time_us = meta.as_double("noise_dwell_time_us");
+    } catch (...) {
+        stat.status = false;
+    }
+
+    return stat;
+}
+
 int main(int argc, char **argv)
 {
 
@@ -1432,7 +1563,7 @@ int main(int argc, char **argv)
         ("outformat,F", po::value<std::string>(&out_fileformat)->default_value("h5"), "Out format, h5 for hdf5 and hdr for analyze image")
 #if defined GADGETRON_COMPRESSION
         ("precision,P", po::value<uint>(&compression_precision)->default_value(0), "Compression precision (bits)")
-        ("tolerance,T", po::value<float>(&compression_tolerance)->default_value(0.0), "Compression tolerance (absolute error)")
+        ("tolerance,T", po::value<float>(&compression_tolerance)->default_value(0.0), "Compression tolerance (fraction of sigma, if no noise stats, assume sigma 1)")
 #endif //GADGETRON_COMPRESSION
         ;
 
@@ -1467,7 +1598,6 @@ int main(int argc, char **argv)
         }
     }
 
-
     if (compression_precision > 0 && compression_tolerance > 0.0) {
        std::cout << "You cannot supply both compression precision (P) and compression tolerance (T) at the same time" << std::endl;
        return -1;
@@ -1501,6 +1631,58 @@ int main(int argc, char **argv)
       std::cout << "  -- hdf5 file out   :      " << out_filename << std::endl;
       std::cout << "  -- hdf5 group out  :      " << hdf5_out_group << std::endl;
     }
+
+
+    //Let's figure out if this measurement has dependencies
+    NoiseStatistics noise_stats; noise_stats.status = false;
+    if (!vm.count("query")) {
+        ISMRMRD::IsmrmrdHeader h;
+        ISMRMRD::deserialize(xml_config.c_str(),h);
+        
+        std::string noise_id;
+        if (h.measurementInformation.is_present() &&
+            (h.measurementInformation().measurementDependency.size() > 0)) {
+            std::cout << "This measurement has dependent measurements" << std::endl;
+            for (auto d: h.measurementInformation().measurementDependency) {
+                std::cout << "  " << d.dependencyType << " : " << d.measurementID << std::endl;
+                if (d.dependencyType == "Noise") {
+                    noise_id = d.measurementID;
+                }
+            }
+        }
+        
+        if (!noise_id.empty()) {
+            //TODO: Remove this hack. This hack addresses a problem with mislabeled noise dependency IDs generated by the converter.
+            //We will keep this for a transition period while preserving backwards compatibility
+            if (noise_id.find("_") == std::string::npos) {
+                // find the scan prefix
+                if (h.measurementInformation().measurementID.is_present()) { 
+                    std::string measurementStr = h.measurementInformation().measurementID();
+                    size_t ind  = measurementStr.find_last_of ("_");
+                    if ( ind != std::string::npos ) {
+                        measurementStr = measurementStr.substr(0, ind);
+                        measurementStr.append("_");
+                        measurementStr.append(noise_id);
+                    }
+                    noise_id = measurementStr;
+                }
+            }
+            
+            std::cout << "Querying the Gadgetron instance for the dependent measurement: " << noise_id << std::endl; 
+            noise_stats = get_noise_statistics(std::string("GadgetronNoiseCovarianceMatrix_") + noise_id, host_name, port, timeout_ms);
+            if (!noise_stats.status) {
+                std::cout << "WARNING: Dependent noise measurement not found on Gadgetron server. Was the noise data processed?" << std::endl;
+#if defined GADGETRON_COMPRESSION
+                if (compression_tolerance > 0.0) {
+                    std::cout << "  !!!!!! COMPRESSION TOLERANCE LEVEL SPECIFIED, BUT IT IS NOT POSSIBLE TO DETERMINE SIGMA. ASSIMUMING SIGMA == 1 !!!!!!" << std::endl;
+                }
+#endif //GADGETRON_COMPRESSION
+            } else {
+                std::cout << "Noise level: Min sigma = " << noise_stats.sigma_min << ", Mean sigma = " << noise_stats.sigma_mean << ", Max sigma = " << noise_stats.sigma_max << std::endl; 
+            }
+        }
+    }
+    
 
     GadgetronClientConnector con;
     con.set_timeout(timeout_ms);
@@ -1549,7 +1731,7 @@ int main(int argc, char **argv)
               if (compression_precision > 0) {
                  con.send_ismrmrd_compressed_acquisition_precision(acq_tmp,compression_precision);
               } else if (compression_tolerance > 0.0) {
-                 con.send_ismrmrd_compressed_acquisition_tolerance(acq_tmp,compression_tolerance);
+                  con.send_ismrmrd_compressed_acquisition_tolerance(acq_tmp,compression_tolerance, noise_stats);
               } else {
                   con.send_ismrmrd_acquisition(acq_tmp);              
               }

@@ -102,6 +102,8 @@ namespace Gadgetron
                 m1->getObjectPtr()->append("min_sigma",min_sigma);
                 m1->getObjectPtr()->append("max_sigma",max_sigma);
                 m1->getObjectPtr()->append("mean_sigma",mean_sigma);
+                m1->getObjectPtr()->append("channels", static_cast<long>(coils));
+                m1->getObjectPtr()->append("status", "success");
             }
             
             // send the found dependencies
