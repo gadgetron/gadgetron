@@ -3,6 +3,7 @@
 
 #include <boost/filesystem.hpp>
 #include <limits>
+#include <fstream>
 
 using namespace boost::filesystem;
 
