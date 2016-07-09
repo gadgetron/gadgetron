@@ -1277,10 +1277,13 @@ public:
 
         GadgetMessageIdentifier id;
         //TODO: switch data type
-        id.id = GADGET_MESSAGE_ISMRMRD_COMPRESSED_ACQUISITION;
+        id.id = GADGET_MESSAGE_ISMRMRD_ACQUISITION;
+
+        ISMRMRD::AcquisitionHeader h = acq.getHead(); //We will make a copy because we will be setting some flags
+        h.setFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION1);
 
         boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&acq.getHead(), sizeof(ISMRMRD::AcquisitionHeader)));
+        boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;
@@ -1329,10 +1332,13 @@ public:
 
         GadgetMessageIdentifier id;
         //TODO: switch data type
-        id.id = GADGET_MESSAGE_ISMRMRD_COMPRESSED_ACQUISITION;
+        id.id = GADGET_MESSAGE_ISMRMRD_ACQUISITION;
+
+        ISMRMRD::AcquisitionHeader h = acq.getHead(); //We will make a copy because we will be setting some flags
+        h.setFlag(ISMRMRD::ISMRMRD_ACQ_COMPRESSION1);
 
         boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
-        boost::asio::write(*socket_, boost::asio::buffer(&acq.getHead(), sizeof(ISMRMRD::AcquisitionHeader)));
+        boost::asio::write(*socket_, boost::asio::buffer(&h, sizeof(ISMRMRD::AcquisitionHeader)));
 
         unsigned long trajectory_elements = acq.getHead().trajectory_dimensions*acq.getHead().number_of_samples;
         unsigned long data_elements = acq.getHead().active_channels*acq.getHead().number_of_samples;

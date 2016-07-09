@@ -2,6 +2,16 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_MRICORE__)
 endif ()
 
+find_package(ZFP)
+if (ZFP_FOUND)
+    message("ZFP Found")
+    add_definitions(-DGADGETRON_COMPRESSION)
+    include_directories(${ZFP_INCLUDE_DIR})
+else ()
+    message("ZFP NOT Found")
+endif ()
+
+
 if (MKL_FOUND)
     # This is a fix for the bug in SVD when MKL is multi-threaded
     message("MKL Found, enabling MKL for mri_core gadgets.")
@@ -210,6 +220,10 @@ target_link_libraries(gadgetron_mricore
     ${OPTIMIZED_GADGET_LIBS}
     ${Boost_LIBRARIES}
 )
+
+if (ZFP_FOUND)
+   target_link_libraries(gadgetron_mricore ${ZFP_LIBRARIES})
+endif ()
 
 install(FILES 
     gadgetron_mricore_export.h

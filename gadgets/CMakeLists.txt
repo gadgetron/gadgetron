@@ -6,12 +6,6 @@ endif ()
 # These dependencies should have been found already to even get in here, but we play safe
 find_package(ACE)
 find_package(FFTW3 COMPONENTS single double)
-find_package(ZFP)
-if (ZFP_FOUND)
-    message("ZFP Found")
-else ()
-    message("ZFP NOT Found")
-endif ()
 
 include_directories(
   ${CMAKE_BINARY_DIR}/apps/gadgetron
@@ -48,10 +42,6 @@ if (CUDA_FOUND)
   add_subdirectory(gpu)
 else ()
   message("Cuda NOT found, NOT compiling gpu accelerated gadgets")
-endif()
-
-if (ZFP_FOUND)
-   add_subdirectory(compression)
 endif()
 
 add_subdirectory(grappa)
