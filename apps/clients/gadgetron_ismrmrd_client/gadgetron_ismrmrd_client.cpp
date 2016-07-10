@@ -1604,15 +1604,16 @@ int main(int argc, char **argv)
         }
     }
 
+#if defined GADGETRON_COMPRESSION
     if (compression_precision > 0 && compression_tolerance > 0.0) {
        std::cout << "You cannot supply both compression precision (P) and compression tolerance (T) at the same time" << std::endl;
        return -1;
     }
+#endif 
     
     //Let's check if the files exist:
     std::string hdf5_xml_varname = std::string(hdf5_in_group) + std::string("/xml");
     std::string hdf5_data_varname = std::string(hdf5_in_group) + std::string("/data");
-
 
     //TODO:
     // Add check to see if input file exists
