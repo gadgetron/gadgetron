@@ -129,7 +129,7 @@ size_t compress_tolerance(float* in, size_t samples, size_t coils, double tolera
 }
 
 
-size_t compress_precision(float* in, size_t samples, size_t coils, uint precision, char* buffer, size_t buf_size)
+size_t compress_precision(float* in, size_t samples, size_t coils, unsigned int precision, char* buffer, size_t buf_size)
 {
   zfp_type type = zfp_type_float;
   zfp_field* field = NULL;
@@ -1268,7 +1268,7 @@ public:
     }
 
 #if defined GADGETRON_COMPRESSION    
-    void send_ismrmrd_compressed_acquisition_precision(ISMRMRD::Acquisition& acq, uint compression_precision) 
+    void send_ismrmrd_compressed_acquisition_precision(ISMRMRD::Acquisition& acq, unsigned int compression_precision) 
     {
         
         if (!socket_) {
@@ -1468,7 +1468,7 @@ public:
 };
 
 
-NoiseStatistics get_noise_statistics(std::string dependency_name, std::string host_name, std::string port, uint timeout_ms)
+NoiseStatistics get_noise_statistics(std::string dependency_name, std::string host_name, std::string port, unsigned int timeout_ms)
 {
     GadgetronClientConnector con;
     con.set_timeout(timeout_ms);
@@ -1547,7 +1547,7 @@ int main(int argc, char **argv)
     bool open_input_file = true;
 
 #if defined GADGETRON_COMPRESSION
-    uint compression_precision = 0;
+    unsigned int compression_precision = 0;
     float compression_tolerance = 0.0;
 #endif //GADGETRON_COMPRESSION
     
@@ -1568,7 +1568,7 @@ int main(int argc, char **argv)
         ("timeout,t", po::value<unsigned int>(&timeout_ms)->default_value(10000), "Timeout [ms]")
         ("outformat,F", po::value<std::string>(&out_fileformat)->default_value("h5"), "Out format, h5 for hdf5 and hdr for analyze image")
 #if defined GADGETRON_COMPRESSION
-        ("precision,P", po::value<uint>(&compression_precision)->default_value(0), "Compression precision (bits)")
+        ("precision,P", po::value<unsigned int>(&compression_precision)->default_value(0), "Compression precision (bits)")
         ("tolerance,T", po::value<float>(&compression_tolerance)->default_value(0.0), "Compression tolerance (fraction of sigma, if no noise stats, assume sigma 1)")
 #endif //GADGETRON_COMPRESSION
         ;
