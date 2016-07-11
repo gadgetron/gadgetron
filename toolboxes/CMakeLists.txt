@@ -1,12 +1,12 @@
 if (WIN32)
-    ADD_DEFINITIONS(-DTIXML_USE_STL)
-endif (WIN32)
+    add_definitions(-DTIXML_USE_STL)
+endif ()
 
 if (MKL_FOUND)
-    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+    include_directories( ${MKL_INCLUDE_DIR} )
+    link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
     link_libraries(${MKL_LIBRARIES})
-endif (MKL_FOUND)
+endif ()
 
 add_subdirectory(log)
 
@@ -25,7 +25,7 @@ if (FFTW3_FOUND)
 
   if (ISMRMRD_FOUND)
     add_subdirectory(mri_image)
-  endif(ISMRMRD_FOUND)
+  endif()
 endif()
 
 add_subdirectory(klt)
@@ -36,10 +36,10 @@ add_subdirectory(rest)
 add_subdirectory(fatwater)
 add_subdirectory(ffd)
 
-IF (ACE_FOUND)
+if (ACE_FOUND)
   add_subdirectory(gadgettools)
   add_subdirectory(cloudbus)
-ENDIF()
+endif()
 
 add_subdirectory(image_io)
 
@@ -50,15 +50,15 @@ find_package(LAPACK)
 if (MATLAB_FOUND)
   message("Compiling MATLAB toolbox")
   add_subdirectory(matlab)
-endif(MATLAB_FOUND)
+endif()
 
 
 # Should we compile the python toolbox
 find_package(Boost COMPONENTS python system thread REQUIRED)
 if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     add_subdirectory(python)
-endif (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+endif ()
 
 if (ARMADILLO_FOUND AND Boost_FOUND AND PLPLOT_FOUND)
     add_subdirectory(plplot)
-endif (ARMADILLO_FOUND AND Boost_FOUND AND PLPLOT_FOUND)
+endif ()

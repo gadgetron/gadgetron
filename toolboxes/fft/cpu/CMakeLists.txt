@@ -1,6 +1,6 @@
 if (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUFFT__)
-endif (WIN32)
+  add_definitions(-D__BUILD_GADGETRON_CPUFFT__)
+endif ()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -29,14 +29,14 @@ if (MKL_FOUND)
       ${MKL_LIBRARIES} 
       ${Boost_LIBRARIES} 
       )
-else (MKL_FOUND)
+else ()
 target_link_libraries(gadgetron_toolbox_cpufft
   gadgetron_toolbox_cpucore
   gadgetron_toolbox_log
   gadgetron_toolbox_cpucore_math
   ${FFTW3_LIBRARIES} 
   )
-endif (MKL_FOUND)
+endif ()
 
 install(TARGETS gadgetron_toolbox_cpufft DESTINATION lib COMPONENT main)
 

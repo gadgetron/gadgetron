@@ -1,8 +1,8 @@
-ENABLE_TESTING()
+enable_testing()
 
 if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 include_directories( ${GTEST_INCLUDE_DIRS} 
                      ${CMAKE_SOURCE_DIR}/toolboxes/plplot 

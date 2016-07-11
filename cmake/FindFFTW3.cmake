@@ -52,20 +52,20 @@ foreach(_comp ${_components})
     list(APPEND _libraries fftw3l)
   elseif(_comp STREQUAL "threads")
     set(_use_threads ON)
-  else(_comp STREQUAL "single")
+  else()
     message(FATAL_ERROR "FindFFTW3: unknown component `${_comp}' specified. "
       "Valid components are `single', `double', `long-double', and `threads'.")
-  endif(_comp STREQUAL "single")
-endforeach(_comp ${_components})
+  endif()
+endforeach()
 
 # If using threads, we need to link against threaded libraries as well.
 if(_use_threads)
   set(_thread_libs)
   foreach(_lib ${_libraries})
     list(APPEND _thread_libs ${_lib}_threads)
-  endforeach(_lib ${_libraries})
+  endforeach()
   set(_libraries ${_thread_libs} ${_libraries})
-endif(_use_threads)
+endif()
 
 # Keep a list of variable names that we need to pass on to
 # find_package_handle_standard_args().
@@ -83,11 +83,11 @@ if (WIN32)
       mark_as_advanced(${_LIB}_LIBRARY)
       list(APPEND FFTW3_LIBRARIES ${${_LIB}_LIBRARY})
       list(APPEND _check_list ${_LIB}_LIBRARY)
-    endforeach(_lib ${_libraries})
+    endforeach()
 
     message("FFTW3 WINDOWS libraries: " ${FFTW3_LIBRARIES})
 
-else (WIN32)
+else ()
     foreach(_lib ${_libraries})
 
       string(TOUPPER ${_lib} _LIB)
@@ -97,10 +97,10 @@ else (WIN32)
       mark_as_advanced(${_LIB}_LIBRARY)
       list(APPEND FFTW3_LIBRARIES ${${_LIB}_LIBRARY})
       list(APPEND _check_list ${_LIB}_LIBRARY)
-    endforeach(_lib ${_libraries})
+    endforeach()
 
     message("FFTW3 UNIX libraries: " ${FFTW3_LIBRARIES})
-endif (WIN32)
+endif ()
 
 # Search for the header file.
 find_path(FFTW3_INCLUDE_DIR fftw3.h 

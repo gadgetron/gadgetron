@@ -1,6 +1,6 @@
-IF (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_UTIL_GADGETS__)
-ENDIF (WIN32)
+if (WIN32)
+    add_definitions(-D__BUILD_GADGETRON_UTIL_GADGETS__)
+endif ()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -27,13 +27,13 @@ target_link_libraries(gadgetron_util
     ${CUDA_CUBLAS_LIBRARIES} 
 )
 
-else (CUDA_FOUND)
+else ()
   target_link_libraries(gadgetron_util
     gadgetron_gadgetbase
     gadgetron_toolbox_log
     ${ACE_LIBRARIES}
 )
-endif(CUDA_FOUND)
+endif()
 
 install(FILES 
     gadgetron_util_gadgets_export.h

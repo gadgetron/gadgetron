@@ -26,6 +26,6 @@ ${QT_QTCORE_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY} )
 
 if (WIN32)
 set_target_properties( sense_2d_golden_radial_gui PROPERTIES LINK_FLAGS "/FORCE:MULTIPLE") 
-endif (WIN32)
+endif ()
 
 install(TARGETS sense_2d_golden_radial_gui DESTINATION bin COMPONENT main)

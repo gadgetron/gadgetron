@@ -27,10 +27,10 @@ set(operator_header_files
 install(FILES ${operator_header_files}
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
-IF (ARMADILLO_FOUND)
+if (ARMADILLO_FOUND)
   add_subdirectory(cpu)
-ENDIF (ARMADILLO_FOUND)
+endif ()
 
-IF (CUDA_FOUND)
+if (CUDA_FOUND)
   add_subdirectory(gpu)
-ENDIF (CUDA_FOUND)
+endif ()

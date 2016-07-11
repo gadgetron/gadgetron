@@ -1,5 +1,14 @@
 FROM gadgetron/ubuntu1404_base
 
+#ZFP
+RUN cd /opt && \
+    git clone https://github.com/hansenms/ZFP.git && \
+    cd ZFP && \
+    mkdir lib && \
+    make && \
+    make shared && \
+    make install
+
 #ISMRMRD
 RUN mkdir /opt/code
 RUN cd /opt/code && \

@@ -4,7 +4,7 @@ if (MATLAB_FOUND)
 
     message("MATLAB FOUND: matlab wrapper for gtplus toolbox will be compiled.")
 
-    SET(CMAKE_DEBUG_POSTFIX)
+    set(CMAKE_DEBUG_POSTFIX)
 
     include_directories( 
         ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
@@ -30,40 +30,40 @@ if (MATLAB_FOUND)
 
     if (WIN32)
         if ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexw64")
-        else ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexw32")
-        endif ( HAS_64_BIT )
+            set(MATLAB_SUFFIX ".mexw64")
+        else ()
+            set(MATLAB_SUFFIX ".mexw32")
+        endif ()
 
         add_definitions(-DMATLAB_DLL_EXPORT_SYM)
-    endif (WIN32)
+    endif ()
 
     if (UNIX)
         if ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexa64")
-        else ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexglx")
-        endif ( HAS_64_BIT )
-    endif (UNIX)
+            set(MATLAB_SUFFIX ".mexa64")
+        else ()
+            set(MATLAB_SUFFIX ".mexglx")
+        endif ()
+    endif ()
 
     if (APPLE)
         if ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexmaci64")
-        endif ( HAS_64_BIT )
-    endif(APPLE)
+            set(MATLAB_SUFFIX ".mexmaci64")
+        endif ()
+    endif()
 
     if ( MKL_FOUND AND FFTW3_FOUND )
 
         add_library(Matlab_gt_read_analyze SHARED Matlab_gt_read_analyze.cpp)
-        SET_TARGET_PROPERTIES(Matlab_gt_read_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+        set_target_properties(Matlab_gt_read_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
         install(TARGETS Matlab_gt_read_analyze DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
         add_library(Matlab_gt_write_analyze SHARED Matlab_gt_write_analyze.cpp)
-        SET_TARGET_PROPERTIES(Matlab_gt_write_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
+        set_target_properties(Matlab_gt_write_analyze PROPERTIES SUFFIX ${MATLAB_SUFFIX})
         install(TARGETS Matlab_gt_write_analyze DESTINATION ${GADGETRON_INSTALL_MATLAB_PATH} COMPONENT main)
 
-    endif ( MKL_FOUND AND FFTW3_FOUND )
+    endif ()
 
-else(MATLAB_FOUND)
+else()
     message("MATLAB NOT FOUND: matlab wrapper for gtplus toolbox will not be compiled.")
-endif(MATLAB_FOUND)
+endif()

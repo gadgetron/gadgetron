@@ -520,7 +520,7 @@ namespace Gadgetron{
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
 
-        return isamax_(&num, (float*)(x), &incx);
+        return isamax_(&num, (float*)(x), &incx) - size_t(1);
     }
 
     inline size_t amax(size_t N, const double* x)
@@ -528,7 +528,7 @@ namespace Gadgetron{
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
 
-        return idamax_(&num, (double*)(x), &incx);
+        return idamax_(&num, (double*)(x), &incx) - size_t(1);
     }
 
     inline size_t amax(size_t N, const  std::complex<float> * x)
@@ -536,7 +536,7 @@ namespace Gadgetron{
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
 
-        return icamax_(&num, (lapack_complex_float*)(x), &incx);
+        return icamax_(&num, (lapack_complex_float*)(x), &incx) - size_t(1);
     }
 
     inline size_t amax(size_t N, const  std::complex<double> * x)
@@ -544,7 +544,7 @@ namespace Gadgetron{
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
 
-        return izamax_(&num, (lapack_complex_double*)(x), &incx);
+        return izamax_(&num, (lapack_complex_double*)(x), &incx) - size_t(1);
     }
 
     template<class T> size_t amax(const hoNDArray<T>& x)

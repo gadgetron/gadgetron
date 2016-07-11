@@ -1,8 +1,6 @@
 if (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_GRAPPA__)
-endif (WIN32)
-
-find_package(Ismrmrd REQUIRED)
+    add_definitions(-D__BUILD_GADGETRON_GRAPPA__)
+endif ()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core
@@ -48,7 +46,7 @@ if(CUDA_FOUND)
       ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
       optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
       )
-else (CUDA_FOUND)
+else ()
     target_link_libraries(gadgetron_grappa 
       gadgetron_gadgetbase
       gadgetron_toolbox_log
@@ -60,7 +58,7 @@ else (CUDA_FOUND)
       ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
       optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
       )
-endif (CUDA_FOUND)
+endif ()
 
 install (FILES  gadgetron_grappa_export.h
                 GrappaCalibrationBuffer.h

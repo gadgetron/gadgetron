@@ -1,8 +1,8 @@
 find_package(HDF5 REQUIRED HL)
 
 if (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUXRAY__)
-endif (WIN32)
+  add_definitions(-D__BUILD_GADGETRON_GPUXRAY__)
+endif ()
 
 
 include_directories(
