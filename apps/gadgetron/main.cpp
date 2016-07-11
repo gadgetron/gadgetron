@@ -199,13 +199,20 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   if (rest_port > 0) {
     GINFO("Starting ReST interface on port %d\n", rest_port);
     Gadgetron::ReST::port_ = rest_port;
-    Gadgetron::ReST::instance()->server().route_dynamic("/info")([]()
-    {
-      std::stringstream ss;
-      print_system_information(ss);
-      std::string content = ss.str();
-      return content;
-    });
+
+
+    Gadgetron::ReST::instance()->server()
+        ->resource["/info"]["GET"]=[](std::shared_ptr<Gadgetron::HttpServer::Response> response, 
+                                      std::shared_ptr<Gadgetron::HttpServer::Request> request) 
+        {
+            std::stringstream content_stream;
+            print_system_information(content_stream);
+            
+            //find length of content_stream (length received using content_stream.tellp()) 
+          content_stream.seekp(0, std::ios::end);
+            
+            *response <<  "HTTP/1.1 200 OK\r\nContent-Length: " << content_stream.tellp() << "\r\n\r\n" << content_stream.rdbuf();
+        };
   }
 
   if (relay_port > 0) {
@@ -229,13 +236,20 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     }
     gadget_parameters["using_cloudbus"] = std::string("true"); //This is our message to the Gadgets that we have activated the bus
     if (rest_port) {
-      Gadgetron::ReST::instance()->server()
-	.route_dynamic("/cloudbus/active_recons")([]()
-						  {
-						    std::stringstream str;
-						    str << Gadgetron::CloudBus::instance()->active_reconstructions();
-						    return str.str();
-						  });
+
+        Gadgetron::ReST::instance()->server()
+            ->resource["/cloudbus/active_recons"]["GET"]=[](std::shared_ptr<Gadgetron::HttpServer::Response> response, 
+                                                            std::shared_ptr<Gadgetron::HttpServer::Request> request) 
+            {
+                std::stringstream content_stream;
+                content_stream << Gadgetron::CloudBus::instance()->active_reconstructions();
+                
+                //find length of content_stream (length received using content_stream.tellp()) 
+                content_stream.seekp(0, std::ios::end);
+                
+                *response <<  "HTTP/1.1 200 OK\r\nContent-Length: " << content_stream.tellp() << "\r\n\r\n" << content_stream.rdbuf();
+            };
+   
     }
   }
 
