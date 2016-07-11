@@ -22,22 +22,22 @@ configure_file("start-gadgetron-from-image.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/st
 set (LIBRARY_PATHS ${ISMRMRD_LIB_DIR})
 set (LIBRARY_PATHS ${LIBRARY_PATHS}:${MKL_LIB_DIR})
 
-FIND_LIBRARY( CUDA_LIBRARY NAMES libcuda.so )
+find_library( CUDA_LIBRARY NAMES libcuda.so )
 
 string(FIND "${CUDA_LIBRARIES}" "libcudart.so" LIBCUDART_LOC)
 string(FIND "${CUDA_LIBRARIES}" "libcuda.so" LIBCUDA_LOC)
 
 if (LIBCUDA_LOC EQUAL -1)
   get_filename_component(CUDART_LIB_DIR ${CUDA_LIBRARIES} PATH)
-else (LIBCUDA_LOC EQUAL -1)
+else ()
   if(LIBCUDART_LOC LESS LIBCUDA_LOC)
     string(SUBSTRING "${CUDA_LIBRARIES}" 0 ${LIBCUDART_LOC} CUDART_LIB_DIR)
-  else(LIBCUDART_LOC LESS LIBCUDA_LOC)
+  else()
     string(SUBSTRING "${CUDA_LIBRARIES}" ${LIBCUDA_LOC} -1 CUDART_LIB_TEMP)
     string(SUBSTRING "${CUDART_LIB_TEMP}" 10 -1 CUDART_LIB_TEMP2)
     get_filename_component(CUDART_LIB_DIR ${CUDART_LIB_TEMP2} PATH)
-  endif(LIBCUDART_LOC LESS LIBCUDA_LOC)
-endif (LIBCUDA_LOC EQUAL -1)
+  endif()
+endif ()
 
 get_filename_component(CUDA_LIB_DIR ${CUDA_LIBRARY} PATH)
 get_filename_component(CUDAFFT_LIB_DIR ${CUDA_CUFFT_LIBRARIES} PATH)
@@ -77,7 +77,7 @@ if (SIEMENS_TO_ISMRMRD_EXE)
     ${CMAKE_SOURCE_DIR}
     ${SIEMENS_TO_ISMRMRD_EXE}
     )
-else(SIEMENS_TO_ISMRMRD_EXE)
+else()
   add_custom_command(
     TARGET chroot
     POST_BUILD
@@ -91,7 +91,7 @@ else(SIEMENS_TO_ISMRMRD_EXE)
     ${CUDA_LIBRARY}
     ${CMAKE_SOURCE_DIR}
     )
-endif(SIEMENS_TO_ISMRMRD_EXE)
+endif()
 
 install(PROGRAMS 
   ${CMAKE_CURRENT_BINARY_DIR}/copy-cuda-lib.sh 

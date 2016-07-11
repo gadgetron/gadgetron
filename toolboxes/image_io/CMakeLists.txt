@@ -1,11 +1,11 @@
 
 if (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_IMAGE_ANALYZE_IO__)
-endif (WIN32)
+    add_definitions(-D__BUILD_GADGETRON_IMAGE_ANALYZE_IO__)
+endif ()
 
 if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 include_directories(
     ${ACE_INCLUDE_DIR} 

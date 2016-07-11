@@ -1,8 +1,6 @@
 if (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_MOCO__)
-endif (WIN32)
-
-find_package(Ismrmrd REQUIRED)
+  add_definitions(-D__BUILD_GADGETRON_MOCO__)
+endif ()
 
 set( CPU_REG 0)
 set( GPU_REG 0)
@@ -15,19 +13,19 @@ if(ARMADILLO_FOUND)
     list(APPEND CPU_LIBS gadgetron_toolbox_cpucore_math gadgetron_toolbox_cpureg)
     
   elseif(ARMADILLO_VERSION_STRING VERSION_GREATER "3.819" )
-    MESSAGE("Armadillo of at least version 3.820 not found, not compiling cpu-based registration gadgets")
-  endif(ARMADILLO_VERSION_STRING VERSION_GREATER "3.819" )
+    message("Armadillo of at least version 3.820 not found, not compiling cpu-based registration gadgets")
+  endif()
 elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found, not compiling cpu-based registration gadgets")
-endif (ARMADILLO_FOUND)
+  message("Armadillo not found, not compiling cpu-based registration gadgets")
+endif ()
 
 if(CUDA_FOUND)
   set(GPU_REG 1)
   list(APPEND GPU_GADGETS gpuRegistrationAveragingGadget.cpp gpuRegistrationScatteringGadget.cpp)
   list(APPEND GPU_LIBS gadgetron_toolbox_gpucore gadgetron_toolbox_gpureg ${CUDA_LIBRARIES})
 elseif (CUDA_FOUND)
-  MESSAGE("Cuda not found, not compiling gpu-based registration gadgets")
-endif (CUDA_FOUND)
+  message("Cuda not found, not compiling gpu-based registration gadgets")
+endif ()
 
 include_directories(   
   ${ACE_INCLUDE_DIR} 
@@ -49,7 +47,7 @@ if(CPU_REG)
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
     ${ARMADILLO_INCLUDE_DIRS}
     )
-endif(CPU_REG)
+endif()
 
 if(GPU_REG)
   include_directories(   
@@ -57,7 +55,7 @@ if(GPU_REG)
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/gpu
     ${CUDA_INCLUDE_DIRS}
     )
-endif(GPU_REG)
+endif()
 
 if(CUDA_FOUND)
     add_library(gadgetron_moco SHARED
@@ -81,7 +79,7 @@ if(CUDA_FOUND)
       )
 
     install (TARGETS gadgetron_moco DESTINATION lib COMPONENT main)
-endif(CUDA_FOUND)
+endif()
 
 install(FILES   cpuRegistrationAveragingGadget.h
                 gadgetron_moco_export.h

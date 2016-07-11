@@ -18,11 +18,11 @@ find_path(GADGETRON_HOME include/gadgetron/Gadget.h
 mark_as_advanced(GADGETRON_HOME)
 list(APPEND _check_list GADGETRON_HOME)
 
-SET(GADGETRON_INCLUDE_DIR ${GADGETRON_HOME}/include/gadgetron)
+set(GADGETRON_INCLUDE_DIR ${GADGETRON_HOME}/include/gadgetron)
 mark_as_advanced(GADGETRON_INCLUDE_DIR)
 list(APPEND _check_list GADGETRON_INCLUDE_DIR)
 
-SET(GADGETRON_LIB_DIR ${GADGETRON_HOME}/lib)
+set(GADGETRON_LIB_DIR ${GADGETRON_HOME}/lib)
 mark_as_advanced(GADGETRON_LIB_DIR)
 list(APPEND _check_list GADGETRON_LIB_DIR)
 
@@ -37,4 +37,4 @@ find_package_handle_standard_args(Gadgetron DEFAULT_MSG ${_check_list})
 find_package(CUDA)
 if (CUDA_FOUND)
   include_directories( ${CUDA_INCLUDE_DIRS} )
-endif (CUDA_FOUND)
+endif ()

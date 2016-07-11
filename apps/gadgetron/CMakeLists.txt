@@ -1,8 +1,8 @@
 configure_file(gadgetron_config.in gadgetron_config.h)
 
 if (WIN32)
-  ADD_DEFINITIONS(-DCROW_MSVC_WORKAROUND)
-endif(WIN32)
+  add_definitions(-DCROW_MSVC_WORKAROUND)
+endif()
 
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -20,7 +20,7 @@ include_directories(
 
 if (CUDA_FOUND)
   include_directories(${CUDA_INCLUDE_DIRS})
-endif(CUDA_FOUND)
+endif()
 
 add_executable(gadgetron 
   main.cpp 
@@ -64,7 +64,7 @@ target_link_libraries(gadgetron_info
 if (CUDA_FOUND)
   target_link_libraries(gadgetron_info ${CUDA_LIBRARIES})
   target_link_libraries(gadgetron ${CUDA_LIBRARIES})
-endif(CUDA_FOUND)
+endif()
 
 add_library(gadgetron_gadgetbase SHARED
   Gadget.cpp

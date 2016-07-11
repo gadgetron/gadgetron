@@ -1,6 +1,6 @@
 if (WIN32)
-ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
-endif (WIN32)
+add_definitions(-D_USE_MATH_DEFINES)
+endif ()
 
 add_executable(blur_3d blur_3d.cpp)
 add_executable(deblur_3d_cg deblur_3d_cg.cpp)
