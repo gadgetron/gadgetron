@@ -32,7 +32,7 @@ target_link_libraries(
 )
 
 if (UNIX AND CUDA_FOUND)
-add_subdirectory(@gadgetron)
+#add_subdirectory(@gadgetron)
 endif()
 
 install(TARGETS gadgetron_toolbox_matlab DESTINATION lib COMPONENT main)
