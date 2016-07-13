@@ -408,6 +408,7 @@ def main():
         myenv[libpath] += "/usr/local/cuda/lib64:"
         myenv[libpath] += "/opt/intel/mkl/lib/intel64:"
         myenv[libpath] += "/opt/intel/lib/intel64:"
+        myenv[libpath] += "/usr/local/lib:"
 
         if os.environ.get(libpath):
             myenv[libpath] += os.environ[libpath]
