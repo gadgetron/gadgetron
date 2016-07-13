@@ -3,6 +3,7 @@ configure_file("enter-chroot-env.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/enter-chroot
 configure_file("gadgetron-dependency-query.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron-dependency-query.sh @ONLY)
 configure_file("siemens_to_ismrmrd.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/siemens_to_ismrmrd.sh @ONLY)
 configure_file("gadgetron_ismrmrd_client.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_ismrmrd_client.sh @ONLY)
+configure_file("gadgetron_ismrmrd_client_noise_summary.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_ismrmrd_client_noise_summary.sh @ONLY)
 configure_file("gt_alive.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/gt_alive.sh @ONLY)
 configure_file("${CMAKE_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web_app.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_web_app.cfg @ONLY)
 configure_file("${CMAKE_SOURCE_DIR}/apps/gadgetron/webapp/gadgetron_web.conf.in" ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_web.conf @ONLY)
@@ -14,6 +15,7 @@ configure_file("start.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/start.sh @ONLY)
 configure_file("start-webapp.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/start-webapp.sh @ONLY)
 configure_file("run-gadgetron-dependency-query.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/run-gadgetron-dependency-query.sh @ONLY)
 configure_file("run-gadgetron_ismrmrd_client.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/run-gadgetron_ismrmrd_client.sh @ONLY)
+configure_file("run-gadgetron_ismrmrd_client_noise_summary.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/run-gadgetron_ismrmrd_client_noise_summary.sh @ONLY)
 configure_file("run-gt_alive.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/run-gt_alive.sh @ONLY)
 configure_file("run-siemens_to_ismrmrd.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/run-siemens_to_ismrmrd.sh @ONLY)
 configure_file("mount_image.sh.in" ${CMAKE_CURRENT_BINARY_DIR}/mount_image.sh @ONLY)
@@ -100,10 +102,12 @@ install(PROGRAMS
   ${CMAKE_CURRENT_BINARY_DIR}/gadgetron-dependency-query.sh
   ${CMAKE_CURRENT_BINARY_DIR}/siemens_to_ismrmrd.sh
   ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_ismrmrd_client.sh
+  ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_ismrmrd_client_noise_summary.sh
   ${CMAKE_CURRENT_BINARY_DIR}/gt_alive.sh
   ${CMAKE_CURRENT_BINARY_DIR}/run-webapp.sh
   ${CMAKE_CURRENT_BINARY_DIR}/run-gadgetron-dependency-query.sh
   ${CMAKE_CURRENT_BINARY_DIR}/run-gadgetron_ismrmrd_client.sh
+  ${CMAKE_CURRENT_BINARY_DIR}/run-gadgetron_ismrmrd_client_noise_summary.sh
   ${CMAKE_CURRENT_BINARY_DIR}/run-gt_alive.sh
   ${CMAKE_CURRENT_BINARY_DIR}/run-siemens_to_ismrmrd.sh
   ${CMAKE_CURRENT_BINARY_DIR}/start-env.sh
