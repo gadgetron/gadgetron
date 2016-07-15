@@ -232,13 +232,14 @@ void CmrKSpaceBinning<T>::process_binning_recon()
         // -----------------------------------------------------
         // all time stamps and raw full kspace is filled now
         // binning can be performed
-        this->compute_kspace_binning(bestHB);
+        std::vector<size_t> slices_not_processing;
+        this->compute_kspace_binning(bestHB, slices_not_processing);
         binning_obj_.full_kspace_raw_.clear();
 
         // -----------------------------------------------------
         // perform recon on the binned kspace 
         // -----------------------------------------------------
-        this->perform_recon_binned_kspace();
+        this->perform_recon_binned_kspace(slices_not_processing);
     }
     catch(...)
     {
@@ -1365,7 +1366,7 @@ void CmrKSpaceBinning<T>::compute_metrics_navigator_heart_beat(size_t s, size_t 
 }
 
 template <typename T> 
-void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& bestHB)
+void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& bestHB, std::vector<size_t>& slices_not_processing)
 {
     try
     {
@@ -1397,6 +1398,8 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
         binning_obj_.kspace_binning_hit_count_.create(E1, dstN, S);
         Gadgetron::clear(binning_obj_.kspace_binning_hit_count_);
 
+        slices_not_processing.clear();
+
         size_t e1, n, s, ii;
 
         if(this->kspace_binning_interpolate_heart_beat_images_)
@@ -1427,7 +1430,9 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
 
                 if ( endN <= startN )
                 {
-                    GERROR_STREAM("KSpace binning for S " << s << " - endN <= startN ...");
+                    GERROR_STREAM("KSpace binning for S " << s << " - endN <= startN - " << endN << " <= " << startN );
+                    GWARN_STREAM("Please consider to reduce temporal footprint of raw image series, if heart rate is too high ... " );
+                    slices_not_processing.push_back(s);
                     continue;
                 }
 
@@ -2247,7 +2252,7 @@ void CmrKSpaceBinning<T>::fill_binned_kspace(size_t s, size_t dst_n, const std::
 }
 
 template <typename T> 
-void CmrKSpaceBinning<T>::perform_recon_binned_kspace()
+void CmrKSpaceBinning<T>::perform_recon_binned_kspace(const std::vector<size_t>& slices_not_processing)
 {
     try
     {
@@ -2276,6 +2281,22 @@ void CmrKSpaceBinning<T>::perform_recon_binned_kspace()
             // use the neighboring frames if there are holes in the binned kspace
             for (s=0; s<S; s++)
             {
+                bool not_processing = false;
+                for (size_t kk=0; kk<slices_not_processing.size(); kk++)
+                {
+                    if(slices_not_processing[kk] == s)
+                    {
+                        not_processing = true;
+                        break;
+                    }
+                }
+
+                if(not_processing)
+                {
+                    GWARN_STREAM("Due to previously happened errors, slice " << s << " will not be processed ... ");
+                    continue;
+                }
+
                 for (n=0; n<N; n++)
                 {
                     for (e1=0; e1<E1; e1++)
@@ -2347,6 +2368,22 @@ void CmrKSpaceBinning<T>::perform_recon_binned_kspace()
         {
             for (s=0; s<S; s++)
             {
+                bool not_processing = false;
+                for (size_t kk=0; kk<slices_not_processing.size(); kk++)
+                {
+                    if(slices_not_processing[kk] == s)
+                    {
+                        not_processing = true;
+                        break;
+                    }
+                }
+
+                if(not_processing)
+                {
+                    GWARN_STREAM("Due to previously happened errors, slice " << s << " will not be processed ... ");
+                    continue;
+                }
+
                 std::stringstream os;
                 os << "_S_" << s;
 
