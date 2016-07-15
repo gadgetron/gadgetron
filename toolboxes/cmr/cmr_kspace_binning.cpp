@@ -1417,6 +1417,9 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                 size_t endE1 = binning_obj_.ending_heart_beat_[s][bestHB_S].first;
                 size_t endN = binning_obj_.ending_heart_beat_[s][bestHB_S].second;
 
+                size_t ori_endN = endN;
+                size_t ori_startN = endN;
+
                 // avoid cross the RR wav
                 if ( binning_obj_.phs_cpt_time_stamp_(startN, s) > binning_obj_.phs_cpt_time_stamp_(startN+1, s) )
                 {
@@ -1432,8 +1435,17 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                 {
                     GERROR_STREAM("KSpace binning for S " << s << " - endN <= startN - " << endN << " <= " << startN );
                     GWARN_STREAM("Please consider to reduce temporal footprint of raw image series, if heart rate is too high ... " );
-                    slices_not_processing.push_back(s);
-                    continue;
+
+                    endN = ori_endN;
+                    startN = ori_startN;
+
+                    if ( endN <= startN )
+                    {
+                        GERROR_STREAM("KSpace binning for S " << s << " - endN <= startN - " << endN << " <= " << startN );
+                        GERROR_STREAM("Slice " << s << " will not be processed ... ");
+                        slices_not_processing.push_back(s);
+                        continue;
+                    }
                 }
 
                 // ----------------------------------------
