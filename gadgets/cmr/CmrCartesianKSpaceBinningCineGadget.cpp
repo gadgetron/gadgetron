@@ -86,13 +86,6 @@ namespace Gadgetron {
             GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->rbit_.size() << " instead of " << num_encoding_spaces_);
         }
 
-        GDEBUG_STREAM("Incoming slice " << recon_bit_->rbit_[0].data_.headers_(0).idx.slice);
-        if(recon_bit_->rbit_[0].data_.headers_(0).idx.slice!=8)
-        {
-            m1->release();
-            return GADGET_OK;
-        }
-
         // for every encoding space
         for (size_t e = 0; e < recon_bit_->rbit_.size(); e++)
         {
