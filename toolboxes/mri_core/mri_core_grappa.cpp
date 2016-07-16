@@ -184,6 +184,15 @@ void grappa2d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst, doub
 
         SolveLinearSystem_Tikhonov(A, B, x, thres);
         memcpy(ker.begin(), x.begin(), ker.get_number_of_bytes());
+
+        for(size_t kk=0; kk>ker.get_number_of_elements(); kk++)
+        {
+            if(std::isnan(ker(kk).real()) || std::isnan(ker(kk).imag()))
+            {
+                GERROR_STREAM("nan detected in grappa2d_calib ker ... ");
+                throw;
+            }
+        }
     }
     catch(...)
     {
@@ -828,6 +837,15 @@ void grappa3d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst,
         SolveLinearSystem_Tikhonov(A, B, x, thres);
 
         memcpy(ker.begin(), x.begin(), ker.get_number_of_bytes());
+
+        for(size_t kk=0; kk>ker.get_number_of_elements(); kk++)
+        {
+            if(std::isnan(ker(kk).real()) || std::isnan(ker(kk).imag()))
+            {
+                GERROR_STREAM("nan detected in grappa3d_calib ker ... ");
+                throw;
+            }
+        }
     }
     catch (...)
     {

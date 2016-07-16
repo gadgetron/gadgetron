@@ -229,7 +229,15 @@ namespace Gadgetron {
 
                 // compute the binning
                 if (perform_timing.value()) { timer.start("compute binning ... "); }
+                try
+                {
                     binning_reconer_.process_binning_recon();
+                }
+                catch(...)
+                {
+                    GERROR_STREAM("Exceptions happened in binning_reconer_.process_binning_recon() for slice " << slc);
+                    continue;
+                }
                 if (perform_timing.value()) { timer.stop(); }
 
                 if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(binning_reconer_.binning_obj_.complex_image_raw_, debug_folder_full_path_ + "binning_obj_complex_image_raw" + os.str()); }

@@ -433,6 +433,15 @@ void spirit3d_calib(const hoNDArray<T>& acsSrc, const hoNDArray<T>& acsDst,
                 }
             }
         }
+
+        for(size_t kk=0; kk>ker.get_number_of_elements(); kk++)
+        {
+            if(std::isnan(ker(kk).real()) || std::isnan(ker(kk).imag()))
+            {
+                GERROR_STREAM("nan detected in spirit3d_calib ker ... ");
+                throw;
+            }
+        }
     }
     catch (...)
     {
