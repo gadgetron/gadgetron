@@ -50,6 +50,10 @@ namespace Gadgetron {
 
         /// coil sensitivity map, [RO E1 E2 dstCHA Nor1 Sor1 SLC]
         hoNDArray<T> coil_map_;
+
+        /// an estimate of gfactor
+        /// gfactor, [RO E1 E2 1 N S SLC]
+        hoNDArray<typename realType<T>::Type> gfactor_;
     };
 }
 

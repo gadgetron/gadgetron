@@ -53,11 +53,25 @@ namespace Gadgetron {
         {
             if(this->spirit_reg_proximity_across_cha.value())
             {
-                this->spirit_image_reg_lamda.value(0.0002);
+                if(spirit_reg_estimate_noise_floor.value())
+                {
+                    this->spirit_image_reg_lamda.value(0.001);
+                }
+                else
+                {
+                    this->spirit_image_reg_lamda.value(0.0002);
+                }
             }
             else
             {
-                this->spirit_image_reg_lamda.value(0.00005);
+                if(spirit_reg_estimate_noise_floor.value())
+                {
+                    this->spirit_image_reg_lamda.value(0.0005);
+                }
+                else
+                {
+                    this->spirit_image_reg_lamda.value(0.00005);
+                }
             }
 
             GDEBUG_STREAM("spirit_image_reg_lamda: " << this->spirit_image_reg_lamda.value());
@@ -115,7 +129,7 @@ namespace Gadgetron {
             os << "encoding_" << e;
             std::string suffix = os.str();
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix); }
 
             // ------------------------------------------------------------------
             // compute effective acceleration factor
@@ -201,9 +215,9 @@ namespace Gadgetron {
 
                         // ------------------------------
 
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kspace2DT, debug_folder_full_path_ + "kspace2DT_nl_spirit_" + suffix_2DT); }
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kIm2DT, debug_folder_full_path_ + "kIm2DT_nl_spirit_" + suffix_2DT); }
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(ref2DT, debug_folder_full_path_ + "ref2DT_nl_spirit_" + suffix_2DT); }
+                        if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kspace2DT, debug_folder_full_path_ + "kspace2DT_nl_spirit_" + suffix_2DT); }
+                        if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kIm2DT, debug_folder_full_path_ + "kIm2DT_nl_spirit_" + suffix_2DT); }
+                        if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(ref2DT, debug_folder_full_path_ + "ref2DT_nl_spirit_" + suffix_2DT); }
 
                         // ------------------------------
 
@@ -212,7 +226,7 @@ namespace Gadgetron {
                         this->perform_nonlinear_spirit_unwrapping(kspace2DT, kIm2DT, ref2DT, coilMap2DT, res2DT, e);
                         if (this->perform_timing.value()) timer.stop();
 
-                        // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "res_nl_spirit_2DT_" + suffix_2DT); }
+                        if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "res_nl_spirit_2DT_" + suffix_2DT); }
                     }
                 }
             }
@@ -224,7 +238,7 @@ namespace Gadgetron {
             this->perform_spirit_coil_combine(recon_obj);
             if (this->perform_timing.value()) timer.stop();
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix); }
         }
         catch (...)
         {
@@ -310,6 +324,28 @@ namespace Gadgetron {
 
             Gadgetron::GadgetronTimer timer(false);
 
+            boost::shared_ptr< hoNDArray< std::complex<float> > > coilMap;
+
+            bool hasCoilMap = false;
+            if (coilMap2DT.get_size(0) == RO && coilMap2DT.get_size(1) == E1 && coilMap2DT.get_size(3)==CHA)
+            {
+                if (ref_N < N)
+                {
+                    coilMap = boost::shared_ptr< hoNDArray< std::complex<float> > >(new hoNDArray< std::complex<float> >(RO, E1, CHA, coilMap2DT.begin()));
+                }
+                else
+                {
+                    coilMap = boost::shared_ptr< hoNDArray< std::complex<float> > >(new hoNDArray< std::complex<float> >(RO, E1, CHA, ref_N, coilMap2DT.begin()));
+                }
+
+                hasCoilMap = true;
+            }
+
+            hoNDArray<float> gFactor;
+            float gfactorMedian = 0;
+
+            float smallest_eigen_value(0);
+
             // compute linear solution as the initialization
             if(use_random_sampling)
             {
@@ -328,7 +364,7 @@ namespace Gadgetron {
                 hoNDArray< std::complex<float> > meanKSpace;
                 Gadgetron::sum_over_dimension(ref2DT, meanKSpace, 4);
 
-                // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(meanKSpace, debug_folder_full_path_ + "spirit_nl_2DT_meanKSpace"); }
+                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(meanKSpace, debug_folder_full_path_ + "spirit_nl_2DT_meanKSpace"); }
 
                 hoNDArray< std::complex<float> > acsSrc(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
                 hoNDArray< std::complex<float> > acsDst(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
@@ -343,45 +379,82 @@ namespace Gadgetron {
                 Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t)this->acceFactorE1_[e], grappa_reg_lamda, kRO, kE1, convKer);
                 Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
 
-                // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(kIm, debug_folder_full_path_ + "spirit_nl_2DT_kIm");
+                if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(kIm, debug_folder_full_path_ + "spirit_nl_2DT_kIm");
 
                 Gadgetron::hoNDFFT<float>::instance()->ifft2c(kspace, complex_im_recon_buf_);
-                // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(complex_im_recon_buf_, debug_folder_full_path_ + "spirit_nl_2DT_aliasedImage");
+                if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(complex_im_recon_buf_, debug_folder_full_path_ + "spirit_nl_2DT_aliasedImage");
 
                 hoNDArray< std::complex<float> > resKSpace(RO, E1, CHA, N);
                 hoNDArray< std::complex<float> > aliasedImage(RO, E1, CHA, N, complex_im_recon_buf_.begin());
                 Gadgetron::grappa2d_image_domain_unwrapping_aliased_image(aliasedImage, kIm, resKSpace);
 
-                // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(resKSpace, debug_folder_full_path_ + "spirit_nl_2DT_linearImage");
+                if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(resKSpace, debug_folder_full_path_ + "spirit_nl_2DT_linearImage");
 
                 Gadgetron::hoNDFFT<float>::instance()->fft2c(resKSpace);
 
                 memcpy(kspaceLinear.begin(), resKSpace.begin(), resKSpace.get_number_of_bytes());
 
+                if(hasCoilMap)
+                {
+                    hoNDArray< std::complex<float> > unmixC;
+                    Gadgetron::grappa2d_unmixing_coeff(kIm, *coilMap, (size_t)acceFactorE1_[e], unmixC, gFactor);
+
+                    if (!debug_folder_full_path_.empty()) gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "spirit_nl_2DT_linearImage_gFactor");
+
+                    hoNDArray<float> gfactorSorted(gFactor);
+
+                    // find the median gfactor
+                    std::sort(gfactorSorted.begin(), gfactorSorted.begin()+RO*E1);
+                    gfactorMedian = gFactor((RO*E1 / 2));
+
+                    // Gadgetron::sort(gFactor, gfactorSorted, true);
+
+                    // gfactorMedian = gfactorSorted((RO*E1 / 2));
+
+                    GDEBUG_STREAM("SPIRIT Non linear, the median gfactor is found to be : " << gfactorMedian);
+
+                    if(N>=spirit_reg_minimal_num_images_for_noise_floor.value())
+                    {
+                        // estimate the noise level
+                        hoNDArray< std::complex<float> > complexIm;
+                        Gadgetron::apply_unmix_coeff_aliased_image(aliasedImage, unmixC, complexIm);
+
+                        if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(complexIm, debug_folder_full_path_ + "spirit_nl_2DT_linearImage_complexIm");
+
+                        // if N is sufficiently large, we can estimate the noise floor by the smallest eigen value
+                        hoMatrix< std::complex<float> > data;
+                        data.createMatrix(RO*E1, N, complexIm.begin(), false);
+
+                        hoNDArray< std::complex<float> > eigenVectors, eigenValues, eigenVectorsPruned;
+
+                        // compute eigen
+                        hoNDKLT< std::complex<float> > klt;
+                        klt.prepare(data, (size_t)1, (size_t)0);
+                        klt.eigen_value(eigenValues);
+
+                        if (this->verbose.value())
+                        {
+                            GDEBUG_STREAM("SPIRIT Non linear, computes eigen values for all 2D kspaces ... ");
+                            eigenValues.print(std::cout);
+
+                            for (size_t i = 0; i<eigenValues.get_size(0); i++)
+                            {
+                                GDEBUG_STREAM(i << " = " << eigenValues(i));
+                            }
+                        }
+
+                        smallest_eigen_value = std::sqrt( std::abs(eigenValues(N - 1).real()) / (RO*E1) );
+                        GDEBUG_STREAM("SPIRIT Non linear, the smallest eigen value is : " << smallest_eigen_value);
+                    }
+                }
+
                 if (this->perform_timing.value()) timer.stop();
             }
 
-            // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(kspaceLinear, debug_folder_full_path_ + "spirit_nl_2DT_kspaceLinear");
+            if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(kspaceLinear, debug_folder_full_path_ + "spirit_nl_2DT_kspaceLinear");
 
             // perform nonlinear reconstruction
             {
-                boost::shared_ptr< hoNDArray< std::complex<float> > > coilMap;
-
-                bool hasCoilMap = false;
-                if (coilMap2DT.get_size(0) == RO && coilMap2DT.get_size(1) == E1 && coilMap2DT.get_size(3)==CHA)
-                {
-                    if (ref_N < N)
-                    {
-                        coilMap = boost::shared_ptr< hoNDArray< std::complex<float> > >(new hoNDArray< std::complex<float> >(RO, E1, CHA, coilMap2DT.begin()));
-                    }
-                    else
-                    {
-                        coilMap = boost::shared_ptr< hoNDArray< std::complex<float> > >(new hoNDArray< std::complex<float> >(RO, E1, CHA, ref_N, coilMap2DT.begin()));
-                    }
-
-                    hasCoilMap = true;
-                }
-
                 boost::shared_ptr<hoNDArray< std::complex<float> > > ker(new hoNDArray< std::complex<float> >(RO, E1, CHA, CHA, ref_N, kerIm.begin()));
                 boost::shared_ptr<hoNDArray< std::complex<float> > > acq(new hoNDArray< std::complex<float> >(RO, E1, CHA, N, kspace.begin()));
                 hoNDArray< std::complex<float> > kspaceInitial(RO, E1, CHA, N, kspaceLinear.begin());
@@ -389,8 +462,7 @@ namespace Gadgetron {
 
                 if (this->spirit_data_fidelity_lamda.value() > 0)
                 {
-                    GDEBUG_STREAM("Start the NL SPIRIT data fidelity iteration - regularization strength : "
-                                    << this->spirit_image_reg_lamda.value()
+                    GDEBUG_STREAM("Start the NL SPIRIT data fidelity iteration - regularization strength : " << this->spirit_image_reg_lamda.value()
                                     << " - number of iteration : "                      << this->spirit_nl_iter_max.value()
                                     << " - proximity across cha : "                     << this->spirit_reg_proximity_across_cha.value()
                                     << " - redundant dimension weighting ratio : "      << this->spirit_reg_N_weighting_ratio.value()
@@ -404,7 +476,18 @@ namespace Gadgetron {
                     solver.iterations_ = this->spirit_nl_iter_max.value();
                     solver.set_output_mode(this->spirit_print_iter.value() ? SolverType::OUTPUT_VERBOSE : SolverType::OUTPUT_SILENT);
                     solver.grad_thres_ = this->spirit_nl_iter_thres.value();
-                    solver.proximal_strength_ratio_ = this->spirit_image_reg_lamda.value();
+
+                    if(spirit_reg_estimate_noise_floor.value() && std::abs(smallest_eigen_value)>0)
+                    {
+                        solver.scale_factor_ = smallest_eigen_value;
+                        solver.proximal_strength_ratio_ = this->spirit_image_reg_lamda.value() * gfactorMedian;
+
+                        GDEBUG_STREAM("SPIRIT Non linear, eigen value is used to derive the regularization strength : " << solver.proximal_strength_ratio_ << " - smallest eigen value : " << solver.scale_factor_);
+                    }
+                    else
+                    {
+                        solver.proximal_strength_ratio_ = this->spirit_image_reg_lamda.value();
+                    }
 
                     boost::shared_ptr< hoNDArray< std::complex<float> > > x0 = boost::make_shared< hoNDArray< std::complex<float> > >(kspaceInitial);
                     solver.set_x0(x0);
@@ -443,12 +526,11 @@ namespace Gadgetron {
                     solver.solve(*acq, res2DT);
                     if (this->perform_timing.value()) timer.stop();
 
-                    // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_data_fidelity_res");
+                    if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_data_fidelity_res");
                 }
                 else
                 {
-                    GDEBUG_STREAM("Start the NL SPIRIT iteration with regularization strength : "
-                                    << this->spirit_image_reg_lamda.value()
+                    GDEBUG_STREAM("Start the NL SPIRIT iteration with regularization strength : "<< this->spirit_image_reg_lamda.value()
                                     << " - number of iteration : " << this->spirit_nl_iter_max.value()
                                     << " - proximity across cha : " << this->spirit_reg_proximity_across_cha.value()
                                     << " - redundant dimension weighting ratio : " << this->spirit_reg_N_weighting_ratio.value()
@@ -462,7 +544,18 @@ namespace Gadgetron {
                     solver.iterations_ = this->spirit_nl_iter_max.value();
                     solver.set_output_mode(this->spirit_print_iter.value() ? SolverType::OUTPUT_VERBOSE : SolverType::OUTPUT_SILENT);
                     solver.grad_thres_ = this->spirit_nl_iter_thres.value();
-                    solver.proximal_strength_ratio_ = this->spirit_image_reg_lamda.value();
+
+                    if(spirit_reg_estimate_noise_floor.value() && std::abs(smallest_eigen_value)>0)
+                    {
+                        solver.scale_factor_ = smallest_eigen_value;
+                        solver.proximal_strength_ratio_ = this->spirit_image_reg_lamda.value() * gfactorMedian;
+
+                        GDEBUG_STREAM("SPIRIT Non linear, eigen value is used to derive the regularization strength : " << solver.proximal_strength_ratio_ << " - smallest eigen value : " << solver.scale_factor_);
+                    }
+                    else
+                    {
+                        solver.proximal_strength_ratio_ = this->spirit_image_reg_lamda.value();
+                    }
 
                     boost::shared_ptr< hoNDArray< std::complex<float> > > x0 = boost::make_shared< hoNDArray< std::complex<float> > >(kspaceInitial);
                     solver.set_x0(x0);
@@ -514,11 +607,11 @@ namespace Gadgetron {
                     solver.solve(b, res2DT);
                     if (this->perform_timing.value()) timer.stop();
 
-                    // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_res");
+                    if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_res");
 
                     spirit.restore_acquired_kspace(kspace, res2DT);
 
-                    // if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_res_restored");
+                    if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(res2DT, debug_folder_full_path_ + "spirit_nl_2DT_res_restored");
                 }
             }
         }

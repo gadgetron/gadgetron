@@ -48,7 +48,7 @@
         <property><name>S_dimension</name><value>set</value></property>
         <property><name>split_slices</name><value>false</value></property>
         <property><name>ignore_segment</name><value>true</value></property>
-        <property><name>verbose</name><value>true</value></property>
+        <property><name>verbose</name><value>false</value></property>
     </gadget>
 
     <!-- Prep ref -->
@@ -60,7 +60,7 @@
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>true</value></property>
-        <property><name>verbose</name><value>true</value></property>
+        <property><name>verbose</name><value>false</value></property>
 
         <!-- averaging across repetition -->
         <property><name>average_all_ref_N</name><value>true</value></property>
@@ -105,7 +105,7 @@
         <!-- parameters for SPIRIT recon -->
         <property><name>spirit_parallel_imaging_lamda</name><value>1.0</value></property>
         <property><name>spirit_data_fidelity_lamda</name><value>1.0</value></property>
-        <property><name>spirit_reg_name</name><value>db2</value></property>
+        <property><name>spirit_reg_name</name><value>db1</value></property>
         <property><name>spirit_reg_level</name><value>1</value></property>
         <property><name>spirit_reg_keep_approx_coeff</name><value>true</value></property>
         <property><name>spirit_reg_keep_redundant_dimension_coeff</name><value>false</value></property>
@@ -113,6 +113,8 @@
         <property><name>spirit_reg_use_coil_sen_map</name><value>false</value></property>
         <property><name>spirit_reg_RO_weighting_ratio</name><value>1.0</value></property>
         <property><name>spirit_reg_E1_weighting_ratio</name><value>1.0</value></property>
+        <property><name>spirit_reg_estimate_noise_floor</name><value>true</value></property>
+        <property><name>spirit_reg_minimal_num_images_for_noise_floor</name><value>16</value></property>
         <property><name>spirit_print_iter</name><value>true</value></property>
 
         <!-- parameters for debug and timing -->

@@ -4,6 +4,7 @@
 #include "hoNDArray_reductions.h"
 #include "hoSPIRIT2DOperator.h"
 #include "hoLsqrSolver.h"
+#include "mri_core_grappa.h"
 
 namespace Gadgetron {
 
@@ -203,6 +204,8 @@ namespace Gadgetron {
 
             size_t dstCHA = dst.get_size(3);
 
+            recon_obj.gfactor_.create(RO, E1, E2, 1, ref_N, ref_S, ref_SLC);
+
             if (acceFactorE1_[e] > 1 || acceFactorE2_[e] > 1)
             {
                 // allocate buffer for kernels
@@ -280,6 +283,18 @@ namespace Gadgetron {
 
                         Gadgetron::spirit2d_calib_convolution_kernel(acsSrc, acsDst, reg_lamda, kRO, kE1, 1, 1, convKer, true);
                         Gadgetron::spirit2d_image_domain_kernel(convKer, RO, E1, kIm);
+
+                        hoNDArray< std::complex<float> > convKerTmp, kImTmp;
+
+                        Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t)acceFactorE1_[e], 0.005, 5, 4, convKerTmp);
+                        Gadgetron::grappa2d_image_domain_kernel(convKerTmp, RO, E1, kImTmp);
+
+                        hoNDArray< std::complex<float> > coilMap(RO, E1, dstCHA, &(recon_obj.coil_map_(0, 0, 0, 0, n, s, slc)));
+                        hoNDArray< std::complex<float> > unmixC;
+                        hoNDArray<float> gFactor;
+
+                        Gadgetron::grappa2d_unmixing_coeff(kImTmp, coilMap, (size_t)acceFactorE1_[e], unmixC, gFactor);
+                        memcpy(&(recon_obj.gfactor_(0, 0, 0, 0, n, s, slc)), gFactor.begin(), gFactor.get_number_of_bytes());
                     }
                 }
             }

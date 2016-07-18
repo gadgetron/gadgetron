@@ -42,6 +42,8 @@ namespace Gadgetron {
         GADGET_PROPERTY(spirit_reg_keep_redundant_dimension_coeff, bool,    "Spirit whether to keep the boundary coefficients of N dimension from being regularized", false);
         GADGET_PROPERTY(spirit_reg_proximity_across_cha      , bool,    "Spirit whether to perform promixity operation across channels", false);
         GADGET_PROPERTY(spirit_reg_use_coil_sen_map          , bool,    "Spirit whether to use coil map in the imaging term", false);
+        GADGET_PROPERTY(spirit_reg_estimate_noise_floor      , bool,    "Spirit whether to estimate noise floor for the imaging term", false);
+        GADGET_PROPERTY(spirit_reg_minimal_num_images_for_noise_floor, int,    "Spirit minimal number of images for noise floor estimation", 16);
         /// W matrix of equation 3 and 4 in ref [1]
         GADGET_PROPERTY(spirit_reg_RO_weighting_ratio        , double,  "Spirit regularization weigthing ratio for RO", 1.0);
         GADGET_PROPERTY(spirit_reg_E1_weighting_ratio        , double,  "Spirit regularization weigthing ratio for E1", 1.0);

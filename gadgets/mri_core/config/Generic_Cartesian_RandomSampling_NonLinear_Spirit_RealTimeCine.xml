@@ -6,7 +6,7 @@
     <!--
         Gadgetron generic recon chain for 2DT cartesian sampling with the Nonlinear SPIRIT reconstruction
 
-        RealTime Cine imaging on the cloud, using the distribution gadget
+        RealTime Cine imaging
         Triggered by slice
         Recon N is phase and S is set
 
@@ -18,11 +18,9 @@
 
     <!-- reader -->
     <reader><slot>1008</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdAcquisitionMessageReader</classname></reader>
-    <reader><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageReader</classname></reader>
 
     <!-- writer -->
     <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
-    <writer><slot>1008</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdAcquisitionMessageWriter</classname></writer>
 
     <!-- Noise prewhitening -->
     <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname></gadget>
@@ -32,15 +30,6 @@
 
     <!-- RO oversampling removal -->
     <gadget><name>RemoveROOversampling</name><dll>gadgetron_mricore</dll><classname>RemoveROOversamplingGadget</classname></gadget>
-
-    <!-- Distribute slice over nodes -->
-    <gadget>
-      <name>Distribute</name>
-      <dll>gadgetron_distributed</dll>
-      <classname>IsmrmrdAcquisitionDistributeGadget</classname>
-      <property><name>parallel_dimension</name><value>slice</value></property>
-      <property><name>use_this_node_for_compute</name><value>false</value></property>
-    </gadget>
 
     <!-- Data accumulation and trigger gadget -->
     <gadget>
@@ -116,7 +105,7 @@
         <!-- parameters for SPIRIT recon -->
         <property><name>spirit_parallel_imaging_lamda</name><value>1.0</value></property>
         <property><name>spirit_data_fidelity_lamda</name><value>1.0</value></property>
-        <property><name>spirit_reg_name</name><value>db1</value></property>
+        <property><name>spirit_reg_name</name><value>db2</value></property>
         <property><name>spirit_reg_level</name><value>1</value></property>
         <property><name>spirit_reg_keep_approx_coeff</name><value>true</value></property>
         <property><name>spirit_reg_keep_redundant_dimension_coeff</name><value>false</value></property>
@@ -143,7 +132,7 @@
         <!-- parameters for debug and timing -->
         <property><name>debug_folder</name><value></value></property>
         <property><name>perform_timing</name><value>false</value></property>
-        <property><name>verbose</name><value>true</value></property>
+        <property><name>verbose</name><value>false</value></property>
 
         <!-- if incoming images have this meta field, it will not be processed -->
         <property><name>skip_processing_meta_field</name><value>Skip_processing_after_recon</value></property>
@@ -218,13 +207,6 @@
         <name>ImageArraySplit</name>
         <dll>gadgetron_mricore</dll>
         <classname>ImageArraySplitGadget</classname>
-    </gadget>
-
-    <!-- Collect images from nodes -->
-    <gadget>
-        <name>Collect</name>
-        <dll>gadgetron_distributed</dll>
-        <classname>CollectGadget</classname>
     </gadget>
 
     <!-- Physio interpolation -->
