@@ -105,8 +105,8 @@
         <!-- parameters for SPIRIT recon -->
         <property><name>spirit_parallel_imaging_lamda</name><value>1.0</value></property>
         <property><name>spirit_data_fidelity_lamda</name><value>1.0</value></property>
-        <property><name>spirit_image_reg_lamda</name><value>0.001</value></property>
-        <property><name>spirit_reg_name</name><value>db1</value></property>
+        <property><name>spirit_image_reg_lamda</name><value>0.0001</value></property>
+        <property><name>spirit_reg_name</name><value>db2</value></property>
         <property><name>spirit_reg_level</name><value>1</value></property>
         <property><name>spirit_reg_keep_approx_coeff</name><value>true</value></property>
         <property><name>spirit_reg_keep_redundant_dimension_coeff</name><value>false</value></property>
@@ -115,7 +115,7 @@
         <property><name>spirit_reg_RO_weighting_ratio</name><value>1.0</value></property>
         <property><name>spirit_reg_E1_weighting_ratio</name><value>1.0</value></property>
         <property><name>spirit_reg_N_weighting_ratio</name><value>10</value></property>
-        <property><name>spirit_reg_estimate_noise_floor</name><value>true</value></property>
+        <property><name>spirit_reg_estimate_noise_floor</name><value>false</value></property>
         <property><name>spirit_reg_minimal_num_images_for_noise_floor</name><value>16</value></property>
         <property><name>spirit_print_iter</name><value>true</value></property>
 
