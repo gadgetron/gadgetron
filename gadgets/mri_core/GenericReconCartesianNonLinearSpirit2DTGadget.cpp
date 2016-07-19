@@ -66,7 +66,7 @@ namespace Gadgetron {
             {
                 if(spirit_reg_estimate_noise_floor.value())
                 {
-                    this->spirit_image_reg_lamda.value(0.0005);
+                    this->spirit_image_reg_lamda.value(0.002);
                 }
                 else
                 {
@@ -346,6 +346,50 @@ namespace Gadgetron {
 
             float smallest_eigen_value(0);
 
+            // -----------------------------------------------------
+            // estimate gfactor
+            // -----------------------------------------------------
+            size_t ref2DT_RO = ref2DT.get_size(0);
+            size_t ref2DT_E1 = ref2DT.get_size(1);
+
+            // mean over N
+            hoNDArray< std::complex<float> > meanKSpace;
+            Gadgetron::sum_over_dimension(ref2DT, meanKSpace, 4);
+
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(meanKSpace, debug_folder_full_path_ + "spirit_nl_2DT_meanKSpace"); }
+
+            hoNDArray< std::complex<float> > acsSrc(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
+            hoNDArray< std::complex<float> > acsDst(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
+
+            double grappa_reg_lamda = 0.0005;
+            size_t kRO = 5;
+            size_t kE1 = 4;
+
+            hoNDArray< std::complex<float> > convKer;
+            hoNDArray< std::complex<float> > kIm(RO, E1, CHA, CHA);
+
+            Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t)this->acceFactorE1_[e], grappa_reg_lamda, kRO, kE1, convKer);
+            Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
+
+            hoNDArray< std::complex<float> > unmixC;
+
+            if(hasCoilMap)
+            {
+                Gadgetron::grappa2d_unmixing_coeff(kIm, *coilMap, (size_t)acceFactorE1_[e], unmixC, gFactor);
+
+                if (!debug_folder_full_path_.empty()) gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "spirit_nl_2DT_gFactor");
+
+                hoNDArray<float> gfactorSorted(gFactor);
+                std::sort(gfactorSorted.begin(), gfactorSorted.begin()+RO*E1);
+                gfactorMedian = gFactor((RO*E1 / 2));
+
+                GDEBUG_STREAM("SPIRIT Non linear, the median gfactor is found to be : " << gfactorMedian);
+            }
+
+            if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(kIm, debug_folder_full_path_ + "spirit_nl_2DT_kIm");
+
+            hoNDArray< std::complex<float> > complexIm;
+
             // compute linear solution as the initialization
             if(use_random_sampling)
             {
@@ -357,29 +401,29 @@ namespace Gadgetron {
             {
                 if (this->perform_timing.value()) timer.start("SPIRIT Non linear, perform linear recon ... ");
 
-                size_t ref2DT_RO = ref2DT.get_size(0);
-                size_t ref2DT_E1 = ref2DT.get_size(1);
+                //size_t ref2DT_RO = ref2DT.get_size(0);
+                //size_t ref2DT_E1 = ref2DT.get_size(1);
 
-                // mean over N
-                hoNDArray< std::complex<float> > meanKSpace;
-                Gadgetron::sum_over_dimension(ref2DT, meanKSpace, 4);
+                //// mean over N
+                //hoNDArray< std::complex<float> > meanKSpace;
+                //Gadgetron::sum_over_dimension(ref2DT, meanKSpace, 4);
 
-                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(meanKSpace, debug_folder_full_path_ + "spirit_nl_2DT_meanKSpace"); }
+                //if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(meanKSpace, debug_folder_full_path_ + "spirit_nl_2DT_meanKSpace"); }
 
-                hoNDArray< std::complex<float> > acsSrc(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
-                hoNDArray< std::complex<float> > acsDst(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
+                //hoNDArray< std::complex<float> > acsSrc(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
+                //hoNDArray< std::complex<float> > acsDst(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
 
-                double grappa_reg_lamda = 0.0005;
-                size_t kRO = 5;
-                size_t kE1 = 4;
+                //double grappa_reg_lamda = 0.0005;
+                //size_t kRO = 5;
+                //size_t kE1 = 4;
 
-                hoNDArray< std::complex<float> > convKer;
-                hoNDArray< std::complex<float> > kIm(RO, E1, CHA, CHA);
+                //hoNDArray< std::complex<float> > convKer;
+                //hoNDArray< std::complex<float> > kIm(RO, E1, CHA, CHA);
 
-                Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t)this->acceFactorE1_[e], grappa_reg_lamda, kRO, kE1, convKer);
-                Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
+                //Gadgetron::grappa2d_calib_convolution_kernel(acsSrc, acsDst, (size_t)this->acceFactorE1_[e], grappa_reg_lamda, kRO, kE1, convKer);
+                //Gadgetron::grappa2d_image_domain_kernel(convKer, RO, E1, kIm);
 
-                if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(kIm, debug_folder_full_path_ + "spirit_nl_2DT_kIm");
+                //if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(kIm, debug_folder_full_path_ + "spirit_nl_2DT_kIm");
 
                 Gadgetron::hoNDFFT<float>::instance()->ifft2c(kspace, complex_im_recon_buf_);
                 if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(complex_im_recon_buf_, debug_folder_full_path_ + "spirit_nl_2DT_aliasedImage");
@@ -394,64 +438,56 @@ namespace Gadgetron {
 
                 memcpy(kspaceLinear.begin(), resKSpace.begin(), resKSpace.get_number_of_bytes());
 
-                if(hasCoilMap)
-                {
-                    hoNDArray< std::complex<float> > unmixC;
-                    Gadgetron::grappa2d_unmixing_coeff(kIm, *coilMap, (size_t)acceFactorE1_[e], unmixC, gFactor);
-
-                    if (!debug_folder_full_path_.empty()) gt_exporter_.export_array(gFactor, debug_folder_full_path_ + "spirit_nl_2DT_linearImage_gFactor");
-
-                    hoNDArray<float> gfactorSorted(gFactor);
-
-                    // find the median gfactor
-                    std::sort(gfactorSorted.begin(), gfactorSorted.begin()+RO*E1);
-                    gfactorMedian = gFactor((RO*E1 / 2));
-
-                    // Gadgetron::sort(gFactor, gfactorSorted, true);
-
-                    // gfactorMedian = gfactorSorted((RO*E1 / 2));
-
-                    GDEBUG_STREAM("SPIRIT Non linear, the median gfactor is found to be : " << gfactorMedian);
-
-                    if(N>=spirit_reg_minimal_num_images_for_noise_floor.value())
-                    {
-                        // estimate the noise level
-                        hoNDArray< std::complex<float> > complexIm;
-                        Gadgetron::apply_unmix_coeff_aliased_image(aliasedImage, unmixC, complexIm);
-
-                        if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(complexIm, debug_folder_full_path_ + "spirit_nl_2DT_linearImage_complexIm");
-
-                        // if N is sufficiently large, we can estimate the noise floor by the smallest eigen value
-                        hoMatrix< std::complex<float> > data;
-                        data.createMatrix(RO*E1, N, complexIm.begin(), false);
-
-                        hoNDArray< std::complex<float> > eigenVectors, eigenValues, eigenVectorsPruned;
-
-                        // compute eigen
-                        hoNDKLT< std::complex<float> > klt;
-                        klt.prepare(data, (size_t)1, (size_t)0);
-                        klt.eigen_value(eigenValues);
-
-                        if (this->verbose.value())
-                        {
-                            GDEBUG_STREAM("SPIRIT Non linear, computes eigen values for all 2D kspaces ... ");
-                            eigenValues.print(std::cout);
-
-                            for (size_t i = 0; i<eigenValues.get_size(0); i++)
-                            {
-                                GDEBUG_STREAM(i << " = " << eigenValues(i));
-                            }
-                        }
-
-                        smallest_eigen_value = std::sqrt( std::abs(eigenValues(N - 1).real()) / (RO*E1) );
-                        GDEBUG_STREAM("SPIRIT Non linear, the smallest eigen value is : " << smallest_eigen_value);
-                    }
-                }
+                Gadgetron::apply_unmix_coeff_aliased_image(aliasedImage, unmixC, complexIm);
 
                 if (this->perform_timing.value()) timer.stop();
             }
 
             if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(kspaceLinear, debug_folder_full_path_ + "spirit_nl_2DT_kspaceLinear");
+
+            if(hasCoilMap)
+            {
+                if(N>=spirit_reg_minimal_num_images_for_noise_floor.value())
+                {
+                    // estimate the noise level
+
+                    if(use_random_sampling)
+                    {
+                        Gadgetron::hoNDFFT<float>::instance()->ifft2c(kspaceLinear, complex_im_recon_buf_);
+
+                        hoNDArray< std::complex<float> > complexLinearImage(RO, E1, CHA, N, complex_im_recon_buf_.begin());
+
+                        Gadgetron::coil_combine(complexLinearImage, *coilMap, 2, complexIm);
+                    }
+
+                    if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(complexIm, debug_folder_full_path_ + "spirit_nl_2DT_linearImage_complexIm");
+
+                    // if N is sufficiently large, we can estimate the noise floor by the smallest eigen value
+                    hoMatrix< std::complex<float> > data;
+                    data.createMatrix(RO*E1, N, complexIm.begin(), false);
+
+                    hoNDArray< std::complex<float> > eigenVectors, eigenValues, eigenVectorsPruned;
+
+                    // compute eigen
+                    hoNDKLT< std::complex<float> > klt;
+                    klt.prepare(data, (size_t)1, (size_t)0);
+                    klt.eigen_value(eigenValues);
+
+                    if (this->verbose.value())
+                    {
+                        GDEBUG_STREAM("SPIRIT Non linear, computes eigen values for all 2D kspaces ... ");
+                        eigenValues.print(std::cout);
+
+                        for (size_t i = 0; i<eigenValues.get_size(0); i++)
+                        {
+                            GDEBUG_STREAM(i << " = " << eigenValues(i));
+                        }
+                    }
+
+                    smallest_eigen_value = std::sqrt( std::abs(eigenValues(N - 1).real()) / (RO*E1) );
+                    GDEBUG_STREAM("SPIRIT Non linear, the smallest eigen value is : " << smallest_eigen_value);
+                }
+            }
 
             // perform nonlinear reconstruction
             {
