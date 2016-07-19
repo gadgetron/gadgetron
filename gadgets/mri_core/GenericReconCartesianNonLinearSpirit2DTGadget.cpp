@@ -349,17 +349,23 @@ namespace Gadgetron {
             // -----------------------------------------------------
             // estimate gfactor
             // -----------------------------------------------------
-            size_t ref2DT_RO = ref2DT.get_size(0);
-            size_t ref2DT_E1 = ref2DT.get_size(1);
 
             // mean over N
             hoNDArray< std::complex<float> > meanKSpace;
-            Gadgetron::sum_over_dimension(ref2DT, meanKSpace, 4);
+
+            if(calib_mode_[e]==ISMRMRD_interleaved)
+            {
+                Gadgetron::compute_averaged_data_N_S(kspace, true, true, true, meanKSpace);
+            }
+            else
+            {
+                Gadgetron::compute_averaged_data_N_S(ref2DT, true, true, true, meanKSpace);
+            }
 
             if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(meanKSpace, debug_folder_full_path_ + "spirit_nl_2DT_meanKSpace"); }
 
-            hoNDArray< std::complex<float> > acsSrc(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
-            hoNDArray< std::complex<float> > acsDst(ref2DT_RO, ref2DT_E1, CHA, meanKSpace.begin());
+            hoNDArray< std::complex<float> > acsSrc(meanKSpace.get_size(0), meanKSpace.get_size(1), CHA, meanKSpace.begin());
+            hoNDArray< std::complex<float> > acsDst(meanKSpace.get_size(0), meanKSpace.get_size(1), CHA, meanKSpace.begin());
 
             double grappa_reg_lamda = 0.0005;
             size_t kRO = 5;
