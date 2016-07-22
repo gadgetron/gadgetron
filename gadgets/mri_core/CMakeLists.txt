@@ -189,7 +189,9 @@ set( gadgetron_mricore_config_files
     config/Generic_Cartesian_Spirit_RealTimeCine.xml
     config/Generic_Cartesian_Spirit_SASHA.xml
     config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine.xml
+    config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine.xml
     config/Generic_Cartesian_NonLinear_Spirit_RealTimeCine_Cloud.xml
+    config/Generic_Cartesian_RandomSampling_NonLinear_Spirit_RealTimeCine_Cloud.xml
     config/NoiseSummary.xml
     config/ismrmrd_dump.xml
 )
