@@ -3,15 +3,17 @@ FROM ubuntu:14.04
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     wget build-essential emacs python-pip libhdf5-serial-dev cmake git-core \
-    libboost-all-dev libfftw3-dev h5utils jq \
+    libboost-all-dev libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
-    libgtest-dev liblapack-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
+    libgtest-dev python-dev liblapack-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
     supervisor
 
 #Python stuff
 RUN pip install Cython
-RUN pip install numpy pyxb h5py psutil Twisted lxml matplotlib  
+RUN pip install numpy 
+RUN pip install pyxb h5py psutil Twisted lxml matplotlib  
+RUN pip install jupyter
 
 #OpenBLAS with OpenMP
 RUN cd /opt && \
@@ -29,6 +31,15 @@ RUN cd /opt && \
     cd /opt && \
     rm -rf debsource
 
+#ZFP
+RUN cd /opt && \
+    git clone https://github.com/hansenms/ZFP.git && \
+    cd ZFP && \
+    mkdir lib && \
+    make && \
+    make shared && \
+    make install
+
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \
     ISMRMRD_HOME=/usr/local
@@ -39,4 +50,9 @@ ENV PATH=$PATH:$GADGETRON_HOME/bin:$ISMRMRD_HOME/bin \
 # Clean up packages.
 RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
+
+ENV TINI_VERSION v0.9.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+ENTRYPOINT ["/tini", "--"]
 

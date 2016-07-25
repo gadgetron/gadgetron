@@ -1,14 +1,5 @@
 FROM gadgetron/ubuntu1404_base
 
-#ZFP
-RUN cd /opt && \
-    git clone https://github.com/hansenms/ZFP.git && \
-    cd ZFP && \
-    mkdir lib && \
-    make && \
-    make shared && \
-    make install
-
 #ISMRMRD
 RUN mkdir /opt/code
 RUN cd /opt/code && \
@@ -84,12 +75,22 @@ RUN cd /opt && \
     echo 'python /usr/local/bin/gadgetron_web_app.py /usr/local/share/gadgetron/config/gadgetron_web_app.cfg' >> start_web.sh && \
     chmod +x start_web.sh
 
+ENV JUPYTER_PORT 8888
+
+#Create script for running Jupyter
+RUN cd /opt && \
+    echo '#!/bin/bash' > start_jupyter.sh && \
+    echo '[ -n "${JUPYTER_PORT}" ] && { jupyter notebook --no-browser --ip=0.0.0.0 --port=${JUPYTER_PORT}; }' >> start_jupyter.sh && \
+    chmod +x start_jupyter.sh
+
 #Generate supervisor file
 RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '[program:gadgetron]' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'command=/opt/start_web.sh' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:jupyter]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=/opt/start_jupyter.sh' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '' >> /etc/supervisor/conf.d/supervisord.conf 
 
 # Clean up packages.
