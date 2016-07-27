@@ -1,11 +1,11 @@
 find_package(Boost COMPONENTS date_time filesystem system thread regex REQUIRED)
 find_package( Threads )
 
-include_directories(
-        ${Boost_INCLUDE_DIR}
-        ${CMAKE_SOURCE_DIR}/toolboxes/log
+if (WIN32)
+  add_definitions(-DCROW_MSVC_WORKAROUND)
+endif()
 
-        )
+include_directories(${Boost_INCLUDE_DIR})
 
 add_library(gadgetron_toolbox_rest SHARED
   gadgetron_rest.cpp

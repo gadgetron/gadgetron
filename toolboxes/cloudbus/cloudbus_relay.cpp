@@ -9,7 +9,6 @@
 
 #include <map>
 #include <chrono>
-#include <ctime>
 
 #include "log.h"
 #include "CloudBus.h"
@@ -239,9 +238,6 @@ namespace Gadgetron{
 
   int CloudBusRelayAcceptor::handle_input (ACE_HANDLE fd)
   {
-
-    GDEBUG("Connection from node\n");
-
     CloudBusNodeController *controller;
 
     ACE_NEW_RETURN (controller, CloudBusNodeController, -1);
@@ -294,84 +290,36 @@ int main(int argc, char** argv)
   Gadgetron::ReST::port_ = rest_port;
   
   Gadgetron::ReST::instance()->server()
-      ->resource["/info"]["GET"]=[](std::shared_ptr<Gadgetron::HttpServer::Response> response, 
-                                    std::shared_ptr<Gadgetron::HttpServer::Request> request) 
-      {
-          std::stringstream content_stream;
-          content_stream << "<html><body><h1>Gadgetron CloudBusRelay</h1></body></html>\n";
-          
-          //find length of content_stream (length received using content_stream.tellp()) 
-          content_stream.seekp(0, std::ios::end);
-          
-          *response <<  "HTTP/1.1 200 OK\r\nContent-Length: " << content_stream.tellp() << "\r\n\r\n" << content_stream.rdbuf();
-      };
-
-  
-  /*
-
-{
-"nodes": [
-        {
-        "active_reconstructions": 0,
-        "address": "127.0.0.1",
-        "compute_capability": 1,
-        "last_recon": 305.227529,
-        "port": 9003,
-        "rest_port": 9083,
-        "uuid": "38ee0f07-84d3-4815-90d1-17ff6eed5070"
-        }
-    ],
-    "number_of_nodes": 1
-}
-
-   */
+    .route_dynamic("/info")([]()
+			    {
+			      return "Gadgetron CloudBusRelay\n";
+			    });
 
   Gadgetron::ReST::instance()->server()
-      ->resource["/info/json"]["GET"]=[&acceptor](std::shared_ptr<Gadgetron::HttpServer::Response> response, 
-                                    std::shared_ptr<Gadgetron::HttpServer::Request> request) 
-      {
-          std::stringstream content_stream;         
-          std::vector<Gadgetron::GadgetronNodeInfo> nl;
-          acceptor.get_node_list(nl);
-
-          content_stream << "{" << std::endl;
-          content_stream << "\"number_of_nodes\": " << nl.size();
-          if (nl.size()) {
-              content_stream << "," << std::endl;
-              content_stream << "\"nodes\": [" << std::endl;
-              size_t idx = 0;
-              for (auto n: nl) {
-                  content_stream << "{" << std::endl;
-                  content_stream << "\"uuid\": \"" << n.uuid << "\"," << std::endl;
-                  content_stream << "\"address\": \"" << n.address << "\"," << std::endl;
-                  content_stream << "\"port\": " << n.port << "," << std::endl;
-                  content_stream << "\"rest_port\": " << n.rest_port << "," << std::endl;
-                  content_stream << "\"compute_capability\": " << n.compute_capability << "," << std::endl;
-                  content_stream << "\"active_reconstructions\": " << n.active_reconstructions << "," << std::endl;
-                  auto t = std::chrono::system_clock::from_time_t(n.last_recon);
-                  std::chrono::duration<double> time_since_last_recon =
-                      std::chrono::system_clock::now() - t;
-                  content_stream << "\"last_recon\": " << time_since_last_recon.count() << std::endl;
-                  if (idx == nl.size()-1) {
-                      content_stream << "}" << std::endl;
-                  } else {
-                      content_stream << "}," << std::endl;
-                  }
-                  idx++;
-              }
-              content_stream << "]" << std::endl;
-          } else {
-              content_stream << std::endl;
-          }
-          content_stream << "}" << std::endl;
-          
-          //find length of content_stream (length received using content_stream.tellp()) 
-          content_stream.seekp(0, std::ios::end);
-          
-          *response <<  "HTTP/1.1 200 OK\r\nContent-Length: " << content_stream.tellp() << "\r\n\r\n" << content_stream.rdbuf();
-      };
-
-  Gadgetron::ReST::instance()->restart();
+    .route_dynamic("/info/json")([&acceptor]()
+				 {
+				   std::vector<Gadgetron::GadgetronNodeInfo> nl;
+				   acceptor.get_node_list(nl);
+				   crow::json::wvalue out, nodes;
+				   out["number_of_nodes"] = nl.size();
+				   size_t idx = 0;
+				   for (auto n: nl)
+				   {
+				     crow::json::wvalue node;
+				     out["nodes"][idx]["uuid"] = n.uuid;
+				     out["nodes"][idx]["address"] = n.address;
+				     out["nodes"][idx]["port"] = n.port;
+				     out["nodes"][idx]["rest_port"] = n.rest_port;
+				     out["nodes"][idx]["compute_capability"] = n.compute_capability;
+				     out["nodes"][idx]["active_reconstructions"] = n.active_reconstructions;
+				     auto t = std::chrono::system_clock::from_time_t(n.last_recon);
+				     std::chrono::duration<double> time_since_last_recon =
+				       std::chrono::system_clock::now() - t;
+				     out["nodes"][idx]["last_recon"] = time_since_last_recon.count();
+				     idx++;
+				   }
+				   return out;
+				 });
 
   ACE_Reactor::instance()->run_reactor_event_loop ();
 
