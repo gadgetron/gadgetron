@@ -3,32 +3,38 @@
 
 #include <thread>
 
-#include "server_http.hpp" //from https://github.com/eidheim/Simple-Web-Server
+#include "crow/crow.h"
+#include "crow/json.h"
+
+// require these undef to avoid visual studio conflicts for ERROR and DELETE
+// TODO: remove these once updated to visual studio 2015
+#ifdef WIN32
+    #ifdef ERROR
+        #undef ERROR
+    #endif // ERROR
+
+    #ifdef DELETE
+        #undef DELETE
+    #endif // DELETE
+#endif // WIN32
 
 #include "gadgetron_rest_exports.h"
 
 namespace Gadgetron {
-    
-  using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
-
   class EXPORTREST ReST
   {
   public:
     static ReST* instance();
-
-    HttpServer* server()
+    crow::SimpleApp& server()
     {
       return app_;
     }
     
-    void restart();
-
     static unsigned int port_;
   protected:
     ReST() {};
-
-    HttpServer* app_;
-
+    void open();
+    crow::SimpleApp app_;
     std::thread server_thread_;
     static ReST* instance_;
   };

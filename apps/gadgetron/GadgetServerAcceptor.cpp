@@ -23,56 +23,30 @@ int GadgetServerAcceptor::open (const ACE_INET_Addr &listen_addr)
   }
   
   //Register a way to close the Acceptor via the ReST API
-  Gadgetron::ReST::instance()->server()
-      ->resource["/acceptor/close"]["GET"]=[this](std::shared_ptr<Gadgetron::HttpServer::Response> response, 
-                                    std::shared_ptr<Gadgetron::HttpServer::Request> request) 
-      {
-          this->close();
-          auto it = this->global_gadget_parameters_.find("using_cloudbus");
-          if (it != this->global_gadget_parameters_.end() && it->second == std::string("true")) {
-              CloudBus::set_relay_port(0);
-              CloudBus::instance()->close();
-          }
-
-          std::stringstream content_stream;
-          content_stream << "Acceptor closed\n";
-          
-          //find length of content_stream (length received using content_stream.tellp()) 
-          content_stream.seekp(0, std::ios::end);
-          
-          *response <<  "HTTP/1.1 200 OK\r\nContent-Length: " << content_stream.tellp() << "\r\n\r\n" << content_stream.rdbuf();
-      };
-
+  Gadgetron::ReST::instance()->server().route_dynamic("/acceptor/close")([this]()
+  {
+    this->close();
+    auto it = this->global_gadget_parameters_.find("using_cloudbus");
+    if (it != this->global_gadget_parameters_.end() && it->second == std::string("true")) {
+        CloudBus::set_relay_port(0);
+        CloudBus::instance()->close();
+    }
+    return "Acceptor closed\n";
+  });
 
   //Register a way to get the port number if it is listening.
-  Gadgetron::ReST::instance()->server()
-      ->resource["/info/port"]["GET"]=[this,listen_addr](std::shared_ptr<Gadgetron::HttpServer::Response> response, 
-                                         std::shared_ptr<Gadgetron::HttpServer::Request> request) 
-      {
+  Gadgetron::ReST::instance()->server().route_dynamic("/info/port")([this,listen_addr]()
+  {
+      std::lock_guard<std::mutex> guard(acceptor_mtx_);
+      if (this->is_listening_) {
+          std::stringstream ss;
+          ss << listen_addr.get_port_number();
+          return crow::response(200, ss.str());
+      }
+      return crow::response(500, "Port not available");
+  });
 
-          std::stringstream content_stream;
-
-          if (this->is_listening_) {
-              std::stringstream ss;
-              content_stream << listen_addr.get_port_number();
-              //find length of content_stream (length received using content_stream.tellp()) 
-              content_stream.seekp(0, std::ios::end);   
-              *response <<  "HTTP/1.1 200 OK\r\nContent-Length: " << content_stream.tellp() << "\r\n\r\n" << content_stream.rdbuf();
-              return;
-          }
-          
-          content_stream << "Port not available";
-          
-          //find length of content_stream (length received using content_stream.tellp()) 
-          content_stream.seekp(0, std::ios::end);
-          
-          *response <<  "HTTP/1.1 500 Internal Server Error\r\nContent-Length: " << content_stream.tellp() << "\r\n\r\n" << content_stream.rdbuf();
-      };
   
-
-  //Make sure latest resources load
-  Gadgetron::ReST::instance()->restart();
-
   return this->reactor ()->register_handler(this, ACE_Event_Handler::ACCEPT_MASK);
 }
 
