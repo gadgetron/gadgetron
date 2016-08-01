@@ -240,7 +240,7 @@ namespace Gadgetron{
 
                     tmpm1->getObjectPtr()->physiology_time_stamp[phys_time_index_] = static_cast<unsigned>(floor((recon_cycle_time[i]+0.0001-current_cycle)*cycle_lengths[current_cycle])); 
                     tmpm1->getObjectPtr()->phase = current_phase;
-                    tmpm1->getObjectPtr()->image_index = current_phase+1 + (uint16_t)slc*phases_to_reconstruct_;
+                    tmpm1->getObjectPtr()->image_index = current_phase+1;
                     tmpm1->getObjectPtr()->image_series_index = current_cycle * 10 + tmpm1->getObjectPtr()->slice;
 
                     // make sure the phase is within the acquisition limit
