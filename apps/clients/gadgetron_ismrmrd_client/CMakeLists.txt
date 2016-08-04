@@ -1,7 +1,7 @@
 find_package(ZFP)
 
 if (ZFP_FOUND)
-   add_definitions(-DGADGETRON_COMPRESSION)
+   add_definitions(-DGADGETRON_COMPRESSION_ZFP)
 endif()
 
 set(Boost_NO_BOOST_CMAKE ON)
@@ -19,6 +19,7 @@ endif()
 include_directories(
   ${Boost_INCLUDE_DIR} 
   ${ISMRMRD_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   )
 
 if (ZFP_FOUND)
