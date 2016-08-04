@@ -1752,24 +1752,44 @@ void CmrKSpaceBinning<T>::interpolate_best_HB_images(const std::vector<float>& c
 
         mag_bestHB_at_desired_cpt.create( RO, E1, dstN );
 
+        // check the boundary of cpt_time_ratio_bestHB
+        std::vector<float> cpt_time_ratio_bestHB_checked(cpt_time_ratio_bestHB);
+
+        if(cpt_time_ratio_bestHB_checked[0] > cpt_time_ratio_bestHB_checked[1])
+        {
+            cpt_time_ratio_bestHB_checked[0] = 1.0 - cpt_time_ratio_bestHB_checked[0];
+            if(cpt_time_ratio_bestHB_checked[0] > cpt_time_ratio_bestHB_checked[1])
+            {
+                cpt_time_ratio_bestHB_checked[0] = 0;
+            }
+
+            GDEBUG_STREAM("Cpt time ratio 0 used for interpolating : " << cpt_time_ratio_bestHB_checked[0]);
+        }
+
+        if(cpt_time_ratio_bestHB_checked[N-1] < cpt_time_ratio_bestHB_checked[N-2])
+        {
+            cpt_time_ratio_bestHB_checked[N-1] = 1.0;
+            GDEBUG_STREAM("Cpt time ratio N-1 used for interpolating : " << cpt_time_ratio_bestHB_checked[N-1]);
+        }
+
         // extend the best HB for periodic boundary condition
         hoNDArray<T> mag(RO, E1, N+2);
         std::vector<float> cpt(N+2);
 
         memcpy(mag.begin()+RO*E1, mag_bestHB.begin(), mag_bestHB.get_number_of_bytes());
-        memcpy(&cpt[0]+1, &cpt_time_ratio_bestHB[0], sizeof(float)*N);
+        memcpy(&cpt[0]+1, &cpt_time_ratio_bestHB_checked[0], sizeof(float)*N);
 
         size_t n;
 
         // first phase
         // memcpy(mag.begin(), mag_bestHB.begin()+(N-1)*RO*E1, sizeof(T)*RO*E1);
         memcpy(mag.begin(), mag_bestHB.begin(), sizeof(T)*RO*E1);
-        cpt[0] = (float)( -(1.0 - cpt_time_ratio_bestHB[N-1]) );
+        cpt[0] = (float)( -(1.0 - cpt_time_ratio_bestHB_checked[N-1]) );
 
         // last phase
         // memcpy(mag.begin()+(N+1)*RO*E1, mag_bestHB.begin(), sizeof(T)*RO*E1);
         memcpy(mag.begin()+(N+1)*RO*E1, mag_bestHB.begin()+(N-1)*RO*E1, sizeof(T)*RO*E1);
-        cpt[N+1] = (float)( 1.0 + cpt_time_ratio_bestHB[0] );
+        cpt[N+1] = (float)( 1.0 + cpt_time_ratio_bestHB_checked[0] );
 
         if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag, debug_folder_ + "mag_bestHB_periodic_condition");
 
