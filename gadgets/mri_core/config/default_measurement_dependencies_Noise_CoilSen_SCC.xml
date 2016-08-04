@@ -30,8 +30,8 @@
         <name>DataSender</name>
         <dll>gadgetron_mricore</dll>
         <classname>DependencyDataSenderGadget</classname>
-        <property><name>head_coil_sen</name><value>AccCoilSen</value></property>
-        <property><name>head_scc</name><value>AccSCC</value></property>
+        <property><name>coil_sen_head_gadget</name><value>AccCoilSen</value></property>
+        <property><name>scc_head_gadget</name><value>AccSCC</value></property>
     </gadget>
 
     <!-- Head of coil sen branch -->

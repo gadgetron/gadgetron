@@ -61,7 +61,6 @@ namespace Gadgetron {
         // deserialize the ismrmrd header
         ISMRMRD::deserialize(mb->rd_ptr(), current_ismrmrd_header_);
 
-        // find the measurementID of this scan
         if (current_ismrmrd_header_.measurementInformation)
         {
             if (current_ismrmrd_header_.measurementInformation->measurementID)
@@ -69,34 +68,57 @@ namespace Gadgetron {
                 measurement_id_ = *current_ismrmrd_header_.measurementInformation->measurementID;
                 GDEBUG( "Measurement ID is %s\n", measurement_id_.c_str() );
             }
-
-            // find the noise depencies if any
-            if (current_ismrmrd_header_.measurementInformation->measurementDependency.size() > 0)
+            else
             {
-                measurement_id_of_coil_sen_dependency_.clear();
-
-                std::vector<ISMRMRD::MeasurementDependency>::const_iterator iter = current_ismrmrd_header_.measurementInformation->measurementDependency.begin();
-                for (; iter != current_ismrmrd_header_.measurementInformation->measurementDependency.end(); iter++)
-                {
-                    std::string dependencyType = iter->dependencyType;
-                    std::string dependencyID = iter->measurementID;
-
-                    GDEBUG( "Found dependency measurement : %s with ID %s\n", dependencyType.c_str(), dependencyID.c_str() );
-
-                    if (dependencyType == "SenMap" || dependencyType == "senmap") {
-                        measurement_id_of_coil_sen_dependency_ = dependencyID;
-                    }
-                }
-
-                if (!measurement_id_of_coil_sen_dependency_.empty())
-                {
-                    GDEBUG( "Measurement ID of coil sen dependency is %s\n", measurement_id_of_coil_sen_dependency_.c_str() );
-
-                    full_name_stored_coil_sen_dependency_ = this->generate_coil_sen_dependency_filename( measurement_id_of_coil_sen_dependency_ );
-                    GDEBUG( "Stored coil sen dependency is %s\n", full_name_stored_coil_sen_dependency_.c_str() );
-                }
+                GERROR_STREAM("Incoming ismrmrd header does not have measurementInformation.measurementID ... ");
+                return GADGET_FAIL;
             }
         }
+        else
+        {
+            GERROR_STREAM("Incoming ismrmrd header does not have measurementInformation ... ");
+            return GADGET_FAIL;
+        }
+
+        full_name_stored_coil_sen_dependency_ = this->generate_coil_sen_dependency_filename( measurement_id_ );
+        GDEBUG( "Stored coil sen dependency is %s\n", full_name_stored_coil_sen_dependency_.c_str() );
+
+        //// find the measurementID of this scan
+        //if (current_ismrmrd_header_.measurementInformation)
+        //{
+        //    if (current_ismrmrd_header_.measurementInformation->measurementID)
+        //    {
+        //        measurement_id_ = *current_ismrmrd_header_.measurementInformation->measurementID;
+        //        GDEBUG( "Measurement ID is %s\n", measurement_id_.c_str() );
+        //    }
+
+        //    // find the noise depencies if any
+        //    if (current_ismrmrd_header_.measurementInformation->measurementDependency.size() > 0)
+        //    {
+        //        measurement_id_of_coil_sen_dependency_.clear();
+
+        //        std::vector<ISMRMRD::MeasurementDependency>::const_iterator iter = current_ismrmrd_header_.measurementInformation->measurementDependency.begin();
+        //        for (; iter != current_ismrmrd_header_.measurementInformation->measurementDependency.end(); iter++)
+        //        {
+        //            std::string dependencyType = iter->dependencyType;
+        //            std::string dependencyID = iter->measurementID;
+
+        //            GDEBUG( "Found dependency measurement : %s with ID %s\n", dependencyType.c_str(), dependencyID.c_str() );
+
+        //            if (dependencyType == "SenMap" || dependencyType == "senmap") {
+        //                measurement_id_of_coil_sen_dependency_ = dependencyID;
+        //            }
+        //        }
+
+        //        if (!measurement_id_of_coil_sen_dependency_.empty())
+        //        {
+        //            GDEBUG( "Measurement ID of coil sen dependency is %s\n", measurement_id_of_coil_sen_dependency_.c_str() );
+
+        //            full_name_stored_coil_sen_dependency_ = this->generate_coil_sen_dependency_filename( measurement_id_of_coil_sen_dependency_ );
+        //            GDEBUG( "Stored coil sen dependency is %s\n", full_name_stored_coil_sen_dependency_.c_str() );
+        //        }
+        //    }
+        //}
 
         return GADGET_OK;
     }
@@ -133,6 +155,14 @@ namespace Gadgetron {
         {
             GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::save_dependency_data(xml_str, scc_array_, scc_header_[0], body_array_, body_header_[0], full_name_stored_coil_sen_dependency_));
         }
+
+        //std::string xml_loaded;
+        //ISMRMRD::AcquisitionHeader hs, hb;
+        //hoNDArray< std::complex<float> > sa, ba;
+        //Gadgetron::load_dependency_data(full_name_stored_coil_sen_dependency_, xml_loaded, sa, hs, ba, hb);
+
+        //if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(sa, debug_folder_full_path_ + "CoilSenMap_sa_array");
+        //if (!debug_folder_full_path_.empty()) gt_exporter_.export_array_complex(ba, debug_folder_full_path_ + "CoilSenMap_ba_array");
 
         // set the permission
 #ifndef _WIN32
@@ -195,7 +225,7 @@ namespace Gadgetron {
             }
         }
 
-        GDEBUG_CONDITION_STREAM(verbose.value(), "CoilSenMapGadget, received number of channel, set 0 and set 1 : " << CHA_1st_set << " " << CHA_2nd_set);
+        GDEBUG_CONDITION_STREAM(verbose.value(), "CoilSenMapGadget, received number of channel, set 0 and set 1 : " << CHA_1st_set << " and " << CHA_2nd_set);
 
         // allocate surface coil and body coil array
         std::vector<size_t> dim(11, 1);

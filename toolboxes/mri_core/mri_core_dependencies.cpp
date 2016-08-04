@@ -34,7 +34,7 @@ namespace Gadgetron
                 GADGET_CHECK_THROW(scc_array.serialize(buf_scc_array, len_scc_array));
 
                 size_t len_body_array = 0;
-                GADGET_CHECK_THROW(scc_array.serialize(buf_body_array, len_body_array));
+                GADGET_CHECK_THROW(body_array.serialize(buf_body_array, len_body_array));
 
                 outfile.write( reinterpret_cast<char*>(&len_ismrmrd_header), sizeof(size_t) );
                 outfile.write( ismrmrd_header.c_str(), len_ismrmrd_header );
@@ -106,7 +106,7 @@ namespace Gadgetron
                 std::vector<char> buf_body(len_body_array);
                 infile.read( &buf_body[0], len_body_array);
 
-                body_array.deserialize(&buf_scc[0], len_scc_array);
+                body_array.deserialize(&buf_body[0], len_body_array);
 
                 // -----------------------------
 
