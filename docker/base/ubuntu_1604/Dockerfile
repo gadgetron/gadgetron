@@ -14,7 +14,7 @@ RUN pip install --upgrade pip
 RUN pip install setuptools
 RUN pip install Cython
 RUN pip install numpy 
-RUN pip install pyxb h5py psutil Twisted lxml matplotlib  
+RUN pip install pyxb h5py psutil Twisted lxml matplotlib pydicom
 RUN pip install jupyter
 
 #OpenBLAS with OpenMP
