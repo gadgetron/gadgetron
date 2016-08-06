@@ -602,7 +602,7 @@ namespace Gadgetron
     }
 
     template<typename T> 
-    void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<T>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile)
+    void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<T>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile)
     {
         try
         {
@@ -610,17 +610,20 @@ namespace Gadgetron
             boost::shared_ptr< std::vector<size_t> > dims = m2.get_dimensions();
             data.create(dims.get());
 
-            T *src = m2.get_data_ptr();
+            const T *src = m2.get_data_ptr();
             ACE_INT16 *dst = data.get_data_ptr();
 
-            T min_pix_val, max_pix_val, sum_pix_val = 0;
+            T min_pix_val, max_pix_val = 0;
             if (m2.get_number_of_elements() > 0)
             {
                 min_pix_val = src[0];
                 max_pix_val = src[0];
             }
 
-            for (unsigned long i = 0; i < m2.get_number_of_elements(); i++)
+            size_t numPixel = m2.get_number_of_elements();
+
+            double sum_pix_val = 0;
+            for (unsigned long i = 0; i < numPixel; i++)
             {
                 T pix_val = src[i];
                 // search for minimum and maximum pixel values
@@ -630,11 +633,7 @@ namespace Gadgetron
 
                 dst[i] = static_cast<ACE_INT16>(pix_val);
             }
-            T mean_pix_val = (T)((sum_pix_val * 4) / (T)data.get_number_of_elements());
-
-            /* update the image data_type.
-            * There is currently no SIGNED SHORT type so this will have to suffice */
-            m1.data_type = ISMRMRD::ISMRMRD_USHORT;
+            T mean_pix_val = (T)((sum_pix_val * 4) / (T)( (numPixel>1) ? numPixel : 1 ));
 
             unsigned int BUFSIZE = 1024;
             std::vector<char> bufVec(BUFSIZE);
@@ -778,15 +777,15 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<short>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<unsigned short>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<int>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<unsigned int>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<float>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<double>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<short>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<unsigned short>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<int>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<unsigned int>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<float>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<double>& m2, std::string& seriesIUID, DcmFileFormat& dcmFile);
 
     template<typename T> 
-    void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<T>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile)
+    void write_ismrmd_image_into_dicom(const  ISMRMRD::ImageHeader& m1, const  hoNDArray<T>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile)
     {
         try
         {
@@ -945,10 +944,10 @@ namespace Gadgetron
         }
     }
 
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<short>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<unsigned short>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<int>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<unsigned int>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<float>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
-    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(ISMRMRD::ImageHeader& m1, hoNDArray<double>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<short>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<unsigned short>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<int>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<unsigned int>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<float>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
+    template EXPORTGADGETSDICOM void write_ismrmd_image_into_dicom(const ISMRMRD::ImageHeader& m1, const hoNDArray<double>& m2, ISMRMRD::IsmrmrdHeader& h, ISMRMRD::MetaContainer& attrib, std::string& seriesIUID, DcmFileFormat& dcmFile);
 }
