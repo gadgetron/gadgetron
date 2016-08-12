@@ -546,14 +546,19 @@ namespace Gadgetron {
         size_t N = x.get_number_of_elements() / lastDim;
 
         long long l;
-#pragma omp parallel for default(none) private(l) shared(lastDim, offsetIndLastDim, x, ind, indLastDim, N, NDim)
-        for ( l=0; l<(long long)lastDim; l++ )
+#pragma omp parallel default(none) private(l) shared(lastDim, offsetIndLastDim, x, ind, indLastDim, N, NDim)
         {
-            if ( l==indLastDim ) continue;
-            ind[NDim-1] = l;
-            size_t offsetInd = x.calculate_offset(ind);
+            std::vector<size_t> indLocal(ind);
 
-            memcpy(x.begin()+offsetInd, x.begin()+offsetIndLastDim, sizeof(T)*N);
+#pragma omp for
+            for ( l=0; l<(long long)lastDim; l++ )
+            {
+                if ( l==indLastDim ) continue;
+                indLocal[NDim-1] = l;
+                size_t offsetInd = x.calculate_offset(indLocal);
+
+                memcpy(x.begin()+offsetInd, x.begin()+offsetIndLastDim, sizeof(T)*N);
+            }
         }
       }
     catch (...)
