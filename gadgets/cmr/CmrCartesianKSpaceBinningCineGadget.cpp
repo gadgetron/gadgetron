@@ -86,6 +86,37 @@ namespace Gadgetron {
             GWARN_STREAM("Incoming recon_bit has more encoding spaces than the protocol : " << recon_bit_->rbit_.size() << " instead of " << num_encoding_spaces_);
         }
 
+        std::vector<unsigned int> processed_slices = kspace_binning_processed_slices.value();
+        if(processed_slices.size()>0)
+        {
+            size_t ii;
+            for (ii=0; ii<recon_bit_->rbit_[0].data_.headers_.get_number_of_elements(); ii++)
+            {
+                if( recon_bit_->rbit_[0].data_.headers_(ii).acquisition_time_stamp>0 ) break;
+            }
+
+            size_t curr_slc = recon_bit_->rbit_[0].data_.headers_(ii).idx.slice;
+
+            GDEBUG_STREAM("Incoming slice : " << curr_slc);
+
+            bool do_processing = false;
+            for (size_t k=0; k<processed_slices.size(); k++)
+            {
+                if(curr_slc==processed_slices[k])
+                {
+                    do_processing = true;
+                    break;
+                }
+            }
+
+            if(!do_processing)
+            {
+                GDEBUG_STREAM("Ignore incoming slice : " << curr_slc);
+                m1->release();
+                return GADGET_OK;
+            }
+        }
+
         // for every encoding space
         for (size_t e = 0; e < recon_bit_->rbit_.size(); e++)
         {
@@ -166,7 +197,7 @@ namespace Gadgetron {
                 }
 
                 if (perform_timing.value()) { gt_timer_.start("CmrCartesianKSpaceBinningCineGadget::send_out_image_array, binning"); }
-                this->send_out_image_array(recon_bit_->rbit_[e], res_binning_, e, image_series.value() + ((int)e + 2), GADGETRON_IMAGE_RETRO);
+                this->send_out_image_array(recon_bit_->rbit_[e], res_binning_, e, image_series.value() + (int)e + 2, GADGETRON_IMAGE_RETRO);
                 if (perform_timing.value()) { gt_timer_.stop(); }
             }
         }
@@ -343,6 +374,40 @@ namespace Gadgetron {
         {
             GADGET_THROW("Errors happened in CmrCartesianKSpaceBinningCineGadget::set_time_stamps(...) ... ");
         }
+    }
+
+    int CmrCartesianKSpaceBinningCineGadget::prep_image_header_send_out(IsmrmrdImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role)
+    {
+        try
+        {
+            BaseClass::prep_image_header_send_out(res, n, s, slc, encoding, series_num, data_role);
+
+            size_t RO = res.data_.get_size(0);
+            size_t E1 = res.data_.get_size(1);
+            size_t E2 = res.data_.get_size(2);
+            size_t CHA = res.data_.get_size(3);
+            size_t N = res.data_.get_size(4);
+            size_t S = res.data_.get_size(5);
+            size_t SLC = res.data_.get_size(6);
+
+            if(send_out_multiple_series_by_slice.value())
+            {
+                res.headers_(n, s, slc).image_series_index += 100 * res.headers_(n, s, slc).slice;
+
+                size_t offset = n + s*N + slc*N*S;
+
+                std::ostringstream ostr;
+                ostr << "_SLC" << res.headers_(n, s, slc).slice+1;
+                res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, ostr.str().c_str());
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors in GenericReconGadget::prep_image_header_send_out(...) ... ");
+            return GADGET_FAIL;
+        }
+
+        return GADGET_OK;
     }
 
     GADGET_FACTORY_DECLARE(CmrCartesianKSpaceBinningCineGadget)

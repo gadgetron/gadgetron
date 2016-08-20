@@ -204,6 +204,71 @@ namespace Gadgetron {
         return imageNum;
     }
 
+    int GenericReconGadget::prep_image_header_send_out(IsmrmrdImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role)
+    {
+        try
+        {
+            size_t RO = res.data_.get_size(0);
+            size_t E1 = res.data_.get_size(1);
+            size_t E2 = res.data_.get_size(2);
+            size_t CHA = res.data_.get_size(3);
+            size_t N = res.data_.get_size(4);
+            size_t S = res.data_.get_size(5);
+            size_t SLC = res.data_.get_size(6);
+
+            res.headers_(n, s, slc).image_index = (uint16_t)this->compute_image_number(res.headers_(n, s, slc), encoding, CHA, 0, E2);
+            res.headers_(n, s, slc).image_series_index = series_num;
+
+            size_t offset = n + s*N + slc*N*S;
+            res.meta_[offset].set(GADGETRON_IMAGENUMBER, (long)res.headers_(n, s, slc).image_index);
+            res.meta_[offset].set(GADGETRON_IMAGEPROCESSINGHISTORY, "GT");
+
+            if (data_role == GADGETRON_IMAGE_REGULAR)
+            {
+                res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+
+                res.meta_[offset].append(GADGETRON_IMAGECOMMENT, "GT");
+
+                res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, "_GT");
+                res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_REGULAR);
+            }
+            else if (data_role == GADGETRON_IMAGE_GFACTOR)
+            {
+                res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+
+                res.meta_[offset].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_GFACTOR);
+                res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_GFACTOR);
+                res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_GFACTOR);
+
+                // set the skip processing flag, so gfactor map will not be processed during e.g. partial fourier handling or kspace filter gadgets
+                res.meta_[offset].set(GADGETRON_SKIP_PROCESSING_AFTER_RECON, (long)1);
+            }
+            else if (data_role == GADGETRON_IMAGE_SNR_MAP)
+            {
+                res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+
+                res.meta_[offset].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_SNR_MAP);
+                res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_SNR_MAP);
+                res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_SNR_MAP);
+            }
+            else if (data_role == GADGETRON_IMAGE_RETRO)
+            {
+                res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
+
+                res.meta_[offset].append(GADGETRON_IMAGECOMMENT, "RETRO");
+                res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, "RETRO");
+                res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_RETRO);
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors in GenericReconGadget::prep_image_header_send_out(...) ... ");
+            return GADGET_FAIL;
+        }
+
+        return GADGET_OK;
+    }
+
     int GenericReconGadget::send_out_image_array(IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role)
     {
         try
@@ -226,53 +291,7 @@ namespace Gadgetron {
                 {
                     for (n = 0; n < N; n++)
                     {
-                        ISMRMRD::ImageHeader header = res.headers_(n, s, slc);
-
-                        // if (header.measurement_uid == 0) continue;
-
-                        res.headers_(n, s, slc).image_index = (uint16_t)this->compute_image_number(res.headers_(n, s, slc), encoding, CHA, 0, E2);
-                        res.headers_(n, s, slc).image_series_index = series_num;
-
-                        size_t offset = n + s*N + slc*N*S;
-                        res.meta_[offset].set(GADGETRON_IMAGENUMBER, (long)res.headers_(n, s, slc).image_index);
-                        res.meta_[offset].set(GADGETRON_IMAGEPROCESSINGHISTORY, "GT");
-
-                        if (data_role == GADGETRON_IMAGE_REGULAR)
-                        {
-                            res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
-
-                            res.meta_[offset].append(GADGETRON_IMAGECOMMENT, "GT");
-
-                            res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, "_GT");
-                            res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_REGULAR);
-                        }
-                        else if (data_role == GADGETRON_IMAGE_GFACTOR)
-                        {
-                            res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
-
-                            res.meta_[offset].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_GFACTOR);
-                            res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_GFACTOR);
-                            res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_GFACTOR);
-
-                            // set the skip processing flag, so gfactor map will not be processed during e.g. partial fourier handling or kspace filter gadgets
-                            res.meta_[offset].set(GADGETRON_SKIP_PROCESSING_AFTER_RECON, (long)1);
-                        }
-                        else if (data_role == GADGETRON_IMAGE_SNR_MAP)
-                        {
-                            res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
-
-                            res.meta_[offset].append(GADGETRON_IMAGECOMMENT, GADGETRON_IMAGE_SNR_MAP);
-                            res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, GADGETRON_IMAGE_SNR_MAP);
-                            res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_SNR_MAP);
-                        }
-                        else if (data_role == GADGETRON_IMAGE_RETRO)
-                        {
-                            res.headers_(n, s, slc).image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
-
-                            res.meta_[offset].append(GADGETRON_IMAGECOMMENT, "RETRO");
-                            res.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, "RETRO");
-                            res.meta_[offset].set(GADGETRON_DATA_ROLE, GADGETRON_IMAGE_RETRO);
-                        }
+                        GADGET_CHECK_RETURN(this->prep_image_header_send_out(res, n, s, slc, encoding, series_num, data_role)==GADGET_OK, GADGET_FAIL);
 
                         if (verbose.value())
                         {
