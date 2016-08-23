@@ -108,6 +108,7 @@
 
         <property><name>number_of_output_phases</name><value>30</value></property>
         <property><name>send_out_raw</name><value>false</value></property>
+        <property><name>send_out_multiple_series_by_slice</name><value>false</value></property>
 
         <property><name>use_multiple_channel_recon</name><value>true</value></property>
         <property><name>use_nonlinear_binning_recon</name><value>true</value></property>

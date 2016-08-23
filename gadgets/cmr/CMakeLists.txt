@@ -58,7 +58,10 @@ set( gadgetron_cmr_src_files CmrCartesianKSpaceBinningCineGadget.cpp )
 
 set( config_BinningCine_files 
     config/BinningCine/CMR_2DT_RTCine_KspaceBinning.xml
-    config/BinningCine/CMR_2DT_RTCine_KspaceBinning_Cloud.xml )
+    config/BinningCine/CMR_2DT_RTCine_KspaceBinning_Cloud.xml 
+    config/BinningCine/CMR_2DT_RTCine_KspaceBinning_MultiSeries.xml
+    config/BinningCine/CMR_2DT_RTCine_KspaceBinning_MultiSeries_Cloud.xml 
+    )
 
 source_group(config/BinningCine FILES ${config_BinningCine_files})
 

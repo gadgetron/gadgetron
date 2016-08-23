@@ -5,6 +5,7 @@
 
     <!--
         Gadgetron kspace binning recon for 2DT cardiac MRI
+        Cloud version
 
         Triggered by slice
         Recon N is phase and S is set
@@ -17,9 +18,11 @@
 
     <!-- reader -->
     <reader><slot>1008</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdAcquisitionMessageReader</classname></reader>
+    <reader><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageReader</classname></reader>
 
     <!-- writer -->
     <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
+    <writer><slot>1008</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdAcquisitionMessageWriter</classname></writer>
 
     <!-- Noise prewhitening -->
     <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname></gadget>
@@ -29,6 +32,15 @@
 
     <!-- RO oversampling removal -->
     <gadget><name>RemoveROOversampling</name><dll>gadgetron_mricore</dll><classname>RemoveROOversamplingGadget</classname></gadget>
+
+    <!-- Distribute slice over nodes -->
+    <gadget>
+      <name>Distribute</name>
+      <dll>gadgetron_distributed</dll>
+      <classname>IsmrmrdAcquisitionDistributeGadget</classname>
+      <property><name>parallel_dimension</name><value>slice</value></property>
+      <property><name>use_this_node_for_compute</name><value>false</value></property>
+    </gadget>
 
     <!-- Data accumulation and trigger gadget -->
     <gadget>
@@ -96,7 +108,7 @@
 
         <property><name>number_of_output_phases</name><value>30</value></property>
         <property><name>send_out_raw</name><value>false</value></property>
-        <property><name>send_out_multiple_series_by_slice</name><value>false</value></property>
+        <property><name>send_out_multiple_series_by_slice</name><value>true</value></property>
 
         <property><name>use_multiple_channel_recon</name><value>true</value></property>
         <property><name>use_nonlinear_binning_recon</name><value>true</value></property>
@@ -124,7 +136,7 @@
         <property><name>kspace_binning_kSize_E1</name><value>7</value></property>
         <property><name>kspace_binning_reg_lamda</name><value>0.005</value></property>
         <property><name>kspace_binning_linear_iter_max</name><value>90</value></property>
-        <property><name>kspace_binning_linear_iter_thres</name><value>0.0005</value></property>
+        <property><name>kspace_binning_linear_iter_thres</name><value>0.0015</value></property>
 
         <property><name>kspace_binning_nonlinear_iter_max</name><value>25</value></property>
         <property><name>kspace_binning_nonlinear_iter_thres</name><value>0.004</value></property>
@@ -202,7 +214,7 @@
         <property><name>verbose</name><value>false</value></property>
     </gadget>
 
-    <!-- Image Array Scaling -->
+        <!-- Image Array Scaling -->
     <gadget>
         <name>Scaling</name>
         <dll>gadgetron_mricore</dll>
@@ -225,6 +237,13 @@
         <name>ImageArraySplit</name>
         <dll>gadgetron_mricore</dll>
         <classname>ImageArraySplitGadget</classname>
+    </gadget>
+
+    <!-- Collect images from nodes -->
+    <gadget>
+        <name>Collect</name>
+        <dll>gadgetron_distributed</dll>
+        <classname>CollectGadget</classname>
     </gadget>
 
     <!-- after recon processing -->
