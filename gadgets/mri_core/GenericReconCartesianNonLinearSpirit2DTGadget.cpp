@@ -204,7 +204,8 @@ namespace Gadgetron {
                         hoNDArray< std::complex<float> > coilMap2DT;
                         if (recon_obj.coil_map_.get_size(6) == SLC)
                         {
-                            std::complex<float>* pCoilMap = &recon_obj.coil_map_(0, 0, 0, 0, 0, s, slc);
+                            size_t coil_S = recon_obj.coil_map_.get_size(5);
+                            std::complex<float>* pCoilMap = &recon_obj.coil_map_(0, 0, 0, 0, 0, ((s>=coil_S) ? coil_S-1 : s), slc);
                             coilMap2DT.create(RO, E1, E2, dstCHA, ref_N, 1, 1, pCoilMap);
                         }
 
