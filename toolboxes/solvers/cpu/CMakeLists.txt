@@ -34,7 +34,9 @@ set( cpu_solver_header_files
         hoLsqrSolver.h 
         hoGpBbSolver.h 
         hoSbCgSolver.h 
-        hoSolverUtils.h )
+        hoSolverUtils.h 
+        curveFittingSolver.h 
+        simplexLagariaSolver.h )
 
 set( cpu_solver_source_files )
 

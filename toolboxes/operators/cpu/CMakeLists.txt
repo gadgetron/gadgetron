@@ -43,7 +43,10 @@ set(cpu_operator_header_files
     hoWavelet1DOperator.h 
     hoWavelet2DTOperator.h 
     hoWavelet3DOperator.h 
-    hoMotionCompensation2DTOperator.h )
+    hoMotionCompensation2DTOperator.h 
+    ../curveFittingOperator.h 
+    ../curveFittingCostFunction.h 
+    twoParaExpDecayOperator.h )
 
 set(cpu_operator_src_files 
     hoSPIRITOperator.cpp 
