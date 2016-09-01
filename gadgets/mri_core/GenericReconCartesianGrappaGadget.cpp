@@ -72,7 +72,7 @@ namespace Gadgetron {
             // ---------------------------------------------------------------
             // export incoming data
 
-            /*if (!debug_folder_full_path_.empty())
+            if (!debug_folder_full_path_.empty())
             {
                 gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data" + os.str());
             }
@@ -83,13 +83,13 @@ namespace Gadgetron {
                 {
                     gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_traj" + os.str());
                 }
-            }*/
+            }
 
             // ---------------------------------------------------------------
 
             if (recon_bit_->rbit_[e].ref_)
             {
-                /*if (!debug_folder_full_path_.empty())
+                if (!debug_folder_full_path_.empty())
                 {
                     gt_exporter_.export_array_complex(recon_bit_->rbit_[e].ref_->data_, debug_folder_full_path_ + "ref" + os.str());
                 }
@@ -100,7 +100,7 @@ namespace Gadgetron {
                     {
                         gt_exporter_.export_array(*(recon_bit_->rbit_[e].ref_->trajectory_), debug_folder_full_path_ + "ref_traj" + os.str());
                     }
-                }*/
+                }
 
                 // ---------------------------------------------------------------
 
@@ -112,7 +112,7 @@ namespace Gadgetron {
 
                 // ----------------------------------------------------------
                 // export prepared ref for calibration and coil map
-                /*if (!debug_folder_full_path_.empty())
+                if (!debug_folder_full_path_.empty())
                 {
                     this->gt_exporter_.export_array_complex(recon_obj_[e].ref_calib_, debug_folder_full_path_ + "ref_calib" + os.str());
                 }
@@ -120,7 +120,7 @@ namespace Gadgetron {
                 if (!debug_folder_full_path_.empty())
                 {
                     this->gt_exporter_.export_array_complex(recon_obj_[e].ref_coil_map_, debug_folder_full_path_ + "ref_coil_map" + os.str());
-                }*/
+                }
 
                 // ---------------------------------------------------------------
                 // after this step, the recon_obj_[e].ref_calib_dst_ and recon_obj_[e].ref_coil_map_ are modified
@@ -150,7 +150,7 @@ namespace Gadgetron {
 
             if (recon_bit_->rbit_[e].data_.data_.get_number_of_elements() > 0)
             {
-                /*if (!debug_folder_full_path_.empty())
+                if (!debug_folder_full_path_.empty())
                 {
                     gt_exporter_.export_array_complex(recon_bit_->rbit_[e].data_.data_, debug_folder_full_path_ + "data_before_unwrapping" + os.str());
                 }
@@ -161,7 +161,7 @@ namespace Gadgetron {
                     {
                         gt_exporter_.export_array(*(recon_bit_->rbit_[e].data_.trajectory_), debug_folder_full_path_ + "data_before_unwrapping_traj" + os.str());
                     }
-                }*/
+                }
 
                 // ---------------------------------------------------------------
 
@@ -177,10 +177,10 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
 
-                /*if (!debug_folder_full_path_.empty())
+                if (!debug_folder_full_path_.empty())
                 {
                     this->gt_exporter_.export_array_complex(recon_obj_[e].recon_res_.data_, debug_folder_full_path_ + "recon_res" + os.str());
-                }*/
+                }
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::send_out_image_array"); }
                 this->send_out_image_array(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
@@ -220,10 +220,10 @@ namespace Gadgetron {
 
                     if (snr_map.get_number_of_elements() > 0)
                     {
-                        /*if (!debug_folder_full_path_.empty())
+                        if (!debug_folder_full_path_.empty())
                         {
                             this->gt_exporter_.export_array_complex(snr_map, debug_folder_full_path_ + "snr_map" + os.str());
-                        }*/
+                        }
 
                         if (perform_timing.value()) { gt_timer_.start("send out gfactor array, snr map"); }
 
@@ -548,13 +548,13 @@ namespace Gadgetron {
 
             recon_obj.recon_res_.data_.create(RO, E1, E2, 1, N, S, SLC);
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    std::stringstream os;
-            //    os << "encoding_" << e;
-            //    std::string suffix = os.str();
-            //    gt_exporter_.export_array_complex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix);
-            //}
+            if (!debug_folder_full_path_.empty())
+            {
+                std::stringstream os;
+                os << "encoding_" << e;
+                std::string suffix = os.str();
+                gt_exporter_.export_array_complex(recon_bit.data_.data_, debug_folder_full_path_ + "data_src_" + suffix);
+            }
 
             // compute aliased images
             data_recon_buf_.create(RO, E1, E2, dstCHA, N, S, SLC);
@@ -580,13 +580,13 @@ namespace Gadgetron {
                 if (this->verbose.value()) GDEBUG_STREAM("GenericReconCartesianGrappaGadget, grappaKernelCompensationFactor*snr_scaling_ratio : " << grappaKernelCompensationFactor*snr_scaling_ratio);
             }
 
-            /*if (!debug_folder_full_path_.empty())
+            if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
                 os << "encoding_" << e;
                 std::string suffix = os.str();
                 gt_exporter_.export_array_complex(complex_im_recon_buf_, debug_folder_full_path_ + "aliasedIm_" + suffix);
-            }*/
+            }
 
             // unwrapping
 
@@ -623,13 +623,13 @@ namespace Gadgetron {
                 }
             }
 
-            /*if (!debug_folder_full_path_.empty())
+            if (!debug_folder_full_path_.empty())
             {
                 std::stringstream os;
                 os << "encoding_" << e;
                 std::string suffix = os.str();
                 gt_exporter_.export_array_complex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix);
-            }*/
+            }
         }
         catch (...)
         {

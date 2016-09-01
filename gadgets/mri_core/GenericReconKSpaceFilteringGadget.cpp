@@ -213,11 +213,11 @@ namespace Gadgetron {
                 }
             }
 
-            /*if (!debug_folder_full_path_.empty())
+            if (!debug_folder_full_path_.empty())
             {
                 if(filter_RO_[encoding].get_number_of_elements()>0)
                     gt_exporter_.export_array_complex(filter_RO_[encoding], debug_folder_full_path_ + "filterRO_" + str);
-            }*/
+            }
         }
 
         if (filter_E1_[encoding].get_number_of_elements() != E1)
@@ -258,11 +258,11 @@ namespace Gadgetron {
                 }
             }
 
-            /*if (!debug_folder_full_path_.empty())
+            if (!debug_folder_full_path_.empty())
             {
                 if (filter_E1_[encoding].get_number_of_elements()>0)
                     gt_exporter_.export_array_complex(filter_E1_[encoding], debug_folder_full_path_ + "filterE1_" + str);
-            }*/
+            }
         }
 
         if (E2>1 && filter_E2_[encoding].get_number_of_elements() != E2)
@@ -303,11 +303,11 @@ namespace Gadgetron {
                 }
             }
 
-            /*if (!debug_folder_full_path_.empty())
+            if (!debug_folder_full_path_.empty())
             {
                 if (filter_E2_[encoding].get_number_of_elements()>0)
                     gt_exporter_.export_array_complex(filter_E2_[encoding], debug_folder_full_path_ + "filterE2_" + str);
-            }*/
+            }
         }
 
         // ----------------------------------------------------------
@@ -320,7 +320,7 @@ namespace Gadgetron {
             // ----------------------------------------------------------
             // go to kspace
             // ----------------------------------------------------------
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_res_->data_, debug_folder_full_path_ + "image_before_filtering_" + str); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_res_->data_, debug_folder_full_path_ + "image_before_filtering_" + str); }
 
             if (perform_timing.value()) { gt_timer_.start("GenericReconKSpaceFilteringGadget: fftc"); }
             if (E2 > 1)
@@ -333,7 +333,7 @@ namespace Gadgetron {
             }
             if (perform_timing.value()) { gt_timer_.stop(); }
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kspace_buf_, debug_folder_full_path_ + "kspace_before_filtering_" + str); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(kspace_buf_, debug_folder_full_path_ + "kspace_before_filtering_" + str); }
 
             // ----------------------------------------------------------
             // filtering
@@ -349,7 +349,7 @@ namespace Gadgetron {
                 Gadgetron::apply_kspace_filter_ROE1E2(kspace_buf_, filter_RO_[encoding], filter_E1_[encoding], filter_E2_[encoding], filter_res_);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                // // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(filter_res_, debug_folder_full_path_ + "kspace_after_filtered_" + str); }
+                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(filter_res_, debug_folder_full_path_ + "kspace_after_filtered_" + str); }
                 inKSpace = true;
             }
             else if ( (filter_RO_[encoding].get_number_of_elements() == RO) && (filter_E1_[encoding].get_number_of_elements() == E1) )
@@ -358,7 +358,7 @@ namespace Gadgetron {
                 Gadgetron::apply_kspace_filter_ROE1(kspace_buf_, filter_RO_[encoding], filter_E1_[encoding], filter_res_);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
-                // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(filter_res_, debug_folder_full_path_ + "kspace_after_filtered_" + str); }
+                if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(filter_res_, debug_folder_full_path_ + "kspace_after_filtered_" + str); }
 
                 inKSpace = true;
             }
@@ -403,7 +403,7 @@ namespace Gadgetron {
                 inKSpace = true;
             }
 
-            // // if (!debug_folder_full_path_.empty()){ gt_exporter_.export_array_complex(filter_res_, debug_folder_full_path_ + "kspace_after_filtering_" + str); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(filter_res_, debug_folder_full_path_ + "kspace_after_filtering_" + str); }
 
             // ----------------------------------------------------------
             // go back to image domain
@@ -417,7 +417,7 @@ namespace Gadgetron {
                 Gadgetron::hoNDFFT<float>::instance()->ifft2c(filter_res_, recon_res_->data_);
             }
 
-            // if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_res_->data_, debug_folder_full_path_ + "image_after_filtering_" + str); }
+            if (!debug_folder_full_path_.empty()) { gt_exporter_.export_array_complex(recon_res_->data_, debug_folder_full_path_ + "image_after_filtering_" + str); }
 
             GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconKSpaceFilteringGadget::process(...) ends ... ");
         }

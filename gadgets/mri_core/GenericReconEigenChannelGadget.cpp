@@ -238,32 +238,32 @@ namespace Gadgetron {
                 }
             }
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    gt_exporter_.export_array_complex(rbit.data_.data_, debug_folder_full_path_ + "data_before_KLT" + os.str());
-            //}
+            if (!debug_folder_full_path_.empty())
+            {
+                gt_exporter_.export_array_complex(rbit.data_.data_, debug_folder_full_path_ + "data_before_KLT" + os.str());
+            }
 
             // apply KL coefficients
             Gadgetron::apply_eigen_channel_coefficients(KLT_[e], rbit.data_.data_);
 
-            //if (!debug_folder_full_path_.empty())
-            //{
-            //    gt_exporter_.export_array_complex(rbit.data_.data_, debug_folder_full_path_ + "data_after_KLT" + os.str());
-            //}
+            if (!debug_folder_full_path_.empty())
+            {
+                gt_exporter_.export_array_complex(rbit.data_.data_, debug_folder_full_path_ + "data_after_KLT" + os.str());
+            }
 
             if (rbit.ref_)
             {
-                /*if (!debug_folder_full_path_.empty())
+                if (!debug_folder_full_path_.empty())
                 {
                     gt_exporter_.export_array_complex(rbit.ref_->data_, debug_folder_full_path_ + "ref_before_KLT" + os.str());
-                }*/
+                }
 
                 Gadgetron::apply_eigen_channel_coefficients(KLT_[e], rbit.ref_->data_);
 
-                /*if (!debug_folder_full_path_.empty())
+                if (!debug_folder_full_path_.empty())
                 {
                     gt_exporter_.export_array_complex(rbit.ref_->data_, debug_folder_full_path_ + "ref_after_KLT" + os.str());
-                }*/
+                }
             }
         }
 
