@@ -232,20 +232,20 @@ namespace Gadgetron {
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(recon_res_->data_, kspace_buf_);
         }
 
-        /*if (!debug_folder_full_path_.empty())
+        if (!debug_folder_full_path_.empty())
         {
             gt_exporter_.export_array_complex(kspace_buf_, debug_folder_full_path_ + "kspace_before_pf");
-        }*/
+        }
 
         // ----------------------------------------------------------
         // pf handling
         // ----------------------------------------------------------
         GADGET_CHECK_RETURN(this->perform_partial_fourier_handling() == GADGET_OK, GADGET_FAIL);
 
-        /*if (!debug_folder_full_path_.empty())
+        if (!debug_folder_full_path_.empty())
         {
             gt_exporter_.export_array_complex(pf_res_, debug_folder_full_path_ + "kspace_after_pf");
-        }*/
+        }
 
         // ----------------------------------------------------------
         // go back to image domain
@@ -259,10 +259,10 @@ namespace Gadgetron {
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(pf_res_, recon_res_->data_);
         }
 
-        /*if (!debug_folder_full_path_.empty())
+        if (!debug_folder_full_path_.empty())
         {
             gt_exporter_.export_array_complex(recon_res_->data_, debug_folder_full_path_ + "data_after_pf");
-        }*/
+        }
 
         GDEBUG_CONDITION_STREAM(verbose.value(), "GenericReconPartialFourierHandlingGadget::process(...) ends ... ");
 
