@@ -128,7 +128,7 @@ int EPICorrGadget::process(
       //}
 
       // Robust fit to a straight line
-      float slope = ctemp.n_rows * std::arg(arma::cdot(ctemp.rows(0,ctemp.n_rows-2), ctemp.rows(1,ctemp.n_rows-1)));
+      float slope = (ctemp.n_rows-1) * std::arg(arma::cdot(ctemp.rows(0,ctemp.n_rows-2), ctemp.rows(1,ctemp.n_rows-1)));
       ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(x.n_rows), -slope*x));
       float intercept = std::arg(arma::sum(ctemp));
       //GDEBUG_STREAM("Slope = " << slope << std::endl);
