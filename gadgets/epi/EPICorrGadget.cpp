@@ -117,7 +117,12 @@ int EPICorrGadget::process(
       // Accumulate over navigator triplets and sum over coils
       // this is the average phase difference between odd and even navigators
       for (p=0; p<numNavigators_-2; p=p+2) {
-    ctemp += arma::sum(arma::conj(navdata_.slice(p)+navdata_.slice(p+2)) % navdata_.slice(p+1),1);
+        arma::cx_fmat nav_diff = arma::conj(navdata_.slice(p)+navdata_.slice(p+2)) % navdata_.slice(p+1);
+        // abs(nav_diff) goes like abs(navdata_)^2, so correct with the sqrt of the amplitude before
+        //   combining across coils:
+        nav_diff = nav_diff / arma::sqrt(arma::abs(nav_diff));
+        // combine across coils (and accumulate across triplets):                                                                                 
+        ctemp += arma::sum( nav_diff, 1 );
       }
       
       // TODO: Add a configuration toggle to switch between correction types
