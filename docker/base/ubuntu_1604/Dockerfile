@@ -6,7 +6,7 @@ RUN apt-get update --quiet && \
     libboost-all-dev libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
-    libgtest-dev python-dev liblapack-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
+    libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
     supervisor 
 
 #Python stuff
@@ -40,6 +40,13 @@ RUN cd /opt && \
     mkdir lib && \
     make && \
     make shared && \
+    make install
+
+#BART
+RUN cd /opt && \
+    git clone https://github.com/mrirecon/bart.git && \
+    cd bart && \
+    make && \
     make install
 
 #Set more environment variables in preparation for Gadgetron installation
