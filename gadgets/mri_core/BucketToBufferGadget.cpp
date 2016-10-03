@@ -381,7 +381,7 @@ namespace Gadgetron{
         //7D,  fixed order [E0, E1, E2, CHA, N, S, LOC]
         //11D, fixed order [E0, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
         uint16_t NE0;
-        if (encoding.trajectory.compare("cartesian") == 0) {
+        if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) ) {
             // if seperate or external calibration mode, using the acq length for NE0
             if (encoding.parallelImaging)
             {
@@ -396,7 +396,7 @@ namespace Gadgetron{
         }
 
         uint16_t NE1;
-        if (encoding.trajectory.compare("cartesian") == 0)
+        if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) )
         {
             if (encoding.parallelImaging)
             {
@@ -432,7 +432,7 @@ namespace Gadgetron{
         }
 
         uint16_t NE2;
-        if (encoding.trajectory.compare("cartesian") == 0)
+        if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) )
         {
             if (encoding.parallelImaging)
             {
@@ -601,7 +601,7 @@ namespace Gadgetron{
     sampling.recon_matrix_[2] = encoding.reconSpace.matrixSize.z;
 
     // For cartesian trajectories, assume that any oversampling has been removed.
-    if (encoding.trajectory.compare("cartesian") == 0) {
+    if (encoding.trajectory.compare("cartesian")==0 || encoding.trajectory.compare("epi")==0) {
         sampling.sampling_limits_[0].min_ = acqhdr.discard_pre;
         sampling.sampling_limits_[0].max_ = acqhdr.number_of_samples - acqhdr.discard_post - 1;
         sampling.sampling_limits_[0].center_ = acqhdr.number_of_samples / 2;
@@ -612,7 +612,7 @@ namespace Gadgetron{
     }
 
     // if the scan is cartesian
-    if ( (encoding.trajectory.compare("cartesian") == 0) && (!forref || (forref && (encoding.parallelImaging.get().calibrationMode.get() == "embedded"))) )
+    if ( ((encoding.trajectory.compare("cartesian") == 0)) || ((encoding.trajectory.compare("epi") == 0)) && (!forref || (forref && (encoding.parallelImaging.get().calibrationMode.get() == "embedded"))) )
     {
         int16_t space_matrix_offset_E1 = 0;
         if (encoding.encodingLimits.kspace_encoding_step_1.is_present())
@@ -699,7 +699,7 @@ namespace Gadgetron{
     //Stuff the data
     uint16_t npts_to_copy = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
     long long offset;
-    if (encoding.trajectory.compare("cartesian") == 0) {
+    if (encoding.trajectory.compare("cartesian") == 0 || encoding.trajectory.compare("epi") == 0) {
         if ((acqhdr.number_of_samples == dataBuffer.data_.get_size(0)) && (acqhdr.center_sample == acqhdr.number_of_samples/2)) // acq has been corrected for center , e.g. by asymmetric handling
         {
             offset = acqhdr.discard_pre;
@@ -742,7 +742,8 @@ namespace Gadgetron{
     int16_t e2 = (int16_t)acqhdr.idx.kspace_encode_step_2;
 
     bool is_cartesian_sampling = (encoding.trajectory.compare("cartesian") == 0);
-    if(is_cartesian_sampling)
+    bool is_epi_sampling = (encoding.trajectory.compare("epi") == 0);
+    if(is_cartesian_sampling || is_epi_sampling)
     {
         if (!forref || (forref && (encoding.parallelImaging.get().calibrationMode.get() == "embedded")))
         {
