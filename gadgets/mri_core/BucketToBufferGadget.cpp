@@ -611,8 +611,9 @@ namespace Gadgetron{
         sampling.sampling_limits_[0].center_ = encoding.encodedSpace.matrixSize.x / 2;
     }
 
-    // if the scan is cartesian
-    if ( ((encoding.trajectory.compare("cartesian") == 0)) || ((encoding.trajectory.compare("epi") == 0)) && (!forref || (forref && (encoding.parallelImaging.get().calibrationMode.get() == "embedded"))) )
+    // if the scan is cartesian  
+        if ( ( (encoding.trajectory.compare("cartesian") == 0) && (!forref || (forref && (encoding.parallelImaging.get().calibrationMode.get() == "embedded"))) )
+        || ( (encoding.trajectory.compare("epi") == 0) && !forref) )
     {
         int16_t space_matrix_offset_E1 = 0;
         if (encoding.encodingLimits.kspace_encoding_step_1.is_present())
