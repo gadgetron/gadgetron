@@ -96,6 +96,7 @@ int EPICorrGadget::process(
     // If we are at the beginning of a shot, then initialize
     if (navNumber_==0) {
       // Set the size of the corrections and storage arrays
+      corrB0_.set_size( adata.n_rows );
       corrpos_.set_size( adata.n_rows);
       corrneg_.set_size( adata.n_rows );
       navdata_.set_size( adata.n_rows, hdr.active_channels, numNavigators_);
@@ -114,6 +115,59 @@ int EPICorrGadget::process(
       arma::fvec x = arma::linspace<arma::fvec>(-0.5, 0.5, adata.n_rows); // Evenly spaced x-space locations
       int p; // counter
       
+      
+      /////////////////////////////////////                                                                             
+      //////      B0 correction      //////                                                                             
+      /////////////////////////////////////                                                                             
+
+      if (B0CorrectionMode.value() > 0)
+      {
+          // Accumulate over navigator pairs and sum over coils                                                         
+          // this is the average phase difference between consecutive odd or even navigators                            
+          for (p=0; p<numNavigators_-2; p=p+1)
+          {
+              ctemp += arma::sum(arma::conj(navdata_.slice(p)) % navdata_.slice(p+2),1);
+          }
+
+          // Perform the fit:                                                                                           
+          float slope = 0.;
+          float intercept = 0.;
+          if (B0CorrectionMode.value() >= 1)
+          {
+              // If a linear term is requested, compute it first (in the complex domain):                               
+              if (B0CorrectionMode.value() == 2)
+              {          // Robust fit to a straight line:                                                              
+                  slope = (ctemp.n_rows-1) * std::arg(arma::cdot(ctemp.rows(0,ctemp.n_rows-2), ctemp.rows(1,ctemp.n_rows-1)));
+                  //GDEBUG_STREAM("Slope = " << slope << std::endl);                                                    
+
+                  // Correct for the slope, to be able to compute the average phase:                                    
+                  ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>( ctemp.n_rows ), -slope*x));
+              }   // end of the B0CorrectionMode==2                                                                     
+
+              // Now, compute the mean phase:                                                                           
+              intercept = std::arg(arma::sum(ctemp));
+              //GDEBUG_STREAM("Intercept = " << intercept << std::endl);                                                
+
+              // Then, our estimate of the phase:                                                                       
+              tvec = slope*x + intercept;
+
+          }       // end of B0CorrectionMode >= 1                                                                       
+
+          // The B0 Correction:                                                                                         
+          // 0.5* because what we have calculated was the phase difference between every other navigator                
+          corrB0_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(ctemp.n_rows), -0.5*tvec));
+
+      }        // end of B0CorrectionMode > 0                                                                           
+      else
+      {      // No B0 correction:                                                                                       
+          corrB0_.ones();
+      }
+
+
+      ////////////////////////////////////////////////////                                                              
+      //////      Odd-Even correction -- Phase      //////                                                              
+      ////////////////////////////////////////////////////                                                              
+
       // Accumulate over navigator triplets and sum over coils
       // this is the average phase difference between odd and even navigators
       for (p=0; p<numNavigators_-2; p=p+2) {
@@ -137,8 +191,8 @@ int EPICorrGadget::process(
       
       // Odd and even phase corrections
       if (!startNegative_) {
-    // if the first navigator is a positive readout, we need to flip the sign of our correction
-    tvec = -1.0*tvec;
+        // if the first navigator is a positive readout, we need to flip the sign of our correction
+        tvec = -1.0*tvec;
       }
       corrpos_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(x.n_rows), -0.5*tvec));
       corrneg_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(x.n_rows), +0.5*tvec));
@@ -149,14 +203,26 @@ int EPICorrGadget::process(
   else {
     // Increment the echo number
     epiEchoNumber_ += 1;
-    // TODO: use this to apply the B0 correction
 
-    // Apply the correction
+    if (epiEchoNumber_ == 0)
+    {
+        // For now, we will correct the phase evolution of each EPI line, with respect
+        //   to the first line in the EPI readout train (echo 0), due to B0 inhomogeneities.
+        //   That is, the reconstructed images will have the phase that the object had at
+        //   the beginning of the EPI readout train (excluding the phase due to encoding),
+        //   multiplied by the coil phase.
+        // Later, we could add the time between the excitation and echo 0, or between one
+        //   of the navigators and echo 0, to correct for phase differences from shot to shot.
+        //   This will be important for multi-shot EPI acquisitions.
+        RefNav_to_Echo0_time_ES_ = 0;
+    }
+
+     // Apply the correction
     // We use the armadillo notation that loops over all the columns
     if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE)) {
       // Negative readout
       for (int p=0; p<adata.n_cols; p++) {
-    adata.col(p) %= corrneg_;
+        adata.col(p) %= (arma::pow(corrB0_,epiEchoNumber_+RefNav_to_Echo0_time_ES_) % corrneg_);
       }
       // Now that we have corrected we set the readout direction to positive
       hdr.clearFlag(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE);
@@ -164,7 +230,7 @@ int EPICorrGadget::process(
     else {
       // Positive readout
       for (int p=0; p<adata.n_cols; p++) {
-    adata.col(p) %= corrpos_;
+        adata.col(p) %= (arma::pow(corrB0_,epiEchoNumber_+RefNav_to_Echo0_time_ES_) % corrpos_);
       }
     }
   }
