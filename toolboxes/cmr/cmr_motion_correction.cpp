@@ -127,6 +127,8 @@ void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage
 
 template EXPORTCMR void perform_moco_fixed_key_frame_2DT(Gadgetron::hoNDImageContainer2D< hoNDImage<float, 2> >& input, const std::vector<unsigned int>& key_frame, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<float, float, 2, 2>& reg);
 
+// ------------------------------------------------------------------------
+
 template <typename T> 
 void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDArray<T>& input, size_t key_frame, T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg)
 {
@@ -238,5 +240,54 @@ void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& target, con
 }
 
 template EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<float>& target, const Gadgetron::hoNDArray<float>& source, size_t key_frame, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<float, float, 2, 2>& reg);
+
+// ------------------------------------------------------------------------
+
+template <typename T> 
+void apply_deformation_field(const Gadgetron::hoNDArray<T>& target, const Gadgetron::hoNDArray<float>& dx, const Gadgetron::hoNDArray<float>& dy, Gadgetron::hoNDArray<T>& output, Gadgetron::GT_BOUNDARY_CONDITION bh)
+{
+    try
+    {
+        size_t RO = target.get_size(0);
+        size_t E1 = target.get_size(1);
+        size_t N = target.get_size(2);
+
+        GADGET_CHECK_THROW(dx.get_size(0)==RO);
+        GADGET_CHECK_THROW(dx.get_size(1)==E1);
+        GADGET_CHECK_THROW(dx.get_size(2)==N);
+
+        GADGET_CHECK_THROW(dy.get_size(0)==RO);
+        GADGET_CHECK_THROW(dy.get_size(1)==E1);
+        GADGET_CHECK_THROW(dy.get_size(2)==N);
+
+        Gadgetron::hoNDImageContainer2D< hoNDImage<T, 2> > im_target, im_source;
+        std::vector<size_t> cols(1, N);
+
+        std::vector<size_t> dim(3);
+        dim[0] = RO;
+        dim[1] = E1;
+        dim[2] = N;
+
+        im_target.create(const_cast<T*>(target.begin()), dim);
+
+        im_source.copyFrom(im_target);
+
+        Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2> reg;
+
+        hoNDImageContainer2D< hoNDImage<float, 2> > deformation_field[2];
+        deformation_field[0].create(const_cast<float*>(dx.begin()), dim);
+        deformation_field[1].create(const_cast<float*>(dy.begin()), dim);
+
+        reg.warpContainer2D(im_target, im_target, deformation_field, im_source, bh);
+
+        im_source.to_NDArray(0, output);
+    }
+    catch(...)
+    {
+        GADGET_THROW("Exceptions happened in apply_deformation_field(...) ... ");
+    }
+}
+
+template EXPORTCMR void apply_deformation_field(const Gadgetron::hoNDArray<float>& input, const Gadgetron::hoNDArray<float>& dx, const Gadgetron::hoNDArray<float>& dy, Gadgetron::hoNDArray<float>& output, Gadgetron::GT_BOUNDARY_CONDITION bh);
 
 }
