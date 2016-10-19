@@ -27,6 +27,11 @@ add_subdirectory(fatwater)
 add_subdirectory(interventional_mri)
 add_subdirectory(cmr)
 
+find_program(BARTCMD bart)
+if (BARTCMD)
+	add_subdirectory(BART_Gadget)
+endif()
+
 if (ARMADILLO_FOUND)
     add_subdirectory(epi)
 elseif (ARMADILLO_FOUND)
