@@ -35,7 +35,7 @@ install (FILES  BART_Gadget.h
 
 install (TARGETS gadgetron_BART_Gadget DESTINATION lib COMPONENT main)
 
-install (FILES BART_Commands__.txt DESTINATION lib COMPONENT main)
+install (FILES BART_Commands_.txt DESTINATION lib COMPONENT main)
 
 install(FILES
   BART_Recon.xml
