@@ -1,0 +1,36 @@
+if (WIN32)
+  add_definitions(-D__BUILD_GADGETRON_bartgadget__)
+endif ()
+
+include_directories(
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
+  )
+
+add_library(gadgetron_bartgadget SHARED 
+  bartgadget.h
+  bartgadget.cpp
+)
+
+set_target_properties(gadgetron_bartgadget PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+
+target_link_libraries(gadgetron_bartgadget gadgetron_toolbox_cpucore 
+  gadgetron_gadgetbase
+  gadgetron_toolbox_log
+  gadgetron_toolbox_cpufft
+  ${ISMRMRD_LIBRARIES}
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+  )
+
+find_package(Boost COMPONENTS tokenizer  ptree xml_parser foreach) 
+if(Boost_FOUND)
+    target_link_libraries(gadgetron_bartgadget ${Boost_LIBRARIES})
+endif()
+
+if(ARMADILLO_FOUND)
+    target_link_libraries(gadgetron_bartgadget gadgetron_toolbox_cpucore_math )
+endif()
+
+install (FILES  bartgadget.h
+                DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
+
+install (TARGETS gadgetron_bartgadget DESTINATION lib COMPONENT main)
