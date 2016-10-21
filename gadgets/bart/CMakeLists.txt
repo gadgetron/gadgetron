@@ -34,3 +34,9 @@ install (FILES  bartgadget.h
                 DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install (TARGETS gadgetron_bartgadget DESTINATION lib COMPONENT main)
+
+install (FILES Sample_GRAPPA_Recon.txt DESTINATION ${GADGETRON_HOME}/share/gadgetron/bart)
+
+install(FILES
+  BART_Recon.xml
+  DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
