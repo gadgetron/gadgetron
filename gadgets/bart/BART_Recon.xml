@@ -74,7 +74,7 @@
 	  <name>bartgadget</name>
 	  <dll>gadgetron_bartgadget</dll>
 	  <classname>Bartgadget</classname>
-	  <BartCommandsFile>SimpleFTT.txt</BartCommandsFile>
+	  <BartCommandsFile>Sample_GRAPPA_Recon.txt</BartCommandsFile>
 	</gadget>
 		
     <!-- ImageArray to images -->
