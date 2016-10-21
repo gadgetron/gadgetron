@@ -29,7 +29,7 @@ add_subdirectory(cmr)
 
 find_program(BARTCMD bart)
 if (BARTCMD)
-	add_subdirectory(BART_Gadget)
+	add_subdirectory(bart)
 endif()
 
 if (ARMADILLO_FOUND)
