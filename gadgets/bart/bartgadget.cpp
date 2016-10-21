@@ -235,7 +235,7 @@ namespace Gadgetron {
 		/*** CALL BART COMMAND LINE from the scripting file***/
 		std::string filename, Commands_Line;
 		try {
-			filename = getCommandsScript("C:/gtuser/mrprogs/install_debug/share/gadgetron/config/BART_recon.xml");
+			filename = getCommandsScript("BART_recon.xml");
 			GDEBUG("Commands Script: %s\n", filename.c_str());
 		}
 		catch (std::exception &e)
