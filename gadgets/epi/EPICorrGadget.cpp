@@ -3,6 +3,8 @@
 
 namespace Gadgetron{
 
+  #define OE_PHASE_CORR_POLY_ORDER 4
+  
   EPICorrGadget::EPICorrGadget() {}
   EPICorrGadget::~EPICorrGadget() {}
 
@@ -93,13 +95,16 @@ int EPICorrGadget::process(
       epiEchoNumber_ = -1;
     }
     
+    int Nx_ = adata.n_rows;
+
     // If we are at the beginning of a shot, then initialize
     if (navNumber_==0) {
       // Set the size of the corrections and storage arrays
-      corrB0_.set_size( adata.n_rows );
-      corrpos_.set_size( adata.n_rows);
-      corrneg_.set_size( adata.n_rows );
-      navdata_.set_size( adata.n_rows, hdr.active_channels, numNavigators_);
+      corrB0_.set_size(  Nx_ );
+      corrpos_.set_size( Nx_ );
+      corrneg_.set_size( Nx_ );
+      navdata_.set_size( Nx_, hdr.active_channels, numNavigators_);
+      navdata_.zeros();
       // Store the first navigator's polarity
       startNegative_ = hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE);
     }
@@ -110,92 +115,155 @@ int EPICorrGadget::process(
     // If this is the last of the navigators for this shot, then
     // compute the correction operator
     if (navNumber_ == (numNavigators_-1)) {
-      arma::cx_fvec ctemp =  arma::zeros<arma::cx_fvec>(adata.n_rows);    // temp column complex
-      arma::fvec tvec = arma::zeros<arma::fvec>(adata.n_rows);            // temp column real
-      arma::fvec x = arma::linspace<arma::fvec>(-0.5, 0.5, adata.n_rows); // Evenly spaced x-space locations
+      arma::cx_fvec ctemp =  arma::zeros<arma::cx_fvec>(Nx_);    // temp column complex
+      arma::fvec tvec = arma::zeros<arma::fvec>(Nx_);            // temp column real
+      arma::fvec x = arma::linspace<arma::fvec>(-0.5, 0.5, Nx_); // Evenly spaced x-space locations
+      arma::fmat X;
+      if ( OEPhaseCorrectionMode.value().compare("polynomial")==0 )
+      {
+          X  = arma::zeros<arma::fmat>( Nx_ ,OE_PHASE_CORR_POLY_ORDER+1);
+          X.col(0) = arma::ones<arma::fvec>( Nx_ );
+          X.col(1) = x;                       // x
+          X.col(2) = arma::square(x);         // x^2
+          X.col(3) = x % X.col(2);            // x^3
+          X.col(4) = arma::square(X.col(2));  // x^4
+      }
       int p; // counter
       
       
-      /////////////////////////////////////                                                                             
-      //////      B0 correction      //////                                                                             
-      /////////////////////////////////////                                                                             
+      /////////////////////////////////////
+      //////      B0 correction      //////
+      /////////////////////////////////////
 
-      if (B0CorrectionMode.value() > 0)
+      if ( B0CorrectionMode.value().compare("none")!=0 )    // If B0 correction is requested
       {
-          // Accumulate over navigator pairs and sum over coils                                                         
-          // this is the average phase difference between consecutive odd or even navigators                            
-          for (p=0; p<numNavigators_-2; p=p+1)
+          // Accumulate over navigator pairs and sum over coils
+          // this is the average phase difference between consecutive odd or even navigators
+          for (p=0; p<numNavigators_-2; p++)
           {
               ctemp += arma::sum(arma::conj(navdata_.slice(p)) % navdata_.slice(p+2),1);
           }
 
-          // Perform the fit:                                                                                           
+          // Perform the fit:
           float slope = 0.;
           float intercept = 0.;
-          if (B0CorrectionMode.value() >= 1)
+          if ( (B0CorrectionMode.value().compare("mean")==0)  ||
+               (B0CorrectionMode.value().compare("linear")==0) )
           {
-              // If a linear term is requested, compute it first (in the complex domain):                               
-              if (B0CorrectionMode.value() == 2)
-              {          // Robust fit to a straight line:                                                              
-                  slope = (ctemp.n_rows-1) * std::arg(arma::cdot(ctemp.rows(0,ctemp.n_rows-2), ctemp.rows(1,ctemp.n_rows-1)));
-                  //GDEBUG_STREAM("Slope = " << slope << std::endl);                                                    
+              // If a linear term is requested, compute it first (in the complex domain):
+              if (B0CorrectionMode.value().compare("linear")==0)
+              {          // Robust fit to a straight line:
+                  slope = (Nx_-1) * std::arg(arma::cdot(ctemp.rows(0,Nx_-2), ctemp.rows(1,Nx_-1)));
+                  //GDEBUG_STREAM("Slope = " << slope << std::endl);
 
-                  // Correct for the slope, to be able to compute the average phase:                                    
-                  ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>( ctemp.n_rows ), -slope*x));
-              }   // end of the B0CorrectionMode==2                                                                     
+                  // Correct for the slope, to be able to compute the average phase:
+                  ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>( Nx_ ), -slope*x));
+              }   // end of the B0CorrectionMode == "linear"
 
-              // Now, compute the mean phase:                                                                           
+              // Now, compute the mean phase:
               intercept = std::arg(arma::sum(ctemp));
-              //GDEBUG_STREAM("Intercept = " << intercept << std::endl);                                                
+              //GDEBUG_STREAM("Intercept = " << intercept << std::endl);
 
-              // Then, our estimate of the phase:                                                                       
+              // Then, our estimate of the phase:
               tvec = slope*x + intercept;
 
-          }       // end of B0CorrectionMode >= 1                                                                       
+          }       // end of B0CorrectionMode == "mean" or "linear"
 
-          // The B0 Correction:                                                                                         
-          // 0.5* because what we have calculated was the phase difference between every other navigator                
+          // The B0 Correction:
+          // 0.5* because what we have calculated was the phase difference between every other navigator
           corrB0_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(ctemp.n_rows), -0.5*tvec));
 
-      }        // end of B0CorrectionMode > 0                                                                           
+      }        // end of B0CorrectionMode != "none"
       else
-      {      // No B0 correction:                                                                                       
+      {      // No B0 correction:
           corrB0_.ones();
       }
 
 
-      ////////////////////////////////////////////////////                                                              
-      //////      Odd-Even correction -- Phase      //////                                                              
-      ////////////////////////////////////////////////////                                                              
+      ////////////////////////////////////////////////////
+      //////      Odd-Even correction -- Phase      //////
+      ////////////////////////////////////////////////////
 
-      // Accumulate over navigator triplets and sum over coils
-      // this is the average phase difference between odd and even navigators
-      for (p=0; p<numNavigators_-2; p=p+2) {
-        ctemp += arma::sum(arma::conj(navdata_.slice(p)+navdata_.slice(p+2)) % navdata_.slice(p+1),1);
+      if (OEPhaseCorrectionMode.value().compare("none")!=0)    // If Odd-Even phase correction is requested
+      {
+          // Accumulate over navigator triplets and sum over coils
+          // this is the average phase difference between odd and even navigators
+          // Note: we have to correct for the B0 evolution between navigators before
+          ctemp.zeros();      // set all elements to zero
+          for (p=0; p<numNavigators_-2; p=p+2)
+          {
+              ctemp += arma::sum( arma::conj( navdata_.slice(p)/repmat(corrB0_,1,navdata_.n_cols) + navdata_.slice(p+2)%repmat(corrB0_,1,navdata_.n_cols) ) % navdata_.slice(p+1),1);
+          }
+
+          float slope = 0.;
+          float intercept = 0.;
+          if ( (OEPhaseCorrectionMode.value().compare("mean")==0      ) ||
+               (OEPhaseCorrectionMode.value().compare("linear")==0    ) ||
+               (OEPhaseCorrectionMode.value().compare("polynomial")==0) )
+          {
+              // If a linear term is requested, compute it first (in the complex domain):                                                                 
+              if ( (OEPhaseCorrectionMode.value().compare("linear")==0    ) ||
+                   (OEPhaseCorrectionMode.value().compare("polynomial")==0) )
+              {          // Robust fit to a straight line:                                                                                                
+                  slope = (Nx_-1) * std::arg(arma::cdot(ctemp.rows(0,Nx_-2), ctemp.rows(1,Nx_-1)));
+
+                  // Now correct for the slope, to be able to compute the average phase:
+                  ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>( Nx_ ), -slope*x));
+              }   // end of the OEPhaseCorrectionMode == "linear" or "polynomial"
+
+              // Now, compute the mean phase:
+              intercept = std::arg(arma::sum(ctemp));
+
+              // Then, our estimate of the phase:
+              tvec = slope*x + intercept;
+
+              // If a polynomial fit is requested:
+              if (OEPhaseCorrectionMode.value().compare("polynomial")==0)
+              {
+                  // Fit the residuals (i.e., after removing the linear trend) to a polynomial.
+                  // You cannot fit the phase directly to the polynomial because it doesn't work
+                  //   in cases that the phase wraps across the image.
+                  // Since we have already removed the slope (in the if OEPhaseCorrectionMode
+                  //   == "linear" or "polynomial" step), just remove the constant phase:
+                  ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>( Nx_ ), -intercept*arma::ones<arma::fvec>( Nx_ )));
+
+                  // Use the magnitude of the average odd navigator as weights:
+                  arma::fvec ctemp_odd  = arma::zeros<arma::fvec>(Nx_);    // temp column complex for odd  magnitudes
+                  for (int p=0; p<numNavigators_-2; p=p+2)
+                  {
+                      ctemp_odd  += ( arma::sqrt(arma::sum(arma::square(arma::abs(navdata_.slice(p))),1)) + arma::sqrt(arma::sum(arma::square(arma::abs(navdata_.slice(p+2))),1)) )/2;
+                  }
+
+                  arma::fmat WX     = arma::diagmat(ctemp_odd) * X;   // Weighted polynomial matrix
+                  arma::fvec Wctemp( Nx_ );                           // Weighted phase residual
+                  for (int p=0; p<Nx_; p++)
+                  {
+                      Wctemp(p) = ctemp_odd(p) * std::arg(ctemp(p));
+                  }
+
+                  // Solve for the polynomial coefficients:
+                  arma::fvec phase_poly_coef = arma::solve( WX , Wctemp );
+
+                  // Then, update our estimate of the phase correction:
+                  tvec += X * phase_poly_coef;     // ( Note the "+=" )
+
+              }   // end of OEPhaseCorrectionMode == "polynomial"
+
+          }       // end of OEPhaseCorrectionMode == "mean", "linear" or "polynomial"
+
+          if (!startNegative_) {
+            // if the first navigator is a positive readout, we need to flip the sign of our correction
+            tvec = -1.0*tvec;
+          }
+      }    // end of OEPhaseCorrectionMode != "none"
+      else
+      {      // No OEPhase correction:
+          tvec.zeros();
       }
-      
-      // TODO: Add a configuration toggle to switch between correction types
 
-      // Point-wise phase estimate
-      //for (p=0; p<adata.n_rows; p++) {
-      //  tvec[p] = std::arg(ctemp[p]);
-      //}
-
-      // Robust fit to a straight line
-      float slope = (ctemp.n_rows-1) * std::arg(arma::cdot(ctemp.rows(0,ctemp.n_rows-2), ctemp.rows(1,ctemp.n_rows-1)));
-      ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(x.n_rows), -slope*x));
-      float intercept = std::arg(arma::sum(ctemp));
-      //GDEBUG_STREAM("Slope = " << slope << std::endl);
-      //GDEBUG_STREAM("Intercept = " << intercept << std::endl);
-      tvec = slope*x + intercept;
-      
       // Odd and even phase corrections
-      if (!startNegative_) {
-        // if the first navigator is a positive readout, we need to flip the sign of our correction
-        tvec = -1.0*tvec;
-      }
-      corrpos_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(x.n_rows), -0.5*tvec));
-      corrneg_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(x.n_rows), +0.5*tvec));
+      corrpos_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(Nx_), -0.5*tvec));
+      corrneg_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(Nx_), +0.5*tvec));
       corrComputed_ = true;
     }
 
@@ -254,5 +322,3 @@ int EPICorrGadget::process(
 
 GADGET_FACTORY_DECLARE(EPICorrGadget)
 }
-
-

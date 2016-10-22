@@ -23,7 +23,17 @@ namespace Gadgetron{
 
     protected:
       GADGET_PROPERTY(verboseMode, bool, "Verbose output", false);
-      GADGET_PROPERTY(B0CorrectionMode, size_t, "B0 correction mode: 0=none, 1=mean b0 (default), 2=mean+linear term", 1);
+      GADGET_PROPERTY_LIMITS(B0CorrectionMode, std::string, "B0 correction mode", "mean",
+                             GadgetPropertyLimitsEnumeration,
+                             "none",
+                             "mean",
+                             "linear");
+      GADGET_PROPERTY_LIMITS(OEPhaseCorrectionMode, std::string, "Odd-Even phase-correction mode", "polynomial",
+                             GadgetPropertyLimitsEnumeration,
+                             "none",
+                             "mean",
+                             "linear",
+                             "polynomial");
 
       virtual int process_config(ACE_Message_Block* mb);
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
