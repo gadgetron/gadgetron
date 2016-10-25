@@ -178,9 +178,7 @@ namespace Gadgetron {
 				write_BART_Files("meas_gadgetron_ref", DIMS_ref, Temp_ref);
 			}
 
-			// New image array message
 			GadgetContainerMessage<IsmrmrdImageArray>* cm1 = new GadgetContainerMessage<IsmrmrdImageArray>();
-
 			IsmrmrdImageArray & imarray = *cm1->getObjectPtr();
 
 			std::vector<float> Temp;
@@ -235,7 +233,7 @@ namespace Gadgetron {
 		/*** CALL BART COMMAND LINE from the scripting file***/
 		std::string filename, Commands_Line;
 		try {
-			filename = getCommandsScript("BART_recon.xml");
+			filename = getCommandsScript("share/gadgetron/bart/BART_Recon.xml");
 			GDEBUG("Commands Script: %s\n", filename.c_str());
 		}
 		catch (std::exception &e)

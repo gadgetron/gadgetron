@@ -4,16 +4,11 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <!--
-        Gadgetron generic recon chain for 2D and 3D cartesian sampling
-
-        RealTimeCine imaging
-        Triggered by slice
-        Recon N is phase and S is set
-
-        Author: Hui Xue
+        Gadgetron bart recon chain for 2D and 3D cartesian sampling
+        Author: Mahamadou Diakite, PhD
         Magnetic Resonance Technology Program, National Heart, Lung and Blood Institute, National Institutes of Health
         10 Center Drive, Bethesda, MD 20814, USA
-        Email: hui.xue@nih.gov
+        Email: mahamadou.diakite@nih.gov
     -->
 
     <!-- reader -->
