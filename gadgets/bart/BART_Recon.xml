@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <!--
+        Gadgetron bart recon chain for 2D and 3D cartesian sampling
+        Author: Mahamadou Diakite, PhD
+        Magnetic Resonance Technology Program, National Heart, Lung and Blood Institute, National Institutes of Health
+        10 Center Drive, Bethesda, MD 20814, USA
+        Email: mahamadou.diakite@nih.gov
+    -->
+
+    <!-- reader -->
+    <reader><slot>1008</slot><dll>gadgetron_mricore</dll><classname>GadgetIsmrmrdAcquisitionMessageReader</classname></reader>
+
+    <!-- writer -->
+    <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
+
+    <!-- Noise prewhitening -->
+    <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname></gadget>
+
+    <!-- RO asymmetric echo handling -->
+    <gadget><name>AsymmetricEcho</name><dll>gadgetron_mricore</dll><classname>AsymmetricEchoAdjustROGadget</classname></gadget>
+
+    <!-- RO oversampling removal -->
+    <gadget><name>RemoveROOversampling</name><dll>gadgetron_mricore</dll><classname>RemoveROOversamplingGadget</classname></gadget>
+
+    <!-- Data accumulation and trigger gadget -->
+    <gadget>
+        <name>AccTrig</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>AcquisitionAccumulateTriggerGadget</classname>
+        <property><name>trigger_dimension</name><value>slice</value></property>
+        <property><name>sorting_dimension</name><value></value></property>
+    </gadget>
+
+    <gadget>
+        <name>BucketToBuffer</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>BucketToBufferGadget</classname>
+        <property><name>N_dimension</name><value>phase</value></property>
+        <property><name>S_dimension</name><value>set</value></property>
+        <property><name>split_slices</name><value>true</value></property>
+        <property><name>ignore_segment</name><value>true</value></property>
+    </gadget>
+
+	<!-- Prep ref -->
+    <gadget>
+        <name>PrepRef</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>GenericReconCartesianReferencePrepGadget</classname>
+
+        <!-- parameters for debug and timing -->
+        <property><name>debug_folder</name><value></value></property>
+        <property><name>perform_timing</name><value>true</value></property>
+        <property><name>verbose</name><value>true</value></property>
+
+        <!-- averaging across repetition -->
+        <property><name>average_all_ref_N</name><value>true</value></property>
+        <!-- every set has its own kernels -->
+        <property><name>average_all_ref_S</name><value>false</value></property>
+        <!-- whether always to prepare ref if no acceleration is used -->
+        <property><name>prepare_ref_always</name><value>true</value></property>
+    </gadget>
+	
+	<!-- This is where we insert our new Gadget -->
+	<gadget>
+	  <name>bartgadget</name>
+	  <dll>gadgetron_bartgadget</dll>
+	  <classname>Bartgadget</classname>
+	  <BartCommandsFile>Sample_GRAPPA_Recon.txt</BartCommandsFile>
+	</gadget>
+		
+    <!-- ImageArray to images -->
+    <gadget>
+        <name>ImageArraySplit</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageArraySplitGadget</classname>
+    </gadget>
+
+    <gadget>
+      <name>Extract</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ExtractGadget</classname>
+    </gadget>
+
+    <gadget>
+      <name>AutoScale</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>AutoScaleGadget</classname>
+    </gadget>
+    
+    <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>FloatToUShortGadget</classname>
+    </gadget>
+	
+    <gadget>
+        <name>ImageFinish</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageFinishGadget</classname>
+    </gadget>
+
+</gadgetronStreamConfiguration>
