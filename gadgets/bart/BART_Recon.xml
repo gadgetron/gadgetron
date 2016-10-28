@@ -4,11 +4,16 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <!--
-        Gadgetron bart recon chain for 2D and 3D cartesian sampling
-        Author: Mahamadou Diakite, PhD
+        Gadgetron generic recon chain for 2D and 3D cartesian sampling
+
+        RealTimeCine imaging
+        Triggered by slice
+        Recon N is phase and S is set
+
+        Author: Hui Xue
         Magnetic Resonance Technology Program, National Heart, Lung and Blood Institute, National Institutes of Health
         10 Center Drive, Bethesda, MD 20814, USA
-        Email: mahamadou.diakite@nih.gov
+        Email: hui.xue@nih.gov
     -->
 
     <!-- reader -->
@@ -67,9 +72,11 @@
 	<!-- This is where we insert our new Gadget -->
 	<gadget>
 	  <name>bartgadget</name>
-	  <dll>gadgetron_bartgadget</dll>
-	  <classname>Bartgadget</classname>
-	  <BartCommandsFile>Sample_GRAPPA_Recon.txt</BartCommandsFile>
+	  <dll>gadgetron_bart</dll>
+	  <classname>BartGadget</classname>
+	  <BartCommandsFile>Sample_Grappa_Recon.txt</BartCommandsFile>
+	  <property><name>BartCommandScript_path</name><value>share/gadgetron/bart</value></property>
+      <property><name>BartCommandScript_name</name><value>Sample_Grappa_Recon.txt</value></property>
 	</gadget>
 		
     <!-- ImageArray to images -->

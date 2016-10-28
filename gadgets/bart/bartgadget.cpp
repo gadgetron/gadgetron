@@ -102,7 +102,7 @@ namespace Gadgetron {
 	{
 		if (createdFiles.empty())
 			return;
-		for (auto e : createdFiles) {
+		for (auto const &e : createdFiles) {
 			std::ostringstream cmd;
 			cmd << "rm -f " << e << ".hdr" << " " << e << ".cfl";
 			system(cmd.str().c_str());
