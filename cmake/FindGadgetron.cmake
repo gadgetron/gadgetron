@@ -27,6 +27,10 @@ set(GADGETRON_LIB_DIR ${GADGETRON_HOME}/lib)
 mark_as_advanced(GADGETRON_LIB_DIR)
 list(APPEND _check_list GADGETRON_LIB_DIR)
 
+set(GADGETRON_INSTALL_CONFIG_PATH  ${GADGETRON_HOME}/share/gadgetron/config)
+mark_as_advanced(GADGETRON_INSTALL_CONFIG_PATH)
+list(APPEND _check_list GADGETRON_INSTALL_CONFIG_PATH)
+
 # Handle the QUIETLY and REQUIRED arguments and set FFTW_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
