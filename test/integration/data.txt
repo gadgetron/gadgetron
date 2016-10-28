@@ -83,3 +83,6 @@ cmr/CineBinning/meas_MID838_PK_rt_test_2slice_FID22519/ref_20160528.h5: 25814fad
 cmr/CineBinning/meas_MID838_PK_rt_test_2slice_FID22519/ref_20160604.h5: db9bad1fdc138bc302176d75de5b0813
 T2W/meas_MID00057_T2w.dat: 46aa75c471a41c793006328a224a4001
 T2W/generic_grappa_T2W_ref.h5: 1c870a3e2b25cee499ad7d7210d7b6b0
+bart/meas_MID00049_FID110018_SAX_realtime_gt_TPAT4.dat: b6b9fdf5a8b0613bd1706be6029f59f5
+bart/meas_MID00049_out.h5: 3c8d240f97406c38656aa78c7709dcb8
+
