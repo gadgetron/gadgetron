@@ -4,6 +4,12 @@ endif ()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
+  ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
+  ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu 
+  ${CMAKE_SOURCE_DIR}/toolboxes/image_io   
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math 
+  ${Boost_INCLUDE_DIR}
   )
 
 add_library(gadgetron_bart SHARED 
@@ -13,19 +19,18 @@ add_library(gadgetron_bart SHARED
 
 set_target_properties(gadgetron_bart PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
-target_link_libraries(gadgetron_bart gadgetron_toolbox_cpucore 
-  gadgetron_gadgetbase
+target_link_libraries(gadgetron_bart gadgetron_gadgetbase
+  gadgetron_mricore 
+  gadgetron_toolbox_mri_core 
   gadgetron_toolbox_log
+  gadgetron_toolbox_cpucore
   gadgetron_toolbox_cpufft
+  gadgetron_toolbox_cpuklt  
   ${ISMRMRD_LIBRARIES}
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}   
+  ${Boost_LIBRARIES}
   )
-
-find_package(Boost COMPONENTS filesystem) 
-if(Boost_FOUND)
-    target_link_libraries(gadgetron_bart ${Boost_LIBRARIES})
-endif()
-
+  
 if(ARMADILLO_FOUND)
     target_link_libraries(gadgetron_bart gadgetron_toolbox_cpucore_math )
 endif()

@@ -8,8 +8,6 @@
 ****************************************************************************************************************************/
 
 #include "bartgadget.h"
-#include "gadgetron/hoNDFFT.h"
-#include "gadgetron/hoNDArray_math.h"
 #include <gadgetron_paths.h>
 #include <boost/tokenizer.hpp>
 #include <sstream>
@@ -101,19 +99,6 @@ namespace Gadgetron {
 	void BartGadget::cleanup(std::string &createdFiles)
 	{
 		boost::filesystem::remove_all(createdFiles);
-	}
-
-	inline std::string BartGadget::get_gadgetron_root(std::string & path_)
-	{
-		std::string root_path;
-		for (auto& part : boost::filesystem::path(path_)) {
-			if (part == "bin")
-				break;
-			if (part == "/")
-				continue;
-			root_path.append(std::string(part.string() + "/"));
-		}
-		return root_path;
 	}
 
 	int BartGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
@@ -278,7 +263,7 @@ namespace Gadgetron {
 			return GADGET_FAIL;
 
 		/*** CALL BART COMMAND LINE from the scripting file***/
-		std::string Commands_Line;
+		std::string Commands_Line, last_command;
 		ifstream inputFile(CommandScript);
 		if (inputFile.is_open())
 		{
@@ -289,6 +274,8 @@ namespace Gadgetron {
 				GDEBUG("%s\n", Commands_Line.c_str());
 				if (system(std::string("cd " + generatedFilesFolder + "&&" + Commands_Line).c_str()))
 					return GADGET_FAIL;
+				else
+					last_command = Commands_Line;
 			}
 			inputFile.close();
 		}
@@ -373,64 +360,18 @@ namespace Gadgetron {
 		std::copy(DATA_Final.begin(), DATA_Final.end(), imarray.data_.begin());
 
 		// Fill image header 
+		size_t encoding_index = 0;
 		for (std::vector<IsmrmrdReconBit>::iterator it = m1->getObjectPtr()->rbit_.begin(); it != m1->getObjectPtr()->rbit_.end(); ++it)
 		{
-			IsmrmrdDataBuffered & dbuff = it->data_;
-			// ImageHeaders will be [N, S, LOC]
-			std::vector<size_t> header_dims(3);
-			header_dims[0] = data_dims_Final[4];
-			header_dims[1] = data_dims_Final[5];
-			header_dims[2] = data_dims_Final[6];
-			imarray.headers_.create(&header_dims);
-
-			for (uint16_t loc = 0; loc < data_dims_Final[6]; ++loc) {
-				for (uint16_t s = 0; s < data_dims_Final[5]; ++s) {
-					for (uint16_t n = 0; n < data_dims_Final[4]; ++n) {
-
-						ISMRMRD::AcquisitionHeader & acqhdr = dbuff.headers_(dbuff.sampling_.sampling_limits_[1].center_,
-							dbuff.sampling_.sampling_limits_[2].center_,
-							n, s, loc);
-						imarray.headers_(n, s, loc).matrix_size[0] = data_dims_Final[0];
-						imarray.headers_(n, s, loc).matrix_size[1] = data_dims_Final[1];
-						imarray.headers_(n, s, loc).matrix_size[2] = data_dims_Final[2];
-						imarray.headers_(n, s, loc).field_of_view[0] = dbuff.sampling_.recon_FOV_[0];
-						imarray.headers_(n, s, loc).field_of_view[1] = dbuff.sampling_.recon_FOV_[1];
-						imarray.headers_(n, s, loc).field_of_view[2] = dbuff.sampling_.recon_FOV_[2];
-						imarray.headers_(n, s, loc).channels = 1;
-						imarray.headers_(n, s, loc).average = acqhdr.idx.average;
-						imarray.headers_(n, s, loc).slice = acqhdr.idx.slice;
-						imarray.headers_(n, s, loc).contrast = acqhdr.idx.contrast;
-						imarray.headers_(n, s, loc).phase = acqhdr.idx.phase;
-						imarray.headers_(n, s, loc).repetition = acqhdr.idx.repetition;
-						imarray.headers_(n, s, loc).set = acqhdr.idx.set;
-						imarray.headers_(n, s, loc).acquisition_time_stamp = acqhdr.acquisition_time_stamp;
-						imarray.headers_(n, s, loc).position[0] = acqhdr.position[0];
-						imarray.headers_(n, s, loc).position[1] = acqhdr.position[1];
-						imarray.headers_(n, s, loc).position[2] = acqhdr.position[2];
-						imarray.headers_(n, s, loc).read_dir[0] = acqhdr.read_dir[0];
-						imarray.headers_(n, s, loc).read_dir[1] = acqhdr.read_dir[1];
-						imarray.headers_(n, s, loc).read_dir[2] = acqhdr.read_dir[2];
-						imarray.headers_(n, s, loc).phase_dir[0] = acqhdr.phase_dir[0];
-						imarray.headers_(n, s, loc).phase_dir[1] = acqhdr.phase_dir[1];
-						imarray.headers_(n, s, loc).phase_dir[2] = acqhdr.phase_dir[2];
-						imarray.headers_(n, s, loc).slice_dir[0] = acqhdr.slice_dir[0];
-						imarray.headers_(n, s, loc).slice_dir[1] = acqhdr.slice_dir[1];
-						imarray.headers_(n, s, loc).slice_dir[2] = acqhdr.slice_dir[2];
-						imarray.headers_(n, s, loc).patient_table_position[0] = acqhdr.patient_table_position[0];
-						imarray.headers_(n, s, loc).patient_table_position[1] = acqhdr.patient_table_position[1];
-						imarray.headers_(n, s, loc).patient_table_position[2] = acqhdr.patient_table_position[2];
-						imarray.headers_(n, s, loc).data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-						imarray.headers_(n, s, loc).image_index = ++image_counter_;
-
-					}
-				}
-			}
+			compute_image_header( *it, imarray, encoding_index);
+			encoding_index += 1;
 
 			if (this->next()->putq(ims) < 0) {
 				m1->release();
 				return GADGET_FAIL;
 			}
 		}
+
 		m1->release();
 		return GADGET_OK;
 	}

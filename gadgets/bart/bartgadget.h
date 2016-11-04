@@ -10,7 +10,7 @@
 #ifndef BART_GADGET_H
 #define BART_GADGET_H
 
-#include "Gadget.h"
+#include "GenericReconGadget.h"
 #include "gadgetron_mricore_export.h"
 #include "gadgetron/mri_core_data.h"
 #include <gadgetron_paths.h>
@@ -36,7 +36,7 @@
 
 namespace Gadgetron {
 
-	class EXPORTGADGETS_bartgadget BartGadget : public Gadget1<IsmrmrdReconData>
+	class EXPORTGADGETS_bartgadget BartGadget : public GenericReconGadget
 	{
 
 	public:
@@ -46,7 +46,7 @@ namespace Gadgetron {
 		virtual ~BartGadget() = default;
 
 	protected:		
-		GADGET_PROPERTY(AbsoluteBartCommandScript_path, std::string, "Absolute path to bart script(s)", std::string(get_gadgetron_root(get_gadgetron_home()) + "share/gadgetron/bart"));
+		GADGET_PROPERTY(AbsoluteBartCommandScript_path, std::string, "Absolute path to bart script(s)", get_gadgetron_home() + "/share/gadgetron/bart");
 		GADGET_PROPERTY(BartCommandScript_name, std::string, "Script file containing bart command(s) to be loaded", "");
 
 		virtual int process(GadgetContainerMessage<IsmrmrdReconData>* m1);
@@ -66,7 +66,6 @@ namespace Gadgetron {
 		// Utility functions
 		std::string &getOutputFilename(const std::string &bartCommandLine);
 		void cleanup(std::string &createdFiles);
-		std::string get_gadgetron_root(std::string &path_);
 	};
 
 
