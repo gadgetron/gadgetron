@@ -24,6 +24,8 @@ if (MKL_FOUND)
     link_directories( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
 endif ()
 
+find_package(HDF5 1.8 REQUIRED COMPONENTS C)
+
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
     ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -58,6 +60,7 @@ include_directories(
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
+    ${HDF5_C_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
 )   
 

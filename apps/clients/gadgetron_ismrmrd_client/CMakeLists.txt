@@ -1,4 +1,7 @@
 find_package(ZFP)
+find_package(HDF5 1.8 REQUIRED COMPONENTS C)
+
+include_directories(${HDF5_C_INCLUDE_DIR})
 
 if (ZFP_FOUND)
    add_definitions(-DGADGETRON_COMPRESSION_ZFP)
@@ -25,6 +28,7 @@ include_directories(
 if (ZFP_FOUND)
    include_directories(${ZFP_INCLUDE_DIR})
 endif()
+
 
 add_executable(gadgetron_ismrmrd_client gadgetron_ismrmrd_client.cpp)
 
