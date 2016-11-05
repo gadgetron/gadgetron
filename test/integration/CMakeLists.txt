@@ -4,6 +4,7 @@
 
 # read in what will be tested for any environment
 file(GLOB TEST_CASE_ALWAYS RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./cases/*.cfg  )
+file(GLOB TEST_CASE_BART RELATIVE ${CMAKE_SOURCE_DIR}/test/integration/  ./bart_cases/*.cfg  )
 
 set(TEST_CASE ${TEST_CASE_ALWAYS})
 
@@ -12,3 +13,11 @@ file(WRITE ./test_cases.txt)
 foreach(test ${TEST_CASE})
     file(APPEND ./test_cases.txt "${test}\n")
 endforeach()
+
+find_program(BARTCMD bart)
+if (BARTCMD)
+  set(TEST_CASE_BART ${TEST_CASE_BART})
+  foreach(test ${TEST_CASE_BART})
+    file(APPEND ./test_cases.txt "${test}\n")
+  endforeach()
+endif()
