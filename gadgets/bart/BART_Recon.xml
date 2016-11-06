@@ -79,6 +79,7 @@
 	  <!--
 	  <property><name>AbsoluteBartCommandScript_path</name><value></value></property>
 	  -->
+	  <property><name>BartWorkingDirectory</name><value>./</value></property>
 	  <property><name>BartCommandScript_name</name><value>Sample_GRAPPA_Recon.txt</value></property>
 	</gadget>
 		
