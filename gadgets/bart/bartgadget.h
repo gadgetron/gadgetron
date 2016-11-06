@@ -45,12 +45,15 @@ namespace Gadgetron {
 		BartGadget();
 		virtual ~BartGadget() = default;
 
-	protected:		
+	protected:
+		GADGET_PROPERTY(BartWorkingDirectory, std::string, "Absolute path to temporary file location (will default to workingDirectory)", "");
 		GADGET_PROPERTY(AbsoluteBartCommandScript_path, std::string, "Absolute path to bart script(s)", get_gadgetron_home() + "/share/gadgetron/bart");
 		GADGET_PROPERTY(BartCommandScript_name, std::string, "Script file containing bart command(s) to be loaded", "");
 
 		virtual int process(GadgetContainerMessage<IsmrmrdReconData>* m1);
 		long long image_counter_;
+		std::string workLocation_;
+
 
 	private:
 		// Write BART files

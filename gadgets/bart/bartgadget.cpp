@@ -114,27 +114,33 @@ namespace Gadgetron {
 		// Check status of the folder containing the generated files (*.hdr & *.cfl)
 		std::string generatedFilesFolder;
 		static std::string outputFolderPath;
-		if (!workingDirectory.value().empty())
-		{
-			time_t rawtime;
-			char buff[80];
-			time(&rawtime);
-			strftime(buff, sizeof(buff), "%H_%M_%S__", localtime(&rawtime));
-			std::mt19937::result_type seed = static_cast<unsigned long>(time(0));
-			auto dice_rand = std::bind(std::uniform_int_distribution<int>(1, 10000), std::mt19937(seed));
-			std::string time_id(buff + std::to_string(dice_rand()));
-			outputFolderPath = workingDirectory.value() + "bart_" + time_id + "/";
-			generatedFilesFolder = std::string(outputFolderPath);
-			boost::filesystem::path dir(generatedFilesFolder);
-			if (boost::filesystem::create_directory(dir))
-				GDEBUG("Folder to store *.hdr & *.cfl files is %s\n", generatedFilesFolder.c_str());
-			else {
-				GERROR("Folder to store *.hdr & *.cfl files doesn't exist...\n");
-				return GADGET_FAIL;
-			}
+		if (BartWorkingDirectory.value().empty()) {
+		  workLocation_ = workingDirectory.value();
+		} else {
+		  workLocation_ = BartWorkingDirectory.value();
 		}
-		else
-			return GADGET_FAIL;
+
+		if (workLocation_.empty()) {
+		  GERROR("Undefined work location, bailing out\n");
+		  return GADGET_FAIL;
+		}
+		
+		time_t rawtime;
+		char buff[80];
+		time(&rawtime);
+		strftime(buff, sizeof(buff), "%H_%M_%S__", localtime(&rawtime));
+		std::mt19937::result_type seed = static_cast<unsigned long>(time(0));
+		auto dice_rand = std::bind(std::uniform_int_distribution<int>(1, 10000), std::mt19937(seed));
+		std::string time_id(buff + std::to_string(dice_rand()));
+		outputFolderPath = workLocation_ + "bart_" + time_id + "/";
+		generatedFilesFolder = std::string(outputFolderPath);
+		boost::filesystem::path dir(generatedFilesFolder);
+		if (boost::filesystem::create_directory(dir))
+		  GDEBUG("Folder to store *.hdr & *.cfl files is %s\n", generatedFilesFolder.c_str());
+		else {
+		  GERROR("Folder to store *.hdr & *.cfl files doesn't exist...\n");
+		  return GADGET_FAIL;
+		}
 
 
 		std::vector<uint16_t> DIMS_ref, DIMS;
