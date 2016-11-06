@@ -87,7 +87,8 @@ class GadgetronResource(resource.Resource):
 
         self.environment = dict()
         self.environment["GADGETRON_HOME"]=gadgetron_home
-        self.environment["PATH"]=self.environment["GADGETRON_HOME"] + "/bin"
+        self.environment["PATH"] = self.environment["GADGETRON_HOME"] + "/bin"
+        self.environment["PATH"] += ":/usr/bin:/usr/local/bin"
 
         libpath = "LD_LIBRARY_PATH"
         if platform.system() == "Darwin":
