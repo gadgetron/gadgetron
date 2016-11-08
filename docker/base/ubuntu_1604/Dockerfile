@@ -44,10 +44,11 @@ RUN cd /opt && \
 
 #BART
 RUN cd /opt && \
-    git clone https://github.com/mrirecon/bart.git && \
-    cd bart && \
+    wget https://github.com/mrirecon/bart/archive/v0.3.01.tar.gz && \
+    tar -xzf v0.3.01.tar.gz && \
+    cd bart-0.3.01 && \
     make && \
-    make install
+    ln -s /opt/bart-0.3.01/bart /usr/local/bin/bart 
 
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \
