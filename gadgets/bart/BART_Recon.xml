@@ -50,7 +50,7 @@
         <property><name>ignore_segment</name><value>true</value></property>
     </gadget>
 
-	<!-- Prep ref -->
+    <!-- Prep ref -->
     <gadget>
         <name>PrepRef</name>
         <dll>gadgetron_mricore</dll>
@@ -68,20 +68,19 @@
         <!-- whether always to prepare ref if no acceleration is used -->
         <property><name>prepare_ref_always</name><value>true</value></property>
     </gadget>
-	
+
 	<!-- This is where we insert our new Gadget -->
 	<gadget>
 	  <name>bartgadget</name>
 	  <dll>gadgetron_bart</dll>
 	  <classname>BartGadget</classname>
-	  <BartCommandsFile>Sample_Grappa_Recon.txt</BartCommandsFile>
 	  <!-- The "AbsoluteBartCommandScript_path" can be provided by the user to overwrite the default value-->
 	  <!--
 	  <property><name>AbsoluteBartCommandScript_path</name><value></value></property>
 	  -->
 	  <property><name>BartCommandScript_name</name><value>Sample_GRAPPA_Recon.txt</value></property>
 	</gadget>
-		
+
     <!-- ImageArray to images -->
     <gadget>
         <name>ImageArraySplit</name>
