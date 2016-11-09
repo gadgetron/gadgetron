@@ -147,20 +147,15 @@ namespace Gadgetron {
 
 		/*** WRITE REFERENCE AND RAW DATA TO FILES ***/
 
+        size_t encoding = 0;
 		for (std::vector<IsmrmrdReconBit>::iterator it = m1->getObjectPtr()->rbit_.begin(); it != m1->getObjectPtr()->rbit_.end(); ++it)
 		{
+            std::stringstream os;
+            os << "_encoding_" << encoding;
+
 			// Grab a reference to the buffer containing the reference data
 			auto  & dbuff_ref = it->ref_;
 			hoNDArray< std::complex<float> >& ref = (*dbuff_ref).data_;
-			// Data 7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
-			uint16_t E0_ref = static_cast<uint16_t>(ref.get_size(0));
-			uint16_t E1_ref = static_cast<uint16_t>(ref.get_size(1));
-			uint16_t E2_ref = static_cast<uint16_t>(ref.get_size(2));
-			uint16_t CHA_ref = static_cast<uint16_t>(ref.get_size(3));
-			uint16_t N_ref = static_cast<uint16_t>(ref.get_size(4));
-			uint16_t S_ref = static_cast<uint16_t>(ref.get_size(5));
-			uint16_t LOC_ref = static_cast<uint16_t>(ref.get_size(6));
-			DIMS_ref = { E0_ref, E1_ref, E2_ref, CHA_ref, N_ref, S_ref, LOC_ref };
 
 			// Grab a reference to the buffer containing the image data
 			IsmrmrdDataBuffered & dbuff = it->data_;
@@ -174,6 +169,41 @@ namespace Gadgetron {
 			uint16_t LOC = static_cast<uint16_t>(dbuff.data_.get_size(6));
 			// Set up data to be written into files
 			DIMS = { E0, E1, E2, CHA, N, S, LOC };
+
+            // ----------------------------------------------------------------------------------------------
+            // prepare ref data for coil map calculation
+            std::vector<size_t> data_dim;
+            dbuff.data_.get_dimensions(data_dim);
+
+            hoNDArray< std::complex<float> > ref_calib, ref_coil_map;
+
+            if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::make_ref_coil_map"); }
+            this->make_ref_coil_map( *dbuff_ref, data_dim, ref_calib, ref_coil_map, encoding);
+            if (perform_timing.value()) { gt_timer_.stop(); }
+
+            // ----------------------------------------------------------
+            // export prepared ref for calibration and coil map
+            if (!debug_folder_full_path_.empty())
+            {
+                this->gt_exporter_.export_array_complex(ref_calib, debug_folder_full_path_ + "ref_calib" + os.str());
+            }
+
+            if (!debug_folder_full_path_.empty())
+            {
+                this->gt_exporter_.export_array_complex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map" + os.str());
+            }
+
+            // Data 7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
+            uint16_t E0_ref = static_cast<uint16_t>(ref_coil_map.get_size(0));
+            uint16_t E1_ref = static_cast<uint16_t>(ref_coil_map.get_size(1));
+            uint16_t E2_ref = static_cast<uint16_t>(ref_coil_map.get_size(2));
+            uint16_t CHA_ref = static_cast<uint16_t>(ref_coil_map.get_size(3));
+            uint16_t N_ref = static_cast<uint16_t>(ref_coil_map.get_size(4));
+            uint16_t S_ref = static_cast<uint16_t>(ref_coil_map.get_size(5));
+            uint16_t LOC_ref = static_cast<uint16_t>(ref_coil_map.get_size(6));
+            DIMS_ref = { E0_ref, E1_ref, E2_ref, CHA_ref, N_ref, S_ref, LOC_ref };
+
+            // ----------------------------------------------------------------------------------------------
 
 			/* The reference data will be pointing to the image data if there is
 				no reference scan. Therefore, we won't write the reference data
@@ -193,7 +223,8 @@ namespace Gadgetron {
 							chunk_dims[1] = E1_ref;
 							chunk_dims[2] = E2_ref;
 							chunk_dims[3] = CHA_ref;
-							hoNDArray<std::complex<float> > chunk = hoNDArray<std::complex<float> >(chunk_dims, &(*dbuff_ref).data_(0, 0, 0, 0, n, s, loc));
+							// hoNDArray<std::complex<float> > chunk = hoNDArray<std::complex<float> >(chunk_dims, &(*dbuff_ref).data_(0, 0, 0, 0, n, s, loc));
+                            hoNDArray<std::complex<float> > chunk = hoNDArray<std::complex<float> >(chunk_dims, &ref_coil_map(0, 0, 0, 0, n, s, loc));
 
 							std::vector<size_t> new_chunk_dims(1);
 							new_chunk_dims[0] = E0_ref*E1_ref*E2_ref*CHA_ref;
@@ -242,6 +273,8 @@ namespace Gadgetron {
 			}
 
 			write_BART_Files(std::string(generatedFilesFolder + "meas_gadgetron").c_str(), DIMS, Temp);
+
+            encoding++;
 		}
 
 		/* Before calling Bart let's do some bookkeeping */

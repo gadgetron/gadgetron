@@ -1,3 +1,3 @@
-bart ecalib reference_data maps
+bart ecalib -t 1e-4 -c 0.1 -m 2 reference_data maps
 bart pattern input_data Pattern
-bart pics -d5 -w 1 -l 1 -r 0.001 -i 100 -p Pattern input_data maps ims
+bart pics -l1 -r 0.00001 -d5 -i 50 -p Pattern -e input_data maps ims
