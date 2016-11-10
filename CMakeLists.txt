@@ -264,7 +264,7 @@ if (LAPACK_FOUND)
   add_definitions(-DUSE_LAPACK)
 endif ()
 
-find_package(PythonLibs)
+find_package(PythonLibs 2)
 string(REPLACE "." ";" PYTHON_VERSION_MAJOR ${PYTHONLIBS_VERSION_STRING})
 list(GET PYTHON_VERSION_MAJOR 0 PYVER)
 add_definitions(-DPYVER=${PYVER})
