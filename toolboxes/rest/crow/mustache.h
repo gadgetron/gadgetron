@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iterator>
 #include <functional>
-#include "json.h"
+#include "crow/json.h"
 namespace crow
 {
     namespace mustache
@@ -520,7 +520,11 @@ namespace crow
 
         inline std::string default_loader(const std::string& filename)
         {
-            std::ifstream inf(detail::get_template_base_directory_ref() + filename);
+            std::string path = detail::get_template_base_directory_ref();
+            if (!(path.back() == '/' || path.back() == '\\'))
+                path += '/';
+            path += filename;
+            std::ifstream inf(path);
             if (!inf)
                 return {};
             return {std::istreambuf_iterator<char>(inf), std::istreambuf_iterator<char>()};
@@ -549,6 +553,11 @@ namespace crow
         inline void set_loader(std::function<std::string(std::string)> loader)
         {
             detail::get_loader_ref() = std::move(loader);
+        }
+
+        inline std::string load_text(const std::string& filename)
+        {
+            return detail::get_loader_ref()(filename);
         }
 
         inline template_t load(const std::string& filename)

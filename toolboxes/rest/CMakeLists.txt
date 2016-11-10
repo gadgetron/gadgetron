@@ -5,7 +5,10 @@ if (WIN32)
   add_definitions(-DCROW_MSVC_WORKAROUND)
 endif()
 
-include_directories(${Boost_INCLUDE_DIR})
+include_directories(
+  ${Boost_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/toolboxes/rest
+)
 
 add_library(gadgetron_toolbox_rest SHARED
   gadgetron_rest.cpp

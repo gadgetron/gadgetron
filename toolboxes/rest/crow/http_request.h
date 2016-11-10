@@ -1,8 +1,10 @@
 #pragma once
 
-#include "common.h"
-#include "ci_map.h"
-#include "query_string.h"
+#include <boost/asio.hpp>
+
+#include "crow/common.h"
+#include "crow/ci_map.h"
+#include "crow/query_string.h"
 
 namespace crow
 {
@@ -17,6 +19,8 @@ namespace crow
         return empty;
     }
 
+	struct DetachHelper;
+
     struct request
     {
         HTTPMethod method;
@@ -27,9 +31,10 @@ namespace crow
         std::string body;
 
         void* middleware_context{};
+        boost::asio::io_service* io_service{};
 
         request()
-            : method(HTTPMethod::GET)
+            : method(HTTPMethod::Get)
         {
         }
 
@@ -46,6 +51,18 @@ namespace crow
         const std::string& get_header_value(const std::string& key) const
         {
             return crow::get_header_value(headers, key);
+        }
+
+        template<typename CompletionHandler>
+        void post(CompletionHandler handler)
+        {
+            io_service->post(handler);
+        }
+
+        template<typename CompletionHandler>
+        void dispatch(CompletionHandler handler)
+        {
+            io_service->dispatch(handler);
         }
 
     };

@@ -3,8 +3,7 @@
 
 #include <thread>
 
-#include "crow/crow.h"
-#include "crow/json.h"
+#include "crow.h"
 
 // require these undef to avoid visual studio conflicts for ERROR and DELETE
 // TODO: remove these once updated to visual studio 2015
