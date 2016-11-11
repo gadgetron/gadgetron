@@ -1,7 +1,7 @@
 #pragma once
 #include <boost/algorithm/string/trim.hpp>
-#include "http_request.h"
-#include "http_response.h"
+#include "crow/http_request.h"
+#include "crow/http_response.h"
 
 namespace crow
 {
@@ -139,7 +139,7 @@ namespace crow
             }
         }
 
-        void after_handle(request& req, response& res, context& ctx)
+        void after_handle(request& /*req*/, response& res, context& ctx)
         {
             for(auto& cookie:ctx.cookies_to_add)
             {
