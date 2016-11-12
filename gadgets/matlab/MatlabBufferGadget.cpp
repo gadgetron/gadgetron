@@ -1,10 +1,14 @@
 #include "MatlabBufferGadget.h"
 #include "MatlabUtils.h"
 
+std::mutex mutex_;
+
 namespace Gadgetron{
 
 int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 {
+    std::lock_guard<std::mutex> lock(mutex_);   
+
 	// Initialize a string for matlab commands
 	std::string cmd;
 
@@ -26,7 +30,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	}
 	engPutVariable(engine_, "recon_data", reconArray);
 
-	cmd = "[imageQ,bufferQ] = matgadget.run_process(recon_data); matgadget.emptyQ(); whos()";
+	cmd = "[imageQ,bufferQ] = matgadget.run_process(recon_data); matgadget.emptyQ();";
 	send_matlab_command(cmd);
 
 	// Get the size of the gadget's queue
@@ -38,12 +42,13 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	}
 
 	size_t qlen = mxGetNumberOfElements(imageQ);
+	if (debug_mode_) {
 	GDEBUG("Image Queue size: %d \n", qlen);
-
+	}
 	const mwSize* dims = mxGetDimensions(imageQ);
 	mwSize ndims = mxGetNumberOfDimensions(imageQ);
 
-
+	GDEBUG("Number of ndims %i \n",ndims);
 
 	//Read all Image bytes
 	for (mwIndex idx = 0; idx < qlen; idx++) {
@@ -72,7 +77,9 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	mxArray* bufferQ = engGetVariable(engine_,"bufferQ");
 
 	qlen = mxGetNumberOfElements(bufferQ);
-	GDEBUG("Buffer Queue size: %d \n", qlen);
+	if (debug_mode_) {
+		GDEBUG("Buffer Queue size: %d \n", qlen);
+		}
 
 	for (mwIndex idx = 0; idx <qlen; idx++){
 
@@ -100,7 +107,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 
 	mxDestroyArray(bufferQ);
 	mxDestroyArray(imageQ);
-	//mxDestroyArray(reconArray); //We're not supposed to delete this?
+	mxDestroyArray(reconArray); //We're not supposed to delete this?
 
 	// We are finished with the incoming messages m1 and m2
 	m1->release();
