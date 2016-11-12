@@ -7,15 +7,15 @@
 #include <chrono>
 #include <vector>
 
-#include "crow/http_parser_merged.h"
+#include "http_parser_merged.h"
 
-#include "crow/parser.h"
-#include "crow/http_response.h"
-#include "crow/logging.h"
-#include "crow/settings.h"
-#include "crow/dumb_timer_queue.h"
-#include "crow/middleware_context.h"
-#include "crow/socket_adaptors.h"
+#include "parser.h"
+#include "http_response.h"
+#include "logging.h"
+#include "settings.h"
+#include "dumb_timer_queue.h"
+#include "middleware_context.h"
+#include "socket_adaptors.h"
 
 namespace crow
 {
@@ -98,28 +98,28 @@ namespace crow
 
         template <typename MW, typename Context, typename ParentContext>
         typename std::enable_if<!is_before_handle_arity_3_impl<MW>::value>::type
-        before_handler_call(MW& mw, request& req, response& res, Context& ctx, ParentContext& /*parent_ctx*/)
+        before_handler_call(MW& mw, request& req, response& res, Context& ctx, ParentContext& parent_ctx)
         {
             mw.before_handle(req, res, ctx.template get<MW>(), ctx);
         }
 
         template <typename MW, typename Context, typename ParentContext>
         typename std::enable_if<is_before_handle_arity_3_impl<MW>::value>::type
-        before_handler_call(MW& mw, request& req, response& res, Context& ctx, ParentContext& /*parent_ctx*/)
+        before_handler_call(MW& mw, request& req, response& res, Context& ctx, ParentContext& parent_ctx)
         {
             mw.before_handle(req, res, ctx.template get<MW>());
         }
 
         template <typename MW, typename Context, typename ParentContext>
         typename std::enable_if<!is_after_handle_arity_3_impl<MW>::value>::type
-        after_handler_call(MW& mw, request& req, response& res, Context& ctx, ParentContext& /*parent_ctx*/)
+        after_handler_call(MW& mw, request& req, response& res, Context& ctx, ParentContext& parent_ctx)
         {
             mw.after_handle(req, res, ctx.template get<MW>(), ctx);
         }
 
         template <typename MW, typename Context, typename ParentContext>
         typename std::enable_if<is_after_handle_arity_3_impl<MW>::value>::type
-        after_handler_call(MW& mw, request& req, response& res, Context& ctx, ParentContext& /*parent_ctx*/)
+        after_handler_call(MW& mw, request& req, response& res, Context& ctx, ParentContext& parent_ctx)
         {
             mw.after_handle(req, res, ctx.template get<MW>());
         }
@@ -146,14 +146,14 @@ namespace crow
         }
 
         template <int N, typename Context, typename Container>
-        bool middleware_call_helper(Container& /*middlewares*/, request& /*req*/, response& /*res*/, Context& /*ctx*/)
+        bool middleware_call_helper(Container& middlewares, request& req, response& res, Context& ctx)
         {
             return false;
         }
 
         template <int N, typename Context, typename Container>
         typename std::enable_if<(N<0)>::type 
-        after_handlers_call_helper(Container& /*middlewares*/, Context& /*context*/, request& /*req*/, response& /*res*/)
+        after_handlers_call_helper(Container& middlewares, Context& context, request& req, response& res)
         {
         }
 
@@ -256,7 +256,6 @@ namespace crow
 
             req_ = std::move(parser_.to_request());
             request& req = req_;
-
             if (parser_.check_version(1, 0))
             {
                 // HTTP/1.0
@@ -283,20 +282,6 @@ namespace crow
                     is_invalid_request = true;
                     res = response(400);
                 }
-				if (parser_.is_upgrade())
-				{
-					if (req.get_header_value("upgrade") == "h2c")
-					{
-						// TODO HTTP/2
-                        // currently, ignore upgrade header
-					}
-                    else
-                    {
-                        close_connection_ = true;
-                        handler_->handle_upgrade(req, res, std::move(adaptor_));
-                        return;
-                    }
-				}
             }
 
             CROW_LOG_INFO << "Request: " << boost::lexical_cast<std::string>(adaptor_.remote_endpoint()) << " " << this << " HTTP/" << parser_.http_major << "." << parser_.http_minor << ' '
@@ -311,7 +296,6 @@ namespace crow
 
                 ctx_ = detail::context<Middlewares...>();
                 req.middleware_context = (void*)&ctx_;
-                req.io_service = &adaptor_.get_io_service();
                 detail::middleware_call_helper<0, decltype(ctx_), decltype(*middlewares_), Middlewares...>(*middlewares_, req, res, ctx_);
 
                 if (!res.completed_)
@@ -436,7 +420,7 @@ namespace crow
             }
             if (add_keep_alive_)
             {
-                static std::string keep_alive_tag = "Connection: Keep-Alive";
+                static std::string keep_alive_tag = "Connetion: Keep-Alive";
                 buffers_.emplace_back(keep_alive_tag.data(), keep_alive_tag.size());
                 buffers_.emplace_back(crlf.data(), crlf.size());
             }
@@ -446,6 +430,7 @@ namespace crow
             buffers_.emplace_back(res_body_copy_.data(), res_body_copy_.size());
 
             do_write();
+            res.clear();
 
             if (need_to_start_read_after_complete_)
             {
@@ -467,7 +452,7 @@ namespace crow
                     if (!ec)
                     {
                         bool ret = parser_.feed(buffer_.data(), bytes_transferred);
-                        if (ret && adaptor_.is_open())
+                        if (ret && adaptor_.is_open() && !close_connection_)
                         {
                             error_while_reading = false;
                         }
@@ -481,14 +466,6 @@ namespace crow
                         is_reading = false;
                         CROW_LOG_DEBUG << this << " from read(1)";
                         check_destroy();
-                    }
-                    else if (close_connection_)
-                    {
-                        cancel_deadline_timer();
-                        parser_.done();
-                        is_reading = false;
-                        check_destroy();
-                        // adaptor will close after write
                     }
                     else if (!need_to_call_after_handlers_)
                     {
@@ -508,10 +485,9 @@ namespace crow
             //auto self = this->shared_from_this();
             is_writing = true;
             boost::asio::async_write(adaptor_.socket(), buffers_, 
-                [&](const boost::system::error_code& ec, std::size_t /*bytes_transferred*/)
+                [&](const boost::system::error_code& ec, std::size_t bytes_transferred)
                 {
                     is_writing = false;
-                    res.clear();
                     res_body_copy_.clear();
                     if (!ec)
                     {
@@ -546,7 +522,7 @@ namespace crow
             timer_queue.cancel(timer_cancel_key_);
         }
 
-        void start_deadline(/*int timeout = 5*/)
+        void start_deadline(int timeout = 5)
         {
             cancel_deadline_timer();
             

@@ -6,7 +6,7 @@
 #include <chrono>
 #include <thread>
 
-#include "crow/logging.h"
+#include "logging.h"
 
 namespace crow
 {
