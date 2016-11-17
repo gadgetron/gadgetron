@@ -17,11 +17,13 @@ NV_BINS="nvidia-cuda-mps-control \
          nvidia-smi"
 
 NV_LIBS_VOLUME="/usr/local/nvidia"
+
 NV_LIBS_CUDA="cuda \
               nvcuvid \
               nvidia-compiler \
               nvidia-encode \
-              nvidia-ml"
+              nvidia-ml \
+              nvidia-fatbinaryloader"
 
 NV_DOCKER_ARGS=""
 
