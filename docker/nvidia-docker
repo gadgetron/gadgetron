@@ -6,7 +6,6 @@ DOCKER=${DOCKER:-"docker"}
 NV_DEVICE="/dev/nvidia"
 UVM_DEVICE="${NV_DEVICE}-uvm"
 CTL_DEVICE="${NV_DEVICE}ctl"
-UVM_TOOLS="${NV_DEVICE}-uvm-tools"
 
 CUDA_VERSION_LABEL="com.nvidia.cuda.version"
 
@@ -141,7 +140,7 @@ load_uvm()
 
 build_docker_args()
 {
-    local args="--device=$CTL_DEVICE --device=$UVM_DEVICE --device=$UVM_TOOLS"
+    local args="--device=$CTL_DEVICE --device=$UVM_DEVICE"
 
     for gpu in $( echo $GPU | tr -s ", " " " ); do
         local minor="$( __nvsmi_query "Minor Number" $gpu )"
