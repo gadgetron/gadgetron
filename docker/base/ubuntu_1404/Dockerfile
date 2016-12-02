@@ -12,7 +12,8 @@ RUN apt-get update --quiet && \
 #Python stuff
 RUN pip install Cython
 RUN pip install numpy 
-RUN pip install pyxb h5py psutil Twisted lxml matplotlib pydicom
+RUN pip install pyxb psutil Twisted lxml matplotlib pydicom
+RUN pip install 'h5py==2.5.0'
 RUN pip install jupyter
 
 #OpenBLAS with OpenMP
