@@ -16,7 +16,7 @@ using namespace std;
 
 namespace Gadgetron{
 
-  const int kernel_width = 7;
+  const int kernel_width = 3;
 
   template<class REAL, unsigned int D> static void smooth_correlation_matrices( cuNDArray<complext<REAL> >*, cuNDArray<complext<REAL> >*);
   template<class REAL> static boost::shared_ptr< cuNDArray<complext<REAL> > > extract_csm( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
