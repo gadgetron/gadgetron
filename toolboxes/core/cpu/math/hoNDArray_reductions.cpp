@@ -549,7 +549,7 @@ namespace Gadgetron{
 
     template<class T> size_t amax(const hoNDArray<T>& x)
     {
-        return amax(x.get_number_of_elements(), x.begin());
+        return amax(x.get_number_of_elements(), x.begin()) - size_t(1);
     }
 
     template EXPORTCPUCOREMATH size_t amax( const hoNDArray<float>& x);
