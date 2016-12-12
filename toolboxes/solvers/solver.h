@@ -25,7 +25,7 @@ namespace Gadgetron
     // Set/get output mode
     virtual int get_output_mode() { return output_mode_; }
     virtual void set_output_mode( int output_mode ) {
-      if( !(output_mode >= OUTPUT_MAX || output_mode < 0 )) 
+      if( !(output_mode > OUTPUT_MAX || output_mode < 0 )) 
 	output_mode_ = output_mode;
     }
   
