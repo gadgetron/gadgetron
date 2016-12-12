@@ -1,5 +1,14 @@
+//    TO DO: - For 3D sequences (E2>1), the 3 navigators should be equivalent for all e2 partition
+//             encoding steps (other than the mean phase).  So we should average across them.  I guess
+//             one way to do so would be to include all partition encoding steps (that have been acquired
+//             up to that one), also from the previous repetitions, in the robust fit, being careful with
+//             the column representing the slope.  The problem with that is that the matrix to invert is
+//             longer, so it could take longer to compute.
+//           - Test the case that more repetitions are sent than the number specified in the xml header.
+
 #include "EPICorrGadget.h"
 #include "ismrmrd/xml.h"
+#include "hoNDArray_fileio.h"
 
 namespace Gadgetron{
 
@@ -46,12 +55,26 @@ int EPICorrGadget::process_config(ACE_Message_Block* mb)
     }
   }
 
+  // Make sure the reference navigator is properly set:
+  if (referenceNavigatorNumber.value() > (numNavigators_-1)) {
+    GDEBUG("Reference navigator number is larger than number of navigators acquired.");
+    return GADGET_FAIL;
+  }
+
+  // Initialize arrays needed for temporal filtering, if requested:
+  GDEBUG_STREAM("navigatorParameterFilterLength = " << navigatorParameterFilterLength.value());
+  if (navigatorParameterFilterLength.value() > 1)
+  {
+      init_arrays_for_nav_parameter_filtering( e_limits );
+  }
+  
   verboseMode_ = verboseMode.value();
 
   corrComputed_ = false;
   navNumber_ = -1;
   epiEchoNumber_ = -1;
 
+  GDEBUG_STREAM("EPICorrGadget configured");
   return 0;
 }
 
@@ -130,7 +153,34 @@ int EPICorrGadget::process(
       }
       int p; // counter
       
-      
+      // mean of the reference navigator (across RO and channels):
+      std::complex<float> navMean = arma::mean( arma::vectorise( navdata_.slice(referenceNavigatorNumber.value()) ) );
+      //GDEBUG_STREAM("navMean = " << navMean);
+	
+      // for clarity, we'll use the following when filtering navigator parameters:
+      size_t set, slc, exc;
+      if (navigatorParameterFilterLength.value() > 1)
+      {
+	  set = hdr.idx.set;
+	  slc = hdr.idx.slice;
+	  // Careful: kspace_encode_step_2 for a navigator is always 0, and at this point we
+	  //          don't have access to the kspace_encode_step_2 for the next line.  Instead,
+	  //          keep track of the excitation number for this set and slice:
+	  //size_t e2  = hdr.idx.kspace_encode_step_2;
+	  //size_t rep = hdr.idx.repetition;
+	  exc = excitNo_[slc][set];   // excitation number with this same specific set and slc
+	  //GDEBUG_STREAM("Excitation number:" << exc << "; slice: " << slc);
+
+	  // If, for whatever reason, we are getting more repetitions than the header
+	  //   specified, increase the size of the array to accomodate:
+	  if ( exc >= (Nav_mag_.get_size(0)/E2_) )
+	  {
+	      this->increase_no_repetitions( 100 );     // add 100 volumes more, to be safe
+	  }
+	  Nav_mag_(exc, set, slc) = std::abs(navMean);
+      }
+
+   
       /////////////////////////////////////
       //////      B0 correction      //////
       /////////////////////////////////////
@@ -155,6 +205,16 @@ int EPICorrGadget::process(
               {          // Robust fit to a straight line:
                   slope = (Nx_-1) * std::arg(arma::cdot(ctemp.rows(0,Nx_-2), ctemp.rows(1,Nx_-1)));
                   //GDEBUG_STREAM("Slope = " << slope << std::endl);
+		  // If we need to filter the estimate:
+		  if (navigatorParameterFilterLength.value() > 1)
+		  {
+		      // (Because to estimate the intercept (constant term) we need to use the slope estimate,
+		      //   we want to filter it first):
+		      //   - Store the value in the corresponding array (we want to store it before filtering)
+		      B0_slope_(exc, set, slc) = slope;
+		      //   - Filter parameter:
+		      slope = filter_nav_correction_parameter( B0_slope_, Nav_mag_, exc, set, slc, navigatorParameterFilterLength.value() );
+		  }
 
                   // Correct for the slope, to be able to compute the average phase:
                   ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>( Nx_ ), -slope*x));
@@ -163,6 +223,14 @@ int EPICorrGadget::process(
               // Now, compute the mean phase:
               intercept = std::arg(arma::sum(ctemp));
               //GDEBUG_STREAM("Intercept = " << intercept << std::endl);
+	      if (navigatorParameterFilterLength.value() > 1)
+	      {
+		  //   - Store the value found in the corresponding array:
+		  B0_intercept_(exc, set, slc) = intercept;
+		  //   - Filter parameters:
+		  // Filter in the complex domain (last arg:"true"), to avoid smoothing across phase wraps:
+		  intercept = filter_nav_correction_parameter( B0_intercept_, Nav_mag_, exc, set, slc, navigatorParameterFilterLength.value(), true );
+	      }
 
               // Then, our estimate of the phase:
               tvec = slope*x + intercept;
@@ -201,18 +269,40 @@ int EPICorrGadget::process(
                (OEPhaseCorrectionMode.value().compare("linear")==0    ) ||
                (OEPhaseCorrectionMode.value().compare("polynomial")==0) )
           {
-              // If a linear term is requested, compute it first (in the complex domain):                                                                 
+              // If a linear term is requested, compute it first (in the complex domain):
+	      // (This is important in case there are -pi/+pi phase wraps, since a polynomial
+	      //  fit to the phase will not work)
               if ( (OEPhaseCorrectionMode.value().compare("linear")==0    ) ||
                    (OEPhaseCorrectionMode.value().compare("polynomial")==0) )
-              {          // Robust fit to a straight line:                                                                                                
-                  slope = (Nx_-1) * std::arg(arma::cdot(ctemp.rows(0,Nx_-2), ctemp.rows(1,Nx_-1)));
+              {          // Robust fit to a straight line:
+		  slope = (Nx_-1) * std::arg(arma::cdot(ctemp.rows(0,Nx_-2), ctemp.rows(1,Nx_-1)));
+		  // If we need to filter the estimate:
+		  if (navigatorParameterFilterLength.value() > 1)
+		  {
+		      // (Because to estimate the intercept (constant term) we need to use the slope estimate,
+		      //   we want to filter it first):
+		      //   - Store the value in the corresponding array (we want to store it before filtering)
+		      OE_phi_slope_(exc, set, slc) = slope;
+		      //   - Filter parameter:
+		      slope = filter_nav_correction_parameter( OE_phi_slope_, Nav_mag_, exc, set, slc, navigatorParameterFilterLength.value() );
+		  }
 
                   // Now correct for the slope, to be able to compute the average phase:
                   ctemp = ctemp % arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>( Nx_ ), -slope*x));
+		  // at this point we should have got rid of any -pi/+pi phase wraps.
               }   // end of the OEPhaseCorrectionMode == "linear" or "polynomial"
 
               // Now, compute the mean phase:
               intercept = std::arg(arma::sum(ctemp));
+	      //GDEBUG_STREAM("Intercept = " << intercept << std::endl);
+	      if (navigatorParameterFilterLength.value() > 1)
+	      {
+		  //   - Store the value found in the corresponding array:
+		  OE_phi_intercept_(exc, set, slc) = intercept;
+		  //   - Filter parameters:
+		  // Filter in the complex domain ("true"), to avoid smoothing across phase wraps:
+		  intercept = filter_nav_correction_parameter( OE_phi_intercept_, Nav_mag_, exc, set, slc, navigatorParameterFilterLength.value(), true );
+	      }
 
               // Then, our estimate of the phase:
               tvec = slope*x + intercept;
@@ -243,6 +333,18 @@ int EPICorrGadget::process(
 
                   // Solve for the polynomial coefficients:
                   arma::fvec phase_poly_coef = arma::solve( WX , Wctemp );
+		  if (navigatorParameterFilterLength.value() > 1)
+		  {
+		      for (size_t i = 0; i < OE_phi_poly_coef_.size(); ++i)
+		      {
+			  //   - Store the value found in the corresponding array:
+			  OE_phi_poly_coef_[i](exc, set, slc) = phase_poly_coef(i);
+
+			  //   - Filter parameters:
+			  phase_poly_coef(i) = filter_nav_correction_parameter( OE_phi_poly_coef_[i], Nav_mag_, exc, set, slc, navigatorParameterFilterLength.value() );
+		      }
+		      //GDEBUG_STREAM("OE_phi_poly_coef size: " << OE_phi_poly_coef_.size()); 
+		  }
 
                   // Then, update our estimate of the phase correction:
                   tvec += X * phase_poly_coef;     // ( Note the "+=" )
@@ -265,6 +367,11 @@ int EPICorrGadget::process(
       corrpos_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(Nx_), -0.5*tvec));
       corrneg_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(Nx_), +0.5*tvec));
       corrComputed_ = true;
+
+      // Increase the excitation number for this slice and set (to be used for the next shot)
+      if (navigatorParameterFilterLength.value() > 1) {
+	  excitNo_[slc][set]++;
+      }
     }
 
   }
@@ -319,6 +426,259 @@ int EPICorrGadget::process(
 
   return 0;
 }
+
+
+//////////////////////////////////////////////////////////
+//
+// init_arrays_for_nav_parameter_filtering
+//
+//    function to initialize the arrays that will be used for the navigator parameters filtering
+//    - e_limits: encoding limits
+
+void EPICorrGadget::init_arrays_for_nav_parameter_filtering( ISMRMRD::EncodingLimits e_limits )
+{
+    // TO DO: Take into account the acceleration along E2:
+
+    E2_  = e_limits.kspace_encoding_step_2 ? e_limits.kspace_encoding_step_2->maximum - e_limits.kspace_encoding_step_2->minimum + 1 : 1;
+    size_t REP = e_limits.repetition ? e_limits.repetition->maximum - e_limits.repetition->minimum + 1 : 1;
+    size_t SET = e_limits.set        ? e_limits.set->maximum        - e_limits.set->minimum        + 1 : 1;
+    size_t SLC = e_limits.slice      ? e_limits.slice->maximum      - e_limits.slice->minimum      + 1 : 1;
+    // NOTE: For EPI sequences, "segment" indicates odd/even readout, so we don't need a separate dimension for it.
+    GDEBUG_STREAM("E2: " << E2_ << "; SLC: " << SLC << "; REP: " << REP << "; SET: " << SET);
+
+    // For 3D sequences, the e2 index in the navigator is always 0 (there is no phase encoding in
+    //   the navigator), so we keep track of the excitation number for each slice and set) to do
+    //   the filtering>
+    excitNo_.resize(SLC);
+    for (size_t i = 0; i < SLC; ++i)
+    {
+	excitNo_[i].resize( SET, size_t(0) );
+    }
+
+    // For 3D sequences, all e2 phase encoding steps excite the whole volume, so the
+    //   navigators should be the same.  So when we filter across repetitions, we have
+    //   to do it also through e2.  Bottom line: e2 and repetition are equivalent.
+    Nav_mag_.create(         E2_*REP, SET, SLC);
+    B0_intercept_.create(    E2_*REP, SET, SLC);
+    if (B0CorrectionMode.value().compare("linear")==0)
+    {
+	B0_slope_.create(        E2_*REP, SET, SLC);
+    }
+    OE_phi_intercept_.create(E2_*REP, SET, SLC);
+    if ((OEPhaseCorrectionMode.value().compare("linear")==0    ) ||
+        (OEPhaseCorrectionMode.value().compare("polynomial")==0) )
+    {
+	OE_phi_slope_.create(    E2_*REP, SET, SLC);
+	if (OEPhaseCorrectionMode.value().compare("polynomial")==0)
+	{
+	    OE_phi_poly_coef_.resize( OE_PHASE_CORR_POLY_ORDER+1 );
+	    for (size_t i = 0; i < OE_phi_poly_coef_.size(); ++i)
+	    {
+		OE_phi_poly_coef_[i].create( E2_*REP, SET, SLC);
+	    }
+	}
+    }
+
+    // Armadillo vector of evenly-spaced timepoints to filter navigator parameters:
+    t_ = arma::linspace<arma::fvec>( 0, navigatorParameterFilterLength.value()-1, navigatorParameterFilterLength.value() );
+
+}
+
+
+////////////////////////////////////////////////////
+//
+//  filter_nav_correction_parameter
+//
+//    funtion to filter (over e2/repetition number) a navigator parameter.
+//    - nav_corr_param_array: array of navigator parameters
+//    - weights_array       : array with weights for the filtering
+//    - exc                 : current excitation number (for this set and slice)
+//    - set                 : set of the array to filter (current one)
+//    - slc                 : slice of the array to filter (current one)
+//    - Nt                  : number of e2/timepoints/repetitions to filter
+//    - filter_in_complex_domain : whether to filter in the complex domain, to avoid +/- pi wraps (default: false)
+//
+//    Currently, it does a simple weighted linear fit.
+  
+float EPICorrGadget::filter_nav_correction_parameter( hoNDArray<float>& nav_corr_param_array,
+							    hoNDArray<float>& weights_array,
+							    size_t exc,
+							    size_t set,
+							    size_t slc,
+							    size_t Nt,
+							    bool   filter_in_complex_domain )
+{
+    // If the array to be filtered doesn't have 3 dimensions, we are in big trouble:
+    if ( nav_corr_param_array.get_number_of_dimensions() != 3 )
+    {
+	GERROR("cbi_EPICorrGadget::filter_nav_correction_parameter, incorrect number of dimensions of the array.\n");
+	return -1;
+    }
+
+    // The dimensions of the weights array should be the same as the parameter array:
+    if ( !nav_corr_param_array.dimensions_equal( &weights_array ) )
+    {
+	GERROR("cbi_EPICorrGadget::filter_nav_correction_parameter, dimensions of the parameter and weights arrays don't match.\n");
+	return -1;
+    }
+
+    // If this repetition number is less than then number of repetitions to exclude...
+    if ( exc < navigatorParameterFilterExcludeVols.value()*E2_ )
+    {
+	//   no filtering is needed, just return the corresponding value:
+	return nav_corr_param_array(exc, set, slc );
+    }
+    
+    // for now, just to a simple (robust) linear fit to the previous Nt timepoints:
+    // TO DO: do we want to do something fancier?
+
+    //
+    // extract the timeseries (e2 phase encoding steps and repetitions)
+    // of parameters and weights corresponding to the requested indices:
+
+    // make sure we don't use more timepoints (e2 phase encoding steps and repetitions)
+    //    that the currently acquired (minus the ones we have been asked to exclude
+    //    from the beginning of the run):
+    Nt = std::min( Nt, exc - (navigatorParameterFilterExcludeVols.value()*E2_) + 1 );
+
+    // create armadillo vectors, and stuff them in reverse order (from the
+    // current timepoint, looking backwards). This way, the filtered value
+    // we want would be simply the intercept):
+    arma::fvec weights =  arma::zeros<arma::fvec>( Nt );
+    arma::fvec params  =  arma::zeros<arma::fvec>( Nt );
+    for (size_t t = 0; t < Nt; ++t)
+    {
+        weights(t) = weights_array(        exc-t, set, slc );
+        params( t) = nav_corr_param_array( exc-t, set, slc );
+    }
+    
+    /////     weighted fit:          b = (W*[1 t_])\(W*params);    /////
+
+    float filtered_param;
+
+    // if we need to filter in the complex domain:
+    if (filter_in_complex_domain)
+    {
+	arma::cx_fvec zparams = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>( Nt ), params));            // zparams = exp( i*params );
+	arma::cx_fvec B = arma::solve( arma::cx_fmat( arma::join_horiz( weights, weights % t_.head(Nt) ), arma::zeros<arma::fmat>( Nt,2) ),   weights % zparams );
+	filtered_param = std::arg( arma::as_scalar(B(0)) );
+    }
+    else
+    {
+	arma::fvec B = arma::solve( arma::join_horiz( weights, weights % t_.head(Nt) ),  weights % params );
+	filtered_param = arma::as_scalar(B(0));
+    }
+
+    //if ( exc==(weights_array.get_size(0)-1) && set==(weights_array.get_size(1)-1) &&
+    //	 slc==(weights_array.get_size(2)-1) )
+    //{
+    //    write_nd_array< float >( &weights_array, "/tmp/nav_weights.real" );
+    //    write_nd_array< float >( &nav_corr_param_array, "/tmp/nav_param_array.real" );
+    //}
+    //GDEBUG_STREAM("orig parameter: " << nav_corr_param_array(exc, set, slc) << "; filtered: " << filtered_param );
+
+    return filtered_param;
+}
+
+  
+////////////////////////////////////////////////////
+//
+//  increase_no_repetitions
+//
+//    funtion to increase the size of the navigator parameter arrays used for filtering
+//    - delta_rep: how many more repetitions to add
+  
+void EPICorrGadget::increase_no_repetitions( size_t delta_rep )
+{
+
+    GDEBUG_STREAM("cbi_EPICorrGadget WARNING: repetition number larger than what specified in header");
+
+    size_t REP     = Nav_mag_.get_size(0)/E2_;   // current maximum number of repetitions
+    size_t new_REP = REP + delta_rep;
+    size_t SET     = Nav_mag_.get_size(1);
+    size_t SLC     = Nav_mag_.get_size(2);
+
+    // create a new temporary array:
+    hoNDArray<float> tmpArray( E2_*new_REP, SET, SLC);
+    tmpArray.fill(float(0.));
+
+    // For each navigator parameter array, copy what we have so far to the temporary array, and then copy back:
+      
+    // Nav_mag_ :
+    for (size_t slc = 0; slc < SLC; ++slc)
+    {
+	for (size_t set = 0; set < SET; ++set)
+	{
+	    memcpy( &tmpArray(0,set,slc), &Nav_mag_(0,set,slc), Nav_mag_.get_number_of_bytes()/SET/SLC );
+	}
+    }
+    Nav_mag_ = tmpArray;
+
+    // B0_intercept_ :
+    for (size_t slc = 0; slc < SLC; ++slc)
+    {
+	for (size_t set = 0; set < SET; ++set)
+	{
+	    memcpy( &tmpArray(0,set,slc), &B0_intercept_(0,set,slc), B0_intercept_.get_number_of_bytes()/SET/SLC );
+	}
+    }
+    B0_intercept_ = tmpArray;
+
+    // B0_slope_ :
+    if (B0CorrectionMode.value().compare("linear")==0)
+    {
+	for (size_t slc = 0; slc < SLC; ++slc)
+	{
+	    for (size_t set = 0; set < SET; ++set)
+	    {
+		memcpy( &tmpArray(0,set,slc), &B0_slope_(0,set,slc), B0_slope_.get_number_of_bytes()/SET/SLC );
+	    }
+	}
+	B0_slope_ = tmpArray;
+    }
+
+    // OE_phi_intercept_ :
+    for (size_t slc = 0; slc < SLC; ++slc)
+    {
+	for (size_t set = 0; set < SET; ++set)
+	{
+	    memcpy( &tmpArray(0,set,slc), &OE_phi_intercept_(0,set,slc), OE_phi_intercept_.get_number_of_bytes()/SET/SLC );
+	}
+    }
+    OE_phi_intercept_ = tmpArray;
+
+    // OE_phi_slope_ :
+    if ((OEPhaseCorrectionMode.value().compare("linear")==0    ) ||
+        (OEPhaseCorrectionMode.value().compare("polynomial")==0) )
+    {
+        for (size_t slc = 0; slc < SLC; ++slc)
+	{
+	    for (size_t set = 0; set < SET; ++set)
+	    {
+		memcpy( &tmpArray(0,set,slc), &OE_phi_slope_(0,set,slc), OE_phi_slope_.get_number_of_bytes()/SET/SLC );
+	    }
+	}
+	OE_phi_slope_ = tmpArray;
+
+	// OE_phi_poly_coef_ :
+	if (OEPhaseCorrectionMode.value().compare("polynomial")==0)
+	{
+	    for (size_t i = 0; i < OE_phi_poly_coef_.size(); ++i)
+	    {
+		for (size_t slc = 0; slc < SLC; ++slc)
+		{
+		    for (size_t set = 0; set < SET; ++set)
+		    {
+		      memcpy( &tmpArray(0,set,slc), &OE_phi_poly_coef_[i](0,set,slc), OE_phi_poly_coef_[i].get_number_of_bytes()/SET/SLC );
+		    }
+		}
+		OE_phi_poly_coef_[i] = tmpArray;
+	    }
+	}
+    }
+
+}
+    
 
 GADGET_FACTORY_DECLARE(EPICorrGadget)
 }
