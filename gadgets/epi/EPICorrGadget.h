@@ -36,7 +36,7 @@ namespace Gadgetron{
                              "mean",
                              "linear",
                              "polynomial");
-      GADGET_PROPERTY(navigatorParameterFilterLength, int, "Number of repetitions to use to filter the navigator parameters (set to 0 or negative for no filtering)", 5);
+      GADGET_PROPERTY(navigatorParameterFilterLength, int, "Number of repetitions to use to filter the navigator parameters (set to 0 or negative for no filtering)", 0);
       GADGET_PROPERTY(navigatorParameterFilterExcludeVols, size_t, "Number of volumes/repetitions to exclude from the beginning of the run when filtering the navigator parameters (e.g., to take into account dummy acquisitions. Default: 0)", 0);
 
       virtual int process_config(ACE_Message_Block* mb);
