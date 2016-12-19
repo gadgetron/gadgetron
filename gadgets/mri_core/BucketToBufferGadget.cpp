@@ -148,7 +148,7 @@ namespace Gadgetron{
         allocateDataArrays(dataBuffer, acqhdr, encoding, stats, true);
 
         // Stuff the data, header and trajectory into this data buffer
-        stuff(it, dataBuffer, encoding, true);
+        stuff(it, dataBuffer, encoding, stats, true);
       }
 
 
@@ -198,7 +198,7 @@ namespace Gadgetron{
         allocateDataArrays(dataBuffer, acqhdr, encoding, stats, false);
 
         // Stuff the data, header and trajectory into this data buffer
-        stuff(it, dataBuffer, encoding, false);
+        stuff(it, dataBuffer, encoding, stats, false);
       }
 
 
@@ -671,7 +671,7 @@ namespace Gadgetron{
     }
   }
 
-  void BucketToBufferGadget::stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, bool forref)
+  void BucketToBufferGadget::stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref)
   {
 
     // The acquisition header and data
@@ -764,6 +764,23 @@ namespace Gadgetron{
             // compute the used e1 and e2 indices and make sure they are in the valid range
             e1 = (int16_t)acqhdr.idx.kspace_encode_step_1 + space_matrix_offset_E1;
             e2 = (int16_t)acqhdr.idx.kspace_encode_step_2 + space_matrix_offset_E2;
+        }
+
+        // for external or separate mode, it is possible the starting numbers of ref lines are not zero, therefore it is needed to subtract the staring ref line number
+        // because the ref array size is set up by the actual number of lines acquired
+        // only assumption for external or separate ref line mode is that all ref lines are numbered sequentially
+        // the acquisition order of ref line can be arbitrary
+        if (forref && ( (encoding.parallelImaging.get().calibrationMode.get() == "separate") || (encoding.parallelImaging.get().calibrationMode.get() == "external") ) )
+        {
+            if(*stats.kspace_encode_step_1.begin()>0)
+            {
+                e1 = acqhdr.idx.kspace_encode_step_1 - *stats.kspace_encode_step_1.begin();
+            }
+
+            if(*stats.kspace_encode_step_2.begin()>0)
+            {
+                e2 = acqhdr.idx.kspace_encode_step_2 - *stats.kspace_encode_step_2.begin();
+            }
         }
 
         if (e1 < 0 || e1 >= (int16_t)NE1)
