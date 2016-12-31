@@ -25,6 +25,10 @@ target_link_libraries(gadgetron_toolbox_fatwater
   gadgetron_toolbox_cpucore 
   gadgetron_toolbox_cpucore_math 
   ${ARMADILLO_LIBRARIES} 
+<<<<<<< HEAD
+=======
+  ${Boost_LIBRARIES}
+>>>>>>> 3dbe8d2... fix compilation of fw in windows
   )
 
 install(TARGETS gadgetron_toolbox_fatwater DESTINATION lib COMPONENT main)
