@@ -10,11 +10,8 @@
 #include <boost/config.hpp>
 #include <boost/graph/push_relabel_max_flow.hpp>
 #include <boost/graph/adjacency_list.hpp>
-<<<<<<< HEAD
 #include <boost/graph/read_dimacs.hpp>
 #include <boost/graph/graph_utility.hpp>
-
-=======
 #include <boost/graph/boykov_kolmogorov_max_flow.hpp>
 #include <boost/graph/edmonds_karp_max_flow.hpp>
 #include <boost/timer/timer.hpp>
@@ -27,13 +24,10 @@
 #include "twoParaExpDecayOperator.h"
 #include "curveFittingCostFunction.h"
 #include <boost/random.hpp>
->>>>>>> 3dbe8d2... fix compilation of fw in windows
 
 #define GAMMABAR 42.576 // MHz/T
 #define PI 3.141592
 
-<<<<<<< HEAD
-=======
 using namespace boost;
  
 typedef int EdgeWeightType;
@@ -67,8 +61,6 @@ void AddEdge(Traits::vertex_descriptor &v1, Traits::vertex_descriptor &v2, prope
   rev[e1] = e2;
   rev[e2] = e1;
 }
-
->>>>>>> 3dbe8d2... fix compilation of fw in windows
 
 namespace Gadgetron {
     hoNDArray< std::complex<float> > fatwater_separation(hoNDArray< std::complex<float> >& data, FatWaterParameters p, FatWaterAlgorithm a)
