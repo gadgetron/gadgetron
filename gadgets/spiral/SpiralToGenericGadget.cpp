@@ -126,6 +126,11 @@ namespace Gadgetron{
       return GADGET_OK;
     }
 
+    // Delete previously attached trajectories 
+    if (m2->cont()) {
+	    m2->cont()->release();
+    }
+    
     // Compute hoNDArray of trajectory and weights at first pass
     //
 
@@ -160,9 +165,9 @@ namespace Gadgetron{
 	float* co_ptr = reinterpret_cast<float*>(host_traj_->get_data_ptr());
 	
 	for (int i = 0; i < (samples_per_interleave_*Nints_); i++) {
-	  co_ptr[i*3+0] = -x_trajectory[i]/2;
-	  co_ptr[i*3+1] = -y_trajectory[i]/2;
-	  co_ptr[i*3+2] = weighting[i];
+		co_ptr[i*3+0] = -x_trajectory[i]/2;
+		co_ptr[i*3+1] = -y_trajectory[i]/2;
+		co_ptr[i*3+2] = weighting[i];
 	}
       }
 
@@ -205,6 +210,9 @@ namespace Gadgetron{
     GadgetContainerMessage< hoNDArray<float> > *cont = new GadgetContainerMessage< hoNDArray<float> >();
     *(cont->getObjectPtr()) = *traj_source;
     m2->cont(cont);
+
+    //We need to make sure that the trajectory dimensions are attached. 
+    m1->getObjectPtr()->trajectory_dimensions = 3;
     
     if (this->next()->putq(m1) < 0) {
       GDEBUG("Failed to put job on queue.\n");
