@@ -79,7 +79,7 @@ namespace Gadgetron {
             }
             else
             {
-                ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
+                ISMRMRD::ParallelImaging p_imaging = *h.encoding[e].parallelImaging;
 
                 acceFactorE1_[e] = p_imaging.accelerationFactor.kspace_encoding_step_1;
                 acceFactorE2_[e] = p_imaging.accelerationFactor.kspace_encoding_step_2;
