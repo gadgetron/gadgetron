@@ -1850,7 +1850,7 @@ int main(int argc, char **argv)
         con.wait();
 
     } catch (std::exception& ex) {
-        std::cout << "Error caught: " << ex.what() << std::endl;
+        std::cerr << "Error caught: " << ex.what() << std::endl;
 	return -1;
     }
 
