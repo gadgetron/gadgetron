@@ -15,7 +15,9 @@
 #include <stdexcept>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/cast.hpp>
+#include <numeric>
 
 namespace Gadgetron{
 
@@ -174,9 +176,8 @@ namespace Gadgetron{
     inline void NDArray<T>::create(std::vector<size_t> *dimensions) 
     {
         if(!dimensions) throw std::runtime_error("NDArray<T>::create(): 0x0 pointer provided");
-        std::vector<size_t> *tmp = new std::vector<size_t>;
-        *tmp = *dimensions;
-        dimensions_ = boost::shared_ptr< std::vector<size_t> >(tmp);
+        dimensions_ = boost::make_shared<std::vector<size_t> >(*dimensions);
+        elements_ = std::accumulate(dimensions_->begin(),dimensions_->end(),1,std::multiplies<size_t>());
         allocate_memory();
         calculate_offset_factors(*dimensions_);
     }
@@ -184,11 +185,7 @@ namespace Gadgetron{
     template <typename T> 
     inline void NDArray<T>::create(std::vector<size_t>& dimensions) 
     {
-        std::vector<size_t> *tmp = new std::vector<size_t>;
-        *tmp = dimensions;
-        dimensions_ = boost::shared_ptr< std::vector<size_t> >(tmp);
-        allocate_memory();
-        calculate_offset_factors(*dimensions_);
+       create(&dimensions);
     }
 
     template <typename T> 
