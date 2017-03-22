@@ -23,6 +23,9 @@ mount --bind /proc ${root_fs}/proc
 mount --bind /sys  ${root_fs}/sys
 mount --bind /dev  ${root_fs}/dev
 
+#Copy necessary files
+cp /etc/hosts ${root_fs}/etc/
+
 #Start the supervisor in the chroot image
 chroot ${root_fs} /bin/bash /opt/start_supervisor
 

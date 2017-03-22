@@ -26,7 +26,7 @@ RUN cd /opt/code && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
     cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml && \
     cp /opt/code/gadgetron/docker/start_supervisor /opt/ && \
-    cp /opt/code/gadgetron/docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+    cp /opt/code/gadgetron/docker/supervisord.conf /opt/
 
 #HASH for ISMRMRD
 RUN cd /opt/code/ismrmrd && \
