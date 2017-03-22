@@ -108,5 +108,3 @@ install(FILES
 install(FILES 
   schema/gadgetron.xsd
   DESTINATION ${GADGETRON_INSTALL_SCHEMA_PATH} COMPONENT main)
-
-add_subdirectory(webapp)
