@@ -15,7 +15,7 @@ RUN cd /opt/code && \
     make install
 
 #Fix compiler error with CUDA for now
-RUN sed -i "s;#error -- unsupported GNU version! gcc 4.9 and up are not supported!;//error -- unsupported GNU version! gcc versions later than 4.9 are not supported!;g" /usr/local/cuda/include/host_config.h
+RUN sed -i "s;#error -- unsupported GNU version! gcc versions later than 4.9 are not supported!;//#error -- unsupported GNU version! gcc versions later than 4.9 are not supported!;g" /usr/local/cuda/include/host_config.h
 
 #GADGETRON
 RUN cd /opt/code && \
