@@ -23,7 +23,15 @@ RUN apt-get remove --yes --autoremove emacs build-essential gcc g++ x11-common l
 RUN apt-get --yes remove *-dev
 RUN rm -rf /opt/code
 RUN rm -rf /opt/*.tar.gz
-
+RUN rm -rf /usr/local/cuda/bin
+RUN rm -rf /usr/local/cuda/doc
+RUN rm -rf /usr/local/cuda/extras
+RUN rm -rf /usr/local/cuda/include
+RUN rm -rf /usr/local/cuda/jre
+RUN rm -rf /usr/local/cuda/libnsight
+RUN rm -rf /usr/local/cuda/libnvvp
+RUN rm -rf /usr/local/cuda/lib64/*.a
+RUN rm -rf /usr/local/cuda/nvvm
 ENTRYPOINT ["/opt/start_supervisor"]
 EOF
 
