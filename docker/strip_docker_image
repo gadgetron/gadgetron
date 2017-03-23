@@ -1,0 +1,46 @@
+#!/bin/bash
+
+me=$(basename "$0")
+
+if [ "$#" -ne 2 ]; then
+    echo "Usage:"
+    printf "\t%s <IMAGE IN> <IMAGE OUT>\n" "$me"
+    exit 1
+fi
+
+IMG_IN=$1
+IMG_OUT=$2
+
+DOCKERFOLDER=$(mktemp -d)
+DOCKER_ENV=$(docker inspect ${IMG_IN}|jq -c .[0].Config.Env[]| tr -d '"'|tr "\n" " ")
+DOCKER_CMD=$(docker inspect ${IMG_IN}|jq -c  .[0].Config.Cmd)
+DOCKER_LABELS=$(docker inspect ${IMG_IN}|jq -c .[0].Config.Labels|tr -d "{}"|tr "," " "|tr ":" "=")
+DOCKER_LABELS="${DOCKER_LABELS} \"io.gadgetron.imagetype\"=\"stripped\""
+cat << EOF > ${DOCKERFOLDER}/Dockerfile
+FROM ${IMG_IN}
+
+RUN apt-get remove --yes --autoremove emacs build-essential gcc g++ x11-common libgtk* make cmake
+RUN apt-get --yes remove *-dev
+RUN rm -rf /opt/code
+RUN rm -rf /opt/*.tar.gz
+
+ENTRYPOINT ["/opt/start_supervisor"]
+EOF
+
+docker build -t tmpstripimage ${DOCKERFOLDER}
+docker export $(docker create --name tmpstripcontainer tmpstripimage) > ${DOCKERFOLDER}/gadgetron_strip_fs.tar
+docker rm tmpstripcontainer
+docker rmi tmpstripimage
+docker import ${DOCKERFOLDER}/gadgetron_strip_fs.tar tmpstripimage
+
+cat << EOF > ${DOCKERFOLDER}/Dockerfile
+FROM tmpstripimage
+
+ENV ${DOCKER_ENV}
+LABEL ${DOCKER_LABELS}
+CMD ${DOCKER_CMD}
+EOF
+docker build -t ${IMG_OUT} ${DOCKERFOLDER}
+
+docker rmi tmpstripimage
+rm -rf ${DOCKERFOLDER}
