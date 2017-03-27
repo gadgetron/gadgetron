@@ -57,7 +57,7 @@ else()
         MATLAB_ROOT extern/include/mex.h
         HINTS $ENV{MATLAB_HOME} $ENV{MATLAB_ROOT}
         PATHS /usr /usr/local /opt
-        PATH_SUFFIXES MATLAB
+        PATH_SUFFIXES MATLAB  MATLAB/R2016a
     )
     find_path(
         MATLAB_INCLUDE_DIR
