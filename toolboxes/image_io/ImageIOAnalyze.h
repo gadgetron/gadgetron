@@ -12,6 +12,7 @@
 #pragma once
 
 #include "ImageIOBase.h"
+#include <boost/filesystem.hpp>
 
 // the file input/output utility functions for the Analyze format
 
@@ -130,6 +131,15 @@ public:
     {
         try
         {
+            // Check if folder exists
+            boost::filesystem::path boost_folder_path(filename);
+            boost_folder_path.remove_filename();
+            if ( !boost::filesystem::is_directory(boost_folder_path) )
+            {
+                GWARN_STREAM("Failed to write " << filename << " because parent folder does not exist");
+                return;
+            }
+
             HeaderType header;
             GADGET_CHECK_THROW(this->array_to_header(a, header));
             GADGET_CHECK_THROW(this->write_header(filename, header));
