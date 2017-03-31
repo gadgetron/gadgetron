@@ -544,10 +544,11 @@ namespace Gadgetron{
     {
         if ( this->delete_data_on_destruct_ ){
             this->deallocate_memory();
+        } else{
+            throw std::runtime_error("NDArray<T>::clear : trying to reallocate memory not owned by array.");
         }
         this->data_ = 0;
         this->elements_ = 0;
-        this->delete_data_on_destruct_ = true;
 
         if ( !this->dimensions_ ){
             this->dimensions_->clear();
