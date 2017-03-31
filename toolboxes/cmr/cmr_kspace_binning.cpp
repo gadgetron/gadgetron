@@ -225,7 +225,7 @@ void CmrKSpaceBinning<T>::process_binning_recon()
         // -----------------------------------------------------
         // release some memory to reduce peak RAM usage
         // -----------------------------------------------------
-        binning_obj_.data_.clear();
+        if(binning_obj_.data_.delete_data_on_destruct()) binning_obj_.data_.clear();
 
         // -----------------------------------------------------
         // perform kspace binning
@@ -234,7 +234,7 @@ void CmrKSpaceBinning<T>::process_binning_recon()
         // binning can be performed
         std::vector<size_t> slices_not_processing;
         this->compute_kspace_binning(bestHB, slices_not_processing);
-        binning_obj_.full_kspace_raw_.clear();
+        if(binning_obj_.full_kspace_raw_.delete_data_on_destruct()) binning_obj_.full_kspace_raw_.clear();
 
         // -----------------------------------------------------
         // perform recon on the binned kspace 
