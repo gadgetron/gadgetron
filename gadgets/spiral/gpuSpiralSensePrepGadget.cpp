@@ -506,6 +506,7 @@ namespace Gadgetron{
 	//
 	
 	if( propagate_csm_from_set_ < 0 || propagate_csm_from_set_ == set ){	  	  
+	  GDEBUG("###>RR> estimate b1 map\n");
 	  csm_ = estimate_b1_map<float,2>( &image ); // Estimates csm
 	}
 	else{
