@@ -19,6 +19,9 @@ root_fs=$(realpath $1)
 umount $(mount|grep ${root_fs}|awk '{print $3}') > /dev/null 2>&1
 
 #Bind necessary mounts
+mkdir -p ${root_fs}/proc
+mkdir -p ${root_fs}/sys
+mkdir -p ${root_fs}/dev
 mount --bind /proc ${root_fs}/proc 
 mount --bind /sys  ${root_fs}/sys
 mount --bind /dev  ${root_fs}/dev
