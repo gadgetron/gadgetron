@@ -9,6 +9,11 @@
 # Michael S. Hansen (michael.schacht.hansen@gmail)
 # 
 
+# TODO:
+#   - chroot image creation from docker (currently separate script)
+#   - Copying of CUDA files into image (or should they be bind mounts)
+
+
 #Script must be run as root
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 
@@ -20,6 +25,18 @@ ME=$(basename "$0")
 MNTFOLDER=/mnt/gadgetron_chroot
 CHROOTPREFIX="chroot_"
 MOUNTPOINT=""
+INPUTMOUNTPOINT=""
+COMMAND=""
+REMOVE=0
+BINDVOLUMES=()
+VERBOSE=0
+
+log()
+{
+    if [ "$VERBOSE" -gt 0 ]; then
+        echo "$1"
+    fi    
+}
 
 create_mnt_folder ()
 {
@@ -33,6 +50,20 @@ gen_mount_path()
     echo "${MNTFOLDER}/${CHROOTPREFIX}${rnd}_${timestamp}"
 }
 
+complete_mount_point()
+{
+    local mntpnt=$1
+
+    #Give this full path name if only folder name
+    if [ -e "${MNTFOLDER}/${mntpnt}" ]; then
+	mntpnt=${MNTFOLDER}/$mntpnt
+    fi
+
+    #Remove trailing slash if it it has one
+    mntpnt=${mntpnt%/} 
+    echo "$mntpnt"
+}
+
 cmd_attach ()
 {
     if [ "$#" -ne 1 ]; then
@@ -41,7 +72,17 @@ cmd_attach ()
     fi
     
     local imgpath=$1
-    local mntpnt=$(gen_mount_path)
+    if [ -z "$INPUTMOUNTPOINT" ]; then
+	local mntpnt=$(gen_mount_path)
+    else
+	local mntpnt="${MNTFOLDER}/${CHROOTPREFIX}${INPUTMOUNTPOINT}"
+    fi
+
+    if [[ -e $mntpnt ]]; then
+	echo "Error: mountpoint $mntpnt already exists"
+	return 1
+    fi
+    
     if [ -d "$imgpath" ]; then
 	rp=$(realpath $imgpath)
 	ln -s $rp $mntpnt
@@ -62,17 +103,37 @@ cmd_attach ()
     mount --bind /sys  ${MOUNTPOINT}/sys
     mount --bind /dev  ${MOUNTPOINT}/dev
 
+    for i in "${BINDVOLUMES[@]}"
+    do
+	local volin=(${i//:/ })
+	if [[ ${#volin[@]} -ne 2 ]]; then
+	    echo "Invalid mount specification"
+	    return 1
+	fi
+	local source=${volin[0]}
+	local destination=${MOUNTPOINT}/${volin[1]}
+
+	if [[ ! -e $source ]]; then
+	    echo "Source for mount point: $source does not exist"
+	    return 1
+	fi
+	
+	if [[ ! -e $destination ]]; then
+	    mkdir -p $destination
+	fi
+	
+	mount --bind $source $destination 
+    done
+
+    #Make sure that networking is operational in chroot
+    cp /etc/hosts ${MOUNTPOINT}/etc/
+    
     return 0
 }
 
 cmd_detach ()
 {
-    local mntpnt=$1
-
-    #Give this full path name if only folder name
-    if [ -e "${MNTFOLDER}/${mntpnt}" ]; then
-	mntpnt=${MNTFOLDER}/$mntpnt
-    fi
+    local mntpnt=$(complete_mount_point $1)
     
     if [ ! -e "$mntpnt" ]; then
 	echo "Unable to remove non-existent mount point"
@@ -82,9 +143,12 @@ cmd_detach ()
     #Set global mount point variable
     MOUNTPOINT=$mntpnt
 
-    umount ${MOUNTPOINT}/proc || /bin/true 
-    umount ${MOUNTPOINT}/sys  || /bin/true
-    umount ${MOUNTPOINT}/dev  || /bin/true
+    #Removing any mount points
+    mount | grep "${MOUNTPOINT}/" | while read -r line ; do
+	local mp=$(echo $line|awk {'print $3'}) 
+	log "Removing mountpoint $mp"
+	umount $mp
+    done
     
     if [[ -L "$MOUNTPOINT" && -d "$MOUNTPOINT" ]]; then
 	rm $MOUNTPOINT
@@ -100,6 +164,46 @@ cmd_detach ()
     return 0
 }
 
+cmd_exec()
+{
+    local mntpnt=$(complete_mount_point $1)
+    MOUNTPOINT=$mntpnt
+    shift
+    export LD_LIBRARY_PATH="/usr/local/lib:/usr/local/cuda/lib64:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64"
+    export GADGETRON_HOME="/usr/local"
+    export ISMRMRD_HOME="/usr/local"
+    export PATH="${PATH}:/usr/local/bin"
+    chroot $MOUNTPOINT "$@"
+}
+
+cmd_run()
+{
+
+    if cmd_attach "$1"; then
+	log "Attached $MOUNTPOINT"
+    else
+	echo "attach command failed with error code: $?"
+	exit 1
+    fi
+
+    shift
+    
+    if cmd_exec $MOUNTPOINT "$@"; then
+	log "exec ($MOUNTPOINT): $@"
+    else
+	echo "exec command failed with error code: $?"
+    fi
+
+    if [[ $REMOVE -eq 1 ]]; then
+	if cmd_detach "$MOUNTPOINT"; then
+	    log "detach ($MOUNTPOINT)"
+	else
+	    echo "detach command failed with error code: $?"
+	    exit 1
+	fi
+    fi    
+}
+
 cmd_list()
 {
     for m in ${MNTFOLDER}/${CHROOTPREXIF}*; do
@@ -111,19 +215,32 @@ cmd_list()
 
 list_commands ()
 {
-    printf "* list                          : List mounted chroot images\n"
-    printf "* exec <mount point> <command>  : Execute command in chroot\n"
-    printf "* attach <img OR path>          : Prepare chroot (with mounts)\n"
-    printf "* detach <mount point>          : Remove chroot mount point\n"
+    printf "  list                          : List mounted chroot images\n"
+    printf "  exec <mount point> <command>  : Execute command in chroot\n"
+    printf "  attach <img OR path>          : Prepare chroot (with mounts)\n"
+    printf "  detach <mount point>          : Remove chroot mount point\n"
+    printf "  run <img OR path> <command>   : Run command in image\n"
+    printf "\n\n"
 }
 
+list_options ()
+{
+    printf "  -r | --rm | --remove           : Detach chroot after run\n"
+    printf "  -n | --name <NAME>             : Use this name with attached chroot\n"
+    printf "  -v | --volume <SRC:DST>        : Mount SRC at DST in chroot\n"
+    printf "  --verbose                      : Verbose logging\n"
+    printf "\n\n"
+}
 print_usage ()
 {
+    printf "\n"
     printf "Usage: "
-    printf "\t%s <COMMAND> <ARGS>\n" "$ME"
+    printf "\t%s <COMMAND> [OPTIONS] <ARGS>\n" "$ME"
     printf "\n"
     printf "Available commands:\n\n"
     list_commands
+    printf "Available options\n\n"
+    list_options
 }
 
 #We must have at least one command
@@ -133,6 +250,26 @@ if [ "$#" -lt 1 ]; then
 fi
 
 COMMAND=$1; shift
+
+#Parse any command line options and store in global variables
+while [[ $1 =~ ^- ]]; do 
+    case $1 in
+        -r  | --rm | --remove )        REMOVE=1
+                                       ;;
+	-n  | --name )                 shift
+	                               INPUTMOUNTPOINT=$1
+				       ;;
+	-v  | --volume )               shift
+	                               BINDVOLUMES+=($1)
+				       ;;
+	--verbose )                    VERBOSE=1
+				       ;;
+        * )                            echo "Unknown option $1"
+	                               print_usage
+                                       exit 1
+    esac
+    shift
+done
 
 #Make sure we have the mount folder
 create_mnt_folder
@@ -151,6 +288,23 @@ case $COMMAND in
 	    echo "$MOUNTPOINT"
 	else
 	    echo "detach command failed with error code: $?"
+	    exit 1
+	fi
+	;;
+    "exec" )
+	if cmd_exec "$@"; then
+	    log "Executed ($MOUNTPOINT): $@"
+	else
+	    echo "exec command failed with error code: $?"
+	    exit 1
+	fi
+	;;
+	
+    "run" )
+	if cmd_run "$@"; then
+	    log "Ran ($MOUNTPOINT): $@"
+	else
+	    echo "run command failed with error code: $?"
 	    exit 1
 	fi
 	;;
