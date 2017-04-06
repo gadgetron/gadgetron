@@ -127,6 +127,11 @@ cmd_attach ()
 
     #Make sure that networking is operational in chroot
     cp /etc/hosts ${MOUNTPOINT}/etc/
+
+    #Make sure that the hostname is actually in the hosts file
+    if [[ -z $(grep $HOSTNAME ${MOUNTPOINT}/etc/hosts) ]]; then
+	echo "127.0.0.1 $HOSTNAME" >> ${MOUNTPOINT}/etc/hosts
+    fi
     
     return 0
 }
