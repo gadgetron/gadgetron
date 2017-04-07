@@ -46,7 +46,10 @@ set(cpu_operator_header_files
     hoMotionCompensation2DTOperator.h 
     ../curveFittingOperator.h 
     ../curveFittingCostFunction.h 
-    twoParaExpDecayOperator.h )
+    twoParaExpDecayOperator.h 
+    twoParaExpRecoveryOperator.h 
+    threeParaExpRecoveryOperator.h 
+    )
 
 set(cpu_operator_src_files 
     hoSPIRITOperator.cpp 
