@@ -35,6 +35,7 @@ add_subdirectory(registration)
 add_subdirectory(rest)
 add_subdirectory(fatwater)
 add_subdirectory(ffd)
+add_subdirectory(image)
 
 if (ACE_FOUND)
   add_subdirectory(gadgettools)
