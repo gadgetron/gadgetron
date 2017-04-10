@@ -552,7 +552,7 @@ namespace Gadgetron
 
             long long n;
 
-            #pragma omp parallel default(none) private(n) shared(N, jac, dim, offset, pixelSize, borderWidth, deltaReciprocal, deform_field)
+            #pragma omp parallel private(n) shared(N, jac, dim, offset, pixelSize, borderWidth, deltaReciprocal, deform_field)
             {
 
                 std::vector<size_t> ind(D);
@@ -654,7 +654,7 @@ namespace Gadgetron
             Gadgetron::clear(logJac);
 
             long long n;
-            #pragma omp parallel default(none) private(n) shared(N, borderWidth, jac, deformNorm, logJac, dim, pixelSize, deform_field)
+            #pragma omp parallel private(n) shared(N, borderWidth, jac, deformNorm, logJac, dim, pixelSize, deform_field)
             {
                 std::vector<size_t> ind(D);
                 hoMatrix<T> jacCurr(D, D);
