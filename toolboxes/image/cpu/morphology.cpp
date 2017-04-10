@@ -13,7 +13,7 @@ namespace Gadgetron
 {
 
 template <typename T> 
-void region_growing_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsigned int>& labelArray, size_t x, size_t y, unsigned int label, bool isEightConnected)
+void region_growing_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected)
 {
     try
     {
@@ -28,7 +28,7 @@ void region_growing_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsi
         ss.push(seed);
 
         std::vector<long long> dx, dy;
-        if (isEightConnected)
+        if (is_8_connected)
         {
             dx.resize(8);
             dy.resize(8);
@@ -83,7 +83,7 @@ void region_growing_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsi
             PtType v = ss.top();
             ss.pop();
 
-            labelArray(v.first, v.second) = label;
+            label_array(v.first, v.second) = label;
             // GDEBUG_STREAM("label point : " << v.first << " " << v.second);
 
             long long cx, cy;
@@ -95,7 +95,7 @@ void region_growing_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsi
 
                 if (input.point_in_range(cx, cy))
                 {
-                    if (labelArray(cx, cy) == 0 && std::abs(input(cx, cy) - object_value) < FLT_EPSILON)
+                    if (label_array(cx, cy) == 0 && std::abs(input(cx, cy) - object_value) < FLT_EPSILON)
                     {
                         ss.push(PtType(cx, cy));
                     }
@@ -109,14 +109,14 @@ void region_growing_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsi
     }
 }
 
-template EXPORTIMAGE void region_growing_2d(const hoNDArray<int>& input, int object_value, hoNDArray<unsigned int>& labelArray, size_t x, size_t y, unsigned int label, bool isEightConnected);
-template EXPORTIMAGE void region_growing_2d(const hoNDArray<float>& input, float object_value, hoNDArray<unsigned int>& labelArray, size_t x, size_t y, unsigned int label, bool isEightConnected);
-template EXPORTIMAGE void region_growing_2d(const hoNDArray<double>& input, double object_value, hoNDArray<unsigned int>& labelArray, size_t x, size_t y, unsigned int label, bool isEightConnected);
+template EXPORTIMAGE void region_growing_2d(const hoNDArray<int>& input, int object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected);
+template EXPORTIMAGE void region_growing_2d(const hoNDArray<float>& input, float object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected);
+template EXPORTIMAGE void region_growing_2d(const hoNDArray<double>& input, double object_value, hoNDArray<unsigned int>& label_array, size_t x, size_t y, unsigned int label, bool is_8_connected);
 
 // --------------------------------------------------------------------------------------------
 
 template <typename T> 
-void bwlabel_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsigned int>& label, bool isEightConnected)
+void bwlabel_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsigned int>& label, bool is_8_connected)
 {
     try
     {
@@ -138,7 +138,7 @@ void bwlabel_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsigned in
                 {
                     if (label(c, r) == 0)
                     {
-                        Gadgetron::region_growing_2d(input, object_value, label, c, r, currLabel, isEightConnected);
+                        Gadgetron::region_growing_2d(input, object_value, label, c, r, currLabel, is_8_connected);
                         currLabel++;
                     }
                 }
@@ -151,14 +151,14 @@ void bwlabel_2d(const hoNDArray<T>& input, T object_value, hoNDArray<unsigned in
     }
 }
 
-template EXPORTIMAGE void bwlabel_2d(const hoNDArray<int>& input, int object_value, hoNDArray<unsigned int>& label, bool isEightConnected);
-template EXPORTIMAGE void bwlabel_2d(const hoNDArray<float>& input, float object_value, hoNDArray<unsigned int>& label, bool isEightConnected);
-template EXPORTIMAGE void bwlabel_2d(const hoNDArray<double>& input, double object_value, hoNDArray<unsigned int>& label, bool isEightConnected);
+template EXPORTIMAGE void bwlabel_2d(const hoNDArray<int>& input, int object_value, hoNDArray<unsigned int>& label, bool is_8_connected);
+template EXPORTIMAGE void bwlabel_2d(const hoNDArray<float>& input, float object_value, hoNDArray<unsigned int>& label, bool is_8_connected);
+template EXPORTIMAGE void bwlabel_2d(const hoNDArray<double>& input, double object_value, hoNDArray<unsigned int>& label, bool is_8_connected);
 
 // --------------------------------------------------------------------------------------------
 
 template <typename T> 
-void bwlabel_clean_fore_and_background(const hoNDArray<T>& input, T object_value, T bg_value, size_t obj_thres, size_t bg_thres, bool isEightConnected, hoNDArray<T>& output)
+void bwlabel_clean_fore_and_background(const hoNDArray<T>& input, T object_value, T bg_value, size_t obj_thres, size_t bg_thres, bool is_8_connected, hoNDArray<T>& output)
 {
     try
     {
@@ -171,7 +171,7 @@ void bwlabel_clean_fore_and_background(const hoNDArray<T>& input, T object_value
         hoNDArray<unsigned int> label;
         label.clear();
 
-        Gadgetron::bwlabel_2d(input, bg_value, label, isEightConnected);
+        Gadgetron::bwlabel_2d(input, bg_value, label, is_8_connected);
 
         std::vector<unsigned int> labels, areas;
         Gadgetron::bwlabel_area_2d(label, labels, areas);
@@ -197,7 +197,7 @@ void bwlabel_clean_fore_and_background(const hoNDArray<T>& input, T object_value
 
         // clean forground
         label.clear();
-        Gadgetron::bwlabel_2d(output, object_value, label, isEightConnected);
+        Gadgetron::bwlabel_2d(output, object_value, label, is_8_connected);
         Gadgetron::bwlabel_area_2d(label, labels, areas);
 
         num_areas = areas.size();
@@ -224,25 +224,25 @@ void bwlabel_clean_fore_and_background(const hoNDArray<T>& input, T object_value
     }
 }
 
-template EXPORTIMAGE void bwlabel_clean_fore_and_background(const hoNDArray<int>& input, int object_value, int bg_value, size_t obj_thres, size_t bg_size, bool isEightConnected, hoNDArray<int>& output);
-template EXPORTIMAGE void bwlabel_clean_fore_and_background(const hoNDArray<float>& input, float object_value, float bg_value, size_t obj_thres, size_t bg_size, bool isEightConnected, hoNDArray<float>& output);
-template EXPORTIMAGE void bwlabel_clean_fore_and_background(const hoNDArray<double>& input, double object_value, double bg_value, size_t obj_thres, size_t bg_size, bool isEightConnected, hoNDArray<double>& output);
+template EXPORTIMAGE void bwlabel_clean_fore_and_background(const hoNDArray<int>& input, int object_value, int bg_value, size_t obj_thres, size_t bg_size, bool is_8_connected, hoNDArray<int>& output);
+template EXPORTIMAGE void bwlabel_clean_fore_and_background(const hoNDArray<float>& input, float object_value, float bg_value, size_t obj_thres, size_t bg_size, bool is_8_connected, hoNDArray<float>& output);
+template EXPORTIMAGE void bwlabel_clean_fore_and_background(const hoNDArray<double>& input, double object_value, double bg_value, size_t obj_thres, size_t bg_size, bool is_8_connected, hoNDArray<double>& output);
 
 // --------------------------------------------------------------------------------------------
 
-void bwlabel_area_2d(const hoNDArray<unsigned int>& labelArray, std::vector<unsigned int>& labels, std::vector<unsigned int>& areas)
+void bwlabel_area_2d(const hoNDArray<unsigned int>& label_array, std::vector<unsigned int>& labels, std::vector<unsigned int>& areas)
 {
     try
     {
         labels.clear();
         areas.clear();
 
-        size_t num = labelArray.get_number_of_elements();
+        size_t num = label_array.get_number_of_elements();
 
         size_t n;
         for (n = 0; n < num; n++)
         {
-            unsigned int v = labelArray(n);
+            unsigned int v = label_array(n);
             if (v>0)
             {
                 size_t numLabel = labels.size();
@@ -272,7 +272,7 @@ void bwlabel_area_2d(const hoNDArray<unsigned int>& labelArray, std::vector<unsi
 
         for (n = 0; n < num; n++)
         {
-            unsigned int v = labelArray(n);
+            unsigned int v = label_array(n);
             if (v>0)
             {
                 size_t l;

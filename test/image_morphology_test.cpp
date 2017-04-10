@@ -69,8 +69,8 @@ TYPED_TEST(image_morphology_test, bwlabel)
     }
 
     hoNDArray<unsigned int> label;
-    bool isEightConnected = true;
-    Gadgetron::bwlabel_2d(aImage, (TypeParam)1, label, isEightConnected);
+    bool is_8_connected = true;
+    Gadgetron::bwlabel_2d(aImage, (TypeParam)1, label, is_8_connected);
 
     std::vector<unsigned int> labels;
     std::vector<unsigned int> areas;
