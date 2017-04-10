@@ -256,7 +256,7 @@ namespace Gadgetron
             {
                 long long n;
 
-                #pragma omp parallel default(none) private(n) shared(N, in, out, interp)
+                #pragma omp parallel private(n) shared(N, in, out, interp)
                 {
                     std::vector<size_t> ind_o(ImageType::NDIM);
                     std::vector<coord_type> ind_i(ImageType::NDIM);
@@ -431,7 +431,7 @@ namespace Gadgetron
 
                 long long n;
 
-                #pragma omp parallel default(none) private(n) shared(N, bh, out, dim_out)
+                #pragma omp parallel private(n) shared(N, bh, out, dim_out)
                 {
                     std::vector<size_t> ind_out(ImageType::NDIM);
                     std::vector<long long> ind_in(ImageType::NDIM);
@@ -649,7 +649,7 @@ namespace Gadgetron
 
                 long long n;
 
-                #pragma omp parallel default(none) private(n) shared(N, bh, in, out, interp)
+                #pragma omp parallel private(n) shared(N, bh, in, out, interp)
                 {
                     std::vector<size_t> ind_out(ImageType::NDIM);
                     std::vector<coord_type> ind_in(ImageType::NDIM);
@@ -1784,7 +1784,7 @@ namespace Gadgetron
                             std::vector<size_t> offsetFactorCurr(D-1);
                             NDArray<T>::calculate_offset_factors(dimCurr, offsetFactorCurr);
 
-#pragma omp parallel default(none) private(n) shared(D, num, dim, img, pData, sigma, ii, offsetFactor, offsetFactorCurr)
+#pragma omp parallel private(n) shared(D, num, dim, img, pData, sigma, ii, offsetFactor, offsetFactorCurr)
                             {
                                 T* buf = new T[ 3*dim[ii] ];
                                 T* mem = buf + dim[ii];

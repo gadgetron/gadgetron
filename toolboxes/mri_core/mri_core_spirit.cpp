@@ -895,14 +895,13 @@ void spirit_adjoint_forward_kernel(const hoNDArray<T>& kImS2D, const hoNDArray<T
 
         size_t N = kImS2D.get_number_of_elements() / srcCHA / dstCHA;
 
+        std::vector<size_t> dim(1);
+        dim[0] = N;
+
         long long d;
-    #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA, kIm, kImS2D, kImD2S) num_threads( (int)dstCHA ) if (dstCHA > 4)
+    #pragma omp parallel default(none) private(d) shared(N, dim, dstCHA, srcCHA, kIm, kImS2D, kImD2S) num_threads( (int)dstCHA ) if (dstCHA > 4)
         {
             hoNDArray<T> ker(N);
-
-            std::vector<size_t> dim(1);
-            dim[0] = N;
-
             hoNDArray<T> dKer, kerS2D, kerD2S;
 
     #pragma omp for

@@ -665,13 +665,14 @@ namespace Gadgetron {
             if (numThreads > omp_get_num_procs()) numThreads = omp_get_num_procs();
             GDEBUG_CONDITION_STREAM(this->verbose.value(), "numThreads : " << numThreads);
 #endif // USE_OMP
-#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1) 
-            {
-                std::vector<size_t> dim(3, 1);
-                dim[0] = RO;
-                dim[1] = E1;
-                dim[2] = CHA;
 
+            std::vector<size_t> dim(3, 1);
+            dim[0] = RO;
+            dim[1] = E1;
+            dim[2] = CHA;
+
+#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, dim, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1) 
+            {
                 boost::shared_ptr< hoSPIRIT2DOperator< std::complex<float> > > oper(new hoSPIRIT2DOperator< std::complex<float> >(&dim));
                 hoSPIRIT2DOperator< std::complex<float> >& spirit = *oper;
                 spirit.use_non_centered_fft_ = true;

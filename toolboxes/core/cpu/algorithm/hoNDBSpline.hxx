@@ -122,7 +122,7 @@ namespace Gadgetron
                 //    offsetFactor[i] = k;
                 //}
 
-                #pragma omp parallel default(none) private(ii) shared(coeff, coeffBuf, pole, NbPoles, dimension, num, len, offsetFactor, d)
+                #pragma omp parallel private(ii) shared(coeff, coeffBuf, pole, NbPoles, dimension, num, len, offsetFactor, d)
                 {
                     T* buf = new T[ len ];
 
