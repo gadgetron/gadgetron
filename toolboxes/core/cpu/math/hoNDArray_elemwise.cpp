@@ -1731,6 +1731,7 @@ namespace Gadgetron{
         }
     }
 
+    template EXPORTCPUCOREMATH void fill(hoNDArray<int>* x, int val);
     template EXPORTCPUCOREMATH void fill( hoNDArray<float>* x, float val);
     template EXPORTCPUCOREMATH void fill( hoNDArray<double>* x, double val);
     template EXPORTCPUCOREMATH void fill( hoNDArray<bool>* x, bool val);
@@ -1746,6 +1747,7 @@ namespace Gadgetron{
         Gadgetron::fill( &x, val);
     }
 
+    template EXPORTCPUCOREMATH void fill(hoNDArray<int>& x, int val);
     template EXPORTCPUCOREMATH void fill( hoNDArray<float>& x, float val);
     template EXPORTCPUCOREMATH void fill( hoNDArray<double>& x, double val);
     template EXPORTCPUCOREMATH void fill( hoNDArray< std::complex<float> >& x,  std::complex<float>  val);
