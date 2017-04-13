@@ -37,7 +37,7 @@ typedef Types</*std::complex<float>, std::complex<double>,*/ float_complext, dou
 
 TYPED_TEST_CASE(hoNDArray_utils_TestReal, realImplementations);
 
-TYPED_TEST(hoNDArray_utils_TestReal, copy_replaceTest)
+TYPED_TEST(hoNDArray_utils_TestReal, fillTest)
 {
     hoNDArray<int> src;
     src.create(34, 25, 58, 37);
@@ -62,7 +62,7 @@ TYPED_TEST(hoNDArray_utils_TestReal, copy_replaceTest)
     offset_dst[1] = 25;
     offset_dst[2] = 40;
 
-    Gadgetron::copy_replace(offset_src, size, &src, offset_dst, &dst);
+    Gadgetron::fill(offset_src, size, &src, offset_dst, &dst);
 
     EXPECT_EQ(2, dst(offset_dst[0], offset_dst[1] - 1, offset_dst[2], 0));
     EXPECT_EQ(2, dst(offset_dst[0], offset_dst[1], offset_dst[2] - 1, 0));

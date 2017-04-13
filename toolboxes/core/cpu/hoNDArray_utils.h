@@ -408,7 +408,7 @@ namespace Gadgetron {
   * @param[out] dst array to be replaced; other part outside the offset+size region will be unchanged
   */
   template<class T, unsigned int D> void
-  copy_replace(const vector_td<size_t, D>& offset_src, const vector_td<size_t, D>& size, hoNDArray<T> *src, const vector_td<size_t, D>& offset_dst, hoNDArray<T> *dst)
+  fill(const vector_td<size_t, D>& offset_src, const vector_td<size_t, D>& size, hoNDArray<T> *src, const vector_td<size_t, D>& offset_dst, hoNDArray<T> *dst)
   {
       if (src == 0x0) {
           throw std::runtime_error("replace: 0x0 src array provided");;
@@ -417,7 +417,7 @@ namespace Gadgetron {
       if (src->get_number_of_dimensions() < D)
       {
           std::stringstream ss;
-          ss << "copy_replace: number of src image dimensions should be at least " << D;
+          ss << "fill: number of src image dimensions should be at least " << D;
           throw std::runtime_error(ss.str());;
       }
 
@@ -429,14 +429,14 @@ namespace Gadgetron {
       if (dst->get_number_of_dimensions() < D)
       {
           std::stringstream ss;
-          ss << "copy_replace: number of dst image dimensions should be at least " << D;
+          ss << "fill: number of dst image dimensions should be at least " << D;
           throw std::runtime_error(ss.str());;
       }
 
       if (src->get_number_of_dimensions() != dst->get_number_of_dimensions())
       {
           std::stringstream ss;
-          ss << "copy_replace: src and dst array have different number of dimensions " << D;
+          ss << "fill: src and dst array have different number of dimensions " << D;
           throw std::runtime_error(ss.str());;
       }
 
@@ -451,12 +451,12 @@ namespace Gadgetron {
       {
           if (src_dim[d] < offset_src[d]+size[d]-1)
           {
-              throw std::runtime_error("copy_replace: src array is too small for provided offset and size");;
+              throw std::runtime_error("fill: src array is too small for provided offset and size");;
           }
 
           if (dst_dim[d] < offset_dst[d] + size[d] - 1)
           {
-              throw std::runtime_error("copy_replace: dst array is too small for provided offset and size");;
+              throw std::runtime_error("fill: dst array is too small for provided offset and size");;
           }
       }
 
@@ -499,7 +499,7 @@ namespace Gadgetron {
   }
 
   template<class T, unsigned int D> void
-  copy_replace(const vector_td<size_t, D>& offset_src, hoNDArray<T>& src, const vector_td<size_t, D>& offset_dst, hoNDArray<T>& dst)
+  fill(const vector_td<size_t, D>& offset_src, hoNDArray<T>& src, const vector_td<size_t, D>& offset_dst, hoNDArray<T>& dst)
   {
       std::vector<size_t> dim = src.get_dimensions();
       vector_td<size_t, D> size;
@@ -507,18 +507,18 @@ namespace Gadgetron {
       if (dim.size() < D)
       {
           std::stringstream ss;
-          ss << "copy_replace: number of src image dimensions should be at least " << D;
+          ss << "fill: number of src image dimensions should be at least " << D;
           throw std::runtime_error(ss.str());;
       }
 
       size_t d;
       for (d = 0; d < D; d++) size[d] = dim[d];
 
-      Gadgetron::copy_replace(offset_src, size, &src, offset_dst, &dst);
+      Gadgetron::fill(offset_src, size, &src, offset_dst, &dst);
   }
 
   template<class T, unsigned int D> void
-  copy_replace(hoNDArray<T>& src, const vector_td<size_t, D>& offset_dst, hoNDArray<T>& dst)
+  fill(hoNDArray<T>& src, const vector_td<size_t, D>& offset_dst, hoNDArray<T>& dst)
   {
       std::vector<size_t> dim = src.get_dimensions();
       vector_td<size_t, D> offset_src, size;
@@ -526,7 +526,7 @@ namespace Gadgetron {
       if (dim.size() < D)
       {
           std::stringstream ss;
-          ss << "copy_replace: number of src image dimensions should be at least " << D;
+          ss << "fill: number of src image dimensions should be at least " << D;
           throw std::runtime_error(ss.str());;
       }
 
@@ -537,7 +537,7 @@ namespace Gadgetron {
           size[d] = dim[d];
       }
 
-      Gadgetron::copy_replace(offset_src, size, &src, offset_dst, &dst);
+      Gadgetron::fill(offset_src, size, &src, offset_dst, &dst);
   }
 
   /**
