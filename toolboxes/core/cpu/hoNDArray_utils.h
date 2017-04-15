@@ -501,7 +501,9 @@ namespace Gadgetron {
   template<class T, unsigned int D> void
   fill(const vector_td<size_t, D>& offset_src, hoNDArray<T>& src, const vector_td<size_t, D>& offset_dst, hoNDArray<T>& dst)
   {
-      std::vector<size_t> dim = src.get_dimensions();
+      std::vector<size_t> dim;
+      src.get_dimensions(dim);
+
       vector_td<size_t, D> size;
 
       if (dim.size() < D)
@@ -520,7 +522,9 @@ namespace Gadgetron {
   template<class T, unsigned int D> void
   fill(hoNDArray<T>& src, const vector_td<size_t, D>& offset_dst, hoNDArray<T>& dst)
   {
-      std::vector<size_t> dim = src.get_dimensions();
+      std::vector<size_t> dim;
+      src.get_dimensions(dim);
+ 
       vector_td<size_t, D> offset_src, size;
 
       if (dim.size() < D)
