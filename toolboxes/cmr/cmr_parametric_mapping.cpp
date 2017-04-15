@@ -146,12 +146,12 @@ template EXPORTCMR void perform_hole_filling(hoNDArray<double>& map, double hole
 // ---------------------------------------------------------------------
 
 template <typename T>
-void perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<T, 2> >& maps, T& hole = (T)(0), size_t max_size_of_holes = 20, bool is_8_connected = true) 
+void perform_hole_filling(Gadgetron::hoNDImageContainer2D< hoMRImage<T, 2> >& maps, T hole, size_t max_size_of_holes, bool is_8_connected) 
 {
     try
     {
-        size_t row = flowMaps.rows();
-        std::vector<size_t> cols = flowMaps.cols();
+        size_t row = maps.rows();
+        std::vector<size_t> cols = maps.cols();
 
         size_t r, c;
         for (r = 0; r < row; r++)

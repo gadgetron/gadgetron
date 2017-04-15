@@ -23,10 +23,10 @@ public:
     typedef CmrParametricMapping<T> BaseClass;
     typedef CmrT1SRMapping<T> Self;
 
-    typename typedef BaseClass::ArrayType ArrayType;
-    typename typedef BaseClass::ImageType ImageType;
-    typename typedef BaseClass::ImageContinerType ImageContinerType;
-    typename typedef BaseClass::VectorType VectorType;
+    typedef typename BaseClass::ArrayType ArrayType;
+    typedef typename BaseClass::ImageType ImageType;
+    typedef typename BaseClass::ImageContinerType ImageContinerType;
+    typedef typename BaseClass::VectorType VectorType;
 
     CmrT1SRMapping();
     virtual ~CmrT1SRMapping();
@@ -41,13 +41,13 @@ public:
     // ======================================================================================
 
     /// provide initial guess for the mapping
-    virtual void get_initial_guess(const std::vector<T>& ti, const std::vector<T>& yi, std::vector<T>& guess);
+    virtual void get_initial_guess(const VectorType& ti, const VectorType& yi, VectorType& guess);
 
     /// compute map values for every parameters in bi
-    virtual void compute_map(const std::vector<T>& ti, const std::vector<T>& yi, const std::vector<T>& guess, std::vector<T>& bi, T& map_v);
+    virtual void compute_map(const VectorType& ti, const VectorType& yi, const VectorType& guess, VectorType& bi, T& map_v);
 
     /// compute SD values for every parameters in bi
-    virtual void compute_sd(const std::vector<T>& ti, const std::vector<T>& yi, const std::vector<T>& bi, std::vector<T>& sd, T& map_sd);
+    virtual void compute_sd(const VectorType& ti, const VectorType& yi, const VectorType& bi, VectorType& sd, T& map_sd);
 
     /// two parameters, A, T1
     virtual size_t get_num_of_paras() const;
