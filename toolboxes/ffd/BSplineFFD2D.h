@@ -447,9 +447,18 @@ bool BSplineFFD2D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
             std::vector<size_t> dim;
             this->ctrl_pt_[d].get_dimensions(dim);
             hoNDArray<T> tmpCtrlPt(dim, this->ctrl_pt_[d].begin(), false);
-            Gadgetron::cropUpTo11DArray(tmpCtrlPt, ctrlPtWithoutPadding, startND, size);
+
+            vector_td<size_t, 2> crop_offset;
+            crop_offset[0] = startND[0];
+            crop_offset[1] = startND[1];
+
+            vector_td<size_t, 2> crop_size;
+            crop_size[0] = size[0];
+            crop_size[1] = size[1];
+
+            Gadgetron::crop(crop_offset, crop_size, &tmpCtrlPt, &ctrlPtWithoutPadding);
             Gadgetron::add(ctrlPtWithoutPadding, dx2D, ctrlPtWithoutPadding);
-            Gadgetron::setSubArrayUpTo11DArray(ctrlPtWithoutPadding, tmpCtrlPt, startND, size);
+            Gadgetron::fill(ctrlPtWithoutPadding, crop_offset, tmpCtrlPt);
         }
 
         /*for (j=0; j<sy; j++)

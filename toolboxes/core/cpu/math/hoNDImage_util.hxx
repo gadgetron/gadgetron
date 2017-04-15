@@ -697,7 +697,7 @@ namespace Gadgetron
 
                 long long n, m, t;
 
-                #pragma omp parallel default(none) private(n, m, t) shared(halfW, N, img, img_out)
+                #pragma omp parallel private(n, m, t) shared(halfW, N, img, img_out)
                 {
                     std::vector<T> buf(2*halfW+1);
 
@@ -734,7 +734,7 @@ namespace Gadgetron
                 long long medianInd = WX*WY/2;
 
                 long long x, y, tx, ty, hx, hy;
-                #pragma omp parallel default(none) private(x, y, tx, ty, hx, hy) shared(halfX, halfY, sx, sy, WX, WY, pImg, pImgOut, medianInd)
+                #pragma omp parallel private(x, y, tx, ty, hx, hy) shared(halfX, halfY, sx, sy, WX, WY, pImg, pImgOut, medianInd)
                 {
                     std::vector<T> buf(WX*WY);
 
@@ -836,7 +836,7 @@ namespace Gadgetron
                 long long medianInd = WX*WY*WZ/2;
 
                 long long x, y, z, tx, ty, tz, hx, hy, hz;
-                #pragma omp parallel default(none) private(x, y, z, tx, ty, tz, hx, hy, hz) shared(halfX, halfY, halfZ, sx, sy, sz, WX, WY, WZ, pImg, pImgOut, medianInd)
+                #pragma omp parallel private(x, y, z, tx, ty, tz, hx, hy, hz) shared(halfX, halfY, halfZ, sx, sy, sz, WX, WY, WZ, pImg, pImgOut, medianInd)
                 {
                     std::vector<T> buf(WX*WY*WZ);
 
