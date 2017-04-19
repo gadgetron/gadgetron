@@ -57,12 +57,17 @@ namespace Gadgetron{
         return (typename stdType<T>::Type) arma::stddev(as_arma_col(data));
     }
 
+    // --------------------------------------------------------------------------------
+
+    template<class T> T var(hoNDArray<T>* data) {
+        return (typename stdType<T>::Type) arma::var(as_arma_col(data));
+    }
+
+    // --------------------------------------------------------------------------------
+
      template<class T> T median(hoNDArray<T>* data){
         return (typename stdType<T>::Type) arma::median(as_arma_col(data));
     }
-
-
-
 
     // --------------------------------------------------------------------------------
 
@@ -599,6 +604,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH float median(hoNDArray<float>*);
     template EXPORTCPUCOREMATH float sum(hoNDArray<float>*);
     template EXPORTCPUCOREMATH float stddev(hoNDArray<float>*);
+    template EXPORTCPUCOREMATH float var(hoNDArray<float>*);
 
     template EXPORTCPUCOREMATH double max(hoNDArray<double>*);
     template EXPORTCPUCOREMATH double min(hoNDArray<double>*);
@@ -606,21 +612,29 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH double median(hoNDArray<double>*);
     template EXPORTCPUCOREMATH double sum(hoNDArray<double>*);
     template EXPORTCPUCOREMATH double stddev(hoNDArray<double>*);
+    template EXPORTCPUCOREMATH double var(hoNDArray<double>*);
 
     template EXPORTCPUCOREMATH complext<double> mean(hoNDArray<complext<double> >*);
     template EXPORTCPUCOREMATH complext<double> median(hoNDArray<complext<double> >*);
     template EXPORTCPUCOREMATH complext<double> sum(hoNDArray<complext<double> >*);
+    template EXPORTCPUCOREMATH complext<double> stddev(hoNDArray<complext<double> >*);
+    template EXPORTCPUCOREMATH complext<double> var(hoNDArray<complext<double> >*);
 
     template EXPORTCPUCOREMATH complext<float> mean(hoNDArray<complext<float> >*);
     template EXPORTCPUCOREMATH complext<float> median(hoNDArray<complext<float> >*);
     template EXPORTCPUCOREMATH complext<float> sum(hoNDArray<complext<float> >*);
+    template EXPORTCPUCOREMATH complext<float> stddev(hoNDArray<complext<float> >*);
+    template EXPORTCPUCOREMATH complext<float> var(hoNDArray<complext<float> >*);
 
     template EXPORTCPUCOREMATH std::complex<double> mean(hoNDArray<std::complex<double> >*);
     template EXPORTCPUCOREMATH std::complex<double> sum(hoNDArray<std::complex<double> >*);
+    template EXPORTCPUCOREMATH std::complex<double> stddev(hoNDArray<std::complex<double> >*);
+    template EXPORTCPUCOREMATH std::complex<double> var(hoNDArray<std::complex<double> >*);
 
     template EXPORTCPUCOREMATH std::complex<float> mean(hoNDArray<std::complex<float> >*);
     template EXPORTCPUCOREMATH std::complex<float> sum(hoNDArray<std::complex<float> >*);
-
+    template EXPORTCPUCOREMATH std::complex<float> stddev(hoNDArray<std::complex<float> >*);
+    template EXPORTCPUCOREMATH std::complex<float> var(hoNDArray<std::complex<float> >*);
 
     template EXPORTCPUCOREMATH float dot<float>( hoNDArray<float>*, hoNDArray<float>*, bool );
     template EXPORTCPUCOREMATH float asum<float>( hoNDArray<float>* );
