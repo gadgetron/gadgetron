@@ -39,6 +39,11 @@ namespace Gadgetron{
     template<class T> EXPORTCPUCOREMATH T stddev(hoNDArray<T>* data);
 
     /***
+    * Calculates the variance of the array
+    */
+    template<class T> EXPORTCPUCOREMATH T var(hoNDArray<T>* data);
+
+    /***
      * Calulates the median of the array
      */
     template<class T> EXPORTCPUCOREMATH T median(hoNDArray<T>* data);
