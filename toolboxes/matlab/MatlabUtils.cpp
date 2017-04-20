@@ -542,7 +542,7 @@ void MatlabToHoNDImage(const mxArray* m, const mxArray* h, hoNDImage<T, D>& a)
 // IsmrmrdDataBuffered
 // ------------------------
 
-mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer){
+mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData){
 
 	const char * field_names[] = {"data","trajectory","headers","samplingdescription"};
 	mwSize one = 1;
@@ -551,8 +551,11 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer){
 
 	if (!mxstruct) throw std::runtime_error("Failed to allocate Matlab struct");
 
-	auto mxdata = hoNDArrayToMatlab(&buffer->data_);
-	mxSetField(mxstruct,0,"data",mxdata);
+    if(!omitData) {
+        auto mxdata = hoNDArrayToMatlab(&buffer->data_);
+        mxSetField(mxstruct,0,"data",mxdata);
+    }
+    
 	//Add trajectory if available
 	if (buffer->trajectory_){
 		auto & trajectory = *buffer->trajectory_;
