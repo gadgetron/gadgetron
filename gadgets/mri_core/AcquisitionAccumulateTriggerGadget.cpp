@@ -190,6 +190,15 @@ namespace Gadgetron{
     //Create the data structure that will go in the bucket
     IsmrmrdAcquisitionData d(m1,m2,AsContainerMessage< hoNDArray<float> >(m2->cont()));
 
+    //GDEBUG("%i\t%i\t%i\t%i\t%i\t%i\t%i\t%i\n",  d.head_->getObjectPtr()->idx.user[0],
+    //                                            d.head_->getObjectPtr()->idx.user[1],
+    //                                            d.head_->getObjectPtr()->idx.user[2],
+    //                                            d.head_->getObjectPtr()->idx.user[3],
+    //                                            d.head_->getObjectPtr()->idx.user[4],
+    //                                            d.head_->getObjectPtr()->idx.user[5],
+    //                                            d.head_->getObjectPtr()->idx.user[6],
+    //                                            d.head_->getObjectPtr()->idx.user[7]);
+    
     //Now let's figure out if a trigger condition has occurred.
     if (prev_.head_) { //Make sure this is not the first acquisition we are receiving
       switch (trigger_) {

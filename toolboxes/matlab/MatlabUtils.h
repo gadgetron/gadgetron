@@ -52,6 +52,12 @@ template<class T, unsigned int D> EXPORTMATLAB void MatlabToHoNDImage(const mxAr
  */
 EXPORTMATLAB mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData = false);
 
+/**
+ * LA's data splitting
+ * @param
+ * @return
+ */
+EXPORTMATLAB mxArray* GetSplitReconData(IsmrmrdDataBuffered* buffer, size_t index_begin, size_t index_end);
 
 EXPORTMATLAB IsmrmrdDataBuffered MatlabStructToBuffer(mxArray* mxstruct);
 
