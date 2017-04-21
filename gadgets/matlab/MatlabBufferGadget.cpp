@@ -35,7 +35,10 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
                 mxSetField(reconArray,i,"reference",mxref);
             }
         }
+        
+        GDEBUG("Sending the whole buckets... ");
         engPutVariable(engine_, "recon_data", reconArray);
+        GDEBUG("done\n");
     }
     else
     {
