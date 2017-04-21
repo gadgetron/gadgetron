@@ -19,7 +19,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	auto reconArray = mxCreateStructArray(1,&nencoding_spaces,2,fieldnames);
 	//auto reconArray = mxCreateCellArray(1,&nencoding_spaces);
 
-    // 2e9 bytes is the published (as of 2017a) hardcoded limit that engPutVariable can transfer.
+    // 2e9 bytes data is the published (as of 2017a) hardcoded limit that engPutVariable can transfer.
     // Empirically, it seems that variables up to 2^32 bytes (~4.3 GB) can be sent.
     size_t max_data_size = 2e9;
     if(sizeof(recon_data->rbit_) < max_data_size) 
@@ -43,15 +43,17 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
     else
     {
         // the dataset needs to be sent in multiple packets
+        // The algorithm here splits the multidimensional arrays (data.data
+        // and reference.data) into n_packets in the RO dimension. After all
+        // packets are sent, MATLAB reconcatenates everything.
         
         int n_packets = ceil( float(sizeof(recon_data->rbit_)) / float(max_data_size) );
-        size_t n_RO = sizeof(recon_data->rbit_[i].data_.data_) / sizeof(recon_data->rbit_[i].data_.data_[0]);
-        float step = float(n_RO)/float(n_packet);
+
         
         GDEBUG("Bucket size limit reached, parsing it into %i packets.\n", n_packets);
         
         for (int i = 0; i <  recon_data->rbit_.size(); i++)
-        {
+        {            
             // Create the regular MATLAB structure, but omits the data for the fields "data" and "reference".
             auto mxrecon = BufferToMatlabStruct(&recon_data->rbit_[i].data_, true);
             mxSetField(reconArray,i,"data",mxrecon);
@@ -63,6 +65,9 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
             
             /*
             // send the packets
+            size_t n_RO = sizeof(recon_data->rbit_[i].data_.data_) / sizeof(recon_data->rbit_[i].data_.data_[0]);
+            float step = float(n_RO)/float(n_packets);
+            
             GDEBUG("Starting to process packets for index %i:\n", i+1);
             for(int p = 0; p < n_packets; p++)
             {
@@ -70,13 +75,23 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
                 size_t beg = roundf(float(p  )*step       );
                 size_t end = roundf(float(p+1)*step - 1.0f);
                 
-                // create the packet
+                // create the packet. A copy of the data is being done here,
+                // which overall increase the RAM usage if packets are needed.
+                // There may be a more efficient way to do this.
                 GDEBUG("Creating data packet #%i...\n", p+1);
-                auto packet = malloc( (end-beg)*sizeof(recon_data->rbit_[i].data_.data_[0]) );
-                std::copy( &(recon_data->rbit_[i].data_.data_[beg]),
-                           &(recon_data->rbit_[i].data_.data_[end]),
-                           &(packet[0]));
-                auto mxdata = hoNDArrayToMatlab(&packet);
+                
+                //void *packet = malloc( (end-beg)*sizeof(recon_data->rbit_[i].data_.data_[0]) );
+                //std::copy( &(recon_data->rbit_[i].data_.data_[beg]),
+                //           &(recon_data->rbit_[i].data_.data_[end]),
+                //           &(packet[0]));
+                //auto mxdata = hoNDArrayToMatlab(&packet);
+                decltype(recon_data->rbit_[i].data_.data_) packet [end-beg]
+                            [sizeof(recon_data->rbit_[i].data_.data_[0])                / sizeof(recon_data->rbit_[i].data_.data_[0][0])]
+                            [sizeof(recon_data->rbit_[i].data_.data_[0][0])             / sizeof(recon_data->rbit_[i].data_.data_[0][0][0])]
+                            [sizeof(recon_data->rbit_[i].data_.data_[0][0][0])          / sizeof(recon_data->rbit_[i].data_.data_[0][0][0][0])]
+                            [sizeof(recon_data->rbit_[i].data_.data_[0][0][0][0])       / sizeof(recon_data->rbit_[i].data_.data_[0][0][0][0][0])]
+                            [sizeof(recon_data->rbit_[i].data_.data_[0][0][0][0][0])    / sizeof(recon_data->rbit_[i].data_.data_[0][0][0][0][0][0])]
+                            [sizeof(recon_data->rbit_[i].data_.data_[0][0][0][0][0][0]) / sizeof(recon_data->rbit_[i].data_.data_[0][0][0][0][0][0][0])]
                 
                 // convert the packet to MALTAB array and send it
                 GDEBUG("Sending data packet #%i...\n", p+1);
