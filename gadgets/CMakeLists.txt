@@ -25,7 +25,9 @@ include_directories(
 add_subdirectory(mri_core)
 add_subdirectory(fatwater)
 add_subdirectory(interventional_mri)
-add_subdirectory(cmr)
+if (ARMADILLO_FOUND)
+  add_subdirectory(cmr)
+endif()
 
 find_program(BARTCMD bart)
 if (BARTCMD)

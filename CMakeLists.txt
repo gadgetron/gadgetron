@@ -231,7 +231,7 @@ if (NOT GTEST_FOUND)
   endif ()
 endif ()
 
-find_package(Armadillo)
+find_package(Armadillo 4.600)
 # check whether ILP64 MKL should is used
 if(ARMADILLO_FOUND)
   add_definitions(-DUSE_ARMADILLO)

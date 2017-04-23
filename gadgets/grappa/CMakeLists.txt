@@ -53,11 +53,15 @@ else ()
       gadgetron_toolbox_cpucore
       gadgetron_toolbox_cpucore_math
       gadgetron_toolbox_cpufft
-      gadgetron_toolbox_mri_core
       ${Boost_LIBRARIES}
       ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
       optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
       )
+    if (ARMADILLO_FOUND)
+      target_link_libraries(gadgetron_grappa 
+        gadgetron_toolbox_mri_core
+      )
+     endif()
 endif ()
 
 install (FILES  gadgetron_grappa_export.h

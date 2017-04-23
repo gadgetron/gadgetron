@@ -221,9 +221,6 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_log
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpufft
-    gadgetron_toolbox_cpuklt
-    gadgetron_toolbox_mri_core
-    gadgetron_toolbox_cpuoperator
     gadgetron_toolbox_image_analyze_io
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
@@ -231,6 +228,13 @@ target_link_libraries(gadgetron_mricore
     ${OPTIMIZED_GADGET_LIBS}
     ${Boost_LIBRARIES}
 )
+if(ARMADILLO_FOUND)
+   target_link_libraries(gadgetron_mricore
+    gadgetron_toolbox_cpuoperator
+    gadgetron_toolbox_cpuklt
+    gadgetron_toolbox_mri_core
+)
+endif()
 
 if (ZFP_FOUND)
    target_link_libraries(gadgetron_mricore ${ZFP_LIBRARIES})
