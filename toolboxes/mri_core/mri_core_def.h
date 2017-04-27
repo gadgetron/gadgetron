@@ -24,6 +24,7 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_COLORMAP                       "GADGETRON_ColorMap"
     #define GADGETRON_IMAGE_ECHOTIME                       "GADGETRON_TE"
     #define GADGETRON_IMAGE_INVERSIONTIME                  "GADGETRON_TI"
+    #define GADGETRON_IMAGE_SATURATIONTIME                 "GADGETRON_TS"
 
     /// role of image data
     #define GADGETRON_DATA_ROLE                            "GADGETRON_DataRole"
