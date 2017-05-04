@@ -169,6 +169,23 @@ cmd_detach ()
     return 0
 }
 
+cmd_clean ()
+{
+    local mntpnt=$(complete_mount_point $1)
+    
+    if [ ! -e "$mntpnt" ]; then
+	echo "Unable to remove non-existent mount point"
+	return 1
+    fi
+
+    #Set global mount point variable
+    MOUNTPOINT=$mntpnt
+
+    fuser -k -m $MOUNTPOINT
+    
+    return 0
+}
+
 cmd_exec()
 {
     local mntpnt=$(complete_mount_point $1)
@@ -225,6 +242,7 @@ list_commands ()
     printf "  attach <img OR path>          : Prepare chroot (with mounts)\n"
     printf "  detach <mount point>          : Remove chroot mount point\n"
     printf "  run <img OR path> <command>   : Run command in image\n"
+    printf "  clean <mount point>           : Remove all processes accessing mount point\n"
     printf "\n\n"
 }
 
@@ -315,6 +333,14 @@ case $COMMAND in
 	;;
     "list" )
 	cmd_list
+	;;
+    "clean" )
+	if cmd_clean "$@"; then
+	    echo "$MOUNTPOINT"
+	else
+	    echo "clean command failed with error code: $?"
+	    exit 1
+	fi
 	;;
     * )
 	echo "Invalid command \"$COMMAND\""
