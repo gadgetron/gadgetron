@@ -112,6 +112,28 @@ namespace Gadgetron {
         }
 
         // -------------------------------------------------------------
+        // if prep times are not read from protocol, find them from image header
+        if (!imaging_prep_time_from_protocol.value())
+        {
+            this->prep_times_.resize(N, 0);
+
+            size_t n;
+            for (n = 0; n < N; n++)
+            {
+                this->prep_times_[n] = data->headers_(n).user_int[7] * 1e-3; // convert microsecond to ms
+            }
+
+            if (this->verbose.value())
+            {
+                GDEBUG_STREAM("Prep times are read from images ... ");
+                for (n = 0; n < N; n++)
+                {
+                    GDEBUG_STREAM("Image " << n << " - " << this->prep_times_[n] << " ms ");
+                }
+            }
+        }
+
+        // -------------------------------------------------------------
 
         // calling the mapping
         IsmrmrdImageArray map, para, map_sd, para_sd;

@@ -45,7 +45,6 @@ namespace Gadgetron {
         GADGET_PROPERTY(send_out_multiple_series_by_slice, bool, "Whether to set out binning images as multiple seires", false);
 
         /// parameters for raw image reconstruction
-        GADGET_PROPERTY(time_tick, float, "Time tick in ms", 2.5);
         GADGET_PROPERTY(arrhythmia_rejector_factor, float, "If a heart beat RR is not in the range of [ (1-arrhythmiaRejectorFactor)*meanRR (1+arrhythmiaRejectorFactor)*meanRR], it will be rejected", 0.25);
 
         GADGET_PROPERTY(grappa_kSize_RO, int, "Raw data recon, kernel size RO", 5);
