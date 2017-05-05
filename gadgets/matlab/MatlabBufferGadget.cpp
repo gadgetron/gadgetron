@@ -7,6 +7,10 @@ namespace Gadgetron{
 
 int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 {
+    double exec_time_1 = clock(); //LA
+    
+    clock_t exec_time_2_begin = clock();
+    
     GDEBUG("Starting MatlabBufferGadget::process\n");
     
     std::lock_guard<std::mutex> lock(mutex_);   
@@ -18,7 +22,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	mwSize nencoding_spaces = recon_data->rbit_.size();
 
 	const char* fieldnames[2] = {"data","reference"};
-	auto reconArray = mxCreateStructArray(1,&nencoding_spaces,2,fieldnames); // what is this mysterious encoding_spaces ?
+	auto reconArray = mxCreateStructArray(1,&nencoding_spaces,2,fieldnames);
 
     ///////////////////////////////////
                  
@@ -35,6 +39,7 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
     }
     engPutVariable(engine_, "recon_data", reconArray);
     
+    clock_t exec_time_2_end = clock();
     
     /*
     // 2e9 bytes data is the published (as of 2017a) hardcoded limit that MALTAB can load
@@ -157,6 +162,8 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
     }
     */
     
+    clock_t exec_time_3_begin = clock();
+    
     GDEBUG("Sending cmd...\n");
     cmd = "[imageQ,bufferQ] = matgadget.run_process(recon_data); matgadget.emptyQ();";
     send_matlab_command(cmd);
@@ -204,10 +211,15 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 
 	mxArray* bufferQ = engGetVariable(engine_,"bufferQ");
 
+    
+    
 	qlen = mxGetNumberOfElements(bufferQ);
 	if (debug_mode_) {
 		GDEBUG("Buffer Queue size: %d \n", qlen);
 		}
+    
+    
+    
 
 	for (mwIndex idx = 0; idx <qlen; idx++){
 
@@ -236,6 +248,17 @@ int MatlabBufferGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	// We are finished with the incoming messages m1 and m2
 	m1->release();
 
+    clock_t exec_time_3_end = clock();
+    
+    std::cout << "------- Execution times [s] -------"
+              << "\nOutside MatlabBufferGadget: "       << double(exec_time_1 - timer_out)/CLOCKS_PER_SEC 
+              << "\nData compression and transfer: "    << double(exec_time_2_end - exec_time_2_begin)/CLOCKS_PER_SEC 
+              << "\nMATLAB::process and others: "       << double(exec_time_3_end - exec_time_3_begin)/CLOCKS_PER_SEC
+              << "\n-----------------------------------\n";
+    
+    
+    timer_out = clock(); //LA
+    
 	return GADGET_OK;
 }
 }

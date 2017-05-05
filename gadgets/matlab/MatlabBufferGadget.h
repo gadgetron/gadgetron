@@ -143,6 +143,8 @@ protected:
     std::string classname_;
     std::string startcmd_;
     bool debug_mode_;
+    
+    std::clock_t timer_out; //LA: timer for measurement of execution time outside this->process
 
     Engine *engine_;
 };

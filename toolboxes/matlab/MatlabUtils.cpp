@@ -554,15 +554,50 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData){
     if(!omitData) {
         //auto mxdata = hoNDArrayToMatlab(&buffer->data_);
         
+        using namespace std;
+        cout << "Compressing data... ";
+        clock_t b = clock();
+        
         std::complex<float>* raw_data = buffer->data_.get_data_ptr();
+        
+
+        size_t nelem  = buffer->data_.get_number_of_elements();
+        size_t h_nelem  = buffer->headers_.get_number_of_elements();
+        
+        size_t nRO    = buffer->data_.get_size(0);
+        size_t nPE    = buffer->data_.get_size(1);
+        size_t n3D    = buffer->data_.get_size(2);
+        size_t nCH    = buffer->data_.get_size(3);
+        size_t N      = buffer->data_.get_size(4);
+        size_t S      = buffer->data_.get_size(5);
+        size_t wtf      = buffer->data_.get_size(6);
         
         // count the number of non-nul RO lines in this buffer (there's probably a more elegant built-in method)
         size_t RO_counter = 0;
-        for (size_t l = 0; l < buffer->data_.get_number_of_elements(); l += buffer->data_.get_size(0) )
+        for (size_t l = 0; l < h_nelem; ++l)
+            if((bool) buffer->headers_[l].read_dir[2])
+                RO_counter += nCH;
+        /*
+        
+        
+        RO_counter = 0;
+        for (size_t l = 0; l < nelem; l += nRO)
             if(real(raw_data[l]) != 0.0f)
                 ++RO_counter;
+        std::cout << "RO_counter: " << RO_counter << std::endl;
         
         
+        
+        for(size_t l=0; l<buffer->headers_.get_number_of_elements(); ++l)
+        {
+            if(l%64==0)
+                cout << "\n";
+            
+            cout << buffer->headers_[l].read_dir[2];
+
+        }
+        */
+        /*
         std::cout << "N elem: " << buffer->data_.get_number_of_elements() << std::endl;
         std::cout << "N phase: " << buffer->data_.get_number_of_elements()/buffer->data_.get_size(0) << std::endl;
         std::cout << "RO_counter: " << RO_counter << std::endl;
@@ -571,6 +606,7 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData){
                                       buffer->data_.get_size(2) << "," <<
                                       buffer->data_.get_size(3) << "," <<
                                       buffer->data_.get_size(4)  << std::endl;
+        */
         
         
         // create the packet. A copy of the data is being done here,
@@ -582,16 +618,15 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData){
         
         packet_dims[0] = buffer->data_.get_size(0);
         packet_dims[1] = RO_counter;
-        //for (size_t j = 3; j < buffer->data_.get_number_of_dimensions(); j++)
-        //    packet_dims[1] *= buffer->data_.get_size(j);
 
         float* real_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
         float* imag_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
 
+        /*
         size_t counter = 0;
-        for (size_t l = 0; l < buffer->data_.get_number_of_elements(); l += buffer->data_.get_size(0) ){
-            if(real(raw_data[l]) != 0.0f) { // need to find a more proper test
-                for (size_t j = 0; j < buffer->data_.get_size(0); j++){
+        for (size_t l = 0; l < nelem; l += nRO ){
+            if(real(raw_data[l]) != 0.0f) { // need to find a more proper test, e.g. using idx as look up table for getting directly the acquired RO line
+                for (size_t j = 0; j < nRO; j++){
 
                     real_data[counter] = real(raw_data[l + j]);
                     imag_data[counter] = imag(raw_data[l + j]);
@@ -599,8 +634,44 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData){
                 }
             }
         }
+        */
         
-        std::cout << "counter: " << counter << std::endl;
+        /*
+        size_t counter = 0;
+        for (size_t l = 0; l < buffer->headers_.get_number_of_elements(); ++l) {
+            
+            if((bool) buffer->headers_[l].read_dir[2])
+            {
+                //for (size_t ch = 0; ch < nCH; ch++){
+                    for (size_t j = 0; j < nRO*nCH; j++){
+
+                        real_data[counter] = real(raw_data[l*nRO*nCH + j]);
+                        imag_data[counter] = imag(raw_data[l*nRO*nCH + j]);
+                        ++counter;
+                    }
+                //}
+            }
+        }
+        */
+        size_t counter = 0;
+        size_t h_idx = 0;
+        for (size_t ch = 0; ch < nCH; ++ch){
+            for (size_t l = 0; l < h_nelem; ++l) {
+                if((bool) buffer->headers_[l].read_dir[2])
+                {
+                    for (size_t r = 0; r < nRO; ++r){
+                            h_idx = ch*nRO*nPE*n3D + l*nRO + r;
+                            real_data[counter] = real(raw_data[h_idx]);
+                            imag_data[counter] = imag(raw_data[h_idx]);
+                            ++counter;
+                    }
+                }
+            }
+        }
+        
+        cout << "done (" << (double) (clock() - b)/CLOCKS_PER_SEC << ")\n";
+        
+        
 
         auto mxdata =  mxCreateNumericMatrix(0, 0, mxSINGLE_CLASS, mxCOMPLEX);
         mxSetDimensions(mxdata, packet_dims, packet_ndim);
@@ -610,6 +681,7 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData){
         
         
         mxSetField(mxstruct,0,"data",mxdata);
+        
     }
     
 	//Add trajectory if available
