@@ -68,6 +68,10 @@ namespace Gadgetron {
         hoNDArray< std::complex<float> > filter_E1_ref_coi_map_;
         hoNDArray< std::complex<float> > filter_E2_ref_coi_map_;
 
+        // kspace line offset in case of partial fourier
+        std::vector<int> space_matrix_offset_E1_;
+        std::vector<int> space_matrix_offset_E2_;
+
         // --------------------------------------------------
         // gadget functions
         // --------------------------------------------------
