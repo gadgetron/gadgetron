@@ -143,6 +143,13 @@ namespace Gadgetron {
         if (status != GADGET_OK)
         {
             GWARN("CmrParametricMappingGadget::process, process incoming data failed ... ");
+
+            // sending the incoming images
+            if (this->next()->putq(m1) == -1)
+            {
+                GERROR("CmrParametricMappingGadget::process, passing incoming image array on to next gadget");
+                return GADGET_FAIL;
+            }
         }
         else
         {
@@ -186,18 +193,9 @@ namespace Gadgetron {
                     return GADGET_FAIL;
                 }
             }
-
-            return GADGET_OK;
         }
 
         if (perform_timing.value()) { gt_timer_local_.stop(); }
-
-        // sending the incoming images
-        if (this->next()->putq(m1) == -1)
-        {
-            GERROR("CmrParametricMappingGadget::process, passing incoming image array on to next gadget");
-            return GADGET_FAIL;
-        }
 
         return GADGET_OK;
     }
