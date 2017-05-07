@@ -227,17 +227,17 @@
         <property><name>send_map</name><value>true</value></property>
         <property><name>send_sd_map</name><value>true</value></property>
 
-        <property><name>color_lut_map</name><value>GadgetronParametricMap.pal</value></property>
+        <property><name>color_lut_map</name><value>GadgetronT1_SR_1_5T.pal</value></property>
         <property><name>window_center_map</name><value>1300</value></property>
         <property><name>window_width_map</name><value>1300</value></property>
 
-        <property><name>color_lut_map_3T</name><value>GadgetronParametricMap_3T.pal</value></property>
+        <property><name>color_lut_map_3T</name><value>GadgetronT1_SR_3T.pal</value></property>
         <property><name>window_center_map_3T</name><value>1300</value></property>
         <property><name>window_width_map_3T</name><value>1300</value></property>
 
         <property><name>scaling_factor_map</name><value>1.0</value></property>
 
-        <property><name>color_lut_sd_map</name><value>GadgetronParametricSDMap.pal</value></property>
+        <property><name>color_lut_sd_map</name><value>GadgetronT1_SD.pal</value></property>
         <property><name>window_center_sd_map</name><value>2.0</value></property>
         <property><name>window_width_sd_map</name><value>4.0</value></property>
         <property><name>scaling_factor_sd_map</name><value>100.0</value></property>
