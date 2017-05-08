@@ -1,4 +1,8 @@
-include_directories(${MATLAB_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/toolboxes/mri_core ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math ${CMAKE_SOURCE_DIR}/toolboxes/matlab)
+include_directories(
+    ${MATLAB_INCLUDE_DIR}
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
+    ${CMAKE_SOURCE_DIR}/toolboxes/matlab)
 
 if (UNIX)
     if (APPLE)
@@ -11,10 +15,22 @@ else()
     set(MATLAB_SUFFIX ".dll")
 endif()
 
-if (UNIX)
-    add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp MatlabBufferGadget.h MatlabBufferGadget.cpp MatlabBucketReconGadget.h MatlabBucketReconGadget.cpp )
+if (UNIX) 
+    add_library(gadgetron_matlab SHARED
+        gadgetron_matlab_export.h
+        MatlabGadget.h MatlabGadget.cpp
+        MatlabBufferGadget.h
+        MatlabBufferGadget.cpp
+        MatlabBucketReconGadget.h
+        MatlabBucketReconGadget.cpp)
 else()
-    add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp)
+    add_library(gadgetron_matlab SHARED
+        gadgetron_matlab_export.h
+        MatlabGadget.h MatlabGadget.cpp
+        MatlabBufferGadget.h
+        MatlabBufferGadget.cpp
+        MatlabBucketReconGadget.h
+        MatlabBucketReconGadget.cpp)
 endif()
 set_target_properties(gadgetron_matlab PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

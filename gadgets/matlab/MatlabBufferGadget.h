@@ -38,8 +38,7 @@ public:
 
     ~MatlabBufferGadget()
     {
-    std::lock_guard<std::mutex> lock(mutex_);   
-       // Close the Matlab engine
+        std::lock_guard<std::mutex> lock(mutex_);   
         GDEBUG("Closing down Matlab\n");
         engClose(engine_);
     }
