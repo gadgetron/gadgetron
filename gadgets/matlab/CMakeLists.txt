@@ -12,7 +12,7 @@ else()
 endif()
 
 if (UNIX)
-    add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp MatlabBufferGadget.h MatlabBufferGadget.cpp )
+    add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp MatlabBufferGadget.h MatlabBufferGadget.cpp MatlabBucketReconGadget.h MatlabBucketReconGadget.cpp )
 else()
     add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp)
 endif()
