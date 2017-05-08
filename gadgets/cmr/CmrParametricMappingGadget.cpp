@@ -143,6 +143,13 @@ namespace Gadgetron {
         if (status != GADGET_OK)
         {
             GWARN("CmrParametricMappingGadget::process, process incoming data failed ... ");
+
+            // sending the incoming images
+            if (this->next()->putq(m1) == -1)
+            {
+                GERROR("CmrParametricMappingGadget::process, passing incoming image array on to next gadget");
+                return GADGET_FAIL;
+            }
         }
         else
         {
@@ -154,21 +161,17 @@ namespace Gadgetron {
                 gt_exporter_.export_array_complex(para_sd.data_, debug_folder_full_path_ + "para_sd" + str);
             }
 
+            // sending the incoming images
+            if (this->next()->putq(m1) == -1)
+            {
+                GERROR("CmrParametricMappingGadget::process, passing incoming image array on to next gadget");
+                return GADGET_FAIL;
+            }
+
             // ----------------------------------------------------------
             // fill in image header and meta
             // send out results
             // ----------------------------------------------------------
-            if ( send_map.value() && (this->fill_map_header(map)==GADGET_OK) )
-            {
-                Gadgetron::GadgetContainerMessage<IsmrmrdImageArray>* cm1 = new Gadgetron::GadgetContainerMessage<IsmrmrdImageArray>();
-                *(cm1->getObjectPtr()) = map;
-                if (this->next()->putq(cm1) == -1)
-                {
-                    GERROR("CmrParametricMappingGadget::process, passing map on to next gadget");
-                    return GADGET_FAIL;
-                }
-            }
-
             if ( send_sd_map.value() && (this->fill_sd_header(map_sd) == GADGET_OK) )
             {
                 Gadgetron::GadgetContainerMessage<IsmrmrdImageArray>* cm2 = new Gadgetron::GadgetContainerMessage<IsmrmrdImageArray>();
@@ -179,16 +182,17 @@ namespace Gadgetron {
                     return GADGET_FAIL;
                 }
             }
-        }
 
-        // set the saturation time field
-
-
-        // sending the incoming images
-        if (this->next()->putq(m1) == -1)
-        {
-            GERROR("CmrParametricMappingGadget::process, passing incoming image array on to next gadget");
-            return GADGET_FAIL;
+            if (send_map.value() && (this->fill_map_header(map) == GADGET_OK))
+            {
+                Gadgetron::GadgetContainerMessage<IsmrmrdImageArray>* cm1 = new Gadgetron::GadgetContainerMessage<IsmrmrdImageArray>();
+                *(cm1->getObjectPtr()) = map;
+                if (this->next()->putq(cm1) == -1)
+                {
+                    GERROR("CmrParametricMappingGadget::process, passing map on to next gadget");
+                    return GADGET_FAIL;
+                }
+            }
         }
 
         if (perform_timing.value()) { gt_timer_local_.stop(); }
