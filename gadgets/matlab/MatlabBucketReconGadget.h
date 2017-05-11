@@ -18,6 +18,16 @@
 #include "engine.h"     // Matlab Engine header
 #include "gadgetron_paths.h"
 
+
+// time measurement
+#include <iostream>
+#include <ctime>
+#include <ratio>
+#include <chrono>
+using namespace std;
+using namespace std::chrono;
+
+
 /*
 
 #include "ismrmrd/ismrmrd.h"
@@ -100,7 +110,7 @@ namespace Gadgetron{
         int send_matlab_command(std::string& command);
         
         IsmrmrdReconBit & getRBit(std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > & recon_data_buffers, size_t key, uint16_t espace);
-        virtual void allocateDataArrays(IsmrmrdDataBuffered &  dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref);
+        uint16_t* getEncodingDimensions(ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref);
         virtual void fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader & acqhdr, bool forref);
         virtual void stuff(std::vector<IsmrmrdAcquisitionData>::iterator it, IsmrmrdDataBuffered & dataBuffer, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref);
 
@@ -109,6 +119,8 @@ namespace Gadgetron{
         std::string startcmd_;
         bool debug_mode_;
 
+        high_resolution_clock::time_point exitTime_;
+        
         Engine *engine_;
     };
 }

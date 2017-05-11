@@ -5,6 +5,8 @@
 #include "hoNDArray_reductions.h"
 #include "MatlabUtils.h"
 
+
+
 std::mutex mutex_MBRG_;
 
 namespace Gadgetron{
@@ -160,41 +162,44 @@ int MatlabBucketReconGadget::send_matlab_command(std::string& command)
   
 int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1)
 {
-    std::cout << "\nReceived new bucket\n";
+//     std::clock_t time1 = std::clock();
+    high_resolution_clock::time_point time1 = high_resolution_clock::now();
+    
+    IsmrmrdAcquisitionBucket* bucket = m1->getObjectPtr();
     
     // LA: count the number of RO data existing in this bucket.
     // there's probably a faster way to do it
     long RO_counter = 0;
-    for (std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->data_.begin();
-        it != m1->getObjectPtr()->data_.end(); ++it)
-    {
+    for (std::vector<IsmrmrdAcquisitionData>::iterator it = bucket->data_.begin(); it != bucket->data_.end(); ++it) {
         ++RO_counter;
     }
-    
-    std::cout << "RO_counter: " << RO_counter << "\n";
-
-    //LA: allocate an array for a copy of the bucket's recon data
-    std::complex<float>* raw_data = (std::complex<float>*) malloc(RO_counter*sizeof(std::complex<float>)*128); //!!!!!!!!!!!
 
     bool init = false;
     uint16_t NE0;
     uint16_t NE1;
     uint16_t NE2;
+    uint16_t NN;
+    uint16_t NS;
     uint16_t NCHA;
-
+    std::complex<float>* raw_data;
+    uint32_t* phase_coordinates; //cannot go under 32 bit data, as it would be very quickly reached
+    
     size_t key;
-    std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > recon_data_buffers;
-
+    std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > recon_data_buffers;    
+    
+    // boolean for packet labelling
+    uint8_t* isLastPacket = (uint8_t*) mxCalloc(1, sizeof(uint8_t));
+    isLastPacket[0] = 0;
+    
     // Iterate over the RO lines of the bucket, copy them into raw_data
-    RO_counter = 0;
     IsmrmrdDataBuffered* pCurrDataBuffer = NULL;
-    for (std::vector<IsmrmrdAcquisitionData>::iterator it = m1->getObjectPtr()->data_.begin();
-        it != m1->getObjectPtr()->data_.end(); ++it)
+    for (std::vector<IsmrmrdAcquisitionData>::iterator it = bucket->data_.begin(); it != bucket->data_.end(); ++it)
     {
         //Get a reference to the header and data for this acquisition
-        ISMRMRD::AcquisitionHeader & acqhdr = *it->head_->getObjectPtr();
+        ISMRMRD::AcquisitionHeader       & acqhdr  = *it->head_->getObjectPtr();
         hoNDArray< std::complex<float> > & acqdata = *it->data_->getObjectPtr();
-
+        
+        /////////////////////// THIS WHOLE BLOCK IS NECESSARY FOR SAMPLING DESCRIPTION ///////////////////////////////////////////
         //Generate the key to the corresponding ReconData buffer
         key = getKey(acqhdr.idx);
 
@@ -210,212 +215,173 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         ISMRMRD::Encoding & encoding = hdr_.encoding[espace];
         //this bucket's imaging data stats
         IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->datastats_[espace];
-
+        
+        
         //Fill the sampling description for this data buffer, only need to fill sampling_ once per recon bit
         if (&dataBuffer != pCurrDataBuffer)
         {
             fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, false);
             pCurrDataBuffer = &dataBuffer;
         }
+        ///////////////////////////////////////////////////////////////////////////////////////////
 
-        //Make sure that the data storage for this data buffer has been allocated
-        //TODO should this check the limits, or should that be done in the stuff function?
-        //allocateDataArrays(dataBuffer, acqhdr, encoding, stats, false);
-
-
-        // Stuff the data, header and trajectory into this data buffer
-        //stuff(it, dataBuffer, encoding, stats, false);
-
-//         if(1)
-//         {
-            NE0  = (uint16_t)rbit.data_.data_.get_size(0);
-            NE1  = (uint16_t)rbit.data_.data_.get_size(1);
-            NE2  = (uint16_t)rbit.data_.data_.get_size(2);
-            NCHA = (uint16_t)rbit.data_.data_.get_size(3);
-            uint16_t npts_to_copy = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
-            init = true;
+        if(!init)
+        {
+            NCHA = acqhdr.active_channels;
+            NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
             
-            std::cout <<   "NE0: "  << NE0
-                      << ", NE1: "  << NE1
-                      << ", NE2: "  << NE2
-                      << ", NCHA: " << NCHA
-                      << ", nptscopy: " << npts_to_copy << "\n";
-//         }
-
-
+            uint16_t* dims = getEncodingDimensions(acqhdr, encoding, stats, false);
+            NE1 = dims[1];
+            NE2 = dims[2];
+            NN  = dims[5];
+            NS  = dims[6];
+            delete[] dims;
+//             std::cout << NE1 << "/"
+//                       << NE2 << "/"
+//                       << NN  << "/"
+//                       << NS  << "\n";
+            
+            
+            raw_data = (std::complex<float>*) malloc(RO_counter*sizeof(std::complex<float>)*NE0*NCHA);
+//             std::cout << "New bucket: contains " << RO_counter << " RO lines of " << NE0 << " data points x " << NCHA << " channels.\n";
+            
+            
+            
+            // this coordinates copy might be unecessary
+            phase_coordinates = (uint32_t*) mxCalloc(RO_counter*NCHA, sizeof(uint32_t));
+            
+            RO_counter = 0; //recycle this counter so that it can be used to track the index within this loop
+            init=true;
+        }
+        
+        // Here we're accessing at the 24th bit of flags. 24th is the bit index of ACQ_LAST_IN_MEASUREMENT
+        uint64_t flags = it->head_->getObjectPtr()->flags;
+        if( ((flags & ( 1 << 24 )) >> 24) )  
+            isLastPacket[0] = 1;
+        
+        
         //Copy this RO line into raw_data
-        // what about echoes ? is it comprised in RO_counter ?
         for (uint16_t cha = 0; cha < NCHA; cha++)
-            memcpy(raw_data + RO_counter*cha*NE0*NE1*NE2 + cha*NE0*NE1*NE2, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*npts_to_copy);
+        {
+            memcpy(raw_data + RO_counter*NCHA*NE0 + cha*NE0, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*NE0);
+            
+            phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)    it->head_->getObjectPtr()->idx.kspace_encode_step_1 +
+                                                       NE1          *it->head_->getObjectPtr()->idx.kspace_encode_step_2 +
+                                                       NE1*NE2      *cha +
+                                                       NE1*NE2*NCHA *it->head_->getObjectPtr()->idx.contrast;
+            
+            //I thought this was take less time to extract, but it doesn't improve anything, so better keep the standard format.
+//             phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)   cha +
+//                                                        NCHA        *it->head_->getObjectPtr()->idx.contrast +
+//                                                        NCHA*NN     *it->head_->getObjectPtr()->idx.kspace_encode_step_2 +
+//                                                        NCHA*NN*NE2 *it->head_->getObjectPtr()->idx.kspace_encode_step_1; 
+        }
 
         ++RO_counter;
     }
     
+//     std::clock_t time2 = std::clock();
+    high_resolution_clock::time_point time2 = high_resolution_clock::now();
+    
+    std::lock_guard<std::mutex> lock(mutex_MBRG_); 
     
     
-    
-    
-    ///////////////////////// BUFFER TO MXSTRUCT //////////////////////////
-    const char * field_names[] = {"data","trajectory","headers","samplingdescription"};
+    ///////////////////////// RAWDATA TO MXSTRUCT //////////////////////////
+    const char * field_names[] = {"data","trajectory","headers","samplingdescription", "kspace_encode_step"};
 	mwSize one = 1;
-	auto mxstruct = mxCreateStructArray(1,&one,4,field_names);
-
-
-	if (!mxstruct) throw std::runtime_error("Failed to allocate Matlab struct");
-
-    //size_t nelem  = buffer->data_.get_number_of_elements();
-    //size_t h_nelem  = buffer->headers_.get_number_of_elements();
-
-    /*
-    size_t nRO    = buffer->data_.get_size(0);
-    size_t nPE    = buffer->data_.get_size(1);
-    size_t n3D    = buffer->data_.get_size(2);
-    size_t nCH    = buffer->data_.get_size(3);
-    size_t N      = buffer->data_.get_size(4);
-    size_t S      = buffer->data_.get_size(5);
-    size_t wtf      = buffer->data_.get_size(6);
-    */
-     
-    // count the number of non-nul RO lines in this buffer (there's probably a more elegant built-in method)
-    /*
-    size_t RO_counter = 0;
-    for (size_t l = 0; l < h_nelem; ++l)
-        if((bool) buffer->headers_[l].read_dir[2])
-            RO_counter += nCH;
-     */
+	auto mxstruct = mxCreateStructArray(1,&one,5,field_names);
+	if (!mxstruct)
+        throw std::runtime_error("Failed to allocate Matlab struct");
 
     // create the packet. A copy of the data is being done here
-    size_t packet_n_elem = RO_counter * NE0;
-    size_t packet_ndim = 2;//buffer->data_.get_number_of_dimensions();
-    mwSize* packet_dims = new mwSize[packet_ndim];
+    size_t packet_n_elem = RO_counter * NE0 * NCHA;
+    size_t packet_ndim = 2;
+    mwSize* packet_dims = new mwSize[packet_ndim]; //no need to delete ?
 
     packet_dims[0] = NE0;
-    packet_dims[1] = RO_counter;
+    packet_dims[1] = RO_counter*NCHA; // this is thus echo x line x partition
 
     float* real_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
     float* imag_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
 
-    /*
-    size_t counter = 0;
-    size_t h_idx = 0;
-    for (size_t ch = 0; ch < NCHA; ++ch){
-        for (size_t l = 0; l < h_nelem; ++l) {
-            if((bool) buffer->headers_[l].read_dir[2])
-            {
-                for (size_t r = 0; r < nRO; ++r){
-                        h_idx = ch*nRO*nPE*n3D + l*nRO + r;
-                        real_data[counter] = real(raw_data[h_idx]);
-                        imag_data[counter] = imag(raw_data[h_idx]);
-                        ++counter;
-                }
-            }
-        }
-    }
-    */
-    for(size_t i = 0; i<NE0*RO_counter; ++i)
+    for(size_t i = 0; i<packet_n_elem; ++i)
     {
         real_data[i] = real(raw_data[i]);
         imag_data[i] = imag(raw_data[i]);
     }
-    
     delete[] raw_data;
-
+    
+    // recon data
     auto mxdata =  mxCreateNumericMatrix(0, 0, mxSINGLE_CLASS, mxCOMPLEX);
     mxSetDimensions(mxdata, packet_dims, packet_ndim);
     mxSetData      (mxdata, real_data);
     mxSetImagData  (mxdata, imag_data);
-
     mxSetField(mxstruct,0,"data",mxdata);
-        
     
-    // need to fix that later
+    // encode step 1
+//     auto mxstep1 = mxCreateNumericMatrix((mwSize) RO_counter, 1, mxUINT16_CLASS, mxREAL);
+//     mxSetData(mxstep1, line_coordinates);
+//     mxSetField(mxstruct,0,"kspace_encode_step_1",mxstep1);
+    
+    // encode step 1
+//     auto mxstep2 = mxCreateNumericMatrix((mwSize) RO_counter, 1, mxUINT16_CLASS, mxREAL);
+//     mxSetData(mxstep2, part_coordinates);
+//     mxSetField(mxstruct,0,"kspace_encode_step_2",mxstep1);
+    
+    // encode
+    auto mxstep = mxCreateNumericMatrix((mwSize) RO_counter*NCHA, 1, mxUINT32_CLASS, mxREAL);
+    mxSetData(mxstep, phase_coordinates);
+    mxSetField(mxstruct,0,"kspace_encode_step",mxstep);
+    
+    
     /*
 	//Add trajectory if available
-	if (buffer->trajectory_){
-		auto & trajectory = *buffer->trajectory_;
+	if (pCurrDataBuffer->trajectory_){
+		auto & trajectory = *pCurrDataBuffer->trajectory_;
 		int traj_fieldnumber = mxAddField(mxstruct,"trajectory");
 		auto mxtraj = hoNDArrayToMatlab(&trajectory);
 		mxSetFieldByNumber(mxstruct,0,traj_fieldnumber,mxtraj);
 	}
-
+    
+    
 	//Add headers
 	std::cout << "Adding headers...";
-	mwSize num_headers = buffer->headers_.get_number_of_elements();
+	mwSize num_headers = pCurrDataBuffer->headers_.get_number_of_elements();
 	auto mxheaders = mxCreateNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
-	memcpy(mxGetData(mxheaders),buffer->headers_.get_data_ptr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
+	memcpy(mxGetData(mxheaders),pCurrDataBuffer->headers_.get_data_ptr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
 	mxSetField(mxstruct,0,"headers",mxheaders);
-
-	auto samplingdescription = samplingdescriptionToMatlabStruct(&buffer->sampling_);
-	mxSetField(mxstruct,0,"samplingdescription",samplingdescription);
-    std::cout << " done." << std::endl;
-	return mxstruct;
     */
     
-    ////////////////////////////BUFFER TO MXSTRUCT END ////////////////////////////////
-    
-    
-    
-    //Send all the ReconData messages
-    // LA: no idea what this does
-    /*
-    GDEBUG("End of bucket reached, sending out %d ReconData buffers\n", recon_data_buffers.size());
-    for(std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* >::iterator it = recon_data_buffers.begin(); it != recon_data_buffers.end(); it++)
-    {
-        //GDEBUG_STREAM("Sending: " << it->first << std::endl);
-        if (it->second) {
-            if (this->next()->putq(it->second) == -1) {
-                it->second->release();
-                throw std::runtime_error("Failed to pass bucket down the chain\n");
-            }
-        }
-    }
+	auto samplingdescription = samplingdescriptionToMatlabStruct(&pCurrDataBuffer->sampling_);
+	mxSetField(mxstruct,0,"samplingdescription",samplingdescription);
 
-    //Clear the recondata buffer map
-    recon_data_buffers.clear();  // is this necessary?
-     */
-
-    //We can release the incoming bucket now. This will release all of the data it contains.
-//     m1->release(); // done later
+ 
+    auto mxIsLastPacket = mxCreateNumericMatrix(1, 1, mxINT8_CLASS, mxREAL);
+    mxSetData(mxIsLastPacket, isLastPacket);
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    GDEBUG("Starting MatlabBufferGadget::process\n");
-    
-    std::lock_guard<std::mutex> lock(mutex_MBRG_);   
-
 	// Initialize a string for matlab commands
 	std::string cmd;
 
-	auto recon_data = m1->getObjectPtr();
-	mwSize nencoding_spaces = 1;//recon_data->rbit_.size();
-	const char* fieldnames[2] = {"data","reference"};
-	auto reconArray = mxCreateStructArray(1,&nencoding_spaces,2,fieldnames);
+	mwSize nencoding_spaces = 1;
+	const char* fieldnames[3] = {"data","reference", "isLastPacket"};
+	auto reconArray = mxCreateStructArray(1,&nencoding_spaces,3,fieldnames);
 
     ///////////////////////////////////
 
-    mxSetField(reconArray,1,"data",mxstruct);
-    /*
-    if (recon_data->rbit_[i].ref_)
-    {
-        auto mxref = BufferToMatlabStruct(recon_data->rbit_[i].ref_.get_ptr());
-        mxSetField(reconArray,i,"reference",mxref);
-    }
-    */
+    mxSetField(reconArray,0,"data",mxstruct);
+    mxSetField(reconArray,0,"isLastPacket",mxIsLastPacket);
+    
+    high_resolution_clock::time_point time3 = high_resolution_clock::now();
+    
     engPutVariable(engine_, "recon_data", reconArray);
     
-    GDEBUG("Sending cmd...\n");
+    high_resolution_clock::time_point time4 = high_resolution_clock::now();
+    
     cmd = "[imageQ,bufferQ] = matgadget.run_process(recon_data); matgadget.emptyQ();";
     send_matlab_command(cmd);
-    GDEBUG("done.\n");
+    
+    high_resolution_clock::time_point time5 = high_resolution_clock::now();
 
     ///////////////////////// FINITION //////////////////////////
 	// Get the size of the gadget's queue
@@ -426,13 +392,11 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 	}
 
 	size_t qlen = mxGetNumberOfElements(imageQ);
-	if (debug_mode_) {
-	GDEBUG("Image Queue size: %d \n", qlen);
-	}
+
 	const mwSize* dims = mxGetDimensions(imageQ);
 	mwSize ndims = mxGetNumberOfDimensions(imageQ);
 
-	GDEBUG("Number of ndims %i \n",ndims);
+	
 
 	//Read all Image bytes
 	for (mwIndex idx = 0; idx < qlen; idx++) {
@@ -459,9 +423,11 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 	mxArray* bufferQ = engGetVariable(engine_,"bufferQ");
     
 	qlen = mxGetNumberOfElements(bufferQ);
-	if (debug_mode_) {
-		GDEBUG("Buffer Queue size: %d \n", qlen);
-		}
+// 	if (debug_mode_) {
+// 		GDEBUG("Buffer Queue size: %d \n", qlen);
+//         GDEBUG("Image Queue size: %d \n", qlen);
+//         GDEBUG("Number of ndims %i \n"  ,ndims);
+//     }
     
 	for (mwIndex idx = 0; idx <qlen; idx++){
 
@@ -487,9 +453,31 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 	mxDestroyArray(imageQ);
 	mxDestroyArray(reconArray);
 
-    std::cout << "segfaults here ";
 	m1->release();
-    std::cout << "and there\n";
+    
+    high_resolution_clock::time_point time6 = high_resolution_clock::now();
+
+    
+//     clock_t CPS = CLOCKS_PER_SEC;
+    duration<double> time_span1 = duration_cast<duration<double>>(time1 - exitTime_);
+    duration<double> time_span2 = duration_cast<duration<double>>(time2 - time1);
+    duration<double> time_span3 = duration_cast<duration<double>>(time3 - time2);
+    duration<double> time_span4 = duration_cast<duration<double>>(time4 - time3);
+    duration<double> time_span5 = duration_cast<duration<double>>(time5 - time4);
+    duration<double> time_span6 = duration_cast<duration<double>>(time6 - time5);
+    
+    //     exitTime_ = std::clock();
+    exitTime_ = high_resolution_clock::now();
+    
+    std::cout   <<   "----------------- Execution times [s] -----------------"
+                << "\nOutside process   : " << time_span1.count()
+                << "\nBucket to raw data: " << time_span2.count()
+                << "\nRaw data to mxdata: " << time_span3.count()
+                << "\nmxdata transfer   : " << time_span4.count()
+                << "\nMATLAB extraction : " << time_span5.count()
+                << "\nFinition          : " << time_span6.count()
+                << "\n-------------------------------------------------------";
+    
     return GADGET_OK;
   }
   
@@ -790,207 +778,185 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
   }
 
   
-  void MatlabBucketReconGadget::allocateDataArrays(IsmrmrdDataBuffered & dataBuffer, ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref)
-  {
-    if (dataBuffer.data_.get_number_of_elements() == 0)
-      {
-        //Allocate the reference data array
-        //7D,  fixed order [E0, E1, E2, CHA, N, S, LOC]
-        //11D, fixed order [E0, E1, E2, CHA, SLC, PHS, CON, REP, SET, SEG, AVE]
-        uint16_t NE0;
-        if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) ) {
-            // if seperate or external calibration mode, using the acq length for NE0
-            if (encoding.parallelImaging)
-            {
-                NE0 = acqhdr.number_of_samples;
-            }
-            else
-            {
-                NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
-            }
-        } else {
+uint16_t* MatlabBucketReconGadget::getEncodingDimensions(ISMRMRD::AcquisitionHeader & acqhdr, ISMRMRD::Encoding encoding, IsmrmrdAcquisitionBucketStats & stats, bool forref)
+{
+    //// NE0 ////
+    uint16_t NE0;
+    if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) ) {
+        // if seperate or external calibration mode, using the acq length for NE0
+        if (encoding.parallelImaging)
+        {
+            NE0 = acqhdr.number_of_samples;
+        }
+        else
+        {
             NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
         }
+    } else {
+        NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
+    }
 
-        uint16_t NE1;
-        if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) )
+    //// NE1 ////
+    uint16_t NE1;
+    if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) )
+    {
+        if (encoding.parallelImaging)
         {
-            if (encoding.parallelImaging)
+            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
+                || encoding.parallelImaging.get().calibrationMode.get() == "external"))
             {
-                if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate"
-                    || encoding.parallelImaging.get().calibrationMode.get() == "external"))
-                {
-                    NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
-                }
-                else
-                {
-                    NE1 = encoding.encodedSpace.matrixSize.y;
-                }
-            }
-            else
-            {
-                if (encoding.encodingLimits.kspace_encoding_step_1.is_present())
-                {
-                    NE1 = encoding.encodingLimits.kspace_encoding_step_1->maximum - encoding.encodingLimits.kspace_encoding_step_1->minimum + 1;
-                }
-                else
-                {
-                    NE1 = encoding.encodedSpace.matrixSize.y;
-                }
-            }
-        }
-        else {
-            if (encoding.encodingLimits.kspace_encoding_step_1.is_present()) {
-                NE1 = encoding.encodingLimits.kspace_encoding_step_1->maximum - encoding.encodingLimits.kspace_encoding_step_1->minimum + 1;
-            }
-            else {
                 NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
             }
-        }
-
-        uint16_t NE2;
-        if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) )
-        {
-            if (encoding.parallelImaging)
+            else
             {
-                if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate" || encoding.parallelImaging.get().calibrationMode.get() == "external"))
-                {
-                    NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
-                }
-                else
-                {
-                    NE2 = encoding.encodedSpace.matrixSize.z;
-                }
+                NE1 = encoding.encodedSpace.matrixSize.y;
+            }
+        }
+        else
+        {
+            if (encoding.encodingLimits.kspace_encoding_step_1.is_present())
+            {
+                NE1 = encoding.encodingLimits.kspace_encoding_step_1->maximum - encoding.encodingLimits.kspace_encoding_step_1->minimum + 1;
             }
             else
             {
-                if (encoding.encodingLimits.kspace_encoding_step_2.is_present())
-                {
-                    NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
-                }
-                else
-                {
-                    NE2 = encoding.encodedSpace.matrixSize.z;
-                }
+                NE1 = encoding.encodedSpace.matrixSize.y;
             }
         }
+    }
+    else {
+        if (encoding.encodingLimits.kspace_encoding_step_1.is_present()) {
+            NE1 = encoding.encodingLimits.kspace_encoding_step_1->maximum - encoding.encodingLimits.kspace_encoding_step_1->minimum + 1;
+        }
         else {
+            NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
+        }
+    }
+
+    //// NE2 ////
+    uint16_t NE2;
+    if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) )
+    {
+        if (encoding.parallelImaging)
+        {
+            if (forref && (encoding.parallelImaging.get().calibrationMode.get() == "separate" || encoding.parallelImaging.get().calibrationMode.get() == "external"))
+            {
+                NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
+            }
+            else
+            {
+                NE2 = encoding.encodedSpace.matrixSize.z;
+            }
+        }
+        else
+        {
             if (encoding.encodingLimits.kspace_encoding_step_2.is_present())
             {
                 NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
             }
             else
             {
-                NE2 = *stats.kspace_encode_step_2.rbegin() - *stats.kspace_encode_step_2.begin() + 1;
+                NE2 = encoding.encodedSpace.matrixSize.z;
             }
         }
-
-        uint16_t NCHA = acqhdr.active_channels;
-
-        uint16_t NLOC;
-        if (split_slices_)
+    }
+    else {
+        if (encoding.encodingLimits.kspace_encoding_step_2.is_present())
         {
-            NLOC = 1;
+            NE2 = encoding.encodingLimits.kspace_encoding_step_2->maximum - encoding.encodingLimits.kspace_encoding_step_2->minimum + 1;
         }
         else
         {
-            if (encoding.encodingLimits.slice.is_present())
-            {
-                NLOC = encoding.encodingLimits.slice->maximum - encoding.encodingLimits.slice->minimum + 1;
-            }
-            else
-            {
-                NLOC = 1;
-            }
+            NE2 = *stats.kspace_encode_step_2.rbegin() - *stats.kspace_encode_step_2.begin() + 1;
+        }
+    }
+    
+    //// NCHA ////
+    uint16_t NCHA = acqhdr.active_channels;
 
-            // if the AcquisitionAccumulateTriggerGadget sort by SLC, then the stats should be used to determine NLOC
-            size_t NLOC_received = *stats.slice.rbegin() - *stats.slice.begin() + 1;
-            if (NLOC_received < NLOC)
-            {
-                NLOC = NLOC_received;
-            }
+    //// NLOC ////
+    uint16_t NLOC;
+    if (split_slices_)
+    {
+        NLOC = 1;
+    }
+    else
+    {
+        if (encoding.encodingLimits.slice.is_present())
+        {
+            NLOC = encoding.encodingLimits.slice->maximum - encoding.encodingLimits.slice->minimum + 1;
+        }
+        else
+        {
+            NLOC = 1;
         }
 
-        uint16_t NN;
-        switch (N_) {
-        case PHASE:
-          NN = *stats.phase.rbegin() - *stats.phase.begin() + 1;
-          break;
-        case CONTRAST:
-          NN = *stats.contrast.rbegin() - *stats.contrast.begin() + 1;
-          break;
-        case REPETITION:
-          NN = *stats.repetition.rbegin() - *stats.repetition.begin() + 1;
-          break;
-        case SET:
-          NN = *stats.set.rbegin() - *stats.set.begin() + 1;
-          break;
-        case SEGMENT:
-          NN = *stats.segment.rbegin() - *stats.segment.begin() + 1;
-          break;
-        case AVERAGE:
-          NN = *stats.average.rbegin() - *stats.average.begin() + 1;
-          break;
-        case SLICE:
-          NN =  *stats.slice.rbegin() - *stats.slice.begin() + 1;
-          break;
-        default:
-          NN = 1;
+        // if the AcquisitionAccumulateTriggerGadget sort by SLC, then the stats should be used to determine NLOC
+        size_t NLOC_received = *stats.slice.rbegin() - *stats.slice.begin() + 1;
+        if (NLOC_received < NLOC)
+        {
+            NLOC = NLOC_received;
         }
+    }
 
-        uint16_t NS;
-        switch (S_) {
-        case PHASE:
-          NS = *stats.phase.rbegin() - *stats.phase.begin() + 1;
-          break;
-        case CONTRAST:
-          NS = *stats.contrast.rbegin() - *stats.contrast.begin() + 1;
-          break;
-        case REPETITION:
-          NS = *stats.repetition.rbegin() - *stats.repetition.begin() + 1;
-          break;
-        case SET:
-          NS = *stats.set.rbegin() - *stats.set.begin() + 1;
-          break;
-        case SEGMENT:
-          NS = *stats.segment.rbegin() - *stats.segment.begin() + 1;
-          break;
-        case AVERAGE:
-          NS = *stats.average.rbegin() - *stats.average.begin() + 1;
-          break;
-        case SLICE:
-          NS =  *stats.slice.rbegin() - *stats.slice.begin() + 1;
-          break;
-        default:
-          NS = 1;
-        }
+    //// NN ////
+    uint16_t NN;
+    switch (N_) {
+    case PHASE:
+      NN = *stats.phase.rbegin() - *stats.phase.begin() + 1;
+      break;
+    case CONTRAST:
+      NN = *stats.contrast.rbegin() - *stats.contrast.begin() + 1;
+      break;
+    case REPETITION:
+      NN = *stats.repetition.rbegin() - *stats.repetition.begin() + 1;
+      break;
+    case SET:
+      NN = *stats.set.rbegin() - *stats.set.begin() + 1;
+      break;
+    case SEGMENT:
+      NN = *stats.segment.rbegin() - *stats.segment.begin() + 1;
+      break;
+    case AVERAGE:
+      NN = *stats.average.rbegin() - *stats.average.begin() + 1;
+      break;
+    case SLICE:
+      NN =  *stats.slice.rbegin() - *stats.slice.begin() + 1;
+      break;
+    default:
+      NN = 1;
+    }
 
-        GDEBUG_CONDITION_STREAM(verbose.value(), "Data dimensions [RO E1 E2 CHA N S SLC] : [" << NE0 << " " << NE1 << " " << NE2 << " " << NCHA << " " << NN << " " << NS << " " << NLOC <<"]");
-
-        //Allocate the array for the data
-        dataBuffer.data_.create(NE0, NE1, NE2, NCHA, NN, NS, NLOC);
-        //clear(&dataBuffer.data_); // bottleneck
-
-        //Allocate the array for the headers
-        dataBuffer.headers_.create(NE1, NE2, NN, NS, NLOC);
-
-        //Allocate the array for the trajectories
-        uint16_t TRAJDIM = acqhdr.trajectory_dimensions;
-        if (TRAJDIM > 0)
-          {
-                dataBuffer.trajectory_ = hoNDArray<float>(TRAJDIM, NE0,NE1,NE2, NN, NS, NLOC);
-            clear(dataBuffer.trajectory_.get_ptr());
-          }
-
-        //boost::shared_ptr< std::vector<size_t> > dims =  dataBuffer.data_.get_dimensions();
-        //GDEBUG_STREAM("NDArray dims: ");
-        //for( std::vector<size_t>::const_iterator i = dims->begin(); i != dims->end(); ++i) {
-        //    GDEBUG_STREAM(*i << ' ');
-        //}
-        //GDEBUG_STREAM(std::endl);
-      }
-
-  }
+    //// NS ////
+    uint16_t NS;
+    switch (S_) {
+    case PHASE:
+      NS = *stats.phase.rbegin() - *stats.phase.begin() + 1;
+      break;
+    case CONTRAST:
+      NS = *stats.contrast.rbegin() - *stats.contrast.begin() + 1;
+      break;
+    case REPETITION:
+      NS = *stats.repetition.rbegin() - *stats.repetition.begin() + 1;
+      break;
+    case SET:
+      NS = *stats.set.rbegin() - *stats.set.begin() + 1;
+      break;
+    case SEGMENT:
+      NS = *stats.segment.rbegin() - *stats.segment.begin() + 1;
+      break;
+    case AVERAGE:
+      NS = *stats.average.rbegin() - *stats.average.begin() + 1;
+      break;
+    case SLICE:
+      NS =  *stats.slice.rbegin() - *stats.slice.begin() + 1;
+      break;
+    default:
+      NS = 1;
+    }
+    
+    return new uint16_t[7]{NE0,NE1,NE2,NCHA,NLOC,NN,NS};
+}
   
 
   void MatlabBucketReconGadget::fillSamplingDescription(SamplingDescription & sampling, ISMRMRD::Encoding & encoding, IsmrmrdAcquisitionBucketStats & stats, ISMRMRD::AcquisitionHeader& acqhdr, bool forref)
