@@ -476,7 +476,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
                 << "\nmxdata transfer   : " << time_span4.count()
                 << "\nMATLAB extraction : " << time_span5.count()
                 << "\nFinition          : " << time_span6.count()
-                << "\n-------------------------------------------------------";
+                << "\n-------------------------------------------------------\n";
     
     return GADGET_OK;
   }
