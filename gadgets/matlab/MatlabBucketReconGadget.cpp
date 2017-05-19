@@ -1,6 +1,7 @@
 #include "MatlabBucketReconGadget.h"
 #include "../mri_core/GadgetIsmrmrdReadWrite.h" //LA: added ../mri_core/, is that the correct way ?
 #include "mri_core_data.h"
+#include "mri_core_def.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_reductions.h"
 #include "MatlabUtils.h"
@@ -162,6 +163,8 @@ int MatlabBucketReconGadget::send_matlab_command(std::string& command)
   
 int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1)
 {
+    
+    
 //     std::clock_t time1 = std::clock();
     high_resolution_clock::time_point time1 = high_resolution_clock::now();
     
@@ -173,6 +176,10 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     for (std::vector<IsmrmrdAcquisitionData>::iterator it = bucket->data_.begin(); it != bucket->data_.end(); ++it) {
         ++RO_counter;
     }
+    for (std::vector<IsmrmrdAcquisitionData>::iterator it = bucket->ref_.begin(); it != bucket->ref_.end(); ++it) {
+        ++RO_counter;
+    }
+    
 
     bool init = false;
     uint16_t NE0;
@@ -192,63 +199,37 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     isLastPacket[0] = 0;
     
     // Iterate over the RO lines of the bucket, copy them into raw_data
-    IsmrmrdDataBuffered* pCurrDataBuffer = NULL;
+//     IsmrmrdDataBuffered* pCurrDataBuffer = NULL;
+    Gadgetron::GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* headersToMatlab = NULL;
+    
     for (std::vector<IsmrmrdAcquisitionData>::iterator it = bucket->data_.begin(); it != bucket->data_.end(); ++it)
     {
         //Get a reference to the header and data for this acquisition
         ISMRMRD::AcquisitionHeader       & acqhdr  = *it->head_->getObjectPtr();
         hoNDArray< std::complex<float> > & acqdata = *it->data_->getObjectPtr();
         
-        /////////////////////// THIS WHOLE BLOCK IS NECESSARY FOR SAMPLING DESCRIPTION ///////////////////////////////////////////
-        //Generate the key to the corresponding ReconData buffer
-        key = getKey(acqhdr.idx);
-
-        //The storage is based on the encoding space
-        uint16_t espace = acqhdr.encoding_space_ref;
-
-        //Get some references to simplify the notation
-        //the reconstruction bit corresponding to this ReconDataBuffer and encoding space
-        IsmrmrdReconBit & rbit = getRBit(recon_data_buffers, key, espace);
-        //and the corresponding data buffer for the imaging data
-        IsmrmrdDataBuffered & dataBuffer = rbit.data_;
-        //this encoding space's xml header info
-        ISMRMRD::Encoding & encoding = hdr_.encoding[espace];
-        //this bucket's imaging data stats
-        IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->datastats_[espace];
-        
-        
-        //Fill the sampling description for this data buffer, only need to fill sampling_ once per recon bit
-        if (&dataBuffer != pCurrDataBuffer)
-        {
-            fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, false);
-            pCurrDataBuffer = &dataBuffer;
-        }
-        ///////////////////////////////////////////////////////////////////////////////////////////
-
         if(!init)
         {
             NCHA = acqhdr.active_channels;
             NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
             
+            key = getKey(acqhdr.idx);
+            uint16_t espace = acqhdr.encoding_space_ref;
+            IsmrmrdReconBit & rbit = getRBit(recon_data_buffers, key, espace);
+            IsmrmrdDataBuffered & dataBuffer = rbit.data_;
+            ISMRMRD::Encoding & encoding = hdr_.encoding[espace];
+            IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->datastats_[espace];
+            fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, false);
             uint16_t* dims = getEncodingDimensions(acqhdr, encoding, stats, false);
+            
             NE1 = dims[1];
             NE2 = dims[2];
             NN  = dims[5];
             NS  = dims[6];
             delete[] dims;
-//             std::cout << NE1 << "/"
-//                       << NE2 << "/"
-//                       << NN  << "/"
-//                       << NS  << "\n";
             
-            
-            raw_data = (std::complex<float>*) malloc(RO_counter*sizeof(std::complex<float>)*NE0*NCHA);
-//             std::cout << "New bucket: contains " << RO_counter << " RO lines of " << NE0 << " data points x " << NCHA << " channels.\n";
-            
-            
-            
-            // this coordinates copy might be unecessary
-            phase_coordinates = (uint32_t*) mxCalloc(RO_counter*NCHA, sizeof(uint32_t));
+            raw_data = (std::complex<float>*) malloc(RO_counter*NCHA*NE0*sizeof(std::complex<float>));
+            phase_coordinates = (uint32_t*) mxCalloc(RO_counter*NCHA,    sizeof(uint32_t));
             
             RO_counter = 0; //recycle this counter so that it can be used to track the index within this loop
             init=true;
@@ -257,7 +238,10 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         // Here we're accessing at the 24th bit of flags. 24th is the bit index of ACQ_LAST_IN_MEASUREMENT
         uint64_t flags = it->head_->getObjectPtr()->flags;
         if( ((flags & ( 1 << 24 )) >> 24) )  
+        {
             isLastPacket[0] = 1;
+            headersToMatlab = it->head_;
+        }
         
         
         //Copy this RO line into raw_data
@@ -269,8 +253,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
                                                        NE1          *it->head_->getObjectPtr()->idx.kspace_encode_step_2 +
                                                        NE1*NE2      *cha +
                                                        NE1*NE2*NCHA *it->head_->getObjectPtr()->idx.contrast;
-            
-            //I thought this was take less time to extract, but it doesn't improve anything, so better keep the standard format.
+            //I thought this would take less time to extract, but it doesn't improve anything, so better keep the standard format.
 //             phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)   cha +
 //                                                        NCHA        *it->head_->getObjectPtr()->idx.contrast +
 //                                                        NCHA*NN     *it->head_->getObjectPtr()->idx.kspace_encode_step_2 +
@@ -280,16 +263,74 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         ++RO_counter;
     }
     
-//     std::clock_t time2 = std::clock();
+    for (std::vector<IsmrmrdAcquisitionData>::iterator it = bucket->ref_.begin(); it != bucket->ref_.end(); ++it)
+    {
+        //Get a reference to the header and data for this acquisition
+        ISMRMRD::AcquisitionHeader       & acqhdr  = *it->head_->getObjectPtr();
+        hoNDArray< std::complex<float> > & acqdata = *it->data_->getObjectPtr();
+        
+        if(!init)
+        {
+            NCHA = acqhdr.active_channels;
+            NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
+            
+            key = getKey(acqhdr.idx);
+            uint16_t espace = acqhdr.encoding_space_ref;
+            IsmrmrdReconBit & rbit = getRBit(recon_data_buffers, key, espace);
+            if (!rbit.ref_)
+                rbit.ref_ = IsmrmrdDataBuffered();
+            IsmrmrdDataBuffered & dataBuffer = *rbit.ref_;
+            ISMRMRD::Encoding & encoding = hdr_.encoding[espace];
+            IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->refstats_[espace];
+            
+            fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, true);
+            uint16_t* dims = getEncodingDimensions(acqhdr, encoding, stats, true);
+
+            NE1 = dims[1];
+            NE2 = dims[2];
+            NN  = dims[5];
+            NS  = dims[6];
+            delete[] dims;
+
+            raw_data = (std::complex<float>*) malloc(RO_counter*NCHA*NE0*sizeof(std::complex<float>));
+            phase_coordinates = (uint32_t*) mxCalloc(RO_counter*NCHA,    sizeof(uint32_t));
+
+            RO_counter = 0; //recycle this counter so that it can be used to track the index within this loop
+            init=true;
+        }
+        
+        // Here we're accessing at the 24th bit of flags. 24th is the bit index of ACQ_LAST_IN_MEASUREMENT
+        uint64_t flags = it->head_->getObjectPtr()->flags;
+        if( ((flags & ( 1 << 24 )) >> 24) )  
+        {
+            isLastPacket[0] = 1;
+            headersToMatlab = it->head_;
+        }
+        
+        //Copy this RO line into raw_data
+        for (uint16_t cha = 0; cha < NCHA; cha++)
+        {
+            memcpy(raw_data + RO_counter*NCHA*NE0 + cha*NE0, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*NE0);
+            
+            phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)    it->head_->getObjectPtr()->idx.kspace_encode_step_1 +
+                                                       NE1          *it->head_->getObjectPtr()->idx.kspace_encode_step_2 +
+                                                       NE1*NE2      *cha +
+                                                       NE1*NE2*NCHA *it->head_->getObjectPtr()->idx.contrast;
+        }
+
+        ++RO_counter;
+    }
+    
     high_resolution_clock::time_point time2 = high_resolution_clock::now();
     
     std::lock_guard<std::mutex> lock(mutex_MBRG_); 
     
     
     ///////////////////////// RAWDATA TO MXSTRUCT //////////////////////////
-    const char * field_names[] = {"data","trajectory","headers","samplingdescription", "kspace_encode_step"};
+//     const char * field_names[] = {"data","trajectory","headers","samplingdescription", "kspace_encode_step"};
+    const char * field_names[] = {"data", "headers", "kspace_encode_step"};
 	mwSize one = 1;
-	auto mxstruct = mxCreateStructArray(1,&one,5,field_names);
+	auto mxstruct = mxCreateStructArray(1,&one,3,field_names); // always check the number of fields, otherwise segfault
 	if (!mxstruct)
         throw std::runtime_error("Failed to allocate Matlab struct");
 
@@ -300,7 +341,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 
     packet_dims[0] = NE0;
     packet_dims[1] = RO_counter*NCHA; // this is thus echo x line x partition
-
+    
     float* real_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
     float* imag_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
 
@@ -318,21 +359,10 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     mxSetImagData  (mxdata, imag_data);
     mxSetField(mxstruct,0,"data",mxdata);
     
-    // encode step 1
-//     auto mxstep1 = mxCreateNumericMatrix((mwSize) RO_counter, 1, mxUINT16_CLASS, mxREAL);
-//     mxSetData(mxstep1, line_coordinates);
-//     mxSetField(mxstruct,0,"kspace_encode_step_1",mxstep1);
-    
-    // encode step 1
-//     auto mxstep2 = mxCreateNumericMatrix((mwSize) RO_counter, 1, mxUINT16_CLASS, mxREAL);
-//     mxSetData(mxstep2, part_coordinates);
-//     mxSetField(mxstruct,0,"kspace_encode_step_2",mxstep1);
-    
     // encode
     auto mxstep = mxCreateNumericMatrix((mwSize) RO_counter*NCHA, 1, mxUINT32_CLASS, mxREAL);
     mxSetData(mxstep, phase_coordinates);
     mxSetField(mxstruct,0,"kspace_encode_step",mxstep);
-    
     
     /*
 	//Add trajectory if available
@@ -350,11 +380,22 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 	auto mxheaders = mxCreateNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
 	memcpy(mxGetData(mxheaders),pCurrDataBuffer->headers_.get_data_ptr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
 	mxSetField(mxstruct,0,"headers",mxheaders);
-    */
+    
     
 	auto samplingdescription = samplingdescriptionToMatlabStruct(&pCurrDataBuffer->sampling_);
 	mxSetField(mxstruct,0,"samplingdescription",samplingdescription);
-
+    */
+//     for(int i=0;i<pCurrDataBuffer->headers_.get_number_of_elements(); ++i)
+//         std::cout << (*(pCurrDataBuffer->headers_.get_data_ptr())).patient_table_position[2] << std::endl;
+//     
+//     std::cout << "nelem: "<< headersToMatlab->getObjectPtr()->get_number_of_elements() << std::endl;
+    
+    if(isLastPacket[0]) {
+        mwSize num_headers = headersToMatlab->size();
+        auto mxheaders = mxCreateNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
+        memcpy(mxGetData(mxheaders),headersToMatlab->getObjectPtr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
+        mxSetField(mxstruct,0,"headers",mxheaders);
+    }
  
     auto mxIsLastPacket = mxCreateNumericMatrix(1, 1, mxINT8_CLASS, mxREAL);
     mxSetData(mxIsLastPacket, isLastPacket);
@@ -402,9 +443,9 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 	for (mwIndex idx = 0; idx < qlen; idx++) {
 		mxArray *res_hdr  = mxGetField(imageQ, idx, "bytes");
 		mxArray *res_data = mxGetField(imageQ, idx, "image");
+        mxArray *res_comment = mxGetField(imageQ, idx, "image_comment"); //LA: no idea when this is freed
 
-		GadgetContainerMessage<ISMRMRD::ImageHeader>* m3 =
-				new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+		GadgetContainerMessage<ISMRMRD::ImageHeader>* m3 = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 		ISMRMRD::ImageHeader *hdr_new = m3->getObjectPtr();
 		memcpy(hdr_new, mxGetData(res_hdr), sizeof(ISMRMRD::ImageHeader));
 
@@ -413,6 +454,19 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 		auto dims = *image.get_dimensions();
 
 		m3->cont(m4);
+        
+        char* image_comment = mxArrayToString(res_comment);
+        
+        std::cout << "Image comment of idx=" << idx << ": " << image_comment << std::endl;
+        
+        GadgetContainerMessage< ISMRMRD::MetaContainer >* cm3 = new GadgetContainerMessage< ISMRMRD::MetaContainer >();
+//      size_t mindex = loc*N*S + s*N + n;
+//      *cm3->getObjectPtr() = imagearr.meta_[mindex];
+
+        cm3->getObjectPtr()[0].append(GADGETRON_IMAGECOMMENT, image_comment);
+
+        m4->cont(cm3);
+        
 		if (this->next()->putq(m3) < 0) {
 			GDEBUG("Failed to put Image message on queue\n");
 			return GADGET_FAIL;
@@ -428,13 +482,14 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 //         GDEBUG("Image Queue size: %d \n", qlen);
 //         GDEBUG("Number of ndims %i \n"  ,ndims);
 //     }
-    
+
 	for (mwIndex idx = 0; idx <qlen; idx++){
 
 		IsmrmrdReconData output_data;
 		IsmrmrdReconBit bit;
 		bit.data_ = MatlabStructToBuffer(mxGetField(bufferQ,idx,"data"));
 
+        
 		auto ref = mxGetField(bufferQ,idx,"reference");
 		if (ref){
 			GDEBUG("Adding reference");
@@ -477,7 +532,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
                 << "\nMATLAB extraction : " << time_span5.count()
                 << "\nFinition          : " << time_span6.count()
                 << "\n-------------------------------------------------------\n";
-    
+
     return GADGET_OK;
   }
   
@@ -795,7 +850,7 @@ uint16_t* MatlabBucketReconGadget::getEncodingDimensions(ISMRMRD::AcquisitionHea
     } else {
         NE0 = acqhdr.number_of_samples - acqhdr.discard_pre - acqhdr.discard_post;
     }
-
+    
     //// NE1 ////
     uint16_t NE1;
     if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) )
@@ -832,7 +887,7 @@ uint16_t* MatlabBucketReconGadget::getEncodingDimensions(ISMRMRD::AcquisitionHea
             NE1 = *stats.kspace_encode_step_1.rbegin() - *stats.kspace_encode_step_1.begin() + 1;
         }
     }
-
+    
     //// NE2 ////
     uint16_t NE2;
     if ( ((encoding.trajectory.compare("cartesian") == 0)) || (encoding.trajectory.compare("epi") == 0) )
@@ -873,7 +928,7 @@ uint16_t* MatlabBucketReconGadget::getEncodingDimensions(ISMRMRD::AcquisitionHea
     
     //// NCHA ////
     uint16_t NCHA = acqhdr.active_channels;
-
+    
     //// NLOC ////
     uint16_t NLOC;
     if (split_slices_)
@@ -882,6 +937,7 @@ uint16_t* MatlabBucketReconGadget::getEncodingDimensions(ISMRMRD::AcquisitionHea
     }
     else
     {
+        
         if (encoding.encodingLimits.slice.is_present())
         {
             NLOC = encoding.encodingLimits.slice->maximum - encoding.encodingLimits.slice->minimum + 1;
@@ -890,15 +946,14 @@ uint16_t* MatlabBucketReconGadget::getEncodingDimensions(ISMRMRD::AcquisitionHea
         {
             NLOC = 1;
         }
-
         // if the AcquisitionAccumulateTriggerGadget sort by SLC, then the stats should be used to determine NLOC
-        size_t NLOC_received = *stats.slice.rbegin() - *stats.slice.begin() + 1;
+        size_t NLOC_received = *stats.slice.rbegin() - *stats.slice.begin() + 1; // crash here if forref if true
+
         if (NLOC_received < NLOC)
         {
             NLOC = NLOC_received;
         }
     }
-
     //// NN ////
     uint16_t NN;
     switch (N_) {
@@ -926,7 +981,6 @@ uint16_t* MatlabBucketReconGadget::getEncodingDimensions(ISMRMRD::AcquisitionHea
     default:
       NN = 1;
     }
-
     //// NS ////
     uint16_t NS;
     switch (S_) {
