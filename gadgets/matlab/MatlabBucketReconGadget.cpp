@@ -457,11 +457,9 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         
         char* image_comment = mxArrayToString(res_comment);
         
-        std::cout << "Image comment of idx=" << idx << ": " << image_comment << std::endl;
+        m3->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
         
         GadgetContainerMessage< ISMRMRD::MetaContainer >* cm3 = new GadgetContainerMessage< ISMRMRD::MetaContainer >();
-//      size_t mindex = loc*N*S + s*N + n;
-//      *cm3->getObjectPtr() = imagearr.meta_[mindex];
 
         cm3->getObjectPtr()[0].append(GADGETRON_IMAGECOMMENT, image_comment);
 

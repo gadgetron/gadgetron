@@ -36,6 +36,7 @@ namespace Gadgetron
 	USER_5,
 	USER_6,
 	USER_7,
+    N_ACQUISITIONS,
 	NONE
       };
 

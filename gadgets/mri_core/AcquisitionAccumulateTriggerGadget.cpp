@@ -58,6 +58,11 @@ namespace Gadgetron{
       trigger_ = USER_6;
     } else if (trigger_dimension_local.compare("user_7") == 0) {
       trigger_ = USER_7;
+    } else if (trigger_dimension_local.compare("n_acquisitions") == 0) {
+      trigger_ = N_ACQUISITIONS;
+      n_acq_since_trigger_ = 0;
+      n_acquisitions_before_trigger_ = n_acquisitions_before_trigger.value();
+      GDEBUG("NUMBER OF ACQ BEFORE TRIGGERING IS : %lu\n", n_acquisitions_before_trigger_);
     } else {
       GDEBUG("WARNING: Unknown trigger dimension (%s), trigger condition set to NONE (end of scan)", trigger_dimension_local.c_str());
       trigger_ = NONE;
@@ -101,6 +106,8 @@ namespace Gadgetron{
       sort_ = USER_6;
     } else if (sorting_dimension_local.compare("user_7") == 0) {
       sort_ = USER_7;
+    } else if (sorting_dimension_local.compare("n_acquisitions") == 0) {
+      sort_ = NONE;
     } else {
       GDEBUG("WARNING: Unknown sort dimension (%s), sorting set to NONE\n", sorting_dimension_local.c_str());
       sort_ = NONE;
@@ -177,6 +184,9 @@ namespace Gadgetron{
       break;
     case USER_7:
       sorting_index = m1->getObjectPtr()->idx.user[7];
+      break;
+    case N_ACQUISITIONS:
+      sorting_index = 0;
       break;
     case NONE:
       sorting_index = 0;
@@ -302,6 +312,11 @@ namespace Gadgetron{
 	if (prev_.head_->getObjectPtr()->idx.user[7] !=
 	    d.head_->getObjectPtr()->idx.user[7]) {
 	  trigger();
+	}
+      case N_ACQUISITIONS:
+	if (++n_acq_since_trigger_ >= n_acquisitions_before_trigger_) {
+	  trigger();
+      n_acq_since_trigger_ = 0;
 	}
 	break;
       case NONE:

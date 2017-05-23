@@ -46,6 +46,7 @@ namespace Gadgetron{
 			     "user_5",
 			     "user_6",
 			     "user_7",
+                 "n_acquisitions",
 			     "");
 
       GADGET_PROPERTY_LIMITS(sorting_dimension, std::string, "Dimension to sort by", "", 
@@ -67,13 +68,19 @@ namespace Gadgetron{
 			     "user_5",
 			     "user_6",
 			     "user_7",
+                 "n_acquisitions",
 			     "");
+      
+      GADGET_PROPERTY(n_acquisitions_before_trigger, unsigned long, "Number of acquisition before trigger", 40);
+      
       IsmrmrdCONDITION trigger_;
       IsmrmrdCONDITION sort_;
       map_type_  buckets_;
       IsmrmrdAcquisitionData prev_;
       unsigned long trigger_events_;
-
+      
+      unsigned long n_acq_since_trigger_;
+      unsigned long n_acquisitions_before_trigger_;
       virtual int process_config(ACE_Message_Block* mb);
 
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
