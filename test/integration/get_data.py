@@ -16,7 +16,7 @@ else:
 
 DATAFILE = "data.txt"
 DATADIR = "data"
-HOST = 'http://gadgetrontestdata.s3-website-us-east-1.amazonaws.com'
+HOST = 'http://gadgetrondata.blob.core.windows.net/gadgetrontestdata'
 
 
 def md5sum(filename, blocksize=64*1024):
