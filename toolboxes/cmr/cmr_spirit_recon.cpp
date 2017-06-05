@@ -69,13 +69,13 @@ namespace Gadgetron {
 
             long long ii;
 
-#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, startE1, endE1, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, kspace_initial_Shifted, hasInitial, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1) 
-            {
-                std::vector<size_t> dim(3, 1);
-                dim[0] = RO;
-                dim[1] = E1;
-                dim[2] = CHA;
+            std::vector<size_t> dim(3, 1);
+            dim[0] = RO;
+            dim[1] = E1;
+            dim[2] = CHA;
 
+#pragma omp parallel default(none) private(ii) shared(num, N, S, RO, E1, CHA, dim, startE1, endE1, ref_N, ref_S, kspace, res, kspace_Shifted, ker_Shifted, kspace_initial_Shifted, hasInitial, iter_max, iter_thres, print_iter) num_threads(numThreads) if(num>1) 
+            {
                 boost::shared_ptr< hoSPIRIT2DOperator< T > > oper(new hoSPIRIT2DOperator< T >(&dim));
                 hoSPIRIT2DOperator< T >& spirit = *oper;
                 spirit.use_non_centered_fft_ = true;

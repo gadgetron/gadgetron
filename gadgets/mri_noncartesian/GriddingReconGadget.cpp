@@ -13,6 +13,7 @@
 #include "cuNDArray_fileio.h"
 #include "cudaDeviceManager.h"
 #include <numeric>
+#include <random>
 
 namespace Gadgetron {
 

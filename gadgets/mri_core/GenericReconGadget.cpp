@@ -44,6 +44,9 @@ namespace Gadgetron {
         acceFactorE2_.resize(NE, 1);
         calib_mode_.resize(NE, ISMRMRD_noacceleration);
 
+        space_matrix_offset_E1_.resize(NE, 0);
+        space_matrix_offset_E2_.resize(NE, 0);
+
         size_t e;
         for (e = 0; e < h.encoding.size(); e++)
         {
@@ -107,6 +110,23 @@ namespace Gadgetron {
                         calib_mode_[e] = Gadgetron::ISMRMRD_external;
                     else if (other)
                         calib_mode_[e] = Gadgetron::ISMRMRD_other;
+                }
+            }
+
+            // -------------------------------------------------
+
+            bool is_cartesian_sampling = (h.encoding[e].trajectory.compare("cartesian") == 0);
+            bool is_epi_sampling = (h.encoding[e].trajectory.compare("epi") == 0);
+            if (is_cartesian_sampling || is_epi_sampling)
+            {
+                if (h.encoding[e].encodingLimits.kspace_encoding_step_1.is_present())
+                {
+                    space_matrix_offset_E1_[e] = (int)h.encoding[e].encodedSpace.matrixSize.y / 2 - (int)h.encoding[e].encodingLimits.kspace_encoding_step_1->center;
+                }
+
+                if (h.encoding[e].encodingLimits.kspace_encoding_step_2.is_present() && h.encoding[e].encodedSpace.matrixSize.z > 1)
+                {
+                    space_matrix_offset_E2_[e] = (int)h.encoding[e].encodedSpace.matrixSize.z / 2 - (int)h.encoding[e].encodingLimits.kspace_encoding_step_2->center;
                 }
             }
         }
@@ -604,22 +624,26 @@ namespace Gadgetron {
                             {
                                 ISMRMRD::AcquisitionHeader& curr_header = recon_bit.data_.headers_(e1, e2, n, s, slc);
 
+                                long long e1_in_bucket = curr_header.idx.kspace_encode_step_1 + space_matrix_offset_E1_[e];
+
                                 if (E2 > 1)
                                 {
-                                    if (std::abs((long long)curr_header.idx.kspace_encode_step_1 - (long long)(E1 / 2)) < bestE1
-                                        && std::abs((long long)curr_header.idx.kspace_encode_step_2 - (long long)(E2 / 2)) < bestE2)
+                                    long long e2_in_bucket = curr_header.idx.kspace_encode_step_2 + space_matrix_offset_E2_[e];
+
+                                    if (std::abs(e1_in_bucket - (long long)(E1 / 2)) < bestE1
+                                        && std::abs(e2_in_bucket - (long long)(E2 / 2)) < bestE2)
                                     {
-                                        bestE1 = std::abs((long long)curr_header.idx.kspace_encode_step_1 - (long long)E1 / 2);
-                                        bestE2 = std::abs((long long)curr_header.idx.kspace_encode_step_2 - (long long)E2 / 2);
+                                        bestE1 = std::abs(e1_in_bucket - (long long)E1 / 2);
+                                        bestE2 = std::abs(e2_in_bucket - (long long)E2 / 2);
 
                                         acq_header = curr_header;
                                     }
                                 }
                                 else
                                 {
-                                    if (std::abs((long long)curr_header.idx.kspace_encode_step_1 - (long long)(E1 / 2)) < bestE1)
+                                    if (std::abs(e1_in_bucket - (long long)(E1 / 2)) < bestE1)
                                     {
-                                        bestE1 = std::abs((long long)curr_header.idx.kspace_encode_step_1 - (long long)E1 / 2);
+                                        bestE1 = std::abs(e1_in_bucket - (long long)E1 / 2);
 
                                         acq_header = curr_header;
                                     }

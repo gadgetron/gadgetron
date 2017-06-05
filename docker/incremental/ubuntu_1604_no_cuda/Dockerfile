@@ -1,5 +1,8 @@
 FROM gadgetron/ubuntu1604_base
 
+ARG GADGETRON_URL=https://github.com/gadgetron/gadgetron
+ARG GADGETRON_BRANCH=master
+
 #ISMRMRD
 RUN mkdir /opt/code
 RUN cd /opt/code && \
@@ -13,7 +16,7 @@ RUN cd /opt/code && \
 
 #GADGETRON
 RUN cd /opt/code && \
-    git clone https://github.com/gadgetron/gadgetron.git && \
+    git clone ${GADGETRON_URL} --branch ${GADGETRON_BRANCH} --single-branch && \
     cd gadgetron && \
     mkdir build && \
     cd build && \
@@ -21,7 +24,9 @@ RUN cd /opt/code && \
     make -j $(nproc) && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
-    cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml
+    cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml && \
+    cp /opt/code/gadgetron/docker/start_supervisor /opt/ && \
+    cp /opt/code/gadgetron/docker/supervisord.conf /opt/
 
 #HASH for ISMRMRD
 RUN cd /opt/code/ismrmrd && \
@@ -65,37 +70,9 @@ RUN cd /opt/code && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.philips_to_ismrmrd.sha1 --value `git rev-parse HEAD` 
 
-
-#Create script for running web app
-RUN cd /opt && \
-    echo '#!/bin/bash' > start_web.sh && \
-    echo '[ -n "${GADGETRON_RELAY_HOST}" ] && { sed -i "s/relay_host=.*/relay_host=${GADGETRON_RELAY_HOST}/g" /usr/local/share/gadgetron/config/gadgetron_web_app.cfg; }' >> start_web.sh && \
-    echo '[ -n "${GADGETRON_LB_ENDPOINT}" ] && { sed -i "s/lb_endpoint=.*/lb_endpoint=${GADGETRON_LB_ENDPOINT}/g" /usr/local/share/gadgetron/config/gadgetron_web_app.cfg; }' >> start_web.sh && \
-    echo '[ -n "${GADGETRON_LOG_FILE}" ] && { sed -i "s|logfile=/tmp/gadgetron.log|logfile=${GADGETRON_LOG_FILE}|g" /usr/local/share/gadgetron/config/gadgetron_web_app.cfg; }' >> start_web.sh && \
-    echo 'python /usr/local/bin/gadgetron_web_app.py /usr/local/share/gadgetron/config/gadgetron_web_app.cfg' >> start_web.sh && \
-    chmod +x start_web.sh
-
-ENV JUPYTER_PORT 8888
-
-#Create script for running Jupyter
-RUN cd /opt && \
-    echo '#!/bin/bash' > start_jupyter.sh && \
-    echo '[ -n "${JUPYTER_PORT}" ] && { jupyter notebook --no-browser --ip=0.0.0.0 --port=${JUPYTER_PORT}; }' >> start_jupyter.sh && \
-    chmod +x start_jupyter.sh
-
-#Generate supervisor file
-RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:gadgetron]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=/opt/start_web.sh' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '[program:jupyter]' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'command=/opt/start_jupyter.sh' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo '' >> /etc/supervisor/conf.d/supervisord.conf 
-
 # Clean up packages.
 RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
 
-CMD ["/usr/bin/supervisord"]
+CMD ["/opt/start_supervisor"]
 

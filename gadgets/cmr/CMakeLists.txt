@@ -29,6 +29,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/image
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
@@ -42,6 +43,9 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
     ${CMAKE_SOURCE_DIR}/toolboxes/image_io
+    ${CMAKE_SOURCE_DIR}/toolboxes/image
+    ${CMAKE_SOURCE_DIR}/toolboxes/image/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
     ${CMAKE_SOURCE_DIR}/toolboxes/cmr
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core
     ${ARMADILLO_INCLUDE_DIRS}
@@ -52,9 +56,14 @@ include_directories(
 
 set( gadgetron_cmr_header_files 
     gadgetron_cmr_export.h 
-    CmrCartesianKSpaceBinningCineGadget.h )
+    CmrCartesianKSpaceBinningCineGadget.h 
+    CmrParametricMappingGadget.h 
+    CmrParametricT1SRMappingGadget.h )
 
-set( gadgetron_cmr_src_files CmrCartesianKSpaceBinningCineGadget.cpp )
+set( gadgetron_cmr_src_files 
+    CmrCartesianKSpaceBinningCineGadget.cpp 
+    CmrParametricMappingGadget.cpp 
+    CmrParametricT1SRMappingGadget.cpp )
 
 set( config_BinningCine_files 
     config/BinningCine/CMR_2DT_RTCine_KspaceBinning.xml
@@ -65,7 +74,15 @@ set( config_BinningCine_files
 
 source_group(config/BinningCine FILES ${config_BinningCine_files})
 
-set( config_cmr_files ${config_BinningCine_files} )
+set( config_Mapping_files 
+    config/Mapping/CMR_2DT_T1Mapping_SASHA.xml
+    )
+
+source_group(config/Mapping FILES ${config_Mapping_files})
+
+set( config_cmr_files 
+    ${config_BinningCine_files} 
+    ${config_Mapping_files} )
 
 add_library(gadgetron_cmr SHARED 
     ${gadgetron_cmr_header_files} 

@@ -401,6 +401,150 @@ namespace Gadgetron {
   }
 
   /**
+  * @param[in] offset_src starting position in src array
+  * @param[in] size Size of subarray to be replaced
+  * @param[in] src Src array to read in replaced content
+  * @param[in] offset_dst starting position in dst array
+  * @param[out] dst array to be replaced; other part outside the offset+size region will be unchanged
+  */
+  template<class T, unsigned int D> void
+  fill(const vector_td<size_t, D>& offset_src, const vector_td<size_t, D>& size, hoNDArray<T> *src, const vector_td<size_t, D>& offset_dst, hoNDArray<T> *dst)
+  {
+      if (src == 0x0) {
+          throw std::runtime_error("replace: 0x0 src array provided");;
+      }
+
+      if (src->get_number_of_dimensions() < D)
+      {
+          std::stringstream ss;
+          ss << "fill: number of src image dimensions should be at least " << D;
+          throw std::runtime_error(ss.str());;
+      }
+
+      if (dst == 0x0)
+      {
+          throw std::runtime_error("replace: 0x0 dst array provided");;
+      }
+
+      if (dst->get_number_of_dimensions() < D)
+      {
+          std::stringstream ss;
+          ss << "fill: number of dst image dimensions should be at least " << D;
+          throw std::runtime_error(ss.str());;
+      }
+
+      if (src->get_number_of_dimensions() != dst->get_number_of_dimensions())
+      {
+          std::stringstream ss;
+          ss << "fill: src and dst array have different number of dimensions " << D;
+          throw std::runtime_error(ss.str());;
+      }
+
+      std::vector<size_t> src_dim;
+      src->get_dimensions(src_dim);
+
+      std::vector<size_t> dst_dim;
+      dst->get_dimensions(dst_dim);
+
+      size_t d;
+      for (d = 0; d < D; d++)
+      {
+          if (src_dim[d] < offset_src[d]+size[d]-1)
+          {
+              throw std::runtime_error("fill: src array is too small for provided offset and size");;
+          }
+
+          if (dst_dim[d] < offset_dst[d] + size[d] - 1)
+          {
+              throw std::runtime_error("fill: dst array is too small for provided offset and size");;
+          }
+      }
+
+      size_t len = size[0];
+      size_t num = 1;
+
+      for (d = 1; d < D; d++) num *= size[d];
+
+      long long k;
+
+      T *src_ptr = src->get_data_ptr();
+      T *dst_ptr = dst->get_data_ptr();
+
+      std::vector<size_t> size_dim = to_std_vector(size);
+      hoNDArray<T> array_size;
+      array_size.create(size_dim, src->begin());
+
+      {
+          std::vector<size_t> ind_src = src->calculate_index(0);
+          std::vector<size_t> ind_dst = dst->calculate_index(0);
+
+          std::vector<size_t> ind_size(D, 0);
+
+          for (k = 0; k < (long long)num; k++)
+          {
+              ind_size = array_size.calculate_index(k*len);
+
+              for (unsigned int d = 0; d < D; d++)
+              {
+                  ind_src[d] = offset_src[d] + ind_size[d];
+                  ind_dst[d] = offset_dst[d] + ind_size[d];
+              }
+
+              T* src_ptr_curr = src_ptr + src->calculate_offset(ind_src);
+              T* dst_ptr_curr = dst_ptr + dst->calculate_offset(ind_dst);
+
+              memcpy(dst_ptr_curr, src_ptr_curr, sizeof(T)*len);
+          }
+      }
+  }
+
+  template<class T, unsigned int D> void
+  fill(const vector_td<size_t, D>& offset_src, hoNDArray<T>& src, const vector_td<size_t, D>& offset_dst, hoNDArray<T>& dst)
+  {
+      std::vector<size_t> dim;
+      src.get_dimensions(dim);
+
+      vector_td<size_t, D> size;
+
+      if (dim.size() < D)
+      {
+          std::stringstream ss;
+          ss << "fill: number of src image dimensions should be at least " << D;
+          throw std::runtime_error(ss.str());;
+      }
+
+      size_t d;
+      for (d = 0; d < D; d++) size[d] = dim[d];
+
+      Gadgetron::fill(offset_src, size, &src, offset_dst, &dst);
+  }
+
+  template<class T, unsigned int D> void
+  fill(hoNDArray<T>& src, const vector_td<size_t, D>& offset_dst, hoNDArray<T>& dst)
+  {
+      std::vector<size_t> dim;
+      src.get_dimensions(dim);
+ 
+      vector_td<size_t, D> offset_src, size;
+
+      if (dim.size() < D)
+      {
+          std::stringstream ss;
+          ss << "fill: number of src image dimensions should be at least " << D;
+          throw std::runtime_error(ss.str());;
+      }
+
+      size_t d;
+      for (d = 0; d < D; d++)
+      {
+          offset_src[d] = 0;
+          size[d] = dim[d];
+      }
+
+      Gadgetron::fill(offset_src, size, &src, offset_dst, &dst);
+  }
+
+  /**
    * @param[in]     size    Size of the output array
    * @param[in]     in      Input array
    * @param[out]    out     Output array after padding

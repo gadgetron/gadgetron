@@ -256,7 +256,7 @@ namespace Gadgetron
             {
                 long long n;
 
-                #pragma omp parallel default(none) private(n) shared(N, in, out, interp)
+                #pragma omp parallel private(n) shared(N, in, out, interp)
                 {
                     std::vector<size_t> ind_o(ImageType::NDIM);
                     std::vector<coord_type> ind_i(ImageType::NDIM);
@@ -431,7 +431,7 @@ namespace Gadgetron
 
                 long long n;
 
-                #pragma omp parallel default(none) private(n) shared(N, bh, out, dim_out)
+                #pragma omp parallel private(n) shared(N, bh, out, dim_out)
                 {
                     std::vector<size_t> ind_out(ImageType::NDIM);
                     std::vector<long long> ind_in(ImageType::NDIM);
@@ -649,7 +649,7 @@ namespace Gadgetron
 
                 long long n;
 
-                #pragma omp parallel default(none) private(n) shared(N, bh, in, out, interp)
+                #pragma omp parallel private(n) shared(N, bh, in, out, interp)
                 {
                     std::vector<size_t> ind_out(ImageType::NDIM);
                     std::vector<coord_type> ind_in(ImageType::NDIM);
@@ -697,7 +697,7 @@ namespace Gadgetron
 
                 long long n, m, t;
 
-                #pragma omp parallel default(none) private(n, m, t) shared(halfW, N, img, img_out)
+                #pragma omp parallel private(n, m, t) shared(halfW, N, img, img_out)
                 {
                     std::vector<T> buf(2*halfW+1);
 
@@ -734,7 +734,7 @@ namespace Gadgetron
                 long long medianInd = WX*WY/2;
 
                 long long x, y, tx, ty, hx, hy;
-                #pragma omp parallel default(none) private(x, y, tx, ty, hx, hy) shared(halfX, halfY, sx, sy, WX, WY, pImg, pImgOut, medianInd)
+                #pragma omp parallel private(x, y, tx, ty, hx, hy) shared(halfX, halfY, sx, sy, WX, WY, pImg, pImgOut, medianInd)
                 {
                     std::vector<T> buf(WX*WY);
 
@@ -836,7 +836,7 @@ namespace Gadgetron
                 long long medianInd = WX*WY*WZ/2;
 
                 long long x, y, z, tx, ty, tz, hx, hy, hz;
-                #pragma omp parallel default(none) private(x, y, z, tx, ty, tz, hx, hy, hz) shared(halfX, halfY, halfZ, sx, sy, sz, WX, WY, WZ, pImg, pImgOut, medianInd)
+                #pragma omp parallel private(x, y, z, tx, ty, tz, hx, hy, hz) shared(halfX, halfY, halfZ, sx, sy, sz, WX, WY, WZ, pImg, pImgOut, medianInd)
                 {
                     std::vector<T> buf(WX*WY*WZ);
 
@@ -1784,7 +1784,7 @@ namespace Gadgetron
                             std::vector<size_t> offsetFactorCurr(D-1);
                             NDArray<T>::calculate_offset_factors(dimCurr, offsetFactorCurr);
 
-#pragma omp parallel default(none) private(n) shared(D, num, dim, img, pData, sigma, ii, offsetFactor, offsetFactorCurr)
+#pragma omp parallel private(n) shared(D, num, dim, img, pData, sigma, ii, offsetFactor, offsetFactorCurr)
                             {
                                 T* buf = new T[ 3*dim[ii] ];
                                 T* mem = buf + dim[ii];

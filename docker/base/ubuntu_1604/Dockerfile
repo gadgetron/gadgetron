@@ -14,9 +14,8 @@ RUN pip install --upgrade pip
 RUN pip install setuptools
 RUN pip install Cython
 RUN pip install numpy 
-RUN pip install pyxb psutil Twisted lxml matplotlib pydicom
+RUN pip install pyxb psutil lxml pydicom
 RUN pip install 'h5py==2.5.0' 
-RUN pip install jupyter
 
 #OpenBLAS with OpenMP
 RUN cd /opt && \
@@ -62,7 +61,3 @@ ENV PATH=$PATH:$GADGETRON_HOME/bin:$ISMRMRD_HOME/bin \
 RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
 
-ENV TINI_VERSION v0.9.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-RUN chmod +x /tini
-ENTRYPOINT ["/tini", "--"]

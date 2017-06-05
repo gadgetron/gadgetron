@@ -346,7 +346,7 @@ void hoNDRedundantWavelet<T>::dwt3D(const T* const in, T* out, size_t RO, size_t
             // E2
             // ------------------------------------------
             long long e1;
-#pragma omp parallel default(none) private(e1) shared(RO, E1, E2, N2D, lll, hll)
+#pragma omp parallel private(e1) shared(RO, E1, E2, N2D, lll, hll)
             {
                 std::vector<T> buf_e2(E2), buf_l(E2), buf_h(E2);
 #pragma omp for
@@ -380,7 +380,7 @@ void hoNDRedundantWavelet<T>::dwt3D(const T* const in, T* out, size_t RO, size_t
 
             long long e2;
 
-#pragma omp parallel default(none) private(e2) shared(RO, E1, E2, N2D, lll, lhl, hll, hhl)
+#pragma omp parallel private(e2) shared(RO, E1, E2, N2D, lll, lhl, hll, hhl)
             {
                 std::vector<T> buf_e1(E1), buf_l(E1), buf_h(E1);
                 std::vector<T> buf_e1_2(E1), buf_l_2(E1), buf_h_2(E1);
@@ -418,7 +418,7 @@ void hoNDRedundantWavelet<T>::dwt3D(const T* const in, T* out, size_t RO, size_t
             // RO
             // ------------------------------------------
 
-#pragma omp parallel default(none) private(e2) shared(RO, E1, E2, N2D, lll, hll, lhl, hhl, llh, hlh, lhh, hhh)
+#pragma omp parallel private(e2) shared(RO, E1, E2, N2D, lll, hll, lhl, hhl, llh, hlh, lhh, hhh)
             {
                 std::vector<T> buf_l(RO);
 #pragma omp for
@@ -507,7 +507,7 @@ void hoNDRedundantWavelet<T>::idwt3D(const T* const in, T* out, size_t RO, size_
             // E1
             // ------------------------------------------
 
-#pragma omp parallel default(none) private(e2) shared(RO, E1, E2, N2D, pLL, pHL, pLH, pHH)
+#pragma omp parallel private(e2) shared(RO, E1, E2, N2D, pLL, pHL, pLH, pHH)
             {
                 std::vector<T> buf_l(E1), buf_l_2(E1);
 #pragma omp for
@@ -537,7 +537,7 @@ void hoNDRedundantWavelet<T>::idwt3D(const T* const in, T* out, size_t RO, size_
 
             long long e1;
 
-#pragma omp parallel for default(none) private(e1) shared(RO, E1, E2, N2D, pLL,pHL, out) 
+#pragma omp parallel for private(e1) shared(RO, E1, E2, N2D, pLL,pHL, out) 
             for (e1 = 0; e1<(long long)E1; e1++)
             {
                 for (size_t ro = 0; ro<RO; ro++)
