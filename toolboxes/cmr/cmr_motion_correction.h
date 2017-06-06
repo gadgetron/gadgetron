@@ -20,7 +20,7 @@
 #include "mri_core_data.h"
 #include "mri_core_utility.h"
 
-#include "hoImageRegContainer2DRegistration.h"
+#include "hoImageRegContainer2DRegistration.h"   
 
 namespace Gadgetron { 
 
@@ -40,8 +40,10 @@ namespace Gadgetron {
 
     /// series a is mocoed to series b
     /// a, b : [RO E1 N]
+    template <typename T> EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& a, const Gadgetron::hoNDArray<T>& b, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
+
     template <typename T> EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& a, const Gadgetron::hoNDArray<T>& b, 
-        size_t key_frame, T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
+        T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg);
 
     /// apply the deformation field
     /// input: [RO E1 N]

@@ -164,9 +164,8 @@ template EXPORTCMR void perform_moco_fixed_key_frame_2DT(const Gadgetron::hoNDAr
 
 // ------------------------------------------------------------------------
 
-template <typename T> 
-void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& target, const Gadgetron::hoNDArray<T>& source, 
-    size_t key_frame, T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg)
+template <typename T>
+void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& target, const Gadgetron::hoNDArray<T>& source, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg)
 {
     try
     {
@@ -174,9 +173,9 @@ void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& target, con
         size_t E1 = target.get_size(1);
         size_t N = target.get_size(2);
 
-        GADGET_CHECK_THROW(source.get_size(0)==RO);
-        GADGET_CHECK_THROW(source.get_size(1)==E1);
-        GADGET_CHECK_THROW(source.get_size(2)==N);
+        GADGET_CHECK_THROW(source.get_size(0) == RO);
+        GADGET_CHECK_THROW(source.get_size(1) == E1);
+        GADGET_CHECK_THROW(source.get_size(2) == N);
 
         Gadgetron::hoNDImageContainer2D< hoNDImage<T, 2> > im_target, im_source;
         std::vector<size_t> cols(1, N);
@@ -188,6 +187,30 @@ void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& target, con
 
         im_target.create(const_cast<T*>(target.begin()), dim);
         im_source.create(const_cast<T*>(source.begin()), dim);
+
+        reg.registerOverContainer2DPairWise(im_target, im_source, warp_input, false);
+    }
+    catch (...)
+    {
+        GADGET_THROW("Exceptions happened in perform_moco_pair_wise_frame_2DT(...) ... ");
+    }
+}
+
+template EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<float>& target, const Gadgetron::hoNDArray<float>& source, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<float, float, 2, 2>& reg);
+
+template <typename T> 
+void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& target, const Gadgetron::hoNDArray<T>& source, 
+    T reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2>& reg)
+{
+    try
+    {
+        size_t RO = target.get_size(0);
+        size_t E1 = target.get_size(1);
+        size_t N = target.get_size(2);
+
+        GADGET_CHECK_THROW(source.get_size(0)==RO);
+        GADGET_CHECK_THROW(source.get_size(1)==E1);
+        GADGET_CHECK_THROW(source.get_size(2)==N);
 
         size_t div_num = 3;
         float dissimilarity_thres = 1e-6;
@@ -230,8 +253,7 @@ void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& target, con
         reg.div_num_pyramid_level_.clear();
         reg.div_num_pyramid_level_.resize(level, div_num);
 
-        std::vector<unsigned int> referenceFrame(1, key_frame);
-        reg.registerOverContainer2DPairWise(im_target, im_source, warp_input, false);
+        Gadgetron::perform_moco_pair_wise_frame_2DT(target, source, warp_input, reg);
     }
     catch(...)
     {
@@ -239,7 +261,7 @@ void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<T>& target, con
     }
 }
 
-template EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<float>& target, const Gadgetron::hoNDArray<float>& source, size_t key_frame, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<float, float, 2, 2>& reg);
+template EXPORTCMR void perform_moco_pair_wise_frame_2DT(const Gadgetron::hoNDArray<float>& target, const Gadgetron::hoNDArray<float>& source, float reg_strength, std::vector<unsigned int> iters, bool bidirectional_moco, bool warp_input, Gadgetron::hoImageRegContainer2DRegistration<float, float, 2, 2>& reg);
 
 // ------------------------------------------------------------------------
 
