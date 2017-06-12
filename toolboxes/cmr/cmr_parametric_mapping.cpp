@@ -324,7 +324,19 @@ void CmrParametricMapping<T>::perform_parametric_mapping()
                             // compute SD if needed
                             if (this->compute_SD_maps_)
                             {
-                                this->compute_sd(ti_, yi, bi, sd, map_sd);
+                                try
+                                {
+                                    this->compute_sd(ti_, yi, bi, sd, map_sd);
+                                }
+                                catch(...)
+                                {
+                                    for (n = 0; n < NUM; n++)
+                                    {
+                                        sd[n] = 0;
+                                    }
+
+                                    map_sd = 0;
+                                }
 
                                 pMapSD[offset] = map_sd;
                                 for (n = 0; n < NUM; n++)

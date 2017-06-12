@@ -137,6 +137,17 @@ namespace Gadgetron {
                     {
                         ind = anchor_ind;
                     }
+                    else
+                    {
+                        float max_ts = this->prep_times_[0];
+                        for (size_t n = 1; n < this->prep_times_.size(); n++)
+                        {
+                            if(this->prep_times_[n]>max_ts)
+                            {
+                                max_ts = this->prep_times_[n];
+                            }
+                        }
+                    }
 
                     memcpy(&mag_longest_TS(0, 0, slc), &mag(0, 0, ind, 0, slc), sizeof(float)*RO*E1);
                 }
