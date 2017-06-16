@@ -2,12 +2,10 @@
 
 #include "GenericReconGadget.h"
 #include "gadgetron_mri_noncartesian_export.h"
-#include "cuNDArray.h"
+#include "hoNDArray.h"
 
 namespace Gadgetron {
-
-	class EXPORTGADGETSMRINONCARTESIAN CPUGriddingReconGadget : public GenericReconGadget
-	{
+	class EXPORTGADGETSMRINONCARTESIAN CPUGriddingReconGadget : public GenericReconGadget{
 	public:
 		GADGET_DECLARE(CPUGriddingReconGadget);
 
@@ -35,10 +33,10 @@ namespace Gadgetron {
 		virtual int process_config(ACE_Message_Block* mb);
 		virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
 
-		boost::shared_ptr<cuNDArray<float_complext> > reconstruct(
-			cuNDArray<float_complext>* data,
-			cuNDArray<floatd2>* traj,
-			cuNDArray<float>* dcw,
+		boost::shared_ptr<hoNDArray<float_complext> > reconstruct(
+			hoNDArray<float_complext>* data,
+			hoNDArray<floatd2>* traj,
+			hoNDArray<float>* dcw,
 			size_t ncoils );
 
 		std::tuple<boost::shared_ptr<hoNDArray<floatd2 > >, boost::shared_ptr<hoNDArray<float >>> separate_traj_and_dcw(hoNDArray<float >* traj_dcw);
