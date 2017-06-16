@@ -142,7 +142,7 @@ void Gadgetron::hoNFFT_plan<REAL, D>::compute_NFFTH_NC2C(
 ){
 	convolve(in, out, 0x0, NFFT_CONV_NC2C);
 	fft(out, NFFT_BACKWARDS);
-	deapodization(out);
+	deapodize(out);
 }
 
 template<class REAL, unsigned int D>
@@ -191,3 +191,12 @@ void Gadgetron::hoNFFT_plan<REAL, D>::image_wrap(
 ){
 	// todo
 }
+
+template EXPORTCPUNFFT class Gadgetron::hoNFFT_plan<float, 1>;
+template EXPORTCPUNFFT class Gadgetron::hoNFFT_plan<double, 1>;
+template EXPORTCPUNFFT class Gadgetron::hoNFFT_plan<float, 2>;
+template EXPORTCPUNFFT class Gadgetron::hoNFFT_plan<double, 2>;
+template EXPORTCPUNFFT class Gadgetron::hoNFFT_plan<float, 3>;
+template EXPORTCPUNFFT class Gadgetron::hoNFFT_plan<double, 3>;
+template EXPORTCPUNFFT class Gadgetron::hoNFFT_plan<float, 4>;
+template EXPORTCPUNFFT class Gadgetron::hoNFFT_plan<double, 4>;
