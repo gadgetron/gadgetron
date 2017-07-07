@@ -27,6 +27,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/ffd
   ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
+  ${CMAKE_SOURCE_DIR}/toolboxes/pattern_recognition
   ${Boost_INCLUDE_DIR}
   ${ARMADILLO_INCLUDE_DIRS}
   ${GTEST_INCLUDE_DIRS}
@@ -53,37 +54,13 @@ link_libraries(
     gadgetron_toolbox_cpuoperator 
     gadgetron_toolbox_cpu_image
     gadgetron_toolbox_cmr
+    gadgetron_toolbox_pr
     ${BOOST_LIBRARIES}
     ${GTEST_LIBRARIES} 
     ${ARMADILLO_LIBRARIES}
     )
 
-if ( CUDA_FOUND )
-
-    include_directories( ${CUDA_INCLUDE_DIRS} )
-
-  cuda_add_executable(test_all 
-      tests.cpp 
-      hoNDArray_elemwise_test.cpp 
-      hoNDArray_blas_test.cpp 
-      hoNDArray_utils_test.cpp
-      hoNDFFT_test.cpp
-      hoNDWavelet_test.cpp
-      curveFitting_test.cpp 
-      image_morphology_test.cpp 
-      vector_td_test.cpp
-      cuNDArray_elemwise_test.cpp 
-      cuNDArray_operators_test.cpp 
-      cuNDArray_blas_test.cpp 
-      cuNDArray_utils_test.cpp
-      vector_td_test.cpp
-      cuVector_td_test_kernels.h 
-      cuVector_td_test_kernels.cu 
-      cuNDFFT_test.cpp
-      )
-else ()
-    add_executable(test_all 
-      tests.cpp 
+set(test_src_files tests.cpp 
       hoNDArray_elemwise_test.cpp 
       hoNDArray_blas_test.cpp 
       hoNDArray_utils_test.cpp
@@ -91,14 +68,35 @@ else ()
       hoNDWavelet_test.cpp
       curveFitting_test.cpp
       image_morphology_test.cpp 
-      )
+      pattern_recognition_test.cpp )
+
+if ( CUDA_FOUND )
+
+    include_directories( ${CUDA_INCLUDE_DIRS} )
+
+    cuda_add_executable(test_all 
+        ${test_src_files} 
+        vector_td_test.cpp
+        cuNDArray_elemwise_test.cpp 
+        cuNDArray_operators_test.cpp 
+        cuNDArray_blas_test.cpp 
+        cuNDArray_utils_test.cpp
+        vector_td_test.cpp
+        cuVector_td_test_kernels.h 
+        cuVector_td_test_kernels.cu 
+        cuNDFFT_test.cpp
+        )
+else ()
+    add_executable(test_all 
+        ${test_src_files}
+        )
 endif ()
 
 if ( CUDA_FOUND )
-  target_link_libraries(test_all 
-    gadgetron_toolbox_gpucore
-    gadgetron_toolbox_gpufft
-    )
+    target_link_libraries(test_all 
+        gadgetron_toolbox_gpucore
+        gadgetron_toolbox_gpufft
+        )
 endif()
 
 add_test(test_all test_all)
