@@ -36,7 +36,7 @@ set( gadgetron_mri_noncartesian_header_files
 	CPUGriddingReconGadget.h)
 
 set( gadgetron_mri_noncartesian_src_files
-  GriddingReconGadget.cpp 
+  GriddingReconGadget.cpp
 	CPUGriddingReconGadget.cpp) 
 
 set( gadgetron_mri_noncartesian_config_files
