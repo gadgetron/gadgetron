@@ -63,27 +63,15 @@ namespace Gadgetron{
 
 			~hoNFFT_plan();
 
-			/**
-				Enum to specify the preprocessing mode.
-			*/
-
-			enum NFFT_prep_mode{
-				NFFT_PREP_C2NC, /** preprocess for carteisan to non cartesian */
-				NFFT_PREP_NC2C, /** preprocess for non cartesian to cartesian */
-				NFFT_PREP_ALL /** preprocess for both directions */
-			};
-
 			/** 
 				Perform NFFT preprocessing for a given trajectory
 
 				\param k: the NFFT non cartesian trajectory
-					performs normalization if not between [-0.5, 0.5]
 				\param mode: enum specifying the preprocessing mode
 			*/
 
 			void preprocess(
-				hoNDArray<typename real1d<Real, D>::Type> k,
-				NFFT_prep_mode mode
+				hoNDArray<typename reald<Real, D>::Type> k
 			);
 
 			/**
@@ -109,8 +97,8 @@ namespace Gadgetron{
 
 			void compute(
 				hoNDArray<complext<Real>> d,
-				hoNDArray<complext<Rea>>> &m,
-				hoNDArray<complext<Real>> w,
+				hoNDArray<complext<Real>> &m,
+				hoNDArray<Real> w,
 				NFFT_comp_mode mode
 			);
 
@@ -162,7 +150,7 @@ namespace Gadgetron{
 			*/
 
 			void fft(
-				hoNDArray<complext<Real>> d,
+				hoNDArray<complext<Real>> &d,
 				NFFT_fft_mode mode
 			);
 
@@ -188,7 +176,9 @@ namespace Gadgetron{
 				Initialize variables and compute tables
 			*/
 
-			void initialize();
+			void initialize(
+				hoNDArray<typename reald<Real, D>::Type> k
+			);
 
 			/**
 				Dedicated convolutions
@@ -200,9 +190,15 @@ namespace Gadgetron{
 			);
 
 			void convolve_NFFT_NC2C(
-				hoNDArray<compelxt<Real>> d,
+				hoNDArray<complext<Real>> d,
 				hoNDArray<complext<Real>> &m
 			);
+
+			/**
+				Bessel function
+			*/
+
+			Real bessi0(Real x);
 		
 		/** 
 			Implementation variables
@@ -211,8 +207,10 @@ namespace Gadgetron{
 		private:
 			
 			typename uint64d<D>::Type n;
-			Real kw, kosf, kwidth, beta;
-			hoNDArray<Real> p, da, nx, ny, nz;
+			Real wg, kw, kosf, kwidth, beta, osf;
+			hoNDArray<Real> p, da, daf, nx, ny, nz;
+			hoNDArray<typename reald<Real, D>::Type> k;
 
-	}
+	};
+
 }
