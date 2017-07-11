@@ -365,6 +365,14 @@ namespace Gadgetron{
 							}
 						}
 					}
+
+					for(size_t i = 0; i < n[0]*osf; i++){
+						m[i] = 0;
+						m[n[0]*osf+i] = 0;
+						m[n[0]*osf*(n[0]*osf-1)+i] = 0;
+						m[n[0]*osf*i+(n[0]*osf-1)] = 0;
+						// Need to add two more
+					}
 				}
 			}
 		}
