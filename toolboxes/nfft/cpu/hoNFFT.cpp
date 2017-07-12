@@ -1,3 +1,5 @@
+/** hoNFFT.cpp */
+
 #include "hoNFFT.h"
 
 #include "hoNDFFT.h"
@@ -22,7 +24,7 @@ namespace Gadgetron{
 	
 	template<class Real, unsigned int D>
 	hoNFFT_plan<Real, D>::hoNFFT_plan(){
-		throw runtime_error("Default constructor is not available");
+		throw std::runtime_error("Default constructor is not available");
 	}
 
 	template<class Real, unsigned int D>
@@ -32,25 +34,23 @@ namespace Gadgetron{
 		Real wg
 	){
 		if(osf < Real(1.0) || osf > Real(2.0))
-			throw runtime_error("Oversampling factor must be between 1 and 2");
+			throw std::runtime_error("Oversampling factor must be between 1 and 2");
 
 		if(wg < Real(1.0) || wg > Real(10.0))
-			throw runtime_error("Kernel width must be between 1 and 10");
+			throw std::runtime_error("Kernel width must be between 1 and 10");
 
-		for(auto it: n)
-			if(it < 0) 
-				throw runtime_error("Matrix size must be positive");
+		for(size_t i = 0; i < D; i++)
+			if(n[i] < 0) 
+				throw std::runtime_error("Matrix size must be positive");
 	
 		this->n = n;
 		this->osf = osf;
 		this->wg = wg;
-
-		initialize();
 	}
 
 	template<class Real, unsigned int D>
 	hoNFFT_plan<Real, D>::~hoNFFT_plan(){
-
+		// Empty destructor
 	}
 
 	template<class Real, unsigned int D>
@@ -58,17 +58,17 @@ namespace Gadgetron{
 		hoNDArray<typename reald<Real, D>::Type> k
 	){
 		if(k.get_number_of_elements() == 0)
-			throw runtime_error("Empty Trajectory");
+			throw std::runtime_error("Empty Trajectory");
 
 		for(auto it: k)
-			for(auto jt: it)
-				if(jt > Real(0.5) || jt < Real(-0.5))
-				 throw runtime_error("Trajectory must be between [-0.5,0.5]");
+			for(size_t i = 0; i < D; i++)
+				if(it[i] > Real(0.5) || it[i] < Real(-0.5))
+				 throw std::runtime_error("Trajectory must be between [-0.5,0.5]");
 		
-		initialize(k);		
+		this->k = k;
+		initialize();		
 	}
 
-	// Replace compute methods with convolve, fft, deapodize 
 	template<class Real, unsigned int D>
 	void hoNFFT_plan<Real, D>::compute(
 		hoNDArray<complext<Real>> d,
@@ -77,52 +77,48 @@ namespace Gadgetron{
 		NFFT_comp_mode mode
 	){
 		if(d.get_number_of_elements() == 0)
-			throw runtime_error("Empty data");
+			throw std::runtime_error("Empty data");
 
 		if(m.get_number_of_elements() == 0)
-			throw runtime_error("Empty gridding matrix");
-
-		if(w)
-			if(w.get_number_of_elements() == 0)
-				throw runtime_error("Empty weights");
+			throw std::runtime_error("Empty gridding matrix");
 
 		switch(mode){
 			case NFFT_FORWARDS_C2NC:{
 				deapodize(d);
 				fft(d, NFFT_FORWARDS);
-				convolve(d, m, 0x0, NFFT_CONV_C2NC);
+				convolve(d, m, NFFT_CONV_C2NC);
 				
-				if(w){
+				if(w.get_number_of_elements() != 0){
 					if(m.get_number_of_elements() != w.get_number_of_elements())
-						throw runtime_error("Incompatible dimensions");
+						throw std::runtime_error("Incompatible dimensions");
 
 					m *= w;
 				}
 				break;
 			}
 			case NFFT_FORWARDS_NC2C:{
-				if(w){
+				if(w.get_number_of_elements() != 0){
 					if(w.get_number_of_elements() != d.get_number_of_elements())
-						throw runtime_error("Incompitalbe dimensions");
+						throw std::runtime_error("Incompitalbe dimensions");
 
 					d *= w;
 				}
 				
-				convolve(d, m, 0x0, NFFT_CONV_NC2C);
+				convolve(d, m, NFFT_CONV_NC2C);
 				fft(m, NFFT_FORWARDS);
 				deapodize(m, true);
 
 				break;
 			}
 			case NFFT_BACKWARDS_NC2C:{
-				if(w){
+				if(w.get_number_of_elements() != 0){
 					if(w.get_number_of_elements() != d.get_number_of_elements())
-						throw runtime_error("Incompatible dimensions");
+						throw std::runtime_error("Incompatible dimensions");
 					
 					d *= w;
 				}
 
-				convolve(d, m, 0x0, NFFT_CONV_NC2C);
+				convolve(d, m, NFFT_CONV_NC2C);
 				fft(m, NFFT_BACKWARDS);
 				deapodize(m);
 
@@ -131,11 +127,11 @@ namespace Gadgetron{
 			case NFFT_BACKWARDS_C2NC:{
 				deapodize(d, true);
 				fft(d, NFFT_BACKWARDS);
-				convolve(d, m, 0x0, NFFT_CONV_C2NC);
+				convolve(d, m, NFFT_CONV_C2NC);
 				
-				if(w){
+				if(w.get_number_of_elements() != 0){
 					if(w.get_number_of_elements() != m.get_number_of_elements())
-						throw runtime_error("Incompatible dimensions");
+						throw std::runtime_error("Incompatible dimensions");
 
 					m *= w;
 				}
@@ -150,7 +146,10 @@ namespace Gadgetron{
 		hoNDArray<complext<Real>> &m,
 		NFFT_conv_mode mode
 	){
-			
+		if(mode == NFFT_CONV_NC2C)
+			convolve_NFFT_NC2C(d, m);
+		else
+			convolve_NFFT_C2NC(d, m);
 	}
 
 	template<class Real, unsigned int D>
@@ -159,9 +158,9 @@ namespace Gadgetron{
 		NFFT_fft_mode mode
 	){
 		if(mode == NFFT_FORWARDS)
-			hoNDFFT<Real>::instance()->fft(d);
+			hoNDFFT<Real>::instance()->fft(&d);
 		else
-			hoNDFFT<Real>::instance()->ifft(d);
+			hoNDFFT<Real>::instance()->ifft(&d);
 	}
 
 	template<class Real, unsigned int D>
@@ -171,22 +170,19 @@ namespace Gadgetron{
 	){
 		if(fourierDomain){
 			if(daf.get_number_of_elements() != d.get_number_of_elements())
-				throw runtime_error("Incompatible deapodization dimensions");
+				throw std::runtime_error("Incompatible deapodization dimensions");
 
 			d /= daf;
 		}else{
 			if(da.get_number_of_elements() != d.get_number_of_elements())
-				throw runtime_error("Incompatible deapodization dimensions");
+				throw std::runtime_error("Incompatible deapodization dimensions");
 
 			d /= da;
 		}
 	}
 
 	template<class Real, unsigned int D>
-	void hoNFFT_plan<Real, D>::initialize(
-		hoNDArray<typename reald<Real, D>::Type> k
-	){
-		this->k = k;
+	void hoNFFT_plan<Real, D>::initialize(){
 		kw = wg/osf;
 		kosf = std::floor(0.91/(osf*1e-3));
 		kwidth = osf*kw/2;
@@ -206,13 +202,13 @@ namespace Gadgetron{
 		
 		// Need to fix to allow for flexibility in dimensions
 		hoNDArray<Real> dax(osf*n[0]);
-		for(int i = 0; i < osf*n; i++){
-			Real x = (i-osf*n/2)/n;
+		for(int i = 0; i < osf*n[0]; i++){
+			Real x = (i-osf*n[0]/2)/n[0];
 			Real tmp = M_PI*M_PI*kw*kw*x*x-beta*beta;
 			auto sqa = std::sqrt(complex<Real>(tmp, 0));
 			dax[i] = (std::sin(sqa)/sqa).real();
 		}
-		auto daxConst = dax[osf*n/2-1];
+		auto daxConst = dax[osf*n[0]/2-1];
 		for(auto it = dax.begin(); it != dax.end(); it++)
 			*it /= daxConst;
 
@@ -246,7 +242,7 @@ namespace Gadgetron{
 							da[i+n[1]*j*osf+n[2]*k*osf] = dax[i]*dax[j]*dax[k];
 				nx.create(k.get_number_of_elements());
 				ny.create(k.get_number_of_elements());
-				nz.create(k.get_numger_of_elements());
+				nz.create(k.get_number_of_elements());
 				for(size_t i = 0; i < k.get_number_of_elements(); i++){
 					nx[i] = (n[0]*osf/2)+osf*n[0]*k[i][0];
 					ny[i] = (n[1]*osf/2)+osf*n[1]*k[i][1];
@@ -289,7 +285,8 @@ namespace Gadgetron{
 				}
 
 				m[0] = 0;
-				m[m.get_numger_of_elements()] = 0;
+				m[m.get_number_of_elements()] = 0;
+				break;
 			}
 			case 2:{
 				m.fill(0);
@@ -312,7 +309,8 @@ namespace Gadgetron{
 
 							nxt = std::max(nxt, Real(0)); nxt = std::min(nxt, osf*n[0]-1);
 							nyt = std::max(nyt, Real(0)); nyt = std::min(nyt, osf*n[1]-1);
-							m[(size_t)(nxt+ny*osf*n[1])] += dw*kwx*kwy;
+
+							m[(size_t)(nxt+nyt*osf*n[1])] += dw*kwx*kwy;
 						}
 					}
 
@@ -323,57 +321,59 @@ namespace Gadgetron{
 						m[n[0]*osf*i+(n[0]*osf-1)] = 0;
 					}
 				}
-				case 3:{
-					m.fill(0);
-					for(size_t i = 0; i < k.get_number_of_elements(); i++){
-						complext<Real> dw = d[i];
-						for(int lx = -kwidth; lx < kwidth+1; lx++){
-							for(int ly = -kwidth; ly < kwidth+1; ly++){
-								for(int lz = -kwidth; lz = kwidth+1; lz++){
-									Real nxt = std::round(nx[i]+lx);
-									Real nyt = std::round(ny[i]+ly);
-									Real nzt = std::round(nz[i]+lz);
+				break;
+			}
+			case 3:{
+				m.fill(0);
+				for(size_t i = 0; i < k.get_number_of_elements(); i++){
+					complext<Real> dw = d[i];
+					for(int lx = -kwidth; lx < kwidth+1; lx++){
+						for(int ly = -kwidth; ly < kwidth+1; ly++){
+							for(int lz = -kwidth; lz = kwidth+1; lz++){
+								Real nxt = std::round(nx[i]+lx);
+								Real nyt = std::round(ny[i]+ly);
+								Real nzt = std::round(nz[i]+lz);
 
-									Real kkx = std::min(
-										std::round(kosf*std::abs(nx[i]-nx)),
-										std::floor(kosf*kwidth)
-									);
-									Real kky = std::min(
-										std::round(kosf*std::abs(ny[i]-ny)),
-										std::floor(kosf*kwidth)
-									);
-									Real kkz = std::min(
-										std::round(kosf*std::abs(nz[i]-nz)),
-										std::floor(kosf*kwidth)
-									);
-									Real kwx = p[kkx];
-									Real kwy = p[kky];
-									Real kwz = p[kkz];
+								Real kkx = std::min(
+									std::round(kosf*std::abs(nx[i]-nxt)),
+									std::floor(kosf*kwidth)
+								);
+								Real kky = std::min(
+									std::round(kosf*std::abs(ny[i]-nyt)),
+									std::floor(kosf*kwidth)
+								);
+								Real kkz = std::min(
+									std::round(kosf*std::abs(nz[i]-nzt)),
+									std::floor(kosf*kwidth)
+								);
+								Real kwx = p[kkx];
+								Real kwy = p[kky];
+								Real kwz = p[kkz];
 
-									nxt = std::max(nxt, Real(0));
-									nxt = std::min(nxt, osf*n[0]-1);
+								nxt = std::max(nxt, Real(0));
+								nxt = std::min(nxt, osf*n[0]-1);
 
-									nyt = std::max(nxt, Real(0));
-									nyt = std::min(nyt, osf*n[1]-1);
+								nyt = std::max(nxt, Real(0));
+								nyt = std::min(nyt, osf*n[1]-1);
 
-									nzt = std::max(nzt, Real(0));
-									nzt = std::min(nzt, osf*n[2]-1);
+								nzt = std::max(nzt, Real(0));
+								nzt = std::min(nzt, osf*n[2]-1);
 
-									m[(size_t)(nxt+nyt*osf*n[1]+nzt*osf*n[2])] +=
-										dw*kwx*kwy*kwz;
-								}
+								m[(size_t)(nxt+nyt*osf*n[1]+nzt*osf*n[2])] +=
+									dw*kwx*kwy*kwz;
 							}
 						}
 					}
-
-					for(size_t i = 0; i < n[0]*osf; i++){
-						m[i] = 0;
-						m[n[0]*osf+i] = 0;
-						m[n[0]*osf*(n[0]*osf-1)+i] = 0;
-						m[n[0]*osf*i+(n[0]*osf-1)] = 0;
-						// Need to add two more
-					}
 				}
+
+				for(size_t i = 0; i < n[0]*osf; i++){
+					m[i] = 0;
+					m[n[0]*osf+i] = 0;
+					m[n[0]*osf*(n[0]*osf-1)+i] = 0;
+					m[n[0]*osf*i+(n[0]*osf-1)] = 0;
+					// Need to add two more
+				}
+				break;
 			}
 		}
 	}
@@ -404,3 +404,12 @@ namespace Gadgetron{
   	return -numerator/denominator;
 	}
 }
+
+template class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<float, 1>;
+template class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<float, 2>;
+template class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<float, 3>;
+
+template class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<double, 1>;
+template class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<double, 2>;
+template class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<double, 3>;
+

@@ -80,7 +80,7 @@ namespace Gadgetron{
 
 			enum NFFT_comp_mode{
 				NFFT_FORWARDS_C2NC, /** forwards cartesian to non */
-				NFFT_BACKWARDS_NC2C, /** forwards non too cartesian */
+				NFFT_BACKWARDS_NC2C, /** forwards non to cartesian */
 				NFFT_BACKWARDS_C2NC, /** backwards cartesian to non */
 				NFFT_FORWARDS_NC2C /** forwards non to cartesian */
 			};
@@ -176,9 +176,7 @@ namespace Gadgetron{
 				Initialize variables and compute tables
 			*/
 
-			void initialize(
-				hoNDArray<typename reald<Real, D>::Type> k
-			);
+			void initialize();
 
 			/**
 				Dedicated convolutions
@@ -207,8 +205,11 @@ namespace Gadgetron{
 		private:
 			
 			typename uint64d<D>::Type n;
+			
 			Real wg, kw, kosf, kwidth, beta, osf;
+
 			hoNDArray<Real> p, da, daf, nx, ny, nz;
+
 			hoNDArray<typename reald<Real, D>::Type> k;
 
 	};

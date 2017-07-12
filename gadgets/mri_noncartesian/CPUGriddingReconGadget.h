@@ -16,6 +16,7 @@ namespace Gadgetron{
 		GADGET_PROPERTY(iterateProperty, bool, "Iterate bool", false);
 
 		float kernelWidth;
+		float oversamplingFactor;
 		std::vector<size_t> imageDims;
 		std::vector<size_t> imageDimsOs;
 

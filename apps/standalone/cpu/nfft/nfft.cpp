@@ -66,12 +66,13 @@ int main(int argc, char** argv){
 	for(auto it : dims) cout << it << ", ";
 	cout << endl;
 	
-	hoNFFT_plan<float, 2> plan(matrixSize, matrixSizeOs, kernelWidth);
+	hoNFFT_plan<float, 2> plan(matrixSize, osf, kernelWidth);
 	hoNDArray<complext<float>> result(matrixSizeOs[0], matrixSizeOs[1]);
-	plan.processAll(k, *data, *weights, n, osf, kernelWidth);
-	//plan.preprocess(&k, hoNFFT_plan<float, 2>::NFFT_PREP_NC2C);
-	//plan.compute(&(*data), &result, &(*weights), hoNFFT_plan<float, 2>::NFFT_BACKWARDS_NC2C);
+	plan.preprocess(k);
+	plan.compute((*data), result, (*weights), hoNFFT_plan<float, 2>::NFFT_BACKWARDS_NC2C);
 	
+	for(auto it = result.begin(); it != result.end(); it++)
+		cout << *it << endl;
 	auto output = boost::make_shared<hoNDArray<complext<float>>>(result);
 	write_nd_array<complext<float>>(output.get(), (char*) parms.get_parameter('o')->get_string_value());
 }
