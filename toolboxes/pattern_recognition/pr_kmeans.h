@@ -26,6 +26,9 @@ namespace Gadgetron {
 // then, the resulting centroids are used for whole data kmeans
 // 'kmeans++': perform the kmeans++ method, http://ilpubs.stanford.edu:8090/778/1/2006-13.pdf
 //
+// online update: the kmeans can optionally use the so-called "online" update. In this process, every data point is reallocated to all clusters and the
+// delta change of adding or removing this point is computed; those moves which will reduce the total sum cost will be performed.
+//
 // output
 // IDX : [N 1] array, indicating to which clusters every data sample belongs (first cluster has index 0)
 // C : [P K], K centroids
@@ -58,6 +61,9 @@ public:
 
     // number of repeated trials
     size_t replicates_;
+
+    // whether to perform on-line update
+    bool perform_online_update_;
 
     // ======================================================================================
     /// parameter for debugging
@@ -115,6 +121,12 @@ public:
     /// check whether clustering results changed
     /// return true, if clustering results are changed
     bool is_clustering_changed(const ClusterType&prev_IDX, const ClusterType& IDX);
+
+    /// online update
+    /// For input, IDX and C stores current clustering results and centroids
+    /// On return, IDX and C may be updated
+    /// max_iter_ is used for online update
+    void perform_online_update(const ArrayType& X, ClusterType& IDX, ArrayType& C, T& sumD);
 };
 
 }

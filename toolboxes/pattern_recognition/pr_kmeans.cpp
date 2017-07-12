@@ -22,6 +22,7 @@ kmeans<T>::kmeans()
 {
     max_iter_ = 100;
     replicates_ = 10;
+    perform_online_update_ = true;
 
     verbose_ = false;
     perform_timing_ = false;
@@ -497,6 +498,15 @@ void kmeans<T>::run(const ArrayType& X, size_t K, const ArrayType& C_for_initial
         {
             GDEBUG_STREAM("Kmeas iteration stopped : iter " << num_iter << " - " << sumD);
         }
+
+        if(this->perform_online_update_)
+        {
+            this->perform_online_update(X, IDX, C, sumD);
+            if (this->verbose_)
+            {
+                GDEBUG_STREAM("Kmeas online update : " << sumD);
+            }
+        }
     }
     catch (...)
     {
@@ -797,6 +807,152 @@ bool kmeans<T>::is_clustering_changed(const ClusterType&prev_IDX, const ClusterT
     {
         GERROR_STREAM("Exceptions happened in kmeans<T>::is_clustering_changed(...) ... ");
         return false;
+    }
+}
+
+template <typename T>
+void kmeans<T>::perform_online_update(const ArrayType& X, ClusterType& IDX, ArrayType& C, T& sumD)
+{
+    try
+    {
+        size_t P = X.get_size(0);
+        size_t N = X.get_size(1);
+        const T* pX = X.begin();
+
+        size_t K = C.get_size(1);
+
+        ArrayType del_cost; // store the delat change of sum cost if reassign a point
+        del_cost.create(N, K);
+
+        // count the number of points in each cluster
+        std::vector<size_t> num_pt_clusters(K, 0);
+
+        size_t n, p, k;
+
+        num_pt_clusters.resize(K, 0);
+        for (n = 0; n < N; n++)
+        {
+            num_pt_clusters[IDX[n]]++;
+        }
+
+        size_t iter(0);
+
+        size_t lastmoved = 0;
+        size_t nummoved = 0;
+        ClusterType prevIDX, newIDX(IDX);
+
+        while (iter < this->max_iter_)
+        {
+            // for every cluster K and every point N
+            // compute change of delta sum cost
+            for (k = 0; k < K; k++)
+            {
+                for (n = 0; n < N; n++)
+                {
+                    T v;
+                    if (IDX[n] == k)
+                    {
+                        if (num_pt_clusters[k] > 1)
+                            v = (T)num_pt_clusters[k] / (T)(num_pt_clusters[k] - 1);
+                        else
+                            v = 1;
+                    }
+                    else
+                        v = (T)num_pt_clusters[k] / (T)(num_pt_clusters[k] + 1);
+
+                    T t(0), d = 0;
+                    for (p = 0; p < P; p++)
+                    {
+                        t = X(p, n) - C(p, k);
+                        d += t*t;
+                    }
+
+                    del_cost(n, k) = v * d;
+                }
+            }
+
+            prevIDX = IDX;
+
+            // get the new IDX
+            for (n = 0; n < N; n++)
+            {
+                newIDX[n] = 0;
+                T min_del_cost = del_cost(n, 0);
+                for (k = 1; k < K; k++)
+                {
+                    if(del_cost(n, k) < min_del_cost)
+                    {
+                        newIDX[n] = k;
+                        min_del_cost = del_cost(n, k);
+                    }
+                }
+            }
+
+            // marked the moving points
+            std::vector<size_t> moved;
+            for (n = 0; n < N; n++)
+            {
+                if(prevIDX[n] != newIDX[n])
+                {
+                    moved.push_back(n);
+                }
+            }
+
+            // if no candidates to move, stop
+            if(moved.empty())
+            {
+                iter++;
+                break;
+            }
+
+            // pick a point to move
+            int moved_ind = N+1;
+            int tt(0);
+            for (size_t ii = 0; ii < moved.size(); ii++)
+            {
+                tt = (int)moved[ii] - (int)lastmoved - 1;
+                if (tt < 0) tt += N;
+                if (tt >= N) tt -= N;
+
+                tt += lastmoved;
+
+                if (tt < moved_ind) moved_ind = tt;
+            }
+
+            if (tt < 0) tt += N;
+            if (tt >= N) tt -= N;
+            moved_ind = (size_t)(tt + 1);
+
+            if(moved_ind<=lastmoved)
+            {
+                iter++;
+                if (iter >= this->max_iter_) break;
+                nummoved = 0;
+            }
+
+            nummoved++;
+            lastmoved = moved_ind;
+
+            size_t oidx = IDX[moved_ind];
+            size_t nidx = newIDX[moved_ind];
+
+            sumD = sumD + del_cost(moved_ind, nidx) - del_cost(moved_ind, oidx);
+
+            IDX[moved_ind] = nidx;
+
+            num_pt_clusters[oidx]--;
+            num_pt_clusters[nidx]++;
+
+            for (p=0; p<P; p++)
+            {
+                C(p, nidx) = C(p, nidx) + (X(p, moved_ind) - C(p, nidx)) / num_pt_clusters[nidx];
+                C(p, oidx) = C(p, oidx) - (X(p, moved_ind) - C(p, oidx)) / num_pt_clusters[oidx];
+            }
+        }
+    }
+    catch (...)
+    {
+        GERROR_STREAM("Exceptions happened in kmeans<T>::perform_online_update(...) ... ");
     }
 }
 
