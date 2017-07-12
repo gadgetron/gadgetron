@@ -42,6 +42,7 @@ add_subdirectory(rest)
 add_subdirectory(fatwater)
 add_subdirectory(ffd)
 add_subdirectory(image)
+add_subdirectory(pattern_recognition)
 
 if (ACE_FOUND)
   add_subdirectory(gadgettools)
