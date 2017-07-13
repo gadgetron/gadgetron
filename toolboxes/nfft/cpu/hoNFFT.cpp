@@ -71,7 +71,7 @@ namespace Gadgetron{
 
 	template<class Real, unsigned int D>
 	void hoNFFT_plan<Real, D>::compute(
-		hoNDArray<complext<Real>> d,
+		hoNDArray<complext<Real>> &d,
 		hoNDArray<complext<Real>> &m,
 		hoNDArray<Real> w,
 		NFFT_comp_mode mode
@@ -84,7 +84,7 @@ namespace Gadgetron{
 
 		switch(mode){
 			case NFFT_FORWARDS_C2NC:{
-				deapodize(d);
+				deapodize(d, true);
 				fft(d, NFFT_FORWARDS);
 				convolve(d, m, NFFT_CONV_C2NC);
 				
@@ -92,7 +92,10 @@ namespace Gadgetron{
 					if(m.get_number_of_elements() != w.get_number_of_elements())
 						throw std::runtime_error("Incompatible dimensions");
 
-					m *= w;
+					m /= w;
+					for(auto it = m.end()-5; it != m.end(); it++)
+						cout << *it << ", ";
+					cout << endl;
 				}
 				break;
 			}
@@ -142,7 +145,7 @@ namespace Gadgetron{
 
 	template<class Real, unsigned int D>
 	void hoNFFT_plan<Real, D>::convolve(
-		hoNDArray<complext<Real>> d,
+		hoNDArray<complext<Real>> &d,
 		hoNDArray<complext<Real>> &m,
 		NFFT_conv_mode mode
 	){
@@ -169,10 +172,10 @@ namespace Gadgetron{
 		bool fourierDomain
 	){
 		if(fourierDomain){
-			if(daf.get_number_of_elements() != d.get_number_of_elements())
+			if(da.get_number_of_elements() != d.get_number_of_elements())
 				throw std::runtime_error("Incompatible deapodization dimensions");
 
-			d /= daf;
+			d *= da;
 		}else{
 			if(da.get_number_of_elements() != d.get_number_of_elements())
 				throw std::runtime_error("Incompatible deapodization dimensions");
@@ -256,15 +259,50 @@ namespace Gadgetron{
 
 	template<class Real, unsigned int D>
 	void hoNFFT_plan<Real, D>::convolve_NFFT_C2NC(
-		hoNDArray<complext<Real>> d,
-		hoNDArray<complext<Real>> &m
+		hoNDArray<complext<Real>> &m,
+		hoNDArray<complext<Real>> &d
 	){
-		
+		switch(D){
+			case 1:{
+				break;				
+			}
+			case 2:{
+				d.fill(0);
+				for(size_t i = 0; i < k.get_number_of_elements(); i++){
+					complext<Real> dw = d[i];
+					for(int lx = -kwidth; lx < kwidth+1; lx++){
+						for(int ly = -kwidth; ly < kwidth+1; ly++){
+							Real nxt = std::round(nx[i]+lx);
+							Real nyt = std::round(ny[i]+ly);
+
+							Real kkx = std::min(
+								std::round(kosf*std::abs(nx[i]-nxt)),
+								std::floor(kosf*kwidth)
+							);
+							Real kky = std::min(
+								std::round(kosf*std::abs(ny[i]-nyt)),
+								std::floor(kosf*kwidth)
+							);
+							Real kwx = p[kkx]; Real kwy = p[kky];
+
+							nxt = std::max(nxt, Real(0)); nxt = std::min(nxt, osf*n[0]-1);
+							nyt = std::max(nyt, Real(0)); nyt = std::min(nyt, osf*n[1]-1);
+
+							d[i] += m[(size_t)(nxt+nyt*osf*n[1])]*kwx*kwy;
+						}
+					}
+				}
+				break;
+			}
+			case 3:{
+				break;	
+			}
+		}
 	}
 
 	template<class Real, unsigned int D>
 	void hoNFFT_plan<Real, D>::convolve_NFFT_NC2C(
-		hoNDArray<complext<Real>> d,
+		hoNDArray<complext<Real>> &d,
 		hoNDArray<complext<Real>> &m
 	){
 		switch(D){

@@ -96,7 +96,7 @@ namespace Gadgetron{
 			*/
 
 			void compute(
-				hoNDArray<complext<Real>> d,
+				hoNDArray<complext<Real>> &d,
 				hoNDArray<complext<Real>> &m,
 				hoNDArray<Real> w,
 				NFFT_comp_mode mode
@@ -128,7 +128,7 @@ namespace Gadgetron{
 			*/
 
 			void convolve(
-				hoNDArray<complext<Real>> d,
+				hoNDArray<complext<Real>> &d,
 				hoNDArray<complext<Real>> &m,
 				NFFT_conv_mode mode
 			);
@@ -183,12 +183,12 @@ namespace Gadgetron{
 			*/
 
 			void convolve_NFFT_C2NC(
-				hoNDArray<complext<Real>> d,
+				hoNDArray<complext<Real>> &d,
 				hoNDArray<complext<Real>> &m
 			);
 
 			void convolve_NFFT_NC2C(
-				hoNDArray<complext<Real>> d,
+				hoNDArray<complext<Real>> &d,
 				hoNDArray<complext<Real>> &m
 			);
 
