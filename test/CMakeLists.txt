@@ -63,12 +63,14 @@ link_libraries(
 set(test_src_files tests.cpp 
       hoNDArray_elemwise_test.cpp 
       hoNDArray_blas_test.cpp 
-      hoNDArray_utils_test.cpp
+      hoNDArray_utils_test.cpp 
+      hoNDArray_reductions_test.cpp 
       hoNDFFT_test.cpp
       hoNDWavelet_test.cpp
       curveFitting_test.cpp
       image_morphology_test.cpp 
-      pattern_recognition_test.cpp )
+      pattern_recognition_test.cpp 
+      )
 
 if ( CUDA_FOUND )
 
