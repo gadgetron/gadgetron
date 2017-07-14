@@ -198,6 +198,11 @@ namespace Gadgetron{
     template <typename T> EXPORTCPUCOREMATH void sort(const hoNDArray<T>& x, hoNDArray<T>& r, bool isascending);
 
     /**
+    * @brief sort the ND array with indexes, similar to [r, ind] = sor(x(:))
+    */
+    template <typename T> EXPORTCPUCOREMATH void sort(const hoNDArray<T>& x, hoNDArray<T>& r, std::vector<size_t>& ind, bool isascending);
+
+    /**
     * @brief finds the index of the element with the maximal absolute value.
     */
     template<class T> EXPORTCPUCOREMATH size_t amax(const hoNDArray<T>& x);
