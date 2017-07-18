@@ -998,14 +998,14 @@ namespace Gadgetron{
     struct hoCompAscendingIndex
     {
         typedef std::pair<size_t, T> PairType;
-        bool operator() (PairType& a, PairType& b) { return (a.second < b.second); }
+        bool operator() (const PairType& a, const PairType& b) { return (a.second < b.second); }
     };
 
     template <typename T>
     struct hoCompDescendingIndex
     {
-        typedef std::pair<size_t, T> PairType;
-        bool operator() (PairType& a, PairType& b) { return (a.second >= b.second); }
+        typedef std::pair<size_t, T> PairType; 
+        bool operator() (const PairType& a, const PairType& b) { return (a.second >= b.second); }
     };
 
     template <typename T>
