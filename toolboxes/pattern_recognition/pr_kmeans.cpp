@@ -921,7 +921,7 @@ void kmeans<T>::perform_online_update(const ArrayType& X, ClusterType& IDX, Arra
 
             if (tt < 0) tt += N;
             if (tt >= N) tt -= N;
-            moved_ind = (size_t)(tt + 1);
+            moved_ind = (size_t)(tt);
 
             if(moved_ind<=lastmoved)
             {
