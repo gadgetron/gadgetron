@@ -344,7 +344,12 @@ void kmeans<T>::run_replicates(const ArrayType& X, size_t K, const ArrayType& C_
         for (r=0; r<R; r++)
         {
             std::stringstream outs;
-            outs << "Kmeans, replicate " << r << " out of " << R;
+            outs << "-----> Kmeans, replicate " << r << " out of " << R;
+
+            if (this->verbose_)
+            {
+                GDEBUG_STREAM(outs.str());
+            }
 
             ArrayType curr_C_initial;
             curr_C_initial.create(P, K, const_cast<T*>(&C_for_initial(0, 0, r)) );
@@ -429,6 +434,8 @@ void kmeans<T>::run(const ArrayType& X, size_t K, const ArrayType& C_for_initial
 
         while (num_iter<=this->max_iter_ &&  this->is_clustering_changed(prev_IDX, IDX))
         {
+            prev_IDX = IDX;
+
             // update the centroid
             this->update_centroid(X, IDX, C, norm_C);
             // update clustering
@@ -490,7 +497,6 @@ void kmeans<T>::run(const ArrayType& X, size_t K, const ArrayType& C_for_initial
                 prev_sumD = sumD;
             }
 
-            prev_IDX = IDX;
             num_iter++;
         }
 
