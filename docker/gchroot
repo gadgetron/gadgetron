@@ -6,7 +6,7 @@
 # commands in chroot images. Mount points for images
 # are created and managed at /mnt/gadgetron_chroot
 #
-# Michael S. Hansen (michael.schacht.hansen@gmail)
+# Michael S. Hansen (michael.schacht.hansen@gmail.com)
 # 
 
 # TODO:
@@ -136,7 +136,7 @@ cmd_attach ()
     return 0
 }
 
-cmd_detach ()
+cmd_detach_impl ()
 {
     local mntpnt=$(complete_mount_point $1)
     
@@ -155,7 +155,7 @@ cmd_detach ()
 	umount $mp
     done
     
-    if [[ -L "$MOUNTPOINT" && -d "$MOUNTPOINT" ]]; then
+    if [[ -L "$MOUNTPOINT" ]]; then
 	rm $MOUNTPOINT
 	return 0
     fi
@@ -167,6 +167,22 @@ cmd_detach ()
     fi
 
     return 0
+}
+
+cmd_detach ()
+{
+    if [ $1 = "all" ]; then
+        for m in ${MNTFOLDER}/${CHROOTPREXIF}*; do
+            if [ -d "$m" ]; then
+                log "detach $m"
+            fi
+            res = $(cmd_detach_impl $m)
+        done
+    else
+        res = $(cmd_detach_impl $1)
+    fi
+
+    return $res
 }
 
 cmd_clean ()
