@@ -79,8 +79,11 @@ cmd_attach ()
     fi
 
     if [[ -e $mntpnt ]]; then
-	echo "Error: mountpoint $mntpnt already exists"
-	return 1
+	echo "mountpoint $mntpnt already exists"
+	mount | grep "${mntpnt}/" | while read -r line ; do
+            echo "$imgpath is already mounted"
+            return 0
+	done
     fi
     
     if [ -d "$imgpath" ]; then
@@ -171,15 +174,18 @@ cmd_detach_impl ()
 
 cmd_detach ()
 {
+    res=0
     if [ $1 = "all" ]; then
         for m in ${MNTFOLDER}/${CHROOTPREXIF}*; do
             if [ -d "$m" ]; then
                 log "detach $m"
             fi
-            res = $(cmd_detach_impl $m)
+            cmd_detach_impl $m
+	    res=$?
         done
     else
-        res = $(cmd_detach_impl $1)
+        cmd_detach_impl $1
+	res=$?
     fi
 
     return $res
