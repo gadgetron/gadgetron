@@ -181,14 +181,13 @@ cmd_detach ()
                 log "detach $m"
             fi
             cmd_detach_impl $m
-	    res=$?
         done
     else
         cmd_detach_impl $1
-	res=$?
+	return $?
     fi
 
-    return $res
+    return 0
 }
 
 cmd_clean ()
