@@ -13,6 +13,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/dwt/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+	${CMAKE_SOURCE_DIR}/toolboxes/nfft/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
@@ -52,6 +53,7 @@ link_libraries(
     gadgetron_toolbox_mri_core 
     gadgetron_toolbox_cpuoperator 
     gadgetron_toolbox_cpu_image
+		gadgetron_toolbox_cpunfft
     gadgetron_toolbox_cmr
     ${BOOST_LIBRARIES}
     ${GTEST_LIBRARIES} 
@@ -65,6 +67,7 @@ if ( CUDA_FOUND )
   cuda_add_executable(test_all 
       tests.cpp 
       hoNDArray_elemwise_test.cpp 
+			hoNFFT_test.cpp
       hoNDArray_blas_test.cpp 
       hoNDArray_utils_test.cpp
       hoNDFFT_test.cpp

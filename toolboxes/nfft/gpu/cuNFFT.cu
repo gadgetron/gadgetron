@@ -554,7 +554,9 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *i
                                                    cuNDArray<REAL> *dcw, std::vector<size_t> halfway_dims )
 {
   // Validity checks
-  
+	if(dcw)
+		std::cout << "\n\n\n" << dcw->get_number_of_elements() << std::endl;
+ 	else std::cout << "\n\n\nDCW not exist\n\n\n" << std::endl; 
   unsigned char components = _NFFT_CONV_C2NC + _NFFT_CONV_NC2C + _NFFT_FFT + _NFFT_DEAPODIZATION;
   
   if( in->get_number_of_elements() != out->get_number_of_elements() ){

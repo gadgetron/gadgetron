@@ -11,7 +11,7 @@ namespace Gadgetron{
 		~CPUGriddingReconGadget();
 	
 	protected:
-		GADGET_PROPERTY(kernelWidthProperty, float, "Kernel width", 7);
+		GADGET_PROPERTY(kernelWidthProperty, float, "Kernel width", 5.5);
 		GADGET_PROPERTY(oversamplingFactorProperty, float, "Oversmapling factor", 1.5);
 		GADGET_PROPERTY(iterateProperty, bool, "Iterate bool", false);
 

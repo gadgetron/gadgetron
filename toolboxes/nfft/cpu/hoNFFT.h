@@ -103,6 +103,10 @@ namespace Gadgetron{
 			);
 
 			/** NEED TO INCLUDE mult_MH_M function for interation */
+			void mult_MH_M(
+				hoNDArray<complext<Real>> &in,
+				hoNDArray<complext<Real>> &out
+			);
 
 		/**
 			Utilities
@@ -208,7 +212,9 @@ namespace Gadgetron{
 			
 			Real wg, kw, kosf, kwidth, beta, osf;
 
-			hoNDArray<Real> p, da, daf, nx, ny, nz;
+			hoNDArray<Real> p, daf, nx, ny, nz;
+
+			hoNDArray<complext<Real>> da;
 
 			hoNDArray<typename reald<Real, D>::Type> k;
 

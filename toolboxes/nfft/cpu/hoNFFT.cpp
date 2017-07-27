@@ -24,7 +24,7 @@ namespace Gadgetron{
 	
 	template<class Real, unsigned int D>
 	hoNFFT_plan<Real, D>::hoNFFT_plan(){
-		throw std::runtime_error("Default constructor is not available");
+		//throw std::runtime_error("Default constructor is not available");
 	}
 
 	template<class Real, unsigned int D>
@@ -85,17 +85,17 @@ namespace Gadgetron{
 		switch(mode){
 			case NFFT_FORWARDS_C2NC:{
 				deapodize(d, true);
+				cout << "    deapodized" << endl;
 				fft(d, NFFT_FORWARDS);
+				cout << "    ffted" << endl;
 				convolve(d, m, NFFT_CONV_C2NC);
+				cout << "    convolved" << endl;
 				
 				if(w.get_number_of_elements() != 0){
 					if(m.get_number_of_elements() != w.get_number_of_elements())
 						throw std::runtime_error("Incompatible dimensions");
 
-					m /= w;
-					for(auto it = m.end()-5; it != m.end(); it++)
-						cout << *it << ", ";
-					cout << endl;
+					//m /= w;
 				}
 				break;
 			}
@@ -118,12 +118,15 @@ namespace Gadgetron{
 					if(w.get_number_of_elements() != d.get_number_of_elements())
 						throw std::runtime_error("Incompatible dimensions");
 					
-					d *= w;
+					//d *= w;
 				}
-
+					
 				convolve(d, m, NFFT_CONV_NC2C);
+				cout << "    convolved" << endl;
 				fft(m, NFFT_BACKWARDS);
+				cout << "    ffted" << endl;
 				deapodize(m);
+				cout << "    deapodized" << endl;
 
 				break;
 			}
@@ -141,6 +144,19 @@ namespace Gadgetron{
 				break;
 			}
 		};
+	}
+
+	template<class Real, unsigned int D>
+	void hoNFFT_plan<Real, D>::mult_MH_M(
+		hoNDArray<complext<Real>> &in,
+		hoNDArray<complext<Real>> &out
+	){
+		hoNDArray<Real> w((size_t)0);
+		hoNDArray<complext<Real>> tmp;
+		tmp.create(n[0]*osf,n[1]*osf);
+		compute(in, tmp, w, NFFT_BACKWARDS_NC2C);
+		compute(tmp, out, w, NFFT_FORWARDS_C2NC);
+		cout << "second compute finsihed" << endl;
 	}
 
 	template<class Real, unsigned int D>
@@ -173,8 +189,8 @@ namespace Gadgetron{
 	){
 		if(fourierDomain){
 			if(da.get_number_of_elements() != d.get_number_of_elements())
-				throw std::runtime_error("Incompatible deapodization dimensions");
-
+				throw std::runtime_error("Incompatiblef deapodization dimensions");
+			
 			d *= da;
 		}else{
 			if(da.get_number_of_elements() != d.get_number_of_elements())
@@ -264,12 +280,24 @@ namespace Gadgetron{
 	){
 		switch(D){
 			case 1:{
+				m.fill(0);
+				for(size_t i = 0; i < k.get_number_of_elements(); i++){
+					for(int lx = -kwidth; lx < kwidth+1; lx++){
+						Real nxt = std::round(nx[i]+lx);
+						Real kkx = std::min(
+							std::round(kosf*std::abs(nx[i]-nxt)),
+							std::floor(kosf*kwidth)
+						);
+						Real kwx = p[kkx];
+						nxt = std::max(nxt, Real(0)); nxt = std::min(nxt, osf*n[0]-1);
+						d[i] += m[(size_t)nxt]*kwx;
+					}
+				}
 				break;				
 			}
 			case 2:{
 				d.fill(0);
 				for(size_t i = 0; i < k.get_number_of_elements(); i++){
-					complext<Real> dw = d[i];
 					for(int lx = -kwidth; lx < kwidth+1; lx++){
 						for(int ly = -kwidth; ly < kwidth+1; ly++){
 							Real nxt = std::round(nx[i]+lx);
@@ -295,6 +323,45 @@ namespace Gadgetron{
 				break;
 			}
 			case 3:{
+				m.fill(0);
+				for(size_t i = 0; i < k.get_number_of_elements(); i++){
+					for(int lx = -kwidth; lx < kwidth+1; lx++){
+						for(int ly = -kwidth; ly < kwidth+1; ly++){
+							for(int lz = -kwidth; lz = kwidth+1; lz++){
+								Real nxt = std::round(nx[i]+lx);
+								Real nyt = std::round(ny[i]+ly);
+								Real nzt = std::round(nz[i]+lz);
+
+								Real kkx = std::min(
+									std::round(kosf*std::abs(nx[i]-nxt)),
+									std::floor(kosf*kwidth)
+								);
+								Real kky = std::min(
+									std::round(kosf*std::abs(ny[i]-nyt)),
+									std::floor(kosf*kwidth)
+								);
+								Real kkz = std::min(
+									std::round(kosf*std::abs(nz[i]-nzt)),
+									std::floor(kosf*kwidth)
+								);
+								Real kwx = p[kkx];
+								Real kwy = p[kky];
+								Real kwz = p[kkz];
+
+								nxt = std::max(nxt, Real(0));
+								nxt = std::min(nxt, osf*n[0]-1);
+
+								nyt = std::max(nxt, Real(0));
+								nyt = std::min(nyt, osf*n[1]-1);
+
+								nzt = std::max(nzt, Real(0));
+								nzt = std::min(nzt, osf*n[2]-1);
+
+								d[i] += m[(size_t)(nxt+nyt*osf*n[1]+nzt*osf*n[2])]*kwx*kwy*kwz;
+							}
+						}
+					}
+				}
 				break;	
 			}
 		}
