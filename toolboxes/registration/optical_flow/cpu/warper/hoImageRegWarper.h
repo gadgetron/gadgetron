@@ -6,8 +6,6 @@
 #ifndef hoImageRegWarper_H_
 #define hoImageRegWarper_H_
 
-#pragma once
-
 #include "hoNDArray.h"
 #include "hoNDImage.h"
 #include "hoNDInterpolator.h"

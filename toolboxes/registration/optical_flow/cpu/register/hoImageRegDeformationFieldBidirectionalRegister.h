@@ -6,8 +6,6 @@
 #ifndef hoImageRegDeformationFieldBidirectionalRegister_H_
 #define hoImageRegDeformationFieldBidirectionalRegister_H_
 
-#pragma once
-
 #include "hoImageRegDeformationFieldRegister.h"
 
 namespace Gadgetron {

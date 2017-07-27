@@ -23,8 +23,6 @@
 #ifndef hoImageRegDeformationFieldSolver_H_
 #define hoImageRegDeformationFieldSolver_H_
 
-#pragma once
-
 #include "hoImageRegNonParametricSolver.h"
 #include "hoImageRegDeformationField.h"
 

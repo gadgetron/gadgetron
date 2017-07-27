@@ -6,8 +6,6 @@
 #ifndef hoImageRegTransformation_H_
 #define hoImageRegTransformation_H_
 
-#pragma once
-
 #include "hoNDArray.h"
 #include "hoNDImage.h"
 #include "hoMatrix.h"

@@ -33,8 +33,6 @@
 #ifndef hoImageRegDissimilarity_H_
 #define hoImageRegDissimilarity_H_
 
-#pragma once
-
 #include "hoNDArray.h"
 #include "hoNDImage.h"
 #include "hoNDInterpolator.h"

@@ -7,8 +7,6 @@
 #ifndef hoImageRegRigid3DTransformation_H_
 #define hoImageRegRigid3DTransformation_H_
 
-#pragma once
-
 #include "hoImageRegHomogenousTransformation.h"
 #include <cmath>
 

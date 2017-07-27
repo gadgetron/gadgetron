@@ -18,8 +18,6 @@
 #ifndef hoImageRegDissimilarityLocalCCR_H_
 #define hoImageRegDissimilarityLocalCCR_H_
 
-#pragma once
-
 #include <limits>
 #include "hoImageRegDissimilarity.h"
 

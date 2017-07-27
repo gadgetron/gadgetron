@@ -6,8 +6,6 @@
 #ifndef hoImageRegContainer2DRegistration_H_
 #define hoImageRegContainer2DRegistration_H_
 
-#pragma once
-
 #include <sstream>
 #include "hoNDArray.h"
 #include "hoNDImage.h"

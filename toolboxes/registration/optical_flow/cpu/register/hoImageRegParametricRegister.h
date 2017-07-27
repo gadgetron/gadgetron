@@ -7,8 +7,6 @@
 #ifndef hoImageRegParametricRegister_H_
 #define hoImageRegParametricRegister_H_
 
-#pragma once
-
 #include "hoImageRegRegister.h"
 
 namespace Gadgetron {

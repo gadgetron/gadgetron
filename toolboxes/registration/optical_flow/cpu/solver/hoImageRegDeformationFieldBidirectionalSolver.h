@@ -25,8 +25,6 @@
 #ifndef hoImageRegDeformationFieldBidirectionalSolver_H_
 #define hoImageRegDeformationFieldBidirectionalSolver_H_
 
-#pragma once
-
 #include "hoImageRegDeformationFieldSolver.h"
 
 #ifdef max
