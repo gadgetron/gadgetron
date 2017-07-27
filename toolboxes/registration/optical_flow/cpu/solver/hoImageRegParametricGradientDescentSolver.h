@@ -3,22 +3,26 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegParametricGradientDescentSolver_H_
+#define hoImageRegParametricGradientDescentSolver_H_
+
 #pragma once
 
 #include "hoImageRegParametricSolver.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    class hoImageRegParametricGradientDescentSolver : public hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut>
+namespace Gadgetron {
+
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    class hoImageRegParametricGradientDescentSolver : public hoImageRegParametricSolver<TargetType, SourceType, CoordType>
     {
     public:
 
-        typedef hoImageRegParametricGradientDescentSolver<ValueType, CoordType, DIn, DOut> Self;
-        typedef hoImageRegParametricSolver<ValueType, CoordType, DIn, DOut> BaseClass;
+        typedef hoImageRegParametricGradientDescentSolver<TargetType, SourceType, CoordType> Self;
+        typedef hoImageRegParametricSolver<TargetType, SourceType, CoordType> BaseClass;
 
-        typedef hoNDImage<ValueType, DOut> TargetType;
-        typedef hoNDImage<ValueType, DIn> SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -87,18 +91,18 @@ namespace Gadgetron
         using BaseClass::use_world_coordinate_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegParametricGradientDescentSolver<ValueType, CoordType, DIn, DOut>::hoImageRegParametricGradientDescentSolver() : BaseClass()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegParametricGradientDescentSolver<TargetType, SourceType, CoordType>::hoImageRegParametricGradientDescentSolver() : BaseClass()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegParametricGradientDescentSolver<ValueType, CoordType, DIn, DOut>::~hoImageRegParametricGradientDescentSolver()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegParametricGradientDescentSolver<TargetType, SourceType, CoordType>::~hoImageRegParametricGradientDescentSolver()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    ValueType hoImageRegParametricGradientDescentSolver<ValueType, CoordType, DIn, DOut>::solver_once(ValueType curr_dissimilarity)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    typename hoImageRegParametricGradientDescentSolver<TargetType, SourceType, CoordType>::ValueType hoImageRegParametricGradientDescentSolver<TargetType, SourceType, CoordType>::solver_once(ValueType curr_dissimilarity)
     {
         std::vector<ValueType> deriv;
         GADGET_CHECK_RETURN_FALSE(this->evaluateDeriv(transform_, dissimilarity_, step_size_para_, deriv));
@@ -136,11 +140,12 @@ namespace Gadgetron
         return prevValue;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegParametricGradientDescentSolver<ValueType, CoordType, DIn, DOut>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegParametricGradientDescentSolver<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "-------------- Gagdgetron Gradient descent image registration solver -------------" << endl;
         BaseClass::print(os);
     }
 }
+#endif // hoImageRegParametricGradientDescentSolver_H_

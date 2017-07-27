@@ -3,12 +3,15 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegParametricTransformation_H_
+#define hoImageRegParametricTransformation_H_
+
 #pragma once
 
 #include "hoImageRegTransformation.h"
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// parametric transformation, e.g. rigid and affine transformation or Free-Form Deformation
     template<typename ValueType, unsigned int DIn, unsigned int DOut> 
     class hoImageRegParametricTransformation : public hoImageRegTransformation<ValueType, DIn, DOut>
@@ -225,3 +228,4 @@ namespace Gadgetron
         return true;
     }
 }
+#endif // hoImageRegParametricTransformation_H_

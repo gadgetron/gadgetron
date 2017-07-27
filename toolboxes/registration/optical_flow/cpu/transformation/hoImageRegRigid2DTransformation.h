@@ -4,13 +4,16 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegRigid2DTransformation_H_
+#define hoImageRegRigid2DTransformation_H_
+
 #pragma once
 
 #include "hoImageRegHomogenousTransformation.h"
 #include <cmath>
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// Homogenous transformation
     template<typename ValueType> 
     class hoImageRegRigid2DTransformation : public hoImageRegHomogenousTransformation<ValueType, 2>
@@ -378,3 +381,4 @@ namespace Gadgetron
         os << " ]" << endl;
     }
 }
+#endif // hoImageRegRigid2DTransformation_H_

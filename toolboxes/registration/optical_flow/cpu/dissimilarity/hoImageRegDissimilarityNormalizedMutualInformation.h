@@ -7,23 +7,27 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegDissimilarityNormalizedMutualInformation_H_
+#define hoImageRegDissimilarityNormalizedMutualInformation_H_
+
 #pragma once
 
 #include "hoImageRegDissimilarityHistogramBased.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, unsigned int D> 
-    class hoImageRegDissimilarityNormalizedMutualInformation : public hoImageRegDissimilarityHistogramBased<ValueType, D>
+namespace Gadgetron {
+
+    template<typename ImageType> 
+    class hoImageRegDissimilarityNormalizedMutualInformation : public hoImageRegDissimilarityHistogramBased<ImageType>
     {
     public:
 
-        typedef hoImageRegDissimilarityNormalizedMutualInformation<ValueType, D> Self;
-        typedef hoImageRegDissimilarityHistogramBased<ValueType, D> BaseClass;
+        typedef hoImageRegDissimilarityNormalizedMutualInformation<ImageType> Self;
+        typedef hoImageRegDissimilarityHistogramBased<ImageType> BaseClass;
 
-        typedef typename BaseClass::ImageType ImageType;
+        enum { D = ImageType::NDIM };
+
         typedef typename BaseClass::InterpolatorType InterpolatorType;
-
+        typedef typename BaseClass::ValueType ValueType;
         typedef ValueType T;
         typedef ValueType element_type;
         typedef ValueType value_type;
@@ -74,20 +78,20 @@ namespace Gadgetron
         hoNDArray<hist_value_type> hist_warpped_;
     };
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityNormalizedMutualInformation<ValueType, D>::
+    template<typename ImageType> 
+    hoImageRegDissimilarityNormalizedMutualInformation<ImageType>::
     hoImageRegDissimilarityNormalizedMutualInformation(unsigned int num_bin_target, unsigned int num_bin_warpped, ValueType bg_value) 
         : BaseClass(num_bin_target, num_bin_warpped, bg_value)
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityNormalizedMutualInformation<ValueType, D>::~hoImageRegDissimilarityNormalizedMutualInformation()
+    template<typename ImageType> 
+    hoImageRegDissimilarityNormalizedMutualInformation<ImageType>::~hoImageRegDissimilarityNormalizedMutualInformation()
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    ValueType hoImageRegDissimilarityNormalizedMutualInformation<ValueType, D>::evaluate(ImageType& w)
+    template<typename ImageType> 
+    typename hoImageRegDissimilarityNormalizedMutualInformation<ImageType>::ValueType hoImageRegDissimilarityNormalizedMutualInformation<ImageType>::evaluate(ImageType& w)
     {
         try
         {
@@ -149,14 +153,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDissimilarityNormalizedMutualInformation<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityNormalizedMutualInformation<ImageType>::evaluate(ImageType& t, ImageType& w) ... ");
         }
 
         return this->dissimilarity_;
     }
 
-    template<typename ValueType, unsigned int D> 
-    void hoImageRegDissimilarityNormalizedMutualInformation<ValueType, D>::print(std::ostream& os) const
+    template<typename ImageType> 
+    void hoImageRegDissimilarityNormalizedMutualInformation<ImageType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image dissimilarity with histogram -------------" << endl;
@@ -171,3 +175,4 @@ namespace Gadgetron
         os << "Step size to ignore pixels when creating histogram is : " << step_size_ignore_pixel_ << endl;
     }
 }
+#endif // hoImageRegDissimilarityNormalizedMutualInformation_H_

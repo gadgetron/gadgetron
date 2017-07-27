@@ -7,6 +7,9 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegSolver_H_
+#define hoImageRegSolver_H_
+
 #pragma once
 
 #include "hoNDArray.h"
@@ -25,8 +28,8 @@
     #include <omp.h>
 #endif // USE_OMP
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     // define the solver type
     enum GT_IMAGE_REG_SOLVER
     {
@@ -95,15 +98,16 @@ namespace Gadgetron
 
     /// ValueType: image pixel value type
     /// CoordType: transformation data type
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
+    template<typename TargetType, typename SourceType, typename CoordType> 
     class hoImageRegSolver
     {
     public:
 
-        typedef hoImageRegSolver<ValueType, CoordType, DIn, DOut> Self;
+        typedef hoImageRegSolver<TargetType, SourceType, CoordType> Self;
 
-        typedef hoNDImage<ValueType, DOut> TargetType;
-        typedef hoNDImage<ValueType, DIn> SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -119,9 +123,9 @@ namespace Gadgetron
 
         typedef CoordType coord_type;
 
-        typedef hoImageRegWarper<ValueType, CoordType, DIn, DOut> ImageRegWarperType;
+        typedef hoImageRegWarper<TargetType, SourceType, CoordType> ImageRegWarperType;
 
-        typedef hoImageRegDissimilarity<ValueType, DOut> ImageRegDissimilarityType;
+        typedef hoImageRegDissimilarity<SourceType> ImageRegDissimilarityType;
 
         hoImageRegSolver();
         virtual ~hoImageRegSolver();
@@ -179,8 +183,8 @@ namespace Gadgetron
         bool use_world_coordinate_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegSolver<ValueType, CoordType, DIn, DOut>::hoImageRegSolver() 
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegSolver<TargetType, SourceType, CoordType>::hoImageRegSolver() 
         : target_(NULL), source_(NULL), bg_value_(0), interp_(NULL), warper_(NULL), dissimilarity_(NULL), verbose_(false), use_world_coordinate_(true), performTiming_(false)
     {
         gt_timer1_.set_timing_in_destruction(false);
@@ -188,13 +192,13 @@ namespace Gadgetron
         gt_timer3_.set_timing_in_destruction(false);
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegSolver<ValueType, CoordType, DIn, DOut>::~hoImageRegSolver()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegSolver<TargetType, SourceType, CoordType>::~hoImageRegSolver()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegSolver<ValueType, CoordType, DIn, DOut>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegSolver<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image registration solver -------------" << endl;
@@ -206,3 +210,4 @@ namespace Gadgetron
         os << "verbose flag is : " << verbose_ << std::endl;
     }
 }
+#endif // hoImageRegSolver_H_

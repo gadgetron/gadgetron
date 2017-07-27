@@ -3,6 +3,9 @@
     \author Hui Xue
 */
 
+#ifndef hoImageRegRegister_H_
+#define hoImageRegRegister_H_
+
 #pragma once
 
 #include "hoNDArray.h"
@@ -38,18 +41,19 @@
 #include "hoImageRegDissimilarityMutualInformation.h"
 #include "hoImageRegDissimilarityNormalizedMutualInformation.h"
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// perform the image registration using pyramid scheme
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
+    template<typename TargetType, typename SourceType, typename CoordType> 
     class hoImageRegRegister
     {
     public:
 
-        typedef hoImageRegRegister<ValueType, CoordType, DIn, DOut> Self;
+        typedef hoImageRegRegister<TargetType, SourceType, CoordType> Self;
 
-        typedef hoNDImage<ValueType, DOut> TargetType;
-        typedef hoNDImage<ValueType, DIn> SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -88,10 +92,10 @@ namespace Gadgetron
         typedef hoNDInterpolatorBSpline<SourceType, DIn> InterpSourceBSplineType;
 
         /// warper type
-        typedef hoImageRegWarper<ValueType, CoordType, DIn, DOut> WarperType;
+        typedef hoImageRegWarper<TargetType, SourceType, CoordType> WarperType;
 
         /// image dissimilarity type
-        typedef hoImageRegDissimilarity<ValueType, DOut> DissimilarityType;
+        typedef hoImageRegDissimilarity<SourceType> DissimilarityType;
 
         hoImageRegRegister(unsigned int resolution_pyramid_levels=3, ValueType bg_value=ValueType(0));
         virtual ~hoImageRegRegister();
@@ -222,8 +226,8 @@ namespace Gadgetron
         std::vector<DissimilarityType*> dissimilarity_pyramid_inverse_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegRegister<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegRegister<TargetType, SourceType, CoordType>::
     hoImageRegRegister(unsigned int resolution_pyramid_levels, ValueType bg_value) 
     : target_(NULL), source_(NULL), bg_value_(bg_value), performTiming_(false)
     {
@@ -276,8 +280,8 @@ namespace Gadgetron
         dissimilarity_MI_betaArg_.resize(resolution_pyramid_levels_, 2.0);
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegRegister<ValueType, CoordType, DIn, DOut>::~hoImageRegRegister()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegRegister<TargetType, SourceType, CoordType>::~hoImageRegRegister()
     {
         unsigned int ii;
         for ( ii=0; ii<resolution_pyramid_levels_; ii++ )
@@ -299,22 +303,22 @@ namespace Gadgetron
         delete source_interp_pyramid_construction_;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegDissimilarity<ValueType, DOut>* hoImageRegRegister<ValueType, CoordType, DIn, DOut>::createDissimilarity(GT_IMAGE_DISSIMILARITY v, unsigned int level)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegDissimilarity<SourceType>* hoImageRegRegister<TargetType, SourceType, CoordType>::createDissimilarity(GT_IMAGE_DISSIMILARITY v, unsigned int level)
     {
-        hoImageRegDissimilarity<ValueType, DOut>* res = NULL;
+        hoImageRegDissimilarity<SourceType>* res = NULL;
 
         unsigned int ii;
 
         switch (v)
         {
             case GT_IMAGE_DISSIMILARITY_SSD:
-                res = new hoImageRegDissimilaritySSD<ValueType, DOut>();
+                res = new hoImageRegDissimilaritySSD<SourceType>();
                 break;
 
             case GT_IMAGE_DISSIMILARITY_LocalCCR:
             {
-                hoImageRegDissimilarityLocalCCR<ValueType, DOut>* ptr = new hoImageRegDissimilarityLocalCCR<ValueType, DOut>();
+                hoImageRegDissimilarityLocalCCR<SourceType>* ptr = new hoImageRegDissimilarityLocalCCR<SourceType>();
                 for ( ii=0; ii<DOut; ii++ )
                 {
                     ptr->sigmaArg_[ii] = dissimilarity_LocalCCR_sigmaArg_[level][ii];
@@ -326,7 +330,7 @@ namespace Gadgetron
 
             case GT_IMAGE_DISSIMILARITY_MI:
             {
-                hoImageRegDissimilarityMutualInformation<ValueType, DOut>* ptr = new hoImageRegDissimilarityMutualInformation<ValueType, DOut>();
+                hoImageRegDissimilarityMutualInformation<SourceType>* ptr = new hoImageRegDissimilarityMutualInformation<SourceType>();
 
                 ptr->betaArg_[0] = dissimilarity_MI_betaArg_[level];
                 ptr->betaArg_[1] = dissimilarity_MI_betaArg_[level];
@@ -341,7 +345,7 @@ namespace Gadgetron
 
             case GT_IMAGE_DISSIMILARITY_NMI:
             {
-                hoImageRegDissimilarityNormalizedMutualInformation<ValueType, DOut>* ptr = new hoImageRegDissimilarityNormalizedMutualInformation<ValueType, DOut>();
+                hoImageRegDissimilarityNormalizedMutualInformation<SourceType>* ptr = new hoImageRegDissimilarityNormalizedMutualInformation<SourceType>();
 
                 ptr->num_bin_target_ = dissimilarity_hist_num_bin_target_[level];
                 ptr->num_bin_warpped_ = dissimilarity_hist_num_bin_warpped_[level];
@@ -361,8 +365,8 @@ namespace Gadgetron
         return res;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegRegister<ValueType, CoordType, DIn, DOut>::initialize()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegRegister<TargetType, SourceType, CoordType>::initialize()
     {
         try
         {
@@ -543,26 +547,26 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegRegister<ValueType, CoordType, DIn, DOut>::initialize() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegRegister<TargetType, SourceType, CoordType>::initialize() ... ");
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    inline void hoImageRegRegister<ValueType, CoordType, DIn, DOut>::setTarget(TargetType& target)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    inline void hoImageRegRegister<TargetType, SourceType, CoordType>::setTarget(TargetType& target)
     {
         target_ = &target;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    inline void hoImageRegRegister<ValueType, CoordType, DIn, DOut>::setSource(SourceType& source)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    inline void hoImageRegRegister<TargetType, SourceType, CoordType>::setSource(SourceType& source)
     {
         source_ = &source;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegRegister<ValueType, CoordType, DIn, DOut>::printContent(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegRegister<TargetType, SourceType, CoordType>::printContent(std::ostream& os) const
     {
         using namespace std;
         os << "Input dimension is : " << DIn << endl;
@@ -638,8 +642,8 @@ namespace Gadgetron
         }
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegRegister<ValueType, CoordType, DIn, DOut>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegRegister<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image register -------------" << endl;
@@ -647,3 +651,4 @@ namespace Gadgetron
         os << "-----------------------------------------------------" << std::endl;
     }
 }
+#endif // hoImageRegRegister_H_
