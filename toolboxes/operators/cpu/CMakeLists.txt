@@ -22,6 +22,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/transformation
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/warper
     ${CMAKE_SOURCE_DIR}/toolboxes/image_io
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
   )
 
 set(cpu_operator_header_files 

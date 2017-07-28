@@ -138,9 +138,6 @@ namespace Gadgetron {
         // store the respiratory navigator detected ROI
         typedef std::vector< std::pair< hoNDPoint<float, 2>, hoNDPoint<float, 2> > > NavigatorRoiType;
 
-        // motion correction
-        typedef Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2> RegContainer2DType;
-
         // image type
         typedef Gadgetron::hoNDImage<T, 2> ImageType;
         typedef Gadgetron::hoNDImageContainer2D<ImageType> ImageContinerType;
@@ -148,6 +145,9 @@ namespace Gadgetron {
         // image type
         typedef Gadgetron::hoNDImage< std::complex<T>, 2> ComplexImageType;
         typedef Gadgetron::hoNDImageContainer2D<ComplexImageType> ComplexImageContinerType;
+
+        // motion correction
+        typedef Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, float> RegContainer2DType;
 
         // deformation field
         typedef hoNDImageContainer2D< hoNDImage<float, 2> > DeformationFieldContinerType;

@@ -22,7 +22,8 @@
     \author Hui Xue
 */
 
-#pragma once
+#ifndef hoImageRegDeformationFieldBidirectionalSolver_H_
+#define hoImageRegDeformationFieldBidirectionalSolver_H_
 
 #include "hoImageRegDeformationFieldSolver.h"
 
@@ -34,20 +35,22 @@
 #undef min
 #endif // min
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// ValueType: image pixel value type
     /// CoordType: transformation data type
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    class hoImageRegDeformationFieldBidirectionalSolver : public hoImageRegDeformationFieldSolver<ValueType, CoordType, D>
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    class hoImageRegDeformationFieldBidirectionalSolver : public hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType>
     {
     public:
 
-        typedef hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D> Self;
-        typedef hoImageRegDeformationFieldSolver<ValueType, CoordType, D> BaseClass;
+        typedef hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType> Self;
+        typedef hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType> BaseClass;
 
-        typedef hoNDImage<ValueType, D> TargetType;
-        typedef hoNDImage<ValueType, D> SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { D = TargetType::NDIM };
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -97,7 +100,6 @@ namespace Gadgetron
         CoordType inverse_deform_enforce_weight_;
 
         using BaseClass::regularization_hilbert_strength_;
-        using BaseClass::apply_in_FOV_constraint_;
         using BaseClass::iter_num_;
         using BaseClass::max_iter_num_;
         using BaseClass::dissimilarity_thres_;
@@ -162,19 +164,19 @@ namespace Gadgetron
         coord_type deform_delta_scale_factor_inverse_[D];
     };
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::
     hoImageRegDeformationFieldBidirectionalSolver() : BaseClass(), inverse_deform_enforce_iter_(10), inverse_deform_enforce_weight_(0.5)
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::~hoImageRegDeformationFieldBidirectionalSolver()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::~hoImageRegDeformationFieldBidirectionalSolver()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::initialize()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::initialize()
     {
         GADGET_CHECK_RETURN_FALSE(interp_inverse_!=NULL);
         GADGET_CHECK_RETURN_FALSE(warper_inverse_!=NULL);
@@ -224,8 +226,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::solve()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::solve()
     {
         try
         {
@@ -282,15 +284,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::solve() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::solve() ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::
     enforceInverseTransform(TransformationType* transform, TransformationType* transform_inverse, DeformationFieldType* deform_delta, unsigned int iter_num)
     {
         try
@@ -523,65 +525,19 @@ namespace Gadgetron
 
                     Gadgetron::add(deform_delta[ii], deform_inverse, deform_inverse);
                 }
-
-                if ( apply_in_FOV_constraint_ )
-                {
-                    if ( !use_world_coordinate_ )
-                    {
-                        if ( D == 2 )
-                        {
-                            long long sx = (long long)dim_inverse[0];
-                            long long sy = (long long)dim_inverse[1];
-
-                            DeformationFieldType& dxInv = transform_inverse->getDeformationField(0);
-                            DeformationFieldType& dyInv = transform_inverse->getDeformationField(1);
-
-                            long long x, y;
-                            // #pragma omp parallel for default(none) private(y, x) shared(sx, sy, dxInv, dyInv) if(sx*sy>64*1024) num_threads(2)
-                            for ( y=0; y<sy; y++ )
-                            {
-                                for ( x=0; x<sx; x++ )
-                                {
-                                    size_t offset = x + y*sx;
-
-                                    CoordType tx = x + dxInv(offset);
-                                    CoordType ty = y + dyInv(offset);
-
-                                    if ( tx < 0 )
-                                    {
-                                        dxInv(offset) = FLT_EPSILON - x;
-                                    }
-                                    else if (tx > sx-1 )
-                                    {
-                                        dxInv(offset) = sx-1-FLT_EPSILON - x;
-                                    }
-
-                                    if ( ty < 0 )
-                                    {
-                                        dyInv(offset) = FLT_EPSILON - y;
-                                    }
-                                    else if (ty > sy-1 )
-                                    {
-                                        dyInv(offset) = sy-1-FLT_EPSILON - y;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::enforceInverseTransform(...) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::enforceInverseTransform(...) ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    void hoImageRegDeformationFieldBidirectionalSolver<ValueType, CoordType, D>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegDeformationFieldBidirectionalSolver<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image registration non-parametric solver for pixel-wise bidirectional deformation field -------------" << endl;
@@ -600,3 +556,4 @@ namespace Gadgetron
         os << "Weight to update the estimation of the inverse transform is : " << inverse_deform_enforce_weight_ << std::endl;
     }
 }
+#endif // hoImageRegDeformationFieldBidirectionalSolver_H_

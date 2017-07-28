@@ -57,6 +57,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
     ${CMAKE_SOURCE_DIR}/toolboxes/image_io
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
