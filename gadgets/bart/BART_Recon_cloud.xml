@@ -90,7 +90,13 @@
 	  <property><name>AbsoluteBartCommandScript_path</name><value></value></property>
 	  -->
 	  <property><name>BartWorkingDirectory</name><value>/tmp/</value></property>
-	  <property><name>BartCommandScript_name</name><value>Sample_GRAPPA_Recon.txt</value></property>
+	  <property><name>BartCommandScript_name</name><value>Sample_GRAPPA_Recon.sh</value></property>
+
+	  <property><name>isBartFileBeingStored</name><value>false</value></property>
+	  <property><name>isBartFolderBeingCachedToVM</name><value>false</value></property>
+	  <property><name>AllocateMemorySizeInMegabytes</name><value>50</value></property>
+
+
 	</gadget>
 
     <!-- ImageArray to images -->
