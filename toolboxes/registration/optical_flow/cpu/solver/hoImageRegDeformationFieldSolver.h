@@ -20,7 +20,8 @@
     \author Hui Xue
 */
 
-#pragma once
+#ifndef hoImageRegDeformationFieldSolver_H_
+#define hoImageRegDeformationFieldSolver_H_
 
 #include "hoImageRegNonParametricSolver.h"
 #include "hoImageRegDeformationField.h"
@@ -33,20 +34,22 @@
 #undef min
 #endif // min
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     /// ValueType: image pixel value type
     /// CoordType: transformation data type
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    class hoImageRegDeformationFieldSolver : public hoImageRegNonParametricSolver<ValueType, CoordType, D, D>
+    template<typename TargetType, typename SourceType, typename CoordType>
+    class hoImageRegDeformationFieldSolver : public hoImageRegNonParametricSolver<TargetType, SourceType, CoordType>
     {
     public:
 
-        typedef hoImageRegDeformationFieldSolver<ValueType, CoordType, D> Self;
-        typedef hoImageRegNonParametricSolver<ValueType, CoordType, D, D> BaseClass;
+        typedef hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType> Self;
+        typedef hoImageRegNonParametricSolver<TargetType, SourceType, CoordType> BaseClass;
 
-        typedef hoNDImage<ValueType, D> TargetType;
-        typedef hoNDImage<ValueType, D> SourceType;
+        typedef typename TargetType::value_type ValueType;
+        enum { D = TargetType::NDIM };
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -59,6 +62,8 @@ namespace Gadgetron
         typedef ValueType value_type;
 
         typedef CoordType coord_type;
+
+        typedef hoNDImage< std::complex<CoordType>, D> DeformCplxType;
 
         typedef typename BaseClass::InterpolatorType InterpolatorType;
 
@@ -92,15 +97,12 @@ namespace Gadgetron
                                 DeformationFieldType& deform_norm , DeformationFieldType& deform_norm_one_dim,
                                 CoordType* deform_delta_scale_factor);
 
+        /// print function
         virtual void print(std::ostream& os) const;
 
         /// the regularization method in ref [3] is used
         /// in the unit of pixel
         ValueType regularization_hilbert_strength_[D];
-
-        /// whether the deformation can warp a point outside the FOV
-        /// InFOV constraint
-        bool apply_in_FOV_constraint_;
 
         using BaseClass::iter_num_;
         using BaseClass::max_iter_num_;
@@ -132,6 +134,10 @@ namespace Gadgetron
 
         TargetType gradient_warpped_[D];
 
+        DeformCplxType deform_cplx_[D];
+        DeformCplxType deform_fft_cplx_[D];
+        DeformCplxType deform_fft_buf_cplx_[D];
+
         /// compensate for the non-isotropic pixel sizes
         coord_type deform_delta_scale_factor_[D];
 
@@ -145,8 +151,8 @@ namespace Gadgetron
         using BaseClass::use_world_coordinate_;
     };
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    hoImageRegDeformationFieldSolver<ValueType, CoordType, D>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType>::
     hoImageRegDeformationFieldSolver() : BaseClass()
     {
         for ( unsigned int ii=0; ii<D; ii++ )
@@ -154,17 +160,15 @@ namespace Gadgetron
             regularization_hilbert_strength_[ii] = 12;
             deform_delta_scale_factor_[ii] = 1;
         }
-
-        apply_in_FOV_constraint_ = false;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    hoImageRegDeformationFieldSolver<ValueType, CoordType, D>::~hoImageRegDeformationFieldSolver()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType>::~hoImageRegDeformationFieldSolver()
     {
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldSolver<ValueType, CoordType, D>::initialize()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType>::initialize()
     {
         GADGET_CHECK_RETURN_FALSE(BaseClass::initialize());
         warper_->setTransformation(*transform_);
@@ -196,8 +200,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldSolver<ValueType, CoordType, D>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType>::
     solve_once(TargetType* target, SourceType* source, TargetType& warped, 
                 unsigned int iter_num, unsigned int max_iter_num, 
                 unsigned int& divTimes, 
@@ -268,9 +272,19 @@ namespace Gadgetron
 
             const TargetType& deriv = dissimilarity.getDeriv();
 
+            size_t N = deriv.get_number_of_elements();
+            const ValueType* pD = deriv.begin();
+
             for ( ii=0; ii<D; ii++ )
             {
-                Gadgetron::multiply(gradient_warpped[ii], deriv, deform_delta[ii]);
+                ValueType* pG = gradient_warpped[ii].begin();
+                CoordType* pR = deform_delta[ii].begin();
+
+                for (size_t n = 0; n < N; n++)
+                {
+                    pR[n] = pG[n] * pD[n];
+                }
+                // Gadgetron::multiply(gradient_warpped[ii], deriv, deform_delta[ii]);
             }
 
             if ( !debugFolder_.empty() )
@@ -347,7 +361,7 @@ namespace Gadgetron
             {
                 for ( ii=0; ii<D; ii++ )
                 {
-                    Gadgetron::scal(PDE_time_integration_step_size, deform_delta[ii]);
+                    Gadgetron::scal( (CoordType)(PDE_time_integration_step_size), deform_delta[ii]);
                 }
 
                 if ( use_world_coordinate_ )
@@ -553,48 +567,6 @@ namespace Gadgetron
                     }
                 }
 
-                // add the InFOV constraint
-                if ( apply_in_FOV_constraint_ )
-                {
-                    if ( !use_world_coordinate_ )
-                    {
-                        if ( D == 2 )
-                        {
-                            CoordType pX, pY;
-
-                            // #pragma omp parallel for default(none) private(y, x, pX, pY) shared(sx, sy, deform_updated) num_threads(2)
-                            for ( y=0; y<sy; y++ )
-                            {
-                                for ( x=0; x<sx; x++ )
-                                {
-                                    size_t offset = x + y*sx;
-
-                                    CoordType tx = x + deform_updated[0](offset);
-                                    CoordType ty = y + deform_updated[1](offset);
-
-                                    if ( tx < 0 )
-                                    {
-                                        deform_updated[0](offset) = FLT_EPSILON - x;
-                                    }
-                                    else if (tx > sx-1 )
-                                    {
-                                        deform_updated[0](offset) = sx-1-FLT_EPSILON - x;
-                                    }
-
-                                    if ( ty < 0 )
-                                    {
-                                        deform_updated[1](offset) = FLT_EPSILON - y;
-                                    }
-                                    else if (ty > sy-1 )
-                                    {
-                                        deform_updated[1](offset) = sy-1-FLT_EPSILON - y;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
                 for ( ii=0; ii<D; ii++ )
                 {
                     transform->setDeformationField(deform_updated[ii], ii);
@@ -609,8 +581,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    bool hoImageRegDeformationFieldSolver<ValueType, CoordType, D>::solve()
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType>::solve()
     {
         try
         {
@@ -647,15 +619,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldSolver<ValueType, CoordType, D>::solve() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType>::solve() ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int D> 
-    void hoImageRegDeformationFieldSolver<ValueType, CoordType, D>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegDeformationFieldSolver<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image registration non-parametric solver for pixel-wise deformation field -------------" << endl;
@@ -671,3 +643,4 @@ namespace Gadgetron
         os << "Step size division ratio is : " << step_size_div_para_ << std::endl;
     }
 }
+#endif // hoImageRegDeformationFieldSolver_H_

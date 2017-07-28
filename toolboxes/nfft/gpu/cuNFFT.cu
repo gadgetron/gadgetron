@@ -554,9 +554,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *i
                                                    cuNDArray<REAL> *dcw, std::vector<size_t> halfway_dims )
 {
   // Validity checks
-	if(dcw)
-		std::cout << "\n\n\n" << dcw->get_number_of_elements() << std::endl;
- 	else std::cout << "\n\n\nDCW not exist\n\n\n" << std::endl; 
+  
   unsigned char components = _NFFT_CONV_C2NC + _NFFT_CONV_NC2C + _NFFT_FFT + _NFFT_DEAPODIZATION;
   
   if( in->get_number_of_elements() != out->get_number_of_elements() ){
@@ -990,11 +988,6 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_NC2C( cuNDArray<complext<R
   
   // Deapodization  
   deapodize( image );
-	std::cout << "IMAGE AFTER DEAPODIZATION" << std::endl;
-	std::cout << "n: " << image->get_number_of_elements() << std::endl;
-	for(size_t i = 0; i < image->get_number_of_elements(); i+= (image->get_number_of_elements()/10))
-		std::cout << (*image)[i] << std::endl;
-	for(int i = 0; i < 10; i++) std::cout << std::endl;
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void

@@ -40,6 +40,7 @@ set( gadgetron_mri_noncartesian_src_files
 	CPUGriddingReconGadget.cpp) 
 
 set( gadgetron_mri_noncartesian_config_files
+	config/Generic_CPU_Gridding_Recon.xml
   config/Generic_Spiral.xml
   config/Generic_Spiral_SNR.xml)
 

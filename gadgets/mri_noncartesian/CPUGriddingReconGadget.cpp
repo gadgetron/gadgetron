@@ -7,12 +7,9 @@
 #include "hoNDArray.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_math.h"
-#include "hoNFFTOperator.h"
 #include "hoCgSolver.h"
 #include <time.h>
 #include <numeric>
-
-// Only performs Non-Cartesian to Cartesian Recon for now
 
 namespace Gadgetron{
 	CPUGriddingReconGadget::CPUGriddingReconGadget(){}
@@ -99,10 +96,7 @@ namespace Gadgetron{
 			hoNDArray<float_complext> channelData(data->get_number_of_elements()/nCoils);
 			std::copy(data->begin()+i*(data->get_number_of_elements()/nCoils), data->begin()+(i+1)*(data->get_number_of_elements()/nCoils), channelData.begin());
 			
-			int start = clock();
 			hoNDArray<float_complext> channelRecon = *reconstructChannel(&channelData, traj, dcw);
-			int end = clock();
-			std::cout << "\n\n\n" << (float)(end-start)/CLOCKS_PER_SEC << std::endl;
 			multiplyConj(channelRecon, channelRecon, channelRecon);
 			add(arg, channelRecon, arg);	
 		}
@@ -128,36 +122,6 @@ namespace Gadgetron{
 			return boost::make_shared<hoNDArray<float_complext>>(result);
 		}else{	
 			// do iterative reconstruction
-			std::vector<size_t> recon_dims;
-			recon_dims.push_back(imageDims[0]*oversamplingFactor);
-			recon_dims.push_back(imageDims[1]*oversamplingFactor);
-			recon_dims.push_back(1);
-
-			auto E = boost::make_shared<hoNFFTOperator<float, 2>>();
-			E->setup(from_std_vector<size_t, 2>(imageDims),
-				oversamplingFactor,
-				kernelWidth
-			);
-			E->set_domain_dimensions(&recon_dims);
-			hoCgSolver<complext<float>> solver;
-			solver.set_max_iterations(5);
-			solver.set_tc_tolerance(1e-5);
-			solver.set_encoding_operator(E);
-			
-			std::cout << "d: " << data->get_number_of_elements() << std::endl;
-			E->set_codomain_dimensions(data->get_dimensions().get());
-			E->preprocess(*traj);
-			auto res = solver.solve_from_rhs(data);
-			hoNFFT_plan<float, 2> plan(
-				from_std_vector<size_t, 2>(imageDims),
-				oversamplingFactor,
-				kernelWidth
-			);	
-			hoNDArray<float_complext> result; result.create(imageDimsOs[0], imageDimsOs[1]);
-			plan.preprocess(*traj);
-			plan.compute(*res, result, *dcw, hoNFFT_plan<float, 2>::NFFT_BACKWARDS_NC2C); 
-
-			return boost::make_shared<hoNDArray<float_complext>>(result);
 		}
 	}
 

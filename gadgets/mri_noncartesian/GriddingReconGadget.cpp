@@ -13,7 +13,6 @@
 #include "cuNDArray_fileio.h"
 #include "cudaDeviceManager.h"
 #include <numeric>
-#include <time.h>
 #include <random>
 
 namespace Gadgetron {
@@ -136,10 +135,7 @@ namespace Gadgetron {
 			}
 
 			//Gridding
-			int start = clock();
 			auto images = reconstruct(&data,traj.get(),dcw.get(),CHA);
-			int end = clock();
-			std::cout << "--------------\n\ngpu version: " << (float)(end - start)/CLOCKS_PER_SEC << "\n\n------------" << std::endl;
 
 			//Calculate coil sensitivity map
 			auto csm = estimate_b1_map<float,2>(images.get());
@@ -250,14 +246,6 @@ namespace Gadgetron {
 		} else { //No density compensation, we have to do iterative reconstruction.
 			std::vector<size_t> recon_dims = image_dims_;
 			recon_dims.push_back(ncoils);
-			std::cout << "recon_dims: " <<
-				recon_dims[0] << ", " << recon_dims[1] << ", "
-				<< recon_dims[2] << std::endl;
-			auto data_dims = *data->get_dimensions();
-			std::cout << "data_dims: " << std::endl;
-			for(auto it : data_dims)
-				std::cout << it << ", ";
-			std::cout << std::endl;
 
 			auto E = boost::make_shared<cuNFFTOperator<float,2>>();
 

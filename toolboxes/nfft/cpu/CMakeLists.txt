@@ -19,8 +19,6 @@ include_directories(
 
 add_library(gadgetron_toolbox_cpunfft SHARED 
     hoNFFT.h
-		hoNFFTOperator.h
-		hoNFFTOperator.cpp
     cpunfft_export.h
 		hoNFFT.cpp
   )
@@ -38,6 +36,5 @@ install(TARGETS gadgetron_toolbox_cpunfft DESTINATION lib COMPONENT main)
 
 install(FILES 
   hoNFFT.h 
-	hoNFFTOperator.h
   cpunfft_export.h 
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

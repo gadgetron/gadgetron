@@ -306,6 +306,7 @@ namespace Gadgetron{
 
       // Perform one iteration of the solver
       //
+
       mult_MH_M( p_.get(), &q );
     
       // Update solution

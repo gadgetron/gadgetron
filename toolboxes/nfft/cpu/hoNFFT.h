@@ -45,6 +45,8 @@ namespace Gadgetron{
 
 			/**
 				Constructor defining the required NFFT parameters
+				
+				Note: Dimensions of n must be equal.
 
 				/param n: the non-oversampled matrix size to use for NFFT
 				/param osf: the oversampling factor
@@ -102,7 +104,14 @@ namespace Gadgetron{
 				NFFT_comp_mode mode
 			);
 
-			/** NEED TO INCLUDE mult_MH_M function for interation */
+			/**
+				To be used by an operator for iterative reconstruction 
+
+				\param in: the input data
+				\param out: the data after MH_H has been applied
+				
+				Note: dimensions of in and out should be the same
+			*/
 			void mult_MH_M(
 				hoNDArray<complext<Real>> &in,
 				hoNDArray<complext<Real>> &out
@@ -184,6 +193,10 @@ namespace Gadgetron{
 
 			/**
 				Dedicated convolutions
+
+				The two methods below are entirely symmetric in 
+				thier implementation. They could probably be
+				combined for conciseness.
 			*/
 
 			void convolve_NFFT_C2NC(

@@ -15,23 +15,25 @@
     \author Hui Xue
 */
 
-#pragma once
+#ifndef hoImageRegDissimilaritySSD_H_
+#define hoImageRegDissimilaritySSD_H_
 
 #include "hoImageRegDissimilarity.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, unsigned int D> 
-    class hoImageRegDissimilaritySSD : public hoImageRegDissimilarity<ValueType, D>
+namespace Gadgetron {
+
+    template<typename ImageType> 
+    class hoImageRegDissimilaritySSD : public hoImageRegDissimilarity<ImageType>
     {
     public:
 
-        typedef hoImageRegDissimilaritySSD<ValueType, D> Self;
-        typedef hoImageRegDissimilarity<ValueType, D> BaseClass;
+        typedef hoImageRegDissimilaritySSD<ImageType> Self;
+        typedef hoImageRegDissimilarity<ImageType> BaseClass;
 
-        typedef typename BaseClass::ImageType ImageType;
+        enum { D = ImageType::NDIM };
+
         typedef typename BaseClass::InterpolatorType InterpolatorType;
-
+        typedef typename BaseClass::ValueType ValueType;
         typedef ValueType T;
         typedef ValueType element_type;
         typedef ValueType value_type;
@@ -65,18 +67,18 @@ namespace Gadgetron
         using BaseClass::deriv;
     };
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilaritySSD<ValueType, D>::hoImageRegDissimilaritySSD() : BaseClass()
+    template<typename ImageType> 
+    hoImageRegDissimilaritySSD<ImageType>::hoImageRegDissimilaritySSD() : BaseClass()
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilaritySSD<ValueType, D>::~hoImageRegDissimilaritySSD()
+    template<typename ImageType> 
+    hoImageRegDissimilaritySSD<ImageType>::~hoImageRegDissimilaritySSD()
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    ValueType hoImageRegDissimilaritySSD<ValueType, D>::evaluate(ImageType& w)
+    template<typename ImageType> 
+    typename hoImageRegDissimilaritySSD<ImageType>::ValueType hoImageRegDissimilaritySSD<ImageType>::evaluate(ImageType& w)
     {
         try
         {
@@ -89,14 +91,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDissimilaritySSD<ValueType, D>::evaluate(w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilaritySSD<ImageType>::evaluate(w) ... ");
         }
 
         return this->dissimilarity_;
     }
 
-    template<typename ValueType, unsigned int D> 
-    void hoImageRegDissimilaritySSD<ValueType, D>::print(std::ostream& os) const
+    template<typename ImageType> 
+    void hoImageRegDissimilaritySSD<ImageType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron image dissimilarity SSD measure -------------" << endl;
@@ -106,3 +108,4 @@ namespace Gadgetron
         os << "Transformation data type is : " << elemTypeName << std::endl;
     }
 }
+#endif // hoImageRegDissimilaritySSD_H_

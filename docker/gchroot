@@ -6,7 +6,7 @@
 # commands in chroot images. Mount points for images
 # are created and managed at /mnt/gadgetron_chroot
 #
-# Michael S. Hansen (michael.schacht.hansen@gmail)
+# Michael S. Hansen (michael.schacht.hansen@gmail.com)
 # 
 
 # TODO:
@@ -79,8 +79,11 @@ cmd_attach ()
     fi
 
     if [[ -e $mntpnt ]]; then
-	echo "Error: mountpoint $mntpnt already exists"
-	return 1
+	echo "mountpoint $mntpnt already exists"
+	mount | grep "${mntpnt}/" | while read -r line ; do
+            echo "$imgpath is already mounted"
+            return 0
+	done
     fi
     
     if [ -d "$imgpath" ]; then
@@ -136,7 +139,7 @@ cmd_attach ()
     return 0
 }
 
-cmd_detach ()
+cmd_detach_impl ()
 {
     local mntpnt=$(complete_mount_point $1)
     
@@ -155,7 +158,7 @@ cmd_detach ()
 	umount $mp
     done
     
-    if [[ -L "$MOUNTPOINT" && -d "$MOUNTPOINT" ]]; then
+    if [[ -L "$MOUNTPOINT" ]]; then
 	rm $MOUNTPOINT
 	return 0
     fi
@@ -164,6 +167,24 @@ cmd_detach ()
 	umount $MOUNTPOINT
 	rmdir $MOUNTPOINT
 	return 0
+    fi
+
+    return 0
+}
+
+cmd_detach ()
+{
+    res=0
+    if [ $1 = "all" ]; then
+        for m in ${MNTFOLDER}/${CHROOTPREXIF}*; do
+            if [ -d "$m" ]; then
+                log "detach $m"
+            fi
+            cmd_detach_impl $m
+        done
+    else
+        cmd_detach_impl $1
+	return $?
     fi
 
     return 0

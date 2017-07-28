@@ -24,7 +24,7 @@ namespace Gadgetron{
 	
 	template<class Real, unsigned int D>
 	hoNFFT_plan<Real, D>::hoNFFT_plan(){
-		//throw std::runtime_error("Default constructor is not available");
+		throw std::runtime_error("Default constructor is not available");
 	}
 
 	template<class Real, unsigned int D>
@@ -42,6 +42,11 @@ namespace Gadgetron{
 		for(size_t i = 0; i < D; i++)
 			if(n[i] < 0) 
 				throw std::runtime_error("Matrix size must be positive");
+		
+		auto v = n[0];
+		for(size_t i = 0; i < D; i++)
+			if(n[i] != v)
+				throw std::runtime_error("Matrix dimensions must be equal");
 	
 		this->n = n;
 		this->osf = osf;
@@ -85,17 +90,14 @@ namespace Gadgetron{
 		switch(mode){
 			case NFFT_FORWARDS_C2NC:{
 				deapodize(d, true);
-				cout << "    deapodized" << endl;
 				fft(d, NFFT_FORWARDS);
-				cout << "    ffted" << endl;
 				convolve(d, m, NFFT_CONV_C2NC);
-				cout << "    convolved" << endl;
 				
 				if(w.get_number_of_elements() != 0){
 					if(m.get_number_of_elements() != w.get_number_of_elements())
 						throw std::runtime_error("Incompatible dimensions");
 
-					//m /= w;
+					m /= w;
 				}
 				break;
 			}
@@ -118,15 +120,12 @@ namespace Gadgetron{
 					if(w.get_number_of_elements() != d.get_number_of_elements())
 						throw std::runtime_error("Incompatible dimensions");
 					
-					//d *= w;
+					d *= w;
 				}
 					
 				convolve(d, m, NFFT_CONV_NC2C);
-				cout << "    convolved" << endl;
 				fft(m, NFFT_BACKWARDS);
-				cout << "    ffted" << endl;
 				deapodize(m);
-				cout << "    deapodized" << endl;
 
 				break;
 			}
@@ -156,7 +155,6 @@ namespace Gadgetron{
 		tmp.create(n[0]*osf,n[1]*osf);
 		compute(in, tmp, w, NFFT_BACKWARDS_NC2C);
 		compute(tmp, out, w, NFFT_FORWARDS_C2NC);
-		cout << "second compute finsihed" << endl;
 	}
 
 	template<class Real, unsigned int D>

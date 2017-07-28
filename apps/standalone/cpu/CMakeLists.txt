@@ -36,14 +36,12 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/apps/matlab
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
     ${CMAKE_SOURCE_DIR}/gadgets/gtPlus 
-		${CMAKE_SOURCE_DIR}/toolboxes/nfft/cpu
 )
 
 #add_subdirectory(MRI)
 add_subdirectory(denoising)
 #add_subdirectory(deblurring)
 add_subdirectory(registration)
-add_subdirectory(nfft)
 
 if(ISMRMRD_FOUND)
   add_subdirectory(gtplus)

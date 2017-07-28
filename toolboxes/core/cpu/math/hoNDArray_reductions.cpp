@@ -994,6 +994,80 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
+    template <typename T>
+    struct hoCompAscendingIndex
+    {
+        typedef std::pair<size_t, T> PairType;
+        bool operator() (const PairType& a, const PairType& b) { return (a.second < b.second); }
+    };
+
+    template <typename T>
+    struct hoCompDescendingIndex
+    {
+        typedef std::pair<size_t, T> PairType; 
+        bool operator() (const PairType& a, const PairType& b) { return (a.second >= b.second); }
+    };
+
+    template <typename T>
+    void sort(size_t N, const T* x, T* r, std::vector<size_t>& ind, bool isascending)
+    {
+        if (r != x)
+        {
+            memcpy(r, x, sizeof(T)*N);
+        }
+
+        ind.resize(N, 0);
+
+        std::vector< std::pair<size_t, T> > x_v(N);
+
+        size_t n;
+        for (n = 0; n < N; n++)
+        {
+            x_v[n].first = n;
+            x_v[n].second = x[n];
+        }
+
+        if (isascending)
+        {
+            hoCompAscendingIndex<T> obj;
+            std::sort(x_v.begin(), x_v.end(), obj);
+        }
+        else
+        {
+            hoCompDescendingIndex<T> obj;
+            std::sort(x_v.begin(), x_v.end(), obj);
+        }
+
+        for (n = 0; n < N; n++)
+        {
+            ind[n] = x_v[n].first;
+            r[n] = x_v[n].second;
+        }
+    }
+
+    template <typename T>
+    void sort(const hoNDArray<T>& x, hoNDArray<T>& r, std::vector<size_t>& ind, bool isascending)
+    {
+        if (&r != &x)
+        {
+            if (r.get_number_of_elements() != x.get_number_of_elements())
+            {
+                r = x;
+            }
+            else
+            {
+                memcpy(r.begin(), x.begin(), x.get_number_of_bytes());
+            }
+        }
+
+        sort(x.get_number_of_elements(), x.begin(), r.begin(), ind, isascending);
+    }
+
+    template EXPORTCPUCOREMATH void sort(const hoNDArray<float>& x, hoNDArray<float>& r, std::vector<size_t>& ind, bool isascending);
+    template EXPORTCPUCOREMATH void sort(const hoNDArray<double>& x, hoNDArray<double>& r, std::vector<size_t>& ind, bool isascending);
+
+    // --------------------------------------------------------------------------------
+
     template <class T>
     void minValue(const hoNDArray<T>& a, T& v)
     {

@@ -43,8 +43,6 @@ public:
             GADGET_CHECK_THROW(x != NULL);
             GADGET_CHECK_THROW(b != NULL);
 
-						std::cout << "\n\n\n\n" << image_dims->size() <<  std::endl;
-						std::cout << (*image_dims)[0] << ", " << (*image_dims)[1] << std::endl;
             GADGET_CHECK_THROW(b->dimensions_equal(image_dims.get()));
 
             if (this->x0_ != NULL)
