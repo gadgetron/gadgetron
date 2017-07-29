@@ -19,8 +19,9 @@
     <name>IsmrmrdDump</name>
     <dll>gadgetron_mricore</dll>
     <classname>IsmrmrdDumpGadget</classname>
-    <property><name>file_prefix</name><value>ISMRMRD_DUMP</value></property>
-    <property><name>append_timestamp</name><value>true</value></property>
+    <property><name>file_prefix</name><value></value></property>
+    <property><name>folder</name><value></value></property>
+    <property><name>save_xml_header_only</name><value>false</value></property>
   </gadget>
 
 </gadgetronStreamConfiguration>

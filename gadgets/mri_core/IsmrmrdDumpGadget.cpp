@@ -2,20 +2,25 @@
 #include "IsmrmrdDumpGadget.h"
 #include <iomanip>
 #include <boost/filesystem.hpp>
+#include "network_utils.h"
 
 namespace bf = boost::filesystem;
 
 namespace Gadgetron
 {
-    std::string get_time_string()
+    std::string get_date_time_string()
     {
         time_t rawtime;
         struct tm * timeinfo;
-        time ( &rawtime );
-        timeinfo = localtime ( &rawtime );
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
 
         std::stringstream str;
-        str << std::setw(2) << std::setfill('0') << timeinfo->tm_hour
+        str << timeinfo->tm_year + 1900
+            << std::setw(2) << std::setfill('0') << timeinfo->tm_mon + 1
+            << std::setw(2) << std::setfill('0') << timeinfo->tm_mday
+            << "-"
+            << std::setw(2) << std::setfill('0') << timeinfo->tm_hour
             << std::setw(2) << std::setfill('0') << timeinfo->tm_min
             << std::setw(2) << std::setfill('0') << timeinfo->tm_sec;
 
@@ -24,37 +29,7 @@ namespace Gadgetron
         return ret;
     }
 
-    std::string get_date_string()
-    {
-        time_t rawtime;
-        struct tm * timeinfo;
-        time ( &rawtime );
-        timeinfo = localtime ( &rawtime );
-
-        std::stringstream str;
-        str << timeinfo->tm_year+1900
-            << std::setw(2) << std::setfill('0') << timeinfo->tm_mon+1
-            << std::setw(2) << std::setfill('0') << timeinfo->tm_mday;
-
-        std::string ret = str.str();
-
-        return ret;
-    }
-
-    std::string get_time_string(size_t hours, size_t mins, size_t secs)
-    {
-        std::stringstream str;
-        str << std::setw(2) << std::setfill('0') << hours
-            << std::setw(2) << std::setfill('0') << mins
-            << std::setw(2) << std::setfill('0') << secs;
-
-        std::string ret = str.str();
-
-        return ret;
-    }
-
-    IsmrmrdDumpGadget::IsmrmrdDumpGadget()
-                    : Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >(), first_call_(true)
+    IsmrmrdDumpGadget::IsmrmrdDumpGadget() : BaseClass(), first_call_(true), save_ismrmrd_data_(true)
     {
     }
 
@@ -68,42 +43,86 @@ namespace Gadgetron
         ISMRMRD::deserialize(mb->rd_ptr(), ismrmrd_header_);
         ismrmrd_xml_ = std::string(mb->rd_ptr());
 
-        bf::path p(folder.value());
-
-        if (!exists(p))
+        // if ip_no_data_saving is set, check current ip of gadgetron server
+        if (!this->ip_no_data_saving.value().empty())
         {
+            std::vector<std::string> ip_list = this->ip_no_data_saving.value();
+
+            GDEBUG_STREAM("IsmrmrdDumpGadget, find pre-set ip for no-data-saving : " << ip_list.size() << " [ ");
+
+            size_t n;
+            for (n = 0; n < ip_list.size(); n++)
+            {
+                GDEBUG_STREAM(ip_list[n]);
+            }
+            GDEBUG_STREAM(" ] ");
+
+            // get current ip of gadgetron
+            std::string host_name;
+            std::vector<std::string> gt_ip_list;
             try
             {
-                bf::create_directory(p);
-            }
-            catch(...)
-            {
-                GERROR("Error caught trying to create folder %s\n", folder.value().c_str());
-                return GADGET_FAIL;
-            }
-        }
-        else
-        {
-            if (!is_directory(p))
-            {
-                GERROR("Specified path is not a directory\n");
-                return GADGET_FAIL;
-            }
-        }
-
-        if(!use_data_timestamp.value())
-        {
-            GDEBUG_STREAM("IsmrmrdDumpGadget, create ismrmrd file name using local time ... ");
-            this->create_ismrmrd_dataset();
-
-            try
-            {
-                ismrmrd_dataset_->writeHeader(ismrmrd_xml_);
+                Gadgetron::find_gadgetron_ip(host_name, gt_ip_list);
             }
             catch (...)
             {
-                GDEBUG("Failed to write XML header to HDF file\n");
-                return GADGET_FAIL;
+                GERROR_STREAM("Find gadgetrion ip failed ... ");
+                gt_ip_list.clear();
+            }
+
+            GDEBUG_STREAM("IsmrmrdDumpGadget, find gadgetron host name : " << host_name);
+
+            GDEBUG_STREAM("IsmrmrdDumpGadget, find gadgetron ip : " << gt_ip_list.size() << " [ ");
+            for (n = 0; n < gt_ip_list.size(); n++)
+            {
+                GDEBUG_STREAM(gt_ip_list[n]);
+            }
+            GDEBUG_STREAM(" ] ");
+
+            size_t m;
+
+            for (n = 0; n < ip_list.size(); n++)
+            {
+                for (m = 0; m < gt_ip_list.size(); m++)
+                {
+                    if (ip_list[n] == gt_ip_list[m])
+                    {
+                        this->save_ismrmrd_data_ = false;
+                        GDEBUG_STREAM("IsmrmrdDumpGadget, find matching ip pair : " << ip_list[n]);
+                        break;
+                    }
+                }
+
+                if (!this->save_ismrmrd_data_)
+                {
+                    break;
+                }
+            }
+        }
+
+        if (this->save_ismrmrd_data_)
+        {
+            boost::filesystem::path p(folder.value());
+
+            if (!exists(p))
+            {
+                try
+                {
+                    boost::filesystem::create_directory(p);
+                }
+                catch (...)
+                {
+                    GERROR("Error caught trying to create folder %s\n", folder.value().c_str());
+                    return GADGET_FAIL;
+                }
+            }
+            else
+            {
+                if (!is_directory(p))
+                {
+                    GERROR("Specified path is not a directory\n");
+                    return GADGET_FAIL;
+                }
             }
         }
 
@@ -112,13 +131,13 @@ namespace Gadgetron
 
     int IsmrmrdDumpGadget::create_ismrmrd_dataset(ISMRMRD::AcquisitionHeader* acq)
     {
-        try{
+        try {
             std::string measurement_id = "";
             std::string ismrmrd_filename = "";
 
-            if ( ismrmrd_header_.measurementInformation )
+            if (ismrmrd_header_.measurementInformation)
             {
-                if ( ismrmrd_header_.measurementInformation->measurementID )
+                if (ismrmrd_header_.measurementInformation->measurementID)
                 {
                     measurement_id = *ismrmrd_header_.measurementInformation->measurementID;
                 }
@@ -126,28 +145,47 @@ namespace Gadgetron
 
             GDEBUG("Measurement ID: %s\n", measurement_id.c_str());
 
-            bf::path p(folder.value());
+            boost::filesystem::path p(folder.value());
 
-            if ( file_prefix.value().empty() )
+            if (file_prefix.value().empty())
             {
-                ismrmrd_filename = "ISMRMRD_DUMP";
+                // try to use the protocol name
+                if (ismrmrd_header_.measurementInformation.is_present())
+                {
+                    if (ismrmrd_header_.measurementInformation.get().protocolName.is_present())
+                    {
+                        ismrmrd_filename = ismrmrd_header_.measurementInformation.get().protocolName.get();
+
+                        for (std::string::size_type i = 0; (i = ismrmrd_filename.find(" ", i)) != std::string::npos;)
+                        {
+                            ismrmrd_filename.replace(i, 1, "_");
+                            i += 1;
+                        }
+
+                        GDEBUG("ismrmrd_filename: %s\n", ismrmrd_filename.c_str());
+                    }
+                    else
+                    {
+                        ismrmrd_filename = "ISMRMRD_DUMP";
+                    }
+                }
+                else
+                {
+                    ismrmrd_filename = "ISMRMRD_DUMP";
+                }
             }
             else
             {
                 ismrmrd_filename = file_prefix.value();
             }
 
-            if (append_id.value() && measurement_id.size())
-            {
-                ismrmrd_filename.append("_");
-                ismrmrd_filename.append(measurement_id);
-            }
+            ismrmrd_filename.append("_");
+            ismrmrd_filename.append(measurement_id);
 
-            // check study date
             std::string study_date, study_time;
-            if ( ismrmrd_header_.studyInformation )
+            if (ismrmrd_header_.studyInformation)
             {
-                if ( ismrmrd_header_.studyInformation->studyDate )
+                if (ismrmrd_header_.studyInformation->studyDate)
                 {
                     study_date = *ismrmrd_header_.studyInformation->studyDate;
 
@@ -156,7 +194,7 @@ namespace Gadgetron
                     study_date = d;
                 }
 
-                if ( ismrmrd_header_.studyInformation->studyTime )
+                if (ismrmrd_header_.studyInformation->studyTime)
                 {
                     study_time = *ismrmrd_header_.studyInformation->studyTime;
 
@@ -166,45 +204,18 @@ namespace Gadgetron
                 }
             }
 
-            //Generate filename
-            if (append_timestamp.value())
+            if (!study_date.empty() && !study_time.empty())
             {
                 ismrmrd_filename.append("_");
+                ismrmrd_filename.append(study_date);
 
-                std::string file_time_string;
-                if(study_date.empty())
-                {
-                    file_time_string = get_date_string();
-                }
-                else
-                {
-                    file_time_string = study_date;
-                }
-
-                std::string time_string;
-
-                if(acq!=NULL)
-                {
-                    uint32_t time_stamp = acq->acquisition_time_stamp;
-
-                    // convert to acqusition date and time
-                    double timeInSeconds = time_stamp * timestamp_tick.value() / 1e3;
-
-                    size_t hours = (size_t)(timeInSeconds/3600);
-                    size_t mins =  (size_t)((timeInSeconds - hours*3600) / 60);
-                    size_t secs =  (size_t)(timeInSeconds- hours*3600 - mins*60);
-
-                    time_string = get_time_string(hours, mins, secs);
-                }
-                else
-                {
-                    time_string = get_time_string();
-                }
-
-                file_time_string.append("-");
-                file_time_string.append(time_string);
-
-                ismrmrd_filename.append(file_time_string);
+                ismrmrd_filename.append("-");
+                ismrmrd_filename.append(study_time);
+            }
+            else
+            {
+                ismrmrd_filename.append("_");
+                ismrmrd_filename.append(get_date_time_string());
             }
 
             ismrmrd_filename.append(".h5");
@@ -212,9 +223,11 @@ namespace Gadgetron
             p /= ismrmrd_filename;
 
             ismrmrd_filename = p.string();
-            ismrmrd_dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(ismrmrd_filename.c_str(), "dataset"));
+            GDEBUG_STREAM("KSpace dump file name : " << ismrmrd_filename);
+
+            ismrmrd_dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(ismrmrd_filename.c_str(), "dataset", true));
         }
-        catch(...)
+        catch (...)
         {
             GERROR_STREAM("Error happened in IsmrmrdDumpGadget::create_ismrmrd_dataset(...) ... ");
             return GADGET_FAIL;
@@ -225,18 +238,10 @@ namespace Gadgetron
 
     int IsmrmrdDumpGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
     {
-        ISMRMRD::Acquisition ismrmrd_acq;
-
-        ismrmrd_acq.setHead(*m1->getObjectPtr());
-
-        memcpy((void *)ismrmrd_acq.getDataPtr(), m2->getObjectPtr()->get_data_ptr(), 
-               sizeof(float)*m2->getObjectPtr()->get_number_of_elements()*2);
-
-        if(first_call_)
+        if (first_call_)
         {
-            if(use_data_timestamp.value())
+            if (this->save_ismrmrd_data_)
             {
-                GDEBUG_STREAM("IsmrmrdDumpGadget, create ismrmrd file name using data time ... ");
                 this->create_ismrmrd_dataset(m1->getObjectPtr());
 
                 try
@@ -248,47 +253,62 @@ namespace Gadgetron
                     GDEBUG("Failed to write XML header to HDF file\n");
                     return GADGET_FAIL;
                 }
+
+                GDEBUG_STREAM("IsmrmrdDumpGadget, save ismrmrd xml header ... ");
             }
+            else
+            {
+                GDEBUG_STREAM("IsmrmrdDumpGadget, do NOT save ismrmrd data ... ");
+            }
+
             first_call_ = false;
         }
 
-        if (m2->cont())
+        if (this->save_ismrmrd_data_ && !this->save_xml_header_only.value())
         {
-            //Write trajectory
-            if (ismrmrd_acq.trajectory_dimensions() == 0)
+            ISMRMRD::Acquisition ismrmrd_acq;
+            ismrmrd_acq.setHead(*m1->getObjectPtr());
+            memcpy((void *)ismrmrd_acq.getDataPtr(), m2->getObjectPtr()->get_data_ptr(), sizeof(float)*m2->getObjectPtr()->get_number_of_elements() * 2);
+
+            if (m2->cont())
             {
-                GDEBUG("Malformed dataset. Trajectory attached but trajectory dimensions == 0\n");
-                return GADGET_FAIL;
+                //Write trajectory
+                if (ismrmrd_acq.trajectory_dimensions() == 0)
+                {
+                    GDEBUG("Malformed dataset. Trajectory attached but trajectory dimensions == 0\n");
+                    return GADGET_FAIL;
+                }
+
+                GadgetContainerMessage< hoNDArray<float> >* m3 = AsContainerMessage< hoNDArray<float> >(m2->cont());
+
+                if (!m3)
+                {
+                    GDEBUG("Error casting trajectory data package");
+                    return GADGET_FAIL;
+                }
+
+                memcpy((void *)ismrmrd_acq.getTrajPtr(), m3->getObjectPtr()->get_data_ptr(),
+                    sizeof(float)*m3->getObjectPtr()->get_number_of_elements());
+            }
+            else
+            {
+                if (ismrmrd_acq.trajectory_dimensions() != 0)
+                {
+                    GDEBUG("Malformed dataset. Trajectory dimensions not zero but no trajectory attached\n");
+                    return GADGET_FAIL;
+                }
             }
 
-            GadgetContainerMessage< hoNDArray<float> >* m3 = AsContainerMessage< hoNDArray<float> >(m2->cont());
-
-            if (!m3)
             {
-                GDEBUG("Error casting trajectory data package");
-                return GADGET_FAIL;
-            } 
-
-            memcpy((void *)ismrmrd_acq.getTrajPtr(), m3->getObjectPtr()->get_data_ptr(),
-            sizeof(float)*m3->getObjectPtr()->get_number_of_elements());
-        }
-        else
-        {
-            if (ismrmrd_acq.trajectory_dimensions() != 0)
-            {
-                GDEBUG("Malformed dataset. Trajectory dimensions not zero but no trajectory attached\n");
-                return GADGET_FAIL;
-            }
-        }
-
-        {
-            try {
-                ismrmrd_dataset_->appendAcquisition(ismrmrd_acq);
-            }
-            catch (...)
-            {
-                GDEBUG("Error appending ISMRMRD Dataset\n");
-                return GADGET_FAIL;
+                try
+                {
+                    ismrmrd_dataset_->appendAcquisition(ismrmrd_acq);
+                }
+                catch (...)
+                {
+                    GDEBUG("Error appending ISMRMRD Dataset\n");
+                    return GADGET_FAIL;
+                }
             }
         }
 
