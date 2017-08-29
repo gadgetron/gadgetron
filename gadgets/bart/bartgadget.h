@@ -3,8 +3,8 @@
 * Author: Mahamadou Diakite, PhD.
 * Institution: National Institutes of Health (NIH)
 * Lang: C++
-* Date: 10/19/2016
-* Version: 0.0.1
+* Date: 8/28/2017
+* Version: 0.1.1
 ****************************************************************************************************************************/
 
 #ifndef BART_GADGET_H
@@ -48,8 +48,13 @@ namespace Gadgetron {
 	protected:
 		GADGET_PROPERTY(BartWorkingDirectory, std::string, "Absolute path to temporary file location (will default to workingDirectory)", "");
 		GADGET_PROPERTY(AbsoluteBartCommandScript_path, std::string, "Absolute path to bart script(s)", get_gadgetron_home() + "/share/gadgetron/bart");
-		GADGET_PROPERTY(BartCommandScript_name, std::string, "Script file containing bart command(s) to be loaded", "");
-
+		GADGET_PROPERTY(BartCommandScript_name, std::string, "Script file containing bart command(s) to be loaded", ""); 		
+		GADGET_PROPERTY(isBartFileBeingStored, bool, "Store Bart file", false);
+	
+	/*Caution: this option must be enable only if the user has root privilege and able to allocation virtual memory*/
+		GADGET_PROPERTY(isBartFolderBeingCachedToVM, bool, "Mount bart directory to the virtual memory for better performance", false);
+		GADGET_PROPERTY(AllocateMemorySizeInMegabytes, int, "Allocate memory to bart directory", 50);
+		
 		virtual int process(GadgetContainerMessage<IsmrmrdReconData>* m1);
 		long long image_counter_;
 		std::string workLocation_;
@@ -69,6 +74,7 @@ namespace Gadgetron {
 		// Utility functions
 		std::string &getOutputFilename(const std::string &bartCommandLine);
 		void cleanup(std::string &createdFiles);
+		void ltrim(std::string &str);
 	};
 
 

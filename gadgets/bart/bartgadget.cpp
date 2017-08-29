@@ -3,8 +3,8 @@
 * Author: Mahamadou Diakite, PhD.
 * Institution: National Institutes of Health (NIH)
 * Lang: C++
-* Date: 10/19/2016
-* Version: 0.0.1
+* Date: 8/28/2017
+* Version: 0.1.1
 ****************************************************************************************************************************/
 
 #include "bartgadget.h"
@@ -96,10 +96,14 @@ namespace Gadgetron {
 		return (outputFile.back());
 	}
 
-	void BartGadget::cleanup(std::string &createdFiles)
+	inline void BartGadget::cleanup(std::string &createdFiles)
 	{
 		boost::filesystem::remove_all(createdFiles);
 	}
+
+	inline void BartGadget::ltrim(std::string &str)
+        {
+		str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](int s){return !std::isspace(s);}));	  }
 
 	int BartGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	{
@@ -140,6 +144,17 @@ namespace Gadgetron {
 		else {
 		  GERROR("Folder to store *.hdr & *.cfl files doesn't exist...\n");
 		  return GADGET_FAIL;
+		}
+
+		/*USE WITH CAUTION*/
+		if(boost::filesystem::exists(generatedFilesFolder) && isBartFolderBeingCachedToVM.value() && !isBartFileBeingStored.value())
+		{
+			std::ostringstream cmd;
+			cmd << "mount -t tmpfs -o size" << AllocateMemorySizeInMegabytes.value() << "M, mode=0755 tmpfs " << generatedFilesFolder;
+			if(system(cmd.str().c_str())){                               
+				cleanup(outputFolderPath);
+				return GADGET_FAIL;
+			} 
 		}
 
 
@@ -231,8 +246,8 @@ namespace Gadgetron {
 							chunk.reshape(new_chunk_dims);
 							// Fill BART container
 							for (auto e : chunk) {
-								Temp_ref.push_back(e.real());
-								Temp_ref.push_back(e.imag());
+								Temp_ref.push_back(std::move(e.real()));
+								Temp_ref.push_back(std::move(e.imag()));
 							}
 						}
 					}
@@ -265,8 +280,8 @@ namespace Gadgetron {
 						chunk.reshape(new_chunk_dims);
 						// Fill BART container
 						for (auto e : chunk) {
-							Temp.push_back(e.real());
-							Temp.push_back(e.imag());
+							Temp.push_back(std::move(e.real()));
+							Temp.push_back(std::move(e.imag()));
 						}
 					}
 				}
@@ -278,44 +293,44 @@ namespace Gadgetron {
 		}
 
 		/* Before calling Bart let's do some bookkeeping */
-		std::ostringstream cmd1, cmd2, cmd3, cmd4, cmd5;
+		std::ostringstream cmd1, cmd2, cmd3, cmd4;
 		std::replace(generatedFilesFolder.begin(), generatedFilesFolder.end(), '\\', '/');
 
 		if (DIMS_ref != DIMS)
 		{
-			cmd1 << "bart reshape 15 " << DIMS_ref[2] << " " << DIMS_ref[0] << " " << DIMS_ref[1] << " " << DIMS_ref[3] << " meas_gadgetron_ref meas_gadgetron_ref_reshape";
-			cmd2 << "bart resize -c 1 " << DIMS[0] << " 2 " << DIMS[1] << " " << " meas_gadgetron_ref_reshape reference_data";
+			cmd1 << "bart resize -c 0 " << DIMS[0] << " 1 " << DIMS[1] << " 2 " << DIMS[2] << " meas_gadgetron_ref reference_data";
 			// Pass commands to Bart
-			if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd1.str()).c_str()))
+			if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd1.str()).c_str())){		
+				cleanup(outputFolderPath);
 				return GADGET_FAIL;
-
-			if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd2.str()).c_str()))
-				return GADGET_FAIL;
+			}			
 		}
 
 		if (DIMS[4] != 1)
-			cmd3 << "bart reshape 1023 " << DIMS[2] << " " << DIMS[0] << " " << DIMS[1] << " " << DIMS[3] << " 1 1 1 1 1 " << DIMS[4] << " meas_gadgetron input_data";
+			cmd2 << "bart reshape 1023 " << DIMS[0] << " " << DIMS[1] << " " << DIMS[2] << " " << DIMS[3] << " 1 1 1 1 1 " << DIMS[4] << " meas_gadgetron input_data";
 		else
-			cmd3 << "bart reshape 15 " << DIMS[2] << " " << DIMS[0] << " " << DIMS[1] << " " << DIMS[3] << " meas_gadgetron input_data";
+			cmd2 << "bart scale 1.0 meas_gadgetron input_data";
 
-		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd3.str()).c_str()))
+		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd2.str()).c_str())){			
+			cleanup(outputFolderPath);
 			return GADGET_FAIL;
+		}
 
 		/*** CALL BART COMMAND LINE from the scripting file***/
-		std::string Commands_Line, last_command;
+                // call BART shell script
+		auto ret = system(std::string("cd " + generatedFilesFolder + "&&" + CommandScript).c_str());
+		(void)ret;
+		
+		std::string Line, Commands_Line;
 		ifstream inputFile(CommandScript);
 		if (inputFile.is_open())
 		{
-			while (getline(inputFile, Commands_Line))
+			while (getline(inputFile, Line))
 			{
-				if (Commands_Line.empty())
+				ltrim(Line);
+				if (Line.empty() || Line.find("bart")!=0)
 					continue;
-				GDEBUG("%s\n", Commands_Line.c_str());
-				if (system(std::string("cd " + generatedFilesFolder + "&&" + Commands_Line).c_str())) {
-					return GADGET_FAIL;
-				} else {
-				  last_command = Commands_Line;
-				}
+				Commands_Line = Line;
 			}
 			inputFile.close();
 		}
@@ -326,21 +341,25 @@ namespace Gadgetron {
 			return GADGET_FAIL;
 		}
 
-		std::string outputFile = getOutputFilename(last_command);
+		std::string outputFile = getOutputFilename(Commands_Line);
+		
 		// Reformat the data back to gadgetron format
 		auto header = read_BART_hdr(std::string(generatedFilesFolder + outputFile).c_str());
-		cmd4 << "bart reshape 1023 " << header[1] << " " << header[2] << " " << header[0] << " " << header[3] << " " << header[9] * header[4]
+		cmd4 << "bart reshape 1023 " << header[0] << " " << header[1] << " " << header[2] << " " << header[3] << " " << header[9] * header[4]
 			<< " 1 1 1 1 1 " << outputFile << " " << outputFile + std::string("_reshape");
 		const auto cmd_s = cmd4.str();
 		GDEBUG("%s\n", cmd_s.c_str());
-		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd_s).c_str()))
+		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd_s).c_str())){
+			cleanup(outputFolderPath);
 			return GADGET_FAIL;
+		}
 
 		std::string outputfile_2 = getOutputFilename(cmd_s);
 		/**** READ FROM BART FILES ***/
 		std::pair< std::vector<size_t>, std::vector<std::complex<float> > > BART_DATA = read_BART_files(std::string(generatedFilesFolder + outputfile_2).c_str());
-
-		cleanup(outputFolderPath);
+                
+                if(!isBartFileBeingStored.value())
+			cleanup(outputFolderPath);
 
 		GadgetContainerMessage<IsmrmrdImageArray>* ims = new GadgetContainerMessage<IsmrmrdImageArray>();
 		IsmrmrdImageArray & imarray = *ims->getObjectPtr();
