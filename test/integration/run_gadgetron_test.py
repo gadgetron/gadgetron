@@ -402,12 +402,13 @@ def main():
         if os.environ.get("MATLAB_HOME"):
             if platform.system() == "Darwin":
                 myenv[libpath] += os.environ["MATLAB_HOME"] + "/bin/maci64:"
-            else:
-                myenv[libpath] += os.environ["MATLAB_HOME"] + "/bin/glnxa64:"
+            #else:
+                #myenv[libpath] += os.environ["MATLAB_HOME"] + "/bin/glnxa64:"
 
         myenv[libpath] += "/usr/local/cuda/lib64:"
         myenv[libpath] += "/opt/intel/mkl/lib/intel64:"
         myenv[libpath] += "/opt/intel/lib/intel64:"
+        myenv[libpath] += "/usr/local/lib:"
 
         if os.environ.get(libpath):
             myenv[libpath] += os.environ[libpath]

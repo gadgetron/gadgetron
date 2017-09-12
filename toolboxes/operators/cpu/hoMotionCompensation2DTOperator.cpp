@@ -177,7 +177,7 @@ void hoMotionCompensation2DTOperator<T, CoordType>::warp_image(const hoNDArray<T
 
             hoNDInterpolatorBSpline<ImageType, 2> interpBSpline(5);
 
-            hoImageRegWarper<ValueType, CoordType, 2, 2> warper;
+            hoImageRegWarper<ImageType, ImageType, CoordType> warper;
             warper.setBackgroundValue(bgValue);
             warper.setTransformation(deformTransform);
             warper.setInterpolator(interpBSpline);

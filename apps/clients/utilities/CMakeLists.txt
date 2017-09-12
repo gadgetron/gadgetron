@@ -2,13 +2,13 @@ set(Boost_NO_BOOST_CMAKE ON)
 
 if(WIN32)
   find_package(Boost COMPONENTS thread system date_time chrono REQUIRED)
-else(WIN32)
+else()
   find_package(Boost COMPONENTS thread system REQUIRED)
-endif(WIN32)
+endif()
 
 if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/apps/gadgetron

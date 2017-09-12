@@ -39,6 +39,11 @@ namespace Gadgetron{
     template<class T> EXPORTCPUCOREMATH T stddev(hoNDArray<T>* data);
 
     /***
+    * Calculates the variance of the array
+    */
+    template<class T> EXPORTCPUCOREMATH T var(hoNDArray<T>* data);
+
+    /***
      * Calulates the median of the array
      */
     template<class T> EXPORTCPUCOREMATH T median(hoNDArray<T>* data);
@@ -191,6 +196,11 @@ namespace Gadgetron{
     * @brief sort the ND array
     */
     template <typename T> EXPORTCPUCOREMATH void sort(const hoNDArray<T>& x, hoNDArray<T>& r, bool isascending);
+
+    /**
+    * @brief sort the ND array with indexes, similar to [r, ind] = sor(x(:))
+    */
+    template <typename T> EXPORTCPUCOREMATH void sort(const hoNDArray<T>& x, hoNDArray<T>& r, std::vector<size_t>& ind, bool isascending);
 
     /**
     * @brief finds the index of the element with the maximal absolute value.

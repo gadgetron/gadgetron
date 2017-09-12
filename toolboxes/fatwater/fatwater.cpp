@@ -12,11 +12,55 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/read_dimacs.hpp>
 #include <boost/graph/graph_utility.hpp>
+#include <boost/graph/boykov_kolmogorov_max_flow.hpp>
+#include <boost/graph/edmonds_karp_max_flow.hpp>
+#include <boost/timer/timer.hpp>
 
+// Curve fitting includes (from Hui's example)
+//#include "hoNDHarrWavelet.h"
+//#include "hoNDRedundantWavelet.h"
+#include "hoNDArray_math.h"
+#include "simplexLagariaSolver.h"
+#include "twoParaExpDecayOperator.h"
+#include "curveFittingCostFunction.h"
+#include <boost/random.hpp>
 
 #define GAMMABAR 42.576 // MHz/T
 #define PI 3.141592
 
+using namespace boost;
+ 
+typedef int EdgeWeightType;
+ 
+typedef adjacency_list_traits < vecS, vecS, directedS > Traits;
+typedef adjacency_list < vecS, vecS, directedS,
+			 property < vertex_name_t, std::string,
+				    property < vertex_index_t, long,
+			 property < vertex_color_t, boost::default_color_type,
+			 property < vertex_distance_t, long,
+			 property < vertex_predecessor_t, Traits::edge_descriptor > > > > >,
+			 property < edge_capacity_t, EdgeWeightType,
+			 property < edge_residual_capacity_t, EdgeWeightType,
+			 property < edge_reverse_t, Traits::edge_descriptor > > > > Graph;
+
+/*
+Traits::edge_descriptor AddEdge(Traits::vertex_descriptor &v1,
+				Traits::vertex_descriptor &v2,
+				property_map < Graph, edge_reverse_t >::type &rev,
+				const double capacity,
+				Graph &g);
+*/
+
+void AddEdge(Traits::vertex_descriptor &v1, Traits::vertex_descriptor &v2, property_map < Graph, edge_reverse_t >::type &rev, const double capacity, Graph &g)
+{
+  Traits::edge_descriptor e1 = add_edge(v1, v2, g).first;
+  Traits::edge_descriptor e2 = add_edge(v2, v1, g).first;
+  put(edge_capacity, g, e1, capacity);
+  put(edge_capacity, g, e2, 0*capacity);
+  
+  rev[e1] = e2;
+  rev[e2] = e1;
+}
 
 namespace Gadgetron {
     hoNDArray< std::complex<float> > fatwater_separation(hoNDArray< std::complex<float> >& data, FatWaterParameters p, FatWaterAlgorithm a)

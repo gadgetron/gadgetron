@@ -42,9 +42,9 @@ namespace Gadgetron {
         GADGET_PROPERTY(number_of_output_phases, int, "Number of output phases after binning", 30);
 
         GADGET_PROPERTY(send_out_raw, bool, "Whether to set out raw images", false);
+        GADGET_PROPERTY(send_out_multiple_series_by_slice, bool, "Whether to set out binning images as multiple seires", false);
 
         /// parameters for raw image reconstruction
-        GADGET_PROPERTY(time_tick, float, "Time tick in ms", 2.5);
         GADGET_PROPERTY(arrhythmia_rejector_factor, float, "If a heart beat RR is not in the range of [ (1-arrhythmiaRejectorFactor)*meanRR (1+arrhythmiaRejectorFactor)*meanRR], it will be rejected", 0.25);
 
         GADGET_PROPERTY(grappa_kSize_RO, int, "Raw data recon, kernel size RO", 5);
@@ -94,6 +94,14 @@ namespace Gadgetron {
         GADGET_PROPERTY_LIMITS(kspace_binning_nonlinear_reg_wav_name, std::string, "Binned kspace recon, wavelet name, non-linear recon", "db1", 
             GadgetPropertyLimitsEnumeration, "db1", "db2", "db3", "db4", "db5");
 
+        // for debug
+        GadgetProperty<std::vector<unsigned int>, GadgetPropertyLimitsNoLimits<std::vector<unsigned int> > > kspace_binning_processed_slices{"kspace_binning_processed_slices", 
+                                                                                                            "unsigned int", 
+                                                                                                            "If set, these slices will be processed", 
+                                                                                                            this, 
+                                                                                                            {}, 
+                                                                                                            GadgetPropertyLimitsNoLimits<std::vector<unsigned int> >()};
+
     protected:
 
         // --------------------------------------------------
@@ -136,5 +144,11 @@ namespace Gadgetron {
 
         // set the time stamps
         void set_time_stamps(IsmrmrdImageArray& res, hoNDArray< float >& acq_time, hoNDArray< float >& cpt_time);
+
+        // --------------------------------------------------
+        // overload functions
+        // --------------------------------------------------
+        // send out the recon results
+        virtual int prep_image_header_send_out(IsmrmrdImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role);
     };
 }

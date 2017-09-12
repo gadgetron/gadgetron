@@ -39,14 +39,25 @@ namespace Gadgetron{
       thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), F());
     } else if (compatible_dimensions(x,y))
       {
-        typedef thrust::transform_iterator<cuNDA_modulus<int>,thrust::counting_iterator<int>, int> transform_it;
-        transform_it indices = thrust::make_transform_iterator(thrust::make_counting_iterator(0),cuNDA_modulus<int>(y.get_number_of_elements()));
-        thrust::permutation_iterator<thrust::device_ptr<S>,transform_it> p = thrust::make_permutation_iterator(y.begin(),indices);
-        thrust::transform(x.begin(),x.end(),p,x.begin(),F());
+        if (y.get_number_of_elements() < x.get_number_of_elements()) {
+          typedef thrust::transform_iterator<cuNDA_modulus<int>, thrust::counting_iterator<int>, int> transform_it;
+          transform_it indices = thrust::make_transform_iterator(thrust::make_counting_iterator(0),
+                                                                 cuNDA_modulus<int>(y.get_number_of_elements()));
+          thrust::permutation_iterator<thrust::device_ptr<S>, transform_it> p = thrust::make_permutation_iterator(
+                  y.begin(), indices);
+          thrust::transform(x.begin(), x.end(), p, x.begin(), F());
+        } else {
+          thrust::transform(x.begin(),x.end(),y.begin(),x.begin(),F());
+        }
+
       } else {
       throw std::runtime_error("The provided cuNDArrays have incompatible dimensions for operator {+=,-=,*=,/=}");
     }
   }
+
+
+
+
 
   template<typename T>
   struct cuNDA_plus : public thrust::binary_function<complext<T>, T, complext<T> >

@@ -15,7 +15,6 @@
 #include <boost/make_shared.hpp>
 #include "b1_map.h"
 #include "cuCgSolver.h"
-#include "cuNDArray_math.h"
 #include "hoNDArray_math.h"
 #include "hoNDArray_utils.h"
 #include "cuNDArray_fileio.h"

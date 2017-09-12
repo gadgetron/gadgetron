@@ -6,11 +6,11 @@ find_package(Boost COMPONENTS date_time REQUIRED)
 
 if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 if (WIN32)
     set(GT_DICOM_LIBRARIES ${DCMTK_dcmdata_LIBRARY} ${DCMTK_oflog_LIBRARY} ${DCMTK_ofstd_LIBRARY})
-else (WIN32)
+else ()
     set(GT_DICOM_LIBRARIES
         ${DCMTK_dcmdata_LIBRARY}
         ${DCMTK_oflog_LIBRARY}
@@ -18,8 +18,8 @@ else (WIN32)
         z m pthread)
     if (APPLE)
         list(APPEND GT_DICOM_LIBRARIES iconv)
-    endif (APPLE)
-endif (WIN32)
+    endif ()
+endif ()
 
 # sanity check:
 #message("DCMTK ${DCMTK_HOME}")
@@ -87,7 +87,7 @@ target_link_libraries(
 
 if(ARMADILLO_FOUND)
     target_link_libraries(gadgetron_dicom gadgetron_toolbox_cpucore_math )
-endif(ARMADILLO_FOUND)
+endif()
 
 install(
     FILES ${gadgetron_dicom_header_files} 

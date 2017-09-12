@@ -1,8 +1,6 @@
-IF (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_CARTESIAN__)
-ENDIF (WIN32)
-
-find_package(Ismrmrd REQUIRED)
+if (WIN32)
+  add_definitions(-D__BUILD_GADGETRON_CARTESIAN__)
+endif ()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
@@ -25,7 +23,7 @@ target_link_libraries(gadgetron_cartesian gadgetron_toolbox_cpucore
 
 if(ARMADILLO_FOUND)
     target_link_libraries(gadgetron_cartesian gadgetron_toolbox_cpucore_math )
-endif(ARMADILLO_FOUND)
+endif()
 
 install (FILES  gadgetron_cartesian_export.h
                 CartesianToGenericGadget.h

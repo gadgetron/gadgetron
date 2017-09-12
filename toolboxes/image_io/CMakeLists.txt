@@ -1,11 +1,11 @@
 
 if (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_IMAGE_ANALYZE_IO__)
-endif (WIN32)
+    add_definitions(-D__BUILD_GADGETRON_IMAGE_ANALYZE_IO__)
+endif ()
 
 if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+endif()
 
 include_directories(
     ${ACE_INCLUDE_DIR} 
@@ -33,7 +33,7 @@ set( image_io_src_files
 
 add_library(gadgetron_toolbox_image_analyze_io SHARED ${image_io_header_files} ${image_io_src_files} )
 set_target_properties(gadgetron_toolbox_image_analyze_io PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
-target_link_libraries(gadgetron_toolbox_image_analyze_io gadgetron_toolbox_log)
+target_link_libraries(gadgetron_toolbox_image_analyze_io gadgetron_toolbox_log ${Boost_LIBRARIES})
 
 install(TARGETS gadgetron_toolbox_image_analyze_io DESTINATION lib COMPONENT main)
 

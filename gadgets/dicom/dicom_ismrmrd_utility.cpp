@@ -60,25 +60,25 @@ namespace Gadgetron
 
             ISMRMRD::StudyInformation study_info = *h.studyInformation;
 
-            if(!h.studyInformation.is_present() || h.studyInformation.get().studyDate.is_present())
+            if(!h.studyInformation.is_present() || !h.studyInformation.get().studyDate.is_present())
                 study_info.studyDate.set("19000101");
 
-            if(!h.studyInformation.is_present() || h.studyInformation.get().studyTime.is_present())
+            if(!h.studyInformation.is_present() || !h.studyInformation.get().studyTime.is_present())
                 study_info.studyTime.set("121212");
 
-            if(!h.studyInformation.is_present() || h.studyInformation.get().studyID.is_present())
+            if(!h.studyInformation.is_present() || !h.studyInformation.get().studyID.is_present())
                 study_info.studyID.set("XXXXXXXX");
 
-            if(!h.studyInformation.is_present() || h.studyInformation.get().accessionNumber.is_present())
+            if(!h.studyInformation.is_present() || !h.studyInformation.get().accessionNumber.is_present())
                 study_info.accessionNumber.set(0);
 
-            if(!h.studyInformation.is_present() || h.studyInformation.get().referringPhysicianName.is_present())
+            if(!h.studyInformation.is_present() || !h.studyInformation.get().referringPhysicianName.is_present())
                 study_info.referringPhysicianName.set("XXXXXXXX");
 
-            if(!h.studyInformation.is_present() || h.studyInformation.get().studyDescription.is_present())
+            if(!h.studyInformation.is_present() || !h.studyInformation.get().studyDescription.is_present())
                 study_info.studyDescription.set("XXXXXXXX");
 
-            if(!h.studyInformation.is_present() || h.studyInformation.get().studyInstanceUID.is_present())
+            if(!h.studyInformation.is_present() || !h.studyInformation.get().studyInstanceUID.is_present())
                 study_info.studyInstanceUID.set("XXXXXXXX");
 
             // -------------------------------------------------

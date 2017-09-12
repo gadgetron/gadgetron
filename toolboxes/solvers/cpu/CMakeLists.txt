@@ -1,6 +1,6 @@
 if (WIN32)
-    ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUSOLVERS__)
-endif (WIN32)
+    add_definitions(-D__BUILD_GADGETRON_CPUSOLVERS__)
+endif ()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -34,7 +34,9 @@ set( cpu_solver_header_files
         hoLsqrSolver.h 
         hoGpBbSolver.h 
         hoSbCgSolver.h 
-        hoSolverUtils.h )
+        hoSolverUtils.h 
+        curveFittingSolver.h 
+        simplexLagariaSolver.h )
 
 set( cpu_solver_source_files )
 

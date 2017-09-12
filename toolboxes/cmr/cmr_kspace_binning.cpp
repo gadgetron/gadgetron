@@ -225,20 +225,21 @@ void CmrKSpaceBinning<T>::process_binning_recon()
         // -----------------------------------------------------
         // release some memory to reduce peak RAM usage
         // -----------------------------------------------------
-        binning_obj_.data_.clear();
+        if(binning_obj_.data_.delete_data_on_destruct()) binning_obj_.data_.clear();
 
         // -----------------------------------------------------
         // perform kspace binning
         // -----------------------------------------------------
         // all time stamps and raw full kspace is filled now
         // binning can be performed
-        this->compute_kspace_binning(bestHB);
-        binning_obj_.full_kspace_raw_.clear();
+        std::vector<size_t> slices_not_processing;
+        this->compute_kspace_binning(bestHB, slices_not_processing);
+        if(binning_obj_.full_kspace_raw_.delete_data_on_destruct()) binning_obj_.full_kspace_raw_.clear();
 
         // -----------------------------------------------------
         // perform recon on the binned kspace 
         // -----------------------------------------------------
-        this->perform_recon_binned_kspace();
+        this->perform_recon_binned_kspace(slices_not_processing);
     }
     catch(...)
     {
@@ -720,7 +721,7 @@ void CmrKSpaceBinning<T>::estimate_respiratory_navigator()
         NavigatorRoiType roi;
         roi.resize(S);
 
-        Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2> reg;
+        Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, float> reg;
 
         size_t s, n, e1;
         for (s=0; s<S; s++)
@@ -1365,7 +1366,7 @@ void CmrKSpaceBinning<T>::compute_metrics_navigator_heart_beat(size_t s, size_t 
 }
 
 template <typename T> 
-void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& bestHB)
+void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& bestHB, std::vector<size_t>& slices_not_processing)
 {
     try
     {
@@ -1397,6 +1398,8 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
         binning_obj_.kspace_binning_hit_count_.create(E1, dstN, S);
         Gadgetron::clear(binning_obj_.kspace_binning_hit_count_);
 
+        slices_not_processing.clear();
+
         size_t e1, n, s, ii;
 
         if(this->kspace_binning_interpolate_heart_beat_images_)
@@ -1414,6 +1417,9 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
                 size_t endE1 = binning_obj_.ending_heart_beat_[s][bestHB_S].first;
                 size_t endN = binning_obj_.ending_heart_beat_[s][bestHB_S].second;
 
+                size_t ori_endN = endN;
+                size_t ori_startN = endN;
+
                 // avoid cross the RR wav
                 if ( binning_obj_.phs_cpt_time_stamp_(startN, s) > binning_obj_.phs_cpt_time_stamp_(startN+1, s) )
                 {
@@ -1427,8 +1433,19 @@ void CmrKSpaceBinning<T>::compute_kspace_binning(const std::vector<size_t>& best
 
                 if ( endN <= startN )
                 {
-                    GERROR_STREAM("KSpace binning for S " << s << " - endN <= startN ...");
-                    continue;
+                    GERROR_STREAM("KSpace binning for S " << s << " - endN <= startN - " << endN << " <= " << startN );
+                    GWARN_STREAM("Please consider to reduce temporal footprint of raw image series, if heart rate is too high ... " );
+
+                    endN = ori_endN;
+                    startN = ori_startN;
+
+                    if ( endN <= startN )
+                    {
+                        GERROR_STREAM("KSpace binning for S " << s << " - endN <= startN - " << endN << " <= " << startN );
+                        GERROR_STREAM("Slice " << s << " will not be processed ... ");
+                        slices_not_processing.push_back(s);
+                        continue;
+                    }
                 }
 
                 // ----------------------------------------
@@ -1735,24 +1752,44 @@ void CmrKSpaceBinning<T>::interpolate_best_HB_images(const std::vector<float>& c
 
         mag_bestHB_at_desired_cpt.create( RO, E1, dstN );
 
+        // check the boundary of cpt_time_ratio_bestHB
+        std::vector<float> cpt_time_ratio_bestHB_checked(cpt_time_ratio_bestHB);
+
+        if(cpt_time_ratio_bestHB_checked[0] > cpt_time_ratio_bestHB_checked[1])
+        {
+            cpt_time_ratio_bestHB_checked[0] = 1.0 - cpt_time_ratio_bestHB_checked[0];
+            if(cpt_time_ratio_bestHB_checked[0] > cpt_time_ratio_bestHB_checked[1])
+            {
+                cpt_time_ratio_bestHB_checked[0] = 0;
+            }
+
+            GDEBUG_STREAM("Cpt time ratio 0 used for interpolating : " << cpt_time_ratio_bestHB_checked[0]);
+        }
+
+        if(cpt_time_ratio_bestHB_checked[N-1] < cpt_time_ratio_bestHB_checked[N-2])
+        {
+            cpt_time_ratio_bestHB_checked[N-1] = 1.0;
+            GDEBUG_STREAM("Cpt time ratio N-1 used for interpolating : " << cpt_time_ratio_bestHB_checked[N-1]);
+        }
+
         // extend the best HB for periodic boundary condition
         hoNDArray<T> mag(RO, E1, N+2);
         std::vector<float> cpt(N+2);
 
         memcpy(mag.begin()+RO*E1, mag_bestHB.begin(), mag_bestHB.get_number_of_bytes());
-        memcpy(&cpt[0]+1, &cpt_time_ratio_bestHB[0], sizeof(float)*N);
+        memcpy(&cpt[0]+1, &cpt_time_ratio_bestHB_checked[0], sizeof(float)*N);
 
         size_t n;
 
         // first phase
         // memcpy(mag.begin(), mag_bestHB.begin()+(N-1)*RO*E1, sizeof(T)*RO*E1);
         memcpy(mag.begin(), mag_bestHB.begin(), sizeof(T)*RO*E1);
-        cpt[0] = (float)( -(1.0 - cpt_time_ratio_bestHB[N-1]) );
+        cpt[0] = (float)( -(1.0 - cpt_time_ratio_bestHB_checked[N-1]) );
 
         // last phase
         // memcpy(mag.begin()+(N+1)*RO*E1, mag_bestHB.begin(), sizeof(T)*RO*E1);
         memcpy(mag.begin()+(N+1)*RO*E1, mag_bestHB.begin()+(N-1)*RO*E1, sizeof(T)*RO*E1);
-        cpt[N+1] = (float)( 1.0 + cpt_time_ratio_bestHB[0] );
+        cpt[N+1] = (float)( 1.0 + cpt_time_ratio_bestHB_checked[0] );
 
         if ( !debug_folder_.empty() ) gt_exporter_.export_array(mag, debug_folder_ + "mag_bestHB_periodic_condition");
 
@@ -1960,7 +1997,7 @@ void CmrKSpaceBinning<T>::perform_moco_selected_images_with_best_heart_beat(cons
 
         std::vector<unsigned int> key_frame(dstN, 0);
 
-        Gadgetron::hoImageRegContainer2DRegistration<float, float, 2, 2> reg;
+        Gadgetron::hoImageRegContainer2DRegistration<hoNDImage<float, 2>, hoNDImage<float, 2>, float> reg;
 
         GDEBUG_STREAM("Perform moco against best heart beat : " << this->kspace_binning_moco_reg_strength_);
         GDEBUG_STREAM("MOCO iterations : ");
@@ -2044,7 +2081,7 @@ void CmrKSpaceBinning<T>::perform_moco_warp_on_selected_images( const std::vecto
         ComplexImageContinerType output;
         output.copyFrom(input);
 
-        Gadgetron::hoImageRegContainer2DRegistration< T, float, 2, 2> reg;
+        Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, float> reg;
         reg.warpContainer2D(input, input, deform, output);
 
         warpped_complex_images.resize(dstN);
@@ -2247,7 +2284,7 @@ void CmrKSpaceBinning<T>::fill_binned_kspace(size_t s, size_t dst_n, const std::
 }
 
 template <typename T> 
-void CmrKSpaceBinning<T>::perform_recon_binned_kspace()
+void CmrKSpaceBinning<T>::perform_recon_binned_kspace(const std::vector<size_t>& slices_not_processing)
 {
     try
     {
@@ -2276,6 +2313,22 @@ void CmrKSpaceBinning<T>::perform_recon_binned_kspace()
             // use the neighboring frames if there are holes in the binned kspace
             for (s=0; s<S; s++)
             {
+                bool not_processing = false;
+                for (size_t kk=0; kk<slices_not_processing.size(); kk++)
+                {
+                    if(slices_not_processing[kk] == s)
+                    {
+                        not_processing = true;
+                        break;
+                    }
+                }
+
+                if(not_processing)
+                {
+                    GWARN_STREAM("Due to previously happened errors, slice " << s << " will not be processed ... ");
+                    continue;
+                }
+
                 for (n=0; n<N; n++)
                 {
                     for (e1=0; e1<E1; e1++)
@@ -2347,6 +2400,22 @@ void CmrKSpaceBinning<T>::perform_recon_binned_kspace()
         {
             for (s=0; s<S; s++)
             {
+                bool not_processing = false;
+                for (size_t kk=0; kk<slices_not_processing.size(); kk++)
+                {
+                    if(slices_not_processing[kk] == s)
+                    {
+                        not_processing = true;
+                        break;
+                    }
+                }
+
+                if(not_processing)
+                {
+                    GWARN_STREAM("Due to previously happened errors, slice " << s << " will not be processed ... ");
+                    continue;
+                }
+
                 std::stringstream os;
                 os << "_S_" << s;
 

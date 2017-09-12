@@ -15,23 +15,25 @@
     \author Hui Xue
 */
 
-#pragma once
+#ifndef hoImageRegDissimilarityMutualInformation_H_
+#define hoImageRegDissimilarityMutualInformation_H_
 
 #include "hoImageRegDissimilarityHistogramBased.h"
 
-namespace Gadgetron
-{
-    template<typename ValueType, unsigned int D> 
-    class hoImageRegDissimilarityMutualInformation : public hoImageRegDissimilarityHistogramBased<ValueType, D>
+namespace Gadgetron {
+
+    template<typename ImageType> 
+    class hoImageRegDissimilarityMutualInformation : public hoImageRegDissimilarityHistogramBased<ImageType>
     {
     public:
 
-        typedef hoImageRegDissimilarityMutualInformation<ValueType, D> Self;
-        typedef hoImageRegDissimilarityHistogramBased<ValueType, D> BaseClass;
+        typedef hoImageRegDissimilarityMutualInformation<ImageType> Self;
+        typedef hoImageRegDissimilarityHistogramBased<ImageType> BaseClass;
 
-        typedef typename BaseClass::ImageType ImageType;
+        enum { D = ImageType::NDIM };
+
         typedef typename BaseClass::InterpolatorType InterpolatorType;
-
+        typedef typename BaseClass::ValueType ValueType;
         typedef ValueType T;
         typedef ValueType element_type;
         typedef ValueType value_type;
@@ -93,8 +95,8 @@ namespace Gadgetron
         ho2DArray<hist_value_type> Dist;
     };
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityMutualInformation<ValueType, D>::
+    template<typename ImageType> 
+    hoImageRegDissimilarityMutualInformation<ImageType>::
     hoImageRegDissimilarityMutualInformation(ValueType betaArg, unsigned int num_bin_target, unsigned int num_bin_warpped, ValueType bg_value) 
         : BaseClass(num_bin_target, num_bin_warpped, bg_value) 
     {
@@ -102,13 +104,13 @@ namespace Gadgetron
         betaArg_[1] = betaArg;
     }
 
-    template<typename ValueType, unsigned int D> 
-    hoImageRegDissimilarityMutualInformation<ValueType, D>::~hoImageRegDissimilarityMutualInformation()
+    template<typename ImageType> 
+    hoImageRegDissimilarityMutualInformation<ImageType>::~hoImageRegDissimilarityMutualInformation()
     {
     }
 
-    template<typename ValueType, unsigned int D> 
-    ValueType hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate(ImageType& w)
+    template<typename ImageType> 
+    typename hoImageRegDissimilarityMutualInformation<ImageType>::ValueType hoImageRegDissimilarityMutualInformation<ImageType>::evaluate(ImageType& w)
     {
         try
         {
@@ -157,14 +159,14 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate(ImageType& t, ImageType& w) ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ImageType>::evaluate(ImageType& t, ImageType& w) ... ");
         }
 
         return this->dissimilarity_;
     }
 
-    template<typename ValueType, unsigned int D> 
-    bool hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluateDeriv(ImageType& w)
+    template<typename ImageType> 
+    bool hoImageRegDissimilarityMutualInformation<ImageType>::evaluateDeriv(ImageType& w)
     {
         try
         {
@@ -263,15 +265,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ValueType, D>::evaluate() ... ");
+            GERROR_STREAM("Errors happened in hoImageRegDissimilarityMutualInformation<ImageType>::evaluate() ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, unsigned int D> 
-    void hoImageRegDissimilarityMutualInformation<ValueType, D>::print(std::ostream& os) const
+    template<typename ImageType> 
+    void hoImageRegDissimilarityMutualInformation<ImageType>::print(std::ostream& os) const
     {
         using namespace std;
         os << "--------------Gagdgetron mutual information image dissimilarity meausre -------------" << endl;
@@ -287,3 +289,4 @@ namespace Gadgetron
         os << "Kernel size for probability density estimation is : " << betaArg_[0] << " x " << betaArg_[1] << endl;
     }
 }
+#endif // hoImageRegDissimilarityMutualInformation_H_

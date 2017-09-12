@@ -100,6 +100,7 @@ int FFTGadget::process( GadgetContainerMessage<IsmrmrdReconData>* m1)
             }
         }
     }
+    m1->release();
     return GADGET_OK;  
 
 }

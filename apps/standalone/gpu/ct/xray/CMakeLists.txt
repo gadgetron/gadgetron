@@ -2,16 +2,16 @@ find_package(HDF5 REQUIRED HL)
 
   if(${CUDA_VERSION} VERSION_GREATER "4.99")
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3} ${CUDA_NVCC_FLAGS4})
-  else(${CUDA_VERSION} VERSION_GREATER "4.99")    
+  else()    
 
     if(${CUDA_VERSION} VERSION_GREATER "4.1")
       set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3})
-    else(${CUDA_VERSION} VERSION_GREATER "4.1")
+    else()
 
       set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS2})
 
-    endif(${CUDA_VERSION} VERSION_GREATER "4.1")
-  endif(${CUDA_VERSION} VERSION_GREATER "4.99")
+    endif()
+  endif()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core

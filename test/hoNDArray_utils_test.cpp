@@ -37,6 +37,47 @@ typedef Types</*std::complex<float>, std::complex<double>,*/ float_complext, dou
 
 TYPED_TEST_CASE(hoNDArray_utils_TestReal, realImplementations);
 
+TYPED_TEST(hoNDArray_utils_TestReal, fillTest)
+{
+    hoNDArray<int> src;
+    src.create(34, 25, 58, 37);
+    Gadgetron::fill(src, 1);
+
+    hoNDArray<int> dst;
+    dst.create(55, 60, 78, 87);
+    Gadgetron::fill(dst, 2);
+
+    vector_td<size_t, 3> offset_src;
+    offset_src[0] = 12;
+    offset_src[1] = 4;
+    offset_src[2] = 13;
+
+    vector_td<size_t, 3> size;
+    size[0] = 8;
+    size[1] = 20;
+    size[2] = 33;
+
+    vector_td<size_t, 3> offset_dst;
+    offset_dst[0] = 0;
+    offset_dst[1] = 25;
+    offset_dst[2] = 40;
+
+    Gadgetron::fill(offset_src, size, &src, offset_dst, &dst);
+
+    EXPECT_EQ(2, dst(offset_dst[0], offset_dst[1] - 1, offset_dst[2], 0));
+    EXPECT_EQ(2, dst(offset_dst[0], offset_dst[1], offset_dst[2] - 1, 0));
+    EXPECT_EQ(2, dst(offset_dst[0], offset_dst[1] + size[1], offset_dst[2], 0));
+    EXPECT_EQ(2, dst(offset_dst[0], offset_dst[1], offset_dst[2] + size[2], 0));
+    EXPECT_EQ(2, dst(offset_dst[0], offset_dst[1] + size[1], offset_dst[2] + size[2], 0));
+
+    EXPECT_EQ(1, dst(offset_dst[0], offset_dst[1], offset_dst[2], 0));
+    EXPECT_EQ(1, dst(offset_dst[0], offset_dst[1] + 1, offset_dst[2], 0));
+    EXPECT_EQ(1, dst(offset_dst[0], offset_dst[1], offset_dst[2] + 1, 0));
+    EXPECT_EQ(1, dst(offset_dst[0], offset_dst[1] + size[1] - 1, offset_dst[2], 0));
+    EXPECT_EQ(1, dst(offset_dst[0], offset_dst[1], offset_dst[2] + size[2] - 1, 0));
+    EXPECT_EQ(1, dst(offset_dst[0], offset_dst[1] + size[1] - 1, offset_dst[2] + size[2] - 1, 0));
+}
+
 TYPED_TEST(hoNDArray_utils_TestReal,permuteTest){
 
   fill(&this->Array,TypeParam(1));

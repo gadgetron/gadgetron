@@ -68,6 +68,10 @@ namespace Gadgetron {
         hoNDArray< std::complex<float> > filter_E1_ref_coi_map_;
         hoNDArray< std::complex<float> > filter_E2_ref_coi_map_;
 
+        // kspace line offset in case of partial fourier
+        std::vector<int> space_matrix_offset_E1_;
+        std::vector<int> space_matrix_offset_E2_;
+
         // --------------------------------------------------
         // gadget functions
         // --------------------------------------------------
@@ -87,6 +91,9 @@ namespace Gadgetron {
 
         // compute image header
         virtual void compute_image_header(IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t encoding);
+
+        // prepare header for sending out
+        virtual int prep_image_header_send_out(IsmrmrdImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role);
 
         // send out the recon results
         virtual int send_out_image_array(IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role);

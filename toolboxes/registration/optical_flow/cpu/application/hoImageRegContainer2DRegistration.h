@@ -3,18 +3,19 @@
     \author Hui Xue
 */
 
-#pragma once
+#ifndef hoImageRegContainer2DRegistration_H_
+#define hoImageRegContainer2DRegistration_H_
 
 #include <sstream>
 #include "hoNDArray.h"
 #include "hoNDImage.h"
+#include "hoMRImage.h"
 #include "hoNDInterpolator.h"
 #include "hoNDBoundaryHandler.h"
 #include "hoMatrix.h"
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
-// #include "gtPlusISMRMRDReconUtil.h"
 
 // transformation
 #include "hoImageRegTransformation.h"
@@ -110,15 +111,15 @@ namespace Gadgetron
     }
 
     /// perform the image registration over an image container2D
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
+    template<typename TargetType, typename SourceType, typename CoordType> 
     class hoImageRegContainer2DRegistration
     {
     public:
 
-        typedef hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut> Self;
-
-        typedef hoNDImage<ValueType, DOut> TargetType;
-        typedef hoNDImage<ValueType, DIn> SourceType;
+        typedef hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType> Self;
+        typedef typename TargetType::value_type ValueType;
+        enum { DIn = TargetType::NDIM };
+        enum { DOut = SourceType::NDIM };
 
         typedef hoNDImage<ValueType, 2> Target2DType;
         typedef Target2DType Source2DType;
@@ -157,10 +158,10 @@ namespace Gadgetron
         typedef hoNDInterpolatorBSpline<SourceType, DIn> InterpSourceBSplineType;
 
         /// warper type
-        typedef hoImageRegWarper<ValueType, CoordType, DIn, DOut> WarperType;
+        typedef hoImageRegWarper<TargetType, SourceType, CoordType> WarperType;
 
         /// image dissimilarity type
-        typedef hoImageRegDissimilarity<ValueType, DOut> DissimilarityType;
+        typedef hoImageRegDissimilarity<SourceType> DissimilarityType;
 
         /// transformation
         typedef hoImageRegParametricTransformation<CoordType, DIn, DOut> TransformationParametricType;
@@ -195,17 +196,19 @@ namespace Gadgetron
         virtual bool registerOverContainer2DProgressive(TargetContinerType& targetContainer, const std::vector<unsigned int>& referenceFrame);
 
         /// warp image containers
-        template <typename ValueType2> 
-        bool warpContainer2D(const hoNDImageContainer2D< hoNDImage<ValueType2, DOut> >& targetContainer, 
-                             const hoNDImageContainer2D< hoNDImage<ValueType2, DIn> >& sourceContainer, 
+        template <typename TargetType2, typename SourceType2> 
+        bool warpContainer2D(const hoNDImageContainer2D< TargetType2 >& targetContainer, 
+                             const hoNDImageContainer2D< SourceType2 >& sourceContainer, 
                              DeformationFieldContinerType deformation_field[], 
-                             hoNDImageContainer2D< hoNDImage<ValueType2, DOut> >& warppedContainer,
+                             hoNDImageContainer2D< SourceType2 >& warppedContainer,
                              Gadgetron::GT_BOUNDARY_CONDITION bh=GT_BOUNDARY_CONDITION_FIXEDVALUE)
         {
             try
             {
-                typedef hoNDImage<ValueType2, DOut> ImageTargetType;
-                typedef hoNDImage<ValueType2, DIn> ImageSourceType;
+                typedef typename TargetType2::value_type ValueType2;
+
+                typedef TargetType2 ImageTargetType;
+                typedef SourceType2 ImageSourceType;
 
                 size_t R = sourceContainer.rows();
                 std::vector<size_t> cols = sourceContainer.cols();
@@ -233,7 +236,7 @@ namespace Gadgetron
 
                         hoNDInterpolatorBSpline<ImageSourceType, DIn> interpBSpline(5);
 
-                        hoImageRegWarper<ValueType2, CoordType, DIn, DOut> warper;
+                        hoImageRegWarper<ImageTargetType, ImageSourceType, CoordType> warper;
                         warper.setBackgroundValue(bg_value_);
                         warper.setTransformation(deformTransform);
                         warper.setInterpolator(interpBSpline);
@@ -282,7 +285,7 @@ namespace Gadgetron
 
                         hoNDInterpolatorBSpline<ImageSourceType, DIn> interpBSpline(5);
 
-                        hoImageRegWarper<ValueType2, CoordType, DIn, DOut> warper;
+                        hoImageRegWarper<ImageTargetType, ImageSourceType, CoordType> warper;
                         warper.setBackgroundValue(bg_value_);
                         warper.setTransformation(deformTransform);
                         warper.setInterpolator(interpBSpline);
@@ -430,8 +433,8 @@ namespace Gadgetron
 
     };
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::
     hoImageRegContainer2DRegistration(unsigned int resolution_pyramid_levels, bool use_world_coordinates, ValueType bg_value) 
     : bg_value_(bg_value), use_world_coordinates_(use_world_coordinates), resolution_pyramid_levels_(resolution_pyramid_levels), performTiming_(false)
     {
@@ -442,8 +445,8 @@ namespace Gadgetron
         GADGET_CHECK_THROW(this->setDefaultParameters(resolution_pyramid_levels, use_world_coordinates));
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::
     ~hoImageRegContainer2DRegistration()
     {
         if ( !parametric_tranformation_.empty() )
@@ -466,8 +469,8 @@ namespace Gadgetron
         }
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::setDefaultParameters(unsigned int resolution_pyramid_levels, bool use_world_coordinates)
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::setDefaultParameters(unsigned int resolution_pyramid_levels, bool use_world_coordinates)
     {
         unsigned int ii;
 
@@ -525,8 +528,8 @@ namespace Gadgetron
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::
     registerTwoImagesParametric(const TargetType& target, const SourceType& source, bool initial, TargetType* warped, TransformationParametricType& transform)
     {
         try
@@ -534,23 +537,22 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerTwoImagesParametric(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::registerTwoImagesParametric(...) ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::
     registerTwoImagesDeformationField(const TargetType& target, const SourceType& source, bool initial, TargetType* warped, DeformationFieldType** deform)
     {
         try
         {
-            GADGET_CHECK_RETURN_FALSE(DIn==DOut);
             GADGET_CHECK_RETURN_FALSE(deform!=NULL);
 
-            hoImageRegDeformationFieldRegister<ValueType, CoordType, DIn> reg(resolution_pyramid_levels_, use_world_coordinates_, bg_value_);
+            hoImageRegDeformationFieldRegister<TargetType, CoordType> reg(resolution_pyramid_levels_, use_world_coordinates_, bg_value_);
 
             if ( !debugFolder_.empty() )
             {
@@ -567,7 +569,6 @@ namespace Gadgetron
             reg.dissimilarity_LocalCCR_sigmaArg_ = dissimilarity_LocalCCR_sigmaArg_;
             reg.boundary_handler_type_warper_ = boundary_handler_type_warper_;
             reg.interp_type_warper_ = interp_type_warper_;
-            reg.apply_in_FOV_constraint_ = apply_in_FOV_constraint_;
             reg.verbose_ = verbose_;
 
             reg.dissimilarity_type_.clear();
@@ -623,7 +624,7 @@ namespace Gadgetron
                 interpBSpline.setArray( const_cast<SourceType&>(source) );
                 interpBSpline.setBoundaryHandler(bhFixedValue);
 
-                hoImageRegWarper<ValueType, ValueType, DIn, DOut> warper;
+                hoImageRegWarper<TargetType, SourceType, CoordType> warper;
                 warper.setBackgroundValue(bg_value_);
                 warper.setTransformation(*reg.transform_);
                 warper.setInterpolator(interpBSpline);
@@ -633,24 +634,23 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerTwoImagesDeformationField(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::registerTwoImagesDeformationField(...) ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::
     registerTwoImagesDeformationFieldBidirectional(const TargetType& target, const SourceType& source, bool initial, TargetType* warped, DeformationFieldType** deform, DeformationFieldType** deformInv)
     {
         try
         {
-            GADGET_CHECK_RETURN_FALSE(DIn==DOut);
             GADGET_CHECK_RETURN_FALSE(deform!=NULL);
             GADGET_CHECK_RETURN_FALSE(deformInv!=NULL);
 
-            hoImageRegDeformationFieldBidirectionalRegister<ValueType, coord_type, DIn> reg(resolution_pyramid_levels_, use_world_coordinates_, bg_value_);
+            hoImageRegDeformationFieldBidirectionalRegister<TargetType, CoordType> reg(resolution_pyramid_levels_, use_world_coordinates_, bg_value_);
 
             if ( !debugFolder_.empty() )
             {
@@ -669,7 +669,6 @@ namespace Gadgetron
             reg.interp_type_warper_ = interp_type_warper_;
             reg.inverse_deform_enforce_iter_pyramid_level_ = inverse_deform_enforce_iter_pyramid_level_;
             reg.inverse_deform_enforce_weight_pyramid_level_ = inverse_deform_enforce_weight_pyramid_level_;
-            reg.apply_in_FOV_constraint_ = apply_in_FOV_constraint_;
 
             reg.verbose_ = verbose_;
 
@@ -729,7 +728,7 @@ namespace Gadgetron
                 interpBSpline.setArray(const_cast<SourceType&>(source));
                 interpBSpline.setBoundaryHandler(bhFixedValue);
 
-                hoImageRegWarper<ValueType, ValueType, DIn, DOut> warper;
+                hoImageRegWarper<TargetType, SourceType, CoordType> warper;
                 warper.setBackgroundValue(bg_value_);
                 warper.setTransformation(*reg.transform_);
                 warper.setInterpolator(interpBSpline);
@@ -739,15 +738,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerTwoImagesDeformationFieldBidirectional(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::registerTwoImagesDeformationFieldBidirectional(...) ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::
     initialize(const TargetContinerType& targetContainer, bool warped)
     {
         try
@@ -788,15 +787,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::initialize(const TargetContinerType& targetContainer) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::initialize(const TargetContinerType& targetContainer) ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::
     registerOverContainer2DPairWise(TargetContinerType& targetContainer, SourceContinerType& sourceContainer, bool warped, bool initial)
     {
         try
@@ -929,18 +928,22 @@ namespace Gadgetron
             {
                 GDEBUG_STREAM("To be implemented ...");
             }
+
+#ifdef USE_OMP
+            omp_set_nested(nested);
+#endif // USE_OMP
         }
         catch(...)
         {
-            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DPairWise(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::registerOverContainer2DPairWise(...) ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::
     registerOverContainer2DFixedReference(TargetContinerType& imageContainer, const std::vector<unsigned int>& referenceFrame, bool warped, bool initial)
     {
         try
@@ -1100,18 +1103,22 @@ namespace Gadgetron
             {
                 GDEBUG_STREAM("To be implemented ...");
             }
+
+#ifdef USE_OMP
+            omp_set_nested(nested);
+#endif // USE_OMP
         }
         catch(...)
         {
-            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DFixedReference(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::registerOverContainer2DFixedReference(...) ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    bool hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    bool hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::
     registerOverContainer2DProgressive(TargetContinerType& imageContainer, const std::vector<unsigned int>& referenceFrame)
     {
         try
@@ -1308,15 +1315,15 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::registerOverContainer2DProgressive(...) ... ");
+            GERROR_STREAM("Error happened in hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::registerOverContainer2DProgressive(...) ... ");
             return false;
         }
 
         return true;
     }
 
-    template<typename ValueType, typename CoordType, unsigned int DIn, unsigned int DOut> 
-    void hoImageRegContainer2DRegistration<ValueType, CoordType, DIn, DOut>::print(std::ostream& os) const
+    template<typename TargetType, typename SourceType, typename CoordType> 
+    void hoImageRegContainer2DRegistration<TargetType, SourceType, CoordType>::print(std::ostream& os) const
     {
         using namespace std;
 
@@ -1416,3 +1423,5 @@ namespace Gadgetron
         os << "------------" << std::endl;
     }
 }
+
+#endif // hoImageRegContainer2DRegistration_H_

@@ -1,8 +1,6 @@
-IF (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_RADIAL__)
-ENDIF (WIN32)
-
-find_package(Ismrmrd REQUIRED)
+if (WIN32)
+  add_definitions(-D__BUILD_GADGETRON_RADIAL__)
+endif ()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
@@ -26,8 +24,8 @@ if (ARMADILLO_FOUND)
   list(APPEND PHASE_GADGET RadialPhaseCorrectionGadget.h RadialPhaseCorrectionGadget.cpp)
   install (FILES  RadialPhaseCorrectionGadget.h DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found, not compiling radial phase correction gadget")
-endif (ARMADILLO_FOUND)
+  message("Armadillo not found, not compiling radial phase correction gadget")
+endif ()
 
 add_library(gadgetron_gpuradial SHARED 
   gadgetron_radial_export.h

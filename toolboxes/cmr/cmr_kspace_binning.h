@@ -138,9 +138,6 @@ namespace Gadgetron {
         // store the respiratory navigator detected ROI
         typedef std::vector< std::pair< hoNDPoint<float, 2>, hoNDPoint<float, 2> > > NavigatorRoiType;
 
-        // motion correction
-        typedef Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2> RegContainer2DType;
-
         // image type
         typedef Gadgetron::hoNDImage<T, 2> ImageType;
         typedef Gadgetron::hoNDImageContainer2D<ImageType> ImageContinerType;
@@ -148,6 +145,9 @@ namespace Gadgetron {
         // image type
         typedef Gadgetron::hoNDImage< std::complex<T>, 2> ComplexImageType;
         typedef Gadgetron::hoNDImageContainer2D<ComplexImageType> ComplexImageContinerType;
+
+        // motion correction
+        typedef Gadgetron::hoImageRegContainer2DRegistration<ImageType, ImageType, float> RegContainer2DType;
 
         // deformation field
         typedef hoNDImageContainer2D< hoNDImage<float, 2> > DeformationFieldContinerType;
@@ -330,10 +330,10 @@ namespace Gadgetron {
         virtual void reject_irregular_heart_beat();
 
         /// compute kspace after binning
-        virtual void compute_kspace_binning(const std::vector<size_t>& bestHB);
+        virtual void compute_kspace_binning(const std::vector<size_t>& bestHB, std::vector<size_t>& slices_not_processing);
 
         /// perform recon on the binned kspace
-        virtual void perform_recon_binned_kspace();
+        virtual void perform_recon_binned_kspace(const std::vector<size_t>& slices_not_processing);
 
         // ======================================================================================
         // implementation functions

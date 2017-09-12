@@ -9,4 +9,4 @@ include_directories(
 if(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.819" )
 add_subdirectory(2d)
 add_subdirectory(3d)
-endif(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.819" )
+endif()

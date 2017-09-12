@@ -560,9 +560,20 @@ bool BSplineFFD3D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
             std::vector<size_t> dim;
             this->ctrl_pt_[d].get_dimensions(dim);
             hoNDArray<T> tmpCtrlPt(dim, this->ctrl_pt_[d].begin(), false);
-            Gadgetron::cropUpTo11DArray(tmpCtrlPt, ctrlPtWithoutPadding, startND, size);
+
+            vector_td<size_t, 3> crop_offset;
+            crop_offset[0] = startND[0];
+            crop_offset[1] = startND[1];
+            crop_offset[2] = startND[2];
+
+            vector_td<size_t, 3> crop_size;
+            crop_size[0] = size[0];
+            crop_size[1] = size[1];
+            crop_size[2] = size[2];
+
+            Gadgetron::crop(crop_offset, crop_size, &tmpCtrlPt, &ctrlPtWithoutPadding);
             Gadgetron::add(ctrlPtWithoutPadding, dx3D, ctrlPtWithoutPadding);
-            Gadgetron::setSubArrayUpTo11DArray(ctrlPtWithoutPadding, tmpCtrlPt, startND, size);
+            Gadgetron::fill(ctrlPtWithoutPadding, crop_offset, tmpCtrlPt);
         }
 
         /// calculate residual error

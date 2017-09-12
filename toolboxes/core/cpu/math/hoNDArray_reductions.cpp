@@ -57,12 +57,17 @@ namespace Gadgetron{
         return (typename stdType<T>::Type) arma::stddev(as_arma_col(data));
     }
 
+    // --------------------------------------------------------------------------------
+
+    template<class T> T var(hoNDArray<T>* data) {
+        return (typename stdType<T>::Type) arma::var(as_arma_col(data));
+    }
+
+    // --------------------------------------------------------------------------------
+
      template<class T> T median(hoNDArray<T>* data){
         return (typename stdType<T>::Type) arma::median(as_arma_col(data));
     }
-
-
-
 
     // --------------------------------------------------------------------------------
 
@@ -520,7 +525,7 @@ namespace Gadgetron{
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
 
-        return isamax_(&num, (float*)(x), &incx);
+        return isamax_(&num, (float*)(x), &incx) - size_t(1);
     }
 
     inline size_t amax(size_t N, const double* x)
@@ -528,7 +533,7 @@ namespace Gadgetron{
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
 
-        return idamax_(&num, (double*)(x), &incx);
+        return idamax_(&num, (double*)(x), &incx) - size_t(1);
     }
 
     inline size_t amax(size_t N, const  std::complex<float> * x)
@@ -536,7 +541,7 @@ namespace Gadgetron{
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
 
-        return icamax_(&num, (lapack_complex_float*)(x), &incx);
+        return icamax_(&num, (lapack_complex_float*)(x), &incx) - size_t(1);
     }
 
     inline size_t amax(size_t N, const  std::complex<double> * x)
@@ -544,7 +549,7 @@ namespace Gadgetron{
         lapack_int num = (lapack_int)(N);
         lapack_int incx = 1;
 
-        return izamax_(&num, (lapack_complex_double*)(x), &incx);
+        return izamax_(&num, (lapack_complex_double*)(x), &incx) - size_t(1);
     }
 
     template<class T> size_t amax(const hoNDArray<T>& x)
@@ -599,6 +604,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH float median(hoNDArray<float>*);
     template EXPORTCPUCOREMATH float sum(hoNDArray<float>*);
     template EXPORTCPUCOREMATH float stddev(hoNDArray<float>*);
+    template EXPORTCPUCOREMATH float var(hoNDArray<float>*);
 
     template EXPORTCPUCOREMATH double max(hoNDArray<double>*);
     template EXPORTCPUCOREMATH double min(hoNDArray<double>*);
@@ -606,21 +612,29 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH double median(hoNDArray<double>*);
     template EXPORTCPUCOREMATH double sum(hoNDArray<double>*);
     template EXPORTCPUCOREMATH double stddev(hoNDArray<double>*);
+    template EXPORTCPUCOREMATH double var(hoNDArray<double>*);
 
     template EXPORTCPUCOREMATH complext<double> mean(hoNDArray<complext<double> >*);
     template EXPORTCPUCOREMATH complext<double> median(hoNDArray<complext<double> >*);
     template EXPORTCPUCOREMATH complext<double> sum(hoNDArray<complext<double> >*);
+    template EXPORTCPUCOREMATH complext<double> stddev(hoNDArray<complext<double> >*);
+    template EXPORTCPUCOREMATH complext<double> var(hoNDArray<complext<double> >*);
 
     template EXPORTCPUCOREMATH complext<float> mean(hoNDArray<complext<float> >*);
     template EXPORTCPUCOREMATH complext<float> median(hoNDArray<complext<float> >*);
     template EXPORTCPUCOREMATH complext<float> sum(hoNDArray<complext<float> >*);
+    template EXPORTCPUCOREMATH complext<float> stddev(hoNDArray<complext<float> >*);
+    template EXPORTCPUCOREMATH complext<float> var(hoNDArray<complext<float> >*);
 
     template EXPORTCPUCOREMATH std::complex<double> mean(hoNDArray<std::complex<double> >*);
     template EXPORTCPUCOREMATH std::complex<double> sum(hoNDArray<std::complex<double> >*);
+    template EXPORTCPUCOREMATH std::complex<double> stddev(hoNDArray<std::complex<double> >*);
+    template EXPORTCPUCOREMATH std::complex<double> var(hoNDArray<std::complex<double> >*);
 
     template EXPORTCPUCOREMATH std::complex<float> mean(hoNDArray<std::complex<float> >*);
     template EXPORTCPUCOREMATH std::complex<float> sum(hoNDArray<std::complex<float> >*);
-
+    template EXPORTCPUCOREMATH std::complex<float> stddev(hoNDArray<std::complex<float> >*);
+    template EXPORTCPUCOREMATH std::complex<float> var(hoNDArray<std::complex<float> >*);
 
     template EXPORTCPUCOREMATH float dot<float>( hoNDArray<float>*, hoNDArray<float>*, bool );
     template EXPORTCPUCOREMATH float asum<float>( hoNDArray<float>* );
@@ -977,6 +991,80 @@ namespace Gadgetron{
 
     template EXPORTCPUCOREMATH void sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending);
     template EXPORTCPUCOREMATH void sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending);
+
+    // --------------------------------------------------------------------------------
+
+    template <typename T>
+    struct hoCompAscendingIndex
+    {
+        typedef std::pair<size_t, T> PairType;
+        bool operator() (const PairType& a, const PairType& b) { return (a.second < b.second); }
+    };
+
+    template <typename T>
+    struct hoCompDescendingIndex
+    {
+        typedef std::pair<size_t, T> PairType; 
+        bool operator() (const PairType& a, const PairType& b) { return (a.second >= b.second); }
+    };
+
+    template <typename T>
+    void sort(size_t N, const T* x, T* r, std::vector<size_t>& ind, bool isascending)
+    {
+        if (r != x)
+        {
+            memcpy(r, x, sizeof(T)*N);
+        }
+
+        ind.resize(N, 0);
+
+        std::vector< std::pair<size_t, T> > x_v(N);
+
+        size_t n;
+        for (n = 0; n < N; n++)
+        {
+            x_v[n].first = n;
+            x_v[n].second = x[n];
+        }
+
+        if (isascending)
+        {
+            hoCompAscendingIndex<T> obj;
+            std::sort(x_v.begin(), x_v.end(), obj);
+        }
+        else
+        {
+            hoCompDescendingIndex<T> obj;
+            std::sort(x_v.begin(), x_v.end(), obj);
+        }
+
+        for (n = 0; n < N; n++)
+        {
+            ind[n] = x_v[n].first;
+            r[n] = x_v[n].second;
+        }
+    }
+
+    template <typename T>
+    void sort(const hoNDArray<T>& x, hoNDArray<T>& r, std::vector<size_t>& ind, bool isascending)
+    {
+        if (&r != &x)
+        {
+            if (r.get_number_of_elements() != x.get_number_of_elements())
+            {
+                r = x;
+            }
+            else
+            {
+                memcpy(r.begin(), x.begin(), x.get_number_of_bytes());
+            }
+        }
+
+        sort(x.get_number_of_elements(), x.begin(), r.begin(), ind, isascending);
+    }
+
+    template EXPORTCPUCOREMATH void sort(const hoNDArray<float>& x, hoNDArray<float>& r, std::vector<size_t>& ind, bool isascending);
+    template EXPORTCPUCOREMATH void sort(const hoNDArray<double>& x, hoNDArray<double>& r, std::vector<size_t>& ind, bool isascending);
 
     // --------------------------------------------------------------------------------
 

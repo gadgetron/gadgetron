@@ -41,6 +41,9 @@ namespace Gadgetron {
         GADGET_PROPERTY(debug_folder, std::string, "If set, the debug output will be written out", "");
         GADGET_PROPERTY(perform_timing, bool, "Whether to perform timing on some computational steps", false);
 
+        /// ms for every time tick
+        GADGET_PROPERTY(time_tick, float, "Time tick in ms", 2.5);
+
     protected:
 
         // number of encoding spaces in the protocol
