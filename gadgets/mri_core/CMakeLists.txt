@@ -112,6 +112,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     ImageSortGadget.h 
                                     GenericReconBase.h 
                                     GenericReconGadget.h 
+				    GenericReconCartesianFFTGadget.h
                                     GenericReconCartesianGrappaGadget.h 
                                     GenericReconCartesianSpiritGadget.h 
                                     GenericReconCartesianNonLinearSpirit2DTGadget.h 
@@ -164,6 +165,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 ImageSortGadget.cpp
                                 GenericReconBase.cpp 
                                 GenericReconGadget.cpp 
+				GenericReconCartesianFFTGadget.cpp
                                 GenericReconCartesianGrappaGadget.cpp 
                                 GenericReconCartesianSpiritGadget.cpp 
                                 GenericReconCartesianNonLinearSpirit2DTGadget.cpp 
@@ -188,6 +190,7 @@ set( gadgetron_mricore_config_files
     config/default_measurement_dependencies_Noise_CoilSen_SCC.xml
     config/isalive.xml
     config/gtquery.xml
+    config/Generic_Cartesian_FFT.xml
     config/Generic_Cartesian_Grappa.xml
     config/Generic_Cartesian_Grappa_SNR.xml
     config/Generic_Cartesian_Grappa_T2W.xml
