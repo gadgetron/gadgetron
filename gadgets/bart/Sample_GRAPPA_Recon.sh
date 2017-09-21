@@ -16,9 +16,14 @@ bart transpose 3 4 reference_data_cc cc_reference_data
 bart fmac -C -s 8 input_data cc_mat_P input_data_cc
 bart transpose 3 4 input_data_cc cc_input_data
 
+<<<<<<< HEAD
+bart ecalib -c0.65 -k6 -r92 -m2 -S cc_reference_data maps
+bart rsense -l1 -r0.001 -i50 cc_input_data maps ims
+=======
 bart ecalib -c0.65 -m2 -S cc_reference_data maps
 bart rsense -l1 -r0.001 -i50 cc_input_data maps ims
 bart scale 10.0 ims ims_scaled
+>>>>>>> ae45a51... Change input text script to shell script
 
 if "$debug";then
 	set +x

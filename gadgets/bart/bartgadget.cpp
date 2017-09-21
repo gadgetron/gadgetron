@@ -391,16 +391,10 @@ namespace Gadgetron {
 		std::copy(DATA_Final.begin(), DATA_Final.end(), imarray.data_.begin());
 
 		// Fill image header 
-		size_t encoding_index = 0;
-		for (std::vector<IsmrmrdReconBit>::iterator it = m1->getObjectPtr()->rbit_.begin(); it != m1->getObjectPtr()->rbit_.end(); ++it)
+		for (size_t it = 0; it < m1->getObjectPtr()->rbit_.size(); ++it)
 		{
-			compute_image_header( *it, imarray, encoding_index);
-			encoding_index += 1;
-
-			if (this->next()->putq(ims) < 0) {
-				m1->release();
-				return GADGET_FAIL;
-			}
+			compute_image_header( m1->getObjectPtr()->rbit_[it], imarray, it);
+                        send_out_image_array( m1->getObjectPtr()->rbit_[it], imarray, it, image_series.value() + ((int)it+1), GADGETRON_IMAGE_REGULAR);
 		}
 
 		m1->release();

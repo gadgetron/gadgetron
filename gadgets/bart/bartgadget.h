@@ -51,6 +51,11 @@ namespace Gadgetron {
 		GADGET_PROPERTY(BartCommandScript_name, std::string, "Script file containing bart command(s) to be loaded", ""); 		
 		GADGET_PROPERTY(isBartFileBeingStored, bool, "Store Bart file", false);
 	
+<<<<<<< HEAD
+		GADGET_PROPERTY(image_series, int, "Set image series", 0);
+
+=======
+>>>>>>> ae45a51... Change input text script to shell script
 	/*Caution: this option must be enable only if the user has root privilege and able to allocation virtual memory*/
 		GADGET_PROPERTY(isBartFolderBeingCachedToVM, bool, "Mount bart directory to the virtual memory for better performance", false);
 		GADGET_PROPERTY(AllocateMemorySizeInMegabytes, int, "Allocate memory to bart directory", 50);
