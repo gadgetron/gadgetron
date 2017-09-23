@@ -10,6 +10,7 @@
 #include "bartgadget.h"
 #include <gadgetron_paths.h>
 #include <boost/tokenizer.hpp>
+#include <boost/filesystem.hpp>
 #include <sstream>
 #include <utility>
 #include <numeric>
@@ -18,6 +19,7 @@
 #include <random>
 #include <functional>
 
+using namespace boost::filesystem;
 
 namespace Gadgetron {
 
@@ -115,6 +117,28 @@ namespace Gadgetron {
 			GERROR("Can't find bart commands script: %s!\n", CommandScript.c_str());
 			return GADGET_FAIL;
 		}
+
+		// set the permission for the script
+#ifdef _WIN32
+		try
+		{
+			boost::filesystem::permissions(CommandScript, all_all);
+		}
+		catch (...)
+		{
+			GERROR("Error changing the permission of the command script.\n");
+			return GADGET_FAIL;
+		}
+#else
+		// in case an older version of boost is used in non-win system
+		// the system call is used
+		int res = chmod(CommandScript.string().c_str(), S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH);
+		if (res != 0)
+		{
+			GERROR("Error changing the permission of the command script.\n");
+			return GADGET_FAIL;
+		}
+#endif // _WIN32
 
 		// Check status of the folder containing the generated files (*.hdr & *.cfl)
 		std::string generatedFilesFolder;
