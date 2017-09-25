@@ -36,6 +36,11 @@ if [ $# -gt 1 ]; then
     mkdir -p ${chroot_tar_dir}
     tar -xf ${chroot_name} --directory=${chroot_tar_dir}
 
+    if [ $# -gt 2 ]; then
+        xml_file=$3
+        rm -rf ${chroot_tar_dir}/usr/local/share/gadgetron/config/${xml_file}
+    fi
+    
     chroot_img_dir=${chroot_base_name}
     mkdir -p ${chroot_img_dir}
     dd if=/dev/zero of=${chroot_img_name} bs=${chroot_img_size}k seek=1024 count=0
