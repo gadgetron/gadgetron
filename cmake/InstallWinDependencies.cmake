@@ -74,7 +74,7 @@ if (Boost_FOUND)
         install( FILES ${fileName} DESTINATION lib COMPONENT main)
     endforeach()
 
-    file(GLOB BOOST_DATE_TIME_DLL ${Boost_LIBRARY_DIR_RELEASE}/boost_data_time*.dll)
+    file(GLOB BOOST_DATE_TIME_DLL ${Boost_LIBRARY_DIR_RELEASE}/boost_date_time*.dll)
     foreach(fileName ${BOOST_DATE_TIME_DLL})
         message("Install ${fileName} ")
         install( FILES ${fileName} DESTINATION lib COMPONENT main)
