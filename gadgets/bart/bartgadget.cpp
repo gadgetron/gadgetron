@@ -10,7 +10,6 @@
 #include "bartgadget.h"
 #include <gadgetron_paths.h>
 #include <boost/tokenizer.hpp>
-#include <boost/filesystem.hpp>
 #include <sstream>
 #include <utility>
 #include <numeric>
