@@ -3,8 +3,8 @@
 * Author: Mahamadou Diakite, PhD.
 * Institution: National Institutes of Health (NIH)
 * Lang: C++
-* Date: 10/19/2016
-* Version: 0.0.1
+* Date: 8/28/2017
+* Version: 0.1.1
 ****************************************************************************************************************************/
 
 #include "bartgadget.h"
@@ -18,6 +18,7 @@
 #include <random>
 #include <functional>
 
+using namespace boost::filesystem;
 
 namespace Gadgetron {
 
@@ -96,10 +97,15 @@ namespace Gadgetron {
 		return (outputFile.back());
 	}
 
-	void BartGadget::cleanup(std::string &createdFiles)
+	inline void BartGadget::cleanup(std::string &createdFiles)
 	{
 		boost::filesystem::remove_all(createdFiles);
 	}
+
+	inline void BartGadget::ltrim(std::string &str)
+        {
+		str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](int s){return !std::isspace(s);}));
+        }
 
 	int BartGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	{
@@ -110,6 +116,28 @@ namespace Gadgetron {
 			GERROR("Can't find bart commands script: %s!\n", CommandScript.c_str());
 			return GADGET_FAIL;
 		}
+
+		// set the permission for the script
+#ifdef _WIN32
+		try
+		{
+			boost::filesystem::permissions(CommandScript, all_all);
+		}
+		catch (...)
+		{
+			GERROR("Error changing the permission of the command script.\n");
+			return GADGET_FAIL;
+		}
+#else
+		// in case an older version of boost is used in non-win system
+		// the system call is used
+		int res = chmod(CommandScript.c_str(), S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH);
+		if (res != 0)
+		{
+			GERROR("Error changing the permission of the command script.\n");
+			return GADGET_FAIL;
+		}
+#endif // _WIN32
 
 		// Check status of the folder containing the generated files (*.hdr & *.cfl)
 		std::string generatedFilesFolder;
@@ -142,6 +170,17 @@ namespace Gadgetron {
 		  return GADGET_FAIL;
 		}
 
+		/*USE WITH CAUTION*/
+		if(boost::filesystem::exists(generatedFilesFolder) && isBartFolderBeingCachedToVM.value() && !isBartFileBeingStored.value())
+		{
+			std::ostringstream cmd;
+			cmd << "mount -t tmpfs -o size" << AllocateMemorySizeInMegabytes.value() << "M, mode=0755 tmpfs " << generatedFilesFolder;
+			if(system(cmd.str().c_str())){                               
+				cleanup(outputFolderPath);
+				return GADGET_FAIL;
+			} 
+		}
+
 
 		std::vector<uint16_t> DIMS_ref, DIMS;
 
@@ -155,7 +194,16 @@ namespace Gadgetron {
 
 			// Grab a reference to the buffer containing the reference data
 			auto  & dbuff_ref = it->ref_;
-			hoNDArray< std::complex<float> >& ref = (*dbuff_ref).data_;
+        		hoNDArray< std::complex<float> >& ref = (*dbuff_ref).data_;
+                       // Data 7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
+			uint16_t E0_ref = static_cast<uint16_t>(ref.get_size(0));
+			uint16_t E1_ref = static_cast<uint16_t>(ref.get_size(1));
+			uint16_t E2_ref = static_cast<uint16_t>(ref.get_size(2));
+			uint16_t CHA_ref = static_cast<uint16_t>(ref.get_size(3));
+			uint16_t N_ref = static_cast<uint16_t>(ref.get_size(4));
+			uint16_t S_ref = static_cast<uint16_t>(ref.get_size(5));
+			uint16_t LOC_ref = static_cast<uint16_t>(ref.get_size(6));
+                        DIMS_ref = {E0_ref, E1_ref, E2_ref, CHA_ref, N_ref, S_ref, LOC_ref};
 
 			// Grab a reference to the buffer containing the image data
 			IsmrmrdDataBuffered & dbuff = it->data_;
@@ -169,41 +217,6 @@ namespace Gadgetron {
 			uint16_t LOC = static_cast<uint16_t>(dbuff.data_.get_size(6));
 			// Set up data to be written into files
 			DIMS = { E0, E1, E2, CHA, N, S, LOC };
-
-            // ----------------------------------------------------------------------------------------------
-            // prepare ref data for coil map calculation
-            std::vector<size_t> data_dim;
-            dbuff.data_.get_dimensions(data_dim);
-
-            hoNDArray< std::complex<float> > ref_calib, ref_coil_map;
-
-            if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianGrappaGadget::make_ref_coil_map"); }
-            this->make_ref_coil_map( *dbuff_ref, data_dim, ref_calib, ref_coil_map, encoding);
-            if (perform_timing.value()) { gt_timer_.stop(); }
-
-            // ----------------------------------------------------------
-            // export prepared ref for calibration and coil map
-            if (!debug_folder_full_path_.empty())
-            {
-                this->gt_exporter_.export_array_complex(ref_calib, debug_folder_full_path_ + "ref_calib" + os.str());
-            }
-
-            if (!debug_folder_full_path_.empty())
-            {
-                this->gt_exporter_.export_array_complex(ref_coil_map, debug_folder_full_path_ + "ref_coil_map" + os.str());
-            }
-
-            // Data 7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
-            uint16_t E0_ref = static_cast<uint16_t>(ref_coil_map.get_size(0));
-            uint16_t E1_ref = static_cast<uint16_t>(ref_coil_map.get_size(1));
-            uint16_t E2_ref = static_cast<uint16_t>(ref_coil_map.get_size(2));
-            uint16_t CHA_ref = static_cast<uint16_t>(ref_coil_map.get_size(3));
-            uint16_t N_ref = static_cast<uint16_t>(ref_coil_map.get_size(4));
-            uint16_t S_ref = static_cast<uint16_t>(ref_coil_map.get_size(5));
-            uint16_t LOC_ref = static_cast<uint16_t>(ref_coil_map.get_size(6));
-            DIMS_ref = { E0_ref, E1_ref, E2_ref, CHA_ref, N_ref, S_ref, LOC_ref };
-
-            // ----------------------------------------------------------------------------------------------
 
 			/* The reference data will be pointing to the image data if there is
 				no reference scan. Therefore, we won't write the reference data
@@ -223,16 +236,14 @@ namespace Gadgetron {
 							chunk_dims[1] = E1_ref;
 							chunk_dims[2] = E2_ref;
 							chunk_dims[3] = CHA_ref;
-							// hoNDArray<std::complex<float> > chunk = hoNDArray<std::complex<float> >(chunk_dims, &(*dbuff_ref).data_(0, 0, 0, 0, n, s, loc));
-                            hoNDArray<std::complex<float> > chunk = hoNDArray<std::complex<float> >(chunk_dims, &ref_coil_map(0, 0, 0, 0, n, s, loc));
-
-							std::vector<size_t> new_chunk_dims(1);
+							 hoNDArray<std::complex<float> > chunk = hoNDArray<std::complex<float> >(chunk_dims, &(*dbuff_ref).data_(0, 0, 0, 0, n, s, loc));
+                					std::vector<size_t> new_chunk_dims(1);
 							new_chunk_dims[0] = E0_ref*E1_ref*E2_ref*CHA_ref;
 							chunk.reshape(new_chunk_dims);
 							// Fill BART container
 							for (auto e : chunk) {
-								Temp_ref.push_back(e.real());
-								Temp_ref.push_back(e.imag());
+								Temp_ref.push_back(std::move(e.real()));
+								Temp_ref.push_back(std::move(e.imag()));
 							}
 						}
 					}
@@ -265,12 +276,12 @@ namespace Gadgetron {
 						chunk.reshape(new_chunk_dims);
 						// Fill BART container
 						for (auto e : chunk) {
-							Temp.push_back(e.real());
-							Temp.push_back(e.imag());
+							Temp.push_back(std::move(e.real()));
+							Temp.push_back(std::move(e.imag()));
 						}
 					}
 				}
-			}
+			}                                                                                                                                                              
 
 			write_BART_Files(std::string(generatedFilesFolder + "meas_gadgetron").c_str(), DIMS, Temp);
 
@@ -278,44 +289,44 @@ namespace Gadgetron {
 		}
 
 		/* Before calling Bart let's do some bookkeeping */
-		std::ostringstream cmd1, cmd2, cmd3, cmd4, cmd5;
+		std::ostringstream cmd1, cmd2, cmd3, cmd4;
 		std::replace(generatedFilesFolder.begin(), generatedFilesFolder.end(), '\\', '/');
 
 		if (DIMS_ref != DIMS)
 		{
-			cmd1 << "bart reshape 15 " << DIMS_ref[2] << " " << DIMS_ref[0] << " " << DIMS_ref[1] << " " << DIMS_ref[3] << " meas_gadgetron_ref meas_gadgetron_ref_reshape";
-			cmd2 << "bart resize -c 1 " << DIMS[0] << " 2 " << DIMS[1] << " " << " meas_gadgetron_ref_reshape reference_data";
+			cmd1 << "bart resize -c 0 " << DIMS[0] << " 1 " << DIMS[1] << " 2 " << DIMS[2] << " meas_gadgetron_ref reference_data";
 			// Pass commands to Bart
-			if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd1.str()).c_str()))
+			if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd1.str()).c_str())){		
+				cleanup(outputFolderPath);
 				return GADGET_FAIL;
-
-			if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd2.str()).c_str()))
-				return GADGET_FAIL;
+			}			
 		}
 
 		if (DIMS[4] != 1)
-			cmd3 << "bart reshape 1023 " << DIMS[2] << " " << DIMS[0] << " " << DIMS[1] << " " << DIMS[3] << " 1 1 1 1 1 " << DIMS[4] << " meas_gadgetron input_data";
+			cmd2 << "bart reshape 1023 " << DIMS[0] << " " << DIMS[1] << " " << DIMS[2] << " " << DIMS[3] << " 1 1 1 1 1 " << DIMS[4] << " meas_gadgetron input_data";
 		else
-			cmd3 << "bart reshape 15 " << DIMS[2] << " " << DIMS[0] << " " << DIMS[1] << " " << DIMS[3] << " meas_gadgetron input_data";
+			cmd2 << "bart scale 1.0 meas_gadgetron input_data";
 
-		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd3.str()).c_str()))
+		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd2.str()).c_str())){			
+			cleanup(outputFolderPath);
 			return GADGET_FAIL;
+		}
 
 		/*** CALL BART COMMAND LINE from the scripting file***/
-		std::string Commands_Line, last_command;
+                // call BART shell script
+		auto ret = system(std::string("cd " + generatedFilesFolder + "&&" + CommandScript).c_str());
+		(void)ret;
+		
+		std::string Line, Commands_Line;
 		ifstream inputFile(CommandScript);
 		if (inputFile.is_open())
 		{
-			while (getline(inputFile, Commands_Line))
+			while (getline(inputFile, Line))
 			{
-				if (Commands_Line.empty())
+				ltrim(Line);
+				if (Line.empty() || Line.find("bart") != 0)
 					continue;
-				GDEBUG("%s\n", Commands_Line.c_str());
-				if (system(std::string("cd " + generatedFilesFolder + "&&" + Commands_Line).c_str())) {
-					return GADGET_FAIL;
-				} else {
-				  last_command = Commands_Line;
-				}
+				Commands_Line = Line;
 			}
 			inputFile.close();
 		}
@@ -326,21 +337,25 @@ namespace Gadgetron {
 			return GADGET_FAIL;
 		}
 
-		std::string outputFile = getOutputFilename(last_command);
+		std::string outputFile = getOutputFilename(Commands_Line);
+		
 		// Reformat the data back to gadgetron format
 		auto header = read_BART_hdr(std::string(generatedFilesFolder + outputFile).c_str());
-		cmd4 << "bart reshape 1023 " << header[1] << " " << header[2] << " " << header[0] << " " << header[3] << " " << header[9] * header[4]
+		cmd4 << "bart reshape 1023 " << header[0] << " " << header[1] << " " << header[2] << " " << header[3] << " " << header[9] * header[4]
 			<< " 1 1 1 1 1 " << outputFile << " " << outputFile + std::string("_reshape");
 		const auto cmd_s = cmd4.str();
 		GDEBUG("%s\n", cmd_s.c_str());
-		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd_s).c_str()))
+		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd_s).c_str())){
+			cleanup(outputFolderPath);
 			return GADGET_FAIL;
+		}
 
 		std::string outputfile_2 = getOutputFilename(cmd_s);
 		/**** READ FROM BART FILES ***/
 		std::pair< std::vector<size_t>, std::vector<std::complex<float> > > BART_DATA = read_BART_files(std::string(generatedFilesFolder + outputfile_2).c_str());
-
-		cleanup(outputFolderPath);
+                
+                if(!isBartFileBeingStored.value())
+			cleanup(outputFolderPath);
 
 		GadgetContainerMessage<IsmrmrdImageArray>* ims = new GadgetContainerMessage<IsmrmrdImageArray>();
 		IsmrmrdImageArray & imarray = *ims->getObjectPtr();
@@ -400,16 +415,10 @@ namespace Gadgetron {
 		std::copy(DATA_Final.begin(), DATA_Final.end(), imarray.data_.begin());
 
 		// Fill image header 
-		size_t encoding_index = 0;
-		for (std::vector<IsmrmrdReconBit>::iterator it = m1->getObjectPtr()->rbit_.begin(); it != m1->getObjectPtr()->rbit_.end(); ++it)
+		for (size_t it = 0; it < m1->getObjectPtr()->rbit_.size(); ++it)
 		{
-			compute_image_header( *it, imarray, encoding_index);
-			encoding_index += 1;
-
-			if (this->next()->putq(ims) < 0) {
-				m1->release();
-				return GADGET_FAIL;
-			}
+			compute_image_header( m1->getObjectPtr()->rbit_[it], imarray, it);
+                        send_out_image_array( m1->getObjectPtr()->rbit_[it], imarray, it, image_series.value() + ((int)it+1), GADGETRON_IMAGE_REGULAR);
 		}
 
 		m1->release();
