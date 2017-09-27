@@ -106,3 +106,45 @@ TYPED_TEST(gt_plplot_Test, plplot_noise_covariance_test)
 
     gt_io.export_array(plotIm, this->gt_ut_res_folder_ + "plplot_trueColor_NoiseSTD");
 }
+
+TYPED_TEST(gt_plplot_Test, plplot_curves_test)
+{
+    typedef float T;
+
+    ImageIOAnalyze gt_io;
+
+    float v;
+
+    std::string xlabel = "Heart Beat";
+    std::string ylabel = "RR interval (ms)";
+    std::string title = "Acqusition heart beat plot";
+    size_t xsize = 2048;
+    size_t ysize = 2048;
+    hoNDArray<float> plotIm;
+
+    bool trueColor = true;
+
+    std::vector<hoNDArray<T> > xs(1);
+    std::vector<hoNDArray<T> > ys(1);
+    std::vector<std::string> legend(1);
+
+    size_t num_hb = 60;
+
+    xs[0].create(num_hb);
+    ys[0].create(num_hb);
+
+    for (size_t n = 0; n < num_hb; n++)
+    {
+        xs[0](n) = n + 1;
+        ys[0](n) = 1000 + std::rand()*100;
+    }
+
+    legend.clear();
+
+    std::ostringstream ostr;
+    ostr << "Acquisition median RR interval " << 1000 << " ms ";
+
+    Gadgetron::plotCurves(xs, ys, "Heart Beat", "RR interval (ms)", ostr.str(), legend, xsize, ysize, trueColor, false, plotIm);
+
+    gt_io.export_array(plotIm, this->gt_ut_res_folder_ + "plplot_trueColor_HeartBeat");
+}

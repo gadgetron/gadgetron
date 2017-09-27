@@ -167,7 +167,7 @@ void getPlotGlyph(size_t n, std::string& gly)
     switch (n%26)
     {
         case 0:
-            gly = "#(2367)"; // .
+            gly = "#(840)"; // circle;
             break;
 
         case 1:
@@ -263,7 +263,7 @@ void getPlotGlyph(size_t n, std::string& gly)
             break;
 
         case 25:
-            gly = "#(840)"; // circle
+            gly = "#(2367)"; // .
             break;
 
         default:
