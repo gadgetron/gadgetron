@@ -5,6 +5,8 @@
 #include <string>
 #include <time.h>
 #include <cstring>
+#include <chrono>
+
 
 namespace Gadgetron
 {
@@ -88,13 +90,17 @@ namespace Gadgetron
       time_t rawtime;
       struct tm * timeinfo;
 
-      time ( &rawtime );
+      auto curtime= std::chrono::system_clock::now();
+      rawtime = std::chrono::system_clock::to_time_t(curtime);
       timeinfo = localtime ( &rawtime );
-      
-      //Time the format YYYY-MM-DD HH:MM:SS
-      char timestr[22];sprintf(timestr, "%d-%02d-%02d %02d:%02d:%02d ",
-			       timeinfo->tm_year+1900, timeinfo->tm_mon+1, timeinfo->tm_mday,
-			       timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+
+      auto duration = curtime.time_since_epoch();
+      int micros = std::chrono::duration_cast<std::chrono::microseconds>(duration).count() % 1000000;
+
+      //Time the format MM-DD HH:MM:SS.uuu
+      char timestr[22];sprintf(timestr, "%02d-%02d %02d:%02d:%02d.%03d ",
+			       timeinfo->tm_mon+1, timeinfo->tm_mday,
+			       timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec, micros/1000);
 
       fmt_str += std::string(timestr);
       append_cformatting_needed = true;
