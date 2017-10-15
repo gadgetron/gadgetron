@@ -12,4 +12,4 @@ cd ${base_dir}/base/ubuntu_1604_cuda75
 docker build -t gadgetron/ubuntu1604_cuda75_base .
 
 cd ${base_dir}/base/ubuntu_1604_cuda80
-docker build --network=host -t gadgetron/ubuntu1604_cuda80_base .
+docker build -t gadgetron/ubuntu1604_cuda80_base .
