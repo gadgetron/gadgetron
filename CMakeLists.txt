@@ -202,12 +202,16 @@ if (CUDA_FOUND)
   # Support compute model 3.0 from Cuda 4.2 and up
   # Support compute model 3.5 from Cuda 5 and up
 
-  option(GADGETRON_CUDA_ALL_COMPUTE_MODEL "Build CUDA components for all computing models" Off)
+  option(GADGETRON_CUDA_ALL_COMPUTE_MODEL "Build CUDA components for all computing models" OFF)
   if (GADGETRON_CUDA_ALL_COMPUTE_MODEL)
-    message("Compiling CUDA components to support compute model 2.0, 3.0 and 3.5")
+    message("Compiling CUDA components to support all compute model 2.0, 3.0, 3.5, 5.0, 5.2, 6.0, 6.1")
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_20,code=sm_20")
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_30,code=sm_30")
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_35,code=sm_35")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_50,code=sm_50")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_52,code=sm_52")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_60,code=sm_60")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_61,code=sm_61")
   endif ()
 
   message("Compiling with ${CUDA_NVCC_FLAGS}")
