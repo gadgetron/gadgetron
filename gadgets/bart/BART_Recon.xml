@@ -75,7 +75,7 @@
 	  <dll>gadgetron_bart</dll>
 	  <classname>BartGadget</classname>
           <property><name>BartCommandScript_name</name><value>Sample_Grappa_Recon.sh</value></property>
-	  <property><name>isBartFileBeingStored</name><value>true</value></property>
+	  <property><name>isBartFileBeingStored</name><value>false</value></property>
 	  <property><name>image_series</name><value>0</value></property>
 	  <!--CACHE BART FILES FOR BETTER PERFORMANCE  -->
           <!---THIS FEATURE SHOULD BE ENABLE ONLY IF THE USER HAS THE ROOT PRIVILEGE AND KNOWS HIS/HER HARDWIRE
