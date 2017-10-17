@@ -174,6 +174,9 @@ namespace Gadgetron {
                 sscanf(threadId.c_str(), "%lx", &threadNumber);
                 outputFolderPath = workingDirectory.value() + "bart_" + time_id + "_" + std::to_string(threadNumber) + "/";
                 generatedFilesFolder = std::string(outputFolderPath);
+                
+		generatedFilesFolder.pop_back();
+	
 		boost::filesystem::path dir(generatedFilesFolder);
 		if (!boost::filesystem::exists(dir) || !boost::filesystem::is_directory(dir))
 			if (boost::filesystem::create_directories(dir))
@@ -182,6 +185,8 @@ namespace Gadgetron {
 				GERROR("Folder to store *.hdr & *.cfl files doesn't exist...\n");
 				return GADGET_FAIL;
 			}
+
+		generatedFilesFolder += "/";
 
 		/*USE WITH CAUTION*/
 		if (boost::filesystem::exists(generatedFilesFolder) && isBartFolderBeingCachedToVM.value() && !isBartFileBeingStored.value())
