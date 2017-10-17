@@ -197,7 +197,7 @@ class SamplingDescription:
 class IsmrmrdDataBuffered:
 	def __init__(self,data,headers,sampling=SamplingDescription(),trajectory=None):
 		self.data = data 
-                if (trajectory != None): self.trajectory =trajectory 
+                if (trajectory is not None): self.trajectory =trajectory 
 		self.headers =headers 
 		self.sampling = sampling
 	
