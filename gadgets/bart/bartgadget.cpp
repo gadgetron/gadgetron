@@ -3,8 +3,8 @@
 * Author: Mahamadou Diakite, PhD.
 * Institution: National Institutes of Health (NIH)
 * Lang: C++
-* Date: 8/28/2017
-* Version: 0.1.1
+* Date: 10/15/2017
+* Version: 1.0.0
 ****************************************************************************************************************************/
 
 #include "bartgadget.h"
@@ -17,8 +17,11 @@
 #include <ctime>
 #include <random>
 #include <functional>
+#include <mutex>
+#include <boost/thread.hpp>
+#include <boost/lexical_cast.hpp>
 
-using namespace boost::filesystem;
+
 
 namespace Gadgetron {
 
@@ -103,12 +106,15 @@ namespace Gadgetron {
 	}
 
 	inline void BartGadget::ltrim(std::string &str)
-        {
-		str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](int s){return !std::isspace(s);}));
-        }
+	{
+		str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](int s) {return !std::isspace(s); }));
+	}
 
 	int BartGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
-	{
+	{        
+                static std::mutex mtx;
+		std::lock_guard<std::mutex> guard(mtx);
+
 		// Check status of bart commands script
 		std::string CommandScript = AbsoluteBartCommandScript_path.value() + "/" + BartCommandScript_name.value();
 		if (!boost::filesystem::exists(CommandScript))
@@ -143,16 +149,18 @@ namespace Gadgetron {
 		std::string generatedFilesFolder;
 		static std::string outputFolderPath;
 		if (BartWorkingDirectory.value().empty()) {
-		  workLocation_ = workingDirectory.value();
-		} else {
-		  workLocation_ = BartWorkingDirectory.value();
+			workLocation_ = workingDirectory.value();
+		}
+		else {
+			workLocation_ = BartWorkingDirectory.value();
 		}
 
 		if (workLocation_.empty()) {
-		  GERROR("Undefined work location, bailing out\n");
-		  return GADGET_FAIL;
+			GERROR("Undefined work location, bailing out\n");
+			return GADGET_FAIL;
 		}
-		
+
+
 		time_t rawtime;
 		char buff[80];
 		time(&rawtime);
@@ -160,25 +168,30 @@ namespace Gadgetron {
 		std::mt19937::result_type seed = static_cast<unsigned long>(time(0));
 		auto dice_rand = std::bind(std::uniform_int_distribution<int>(1, 10000), std::mt19937(seed));
 		std::string time_id(buff + std::to_string(dice_rand()));
-		outputFolderPath = workLocation_ + "bart_" + time_id + "/";
-		generatedFilesFolder = std::string(outputFolderPath);
+                // Get the current process ID
+ 		std::string threadId = boost::lexical_cast<std::string>(boost::this_thread::get_id());
+                unsigned long threadNumber = 0;
+                sscanf(threadId.c_str(), "%lx", &threadNumber);
+                outputFolderPath = workingDirectory.value() + "bart_" + time_id + "_" + std::to_string(threadNumber) + "/";
+                generatedFilesFolder = std::string(outputFolderPath);
 		boost::filesystem::path dir(generatedFilesFolder);
-		if (boost::filesystem::create_directory(dir))
-		  GDEBUG("Folder to store *.hdr & *.cfl files is %s\n", generatedFilesFolder.c_str());
-		else {
-		  GERROR("Folder to store *.hdr & *.cfl files doesn't exist...\n");
-		  return GADGET_FAIL;
-		}
+		if (!boost::filesystem::exists(dir) || !boost::filesystem::is_directory(dir))
+			if (boost::filesystem::create_directories(dir))
+				GDEBUG("Folder to store *.hdr & *.cfl files is %s\n", generatedFilesFolder.c_str());
+			else {
+				GERROR("Folder to store *.hdr & *.cfl files doesn't exist...\n");
+				return GADGET_FAIL;
+			}
 
 		/*USE WITH CAUTION*/
-		if(boost::filesystem::exists(generatedFilesFolder) && isBartFolderBeingCachedToVM.value() && !isBartFileBeingStored.value())
+		if (boost::filesystem::exists(generatedFilesFolder) && isBartFolderBeingCachedToVM.value() && !isBartFileBeingStored.value())
 		{
 			std::ostringstream cmd;
 			cmd << "mount -t tmpfs -o size" << AllocateMemorySizeInMegabytes.value() << "M, mode=0755 tmpfs " << generatedFilesFolder;
-			if(system(cmd.str().c_str())){                               
+			if (system(cmd.str().c_str())) {
 				cleanup(outputFolderPath);
 				return GADGET_FAIL;
-			} 
+			}
 		}
 
 
@@ -186,16 +199,16 @@ namespace Gadgetron {
 
 		/*** WRITE REFERENCE AND RAW DATA TO FILES ***/
 
-        size_t encoding = 0;
+		size_t encoding = 0;
 		for (std::vector<IsmrmrdReconBit>::iterator it = m1->getObjectPtr()->rbit_.begin(); it != m1->getObjectPtr()->rbit_.end(); ++it)
 		{
-            std::stringstream os;
-            os << "_encoding_" << encoding;
+			std::stringstream os;
+			os << "_encoding_" << encoding;
 
 			// Grab a reference to the buffer containing the reference data
 			auto  & dbuff_ref = it->ref_;
-        		hoNDArray< std::complex<float> >& ref = (*dbuff_ref).data_;
-                       // Data 7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
+			hoNDArray< std::complex<float> >& ref = (*dbuff_ref).data_;
+			// Data 7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
 			uint16_t E0_ref = static_cast<uint16_t>(ref.get_size(0));
 			uint16_t E1_ref = static_cast<uint16_t>(ref.get_size(1));
 			uint16_t E2_ref = static_cast<uint16_t>(ref.get_size(2));
@@ -203,7 +216,7 @@ namespace Gadgetron {
 			uint16_t N_ref = static_cast<uint16_t>(ref.get_size(4));
 			uint16_t S_ref = static_cast<uint16_t>(ref.get_size(5));
 			uint16_t LOC_ref = static_cast<uint16_t>(ref.get_size(6));
-                        DIMS_ref = {E0_ref, E1_ref, E2_ref, CHA_ref, N_ref, S_ref, LOC_ref};
+			DIMS_ref = { E0_ref, E1_ref, E2_ref, CHA_ref, N_ref, S_ref, LOC_ref };
 
 			// Grab a reference to the buffer containing the image data
 			IsmrmrdDataBuffered & dbuff = it->data_;
@@ -236,8 +249,8 @@ namespace Gadgetron {
 							chunk_dims[1] = E1_ref;
 							chunk_dims[2] = E2_ref;
 							chunk_dims[3] = CHA_ref;
-							 hoNDArray<std::complex<float> > chunk = hoNDArray<std::complex<float> >(chunk_dims, &(*dbuff_ref).data_(0, 0, 0, 0, n, s, loc));
-                					std::vector<size_t> new_chunk_dims(1);
+							hoNDArray<std::complex<float> > chunk = hoNDArray<std::complex<float> >(chunk_dims, &(*dbuff_ref).data_(0, 0, 0, 0, n, s, loc));
+							std::vector<size_t> new_chunk_dims(1);
 							new_chunk_dims[0] = E0_ref*E1_ref*E2_ref*CHA_ref;
 							chunk.reshape(new_chunk_dims);
 							// Fill BART container
@@ -281,11 +294,11 @@ namespace Gadgetron {
 						}
 					}
 				}
-			}                                                                                                                                                              
+			}
 
 			write_BART_Files(std::string(generatedFilesFolder + "meas_gadgetron").c_str(), DIMS, Temp);
 
-            encoding++;
+			encoding++;
 		}
 
 		/* Before calling Bart let's do some bookkeeping */
@@ -296,10 +309,10 @@ namespace Gadgetron {
 		{
 			cmd1 << "bart resize -c 0 " << DIMS[0] << " 1 " << DIMS[1] << " 2 " << DIMS[2] << " meas_gadgetron_ref reference_data";
 			// Pass commands to Bart
-			if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd1.str()).c_str())){		
+			if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd1.str()).c_str())) {
 				cleanup(outputFolderPath);
 				return GADGET_FAIL;
-			}			
+			}
 		}
 
 		if (DIMS[4] != 1)
@@ -307,18 +320,18 @@ namespace Gadgetron {
 		else
 			cmd2 << "bart scale 1.0 meas_gadgetron input_data";
 
-		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd2.str()).c_str())){			
+		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd2.str()).c_str())) {
 			cleanup(outputFolderPath);
 			return GADGET_FAIL;
 		}
 
 		/*** CALL BART COMMAND LINE from the scripting file***/
-                // call BART shell script
+				// call BART shell script
 		auto ret = system(std::string("cd " + generatedFilesFolder + "&&" + CommandScript).c_str());
 		(void)ret;
-		
+
 		std::string Line, Commands_Line;
-		ifstream inputFile(CommandScript);
+		std::fstream inputFile(CommandScript);
 		if (inputFile.is_open())
 		{
 			while (getline(inputFile, Line))
@@ -338,14 +351,14 @@ namespace Gadgetron {
 		}
 
 		std::string outputFile = getOutputFilename(Commands_Line);
-		
+
 		// Reformat the data back to gadgetron format
 		auto header = read_BART_hdr(std::string(generatedFilesFolder + outputFile).c_str());
 		cmd4 << "bart reshape 1023 " << header[0] << " " << header[1] << " " << header[2] << " " << header[3] << " " << header[9] * header[4]
 			<< " 1 1 1 1 1 " << outputFile << " " << outputFile + std::string("_reshape");
 		const auto cmd_s = cmd4.str();
 		GDEBUG("%s\n", cmd_s.c_str());
-		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd_s).c_str())){
+		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd_s).c_str())) {
 			cleanup(outputFolderPath);
 			return GADGET_FAIL;
 		}
@@ -353,8 +366,8 @@ namespace Gadgetron {
 		std::string outputfile_2 = getOutputFilename(cmd_s);
 		/**** READ FROM BART FILES ***/
 		std::pair< std::vector<size_t>, std::vector<std::complex<float> > > BART_DATA = read_BART_files(std::string(generatedFilesFolder + outputfile_2).c_str());
-                
-                if(!isBartFileBeingStored.value())
+
+		if (!isBartFileBeingStored.value())
 			cleanup(outputFolderPath);
 
 		GadgetContainerMessage<IsmrmrdImageArray>* ims = new GadgetContainerMessage<IsmrmrdImageArray>();
@@ -417,8 +430,8 @@ namespace Gadgetron {
 		// Fill image header 
 		for (size_t it = 0; it < m1->getObjectPtr()->rbit_.size(); ++it)
 		{
-			compute_image_header( m1->getObjectPtr()->rbit_[it], imarray, it);
-                        send_out_image_array( m1->getObjectPtr()->rbit_[it], imarray, it, image_series.value() + ((int)it+1), GADGETRON_IMAGE_REGULAR);
+			compute_image_header(m1->getObjectPtr()->rbit_[it], imarray, it);
+			send_out_image_array(m1->getObjectPtr()->rbit_[it], imarray, it, image_series.value() + ((int)it + 1), GADGETRON_IMAGE_REGULAR);
 		}
 
 		m1->release();
