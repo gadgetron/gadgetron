@@ -16,28 +16,39 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
   )
 
-add_library(gadgetron_spiral SHARED 
-  gadgetron_spiral_export.h 
-  vds.cpp 
-  gpuSpiralSensePrepGadget.h gpuSpiralSensePrepGadget.cpp 
-  SpiralToGenericGadget.h SpiralToGenericGadget.cpp)
+set(SPIRAL_HEADER_FILES gadgetron_spiral_export.h SpiralToGenericGadget.h vds.h)
+set(SPIRAL_SRC_FILES vds.cpp  SpiralToGenericGadget.cpp)
+
+if (CUDA_FOUND)
+    set(SPIRAL_HEADER_FILES ${SPIRAL_HEADER_FILES} gpuSpiralSensePrepGadget.h)
+    set(SPIRAL_SRC_FILES ${SPIRAL_SRC_FILES}  gpuSpiralSensePrepGadget.cpp)
+endif()
+  
+add_library(gadgetron_spiral SHARED ${SPIRAL_HEADER_FILES} ${SPIRAL_SRC_FILES})
 
 set_target_properties(gadgetron_spiral PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
 target_link_libraries(gadgetron_spiral
   gadgetron_gadgetbase
   gadgetron_toolbox_log
-  gadgetron_toolbox_cpucore gadgetron_toolbox_gpucore gadgetron_toolbox_gpunfft gadgetron_toolbox_gpusolvers gadgetron_toolbox_gpuoperators
-  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
+  gadgetron_toolbox_cpucore 
+  ${ISMRMRD_LIBRARIES} 
+  ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
-target_link_libraries(gadgetron_spiral gadgetron_toolbox_gpuparallelmri)
+if (CUDA_FOUND)
+    target_link_libraries(gadgetron_spiral 
+                                ${CUDA_LIBRARIES} 
+                                gadgetron_toolbox_gpucore 
+                                gadgetron_toolbox_gpunfft 
+                                gadgetron_toolbox_gpusolvers 
+                                gadgetron_toolbox_gpuoperators
+                                gadgetron_toolbox_gpuparallelmri )
+endif()
 
 install (TARGETS gadgetron_spiral DESTINATION lib COMPONENT main)
-install (FILES vds.h gadgetron_spiral_export.h 
-                     gpuSpiralSensePrepGadget.h 
-                     SpiralToGenericGadget.h 
+install (FILES ${SPIRAL_HEADER_FILES}
                      DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_subdirectory(config)
