@@ -17,6 +17,7 @@ add_library(gadgetron_bart SHARED
   bartgadget.cpp
   BART_Recon.xml 
   BART_Recon_cloud.xml
+  BART_Recon_cloud_Standard.xml
 )
 
 set_target_properties(gadgetron_bart PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -45,4 +46,4 @@ install (TARGETS gadgetron_bart DESTINATION lib COMPONENT main)
 set(GADGETRON_INSTALL_BART_PATH share/gadgetron/bart)
 install (FILES Sample_Grappa_Recon.sh DESTINATION ${GADGETRON_INSTALL_BART_PATH})
 
-install(FILES BART_Recon.xml BART_Recon_cloud.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
+install(FILES BART_Recon.xml BART_Recon_cloud.xml BART_Recon_cloud_Standard.xml DESTINATION ${GADGETRON_INSTALL_CONFIG_PATH} COMPONENT main)
