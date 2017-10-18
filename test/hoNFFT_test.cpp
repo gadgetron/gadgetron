@@ -54,7 +54,7 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
 {
     typedef float T;
 
-    if (gt_ut_folder_.empty())
+    if (this->gt_ut_folder_.empty())
     {
         GDEBUG_STREAM("Gadgetron unit test directory is not set ... ");
         return;
