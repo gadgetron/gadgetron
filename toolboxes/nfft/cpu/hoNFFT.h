@@ -1,236 +1,238 @@
 /**
-	\brief CPU implementation of the non-cartesian FFT
+    \brief CPU implementation of the non-cartesian FFT
 
-	Comparisions were made to the gridkb function provided in the 
-	Stanford Medical Image Reconstruction course lecture notes and 
-	the Cuda version of the NFFT (cuNFFT)
+    Comparisions were made to the gridkb function provided in the 
+    Stanford Medical Image Reconstruction course lecture notes and 
+    the Cuda version of the NFFT (cuNFFT)
 
-	Uses the Kaiser Bessel for convolution
+    Uses the Kaiser Bessel for convolution
 */
 
 #pragma once 
 
 #include "hoNDArray.h"
 #include "vector_td.h"
-#include "complext.h"
+#include <complex>
 
 #include <boost/shared_ptr.hpp>
 
 #include "cpunfft_export.h"
 
 namespace Gadgetron{
-	
-	/**
-		NFFT class declaration
-		----------------------
 
-		Real: desired precision : float or double only 
-		D: dimensionality: 1D, 2D, and 3D supported
-	*/
+    /**
+        NFFT class declaration
+        ----------------------
 
-	template<class Real, unsigned int D>
-	class EXPORTCPUNFFT hoNFFT_plan{
-	
-		/**
-			Main interface
-		*/
-		
-		public:
-			
-			/**
-				Default constructor
-			*/
-			
-			hoNFFT_plan();
+        Real: desired precision : float or double only 
+        D: dimensionality: 1D, 2D, and 3D supported
+    */
 
-			/**
-				Constructor defining the required NFFT parameters
-				
-				Note: Dimensions of n must be equal.
+    template<class Real, unsigned int D>
+    class EXPORTCPUNFFT hoNFFT_plan
+    {
+        typedef std::complex<Real> ComplexType;
 
-				/param n: the non-oversampled matrix size to use for NFFT
-				/param osf: the oversampling factor
-				/param wg: the width of the oversampled kernel
-			*/
+        /**
+            Main interface
+        */
 
-			hoNFFT_plan(
-				typename uint64d<D>::Type n,
-				Real osf,
-				Real wg
-			);
-			
-			/** 
-				Destructor
-			*/
+        public:
 
-			~hoNFFT_plan();
+            /**
+                Default constructor
+            */
 
-			/** 
-				Perform NFFT preprocessing for a given trajectory
+            hoNFFT_plan();
 
-				\param k: the NFFT non cartesian trajectory
-				\param mode: enum specifying the preprocessing mode
-			*/
+            /**
+                Constructor defining the required NFFT parameters
 
-			void preprocess(
-				hoNDArray<typename reald<Real, D>::Type> k
-			);
+                Note: Dimensions of n must be equal.
 
-			/**
-				Enum defining the desired NFFT operation
-			*/
+                /param n: the non-oversampled matrix size to use for NFFT
+                /param osf: the oversampling factor
+                /param wg: the width of the oversampled kernel
+            */
 
-			enum NFFT_comp_mode{
-				NFFT_FORWARDS_C2NC, /** forwards cartesian to non */
-				NFFT_BACKWARDS_NC2C, /** forwards non to cartesian */
-				NFFT_BACKWARDS_C2NC, /** backwards cartesian to non */
-				NFFT_FORWARDS_NC2C /** forwards non to cartesian */
-			};
+            hoNFFT_plan(
+                typename uint64d<D>::Type n,
+                Real osf,
+                Real wg
+            );
 
-			/**
-				Execute the NFFT
+            /** 
+                Destructor
+            */
 
-				\param d: the input data array
-				\param m: the output matrix
-				\param w: optional density compensation if not iterative 
-					provide a 0x0 if non density compensation
-				\param mode: enum specifyiing the mode of operation
-			*/
+            ~hoNFFT_plan();
 
-			void compute(
-				hoNDArray<complext<Real>> &d,
-				hoNDArray<complext<Real>> &m,
-				hoNDArray<Real> w,
-				NFFT_comp_mode mode
-			);
+            /** 
+                Perform NFFT preprocessing for a given trajectory
 
-			/**
-				To be used by an operator for iterative reconstruction 
+                \param k: the NFFT non cartesian trajectory
+                \param mode: enum specifying the preprocessing mode
+            */
 
-				\param in: the input data
-				\param out: the data after MH_H has been applied
-				
-				Note: dimensions of in and out should be the same
-			*/
-			void mult_MH_M(
-				hoNDArray<complext<Real>> &in,
-				hoNDArray<complext<Real>> &out
-			);
+            void preprocess(
+                const hoNDArray<typename reald<Real, D>::Type>& k
+            );
 
-		/**
-			Utilities
-		*/
+            /**
+                Enum defining the desired NFFT operation
+            */
 
-		public:
-			
-			/**
-				Enum specifying the direction of the NFFT convolution 
-			*/
+            enum NFFT_comp_mode{
+                NFFT_FORWARDS_C2NC, /** forwards cartesian to non */
+                NFFT_BACKWARDS_NC2C, /** backwards non to cartesian */
+                NFFT_BACKWARDS_C2NC, /** backwards cartesian to non */
+                NFFT_FORWARDS_NC2C /** forwards non to cartesian */
+            };
 
-			enum NFFT_conv_mode{
-				NFFT_CONV_C2NC, /** cartesian to non convolution */
-				NFFT_CONV_NC2C /** non to cartesian convolution */
-			};
+            /**
+                Execute the NFFT
 
-			/** 
-				Perform standalone convolution
-				
-				\param d: input array
-				\param m: output array
-				\param mode: enum specifying the mode of the convolution
-			*/
+                \param d: the input data array
+                \param m: the output matrix
+                \param w: optional density compensation if not iterative 
+                    provide a 0x0 if non density compensation
+                \param mode: enum specifyiing the mode of operation
+            */
 
-			void convolve(
-				hoNDArray<complext<Real>> &d,
-				hoNDArray<complext<Real>> &m,
-				NFFT_conv_mode mode
-			);
+            void compute(
+                hoNDArray<ComplexType> &d,
+                hoNDArray<ComplexType> &m,
+                hoNDArray<Real>& w,
+                NFFT_comp_mode mode
+            );
 
-			/** 
-				enum specifying the direction of the NFFT fft
-			*/
+            /**
+                To be used by an operator for iterative reconstruction 
 
-			enum NFFT_fft_mode{
-				NFFT_FORWARDS,
-				NFFT_BACKWARDS
-			};
+                \param in: the input data
+                \param out: the data after MH_H has been applied
 
-			/**
-				Cartesian fft. Making use of the hoNDFFT class.
+                Note: dimensions of in and out should be the same
+            */
+            void mult_MH_M(
+                hoNDArray<ComplexType> &in,
+                hoNDArray<ComplexType> &out
+            );
 
-				\param d: input and output for he fft 
-				\param mode: enum specifying the mode of the fft 
-			*/
+        /**
+            Utilities
+        */
 
-			void fft(
-				hoNDArray<complext<Real>> &d,
-				NFFT_fft_mode mode
-			);
+        public:
 
-			/**
-				NFFT deapodization
+            /**
+                Enum specifying the direction of the NFFT convolution 
+            */
 
-				\param d: input and output image to be deapodized 
-				\param fourierDomain: has data been ffted
-			*/
+            enum NFFT_conv_mode{
+                NFFT_CONV_C2NC, /** cartesian to non convolution */
+                NFFT_CONV_NC2C /** non to cartesian convolution */
+            };
 
-			void deapodize(
-				hoNDArray<complext<Real>> &d,
-				bool fourierDomain = false
-			);
-			
-		/**
-			Private implementation methods
-		*/
+            /** 
+                Perform standalone convolution
 
-		private:
-			
-			/**
-				Initialize variables and compute tables
-			*/
+                \param d: input array
+                \param m: output array
+                \param mode: enum specifying the mode of the convolution
+            */
 
-			void initialize();
+            void convolve(
+                hoNDArray<ComplexType> &d,
+                hoNDArray<ComplexType> &m,
+                NFFT_conv_mode mode
+            );
 
-			/**
-				Dedicated convolutions
+            /** 
+                enum specifying the direction of the NFFT fft
+            */
 
-				The two methods below are entirely symmetric in 
-				thier implementation. They could probably be
-				combined for conciseness.
-			*/
+            enum NFFT_fft_mode{
+                NFFT_FORWARDS,
+                NFFT_BACKWARDS
+            };
 
-			void convolve_NFFT_C2NC(
-				hoNDArray<complext<Real>> &d,
-				hoNDArray<complext<Real>> &m
-			);
+            /**
+                Cartesian fft. Making use of the hoNDFFT class.
 
-			void convolve_NFFT_NC2C(
-				hoNDArray<complext<Real>> &d,
-				hoNDArray<complext<Real>> &m
-			);
+                \param d: input and output for he fft 
+                \param mode: enum specifying the mode of the fft 
+            */
 
-			/**
-				Bessel function
-			*/
+            void fft(
+                hoNDArray<ComplexType> &d,
+                NFFT_fft_mode mode
+            );
 
-			Real bessi0(Real x);
-		
-		/** 
-			Implementation variables
-		*/
+            /**
+                NFFT deapodization
 
-		private:
-			
-			typename uint64d<D>::Type n;
-			
-			Real wg, kw, kosf, kwidth, beta, osf;
+                \param d: input and output image to be deapodized 
+                \param fourierDomain: has data been ffted
+            */
 
-			hoNDArray<Real> p, daf, nx, ny, nz;
+            void deapodize(
+                hoNDArray<ComplexType> &d,
+                bool fourierDomain = false
+            );
 
-			hoNDArray<complext<Real>> da;
+        /**
+            Private implementation methods
+        */
 
-			hoNDArray<typename reald<Real, D>::Type> k;
+        private:
 
-	};
+            /**
+                Initialize variables and compute tables
+            */
+
+            void initialize();
+
+            /**
+                Dedicated convolutions
+
+                The two methods below are entirely symmetric in 
+                thier implementation. They could probably be
+                combined for conciseness.
+            */
+
+            void convolve_NFFT_C2NC(
+                hoNDArray<ComplexType> &d,
+                hoNDArray<ComplexType> &m
+            );
+
+            void convolve_NFFT_NC2C(
+                hoNDArray<ComplexType> &d,
+                hoNDArray<ComplexType> &m
+            );
+
+            /**
+                Bessel function
+            */
+
+            Real bessi0(Real x);
+
+        /** 
+            Implementation variables
+        */
+
+        private:
+
+            typename uint64d<D>::Type n;
+
+            Real wg, kw, kosf, kwidth, beta, osf;
+
+            hoNDArray<Real> p, daf, nx, ny, nz;
+
+            hoNDArray<ComplexType> da;
+
+            hoNDArray<typename reald<Real, D>::Type> k;
+
+    };
 
 }
