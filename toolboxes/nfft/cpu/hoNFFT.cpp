@@ -80,6 +80,20 @@ namespace Gadgetron{
 
     template<class Real, unsigned int D>
     void hoNFFT_plan<Real, D>::compute(
+        hoNDArray<complext<Real>> &d,
+        hoNDArray<complext<Real>> &m,
+        hoNDArray<Real>& w,
+        NFFT_comp_mode mode
+    )
+    {
+        hoNDArray<ComplexType>* pd = reinterpret_cast<hoNDArray<ComplexType>*>(&d);
+        hoNDArray<ComplexType>* pm = reinterpret_cast<hoNDArray<ComplexType>*>(&m);
+
+        this->compute(*pd, *pm, w, mode);
+    }
+
+    template<class Real, unsigned int D>
+    void hoNFFT_plan<Real, D>::compute(
         hoNDArray<ComplexType> &d,
         hoNDArray<ComplexType> &m,
         hoNDArray<Real>& w,
@@ -148,6 +162,18 @@ namespace Gadgetron{
                 break;
             }
         };
+    }
+
+    template<class Real, unsigned int D>
+    void hoNFFT_plan<Real, D>::mult_MH_M(
+        hoNDArray<complext<Real>> &in,
+        hoNDArray<complext<Real>> &out
+    )
+    {
+        hoNDArray<ComplexType>* pin = reinterpret_cast<hoNDArray<ComplexType>*>(&in);
+        hoNDArray<ComplexType>* pout = reinterpret_cast<hoNDArray<ComplexType>*>(&out);
+
+        this->mult_MH_M(*pin, *pout);
     }
 
     template<class Real, unsigned int D>

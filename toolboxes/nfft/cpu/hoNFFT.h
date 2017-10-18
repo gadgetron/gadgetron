@@ -12,6 +12,7 @@
 
 #include "hoNDArray.h"
 #include "vector_td.h"
+#include "complext.h"
 #include <complex>
 
 #include <boost/shared_ptr.hpp>
@@ -106,6 +107,13 @@ namespace Gadgetron{
                 NFFT_comp_mode mode
             );
 
+            void compute(
+                hoNDArray<complext<Real>> &d,
+                hoNDArray<complext<Real>> &m,
+                hoNDArray<Real>& w,
+                NFFT_comp_mode mode
+            );
+
             /**
                 To be used by an operator for iterative reconstruction 
 
@@ -117,6 +125,11 @@ namespace Gadgetron{
             void mult_MH_M(
                 hoNDArray<ComplexType> &in,
                 hoNDArray<ComplexType> &out
+            );
+
+            void mult_MH_M(
+                hoNDArray<complext<Real>> &in,
+                hoNDArray<complext<Real>> &out
             );
 
         /**
