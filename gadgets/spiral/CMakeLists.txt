@@ -4,22 +4,25 @@ endif ()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
-  ${CMAKE_SOURCE_DIR}/gadgets/pmri
-  ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
-  ${CUDA_INCLUDE_DIRS}
   )
 
 set(SPIRAL_HEADER_FILES gadgetron_spiral_export.h SpiralToGenericGadget.h vds.h)
 set(SPIRAL_SRC_FILES vds.cpp  SpiralToGenericGadget.cpp)
 
 if (CUDA_FOUND)
+    include_directories(
+      ${CMAKE_SOURCE_DIR}/gadgets/pmri
+      ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
+      ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+      ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
+      ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
+      ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
+      ${CUDA_INCLUDE_DIRS}
+      )
+
     set(SPIRAL_HEADER_FILES ${SPIRAL_HEADER_FILES} gpuSpiralSensePrepGadget.h)
     set(SPIRAL_SRC_FILES ${SPIRAL_SRC_FILES}  gpuSpiralSensePrepGadget.cpp)
 endif()
