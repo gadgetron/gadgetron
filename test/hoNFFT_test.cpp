@@ -29,8 +29,8 @@ class hoNFFT_2D_NC2C_BACKWARDS : public ::testing::Test{
             if(!gt_ut_folder_.empty())
             {
                 GDEBUG_STREAM("Unit Test for Gadgetron hoNFFT");
-                gt_ut_data_folder_ = gt_ut_folder_ + "/data/";
-                gt_ut_res_folder_ = gt_ut_folder_ + "/result/";
+                gt_ut_data_folder_ = gt_ut_folder_;
+                gt_ut_res_folder_ = gt_ut_folder_;
                 GDEBUG_STREAM("gt_ut_data_folder_ is " << gt_ut_data_folder_);
                 GDEBUG_STREAM("gt_ut_res_folder_ is " << gt_ut_res_folder_);
             }
@@ -61,15 +61,15 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
     }
 
     hoNDArray< std::complex<T> > data;
-    this->gt_io_.import_array_complex(data, this->gt_ut_data_folder_ + "spiral/data_spiral_real",
-        this->gt_ut_data_folder_ + "spiral/data_spiral_imag");
+    this->gt_io_.import_array_complex(data, this->gt_ut_data_folder_ + "/spiral/data_spiral_real",
+        this->gt_ut_data_folder_ + "/spiral/data_spiral_imag");
     data.print(std::cout);
 
     T v;
     Gadgetron::norm2(data, v); GDEBUG_STREAM("data = " << v);
 
     hoNDArray< T > k_spiral;
-    this->gt_io_.import_array(k_spiral, this->gt_ut_data_folder_ + "spiral/k_spiral");
+    this->gt_io_.import_array(k_spiral, this->gt_ut_data_folder_ + "/spiral/k_spiral");
     k_spiral.print(std::cout);
     Gadgetron::norm2(k_spiral, v); GDEBUG_STREAM("k_spiral = " << v);
 
@@ -87,7 +87,7 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
     }
 
     hoNDArray< T > w_spiral;
-    this->gt_io_.import_array(w_spiral, this->gt_ut_data_folder_ + "spiral/w_spiral");
+    this->gt_io_.import_array(w_spiral, this->gt_ut_data_folder_ + "/spiral/w_spiral");
     w_spiral.print(std::cout);
     Gadgetron::norm2(w_spiral, v); GDEBUG_STREAM("w_spiral = " << v);
 
@@ -120,12 +120,12 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
 
     res.print(std::cout);
 
-    this->gt_io_.export_array_complex(res, this->gt_ut_res_folder_ + "spiral/res_regridding");
+    this->gt_io_.export_array_complex(res, this->gt_ut_res_folder_ + "/spiral/res_regridding");
 
     // compare agains ground truth
     hoNDArray< std::complex<T> > ref;
-    this->gt_io_.import_array_complex(ref, this->gt_ut_data_folder_ + "spiral/res_regridding_REAL",
-        this->gt_ut_data_folder_ + "spiral/res_regridding_IMAG");
+    this->gt_io_.import_array_complex(ref, this->gt_ut_data_folder_ + "/spiral/ref_regridding_REAL",
+        this->gt_ut_data_folder_ + "/spiral/ref_regridding_IMAG");
     ref.print(std::cout);
 
     hoNDArray< std::complex<T> > diff;
