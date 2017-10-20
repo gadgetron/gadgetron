@@ -10,8 +10,10 @@ if(CUDA_FOUND)
     set(CUDA_NVCC_FLAGS4 "-gencode arch=compute_35,code=sm_35")   
     set(CUDA_NVCC_FLAGS5 "-gencode arch=compute_50,code=sm_50")
     set(CUDA_NVCC_FLAGS52 "-gencode arch=compute_52,code=sm_52")   
-    set(CUDA_NVCC_FLAGS6 "-gencode arch=compute_60,code=sm_60")   
-    set(CUDA_NVCC_FLAGS61 "-gencode arch=compute_61,code=sm_61")   
+    if (${CUDA_VERSION_MAJOR} VERSION_GREATER "7")
+        set(CUDA_NVCC_FLAGS6 "-gencode arch=compute_60,code=sm_60")   
+        set(CUDA_NVCC_FLAGS61 "-gencode arch=compute_61,code=sm_61")   
+    endif()
   cuda_find_helper_file(cuda_compute_capability c)
   try_run(RUN_RESULT_VAR COMPILE_RESULT_VAR
     ${CMAKE_BINARY_DIR} 
