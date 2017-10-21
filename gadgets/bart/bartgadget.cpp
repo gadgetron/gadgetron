@@ -15,6 +15,7 @@
 #include <numeric>
 #include <cstdlib>
 #include <ctime>
+#include <memory>
 #include <random>
 #include <functional>
 #include <mutex>
@@ -80,11 +81,10 @@ namespace Gadgetron {
 		infile.read(reinterpret_cast<char*>(&buffer[0]), size);
 		infile.close();
 		// Reformat the data
-		unsigned long count = 0;
 		std::vector< std::complex<float> > Data;
 		Data.reserve(buffer.size() / 2);
 
-		for (size_t count = 0; count < buffer.size(); count += 2)
+		for (size_t count = 0, buffer_size = buffer.size(); count != buffer_size; count += 2)
 			Data.push_back(std::complex<float>(buffer[count], buffer[count + 1]));
 
 		return (std::pair< std::vector<size_t>, std::vector< std::complex<float> > >(DIMS, Data));
@@ -95,7 +95,7 @@ namespace Gadgetron {
 		static std::vector<std::string> outputFile;
 		boost::char_separator<char> sep(" ");
 		boost::tokenizer<boost::char_separator<char> > tokens(bartCommandLine, sep);
-		for (auto itr = tokens.begin(); itr != tokens.end(); ++itr)
+		for (auto itr = tokens.begin(), tokens_end = tokens.end(); itr != tokens_end; ++itr)
 			outputFile.push_back(*itr);
 		return (outputFile.back());
 	}
@@ -205,7 +205,7 @@ namespace Gadgetron {
 		/*** WRITE REFERENCE AND RAW DATA TO FILES ***/
 
 		size_t encoding = 0;
-		for (std::vector<IsmrmrdReconBit>::iterator it = m1->getObjectPtr()->rbit_.begin(); it != m1->getObjectPtr()->rbit_.end(); ++it)
+		for (std::vector<IsmrmrdReconBit>::iterator it = m1->getObjectPtr()->rbit_.begin(), rbit_end =  m1->getObjectPtr()->rbit_.end(); it != rbit_end; ++it)
 		{
 			std::stringstream os;
 			os << "_encoding_" << encoding;
@@ -270,9 +270,7 @@ namespace Gadgetron {
 				write_BART_Files(std::string(generatedFilesFolder + "meas_gadgetron_ref").c_str(), DIMS_ref, Temp_ref);
 			}
 
-			GadgetContainerMessage<IsmrmrdImageArray>* cm1 = new GadgetContainerMessage<IsmrmrdImageArray>();
-			IsmrmrdImageArray & imarray = *cm1->getObjectPtr();
-
+			auto cm1 = std::make_unique<GadgetContainerMessage<IsmrmrdImageArray>>();
 			std::vector<float> Temp;
 			Temp.reserve(2 * E0*E1*E2*CHA*N*S*LOC);
 
@@ -307,7 +305,7 @@ namespace Gadgetron {
 		}
 
 		/* Before calling Bart let's do some bookkeeping */
-		std::ostringstream cmd1, cmd2, cmd3, cmd4;
+		std::ostringstream cmd1, cmd2, cmd3;
 		std::replace(generatedFilesFolder.begin(), generatedFilesFolder.end(), '\\', '/');
 
 		if (DIMS_ref != DIMS)
@@ -359,9 +357,9 @@ namespace Gadgetron {
 
 		// Reformat the data back to gadgetron format
 		auto header = read_BART_hdr(std::string(generatedFilesFolder + outputFile).c_str());
-		cmd4 << "bart reshape 1023 " << header[0] << " " << header[1] << " " << header[2] << " " << header[3] << " " << header[9] * header[4]
+		cmd3 << "bart reshape 1023 " << header[0] << " " << header[1] << " " << header[2] << " " << header[3] << " " << header[9] * header[4]
 			<< " 1 1 1 1 1 " << outputFile << " " << outputFile + std::string("_reshape");
-		const auto cmd_s = cmd4.str();
+		const auto cmd_s = cmd3.str();
 		GDEBUG("%s\n", cmd_s.c_str());
 		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd_s).c_str())) {
 			cleanup(outputFolderPath);
@@ -375,7 +373,7 @@ namespace Gadgetron {
 		if (!isBartFileBeingStored.value())
 			cleanup(outputFolderPath);
 
-		GadgetContainerMessage<IsmrmrdImageArray>* ims = new GadgetContainerMessage<IsmrmrdImageArray>();
+		auto ims = std::make_unique<GadgetContainerMessage<IsmrmrdImageArray>>();
 		IsmrmrdImageArray & imarray = *ims->getObjectPtr();
 
 		// Grab data from BART files
@@ -433,7 +431,7 @@ namespace Gadgetron {
 		std::copy(DATA_Final.begin(), DATA_Final.end(), imarray.data_.begin());
 
 		// Fill image header 
-		for (size_t it = 0; it < m1->getObjectPtr()->rbit_.size(); ++it)
+		for (size_t it = 0, rbit_size = m1->getObjectPtr()->rbit_.size(); it != rbit_size; ++it)
 		{
 			compute_image_header(m1->getObjectPtr()->rbit_[it], imarray, it);
 			send_out_image_array(m1->getObjectPtr()->rbit_[it], imarray, it, image_series.value() + ((int)it + 1), GADGETRON_IMAGE_REGULAR);
