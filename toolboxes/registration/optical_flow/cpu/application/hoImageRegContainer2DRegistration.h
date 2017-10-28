@@ -820,6 +820,8 @@ namespace Gadgetron
 
             GDEBUG_STREAM("registerOverContainer2DPairWise - threading ... ");
 
+            int numOfThreads = 1;
+
             #ifdef USE_OMP
                 int numOfProcs = omp_get_num_procs();
                 int nested = omp_get_nested();
@@ -833,6 +835,8 @@ namespace Gadgetron
                     omp_set_nested(0);
                     GDEBUG_STREAM("registerOverContainer2DPairWise - nested openMP off ... ");
                 }
+
+                numOfThreads = (numOfImages>numOfProcs) ? numOfProcs : numOfImages;
             #endif // USE_OMP
 
             unsigned int ii;
@@ -847,7 +851,7 @@ namespace Gadgetron
                     deformation_field_[ii].get_all_images(deform[ii]);
                 }
 
-                #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, warpedImages)
+                #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, warpedImages) num_threads(numOfThreads)
                 {
                     DeformationFieldType* deformCurr[DIn];
 
@@ -888,7 +892,7 @@ namespace Gadgetron
                     deformation_field_inverse_[ii].get_all_images(deformInv[ii]);
                 }
 
-                #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, deformInv, warpedImages)
+                #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, deformInv, warpedImages) num_threads(numOfThreads)
                 {
                     DeformationFieldType* deformCurr[DIn];
                     DeformationFieldType* deformInvCurr[DIn];
@@ -988,6 +992,8 @@ namespace Gadgetron
 
             GADGET_CHECK_RETURN_FALSE(numOfImages==targetImages.size());
 
+            int numOfThreads = 1;
+
             #ifdef USE_OMP
                 int numOfProcs = omp_get_num_procs();
                 int nested = omp_get_nested();
@@ -1001,6 +1007,8 @@ namespace Gadgetron
                     omp_set_nested(0);
                     GDEBUG_STREAM("registerOverContainer2DFixedReference - nested openMP off ... ");
                 }
+
+                numOfThreads = (numOfImages>numOfProcs) ? numOfProcs : numOfImages;
             #endif // USE_OMP
 
             if ( container_reg_transformation_ == GT_IMAGE_REG_TRANSFORMATION_DEFORMATION_FIELD )
@@ -1012,7 +1020,7 @@ namespace Gadgetron
                     deformation_field_[ii].get_all_images(deform[ii]);
                 }
 
-                #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, warpedImages)
+                #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, warpedImages) num_threads(numOfThreads)
                 {
                     DeformationFieldType* deformCurr[DIn];
 
@@ -1058,7 +1066,7 @@ namespace Gadgetron
                     deformation_field_inverse_[ii].get_all_images(deformInv[ii]);
                 }
 
-                #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, deformInv, warpedImages)
+                #pragma omp parallel default(none) private(n, ii) shared(numOfImages, initial, targetImages, sourceImages, deform, deformInv, warpedImages) num_threads(numOfThreads)
                 {
                     DeformationFieldType* deformCurr[DIn];
                     DeformationFieldType* deformInvCurr[DIn];
