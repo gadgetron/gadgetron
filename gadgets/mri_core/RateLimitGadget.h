@@ -1,0 +1,35 @@
+#ifndef ACCUMULATORGADGET_H
+#define ACCUMULATORGADGET_H
+
+#include "Gadget.h"
+#include "hoNDArray.h"
+#include "gadgetron_mricore_export.h"
+
+#include <ismrmrd/ismrmrd.h>
+#include <complex>
+#include <chrono>
+
+namespace Gadgetron{
+  
+  class EXPORTGADGETSMRICORE RateLimitGadget :
+  public BasicPropertyGadget
+    {
+      
+    public:
+      GADGET_DECLARE(RateLimitGadget);
+      
+      RateLimitGadget();
+      ~RateLimitGadget();
+      
+    protected:
+      GADGET_PROPERTY(sleep_time_, int, "Time between each message", 0);
+
+      virtual int process_config(ACE_Message_Block* mb);
+        int process(ACE_Message_Block* mb);
+
+
+        std::chrono::milliseconds sleep_time;
+
+    };
+}
+#endif //ACCUMULATORGADGET_H
