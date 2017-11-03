@@ -22,7 +22,7 @@ namespace Gadgetron{
       ~RateLimitGadget();
       
     protected:
-      GADGET_PROPERTY(sleep_time_, int, "Time between each message", 0);
+      GADGET_PROPERTY(sleep_time_, int, "sleep_time", 0);
 
       virtual int process_config(ACE_Message_Block* mb);
         int process(ACE_Message_Block* mb);
