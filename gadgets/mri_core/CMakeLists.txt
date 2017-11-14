@@ -75,7 +75,8 @@ elseif (ARMADILLO_FOUND)
     message("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
 endif ()
 
-set( gadgetron_mricore_header_files GadgetMRIHeaders.h 
+set( gadgetron_mricore_header_files GadgetMRIHeaders.h
+                                    RateLimitGadget.h
                                     AcquisitionPassthroughGadget.h 
                                     AcquisitionFinishGadget.h 
                                     AccumulatorGadget.h 
@@ -179,6 +180,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 GenericReconEigenChannelGadget.cpp 
                                 GenericReconNoiseStdMapComputingGadget.cpp 
                                 WhiteNoiseInjectorGadget.cpp
+                                RateLimitGadget.cpp
                                 NoiseSummaryGadget.cpp )
 
 set( gadgetron_mricore_config_files
