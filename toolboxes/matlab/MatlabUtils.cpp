@@ -551,7 +551,7 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData){
 
 	if (!mxstruct) throw std::runtime_error("Failed to allocate Matlab struct");
 
-    if(!omitData) {
+    if(omitData) {
         //auto mxdata = hoNDArrayToMatlab(&buffer->data_);
         
         using namespace std;
@@ -682,6 +682,11 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData){
         
         mxSetField(mxstruct,0,"data",mxdata);
         
+    }
+    else // don't omit data
+    {
+	auto mxdata = hoNDArrayToMatlab(&buffer->data_);
+	mxSetField(mxstruct,0,"data",mxdata);
     }
     
 	//Add trajectory if available
