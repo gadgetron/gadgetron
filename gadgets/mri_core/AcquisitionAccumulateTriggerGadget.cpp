@@ -210,7 +210,7 @@ namespace Gadgetron{
     //                                            d.head_->getObjectPtr()->idx.user[7]);
     
     //Now let's figure out if a trigger condition has occurred.
-    if (prev_.head_) { //Make sure this is not the first acquisition we are receiving
+    if (prev_.head_ || trigger_==N_ACQUISITIONS) { // First acq. trigger possible only if n_acq trigger.
       switch (trigger_) {
       case KSPACE_ENCODE_STEP_1:
  	if (prev_.head_->getObjectPtr()->idx.kspace_encode_step_1 !=
