@@ -62,7 +62,9 @@ namespace Gadgetron{
       trigger_ = N_ACQUISITIONS;
       n_acq_since_trigger_ = 0;
       n_acquisitions_before_trigger_ = n_acquisitions_before_trigger.value();
-      GDEBUG("NUMBER OF ACQ BEFORE TRIGGERING IS : %lu\n", n_acquisitions_before_trigger_);
+      n_acquisitions_before_ongoing_trigger_ = n_acquisitions_before_ongoing_trigger.value();
+      GDEBUG("NUMBER OF ACQ BEFORE (INITIAL) TRIGGER IS : %lu\n", n_acquisitions_before_trigger_);
+      GDEBUG("NUMBER OF ACQ BEFORE ONGOING TRIGGERING IS : %lu\n", n_acquisitions_before_ongoing_trigger_);
     } else {
       GDEBUG("WARNING: Unknown trigger dimension (%s), trigger condition set to NONE (end of scan)", trigger_dimension_local.c_str());
       trigger_ = NONE;
@@ -210,7 +212,7 @@ namespace Gadgetron{
     //                                            d.head_->getObjectPtr()->idx.user[7]);
     
     //Now let's figure out if a trigger condition has occurred.
-    if (prev_.head_ || trigger_==N_ACQUISITIONS) { // First acq. trigger possible only if n_acq trigger.
+    if (prev_.head_) { // Can only trigger if prev index set.
       switch (trigger_) {
       case KSPACE_ENCODE_STEP_1:
  	if (prev_.head_->getObjectPtr()->idx.kspace_encode_step_1 !=
@@ -313,12 +315,9 @@ namespace Gadgetron{
 	    d.head_->getObjectPtr()->idx.user[7]) {
 	  trigger();
 	}
+    break;
       case N_ACQUISITIONS:
-	if (++n_acq_since_trigger_ >= n_acquisitions_before_trigger_) {
-	  trigger();
-      n_acq_since_trigger_ = 0;
-	}
-	break;
+    break;
       case NONE:
 	break;	
       default:
@@ -378,7 +377,16 @@ namespace Gadgetron{
         bucket->refstats_[espace].average.insert(m1->getObjectPtr()->idx.average);
         bucket->refstats_[espace].repetition.insert(m1->getObjectPtr()->idx.repetition);
       }
-
+        
+    // Handle possible n_acq trigger _after_ pushing data - all others come before
+    if(trigger_==N_ACQUISITIONS)
+        if (++n_acq_since_trigger_ >= n_acquisitions_before_trigger_)
+        {
+            trigger();
+            n_acq_since_trigger_ = 0;
+            n_acquisitions_before_trigger_=n_acquisitions_before_ongoing_trigger_;
+        }
+            
     //We can release the data now. It is reference counted and counter have been incremented through operations above. 
     m1->release();
 

@@ -561,7 +561,7 @@ namespace Gadgetron{
 
         //Allocate the array for the data
         dataBuffer.data_.create(NE0, NE1, NE2, NCHA, NN, NS, NLOC);
-        //clear(&dataBuffer.data_); // bottleneck
+        clear(&dataBuffer.data_); // bottleneck
 
         //Allocate the array for the headers
         dataBuffer.headers_.create(NE1, NE2, NN, NS, NLOC);

@@ -71,7 +71,8 @@ namespace Gadgetron{
                  "n_acquisitions",
 			     "");
       
-      GADGET_PROPERTY(n_acquisitions_before_trigger, unsigned long, "Number of acquisition before trigger", 40);
+      GADGET_PROPERTY(n_acquisitions_before_trigger, unsigned long, "Number of acquisition before first trigger", 40);
+      GADGET_PROPERTY(n_acquisitions_before_ongoing_trigger, unsigned long, "Number of acquisition before ongoing triggers", 40);
       
       IsmrmrdCONDITION trigger_;
       IsmrmrdCONDITION sort_;
@@ -81,6 +82,7 @@ namespace Gadgetron{
       
       unsigned long n_acq_since_trigger_;
       unsigned long n_acquisitions_before_trigger_;
+      unsigned long n_acquisitions_before_ongoing_trigger_;
       virtual int process_config(ACE_Message_Block* mb);
 
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
