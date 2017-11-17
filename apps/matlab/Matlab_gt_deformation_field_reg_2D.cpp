@@ -10,6 +10,7 @@
 #include <strstream>
 #include "GadgetronTimer.h"
 #include "MatlabUtils.h"
+#include "Matlab_info.h"
 
 // Gadgetron includes
 #include "hoNDArray.h"
@@ -33,6 +34,7 @@ static void usage()
     outs << "==============================================================================================" << endl;
     outs << "Usage: Matlab_gt_deformation_field_reg_2D \n";
     outs << "Perform gadgetron 2D non-rigid image registration" << endl;
+    printAuthorInfo(outs);
     outs << NIn << " Input paras:" << endl;
     outs << '\t' << "target                                     : Nfe*Npe, 2D array, target (fixed) image, in float" << endl;
     outs << '\t' << "source                                     : Nfe*Npe, 2D array, source (moving) image, in float" << endl;

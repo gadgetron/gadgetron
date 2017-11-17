@@ -10,7 +10,7 @@
 #include <strstream>
 #include "GadgetronTimer.h"
 #include "MatlabUtils.h"
-
+#include "Matlab_info.h"
 #include "hoImageRegContainer2DRegistration.h"
 
 #define MEXPRINTF(name) mexPrintf(#name);
@@ -26,6 +26,7 @@ static void usage()
     outs << "==============================================================================================" << endl;
     outs << "Usage: Matlab_gt_apply_deformation_field_reg_2D_series \n";
     outs << "Apply gadgetron 2D deformation fields for a series of 2D images" << endl;
+    printAuthorInfo(outs);
     outs << NIn << " Input paras:" << endl;
     outs << '\t' << "data                                       : RO*E1*N, 2D array of images, in float" << endl;
     outs << '\t' << "dx                                         : deformation fields for x dimension" << endl;
