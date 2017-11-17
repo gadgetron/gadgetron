@@ -133,7 +133,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
             deformation_field[1](0, p).create(dimIm, dy.begin() + p*RO*E1, false);
         }
 
-        Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2> regContainer;
+        Gadgetron::hoImageRegContainer2DRegistration<Image2DType, Image2DType, float> regContainer;
 
         hoNDImageContainer2D< Image2DType > warppedContainer;
 

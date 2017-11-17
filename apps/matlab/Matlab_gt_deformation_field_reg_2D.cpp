@@ -207,7 +207,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         interpBSpline.setBoundaryHandler(bhFixedValue);
 
         // warpper
-        hoImageRegWarper<T, float, 2, 2> warper;
+        hoImageRegWarper<Image2DType, Image2DType, float> warper;
         warper.setBackgroundValue(-1);
 
         Image2DType warped;
@@ -215,7 +215,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 
         if ( BidirectionalReg )
         {
-            Gadgetron::hoImageRegDeformationFieldBidirectionalRegister<T, float, 2> reg(level, false, -1);
+            Gadgetron::hoImageRegDeformationFieldBidirectionalRegister<Image2DType, float> reg(level, false, -1);
 
             if ( !debugFolder.empty() )
             {
@@ -280,7 +280,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         }
         else
         {
-            Gadgetron::hoImageRegDeformationFieldRegister<T, float, 2> reg(level, false, -1);
+            Gadgetron::hoImageRegDeformationFieldRegister<Image2DType, float> reg(level, false, -1);
 
             if ( !debugFolder.empty() )
             {

@@ -211,7 +211,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         Gadgetron::hoNDImageContainer2D<Image2DType> sourceSeries;
         sourceSeries.create(source.begin(), dim);
 
-        Gadgetron::hoImageRegContainer2DRegistration<T, float, 2, 2> regContainer;
+        Gadgetron::hoImageRegContainer2DRegistration<Image2DType, Image2DType, float> regContainer;
 
         regContainer.setDefaultParameters(level, false);
 
