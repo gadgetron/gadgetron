@@ -43,12 +43,14 @@ target_link_libraries(gadgetron
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
  )
 
-find_package(PythonLibs)
-find_package(NumPy)
-find_package(Boost COMPONENTS python)
+if (BUILD_PYTHON_SUPPORT)
+  find_package(PythonLibs)
+  find_package(NumPy)
+  find_package(Boost COMPONENTS python)
 
-if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
-  add_definitions("-DCOMPILING_WITH_PYTHON_SUPPORT")
+  if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+    add_definitions("-DCOMPILING_WITH_PYTHON_SUPPORT")
+  endif()
 endif()
 
 add_executable(gadgetron_info

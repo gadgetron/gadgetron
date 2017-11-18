@@ -62,10 +62,14 @@ endif()
 
 
 # Should we compile the python toolbox
-find_package(Boost COMPONENTS python system thread REQUIRED)
-if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+if (BUILD_PYTHON_SUPPORT AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+  find_package(Boost COMPONENTS python system thread)
+  if (Boost_PYTHON_FOUND AND Boost_SYSTEM_FOUND AND Boost_THREAD_FOUND)
     add_subdirectory(python)
-endif ()
+  endif ()
+else()
+  set(BUILD_PYTHON_SUPPORT OFF)
+endif()
 
 if (ARMADILLO_FOUND AND Boost_FOUND AND PLPLOT_FOUND)
     add_subdirectory(plplot)
