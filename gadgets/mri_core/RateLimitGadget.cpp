@@ -30,7 +30,7 @@ int RateLimitGadget::process(ACE_Message_Block* mb)
 
   mb->release();
 
-
+  return GADGET_OK;
 
 }
 
