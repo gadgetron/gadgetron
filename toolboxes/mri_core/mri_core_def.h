@@ -81,6 +81,10 @@ namespace Gadgetron
     #define GADGETRON_IMAGE_GD_EXTRACTIONMAP               "EXTRACTIONMAP"
     #define GADGETRON_IMAGE_PERMEABILITY_SURFACE_AREAMAP   "PSMAP"
 
+    /// image annotation tags
+    #define GADGETRON_CMR_2D_ENDO_CONTOUR                   "ENDO"
+    #define GADGETRON_CMR_2D_EPI_CONTOUR                    "EPI"
+
     //MSH: Interventional MRI (Interactive Real Time, IRT)
     #define GADGETRON_IMAGE_IRT_IMAGE                      "IRT_IMAGE"
     #define GADGETRON_IMAGE_IRT_DEVICE                     "IRT_DEVICE"
@@ -100,4 +104,7 @@ namespace Gadgetron
     /// if set, skip the processing steps after the recon, e.g. partial fourier handling and kspace filter
     #define GADGETRON_SKIP_PROCESSING_AFTER_RECON           "Skip_processing_after_recon"
     #define GADGETRON_USE_DEDICATED_SCALING_FACTOR          "Use_dedicated_scaling_factor"
+
+    /// instruct the client to keep image geometry
+    #define GADGETRON_KEEP_IMAGE_GEOMETRY                   "Keep_image_geometry"
 }

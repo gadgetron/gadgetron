@@ -38,6 +38,7 @@ public:
 protected:
   int process_config(ACE_Message_Block* mb)
   {
+    // start python interpreter
     if (initialize_python() != GADGET_OK) {
       GDEBUG("Failed to initialize Python in Gadget %s\n", this->module()->name());
       return GADGET_FAIL;
