@@ -94,4 +94,15 @@ namespace Gadgetron {
         GenericReconImageBase();
         virtual ~GenericReconImageBase();
     };
+
+    class EXPORTGADGETSMRICORE GenericReconImageHeaderBase :public GenericReconBase < ISMRMRD::ImageHeader >
+    {
+    public:
+        GADGET_DECLARE(GenericReconImageHeaderBase);
+
+        typedef GenericReconBase < ISMRMRD::ImageHeader > BaseClass;
+
+        GenericReconImageHeaderBase();
+        virtual ~GenericReconImageHeaderBase();
+    };
 }

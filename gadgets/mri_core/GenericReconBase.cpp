@@ -52,6 +52,7 @@ namespace Gadgetron {
 
     template class EXPORTGADGETSMRICORE GenericReconBase<IsmrmrdReconData>;
     template class EXPORTGADGETSMRICORE GenericReconBase<IsmrmrdImageArray>;
+    template class EXPORTGADGETSMRICORE GenericReconBase<ISMRMRD::ImageHeader>;
 
     GenericReconDataBase::GenericReconDataBase() : BaseClass()
     {
@@ -69,6 +70,15 @@ namespace Gadgetron {
     {
     }
 
+    GenericReconImageHeaderBase::GenericReconImageHeaderBase() : BaseClass()
+    {
+    }
+
+    GenericReconImageHeaderBase::~GenericReconImageHeaderBase()
+    {
+    }
+
     GADGET_FACTORY_DECLARE(GenericReconDataBase)
     GADGET_FACTORY_DECLARE(GenericReconImageBase)
+    GADGET_FACTORY_DECLARE(GenericReconImageHeaderBase)
 }
