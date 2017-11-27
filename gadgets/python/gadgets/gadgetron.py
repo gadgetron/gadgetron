@@ -205,3 +205,9 @@ class IsmrmrdReconBit:
 	def __init__(self,data,ref=None):
 		self.data = data
 		if (ref != None): self.ref = ref
+
+class IsmrmrdImageArray: 
+    def __init__(self,data,headers,meta):
+        self.data=data
+        self.headers=headers
+        self.meta=meta

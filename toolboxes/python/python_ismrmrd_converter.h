@@ -9,6 +9,9 @@ namespace bp = boost::python;
 
 namespace Gadgetron {
 
+// -------------------------------------------------------------------------------------------------------
+// ISMRMRD::AcquisitionHeader
+
 struct AcquisitionHeader_to_PythonAcquisitionHeader {
     static PyObject* convert(const ISMRMRD::AcquisitionHeader& head) {
         try {
@@ -172,6 +175,8 @@ struct AcquisitionHeader_from_PythonAcquisitionHeader {
     }
 };
 
+// -------------------------------------------------------------------------------------------------------
+// ISMRMRD::ImageHeader
 
 struct ImageHeader_to_PythonImageHeader {
     static PyObject* convert(const ISMRMRD::ImageHeader& head) {
