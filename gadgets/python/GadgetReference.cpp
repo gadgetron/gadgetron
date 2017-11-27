@@ -55,6 +55,7 @@ namespace Gadgetron{
       
       ISMRMRD::deserialize(meta, *m3->getObjectPtr());
       m2->cont(m3);
+	  m3->release();
     }
 
     if (gadget_) {
@@ -63,6 +64,7 @@ namespace Gadgetron{
       //GDEBUG("Returning data (%s)\n", gadget_->module()->name());
       if (gadget_->next()->putq(m1,&nowait) == -1) {
 	m1->release();
+	m2->release();
 	//if (gadget_->next()->putq(m1) == -1) {
 	/*
 	  GDEBUG("Putting message on Queue failed (%s)\n", gadget_->module()->name());
@@ -75,15 +77,20 @@ namespace Gadgetron{
       } else {
 	//GDEBUG("SUCCESS Returning data (%s)\n", gadget_->module()->name());
 
+	m1->release();
+	m2->release();
 	return GADGET_OK;
       }
       //return gadget_->next()->putq(m1);
     } else {
       GDEBUG("Data received from python, but no Gadget registered for output\n");
       m1->release();
+	  m2->release();
       return GADGET_OK;
     }
 
+	m1->release();
+	m2->release();
     return GADGET_OK;
   }
 

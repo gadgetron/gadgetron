@@ -657,9 +657,12 @@ namespace Gadgetron{
 	if (this->next()->putq(m3) < 0) {
 	  GDEBUG("Failed to put job on queue.\n");
 	  m3->release();
+	  m4->release();
 	  return GADGET_FAIL;
 	}
 	interleaves_counter_multiframe_[set*slices_+slice] = 0;
+	m3->release();
+	m4->release();
       }
       interleaves_counter_singleframe_[set*slices_+slice] = 0;
     }

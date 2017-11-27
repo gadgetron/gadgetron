@@ -452,6 +452,7 @@ add_job( hoNDArray< std::complex<T> >* ref_data,
     try{mb2->getObjectPtr()->create(ref_data->get_dimensions().get());}
     catch (std::runtime_error &err ){
         mb1->release();
+		mb2->release();
         return -3;
     }
 
@@ -460,6 +461,9 @@ add_job( hoNDArray< std::complex<T> >* ref_data,
 
     this->putq(mb1);
 
+	 mb1->release();
+	 mb2->release();
+	 
     return 0;
         }
 

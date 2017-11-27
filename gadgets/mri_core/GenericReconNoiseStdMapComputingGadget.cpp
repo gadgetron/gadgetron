@@ -116,6 +116,7 @@ namespace Gadgetron {
         if (this->next()->putq(m1) == -1)
         {
             GERROR("GenericReconNoiseStdMapComputingGadget::process, passing images on to next gadget");
+			cm1->release();
             return GADGET_FAIL;
         }
 
@@ -209,9 +210,10 @@ namespace Gadgetron {
         if (this->next()->putq(cm1) == -1)
         {
             GERROR("GenericReconNoiseStdMapComputingGadget::process, passing data on to next gadget");
+			cm1->release();
             return GADGET_FAIL;
         }
-
+        cm1->release();
         return GADGET_OK;
     }
 

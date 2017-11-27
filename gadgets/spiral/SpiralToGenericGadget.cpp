@@ -216,9 +216,13 @@ namespace Gadgetron{
     
     if (this->next()->putq(m1) < 0) {
       GDEBUG("Failed to put job on queue.\n");
+	  delete traj_source;
+	  cont->release();
       return GADGET_FAIL;
     }
     
+	delete traj_source;
+	cont->release();
     return GADGET_OK;
   }
   

@@ -278,6 +278,7 @@ namespace Gadgetron{
       if( err != cudaSuccess ){
 	GDEBUG("Unable to copy result from device to host: %s\n", cudaGetErrorString(err));
 	m->release();
+	cm->release();
 	return GADGET_FAIL;
       }
 
@@ -290,8 +291,11 @@ namespace Gadgetron{
       if (this->next()->putq(m) < 0) {
 	GDEBUG("Failed to put result image on to queue\n");
 	m->release();
+	cm->release();
 	return GADGET_FAIL;
       }
+	 m->release();
+	cm->release();
     }
     
     frame_counter_ += frames;

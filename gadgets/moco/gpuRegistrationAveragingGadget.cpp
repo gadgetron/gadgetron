@@ -27,6 +27,7 @@ namespace Gadgetron{
     solver->set_beta(this->beta_);
     solver->set_limit(this->limit_);
 
+	delete solver;
     return GADGET_OK;
   }
 
@@ -38,11 +39,12 @@ namespace Gadgetron{
     
     if( cudaMemcpy( m2->getObjectPtr()->get_data_ptr(), continuation->get_data_ptr(), 
 		    continuation->get_number_of_elements()*sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) {
+	  m2->release();
       throw cuda_error("gpuRegistrationAveragingGadget::set_continuation(): failed to copy memory from device");
     }
 
     m1->cont(m2);
-
+	m2->release();
     return GADGET_OK;
   }
 

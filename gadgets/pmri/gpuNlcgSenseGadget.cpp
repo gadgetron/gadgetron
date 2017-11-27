@@ -347,6 +347,7 @@ namespace Gadgetron{
       cudaError_t err = cudaGetLastError();
       if( err != cudaSuccess ){
         GDEBUG("\nUnable to copy result from device to host: %s", cudaGetErrorString(err));
+		cm->release();
         m->release();
         return GADGET_FAIL;
       }
@@ -359,9 +360,12 @@ namespace Gadgetron{
 
       if (this->next()->putq(m) < 0) {
         GDEBUG("\nFailed to result image on to Q\n");
+		cm->release();
         m->release();
         return GADGET_FAIL;
       }
+	  cm->release();
+      m->release();
     }
 
     frame_counter_ += frames;

@@ -106,6 +106,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 			if( err != cudaSuccess ){
 				GDEBUG("Unable to copy result from device to host: %s\n", cudaGetErrorString(err));
 				m->release();
+				cm->release();
 				return GADGET_FAIL;
 			}
 
@@ -118,8 +119,11 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 			if (this->next()->putq(m) < 0) {
 				GDEBUG("Failed to put result image on to queue\n");
 				m->release();
+				cm->release();
 				return GADGET_FAIL;
 			}
+			m->release();
+			cm->release();
 		}
 	} else{
 		std::vector<size_t> img_dims { cgresult->get_size(0),cgresult->get_size(1),(size_t)frames};
