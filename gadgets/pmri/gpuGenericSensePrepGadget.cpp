@@ -680,7 +680,7 @@ namespace Gadgetron{
       GadgetContainerMessage<ISMRMRD::ImageHeader> *m4 = new GadgetContainerMessage<ISMRMRD::ImageHeader>;
 
       *m4->getObjectPtr() = sj->getObjectPtr()->image_headers_[0];
-      m4->cont(sj);
+       m4->cont(sj);
 
       // Pass the Sense job downstream
       //
@@ -688,8 +688,11 @@ namespace Gadgetron{
       if (this->next()->putq(m4) < 0) {
         GDEBUG("Failed to put job on queue.\n");
         m4->release();
+		sj->release();
         return GADGET_FAIL;
       }
+	  m4->release();
+	  sj->release();
     }
     
     if( is_last_readout_in_frame )

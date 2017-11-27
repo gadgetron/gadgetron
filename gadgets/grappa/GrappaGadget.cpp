@@ -346,14 +346,20 @@ namespace Gadgetron{
       image_data_[slice] = 0;
       if (create_image_buffer(slice) != GADGET_OK) {
         GDEBUG("Failed to create image buffer");
+		cm0->release();
+		cm1->release();
         return GADGET_FAIL;
       }
 
       if (this->next()->putq(cm0) < 0) {
         GDEBUG("Failed to pass image on to next Gadget in chain\n");
+		cm0->release();
+		cm1->release();
         return GADGET_FAIL;
       }
-
+	  cm0->release();
+	  cm1->release();
+      
       /*
         hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),0);
         hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),1);

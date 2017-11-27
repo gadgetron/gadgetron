@@ -254,7 +254,8 @@ namespace Gadgetron
         std::vector<size_t>* tmp = new std::vector<size_t>;
         this->dimensions_ = boost::shared_ptr< std::vector<size_t> >(tmp);
         *(this->dimensions_) = *(a->dimensions_);
-
+         delete tmp;
+		 
         tmp = new std::vector<size_t>;
         this->offsetFactors_ = boost::shared_ptr< std::vector<size_t> >(tmp);
         *(this->offsetFactors_) = *(a->offsetFactors_);
@@ -268,6 +269,7 @@ namespace Gadgetron
         {
             this->elements_ = 0;
         }
+		delete tmp;
     }
 
     template <typename T> 
@@ -278,7 +280,8 @@ namespace Gadgetron
         std::vector<size_t>* tmp = new std::vector<size_t>;
         this->dimensions_ = boost::shared_ptr< std::vector<size_t> >(tmp);
         *(this->dimensions_) = *(a.dimensions_);
-
+        delete tmp;
+		
         tmp = new std::vector<size_t>;
         this->offsetFactors_ = boost::shared_ptr< std::vector<size_t> >(tmp);
         *(this->offsetFactors_) = *(a.offsetFactors_);
@@ -292,6 +295,7 @@ namespace Gadgetron
         {
             this->elements_ = 0;
         }
+		delete tmp;
     }
 
 #if __cplusplus > 199711L

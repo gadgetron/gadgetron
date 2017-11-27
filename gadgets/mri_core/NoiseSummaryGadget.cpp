@@ -78,6 +78,7 @@ namespace Gadgetron
                     infile.close();
                 } else {
                     GDEBUG("Noise covariance matrix file is not found. Error\n");
+					m1->release();
                     return GADGET_FAIL;
                 }
 
@@ -113,6 +114,8 @@ namespace Gadgetron
             mb->cont(m1);
 
             int ret =  this->controller_->output_ready(mb);
+			m1->release();
+			mb->release();
         }
         
         return GADGET_OK;

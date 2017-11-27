@@ -127,7 +127,7 @@ namespace Gadgetron {
 #ifdef _WIN32
 		try
 		{
-			boost::filesystem::permissions(CommandScript, all_all);
+			boost::filesystem::permissions(CommandScript, boost::filesystem::all_all);
 		}
 		catch (...)
 		{
