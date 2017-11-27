@@ -340,7 +340,7 @@ namespace Gadgetron {
 			while (getline(inputFile, Line))
 			{
 				ltrim(Line);
-				if (Line.empty() || Line.find("bart") != 0)
+				if (Line.empty() || Line.compare(0, 4, "bart") != 0)
 					continue;
 				Commands_Line = Line;
 			}
