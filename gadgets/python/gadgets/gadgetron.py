@@ -7,6 +7,7 @@ except ImportError:
 import time
 import numpy as np
 
+# Gateway for python to call back c++ or next gadget in python
 class Gadget(object):
     def __init__(self, next_gadget=None):
         self.next_gadget = next_gadget

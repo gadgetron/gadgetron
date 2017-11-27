@@ -14,6 +14,7 @@
 
 namespace Gadgetron {
 
+    /// This PythonGadget is the gateway for c++ to call python
     class EXPORTGADGETSPYTHON PythonGadget : public BasicPropertyGadget
     {
     public:

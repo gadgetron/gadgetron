@@ -3,6 +3,7 @@
 
 #include "python_toolbox.h" // for pyerr_to_string()
 #include "ismrmrd/ismrmrd.h"
+#include "ismrmrd/meta.h"
 
 #include <boost/python.hpp>
 namespace bp = boost::python;
@@ -320,6 +321,74 @@ struct ImageHeader_from_PythonImageHeader {
     }
 };
 
+// -------------------------------------------------------------------------------------------------------
+// ISMRMRD::MetaContainer
+
+struct MetaContainer_to_PythonMetaContainer {
+    static PyObject* convert(const ISMRMRD::MetaContainer& meta)
+    {
+        try
+        {
+            bp::object module = bp::import("ismrmrd");
+            bp::object pymeta = module.attr("Meta")();
+
+            std::stringstream str;
+            ISMRMRD::serialize(const_cast<ISMRMRD::MetaContainer&>(meta), str);
+
+            pymeta = boost::python::object(str.str());
+
+            // increment the reference count so it exists after `return`
+            return bp::incref(pymeta.ptr());
+        }
+        catch (const bp::error_already_set&)
+        {
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
+        }
+    }
+};
+
+struct MetaContainer_from_PythonMetaContainer
+{
+    MetaContainer_from_PythonMetaContainer()
+    {
+        bp::converter::registry::push_back(
+            &convertible,
+            &construct,
+            bp::type_id<ISMRMRD::MetaContainer>());
+    }
+
+    static void* convertible(PyObject* obj)
+    {
+        return obj;
+    }
+
+    /// Construct an ISMRMRD::ImageHeader in-place
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data* data)
+    {
+        void* storage = ((bp::converter::rvalue_from_python_storage<ISMRMRD::MetaContainer>*)data)->storage.bytes;
+
+        // Placement-new of ISMRMRD::ImageHeader in memory provided by Boost
+        ISMRMRD::MetaContainer* head = new (storage) ISMRMRD::MetaContainer;
+        data->convertible = storage;
+
+        try {
+            bp::object pyhead((bp::handle<>(bp::borrowed(obj))));
+
+            
+        }
+        catch (const bp::error_already_set&)
+        {
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
+        }
+    }
+};
+
+// -------------------------------------------------------------------------------------------------------
+
 /// Create and register AcquisitionHeader converter as necessary
 inline void create_ismrmrd_AcquisitionHeader_converter() {
     bp::type_info info = bp::type_id<ISMRMRD::AcquisitionHeader>();
@@ -331,6 +400,7 @@ inline void create_ismrmrd_AcquisitionHeader_converter() {
     }
 }
 
+// -------------------------------------------------------------------------------------------------------
 /// Create and register ImageHeader converter as necessary
 inline void create_ismrmrd_ImageHeader_converter() {
     bp::type_info info = bp::type_id<ISMRMRD::ImageHeader>();
@@ -342,7 +412,7 @@ inline void create_ismrmrd_ImageHeader_converter() {
     }
 }
 
-
+// -------------------------------------------------------------------------------------------------------
 /// Partial specialization of `python_converter` for ISMRMRD::AcquisitionHeader
 template<> struct python_converter<ISMRMRD::AcquisitionHeader> {
     static void create()
@@ -351,6 +421,7 @@ template<> struct python_converter<ISMRMRD::AcquisitionHeader> {
     }
 };
 
+// -------------------------------------------------------------------------------------------------------
 /// Partial specialization of `python_converter` for ISMRMRD::ImageHeader
 template<> struct python_converter<ISMRMRD::ImageHeader> {
     static void create()
