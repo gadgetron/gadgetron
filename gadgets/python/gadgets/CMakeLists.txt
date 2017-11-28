@@ -1,5 +1,6 @@
 install(FILES
     gadgetron.py
+	array_image.py
     rms_coil_combine.py
     remove_2x_oversampling.py
     accumulate_and_recon.py
