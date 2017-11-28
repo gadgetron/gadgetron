@@ -69,7 +69,7 @@
         <name>PythonImageArray</name>
         <dll>gadgetron_python</dll>
         <classname>PythonGadget</classname>
-        <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
+        <!--<property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>-->
         <property><name>python_module</name>                <value>array_image</value></property>
         <property><name>python_class</name>                <value>ArrayImage</value></property>
     </gadget>
