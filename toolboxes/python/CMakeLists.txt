@@ -10,10 +10,19 @@ include_directories(
     ${NUMPY_INCLUDE_DIRS}
     ${ACE_INCLUDE_DIR})
 
+set(gadgetron_toolbox_python_header_files python_converters.h
+                                        python_export.h
+                                        python_hoNDArray_converter.h
+                                        python_IsmrmrdReconData_converter.h
+                                        python_ismrmrd_converter.h
+                                        python_numpy_wrappers.h
+                                        python_toolbox.h
+                                        python_tuple_converter.h
+                                        python_vector_converter.h )
+
 add_library(gadgetron_toolbox_python SHARED
     python_toolbox.cpp
-    python_toolbox.h
-    python_export.h)
+    ${gadgetron_toolbox_python_header_files})
 
 target_link_libraries(gadgetron_toolbox_python
     gadgetron_toolbox_cpucore
@@ -32,13 +41,7 @@ endif ()
 install(TARGETS gadgetron_toolbox_python DESTINATION lib COMPONENT main)
 
 install(FILES
-    python_toolbox.h
-    python_converters.h
-    python_tuple_converter.h
-    python_hoNDArray_converter.h
-    python_ismrmrd_converter.h
-    python_numpy_wrappers.h
-    python_export.h
+    ${gadgetron_toolbox_python_header_files}
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 add_subdirectory(example)

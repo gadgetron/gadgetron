@@ -8,7 +8,7 @@ using namespace boost::python;
 
 BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 {
-    boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
+    // boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
 
     class_<Gadgetron::GadgetReference>("GadgetReference")
       .def("return_acquisition", &Gadgetron::GadgetReference::return_acquisition)
