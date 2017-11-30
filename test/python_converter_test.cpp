@@ -79,7 +79,7 @@ TYPED_TEST(python_converter_test, numpy_hoNDArray)
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Generate an hoNDArray of even #s using numpy");
     PythonFunction<hoNDArray<float>> arange("numpy", "arange");
-    hoNDArray<float> evens = arange(0, 100, 2, "f64");
+    hoNDArray<float> evens = arange(0, 100, 2, "f");
     std::cout << "number of even numbers between 0 and 100: " <<
         evens.get_number_of_elements() << std::endl;
     EXPECT_FLOAT_EQ(evens(0), 0);

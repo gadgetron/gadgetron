@@ -54,8 +54,6 @@ class Gadget(object):
                     self.next_gadget.return_acquisition(args[0],args[1].astype('complex64'))
                 elif isinstance(args[0],IsmrmrdImageArray): 
                     self.next_gadget.return_ismrmrd_image_array(args[0])
-                elif len(args[0]) > 0 and isinstance(args[0][0],IsmrmrdReconBit): 
-                    self.next_gadget.return_recondata(args[0])
                 elif isinstance(args[0], ismrmrd.ImageHeader):
                     header = args[0]
                     if (args[1].dtype == np.uint16):
@@ -73,6 +71,8 @@ class Gadget(object):
                             self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), args[2].serialize())
                         else:
                             self.next_gadget.return_image_cplx(header,args[1].astype('complex64'))
+                elif len(args[0]) > 0 and isinstance(args[0][0],IsmrmrdReconBit): 
+                    self.next_gadget.return_recondata(args[0])
                 else:
                     raise("Unsupported types when returning to Gadgetron framework")
             else:
