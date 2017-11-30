@@ -54,7 +54,8 @@ set(gadgetron_python_gadgets_files
                             gadgets/pseudoreplicagather.py
                             gadgets/remove_2x_oversampling.py
                             gadgets/rms_coil_combine.py
-                            gadgets/tpat_snr_scale.py )
+                            gadgets/tpat_snr_scale.py 
+                            )
 
 set(gadgetron_python_examples_files 
                             examples/mixed_gadgets.py
@@ -66,9 +67,12 @@ source_group(utils              FILES      ${gadgetron_python_utils_files})
 source_group(gadgets            FILES      ${gadgetron_python_gadgets_files})
 source_group(examples           FILES      ${gadgetron_python_examples_files})
 
-add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp 
-  GadgetReference.cpp 
-  GadgetInstrumentationStreamController.cpp)
+add_library(GadgetronPythonMRI MODULE 
+                GadgetronPythonMRI.cpp 
+                GadgetReference.h
+                GadgetReference.cpp 
+                GadgetInstrumentationStreamController.h 
+                GadgetInstrumentationStreamController.cpp )
 
 #We should probably not set soversion on the python module. Causes problems with clang
 #set_target_properties(GadgetronPythonMRI PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -115,8 +119,11 @@ set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 install(TARGETS gadgetron_python DESTINATION lib COMPONENT main)
 install(TARGETS GadgetronPythonMRI DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
 
+install(FILES
+    ${gadgetron_python_gadgets_files}
+    DESTINATION ${GADGETRON_INSTALL_PYTHON_MODULE_PATH} COMPONENT main)
+
 add_subdirectory(config)
-add_subdirectory(gadgets)
 add_subdirectory(utils)
 #add_subdirectory(examples)
 

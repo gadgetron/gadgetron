@@ -7,3 +7,4 @@ add_executable(python_demo demo.cpp)
 target_link_libraries(python_demo gadgetron_toolbox_python ${ISMRMRD_LIBRARIES})
 
 install(TARGETS gadgetron_test_python DESTINATION bin COMPONENT main)
+install(TARGETS python_demo DESTINATION bin COMPONENT main)

@@ -14,6 +14,7 @@ set(gadgetron_toolbox_python_header_files python_converters.h
                                         python_export.h
                                         python_hoNDArray_converter.h
                                         python_IsmrmrdReconData_converter.h
+                                        python_IsmrmrdImageArray_converter.h
                                         python_ismrmrd_converter.h
                                         python_numpy_wrappers.h
                                         python_toolbox.h

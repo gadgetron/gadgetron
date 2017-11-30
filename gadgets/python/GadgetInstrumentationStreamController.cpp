@@ -112,6 +112,25 @@ namespace Gadgetron
     }
     return GADGET_OK;
   }
+
+  int GadgetInstrumentationStreamController::return_ismrmrd_image_array(ACE_Message_Block* mb)
+  {
+      GILLock lock;
+      auto m1 = AsContainerMessage<IsmrmrdImageArray>(mb);
+      try
+      {
+          python_gadget_.attr("put_next")(*m1->getObjectPtr());
+      }
+      catch (boost::python::error_already_set const &)
+      {
+          GERROR("Passing IsmrmrdImageArray on to python wrapper gadget failed\n");
+          std::string python_error = pyerr_to_string();
+          GDEBUG(python_error.c_str());
+          return GADGET_FAIL;
+      }
+      return GADGET_OK;
+  }
+
   template <class T1, class T2, class T3> int GadgetInstrumentationStreamController::return_data(ACE_Message_Block* mb)
   {
     static int counter = 0;
@@ -288,11 +307,24 @@ namespace Gadgetron
   int GadgetInstrumentationStreamController::put_recondata(boost::python::object rec){
     auto m1 = new GadgetContainerMessage<IsmrmrdReconData>(boost::python::extract<IsmrmrdReconData>(rec)());
     if (stream_.put(m1) == -1) {
-      GERROR("Failed to put stuff on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
+      GERROR("Failed to put IsmrmrdReconData on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
       m1->release();
       return GADGET_FAIL;
     }
     return GADGET_OK;
+  }
+
+  int GadgetInstrumentationStreamController::put_ismrmrd_image_array(boost::python::object rec)
+  {
+      auto m1 = new GadgetContainerMessage<IsmrmrdImageArray>(boost::python::extract<IsmrmrdImageArray>(rec)());
+      if (stream_.put(m1) == -1)
+      {
+          GERROR("Failed to put IsmrmrdImageArray on stream, too long wait, %d\n", ACE_OS::last_error() == EWOULDBLOCK);
+          m1->release();
+          return GADGET_FAIL;
+      }
+
+      return GADGET_OK;
   }
 
   template<class TH, class TD>
