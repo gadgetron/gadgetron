@@ -54,7 +54,8 @@ set(gadgetron_python_gadgets_files
                             gadgets/pseudoreplicagather.py
                             gadgets/remove_2x_oversampling.py
                             gadgets/rms_coil_combine.py
-                            gadgets/tpat_snr_scale.py 
+                            gadgets/tpat_snr_scale.py
+			    gadgets/array_image.py
                             )
 
 set(gadgetron_python_examples_files 
