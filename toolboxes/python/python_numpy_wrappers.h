@@ -34,6 +34,7 @@ template <> inline int get_numpy_type< double >() { return NPY_FLOAT64; }
 template <> inline int get_numpy_type< std::complex<float> >() { return NPY_COMPLEX64; }
 template <> inline int get_numpy_type< std::complex<double> >() { return NPY_COMPLEX128; }
 template <> inline int get_numpy_type< ISMRMRD::AcquisitionHeader>() { return NPY_OBJECT;}
+template <> inline int get_numpy_type< ISMRMRD::ImageHeader>() { return NPY_OBJECT; }
 /* Don't define these for now */
 /* template <> inline int get_numpy_type< char* >() { return NPY_STRING; } */
 /* template <> inline int get_numpy_type< std::string >() { return NPY_STRING; } */
