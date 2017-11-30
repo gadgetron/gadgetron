@@ -324,7 +324,8 @@ struct ImageHeader_from_PythonImageHeader {
 // -------------------------------------------------------------------------------------------------------
 // ISMRMRD::MetaContainer
 
-struct MetaContainer_to_PythonMetaContainer {
+struct MetaContainer_to_PythonMetaContainer
+{
     static PyObject* convert(const ISMRMRD::MetaContainer& meta)
     {
         try
@@ -369,14 +370,13 @@ struct MetaContainer_from_PythonMetaContainer
     {
         void* storage = ((bp::converter::rvalue_from_python_storage<ISMRMRD::MetaContainer>*)data)->storage.bytes;
 
-        // Placement-new of ISMRMRD::ImageHeader in memory provided by Boost
-        ISMRMRD::MetaContainer* head = new (storage) ISMRMRD::MetaContainer;
+        ISMRMRD::MetaContainer* meta = new (storage) ISMRMRD::MetaContainer;
         data->convertible = storage;
 
         try {
-            bp::object pyhead((bp::handle<>(bp::borrowed(obj))));
-
-            
+            bp::object pyMeta((bp::handle<>(bp::borrowed(obj))));
+            std::string meta_str = bp::extract<std::string>(pyMeta);
+            ISMRMRD::deserialize(meta_str.c_str(), *meta);
         }
         catch (const bp::error_already_set&)
         {
@@ -413,6 +413,20 @@ inline void create_ismrmrd_ImageHeader_converter() {
 }
 
 // -------------------------------------------------------------------------------------------------------
+/// Create and register MetaContainer converter as necessary
+inline void create_ismrmrd_MetaContainer_converter()
+{
+    bp::type_info info = bp::type_id<ISMRMRD::MetaContainer>();
+    const bp::converter::registration* reg = bp::converter::registry::query(info);
+    // only register if not already registered!
+    if (nullptr == reg || nullptr == (*reg).m_to_python)
+    {
+        bp::to_python_converter<ISMRMRD::MetaContainer, MetaContainer_to_PythonMetaContainer>();
+        MetaContainer_from_PythonMetaContainer();
+    }
+}
+
+// -------------------------------------------------------------------------------------------------------
 /// Partial specialization of `python_converter` for ISMRMRD::AcquisitionHeader
 template<> struct python_converter<ISMRMRD::AcquisitionHeader> {
     static void create()
@@ -427,6 +441,15 @@ template<> struct python_converter<ISMRMRD::ImageHeader> {
     static void create()
     {
         create_ismrmrd_ImageHeader_converter();
+    }
+};
+
+// -------------------------------------------------------------------------------------------------------
+/// Partial specialization of `python_converter` for ISMRMRD::MetaContainer
+template<> struct python_converter<ISMRMRD::MetaContainer> {
+    static void create()
+    {
+        create_ismrmrd_MetaContainer_converter();
     }
 };
 

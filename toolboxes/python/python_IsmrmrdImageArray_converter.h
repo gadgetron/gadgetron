@@ -25,7 +25,7 @@ namespace Gadgetron {
             bp::object pygadgetron = bp::import("gadgetron");
 
             auto data = bp::object(arrayData.data_);
-            auto pyHeaders = bp::list();
+            /*auto pyHeaders = bp::list();
 
             size_t n;
             for (n=0; n<arrayData.headers_.get_number_of_elements(); n++)
@@ -39,7 +39,10 @@ namespace Gadgetron {
             {
                 auto meta = boost::python::object(arrayData.meta_[n]);
                 pyMeta.append(meta);
-            }
+            }*/
+
+            auto pyHeaders = boost::python::object(arrayData.headers_);
+            auto pyMeta = boost::python::object(arrayData.meta_);
 
             auto buffer = pygadgetron.attr("IsmrmrdImageArray")(data, pyHeaders, pyMeta);
 
@@ -48,7 +51,7 @@ namespace Gadgetron {
         }
     };
 
-    /// Used for making an hoNDArray from a NumPy array
+    // ------------------------------------------------------------------------
     struct IsmrmrdImageArray_from_python_object
     {
         IsmrmrdImageArray_from_python_object()
@@ -74,75 +77,36 @@ namespace Gadgetron {
             IsmrmrdImageArray* reconData = new (storage) IsmrmrdImageArray;
             data->convertible = storage;
 
-
             try {
-                bp::list pyRecondata((bp::handle<>(bp::borrowed(obj))));
-                auto length = bp::len(pyRecondata);
-                GDEBUG("Recon data length: %i\n", length);
-                for (int i = 0; i < length; i++) {
-                    bp::object reconBit = pyRecondata[i];
-                    IsmrmrdReconBit rBit;
-                    rBit.data_ = extractDataBuffered(reconBit.attr("data"));
-                    if (PyObject_HasAttrString(reconBit.ptr(), "ref")) {
-                        rBit.ref_ = extractDataBuffered(reconBit.attr("ref"));
-                    }
-                    reconData->rbit_.push_back(rBit);
-                }
+                bp::object pyImageArray((bp::handle<>(bp::borrowed(obj))));
 
+                reconData->data_ = bp::extract<hoNDArray<std::complex<float>>>(pyImageArray.attr("data"));
+                reconData->headers_ = bp::extract<hoNDArray<ISMRMRD::ImageHeader>>(pyImageArray.attr("headers"));
+                reconData->meta_ = bp::extract<std::vector<ISMRMRD::MetaContainer>>(pyImageArray.attr("meta"));
             }
-            catch (const bp::error_already_set&) {
+            catch (const bp::error_already_set&)
+            {
                 std::string err = pyerr_to_string();
                 GERROR(err.c_str());
                 throw std::runtime_error(err);
             }
         }
-        static IsmrmrdDataBuffered extractDataBuffered(bp::object pyDataBuffered) {
-            IsmrmrdDataBuffered result;
-
-            result.data_ = bp::extract<hoNDArray<std::complex<float>>>(pyDataBuffered.attr("data"));
-            if (PyObject_HasAttrString(pyDataBuffered.ptr(), "trajectory"))
-                result.trajectory_ = bp::extract<hoNDArray<float>>(pyDataBuffered.attr("trajectory"));
-
-            result.headers_ = bp::extract<hoNDArray<ISMRMRD::AcquisitionHeader>>(pyDataBuffered.attr("headers"));
-
-            auto pySampling = pyDataBuffered.attr("sampling");
-            SamplingDescription sampling;
-            for (int i = 0; i < 3; i++)
-                sampling.encoded_FOV_[i] = bp::extract<float>(pySampling.attr("encoded_FOV")[i]);
-            for (int i = 0; i < 3; i++)
-                sampling.encoded_matrix_[i] = bp::extract<uint16_t>(pySampling.attr("encoded_matrix")[i]);
-            for (int i = 0; i < 3; i++)
-                sampling.recon_FOV_[i] = bp::extract<float>(pySampling.attr("recon_FOV")[i]);
-            for (int i = 0; i < 3; i++)
-                sampling.recon_matrix_[i] = bp::extract<uint16_t>(pySampling.attr("recon_matrix")[i]);
-            for (int i = 0; i < 3; i++) {
-                auto pySL = pySampling.attr("sampling_limits")[i];
-                sampling.sampling_limits_[i].min_ = bp::extract<uint16_t>(pySL.attr("min"));
-                sampling.sampling_limits_[i].center_ = bp::extract<uint16_t>(pySL.attr("center"));
-                sampling.sampling_limits_[i].max_ = bp::extract<uint16_t>(pySL.attr("max"));
-            }
-            return result;
-        }
-
-
     };
 
-
-
-    /// Partial specialization of `python_converter` for hoNDArray
-    template<> struct python_converter<IsmrmrdImageArray> {
+    // ------------------------------------------------------------------------
+    template<> struct python_converter<IsmrmrdImageArray>
+    {
         static void create()
         {
-            // register hoNDArray converter
             bp::type_info info = bp::type_id<IsmrmrdImageArray >();
             const bp::converter::registration* reg = bp::converter::registry::query(info);
             // only register if not already registered!
-            if (nullptr == reg || nullptr == (*reg).m_to_python) {
+            if (nullptr == reg || nullptr == (*reg).m_to_python)
+            {
                 bp::to_python_converter<IsmrmrdImageArray, IsmrmrdImageArray_to_python_object >();
                 IsmrmrdImageArray_from_python_object();
             }
 
         }
     };
-
 }

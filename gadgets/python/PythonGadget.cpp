@@ -5,9 +5,11 @@ namespace Gadgetron {
     int PythonGadget::process(ACE_Message_Block* mb)
     {
         GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* hma = AsContainerMessage<ISMRMRD::AcquisitionHeader>(mb);
-        if (hma) {
+        if (hma)
+        {
             GadgetContainerMessage< hoNDArray< std::complex<float> > >* dmb = AsContainerMessage< hoNDArray< std::complex<float> > >(hma->cont());
-            if (!dmb) {
+            if (!dmb)
+            {
                 GERROR("Error converting data array from message block for Acquisition\n");
                 hma->release();
                 return GADGET_FAIL;;
@@ -15,7 +17,8 @@ namespace Gadgetron {
             GadgetContainerMessage< ISMRMRD::MetaContainer>* mmb = AsContainerMessage< ISMRMRD::MetaContainer >(dmb->cont());
             return this->process(hma, dmb, mmb);
         }
-        else {
+        else
+        {
             GadgetContainerMessage<ISMRMRD::ImageHeader>* hmi = AsContainerMessage<ISMRMRD::ImageHeader>(mb);
             if (hmi)
                 return this->process_image(hmi);
@@ -24,8 +27,17 @@ namespace Gadgetron {
         {
             auto recon_data = AsContainerMessage<IsmrmrdReconData>(mb);
             if (recon_data) {
-                GDEBUG("Calling into python gadget with recon data");
+                GDEBUG("Calling into python gadget with IsmrmrdReconData");
                 return this->process(recon_data);
+            }
+        }
+
+        {
+            auto array_data = AsContainerMessage<IsmrmrdImageArray>(mb);
+            if (array_data)
+            {
+                GDEBUG("Calling into python gadget with IsmrmrdImageArray");
+                return this->process(array_data);
             }
         }
 

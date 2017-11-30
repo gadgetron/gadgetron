@@ -51,12 +51,20 @@ namespace Gadgetron {
             register_converter<hoNDArray< float > >();
             register_converter<hoNDArray< unsigned short > >();
             register_converter<hoNDArray< ISMRMRD::AcquisitionHeader > >();
+            register_converter<hoNDArray< ISMRMRD::ImageHeader > >();
 
             // ensure boost can convert ISMRMRD headers automatically
             register_converter<ISMRMRD::ImageHeader>();
             register_converter<ISMRMRD::AcquisitionHeader>();
 
             register_converter<IsmrmrdReconData>();
+            register_converter<IsmrmrdImageArray>();
+
+            register_converter< std::vector< std::complex<float> > >();
+            register_converter< std::vector< float > >();
+            register_converter< std::vector< unsigned short > >();
+            register_converter< std::vector<ISMRMRD::MetaContainer> >();
+
             std::string pypath = python_path.value();
             std::string pymod = python_module.value();
             std::string pyclass = python_class.value();
@@ -202,7 +210,8 @@ namespace Gadgetron {
             }
 
             GILLock lock;
-            try {
+            try
+            {
                 boost::python::object process_fn = class_.attr("process");
                 auto pyrecon_data = boost::python::object(*recon_data->getObjectPtr());
                 int res = boost::python::extract<int>(process_fn(pyrecon_data));
@@ -212,8 +221,6 @@ namespace Gadgetron {
                         this->module()->name());
                     return GADGET_FAIL;
                 }
-
-                //Else we are done with this now.
                 recon_data->release();
             }
             catch (boost::python::error_already_set const &)
@@ -222,6 +229,7 @@ namespace Gadgetron {
                 PyErr_Print();
                 return GADGET_FAIL;
             }
+
             return GADGET_OK;
         }
 

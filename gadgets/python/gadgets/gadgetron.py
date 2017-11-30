@@ -52,6 +52,10 @@ class Gadget(object):
                     raise Exception("Only two or 3 return arguments are currently supported when returning to Gadgetron framework")
                 if isinstance(args[0], ismrmrd.AcquisitionHeader):
                     self.next_gadget.return_acquisition(args[0],args[1].astype('complex64'))
+                elif isinstance(args[0],IsmrmrdImageArray): 
+                    self.next_gadget.return_ismrmrd_image_array(args[0])
+                elif len(args[0]) > 0 and isinstance(args[0][0],IsmrmrdReconBit): 
+                    self.next_gadget.return_recondata(args[0])
                 elif isinstance(args[0], ismrmrd.ImageHeader):
                     header = args[0]
                     if (args[1].dtype == np.uint16):
@@ -69,8 +73,6 @@ class Gadget(object):
                             self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), args[2].serialize())
                         else:
                             self.next_gadget.return_image_cplx(header,args[1].astype('complex64'))
-                elif len(args[0]) > 0 and isinstance(args[0][0],IsmrmrdReconBit): 
-                    self.next_gadget.return_recondata(args[0])
                 else:
                     raise("Unsupported types when returning to Gadgetron framework")
             else:
@@ -135,6 +137,8 @@ class WrapperGadget(Gadget):
                     self.controller_.put_image_cplx_attr(header, args[0].astype('complex64'), args[1].serialize())
                 else:
                     self.controller_.put_image_cplx(header,args[0].astype('complex64'))
+        elif asattr(args[0],"__getitem__") and hasattr(args[0][0],"headers"):
+            self.controller_.put_ismrmrd_image_array(args[0]);
         elif hasattr(args[0],"__getitem__") and hasattr(args[0][0],"data"):
             self.controller_.put_recondata(args[0]);
         else:
@@ -208,7 +212,7 @@ class IsmrmrdReconBit:
 		if (ref != None): self.ref = ref
 
 class IsmrmrdImageArray: 
-    def __init__(self,data,headers,meta):
+    def __init__(self,data=None,headers=None,meta=None):
         self.data=data
         self.headers=headers
         self.meta=meta
