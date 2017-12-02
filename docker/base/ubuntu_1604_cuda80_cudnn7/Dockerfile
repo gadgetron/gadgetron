@@ -17,7 +17,7 @@ RUN pip install numpy
 RUN pip install pyxb psutil lxml pydicom
 RUN pip install 'h5py==2.5.0' 
 
-RUN apt-get update && apt-get install -y pythonpython-setuptools python-pip python-dev build-essential libgtk2.0-dev
+RUN apt-get update && apt-get install -y python python-setuptools python-pip python-dev build-essential libgtk2.0-dev
 RUN easy_install -U pip
 RUN pip install tensorflow-gpu matplotlib opencv-python scikit-image scipy
 
