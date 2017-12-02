@@ -2,7 +2,7 @@ FROM nvidia/cuda:8.0-cudnn7-devel-ubuntu16.04
 
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
-    wget build-essential emacs python-pip libhdf5-serial-dev cmake git-core \
+    apt-utils wget build-essential emacs python-pip libhdf5-serial-dev cmake git-core \
     libboost-all-dev libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
@@ -19,11 +19,11 @@ RUN pip install 'h5py==2.5.0'
 
 RUN apt-get update && apt-get install -y python python-setuptools python-pip python-dev build-essential libgtk2.0-dev
 RUN easy_install -U pip
-RUN pip install tensorflow-gpu matplotlib opencv-python scikit-image scipy
+RUN apt install --yes python-scipy
+RUN pip install tensorflow-gpu matplotlib opencv-python scikit-image
 
 # fix the  qhull reentrant problem
-RUN pip uninstall scipy
-RUN apt install python-scipy
+# RUN pip uninstall -y scipy
 
 #OpenBLAS with OpenMP
 RUN cd /opt && \
@@ -48,14 +48,14 @@ RUN cd /opt && \
     mkdir lib && \
     make && \
     make shared && \
-    make install
+    make -j 16 install
 
 #BART
 RUN cd /opt && \
     wget https://github.com/mrirecon/bart/archive/v0.3.01.tar.gz && \
     tar -xzf v0.3.01.tar.gz && \
     cd bart-0.3.01 && \
-    make && \
+    make -j 16 && \
     ln -s /opt/bart-0.3.01/bart /usr/local/bin/bart 
 
 #Set more environment variables in preparation for Gadgetron installation
