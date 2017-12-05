@@ -146,7 +146,7 @@ template<class REAL,unsigned int N> struct MatlabConverter<vector_td<REAL,N>> {
 };
 template<class REAL> struct MatlabConverter<complext<REAL>> {
 	static mxArray* convert(hoNDArray<complext<REAL>>* input){
-
+        
 		size_t ndim = input->get_number_of_dimensions();
 
 		//Matlab does not support to creation of 7D arrays, but 8,6 and 9 works just fine.
@@ -170,7 +170,7 @@ template<class REAL> struct MatlabConverter<complext<REAL>> {
 		mxSetData(result,real_data);
 		mxSetImagData(result,imag_data);
 
-		auto ndims_test = mxGetNumberOfDimensions(result);
+		auto ndims_test = mxGetNumberOfDimensions(result); // LA: shouldn't this be removed ?
 
 		return result;
 	}
@@ -542,17 +542,153 @@ void MatlabToHoNDImage(const mxArray* m, const mxArray* h, hoNDImage<T, D>& a)
 // IsmrmrdDataBuffered
 // ------------------------
 
-mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer){
+mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer, bool omitData){
 
-	const char * field_names[] = {"data","trajectory","headers","samplingdescription"};
+    const char * field_names[] = {"data","trajectory","headers","samplingdescription"};
 	mwSize one = 1;
 	auto mxstruct = mxCreateStructArray(1,&one,4,field_names);
 
 
 	if (!mxstruct) throw std::runtime_error("Failed to allocate Matlab struct");
 
+    if(omitData) {
+        //auto mxdata = hoNDArrayToMatlab(&buffer->data_);
+        
+        using namespace std;
+        cout << "Compressing data... ";
+        clock_t b = clock();
+        
+        std::complex<float>* raw_data = buffer->data_.get_data_ptr();
+        
+
+        size_t nelem  = buffer->data_.get_number_of_elements();
+        size_t h_nelem  = buffer->headers_.get_number_of_elements();
+        
+        size_t nRO    = buffer->data_.get_size(0);
+        size_t nPE    = buffer->data_.get_size(1);
+        size_t n3D    = buffer->data_.get_size(2);
+        size_t nCH    = buffer->data_.get_size(3);
+        size_t N      = buffer->data_.get_size(4);
+        size_t S      = buffer->data_.get_size(5);
+        size_t wtf      = buffer->data_.get_size(6);
+        
+        // count the number of non-nul RO lines in this buffer (there's probably a more elegant built-in method)
+        size_t RO_counter = 0;
+        for (size_t l = 0; l < h_nelem; ++l)
+            if((bool) buffer->headers_[l].read_dir[2])
+                RO_counter += nCH;
+        /*
+        
+        
+        RO_counter = 0;
+        for (size_t l = 0; l < nelem; l += nRO)
+            if(real(raw_data[l]) != 0.0f)
+                ++RO_counter;
+        std::cout << "RO_counter: " << RO_counter << std::endl;
+        
+        
+        
+        for(size_t l=0; l<buffer->headers_.get_number_of_elements(); ++l)
+        {
+            if(l%64==0)
+                cout << "\n";
+            
+            cout << buffer->headers_[l].read_dir[2];
+
+        }
+        */
+        /*
+        std::cout << "N elem: " << buffer->data_.get_number_of_elements() << std::endl;
+        std::cout << "N phase: " << buffer->data_.get_number_of_elements()/buffer->data_.get_size(0) << std::endl;
+        std::cout << "RO_counter: " << RO_counter << std::endl;
+        std::cout << "data dims: " << buffer->data_.get_size(0) << "," <<
+                                      buffer->data_.get_size(1) << "," <<
+                                      buffer->data_.get_size(2) << "," <<
+                                      buffer->data_.get_size(3) << "," <<
+                                      buffer->data_.get_size(4)  << std::endl;
+        */
+        
+        
+        // create the packet. A copy of the data is being done here,
+        // which overall increase the RAM usage if packets are needed.
+        // There may be a more efficient way to do this.
+        size_t packet_n_elem = RO_counter * buffer->data_.get_size(0);
+        size_t packet_ndim = 2;//buffer->data_.get_number_of_dimensions();
+        mwSize* packet_dims = new mwSize[packet_ndim];
+        
+        packet_dims[0] = buffer->data_.get_size(0);
+        packet_dims[1] = RO_counter;
+
+        float* real_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
+        float* imag_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
+
+        /*
+        size_t counter = 0;
+        for (size_t l = 0; l < nelem; l += nRO ){
+            if(real(raw_data[l]) != 0.0f) { // need to find a more proper test, e.g. using idx as look up table for getting directly the acquired RO line
+                for (size_t j = 0; j < nRO; j++){
+
+                    real_data[counter] = real(raw_data[l + j]);
+                    imag_data[counter] = imag(raw_data[l + j]);
+                    ++counter;
+                }
+            }
+        }
+        */
+        
+        /*
+        size_t counter = 0;
+        for (size_t l = 0; l < buffer->headers_.get_number_of_elements(); ++l) {
+            
+            if((bool) buffer->headers_[l].read_dir[2])
+            {
+                //for (size_t ch = 0; ch < nCH; ch++){
+                    for (size_t j = 0; j < nRO*nCH; j++){
+
+                        real_data[counter] = real(raw_data[l*nRO*nCH + j]);
+                        imag_data[counter] = imag(raw_data[l*nRO*nCH + j]);
+                        ++counter;
+                    }
+                //}
+            }
+        }
+        */
+        size_t counter = 0;
+        size_t h_idx = 0;
+        for (size_t ch = 0; ch < nCH; ++ch){
+            for (size_t l = 0; l < h_nelem; ++l) {
+                if((bool) buffer->headers_[l].read_dir[2])
+                {
+                    for (size_t r = 0; r < nRO; ++r){
+                            h_idx = ch*nRO*nPE*n3D + l*nRO + r;
+                            real_data[counter] = real(raw_data[h_idx]);
+                            imag_data[counter] = imag(raw_data[h_idx]);
+                            ++counter;
+                    }
+                }
+            }
+        }
+        
+        cout << "done (" << (double) (clock() - b)/CLOCKS_PER_SEC << ")\n";
+        
+        
+
+        auto mxdata =  mxCreateNumericMatrix(0, 0, mxSINGLE_CLASS, mxCOMPLEX);
+        mxSetDimensions(mxdata, packet_dims, packet_ndim);
+        mxSetData      (mxdata, real_data);
+        mxSetImagData  (mxdata, imag_data);
+        
+        
+        
+        mxSetField(mxstruct,0,"data",mxdata);
+        
+    }
+    else // don't omit data
+    {
 	auto mxdata = hoNDArrayToMatlab(&buffer->data_);
 	mxSetField(mxstruct,0,"data",mxdata);
+    }
+    
 	//Add trajectory if available
 	if (buffer->trajectory_){
 		auto & trajectory = *buffer->trajectory_;
@@ -562,7 +698,7 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer){
 	}
 
 	//Add headers
-	std::cout << "Adding headers " << std::endl;
+	std::cout << "Adding headers...";
 	mwSize num_headers = buffer->headers_.get_number_of_elements();
 	auto mxheaders = mxCreateNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
 	memcpy(mxGetData(mxheaders),buffer->headers_.get_data_ptr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
@@ -570,11 +706,94 @@ mxArray* BufferToMatlabStruct(IsmrmrdDataBuffered* buffer){
 
 	auto samplingdescription = samplingdescriptionToMatlabStruct(&buffer->sampling_);
 	mxSetField(mxstruct,0,"samplingdescription",samplingdescription);
-
+    std::cout << " done." << std::endl;
 	return mxstruct;
+    
+    /*
+	const char * field_names[] = {"data","trajectory","headers","samplingdescription"};
+	mwSize one = 1;
+	auto mxstruct = mxCreateStructArray(1,&one,4,field_names);
 
+
+	if (!mxstruct) throw std::runtime_error("Failed to allocate Matlab struct");
+
+    if(!omitData) {
+        auto mxdata = hoNDArrayToMatlab(&buffer->data_);
+        mxSetField(mxstruct,0,"data",mxdata);
+    }
+    
+	//Add trajectory if available
+	if (buffer->trajectory_){
+		auto & trajectory = *buffer->trajectory_;
+		int traj_fieldnumber = mxAddField(mxstruct,"trajectory");
+		auto mxtraj = hoNDArrayToMatlab(&trajectory);
+		mxSetFieldByNumber(mxstruct,0,traj_fieldnumber,mxtraj);
+	}
+
+	//Add headers
+	std::cout << "Adding headers...";
+	mwSize num_headers = buffer->headers_.get_number_of_elements();
+	auto mxheaders = mxCreateNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
+	memcpy(mxGetData(mxheaders),buffer->headers_.get_data_ptr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
+	mxSetField(mxstruct,0,"headers",mxheaders);
+
+	auto samplingdescription = samplingdescriptionToMatlabStruct(&buffer->sampling_);
+	mxSetField(mxstruct,0,"samplingdescription",samplingdescription);
+    std::cout << " done." << std::endl;
+	return mxstruct;
+    */
 
 }
+
+
+mxArray* GetSplitReconData(IsmrmrdDataBuffered* buffer, size_t index_begin, size_t index_end) {
+    
+    // create the packet. A copy of the data is being done here,
+    // which overall increase the RAM usage if packets are needed.
+    // There may be a more efficient way to do this.
+    size_t packet_n_elem = (index_end-index_begin+1) * buffer->data_.get_number_of_elements()/buffer->data_.get_size(0);
+
+    size_t packet_ndim = buffer->data_.get_number_of_dimensions();
+    mwSize* packet_dims = new mwSize[packet_ndim];
+    packet_dims[0] = index_end-index_begin+1;
+    for (size_t j = 1; j < packet_ndim; j++)
+        packet_dims[j] = buffer->data_.get_size(j);
+
+    float* real_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
+    float* imag_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
+
+    std::complex<float>* raw_data = buffer->data_.get_data_ptr();
+
+    // It appears that the data is not stored as I would have expected it.
+    // index 1,2,3,... actually follow the RO dimension, even though RO
+    // is the first dimension of the data. In MATLAB this is the other way around.
+    /*
+    size_t start = index_begin*dim_1_n_elem;
+    for (size_t j = 0; j < packet_n_elem; j++){
+        real_data[j] = real(raw_data[start + j]);
+        imag_data[j] = imag(raw_data[start + j]);
+    }
+    GDEBUG("Index: start %lu, index_end: %lu\n", start, start + packet_n_elem - 1);
+     */
+
+    size_t counter = 0;
+    for (size_t l = 0; l < buffer->data_.get_number_of_elements(); l += buffer->data_.get_size(0) ){
+        for (size_t j = 0; j < index_end-index_begin+1; j++){
+
+            real_data[counter] = real(raw_data[index_begin + l + j]);
+            imag_data[counter] = imag(raw_data[index_begin + l + j]);
+            ++counter;
+        }
+    }
+
+    auto mxdata =  mxCreateNumericMatrix(0, 0, mxSINGLE_CLASS, mxCOMPLEX);
+    mxSetDimensions(mxdata, packet_dims, packet_ndim);
+    mxSetData      (mxdata, real_data);
+    mxSetImagData  (mxdata, imag_data);
+    
+    return mxdata;
+}
+
 static SamplingDescription MatlabStructToSamplingdescription(mxArray* mxstruct){
 
 	SamplingDescription samp;

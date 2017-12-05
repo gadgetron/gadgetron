@@ -79,6 +79,8 @@ namespace Gadgetron{
   ::process(GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1)
   {
 
+      
+      
     size_t key;
     std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > recon_data_buffers;
 
@@ -151,7 +153,6 @@ namespace Gadgetron{
         stuff(it, dataBuffer, encoding, stats, true);
       }
 
-
     //Iterate over the imaging data of the bucket
     // this is exactly the same code as for the reference data except for
     // the chunk of the data buffer.
@@ -186,19 +187,27 @@ namespace Gadgetron{
         //this bucket's imaging data stats
         IsmrmrdAcquisitionBucketStats & stats = m1->getObjectPtr()->datastats_[espace];
 
+
+        
+        
         //Fill the sampling description for this data buffer, only need to fill sampling_ once per recon bit
         if (&dataBuffer != pCurrDataBuffer)
         {
             fillSamplingDescription(dataBuffer.sampling_, encoding, stats, acqhdr, false);
             pCurrDataBuffer = &dataBuffer;
         }
-
+        
         //Make sure that the data storage for this data buffer has been allocated
         //TODO should this check the limits, or should that be done in the stuff function?
         allocateDataArrays(dataBuffer, acqhdr, encoding, stats, false);
 
+        
+        
+        
         // Stuff the data, header and trajectory into this data buffer
         stuff(it, dataBuffer, encoding, stats, false);
+        
+        
       }
 
 
@@ -563,7 +572,7 @@ namespace Gadgetron{
 
         //Allocate the array for the data
         dataBuffer.data_.create(NE0, NE1, NE2, NCHA, NN, NS, NLOC);
-        clear(&dataBuffer.data_);
+        clear(&dataBuffer.data_); // bottleneck
 
         //Allocate the array for the headers
         dataBuffer.headers_.create(NE1, NE2, NN, NS, NLOC);
@@ -815,6 +824,7 @@ namespace Gadgetron{
 
     std::complex<float>* pData = &dataBuffer.data_(offset, e1, e2, 0, NUsed, SUsed, slice_loc);
 
+    
     for (uint16_t cha = 0; cha < NCHA; cha++)
     {
         dataptr = pData + cha*NE0*NE1*NE2;
