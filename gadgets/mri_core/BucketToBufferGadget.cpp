@@ -225,7 +225,7 @@ namespace Gadgetron{
                 total_data += it->second->getObjectPtr()->rbit_[r].data_.data_.get_number_of_elements();
             }
 
-            if(total_data>0)
+            if(true/*total_data>0*/)
             {
                 if (this->next()->putq(it->second) == -1) {
                     it->second->release();

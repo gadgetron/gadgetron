@@ -237,7 +237,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         
         // Here we're accessing at the 24th bit of flags. 24th is the bit index of ACQ_LAST_IN_MEASUREMENT
         uint64_t flags = it->head_->getObjectPtr()->flags;
-        if( ((flags & ( 1 << 24 )) >> 24) )  
+        if(((flags & ( 1 << 24 )) >> 24))  
         {
             isLastPacket[0] = 1;
             headersToMatlab = it->head_;
@@ -301,7 +301,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         
         // Here we're accessing at the 24th bit of flags. 24th is the bit index of ACQ_LAST_IN_MEASUREMENT
         uint64_t flags = it->head_->getObjectPtr()->flags;
-        if( ((flags & ( 1 << 24 )) >> 24) )  
+        if(RO_counter == 0/*((flags & ( 1 << 24 )) >> 24)*/)  
         {
             isLastPacket[0] = 1;
             headersToMatlab = it->head_;
