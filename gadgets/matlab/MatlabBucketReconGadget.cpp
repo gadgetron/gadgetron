@@ -240,7 +240,8 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         {
             memcpy(raw_data + RO_counter*NCHA*NE0 + cha*NE0, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*NE0);
             
-            phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)    it->head_->getObjectPtr()->idx.kspace_encode_step_1 +
+            phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)    1 + /* Matlab indices start from 1 */
+                                                                     it->head_->getObjectPtr()->idx.kspace_encode_step_1 +
                                                        NE1          *it->head_->getObjectPtr()->idx.kspace_encode_step_2 +
                                                        NE1*NE2      *cha +
                                                        NE1*NE2*NCHA *it->head_->getObjectPtr()->idx.contrast;
@@ -303,7 +304,8 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         {
             memcpy(raw_data + RO_counter*NCHA*NE0 + cha*NE0, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*NE0);
             
-            phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)    it->head_->getObjectPtr()->idx.kspace_encode_step_1 +
+            phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)    1 + /* Matlab indices start from 1 */
+                                                                     it->head_->getObjectPtr()->idx.kspace_encode_step_1 +
                                                        NE1          *it->head_->getObjectPtr()->idx.kspace_encode_step_2 +
                                                        NE1*NE2      *cha +
                                                        NE1*NE2*NCHA *it->head_->getObjectPtr()->idx.contrast;
@@ -381,7 +383,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     
     if(isLastPacket) {
         mwSize num_headers = 1; //headersToMatlab->size();
-        auto mxheaders = mxCreateuninitNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
+        auto mxheaders = mxCreateUninitNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
         memcpy(mxGetData(mxheaders),headersToMatlab->getObjectPtr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
         mxSetField(mxstruct,0,"headers",mxheaders);
     }
