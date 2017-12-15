@@ -27,7 +27,9 @@
 namespace Gadgetron {
 
 	BartGadget::BartGadget() :
-		image_counter_(0)
+		BaseClass(),
+                workLocation_{},
+		dp{}
 	{}
 
 	std::vector<size_t> BartGadget::read_BART_hdr(const char *filename)
@@ -109,6 +111,131 @@ namespace Gadgetron {
 	{
 		str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](int s) {return !std::isspace(s); }));
 	}
+	
+	void BartGadget::replace_default_parameters(std::string & str)
+	{
+		std::string::size_type pos = 0u;
+		while ((pos = str.find('$', pos)) != std::string::npos)
+		{
+			auto pos_end = str.find(' ', pos);
+			auto pos_diff = pos_end - pos;
+			std::string tmp = str.substr(pos, pos_diff);
+			tmp.erase(0, 1);
+			if (tmp == std::string("recon_matrix_x"))
+				str.replace(pos, pos_diff, std::to_string(dp.recon_matrix_x));
+			else if (tmp == std::string("recon_matrix_y"))
+				str.replace(pos, pos_diff, std::to_string(dp.recon_matrix_y));
+			else if (tmp == std::string("recon_matrix_z"))
+				str.replace(pos, pos_diff, std::to_string(dp.recon_matrix_z));
+			else if (tmp == std::string("FOV_x"))
+				str.replace(pos, pos_diff, std::to_string(dp.FOV_x));
+			else if (tmp == std::string("FOV_y"))
+				str.replace(pos, pos_diff, std::to_string(dp.FOV_y));
+			else if (tmp == std::string("FOV_z"))
+				str.replace(pos, pos_diff, std::to_string(dp.FOV_z));
+			else if (tmp == std::string("acc_factor_PE1"))
+				str.replace(pos, pos_diff, std::to_string(dp.acc_factor_PE1));
+			else if (tmp == std::string("acc_factor_PE2"))
+				str.replace(pos, pos_diff, std::to_string(dp.acc_factor_PE2));
+			else if (tmp == std::string("reference_lines_PE1"))
+				str.replace(pos, pos_diff, std::to_string(dp.reference_lines_PE1));
+			else if (tmp == std::string("reference_lines_PE2"))
+				str.replace(pos, pos_diff, std::to_string(dp.reference_lines_PE2));
+			else {
+				GERROR( "Unknown default parameter, please see the complete list of avaible parameters...");
+			}
+			pos = pos_end;
+		}
+	}
+	
+	int BartGadget::process_config(ACE_Message_Block * mb)
+	{
+		GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
+
+		/** Let's get some information about the incoming data **/
+		ISMRMRD::IsmrmrdHeader h;
+		try
+		{
+			deserialize(mb->rd_ptr(), h);
+		}
+		catch (...)
+		{
+			GDEBUG("BartGadget::process_config: Failed to parse incoming ISMRMRD Header");
+		}
+
+
+		for (size_t ii = 0, h_encoding_size = h.encoding.size(); ii < h_encoding_size; ++ii)
+		{
+			ISMRMRD::EncodingSpace recon_space = h.encoding[ii].reconSpace;
+
+			GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Encoding matrix size: " << recon_space.matrixSize.x << " " << recon_space.matrixSize.y << " " << recon_space.matrixSize.z);
+			GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Encoding field_of_view : " << recon_space.fieldOfView_mm.x << " " << recon_space.fieldOfView_mm.y << " " << recon_space.fieldOfView_mm.z);
+			dp.recon_matrix_x = recon_space.matrixSize.x;
+			dp.recon_matrix_y = recon_space.matrixSize.y;
+			dp.recon_matrix_z = recon_space.matrixSize.z;
+			dp.FOV_x = static_cast<uint16_t>(recon_space.fieldOfView_mm.x);
+			dp.FOV_y = static_cast<uint16_t>(recon_space.fieldOfView_mm.y);
+			dp.FOV_z = static_cast<uint16_t>(recon_space.fieldOfView_mm.z);
+
+			if (!h.encoding[ii].parallelImaging)
+			{
+				GDEBUG_STREAM("BartGadget::process_config: Parallel Imaging not enable...");
+			}
+			else
+			{
+				ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
+				GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: acceleration Factor along PE1 is " << p_imaging.accelerationFactor.kspace_encoding_step_1);
+				GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: acceleration Factor along PE2 is " << p_imaging.accelerationFactor.kspace_encoding_step_2);
+				dp.acc_factor_PE1 = p_imaging.accelerationFactor.kspace_encoding_step_1;
+				dp.acc_factor_PE2 = p_imaging.accelerationFactor.kspace_encoding_step_2;
+
+				if (p_imaging.accelerationFactor.kspace_encoding_step_2 > 1) {
+					GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Limits of the size of the calibration region (PE1) " << h.userParameters->userParameterLong[0].name << " is " << h.userParameters->userParameterLong[0].value);
+					GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Limits of the size of the calibration region (PE2) " << h.userParameters->userParameterLong[1].name << " is " << h.userParameters->userParameterLong[1].value);
+					dp.reference_lines_PE1 = h.userParameters->userParameterLong[0].value;
+					dp.reference_lines_PE2 = h.userParameters->userParameterLong[1].value;
+				}
+				else {
+					GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Limits of the size of the calibration region (PE1) " << h.userParameters->userParameterLong[0].name << " is " << h.userParameters->userParameterLong[0].value);
+					dp.reference_lines_PE1 = h.userParameters->userParameterLong[0].value;
+				}
+
+				std::string calib = *p_imaging.calibrationMode;
+
+				auto separate = (calib.compare("separate") == 0);
+				auto embedded = (calib.compare("embedded") == 0);
+				auto external = (calib.compare("external") == 0);
+				auto interleaved = (calib.compare("interleaved") == 0);
+				auto other = (calib.compare("other") == 0);
+
+				if (p_imaging.accelerationFactor.kspace_encoding_step_1 > 1 || p_imaging.accelerationFactor.kspace_encoding_step_2 > 1)
+				{
+					if (interleaved) {
+						GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Calibration mode INTERLEAVE ");
+					}
+					else if (embedded) {
+						GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Calibration mode EMBEDDED");
+					}
+					else if (separate) {
+						GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Calibration mode SEPERATE");
+					}
+					else if (external) {
+						GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Calibration mode EXTERNAL");
+					}
+					else if (other) {
+						GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Calibration mode OTHER");
+					}
+					else {
+						GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Something went terribly wrong, this should never happen!");
+						return GADGET_FAIL;
+					}
+				}
+
+			}
+
+		}
+		return GADGET_OK;
+	}
 
 	int BartGadget::process(GadgetContainerMessage<IsmrmrdReconData>* m1)
 	{        
@@ -127,7 +254,7 @@ namespace Gadgetron {
 #ifdef _WIN32
 		try
 		{
-			boost::filesystem::permissions(CommandScript, all_all);
+			boost::filesystem::permissions(CommandScript, boost::filesystem::all_all);
 		}
 		catch (...)
 		{
@@ -178,13 +305,15 @@ namespace Gadgetron {
 		generatedFilesFolder.pop_back();
 	
 		boost::filesystem::path dir(generatedFilesFolder);
-		if (!boost::filesystem::exists(dir) || !boost::filesystem::is_directory(dir))
-			if (boost::filesystem::create_directories(dir))
+		if (!boost::filesystem::exists(dir) || !boost::filesystem::is_directory(dir)){
+			if (boost::filesystem::create_directories(dir)){
 				GDEBUG("Folder to store *.hdr & *.cfl files is %s\n", generatedFilesFolder.c_str());
+                        }
 			else {
 				GERROR("Folder to store *.hdr & *.cfl files doesn't exist...\n");
 				return GADGET_FAIL;
 			}
+                }
 
 		generatedFilesFolder += "/";
 
@@ -319,8 +448,8 @@ namespace Gadgetron {
 		}
 
 		if (DIMS[4] != 1)
-			cmd2 << "bart reshape 1023 " << DIMS[0] << " " << DIMS[1] << " " << DIMS[2] << " " << DIMS[3] << " 1 1 1 1 1 " << DIMS[4] << " meas_gadgetron input_data";
-		else
+			cmd2 << "bart reshape 1023 " << DIMS[0] << " " << DIMS[1] << " " << DIMS[2] << " " << DIMS[3] << " 1 1 1 " << DIMS[5] << " " << DIMS[6] << " " << DIMS[4] << " meas_gadgetron input_data";
+		else	
 			cmd2 << "bart scale 1.0 meas_gadgetron input_data";
 
 		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd2.str()).c_str())) {
@@ -329,9 +458,6 @@ namespace Gadgetron {
 		}
 
 		/*** CALL BART COMMAND LINE from the scripting file***/
-				// call BART shell script
-		auto ret = system(std::string("cd " + generatedFilesFolder + "&&" + CommandScript).c_str());
-		(void)ret;
 
 		std::string Line, Commands_Line;
 		std::fstream inputFile(CommandScript);
@@ -342,6 +468,13 @@ namespace Gadgetron {
 				ltrim(Line);
 				if (Line.empty() || Line.compare(0, 4, "bart") != 0)
 					continue;
+				
+				replace_default_parameters(Line);
+				GDEBUG("%s\n", Line.c_str());
+				
+				auto ret = system(std::string("cd " + generatedFilesFolder + "&&" + Line).c_str());
+				(void)ret;
+				
 				Commands_Line = Line;
 			}
 			inputFile.close();
@@ -357,8 +490,8 @@ namespace Gadgetron {
 
 		// Reformat the data back to gadgetron format
 		auto header = read_BART_hdr(std::string(generatedFilesFolder + outputFile).c_str());
-		cmd3 << "bart reshape 1023 " << header[0] << " " << header[1] << " " << header[2] << " " << header[3] << " " << header[9] * header[4]
-			<< " 1 1 1 1 1 " << outputFile << " " << outputFile + std::string("_reshape");
+		cmd3 << "bart reshape 1023 " << header[0] << " " << header[1] << " " << header[2] << " " << header[3] << " " << header[9] * header[4] <<
+			" " << header[5] << " " << header[6] << " " << header[7] << " " << header[8] << " 1 " << outputFile << " " << outputFile + std::string("_reshape");
 		const auto cmd_s = cmd3.str();
 		GDEBUG("%s\n", cmd_s.c_str());
 		if (system(std::string("cd " + generatedFilesFolder + "&&" + cmd_s).c_str())) {
@@ -434,7 +567,7 @@ namespace Gadgetron {
 		for (size_t it = 0, rbit_size = m1->getObjectPtr()->rbit_.size(); it != rbit_size; ++it)
 		{
 			compute_image_header(m1->getObjectPtr()->rbit_[it], imarray, it);
-			send_out_image_array(m1->getObjectPtr()->rbit_[it], imarray, it, image_series.value() + ((int)it + 1), GADGETRON_IMAGE_REGULAR);
+			send_out_image_array(m1->getObjectPtr()->rbit_[it], imarray, it, image_series.value() + (static_cast<int>(it) + 1), GADGETRON_IMAGE_REGULAR);
 		}
 
 		m1->release();
