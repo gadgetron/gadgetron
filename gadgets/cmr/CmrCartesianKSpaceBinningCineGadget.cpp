@@ -5,6 +5,7 @@ namespace Gadgetron {
 
     CmrCartesianKSpaceBinningCineGadget::CmrCartesianKSpaceBinningCineGadget() : BaseClass()
     {
+        send_out_multiple_series_by_slice_ = false;
     }
 
     CmrCartesianKSpaceBinningCineGadget::~CmrCartesianKSpaceBinningCineGadget()
@@ -15,17 +16,34 @@ namespace Gadgetron {
     {
         GADGET_CHECK_RETURN(BaseClass::process_config(mb) == GADGET_OK, GADGET_FAIL);
 
+        this->send_out_multiple_series_by_slice_ = this->send_out_multiple_series_by_slice.value();
+
         // -------------------------------------------------
 
-        //ISMRMRD::IsmrmrdHeader h;
-        //try
-        //{
-        //    deserialize(mb->rd_ptr(), h);
-        //}
-        //catch (...)
-        //{
-        //    GDEBUG("Error parsing ISMRMRD Header");
-        //}
+        ISMRMRD::IsmrmrdHeader h;
+        try
+        {
+            deserialize(mb->rd_ptr(), h);
+        }
+        catch (...)
+        {
+            GDEBUG("Error parsing ISMRMRD Header");
+        }
+
+        if (h.userParameters)
+        {
+            for (std::vector<ISMRMRD::UserParameterLong>::const_iterator i = h.userParameters->userParameterLong.begin(); i != h.userParameters->userParameterLong.end(); ++i)
+            {
+                if (std::strcmp(i->name.c_str(), "MultiSeriesForSlices") == 0)
+                {
+                    GDEBUG_STREAM("Found from protocol, MultiSeriesForSlices is defined ... ");
+                    this->send_out_multiple_series_by_slice_ = true;
+                    GDEBUG_STREAM("Reset, send_out_multiple_series_by_slice_ is " << send_out_multiple_series_by_slice_);
+                }
+            }
+        }
+
+        // -------------------------------------------------
 
         binning_reconer_.debug_folder_                                   = this->debug_folder_full_path_;
         binning_reconer_.perform_timing_                                 = this->perform_timing.value();
@@ -390,7 +408,7 @@ namespace Gadgetron {
             size_t S = res.data_.get_size(5);
             size_t SLC = res.data_.get_size(6);
 
-            if(send_out_multiple_series_by_slice.value())
+            if(this->send_out_multiple_series_by_slice_)
             {
                 res.headers_(n, s, slc).image_series_index += 100 * res.headers_(n, s, slc).slice;
 
