@@ -87,6 +87,7 @@ T2W/meas_MID00057_T2w.dat: 46aa75c471a41c793006328a224a4001
 T2W/generic_grappa_T2W_ref.h5: 1c870a3e2b25cee499ad7d7210d7b6b0
 bart/meas_MID00168_FID39823_R3_RT_Cine_res160_46ms_NL_BART_Proto1.dat: 2b736fe484f29600cb9b35f4585c8a17
 bart/meas_MID00168_FID39823_R3_RT_Cine_res160_46ms_NL_BART_Proto1_ref20170923.h5: 1c7ce09b632d6c303eabc515eaa6dcdc
+bart/ref_20171222.h5: 2766640c429d1dc98829a9e962885613
 ut/spiral/data_spiral_imag.hdr: 53815a7022a66b7c3df28cf685a8d39c
 ut/spiral/data_spiral_imag.img: 47917a9f1c5b2c6c83f119f301474dfc
 ut/spiral/data_spiral_real.hdr: 53815a7022a66b7c3df28cf685a8d39c
