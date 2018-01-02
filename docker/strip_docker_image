@@ -21,6 +21,8 @@ FROM ${IMG_IN}
 
 RUN apt-get remove --yes --autoremove emacs build-essential x11-common libgtk* make cmake
 RUN apt-get --yes remove *-dev
+RUN apt-get update
+RUN apt-get -y install libplplot-dev
 RUN rm -rf /opt/code
 RUN rm -rf /opt/*.tar.gz
 RUN rm -rf /usr/local/cuda/bin
