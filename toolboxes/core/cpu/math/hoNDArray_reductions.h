@@ -215,4 +215,10 @@ namespace Gadgetron{
 
     template <class T> EXPORTCPUCOREMATH 
     void maxValue(const hoNDArray<T>& a, T& v);
+
+    /**
+    * @brief linear fitting, y = a*x + b
+      compute linear fit for y to x
+    */
+    template <typename T> EXPORTCPUCOREMATH void linFit(const hoNDArray<T>& x, const hoNDArray<T>& y, T& a, T& b);
 }

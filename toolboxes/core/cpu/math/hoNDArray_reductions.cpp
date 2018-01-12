@@ -1121,4 +1121,32 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void maxValue(const hoNDArray<double>& a, double& v);
 
     // --------------------------------------------------------------------------------
+
+    template <typename T> 
+    void linFit(const hoNDArray<T>& x, const hoNDArray<T>& y, T& a, T& b)
+    {
+        try
+        {
+            GADGET_CHECK_THROW(x.get_number_of_elements() == y.get_number_of_elements());
+
+            arma::Col<T> vx = as_arma_col(&x);
+            arma::Col<T> vy = as_arma_col(&y);
+
+            arma::Col<T> P = arma::polyfit(vx, vy, 1);
+
+            a = P(0);
+            b = P(1);
+        }
+        catch (...)
+        {
+            GADGET_THROW("Errors in linFit(const hoNDArray<T>& x, const hoNDArray<T>& y, T& a, T& b) ... ");
+        }
+    }
+
+    template EXPORTCPUCOREMATH void linFit(const hoNDArray<float>& x, const hoNDArray<float>& y, float& a, float& b);
+    template EXPORTCPUCOREMATH void linFit(const hoNDArray<double>& x, const hoNDArray<double>& y, double& a, double& b);
+    template EXPORTCPUCOREMATH void linFit(const hoNDArray< std::complex<float> >& x, const hoNDArray< std::complex<float> >& y, std::complex<float>& a, std::complex<float>& b);
+    template EXPORTCPUCOREMATH void linFit(const hoNDArray< std::complex<double> >& x, const hoNDArray< std::complex<double> >& y, std::complex<double>& a, std::complex<double>& b);
+
+    // --------------------------------------------------------------------------------
 }
