@@ -1,5 +1,6 @@
 #include "hoNDArray_reductions.h"
 #include "hoArmadillo.h"
+#include "hoNDArray_linalg.h"
 
 #ifndef lapack_int
     #define lapack_int int
@@ -1129,13 +1130,40 @@ namespace Gadgetron{
         {
             GADGET_CHECK_THROW(x.get_number_of_elements() == y.get_number_of_elements());
 
-            arma::Col<T> vx = as_arma_col(&x);
+            size_t N = x.get_number_of_elements();
+
+            hoNDArray<T> A;
+            A.create(N, 2);
+
+            size_t n;
+            for (n=0; n<N; n++)
+            {
+                A(n, 0) = x(n);
+                A(n, 1) = 1;
+            }
+
+            hoNDArray<T> A2(A);
+
+            hoNDArray<T> ATA(2, 2), ATy(2, 1);
+            gemm(ATA, A, true, A2, false);
+            gemm(ATy, A, true, y, false);
+
+            getri(ATA);
+
+            hoNDArray<T> res;
+            res.create(2, 1);
+            gemm(res, ATA, false, ATy, false);
+
+            a = res(0);
+            b = res(1);
+
+            /*arma::Col<T> vx = as_arma_col(&x);
             arma::Col<T> vy = as_arma_col(&y);
 
             arma::Col<T> P = arma::polyfit(vx, vy, 1);
 
             a = P(0);
-            b = P(1);
+            b = P(1);*/
         }
         catch (...)
         {
