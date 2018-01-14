@@ -145,6 +145,7 @@ namespace Gadgetron {
                             if(this->prep_times_[n]>max_ts)
                             {
                                 max_ts = this->prep_times_[n];
+                                ind = n;
                             }
                         }
                     }

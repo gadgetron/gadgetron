@@ -77,6 +77,7 @@ set(test_src_files tests.cpp
       curveFitting_test.cpp
       image_morphology_test.cpp 
       pattern_recognition_test.cpp 
+      cmr_mapping_test.cpp 
       )
 
 if (PYTHONLIBS_FOUND)
