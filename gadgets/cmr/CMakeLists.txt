@@ -58,12 +58,14 @@ set( gadgetron_cmr_header_files
     gadgetron_cmr_export.h 
     CmrCartesianKSpaceBinningCineGadget.h 
     CmrParametricMappingGadget.h 
-    CmrParametricT1SRMappingGadget.h )
+    CmrParametricT1SRMappingGadget.h 
+    CmrParametricT2MappingGadget.h )
 
 set( gadgetron_cmr_src_files 
     CmrCartesianKSpaceBinningCineGadget.cpp 
     CmrParametricMappingGadget.cpp 
-    CmrParametricT1SRMappingGadget.cpp )
+    CmrParametricT1SRMappingGadget.cpp 
+    CmrParametricT2MappingGadget.cpp )
 
 set( config_BinningCine_files 
     config/BinningCine/CMR_2DT_RTCine_KspaceBinning.xml

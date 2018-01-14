@@ -44,6 +44,7 @@ set(cmr_header_fiels cmr_export.h
                     cmr_motion_correction.h 
                     cmr_parametric_mapping.h 
                     cmr_t1_mapping.h 
+                    cmr_t2_mapping.h 
                     cmr_spirit_recon.h )
 
 set(cmr_src_fiels cmr_kspace_binning.cpp 
@@ -51,6 +52,7 @@ set(cmr_src_fiels cmr_kspace_binning.cpp
                 cmr_motion_correction.cpp 
                 cmr_parametric_mapping.cpp 
                 cmr_t1_mapping.cpp 
+                cmr_t2_mapping.cpp 
                 cmr_spirit_recon.cpp )
 
 add_library(gadgetron_toolbox_cmr SHARED 
