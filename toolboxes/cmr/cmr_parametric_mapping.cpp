@@ -388,6 +388,29 @@ void CmrParametricMapping<T>::perform_parametric_mapping()
                 if (!debug_folder_.empty()) gt_exporter_.export_array(this->sd_para_, debug_folder_ + "CmrParametricMapping_sd_para_after_hole_filling");
             }
         }
+
+        size_t N_pts = this->map_.get_number_of_elements();
+
+        size_t ii;
+        for (ii = 0; ii<N_pts; ii++)
+        {
+            T v = this->map_(ii);
+            if (v >= this->max_map_value_) v = this->max_map_value_;
+            if (v <= this->min_map_value_) v = this->min_map_value_;
+
+            this->map_(ii) = v;
+        }
+
+        if (this->compute_SD_maps_)
+        {
+            for (ii = 0; ii<N_pts; ii++)
+            {
+                T v = this->sd_map_(ii);
+                if (v <= 0) v = 0;
+
+                this->sd_map_(ii) = v;
+            }
+        }
     }
     catch (...)
     {
