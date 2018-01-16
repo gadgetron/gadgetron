@@ -187,6 +187,7 @@ CmrParametricMapping<T>::CmrParametricMapping()
     thres_fun_ = 1e-5;
 
     max_map_value_ = -1;
+    min_map_value_ = 0;
 
     verbose_ = false;
     perform_timing_ = false;
