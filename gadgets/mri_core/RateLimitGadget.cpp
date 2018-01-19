@@ -28,9 +28,9 @@ int RateLimitGadget::process(ACE_Message_Block* mb)
   std::this_thread::sleep_for(this->sleep_time);
   this->next()->putq(mb);
 
-  mb->release();
+  //mb->release();
 
-
+  return GADGET_OK;
 
 }
 

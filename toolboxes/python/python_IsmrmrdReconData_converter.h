@@ -146,7 +146,6 @@ struct IsmrmrdReconData_from_python_object {
 };
 
 
-
 /// Partial specialization of `python_converter` for hoNDArray
 template<> struct python_converter<IsmrmrdReconData> {
   static void create()

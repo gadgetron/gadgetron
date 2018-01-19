@@ -120,6 +120,12 @@ namespace Gadgetron {
 
             GDEBUG_STREAM("GenericReconEigenChannelGadget - incoming data array : [RO E1 E2 CHA N S SLC] - [" << RO << " " << E1 << " " << E2 << " " << CHA << " " << N << " " << S << " " << SLC << "]");
 
+            if(data.get_number_of_elements()==0)
+            {
+                m1->release();
+                return GADGET_OK;
+            }
+
             // whether it is needed to update coefficients
             bool recompute_coeff = false;
             if ( (KLT_[e].size()!=SLC) || update_eigen_channel_coefficients.value() )

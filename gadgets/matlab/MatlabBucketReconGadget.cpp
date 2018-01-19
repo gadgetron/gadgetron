@@ -170,16 +170,8 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     
     IsmrmrdAcquisitionBucket* bucket = m1->getObjectPtr();
     
-    // LA: count the number of RO data existing in this bucket.
-    // there's probably a faster way to do it
-    long RO_counter = 0;
-    for (std::vector<IsmrmrdAcquisitionData>::iterator it = bucket->data_.begin(); it != bucket->data_.end(); ++it) {
-        ++RO_counter;
-    }
-    for (std::vector<IsmrmrdAcquisitionData>::iterator it = bucket->ref_.begin(); it != bucket->ref_.end(); ++it) {
-        ++RO_counter;
-    }
-    
+    // Number of RO data existing in this bucket.
+    long RO_counter = bucket->data_.size()+bucket->ref_.size();
 
     bool init = false;
     uint16_t NE0;
@@ -195,8 +187,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > recon_data_buffers;    
     
     // boolean for packet labelling
-    uint8_t* isLastPacket = (uint8_t*) mxCalloc(1, sizeof(uint8_t));
-    isLastPacket[0] = 0;
+    uint8_t isLastPacket;
     
     // Iterate over the RO lines of the bucket, copy them into raw_data
 //     IsmrmrdDataBuffered* pCurrDataBuffer = NULL;
@@ -237,9 +228,9 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         
         // Here we're accessing at the 24th bit of flags. 24th is the bit index of ACQ_LAST_IN_MEASUREMENT
         uint64_t flags = it->head_->getObjectPtr()->flags;
-        if( ((flags & ( 1 << 24 )) >> 24) )  
+        if(((flags & ( 1 << 24 )) >> 24))  
         {
-            isLastPacket[0] = 1;
+            isLastPacket = 1;
             headersToMatlab = it->head_;
         }
         
@@ -249,7 +240,8 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         {
             memcpy(raw_data + RO_counter*NCHA*NE0 + cha*NE0, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*NE0);
             
-            phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)    it->head_->getObjectPtr()->idx.kspace_encode_step_1 +
+            phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)    1 + /* Matlab indices start from 1 */
+                                                                     it->head_->getObjectPtr()->idx.kspace_encode_step_1 +
                                                        NE1          *it->head_->getObjectPtr()->idx.kspace_encode_step_2 +
                                                        NE1*NE2      *cha +
                                                        NE1*NE2*NCHA *it->head_->getObjectPtr()->idx.contrast;
@@ -301,9 +293,9 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         
         // Here we're accessing at the 24th bit of flags. 24th is the bit index of ACQ_LAST_IN_MEASUREMENT
         uint64_t flags = it->head_->getObjectPtr()->flags;
-        if( ((flags & ( 1 << 24 )) >> 24) )  
+        if(RO_counter == 0/*((flags & ( 1 << 24 )) >> 24)*/)  
         {
-            isLastPacket[0] = 1;
+            isLastPacket = 1;
             headersToMatlab = it->head_;
         }
         
@@ -312,7 +304,8 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         {
             memcpy(raw_data + RO_counter*NCHA*NE0 + cha*NE0, &acqdata(acqhdr.discard_pre, cha), sizeof(std::complex<float>)*NE0);
             
-            phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)    it->head_->getObjectPtr()->idx.kspace_encode_step_1 +
+            phase_coordinates[RO_counter*NCHA + cha] = (uint32_t)    1 + /* Matlab indices start from 1 */
+                                                                     it->head_->getObjectPtr()->idx.kspace_encode_step_1 +
                                                        NE1          *it->head_->getObjectPtr()->idx.kspace_encode_step_2 +
                                                        NE1*NE2      *cha +
                                                        NE1*NE2*NCHA *it->head_->getObjectPtr()->idx.contrast;
@@ -329,8 +322,7 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     ///////////////////////// RAWDATA TO MXSTRUCT //////////////////////////
 //     const char * field_names[] = {"data","trajectory","headers","samplingdescription", "kspace_encode_step"};
     const char * field_names[] = {"data", "headers", "kspace_encode_step"};
-	mwSize one = 1;
-	auto mxstruct = mxCreateStructArray(1,&one,3,field_names); // always check the number of fields, otherwise segfault
+	auto mxstruct = mxCreateStructMatrix(1,1,3,field_names); // always check the number of fields, otherwise segfault
 	if (!mxstruct)
         throw std::runtime_error("Failed to allocate Matlab struct");
 
@@ -341,10 +333,13 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 
     packet_dims[0] = NE0;
     packet_dims[1] = RO_counter*NCHA; // this is thus echo x line x partition
-    
-    float* real_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
-    float* imag_data = (float*) mxCalloc(packet_n_elem, sizeof(float));
 
+    // recon data
+    auto mxdata =  mxCreateUninitNumericArray(packet_ndim, packet_dims, mxSINGLE_CLASS, mxCOMPLEX);
+    float* real_data=(float *)mxGetData(mxdata);
+    float* imag_data=(float *)mxGetImagData(mxdata);
+
+    // Copy from C++ to matlab
     for(size_t i = 0; i<packet_n_elem; ++i)
     {
         real_data[i] = real(raw_data[i]);
@@ -352,15 +347,11 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     }
     delete[] raw_data;
     
-    // recon data
-    auto mxdata =  mxCreateNumericMatrix(0, 0, mxSINGLE_CLASS, mxCOMPLEX);
-    mxSetDimensions(mxdata, packet_dims, packet_ndim);
-    mxSetData      (mxdata, real_data);
-    mxSetImagData  (mxdata, imag_data);
     mxSetField(mxstruct,0,"data",mxdata);
     
     // encode
-    auto mxstep = mxCreateNumericMatrix((mwSize) RO_counter*NCHA, 1, mxUINT32_CLASS, mxREAL);
+    auto mxstep = mxCreateUninitNumericMatrix((mwSize) RO_counter*NCHA, 1, mxUINT32_CLASS, mxREAL);
+    mxFree(mxGetData(mxstep));
     mxSetData(mxstep, phase_coordinates);
     mxSetField(mxstruct,0,"kspace_encode_step",mxstep);
     
@@ -390,17 +381,17 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 //     
 //     std::cout << "nelem: "<< headersToMatlab->getObjectPtr()->get_number_of_elements() << std::endl;
     
-    if(isLastPacket[0]) {
-        mwSize num_headers = headersToMatlab->size();
-        auto mxheaders = mxCreateNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
+    if(isLastPacket) {
+        mwSize num_headers = 1; //headersToMatlab->size();
+        auto mxheaders = mxCreateUninitNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
         memcpy(mxGetData(mxheaders),headersToMatlab->getObjectPtr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
         mxSetField(mxstruct,0,"headers",mxheaders);
     }
  
-    auto mxIsLastPacket = mxCreateNumericMatrix(1, 1, mxINT8_CLASS, mxREAL);
-    mxSetData(mxIsLastPacket, isLastPacket);
-    
-    
+    // Create matlab boolean and set value to C++
+    auto mxIsLastPacket = mxCreateUninitNumericMatrix(1, 1, mxINT8_CLASS, mxREAL); // destroyed by recon_array destroy later
+    *(uint8_t *)mxGetData(mxIsLastPacket)=isLastPacket;
+        
 	// Initialize a string for matlab commands
 	std::string cmd;
 
