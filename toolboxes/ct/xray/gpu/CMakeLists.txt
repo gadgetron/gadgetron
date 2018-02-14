@@ -36,6 +36,7 @@ target_link_libraries(
   gadgetron_toolbox_gpuxray gadgetron_toolbox_gpucore gadgetron_toolbox_gpunfft
   gadgetron_toolbox_cpucore_math
   ${CUDA_LIBRARIES}
+  ${HDF5_CXX_LIBRARY_hdf5_hl}
 )
 
 install(TARGETS gadgetron_toolbox_gpuxray DESTINATION lib COMPONENT main)
