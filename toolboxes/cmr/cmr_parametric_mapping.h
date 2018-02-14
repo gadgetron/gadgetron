@@ -104,6 +104,7 @@ namespace Gadgetron {
 
         /// maximal valid value of map
         T max_map_value_;
+        T min_map_value_;
 
         // ======================================================================================
         /// parameter for debugging

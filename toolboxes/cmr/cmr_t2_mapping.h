@@ -1,5 +1,5 @@
-/** \file   cmr_t1_mapping.h
-    \brief  Implement cardiac MR t1 mapping for 2D applications
+/** \file   cmr_t2_mapping.h
+    \brief  Implement cardiac MR t2 mapping for 2D applications
             The input has dimension [RO E1 N S SLC]
             Temporal dimension is N
     \author Hui Xue
@@ -12,27 +12,27 @@
 namespace Gadgetron { 
 
 // ======================================================================================
-// T1 Saturation recovery
-// y = A * ( 1-exp(-ti/T1) )
+// T2 decay
+// y = A * exp(-te/T2)
 
 template <typename T>
-class EXPORTCMR CmrT1SRMapping : public CmrParametricMapping<T>
+class EXPORTCMR CmrT2Mapping : public CmrParametricMapping<T>
 {
 public:
 
     typedef CmrParametricMapping<T> BaseClass;
-    typedef CmrT1SRMapping<T> Self;
+    typedef CmrT2Mapping<T> Self;
 
     typedef typename BaseClass::ArrayType ArrayType;
     typedef typename BaseClass::ImageType ImageType;
     typedef typename BaseClass::ImageContinerType ImageContinerType;
     typedef typename BaseClass::VectorType VectorType;
 
-    CmrT1SRMapping();
-    virtual ~CmrT1SRMapping();
+    CmrT2Mapping();
+    virtual ~CmrT2Mapping();
 
     // ======================================================================================
-    /// parameter for t1 SR mapping
+    /// parameter for t2 mapping
     // ======================================================================================
 
 

@@ -1,9 +1,9 @@
-/** \file   cmr_t1_mapping.cpp
+/** \file   cmr_t2_mapping.cpp
     \brief  Implement CMR T1 mapping for 2D acquisition
     \author Hui Xue
 */
 
-#include "cmr_t1_mapping.h"
+#include "cmr_t2_mapping.h"
 #include "log.h"
 
 #include "hoNDArray_reductions.h"
@@ -11,7 +11,7 @@
 #include "hoNDArray_math.h"
 
 #include "simplexLagariaSolver.h"
-#include "twoParaExpRecoveryOperator.h"
+#include "twoParaExpDecayOperator.h"
 #include "curveFittingCostFunction.h"
 
 #include <boost/math/special_functions/sign.hpp>
@@ -19,60 +19,96 @@
 namespace Gadgetron { 
 
 template <typename T> 
-CmrT1SRMapping<T>::CmrT1SRMapping() : BaseClass()
+CmrT2Mapping<T>::CmrT2Mapping() : BaseClass()
 {
     max_iter_ = 150;
     max_fun_eval_ = 1000;
     thres_fun_ = 1e-4;
 
-    // maximal allowed T1
     max_map_value_ = 2500;
 }
 
 template <typename T> 
-CmrT1SRMapping<T>::~CmrT1SRMapping()
+CmrT2Mapping<T>::~CmrT2Mapping()
 {
 }
 
 template <typename T>
-void CmrT1SRMapping<T>::get_initial_guess(const VectorType& ti, const VectorType& yi, VectorType& guess)
+void CmrT2Mapping<T>::get_initial_guess(const VectorType& ti, const VectorType& yi, VectorType& guess)
 {
     if (guess.size() != this->get_num_of_paras())
     {
         guess.resize(this->get_num_of_paras(), 0);
     }
 
-    guess[0] = 500;
-    guess[1] = 1200;
+    // do a log linear fit
+    size_t numpts = yi.size();
+    GADGET_CHECK_THROW(numpts>0);
 
-    // A
-    if(!yi.empty()) guess[0] = *std::max_element(yi.begin(), yi.end());
+    T default_A = *std::max_element(yi.begin(), yi.end());
+    T default_T2 = ti[ti.size() / 2];;
 
-    // T1
-    if (!ti.empty()) guess[1] = ti[ti.size() / 2];
+    try
+    {
+        size_t i;
+        for (i = 0; i < numpts; i++)
+        {
+            if(yi[i]<=0)
+            {
+                guess[0] = default_A;
+                guess[1] = default_T2;
+                return;
+            }
+        }
+
+        hoNDArray<T> log_yi(numpts), bi_est(2);
+        hoNDArray<T> xi(numpts);
+        for (size_t i = 0; i < numpts; i++)
+        {
+            xi[i] = ti[i];
+            log_yi[i] = std::log(yi[i]);
+        }
+
+        T a, b;
+        Gadgetron::linFit(xi, log_yi, a, b);
+
+        guess[0] = std::exp(b);
+        guess[1] = -1.0 / a;
+    }
+    catch(...)
+    {
+        guess[0] = default_A;
+        guess[1] = default_T2;
+    }
+
+    if(guess[1]<0)
+    {
+        guess[0] = default_A;
+        guess[1] = default_T2;
+    }
 }
 
 template <typename T>
-void CmrT1SRMapping<T>::compute_map(const VectorType& ti, const VectorType& yi, const VectorType& guess, VectorType& bi, T& map_v)
+void CmrT2Mapping<T>::compute_map(const VectorType& ti, const VectorType& yi, const VectorType& guess, VectorType& bi, T& map_v)
 {
     try
     {
         bi = guess;
         map_v = 0;
 
-        typedef Gadgetron::twoParaExpRecoveryOperator< std::vector<T> > SignalType;
+        typedef Gadgetron::twoParaExpDecayOperator< std::vector<T> > SignalType;
         typedef Gadgetron::leastSquareErrorCostFunction< std::vector<T> > CostType;
 
         // define solver
         Gadgetron::simplexLagariaSolver< VectorType, SignalType, CostType > solver;
 
         // define signal model
-        SignalType t1_sr;
+        SignalType t2;
 
         // define cost function
         CostType lse;
 
-        solver.signal_model_ = &t1_sr;
+        solver.signal_model_ = &t2;
         solver.cf_ = &lse;
 
         solver.max_iter_ = max_iter_;
@@ -93,12 +129,12 @@ void CmrT1SRMapping<T>::compute_map(const VectorType& ti, const VectorType& yi, 
     }
     catch (...)
     {
-        GADGET_THROW("Exceptions happened in CmrT1SRMapping<T>::compute_map(...) ... ");
+        GADGET_THROW("Exceptions happened in CmrT2Mapping<T>::compute_map(...) ... ");
     }
 }
 
 template <typename T>
-void CmrT1SRMapping<T>::compute_sd(const VectorType& ti, const VectorType& yi, const VectorType& bi, VectorType& sd, T& map_sd)
+void CmrT2Mapping<T>::compute_sd(const VectorType& ti, const VectorType& yi, const VectorType& bi, VectorType& sd, T& map_sd)
 {
     try
     {
@@ -107,12 +143,12 @@ void CmrT1SRMapping<T>::compute_sd(const VectorType& ti, const VectorType& yi, c
 
         map_sd = 0;
 
-        typedef Gadgetron::twoParaExpRecoveryOperator< std::vector<T> > SignalType;
-        SignalType t1_sr;
+        typedef Gadgetron::twoParaExpDecayOperator< std::vector<T> > SignalType;
+        SignalType t2;
 
         // compute fitting values
         VectorType y;
-        t1_sr.magnitude(ti, bi, y);
+        t2.magnitude(ti, bi, y);
 
         // compute residual
         VectorType res(y), abs_res(y);
@@ -134,7 +170,7 @@ void CmrT1SRMapping<T>::compute_sd(const VectorType& ti, const VectorType& yi, c
         VectorType gradVec(N);
         for (n = 0; n < num; n++)
         {
-            t1_sr.gradient(ti[n], bi, gradVec);
+            t2.gradient(ti[n], bi, gradVec);
             memcpy(grad.begin() + n*N, &gradVec[0], sizeof(T)*N);
         }
 
@@ -145,20 +181,20 @@ void CmrT1SRMapping<T>::compute_sd(const VectorType& ti, const VectorType& yi, c
     }
     catch (...)
     {
-        GADGET_THROW("Exceptions happened in CmrT1SRMapping<T>::compute_map(...) ... ");
+        GADGET_THROW("Exceptions happened in CmrT2Mapping<T>::compute_map(...) ... ");
     }
 }
 
 template <typename T>
-size_t CmrT1SRMapping<T>::get_num_of_paras() const
+size_t CmrT2Mapping<T>::get_num_of_paras() const
 {
-    return 2; // A and T1
+    return 2; // A and T2
 }
 
 // ------------------------------------------------------------
 // Instantiation
 // ------------------------------------------------------------
 
-template class EXPORTCMR CmrT1SRMapping< float >;
+template class EXPORTCMR CmrT2Mapping< float >;
 
 }

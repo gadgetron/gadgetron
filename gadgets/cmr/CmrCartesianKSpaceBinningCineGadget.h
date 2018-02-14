@@ -127,6 +127,9 @@ namespace Gadgetron {
         hoNDArray< float > acq_time_binning_;
         hoNDArray< float > cpt_time_binning_;
 
+        // if ture, every slice will be sent out as a separate series
+        bool send_out_multiple_series_by_slice_;
+
         // --------------------------------------------------
         // gadget functions
         // --------------------------------------------------

@@ -37,7 +37,7 @@ static void usage()
     outs << "==============================================================================================" << endl;
     outs << std::ends; 
 
-    mexPrintf("%s\n", outs.str() );
+    mexPrintf("%s\n", outs.str().c_str() );
 }
 
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])

@@ -214,6 +214,7 @@ namespace Gadgetron{
             for (size_t r=0; r<num_rbit; r++)
             {
                 total_data += it->second->getObjectPtr()->rbit_[r].data_.data_.get_number_of_elements();
+                if(it->second->getObjectPtr()->rbit_[r].ref_) total_data += it->second->getObjectPtr()->rbit_[r].ref_.get().data_.get_number_of_elements();
             }
 
             if(total_data>0)
