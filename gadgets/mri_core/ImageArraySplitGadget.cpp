@@ -73,6 +73,7 @@ int ImageArraySplitGadget::process( GadgetContainerMessage<IsmrmrdImageArray>* m
         }
     }
     
+    m1->release();
     return GADGET_OK;  
 
 }

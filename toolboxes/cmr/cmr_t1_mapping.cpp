@@ -87,7 +87,8 @@ void CmrT1SRMapping<T>::compute_map(const VectorType& ti, const VectorType& yi, 
         if (bi[0] > 0 && bi[1] > 0)
         {
             map_v = bi[1];
-            if (map_v > max_map_value_) map_v = hole_marking_value_;
+            if (map_v >= max_map_value_) map_v = hole_marking_value_;
+            if (map_v <= min_map_value_) map_v = hole_marking_value_;
         }
     }
     catch (...)

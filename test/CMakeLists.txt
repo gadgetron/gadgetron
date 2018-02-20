@@ -11,6 +11,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/nfft/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/dwt/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
@@ -28,12 +30,15 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/ffd
   ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
   ${CMAKE_SOURCE_DIR}/toolboxes/pattern_recognition
+  ${CMAKE_SOURCE_DIR}/toolboxes/python
   ${Boost_INCLUDE_DIR}
   ${ARMADILLO_INCLUDE_DIRS}
   ${GTEST_INCLUDE_DIRS}
   ${ACE_INCLUDE_DIR}
   ${ISMRMRD_INCLUDE_DIR}
   ${FFTW3_INCLUDE_DIR}
+  ${PYTHON_INCLUDE_PATH}
+  ${NUMPY_INCLUDE_DIRS}
   )
 
 if (CUDA_FOUND)
@@ -44,6 +49,7 @@ link_libraries(
     gadgetron_toolbox_cpucore 
     gadgetron_toolbox_cpucore_math
     gadgetron_toolbox_cpufft
+    gadgetron_toolbox_cpunfft
     gadgetron_toolbox_cpudwt
     gadgetron_toolbox_cpu_image
     gadgetron_toolbox_cpucore
@@ -66,11 +72,17 @@ set(test_src_files tests.cpp
       hoNDArray_utils_test.cpp 
       hoNDArray_reductions_test.cpp 
       hoNDFFT_test.cpp
+      hoNFFT_test.cpp
       hoNDWavelet_test.cpp
       curveFitting_test.cpp
       image_morphology_test.cpp 
       pattern_recognition_test.cpp 
+      cmr_mapping_test.cpp 
       )
+
+if (PYTHONLIBS_FOUND)
+    set(test_src_files ${test_src_files} python_converter_test.cpp )
+endif ()
 
 if ( CUDA_FOUND )
 
@@ -100,6 +112,15 @@ if ( CUDA_FOUND )
         gadgetron_toolbox_gpufft
         )
 endif()
+
+if (PYTHONLIBS_FOUND)
+    target_link_libraries(test_all 
+        gadgetron_toolbox_python
+        ${ISMRMRD_LIBRARIES}
+        ${PYTHON_LIBRARIES}
+        )
+endif ()
+
 
 add_test(test_all test_all)
 

@@ -85,16 +85,15 @@
 	  <name>bartgadget</name>
 	  <dll>gadgetron_bart</dll>
 	  <classname>BartGadget</classname>
-	  <!-- The "AbsoluteBartCommandScript_path" can be provided by the user to overwrite the default value-->
-	  <!--
-	  <property><name>AbsoluteBartCommandScript_path</name><value></value></property>
-	  -->
-	  <property><name>BartWorkingDirectory</name><value>/tmp/</value></property>
+	  <property><name>isVerboseON</name><value>false</value></property>
 	  <property><name>BartCommandScript_name</name><value>Sample_Grappa_Recon.sh</value></property>
 	  <property><name>isBartFileBeingStored</name><value>false</value></property>
-          <property><name>image_series</name><value>0</value></property>
-	  
-         <property><name>isBartFolderBeingCachedToVM</name><value>false</value></property>
+      <property><name>image_series</name><value>0</value></property>
+	  <!--CACHE BART FILES FOR BETTER PERFORMANCE  -->
+      <!---THIS FEATURE SHOULD BE ENABLE ONLY IF THE USER HAS THE ROOT PRIVILEGE AND KNOWS HIS/HER HARDWIRE
+          WELL ENOUGH TO ALLOCATE VIRTUAL MEMORY -->
+	  <!--ONE HAS TO SET "isBartFileBeingStored" TO FALSE-->	  
+      <property><name>isBartFolderBeingCachedToVM</name><value>false</value></property>
 	  <property><name>AllocateMemorySizeInMegabytes</name><value>50</value></property>
 	</gadget>
 
@@ -162,6 +161,16 @@
       <dll>gadgetron_mricore</dll>
       <classname>ExtractGadget</classname>
     </gadget>
+	
+	<gadget>
+      <name>Sort</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageSortGadget</classname>
+      <property>
+        <name>sorting_dimension</name>
+        <value>repetition</value>
+      </property>
+    </gadget>  
 
     <gadget>
       <name>AutoScale</name>

@@ -45,6 +45,26 @@ namespace Gadgetron {
         float field_strength_T_ = h.acquisitionSystemInformation.get().systemFieldStrength_T();
         GDEBUG_CONDITION_STREAM(verbose.value(), "field_strength_T_ is read from protocol : " << field_strength_T_);
 
+        if (h.encoding.size() != 1)
+        {
+            GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
+        }
+
+        size_t e = 0;
+        ISMRMRD::EncodingSpace e_space = h.encoding[e].encodedSpace;
+        ISMRMRD::EncodingSpace r_space = h.encoding[e].reconSpace;
+        ISMRMRD::EncodingLimits e_limits = h.encoding[e].encodingLimits;
+
+        meas_max_idx_.kspace_encode_step_1 = (uint16_t)e_space.matrixSize.y - 1;
+        meas_max_idx_.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum : 0;
+        meas_max_idx_.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum : 0;
+        meas_max_idx_.kspace_encode_step_2 = (uint16_t)e_space.matrixSize.z - 1;
+        meas_max_idx_.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum : 0;
+        meas_max_idx_.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
+        meas_max_idx_.repetition = e_limits.repetition ? e_limits.repetition->maximum : 0;
+        meas_max_idx_.average = e_limits.average ? e_limits.average->maximum : 0;
+        meas_max_idx_.segment = 0;
+
         return GADGET_OK;
     }
 

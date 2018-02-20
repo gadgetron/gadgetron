@@ -11,16 +11,19 @@
 #include "mri_core_coil_map_estimation.h"
 #include "GadgetronTimer.h"
 #include "MatlabUtils.h"
+#include "Matlab_info.h"
 
 #define MEXPRINTF(name) mexPrintf(#name);
 
 static void usage()
 {
     using namespace std;
-    std::ostrstream outs;
+    std::stringstream outs;
 
     outs << "==============================================================================================" << endl;
     outs << "Usage: compute_coil_map \n";
+    outs << "Compute coil sensitivity maps" << endl;
+    printAuthorInfo(outs);
     outs << "6 Input paras:" << endl;
     outs << '\t' << "complexIm  : RO*E1*E2*CHA*N, 2D (if E2==1) or 3D complex image array, in complex float" << endl;
     outs << '\t' << "algo       : ISMRMRD_SOUHEIL or ISMRMRD_SOUHEIL_ITER" << endl;
@@ -34,7 +37,7 @@ static void usage()
     outs << "==============================================================================================" << endl;
     outs << std::ends; 
 
-    mexPrintf("%s\n", outs.str() );
+    mexPrintf("%s\n", outs.str().c_str() );
 }
 
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])

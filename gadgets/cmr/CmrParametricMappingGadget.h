@@ -70,6 +70,9 @@ namespace Gadgetron {
         // imaging prep time (e.g. inverison/saturation/echo time)
         std::vector<float> prep_times_;
 
+        // encoding space size
+        ISMRMRD::EncodingCounters meas_max_idx_;
+
         // --------------------------------------------------
         // functional functions
         // --------------------------------------------------

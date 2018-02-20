@@ -167,7 +167,7 @@ void getPlotGlyph(size_t n, std::string& gly)
     switch (n%26)
     {
         case 0:
-            gly = "#(2367)"; // .
+            gly = "#(840)"; // circle;
             break;
 
         case 1:
@@ -263,7 +263,7 @@ void getPlotGlyph(size_t n, std::string& gly)
             break;
 
         case 25:
-            gly = "#(840)"; // circle
+            gly = "#(2367)"; // .
             break;
 
         default:
@@ -272,10 +272,47 @@ void getPlotGlyph(size_t n, std::string& gly)
 }
 
 template <typename T> EXPORTGTPLPLOT
+bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray<T> >& y,
+    const std::string& xlabel, const std::string& ylabel,
+    const std::string& title, const std::vector<std::string>& legend,
+    const std::vector<std::string>& symbols,
+    size_t xsize, size_t ysize,
+    bool trueColor, bool drawLine,
+    hoNDArray<float>& plotIm)
+{
+    try
+    {
+        GADGET_CHECK_RETURN_FALSE(x.size()>0);
+        GADGET_CHECK_RETURN_FALSE(y.size()>0);
+        GADGET_CHECK_RETURN_FALSE(x.size() == y.size());
+
+        T xlim[2], ylim[2];
+        findDataRange(x, y, xlim[0], xlim[1], ylim[0], ylim[1]);
+
+        return Gadgetron::plotCurves(x, y, xlabel, ylabel, title, legend, symbols, xsize, ysize, xlim, ylim, trueColor, drawLine, plotIm);
+    }
+    catch(...)
+    {
+        GERROR_STREAM("Errors happened in plotCurves(...) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<float> >& x, const std::vector<hoNDArray<float> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
+    size_t xsize, size_t ysize, bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+
+template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<double> >& x, const std::vector<hoNDArray<double> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
+    size_t xsize, size_t ysize, bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+
+template <typename T> EXPORTGTPLPLOT
 bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray<T> >& y, 
                 const std::string& xlabel, const std::string& ylabel, 
                 const std::string& title, const std::vector<std::string>& legend, 
+                const std::vector<std::string>& symbols, 
                 size_t xsize, size_t ysize, 
+                T xlim[2], T ylim[2], 
                 bool trueColor, bool drawLine, 
                 hoNDArray<float>& plotIm)
 {
@@ -285,8 +322,10 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
         GADGET_CHECK_RETURN_FALSE(y.size()>0);
         GADGET_CHECK_RETURN_FALSE(x.size() == y.size());
 
-        T minX, maxX, minY, maxY;
-        findDataRange(x, y, minX, maxX, minY, maxY);
+        T minX = xlim[0];
+        T maxX = xlim[1];
+        T minY = ylim[0];
+        T maxY = ylim[1];
 
         plsdev("mem");
 
@@ -348,7 +387,13 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
             }
 
             std::string gly;
-            getPlotGlyph(n, gly);
+            if(symbols.size()>n)
+            {
+                gly = symbols[n];
+            }
+            else
+                getPlotGlyph(n, gly);
+
             plstring(N, xd.begin(), yd.begin(), gly.c_str());
         }
 
@@ -427,18 +472,18 @@ bool plotCurves(const std::vector<hoNDArray<T> >& x, const std::vector<hoNDArray
     }
     catch (...)
     {
-        GERROR_STREAM("Errors happened in plotCurves(...) ... ");
+        GERROR_STREAM("Errors happened in plotCurves(xlim, ylim) ... ");
         return false;
     }
 
     return true;
 }
 
-template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<float> >& x, const std::vector<hoNDArray<float> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend,
-    size_t xsize, size_t ysize, bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<float> >& x, const std::vector<hoNDArray<float> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
+    size_t xsize, size_t ysize, float xlim[2], float ylim[2], bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
 
-template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<double> >& x, const std::vector<hoNDArray<double> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend,
-    size_t xsize, size_t ysize, bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
+template EXPORTGTPLPLOT bool plotCurves(const std::vector<hoNDArray<double> >& x, const std::vector<hoNDArray<double> >& y, const std::string& xlabel, const std::string& ylabel, const std::string& title, const std::vector<std::string>& legend, const std::vector<std::string>& symbols, 
+    size_t xsize, size_t ysize, double xlim[2], double ylim[2], bool trueColor, bool drawLine, hoNDArray<float>& plotIm);
 
 // ---------------------------------------------------
 
@@ -498,7 +543,7 @@ bool plotNoiseStandardDeviation(const hoNDArray< std::complex<T> >& m, const std
         plbox("bcnst", 0.0, 0, "bcnstv", 0.0, 0);
 
         std::string gly;
-        getPlotGlyph(25, gly); // circle
+        getPlotGlyph(0, gly); // circle
         plstring(CHA, xd.begin(), yd.begin(), gly.c_str());
 
         // draw the median line
