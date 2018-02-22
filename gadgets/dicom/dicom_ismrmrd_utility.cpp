@@ -673,7 +673,7 @@ namespace Gadgetron
 
             // Image Number
             key.set(0x0020, 0x0013);
-            ACE_OS::snprintf(buf, BUFSIZE, "%d", m1.image_index + 1);
+            ACE_OS::snprintf(buf, BUFSIZE, "%d", m1.image_index);
             write_dcm_string(dataset, key, buf);
 
             // Image Position (Patient)
