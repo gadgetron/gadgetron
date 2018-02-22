@@ -476,6 +476,9 @@ namespace Gadgetron {
 		{
 			while (getline(inputFile, Line))
 			{
+				// crop comment
+				Line = Line.substr(0, Line.find_first_of("#"));
+
 				trim(Line);
 				if (Line.empty() || Line.compare(0, 4, "bart") != 0)
 					continue;
