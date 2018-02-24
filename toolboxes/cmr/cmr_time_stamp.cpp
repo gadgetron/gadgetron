@@ -443,7 +443,7 @@ namespace Gadgetron {
 
             long long n;
 
-            #pragma omp parallel default(none) shared(N, output_N, num, data, res, spline_degree) private (n)
+#pragma omp parallel default(none) shared(N, output_N, num, data, res, spline_degree, num_of_dims) private (n)
             {
                 hoNDArray<T> data_in(N);
                 hoNDArray<T> data_res(output_N);
