@@ -12,6 +12,7 @@
 #include "mri_core_def.h"
 #include "mri_core_data.h"
 #include "mri_core_utility.h"
+#include "hoNDBSpline.h"
 
 namespace Gadgetron { 
 
@@ -37,4 +38,10 @@ namespace Gadgetron {
     /// given the filled time stamp arrays [E1 N], compute time stamp for every n
     EXPORTCMR void compute_phase_time_stamp(const hoNDArray<float>& time_stamp, const hoNDArray<float>& cpt_time_stamp, size_t startE1, size_t endE1, 
         hoNDArray<float>& phs_time_stamp, hoNDArray<float>& phs_cpt_time_stamp);
+
+    /// resample data array along last dimension, for cmr interpolation
+    /// the data has the size [... N], and assumed to be sampled at [0 1 2 ... N-1]
+    /// resampled res array will be computed at [0 dn 2*dn ... output_N-1], dn = (N-1)/(output_N-1)
+    /// BSpline will be used for interpolation
+    template <typename T> EXPORTCMR void resample_cardiac_phase_cmr_array(const hoNDArray<T>& data, size_t output_N, hoNDArray<T>& res, size_t spline_degree=5);
 }
