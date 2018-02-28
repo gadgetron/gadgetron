@@ -431,7 +431,6 @@ namespace Gadgetron {
             size_t N = dims[num_of_dims -1];
 
             GADGET_CHECK_THROW(N>2);
-            GADGET_CHECK_THROW(output_N>N);
 
             std::vector<size_t> dims_res(dims);
             dims_res[num_of_dims - 1] = output_N;
