@@ -111,6 +111,17 @@ namespace Gadgetron {
 	{
 		str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](int s) {return !std::isspace(s); }));
 	}
+
+	inline void BartGadget::rtrim(std::string &str)
+	{
+		str.erase(std::find_if(str.rbegin(), str.rend(), [](int s) {return !std::isspace(s);}).base(), str.end());
+	}
+
+	inline void BartGadget::trim(std::string &str)
+	{
+		ltrim(str);
+		rtrim(str);
+	}
 	
 	void BartGadget::replace_default_parameters(std::string & str)
 	{
@@ -465,7 +476,10 @@ namespace Gadgetron {
 		{
 			while (getline(inputFile, Line))
 			{
-				ltrim(Line);
+				// crop comment
+				Line = Line.substr(0, Line.find_first_of("#"));
+
+				trim(Line);
 				if (Line.empty() || Line.compare(0, 4, "bart") != 0)
 					continue;
 				
