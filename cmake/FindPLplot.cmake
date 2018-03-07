@@ -30,10 +30,23 @@ if (PLPLOT_FOUND)
     else ()
         set(PLPLOT_INCLUDE_DIR "${PLPLOT_PATH}/plplot")
         set(PLPLOT_LIB_DIR "${PLPLOT_PATH}/../lib")
-        # linux distribution has older PLplot version
-        # the 'd' means double precision, not debug
-        set(PLPLOT_LIBRARIES plplotd)
-        set(PLPLOT_LIBRARIES ${PLPLOT_LIBRARIES} plplotcxxd)
+
+	if (EXISTS ${PLPLOT_LIB_DIR}/libplplotcxx.so)
+	  message("PLplot lib is found at ${PLPLOT_LIB_DIR}")
+	  set(PLPLOT_LIBRARIES plplot)
+          set(PLPLOT_LIBRARIES ${PLPLOT_LIBRARIES} plplotcxx)
+	elseif (EXISTS ${PLPLOT_PATH}/../lib/x86_64-linux-gnu/libplplotcxx.so)
+	  set(PLPLOT_LIB_DIR "${PLPLOT_PATH}/../lib/x86_64-linux-gnu")
+ 	  message("PLplot lib is found at ${PLPLOT_LIB_DIR}")
+	  set(PLPLOT_LIBRARIES plplot)
+          set(PLPLOT_LIBRARIES ${PLPLOT_LIBRARIES} plplotcxx)
+	else()
+	  # linux distribution has older PLplot version
+	  # the 'd' means double precision, not debug
+          set(PLPLOT_LIBRARIES plplotd)
+          set(PLPLOT_LIBRARIES ${PLPLOT_LIBRARIES} plplotcxxd)
+	  message("PLplot lib is found at ${PLPLOT_LIB_DIR}")
+	endif ()
     endif ()
 
     add_definitions(-DUSE_PLPLOT)
