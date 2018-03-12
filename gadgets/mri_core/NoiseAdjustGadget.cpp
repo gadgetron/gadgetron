@@ -453,7 +453,6 @@ namespace Gadgetron{
                gemm(*m2->getObjectPtr(), tmp, noise_prewhitener_matrixf_);
           } else {
                if (!pass_nonconformant_data_) {
-                     m1->release();
                      GERROR("Number of channels in noise prewhitener %d is incompatible with incoming data %d\n", noise_prewhitener_matrixf_.get_size(0), m2->getObjectPtr()->get_size(1));
                      return GADGET_FAIL;
                }
