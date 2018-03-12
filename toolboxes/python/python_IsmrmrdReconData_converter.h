@@ -15,6 +15,7 @@ class IsmrmrdReconData_to_python_object {
 public:
   static PyObject* convert(const IsmrmrdReconData & reconData) {
 //      initialize_python();
+      GILLock lock;
     bp::object pygadgetron = bp::import("gadgetron");
 
     auto pyReconData = bp::list();

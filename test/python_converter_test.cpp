@@ -6,18 +6,17 @@
 using namespace Gadgetron;
 using testing::Types;
 
-template<typename T> class python_converter_test : public ::testing::Test
+class python_converter_test : public ::testing::Test
 {
 protected:
     virtual void SetUp()
     {
+
     }
 };
 
-typedef Types<float> realImplementations;
-TYPED_TEST_CASE(python_converter_test, realImplementations);
 
-TYPED_TEST(python_converter_test, no_return_value)
+TEST_F(python_converter_test, no_return_value)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Call a function with no return value (print all arguments)");
@@ -38,7 +37,7 @@ TYPED_TEST(python_converter_test, no_return_value)
     foo(a, b, c, d, e, arr);
 }
 
-TYPED_TEST(python_converter_test, single_return_value)
+TEST_F(python_converter_test, single_return_value)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Call a function with a single return value");
@@ -50,7 +49,7 @@ TYPED_TEST(python_converter_test, single_return_value)
     EXPECT_FLOAT_EQ(atan, 1.05165);
 }
 
-TYPED_TEST(python_converter_test, tuple_return_value)
+TEST_F(python_converter_test, tuple_return_value)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Call a function that returns a tuple");
@@ -64,7 +63,7 @@ TYPED_TEST(python_converter_test, tuple_return_value)
     EXPECT_FLOAT_EQ(fdiff, 2.77);
 }
 
-TYPED_TEST(python_converter_test, tuple_len)
+TEST_F(python_converter_test, tuple_len)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Call a function that expects an iterable argument (tuple)");
@@ -74,7 +73,7 @@ TYPED_TEST(python_converter_test, tuple_len)
     EXPECT_EQ(l, 3);
 }
 
-TYPED_TEST(python_converter_test, numpy_hoNDArray)
+TEST_F(python_converter_test, numpy_hoNDArray)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Generate an hoNDArray of even #s using numpy");
@@ -88,7 +87,7 @@ TYPED_TEST(python_converter_test, numpy_hoNDArray)
     EXPECT_EQ(evens.get_number_of_elements(), 50);
 }
 
-TYPED_TEST(python_converter_test, ismrmrd_imageheader)
+TEST_F(python_converter_test, ismrmrd_imageheader)
 {
     {
         GILLock gl;     // this is needed
@@ -119,7 +118,7 @@ TYPED_TEST(python_converter_test, ismrmrd_imageheader)
     EXPECT_EQ(acq_head2.version, 42);
 }
 
-TYPED_TEST(python_converter_test, std_vec_complex)
+TEST_F(python_converter_test, std_vec_complex)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Test converter for std::vector<std::complex<float>>");
@@ -140,7 +139,7 @@ TYPED_TEST(python_converter_test, std_vec_complex)
     EXPECT_EQ(vec.size(), 32);
 }
 
-TYPED_TEST(python_converter_test, hoNDArray_ismrmrd_imageheader)
+TEST_F(python_converter_test, hoNDArray_ismrmrd_imageheader)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Test for hoNDArray<ISMRMRD::ImageHeader>")
@@ -173,7 +172,7 @@ TYPED_TEST(python_converter_test, hoNDArray_ismrmrd_imageheader)
     EXPECT_EQ(img_head_array.get_size(1), 10);
 }
 
-TYPED_TEST(python_converter_test, ismrmrd_meta)
+TEST_F(python_converter_test, ismrmrd_meta)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Test for ISMRMRD::MetaContainer")
@@ -220,7 +219,7 @@ TYPED_TEST(python_converter_test, ismrmrd_meta)
     EXPECT_FLOAT_EQ(meta.as_double("TestDouble", 2), 3.2);
 }
 
-TYPED_TEST(python_converter_test, vec_ismrmrd_meta)
+TEST_F(python_converter_test, vec_ismrmrd_meta)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Test converter for std::vector<ISMRMRD::MetaContainer>");
@@ -290,7 +289,15 @@ TYPED_TEST(python_converter_test, vec_ismrmrd_meta)
     }
 }
 
-TYPED_TEST(python_converter_test, ismrmrd_image_array)
+TEST_F(python_converter_test, ismrmrd_image_array_to_python){
+    GILLock lock;
+    register_converter<IsmrmrdImageArray>();
+    IsmrmrdImageArray array;
+
+    auto py_array = boost::python::object(array);
+}
+
+TEST_F(python_converter_test, ismrmrd_image_array)
 {
     char* gt_home = std::getenv("GADGETRON_HOME");
     if (gt_home != NULL)

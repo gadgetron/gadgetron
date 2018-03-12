@@ -16,6 +16,7 @@ namespace Gadgetron {
 struct AcquisitionHeader_to_PythonAcquisitionHeader {
     static PyObject* convert(const ISMRMRD::AcquisitionHeader& head) {
         try {
+            GILLock lock;
             bp::object module = bp::import("ismrmrd");
             bp::object pyhead = module.attr("AcquisitionHeader")();
 
@@ -182,6 +183,7 @@ struct AcquisitionHeader_from_PythonAcquisitionHeader {
 struct ImageHeader_to_PythonImageHeader {
     static PyObject* convert(const ISMRMRD::ImageHeader& head) {
         try {
+            GILLock lock;
             bp::object module = bp::import("ismrmrd");
             bp::object pyhead = module.attr("ImageHeader")();
 
@@ -365,7 +367,7 @@ struct MetaContainer_from_PythonMetaContainer
         return obj;
     }
 
-    /// Construct an ISMRMRD::ImageHeader in-place
+    /// Construct an ISMRMRD::MetaContainer in-place
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data* data)
     {
         void* storage = ((bp::converter::rvalue_from_python_storage<ISMRMRD::MetaContainer>*)data)->storage.bytes;
