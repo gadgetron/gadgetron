@@ -115,8 +115,8 @@ namespace Gadgetron {
 
             // -------------------------------------------------
 
-            bool is_cartesian_sampling = (h.encoding[e].trajectory.compare("cartesian") == 0);
-            bool is_epi_sampling = (h.encoding[e].trajectory.compare("epi") == 0);
+            bool is_cartesian_sampling = (h.encoding[e].trajectory == ISMRMRD::TrajectoryType::CARTESIAN);
+            bool is_epi_sampling= (h.encoding[e].trajectory == ISMRMRD::TrajectoryType::EPI);
             if (is_cartesian_sampling || is_epi_sampling)
             {
                 if (h.encoding[e].encodingLimits.kspace_encoding_step_1.is_present())

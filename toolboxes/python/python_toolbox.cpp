@@ -34,12 +34,14 @@ int initialize_python(void)
         //Swap out and return current thread state and release the GIL
         //Must be done, otherwise subsequent calls to PyGILState_Ensure()
         //will not be guaranteed to acquire lock
-        PyThreadState* tstate = PyEval_SaveThread();
+//        PyThreadState* tstate = PyEval_SaveThread();
+        PyThreadState* tstate = PyThreadState_Get();
         if (!tstate) {
             GDEBUG("Error occurred returning lock to Python\n");
             return GADGET_FAIL;
         }
 
+        PyEval_ReleaseThread(tstate);
         python_initialized = true; // interpreter successfully initialized
 
         //Let's first get the path set for the library folder
