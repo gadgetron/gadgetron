@@ -115,8 +115,8 @@ namespace Gadgetron {
 
             // -------------------------------------------------
 
-            bool is_cartesian_sampling = (h.encoding[e].trajectory.compare("cartesian") == 0);
-            bool is_epi_sampling = (h.encoding[e].trajectory.compare("epi") == 0);
+            bool is_cartesian_sampling = (h.encoding[e].trajectory == ISMRMRD::TrajectoryType::CARTESIAN);
+            bool is_epi_sampling= (h.encoding[e].trajectory == ISMRMRD::TrajectoryType::EPI);
             if (is_cartesian_sampling || is_epi_sampling)
             {
                 if (h.encoding[e].encodingLimits.kspace_encoding_step_1.is_present())
@@ -317,7 +317,7 @@ namespace Gadgetron {
                         {
                             for (size_t cha = 0; cha < CHA; cha++)
                             {
-                                GDEBUG_STREAM("sending out " << data_role << " image [CHA SLC CON PHS REP SET AVE] = [" << cha << " "<< res.headers_(n, s, slc).slice << " " << res.headers_(n, s, slc).contrast << " "<< res.headers_(n, s, slc).phase << " " << res.headers_(n, s, slc).repetition << " " << res.headers_(n, s, slc).set << " " << res.headers_(n, s, slc).average << " " << "] "<< " -- Image number -- " << res.headers_(n, s, slc).image_index); 
+                                GDEBUG_STREAM("sending out " << data_role << " image [CHA SLC CON PHS REP SET AVE] = [" << cha << " "<< res.headers_(n, s, slc).slice << " " << res.headers_(n, s, slc).contrast << " "<< res.headers_(n, s, slc).phase << " " << res.headers_(n, s, slc).repetition << " " << res.headers_(n, s, slc).set << " " << res.headers_(n, s, slc).average << " " << "] " << " -- Image series -- " << res.headers_(n, s, slc).image_series_index << " -- Image number -- " << res.headers_(n, s, slc).image_index);
                             }
                         }
                     }
@@ -740,6 +740,32 @@ namespace Gadgetron {
                         meta.set("sampling_limits_E2"   , (long)recon_bit.data_.sampling_.sampling_limits_[2].min_);
                         meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].center_);
                         meta.append("sampling_limits_E2", (long)recon_bit.data_.sampling_.sampling_limits_[2].max_);
+
+                        meta.set("PatientPosition", (double)res.headers_(n, s, slc).position[0]);
+                        meta.append("PatientPosition", (double)res.headers_(n, s, slc).position[1]);
+                        meta.append("PatientPosition", (double)res.headers_(n, s, slc).position[2]);
+
+                        meta.set("read_dir", (double)res.headers_(n, s, slc).read_dir[0]);
+                        meta.append("read_dir", (double)res.headers_(n, s, slc).read_dir[1]);
+                        meta.append("read_dir", (double)res.headers_(n, s, slc).read_dir[2]);
+
+                        meta.set("phase_dir", (double)res.headers_(n, s, slc).phase_dir[0]);
+                        meta.append("phase_dir", (double)res.headers_(n, s, slc).phase_dir[1]);
+                        meta.append("phase_dir", (double)res.headers_(n, s, slc).phase_dir[2]);
+
+                        meta.set("slice_dir", (double)res.headers_(n, s, slc).slice_dir[0]);
+                        meta.append("slice_dir", (double)res.headers_(n, s, slc).slice_dir[1]);
+                        meta.append("slice_dir", (double)res.headers_(n, s, slc).slice_dir[2]);
+
+                        meta.set("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[0]);
+                        meta.append("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[1]);
+                        meta.append("patient_table_position", (double)res.headers_(n, s, slc).patient_table_position[2]);
+
+                        meta.set("acquisition_time_stamp", (long)res.headers_(n, s, slc).acquisition_time_stamp);
+
+                        meta.set("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[0]);
+                        meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[1]);
+                        meta.append("physiology_time_stamp", (long)res.headers_(n, s, slc).physiology_time_stamp[2]);
                     }
                 }
             }

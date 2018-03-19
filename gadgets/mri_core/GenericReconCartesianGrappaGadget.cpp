@@ -423,7 +423,7 @@ namespace Gadgetron {
                 long long ii;
 
                 // only allow this for loop openmp if num>1 and 2D recon
-#pragma omp parallel for default(none) private(ii) shared(src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, convKRO, convKE1, convKE2, kRO, kNE1, kNE2) if(num>1 && E2==1)
+#pragma omp parallel for default(none) private(ii) shared(src, dst, recon_obj, e, num, ref_N, ref_S, ref_RO, ref_E1, ref_E2, RO, E1, E2, dstCHA, srcCHA, convKRO, convKE1, convKE2, kRO, kNE1, kNE2) if(num>1)
                 for (ii = 0; ii < num; ii++)
                 {
                     size_t slc = ii / (ref_N*ref_S);

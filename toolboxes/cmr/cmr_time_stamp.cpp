@@ -415,4 +415,75 @@ namespace Gadgetron {
             GADGET_THROW("Exceptions happened in compute_phase_time_stamp(...) ... ");
         }
     }
+
+    template <typename T> 
+    void resample_cardiac_phase_cmr_array(const hoNDArray<T>& data, size_t output_N, hoNDArray<T>& res, size_t spline_degree)
+    {
+        try
+        {
+            std::vector<size_t> dims;
+            data.get_dimensions(dims);
+
+            size_t num_of_dims = dims.size();
+
+            GADGET_CHECK_THROW(num_of_dims >=2);
+
+            size_t N = dims[num_of_dims -1];
+
+            GADGET_CHECK_THROW(N>2);
+
+            std::vector<size_t> dims_res(dims);
+            dims_res[num_of_dims - 1] = output_N;
+
+            res.create(dims_res);
+            Gadgetron::clear(res);
+
+            long long num = data.get_number_of_elements()/N;
+
+            long long n;
+
+#pragma omp parallel default(none) shared(N, output_N, num, data, res, spline_degree, num_of_dims) private (n)
+            {
+                hoNDArray<T> data_in(N);
+                hoNDArray<T> data_res(output_N);
+                hoNDArray<T> coeff(N);
+                hoNDBSpline< T, 1 > interp;
+
+                float dx = (float(N)-1)/(float(output_N)-1);
+
+                std::vector<size_t> ind;
+
+                #pragma omp for 
+                for (n=0; n<num; n++)
+                {
+                    ind = data.calculate_index(n);
+
+                    size_t ii;
+                    for(ii=0; ii<N; ii++)
+                    {
+                        ind[num_of_dims - 1] = ii;
+                        data_in(ii) = data(ind);
+                    }
+
+                    interp.computeBSplineCoefficients(data_in, spline_degree, coeff);
+
+                    for (ii = 0; ii<output_N; ii++)
+                    {
+                        ind[num_of_dims - 1] = ii;
+                        data_res(ii) = interp.evaluateBSpline(coeff.begin(), N, spline_degree, 0, ii*dx);
+                        res(ind) = data_res(ii);
+                    }
+                }
+            }
+        }
+        catch(...)
+        {
+            GADGET_THROW("Exceptions happened in resample_cardiac_phase_cmr_array(...) ... ");
+        }
+    }
+
+    template EXPORTCMR void resample_cardiac_phase_cmr_array(const hoNDArray<float>& data, size_t output_N, hoNDArray<float>& res, size_t spline_degree);
+    template EXPORTCMR void resample_cardiac_phase_cmr_array(const hoNDArray<double>& data, size_t output_N, hoNDArray<double>& res, size_t spline_degree);
+    template EXPORTCMR void resample_cardiac_phase_cmr_array(const hoNDArray< std::complex<float> >& data, size_t output_N, hoNDArray< std::complex<float> >& res, size_t spline_degree);
+    template EXPORTCMR void resample_cardiac_phase_cmr_array(const hoNDArray< std::complex<double> >& data, size_t output_N, hoNDArray< std::complex<double> >& res, size_t spline_degree);
 }

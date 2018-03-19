@@ -113,7 +113,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     ImageSortGadget.h 
                                     GenericReconBase.h 
                                     GenericReconGadget.h 
-				    GenericReconCartesianFFTGadget.h
+                                    GenericReconCartesianFFTGadget.h
                                     GenericReconCartesianGrappaGadget.h 
                                     GenericReconCartesianSpiritGadget.h 
                                     GenericReconCartesianNonLinearSpirit2DTGadget.h 
