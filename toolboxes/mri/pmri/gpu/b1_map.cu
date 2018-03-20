@@ -691,7 +691,7 @@ namespace Gadgetron{
       REAL sin_a, cos_a; gad_sincos( angle, &sin_a, &cos_a );
 
       complext<REAL> tmp;
-      tmp.vec[0] = cos_a; tmp.vec[1] = sin_a;
+      tmp._real = cos_a; tmp._imag = sin_a;
       tmp = conj(tmp);
 
       for( unsigned int c=0; c<num_batches; c++ ){

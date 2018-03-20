@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "hoNDArray.h"
 #include "cuNDArray.h"
+#include "hoNDArray.h"
 #include "check_CUDA.h"
 
 namespace Gadgetron{

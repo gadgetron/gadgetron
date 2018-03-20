@@ -28,107 +28,108 @@ namespace Gadgetron{
   {
   public:
 
-    T vec[2];
-
+//    T vec[2];
+    T _real;
+    T _imag;  
     __inline__ __host__ __device__  T real() const 
     {
-      return vec[0];
+      return _real;
     }
 
     __inline__ __host__ __device__  T imag() const 
     {
-      return vec[1];
+      return _imag;
     }
 
     __inline__ __host__ __device__  complext() {}
 
     __inline__ __host__ __device__  complext(T real, T imag){
-      vec[0]=real;
-      vec[1]=imag;
+      _real=real;
+      _imag=imag;
     }
 
     __inline__ __host__ __device__  complext(const complext<T>& tmp){
-      vec[0] = tmp.vec[0];
-      vec[1] = tmp.vec[1];
+      _real = tmp._real;
+      _imag = tmp._imag;
     }
 
     __inline__ __host__ __device__  complext(const std::complex<T>& tmp){
-      vec[0] = tmp.real();
-      vec[1] = tmp.imag();
+      _real = tmp.real();
+      _imag = tmp.imag();
 		}
     __inline__ __host__ __device__  complext(const T r){
-      vec[0] = r;
-      vec[1] = 0;
+      _real = r;
+      _imag = 0;
     }
 
     __inline__ __host__ __device__ void conj(){
-      vec[1] = -vec[1];
+      _imag = -_imag;
     }
 
     __inline__ __host__ __device__  complext<T> operator+(const complext<T>& other){
-      return complext<T>(vec[0]+other.vec[0],vec[1]+other.vec[1]);
+      return complext<T>(_real+other._real,_imag+other._imag);
     }
 
     __inline__ __host__ __device__  complext<T> operator-(const complext<T>& other){
-      return complext<T>(vec[0]-other.vec[0],vec[1]-other.vec[1]);
+      return complext<T>(_real-other._real,_imag-other._imag);
     }
 
     __inline__ __host__ __device__  complext<T> operator-(){
-      return complext<T>(-vec[0],-vec[1]);
+      return complext<T>(-_real,-_imag);
     }
 
     __inline__ __host__ __device__  void operator-=(const complext<T>& other){
-      vec[0] -= other.vec[0];
-      vec[1] -= other.vec[1];
+      _real -= other._real;
+      _imag -= other._imag;
     }
 
     __inline__ __host__ __device__  void operator+=(const complext<T>& other){
-      vec[0] += other.vec[0];
-      vec[1] += other.vec[1];
+      _real += other._real;
+      _imag += other._imag;
     }
 
     __inline__ __host__ __device__  complext<T> operator*(const T& other){
-      return complext<T>(vec[0]*other,vec[1]*other);
+      return complext<T>(_real*other,_imag*other);
     }
 
     __inline__ __host__ __device__  complext<T> operator*(const complext<T>& other){
-      return complext<T>(vec[0]*other.vec[0]-vec[1]*other.vec[1],vec[0]*other.vec[1]+vec[1]*other.vec[0]);
+      return complext<T>(_real*other._real-_imag*other._imag,_real*other._imag+_imag*other._real);
     }
 
     __inline__ __host__ __device__  complext<T> operator/(const T& other){
-      return complext<T>(vec[0]/other,vec[1]/other);
+      return complext<T>(_real/other,_imag/other);
     }
 
     __inline__ __host__ __device__  complext<T> operator/(const complext<T>& other){
-      T cd = other.vec[0]*other.vec[0]+other.vec[1]*other.vec[1];
-      return complext<T>((vec[0]*other.vec[0]+vec[1]*other.vec[1])/cd ,(vec[1]*other.vec[0]-vec[0]*other.vec[1])/cd);
+      T cd = other._real*other._real+other._imag*other._imag;
+      return complext<T>((_real*other._real+_imag*other._imag)/cd ,(_imag*other._real-_real*other._imag)/cd);
     }
 
     __inline__ __host__ __device__  void operator*=(const T& other){
-      vec[0] *= other;
-      vec[1] *= other;
+      _real *= other;
+      _imag *= other;
     }
 
     __inline__ __host__ __device__  void operator*=(const complext<T>& other){
       complext<T> tmp = *this;
-      vec[0] = tmp.vec[0]*other.vec[0]-tmp.vec[1]*other.vec[1];
-      vec[1] = tmp.vec[0]*other.vec[1]+tmp.vec[1]*other.vec[0];
+      _real = tmp._real*other._real-tmp._imag*other._imag;
+      _imag = tmp._real*other._imag+tmp._imag*other._real;
     }
 
     __inline__ __host__ __device__  void operator/=(const T& other){
-      vec[0] /= other;
-      vec[1] /= other;
+      _real /= other;
+      _imag /= other;
     }
 
     __inline__ __host__ __device__  void operator/=(const complext<T>& other){
       complext<T> tmp = (*this)/other;
-      vec[0]=tmp.vec[0];
-      vec[1]=tmp.vec[1];
+      _real=tmp._real;
+      _imag=tmp._imag;
     }
 
     __inline__ __host__ __device__  bool operator==(const complext<T>& comp2){
 
-      return vec[0]==comp2.vec[0] && vec[1]==comp2.vec[1];
+      return _real==comp2._real && _imag==comp2._imag;
     }
     __inline__ __host__ __device__  bool operator!=(const complext<T>& comp2){
 
@@ -201,23 +202,23 @@ namespace Gadgetron{
   }
 
   template<class T> __inline__ __host__ __device__ T abs(complext<T> comp){
-    return ::sqrt(comp.vec[0]*comp.vec[0]+comp.vec[1]*comp.vec[1]);
+    return ::sqrt(comp._real*comp._real+comp._imag*comp._imag);
   }
 
   template<class T> __inline__ __host__ __device__ complext<T> sin(complext<T> comp){
-    return complext<T>(sin(comp.vec[0])*std::cosh(comp.vec[1]),std::cos(comp.vec[0])*std::sinh(comp.vec[1]));
+    return complext<T>(sin(comp._real)*std::cosh(comp._imag),std::cos(comp._real)*std::sinh(comp._imag));
   }
 
   template<class T> __inline__ __host__ __device__ complext<T> cos(complext<T> comp){
-    return complext<T>(cos(comp.vec[0])*cosh(comp.vec[1]),-sin(comp.vec[0])*sinh(comp.vec[1]));
+    return complext<T>(cos(comp._real)*cosh(comp._imag),-sin(comp._real)*sinh(comp._imag));
   }
 
   template<class T> __inline__ __host__ __device__ complext<T> exp(complext<T> com){
-	  return exp(com.vec[0])*complext<T>(cos(com.vec[1]),sin(com.vec[1]));
+	  return exp(com._real)*complext<T>(cos(com._imag),sin(com._imag));
   }
 
   template<class T> __inline__ __host__ __device__ T imag(complext<T> comp){
-    return comp.vec[1];
+    return comp._imag;
   }
 
   __inline__ __host__ __device__ double real(double r){
@@ -237,61 +238,61 @@ namespace Gadgetron{
   }
 
   template<class T> __inline__ __host__ __device__ T real(complext<T> comp){
-    return comp.vec[0];
+    return comp._real;
   }
 
   template<class T> __inline__ __host__ __device__ T arg(complext<T> comp){
-    return std::atan2(comp.vec[1],comp.vec[0]);
+    return std::atan2(comp._imag,comp._real);
   }
 
   template<class T> __inline__ __host__ __device__  complext<T> operator*(const T& r,const complext<T>& z){
-    return complext<T>(z.vec[0]*r,z.vec[1]*r);
+    return complext<T>(z._real*r,z._imag*r);
   }
 
   template<class T> __inline__ __host__ __device__  complext<T> operator*(const complext<T>& z,const T& r){
-    return complext<T>(z.vec[0]*r,z.vec[1]*r);
+    return complext<T>(z._real*r,z._imag*r);
   }
 
   template<class T> __inline__ __host__ __device__  complext<T> operator+(const complext<T>& z1,const complext<T>& z2){
-    return complext<T>(z1.vec[0]+z2.vec[0],z1.vec[1]+z2.vec[1]);
+    return complext<T>(z1._real+z2._real,z1._imag+z2._imag);
   }
 
   template<class T> __inline__ __host__ __device__  complext<T> operator+(const complext<T>& z1,const T& r){
-    return complext<T>(z1.vec[0]+r, z1.vec[1]);
+    return complext<T>(z1._real+r, z1._imag);
   }
 
   template<class T> __inline__ __host__ __device__  complext<T> operator+(const T& r,const complext<T>& z1){
-    return complext<T>(z1.vec[0]+r, z1.vec[1]);
+    return complext<T>(z1._real+r, z1._imag);
   }
 
   template<class T> __inline__ __host__ __device__  complext<T> operator-(const complext<T>& z1,const complext<T>& z2){
-    return complext<T>(z1.vec[0]-z2.vec[0],z1.vec[1]-z2.vec[1]);
+    return complext<T>(z1._real-z2._real,z1._imag-z2._imag);
   }
 
   template<class T> __inline__ __host__ __device__  complext<T> operator-(const T& r,const complext<T>& z2){
-    return complext<T>(r-z2.vec[0],-z2.vec[1]);
+    return complext<T>(r-z2._real,-z2._imag);
   }
 
   template<class T> __inline__ __host__ __device__  complext<T> operator-(const complext<T>& z2,const T& r){
-    return complext<T>(z2.vec[0]-r,z2.vec[1]);
+    return complext<T>(z2._real-r,z2._imag);
   }
 
   template<class T> __inline__ __host__ __device__  complext<T> operator*(const complext<T>& z1,const complext<T>& z2){
-    return complext<T>(z1.vec[0]*z2.vec[0]-z1.vec[1]*z2.vec[1],z1.vec[0]*z2.vec[1]+z1.vec[1]*z2.vec[0]);
+    return complext<T>(z1._real*z2._real-z1._imag*z2._imag,z1._real*z2._imag+z1._imag*z2._real);
   }
 
   template<class T> __inline__ __host__ __device__  complext<T> operator/(const complext<T>& z1,const complext<T>& z2){
-    T cd = z2.vec[0]*z2.vec[0]+z2.vec[1]*z2.vec[1];
-    return complext<T>((z1.vec[0]*z2.vec[0]+z1.vec[1]*z2.vec[1])/cd ,(z1.vec[1]*z2.vec[0]-z1.vec[0]*z2.vec[1])/cd);
+    T cd = z2._real*z2._real+z2._imag*z2._imag;
+    return complext<T>((z1._real*z2._real+z1._imag*z2._imag)/cd ,(z1._imag*z2._real-z1._real*z2._imag)/cd);
   }
 
   template<class REAL, class T> __inline__ __host__ __device__  complext<T> operator/(const REAL& real, const complext<T>& comp){
-    T cd = comp.vec[0]*comp.vec[0]+comp.vec[1]*comp.vec[1];
-    return complext<T>(comp.vec[0]*real/cd,-real*comp.vec[1]/cd);
+    T cd = comp._real*comp._real+comp._imag*comp._imag;
+    return complext<T>(comp._real*real/cd,-real*comp._imag/cd);
   }
 
   template<class REAL, class T> __inline__ __host__ __device__  complext<T> operator/(const complext<T>& comp,const REAL& real){
-    return complext<T>(comp.vec[0]/real,comp.vec[1]/real);
+    return complext<T>(comp._real/real,comp._imag/real);
   }
 
   __inline__ __host__ __device__ float norm(const float& r){
@@ -303,7 +304,7 @@ namespace Gadgetron{
   }
 
   template<class T> __inline__ __host__ __device__ T norm(const complext<T>& z){
-    return z.vec[0]*z.vec[0]+z.vec[1]*z.vec[1];
+    return z._real*z._real+z._imag*z._imag;
   }
 
   __inline__ __host__ __device__ double conj(const double& r){ 

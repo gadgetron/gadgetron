@@ -29,8 +29,8 @@ NFFT_output( unsigned int number_of_samples, unsigned int number_of_batches, com
   
   for( unsigned int batch=0; batch<number_of_batches; batch++ ){
     complext<REAL>sample_value;
-    sample_value.vec[0] = shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)];
-    sample_value.vec[1] = shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)+warpSize];
+    sample_value._real = shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)];
+    sample_value._imag = shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)+warpSize];
 
     unsigned int out_idx = (batch*gridDim.y+blockIdx.y)*number_of_samples + globalThreadId;
 
@@ -82,8 +82,8 @@ NFFT_iterate_body( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::T
       image[ (batch*gridDim.y+blockIdx.y)*prod(matrix_size_os) + co_to_idx<D>( vector_td<unsigned int, D>(grid_position), matrix_size_os ) ];
     
     // Add 'weight*grid_value' to the samples in shared memory
-    shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)] += (weight*grid_value.vec[0]);
-    shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)+warpSize] += (weight*grid_value.vec[1]);
+    shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)] += (weight*grid_value._real);
+    shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)+warpSize] += (weight*grid_value._imag);
   }
 }
 

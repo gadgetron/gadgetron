@@ -90,12 +90,11 @@ if ( CUDA_FOUND )
 
     cuda_add_executable(test_all 
         ${test_src_files} 
-        vector_td_test.cpp
-        cuNDArray_elemwise_test.cpp 
+        cuNDArray_elemwise_test.cpp
         cuNDArray_operators_test.cpp 
         cuNDArray_blas_test.cpp 
         cuNDArray_utils_test.cpp
-        vector_td_test.cpp
+#        vector_td_test.cpp
         cuVector_td_test_kernels.h 
         cuVector_td_test_kernels.cu 
         cuNDFFT_test.cpp

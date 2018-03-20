@@ -74,8 +74,7 @@ protected:
 };
 
 typedef Types<float, double> realImplementations;
-typedef Types</*std::complex<float>, std::complex<double>,*/ float_complext, double_complext> cplxImplementations;
-typedef Types<float_complext, double_complext> cplxtImplementations;
+typedef Types</*std::complex<float>, std::complex<double>,*/ float_complext> cplxImplementations;
 
 TYPED_TEST_CASE(cuNDArray_elemwise_TestReal, realImplementations);
 
@@ -370,7 +369,7 @@ TYPED_TEST(cuNDArray_elemwise_TestCplx4,shrinkdTest){
   EXPECT_FLOAT_EQ(0.0,imag(&this->Array)->at(23125));
 }
 
-TYPED_TEST_CASE(cuNDArray_elemwise_TestCplx3, cplxtImplementations);
+TYPED_TEST_CASE(cuNDArray_elemwise_TestCplx3, cplxImplementations);
 
 TYPED_TEST(cuNDArray_elemwise_TestCplx3,realToCplxTest){
   fill(&this->Array,TypeParam(3.4,4.2));
