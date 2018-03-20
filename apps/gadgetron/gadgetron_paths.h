@@ -11,6 +11,7 @@
 #pragma comment(lib, "shlwapi.lib")
 #else
 #include <unistd.h>
+#include <cstdlib>
 #endif // _WIN32
 
 #ifdef __APPLE__
@@ -59,16 +60,15 @@ namespace Gadgetron
         return std::string("");
       }
 #else //Probably some NIX where readlink should work
-    char buff[MAX_GADGETRON_HOME_LENGTH];
-    ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
-    if (len != -1) {
-      buff[len] = '\0';
-      std::string s1(buff);
-      return s1.substr(0, s1.find_last_of("\\/")) + std::string("/../");
-    } else {
+      std::string home = std::getenv("GADGETRON_HOME");
+
+    if (home.size() == 0) {
       GDEBUG_STREAM("Unable to determine GADGETRON_HOME" << std::endl);
       return std::string("");
+    } else {
+        return home;
     }
+
 #endif
   }
 }
