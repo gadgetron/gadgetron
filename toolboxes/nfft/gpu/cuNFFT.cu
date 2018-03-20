@@ -922,8 +922,8 @@ compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typ
     
     // Output weight
     complext<REAL>  result;
-    result.vec[0] = weight; 
-    result.vec[1] = zero;
+    result._real = weight; 
+    result._imag = zero;
     image_os[idx] = result;
   }
 }

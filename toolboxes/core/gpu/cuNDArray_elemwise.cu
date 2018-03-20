@@ -285,7 +285,7 @@ template <typename T,typename T2> struct cuNDA_convert_to : public thrust::unary
 
 template <typename T,typename T2> struct cuNDA_convert_to<complext<T>,complext<T2> > : public thrust::unary_function<complext<T>,complext<T2> >
 {
-  __device__ complext<T2> operator()(complext<T> &x) const {return complext<T2>(x.vec[0],x.vec[1]);}
+  __device__ complext<T2> operator()(complext<T> &x) const {return complext<T2>(x._real,x._imag);}
 };
 
 template<class T, class T2> boost::shared_ptr< cuNDArray<T2> >

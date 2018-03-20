@@ -16,8 +16,8 @@ template <class T> __global__ static void filter_kernel(T* x, T* g, int elements
 template <class REAL> __global__ static void filter_kernel(complext<REAL>* x, complext<REAL>* g, int elements){
 	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
 	if (idx < elements){
-		if ( real(x[idx]) <= REAL(0) && real(g[idx]) > 0) g[idx].vec[0] = REAL(0);
-		g[idx].vec[1]=REAL(0);
+		if ( real(x[idx]) <= REAL(0) && real(g[idx]) > 0) g[idx]._real = REAL(0);
+		g[idx]._imag=REAL(0);
 	}
 }
 

@@ -21,6 +21,13 @@
 
 #if GADGETRON_CUDA_IS_AVAILABLE
 #include "host_defines.h"
+//Here we bypass the CUDA 9 issues caused when CUDACC was deprecated
+#ifdef __CUDACC_VER__
+#ifdef __CUDACC_VER_MAJOR__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ (__CUDACC_VER_MAJOR__ * 10000 + __CUDACC_VER_MINOR__ * 100)
+#endif
+#endif
 #else
 #define __host__
 #define __device__
