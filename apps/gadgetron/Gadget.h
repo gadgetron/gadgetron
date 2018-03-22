@@ -540,8 +540,8 @@ namespace Gadgetron{
 
    protected:
       T value_;
-      L limits_;
       Gadget* g_;
+      L limits_;
     };
 
     template <typename T, typename L> class GadgetProperty<std::vector<T>,L >
