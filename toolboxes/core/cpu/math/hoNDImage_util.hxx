@@ -53,7 +53,6 @@ namespace Gadgetron
     template<typename ImageType, typename InterpolatorType> 
     bool downsampleImage(const ImageType& in, InterpolatorType& interp, ImageType& out, float ratio[])
     {
-        typedef typename ImageType::value_type T;
         unsigned int D = ImageType::NDIM;
 
         try
@@ -83,7 +82,6 @@ namespace Gadgetron
     template<typename ImageType, typename InterpolatorType> 
     bool upsampleImage(const ImageType& in, InterpolatorType& interp, ImageType& out, float ratio[])
     {
-        typedef typename ImageType::value_type T;
         unsigned int D = ImageType::NDIM;
 
         try
@@ -113,7 +111,6 @@ namespace Gadgetron
     template<typename ImageType, typename InterpolatorType> 
     bool resampleImage(const ImageType& in, InterpolatorType& interp, const std::vector<size_t>& dim_out, ImageType& out)
     {
-        typedef typename ImageType::value_type T;
         unsigned int D = ImageType::NDIM;
 
         try
