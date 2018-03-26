@@ -1,8 +1,7 @@
-#ifndef GADGETRON_PYTHON_H
-#define GADGETRON_PYTHON_H
+#pragma once
 
 #include "python_export.h"
-
+#include "log.h"
 #include <boost/python.hpp>
 namespace bp = boost::python;
 
@@ -22,27 +21,33 @@ EXPORTPYTHON std::string pyerr_to_string(void);
 }
 
 // Include converters after declaring above functions
-#include "python_converters.h"
-
-namespace Gadgetron
-{
+namespace Gadgetron {
 /// Utility class for RAII handling of the Python GIL. Usage:
 ///
 ///    GILLock lg;  // at the top of a block
 ///
-class GILLock
-{
-public:
-    GILLock() { gstate_ = PyGILState_Ensure(); }
-    ~GILLock() { PyGILState_Release(gstate_); }
-private:
-    // noncopyable
-    GILLock(const GILLock&);
-    GILLock& operator=(const GILLock&);
+    class GILLock {
+    public:
+        GILLock() { gstate_ = PyGILState_Ensure(); }
 
-    PyGILState_STATE gstate_;
-};
+        ~GILLock() { PyGILState_Release(gstate_); }
 
+    private:
+        // noncopyable
+        GILLock(const GILLock &);
+
+        GILLock &operator=(const GILLock &);
+
+        PyGILState_STATE gstate_;
+
+    };
+
+}
+
+#include "python_converters.h"
+
+
+namespace Gadgetron {
 /// Base class for templated PythonFunction class. Do not use directly.
 class PythonFunctionBase
 {
@@ -151,4 +156,4 @@ public:
 
 }
 
-#endif // GADGETRON_PYTHON_H
+

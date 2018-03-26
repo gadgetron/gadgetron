@@ -13,10 +13,11 @@
 #endif
 
 //In header file add this macro
-//#define GADGETRON_LOADABLE_DECLARE(COMPONENT)                   \
-//  void *operator new (size_t bytes);                            \
-//  void operator delete (void *ptr);                             \
-//  void *operator new(size_t s, void * p) { return p; }
+/*#define GADGETRON_LOADABLE_DECLARE(COMPONENT)                   \
+ void *operator new (size_t bytes);                            \
+ void operator delete (void *ptr);                             \
+ void *operator new(size_t s, void * p) { return p; }
+*/
 
 //In CPP file add this macro add the end
 #define GADGETRON_LOADABLE_FACTORY_DECLARE(CLASS, COMPONENT)	\

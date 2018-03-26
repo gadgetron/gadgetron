@@ -29,7 +29,7 @@ template <typename T> class cuNDArray_vector_td_Test : public ::testing::Test {
 };
 
 //typedef Types<float,double,float_complext,double_complext> Implementations;
-typedef Types<float,double> Implementations;
+typedef Types<float> Implementations;
 
 TYPED_TEST_CASE(cuNDArray_vector_td_Test, Implementations);
 

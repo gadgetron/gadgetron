@@ -35,17 +35,35 @@
 
 
 namespace Gadgetron {
+	
+	// The user is free to add more parameters as the need arises.
+	struct Default_parameters 
+	{
+		uint16_t recon_matrix_x;
+		uint16_t recon_matrix_y;
+		uint16_t recon_matrix_z;
+		uint16_t FOV_x;
+		uint16_t FOV_y;
+		uint16_t FOV_z;
+		uint16_t acc_factor_PE1;
+		uint16_t acc_factor_PE2;
+		uint16_t reference_lines_PE1;
+		uint16_t reference_lines_PE2;
+	};
 
-	class EXPORTGADGETS_bartgadget BartGadget : public GenericReconGadget
+	class EXPORTGADGETS_bartgadget BartGadget final : public GenericReconGadget
 	{
 
 	public:
-		GADGET_DECLARE(BartGadget);
+		GADGET_DECLARE(BartGadget)
+		
+		using BaseClass = GenericReconGadget;
 
 		BartGadget();
-		virtual ~BartGadget() = default;
+		~BartGadget() = default;
 
 	protected:
+		GADGET_PROPERTY(isVerboseON, bool, "Display some information about the incoming data", false);
 		GADGET_PROPERTY(BartWorkingDirectory, std::string, "Absolute path to temporary file location (will default to workingDirectory)", "");
 		GADGET_PROPERTY(AbsoluteBartCommandScript_path, std::string, "Absolute path to bart script(s)", get_gadgetron_home() + "/share/gadgetron/bart");
 		GADGET_PROPERTY(BartCommandScript_name, std::string, "Script file containing bart command(s) to be loaded", "");
@@ -57,12 +75,14 @@ namespace Gadgetron {
 		GADGET_PROPERTY(isBartFolderBeingCachedToVM, bool, "Mount bart directory to the virtual memory for better performance", false);
 		GADGET_PROPERTY(AllocateMemorySizeInMegabytes, int, "Allocate memory to bart directory", 50);
 
-		virtual int process(GadgetContainerMessage<IsmrmrdReconData>* m1);
-		long long image_counter_;
-		std::string workLocation_;
+		int process_config(ACE_Message_Block* mb);
+		int process(GadgetContainerMessage<IsmrmrdReconData>* m1);		
 
 
 	private:
+                std::string workLocation_;
+		Default_parameters dp;
+		
 		// Write BART files
 		template<typename T>
 		void write_BART_hdr(const char* filename, std::vector<T> &DIMS);
@@ -77,6 +97,9 @@ namespace Gadgetron {
 		std::string &getOutputFilename(const std::string &bartCommandLine);
 		void cleanup(std::string &createdFiles);
 		void ltrim(std::string &str);
+		void rtrim(std::string &str);
+		void trim(std::string &str);
+		void replace_default_parameters(std::string &str);
 	};
 
 
@@ -108,5 +131,5 @@ namespace Gadgetron {
 		pFile.write(reinterpret_cast<char*>(&DATA[0]), DATA.size() * sizeof(float));
 		pFile.close();
 	}
-}
+} // namespace Gadgetron
 #endif //BART_GADGET_H

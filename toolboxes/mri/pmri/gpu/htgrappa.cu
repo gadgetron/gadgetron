@@ -110,7 +110,7 @@ namespace Gadgetron {
       if ((coil == coilg) && (kx == 0) && (ky == 0) && (set == 0)) {
         kernel[coilg*source_coils*(kernel_size.y*acceleration_factor)*kernel_size.x +
                coil*(kernel_size.y*acceleration_factor)*kernel_size.x +
-               ((kernel_size.y>>1)*acceleration_factor)*kernel_size.x + (kernel_size.x>>1) ].vec[0] = 1;
+               ((kernel_size.y>>1)*acceleration_factor)*kernel_size.x + (kernel_size.x>>1) ]._real = 1;
 
       }
     }

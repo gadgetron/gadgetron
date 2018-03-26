@@ -3,7 +3,7 @@
 */
 
 #pragma once
-
+#include "core_defines.h"
 #include "NDArray.h"
 #include "hoNDArray.h"
 #include "complext.h"

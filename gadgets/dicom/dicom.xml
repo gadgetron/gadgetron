@@ -19,10 +19,6 @@
       <name>RemoveROOversampling</name>
         <dll>gadgetron_mricore</dll>
         <classname>RemoveROOversamplingGadget</classname>
-        <property>
-            <name>constant_noise_variance</name>
-            <value>false</value>
-        </property>
     </gadget>
 
     <gadget>

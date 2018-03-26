@@ -84,26 +84,26 @@ namespace Gadgetron
             // -------------------------------------------------
 
             if (!h.measurementInformation) {
-                GADGET_THROW("Header missing MeasurementInformation parameters");
+                GWARN("Header missing MeasurementInformation parameters");
             }
 
-            ISMRMRD::MeasurementInformation meas_info = *h.measurementInformation;
+            auto meas_info = h.measurementInformation;
 
             // -------------------------------------------------
 
             if (!h.acquisitionSystemInformation) {
-                GADGET_THROW("Header missing AcquisitionSystemInformation parameters");
+                GWARN("Header missing AcquisitionSystemInformation parameters");
             }
 
-            ISMRMRD::AcquisitionSystemInformation sys_info = *h.acquisitionSystemInformation;
+            auto sys_info = h.acquisitionSystemInformation;
 
             if (!h.sequenceParameters) {
-                GADGET_THROW("Header missing SequenceTiming parameters");
+                GWARN("Header missing SequenceTiming parameters");
             }
 
             // -------------------------------------------------
 
-            ISMRMRD::SequenceParameters seq_info = *h.sequenceParameters;
+            auto seq_info = h.sequenceParameters;
 
             if (h.encoding.size() == 0) {
                 GDEBUG_STREAM("Number of encoding spaces: " << h.encoding.size());
@@ -123,9 +123,9 @@ namespace Gadgetron
 
             // Set the Application Entity Title in the DICOM Meta Info section
             // The rest of the Meta Info will be automatically populated by DCMTK
-            if (sys_info.stationName) {
+            if (sys_info && sys_info->stationName) {
                 status = metainfo->putAndInsertString(DcmTagKey(0x0002, 0x0016),
-                    sys_info.stationName->c_str());
+                    sys_info.get().stationName->c_str());
                 if (!status.good()) {
                     GADGET_THROW("Failed to set AET in MetaInfo");
                 }
@@ -168,9 +168,9 @@ namespace Gadgetron
             }
 
             // Series, Acquisition, Content Date
-            if (meas_info.seriesDate) {
+            if (meas_info && meas_info->seriesDate) {
                 key.set(0x0008, 0x0021);
-                std::string d(meas_info.seriesDate.get());
+                std::string d(meas_info.get().seriesDate.get());
                 d.erase(std::remove(d.begin(), d.end(), '-'), d.end());
                 write_dcm_string(dataset, key, d.c_str());
 
@@ -190,9 +190,9 @@ namespace Gadgetron
             }
 
             // Series, Acquisition, Content Time
-            if (meas_info.seriesTime) {
+            if (meas_info->seriesTime) {
                 key.set(0x0008, 0x0031);
-                std::string t(meas_info.seriesTime.get());
+                std::string t(meas_info.get().seriesTime.get());
                 t.erase(std::remove(t.begin(), t.end(), ':'), t.end());
                 write_dcm_string(dataset, key, t.c_str());
 
@@ -221,8 +221,8 @@ namespace Gadgetron
 
             // Manufacturer
             key.set(0x0008, 0x0070);
-            if (sys_info.systemVendor) {
-                write_dcm_string(dataset, key, sys_info.systemVendor->c_str());
+            if (sys_info && sys_info->systemVendor) {
+                write_dcm_string(dataset, key, sys_info.get().systemVendor->c_str());
             }
             else {
                 write_dcm_string(dataset, key, "UNKNOWN");
@@ -230,8 +230,8 @@ namespace Gadgetron
 
             // Institution Name
             key.set(0x0008, 0x0080);
-            if (sys_info.institutionName) {
-                write_dcm_string(dataset, key, sys_info.institutionName->c_str());
+            if (sys_info && sys_info->institutionName) {
+                write_dcm_string(dataset, key, sys_info.get().institutionName->c_str());
             }
             else {
                 write_dcm_string(dataset, key, "UNKNOWN");
@@ -248,8 +248,8 @@ namespace Gadgetron
 
             // Station Name
             key.set(0x0008, 0x1010);
-            if (sys_info.stationName) {
-                write_dcm_string(dataset, key, sys_info.stationName->c_str());
+            if (sys_info && sys_info->stationName) {
+                write_dcm_string(dataset, key, sys_info.get().stationName->c_str());
             }
             else {
                 write_dcm_string(dataset, key, "");
@@ -266,8 +266,8 @@ namespace Gadgetron
 
             // Series Description
             key.set(0x0008, 0x103E);
-            if (meas_info.seriesDescription) {
-                write_dcm_string(dataset, key, meas_info.seriesDescription->c_str());
+            if (meas_info->seriesDescription) {
+                write_dcm_string(dataset, key, meas_info.get().seriesDescription->c_str());
             }
             else {
                 write_dcm_string(dataset, key, "");
@@ -275,15 +275,15 @@ namespace Gadgetron
 
             // Manufacturer's Model Name
             key.set(0x0008, 0x1090);
-            if (sys_info.systemModel) {
-                write_dcm_string(dataset, key, sys_info.systemModel->c_str());
+            if (sys_info && sys_info->systemModel) {
+                write_dcm_string(dataset, key, sys_info.get().systemModel->c_str());
             }
             else {
                 write_dcm_string(dataset, key, "");
             }
 
             // Referenced SOP Instance UIDs
-            std::vector<ISMRMRD::ReferencedImageSequence> refs(meas_info.referencedImageSequence);
+            std::vector<ISMRMRD::ReferencedImageSequence> refs(meas_info->referencedImageSequence);
             if (refs.size() > 0) {
                 DcmItem *ref_sequence;
                 std::vector<ISMRMRD::ReferencedImageSequence>::iterator it;
@@ -354,9 +354,9 @@ namespace Gadgetron
 
             // Patient Age
             key.set(0x0010, 0x1010);
-            if (patient_info.patientBirthdate && meas_info.seriesDate) {
+            if (patient_info.patientBirthdate && meas_info->seriesDate) {
                 boost::gregorian::date bday(boost::gregorian::from_simple_string(patient_info.patientBirthdate.get()));
-                boost::gregorian::date seriesDate(boost::gregorian::from_simple_string(meas_info.seriesDate.get()));
+                boost::gregorian::date seriesDate(boost::gregorian::from_simple_string(meas_info.get().seriesDate.get()));
 
                 boost::gregorian::days age = seriesDate - bday;
 
@@ -438,34 +438,34 @@ namespace Gadgetron
             write_dcm_string(dataset, key, buf);
 
             // Repetition Time
-            if (seq_info.TR.is_present() && seq_info.TR.get().size() > 0)
+            if (seq_info && seq_info.get().TR.is_present() && seq_info.get().TR.get().size() > 0)
             {
                 key.set(0x0018, 0x0080);
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TR.get().front());
+                ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.get().TR.get().front());
                 write_dcm_string(dataset, key, buf);
             }
 
             // Echo Time
-            if (seq_info.TE.is_present() && seq_info.TE.get().size() > 0)
+            if (seq_info && seq_info.get().TE.is_present() && seq_info.get().TE.get().size() > 0)
             {
                 key.set(0x0018, 0x0081);
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TE.get().front());
+                ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.get().TE.get().front());
                 write_dcm_string(dataset, key, buf);
             }
 
             // Inversion Time
-            if (seq_info.TI.is_present() && seq_info.TI.get().size()>0)
+            if (seq_info && seq_info.get().TI.is_present() && seq_info.get().TI.get().size()>0)
             {
                 key.set(0x0018, 0x0082);
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.get().front());
+                ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.get().TI.get().front());
                 write_dcm_string(dataset, key, buf);
             }
 
             // Flip Angle
-            if (seq_info.flipAngle_deg.is_present() && seq_info.flipAngle_deg.get().size()>0)
+            if (seq_info && seq_info.get().flipAngle_deg.is_present() && seq_info.get().flipAngle_deg.get().size()>0)
             {
                 key.set(0x0018, 0x1314);
-                ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)seq_info.flipAngle_deg.get().front());
+                ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)seq_info.get().flipAngle_deg.get().front());
                 write_dcm_string(dataset, key, buf);
             }
 
@@ -476,8 +476,8 @@ namespace Gadgetron
 
             // Magnetic Field Strength (T)
             key.set(0x0018, 0x0087);
-            if (sys_info.systemFieldStrength_T) {
-                ACE_OS::snprintf(buf, BUFSIZE, "%f", *sys_info.systemFieldStrength_T);
+            if (sys_info && sys_info->systemFieldStrength_T) {
+                ACE_OS::snprintf(buf, BUFSIZE, "%f", *sys_info->systemFieldStrength_T);
                 write_dcm_string(dataset, key, buf);
             }
             else {
@@ -505,9 +505,9 @@ namespace Gadgetron
             write_dcm_string(dataset, key, "100");
 
             // Protocol Name
-            if (meas_info.protocolName) {
+            if (meas_info && meas_info->protocolName) {
                 key.set(0x0018, 0x1030);
-                write_dcm_string(dataset, key, meas_info.protocolName.get().c_str());
+                write_dcm_string(dataset, key, meas_info.get().protocolName.get().c_str());
             }
             else {
                 write_dcm_string(dataset, key, "");
@@ -524,10 +524,11 @@ namespace Gadgetron
             key.set(0x0018, 0x1312);
             write_dcm_string(dataset, key, "ROW");
 
-            // Patient Position
-            key.set(0x0018, 0x5100);
-            write_dcm_string(dataset, key, meas_info.patientPosition.c_str());
-
+            if (meas_info) {
+                // Patient Position
+                key.set(0x0018, 0x5100);
+                write_dcm_string(dataset, key, meas_info.get().patientPosition.c_str());
+            }
             /****************************************/
             // Group Length
             key.set(0x0020, 0x0000);
@@ -552,9 +553,9 @@ namespace Gadgetron
             }
 
             // Frame of Reference UID
-            if (meas_info.frameOfReferenceUID) {
+            if (meas_info && meas_info->frameOfReferenceUID) {
                 key.set(0x0020, 0x0052);
-                write_dcm_string(dataset, key, meas_info.frameOfReferenceUID->c_str());
+                write_dcm_string(dataset, key, meas_info.get().frameOfReferenceUID->c_str());
             }
 
             /****************************************/

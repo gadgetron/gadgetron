@@ -30,8 +30,8 @@ NFFT_H_output( unsigned int number_of_batches, complext<REAL>* __restrict__ imag
   
   for( unsigned int batch=0; batch<number_of_batches; batch++ ){
     complext<REAL>cell_coefficient;
-    cell_coefficient.vec[0] = shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)];
-    cell_coefficient.vec[1] = shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize];
+    cell_coefficient._real = shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)];
+    cell_coefficient._imag = shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize];
     image[(batch*gridDim.y+blockIdx.y)*number_of_domains+globalThreadId] = cell_coefficient;
   }
 }
@@ -82,8 +82,8 @@ NFFT_H_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Typ
 	complext<REAL>sample_val = samples[sampleIdx+batch*gridDim.y*number_of_samples];
 
 	// Apply filter to shared memory domain. 
-	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)] += (weight*sample_val.vec[0]);
-	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize] += (weight*sample_val.vec[1]);
+	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)] += (weight*sample_val._real);
+	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize] += (weight*sample_val._imag);
       }
     }
 }

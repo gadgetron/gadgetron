@@ -22,6 +22,7 @@ namespace Gadgetron {
     public:
         static PyObject* convert(const IsmrmrdImageArray & arrayData)
         {
+            GILLock lock;
             bp::object pygadgetron = bp::import("gadgetron");
 
             auto data = bp::object(arrayData.data_);
@@ -44,6 +45,8 @@ namespace Gadgetron {
             auto pyHeaders = boost::python::object(arrayData.headers_);
             auto pyMeta = boost::python::object(arrayData.meta_);
 
+            bp::incref(pyHeaders.ptr());
+            bp::incref(pyMeta.ptr());
             auto buffer = pygadgetron.attr("IsmrmrdImageArray")(data, pyHeaders, pyMeta);
 
             // increment the reference count so it exists after `return`
