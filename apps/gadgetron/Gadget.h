@@ -756,6 +756,55 @@ namespace Gadgetron{
 
       };
 
+      template <class P1, class P2> class Gadget1Of2 : public BasicPropertyGadget
+      {
+      protected:
+          int process(ACE_Message_Block* mb)
+          {
+              GadgetContainerMessage<P1>* m1 = AsContainerMessage<P1>(mb);
+              GadgetContainerMessage<P2>* m2 = 0;
+
+              if (m1)
+              {
+                  return this->process(m1);
+              }
+              else
+              {
+                  m2 = AsContainerMessage<P2>(mb);
+                  if (m2)
+                  {
+                      return this->process(m2);
+                  }
+              }
+
+              if(!m1 || !m2)
+              {
+                  if (!pass_on_undesired_data_)
+                  {
+                      GERROR("%s -> %s, (%s, %s, %p, %p), (%s, %s, %p, %p)\n",
+                          this->module()->name(),
+                          "Gadget1Of2::process, Conversion of Message Block Failed, must be one of two types",
+                          typeid(GadgetContainerMessage<P1>*).name(),
+                          typeid(m1).name(),
+                          mb,
+                          m1,
+                          typeid(GadgetContainerMessage<P2>*).name(),
+                          typeid(m2).name(),
+                          mb->cont(),
+                          m2);
+                      return -1;
+                  }
+                  else
+                  {
+                      return (this->next()->putq(mb));
+                  }
+              }
+          }
+
+          virtual int process(GadgetContainerMessage<P1>* m1) = 0;
+          virtual int process(GadgetContainerMessage<P2>* m1) = 0;
+      };
+
       /* Macros for handling dyamic linking */
       // #define GADGET_DECLARE(GADGET) GADGETRON_LOADABLE_DECLARE(GADGET)
       // #define GADGET_FACTORY_DECLARE(GADGET) GADGETRON_LOADABLE_FACTORY_DECLARE(Gadget,GADGET)
