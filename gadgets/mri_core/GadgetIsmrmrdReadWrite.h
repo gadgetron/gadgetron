@@ -8,6 +8,7 @@
 #include "url_encode.h"
 #include "gadgetron_mricore_export.h"
 #include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/waveform.h>
 #include <ace/SOCK_Stream.h>
 #include <ace/Task.h>
 #include <complex>
@@ -286,6 +287,105 @@ namespace Gadgetron{
             return m1;
         }
 
-    };    
+    };
+
+    // ------------------------------------------------------------------------------------------------------- //
+    // ISMRMRD wave form reader/writer
+
+    class EXPORTGADGETSMRICORE GadgetIsmrmrdWaveformMessageWriter : public GadgetMessageWriter
+    {
+
+    public:
+        virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
+        {
+            auto h = AsContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>(mb);
+
+            if (!h)
+            {
+                GERROR("GadgetIsmrmrdWaveformMessageWriter, invalid waveform message objects");
+                return -1;
+            }
+
+            ssize_t send_cnt = 0;
+
+            GadgetMessageIdentifier id;
+            id.id = GADGET_MESSAGE_ISMRMRD_WAVEFORM;
+
+            if ((send_cnt = sock->send_n(&id, sizeof(GadgetMessageIdentifier))) <= 0)
+            {
+                GERROR("Unable to send waveform message identifier\n");
+                return -1;
+            }
+
+            ISMRMRD::ISMRMRD_WaveformHeader* wavHead = h->getObjectPtr();
+            if ((send_cnt = sock->send_n(wavHead, sizeof(ISMRMRD::ISMRMRD_WaveformHeader))) <= 0)
+            {
+                GERROR("Unable to send waveform header\n");
+                return -1;
+            }
+
+            unsigned long data_elements = wavHead->channels*wavHead->number_of_samples;
+
+            auto d = AsContainerMessage< hoNDArray<uint32_t> >(h->cont());
+
+            if (data_elements)
+            {
+                if ((send_cnt = sock->send_n(d->getObjectPtr()->get_data_ptr(), sizeof(uint32_t)*data_elements)) <= 0)
+                {
+                    GERROR("Unable to send waveform data elements\n");
+                    return -1;
+                }
+            }
+
+            return 0;
+        }
+    };
+
+    class EXPORTGADGETSMRICORE GadgetIsmrmrdWaveformMessageReader : public GadgetMessageReader
+    {
+
+    public:
+        GADGETRON_READER_DECLARE(GadgetIsmrmrdWaveformMessageReader);
+
+        virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream)
+        {
+            GadgetContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>* m1 = new GadgetContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>();
+            GadgetContainerMessage<hoNDArray< uint32_t > >* m2 = new GadgetContainerMessage< hoNDArray< uint32_t > >();
+
+            m1->cont(m2);
+
+            ssize_t recv_count = 0;
+
+            if ((recv_count = stream->recv_n(m1->getObjectPtr(), sizeof(ISMRMRD::ISMRMRD_WaveformHeader))) <= 0)
+            {
+                GERROR("GadgetIsmrmrdWaveformMessageReader, failed to read ISMRMRD_WaveformHeader\n");
+                return 0;
+            }
+
+            std::vector<size_t> adims;
+            adims.push_back(m1->getObjectPtr()->number_of_samples);
+            adims.push_back(m1->getObjectPtr()->channels);
+
+            try
+            {
+                m2->getObjectPtr()->create(&adims);
+            }
+            catch (std::runtime_error &err)
+            {
+                GEXCEPTION(err, "(%P|%t) Allocate waveform sample data\n");
+                m1->release();
+                return 0;
+            }
+
+            if ((recv_count = stream->recv_n(m2->getObjectPtr()->get_data_ptr(), sizeof(uint32_t)*adims[0] * adims[1])) <= 0)
+            {
+                GERROR("Unable to read waveform data\n");
+                m1->release();
+                return 0;
+            }
+
+            return m1;
+        }
+    };
 }
 #endif //GADGETISMRMRDREADWRITE_H

@@ -13,7 +13,6 @@
 // -NIFTI and Analyze output
 // -Check on potential threading problem with asio socket 
 //    - having and reading and writing thread is supposedly not safe, but seems to work here
-// -Add command line switch for controlling verbosity of output
 // -Static linking for standalone executable. 
 
 #include <boost/program_options.hpp>
@@ -26,6 +25,7 @@
 #include <ismrmrd/dataset.h>
 #include <ismrmrd/meta.h>
 #include <ismrmrd/xml.h>
+#include <ismrmrd/waveform.h>
 
 #include <fstream>
 #include <streambuf>
@@ -222,6 +222,7 @@ enum GadgetronMessageID {
     GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_SHORT     = 1021, /**< DEPRECATED */
     GADGET_MESSAGE_ISMRMRD_IMAGE                          = 1022,
     GADGET_MESSAGE_RECONDATA                              = 1023,
+    GADGET_MESSAGE_ISMRMRD_WAVEFORM                       = 1026,
     GADGET_MESSAGE_EXT_ID_MAX                             = 4096
 };
 
@@ -1098,7 +1099,7 @@ public:
     {
         timeout_ms_ = t;
     }
-    
+
     void read_task()
     {
         if (!socket_) {
@@ -1107,25 +1108,25 @@ public:
 
         GadgetMessageIdentifier id;
         while (socket_->is_open()) {
-	  try {
+      try {
             boost::asio::read(*socket_, boost::asio::buffer(&id,sizeof(GadgetMessageIdentifier)));
-	    
+
             if (id.id == GADGET_MESSAGE_CLOSE) {
-	      break;
+          break;
             }
-	    
+
             GadgetronClientMessageReader* r = find_reader(id.id);
-	    
+
             if (!r) {
-	      std::cout << "Message received with ID: " << id.id << std::endl;
-	      throw GadgetronClientException("Unknown Message ID");
+          std::cout << "Message received with ID: " << id.id << std::endl;
+          throw GadgetronClientException("Unknown Message ID");
             } else {
-	      r->read(socket_);
+          r->read(socket_);
             }
-	  } catch (...) {
-	    std::cout << "Input stream has terminated" << std::endl;
-	    return;	    
-	  }
+      } catch (...) {
+        std::cout << "Input stream has terminated" << std::endl;
+        return;
+      }
         }
     }
 
@@ -1135,13 +1136,11 @@ public:
 
     void connect(std::string hostname, std::string port)
     {
-
-
         tcp::resolver resolver(io_service);
         tcp::resolver::query query(tcp::v4(), hostname.c_str(), port.c_str());
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
         tcp::resolver::iterator end;
-        
+
         socket_ = new tcp::socket(io_service);
         if (!socket_) {
             throw GadgetronClientException("Unable to create socket.");
@@ -1170,14 +1169,10 @@ public:
         }
 
         t.join();
-        
         if (error)
             throw GadgetronClientException("Error connecting using socket.");
-                               
-
 
         reader_thread_ = boost::thread(boost::bind(&GadgetronClientConnector::read_task, this));
-
     }
 
     void send_gadgetron_close() { 
@@ -1224,7 +1219,6 @@ public:
         boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));    
 
     }
-
 
     void  send_gadgetron_parameters(std::string xml_string)
     {
@@ -1343,10 +1337,10 @@ public:
 
             CompressedBuffer<float> comp_buffer(input_data, local_tolerance);
             std::vector<uint8_t> serialized_buffer = comp_buffer.serialize();
- 
+
             compressed_bytes_sent_ += serialized_buffer.size();
             uncompressed_bytes_sent_ += data_elements*2*sizeof(float);
-                            
+
             uint32_t bs = (uint32_t)serialized_buffer.size();
             boost::asio::write(*socket_, boost::asio::buffer(&bs, sizeof(uint32_t)));
             boost::asio::write(*socket_, boost::asio::buffer(&serialized_buffer[0], serialized_buffer.size()));
@@ -1356,7 +1350,7 @@ public:
     void send_ismrmrd_zfp_compressed_acquisition_precision(ISMRMRD::Acquisition& acq, unsigned int compression_precision) 
     {
 
-#if defined GADGETRON_COMPRESSION_ZFP           
+#if defined GADGETRON_COMPRESSION_ZFP
         if (!socket_) {
             throw GadgetronClientException("Invalid socket.");
         }
@@ -1415,7 +1409,6 @@ public:
 
     void send_ismrmrd_zfp_compressed_acquisition_tolerance(ISMRMRD::Acquisition& acq, float compression_tolerance, NoiseStatistics& stat) 
     {
-        
 #if defined GADGETRON_COMPRESSION_ZFP
         if (!socket_) {
             throw GadgetronClientException("Invalid socket.");
@@ -1477,7 +1470,28 @@ public:
 #endif //GADGETRON_COMPRESSION_ZFP
 
     }
-    
+
+    void send_ismrmrd_waveform(ISMRMRD::Waveform& wav)
+    {
+        if (!socket_)
+        {
+            throw GadgetronClientException("Invalid socket.");
+        }
+
+        GadgetMessageIdentifier id;
+        id.id = GADGET_MESSAGE_ISMRMRD_WAVEFORM;;
+
+        boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+        boost::asio::write(*socket_, boost::asio::buffer(&wav.head, sizeof(ISMRMRD::ISMRMRD_WaveformHeader)));
+
+        unsigned long data_elements = wav.head.channels*wav.head.number_of_samples;
+
+        if (data_elements)
+        {
+            boost::asio::write(*socket_, boost::asio::buffer(wav.begin_data(), sizeof(uint32_t)*data_elements));
+        }
+    }
+
     void register_reader(unsigned short slot, boost::shared_ptr<GadgetronClientMessageReader> r) {
         readers_[slot] = r;
     }
@@ -1599,7 +1613,7 @@ NoiseStatistics get_noise_statistics(std::string dependency_name, std::string ho
 
     try {
         con.connect(host_name,port);
-        con.send_gadgetron_configuration_script(xml_config);       
+        con.send_gadgetron_configuration_script(xml_config);
         con.send_gadgetron_close();
         con.wait();
     } catch (...) {
@@ -1623,6 +1637,40 @@ NoiseStatistics get_noise_statistics(std::string dependency_name, std::string ho
     return stat;
 }
 
+void send_ismrmrd_acq(GadgetronClientConnector& con, ISMRMRD::Acquisition& acq_tmp, 
+    unsigned int compression_precision, bool use_zfp_compression, float compression_tolerance, NoiseStatistics& noise_stats)
+{
+    try
+    {
+        if (compression_precision > 0)
+        {
+            if (use_zfp_compression) {
+                con.send_ismrmrd_zfp_compressed_acquisition_precision(acq_tmp, compression_precision);
+            }
+            else {
+                con.send_ismrmrd_compressed_acquisition_precision(acq_tmp, compression_precision);
+            }
+        }
+        else if (compression_tolerance > 0.0)
+        {
+            if (use_zfp_compression) {
+                con.send_ismrmrd_zfp_compressed_acquisition_tolerance(acq_tmp, compression_tolerance, noise_stats);
+            }
+            else {
+                con.send_ismrmrd_compressed_acquisition_tolerance(acq_tmp, compression_tolerance, noise_stats);
+            }
+        }
+        else
+        {
+            con.send_ismrmrd_acquisition(acq_tmp);
+        }
+    }
+    catch(...)
+    {
+        throw GadgetronClientException("send_ismrmrd_acq failed ... ");
+    }
+}
+
 int main(int argc, char **argv)
 {
 
@@ -1642,12 +1690,14 @@ int main(int argc, char **argv)
     unsigned int compression_precision = 0;
     float compression_tolerance = 0.0;
     bool use_zfp_compression = false;
-    
+    bool verbose = false;
+
     po::options_description desc("Allowed options");
 
     desc.add_options()
-        ("help,h", "produce help message")
+        ("help,h", "Produce help message")
         ("query,q", "Dependency query mode")
+        ("verbose,v", "Verbose mode")
         ("port,p", po::value<std::string>(&port)->default_value("9002"), "Port")
         ("address,a", po::value<std::string>(&host_name)->default_value("localhost"), "Address (hostname) of Gadgetron host")
         ("filename,f", po::value<std::string>(&in_filename), "Input file")
@@ -1684,7 +1734,11 @@ int main(int argc, char **argv)
     if (vm.count("query")) {
       open_input_file = false;
     }
-    
+
+    if (vm.count("verbose")) {
+        verbose = true;
+    }
+
     if (vm.count("config-local")) {
         std::ifstream t(config_file_local.c_str());
         if (t) {
@@ -1701,10 +1755,11 @@ int main(int argc, char **argv)
        std::cout << "You cannot supply both compression precision (P) and compression tolerance (T) at the same time" << std::endl;
        return -1;
     }
-    
+
     //Let's check if the files exist:
     std::string hdf5_xml_varname = std::string(hdf5_in_group) + std::string("/xml");
     std::string hdf5_data_varname = std::string(hdf5_in_group) + std::string("/data");
+    std::string hdf5_waveform_varname = std::string(hdf5_in_group) + std::string("/waveform");
 
     //TODO:
     // Add check to see if input file exists
@@ -1736,7 +1791,7 @@ int main(int argc, char **argv)
     if (!vm.count("query")) {
         ISMRMRD::IsmrmrdHeader h;
         ISMRMRD::deserialize(xml_config.c_str(),h);
-        
+
         std::string noise_id;
         if (h.measurementInformation.is_present() &&
             (h.measurementInformation().measurementDependency.size() > 0)) {
@@ -1765,7 +1820,7 @@ int main(int argc, char **argv)
                     noise_id = measurementStr;
                 }
             }
-            
+
             std::cout << "Querying the Gadgetron instance for the dependent measurement: " << noise_id << std::endl; 
             noise_stats = get_noise_statistics(std::string("GadgetronNoiseCovarianceMatrix_") + noise_id, host_name, port, timeout_ms);
             if (!noise_stats.status) {
@@ -1778,11 +1833,10 @@ int main(int argc, char **argv)
             }
         }
     }
-    
 
     GadgetronClientConnector con;
     con.set_timeout(timeout_ms);
-    
+
     if ( out_fileformat == "hdr" )
     {
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAnalyzeImageMessageReader(hdf5_out_group)));
@@ -1794,53 +1848,157 @@ int main(int argc, char **argv)
 
     con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
 
-    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));			
+    con.register_reader(GADGET_MESSAGE_DEPENDENCY_QUERY, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientDependencyQueryReader(std::string(out_filename))));
     con.register_reader(GADGET_MESSAGE_TEXT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientTextReader()));
-			
-    try {
+
+    try
+    {
         con.connect(host_name,port);
-        if (vm.count("config-local")) {
+        if (vm.count("config-local"))
+        {
             con.send_gadgetron_configuration_script(config_xml_local);
-        } else {
+        }
+        else
+        {
             con.send_gadgetron_configuration_file(config_file);
         }
 
-	if (open_input_file) {
-	  con.send_gadgetron_parameters(xml_config);
-	  
-	  uint32_t acquisitions = 0;
-	  {
-	    mtx.lock();
-            acquisitions = ismrmrd_dataset->getNumberOfAcquisitions();
-            mtx.unlock();
-	  }
-	  
-	  ISMRMRD::Acquisition acq_tmp;
-	  for (uint32_t i = 0; i < acquisitions; i++) {
-            {
-	      {
-		boost::mutex::scoped_lock scoped_lock(mtx);
-		ismrmrd_dataset->readAcquisition(i, acq_tmp);
-	      }
+        if (open_input_file)
+        {
+            con.send_gadgetron_parameters(xml_config);
 
-              if (compression_precision > 0) {
-                  if (use_zfp_compression) {
-                      con.send_ismrmrd_zfp_compressed_acquisition_precision(acq_tmp,compression_precision);
-                  } else {
-                      con.send_ismrmrd_compressed_acquisition_precision(acq_tmp,compression_precision);
-                  }
-              } else if (compression_tolerance > 0.0) {
-                  if (use_zfp_compression) {
-                      con.send_ismrmrd_zfp_compressed_acquisition_tolerance(acq_tmp,compression_tolerance, noise_stats);
-                  } else {
-                      con.send_ismrmrd_compressed_acquisition_tolerance(acq_tmp,compression_tolerance, noise_stats);
-                  }
-              } else {
-                  con.send_ismrmrd_acquisition(acq_tmp);              
-              }
+            uint32_t acquisitions = 0;
+            {
+                mtx.lock();
+                acquisitions = ismrmrd_dataset->getNumberOfAcquisitions();
+                mtx.unlock();
             }
-	  }
-	}
+
+            uint32_t waveforms = 0;
+            {
+                mtx.lock();
+                waveforms = ismrmrd_dataset->getNumberOfWaveforms();
+                mtx.unlock();
+            }
+
+            if(verbose)
+            {
+                std::cout << "Find " << acquisitions << " ismrmrd acquisitions" << std::endl;
+                std::cout << "Find " << waveforms << " ismrmrd waveforms" << std::endl;
+            }
+
+            ISMRMRD::Acquisition acq_tmp;
+            ISMRMRD::Waveform wav_tmp;
+
+            uint32_t i(0), j(0); // i : index over the acquisition; j : index over the waveform
+
+            if(waveforms>0)
+            {
+                {
+                    boost::mutex::scoped_lock scoped_lock(mtx);
+                    ismrmrd_dataset->readAcquisition(i, acq_tmp);
+                }
+
+                {
+                    boost::mutex::scoped_lock scoped_lock(mtx);
+                    ismrmrd_dataset->readWaveform(j, wav_tmp);
+                }
+
+                while(i<acquisitions && j<waveforms)
+                {
+                    while(wav_tmp.head.time_stamp < acq_tmp.getHead().acquisition_time_stamp)
+                    {
+                        con.send_ismrmrd_waveform(wav_tmp);
+
+                        if (verbose)
+                        {
+                            std::cout << "--> Send out ismrmrd waveform : " << j << " - " << wav_tmp.head.scan_counter 
+                                << " - " << wav_tmp.head.time_stamp 
+                                << " - " << wav_tmp.head.channels
+                                << " - " << wav_tmp.head.number_of_samples
+                                << " - " << wav_tmp.head.waveform_id
+                                << std::endl;
+                        }
+
+                        j++;
+
+                        if(j<waveforms)
+                        {
+                            boost::mutex::scoped_lock scoped_lock(mtx);
+                            ismrmrd_dataset->readWaveform(j, wav_tmp);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    while (acq_tmp.getHead().acquisition_time_stamp <= wav_tmp.head.time_stamp)
+                    {
+                        send_ismrmrd_acq(con, acq_tmp, compression_precision, use_zfp_compression, compression_tolerance, noise_stats);
+
+                        if (verbose)
+                        {
+                            std::cout << "==> Send out ismrmrd acq : " << i << " - " << acq_tmp.getHead().scan_counter << " - " << acq_tmp.getHead().acquisition_time_stamp << std::endl;
+                        }
+
+                        i++;
+
+                        if(i<acquisitions)
+                        {
+                            boost::mutex::scoped_lock scoped_lock(mtx);
+                            ismrmrd_dataset->readAcquisition(i, acq_tmp);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if(j==waveforms && i<acquisitions)
+                    {
+                        send_ismrmrd_acq(con, acq_tmp, compression_precision, use_zfp_compression, compression_tolerance, noise_stats);
+
+                        for (uint32_t ia=i+1; ia<acquisitions; ia++)
+                        {
+                            {
+                                boost::mutex::scoped_lock scoped_lock(mtx);
+                                ismrmrd_dataset->readAcquisition(ia, acq_tmp);
+                            }
+
+                            send_ismrmrd_acq(con, acq_tmp, compression_precision, use_zfp_compression, compression_tolerance, noise_stats);
+                        }
+                    }
+
+                    if (i==acquisitions && j<waveforms)
+                    {
+                        con.send_ismrmrd_waveform(wav_tmp);
+
+                        for (uint32_t iw = j + 1; iw<waveforms; iw++)
+                        {
+                            {
+                                boost::mutex::scoped_lock scoped_lock(mtx);
+                                ismrmrd_dataset->readWaveform(iw, wav_tmp);
+                            }
+
+                            con.send_ismrmrd_waveform(wav_tmp);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (i=0; i<acquisitions; i++)
+                {
+                    {
+                        boost::mutex::scoped_lock scoped_lock(mtx);
+                        ismrmrd_dataset->readAcquisition(i, acq_tmp);
+                    }
+
+                    send_ismrmrd_acq(con, acq_tmp, compression_precision, use_zfp_compression, compression_tolerance, noise_stats);
+                }
+            }
+        }
 
         if (compression_precision > 0 || compression_tolerance > 0.0) {
             std::cout << "Compression ratio: " << con.compression_ratio() << std::endl;
@@ -1848,10 +2006,11 @@ int main(int argc, char **argv)
 
         con.send_gadgetron_close();
         con.wait();
-
-    } catch (std::exception& ex) {
+    }
+    catch (std::exception& ex)
+    {
         std::cerr << "Error caught: " << ex.what() << std::endl;
-	return -1;
+        return -1;
     }
 
     return 0;

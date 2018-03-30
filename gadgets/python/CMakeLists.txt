@@ -37,6 +37,9 @@ set(gadgetron_python_config_files
                             config/python_buckets.xml
                             config/python_ideal_cg.xml
                             config/python_short.xml
+                            config/python_image_array.xml
+                            config/python_passthrough.xml
+                            config/python_short.xml
                             config/python_tpat_snr_scale.xml )
 
 set(gadgetron_python_utils_files 

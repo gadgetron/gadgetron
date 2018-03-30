@@ -8,6 +8,11 @@
         <dll>gadgetron_mricore</dll>
         <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
+    <reader>
+        <slot>1026</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>GadgetIsmrmrdWaveformMessageReader</classname>
+    </reader>
 
     <!-- store the incoming noise data -->
     <gadget>
@@ -15,7 +20,6 @@
         <dll>gadgetron_mricore</dll>
         <classname>IsmrmrdDumpGadget</classname>
         <property><name>file_prefix</name><value>ISMRMRD_Noise_dependency</value></property>
-        <property><name>folder</name><value>/tmp/gadgetron_data</value></property>
     </gadget>
 
     <!-- SNR unit noise adjust gadget -->
