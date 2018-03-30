@@ -635,7 +635,7 @@ namespace Gadgetron{
 
       protected:
         GADGET_PROPERTY(using_cloudbus,bool,"Indicates whether the cloudbus is in use and available", false);
-        GADGET_PROPERTY(pass_on_undesired_data,bool, "If true, data not matching the process function will be passed to next Gadget", false);
+        GADGET_PROPERTY(pass_on_undesired_data,bool, "If true, data not matching the process function will be passed to next Gadget", true);
         GADGET_PROPERTY(threads,int, "Number of threads to run in this Gadget", 1);
         #ifdef _WIN32
         GADGET_PROPERTY(workingDirectory, std::string, "Where to store temporary files", "c:\\temp\\gadgetron\\");

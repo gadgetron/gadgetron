@@ -8,6 +8,11 @@
         <dll>gadgetron_mricore</dll>
         <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
+    <reader>
+        <slot>1026</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>GadgetIsmrmrdWaveformMessageReader</classname>
+    </reader>
 
     <!-- SNR unit noise adjust gadget 
          If the scan has asymmetric readout, the center of echo will shifted to the index 0
