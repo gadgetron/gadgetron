@@ -4,9 +4,14 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <reader>
-      <slot>1008</slot>
-      <dll>gadgetron_mricore</dll>
-      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+        <slot>1008</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+    </reader>
+    <reader>
+        <slot>1026</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>GadgetIsmrmrdWaveformMessageReader</classname>
     </reader>
 
     <writer>
