@@ -69,6 +69,17 @@ namespace Gadgetron {
       //We will store/load a copy of the noise scans XML header to enable us to check which coil layout, etc.
       ISMRMRD::IsmrmrdHeader current_ismrmrd_header_;
       ISMRMRD::IsmrmrdHeader noise_ismrmrd_header_;
+      std::vector<size_t> coil_order_of_data_in_noise_;
 
+      void print_coil_label(const std::vector<ISMRMRD::CoilLabel>& coils);
+
+      // compare coil labels of noise and data
+      // if number of channels are different, return false and order.size()==0
+      // if any channels in noise cannot be found in data, return false and order.size()==0
+      // if all channels in noise exist in data, but order is incorrect, return false, but  and order.size()==CHA
+      // if all channels in nosie match channels in data, return true
+      // order gives the matching order for src and dst coils
+      // e.g. [2 1 0 3] means coil 0 of src matches coil 2 of dst etc.
+      bool compare_coil_label(const std::vector<ISMRMRD::CoilLabel>& src_coils, const std::vector<ISMRMRD::CoilLabel>& dst_coils, std::vector<size_t>& order);
     };
 }
