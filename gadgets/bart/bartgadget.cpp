@@ -206,7 +206,7 @@ namespace Gadgetron {
 					dp.reference_lines_PE1 = h.userParameters->userParameterLong[0].value;
 					dp.reference_lines_PE2 = h.userParameters->userParameterLong[1].value;
 				}
-				else {
+				else if (p_imaging.accelerationFactor.kspace_encoding_step_1 > 1) {
 					GDEBUG_CONDITION_STREAM(isVerboseON.value(), "BartGadget::process_config: Limits of the size of the calibration region (PE1) " << h.userParameters->userParameterLong[0].name << " is " << h.userParameters->userParameterLong[0].value);
 					dp.reference_lines_PE1 = h.userParameters->userParameterLong[0].value;
 				}
