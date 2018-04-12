@@ -461,28 +461,21 @@ namespace Gadgetron {
         //We should only reach this code if this data is not noise.
         if (perform_noise_adjust_) {
             //Calculate the prewhitener if it has not been done
-            if (!noise_decorrelation_calculated_ && (number_of_noise_samples_ > 0)) {
-                if (number_of_noise_samples_ > 1) {
+            if (!noise_decorrelation_calculated_ && (number_of_noise_samples_ > 0))
+            {
+                if (number_of_noise_samples_ > 1)
+                {
                     //Scale
                     noise_covariance_matrixf_ *= std::complex<float>(1.0 / (float)(number_of_noise_samples_ - 1));
                     number_of_noise_samples_ = 1; //Scaling has been done
                 }
-                computeNoisePrewhitener();
-                acquisition_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
-                if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f)) {
-                    noise_bw_scale_factor_ = 1.0f;
-                }
-                else {
-                    noise_bw_scale_factor_ = (float)std::sqrt(2.0*acquisition_dwell_time_us_ / noise_dwell_time_us_*receiver_noise_bandwidth_);
-                }
 
-                noise_prewhitener_matrixf_ *= std::complex<float>(noise_bw_scale_factor_, 0.0);
-
-                size_t CHA = noise_prewhitener_matrixf_.get_size(0);
+                // if required, switch order of coils
+                size_t CHA = noise_covariance_matrixf_.get_size(0);
 
                 // check whether to switch channel order
                 bool reorder_noise_cov = false;
-                if(coil_order_of_data_in_noise_.size()==CHA)
+                if (coil_order_of_data_in_noise_.size() == CHA)
                 {
                     size_t n, m;
                     for (n = 0; n<CHA; n++)
@@ -497,31 +490,49 @@ namespace Gadgetron {
                     if (reorder_noise_cov)
                     {
                         GDEBUG_STREAM("Require to reorder the noise covariance matrix to match the data ... ");
-                        hoNDArray< std::complex<float> > noise_prewhitener_reordered;
-                        noise_prewhitener_reordered.create(CHA, CHA);
-                        Gadgetron::clear(noise_prewhitener_reordered);
+                        hoNDArray< std::complex<float> > noise_covariance_reordered;
+                        noise_covariance_reordered.create(CHA, CHA);
+                        Gadgetron::clear(noise_covariance_reordered);
 
-                        // switch row of prewhitener
+                        // switch row
                         for (n = 0; n<CHA; n++)
                         {
                             GDEBUG_STREAM(n << " - copy " << noise_ismrmrd_header_.acquisitionSystemInformation->coilLabel[coil_order_of_data_in_noise_[n]].coilName
                                 << " to " << current_ismrmrd_header_.acquisitionSystemInformation->coilLabel[n].coilName);
 
-                            for (m=0; m<CHA; m++)
+                            for (m = 0; m<CHA; m++)
                             {
-                                noise_prewhitener_reordered(n, m) = noise_prewhitener_matrixf_(coil_order_of_data_in_noise_[n], m);
+                                noise_covariance_reordered(n, m) = noise_covariance_matrixf_(coil_order_of_data_in_noise_[n], m);
                             }
                         }
 
-                        float v = Gadgetron::norm2(noise_prewhitener_reordered);
-                        float v2 = Gadgetron::norm2(noise_prewhitener_matrixf_);
+                        // switch column
+                        for (m = 0; m<CHA; m++)
+                        {
+                            for (n = 0; n<CHA; n++)
+                            {
+                                noise_covariance_matrixf_(n, m) = noise_covariance_reordered(n, coil_order_of_data_in_noise_[m]);
+                            }
+                        }
 
-                        GDEBUG_STREAM("noise_prewhitener_reordered = " << v);
-                        GDEBUG_STREAM("noise_prewhitener_matrixf_ = " << v2);
+                        float v = Gadgetron::norm2(noise_covariance_matrixf_);
+                        float v2 = Gadgetron::norm2(noise_covariance_reordered);
 
-                        noise_prewhitener_matrixf_ = noise_prewhitener_reordered;
+                        GDEBUG_STREAM("noise_covariance_matrixf_ = " << v);
+                        GDEBUG_STREAM("noise_covariance_reordered = " << v2);
                     }
                 }
+
+                computeNoisePrewhitener();
+                acquisition_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
+                if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f)) {
+                    noise_bw_scale_factor_ = 1.0f;
+                }
+                else {
+                    noise_bw_scale_factor_ = (float)std::sqrt(2.0*acquisition_dwell_time_us_ / noise_dwell_time_us_*receiver_noise_bandwidth_);
+                }
+
+                noise_prewhitener_matrixf_ *= std::complex<float>(noise_bw_scale_factor_, 0.0);
 
                 GDEBUG("Noise dwell time: %f\n", noise_dwell_time_us_);
                 GDEBUG("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
