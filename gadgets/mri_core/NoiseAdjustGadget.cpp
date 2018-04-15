@@ -612,6 +612,10 @@ namespace Gadgetron {
         }
 
         order_in_src.resize(srcN, 0);
+        for (d = 0; d<dstN; d++)
+        {
+            order_in_src[d] = d;
+        }
 
         // if coil labels are not matching, try to reorder them
         for (d = 0; d<dstN; d++)
