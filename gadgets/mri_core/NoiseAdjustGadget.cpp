@@ -138,10 +138,22 @@ namespace Gadgetron {
                                 // if number of channels in noise is different than data 
                                 // or 
                                 // if any channels in noise do not exist in data
-                                if(CHA != current_ismrmrd_header_.acquisitionSystemInformation->coilLabel.size() || coil_order_of_data_in_noise_.size()!=CHA)
+                                if(CHA != current_ismrmrd_header_.acquisitionSystemInformation->coilLabel.size())
                                 {
-                                    GDEBUG("Noise and measurement coil labels don't match\n");
+                                    GDEBUG("Noise and measurement have different number of coils\n");
                                     return GADGET_FAIL;
+                                }
+                                else
+                                {
+                                    if(coil_order_of_data_in_noise_.size()==CHA)
+                                    {
+                                        GWARN_STREAM("Noise and meansurement have different coils, but can be reordered ... ");
+                                    }
+                                    else
+                                    {
+                                        coil_order_of_data_in_noise_.clear();;
+                                        GWARN_STREAM("Noise and meansurement have different coils and cannot be reordered ... ");
+                                    }
                                 }
                             }
 
