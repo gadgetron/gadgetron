@@ -28,7 +28,6 @@ namespace Gadgetron {
 
 	BartGadget::BartGadget() :
 		BaseClass(),
-                workLocation_{},
 		dp{}
 	{}
 
@@ -153,7 +152,7 @@ namespace Gadgetron {
 			else if (tmp == std::string("reference_lines_PE2"))
 				str.replace(pos, pos_diff, std::to_string(dp.reference_lines_PE2));
 			else {
-				GERROR( "Unknown default parameter, please see the complete list of avaible parameters...");
+                GERROR( "Unknown default parameter, please see the complete list of available parameters...");
 			}
 			pos = pos_end;
 		}
@@ -286,18 +285,10 @@ namespace Gadgetron {
 		// Check status of the folder containing the generated files (*.hdr & *.cfl)
 		std::string generatedFilesFolder;
 		static std::string outputFolderPath;
-		if (BartWorkingDirectory.value().empty()) {
-			workLocation_ = workingDirectory.value();
-		}
-		else {
-			workLocation_ = BartWorkingDirectory.value();
-		}
-
-		if (workLocation_.empty()) {
-			GERROR("Undefined work location, bailing out\n");
-			return GADGET_FAIL;
-		}
-
+        if (BartWorkingDirectory_path.value().empty()){
+            GERROR("Error: No BART working directory provided!");
+            return GADGET_FAIL;
+        }
 
 		time_t rawtime;
 		char buff[80];
@@ -310,7 +301,7 @@ namespace Gadgetron {
  		std::string threadId = boost::lexical_cast<std::string>(boost::this_thread::get_id());
                 unsigned long threadNumber = 0;
                 sscanf(threadId.c_str(), "%lx", &threadNumber);
-                outputFolderPath = workingDirectory.value() + "bart_" + time_id + "_" + std::to_string(threadNumber) + "/";
+                outputFolderPath = BartWorkingDirectory_path.value() + "bart_" + time_id + "_" + std::to_string(threadNumber) + "/";
                 generatedFilesFolder = std::string(outputFolderPath);
                 
 		generatedFilesFolder.pop_back();

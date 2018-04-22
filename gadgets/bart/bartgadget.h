@@ -64,7 +64,7 @@ namespace Gadgetron {
 
 	protected:
 		GADGET_PROPERTY(isVerboseON, bool, "Display some information about the incoming data", false);
-		GADGET_PROPERTY(BartWorkingDirectory, std::string, "Absolute path to temporary file location (will default to workingDirectory)", "");
+        GADGET_PROPERTY(BartWorkingDirectory_path, std::string, "Absolute path to temporary file location", "/tmp/gadgetron/");
 		GADGET_PROPERTY(AbsoluteBartCommandScript_path, std::string, "Absolute path to bart script(s)", get_gadgetron_home() + "/share/gadgetron/bart");
 		GADGET_PROPERTY(BartCommandScript_name, std::string, "Script file containing bart command(s) to be loaded", "");
 		GADGET_PROPERTY(isBartFileBeingStored, bool, "Store Bart file", false);
@@ -80,7 +80,6 @@ namespace Gadgetron {
 
 
 	private:
-                std::string workLocation_;
 		Default_parameters dp;
 		
 		// Write BART files
