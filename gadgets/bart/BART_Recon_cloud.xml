@@ -88,6 +88,8 @@
 	  <classname>BartGadget</classname>
 	  <property><name>isVerboseON</name><value>false</value></property>
 	  <property><name>BartCommandScript_name</name><value>Sample_Grappa_Recon.sh</value></property>
+          <!--Enable and provide the absolute path to the bart working directory different from the default path-->
+          <!--property><name>BartWorkingDirectory_path</name><value></value></property-->
 	  <property><name>isBartFileBeingStored</name><value>false</value></property>
       <property><name>image_series</name><value>0</value></property>
 	  <!--CACHE BART FILES FOR BETTER PERFORMANCE  -->
