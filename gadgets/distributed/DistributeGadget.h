@@ -30,14 +30,12 @@ namespace Gadgetron{
     virtual int collector_putq(ACE_Message_Block* m);
 
   protected:
-    GADGET_PROPERTY(collector, std::string,
-      "Name of collection Gadget", "Collect");
-    GADGET_PROPERTY(single_package_mode, bool,
-      "Indicates that only one package is sent to each node", false);
-    GADGET_PROPERTY(nodes_used_sequentially, bool,
-      "Indicates that data is distributed to one node at a time. When new node becomes active, previous receives close message.", true);
-    GADGET_PROPERTY(use_this_node_for_compute, bool,
-      "This node can also be used for computation", true);
+    GADGET_PROPERTY(collector, std::string,"Name of collection Gadget", "Collect");
+    GADGET_PROPERTY(single_package_mode, bool,"Indicates that only one package is sent to each node", false);
+    GADGET_PROPERTY(nodes_used_sequentially, bool,"Indicates that data is distributed to one node at a time. When new node becomes active, previous receives close message.", true);
+    GADGET_PROPERTY(use_this_node_for_compute, bool,"This node can also be used for computation", true);
+    GADGET_PROPERTY(check_node_alive, bool,"Check nodes for whether it is alive before sending data through", true);
+    GADGET_PROPERTY(check_node_alive_time_out, double, "Time out period in seconds for checkign nodes alive", 5.0);
 
     virtual int process(ACE_Message_Block* m);
     virtual int process_config(ACE_Message_Block* m);
