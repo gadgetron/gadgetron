@@ -134,25 +134,24 @@ namespace Gadgetron {
                         {
                             s.close();
                             me = *it;
+                            found_valid_node = true;
                         }
                     }
                     else
                     {
                         me = *it;
+                        found_valid_node = true;
                     }
-                }
-
-                //Is this a free node
-                if (me.active_reconstructions == 0)
-                {
-                    found_valid_node = true;
-                    break;
                 }
             }
 
             if (check_node_alive.value() && !found_valid_node)
             {
                 GWARN_STREAM("Failed to find valid node for processing job " << node_index);
+            }
+            else
+            {
+                GDEBUG_STREAM("Find valid node " << me.address << " for processing job " << node_index << "; this node had active recon at " << me.active_reconstructions );
             }
 
             // first job, send to current node if required
@@ -171,7 +170,7 @@ namespace Gadgetron {
                     }
                 }
 
-                GDEBUG_STREAM("Send first job to current node : " << me.address);
+                GDEBUG_STREAM("Send job " << node_index << " to node : " << me.address);
             }
 
             char buffer[10];
