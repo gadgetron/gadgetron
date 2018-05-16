@@ -224,7 +224,7 @@ namespace Gadgetron
     std::vector< ISMRMRD::MetaContainer > meta_;
 
     IsmrmrdImageArray() {}
-    IsmrmrdImageArray(IsmrmrdImageArray& obj)
+    IsmrmrdImageArray(const IsmrmrdImageArray& obj)
     {
         this->data_.copyFrom(obj.data_);
         this->headers_.copyFrom(obj.headers_);
