@@ -136,6 +136,7 @@ namespace Gadgetron {
                     if (rbit.ref_)
                     {
                         // remove the ref
+                        rbit.ref_->clear();
                         rbit.ref_ = boost::none;
                     }
                 }

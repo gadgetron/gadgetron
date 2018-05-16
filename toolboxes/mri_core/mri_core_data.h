@@ -101,6 +101,26 @@ namespace Gadgetron
         recon_matrix_[2] = 0;
     }
 
+    SamplingDescription(SamplingDescription& obj)
+    {
+        encoded_FOV_[0] = obj.encoded_FOV_[0];
+        encoded_FOV_[1] = obj.encoded_FOV_[1];
+        encoded_FOV_[2] = obj.encoded_FOV_[2];
+
+        recon_FOV_[0] = obj.recon_FOV_[0];
+        recon_FOV_[1] = obj.recon_FOV_[1];
+        recon_FOV_[2] = obj.recon_FOV_[2];
+
+        encoded_matrix_[0] = obj.encoded_matrix_[0];
+        encoded_matrix_[1] = obj.encoded_matrix_[1];
+        encoded_matrix_[2] = obj.encoded_matrix_[2];
+
+        recon_matrix_[0] = obj.recon_matrix_[0];
+        recon_matrix_[1] = obj.recon_matrix_[1];
+        recon_matrix_[2] = obj.recon_matrix_[2];
+    }
+
+    ~SamplingDescription() {}
   };
   
   struct IsmrmrdDataBuffered
@@ -117,7 +137,37 @@ namespace Gadgetron
     
     SamplingDescription sampling_;
 
-    // function to check if it's empty
+    IsmrmrdDataBuffered() {}
+    IsmrmrdDataBuffered(const IsmrmrdDataBuffered& obj)
+    {
+        this->data_.copyFrom(obj.data_);
+
+        if (obj.trajectory_)
+        {
+            if (this->trajectory_)
+                if (this->trajectory_->delete_data_on_destruct()) this->trajectory_->clear();
+            else
+                this->trajectory_ = hoNDArray<float>();
+
+            this->trajectory_->copyFrom(*obj.trajectory_);
+        }
+        
+        this->headers_.copyFrom(obj.headers_);
+        this->sampling_ = obj.sampling_;
+    }
+
+    ~IsmrmrdDataBuffered() {}
+
+    void clear()
+    {
+        if (this->data_.delete_data_on_destruct()) this->data_.clear();
+        if (this->trajectory_)
+        {
+            if (this->trajectory_->delete_data_on_destruct()) this->trajectory_->clear();
+        }
+
+        if (this->headers_.delete_data_on_destruct()) headers_.clear();
+    }
   };
   
 
@@ -129,6 +179,22 @@ namespace Gadgetron
   public:
     IsmrmrdDataBuffered data_;
     boost::optional<IsmrmrdDataBuffered> ref_;
+
+    IsmrmrdReconBit() {}
+    IsmrmrdReconBit(const IsmrmrdReconBit& obj)
+    {
+        this->data_= obj.data_;
+
+        if (obj.ref_)
+        {
+            if (!this->ref_)
+                this->ref_.reset(IsmrmrdDataBuffered());
+
+            *this->ref_ = *obj.ref_;
+        }
+    }
+
+    ~IsmrmrdReconBit() {}
   };
 
   /**
@@ -156,7 +222,16 @@ namespace Gadgetron
     //3D, fixed order [N, S, LOC]
     //This element is optional (length is 0 if not present)
     std::vector< ISMRMRD::MetaContainer > meta_;
-    
+
+    IsmrmrdImageArray() {}
+    IsmrmrdImageArray(IsmrmrdImageArray& obj)
+    {
+        this->data_.copyFrom(obj.data_);
+        this->headers_.copyFrom(obj.headers_);
+        this->meta_ = obj.meta_;
+    }
+
+    ~IsmrmrdImageArray() {}
   };
 
 }

@@ -145,6 +145,7 @@ namespace Gadgetron {
 
                 // ---------------------------------------------------------------
 
+                recon_bit_->rbit_[e].ref_->clear();
                 recon_bit_->rbit_[e].ref_ = boost::none;
             }
 
@@ -691,6 +692,36 @@ namespace Gadgetron {
         {
             GADGET_THROW("Errors happened in GenericCartesianGrappaReconGadget::compute_snr_map(...) ... ");
         }
+    }
+
+    int GenericReconCartesianGrappaGadget::close(unsigned long flags)
+    {
+        GDEBUG_CONDITION_STREAM(true, "GenericReconCartesianGrappaGadget - close(flags) : " << flags);
+
+        if (BaseClass::close(flags) != GADGET_OK) return GADGET_FAIL;
+
+        if (flags != 0)
+        {
+            size_t e;
+            for (e = 0; e < recon_obj_.size(); e++)
+            {
+                GDEBUG_STREAM("Clean recon_obj_ for encoding space " << e);
+                if (recon_obj_[e].recon_res_.data_.delete_data_on_destruct()) recon_obj_[e].recon_res_.data_.clear();
+                if (recon_obj_[e].recon_res_.headers_.delete_data_on_destruct()) recon_obj_[e].recon_res_.headers_.clear();
+                recon_obj_[e].recon_res_.meta_.clear();
+
+                if (recon_obj_[e].gfactor_.delete_data_on_destruct()) recon_obj_[e].gfactor_.clear();
+                if (recon_obj_[e].ref_calib_.delete_data_on_destruct()) recon_obj_[e].ref_calib_.clear();
+                if (recon_obj_[e].ref_calib_dst_.delete_data_on_destruct()) recon_obj_[e].ref_calib_dst_.clear();
+                if (recon_obj_[e].ref_coil_map_.delete_data_on_destruct()) recon_obj_[e].ref_coil_map_.clear();
+                if (recon_obj_[e].kernel_.delete_data_on_destruct()) recon_obj_[e].kernel_.clear();
+                if (recon_obj_[e].kernelIm_.delete_data_on_destruct()) recon_obj_[e].kernelIm_.clear();
+                if (recon_obj_[e].unmixing_coeff_.delete_data_on_destruct()) recon_obj_[e].unmixing_coeff_.clear();
+                if (recon_obj_[e].coil_map_.delete_data_on_destruct()) recon_obj_[e].coil_map_.clear();
+            }
+        }
+
+        return GADGET_OK;
     }
 
     GADGET_FACTORY_DECLARE(GenericReconCartesianGrappaGadget)
