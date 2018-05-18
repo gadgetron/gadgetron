@@ -235,10 +235,9 @@ if (NOT GTEST_FOUND)
   endif ()
 endif ()
 
-find_package(Armadillo 4.600)
+find_package(Armadillo 4.600 REQUIRED)
 # check whether ILP64 MKL should is used
 if(ARMADILLO_FOUND)
-  add_definitions(-DUSE_ARMADILLO)
   set(ARMADILLO_BLAS_LONG_LONG FALSE)
   if(EXISTS "${ARMADILLO_INCLUDE_DIR}/armadillo_bits/config.hpp")
     # Read and parse armadillo config.hpp to find out whether BLAS uses long long
@@ -251,8 +250,7 @@ if(ARMADILLO_FOUND)
     endif ()
     unset(_armadillo_blas_long_long)
   endif()
-else()
-  message("Armadillo not found. This will disable many toolboxes and gadgets.")
+
 endif()
 
 find_package(HDF5 1.8 COMPONENTS C CXX HL REQUIRED)
