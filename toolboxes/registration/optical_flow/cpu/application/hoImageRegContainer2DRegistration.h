@@ -6,6 +6,8 @@
 #ifndef hoImageRegContainer2DRegistration_H_
 #define hoImageRegContainer2DRegistration_H_
 
+#pragma once
+
 #include <sstream>
 #include "hoNDArray.h"
 #include "hoNDImage.h"
@@ -43,8 +45,8 @@
 // container2D
 #include "hoNDImageContainer2D.h"
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     template <typename ObjType> void printInfo(const ObjType& obj)
     {
         std::ostringstream outs;
@@ -394,6 +396,9 @@ namespace Gadgetron
         /// in-FOV constraint
         bool apply_in_FOV_constraint_;
 
+        /// divergence free constraint
+        bool apply_divergence_free_constraint_;
+
         /// verbose mode
         bool verbose_;
 
@@ -522,6 +527,7 @@ namespace Gadgetron
         inverse_deform_enforce_weight_pyramid_level_.resize(resolution_pyramid_levels_, 0.5);
 
         apply_in_FOV_constraint_ = false;
+        apply_divergence_free_constraint_ = false;
 
         verbose_ = false;
 
@@ -569,6 +575,8 @@ namespace Gadgetron
             reg.dissimilarity_LocalCCR_sigmaArg_ = dissimilarity_LocalCCR_sigmaArg_;
             reg.boundary_handler_type_warper_ = boundary_handler_type_warper_;
             reg.interp_type_warper_ = interp_type_warper_;
+            reg.apply_in_FOV_constraint_ = apply_in_FOV_constraint_;
+            reg.apply_divergence_free_constraint_ = apply_divergence_free_constraint_;
             reg.verbose_ = verbose_;
 
             reg.dissimilarity_type_.clear();
@@ -669,6 +677,8 @@ namespace Gadgetron
             reg.interp_type_warper_ = interp_type_warper_;
             reg.inverse_deform_enforce_iter_pyramid_level_ = inverse_deform_enforce_iter_pyramid_level_;
             reg.inverse_deform_enforce_weight_pyramid_level_ = inverse_deform_enforce_weight_pyramid_level_;
+            reg.apply_in_FOV_constraint_ = apply_in_FOV_constraint_;
+            reg.apply_divergence_free_constraint_ = apply_divergence_free_constraint_;
 
             reg.verbose_ = verbose_;
 
@@ -822,22 +832,23 @@ namespace Gadgetron
 
             int numOfThreads = 1;
 
-            #ifdef USE_OMP
-                int numOfProcs = omp_get_num_procs();
-                int nested = omp_get_nested();
-                if ( numOfImages < numOfProcs-1 )
-                {
-                    omp_set_nested(1);
-                    GDEBUG_STREAM("registerOverContainer2DPairWise - nested openMP on ... ");
-                }
-                else
-                {
-                    omp_set_nested(0);
-                    GDEBUG_STREAM("registerOverContainer2DPairWise - nested openMP off ... ");
-                }
+#ifdef USE_OMP
+            int numOfProcs = omp_get_num_procs();
+            int nested = omp_get_nested();
+            GDEBUG_STREAM("registerOverContainer2DPairWise - nested openMP is " << nested);
+            /*if (numOfImages < numOfProcs - 1)
+            {
+                omp_set_nested(1);
+                GDEBUG_STREAM("registerOverContainer2DPairWise - nested openMP on ... ");
+            }
+            else
+            {
+                omp_set_nested(0);
+                GDEBUG_STREAM("registerOverContainer2DPairWise - nested openMP off ... ");
+            }*/
 
-                numOfThreads = (numOfImages>numOfProcs) ? numOfProcs : numOfImages;
-            #endif // USE_OMP
+            numOfThreads = (numOfImages>numOfProcs) ? numOfProcs : numOfImages;
+#endif // USE_OMP
 
             unsigned int ii;
             long long n;
@@ -933,9 +944,9 @@ namespace Gadgetron
                 GDEBUG_STREAM("To be implemented ...");
             }
 
-#ifdef USE_OMP
-            omp_set_nested(nested);
-#endif // USE_OMP
+//#ifdef USE_OMP
+//            omp_set_nested(nested);
+//#endif // USE_OMP
         }
         catch(...)
         {
@@ -994,22 +1005,23 @@ namespace Gadgetron
 
             int numOfThreads = 1;
 
-            #ifdef USE_OMP
-                int numOfProcs = omp_get_num_procs();
-                int nested = omp_get_nested();
-                if ( numOfImages < numOfProcs-1 )
-                {
-                    omp_set_nested(1);
-                    GDEBUG_STREAM("registerOverContainer2DFixedReference - nested openMP on ... ");
-                }
-                else
-                {
-                    omp_set_nested(0);
-                    GDEBUG_STREAM("registerOverContainer2DFixedReference - nested openMP off ... ");
-                }
+#ifdef USE_OMP
+            int numOfProcs = omp_get_num_procs();
+            int nested = omp_get_nested();
+            GDEBUG_STREAM("registerOverContainer2DFixedReference - nested openMP is " << nested);
+            //if (numOfImages < numOfProcs - 1)
+            //{
+            //    omp_set_nested(1);
+            //    GDEBUG_STREAM("registerOverContainer2DFixedReference - nested openMP on ... ");
+            //}
+            //else
+            //{
+            //    omp_set_nested(0);
+            //    GDEBUG_STREAM("registerOverContainer2DFixedReference - nested openMP off ... ");
+            //}
 
-                numOfThreads = (numOfImages>numOfProcs) ? numOfProcs : numOfImages;
-            #endif // USE_OMP
+            numOfThreads = (numOfImages>numOfProcs) ? numOfProcs : numOfImages;
+#endif // USE_OMP
 
             if ( container_reg_transformation_ == GT_IMAGE_REG_TRANSFORMATION_DEFORMATION_FIELD )
             {
@@ -1112,9 +1124,9 @@ namespace Gadgetron
                 GDEBUG_STREAM("To be implemented ...");
             }
 
-#ifdef USE_OMP
-            omp_set_nested(nested);
-#endif // USE_OMP
+//#ifdef USE_OMP
+//            omp_set_nested(nested);
+//#endif // USE_OMP
         }
         catch(...)
         {
@@ -1348,6 +1360,8 @@ namespace Gadgetron
         elemTypeName = std::string(typeid(CoordType).name());
         os << "Transformation coordinate data type is : " << elemTypeName << std::endl;
 
+        os << "Whether to apply in_FOV constraint : " << apply_in_FOV_constraint_ << std::endl;
+        os << "Whether to apply divergence free constraint : " << apply_divergence_free_constraint_ << std::endl;
         os << "Whether to perform world coordinate registration is : " << use_world_coordinates_ << std::endl;
         os << "Number of resolution pyramid levels is : " << resolution_pyramid_levels_ << std::endl;
 

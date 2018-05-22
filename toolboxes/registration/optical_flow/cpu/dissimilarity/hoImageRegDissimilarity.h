@@ -33,6 +33,8 @@
 #ifndef hoImageRegDissimilarity_H_
 #define hoImageRegDissimilarity_H_
 
+#pragma once
+
 #include "hoNDArray.h"
 #include "hoNDImage.h"
 #include "hoNDInterpolator.h"
@@ -46,8 +48,8 @@
     #include <omp.h>
 #endif // USE_OMP
 
-namespace Gadgetron
-{
+namespace Gadgetron {
+
     // define the image dissimilarity type
     enum GT_IMAGE_DISSIMILARITY
     {
@@ -123,7 +125,6 @@ namespace Gadgetron
 
         typedef hoImageRegDissimilarity<ImageType> Self;
         typedef hoNDInterpolator<ImageType> InterpolatorType;
-
 
         typedef typename ImageType::value_type ValueType;
         enum { D = ImageType::NDIM };

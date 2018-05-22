@@ -6,6 +6,8 @@
 #ifndef hoImageRegParametricTransformation_H_
 #define hoImageRegParametricTransformation_H_
 
+#pragma once
+
 #include "hoImageRegTransformation.h"
 
 namespace Gadgetron {

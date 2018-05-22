@@ -6,6 +6,8 @@
 #ifndef hoImageRegDeformationFieldBidirectionalRegister_H_
 #define hoImageRegDeformationFieldBidirectionalRegister_H_
 
+#pragma once
+
 #include "hoImageRegDeformationFieldRegister.h"
 
 namespace Gadgetron {
@@ -100,6 +102,8 @@ namespace Gadgetron {
         using BaseClass::boundary_handler_type_pyramid_construction_;
         using BaseClass::interp_type_pyramid_construction_;
         using BaseClass::dissimilarity_type_;
+        using BaseClass::apply_in_FOV_constraint_;
+        using BaseClass::apply_divergence_free_constraint_;
         using BaseClass::solver_type_;
         using BaseClass::deform_field_bh_;
         using BaseClass::deform_field_interp_;
@@ -279,6 +283,9 @@ namespace Gadgetron {
 
                 solver_pyramid_inverse_[ii].inverse_deform_enforce_iter_ = inverse_deform_enforce_iter_pyramid_level_[ii];
                 solver_pyramid_inverse_[ii].inverse_deform_enforce_weight_ = inverse_deform_enforce_weight_pyramid_level_[ii];
+
+                solver_pyramid_inverse_[ii].apply_in_FOV_constraint_ = apply_in_FOV_constraint_;
+                solver_pyramid_inverse_[ii].apply_divergence_free_constraint_ = apply_divergence_free_constraint_;
             }
 
             // downsample the deformation field if necessary

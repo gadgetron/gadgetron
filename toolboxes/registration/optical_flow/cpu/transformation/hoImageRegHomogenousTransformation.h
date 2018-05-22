@@ -6,6 +6,8 @@
 #ifndef hoImageRegHomogenousTransformation_H_
 #define hoImageRegHomogenousTransformation_H_
 
+#pragma once
+
 #include "hoImageRegParametricTransformation.h"
 #include "hoMatrix.h"
 #include "hoNDArray_linalg.h"

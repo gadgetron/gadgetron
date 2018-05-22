@@ -6,12 +6,13 @@
 #ifndef hoImageRegDissimilarityHistogramBased_H_
 #define hoImageRegDissimilarityHistogramBased_H_
 
+#pragma once
+
 #include <limits>
 #include "hoMatrix.h"
 #include "hoImageRegDissimilarity.h"
 
-namespace Gadgetron
-{
+namespace Gadgetron {
 
     template<typename ImageType> 
     class hoImageRegDissimilarityHistogramBased : public hoImageRegDissimilarity<ImageType>

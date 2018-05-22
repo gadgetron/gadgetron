@@ -18,6 +18,8 @@
 #ifndef hoImageRegDissimilarityMutualInformation_H_
 #define hoImageRegDissimilarityMutualInformation_H_
 
+#pragma once
+
 #include "hoImageRegDissimilarityHistogramBased.h"
 
 namespace Gadgetron {
