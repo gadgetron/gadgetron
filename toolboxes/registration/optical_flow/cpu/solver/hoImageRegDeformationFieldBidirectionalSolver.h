@@ -25,6 +25,8 @@
 #ifndef hoImageRegDeformationFieldBidirectionalSolver_H_
 #define hoImageRegDeformationFieldBidirectionalSolver_H_
 
+#pragma once
+
 #include "hoImageRegDeformationFieldSolver.h"
 
 #ifdef max
@@ -100,6 +102,8 @@ namespace Gadgetron {
         CoordType inverse_deform_enforce_weight_;
 
         using BaseClass::regularization_hilbert_strength_;
+        using BaseClass::apply_in_FOV_constraint_;
+        using BaseClass::apply_divergence_free_constraint_;
         using BaseClass::iter_num_;
         using BaseClass::max_iter_num_;
         using BaseClass::dissimilarity_thres_;
@@ -524,6 +528,52 @@ namespace Gadgetron {
                     Gadgetron::scal( CoordType(-1*inverse_deform_enforce_weight_), deform_delta[ii]);
 
                     Gadgetron::add(deform_delta[ii], deform_inverse, deform_inverse);
+                }
+
+                if ( apply_in_FOV_constraint_ )
+                {
+                    if ( !use_world_coordinate_ )
+                    {
+                        if ( D == 2 )
+                        {
+                            long long sx = (long long)dim_inverse[0];
+                            long long sy = (long long)dim_inverse[1];
+
+                            DeformationFieldType& dxInv = transform_inverse->getDeformationField(0);
+                            DeformationFieldType& dyInv = transform_inverse->getDeformationField(1);
+
+                            long long x, y;
+                            // #pragma omp parallel for default(none) private(y, x) shared(sx, sy, dxInv, dyInv) if(sx*sy>64*1024) num_threads(2)
+                            for ( y=0; y<sy; y++ )
+                            {
+                                for ( x=0; x<sx; x++ )
+                                {
+                                    size_t offset = x + y*sx;
+
+                                    CoordType tx = x + dxInv(offset);
+                                    CoordType ty = y + dyInv(offset);
+
+                                    if ( tx < 0 )
+                                    {
+                                        dxInv(offset) = FLT_EPSILON - x;
+                                    }
+                                    else if (tx > sx-1 )
+                                    {
+                                        dxInv(offset) = sx-1-FLT_EPSILON - x;
+                                    }
+
+                                    if ( ty < 0 )
+                                    {
+                                        dyInv(offset) = FLT_EPSILON - y;
+                                    }
+                                    else if (ty > sy-1 )
+                                    {
+                                        dyInv(offset) = sy-1-FLT_EPSILON - y;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

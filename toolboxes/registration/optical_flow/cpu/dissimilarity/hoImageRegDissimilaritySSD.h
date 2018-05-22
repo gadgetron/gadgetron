@@ -18,6 +18,8 @@
 #ifndef hoImageRegDissimilaritySSD_H_
 #define hoImageRegDissimilaritySSD_H_
 
+#pragma once
+
 #include "hoImageRegDissimilarity.h"
 
 namespace Gadgetron {

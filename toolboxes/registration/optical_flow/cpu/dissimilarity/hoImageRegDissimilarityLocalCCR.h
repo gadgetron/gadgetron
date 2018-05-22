@@ -18,11 +18,12 @@
 #ifndef hoImageRegDissimilarityLocalCCR_H_
 #define hoImageRegDissimilarityLocalCCR_H_
 
+#pragma once
+
 #include <limits>
 #include "hoImageRegDissimilarity.h"
 
-namespace Gadgetron
-{
+namespace Gadgetron {
 
     template<typename ImageType> 
     class hoImageRegDissimilarityLocalCCR : public hoImageRegDissimilarity<ImageType>

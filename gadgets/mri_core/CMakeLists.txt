@@ -166,7 +166,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 ImageSortGadget.cpp
                                 GenericReconBase.cpp 
                                 GenericReconGadget.cpp 
-				GenericReconCartesianFFTGadget.cpp
+                                GenericReconCartesianFFTGadget.cpp
                                 GenericReconCartesianGrappaGadget.cpp 
                                 GenericReconCartesianSpiritGadget.cpp 
                                 GenericReconCartesianNonLinearSpirit2DTGadget.cpp 

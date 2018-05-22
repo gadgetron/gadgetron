@@ -6,6 +6,8 @@
 #ifndef hoImageRegTransformation_H_
 #define hoImageRegTransformation_H_
 
+#pragma once
+
 #include "hoNDArray.h"
 #include "hoNDImage.h"
 #include "hoMatrix.h"
@@ -15,8 +17,8 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDImage_util.h"
-#include "ImageIOAnalyze.h"
 #include "GadgetronTimer.h"
+#include "ImageIOAnalyze.h"
 
 #ifdef USE_OMP
     #include <omp.h>
