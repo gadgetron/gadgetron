@@ -536,4 +536,619 @@ namespace Gadgetron
         debugFolderPath.append(debugFolder);
         debugFolderPath.append("/");
     }
+
+    // ------------------------------------------------------------------------
+
+    void find_calib_mode(ISMRMRD::IsmrmrdHeader& h, Gadgetron::ismrmrdCALIBMODE& CalibMode, Gadgetron::IsmrmrdDIM& InterleaveDim, double& acceFactorE1, double& acceFactorE2, bool verbose)
+    {
+        try
+        {
+            if (!h.encoding[0].parallelImaging)
+            {
+                GADGET_THROW("Parallel Imaging section not found in header");
+            }
+
+            ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
+
+            acceFactorE1 = (double)(p_imaging.accelerationFactor.kspace_encoding_step_1);
+            acceFactorE2 = (double)(p_imaging.accelerationFactor.kspace_encoding_step_2);
+
+            GDEBUG_CONDITION_STREAM(verbose, "acceFactorE1 is " << acceFactorE1);
+            GDEBUG_CONDITION_STREAM(verbose, "acceFactorE2 is " << acceFactorE2);
+
+            if (!p_imaging.calibrationMode.is_present())
+            {
+                GADGET_THROW("Parallel calibration mode not found in header");
+            }
+
+            std::string calib = *p_imaging.calibrationMode;
+            if (calib.compare("interleaved") == 0)
+            {
+                CalibMode = Gadgetron::ISMRMRD_interleaved;
+                GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is interleaved");
+
+                if (p_imaging.interleavingDimension)
+                {
+                    if (p_imaging.interleavingDimension->compare("phase") == 0)
+                    {
+                        InterleaveDim = Gadgetron::DIM_Phase;
+                    }
+                    else if (p_imaging.interleavingDimension->compare("repetition") == 0)
+                    {
+                        InterleaveDim = Gadgetron::DIM_Repetition;
+                    }
+                    else if (p_imaging.interleavingDimension->compare("average") == 0)
+                    {
+                        InterleaveDim = Gadgetron::DIM_Average;
+                    }
+                    else if (p_imaging.interleavingDimension->compare("contrast") == 0)
+                    {
+                        InterleaveDim = Gadgetron::DIM_Contrast;
+                    }
+                    else if (p_imaging.interleavingDimension->compare("other") == 0)
+                    {
+                        InterleaveDim = Gadgetron::DIM_other1;
+                    }
+                    else
+                    {
+                        GADGET_THROW("Unknown interleaving dimension. Bailing out");
+                    }
+                }
+            }
+            else if (calib.compare("embedded") == 0)
+            {
+                CalibMode = Gadgetron::ISMRMRD_embedded;
+                GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is embedded");
+            }
+            else if (calib.compare("separate") == 0)
+            {
+                CalibMode = Gadgetron::ISMRMRD_separate;
+                GDEBUG_CONDITION_STREAM(verbose, "Calibration mode is separate");
+            }
+            else if (calib.compare("external") == 0)
+            {
+                CalibMode = Gadgetron::ISMRMRD_external;
+            }
+            else if ((calib.compare("other") == 0) && acceFactorE1 == 1 && acceFactorE2 == 1)
+            {
+                CalibMode = Gadgetron::ISMRMRD_noacceleration;
+                acceFactorE1 = 1;
+            }
+            else if ((calib.compare("other") == 0) && (acceFactorE1>1 || acceFactorE2>1))
+            {
+                CalibMode = Gadgetron::ISMRMRD_interleaved;
+                acceFactorE1 = 2;
+                InterleaveDim = Gadgetron::DIM_Phase;
+            }
+            else
+            {
+                GADGET_THROW("Failed to process parallel imaging calibration mode");
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Error happened in findCalibMode(...) ... ");
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    void find_encoding_limits(ISMRMRD::IsmrmrdHeader& h, ISMRMRD::EncodingCounters& meas_max_idx, bool verbose)
+    {
+        try
+        {
+            ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+            ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+            ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+
+            meas_max_idx.kspace_encode_step_1 = (uint16_t)e_space.matrixSize.y - 1;
+
+            meas_max_idx.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum : 0;
+            meas_max_idx.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum : 0;
+
+            meas_max_idx.kspace_encode_step_2 = (uint16_t)e_space.matrixSize.z - 1;
+
+            meas_max_idx.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum : 0;
+
+            meas_max_idx.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
+
+            meas_max_idx.repetition = e_limits.repetition ? e_limits.repetition->maximum : 0;
+
+            meas_max_idx.average = e_limits.average ? e_limits.average->maximum : 0;
+
+            // always combine the SEG
+            meas_max_idx.segment = 0;
+        }
+        catch (...)
+        {
+            GADGET_THROW("Error happened in findEncodingLimits(...) ... ");
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    void find_matrix_size_encoding(ISMRMRD::IsmrmrdHeader& h, size_t matrix_size_encoding[3])
+    {
+        matrix_size_encoding[0] = h.encoding[0].encodedSpace.matrixSize.x;
+        matrix_size_encoding[1] = h.encoding[0].encodedSpace.matrixSize.y;
+        matrix_size_encoding[2] = h.encoding[0].encodedSpace.matrixSize.z;
+    }
+
+    // ------------------------------------------------------------------------
+
+    void find_FOV_encoding(ISMRMRD::IsmrmrdHeader& h, float field_of_view_encoding[3])
+    {
+        field_of_view_encoding[0] = h.encoding[0].encodedSpace.fieldOfView_mm.x;
+        field_of_view_encoding[1] = h.encoding[0].encodedSpace.fieldOfView_mm.y;
+        field_of_view_encoding[2] = h.encoding[0].encodedSpace.fieldOfView_mm.z;
+    }
+
+    // ------------------------------------------------------------------------
+
+    void find_matrix_size_recon(ISMRMRD::IsmrmrdHeader& h, size_t matrix_size_recon[3])
+    {
+        matrix_size_recon[0] = h.encoding[0].reconSpace.matrixSize.x;
+        matrix_size_recon[1] = h.encoding[0].reconSpace.matrixSize.y;
+        matrix_size_recon[2] = h.encoding[0].reconSpace.matrixSize.z;
+    }
+
+    // ------------------------------------------------------------------------
+
+    void find_FOV_recon(ISMRMRD::IsmrmrdHeader& h, float field_of_view_recon[3])
+    {
+        field_of_view_recon[0] = h.encoding[0].reconSpace.fieldOfView_mm.x;
+        field_of_view_recon[1] = h.encoding[0].reconSpace.fieldOfView_mm.y;
+        field_of_view_recon[2] = h.encoding[0].reconSpace.fieldOfView_mm.z;
+    }
+
+    // ------------------------------------------------------------------------
+
+    void get_current_moment(std::string& procTime)
+    {
+        char timestamp[100];
+        time_t mytime;
+        struct tm *mytm;
+        mytime = time(NULL);
+        mytm = localtime(&mytime);
+        strftime(timestamp, sizeof(timestamp), "%a, %b %d %Y, %H:%M:%S", mytm);
+        procTime = timestamp;
+    }
+
+    // ------------------------------------------------------------------------
+
+    void get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<long>& v)
+    {
+        try
+        {
+            size_t num = attrib.length(name.c_str());
+            if (num == 0)
+            {
+                v.clear();
+                GWARN_STREAM("get_ismrmrd_meta_values, can not find field : " << name);
+                return;
+            }
+
+            v.resize(num);
+
+            size_t ii;
+            for (ii = 0; ii<num; ii++)
+            {
+                v[ii] = attrib.as_long(name.c_str(), ii);
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Error happened in get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<long>& v) ... ");
+        }
+    }
+
+    void get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<double>& v)
+    {
+        try
+        {
+            size_t num = attrib.length(name.c_str());
+            if (num == 0)
+            {
+                v.clear();
+                GWARN_STREAM("get_ismrmrd_meta_values, can not find field : " << name);
+                return;
+            }
+
+            v.resize(num);
+
+            size_t ii;
+            for (ii = 0; ii<num; ii++)
+            {
+                v[ii] = attrib.as_double(name.c_str(), ii);
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Error happened in get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<double>& v) ... ");
+        }
+    }
+
+    void get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<std::string>& v)
+    {
+        try
+        {
+            size_t num = attrib.length(name.c_str());
+            if (num == 0)
+            {
+                v.clear();
+                GWARN_STREAM("get_ismrmrd_meta_values, can not find field : " << name);
+                return;
+            }
+
+            v.resize(num);
+
+            size_t ii;
+            for (ii = 0; ii<num; ii++)
+            {
+                v[ii] = std::string(attrib.as_str(name.c_str(), ii));
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Error happened in get_ismrmrd_meta_values(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<std::string>& v) ... ");
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    template <typename T>
+    void set_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v)
+    {
+        try
+        {
+            size_t num = v.size();
+            if (num == 0)
+            {
+                GWARN_STREAM("setISMRMRMetaValues, input vector is empty ... " << name);
+                return;
+            }
+
+            attrib.set(name.c_str(), v[0]);
+
+            size_t ii;
+            for (ii = 1; ii<v.size(); ii++)
+            {
+                attrib.append(name.c_str(), v[ii]);
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Error happened in setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v) ... ");
+        }
+    }
+
+    template EXPORTMRICORE void set_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<long>& v);
+    template EXPORTMRICORE void set_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<double>& v);
+
+    void set_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v)
+    {
+        try
+        {
+            size_t num = v.size();
+            if (num == 0)
+            {
+                GWARN_STREAM("setISMRMRMetaValues, input vector is empty ... " << name);
+                return;
+            }
+
+            attrib.set(name.c_str(), v[0].c_str());
+
+            size_t ii;
+            for (ii = 1; ii<v.size(); ii++)
+            {
+                attrib.append(name.c_str(), v[ii].c_str());
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Error happened in setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v) ... ");
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    template <typename T>
+    void append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v)
+    {
+        try
+        {
+            size_t num = v.size();
+            if (num == 0)
+            {
+                GWARN_STREAM("append_ismrmrd_meta_values, input vector is empty ... " << name);
+                return;
+            }
+
+            attrib.append(name.c_str(), v[0]);
+
+            size_t ii;
+            for (ii = 1; ii<v.size(); ii++)
+            {
+                attrib.append(name.c_str(), v[ii]);
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Error happened in append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v) ... ");
+        }
+    }
+
+    template EXPORTMRICORE void append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<long>& v);
+    template EXPORTMRICORE void append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<double>& v);
+
+    void append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v)
+    {
+        try
+        {
+            size_t num = v.size();
+            if (num == 0)
+            {
+                GWARN_STREAM("append_ismrmrd_meta_values, input vector is empty ... " << name);
+                return;
+            }
+
+            attrib.append(name.c_str(), v[0].c_str());
+
+            size_t ii;
+            for (ii = 1; ii<v.size(); ii++)
+            {
+                attrib.append(name.c_str(), v[ii].c_str());
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Error happened in append_ismrmrd_meta_values(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v) ... ");
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    void PatientCoordinateSystem_to_DeviceCoordinateSystem(double& x, double& y, double& z, const std::string& position)
+    {
+        // this is following dicom tag (0020, 0037)
+
+        if (position == "HFS") // Head-first supine (HFS)
+        {
+            y = -y;
+            z = -z;
+        }
+        else if (position == "HFP") // Head-first prone (HFP)
+        {
+            x = -x;
+            z = -z;
+        }
+        else if (position == "HFDR") // Head-first decubitus-right
+        {
+            double v = x;
+            x = y;
+            y = v;
+            z = -z;
+        }
+        else if (position == "HFDL") // Head-first decubitus-left (HFDL)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            x = -x;
+            y = -y;
+            z = -z;
+        }
+        else if (position == "FFDR") // Feet-first decubitus-right (FFDR)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            x = -x;
+        }
+        else if (position == "FFDL") // Feet-first decubitus-left (FFDL)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            y = -y;
+        }
+        else if (position == "FFP") // Feet-first prone (FFP)
+        {
+        }
+        else if (position == "FFS") // Feet-first supine (FFS)
+        {
+            x = -x;
+            y = -y;
+        }
+        else
+        {
+            GADGET_THROW("Unknown position string ... ");
+        }
+    }
+
+    void DeviceCoordinateSystem_to_PatientCoordinateSystem(double& x, double& y, double& z, const std::string& position)
+    {
+        if (position == "HFS") // Head-first supine (HFS)
+        {
+            y = -y;
+            z = -z;
+        }
+        else if (position == "HFP") // Head-first prone (HFP)
+        {
+            x = -x;
+            z = -z;
+        }
+        else if (position == "HFDR") // Head-first decubitus-right
+        {
+            double v = x;
+            x = y;
+            y = v;
+            z = -z;
+        }
+        else if (position == "HFDL") // Head-first decubitus-left (HFDL)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            x = -x;
+            y = -y;
+            z = -z;
+        }
+        else if (position == "FFDR") // Feet-first decubitus-right (FFDR)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            y = -y;
+        }
+        else if (position == "FFDL") // Feet-first decubitus-left (FFDL)
+        {
+            double v = x;
+            x = y;
+            y = v;
+
+            x = -x;
+        }
+        else if (position == "FFP") // Feet-first prone (FFP)
+        {
+        }
+        else if (position == "FFS") // Feet-first supine (FFS)
+        {
+            x = -x;
+            y = -y;
+        }
+        else
+        {
+            GADGET_THROW("Unknown position string ... ");
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    bool check_idential_slice_prescription(ISMRMRD::ISMRMRD_ImageHeader a, ISMRMRD::ISMRMRD_ImageHeader b)
+    {
+        GADGET_CHECK_RETURN_FALSE(a.matrix_size[0] == b.matrix_size[0]);
+        GADGET_CHECK_RETURN_FALSE(a.matrix_size[1] == b.matrix_size[1]);
+        GADGET_CHECK_RETURN_FALSE(a.matrix_size[2] == b.matrix_size[2]);
+
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.field_of_view[0] - b.field_of_view[0])<0.1);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.field_of_view[1] - b.field_of_view[1])<0.1);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.field_of_view[2] - b.field_of_view[2])<0.1);
+
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.patient_table_position[0] - b.patient_table_position[0])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.patient_table_position[1] - b.patient_table_position[1])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.patient_table_position[2] - b.patient_table_position[2])<0.001);
+
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.position[0] - b.position[0])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.position[1] - b.position[1])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.position[2] - b.position[2])<0.001);
+
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.read_dir[0] - b.read_dir[0])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.read_dir[1] - b.read_dir[1])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.read_dir[2] - b.read_dir[2])<0.001);
+
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.phase_dir[0] - b.phase_dir[0])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.phase_dir[1] - b.phase_dir[1])<0.001);
+        GADGET_CHECK_RETURN_FALSE(std::abs(a.phase_dir[2] - b.phase_dir[2])<0.001);
+
+        return true;
+    }
+
+    // ------------------------------------------------------------------------
+
+    std::string get_ismrmrd_dim_name(const IsmrmrdDIM& dim)
+    {
+        std::ostringstream os;
+        switch (dim)
+        {
+        case DIM_ReadOut:
+            os << "DIM_ReadOut";
+            break;
+
+        case DIM_Encoding1:
+            os << "DIM_Encoding1";
+            break;
+
+        case DIM_Channel:
+            os << "DIM_Channel";
+            break;
+
+        case DIM_Slice:
+            os << "DIM_Slice";
+            break;
+
+        case DIM_Encoding2:
+            os << "DIM_Encoding2";
+            break;
+
+        case DIM_Contrast:
+            os << "DIM_Contrast";
+            break;
+
+        case DIM_Phase:
+            os << "DIM_Phase";
+            break;
+
+        case DIM_Repetition:
+            os << "DIM_Repetition";
+            break;
+
+        case DIM_Set:
+            os << "DIM_Set";
+            break;
+
+        case DIM_Segment:
+            os << "DIM_Segment";
+            break;
+
+        case DIM_Average:
+            os << "DIM_Average";
+            break;
+
+        case DIM_other1:
+            os << "DIM_other1";
+            break;
+
+        case DIM_other2:
+            os << "DIM_other2";
+            break;
+
+        case DIM_other3:
+            os << "DIM_other3";
+            break;
+
+        default:
+            os << "DIM_NONE";
+        }
+
+        std::string dimStr(os.str());
+        return dimStr;
+    }
+
+    // ------------------------------------------------------------------------
+
+    IsmrmrdDIM get_ismrmrd_dim_from_name(const std::string& name)
+    {
+        if (name == "DIM_ReadOut") return DIM_ReadOut;
+        if (name == "DIM_Encoding1") return DIM_Encoding1;
+        if (name == "DIM_Channel") return DIM_Channel;
+        if (name == "DIM_Slice") return DIM_Slice;
+        if (name == "DIM_Encoding2") return DIM_Encoding2;
+        if (name == "DIM_Contrast") return DIM_Contrast;
+        if (name == "DIM_Phase") return DIM_Phase;
+        if (name == "DIM_Repetition") return DIM_Repetition;
+        if (name == "DIM_Set") return DIM_Set;
+        if (name == "DIM_Segment") return DIM_Segment;
+        if (name == "DIM_Average") return DIM_Average;
+        if (name == "DIM_other1") return DIM_other1;
+        if (name == "DIM_other2") return DIM_other2;
+        if (name == "DIM_other3") return DIM_other3;
+
+        return DIM_NONE;
+    }
 }

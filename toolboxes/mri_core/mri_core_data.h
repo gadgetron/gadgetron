@@ -39,6 +39,26 @@ namespace Gadgetron
 	NONE
       };
 
+    // define the dimensions of ISMRMRD
+    enum IsmrmrdDIM
+    {
+        DIM_ReadOut = 32,
+        DIM_Encoding1,
+        DIM_Channel,
+        DIM_Slice,
+        DIM_Encoding2,
+        DIM_Contrast,
+        DIM_Phase,
+        DIM_Repetition,
+        DIM_Set,
+        DIM_Segment,
+        DIM_Average,
+        DIM_other1,
+        DIM_other2,
+        DIM_other3,
+        DIM_NONE
+    };
+
     // --------------------------------------------------------------------------
     /// define the calibration mode of ISMRMRD
     // --------------------------------------------------------------------------
