@@ -4,9 +4,9 @@
 #include "cpucore_math_export.h"
 #include "hoNDArray.h"
 
-#ifdef USE_ARMADILLO
-    #include "hoArmadillo.h"
-#endif // USE_ARMADILLO
+
+#include "hoArmadillo.h"
+
 
 #ifndef lapack_int
     #define lapack_int int

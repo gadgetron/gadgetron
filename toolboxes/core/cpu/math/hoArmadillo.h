@@ -2,7 +2,6 @@
 #define ARMA_64BIT_WORD
 #include "hoNDArray.h"
 
-#ifdef USE_ARMADILLO
 
 #include <armadillo>
 
@@ -86,4 +85,4 @@ namespace Gadgetron{
     }
 }
 
-#endif // USE_ARMADILLO
+
