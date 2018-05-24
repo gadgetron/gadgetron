@@ -12,6 +12,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
+#include <cstring>
+#include <limits>
 
 #include "float.h"
 #include "log.h"
