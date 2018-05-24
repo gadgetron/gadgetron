@@ -105,7 +105,7 @@ namespace Gadgetron {
             GDEBUG("Number of encoding spaces: %d\n", h.encoding.size());
         }
 
-        GADGET_CATCH_THROW(find_encoding_limits(h, meas_max_idx_, verbose.value()), GADGET_FAIL);
+        GADGET_CATCH_THROW(find_encoding_limits(h, meas_max_idx_, verbose.value()));
 
         // ---------------------------------------------------------
         // check interpolation is on or off
