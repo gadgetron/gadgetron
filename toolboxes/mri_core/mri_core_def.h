@@ -110,4 +110,10 @@ namespace Gadgetron
 
     /// instruct the client to keep image geometry
     #define GADGETRON_KEEP_IMAGE_GEOMETRY                   "Keep_image_geometry"
+
+    /// data flow tag
+    /// if this flag is set to be 1 for a image, the image is immediately passed to the next gadget
+    /// if this flag is 0, this image is a stored image by the accummulator
+    /// whether to pass a stored image to the next gadget is determined by the processing gadget itself
+    #define GADGETRON_PASS_IMMEDIATE                       "GT_PASSIMAGE_IMMEDIATE"
 }
