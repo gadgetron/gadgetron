@@ -118,12 +118,16 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
         with open(gadgetron_log_filename, "w") as gf:
             gp = subprocess.Popen(["gadgetron", "-p", port, "-R", "19080", "-l", "8004"], env=environment, stdout=gf, stderr=gf)
 
+            print("Start gadgetron at port " + port)
+
             node_p = list()
             if nodes > 0:
                 #start the cloudbus relay
                 relay_log_filename = os.path.join(pwd, out_folder, "gadgetron_cloudbus_relay.log")
                 with open(relay_log_filename, "w") as lgf:
                     p_relay = subprocess.Popen(["gadgetron_cloudbus_relay", "8004", "18004"], env=environment, stdout=lgf, stderr=lgf)
+
+                    print("Start gadgetron_cloudbus_relay")
 
                 base_rest_port = 19080
                 for pi in range(nodes):
@@ -133,8 +137,9 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
                     with open(node_log_filename, "w") as ngf:
                         pn = subprocess.Popen(["gadgetron", "-p", str(int(port)+pi+1), "-R", str(base_rest_port+pi+1), "-l", "8004"], env=environment, stdout=ngf, stderr=ngf)
                         node_p.append(pn)
+                        print("Start gadgetron at port " + str(int(port)+pi+1))
 
-            time.sleep(2)
+            time.sleep(3)
 
     #Let's figure out if we should run this test or not
     info = subprocess.check_output(["gadgetron_ismrmrd_client", "-a", host, "-p", port, "-q", "-c", "gadgetron_info.xml"], env=environment);
@@ -218,10 +223,12 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
 
         if start_gadgetron:
             gp.terminate()
+            print("Stop gadgetron ")
             if nodes > 0:
                 p_relay.terminate()
                 for pi in node_p:
                     pi.terminate()
+                    print("Stop gadgetron node")
 
         return True
 
