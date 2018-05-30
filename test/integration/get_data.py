@@ -34,8 +34,9 @@ def load_checksums(datafile):
     checksums = {}
     with open(datafile) as f:
         for line in f:
-            filepath, checksum = line.split(':')
-            checksums[filepath.strip()] = checksum.strip()
+            if len(line.strip()) > 0 :
+                filepath, checksum = line.split(':')
+                checksums[filepath.strip()] = checksum.strip()
     return checksums
 
 
