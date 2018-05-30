@@ -29,8 +29,11 @@ def main():
     gadgetron_outfile = open('gadgetron.log', 'w')
     client_outfile = open('client.log', 'w')
 
+    print("A total of %d tests are found " % len(content))
+
+    t_ind = 1
     for t in content:
-        print("Grabbing test case: " + t)
+        print("Grabbing test case %d/%d: %s" % (t_ind, len(content), t))
         print("--" * 20)
 
         # save this test's log files
@@ -57,6 +60,8 @@ def main():
         client_outfile.write("==============================================\n")
         with open(client_log_filename) as infile:
             client_outfile.write(infile.read())
+
+        t_ind += 1
 
         if r != 0:
             test_result = False
