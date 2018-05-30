@@ -1,6 +1,7 @@
 import os
 import sys
 import hashlib
+import subprocess
 
 if sys.version_info[0] >= 3:
     import urllib.request
@@ -20,13 +21,13 @@ HOST = 'http://gadgetrondata.blob.core.windows.net/gadgetrontestdata'
 
 
 def md5sum(filename, blocksize=64*1024):
-    hsh = hashlib.md5()
-    with open(filename, "r+b") as f:
-        buf = f.read(blocksize)
-        while len(buf) > 0:
-            hsh.update(buf)
-            buf = f.read(blocksize)
-    return hsh.hexdigest()
+    res = subprocess.check_output(["md5sum", filename])
+    res = res.split()
+    if sys.platform == "win32":
+        md5_str = str(res[0])[2:-1]
+    else:
+        md5_str = str(res[0])
+    return md5_str
 
 
 def load_checksums(datafile):
