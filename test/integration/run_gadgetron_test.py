@@ -304,10 +304,12 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
 
     if start_gadgetron:
         gp.terminate()
+        print("Stop gadgetron ")
         if nodes > 0:
             p_relay.terminate()
             for pi in node_p:
                 pi.terminate()
+                print("Stop gadgetron node")
 
     if not success:
         return False
