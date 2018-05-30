@@ -31,6 +31,7 @@ def main():
 
     for t in content:
         print("Grabbing test case: " + t)
+        print("--" * 20)
 
         # save this test's log files
         out_folder = 'test'
