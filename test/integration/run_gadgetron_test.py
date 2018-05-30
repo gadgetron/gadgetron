@@ -8,7 +8,22 @@ import os
 import shutil
 import platform
 import re
+import time
 
+class TimeoutError(Exception):
+    pass
+
+class timeout:
+    def __init__(self, seconds=1, error_message='Timeout'):
+        self.seconds = seconds
+        self.error_message = error_message
+    def handle_timeout(self, signum, frame):
+        raise TimeoutError(self.error_message)
+    def __enter__(self):
+        signal.signal(signal.SIGALRM, self.handle_timeout)
+        signal.alarm(self.seconds)
+    def __exit__(self, type, value, traceback):
+        signal.alarm(0)
 
 def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
     print("Running test case: " + testcase_cfg_file)
@@ -222,12 +237,26 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
         f.close()
 
         if start_gadgetron:
-            gp.terminate()
+            try:
+                with timeout(seconds=3):
+                    gp.terminate()
+            except:
+                gp.kill()
             print("Stop gadgetron ")
             if nodes > 0:
-                p_relay.terminate()
+                try:
+                    with timeout(seconds=3):
+                        p_relay.terminate()
+                except:
+                    p_relay.kill()
+
                 for pi in node_p:
-                    pi.terminate()
+                    try:
+                        with timeout(seconds=3):
+                            pi.terminate()
+                    except:
+                        pi.kill()
+
                     print("Stop gadgetron node")
 
         return True
@@ -302,14 +331,30 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
             print("Failed to run gadgetron_ismrmrd_client!")
             success = False
 
-    if start_gadgetron:
-        gp.terminate()
-        print("Stop gadgetron ")
-        if nodes > 0:
-            p_relay.terminate()
-            for pi in node_p:
-                pi.terminate()
-                print("Stop gadgetron node")
+        if start_gadgetron:
+            try:
+                with timeout(seconds=3):
+                    gp.terminate()
+            except:
+                gp.kill()
+            print("Stop gadgetron ")
+            if nodes > 0:
+                try:
+                    with timeout(seconds=3):
+                        p_relay.terminate()
+                except:
+                    p_relay.kill()
+                print("Stop gadgetron relay")
+                
+                for pi in node_p:
+                    try:
+                        with timeout(seconds=3):
+                            pi.terminate()
+                    except:
+                        pi.kill()
+
+                    print("Stop gadgetron node")
+            
 
     if not success:
         return False
