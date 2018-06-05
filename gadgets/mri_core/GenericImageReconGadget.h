@@ -92,6 +92,7 @@ public:
     GADGET_PROPERTY(debug_folder, std::string, "If set, the debug output will be written out", "");
     GADGET_PROPERTY(perform_timing, bool, "Whether to perform timing on some computational steps", false);
 
+    GADGET_PROPERTY(send_out_image_array, bool, "Whether to send out image array; if false, send out individual image", false);
     GADGET_PROPERTY(send_out_gfactor_map, bool, "Whether to send out gfactor maps", false);
     GADGET_PROPERTY(send_out_snr_map, bool, "Whether to send out snr maps", true);
     GADGET_PROPERTY(send_out_std_map, bool, "Whether to send out std maps", false);
@@ -126,11 +127,15 @@ protected:
     bool getImage2DFromImage3D(Image3DType& image3D, Image2DBufferType& image2DBuf);
 
     /// compute the image number
-    size_t computeSeriesImageNumber (ISMRMRD::ImageHeader& imheader, size_t nCHA, size_t cha, size_t nE2, size_t e2);
+    size_t computeSeriesImageNumber (ISMRMRD::ISMRMRD_ImageHeader& imheader, size_t nCHA, size_t cha, size_t nE2, size_t e2);
 
     /// send out the images as a Gadget3 message
     /// windowCenter and windowWidth is for every SLC
     virtual bool sendOutImages(Image2DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter=std::vector<float>(), const std::vector<float>& windowWidth=std::vector<float>(), bool resetImageCommentsParametricMaps=true, Gadget* anchor=NULL);
+
+    virtual bool sendOutImageBuffer(Image2DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
+
+    virtual void decorateImageHeader(ISMRMRD::ISMRMRD_ImageHeader& header, ISMRMRD::MetaContainer& attrib, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter, const std::vector<float>& windowWidth, bool resetImageCommentsParametricMaps, size_t slc, size_t SLC);
 
     /// convert 3D container to 2D and vice versa
     /// a [RO E1 E2] 3D image will be converted into E2 2D images

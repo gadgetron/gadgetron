@@ -128,6 +128,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     GenericReconNoiseStdMapComputingGadget.h 
                                     GenericImageReconGadget.h 
                                     GenericReconAccumulateImageTriggerGadget.h 
+                                    GenericImageReconArrayToImageGadget.h 
                                     WhiteNoiseInjectorGadget.h
                                     NoiseSummaryGadget.h 
                                     NHLBICompression.h )
@@ -183,6 +184,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 GenericReconNoiseStdMapComputingGadget.cpp 
                                 GenericImageReconGadget.cpp 
                                 GenericReconAccumulateImageTriggerGadget.cpp 
+                                GenericImageReconArrayToImageGadget.cpp 
                                 WhiteNoiseInjectorGadget.cpp
                                 RateLimitGadget.cpp
                                 NoiseSummaryGadget.cpp )

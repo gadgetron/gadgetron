@@ -42,6 +42,9 @@ namespace Gadgetron
 
         virtual void print(std::ostream& os) const;
 
+        // deep copy
+        void copyFrom(const hoNDObjectArray<TObjectType>& aArray);
+
     protected:
 
         using BaseClass::dimensions_;
@@ -147,6 +150,30 @@ namespace Gadgetron
         for ( size_t n=0; n<this->elements_; n++ )
         {
             this->data_[n] = NULL;
+        }
+    }
+
+    template <typename TObjectType>
+    void hoNDObjectArray<TObjectType>::copyFrom(const hoNDObjectArray<TObjectType>& aArray)
+    {
+        try
+        {
+            if (!this->dimensions_equal(&aArray))
+            {
+                this->create(aArray.get_dimensions());
+            }
+
+            long long i;
+            for (i = 0; i<(long long)elements_; i++)
+            {
+                data_[i] = new TObjectType(*aArray(i));
+            }
+
+            this->delete_data_on_destruct_ = true;
+        }
+        catch (...)
+        {
+            GADGET_THROW("Exceptions happened in hoNDObjectArray::copyFrom(...) ... ");
         }
     }
 
