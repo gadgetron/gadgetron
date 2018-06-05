@@ -156,7 +156,14 @@ namespace Gadgetron {
                     GDEBUG_STREAM("Image Recon, send out received gfactor map ...");
 
                     dataRole.clear();
-                    GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_ + 200, processStr, dataRole), GADGET_FAIL);
+                    if (send_out_image_array.value())
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutImageBuffer(ori, image_series_num_ + 200, processStr, dataRole), GADGET_FAIL);
+                    }
+                    else
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_ + 200, processStr, dataRole), GADGET_FAIL);
+                    }
                     GADGET_CHECK_RETURN(this->releaseImageBuffer(ori), GADGET_FAIL);
                 }
 
@@ -167,7 +174,14 @@ namespace Gadgetron {
                 if (send_out_snr_map_)
                 {
                     dataRole.clear();
-                    GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_ + 201, processStr, dataRole), GADGET_FAIL);
+                    if (send_out_image_array.value())
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutImageBuffer(ori, image_series_num_ + 201, processStr, dataRole), GADGET_FAIL);
+                    }
+                    else
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_ + 201, processStr, dataRole), GADGET_FAIL);
+                    }
                     GADGET_CHECK_RETURN(this->releaseImageBuffer(ori), GADGET_FAIL);
                 }
 
@@ -178,7 +192,14 @@ namespace Gadgetron {
                 if (send_out_std_map_)
                 {
                     dataRole.clear();
-                    GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_ + 202, processStr, dataRole), GADGET_FAIL);
+                    if (send_out_image_array.value())
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutImageBuffer(ori, image_series_num_ + 202, processStr, dataRole), GADGET_FAIL);
+                    }
+                    else
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_ + 202, processStr, dataRole), GADGET_FAIL);
+                    }
                     GADGET_CHECK_RETURN(this->releaseImageBuffer(ori), GADGET_FAIL);
                 }
 
@@ -189,7 +210,14 @@ namespace Gadgetron {
                 if (send_out_wrap_around_map_)
                 {
                     dataRole.clear();
-                    GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_ + 203, processStr, dataRole), GADGET_FAIL);
+                    if (send_out_image_array.value())
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutImageBuffer(ori, image_series_num_ + 203, processStr, dataRole), GADGET_FAIL);
+                    }
+                    else
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_ + 203, processStr, dataRole), GADGET_FAIL);
+                    }
                     GADGET_CHECK_RETURN(this->releaseImageBuffer(ori), GADGET_FAIL);
                 }
 
@@ -203,7 +231,14 @@ namespace Gadgetron {
                 if (pass_image_immediately)
                 {
                     dataRole.clear();
-                    GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_ + 1004, processStr, dataRole), GADGET_FAIL);
+                    if (send_out_image_array.value())
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutImageBuffer(ori, image_series_num_ + 1004, processStr, dataRole), GADGET_FAIL);
+                    }
+                    else
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_ + 1004, processStr, dataRole), GADGET_FAIL);
+                    }
                     GADGET_CHECK_RETURN(this->releaseImageBuffer(ori), GADGET_FAIL);
                     return GADGET_OK;
                 }
@@ -335,7 +370,7 @@ namespace Gadgetron {
         return true;
     }
 
-    size_t GenericImageReconGadget::computeSeriesImageNumber(ISMRMRD::ImageHeader& imheader, size_t nCHA, size_t cha, size_t nE2, size_t e2)
+    size_t GenericImageReconGadget::computeSeriesImageNumber(ISMRMRD::ISMRMRD_ImageHeader& imheader, size_t nCHA, size_t cha, size_t nE2, size_t e2)
     {
         size_t nSET = meas_max_idx_.set + 1;
         size_t nREP = meas_max_idx_.repetition + 1;
@@ -355,6 +390,385 @@ namespace Gadgetron {
             + 1;
 
         return imageNum;
+    }
+
+    void GenericImageReconGadget::decorateImageHeader(ISMRMRD::ISMRMRD_ImageHeader& header, ISMRMRD::MetaContainer& attrib, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter, const std::vector<float>& windowWidth, bool resetImageCommentsParametricMaps, size_t slc, size_t SLC)
+    {
+        try
+        {
+            if (!dataRole.empty() && (dataRole[0] != GADGETRON_IMAGE_REGULAR))
+            {
+                std::string str;
+
+                // data role
+                bool isRealImage = false;
+                bool isParametricMap = false;
+                bool isParametricT1Map = false;
+                bool isParametricT1SDMap = false;
+                bool isParametricT2Map = false;
+                bool isParametricT2SDMap = false;
+                bool isParametricT2StarMap = false;
+                bool isParametricR2StarMap = false;
+                bool isParametricT2StarMaskMap = false;
+                bool isParametricT2StarSDMap = false;
+                bool isParametricT2StarAMap = false;
+                bool isParametricT2StarTruncMap = false;
+                bool isParametricPerfMap = false;
+                bool isParametricPerfFlowMap = false;
+                bool isParametricPerfInterstitialVolumeMap = false;
+                bool isParametricPerfMTTMap = false;
+                bool isParametricPerfBloodVolumeMap = false;
+                bool isParametricPerfEMap = false;
+                bool isParametricPerfPSMap = false;
+                bool isParametricAIFGd = false;
+                bool isParametricPerfGd = false;
+
+                if (!dataRole.empty())
+                {
+                    size_t n;
+                    for (n = 0; n < dataRole.size(); n++)
+                    {
+                        if (send_out_PSIR_as_real_ && dataRole[n] == GADGETRON_IMAGE_PSIR)
+                        {
+                            isRealImage = true;
+                        }
+
+                        if ((dataRole[n] == GADGETRON_IMAGE_T1MAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_T1SDMAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_T2MAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_T2SDMAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_T2STARMAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_R2STARMAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_T2STARMASKMAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_T2STARSDMAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_T2STARAMAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_T2STARTRUNCMAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_FREQMAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_B1MAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_FLIPANGLEMAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_PERF_MAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_PERF_FLOW_MAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_PERF_INTERSITITAL_VOLUME_MAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_PERF_MEANTRANSITTIME_MAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_PERF_VASCULAR_VOLUME_MAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_PERF_Gd_Extraction_MAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP)
+                            || (dataRole[n] == GADGETRON_IMAGE_AIF_Gd_CONCENTRATION)
+                            || (dataRole[n] == GADGETRON_IMAGE_PERF_Gd_CONCENTRATION)
+                            )
+                        {
+                            isParametricMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_T1MAP)
+                        {
+                            isParametricT1Map = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_T1SDMAP)
+                        {
+                            isParametricT1SDMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_T2MAP)
+                        {
+                            isParametricT2Map = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_T2SDMAP)
+                        {
+                            isParametricT2SDMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_T2STARMAP)
+                        {
+                            isParametricT2StarMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_R2STARMAP)
+                        {
+                            isParametricR2StarMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_T2STARSDMAP)
+                        {
+                            isParametricT2StarSDMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_T2STARAMAP)
+                        {
+                            isParametricT2StarAMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_T2STARTRUNCMAP)
+                        {
+                            isParametricT2StarTruncMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_T2STARMASKMAP)
+                        {
+                            isParametricT2StarMaskMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_PERF_MAP)
+                        {
+                            isParametricPerfMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_PERF_FLOW_MAP)
+                        {
+                            isParametricPerfFlowMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_PERF_INTERSITITAL_VOLUME_MAP)
+                        {
+                            isParametricPerfInterstitialVolumeMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_PERF_MEANTRANSITTIME_MAP)
+                        {
+                            isParametricPerfMTTMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_PERF_VASCULAR_VOLUME_MAP)
+                        {
+                            isParametricPerfBloodVolumeMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_PERF_Gd_Extraction_MAP)
+                        {
+                            isParametricPerfEMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP)
+                        {
+                            isParametricPerfPSMap = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_AIF_Gd_CONCENTRATION)
+                        {
+                            isParametricAIFGd = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_PERF_Gd_CONCENTRATION)
+                        {
+                            isParametricPerfGd = true;
+                        }
+                    }
+
+                    Gadgetron::append_ismrmrd_meta_values(attrib, GADGETRON_DATA_ROLE, dataRole);
+
+                    std::vector<std::string> dataRoleAll;
+                    Gadgetron::get_ismrmrd_meta_values(attrib, GADGETRON_DATA_ROLE, dataRoleAll);
+
+                    // double check the image type
+                    if (isRealImage)
+                    {
+                        header.image_type = ISMRMRD::ISMRMRD_IMTYPE_REAL;
+                    }
+
+                    // image comment
+                    if (isParametricMap)
+                    {
+                        // reset the image comment for maps
+
+                        std::vector<std::string> commentStr(dataRole.size() + 1);
+
+                        commentStr[0] = "GT";
+                        for (n = 0; n < dataRole.size(); n++)
+                        {
+                            commentStr[n + 1] = dataRole[n];
+                        }
+
+                        if (resetImageCommentsParametricMaps)
+                        {
+                            Gadgetron::set_ismrmrd_meta_values(attrib, GADGETRON_IMAGECOMMENT, commentStr);
+                        }
+                        else
+                        {
+                            for (n = 0; n < dataRole.size(); n++)
+                            {
+                                attrib.append(GADGETRON_IMAGECOMMENT, dataRole[n].c_str());
+                            }
+                        }
+
+                        // get the scaling ratio
+                        float scalingRatio = 1;
+                        try
+                        {
+                            scalingRatio = (float)(attrib.as_double(GADGETRON_IMAGE_SCALE_RATIO, 0));
+
+                            std::ostringstream ostr;
+                            ostr << "x" << scalingRatio;
+                            std::string scalingStr = ostr.str();
+                            attrib.append(GADGETRON_IMAGECOMMENT, scalingStr.c_str());
+
+                            if (isParametricT1Map || isParametricT1SDMap
+                                || isParametricT2Map || isParametricT2SDMap
+                                || isParametricT2StarMap || isParametricT2StarSDMap)
+                            {
+                                std::ostringstream ostr;
+                                ostr << std::setprecision(3) << 1.0f / scalingRatio << "ms";
+                                std::string unitStr = ostr.str();
+
+                                attrib.append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+                            }
+
+                            if (isParametricR2StarMap)
+                            {
+                                std::ostringstream ostr;
+                                ostr << std::setprecision(3) << 1.0f / scalingRatio << "Hz";
+                                std::string unitStr = ostr.str();
+
+                                attrib.append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+                            }
+
+                            if (isParametricPerfFlowMap || isParametricPerfMap || isParametricPerfPSMap)
+                            {
+                                std::ostringstream ostr;
+                                ostr << std::setprecision(3) << 1.0f / scalingRatio << "ml/min/g";
+                                std::string unitStr = ostr.str();
+
+                                attrib.append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+                            }
+
+                            if (isParametricPerfInterstitialVolumeMap)
+                            {
+                                std::ostringstream ostr;
+                                ostr << std::setprecision(3) << 1.0f / scalingRatio << "ml/100g";
+                                std::string unitStr = ostr.str();
+
+                                attrib.append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+                            }
+
+                            if (isParametricPerfMTTMap)
+                            {
+                                std::ostringstream ostr;
+                                ostr << std::setprecision(3) << 1.0f / scalingRatio << "s";
+                                std::string unitStr = ostr.str();
+
+                                attrib.append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+                            }
+
+                            if (isParametricPerfEMap)
+                            {
+                                std::ostringstream ostr;
+                                ostr << std::setprecision(3) << 1.0f / scalingRatio;
+                                std::string unitStr = ostr.str();
+
+                                attrib.append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+                            }
+
+                            if (isParametricPerfBloodVolumeMap)
+                            {
+                                std::ostringstream ostr;
+                                ostr << std::setprecision(3) << 1.0f / scalingRatio << "ml/100g";
+                                std::string unitStr = ostr.str();
+
+                                attrib.append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+                            }
+
+                            if (isParametricAIFGd || isParametricPerfGd)
+                            {
+                                std::ostringstream ostr;
+                                ostr << std::setprecision(3) << 1.0f / scalingRatio << "MMOL/L";
+                                std::string unitStr = ostr.str();
+
+                                attrib.append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
+                            }
+                        }
+                        catch (...)
+                        {
+                            GWARN_STREAM("Image attrib does not have the scale ratio ...");
+                            scalingRatio = 1;
+                        }
+                    }
+                    else
+                    {
+                        bool hasSCC = false;
+                        size_t n;
+                        for (n = 0; n < processStr.size(); n++)
+                        {
+                            if (processStr[n] == GADGETRON_IMAGE_SURFACECOILCORRECTION)
+                            {
+                                hasSCC = true;
+                            }
+                        }
+
+                        if (hasSCC)
+                        {
+                            double scalingRatio = (float)(attrib.as_double(GADGETRON_IMAGE_SCALE_RATIO, 0));
+
+                            std::ostringstream ostr;
+                            ostr << "x" << scalingRatio;
+                            std::string scalingStr = ostr.str();
+
+                            size_t numComment = attrib.length(GADGETRON_IMAGECOMMENT);
+                            if (numComment == 0)
+                            {
+                                attrib.append(GADGETRON_IMAGECOMMENT, scalingStr.c_str());
+                            }
+                            else
+                            {
+                                size_t n;
+                                for (n = 0; n < numComment; n++)
+                                {
+                                    std::string commentItem = attrib.as_str(GADGETRON_IMAGECOMMENT, n);
+                                    if (commentItem.find("x") != std::string::npos)
+                                    {
+                                        const ISMRMRD::MetaValue& v = attrib.value(GADGETRON_IMAGECOMMENT, n);
+                                        ISMRMRD::MetaValue& v2 = const_cast<ISMRMRD::MetaValue&>(v);
+                                        v2 = scalingStr.c_str();
+                                    }
+                                }
+                            }
+
+                            if (attrib.length(GADGETRON_IMAGE_SCALE_OFFSET) > 0)
+                            {
+                                double offset = (float)(attrib.as_double(GADGETRON_IMAGE_SCALE_OFFSET, 0));
+
+                                if (offset > 0)
+                                {
+                                    std::ostringstream ostr;
+                                    ostr << "+" << offset;
+                                    std::string offsetStr = ostr.str();
+
+                                    attrib.append(GADGETRON_IMAGECOMMENT, offsetStr.c_str());
+                                }
+                            }
+                        }
+
+                        for (n = 0; n < dataRole.size(); n++)
+                        {
+                            attrib.append(GADGETRON_IMAGECOMMENT, dataRole[n].c_str());
+                        }
+                    }
+
+                    // seq description
+                    Gadgetron::append_ismrmrd_meta_values(attrib, GADGETRON_SEQUENCEDESCRIPTION, dataRole);
+                }
+
+                // image processing history
+                if (!processStr.empty())
+                {
+                    size_t n;
+                    for (n = 0; n < processStr.size(); n++)
+                    {
+                        attrib.append(GADGETRON_IMAGEPROCESSINGHISTORY, processStr[n].c_str());
+                    }
+                }
+
+                if (windowCenter.size() == SLC && windowWidth.size() == SLC)
+                {
+                    attrib.set(GADGETRON_IMAGE_WINDOWCENTER, (long)windowCenter[slc]);
+                    attrib.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)windowWidth[slc]);
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Exceptions happened in decorateImageHeader(...) ... ");
+        }
     }
 
     bool GenericImageReconGadget::sendOutImages(Image2DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole,
@@ -464,398 +878,7 @@ namespace Gadgetron {
                                                 // set the attributes
                                                 *cm3->getObjectPtr() = pImage->attrib_;
 
-                                                if (!dataRole.empty() && (dataRole[0] != GADGETRON_IMAGE_REGULAR))
-                                                {
-                                                    std::string str;
-
-                                                    // data role
-                                                    bool isRealImage = false;
-                                                    bool isParametricMap = false;
-                                                    bool isParametricT1Map = false;
-                                                    bool isParametricT1SDMap = false;
-                                                    bool isParametricT2Map = false;
-                                                    bool isParametricT2SDMap = false;
-                                                    bool isParametricT2StarMap = false;
-                                                    bool isParametricR2StarMap = false;
-                                                    bool isParametricT2StarMaskMap = false;
-                                                    bool isParametricT2StarSDMap = false;
-                                                    bool isParametricT2StarAMap = false;
-                                                    bool isParametricT2StarTruncMap = false;
-                                                    bool isParametricPerfMap = false;
-                                                    bool isParametricPerfFlowMap = false;
-                                                    bool isParametricPerfInterstitialVolumeMap = false;
-                                                    bool isParametricPerfMTTMap = false;
-                                                    bool isParametricPerfBloodVolumeMap = false;
-                                                    bool isParametricPerfEMap = false;
-                                                    bool isParametricPerfPSMap = false;
-                                                    bool isParametricAIFGd = false;
-                                                    bool isParametricPerfGd = false;
-
-                                                    if (!dataRole.empty())
-                                                    {
-                                                        size_t n;
-                                                        for (n = 0; n < dataRole.size(); n++)
-                                                        {
-                                                            if (send_out_PSIR_as_real_ && dataRole[n] == GADGETRON_IMAGE_PSIR)
-                                                            {
-                                                                isRealImage = true;
-                                                            }
-
-                                                            if ((dataRole[n] == GADGETRON_IMAGE_T1MAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_T1SDMAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_T2MAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_T2SDMAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_T2STARMAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_R2STARMAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_T2STARMASKMAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_T2STARSDMAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_T2STARAMAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_T2STARTRUNCMAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_FREQMAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_B1MAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_FLIPANGLEMAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_PERF_MAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_PERF_FLOW_MAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_PERF_INTERSITITAL_VOLUME_MAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_PERF_MEANTRANSITTIME_MAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_PERF_VASCULAR_VOLUME_MAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_PERF_Gd_Extraction_MAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_AIF_Gd_CONCENTRATION)
-                                                                || (dataRole[n] == GADGETRON_IMAGE_PERF_Gd_CONCENTRATION)
-                                                                )
-                                                            {
-                                                                isParametricMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_T1MAP)
-                                                            {
-                                                                isParametricT1Map = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_T1SDMAP)
-                                                            {
-                                                                isParametricT1SDMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_T2MAP)
-                                                            {
-                                                                isParametricT2Map = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_T2SDMAP)
-                                                            {
-                                                                isParametricT2SDMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_T2STARMAP)
-                                                            {
-                                                                isParametricT2StarMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_R2STARMAP)
-                                                            {
-                                                                isParametricR2StarMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_T2STARSDMAP)
-                                                            {
-                                                                isParametricT2StarSDMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_T2STARAMAP)
-                                                            {
-                                                                isParametricT2StarAMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_T2STARTRUNCMAP)
-                                                            {
-                                                                isParametricT2StarTruncMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_T2STARMASKMAP)
-                                                            {
-                                                                isParametricT2StarMaskMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_PERF_MAP)
-                                                            {
-                                                                isParametricPerfMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_PERF_FLOW_MAP)
-                                                            {
-                                                                isParametricPerfFlowMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_PERF_INTERSITITAL_VOLUME_MAP)
-                                                            {
-                                                                isParametricPerfInterstitialVolumeMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_PERF_MEANTRANSITTIME_MAP)
-                                                            {
-                                                                isParametricPerfMTTMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_PERF_VASCULAR_VOLUME_MAP)
-                                                            {
-                                                                isParametricPerfBloodVolumeMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_PERF_Gd_Extraction_MAP)
-                                                            {
-                                                                isParametricPerfEMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP)
-                                                            {
-                                                                isParametricPerfPSMap = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_AIF_Gd_CONCENTRATION)
-                                                            {
-                                                                isParametricAIFGd = true;
-                                                            }
-
-                                                            if (dataRole[n] == GADGETRON_IMAGE_PERF_Gd_CONCENTRATION)
-                                                            {
-                                                                isParametricPerfGd = true;
-                                                            }
-                                                        }
-
-                                                        Gadgetron::append_ismrmrd_meta_values(*cm3->getObjectPtr(), GADGETRON_DATA_ROLE, dataRole);
-
-                                                        std::vector<std::string> dataRoleAll;
-                                                        Gadgetron::get_ismrmrd_meta_values(*cm3->getObjectPtr(), GADGETRON_DATA_ROLE, dataRoleAll);
-
-                                                        /*if ( !debug_folder_full_path_.empty() )
-                                                        {
-                                                            std::ostringstream ostr;
-                                                            for ( n=0; n<dataRoleAll.size(); n++ )
-                                                            {
-                                                                ostr << dataRoleAll[n] << "_";
-                                                            }
-                                                            ostr << cm1->getObjectPtr()->image_index;
-
-                                                            if ( !debug_folder_full_path_.empty() ) gt_exporter_.export_array_complex(*cm2->getObjectPtr(), debug_folder_full_path_+ostr.str());
-                                                        }*/
-
-                                                        // double check the image type
-                                                        if (isRealImage)
-                                                        {
-                                                            cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_REAL;
-                                                        }
-
-                                                        // image comment
-                                                        if (isParametricMap)
-                                                        {
-                                                            // reset the image comment for maps
-
-                                                            std::vector<std::string> commentStr(dataRole.size() + 1);
-
-                                                            commentStr[0] = "GT";
-                                                            for (n = 0; n < dataRole.size(); n++)
-                                                            {
-                                                                commentStr[n + 1] = dataRole[n];
-                                                            }
-
-                                                            if (resetImageCommentsParametricMaps)
-                                                            {
-                                                                Gadgetron::set_ismrmrd_meta_values(*cm3->getObjectPtr(), GADGETRON_IMAGECOMMENT, commentStr);
-                                                            }
-                                                            else
-                                                            {
-                                                                for (n = 0; n < dataRole.size(); n++)
-                                                                {
-                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, dataRole[n].c_str());
-                                                                }
-                                                            }
-
-                                                            // get the scaling ratio
-                                                            float scalingRatio = 1;
-                                                            try
-                                                            {
-                                                                scalingRatio = (float)(cm3->getObjectPtr()->as_double(GADGETRON_IMAGE_SCALE_RATIO, 0));
-
-                                                                std::ostringstream ostr;
-                                                                ostr << "x" << scalingRatio;
-                                                                std::string scalingStr = ostr.str();
-                                                                cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, scalingStr.c_str());
-
-                                                                if (isParametricT1Map || isParametricT1SDMap
-                                                                    || isParametricT2Map || isParametricT2SDMap
-                                                                    || isParametricT2StarMap || isParametricT2StarSDMap)
-                                                                {
-                                                                    std::ostringstream ostr;
-                                                                    ostr << std::setprecision(3) << 1.0f / scalingRatio << "ms";
-                                                                    std::string unitStr = ostr.str();
-
-                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
-                                                                }
-
-                                                                if (isParametricR2StarMap)
-                                                                {
-                                                                    std::ostringstream ostr;
-                                                                    ostr << std::setprecision(3) << 1.0f / scalingRatio << "Hz";
-                                                                    std::string unitStr = ostr.str();
-
-                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
-                                                                }
-
-                                                                if (isParametricPerfFlowMap || isParametricPerfMap || isParametricPerfPSMap)
-                                                                {
-                                                                    std::ostringstream ostr;
-                                                                    ostr << std::setprecision(3) << 1.0f / scalingRatio << "ml/min/g";
-                                                                    std::string unitStr = ostr.str();
-
-                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
-                                                                }
-
-                                                                if (isParametricPerfInterstitialVolumeMap)
-                                                                {
-                                                                    std::ostringstream ostr;
-                                                                    ostr << std::setprecision(3) << 1.0f / scalingRatio << "ml/100g";
-                                                                    std::string unitStr = ostr.str();
-
-                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
-                                                                }
-
-                                                                if (isParametricPerfMTTMap)
-                                                                {
-                                                                    std::ostringstream ostr;
-                                                                    ostr << std::setprecision(3) << 1.0f / scalingRatio << "s";
-                                                                    std::string unitStr = ostr.str();
-
-                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
-                                                                }
-
-                                                                if (isParametricPerfEMap)
-                                                                {
-                                                                    std::ostringstream ostr;
-                                                                    ostr << std::setprecision(3) << 1.0f / scalingRatio;
-                                                                    std::string unitStr = ostr.str();
-
-                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
-                                                                }
-
-                                                                if (isParametricPerfBloodVolumeMap)
-                                                                {
-                                                                    std::ostringstream ostr;
-                                                                    ostr << std::setprecision(3) << 1.0f / scalingRatio << "ml/100g";
-                                                                    std::string unitStr = ostr.str();
-
-                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
-                                                                }
-
-                                                                if (isParametricAIFGd || isParametricPerfGd)
-                                                                {
-                                                                    std::ostringstream ostr;
-                                                                    ostr << std::setprecision(3) << 1.0f / scalingRatio << "MMOL/L";
-                                                                    std::string unitStr = ostr.str();
-
-                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, unitStr.c_str());
-                                                                }
-                                                            }
-                                                            catch (...)
-                                                            {
-                                                                GWARN_STREAM("Image attrib does not have the scale ratio ...");
-                                                                scalingRatio = 1;
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            bool hasSCC = false;
-                                                            size_t n;
-                                                            for (n = 0; n < processStr.size(); n++)
-                                                            {
-                                                                if (processStr[n] == GADGETRON_IMAGE_SURFACECOILCORRECTION)
-                                                                {
-                                                                    hasSCC = true;
-                                                                }
-                                                            }
-
-                                                            if (hasSCC)
-                                                            {
-                                                                double scalingRatio = (float)(cm3->getObjectPtr()->as_double(GADGETRON_IMAGE_SCALE_RATIO, 0));
-
-                                                                std::ostringstream ostr;
-                                                                ostr << "x" << scalingRatio;
-                                                                std::string scalingStr = ostr.str();
-
-                                                                size_t numComment = cm3->getObjectPtr()->length(GADGETRON_IMAGECOMMENT);
-                                                                if (numComment == 0)
-                                                                {
-                                                                    cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, scalingStr.c_str());
-                                                                }
-                                                                else
-                                                                {
-                                                                    size_t n;
-                                                                    for (n = 0; n < numComment; n++)
-                                                                    {
-                                                                        std::string commentItem = cm3->getObjectPtr()->as_str(GADGETRON_IMAGECOMMENT, n);
-                                                                        if (commentItem.find("x") != std::string::npos)
-                                                                        {
-                                                                            const ISMRMRD::MetaValue& v = cm3->getObjectPtr()->value(GADGETRON_IMAGECOMMENT, n);
-                                                                            ISMRMRD::MetaValue& v2 = const_cast<ISMRMRD::MetaValue&>(v);
-                                                                            v2 = scalingStr.c_str();
-                                                                        }
-                                                                    }
-                                                                }
-
-                                                                if (cm3->getObjectPtr()->length(GADGETRON_IMAGE_SCALE_OFFSET) > 0)
-                                                                {
-                                                                    double offset = (float)(cm3->getObjectPtr()->as_double(GADGETRON_IMAGE_SCALE_OFFSET, 0));
-
-                                                                    if (offset > 0)
-                                                                    {
-                                                                        std::ostringstream ostr;
-                                                                        ostr << "+" << offset;
-                                                                        std::string offsetStr = ostr.str();
-
-                                                                        cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, offsetStr.c_str());
-                                                                    }
-                                                                }
-                                                            }
-
-                                                            for (n = 0; n < dataRole.size(); n++)
-                                                            {
-                                                                cm3->getObjectPtr()->append(GADGETRON_IMAGECOMMENT, dataRole[n].c_str());
-                                                            }
-                                                        }
-
-                                                        // seq description
-                                                        Gadgetron::append_ismrmrd_meta_values(*cm3->getObjectPtr(), GADGETRON_SEQUENCEDESCRIPTION, dataRole);
-                                                    }
-
-                                                    /*GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out 2D image [CHA SLC E2 CON PHS REP SET AVE] = ["
-                                                        << cha << " "
-                                                        << cm1->getObjectPtr()->slice << " "
-                                                        << e2 << " "
-                                                        << cm1->getObjectPtr()->contrast << " "
-                                                        << cm1->getObjectPtr()->phase << " "
-                                                        << cm1->getObjectPtr()->repetition << " "
-                                                        << cm1->getObjectPtr()->set << " "
-                                                        << cm1->getObjectPtr()->average << "] \t"
-                                                        << " -- Image number -- " << cm1->getObjectPtr()->image_index
-                                                        << " -- Series number -- " << cm1->getObjectPtr()->image_series_index);*/
-
-                                                        // image processing history
-                                                    if (!processStr.empty())
-                                                    {
-                                                        size_t n;
-                                                        for (n = 0; n < processStr.size(); n++)
-                                                        {
-                                                            cm3->getObjectPtr()->append(GADGETRON_IMAGEPROCESSINGHISTORY, processStr[n].c_str());
-                                                        }
-                                                    }
-
-                                                    if (windowCenter.size() == SLC && windowWidth.size() == SLC)
-                                                    {
-                                                        cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWCENTER, (long)windowCenter[slc]);
-                                                        cm3->getObjectPtr()->set(GADGETRON_IMAGE_WINDOWWIDTH, (long)windowWidth[slc]);
-                                                    }
-                                                }
+                                                this->decorateImageHeader(*cm1->getObjectPtr(), *cm3->getObjectPtr(), seriesNum, processStr, dataRole, windowCenter, windowWidth, resetImageCommentsParametricMaps, slc, SLC);
 
                                                 if (anchor != NULL)
                                                 {
@@ -891,6 +914,135 @@ namespace Gadgetron {
         catch (...)
         {
             GERROR_STREAM("Errors happened in GenericImageReconGadget::sendOutImages(images, seriesNum, processStr, dataRole) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool GenericImageReconGadget::sendOutImageBuffer(Image2DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole,
+        const std::vector<float>& windowCenter, const std::vector<float>& windowWidth, bool resetImageCommentsParametricMaps, Gadget* anchor)
+    {
+        try
+        {
+            size_t CHA = images.get_size(0);
+            size_t SLC = images.get_size(1);
+            size_t CON = images.get_size(2);
+            size_t PHS = images.get_size(3);
+            size_t REP = images.get_size(4);
+            size_t SET = images.get_size(5);
+            size_t AVE = images.get_size(6);
+
+            std::string dataRoleString;
+            if (!dataRole.empty())
+            {
+                std::ostringstream ostr;
+                for (size_t n = 0; n < dataRole.size(); n++)
+                {
+                    ostr << dataRole[n] << " - ";
+                }
+
+                dataRoleString = ostr.str();
+            }
+
+            GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out image array " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
+                << CHA << " " << SLC << " " << CON << " " << PHS << " " << REP << " " << SET << " " << AVE << "] ");
+
+            size_t ave(0), set(0), rep(0), phs(0), con(0), slc(0), cha(0);
+            std::vector<size_t> dim3D(3);
+
+            for (ave = 0; ave < AVE; ave++)
+            {
+                for (set = 0; set < SET; set++)
+                {
+                    for (rep = 0; rep < REP; rep++)
+                    {
+                        for (phs = 0; phs < PHS; phs++)
+                        {
+                            for (con = 0; con < CON; con++)
+                            {
+                                for (slc = 0; slc < SLC; slc++)
+                                {
+                                    for (cha = 0; cha < CHA; cha++)
+                                    {
+                                        Image2DType* pImage = images(cha, slc, con, phs, rep, set, ave);
+                                        if (pImage != NULL)
+                                        {
+                                            T v = Gadgetron::norm2(*pImage);
+                                            if (v < FLT_EPSILON) continue; // do not send out empty image
+
+                                            try
+                                            {
+                                                long long imageNum(0);
+                                                if (pImage->attrib_.length(GADGETRON_IMAGENUMBER) == 0)
+                                                {
+                                                    imageNum = this->computeSeriesImageNumber(pImage->header_, CHA, cha, 1, 0);
+                                                    pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
+                                                }
+                                                else
+                                                {
+                                                    imageNum = pImage->attrib_.as_long(GADGETRON_IMAGENUMBER);
+                                                    if (imageNum <=0)
+                                                    {
+                                                        imageNum = this->computeSeriesImageNumber(pImage->header_, CHA, cha, 1, 0);
+                                                        pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
+                                                    }
+                                                }
+
+                                                pImage->header_.data_type = ISMRMRD::ISMRMRD_CXFLOAT;
+                                                pImage->header_.image_series_index = seriesNum;
+
+                                                // set the image data
+                                                size_t RO = pImage->get_size(0);
+                                                size_t E1 = pImage->get_size(1);
+                                                size_t E2 = pImage->get_size(2);
+
+                                                dim3D[0] = RO;
+                                                dim3D[1] = E1;
+                                                dim3D[2] = E2;
+
+                                                pImage->header_.matrix_size[0] = RO;
+                                                pImage->header_.matrix_size[1] = E1;
+                                                pImage->header_.matrix_size[2] = E2;
+
+                                                this->decorateImageHeader(pImage->header_, pImage->attrib_, seriesNum, processStr, dataRole, windowCenter, windowWidth, resetImageCommentsParametricMaps, slc, SLC);
+                                            }
+                                            catch (...)
+                                            {
+                                                throw;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Gadgetron::GadgetContainerMessage<Image2DBufferType>* cm1 = new Gadgetron::GadgetContainerMessage<Image2DBufferType>();
+            cm1->getObjectPtr()->copyFrom(images);
+
+            if (anchor != NULL)
+            {
+                if (anchor->putq(cm1) < 0)
+                {
+                    cm1->release();
+                    return false;
+                }
+            }
+            else
+            {
+                if (this->next()->putq(cm1) < 0)
+                {
+                    cm1->release();
+                    return false;
+                }
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors happened in GenericImageReconGadget::sendOutImageBuffer(images, seriesNum, processStr, dataRole) ... ");
             return false;
         }
 

@@ -38,9 +38,10 @@ namespace Gadgetron
         virtual void create(std::vector<size_t> *dimensions);
         virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
 
-        void get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDObjectArray<TObjectType>& out);
-
         virtual void print(std::ostream& os) const;
+
+        // deep copy
+        void copyFrom(const hoNDObjectArray<TObjectType>& aArray);
 
     protected:
 
@@ -77,32 +78,29 @@ namespace Gadgetron
     template <typename TObjectType> 
     hoNDObjectArray<TObjectType>::~hoNDObjectArray()
     {
-        if (this->delete_data_on_destruct_)
+        size_t n;
+        for ( n=0; n<this->elements_; n++ )
         {
-            size_t n;
-            for ( n=0; n<this->elements_; n++ )
+            if ( this->data_[n] != NULL )
             {
-                if ( this->data_[n] != NULL )
-                {
-                    delete this->data_[n];
-                    this->data_[n] = NULL;
-                }
+                delete this->data_[n];
+                this->data_[n] = NULL;
             }
-
-            this->deallocate_memory();
         }
+
+        this->deallocate_memory();
     }
 
     template <typename TObjectType> 
     hoNDObjectArray<TObjectType>::hoNDObjectArray(const hoNDObjectArray<TObjectType>  *a) : BaseClass(a)
     {
-        this->delete_data_on_destruct_ = false;
+        this->copyFrom(*a);
     }
 
     template <typename TObjectType> 
     hoNDObjectArray<TObjectType>::hoNDObjectArray(const hoNDObjectArray<TObjectType> &a) : BaseClass(a)
     {
-        this->delete_data_on_destruct_ = false;
+        this->copyFrom(a);
     }
 
     template <typename TObjectType> 
@@ -110,9 +108,7 @@ namespace Gadgetron
     {
         if ( &rhs == this ) return *this;
 
-        BaseClass::operator=(rhs);
-
-        this->delete_data_on_destruct_ = false;
+        this->copyFrom(rhs);
 
         return *this;
     }
@@ -150,40 +146,28 @@ namespace Gadgetron
         }
     }
 
-    template <typename TObjectType> 
-    void hoNDObjectArray<TObjectType>::get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDObjectArray<TObjectType>& out)
+    template <typename TObjectType>
+    void hoNDObjectArray<TObjectType>::copyFrom(const hoNDObjectArray<TObjectType>& aArray)
     {
-        if ( start.size() != size.size() )
+        try
         {
-            BOOST_THROW_EXCEPTION( runtime_error("hoNDArray<>::get_sub_array failed"));
-        }
-
-        if ( start.size() != (*dimensions_).size() )
-        {
-            BOOST_THROW_EXCEPTION( runtime_error("hoNDArray<>::get_sub_array failed"));
-        }
-
-        out.create(&size);
-
-        if ( out.get_number_of_elements() == this->get_number_of_elements() )
-        {
-            out = *this;
-            return;
-        }
-
-        std::vector<size_t> end(start.size());
-
-        size_t ii;
-        for ( ii=0; ii<start.size(); ii++ )
-        {
-            end[ii] = start[ii] + size[ii] - 1;
-            if ( end[ii] >= (*dimensions_)[ii] )
+            if (!this->dimensions_equal(&aArray))
             {
-                BOOST_THROW_EXCEPTION( runtime_error("hoNDArray<>::get_sub_array failed"));
+                this->create(aArray.get_dimensions());
             }
-        }
 
-        out.delete_data_on_destruct(false);
+            long long i;
+            for (i = 0; i<(long long)elements_; i++)
+            {
+                data_[i] = new TObjectType(*aArray(i));
+            }
+
+            this->delete_data_on_destruct_ = true;
+        }
+        catch (...)
+        {
+            GADGET_THROW("Exceptions happened in hoNDObjectArray::copyFrom(...) ... ");
+        }
     }
 
     template <typename TObjectType> 

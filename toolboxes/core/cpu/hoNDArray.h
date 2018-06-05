@@ -128,20 +128,28 @@ namespace Gadgetron{
     //const T& operator()( const std::vector<size_t>& ind ) const;
 
     template<typename T2> 
-    bool copyFrom(const hoNDArray<T2>& aArray) // Should be a void function
+    bool copyFrom(const hoNDArray<T2>& aArray)
     {
-      if ( !this->dimensions_equal(&aArray) )
-      {
-        this->create(aArray.get_dimensions());
-      }
+        try
+        {
+            if (!this->dimensions_equal(&aArray))
+            {
+                this->create(aArray.get_dimensions());
+            }
 
-      long long i;
-      #pragma omp parallel for default(none) private(i) shared(aArray)
-      for ( i=0; i<(long long)elements_; i++ )
-      {
-        data_[i] = static_cast<T>(aArray(i));
-      }
-      return true;
+            long long i;
+#pragma omp parallel for default(none) private(i) shared(aArray)
+            for (i = 0; i < (long long)elements_; i++)
+            {
+                data_[i] = static_cast<T>(aArray(i));
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Exceptions happened in hoNDArray::copyFrom(...) ... ");
+            return false;
+        }
+        return true;
     }
 
     void get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out);
