@@ -78,17 +78,21 @@ namespace Gadgetron
     template <typename TObjectType> 
     hoNDObjectArray<TObjectType>::~hoNDObjectArray()
     {
-        size_t n;
-        for ( n=0; n<this->elements_; n++ )
+        if (this->data_ != NULL)
         {
-            if ( this->data_[n] != NULL )
+            size_t n;
+            for (n = 0; n < this->elements_; n++)
             {
-                delete this->data_[n];
-                this->data_[n] = NULL;
+                if (this->data_[n] != NULL)
+                {
+                    delete this->data_[n];
+                    this->data_[n] = NULL;
+                }
             }
         }
 
-        this->deallocate_memory();
+        if (this->delete_data_on_destruct_)
+            this->deallocate_memory();
     }
 
     template <typename TObjectType> 
@@ -159,7 +163,10 @@ namespace Gadgetron
             long long i;
             for (i = 0; i<(long long)elements_; i++)
             {
-                data_[i] = new TObjectType(*aArray(i));
+                if (aArray(i) != NULL)
+                    data_[i] = new TObjectType(*aArray(i));
+                else
+                    data_[i] = NULL;
             }
 
             this->delete_data_on_destruct_ = true;
