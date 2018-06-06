@@ -180,6 +180,10 @@ namespace Gadgetron {
                 GERROR("Failed to open connection to node %s : %d\n", me.address.c_str(), me.port);
                 return GADGET_FAIL;
             }
+            else
+            {
+                GDEBUG_STREAM("Successfully create connection to " << me.address << ":" << me.port);
+            }
 
             GadgetronXML::GadgetStreamConfiguration cfg;
             try
@@ -235,11 +239,19 @@ namespace Gadgetron {
                 GERROR("Failed to send XML configuration to compute node\n");
                 return GADGET_FAIL;
             }
+            else
+            {
+                GDEBUG_STREAM("Successfully send configuration to " << me.address << ":" << me.port);
+            }
 
             if (con->send_gadgetron_parameters(node_parameters_) != 0)
             {
                 GERROR("Failed to send XML parameters to compute node\n");
                 return GADGET_FAIL;
+            }
+            else
+            {
+                GDEBUG_STREAM("Successfully send parameters to " << me.address << ":" << me.port);
             }
 
             mtx_.acquire();
