@@ -19,15 +19,18 @@ class BucketRecon(Gadget):
 
     def process(self, recondata,*args):
 
-        print np.shape(recondata[0].data.data)
+        print(np.shape(recondata[0].data.data))
+
         image = transform.transform_kspace_to_image(recondata[0].data.data,dim=(0,1,2))
-	image = np.reshape(image,(image.shape[0],image.shape[1],image.shape[2],image.shape[3]))
+        image = np.reshape(image,(image.shape[0],image.shape[1],image.shape[2],image.shape[3]))
+
         #Create a new image header and transfer value
         acq = np.ravel(recondata[0].data.headers)[0]
+
         img_head = ismrmrd.ImageHeader()
+
         img_head.channels = acq.active_channels
         img_head.slice = acq.idx.slice
-
         img_head.matrix_size = (image.shape[0],image.shape[1],image.shape[2])
         img_head.position = acq.position
         img_head.read_dir = acq.read_dir
@@ -39,7 +42,7 @@ class BucketRecon(Gadget):
         img_head.image_series_index = 0
         img_head.data_type = ismrmrd.DATATYPE_CXFLOAT
 
-         #Return image to Gadgetron
+        #Return image to Gadgetron
         self.put_next(img_head,image)
         print("Slice ", img_head.slice)
         return 0    
