@@ -1,9 +1,5 @@
 #include "python_toolbox.h"
 
-#include "Gadget.h"             // for GADGET_OK/FAIL
-#include "gadgetron_paths.h"    // for get_gadgetron_home()
-#include "gadgetron_config.h"   // for GADGETRON_PYTHON_PATH
-
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/numpyconfig.h>
 #include <numpy/arrayobject.h>
@@ -11,6 +7,12 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/algorithm/string.hpp>
 
+// #include "Gadget.h"             // for GADGET_OK/FAIL
+#include "gadgetron_paths.h"    // for get_gadgetron_home()
+#include "gadgetron_config.h"   // for GADGETRON_PYTHON_PATH
+
+#define GADGET_FAIL -1
+#define GADGET_OK    0
 
 namespace Gadgetron
 {

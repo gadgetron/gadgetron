@@ -41,7 +41,7 @@ class BucketRecon(Gadget):
 
          #Return image to Gadgetron
         self.put_next(img_head,image)
-        print "Slice ", img_head.slice
+        print("Slice ", img_head.slice)
         return 0    
         #print "Returning to Gadgetron"
  

@@ -186,30 +186,32 @@ def get_last_gadget(first_gadget):
     return g
 
 class SamplingLimit:
-	def __init__(self):
-		self.min = 0
-		self.center = 0
-		self.max = 0
+    def __init__(self):
+        self.min = 0
+        self.center = 0
+        self.max = 0
 
 class SamplingDescription:
-	def __init__(self):
-		self.encoded_FOV = (0.0,0.0,0.0)
-		self.recon_FOV = (0.0,0.0,0.0)
-		self.encoded_matrix = (0,0,0)
-		self.recon_matrix = (0,0,0)
-		self.sampling_limits = (SamplingLimit(),SamplingLimit(),SamplingLimit())
+    def __init__(self):
+        self.encoded_FOV = (0.0,0.0,0.0)
+        self.recon_FOV = (0.0,0.0,0.0)
+        self.encoded_matrix = (0,0,0)
+        self.recon_matrix = (0,0,0)
+        self.sampling_limits = (SamplingLimit(),SamplingLimit(),SamplingLimit())
 
 class IsmrmrdDataBuffered:
-	def __init__(self,data,headers,sampling=SamplingDescription(),trajectory=None):
-		self.data = data 
-                if (trajectory is not None): self.trajectory =trajectory 
-		self.headers =headers 
-		self.sampling = sampling
-	
+    def __init__(self,data,headers,sampling=SamplingDescription(),trajectory=None):
+        self.data = data 
+        if (trajectory is not None): 
+            self.trajectory =trajectory 
+        self.headers =headers 
+        self.sampling = sampling
+
 class IsmrmrdReconBit:
-	def __init__(self,data,ref=None):
-		self.data = data
-		if (ref != None): self.ref = ref
+    def __init__(self,data,ref=None):
+        self.data = data
+        if (ref != None): 
+            self.ref = ref
 
 class IsmrmrdImageArray: 
     def __init__(self,data=None,headers=None,meta=None):

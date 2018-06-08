@@ -29,7 +29,7 @@ def get_last_gadget(first_gadget):
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print "Usage: " + sys.argv[0] + " <gadgetron_python_chain.py> <ismrmrd_out.h5> <ismrmrd_out.h5>"
+        print("Usage: " + sys.argv[0] + " <gadgetron_python_chain.py> <ismrmrd_out.h5> <ismrmrd_out.h5>")
         raise Exception("Invalid number of arguments.")
 
     python_function_file = sys.argv[1]
@@ -65,11 +65,11 @@ if __name__ == "__main__":
     gadget_wait_function(g0)
 
     res = get_last_gadget(g0).get_results()
-    print "Received " + str(len(res)) + " result items"
+    print("Received " + str(len(res)) + " result items")
 
     out_dset = ismrmrd.Dataset(filename_out, "out")
     for o in res:
-        print "Appending image to out file"
+        print("Appending image to out file")
         img = ismrmrd.Image(head=o[0])
         img.data.ravel()[:] = o[1].ravel()[:] 
         out_dset.append_image("image_%d" % img.image_series_index, img)

@@ -25,6 +25,10 @@ add_library(gadgetron_toolbox_python SHARED
     python_toolbox.cpp
     ${gadgetron_toolbox_python_header_files})
 
+message("PYTHON_INCLUDE_PATH is ${PYTHON_INCLUDE_PATH}")
+message("PYTHON_LIBRARIES is ${PYTHON_LIBRARIES}")
+message("NUMPY_INCLUDE_DIRS is ${NUMPY_INCLUDE_DIRS}")
+
 target_link_libraries(gadgetron_toolbox_python
     gadgetron_toolbox_cpucore
     ${ISMRMRD_LIBRARIES}

@@ -38,7 +38,7 @@ class PseudoreplicaGather(Gadget):
         else:
         	self.imageBuffer[...,self.counter-1] = img
 
-        print "Counter: ", self.counter, self.repetitions
+        print("Counter: ", self.counter, self.repetitions)
 	if (self.counter == self.repetitions):
 	        img_head = header
         	img_head.data_type = ismrmrd.DATATYPE_FLOAT
@@ -47,7 +47,7 @@ class PseudoreplicaGather(Gadget):
 		self.counter = 0
 		self.imageBuffer = None
 		self.original = None
-                print "Putting image on stream"
+                print("Putting image on stream")
         	self.put_next(img_head,pseudoreplica.astype('float32'),*args)
         else:
                 self.counter += 1
