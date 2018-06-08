@@ -58,7 +58,7 @@ int main(int argc, char** argv)
         GDEBUG_STREAM("Generate an hoNDArray of even #s using numpy");
         PythonFunction<hoNDArray<float>> arange("numpy", "arange");
         // hoNDArray<float> evens = arange(0, 100, 2, "float64");
-        hoNDArray<float> evens = arange(0, 100, 2);
+        hoNDArray<float> evens = arange(0, 100, 2, "f");
         std::cout << "number of even numbers between 0 and 100: " <<
                 evens.get_number_of_elements() << std::endl;
     }
