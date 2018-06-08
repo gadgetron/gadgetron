@@ -6,12 +6,8 @@ import ismrmrd.xsd
 
 
 def calcPseudoreplica(original, pseudoreplicas):
-
-	stdImg = std(pseudoreplicas,axis=pseudoreplicas.ndim-1)
-
-      	return stdImg
-
-
+    stdImg = std(pseudoreplicas,axis=pseudoreplicas.ndim-1)
+    return stdImg
 
 class PseudoreplicaGather(Gadget):
     def __init__(self, next_gadget=None):
@@ -20,37 +16,38 @@ class PseudoreplicaGather(Gadget):
         self.counter = 0
         self.header = None
         self.enc = None
-	self.original = None
+        self.original = None
+
     def process_config(self, conf):
         #self.header = ismrmrd.xsd.CreateFromDocument(conf)
         #self.enc = self.header.encoding[0]
-        print self.params
-	self.repetitions = int(self.params["repetitions"])
-
+        print(self.params)
+        self.repetitions = int(self.params["repetitions"])
 
     def process(self, header, img,*args):
         if self.imageBuffer is None:
-		s = shape(img)
-		s2 = s + (self.repetitions,)
-		self.imageBuffer = zeros(s2,dtype=complex64)
-	if self.counter == 0: #First image is without added noise.
-		self.original = img
+            s = shape(img)
+            s2 = s + (self.repetitions,)
+            self.imageBuffer = zeros(s2,dtype=complex64)
+
+        if self.counter == 0: #First image is without added noise.
+            self.original = img
         else:
-        	self.imageBuffer[...,self.counter-1] = img
+            self.imageBuffer[...,self.counter - 1] = img
 
         print("Counter: ", self.counter, self.repetitions)
-	if (self.counter == self.repetitions):
-	        img_head = header
-        	img_head.data_type = ismrmrd.DATATYPE_FLOAT
-		pseudoreplica = calcPseudoreplica(self.original,self.imageBuffer)
-	        #Return image to Gadgetron
-		self.counter = 0
-		self.imageBuffer = None
-		self.original = None
-                print("Putting image on stream")
-        	self.put_next(img_head,pseudoreplica.astype('float32'),*args)
+        if (self.counter == self.repetitions):
+            img_head = header
+            img_head.data_type = ismrmrd.DATATYPE_FLOAT
+            pseudoreplica = calcPseudoreplica(self.original,self.imageBuffer)
+            #Return image to Gadgetron
+            self.counter = 0
+            self.imageBuffer = None
+            self.original = None
+            print("Putting image on stream")
+            self.put_next(img_head,pseudoreplica.astype('float32'),*args)
         else:
-                self.counter += 1
+            self.counter += 1
    
         #print "Returning to Gadgetron"
         return 0 #Everything OK
