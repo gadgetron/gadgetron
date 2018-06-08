@@ -28,7 +28,7 @@ class IDEAL(Gadget):
         bshape = np.shape(buffer.data)
         bdata = buffer.data
         nzf,nte,nslices,ncoils,ntimes,_,_ = np.shape(bdata) 
-        print "input buffer shape",np.shape(bdata)
+        print("input buffer shape",np.shape(bdata))
         nte = nte-1
         dspec = bdata[:,0,...]
         nzf2 = max(nzf,8192)
@@ -41,8 +41,8 @@ class IDEAL(Gadget):
         cog_freq = np.sum(fax[cog_ind]*absspec[cog_ind])/np.sum(absspec[cog_ind])
         freqs = self.frequencies+cog_freq
 
-        print "Frequency shift", cog_freq
-        print "Frequencies",freqs
+        print("Frequency shift", cog_freq)
+        print("Frequencies",freqs)
         t = np.linspace(0,nte*self.dte,nte,endpoint=False)
         A = np.matrix(np.exp(-1j*2*np.pi*np.outer(t,freqs)))
         pinv_A = np.linalg.pinv(A)
@@ -85,7 +85,7 @@ class IDEAL(Gadget):
         outdata = outdata[:,:,:,:,:,np.newaxis,np.newaxis]
         ref_data = np.array(outdata[:,3,np.newaxis,:,:,:,:])
 
-        print "Ref data nan",np.sum(ref_data)
+        print("Ref data nan",np.sum(ref_data))
         ref_headers = buffer.headers.flat[:ntimes]
 
         buffer.trajectory = buffer.trajectory[:,:,0,...]

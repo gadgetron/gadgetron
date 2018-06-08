@@ -33,7 +33,7 @@ TEST_F(python_converter_test, no_return_value)
     dims.push_back(4);
     hoNDArray<std::complex<float> > arr(dims);
 
-    PythonFunction<> foo("__builtin__", "print");
+    PythonFunction<> foo("builtins", "print");
     foo(a, b, c, d, e, arr);
 }
 
@@ -53,7 +53,7 @@ TEST_F(python_converter_test, tuple_return_value)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Call a function that returns a tuple");
-    PythonFunction<float, float> divmod("__builtin__", "divmod");
+    PythonFunction<float, float> divmod("builtins", "divmod");
     float w = 6.89;
     float z = 4.12;
     float fsum = 0, fdiff = 0;
@@ -67,7 +67,7 @@ TEST_F(python_converter_test, tuple_len)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Call a function that expects an iterable argument (tuple)");
-    PythonFunction<int> tuplen("__builtin__", "len");
+    PythonFunction<int> tuplen("builtins", "len");
     int l = tuplen(std::make_tuple(-7, 0, 7));
     std::cout << "tuple length: " << l << std::endl;
     EXPECT_EQ(l, 3);
@@ -150,8 +150,8 @@ TEST_F(python_converter_test, hoNDArray_ismrmrd_imageheader)
         boost::python::exec("import ismrmrd\n"
             "def mk_image_headers(img_head_array): \n"
             "   img_head_array[2,4].version=120\n"
-            "   print img_head_array[0,0]\n"
-            "   print img_head_array[2,4]\n"
+            "   print(img_head_array[0,0])\n"
+            "   print(img_head_array[2,4])\n"
             "   return img_head_array\n",
             global, global);
     }
@@ -183,9 +183,9 @@ TEST_F(python_converter_test, ismrmrd_meta)
         boost::python::exec("import ismrmrd\n"
             "def mk_meta(meta): \n"
             "   mt = ismrmrd.Meta.deserialize(meta)\n"
-            "   print mt['TestLong']\n"
-            "   print mt['TestDouble']\n"
-            "   print mt['TestString']\n"
+            "   print(mt['TestLong'])\n"
+            "   print(mt['TestDouble'])\n"
+            "   print(mt['TestString'])\n"
             "   mt_str = ismrmrd.Meta.serialize(mt)\n"
             "   return mt_str\n",
             global, global);
@@ -233,12 +233,12 @@ TEST_F(python_converter_test, vec_ismrmrd_meta)
             "   mt = list()\n"
             "   for x in meta_str:\n"
             "       mt.append(ismrmrd.Meta.deserialize(x))\n"
-            "   print mt[0]['TestLong']\n"
-            "   print mt[0]['TestDouble']\n"
-            "   print mt[0]['TestString']\n"
-            "   print mt[11]['TestLong']\n"
-            "   print mt[11]['TestDouble']\n"
-            "   print mt[11]['TestString']\n"
+            "   print(mt[0]['TestLong'])\n"
+            "   print(mt[0]['TestDouble'])\n"
+            "   print(mt[0]['TestString'])\n"
+            "   print(mt[11]['TestLong'])\n"
+            "   print(mt[11]['TestDouble'])\n"
+            "   print(mt[11]['TestString'])\n"
             "   res_str = list()\n"
             "   for x in mt:\n"
             "       res_str_curr=ismrmrd.Meta.serialize(x)\n"
