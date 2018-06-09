@@ -23,7 +23,7 @@ RUN apt-get install -y python3-numpy python3-configargparse
 RUN apt install --yes python3-scipy
 
 RUN pip3 install --upgrade tensorflow tensorflow-gpu
-RUN pip3 install http://download.pytorch.org/whl/cu90/torch-0.4.0-cp36-cp36m-linux_x86_64.whl
+RUN pip3 install http://download.pytorch.org/whl/cu91/torch-0.4.0-cp36-cp36m-linux_x86_64.whl 
 RUN pip3 install torchvision scipy matplotlib scikit-learn scikit-image jupyter
 RUN pip3 install tensorboardx visdom opencv-python
 
