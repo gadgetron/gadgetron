@@ -28,6 +28,7 @@ add_library(gadgetron_toolbox_python SHARED
 message("PYTHON_INCLUDE_PATH is ${PYTHON_INCLUDE_PATH}")
 message("PYTHON_LIBRARIES is ${PYTHON_LIBRARIES}")
 message("NUMPY_INCLUDE_DIRS is ${NUMPY_INCLUDE_DIRS}")
+message("Boost_LIBRARIES is ${Boost_LIBRARIES}")
 
 target_link_libraries(gadgetron_toolbox_python
     gadgetron_toolbox_cpucore
