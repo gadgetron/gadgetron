@@ -63,8 +63,16 @@ endif()
 
 # Should we compile the python toolbox
 if (BUILD_PYTHON_SUPPORT AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
-  find_package(Boost COMPONENTS python3 system thread)
-  message("Boost_PYTHON3_FOUND is ${Boost_PYTHON_FOUND}")
+  find_package(Boost COMPONENTS system thread)
+
+  if(BUILD_WITH_PYTHON3)
+    find_package(Boost COMPONENTS python3 system thread)
+    message("Boost_PYTHON3_FOUND is ${Boost_PYTHON3_FOUND}")
+  else()
+    find_package(Boost COMPONENTS python system thread)
+    message("Boost_PYTHON_FOUND is ${Boost_PYTHON_FOUND}")
+  endif()
+
   message("Boost_SYSTEM_FOUND is ${Boost_SYSTEM_FOUND}")
   message("Boost_THREAD_FOUND is ${Boost_THREAD_FOUND}")
   if (Boost_SYSTEM_FOUND AND Boost_THREAD_FOUND)
