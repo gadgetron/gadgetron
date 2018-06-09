@@ -7,7 +7,7 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
-    supervisor net-tools
+    supervisor net-tools 
 
 #Python stuff
 RUN pip install --upgrade pip
