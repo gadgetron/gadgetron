@@ -273,7 +273,15 @@ endif ()
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
-  find_package(PythonLibs 3)
+
+  option(BUILD_WITH_PYTHON3 "Build with Python 3.x" Off)
+
+  if (BUILD_WITH_PYTHON3)
+    find_package(Python3)
+  else()
+    find_package(PythonLibs 2)
+  endif ()
+
   string(REPLACE "." ";" PYTHON_VERSION_MAJOR ${PYTHONLIBS_VERSION_STRING})
   list(GET PYTHON_VERSION_MAJOR 0 PYVER)
   add_definitions(-DPYVER=${PYVER})
