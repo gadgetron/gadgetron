@@ -1,4 +1,4 @@
-FROM gadgetron/ubuntu1604_cuda80_base
+FROM gadgetron/ubuntu1604_cuda90_cudnn7_base
 
 ARG GADGETRON_URL=https://github.com/gadgetron/gadgetron
 ARG GADGETRON_BRANCH=master
@@ -11,7 +11,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make -j $(nproc) && \
+    make -j 16 && \
     make install
 
 #Fix compiler error with CUDA for now
@@ -23,8 +23,8 @@ RUN cd /opt/code && \
     cd gadgetron && \
     mkdir build && \
     cd build && \
-    cmake ../ && \
-    make -j $(nproc) && \
+    cmake -DBUILD_WITH_PYTHON3=ON ../ && \
+    make -j 16 && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
     cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml && \
@@ -57,7 +57,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make -j $(nproc) && \
+    make -j 16 && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.siemens_to_ismrmrd.sha1 --value `git rev-parse HEAD` 
 
