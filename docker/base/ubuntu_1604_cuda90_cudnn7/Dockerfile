@@ -19,17 +19,17 @@ RUN pip install 'h5py==2.5.0'
 
 RUN apt-get update && apt-get install -y libgtk2.0-dev
 
-RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade pip3
 RUN pip3 install Cython
 RUN pip3 install pydicom
-RUN apt-get install python3-setuptools python3-psutil python3-pyxb python3-lxml
-RUN apt-get install python3-h5py
-RUN apt-get install python3-numpy python3-configargparse
+RUN apt-get install -y python3-setuptools python3-psutil python3-pyxb python3-lxml
+RUN apt-get install -y python3-h5py
+RUN apt-get install -y python3-numpy python3-configargparse
 RUN apt install --yes python3-scipy
 
-RUN easy_install -U pip
 RUN pip3 install --upgrade tensorflow tensorflow-gpu
-RUN pip3 install matplotlib opencv-python scikit-image scikit-learn jupyter
+RUN apt-get install -y python3-matplotlib python3-opencv 
+RUN pip3 install scikit-image scikit-learn jupyter
 RUN pip3 install http://download.pytorch.org/whl/cu90/torch-0.4.0-cp35-cp35m-linux_x86_64.whl 
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom opencv-python
