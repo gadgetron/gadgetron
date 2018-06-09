@@ -19,8 +19,8 @@ RUN pip install 'h5py==2.5.0'
 
 RUN pip3 install --upgrade pip
 RUN pip3 install Cython
-RUN pip3 install pydicom
 RUN apt-get install python3-setuptools python3-psutil python3-pyxb python3-lxml
+RUN pip3 install pydicom
 RUN apt-get install python3-h5py
 RUN apt-get install python3-numpy python3-configargparse
 
