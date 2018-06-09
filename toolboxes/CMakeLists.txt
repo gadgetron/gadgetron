@@ -74,7 +74,7 @@ if (BUILD_PYTHON_SUPPORT AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
 
   message("Boost_SYSTEM_FOUND is ${Boost_SYSTEM_FOUND}")
   message("Boost_THREAD_FOUND is ${Boost_THREAD_FOUND}")
-  if (Boost_SYSTEM_FOUND AND Boost_THREAD_FOUND)
+  if ((Boost_PYTHON3_FOUND OR Boost_PYTHON_FOUND) AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     message("Find python; build gadgetron toolbox python")
     add_subdirectory(python)
   else()
