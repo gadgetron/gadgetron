@@ -28,10 +28,10 @@ class AccumulateAndRecon(Gadget):
             eNy = self.enc.encodedSpace.matrixSize.y
             eNx = self.enc.encodedSpace.matrixSize.x
         
-            self.myBuffer = np.zeros((eNx/2,eNy,eNz,nslices,channels),dtype=np.complex64)
+            self.myBuffer = np.zeros(( int(eNx/2),eNy,eNz,nslices,channels),dtype=np.complex64)
 
         line_offset = self.enc.encodedSpace.matrixSize.y/2 - self.enc.encodingLimits.kspace_encoding_step_1.center             
-        self.myBuffer[:,acq.idx.kspace_encode_step_1+line_offset,acq.idx.kspace_encode_step_2,acq.idx.slice,:] = data
+        self.myBuffer[:,int(acq.idx.kspace_encode_step_1+line_offset), int(acq.idx.kspace_encode_step_2), int(acq.idx.slice),:] = data
 
         if (acq.flags & (1<<7)): #Is this the last scan in slice
             image = transform.transform_kspace_to_image(self.myBuffer,dim=(0,1,2))

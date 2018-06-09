@@ -33,7 +33,11 @@ TEST_F(python_converter_test, no_return_value)
     dims.push_back(4);
     hoNDArray<std::complex<float> > arr(dims);
 
+#if PY_MAJOR_VERSION == 3
     PythonFunction<> foo("builtins", "print");
+#else
+    PythonFunction<> foo("__builtin__", "print");
+#endif
     foo(a, b, c, d, e, arr);
 }
 
@@ -53,7 +57,11 @@ TEST_F(python_converter_test, tuple_return_value)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Call a function that returns a tuple");
+#if PY_MAJOR_VERSION == 3
     PythonFunction<float, float> divmod("builtins", "divmod");
+#else
+    PythonFunction<float, float> divmod("__builtin__", "divmod");
+#endif
     float w = 6.89;
     float z = 4.12;
     float fsum = 0, fdiff = 0;
@@ -67,7 +75,11 @@ TEST_F(python_converter_test, tuple_len)
 {
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Call a function that expects an iterable argument (tuple)");
+#if PY_MAJOR_VERSION == 3
     PythonFunction<int> tuplen("builtins", "len");
+#else
+    PythonFunction<int> tuplen("__builtin__", "len");
+#endif
     int l = tuplen(std::make_tuple(-7, 0, 7));
     std::cout << "tuple length: " << l << std::endl;
     EXPECT_EQ(l, 3);
