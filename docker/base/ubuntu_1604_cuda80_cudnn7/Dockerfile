@@ -31,7 +31,7 @@ RUN pip3 install --upgrade tensorflow tensorflow-gpu
 RUN apt-get install -y python3-matplotlib
 RUN pip3 install scikit-image scikit-learn jupyter
 RUN pip3 install torch torchvision 
-RUN pip3 install tensorboardx visdom opencv-python
+RUN pip3 install tensorboardx opencv-python
 
 # fix the  qhull reentrant problem
 # RUN pip uninstall -y scipy
