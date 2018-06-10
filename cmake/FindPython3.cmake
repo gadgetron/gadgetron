@@ -78,9 +78,6 @@ else ()
     endif()
 
     FILE(GLOB var "${PATHON3_PATH}/include/python*")
-    foreach(file ${var})
-        message("${var}")
-    endforeach()
 
     foreach(file ${var})
         string(FIND ${file} "python3.6" pos)
