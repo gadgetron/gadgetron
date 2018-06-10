@@ -23,7 +23,7 @@ RUN cd /opt/code && \
     cd gadgetron && \
     mkdir build && \
     cd build && \
-    cmake ../ && \
+    cmake -DBUILD_WITH_PYTHON3=ON ../ && \
     make -j 16 && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
@@ -39,7 +39,7 @@ RUN cd /opt/code/ismrmrd && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python.git &&  \
     cd ismrmrd-python && \
-    python setup.py install && \
+    python3 setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpython.sha1 --value `git rev-parse HEAD` 
 
 
@@ -47,7 +47,7 @@ RUN cd /opt/code && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python-tools.git &&  \
     cd ismrmrd-python-tools && \
-    python setup.py install && \
+    python3 setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpythontools.sha1 --value `git rev-parse HEAD` 
 
 #SIEMENS_TO_ISMRMRD
