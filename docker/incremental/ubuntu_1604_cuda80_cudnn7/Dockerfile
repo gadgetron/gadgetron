@@ -1,4 +1,4 @@
-FROM gadgetron/ubuntu1604_cuda80_cudnn7_base
+FROM gadgetron/ubuntu_1604_cuda80_cudnn7_base
 
 ARG GADGETRON_URL=https://github.com/gadgetron/gadgetron
 ARG GADGETRON_BRANCH=master

@@ -15,9 +15,10 @@ RUN pip install 'h5py==2.5.0'
 RUN apt-get update && apt-get install -y libgtk2.0-dev
 
 RUN pip3 install --upgrade pip
-RUN pip3 install setuptools
+RUN pip3 install -U pip setuptools
 RUN pip3 install Cython
-RUN pip3 install pyxb psutil lxml pydicom
+RUN apt-get install -y python3-psutil python3-pyxb python3-lxml
+RUN pip3 install pydicom
 RUN apt-get install -y python3-h5py
 RUN apt-get install -y python3-numpy python3-configargparse
 RUN apt install --yes python3-scipy
@@ -26,6 +27,9 @@ RUN pip3 install --upgrade tensorflow tensorflow-gpu
 RUN pip3 install http://download.pytorch.org/whl/cu91/torch-0.4.0-cp36-cp36m-linux_x86_64.whl 
 RUN pip3 install torchvision scipy matplotlib scikit-learn scikit-image jupyter
 RUN pip3 install tensorboardx visdom opencv-python
+
+# since cmake has problems to find python3 and boost-python3
+RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py36.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
 
 # fix the  qhull reentrant problem
 # RUN pip uninstall -y scipy
