@@ -3,6 +3,18 @@ FROM gadgetron/ubuntu_1604_cuda80_cudnn7_base
 ARG GADGETRON_URL=https://github.com/gadgetron/gadgetron
 ARG GADGETRON_BRANCH=master
 
+RUN pip3 install --upgrade pip
+RUN pip3 install -U pip setuptools
+RUN pip3 install Cython
+RUN apt-get install -y python3-psutil python3-pyxb python3-lxml
+RUN pip3 install pydicom
+RUN apt-get install -y python3-h5py
+RUN apt-get install -y python3-numpy python3-configargparse
+RUN apt install --yes python3-scipy
+
+# since cmake has problems to find python3 and boost-python3
+RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py35.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
+
 #ISMRMRD
 RUN mkdir /opt/code
 RUN cd /opt/code && \
