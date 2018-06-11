@@ -3,6 +3,18 @@ FROM gadgetron/ubuntu1604_cuda80_cudnn6_base
 ARG GADGETRON_URL=https://github.com/gadgetron/gadgetron
 ARG GADGETRON_BRANCH=master
 
+RUN pip3 install --upgrade pip
+RUN pip3 install -U pip setuptools
+RUN pip3 install Cython
+RUN apt-get install -y python3-psutil python3-pyxb python3-lxml
+RUN pip3 install pydicom
+RUN apt-get install -y python3-h5py
+RUN apt-get install -y python3-numpy python3-configargparse
+RUN apt install --yes python3-scipy
+
+# since cmake has problems to find python3 and boost-python3
+RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py35.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
+
 #ISMRMRD
 RUN mkdir /opt/code
 RUN cd /opt/code && \
@@ -23,7 +35,7 @@ RUN cd /opt/code && \
     cd gadgetron && \
     mkdir build && \
     cd build && \
-    cmake ../ && \
+    cmake -DBUILD_WITH_PYTHON3=ON ../ && \
     make -j 16 && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
@@ -39,7 +51,7 @@ RUN cd /opt/code/ismrmrd && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python.git &&  \
     cd ismrmrd-python && \
-    python setup.py install && \
+    python3 setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpython.sha1 --value `git rev-parse HEAD` 
 
 
@@ -47,7 +59,7 @@ RUN cd /opt/code && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python-tools.git &&  \
     cd ismrmrd-python-tools && \
-    python setup.py install && \
+    python3 setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpythontools.sha1 --value `git rev-parse HEAD` 
 
 #SIEMENS_TO_ISMRMRD

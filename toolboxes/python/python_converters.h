@@ -25,6 +25,7 @@ void register_converter(void) {
 
 }
 
+#include "patchlevel.h"
 #include "python_tuple_converter.h"
 #include "python_hoNDArray_converter.h"
 #include "python_ismrmrd_converter.h"
