@@ -17,6 +17,7 @@
 
 #include <complex>
 #include <fstream>
+#include <boost/filesystem.hpp>
 
 using namespace Gadgetron;
 
@@ -134,7 +135,8 @@ int GadgetStreamController::svc(void)
       }
     } else if (id.id == GADGET_MESSAGE_CONFIG_SCRIPT) {
       std::string xml_config(mb->rd_ptr(), mb->length());
-      if (this->configure(xml_config) != GADGET_OK) {
+      std::stringstream stream(xml_config, std::ios::in);
+      if (this->configure(stream) != GADGET_OK) {
 	GERROR("GadgetStream configuration failed\n");
 	mb->release();
 	return GADGET_FAIL;
@@ -209,50 +211,37 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 
 
 
-int GadgetStreamController::configure_from_file(std::string config_xml_filename)
+int GadgetStreamController::configure_from_file(std::string filename)
 {
-  ACE_TCHAR config_file_name[4096];
-  ACE_OS::sprintf(config_file_name, "%s/%s/%s", gadgetron_home_.c_str(), GADGETRON_CONFIG_PATH, config_xml_filename.c_str());
-  
-  GINFO("Running configuration: %s\n", config_file_name);
+  boost::filesystem::path home(gadgetron_home_);
+  boost::filesystem::path config_path(GADGETRON_CONFIG_PATH);
+  boost::filesystem::path config_file(filename);
 
-  std::ifstream file (config_file_name, std::ios::in|std::ios::binary|std::ios::ate);
-  if (file.is_open()) {
-    size_t size = file.tellg();
-    char* buffer = new char [size];
-    if (!buffer) {
-      GERROR("Unable to create temporary buffer for configuration file\n");
-      return GADGET_FAIL;
-    }
-    file.seekg (0, std::ios::beg);
-    file.read (buffer, size);
-    file.close();
-    std::string xml_file_contents(buffer,size);
-    
-    return configure(xml_file_contents);
-    delete[] buffer;
-    
-  } else {
-    GERROR("Unable to open configuation file: %s\n", config_file_name);
+  boost::filesystem::path full_path = home / config_path / config_file;
+
+  GINFO("Running configuration: %s\n", full_path.c_str());
+
+  std::ifstream config_file_stream (full_path.c_str(), std::ios::in);
+
+  if (!config_file_stream.is_open()) {
+    GERROR("Unable to open configuation file: %s\n", full_path.c_str());
     return GADGET_FAIL;
   }
-  
-  return GADGET_OK;
+
+  return configure(config_file_stream);
 }
 
-int GadgetStreamController::configure(std::string config_xml_string)
+int GadgetStreamController::configure(std::istream& config_file_stream)
 {
-
-  //Store a copy
-  config_xml_ = config_xml_string;
-  
   GadgetronXML::GadgetStreamConfiguration cfg;
   try {
-    deserialize(config_xml_string.c_str(), cfg);  
+    deserialize(config_file_stream, cfg);
   }  catch (const std::runtime_error& e) {
     GERROR("Failed to parse Gadget Stream Configuration: %s\n", e.what());
     return GADGET_FAIL;
   }
+
+  stream_configuration_ = cfg;
 
   GINFO("Found %d readers\n", cfg.reader.size());
   GINFO("Found %d writers\n", cfg.writer.size());

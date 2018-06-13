@@ -5,6 +5,8 @@
 #include "gadgetron_distributed_gadgets_export.h"
 #include "GadgetronConnector.h"
 
+#include "gadgetron_xml.h"
+
 #include <complex>
 
 namespace Gadgetron{
@@ -57,7 +59,7 @@ namespace Gadgetron{
       return 0; //This is an invalid ID.
     }
 
-    const char* get_node_xml_config();
+    const GadgetronXML::GadgetStreamConfiguration& get_node_stream_configuration();
 
     Gadget* collect_gadget_;
 
@@ -65,7 +67,7 @@ namespace Gadgetron{
     ACE_Thread_Mutex mtx_;
 
   private:
-    std::string node_xml_config_;
+    GadgetronXML::GadgetStreamConfiguration node_stream_configuration_;
     std::string node_parameters_;
     std::map<int,GadgetronConnector*> node_map_;
     std::vector<GadgetronConnector*> closed_connectors_;
