@@ -21,7 +21,11 @@ int main(int argc, char** argv)
         dims.push_back(4);
         hoNDArray<std::complex<float> > arr(dims);
 
+#if PY_MAJOR_VERSION == 3
+        PythonFunction<> foo("builtins", "print");
+#else
         PythonFunction<> foo("__builtin__", "print");
+#endif
         foo(a, b, c, d, e, arr);
     }
 
@@ -37,7 +41,12 @@ int main(int argc, char** argv)
     {
         GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
         GDEBUG_STREAM("Call a function that returns a tuple");
-        PythonFunction<float,float> divmod("__builtin__", "divmod");
+
+#if PY_MAJOR_VERSION == 3
+        PythonFunction<float, float> divmod("builtins", "divmod");
+#else
+        PythonFunction<float, float> divmod("__builtin__", "divmod");
+#endif
         float w = 6.89;
         float z = 4.12;
         float fsum = 0, fdiff = 0;
@@ -48,7 +57,12 @@ int main(int argc, char** argv)
     {
         GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
         GDEBUG_STREAM("Call a function that expects an iterable argument (tuple)");
+        
+#if PY_MAJOR_VERSION == 3
+        PythonFunction<int> tuplen("builtins", "len");
+#else
         PythonFunction<int> tuplen("__builtin__", "len");
+#endif
         int l = tuplen(std::make_tuple(-7, 0, 7));
         std::cout << "tuple length: " << l << std::endl;
     }
@@ -57,7 +71,8 @@ int main(int argc, char** argv)
         GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
         GDEBUG_STREAM("Generate an hoNDArray of even #s using numpy");
         PythonFunction<hoNDArray<float>> arange("numpy", "arange");
-        hoNDArray<float> evens = arange(0, 100, 2, "f64");
+        // hoNDArray<float> evens = arange(0, 100, 2, "float64");
+        hoNDArray<float> evens = arange(0, 100, 2, "f");
         std::cout << "number of even numbers between 0 and 100: " <<
                 evens.get_number_of_elements() << std::endl;
     }
@@ -119,8 +134,8 @@ int main(int argc, char** argv)
             boost::python::exec("import ismrmrd\n"
                 "def mk_image_headers(img_head_array): \n"
                 "   img_head_array[2,4].version=120\n"
-                "   print img_head_array[0,0]\n"
-                "   print img_head_array[2,4]\n"
+                "   print(img_head_array[0,0])\n"
+                "   print(img_head_array[2,4])\n"
                 "   return img_head_array\n",
                 global, global);
         }
@@ -145,9 +160,9 @@ int main(int argc, char** argv)
             boost::python::exec("import ismrmrd\n"
                 "def mk_meta(meta): \n"
                 "   mt = ismrmrd.Meta.deserialize(meta)\n"
-                "   print mt['TestLong']\n"
-                "   print mt['TestDouble']\n"
-                "   print mt['TestString']\n"
+                "   print(mt['TestLong'])\n"
+                "   print(mt['TestDouble'])\n"
+                "   print(mt['TestString'])\n"
                 "   mt_str = ismrmrd.Meta.serialize(mt)\n"
                 "   return mt_str\n",
                 global, global);
@@ -188,12 +203,12 @@ int main(int argc, char** argv)
                 "   mt = list()\n"
                 "   for x in meta_str:\n"
                 "       mt.append(ismrmrd.Meta.deserialize(x))\n"
-                "   print mt[0]['TestLong']\n"
-                "   print mt[0]['TestDouble']\n"
-                "   print mt[0]['TestString']\n"
-                "   print mt[11]['TestLong']\n"
-                "   print mt[11]['TestDouble']\n"
-                "   print mt[11]['TestString']\n"
+                "   print(mt[0]['TestLong'])\n"
+                "   print(mt[0]['TestDouble'])\n"
+                "   print(mt[0]['TestString'])\n"
+                "   print(mt[11]['TestLong'])\n"
+                "   print(mt[11]['TestDouble'])\n"
+                "   print(mt[11]['TestString'])\n"
                 "   res_str = list()\n"
                 "   for x in mt:\n"
                 "       res_str_curr=ismrmrd.Meta.serialize(x)\n"

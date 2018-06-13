@@ -40,15 +40,30 @@
 #============================================================================
 
 # Finding NumPy involves calling the Python interpreter
-if(NumPy_FIND_REQUIRED)
-    find_package(PythonInterp REQUIRED)
-else()
-    find_package(PythonInterp)
-endif()
 
-if(NOT PYTHONINTERP_FOUND)
-    set(NUMPY_FOUND FALSE)
-    return()
+if (BUILD_WITH_PYTHON3)
+    message("Find numpy after python3")
+    if(NumPy_FIND_REQUIRED)
+        find_package(Python3 REQUIRED)
+    else()
+        find_package(Python3)
+    endif()
+
+    if(NOT PYTHONLIBS_FOUND)
+        set(NUMPY_FOUND FALSE)
+        return()
+    endif()
+else()
+    if(NumPy_FIND_REQUIRED)
+        find_package(PythonInterp REQUIRED)
+    else()
+        find_package(PythonInterp)
+    endif()
+
+    if(NOT PYTHONINTERP_FOUND)
+        set(NUMPY_FOUND FALSE)
+        return()
+    endif()
 endif()
 
 execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
@@ -99,4 +114,4 @@ find_package_message(NUMPY
     "${NUMPY_INCLUDE_DIRS}${NUMPY_VERSION}")
 
 set(NUMPY_FOUND TRUE)
-
+message("Find numpy ${NUMPY_VERSION} at ${NUMPY_INCLUDE_DIRS}")

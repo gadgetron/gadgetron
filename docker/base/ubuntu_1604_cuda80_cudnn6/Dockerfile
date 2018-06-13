@@ -2,12 +2,12 @@ FROM nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04
 
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
-    apt-utils wget build-essential emacs python-pip libhdf5-serial-dev cmake git-core \
+    apt-utils wget build-essential emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core \
     libboost-all-dev libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
-    supervisor net-tools
+    supervisor net-tools 
 
 #Python stuff
 RUN pip install --upgrade pip
@@ -17,10 +17,25 @@ RUN pip install numpy
 RUN pip install pyxb psutil lxml pydicom
 RUN pip install 'h5py==2.5.0' 
 
-RUN apt-get update && apt-get install -y python python-setuptools python-pip python-dev build-essential libgtk2.0-dev
-RUN easy_install -U pip
-RUN apt install --yes python-scipy
-RUN pip install tensorflow-gpu matplotlib opencv-python scikit-image
+RUN apt-get update && apt-get install -y libgtk2.0-dev
+
+RUN pip3 install --upgrade pip
+RUN pip3 install -U pip setuptools
+RUN pip3 install Cython
+RUN apt-get install -y python3-psutil python3-pyxb python3-lxml
+RUN pip3 install pydicom
+RUN apt-get install -y python3-h5py
+RUN apt-get install -y python3-numpy python3-configargparse
+RUN apt install --yes python3-scipy
+
+RUN pip3 install --upgrade tensorflow tensorflow-gpu
+RUN apt-get install -y python3-matplotlib
+RUN pip3 install scikit-image scikit-learn jupyter
+RUN pip3 install torch torchvision 
+RUN pip3 install tensorboardx opencv-python
+
+# since cmake has problems to find python3 and boost-python3
+RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py35.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
 
 # fix the  qhull reentrant problem
 # RUN pip uninstall -y scipy

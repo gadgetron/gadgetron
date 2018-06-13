@@ -3,7 +3,7 @@ import time
 import sys
 import h5py
 import numpy
-import ConfigParser
+import configparser
 import os
 import shutil
 import platform
@@ -29,7 +29,7 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
     print("Running test case: " + testcase_cfg_file)
 
     pwd = os.getcwd()
-    config = ConfigParser.RawConfigParser()
+    config = configparser.RawConfigParser()
     config.read(testcase_cfg_file)
 
     data_folder = 'data'
@@ -50,14 +50,14 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
         siemens_dependency_parameter_xml = config.get('FILES', 'siemens_dependency_parameter_xml')
         siemens_dependency_parameter_xsl = config.get('FILES', 'siemens_dependency_parameter_xsl')
         siemens_data_measurement = config.getint('FILES', 'siemens_data_measurement')
-    except ConfigParser.NoOptionError:
+    except configparser.NoOptionError:
         print("Missing siemens configuration parameter(s), assuming no conversion to ISMRMRD needed")
         need_siemens_conversion = False
 
     need_siemens_conversion_flag = True
     try:
         siemens_data_conversion_flag = config.get('FILES', 'siemens_data_conversion_flag')
-    except ConfigParser.NoOptionError:
+    except configparser.NoOptionError:
         need_siemens_conversion_flag = False
 
     # if siemens_dat config parameter found but empty, assume no conversion to ISMRMRD intended
@@ -158,7 +158,8 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
 
     #Let's figure out if we should run this test or not
     info = subprocess.check_output(["gadgetron_ismrmrd_client", "-a", host, "-p", port, "-q", "-c", "gadgetron_info.xml"], env=environment);
-
+    info = str(info.decode('utf-8'))
+    
     has_python_support = False
     has_cuda_support = False
     has_matlab_support = False
@@ -225,7 +226,11 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
         print("System Memory: " + str(system_memory) + "/" + str(need_system_memory))
         print("Python Support: " + str(has_python_support) + "/" + str(need_python_support))
         print("Matlab Support: " + str(has_matlab_support) + "/" + str(need_matlab_support))
-        print("CUDA Support: " + str(has_cuda_support and (number_of_gpus > 0)) + "/" + str(need_gpu_support))
+        if has_cuda_support and ( int(number_of_gpus) > 0) :
+            cuda_r = True
+        else:
+            cuda_r = False
+        print("CUDA Support: " + str(cuda_r) + "/" + str(need_gpu_support))
         print("GPU Memory: " + str(gpu_memory) + "/" + str(need_gpu_memory))
 
         f = open(gadgetron_log_filename, "w")
@@ -380,9 +385,9 @@ def run_test(environment, testcase_cfg_file, host, port, start_gadgetron=True):
     a2 = a2.tolist()
     while a2.count(1) > 0:
         a2.remove(1)
-    print " Shape 1: " + str(d1.shape) + "  numpy: " + str(a1)
-    print " Shape 2: " + str(d2.shape) + "  numpy: " + str(a2)
-    print " Compare dimensions: " + str(compare_dimensions)
+    print(" Shape 1: " + str(d1.shape) + "  numpy: " + str(a1))
+    print(" Shape 2: " + str(d2.shape) + "  numpy: " + str(a2))
+    print(" Compare dimensions: " + str(compare_dimensions))
     shapes_match = (a1 == a2)
 
     # If the types in the hdf5 are unsigned short numpy produces norms, dot products etc. in unsigned short. And that _will_ overflow...

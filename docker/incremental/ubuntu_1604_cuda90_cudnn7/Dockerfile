@@ -1,7 +1,19 @@
-FROM gadgetron/ubuntu_1604_base
+FROM gadgetron/ubuntu_1604_cuda90_cudnn7_base
 
 ARG GADGETRON_URL=https://github.com/gadgetron/gadgetron
 ARG GADGETRON_BRANCH=master
+
+RUN pip3 install --upgrade pip
+RUN pip3 install -U pip setuptools
+RUN pip3 install Cython
+RUN apt-get install -y python3-psutil python3-pyxb python3-lxml
+RUN pip3 install pydicom
+RUN apt-get install -y python3-h5py
+RUN apt-get install -y python3-numpy python3-configargparse
+RUN apt install --yes python3-scipy
+
+# since cmake has problems to find python3 and boost-python3
+RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py35.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
 
 #ISMRMRD
 RUN mkdir /opt/code
@@ -11,8 +23,11 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make -j $(nproc) && \
+    make -j 16 && \
     make install
+
+#Fix compiler error with CUDA for now
+RUN sed -i "s;#error -- unsupported GNU version! gcc versions later than 4.9 are not supported!;//#error -- unsupported GNU version! gcc versions later than 4.9 are not supported!;g" /usr/local/cuda/include/host_config.h
 
 #GADGETRON
 RUN cd /opt/code && \
@@ -20,8 +35,8 @@ RUN cd /opt/code && \
     cd gadgetron && \
     mkdir build && \
     cd build && \
-    cmake ../ && \
-    make -j $(nproc) && \
+    cmake -DBUILD_WITH_PYTHON3=ON ../ && \
+    make -j 16 && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
     cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml && \
@@ -36,7 +51,7 @@ RUN cd /opt/code/ismrmrd && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python.git &&  \
     cd ismrmrd-python && \
-    python setup.py install && \
+    python3 setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpython.sha1 --value `git rev-parse HEAD` 
 
 
@@ -44,7 +59,7 @@ RUN cd /opt/code && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python-tools.git &&  \
     cd ismrmrd-python-tools && \
-    python setup.py install && \
+    python3 setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpythontools.sha1 --value `git rev-parse HEAD` 
 
 #SIEMENS_TO_ISMRMRD
@@ -54,7 +69,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make -j $(nproc) && \
+    make -j 16 && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.siemens_to_ismrmrd.sha1 --value `git rev-parse HEAD` 
 
@@ -70,9 +85,9 @@ RUN cd /opt/code && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.philips_to_ismrmrd.sha1 --value `git rev-parse HEAD` 
 
+
 # Clean up packages.
 RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
 
 CMD ["/opt/start_supervisor"]
-

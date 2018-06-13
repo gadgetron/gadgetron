@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess
-
+import configparser
 
 def main():
     import argparse
@@ -43,9 +43,9 @@ def main():
 
         # Now run the test
         if args.external:
-            r = subprocess.call(["python", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-a", str(args.address), "-p", str(args.port), "-e"])
+            r = subprocess.call(["python3", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-a", str(args.address), "-p", str(args.port), "-e"])
         else:
-            r = subprocess.call(["python", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-a", str(args.address), "-p", str(args.port)])
+            r = subprocess.call(["python3", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-a", str(args.address), "-p", str(args.port)])
 
         # Grab the log files and append to master logs
         gadgetron_outfile.write("==============================================\n")
