@@ -11,6 +11,7 @@ RUN pip3 install pydicom
 RUN apt-get install -y python3-h5py
 RUN apt-get install -y python3-numpy python3-configargparse
 RUN apt install --yes python3-scipy
+RUN pip3 install tensorflow matplotlib opencv-python scikit-image
 
 # since cmake has problems to find python3 and boost-python3
 RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py35.so /usr/lib/x86_64-linux-gnu/libboost_python3.so

@@ -68,7 +68,7 @@ class Gadget(object):
                             self.next_gadget.return_image_float(header,args[1])
                     else:
                         if len(args) == 3:
-                            self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), args[2].serialize())
+                            self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), str(args[2].serialize()))
                         else:
                             self.next_gadget.return_image_cplx(header,args[1].astype('complex64'))
                 elif len(args[0]) > 0 and isinstance(args[0][0],IsmrmrdReconBit): 
