@@ -126,11 +126,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   GadgetronXML::GadgetronConfiguration c;
   try
     {
-      std::ifstream t(gcfg.c_str());
-      std::string gcfg_text((std::istreambuf_iterator<char>(t)),
-			    std::istreambuf_iterator<char>());
-      
-      GadgetronXML::deserialize(gcfg_text.c_str(), c);
+      std::ifstream config_stream(gcfg.c_str());
+
+      GadgetronXML::deserialize(config_stream, c);
       ACE_OS_String::strncpy(port_no, c.port.c_str(), 1024);
 
       if (c.cloudBus) {

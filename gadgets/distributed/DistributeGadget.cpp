@@ -25,10 +25,9 @@ namespace Gadgetron {
     {
     }
 
-
-    const char* DistributeGadget::get_node_xml_config()
+    const GadgetronXML::GadgetStreamConfiguration& DistributeGadget::get_node_stream_configuration()
     {
-        return node_xml_config_.c_str();
+        return node_stream_configuration_;
     }
 
     int DistributeGadget::collector_putq(ACE_Message_Block* m)
@@ -185,19 +184,8 @@ namespace Gadgetron {
                 GDEBUG_STREAM("Successfully create connection to " << me.address << ":" << me.port);
             }
 
-            GadgetronXML::GadgetStreamConfiguration cfg;
-            try
-            {
-                deserialize(node_xml_config_.c_str(), cfg);
-            }
-            catch (const std::runtime_error& e)
-            {
-                GERROR("Failed to parse Node Gadget Stream Configuration: %s\n", e.what());
-                return GADGET_FAIL;
-            }
-
             //Configuration of readers
-            for (auto i = cfg.reader.begin(); i != cfg.reader.end(); ++i)
+            for (auto i = node_stream_configuration_.reader.begin(); i != node_stream_configuration_.reader.end(); ++i)
             {
                 GadgetMessageReader* r =
                     controller_->load_dll_component<GadgetMessageReader>(i->dll.c_str(),
@@ -211,7 +199,7 @@ namespace Gadgetron {
                 con->register_reader(i->slot, r);
             }
 
-            for (auto i = cfg.writer.begin(); i != cfg.writer.end(); ++i)
+            for (auto i = node_stream_configuration_.writer.begin(); i != node_stream_configuration_.writer.end(); ++i)
             {
                 GadgetMessageWriter* w =
                     controller_->load_dll_component<GadgetMessageWriter>(i->dll.c_str(),
@@ -234,14 +222,17 @@ namespace Gadgetron {
             //    return GADGET_FAIL;
             //}
 
-            if (con->send_gadgetron_configuration_script(node_xml_config_) != 0)
+            std::stringstream output;
+            GadgetronXML::serialize(node_stream_configuration_, output);
+
+            if (con->send_gadgetron_configuration_script(output.str()) != 0)
             {
                 GERROR("Failed to send XML configuration to compute node\n");
                 return GADGET_FAIL;
             }
             else
             {
-                GDEBUG_STREAM("Successfully send configuration to " << me.address << ":" << me.port);
+                GDEBUG_STREAM("Successfully sent configuration to " << me.address << ":" << me.port);
             }
 
             if (con->send_gadgetron_parameters(node_parameters_) != 0)
@@ -251,7 +242,7 @@ namespace Gadgetron {
             }
             else
             {
-                GDEBUG_STREAM("Successfully send parameters to " << me.address << ":" << me.port);
+                GDEBUG_STREAM("Successfully sent parameters to " << me.address << ":" << me.port);
             }
 
             mtx_.acquire();
@@ -343,11 +334,7 @@ namespace Gadgetron {
         started_nodes_ = 0;
         node_parameters_ = std::string(m->rd_ptr());
 
-        //Grab the original XML conifguration
-        std::string xml = controller_->get_xml_configuration();
-
-        GadgetronXML::GadgetStreamConfiguration cfg;
-        GadgetronXML::deserialize(xml.c_str(), cfg);
+        GadgetronXML::GadgetStreamConfiguration cfg = controller_->get_stream_configuration();
 
         //Delete Gadgets up to this Gadget
         std::vector<GadgetronXML::Gadget>::iterator it = cfg.gadget.begin();
@@ -359,10 +346,7 @@ namespace Gadgetron {
         while ((it->name != collector.value()) && (it != cfg.gadget.end())) it++; it++;
         cfg.gadget.erase(it, cfg.gadget.end());
 
-        std::stringstream o;
-        GadgetronXML::serialize(cfg, o);
-
-        node_xml_config_ = o.str();
+        node_stream_configuration_ = cfg;
 
         Gadget* tmp = this;
         while (tmp->next()) {

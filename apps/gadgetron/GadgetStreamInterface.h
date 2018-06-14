@@ -6,6 +6,7 @@
 #include "ace/DLL_Manager.h"
 
 #include "gadgetron_paths.h"
+#include "gadgetron_xml.h"
 #include "Gadget.h"
 
 typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
@@ -46,9 +47,9 @@ namespace Gadgetron {
       global_gadget_parameters_ = globalGadgetPara;
     }
 
-    std::string get_xml_configuration()
+    const GadgetronXML::GadgetStreamConfiguration& get_stream_configuration()
     {
-      return config_xml_;
+      return stream_configuration_;
     }
     
     template <class T>  T* load_dll_component(const char* DLL, const char* component_name)
@@ -108,7 +109,7 @@ namespace Gadgetron {
     std::vector<ACE_DLL_Handle*> dll_handles_;
     std::map<std::string, std::string> global_gadget_parameters_;
     std::string gadgetron_home_;
-    std::string config_xml_; //Copy of the original XML configuration
+    GadgetronXML::GadgetStreamConfiguration stream_configuration_;
 
     virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name)
     {
