@@ -39,7 +39,7 @@ RUN cd /opt/code/ismrmrd && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python.git &&  \
     cd ismrmrd-python && \
-    python3 setup.py install && \
+    python setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpython.sha1 --value `git rev-parse HEAD` 
 
 
@@ -47,7 +47,7 @@ RUN cd /opt/code && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python-tools.git &&  \
     cd ismrmrd-python-tools && \
-    python3 setup.py install && \
+    python setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpythontools.sha1 --value `git rev-parse HEAD` 
 
 #SIEMENS_TO_ISMRMRD
