@@ -778,8 +778,6 @@ namespace Gadgetron {
 
     void GenericReconGadget::compute_snr_scaling_factor(IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio)
     {
-        try
-        {
             size_t RO = recon_bit.data_.data_.get_size(0);
             size_t E1 = recon_bit.data_.data_.get_size(1);
             size_t E2 = recon_bit.data_.data_.get_size(2);
@@ -836,11 +834,7 @@ namespace Gadgetron {
             {
                 GWARN_STREAM("Cannot find any sampled lines ... ");
             }
-        }
-        catch (...)
-        {
-            GADGET_THROW("Errors happened in GenericReconGadget::compute_snr_scaling_factor(...) ... ");
-        }
+
     }
 
     GADGET_FACTORY_DECLARE(GenericReconGadget)

@@ -164,10 +164,11 @@ namespace Gadgetron
 
         if (obj.trajectory_)
         {
-            if (this->trajectory_)
+            if (this->trajectory_) {
                 if (this->trajectory_->delete_data_on_destruct()) this->trajectory_->clear();
-            else
+            } else {
                 this->trajectory_ = hoNDArray<float>();
+            }
 
             this->trajectory_->copyFrom(*obj.trajectory_);
         }

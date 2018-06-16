@@ -95,6 +95,7 @@ namespace Gadgetron {
         virtual int fill_sd_header(IsmrmrdImageArray& map_sd);
 
         // compute image mask
-        virtual bool compute_mask_for_mapping(const hoNDArray<float>& mag, hoNDArray<float>& mask, float scale_factor);
+        virtual void compute_mask_for_mapping(const hoNDArray<float> &mag, hoNDArray<float> &mask,
+                                              float scale_factor);
     };
 }

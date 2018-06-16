@@ -241,6 +241,7 @@ namespace Gadgetron{
           continue;
         }
 
+
         int success;
         try{ success = this->process(m); }
         catch (std::runtime_error& err){
@@ -761,24 +762,16 @@ namespace Gadgetron{
       protected:
           int process(ACE_Message_Block* mb)
           {
-              GadgetContainerMessage<P1>* m1 = AsContainerMessage<P1>(mb);
-              GadgetContainerMessage<P2>* m2 = 0;
+              GadgetContainerMessage<P1>* m1 = nullptr;
+              GadgetContainerMessage<P2>* m2 = nullptr;
 
-              if (m1)
+              if ((m1 = AsContainerMessage<P1>(mb)))
               {
                   return this->process(m1);
               }
-              else
-              {
-                  m2 = AsContainerMessage<P2>(mb);
-                  if (m2)
-                  {
+              else if ( (m2 = AsContainerMessage<P2>(mb))){
                       return this->process(m2);
-                  }
-              }
-
-              if(!m1 || !m2)
-              {
+              } else {
                   if (!pass_on_undesired_data_)
                   {
                       GERROR("%s -> %s, (%s, %s, %p, %p), (%s, %s, %p, %p)\n",
@@ -799,6 +792,7 @@ namespace Gadgetron{
                       return (this->next()->putq(mb));
                   }
               }
+
           }
 
           virtual int process(GadgetContainerMessage<P1>* m1) = 0;

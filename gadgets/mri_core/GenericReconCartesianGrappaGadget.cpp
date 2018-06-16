@@ -519,8 +519,7 @@ namespace Gadgetron {
 
     void GenericReconCartesianGrappaGadget::perform_unwrapping(IsmrmrdReconBit& recon_bit, ReconObjType& recon_obj, size_t e)
     {
-        try
-        {
+
             typedef std::complex<float> T;
 
             size_t RO = recon_bit.data_.data_.get_size(0);
@@ -631,11 +630,7 @@ namespace Gadgetron {
                 std::string suffix = os.str();
                 gt_exporter_.export_array_complex(recon_obj.recon_res_.data_, debug_folder_full_path_ + "unwrappedIm_" + suffix);
             }
-        }
-        catch (...)
-        {
-            GADGET_THROW("Errors happened in GenericReconCartesianGrappaGadget::perform_unwrapping(...) ... ");
-        }
+
     }
 
     void GenericReconCartesianGrappaGadget::compute_snr_map(ReconObjType& recon_obj, hoNDArray< std::complex<float> >& snr_map)
