@@ -25,10 +25,11 @@
     <writer><slot>1022</slot><dll>gadgetron_mricore</dll><classname>MRIImageWriter</classname></writer>
 
     <!-- Noise prewhitening -->
-    <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname></gadget>
+    <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname>
+    </gadget>
 
     <!-- RO asymmetric echo handling -->
-    <gadget><name>AsymmetricEcho</name><dll>gadgetron_mricore</dll><classname>AsymmetricEchoAdjustROGadget</classname></gadget>
+    <!--<gadget><name>AsymmetricEcho</name><dll>gadgetron_mricore</dll><classname>AsymmetricEchoAdjustROGadget</classname></gadget>-->
 
     <!-- RO oversampling removal -->
     <gadget><name>RemoveROOversampling</name><dll>gadgetron_mricore</dll><classname>RemoveROOversamplingGadget</classname></gadget>
@@ -39,6 +40,7 @@
         <dll>gadgetron_mricore</dll>
         <classname>AcquisitionAccumulateTriggerGadget</classname>
         <property><name>trigger_dimension</name><value>slice</value></property>
+        <property><name>sorting_dimension</name><value>contrast</value></property>
     </gadget>
 
     <gadget>
@@ -58,26 +60,28 @@
         <classname>GenericReconCartesianReferencePrepGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value></value></property>
+        <!--property><name>debug_folder</name><value>DebugFolder</value></property-->
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
         <!-- averaging across repetition -->
-        <property><name>average_all_ref_N</name><value>true</value></property>
+        <property><name>average_all_ref_N</name><value>false</value></property>
         <!-- every set has its own kernels -->
-        <property><name>average_all_ref_S</name><value>true</value></property>
+        <property><name>average_all_ref_S</name><value>false</value></property>
+        <!-- Only use the first echo for reference data, to ensure phase correctness -->
+
         <!-- whether always to prepare ref if no acceleration is used -->
         <property><name>prepare_ref_always</name><value>false</value></property>
     </gadget>
 
-    <!-- Coil compression -->
+     <!--Coil compression-->
     <gadget>
         <name>CoilCompression</name>
         <dll>gadgetron_mricore</dll>
         <classname>GenericReconEigenChannelGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value></value></property>
+        <!--property><name>debug_folder</name><value>DebugFolder</value></property-->
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
@@ -90,7 +94,21 @@
         <property><name>upstream_coil_compression_num_modesKept</name><value>0</value></property>
     </gadget>
 
-    <!-- Recon -->
+     <!--Recon -->
+
+    <!--<gadget>-->
+    <!--<name>Recon</name>-->
+    <!--<dll>gadgetron_mricore</dll>-->
+    <!--<classname>GenericReconCartesianSpiritGadget</classname>-->
+
+    <!--&lt;!&ndash; image series &ndash;&gt;-->
+    <!--<property><name>image_series</name><value>0</value></property>-->
+
+     <!--&lt;!&ndash;Coil map estimation, Inati or Inati_Iter&ndash;&gt;-->
+    <!--<property><name>coil_map_algorithm</name><value>Inati</value></property>-->
+
+    <!--</gadget>-->
+
     <gadget>
         <name>Recon</name>
         <dll>gadgetron_mricore</dll>
@@ -103,12 +121,12 @@
         <property><name>coil_map_algorithm</name><value>Inati</value></property>
 
         <!-- Down stream coil compression -->
-        <property><name>downstream_coil_compression</name><value>true</value></property>
+        <property><name>downstream_coil_compression</name><value>false</value></property>
         <property><name>downstream_coil_compression_thres</name><value>0.002</value></property>
         <property><name>downstream_coil_compression_num_modesKept</name><value>0</value></property>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value></value></property>
+        <!--property><name>debug_folder</name><value>DebugFolder</value></property-->
         <property><name>perform_timing</name><value>true</value></property>
         <property><name>verbose</name><value>true</value></property>
 
@@ -116,14 +134,17 @@
         <property><name>send_out_gfactor</name><value>true</value></property>
     </gadget>
 
-    <!-- Partial fourier handling -->
+
+
+
+     <!--Partial fourier handling-->
     <gadget>
         <name>PartialFourierHandling</name>
         <dll>gadgetron_mricore</dll>
         <classname>GenericReconPartialFourierHandlingFilterGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value></value></property>
+        <!--property><name>debug_folder</name><value>DebugFolder</value></property-->
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
 
@@ -144,7 +165,7 @@
         <classname>GenericReconKSpaceFilteringGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value></value></property>
+
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
 
@@ -164,7 +185,19 @@
         <property><name>filterE2_sigma</name><value>1.0</value></property>
         <property><name>filterE2_width</name><value>0.15</value></property>
     </gadget>
-
+    <gadget>
+        <name>Combiner</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageAccumulatorGadget</classname>
+        <property>
+            <name>accumulate_dimension</name>
+            <value>contrast</value>
+        </property>
+        <property>
+            <name>combine_along</name>
+            <value>S</value>
+        </property>
+    </gadget>
     <!-- FOV Adjustment -->
     <gadget>
         <name>FOVAdjustment</name>
@@ -172,12 +205,32 @@
         <classname>GenericReconFieldOfViewAdjustmentGadget</classname>
 
         <!-- parameters for debug and timing -->
-        <property><name>debug_folder</name><value></value></property>
+
         <property><name>perform_timing</name><value>false</value></property>
         <property><name>verbose</name><value>false</value></property>
     </gadget>
 
-    <!-- Image Array Scaling -->
+
+
+    <gadget>
+        <name>FatWater</name>
+        <dll>gadgetron_fatwater</dll>
+        <classname>FatWaterGadget</classname>
+        <property><name>range_frequency_offset</name><value>[-500,500]</value></property>
+        <property><name>number_of_frequency_offsets</name><value>200</value></property>
+        <property><name>range_r2star</name><value>[5,500]</value></property>
+        <property><name>number_of_r2stars</name><value>5</value></property>
+        <property><name>number_of_r2stars_fine</name><value>200</value></property>
+        <property><name>graph_cut_iterations</name><value>40</value></property>
+        <property><name>graph_cut_iterations</name><value>40</value></property>
+        <property><name>do_gradient_descent</name><value>true</value></property>
+        <property><name>regularization_lambda</name><value>0.02</value></property>
+        <property><name>regularization_offset</name><value>0.01</value></property>
+        <property><name>save_field_map</name><value>true</value></property>
+        <property><name>save_r2star_map</name><value>true</value></property>
+    </gadget>
+
+         <!--Image Array Scaling -->
     <gadget>
         <name>Scaling</name>
         <dll>gadgetron_mricore</dll>
@@ -202,18 +255,25 @@
         <classname>ImageArraySplitGadget</classname>
     </gadget>
 
-    <!-- after recon processing -->
     <gadget>
-        <name>ComplexToFloatAttrib</name>
+        <name>Extract</name>
         <dll>gadgetron_mricore</dll>
-        <classname>ComplexToFloatGadget</classname>
+        <classname>ExtractGadget</classname>
+
     </gadget>
 
-    <gadget>
-        <name>FloatToShortAttrib</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>FloatToUShortGadget</classname>
-    </gadget>
+    <!-- after recon processing -->
+    <!--<gadget>-->
+        <!--<name>ComplexToFloatAttrib</name>-->
+        <!--<dll>gadgetron_mricore</dll>-->
+        <!--<classname>ComplexToFloatGadget</classname>-->
+    <!--</gadget>-->
+
+    <!--<gadget>-->
+        <!--<name>FloatToShortAttrib</name>-->
+        <!--<dll>gadgetron_mricore</dll>-->
+        <!--<classname>FloatToUShortGadget</classname>-->
+    <!--</gadget>-->
 
     <gadget>
         <name>ImageFinish</name>

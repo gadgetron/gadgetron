@@ -61,13 +61,13 @@ int GadgetServerAcceptor::handle_input (ACE_HANDLE)
 
   if (this->acceptor_.accept (controller->peer ()) == -1) {
     GERROR("Failed to accept controller connection\n"); 
-    delete controller;
     return -1;
   }
   
   controller->reactor (this->reactor ());
   if (controller->open () == -1)
     controller->handle_close (ACE_INVALID_HANDLE, 0);
+
   return 0;
 }
 

@@ -43,7 +43,7 @@ namespace Gadgetron{
 
     }
 
-    virtual const char* name()
+    virtual const char* name() const
     {
       return name_.c_str();
     }
@@ -243,18 +243,23 @@ namespace Gadgetron{
 
 
         int success;
+#ifdef NDEBUG //We actually want a full stack trace in debug mode, so only catch in release.
         try{ success = this->process(m); }
         catch (std::runtime_error& err){
           GEXCEPTION(err,"Gadget::process() failed\n");
           success = -1;
         }
-
-        if (success == -1) {
+#else
+        success = this->process(m);
+#endif
+        if (success == -1){
           m->release();
           this->flush();
           GERROR("Gadget (%s) process failed\n", this->module()->name());
           return GADGET_FAIL;
         }
+
+
       }
       return 0;
     }
@@ -494,7 +499,7 @@ namespace Gadgetron{
         this->value(default_value);
       }
 
-      T value()
+      T value() const
       {
         if (is_reference_) {
           boost::shared_ptr<std::string> val = this->g_->get_string_value(this->name());
@@ -525,7 +530,7 @@ namespace Gadgetron{
           T tmp;
 //          std::stringstream(val) >> std::boolalpha >> tmp;
       	  GadgetProperty_extract_value(val,tmp);
-	  this->value(tmp);
+	      this->value(tmp);
         }
       }
 
@@ -534,13 +539,15 @@ namespace Gadgetron{
         return this->value() == v;
       }
 
+     operator T() const { return this->value(); }
+
       virtual const char* limits_description()
       {
         return limits_.limits_description();
       }
 
    protected:
-      T value_;
+      mutable T value_;
       Gadget* g_;
       L limits_;
     };
@@ -559,7 +566,7 @@ namespace Gadgetron{
           this->value(default_value);
         }
 
-        std::vector<T> value()
+        std::vector<T> value() const
         {
           if (is_reference_) {
             boost::shared_ptr<std::string> val = this->g_->get_string_value(this->name());
@@ -571,6 +578,8 @@ namespace Gadgetron{
           }
           return values_;
         }
+
+        operator std::vector<T>() const { return this->value();}
 
         void value(std::vector<T> v)
         {
@@ -614,7 +623,7 @@ namespace Gadgetron{
         }
 
       protected:
-        std::vector<T> values_;
+          mutable std::vector<T> values_;
         L limits_;
         Gadget* g_;
       };

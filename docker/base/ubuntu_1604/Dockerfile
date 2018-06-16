@@ -1,5 +1,7 @@
 FROM ubuntu:16.04
 
+#Fix default ceres package on 16.04 is broken
+RUN add-apt-repository ppa:lkoppel/ceres
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     wget build-essential emacs python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core \
@@ -7,6 +9,7 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
+    libceres-dev\
     supervisor 
 
 #Python stuff

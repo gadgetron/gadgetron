@@ -13,6 +13,11 @@ foreach(p
 endforeach()
 project(GADGETRON)
 
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+endif(CCACHE_FOUND)
 # --- Provide good defaults for searching for packages (i.e. ismrmrd)
 set(CMAKE_PREFIX_PATH "")
 if(CMAKE_PREFIX_PATH)
@@ -270,6 +275,9 @@ if (LAPACK_FOUND)
   add_definitions(-DUSE_LAPACK)
 endif ()
 
+find_package(Eigen3)
+find_package(Ceres)
+
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 
 if (BUILD_PYTHON_SUPPORT)
@@ -332,6 +340,12 @@ if (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND AND HDF5_FOUND)
   add_subdirectory(gadgets)
 else()
   message("Required dependencies for gadget compilation not found (ACE, ISMRMRD, FFTW3, HDF5).")
+endif()
+
+option(BUILD_WITH_GPERFTOOLS_PROFILER "Build with the gperftools profiler." Off)
+if (BUILD_WITH_GPERFTOOLS_PROFILER)
+  message("Adding gpertools to build.")
+  find_package(Gperftools REQUIRED)
 endif()
 
 add_subdirectory(test)

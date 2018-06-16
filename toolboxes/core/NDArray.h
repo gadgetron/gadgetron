@@ -16,6 +16,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/cast.hpp>
+#include <boost/make_shared.hpp>
 
 namespace Gadgetron{
 
@@ -29,7 +30,7 @@ namespace Gadgetron{
         NDArray () : data_(0), elements_(0), delete_data_on_destruct_(true)
         {
             dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-            offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
+
         }
 
         virtual ~NDArray() {}
@@ -164,7 +165,7 @@ namespace Gadgetron{
     protected:
 
         boost::shared_ptr< std::vector<size_t> > dimensions_;
-        boost::shared_ptr< std::vector<size_t> > offsetFactors_;
+        std::array<size_t,9> offsetFactors_;
         T* data_;
         size_t elements_;
         bool delete_data_on_destruct_;
@@ -377,78 +378,78 @@ namespace Gadgetron{
     {
         size_t offset = ind[0];
         for( size_t i = 1; i < dimensions_->size(); i++ )
-            offset += ind[i] * (*offsetFactors_)[i];
+            offset += ind[i] * offsetFactors_[i];
         return offset;
     }
 
     template <typename T> 
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y) const
     {
-        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==2);
-        return x + y * (*offsetFactors_)[1];
+//        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==2);
+        return x + y * offsetFactors_[1];
     }
 
     template <typename T> 
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z) const
     {
-        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==3);
-        return x + y * (*offsetFactors_)[1] + z * (*offsetFactors_)[2];
+//        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==3);
+        return x + y * offsetFactors_[1] + z * offsetFactors_[2];
     }
 
     template <typename T> 
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s) const
     {
-        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==4);
-        return x + y * (*offsetFactors_)[1] + z * (*offsetFactors_)[2] + s * (*offsetFactors_)[3];
+//        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==4);
+        return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3];
     }
 
     template <typename T> 
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p) const
     {
-        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==5);
-        return x + y * (*offsetFactors_)[1] + z * (*offsetFactors_)[2] + s * (*offsetFactors_)[3] + p * (*offsetFactors_)[4];
+//        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==5);
+        return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4];
     }
 
     template <typename T> 
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r) const
     {
-        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==6);
-        return x + y * (*offsetFactors_)[1] + z * (*offsetFactors_)[2] + s * (*offsetFactors_)[3] + p * (*offsetFactors_)[4] + r * (*offsetFactors_)[5];
+//        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==6);
+        return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5];
     }
 
     template <typename T> 
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a) const
     {
-        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==7);
-        return x + y * (*offsetFactors_)[1] + z * (*offsetFactors_)[2] + s * (*offsetFactors_)[3] + p * (*offsetFactors_)[4] + r * (*offsetFactors_)[5] + a * (*offsetFactors_)[6];
+//        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==7);
+        return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5] + a * offsetFactors_[6];
     }
 
     template <typename T> 
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q) const
     {
-        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==8);
-        return x + y * (*offsetFactors_)[1] + z * (*offsetFactors_)[2] + s * (*offsetFactors_)[3] + p * (*offsetFactors_)[4] + r * (*offsetFactors_)[5] + a * (*offsetFactors_)[6] + q * (*offsetFactors_)[7];
+//        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==8);
+        return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5] + a * offsetFactors_[6] + q * offsetFactors_[7];
     }
 
     template <typename T> 
     inline size_t NDArray<T>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u) const
     {
-        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==9);
-        return x + y * (*offsetFactors_)[1] + z * (*offsetFactors_)[2] + s * (*offsetFactors_)[3] + p * (*offsetFactors_)[4] + r * (*offsetFactors_)[5] + a * (*offsetFactors_)[6] + q * (*offsetFactors_)[7]+ u * (*offsetFactors_)[8];
+//        GADGET_DEBUG_CHECK_THROW(dimensions_->size()==9);
+        return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5] + a * offsetFactors_[6] + q * offsetFactors_[7]+ u * offsetFactors_[8];
     }
 
     template <typename T> 
     inline size_t NDArray<T>::get_offset_factor(size_t dim) const
     {
-        if ( dim >= (*dimensions_).size() )
+        if ( dim >= dimensions_->size() )
             throw std::runtime_error("NDArray<T>::get_offset_factor : index out of range");
-        return (*offsetFactors_)[dim];
+        return offsetFactors_[dim];
     }
 
     template <typename T> 
     inline void NDArray<T>::get_offset_factor(std::vector<size_t>& offset) const
     {
-        offset=*offsetFactors_;
+        offset=std::vector<size_t>(offsetFactors_.begin(),offsetFactors_.end());
     }
 
     template <typename T> 
@@ -463,9 +464,8 @@ namespace Gadgetron{
     template <typename T> 
     inline boost::shared_ptr< std::vector<size_t> > NDArray<T>::get_offset_factor() const
     {
-        std::vector<size_t> *tmp = new std::vector<size_t>;
-        *tmp=*offsetFactors_;
-        return boost::shared_ptr< std::vector<size_t> >(tmp); 
+
+        return boost::make_shared<std::vector<size_t>>(offsetFactors_.begin(),offsetFactors_.end());
     }
 
     template <typename T> 
@@ -487,17 +487,17 @@ namespace Gadgetron{
     template <typename T> 
     inline void NDArray<T>::calculate_offset_factors(const std::vector<size_t>& dimensions)
     {
-        if ( offsetFactors_.get() == NULL ){
-            std::vector<size_t> *tmp = new std::vector<size_t>;
-            offsetFactors_ = boost::shared_ptr< std::vector<size_t> >(tmp);
-        }
-        offsetFactors_->resize(dimensions.size());
-        for( size_t i = 0; i < dimensions.size(); i++ ){
+
+        std::fill(offsetFactors_.begin(),offsetFactors_.end(),1);
+        size_t offsets = std::min(dimensions.size(),offsetFactors_.size());
+        for( size_t i = 0; i < offsets; i++ ){
             size_t k = 1;
             for( size_t j = 0; j < i; j++ )
                 k *= dimensions[j];
-            (*offsetFactors_)[i] = k;
+            offsetFactors_[i] = k;
         }
+
+
     }
 
     template <typename T> 
@@ -508,8 +508,8 @@ namespace Gadgetron{
 
         std::vector<size_t> index(dimensions_->size());
         for( long long i = dimensions_->size()-1; i>=0; i-- ){
-            index[i] = offset / (*offsetFactors_)[i];
-            offset %= (*offsetFactors_)[i];
+            index[i] = offset / offsetFactors_[i];
+            offset %= offsetFactors_[i];
         }
         return index;
     }
@@ -522,8 +522,8 @@ namespace Gadgetron{
 
         index.resize(dimensions_->size(), 0);
         for( long long i = dimensions_->size()-1; i>=0; i-- ){
-            index[i] = offset / (*offsetFactors_)[i];
-            offset %= (*offsetFactors_)[i];
+            index[i] = offset / offsetFactors_[i];
+            offset %= offsetFactors_[i];
         }
     }
 
@@ -552,11 +552,9 @@ namespace Gadgetron{
 
         if ( !this->dimensions_ ){
             this->dimensions_->clear();
-            this->offsetFactors_->clear();
         }
         else{
             this->dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-            this->offsetFactors_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
         }
     } 
 

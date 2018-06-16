@@ -281,7 +281,7 @@ namespace Gadgetron{
   //
 
   template<class T, unsigned int D> inline
-  std::vector<T> to_std_vector( vector_td<T,D> vec )
+  std::vector<T> to_std_vector(const vector_td<T,D>& vec )
   {
     std::vector<T> out(D);
     for(unsigned int i=0; i<D; i++ )
@@ -290,7 +290,7 @@ namespace Gadgetron{
   }
 
   template<class T, unsigned int D> inline
-  vector_td<T,D> from_std_vector( std::vector<T> &_vector )
+  vector_td<T,D> from_std_vector(const std::vector<T> &_vector )
   {
     vector_td<T,D> out;
     for( unsigned int i=0; i<D; i++ ){

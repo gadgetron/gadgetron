@@ -378,6 +378,7 @@ namespace Gadgetron{
 	    GDEBUG("Failed to pass bucket down the chain\n");
 	    return GADGET_FAIL;
 	  }
+	  buckets_.erase(it->first);
       }
     }
 

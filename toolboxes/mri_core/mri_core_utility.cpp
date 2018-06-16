@@ -28,26 +28,25 @@ namespace Gadgetron
             size_t S = data.get_size(5);
             size_t SLC = data.get_size(6);
 
-            hoNDArray<bool> sampled;
-            sampled.create(E1, E2, N, S, SLC);
+            hoNDArray<bool> sampled(E1, E2, N, S, SLC);
 
-            size_t slc, s, n, e2, e1;
 
-            for (slc = 0; slc < SLC; slc++)
+
+            for (size_t slc = 0; slc < SLC; slc++)
             {
-                for (s = 0; s < S; s++)
+                for (size_t s = 0; s < S; s++)
                 {
-                    for (n = 0; n < N; n++)
+                    for (size_t n = 0; n < N; n++)
                     {
-                        for (e2 = 0; e2 < E2; e2++)
+                        for (size_t e2 = 0; e2 < E2; e2++)
                         {
-                            for (e1 = 0; e1 < E1; e1++)
+                            for (size_t e1 = 0; e1 < E1; e1++)
                             {
                                 value_type v = 0;
                                 const T* pData = &(data(0, e1, e2, 0, n, s, slc));
 
-                                size_t ro;
-                                for (ro = 0; ro < RO; ro++)
+
+                                for (size_t ro = 0; ro < RO; ro++)
                                 {
                                     v += std::abs(pData[ro]);
                                 }
@@ -84,51 +83,46 @@ namespace Gadgetron
     template <typename T>
     std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray<T>& data)
     {
-        try
+
+        hoNDArray<bool> sampled = Gadgetron::detect_readout_sampling_status(data);
+
+        size_t RO = data.get_size(0);
+        size_t E1 = data.get_size(1);
+        size_t E2 = data.get_size(2);
+        size_t CHA = data.get_size(3);
+        size_t N = data.get_size(4);
+        size_t S = data.get_size(5);
+        size_t SLC = data.get_size(6);
+
+        size_t start_E1, end_E1;
+        start_E1 = E1;
+        end_E1 = 0;
+
+
+
+        for (size_t slc = 0; slc < SLC; slc++)
         {
-            hoNDArray<bool> sampled = Gadgetron::detect_readout_sampling_status(data);
-
-            size_t RO = data.get_size(0);
-            size_t E1 = data.get_size(1);
-            size_t E2 = data.get_size(2);
-            size_t CHA = data.get_size(3);
-            size_t N = data.get_size(4);
-            size_t S = data.get_size(5);
-            size_t SLC = data.get_size(6);
-
-            size_t start_E1, end_E1;
-            start_E1 = E1;
-            end_E1 = 0;
-
-            size_t e1, e2, n, s, slc;
-
-            for (slc = 0; slc < SLC; slc++)
+            for (size_t s = 0; s < S; s++)
             {
-                for (s = 0; s < S; s++)
+                for (size_t n = 0; n < N; n++)
                 {
-                    for (n = 0; n < N; n++)
+                    for (size_t e2 = 0; e2 < E2; e2++)
                     {
-                        for (e2 = 0; e2 < E2; e2++)
+                        for (size_t e1 = 0; e1 < E1; e1++)
                         {
-                            for (e1 = 0; e1 < E1; e1++)
+                            if (sampled(e1, e2, n, s, slc)==true)
                             {
-                                if (sampled(e1, e2, n, s, slc)==true)
-                                {
-                                    if (e1 < start_E1) start_E1 = e1;
-                                    if (e1 > end_E1) end_E1 = e1;
-                                }
+                                if (e1 < start_E1) start_E1 = e1;
+                                if (e1 > end_E1) end_E1 = e1;
                             }
                         }
                     }
                 }
             }
+        }
 
-            return std::make_tuple(start_E1, end_E1);
-        }
-        catch (...)
-        {
-            GADGET_THROW("Errors in detect_sampled_region_E1(...) ... ");
-        }
+        return std::make_tuple(start_E1, end_E1);
+
     }
 
     template EXPORTMRICORE std::tuple<size_t, size_t> detect_sampled_region_E1(const hoNDArray<float>& data);
@@ -280,89 +274,84 @@ namespace Gadgetron
     template <typename T> 
     void compute_averaged_data_N_S(const hoNDArray<T>& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray<T>& res)
     {
-        try
+
+        size_t RO = data.get_size(0);
+        size_t E1 = data.get_size(1);
+        size_t E2 = data.get_size(2);
+        size_t CHA = data.get_size(3);
+        size_t N = data.get_size(4);
+        size_t S = data.get_size(5);
+        size_t SLC = data.get_size(6);
+
+        typedef typename realType<T>::Type value_type;
+
+        if (average_N)
         {
-            size_t RO = data.get_size(0);
-            size_t E1 = data.get_size(1);
-            size_t E2 = data.get_size(2);
-            size_t CHA = data.get_size(3);
-            size_t N = data.get_size(4);
-            size_t S = data.get_size(5);
-            size_t SLC = data.get_size(6);
-
-            typedef typename realType<T>::Type value_type;
-
-            if (average_N)
+            if (N > 1)
             {
-                if (N > 1)
+                if (count_sampling_freq)
                 {
-                    if (count_sampling_freq)
+                    hoNDArray<bool> sampled = Gadgetron::detect_readout_sampling_status(data);
+                    Gadgetron::sum_over_dimension(data, res, 4);
+
+                    // for every E1/E2 location, count how many times it is sampled for all N
+                    size_t ro, e1, e2, cha, n, s, slc;
+                    for (slc = 0; slc < SLC; slc++)
                     {
-                        hoNDArray<bool> sampled = Gadgetron::detect_readout_sampling_status(data);
-                        Gadgetron::sum_over_dimension(data, res, 4);
-
-                        // for every E1/E2 location, count how many times it is sampled for all N
-                        size_t ro, e1, e2, cha, n, s, slc;
-                        for (slc = 0; slc < SLC; slc++)
+                        for (cha = 0; cha < CHA; cha++)
                         {
-                            for (cha = 0; cha < CHA; cha++)
+                            for (e2 = 0; e2 < E2; e2++)
                             {
-                                for (e2 = 0; e2 < E2; e2++)
+                                for (e1 = 0; e1 < E1; e1++)
                                 {
-                                    for (e1 = 0; e1 < E1; e1++)
+                                    float freq = 0;
+
+                                    for (s = 0; s < S; s++)
                                     {
-                                        float freq = 0;
-
-                                        for (s = 0; s < S; s++)
+                                        for (n = 0; n < N; n++)
                                         {
-                                            for (n = 0; n < N; n++)
-                                            {
-                                                if (sampled(e1, e2, n, s, slc)) freq += 1;
-                                            }
+                                            if (sampled(e1, e2, n, s, slc)) freq += 1;
+                                        }
 
-                                            if (freq > 1)
-                                            {
-                                                value_type freq_reciprocal = (value_type)(1.0 / freq);
-                                                T* pAve = &(res(0, e1, e2, cha, 0, s, slc));
-                                                for (ro = 0; ro < RO; ro++) pAve[ro] *= freq_reciprocal;
-                                            }
+                                        if (freq > 1)
+                                        {
+                                            value_type freq_reciprocal = (value_type)(1.0 / freq);
+                                            T* pAve = &(res(0, e1, e2, cha, 0, s, slc));
+                                            for (ro = 0; ro < RO; ro++) pAve[ro] *= freq_reciprocal;
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    else
-                    {
-                        Gadgetron::sum_over_dimension(data, res, (size_t)4);
-                        Gadgetron::scal((value_type)(1.0 / N), res);
-                    }
                 }
                 else
                 {
-                    res = data;
+                    Gadgetron::sum_over_dimension(data, res, (size_t)4);
+                    Gadgetron::scal((value_type)(1.0 / N), res);
                 }
             }
             else
             {
                 res = data;
             }
+        }
+        else
+        {
+            res = data;
+        }
 
-            if (average_S)
+        if (average_S)
+        {
+            if (S > 1)
             {
-                if (S > 1)
-                {
-                    hoNDArray<T> dataTmp;
-                    Gadgetron::sum_over_dimension(res, dataTmp, 5);
-                    Gadgetron::scal((value_type)(1.0 / S), dataTmp);
-                    res = dataTmp;
-                }
+                hoNDArray<T> dataTmp;
+                Gadgetron::sum_over_dimension(res, dataTmp, 5);
+                Gadgetron::scal((value_type)(1.0 / S), dataTmp);
+                res = dataTmp;
             }
         }
-        catch (...)
-        {
-            GADGET_THROW("Errors in compute_averaged_data_N_S(...) ... ");
-        }
+
     }
 
     template EXPORTMRICORE void compute_averaged_data_N_S(const hoNDArray< std::complex<float> >& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray< std::complex<float> >& res);

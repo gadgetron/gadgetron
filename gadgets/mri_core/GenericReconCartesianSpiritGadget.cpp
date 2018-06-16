@@ -170,7 +170,7 @@ namespace Gadgetron {
                 if (perform_timing.value()) { gt_timer_.stop(); }
             }
 
-            recon_bit_->rbit_[e].ref_->clear();
+//            recon_bit_->rbit_[e].ref_->clear();
             recon_bit_->rbit_[e].ref_ = boost::none;
             recon_obj_[e].recon_res_.data_.clear();
             recon_obj_[e].recon_res_.headers_.clear();

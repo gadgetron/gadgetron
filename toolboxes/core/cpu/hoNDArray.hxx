@@ -255,9 +255,8 @@ namespace Gadgetron
         this->dimensions_ = boost::shared_ptr< std::vector<size_t> >(tmp);
         *(this->dimensions_) = *(a->dimensions_);
 
-        tmp = new std::vector<size_t>;
-        this->offsetFactors_ = boost::shared_ptr< std::vector<size_t> >(tmp);
-        *(this->offsetFactors_) = *(a->offsetFactors_);
+
+        this->offsetFactors_ = a->offsetFactors_;
 
         if ( !this->dimensions_->empty() )
         {
@@ -279,9 +278,9 @@ namespace Gadgetron
         this->dimensions_ = boost::shared_ptr< std::vector<size_t> >(tmp);
         *(this->dimensions_) = *(a.dimensions_);
 
-        tmp = new std::vector<size_t>;
-        this->offsetFactors_ = boost::shared_ptr< std::vector<size_t> >(tmp);
-        *(this->offsetFactors_) = *(a.offsetFactors_);
+
+        offsetFactors_ = a.offsetFactors_;
+
 
         if ( !this->dimensions_->empty() )
         {
@@ -303,7 +302,7 @@ namespace Gadgetron
     	a.dimensions_.reset();
     	a.data_ = nullptr;
     	this->offsetFactors_ = a.offsetFactors_;
-    	a.offsetFactors_.reset();
+
     }
 #endif
     template <typename T> 
@@ -324,7 +323,7 @@ namespace Gadgetron
             deallocate_memory();
             this->data_ = 0;
             *(this->dimensions_) = *(rhs.dimensions_);
-            *(this->offsetFactors_) = *(rhs.offsetFactors_);
+            offsetFactors_ = rhs.offsetFactors_;
             allocate_memory();
             memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
         }
@@ -339,10 +338,10 @@ namespace Gadgetron
 
         this->clear();
         *this->dimensions_ = *rhs.dimensions_;
-        *this->offsetFactors_ = *rhs.offsetFactors_;
+        this->offsetFactors_ = rhs.offsetFactors_;
         this->elements_ = rhs.elements_;
         rhs.dimensions_.reset();
-        rhs.offsetFactors_.reset();
+
         data_ = rhs.data_;
         rhs.data_ = nullptr;
         return *this;
@@ -735,6 +734,16 @@ namespace Gadgetron
         GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
         return this->get_data_ptr()[idx];
     }
+    template <typename T>
+    inline const T& hoNDArray<T>::operator[]( size_t idx ) const
+    {
+        /*if( idx >= this->get_number_of_elements() )
+        {
+        BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator[]: index out of range."));
+        }*/
+        GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+        return this->get_data_ptr()[idx];
+    }
 
     //template <typename T> 
     //inline T& hoNDArray<T>::operator()( size_t idx )
@@ -783,7 +792,7 @@ namespace Gadgetron
     //}
 
     template <typename T> 
-    void hoNDArray<T>::get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out)
+    void hoNDArray<T>::get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out) const
     {
         if ( start.size() != size.size() ){
             BOOST_THROW_EXCEPTION( runtime_error("hoNDArray<>::get_sub_array failed"));
