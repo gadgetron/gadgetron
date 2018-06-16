@@ -26,7 +26,7 @@ def md5sum(filename, blocksize=64*1024):
     if sys.platform == "win32":
         md5_str = str(res[0])[2:-1]
     else:
-        md5_str = str(res[0])
+        md5_str = str(res[0].decode('UTF-8'))
     return md5_str
 
 
