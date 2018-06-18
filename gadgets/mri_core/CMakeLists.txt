@@ -131,7 +131,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     GenericImageReconArrayToImageGadget.h 
                                     WhiteNoiseInjectorGadget.h
                                     NoiseSummaryGadget.h 
-                                    NHLBICompression.h )
+                                    NHLBICompression.h
+                                    ImageAccumulatorGadget.h)
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -187,7 +188,8 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 GenericImageReconArrayToImageGadget.cpp 
                                 WhiteNoiseInjectorGadget.cpp
                                 RateLimitGadget.cpp
-                                NoiseSummaryGadget.cpp )
+                                NoiseSummaryGadget.cpp
+                                ImageAccumulatorGadget.cpp )
 
 set( gadgetron_mricore_config_files
     config/default.xml
@@ -202,8 +204,7 @@ set( gadgetron_mricore_config_files
     config/Generic_Cartesian_Grappa.xml
     config/Generic_Cartesian_Grappa_SNR.xml
     config/Generic_Cartesian_Grappa_T2W.xml
-    config/Generic_Cartesian_Grappa_FatWater.xml
-    config/Generic_Cartesian_Grappa_RealTimeCine.xml
+        config/Generic_Cartesian_Grappa_RealTimeCine.xml
     config/Generic_Cartesian_Grappa_RealTimeCine_Cloud.xml
     config/Generic_Cartesian_Grappa_EPI.xml
     config/Generic_Cartesian_Grappa_EPI_AVE.xml
@@ -225,7 +226,7 @@ add_library(gadgetron_mricore SHARED
     ${gadgetron_mricore_config_files}
     ${OPTIMIZED_GADGETS}
     ${OPTIMIZED_GADGET_HEADERS}
-)
+        )
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

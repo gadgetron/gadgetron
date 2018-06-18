@@ -64,10 +64,10 @@ namespace Gadgetron{
     GDEBUG("S DIMENSION IS: %s (%d)\n", S_dimension.value().c_str(), S_);
 
     split_slices_  = split_slices.value();
-    GDEBUG("SPLIT SLICES IS: %b\n", split_slices_);
+    GDEBUG("SPLIT SLICES IS: %d\n", split_slices_);
 
     ignore_segment_  = ignore_segment.value();
-    GDEBUG("IGNORE SEGMENT IS: %b\n", ignore_segment_);
+    GDEBUG("IGNORE SEGMENT IS: %d\n", ignore_segment_);
 
     // keep a copy of the deserialized ismrmrd xml header for runtime
     ISMRMRD::deserialize(mb->rd_ptr(), hdr_);

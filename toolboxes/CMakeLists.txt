@@ -39,7 +39,7 @@ add_subdirectory(nfft)
 add_subdirectory(dwt)
 add_subdirectory(registration)
 add_subdirectory(rest)
-add_subdirectory(fatwater)
+
 add_subdirectory(ffd)
 add_subdirectory(image)
 add_subdirectory(pattern_recognition)
@@ -54,6 +54,14 @@ add_subdirectory(image_io)
 find_package(BLAS)
 find_package(LAPACK)
 
+
+
+if (CERES_FOUND)
+  message("Ceres found, compiling fat/water toolbox")
+  add_subdirectory(fatwater)
+else()
+  message("Ceres not found, skipping fat/water toolbox")
+endif()
 
 if (MATLAB_FOUND)
   message("Compiling MATLAB toolbox")

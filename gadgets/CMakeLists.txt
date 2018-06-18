@@ -23,7 +23,7 @@ include_directories(
   )
 
 add_subdirectory(mri_core)
-add_subdirectory(fatwater)
+
 add_subdirectory(interventional_mri)
 if (ARMADILLO_FOUND)
   add_subdirectory(cmr)
@@ -40,6 +40,12 @@ elseif (ARMADILLO_FOUND)
     message("Armadillo not found, NOT compiling EPI Gadgets")
 endif ()
 
+
+if (CERES_FOUND)
+  add_subdirectory(fatwater)
+elseif(CERES_FOUND)
+  message("Ceres not found, skipping fatwater gadgets")
+endif()
 if (CUDA_FOUND)
   message("Cuda found, compiling gpu accelerated gadgets")
   add_subdirectory(pmri)

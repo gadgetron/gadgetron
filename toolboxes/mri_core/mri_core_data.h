@@ -164,10 +164,11 @@ namespace Gadgetron
 
         if (obj.trajectory_)
         {
-            if (this->trajectory_)
+            if (this->trajectory_) {
                 if (this->trajectory_->delete_data_on_destruct()) this->trajectory_->clear();
-            else
+            } else {
                 this->trajectory_ = hoNDArray<float>();
+            }
 
             this->trajectory_->copyFrom(*obj.trajectory_);
         }
@@ -243,15 +244,15 @@ namespace Gadgetron
     //This element is optional (length is 0 if not present)
     std::vector< ISMRMRD::MetaContainer > meta_;
 
-    IsmrmrdImageArray() {}
-    IsmrmrdImageArray(const IsmrmrdImageArray& obj)
-    {
-        this->data_.copyFrom(obj.data_);
-        this->headers_.copyFrom(obj.headers_);
-        this->meta_ = obj.meta_;
-    }
+//    IsmrmrdImageArray() {}
+//    IsmrmrdImageArray(const IsmrmrdImageArray& obj)
+//    {
+//        this->data_.copyFrom(obj.data_);
+//        this->headers_.copyFrom(obj.headers_);
+//        this->meta_ = obj.meta_;
+//    }
 
-    ~IsmrmrdImageArray() {}
+    ~IsmrmrdImageArray() = default;
   };
 
 }

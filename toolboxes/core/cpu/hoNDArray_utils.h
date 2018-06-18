@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/make_shared.hpp>
+#include <numeric>
 #include "hoNDArray.h"
 #include "vector_td_utilities.h"
 
@@ -243,45 +245,78 @@ namespace Gadgetron {
     }
     return out;
   }
-  
+
+  namespace {
+      template<class T, class ACCUMULATOR> boost::shared_ptr<hoNDArray<T> >
+      accumulate(const hoNDArray<T> *in, size_t dim, ACCUMULATOR acc )
+      {
+          if( in == 0x0 ){
+              throw std::runtime_error("sum(): illegal input pointer.");;
+          }
+
+          if( !(in->get_number_of_dimensions()>1) ){
+              throw std::runtime_error("sum(): underdimensioned.");;
+          }
+
+          if( dim > in->get_number_of_dimensions()-1 ){
+              throw std::runtime_error( "sum(): dimension out of range.");;
+          }
+
+          size_t number_of_batches = in->get_size(dim);
+          size_t number_of_elements = in->get_number_of_elements()/number_of_batches;
+          std::vector<size_t> dims;
+          for (auto i = 0; i < in->get_number_of_dimensions(); i++){
+              if (i != dim) dims.push_back(in->get_size(i));
+          }
+
+          auto  out = boost::make_shared<hoNDArray<T>>(&dims);
+          auto orig_dims = *in->get_dimensions();
+          auto stride = std::accumulate(orig_dims.begin(),orig_dims.begin()+dim,1,std::multiplies<size_t>());
+
+
+
+          size_t inner_elements = stride;
+          size_t outer_elements = out->get_number_of_elements()/inner_elements;
+//#ifdef USE_OMP
+//#pragma omp parallel for schedule(dynamic,1) collapse(2)
+//#endif
+          for (size_t outer_idx = 0; outer_idx < outer_elements; outer_idx++) {
+
+              for (long long idx = 0; idx < (long long) inner_elements; idx++) {
+                  size_t offset = outer_idx*inner_elements;
+                  size_t old_offset = offset*number_of_batches;
+                  T val = in->at(idx+old_offset);
+                  for (size_t j = 1; j < number_of_batches; j++) {
+                      size_t in_idx = j * stride + idx+ old_offset;
+                      val = acc(val,in->at(in_idx));
+                  }
+                  out->at(idx + offset) = val;
+              }
+          }
+          return out;
+      }
+  }
+
   // Sum over dimension
   template<class T> boost::shared_ptr<hoNDArray<T> > 
-  sum(hoNDArray<T> *in, size_t dim )
+  sum(const hoNDArray<T> *in, size_t dim )
   {
-    if( in == 0x0 ){
-      throw std::runtime_error("sum(): illegal input pointer.");;
+      return accumulate(in, dim, std::plus<T>());
+  }
+
+    template<class T> boost::shared_ptr<hoNDArray<T> >
+    max(const hoNDArray<T> *in, size_t dim )
+    {
+        return accumulate(in, dim, [](auto v1, auto v2){ return std::max(v1,v2);});
     }
 
-    if( !(in->get_number_of_dimensions()>1) ){
-      throw std::runtime_error("sum(): underdimensioned.");;
+    template<class T> boost::shared_ptr<hoNDArray<T> >
+    min(const hoNDArray<T> *in, size_t dim )
+    {
+        return accumulate(in, dim,  [](auto v1, auto v2){ return std::min(v1,v2);});
     }
 
-    if( dim > in->get_number_of_dimensions()-1 ){
-      throw std::runtime_error( "sum(): dimension out of range.");;
-    }
-
-    size_t number_of_batches = in->get_size(dim);
-    size_t number_of_elements = in->get_number_of_elements()/number_of_batches;
-    std::vector<size_t> dims = *in->get_dimensions(); dims.pop_back();
-
-    boost::shared_ptr< hoNDArray<T> > out(new hoNDArray<T>());
-    out->create(&dims);
-
-#ifdef USE_OMP
-#pragma omp parallel for
-#endif
-    for( long long idx=0; idx<(long long)number_of_elements; idx++ ){
-      T val(0);
-      for( size_t j=0; j<number_of_batches; j++ ){
-        size_t in_idx = j*number_of_elements+idx;
-        val += in->get_data_ptr()[in_idx];      
-      }
-      out->get_data_ptr()[idx] = val;
-    }
-    return out;
-  } 
-
-  /**
+    /**
   * @param[in] crop_offset starting position to crop
   * @param[in] crop_size Size of cropped array
   * @param[in] in input array
@@ -728,7 +763,7 @@ namespace Gadgetron {
 
   // Downsample
   template<class REAL, unsigned int D> 
-  boost::shared_ptr< hoNDArray<REAL> > downsample( hoNDArray<REAL> *_in )
+  boost::shared_ptr< hoNDArray<REAL> > downsample(const  hoNDArray<REAL> *_in )
   {
     // A few sanity checks 
 
@@ -802,7 +837,7 @@ namespace Gadgetron {
 
   // Linear interpolation upsampling
   template<class REAL, unsigned int D> boost::shared_ptr< hoNDArray<REAL> >
-  upsample( hoNDArray<REAL> *_in )
+  upsample( const  hoNDArray<REAL> *_in )
   {
     // A few sanity checks 
 

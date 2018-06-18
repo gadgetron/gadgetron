@@ -120,7 +120,7 @@ namespace Gadgetron{
     const T& at( size_t idx ) const;
 
     T& operator[]( size_t idx );
-
+    const T& operator[]( size_t idx ) const;
     //T& operator()( size_t idx );
     //const T& operator()( size_t idx ) const;
 
@@ -152,7 +152,7 @@ namespace Gadgetron{
         return true;
     }
 
-    void get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out);
+    void get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out) const;
 
     virtual void print(std::ostream& os) const;
     virtual void printContent(std::ostream& os) const;

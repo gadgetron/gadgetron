@@ -1723,8 +1723,8 @@ namespace Gadgetron
             {
                 std::vector<long long> dim(D);
 
-                unsigned int ii;
-                for ( ii=0; ii<D; ii++ )
+
+                for (auto ii=0; ii<D; ii++ )
                 {
                     dim[ii] = (long long)img.get_size(ii);
                 }
@@ -1737,7 +1737,7 @@ namespace Gadgetron
                 img.get_offset_factor(offsetFactor);
 
                 // filter along every dimension
-                for ( ii=0; ii<D; ii++ )
+                for (auto ii=0; ii<D; ii++ )
                 {
                     if ( sigma[ii] > 0 )
                     {

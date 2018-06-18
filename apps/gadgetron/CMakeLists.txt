@@ -82,6 +82,12 @@ target_link_libraries(gadgetron_gadgetbase
   gadgetron_toolbox_log
 )
 
+if (GPERFTOOLS_PROFILER)
+  message("Adding gperftools cpu profiler to gadgetron link assemblage.")
+  target_link_libraries(gadgetron ${GPERFTOOLS_PROFILER})
+endif()
+  
+
 set_target_properties(gadgetron_gadgetbase PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 set_target_properties (gadgetron_gadgetbase PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_GADGETBASE__")
 
