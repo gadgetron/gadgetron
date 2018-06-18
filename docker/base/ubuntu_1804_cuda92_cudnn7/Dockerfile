@@ -1,8 +1,8 @@
 FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
 
 RUN apt-get update --quiet && \
-    apt-get install --no-install-recommends --no-install-suggests --yes  \
-    -y apt-utils wget build-essential emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev supervisor cmake-curses-gui neofetch supervisor net-tools
+    apt-get install --yes  \
+    -y apt-utils wget build-essential cython emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev supervisor cmake-curses-gui neofetch supervisor net-tools
 
 #Python stuff
 RUN pip install --upgrade pip
@@ -16,12 +16,10 @@ RUN apt-get update && apt-get install -y libgtk2.0-dev
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
-RUN pip3 install Cython
-RUN apt-get install -y python3-psutil python3-pyxb python3-lxml
+RUN pip3 install Cython scikit-image
+RUN apt-get install -y python3-psutil python3-pyxb python3-lxml python3-matplotlib python3-numpy python3-pil python3-scipy python3-configargparse python3-opencv
 RUN pip3 install pydicom
 RUN apt-get install -y python3-h5py
-RUN apt-get install -y python3-numpy python3-configargparse
-RUN apt install --yes python3-scipy
 
 RUN pip3 install --upgrade tensorflow tensorflow-gpu
 RUN pip3 install http://download.pytorch.org/whl/cu91/torch-0.4.0-cp36-cp36m-linux_x86_64.whl 
