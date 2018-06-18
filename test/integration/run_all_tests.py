@@ -48,18 +48,21 @@ def main():
             r = subprocess.call(["python3", "run_gadgetron_test.py", "-I", ismrmrd_home, "-G", gadgetron_home, t, "-a", str(args.address), "-p", str(args.port)])
 
         # Grab the log files and append to master logs
+        gt_out_str = "   GADGETRON TEST CASE: %d/%d: %s" % (t_ind, len(content), t)
         gadgetron_outfile.write("==============================================\n")
-        gadgetron_outfile.write("   GADGETRON TEST CASE: " + t + "\n")
+        gadgetron_outfile.write(gt_out_str + "\n")
         gadgetron_outfile.write("==============================================\n")
         if not args.external:
             with open(gadgetron_log_filename) as infile:
                 gadgetron_outfile.write(infile.read())
+                gadgetron_outfile.flush()
 
         client_outfile.write("==============================================\n")
         client_outfile.write("   GADGETRON TEST CASE: " + t + "\n")
         client_outfile.write("==============================================\n")
         with open(client_log_filename) as infile:
             client_outfile.write(infile.read())
+            client_outfile.flush()
 
         t_ind += 1
 
