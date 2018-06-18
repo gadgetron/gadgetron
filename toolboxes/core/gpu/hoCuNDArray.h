@@ -26,6 +26,7 @@ namespace Gadgetron{
     	this->data_ = other.data_;
     	this->dimensions_ = other.dimensions_;
     	this->elements_ = other.elements_;
+    	this->offsetFactors_ = std::move(other.offsetFactors_);
     	other.dimensions_.reset();
     	other.data_ = nullptr;
     }
@@ -115,7 +116,7 @@ namespace Gadgetron{
             deallocate_memory();
             this->data_ = 0;
             *(this->dimensions_) = *(rhs.dimensions_);
-            *(this->offsetFactors_) = *(rhs.offsetFactors_);
+            this->offsetFactors_ = rhs.offsetFactors_;
             this->allocate_memory();
             memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
         }
@@ -149,7 +150,6 @@ namespace Gadgetron{
         this->offsetFactors_ = rhs.offsetFactors_;
         this->elements_ = rhs.elements_;
         rhs.dimensions_.reset();
-        rhs.offsetFactors_.reset();
         this->data_ = rhs.data_;
         rhs.data_ = nullptr;
         return *this;

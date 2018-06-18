@@ -122,6 +122,7 @@ namespace Gadgetron{
 			return boost::make_shared<hoNDArray<float_complext>>(result);
 		}else{	
 			// do iterative reconstruction
+			return boost::make_shared<hoNDArray<float_complext>>();
 		}
 	}
 

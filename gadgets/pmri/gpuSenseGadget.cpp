@@ -62,7 +62,7 @@ int gpuSenseGadget::process_config(ACE_Message_Block* mb) {
     return GADGET_FAIL;
   }
   save_individual_frames_ = save_individual_frames.value();
-
+  return GADGET_OK;
 }
 
 int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob* j, cuNDArray<float_complext>* cgresult,int channels) {
@@ -146,6 +146,7 @@ int gpuSenseGadget::put_frames_on_que(int frames,int rotations, GenericReconJob*
 		}
 
 	}
+	return GADGET_OK;
 
 }
 
