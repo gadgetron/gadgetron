@@ -59,7 +59,7 @@ namespace {
 
         static constexpr size_t NSPECIES = sizeof...(SPECIES);
 
-        static constexpr size_t NPARAMS = NSPECIES * 2 + 1;
+        static constexpr size_t NPARAMS = NSPECIES * 2 + 2;
 
         FatWaterModelCeres(const FatWater::Parameters &parameters, const std::vector<float> &TEs,
                            const std::vector<complext<double>> &data, float fieldstrength, float r2star) : TEs_(TEs),
@@ -97,15 +97,29 @@ namespace {
 
 
         template<class... Ts>
-        bool operator()(const ceres::Jet<double, NPARAMS> *const fm_ptr, Ts &&... args) const {
-            return internal_implementation<ceres::Jet<double, NPARAMS>, ceres::Jet<SPECIES, NPARAMS>...>(fm_ptr,
+        bool operator()(const ceres::Jet<double, NPARAMS-1> *const fm_ptr,  Ts &&... args) const {
+            return internal_implementation<ceres::Jet<double, NPARAMS-1>, float, ceres::Jet<SPECIES, NPARAMS-1>...>(fm_ptr,&this->r2star_,
                                                                                                          std::forward<Ts>(
                                                                                                                  args)...);
         }
 
         template<class... Ts>
-        bool operator()(const double *const fm_ptr, Ts &&... args) const {
-            return internal_implementation<double, SPECIES...>(fm_ptr, std::forward<Ts>(args)...);
+        std::enable_if_t<sizeof...(Ts) == NSPECIES+1,bool>
+        operator()(const double *const fm_ptr, Ts &&... args) const {
+            return internal_implementation<double,float, SPECIES...>(fm_ptr,&r2star_, std::forward<Ts>(args)...);
+        }
+
+
+        template<class... Ts>
+        bool operator()(const ceres::Jet<double, NPARAMS> *const fm_ptr, const ceres::Jet<double, NPARAMS> *const r2star, Ts &&... args) const {
+            return internal_implementation<ceres::Jet<double, NPARAMS>, ceres::Jet<double, NPARAMS>, ceres::Jet<SPECIES, NPARAMS>...>(fm_ptr,r2star,
+                                                                                                         std::forward<Ts>(
+                                                                                                                 args)...);
+        }
+
+        template<class... Ts>
+        std::enable_if_t<sizeof...(Ts) == NSPECIES+1,bool> operator()(const double *const fm_ptr,const double* const r2star, Ts &&... args) const {
+            return internal_implementation<double,double, SPECIES...>(fm_ptr,r2star, std::forward<Ts>(args)...);
         }
 
 
@@ -142,13 +156,13 @@ namespace {
 
         template<class T> using base_type_t = typename base_type<T>::type;
 
-        template<class T, class... Ts>
-        bool internal_implementation(const base_type_t<T> *const fm_ptr, const Ts *const ... args,
+        template<class T,class R, class... Ts>
+        bool internal_implementation(const base_type_t<T> *const fm_ptr,const R* const r2star_ptr, const Ts *const ... args,
                                      base_type_t<T> *residual) const {
 
 
             const T &fm = *fm_ptr;
-            const double r2star = r2star;
+            const R &r2star = *r2star_ptr;
             auto species = std::array<complext<T>, NSPECIES>{extract_species(args)...};
 
             for (int j = 0; j < NRESIDUALS; j++) {
@@ -194,15 +208,32 @@ namespace {
     };
 
 
+    struct DiagLoss{
+        DiagLoss(double scale1, double original) : scale1_(scale1), original_(original) {}
+
+        template<class T>
+        bool operator()(const T *const dx, T *residual) const {
+
+            residual[0] = scale1_ * (original_ - dx[0]);
+
+            return true;
+        }
+
+    private:
+        const double scale1_;
+        const double original_;
+
+    };
+
+
     static void
-    add_regularization(ceres::Problem &problem, hoNDArray<double> &field_map, const hoNDArray<float> &lambda_map,
+    add_regularization(ceres::Problem &problem, hoNDArray<double> &field_map, float lambda,
                        ceres::LossFunction *loss = NULL) {
 
 
-        auto add_term = [&](int x1, int y1, int x2, int y2) {
-            auto weight = std::min(lambda_map(x1, y1), lambda_map(x2, y2));
-            auto cost_function = new ceres::AutoDiffCostFunction<DiffLoss, 1, 1, 1>(new DiffLoss(weight));
-            std::vector<double *> ptrs = {&field_map(x1, y1), &field_map(x2, y2)};
+        auto add_term = [&](int x1, int y1,int z1,  int x2, int y2, int z2) {
+            auto cost_function = new ceres::AutoDiffCostFunction<DiffLoss, 1, 1, 1>(new DiffLoss(lambda));
+            std::vector<double *> ptrs = {&field_map(x1, y1,z1), &field_map(x2, y2,z2)};
             problem.AddResidualBlock(cost_function, loss, ptrs);
         };
         const size_t X = field_map.get_size(0);
@@ -214,16 +245,57 @@ namespace {
                 for (int kx = 0; kx < X; kx++) {
 
                     if (kx < X - 1) {
-                        add_term(kx, ky, kx + 1, ky);
+                        add_term(kx, ky, kz, kx + 1, ky, kz);
                     }
                     if (ky < Y - 1) {
-                        add_term(kx, ky, kx, ky + 1);
+                        add_term(kx, ky, kz, kx, ky + 1, kz);
+                    }
+                    if (kz < Z - 1) {
+                        add_term(kx, ky, kz, kx, ky, kz + 1);
                     }
 
                 }
             }
         }
     }
+
+
+    static void
+    add_regularization(ceres::Problem &problem, hoNDArray<double> &field_map, const hoNDArray<float> &lambda_map,
+                       ceres::LossFunction *loss = NULL) {
+
+
+        auto add_term = [&](int x1, int y1,int z1,  int x2, int y2, int z2) {
+            auto weight = std::min(lambda_map(x1, y1,z1), lambda_map(x2, y2,z2));
+            auto cost_function = new ceres::AutoDiffCostFunction<DiffLoss, 1, 1, 1>(new DiffLoss(weight));
+            std::vector<double *> ptrs = {&field_map(x1, y1,z1), &field_map(x2, y2,z2)};
+            problem.AddResidualBlock(cost_function, loss, ptrs);
+        };
+        const size_t X = field_map.get_size(0);
+        const size_t Y = field_map.get_size(1);
+        const size_t Z = field_map.get_size(2);
+
+        for (int kz = 0; kz < Z; kz++) {
+            for (int ky = 0; ky < Y; ky++) {
+                for (int kx = 0; kx < X; kx++) {
+
+                    if (kx < X - 1) {
+                        add_term(kx, ky, kz, kx + 1, ky, kz);
+                    }
+                    if (ky < Y - 1) {
+                        add_term(kx, ky, kz, kx, ky + 1, kz);
+                    }
+                    if (kz < Z - 1) {
+                        add_term(kx, ky, kz, kx, ky, kz + 1);
+                    }
+
+                }
+            }
+        }
+    }
+
+
+
 
 
     template<unsigned int ECHOES>
@@ -260,6 +332,8 @@ namespace {
 
         ceres::Problem problem;
         ceres::Solver::Options options;
+        options.minimizer_type = ceres::LINE_SEARCH;
+        options.line_search_direction_type = ceres::LBFGS;
         options.linear_solver_type = ceres::ITERATIVE_SCHUR;
         options.num_threads = omp_get_max_threads();
         options.dense_linear_algebra_library_type = ceres::EIGEN;
@@ -267,9 +341,7 @@ namespace {
         options.gradient_tolerance = 1e-6;
         options.parameter_tolerance = 1e-6;
 
-        options.inner_iteration_tolerance = 1e-6;
 
-        auto ordering = std::make_shared<ceres::ParameterBlockOrdering>();
         for (int kz = 0; kz < Z; kz++) {
             for (int ky = 0; ky < Y; ky++) {
                 for (int kx = 0; kx < X; kx++) {
@@ -287,21 +359,18 @@ namespace {
                     }
 
                     auto cost_function = new ceres::AutoDiffCostFunction<FatWaterModelCeres<ECHOES, complex_residual, double, double>,
-                            ECHOES * 2, 1, 2, 2>(
+                            ECHOES * 2, 1,  2, 2>(
                             new FatWaterModelCeres<ECHOES, complex_residual, double, double>(parameters, TEs_repeated,
                                                                                              signal,
                                                                                              field_strength,
                                                                                              r2));
-                    std::vector<double *> b = {&f, (double *) &water, (double *) &fat};
-                    problem.AddResidualBlock(cost_function, nullptr, b);
+                    std::vector<double *> b = {&f,  (double *) &water, (double *) &fat};
 
+                    problem.AddResidualBlock(cost_function, nullptr, b);
                 }
             }
         }
         add_regularization(problem, field_map, lambda_map);
-
-
-        options.inner_iteration_ordering = ordering;
         ceres::Solver::Summary summary;
         ceres::Solve(options, &problem, &summary);
         std::cout << "Initial cost: " << summary.initial_cost << " Final cost:" << summary.final_cost << " Iterations "
