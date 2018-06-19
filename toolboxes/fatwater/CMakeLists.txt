@@ -11,8 +11,8 @@ endif()
 include_directories(
   ${Boost_INCLUDE_DIR} 
   ${ARMADILLO_INCLUDE_DIRS}
-        ${EIGEN_INCLUDE_DIRS}
-        ${MKL_INCLUDE_DIR}
+  ${EIGEN_INCLUDE_DIR}
+  ${MKL_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
