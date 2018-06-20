@@ -6,7 +6,7 @@
 namespace Gadgetron {
 
     namespace FatWater {
-        void fat_water_fitting(hoNDArray<float> &field_map, hoNDArray<float> &r2star_map,
+        void EXPORTFATWATER fat_water_fitting(hoNDArray<float> &field_map, hoNDArray<float> &r2star_map,
                                hoNDArray<std::complex<float>> &fractions,
                                const hoNDArray<std::complex<float>> &input_data,
                                const hoNDArray<float> &lambda_map, const Parameters &parameters );

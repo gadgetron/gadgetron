@@ -9,7 +9,7 @@
 namespace Gadgetron{
     namespace FatWater {
 
-        void correct_frequency_shift(hoNDArray<std::complex<float>> &species_images, const Parameters &params);
+        void EXPORTFATWATER correct_frequency_shift(hoNDArray<std::complex<float>> &species_images, const Parameters &params);
 
 
     }

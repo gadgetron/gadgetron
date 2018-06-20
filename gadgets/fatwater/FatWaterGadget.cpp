@@ -85,7 +85,6 @@ namespace Gadgetron {
             return GADGET_FAIL;
         }
 
-
         FatWater::ChemicalSpecies water = {"water", {{1.0, 0.0}}};
         FatWater::ChemicalSpecies fat = {"fat",
                                        {
