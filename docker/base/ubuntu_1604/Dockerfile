@@ -1,6 +1,9 @@
 FROM ubuntu:16.04
 
 #Fix default ceres package on 16.04 is broken
+
+RUN apt-get update --quiet && \
+    apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
 RUN add-apt-repository ppa:lkoppel/ceres
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
@@ -9,9 +12,14 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
-    libceres-dev\
-    supervisor net-tools 
+    libceres-dev libopenblas-dev\
+    supervisor net-tools
 
+#Update gcc to something remotely recent
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN apt-get update
+RUN apt-get -y install gcc-6 g++-6
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
 
 #Python stuff
 RUN pip install --upgrade pip
