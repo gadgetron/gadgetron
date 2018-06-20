@@ -43,6 +43,7 @@ add_subdirectory(rest)
 add_subdirectory(ffd)
 add_subdirectory(image)
 add_subdirectory(pattern_recognition)
+add_subdirectory(denoise)
 
 if (ACE_FOUND)
   add_subdirectory(gadgettools)
