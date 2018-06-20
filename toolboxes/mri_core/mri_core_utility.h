@@ -38,6 +38,9 @@ namespace Gadgetron
     /// if count_sampling_freq == true, number of times where a line is sampled along N is counted, instread of an uniformed averaging
     template <typename T> EXPORTMRICORE void compute_averaged_data_N_S(const hoNDArray<T>& data, bool average_N, bool average_S, bool count_sampling_freq, hoNDArray<T>& res);
 
+    /// select specific N and/or S
+    template <typename T> EXPORTMRICORE void select_data_N_S(const hoNDArray<T>& data, bool select_N, size_t n, bool select_S, size_t s, hoNDArray<T>& res);
+
     /// compute KL coefficients from the data
     /// the KLT has the size [N S SLC]
     /// if average_N==true or average_S==true, data will first be averaged along N or S
