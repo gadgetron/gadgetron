@@ -385,7 +385,7 @@ namespace Gadgetron{
                 for(size_t i = 0; i < k.get_number_of_elements(); i++){
                     for(int lx = -kwidth; lx < kwidth+1; lx++){
                         for(int ly = -kwidth; ly < kwidth+1; ly++){
-                            for(int lz = -kwidth; lz = kwidth+1; lz++){
+                            for(int lz = -kwidth; lz < kwidth+1; lz++){
                                 Real nxt = std::round(nx[i]+lx);
                                 Real nyt = std::round(ny[i]+ly);
                                 Real nzt = std::round(nz[i]+lz);
