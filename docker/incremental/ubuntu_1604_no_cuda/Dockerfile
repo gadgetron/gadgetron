@@ -11,7 +11,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make -j $(nproc) && \
+    make -j 16 && \
     make install
 
 #GADGETRON
@@ -20,8 +20,8 @@ RUN cd /opt/code && \
     cd gadgetron && \
     mkdir build && \
     cd build && \
-    cmake ../ && \
-    make -j $(nproc) && \
+    cmake -DBUILD_WITH_PYTHON3=ON ../ && \
+    make -j 16 && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
     cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml && \
@@ -36,7 +36,7 @@ RUN cd /opt/code/ismrmrd && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python.git &&  \
     cd ismrmrd-python && \
-    python setup.py install && \
+    python3 setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpython.sha1 --value `git rev-parse HEAD` 
 
 
@@ -44,7 +44,7 @@ RUN cd /opt/code && \
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd-python-tools.git &&  \
     cd ismrmrd-python-tools && \
-    python setup.py install && \
+    python3 setup.py install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.ismrmrdpythontools.sha1 --value `git rev-parse HEAD` 
 
 #SIEMENS_TO_ISMRMRD
@@ -54,7 +54,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make -j $(nproc) && \
+    make -j 16 && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.siemens_to_ismrmrd.sha1 --value `git rev-parse HEAD` 
 
@@ -70,9 +70,11 @@ RUN cd /opt/code && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.philips_to_ismrmrd.sha1 --value `git rev-parse HEAD` 
 
+
 # Clean up packages.
 RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
 
 CMD ["/opt/start_supervisor"]
+
 

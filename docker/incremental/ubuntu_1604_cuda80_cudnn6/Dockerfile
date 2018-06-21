@@ -3,19 +3,6 @@ FROM gadgetron/ubuntu1604_cuda80_cudnn6_base
 ARG GADGETRON_URL=https://github.com/gadgetron/gadgetron
 ARG GADGETRON_BRANCH=master
 
-RUN pip3 install --upgrade pip
-RUN pip3 install -U pip setuptools
-RUN pip3 install Cython
-RUN apt-get install -y python3-psutil python3-pyxb python3-lxml
-RUN pip3 install pydicom
-RUN apt-get install -y python3-h5py
-RUN apt-get install -y python3-numpy python3-configargparse
-RUN apt install --yes python3-scipy
-RUN pip3 install tensorflow matplotlib opencv-python scikit-image
-
-# since cmake has problems to find python3 and boost-python3
-RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py35.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
-
 #ISMRMRD
 RUN mkdir /opt/code
 RUN cd /opt/code && \
@@ -36,7 +23,7 @@ RUN cd /opt/code && \
     cd gadgetron && \
     mkdir build && \
     cd build && \
-    cmake -DBUILD_WITH_PYTHON3=ON ../ && \
+    cmake -DCUDA_NVCC_FLAGS="-ccbin gcc-6" -DBUILD_WITH_PYTHON3=ON ../ && \
     make -j 16 && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
@@ -92,3 +79,4 @@ RUN  apt-get clean && \
    rm -rf /var/lib/apt/lists/*
 
 CMD ["/opt/start_supervisor"]
+
