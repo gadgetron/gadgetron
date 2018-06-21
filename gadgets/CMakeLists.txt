@@ -42,6 +42,7 @@ endif ()
 
 
 if (CERES_FOUND)
+  message("Ceres is at ${CERES_INCLUDE_DIR}")
   add_subdirectory(fatwater)
 elseif(CERES_FOUND)
   message("Ceres not found, skipping fatwater gadgets")

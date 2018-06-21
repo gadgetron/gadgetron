@@ -13,6 +13,8 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
   ${EIGEN_INCLUDE_DIR}
   ${MKL_INCLUDE_DIR}
+  ${CERES_INCLUDE_DIR}
+  ${FFTW3_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
@@ -47,5 +49,6 @@ install(TARGETS gadgetron_toolbox_fatwater DESTINATION lib COMPONENT main)
 
 install(FILES
   fatwater_export.h 
-  fatwater.h
+  fatwater.h 
+  correct_frequency_shift.h 
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

@@ -13,6 +13,8 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+#include <array>
+#include <algorithm>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/cast.hpp>
@@ -165,7 +167,7 @@ namespace Gadgetron{
     protected:
 
         boost::shared_ptr< std::vector<size_t> > dimensions_;
-        std::array<size_t,9> offsetFactors_;
+        std::array<size_t, 12> offsetFactors_;
         T* data_;
         size_t elements_;
         bool delete_data_on_destruct_;
@@ -489,7 +491,9 @@ namespace Gadgetron{
     {
 
         std::fill(offsetFactors_.begin(),offsetFactors_.end(),1);
-        size_t offsets = std::min(dimensions.size(),offsetFactors_.size());
+	size_t a = dimensions.size();
+        size_t b = offsetFactors_.size();
+        size_t offsets = a<b ? a : b;
         for( size_t i = 0; i < offsets; i++ ){
             size_t k = 1;
             for( size_t j = 0; j < i; j++ )

@@ -360,6 +360,102 @@ namespace Gadgetron
     // ------------------------------------------------------------------------
 
     template <typename T> 
+    void select_data_N_S(const hoNDArray<T>& data, bool select_N, size_t n, bool select_S, size_t s, hoNDArray<T>& res)
+    {
+        try
+        {
+            size_t RO = data.get_size(0);
+            size_t E1 = data.get_size(1);
+            size_t E2 = data.get_size(2);
+            size_t CHA = data.get_size(3);
+            size_t N = data.get_size(4);
+            size_t S = data.get_size(5);
+            size_t SLC = data.get_size(6);
+
+            std::vector<size_t> dim;
+            data.get_dimensions(dim);
+
+            std::vector<size_t> dimR(dim);
+
+            size_t slc, ss, nn;
+
+            if(!select_N && !select_S)
+            {
+                res = data;
+            }
+            else if(select_N && !select_S)
+            {
+                if(n<N)
+                {
+                    dimR[4] = 1;
+                    res.create(dimR);
+
+                    for (slc = 0; slc < SLC; slc++)
+                    {
+                        for (ss = 0; ss < S; ss++)
+                        {
+                            const T* pData = &(data(0, 0, 0, 0, n, ss, slc));
+                            T* pRes = &res(0, 0, 0, 0, 0, ss, slc);
+                            memcpy(pRes, pData, sizeof(T)*RO*E1*E2*CHA);
+                        }
+                    }
+                }
+                else
+                {
+                    GADGET_THROW("select_data_N_S, n>=N");
+                }
+            }
+            else if (!select_N && select_S)
+            {
+                if (s<S)
+                {
+                    dimR[5] = 1;
+                    res.create(dimR);
+
+                    for (slc = 0; slc < SLC; slc++)
+                    {
+                        for (nn = 0; nn < N; nn++)
+                        {
+                            const T* pData = &(data(0, 0, 0, 0, nn, s, slc));
+                            T* pRes = &res(0, 0, 0, 0, nn, 0, slc);
+                            memcpy(pRes, pData, sizeof(T)*RO*E1*E2*CHA);
+                        }
+                    }
+                }
+                else
+                {
+                    GADGET_THROW("select_data_N_S, s>=S");
+                }
+            }
+            else
+            {
+                GADGET_CHECK_THROW(n < N);
+                GADGET_CHECK_THROW(s < S);
+
+                dimR[4] = 1;
+                dimR[5] = 1;
+                res.create(dimR);
+
+                for (slc = 0; slc < SLC; slc++)
+                {
+                    const T* pData = &(data(0, 0, 0, 0, n, s, slc));
+                    T* pRes = &res(0, 0, 0, 0, 0, 0, slc);
+                    memcpy(pRes, pData, sizeof(T)*RO*E1*E2*CHA);
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_THROW("Errors in select_data_N_S(...) ... ");
+        }
+    }
+
+    template EXPORTMRICORE void select_data_N_S(const hoNDArray< std::complex<float> >& data, bool select_N, size_t n, bool select_S, size_t s, hoNDArray< std::complex<float> >& res);
+    template EXPORTMRICORE void select_data_N_S(const hoNDArray< std::complex<double> >& data, bool select_N, size_t n, bool select_S, size_t s, hoNDArray< std::complex<double> >& res);
+
+    // ------------------------------------------------------------------------
+
+    template <typename T> 
     void compute_eigen_channel_coefficients(const hoNDArray<T>& data, bool average_N, bool average_S, bool count_sampling_freq, size_t N, size_t S, double coil_compression_thres, size_t compression_num_modesKept, std::vector< std::vector< std::vector< hoNDKLT<T> > > >& KLT)
     {
         try

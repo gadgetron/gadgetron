@@ -20,5 +20,11 @@ docker build -t gadgetron/ubuntu_1604_cuda80_cudnn6_base .
 cd ${base_dir}/base/ubuntu_1604_cuda80_cudnn7
 docker build -t gadgetron/ubuntu_1604_cuda80_cudnn7_base .
 
+cd ${base_dir}/base/ubuntu_1804
+docker build -t gadgetron/ubuntu_1804_base .
+
+cd ${base_dir}/base/ubuntu_1804_cuda90
+docker build -t gadgetron/ubuntu_1804_cuda90_base .
+
 cd ${base_dir}/base/ubuntu_1804_cuda92_cudnn7
 docker build -t gadgetron/ubuntu_1804_cuda92_cudnn7_base .

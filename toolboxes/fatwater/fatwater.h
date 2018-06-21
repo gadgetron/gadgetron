@@ -11,7 +11,7 @@ namespace Gadgetron
 {
     namespace FatWater {
 
-        struct Config {
+        struct EXPORTFATWATER Config {
             std::pair<float, float> frequency_range = {-500, 500};
             size_t number_of_frequency_samples = 200;
 
@@ -31,19 +31,19 @@ namespace Gadgetron
         /**
            Amplitudes and frequences (in ppm)
          */
-        struct ChemicalSpecies {
+        struct EXPORTFATWATER ChemicalSpecies {
             std::string name;
             std::vector<std::pair<std::complex<float>, float> > amplitude_frequency_pairs;
         };
 
 
-        struct Output {
+        struct EXPORTFATWATER Output {
             hoNDArray<std::complex<float>> images;
             hoNDArray<float> field_map;
             hoNDArray<float> r2star_map;
         };
 
-        struct Parameters {
+        struct EXPORTFATWATER Parameters {
 
             float field_strength_T;
             bool precession_is_clockwise;
