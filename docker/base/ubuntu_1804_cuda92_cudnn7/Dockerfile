@@ -47,7 +47,6 @@ RUN cd /opt && \
     debchange -i "Compiling with OpenMP support" && \
     debuild -us -uc -i -I && \
     debi && \
-    update-alternatives --set libblas.so.3 /usr/lib/openblas-base/libblas.so.3 && \
     cd /opt && \
     rm -rf debsource
 
