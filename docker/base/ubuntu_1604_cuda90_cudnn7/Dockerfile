@@ -1,13 +1,17 @@
 FROM nvidia/cuda:9.0-cudnn7-devel-ubuntu16.04
 
 RUN apt-get update --quiet && \
+    apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
+RUN add-apt-repository ppa:lkoppel/ceres
+RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     apt-utils wget build-essential emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core \
     libboost-all-dev libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
-    libgtest-dev python-dev liblapack-dev liblapacke-dev libopenblas-base libopenblas-dev libplplot-dev libdcmtk-dev \
-    libceres-dev supervisor net-tools cpio unzip
+    libgtest-dev python-dev liblapack-dev liblapacke-dev libopenblas-base libplplot-dev libdcmtk-dev \
+    libceres-dev libopenblas-dev\
+    supervisor net-tools cpio
 
 #Update gcc to something remotely recent
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
