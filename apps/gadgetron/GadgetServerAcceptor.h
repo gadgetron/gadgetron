@@ -11,6 +11,7 @@ namespace Gadgetron{
 class GadgetServerAcceptor : public ACE_Event_Handler
 {
 public:
+  GadgetServerAcceptor(std::map<std::string, std::string> parameters, ACE_Reactor *reactor = ACE_Reactor::instance());
   virtual ~GadgetServerAcceptor ();
 
   int open (const ACE_INET_Addr &listen_addr);

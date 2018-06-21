@@ -20,38 +20,16 @@ namespace Gadgetron {
   class GadgetStreamInterface
   {
   public:
-    GadgetStreamInterface()
-      : stream_configured_(false)
-    {  
-      gadgetron_home_ = get_gadgetron_home();
-    } 
+    GadgetStreamInterface();
 
     virtual int output_ready(ACE_Message_Block* mb) = 0;
 
-    virtual Gadget* find_gadget(std::string gadget_name)
-    {
-      GadgetModule* gm = stream_.find(gadget_name.c_str());
-      
-      if (gm) {
-	Gadget* g = dynamic_cast<Gadget*>(gm->writer());
-	return g;
-      } else {
-	GDEBUG("Gadget with name %s not found! Returning null pointer\n", gadget_name.c_str());
-      }
-      
-      return 0;
-    }
+    virtual Gadget* find_gadget(std::string gadget_name);
 
-    void set_global_gadget_parameters(const std::map<std::string, std::string>& globalGadgetPara)
-    {
-      global_gadget_parameters_ = globalGadgetPara;
-    }
+    void set_global_gadget_parameters(const std::map<std::string, std::string>& globalGadgetPara);
 
-    const GadgetronXML::GadgetStreamConfiguration& get_stream_configuration()
-    {
-      return stream_configuration_;
-    }
-    
+    const GadgetronXML::GadgetStreamConfiguration& get_stream_configuration();
+
     template <class T>  T* load_dll_component(const char* DLL, const char* component_name)
     {
       ACE_DLL_Manager* dllmgr = ACE_DLL_Manager::instance();
@@ -111,26 +89,10 @@ namespace Gadgetron {
     std::string gadgetron_home_;
     GadgetronXML::GadgetStreamConfiguration stream_configuration_;
 
-    virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name)
-    {
+    virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name);
 
-      Gadget* g = load_dll_component<Gadget>(DLL,gadget);
-      
-      if (!g) {
-	GERROR("Failed to load gadget using factory\n");
-	return 0;
-      }
-      
-      g->set_controller(this);
-      
-      GadgetModule *module = 0;
-      ACE_NEW_RETURN (module,
-		      GadgetModule (gadget_module_name, g),
-		      0);
-      
-      return module;
-    }
-
+  private:
+      GadgetModule *default_end_module(void);
   };
 }
 
