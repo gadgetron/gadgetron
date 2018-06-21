@@ -7,7 +7,7 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libopenblas-base libopenblas-dev libplplot-dev libdcmtk-dev \
-    libceres-dev supervisor net-tools cpip unzip
+    libceres-dev supervisor net-tools cpio unzip
 
 #Update gcc to something remotely recent
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
