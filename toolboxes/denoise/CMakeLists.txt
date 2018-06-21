@@ -2,6 +2,7 @@
 include_directories(
         ${Boost_INCLUDE_DIR}
         ${ARMADILLO_INCLUDE_DIRS}
+        ${EIGEN_INCLUDE_DIR}
         ${MKL_INCLUDE_DIR}
         ${CMAKE_SOURCE_DIR}/toolboxes/core
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -13,7 +14,7 @@ include_directories(
 add_library(gadgetron_toolbox_denoise SHARED
         non_local_means.cpp
         non_local_means.h
-        )
+        non_local_bayes.cpp non_local_bayes.h)
 
 set_target_properties(gadgetron_toolbox_denoise PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

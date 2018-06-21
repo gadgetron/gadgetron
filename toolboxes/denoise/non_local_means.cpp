@@ -3,7 +3,9 @@
 //
 
 #include <vector_td_utilities.h>
+#include <GadgetronTimer.h>
 #include "non_local_means.h"
+
 
 
 namespace Gadgetron {
@@ -11,10 +13,13 @@ namespace Gadgetron {
 
         namespace {
 
-            template<int D> vector_td<float,D*D> get_window(const hoNDArray<float>& image, int x, int y, const vector_td<int,2>& image_dims){
+
+
+            template<class T,int D> vector_td<T,D*D> get_patch(const hoNDArray<T> &image, int x, int y,
+                                                               const vector_td<int, 2> &image_dims){
 
                 constexpr int N = D*D;
-                vector_td<float,N > window;
+                vector_td<T,N > window;
                 for (int ky = 0; ky < D; ky++){
                     for (int kx = 0; kx < D; kx++){
                         window[kx+ky*D] = image(((kx-D/2)+x+image_dims[0])%image_dims[0],((ky-D/2)+y+image_dims[1])%image_dims[1]);
@@ -23,13 +28,16 @@ namespace Gadgetron {
                 }
                 return window;
             };
-        }
 
-        hoNDArray<float> non_local_means(const hoNDArray<float>& image, float noise_std, unsigned int search_radius){
+
+
+
+
+            template<class T> hoNDArray<T> non_local_means_single_image(const hoNDArray<T>& image, float noise_std, int search_radius){
 
             constexpr int D = 5;
 
-            hoNDArray<float> result(image.get_dimensions());
+            hoNDArray<T> result(image.get_dimensions());
             const float noise_std2 = noise_std*noise_std;
             const vector_td<int,2> image_dims =  vector_td<int,2>(from_std_vector<size_t ,2>(*image.get_dimensions()));
 
@@ -38,15 +46,15 @@ namespace Gadgetron {
             for (int ky = 0; ky < image.get_size(1); ky++){
                 for (int kx = 0; kx < image.get_size(0); kx++){
                     float sum_weight = 0;
-                    float sum_value = 0;
-                    auto window = get_window<D>(image,kx,ky,image_dims);
+                    T sum_value = 0;
+                    auto window = get_patch<T, D>(image, kx, ky, image_dims);
 
-                    for (int dy = -search_radius; dy < search_radius; dy++){
-                        for (int dx = -search_radius; dx < search_radius; dx++){
+                    for (int dy = -int(search_radius); dy < search_radius; dy++){
+                        for (int dx = -int(search_radius); dx < search_radius; dx++){
 
-                            auto window2 = get_window<D>(image,kx+dx,ky+dy,image_dims);
+                            auto window2 = get_patch<T, D>(image, kx + dx, ky + dy, image_dims);
                             auto diff = window-window2;
-                            auto weight = std::exp(-norm_squared(diff)/noise_std2);
+                            auto weight = std::exp(-norm_squared(diff)/(noise_std2*D*D));
 
                             sum_weight += weight;
                             sum_value += weight*window2[D/2+D*(D/2)];
@@ -63,9 +71,38 @@ namespace Gadgetron {
 
         }
 
+        template<class T> hoNDArray<T> non_local_means_T(const hoNDArray<T>& image, float noise_std, unsigned int search_radius){
+
+                GadgetronTimer("Non local means");
+            size_t n_images = image.get_number_of_elements()/(image.get_size(0)*image.get_size(1));
+
+            std::vector<size_t> image_dims = {image.get_size(0),image.get_size(1)};
+            size_t image_elements = image_dims[0]*image_dims[1];
+
+            auto result = hoNDArray<T>(image.get_dimensions());
+            for (int i = 0; i < n_images; i++){
+
+                auto  image_view = hoNDArray<T>(image_dims,image.get_data_ptr()+i*image_elements);
+                auto  result_view = hoNDArray<T>(image_dims,result.get_data_ptr()+i*image_elements);
+
+                result_view = non_local_means_single_image(image_view,noise_std,search_radius);
+
+
+            }
+            return result;
+        }
+        }
 
 
 
+
+        hoNDArray<float> non_local_means(const hoNDArray<float>& image, float noise_std, unsigned int search_radius){
+            return non_local_means_T(image, noise_std,search_radius);
+        }
+
+        hoNDArray<std::complex<float>> non_local_means(const hoNDArray<std::complex<float>>& image, float noise_std, unsigned int search_radius){
+            return non_local_means_T(image,noise_std,search_radius);
+        }
 
 
     }

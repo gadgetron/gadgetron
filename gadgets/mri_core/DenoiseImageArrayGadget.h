@@ -12,12 +12,12 @@
 #include "gadgetron_mricore_export.h"
 
 namespace Gadgetron {
-    class EXPORTGADGETSMRICORE DenoiseGadget : public Gadget2<ISMRMRD::ImageHeader, hoNDArray<float>> {
+    class EXPORTGADGETSMRICORE DenoiseImageArrayGadget : public Gadget1<IsmrmrdImageArray> {
 
-        using super = Gadget2<ISMRMRD::ImageHeader, hoNDArray<float>>;
+        using super = Gadget1<IsmrmrdImageArray>;
 
     public:
-        GADGET_DECLARE(DenoiseGadget)
+        GADGET_DECLARE(DenoiseImageArrayGadget)
 
 
         GADGET_PROPERTY(image_std,float,"Standard deviation of the noise in the produced image",1);
@@ -25,7 +25,7 @@ namespace Gadgetron {
 
 
     protected:
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>*, GadgetContainerMessage<hoNDArray<float>>*) override ;
+        virtual int process(GadgetContainerMessage<IsmrmrdImageArray>*) override ;
 
 
     };

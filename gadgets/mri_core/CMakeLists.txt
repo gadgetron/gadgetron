@@ -227,7 +227,7 @@ add_library(gadgetron_mricore SHARED
     ${gadgetron_mricore_config_files}
     ${OPTIMIZED_GADGETS}
     ${OPTIMIZED_GADGET_HEADERS}
-        DenoiseGadget.cpp DenoiseGadget.h)
+        DenoiseGadget.cpp DenoiseGadget.h DenoiseImageArrayGadget.cpp)
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
