@@ -30,7 +30,7 @@ RUN pip3 install torchvision
 RUN pip3 install tensorboardx visdom
 
 # since cmake has problems to find python3 and boost-python3
-RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py36.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
+# RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py36.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
 
 # fix the  qhull reentrant problem
 # RUN pip uninstall -y scipy
