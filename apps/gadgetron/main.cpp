@@ -257,14 +257,14 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
   GINFO("Configuring services, Running on port %s\n", port_no);
 
+  auto reactor = ACE_Reactor::instance();
+
   ACE_INET_Addr port_to_listen (port_no);
-  GadgetServerAcceptor acceptor;
-  acceptor.global_gadget_parameters_ = gadget_parameters;
-  acceptor.reactor (ACE_Reactor::instance ());
+  GadgetServerAcceptor acceptor(gadget_parameters, reactor);
   if (acceptor.open (port_to_listen) == -1)
     return 1;
   
-  ACE_Reactor::instance()->run_reactor_event_loop ();
+  reactor->run_reactor_event_loop ();
 
   return 0;
 }

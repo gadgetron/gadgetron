@@ -111,8 +111,10 @@ RUN cd /opt && \
 ENV GADGETRON_HOME=/usr/local \
     ISMRMRD_HOME=/usr/local
 
-ENV PATH=$PATH:$GADGETRON_HOME/bin:$ISMRMRD_HOME/bin \
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ISMRMRD_HOME/lib:$GADGETRON_HOME/lib
+ENV PATH=$PATH:/usr/local/cuda-9.0/bin;$GADGETRON_HOME/bin:$ISMRMRD_HOME/bin \
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64:$ISMRMRD_HOME/lib:$GADGETRON_HOME/lib
+
+ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs:${LIBRARY_PATH}
 
 # Clean up packages.
 #RUN  apt-get clean && \

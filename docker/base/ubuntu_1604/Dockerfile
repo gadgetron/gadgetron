@@ -11,9 +11,9 @@ RUN apt-get update --quiet && \
     libboost-all-dev libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
-    libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libatlas-dev libplplot-dev libdcmtk-dev \
+    libgtest-dev python-dev liblapack-dev liblapacke-dev libopenblas-base libplplot-dev libdcmtk-dev \
     libceres-dev libopenblas-dev\
-    supervisor net-tools
+    supervisor net-tools cpio
 
 #Update gcc to something remotely recent
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
@@ -31,31 +31,16 @@ RUN pip install 'h5py==2.5.0'
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
-RUN pip3 install Cython
-RUN apt-get install -y python3-psutil python3-pyxb python3-lxml
-RUN pip3 install pydicom
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
+RUN pip3 install Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
+RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
-RUN apt-get install -y python3-numpy python3-configargparse
-RUN apt install --yes python3-scipy
 
 # since cmake has problems to find python3 and boost-python3
 RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py35.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
-
-#OpenBLAS with OpenMP
-RUN cd /opt && \
-    mkdir debsource && \
-    cd debsource && \
-    apt-get --no-install-recommends --no-install-suggests --yes build-dep libopenblas-base && \
-    apt-get install --no-install-recommends --no-install-suggests --yes build-essential fakeroot devscripts && \
-    apt-get source libopenblas-base && \
-    cd openblas-0.2.18/ && \
-    sed -i "s/NO_WARMUP=1/NO_WARMUP=1 OPENMP=1/g" debian/rules && \
-    debchange -i "Compiling with OpenMP support" && \
-    debuild -us -uc -i -I && \
-    debi && \
-    update-alternatives --set libblas.so.3 /usr/lib/openblas-base/libblas.so.3 && \
-    cd /opt && \
-    rm -rf debsource
 
 #ZFP
 RUN cd /opt && \
