@@ -21,9 +21,7 @@ namespace Gadgetron
 
   GadgetInstrumentationStreamController::~GadgetInstrumentationStreamController()
   {
-    if (this->close() != GADGET_OK) {
-      throw std::runtime_error("Unable to shut down sream in  GadgetInstrumentationStreamController");
-    }
+    this->close();
   }
   
   int GadgetInstrumentationStreamController::open()
