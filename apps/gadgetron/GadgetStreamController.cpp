@@ -58,6 +58,22 @@ int GadgetStreamController::open (void)
   readers_.insert(GADGET_MESSAGE_PARAMETER_SCRIPT,
 		  new GadgetMessageScriptReader());
 
+  GadgetModule *head = 0;
+  GadgetModule *tail = 0;
+
+  if (tail == 0) {
+    Gadget* eg = new EndGadget();
+    if (eg) {
+      eg->set_controller(this);
+    }
+		
+    ACE_NEW_RETURN(tail,
+		   ACE_Module<ACE_MT_SYNCH>( ACE_TEXT("EndGadget"),
+					     eg ),
+		   -1);
+
+    stream_.open(0,head,tail);
+  }
 
   this->writer_task_.open();
 

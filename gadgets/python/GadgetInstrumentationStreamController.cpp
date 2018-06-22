@@ -21,11 +21,30 @@ namespace Gadgetron
 
   GadgetInstrumentationStreamController::~GadgetInstrumentationStreamController()
   {
-    this->close();
+    if (this->close() != GADGET_OK) {
+      throw std::runtime_error("Unable to shut down sream in  GadgetInstrumentationStreamController");
+    }
   }
   
   int GadgetInstrumentationStreamController::open()
   {
+    GadgetModule *head = 0;
+    GadgetModule *tail = 0;
+    
+    if (tail == 0) {
+      Gadget* eg = new EndGadget();
+      if (eg) {
+	eg->set_controller(this);
+      }
+      
+      ACE_NEW_RETURN(tail,
+		     ACE_Module<ACE_MT_SYNCH>( ACE_TEXT("EndGadget"),
+					       eg ),
+		     -1);
+      
+      stream_.open(0,head,tail);
+    }
+
     //Adding some gadgets to "capture data and return to the stream"
     if (this->prepend_gadget("ImageFinishFloat","gadgetron_mricore","ImageFinishGadget") != GADGET_OK) return GADGET_FAIL;
     this->find_gadget("ImageFinishFloat")->pass_on_undesired_data(true);
