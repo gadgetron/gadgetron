@@ -42,6 +42,17 @@ RUN cd /opt && \
     cd /opt && \
     rm -rf debsource
 
+#Install Openblas
+RUN rm /usr/lib/x86_64-linux-gnu/libblas.so
+RUN rm /usr/lib/x86_64-linux-gnu/libblas.so.3
+RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3 /usr/lib/x86_64-linux-gnu/libblas.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3 /usr/lib/x86_64-linux-gnu/libblas.so.3
+
+RUN rm /usr/lib/x86_64-linux-gnu/liblapack.so
+RUN rm /usr/lib/x86_64-linux-gnu/liblapack.so.3
+RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/liblapack.so.3 /usr/lib/x86_64-linux-gnu/liblapack.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/liblapack.so.3 /usr/lib/x86_64-linux-gnu/liblapack.so.3
+
 #ZFP
 RUN cd /opt && \
     git clone https://github.com/hansenms/ZFP.git && \
