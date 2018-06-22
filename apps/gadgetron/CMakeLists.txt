@@ -27,10 +27,12 @@ add_executable(gadgetron
   GadgetServerAcceptor.h
   GadgetServerAcceptor.cpp 
   GadgetStreamController.h
-  EndGadget.h 
+  EndGadget.h
+  EndGadget.cpp
+  GadgetStreamInterface.cpp
   Gadget.h 
   GadgetContainerMessage.h 
-  GadgetMessageInterface.h 
+  GadgetMessageInterface.h
   GadgetronExport.h 
   gadgetron_xml.h
   )
@@ -55,6 +57,8 @@ endif()
 
 add_executable(gadgetron_info
   gadgetron_info.cpp
+  EndGadget.cpp
+  GadgetStreamInterface.cpp
 )
 
 target_link_libraries(gadgetron_info 

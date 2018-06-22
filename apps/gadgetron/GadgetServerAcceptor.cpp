@@ -5,6 +5,13 @@
 
 using namespace Gadgetron;
 
+GadgetServerAcceptor::GadgetServerAcceptor(std::map<std::string, std::string> parameters, ACE_Reactor *reactor) :
+    is_listening_(false),
+    global_gadget_parameters_(std::move(parameters))
+{
+    this->reactor(reactor);
+}
+
 GadgetServerAcceptor::~GadgetServerAcceptor ()
 {
   this->handle_close (ACE_INVALID_HANDLE, 0);
@@ -56,18 +63,17 @@ int GadgetServerAcceptor::handle_input (ACE_HANDLE)
 
   ACE_NEW_RETURN (controller, GadgetStreamController, -1);
 
-
   controller->set_global_gadget_parameters(global_gadget_parameters_);
 
   if (this->acceptor_.accept (controller->peer ()) == -1) {
     GERROR("Failed to accept controller connection\n"); 
+    delete controller;
     return -1;
   }
   
   controller->reactor (this->reactor ());
   if (controller->open () == -1)
     controller->handle_close (ACE_INVALID_HANDLE, 0);
-
   return 0;
 }
 
