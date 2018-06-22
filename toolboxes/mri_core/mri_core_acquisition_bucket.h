@@ -80,23 +80,26 @@ namespace Gadgetron
      */
     IsmrmrdAcquisitionData& operator=(const IsmrmrdAcquisitionData& d)
       {
-	if (this != &d) { 
+	if (this != &d) {
+
+      if (head_) head_->release();
 	  if (d.head_) {
-	    if (head_) head_->release();
 	    head_ = d.head_->duplicate();
 	  } else {
 	    head_ = 0;
 	  }
-	  
+
+      if (data_) data_->release();
 	  if (d.data_) {
-	    if (data_) data_->release();
 	    data_ = d.data_->duplicate();
 	  } else {
 	    data_ = 0;
 	  }
-	  
+
+
+	  if (traj_) traj_->release();
+
 	  if (d.traj_) {
-	    if (traj_) traj_->release();
 	    traj_ = d.traj_->duplicate();
 	  } else {
 	    traj_ = 0;
