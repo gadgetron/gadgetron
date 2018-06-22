@@ -21,7 +21,7 @@ namespace Gadgetron {
 
 
         GADGET_PROPERTY(image_std,float,"Standard deviation of the noise in the produced image",1);
-        GADGET_PROPERTY(search_radius,int,"Standard deviation of the noise in the produced image",5);
+        GADGET_PROPERTY(search_radius,int,"Standard deviation of the noise in the produced image",25);
 
 
     protected:

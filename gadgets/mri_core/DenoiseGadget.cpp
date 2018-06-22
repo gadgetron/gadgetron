@@ -2,6 +2,7 @@
 // Created by dchansen on 6/19/18.
 //
 
+#include <GadgetronTimer.h>
 #include "DenoiseGadget.h"
 #include "non_local_means.h"
 #include "non_local_bayes.h"
@@ -11,6 +12,7 @@ namespace Gadgetron {
 
 
          auto& input = *image_msg->getObjectPtr();
+         GadgetronTimer("Non local Bayes");
          input = Denoise::non_local_bayes(input,image_std,search_radius);
 
          this->next()->putq(header_msg);
