@@ -191,8 +191,11 @@ endif()
 
 find_package(ACE REQUIRED)
 
-find_package(CUDA_advanced)
+option(USE_CUDA "Build with CUDA support" On)
 
+if (USE_CUDA)
+find_package(CUDA_advanced)
+endif()
 if (CUDA_FOUND)
   add_definitions(-DUSE_CUDA)
   set( GADGETRON_CUDA_FOUND_BOOL 1 )
