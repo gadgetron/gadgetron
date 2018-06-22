@@ -336,6 +336,10 @@ namespace Gadgetron
     {
         if ( &rhs == this ) return *this;
 
+        if (!this->delete_data_on_destruct_ ) {
+            return this->operator=(const_cast<const hoNDArray<T>&>(rhs));
+        }
+
         this->clear();
         *this->dimensions_ = *rhs.dimensions_;
         this->offsetFactors_ = rhs.offsetFactors_;
