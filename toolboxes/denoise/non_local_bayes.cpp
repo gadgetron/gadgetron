@@ -44,7 +44,7 @@ namespace Gadgetron {
             std::vector<ImagePatch<T>> create_patches(const hoNDArray<T> &image,int kx, int ky, int patch_size, int search_window,const vector_td<int,2>& image_dims) {
 
                 std::vector<ImagePatch<T>> result;
-//                result.reserve(search_window);
+                result.reserve(search_window);
 
                 for (int dy = std::max(ky-search_window/2,0); dy < std::min(search_window/2+ky,image_dims[1]); dy++) {
                     for (int dx = std::max(kx-search_window/2,0); dx < std::min(search_window/2+kx,image_dims[0]); dx++) {
@@ -62,7 +62,7 @@ namespace Gadgetron {
 
 
                for (int ky = 0; ky < patch_size; ky++ ){
-                   auto output_ky =  (patch.center_y+ky-patch_size/2 + image_dims[0])%image_dims[0];
+                   auto output_ky =  (patch.center_y+ky-patch_size/2 + image_dims[1])%image_dims[1];
                    for (int kx = 0; kx < patch_size; kx++ ){
                        auto output_kx =  (patch.center_x+kx-patch_size/2 + image_dims[0])%image_dims[0];
                        image(output_kx,output_ky) += patch.patch[kx+ky*patch_size];
