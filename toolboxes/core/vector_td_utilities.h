@@ -477,17 +477,17 @@ namespace Gadgetron{
   //
 
   template<class REAL, unsigned int D> __inline__ __host__ __device__ 
-  REAL norm_squared( const vector_td<REAL,D> vec )
+  typename realType<REAL>::Type norm_squared( const vector_td<REAL,D> vec )
   {
-    REAL res = REAL(0);
+    typename realType<REAL>::Type res(0);
     for (unsigned int i=0; i<D; i++){
-      res += (vec[i]*vec[i]);
+      res += norm(vec[i]);
     }
     return res;
   }
 
   template<class REAL, unsigned int D> __inline__ __host__ __device__ 
-  REAL norm( const vector_td<REAL,D> vec )
+  typename realType<REAL>::Type norm( const vector_td<REAL,D> vec )
   {
     return ::sqrt(norm_squared<REAL,D>(vec));
   }
