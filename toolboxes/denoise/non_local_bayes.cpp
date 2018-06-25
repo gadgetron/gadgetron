@@ -138,8 +138,7 @@ namespace Gadgetron {
             template <class T>
             arma::Col<T> bayesian_estimate(const arma::Col<T>& patch, const arma::Mat<T>& covariance, const arma::Mat<T>& inv_covariance,const arma::Col<T>& mean_patch, float noise_std){
 
-                return mean_patch + (covariance+noise_std*noise_std*arma::eye<arma::Mat<T>>(covariance.n_rows,covariance.n_cols))*
-                                    inv_covariance*(patch-mean_patch);
+                return mean_patch + inv_covariance*covariance*(patch-mean_patch);
 
             }
 
@@ -154,7 +153,7 @@ namespace Gadgetron {
 
                 constexpr int patch_size = 5;
 
-                const int n_patches = 50;
+                const int n_patches = 0;
 
                 hoNDArray<T> result(image.get_dimensions());
                 result.fill(0);
@@ -166,7 +165,7 @@ namespace Gadgetron {
                 count.fill(0);
 
                 const float noise_std2 = noise_std * noise_std;
-//                float noise_std2 = 0;
+//                noise_std = 0;
                 const vector_td<int, 2> image_dims = vector_td<int, 2>(
                         from_std_vector<size_t, 2>(*image.get_dimensions()));
 
@@ -190,24 +189,22 @@ namespace Gadgetron {
 
 
                             auto inv_cov = arma::Mat<T>(mean_patch.size(),mean_patch.size());
-                            if (arma::inv(inv_cov,covariance_matrix)){
+                            if (arma::inv(inv_cov,covariance_matrix+noise_std*noise_std*arma::eye<decltype(covariance_matrix)>(covariance_matrix.n_rows,covariance_matrix.n_cols))){
                                 for (auto& patch : patches){
                                     patch.patch = bayesian_estimate(patch.patch,covariance_matrix,inv_cov,mean_patch,noise_std);
                                 }
                             }
-
 
                             for (auto & patch : patches ){
                                 add_patch(patch,result,count,patch_size,image_dims);
                                 mask(patch.center_x,patch.center_y)  = false;
                             }
 
-
                         }
 
                     }
                 }
-
+//
                 for (size_t i = 0; i < result.get_number_of_elements(); i++){
                     result[i] /= count[i];
                 }
