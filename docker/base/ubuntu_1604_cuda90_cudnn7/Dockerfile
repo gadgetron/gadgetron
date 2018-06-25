@@ -34,13 +34,13 @@ RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
+RUN pip3 install Cython scipy tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
 RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
 
-RUN pip3 install --upgrade tensorflow tensorflow-gpu
+# tensorflow at ubuntu 16.04 only supports cuda8 + cudnn6
+RUN pip3 install --upgrade tensorflow
 RUN pip3 install http://download.pytorch.org/whl/cu90/torch-0.4.0-cp35-cp35m-linux_x86_64.whl  
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom

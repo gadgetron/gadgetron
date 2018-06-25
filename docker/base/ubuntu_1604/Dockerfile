@@ -33,11 +33,15 @@ RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
+RUN pip3 install Cython scipy tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
 RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
+
+RUN pip3 install --upgrade tensorflow
+RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl 
+RUN pip3 install torchvision 
+RUN pip3 install tensorboardx visdom
 
 # since cmake has problems to find python3 and boost-python3
 RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py35.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
