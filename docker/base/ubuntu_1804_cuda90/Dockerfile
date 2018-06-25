@@ -12,9 +12,9 @@ RUN apt-get install --no-install-recommends --no-install-suggests --yes linux-so
 # RUN apt-get source linux-image-$(uname -r)
 RUN apt-get install --no-install-recommends --no-install-suggests --yes linux-headers-$(uname -r)
 
-RUN add-apt-repository ppa:graphics-drivers/ppa
-RUN apt update --quiet && apt upgrade -y
-RUN DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes nvidia-390
+# RUN add-apt-repository ppa:graphics-drivers/ppa
+# RUN apt update --quiet && apt upgrade -y
+# RUN DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --no-install-suggests --yes nvidia-390
 
 RUN mkdir /opt/code
 RUN cd /opt/code
@@ -78,6 +78,17 @@ RUN cd /opt && \
     debi && \
     cd /opt && \
     rm -rf debsource
+
+#Install Openblas
+RUN rm /usr/lib/x86_64-linux-gnu/libblas.so
+RUN rm /usr/lib/x86_64-linux-gnu/libblas.so.3
+RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3 /usr/lib/x86_64-linux-gnu/libblas.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3 /usr/lib/x86_64-linux-gnu/libblas.so.3
+
+RUN rm /usr/lib/x86_64-linux-gnu/liblapack.so
+RUN rm /usr/lib/x86_64-linux-gnu/liblapack.so.3
+RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/liblapack.so.3 /usr/lib/x86_64-linux-gnu/liblapack.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/liblapack.so.3 /usr/lib/x86_64-linux-gnu/liblapack.so.3
 
 #ZFP
 RUN cd /opt && \
