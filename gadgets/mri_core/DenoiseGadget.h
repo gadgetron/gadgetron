@@ -7,14 +7,14 @@
 
 
 #include <ismrmrd/ismrmrd.h>
+#include <string>
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "gadgetron_mricore_export.h"
 
 namespace Gadgetron {
-    class EXPORTGADGETSMRICORE DenoiseGadget : public Gadget2<ISMRMRD::ImageHeader, hoNDArray<float>> {
+    class EXPORTGADGETSMRICORE DenoiseGadget : public BasicPropertyGadget{
 
-        using super = Gadget2<ISMRMRD::ImageHeader, hoNDArray<float>>;
 
     public:
         GADGET_DECLARE(DenoiseGadget)
@@ -22,10 +22,13 @@ namespace Gadgetron {
 
         GADGET_PROPERTY(image_std,float,"Standard deviation of the noise in the produced image",1);
         GADGET_PROPERTY(search_radius,int,"Standard deviation of the noise in the produced image",25);
+        GADGET_PROPERTY(denoiser,std::string,"Type of denoiser - non_local_means or non_local_bayes","non_local_bayes");
+
 
 
     protected:
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>*, GadgetContainerMessage<hoNDArray<float>>*) override ;
+       int process(ACE_Message_Block* mb);
+       template<class T> int process(GadgetContainerMessage<ISMRMRD::ImageHeader>*, GadgetContainerMessage<hoNDArray<T>>*);
 
 
     };

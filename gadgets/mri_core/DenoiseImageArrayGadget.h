@@ -22,6 +22,7 @@ namespace Gadgetron {
 
         GADGET_PROPERTY(image_std,float,"Standard deviation of the noise in the produced image",1);
         GADGET_PROPERTY(search_radius,int,"Standard deviation of the noise in the produced image",25);
+        GADGET_PROPERTY(denoiser,std::string,"Type of denoiser - non_local_means or non_local_bayes","non_local_bayes");
 
 
     protected:

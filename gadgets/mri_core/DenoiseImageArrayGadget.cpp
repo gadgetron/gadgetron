@@ -11,7 +11,15 @@ namespace Gadgetron {
 
 
          auto& input = image_msg->getObjectPtr()->data_;
-         input = Denoise::non_local_bayes(input,image_std,search_radius);
+
+         if (denoiser == "non_local_bayes") {
+             input = Denoise::non_local_bayes(input, image_std, search_radius);
+         } else if (denoiser == "non_local_means") {
+             input = Denoise::non_local_means(input, image_std, search_radius);
+         } else {
+             throw std::invalid_argument(std::string("DenoiseGadget: Unknown denoiser type: ") + std::string(denoiser));
+         }
+
 
          this->next()->putq(image_msg);
 
