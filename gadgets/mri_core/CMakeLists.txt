@@ -58,6 +58,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
     ${CMAKE_SOURCE_DIR}/toolboxes/image_io
     ${CMAKE_SOURCE_DIR}/toolboxes/mri_image
+    ${CMAKE_SOURCE_DIR}/toolboxes/denoise
     ${ARMADILLO_INCLUDE_DIRS}
     ${MKL_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
@@ -226,7 +227,8 @@ add_library(gadgetron_mricore SHARED
     ${gadgetron_mricore_config_files}
     ${OPTIMIZED_GADGETS}
     ${OPTIMIZED_GADGET_HEADERS}
-        )
+        DenoiseGadget.cpp DenoiseGadget.h)
+# Above: Whitespace misaligned, and one file on each line please.
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
@@ -236,6 +238,7 @@ target_link_libraries(gadgetron_mricore
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpufft
     gadgetron_toolbox_image_analyze_io
+    gadgetron_toolbox_denoise
     gadgetron_toolbox_hostutils
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
