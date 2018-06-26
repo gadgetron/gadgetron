@@ -8,6 +8,7 @@
 
 #include <ismrmrd/ismrmrd.h>
 #include <string>
+#include <mri_core_data.h>
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "gadgetron_mricore_export.h"
@@ -29,6 +30,9 @@ namespace Gadgetron {
     protected:
        int process(ACE_Message_Block* mb);
        template<class T> int process(GadgetContainerMessage<ISMRMRD::ImageHeader>*, GadgetContainerMessage<hoNDArray<T>>*);
+       int process(GadgetContainerMessage<IsmrmrdImageArray>*);
+
+       template<class T> hoNDArray<T> denoise_function(const hoNDArray<T>&);
 
 
     };
