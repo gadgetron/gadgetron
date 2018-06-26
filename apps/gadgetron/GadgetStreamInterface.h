@@ -5,6 +5,7 @@
 #include "ace/DLL.h"
 #include "ace/DLL_Manager.h"
 
+#include "gadgetbase_export.h"
 #include "gadgetron_paths.h"
 #include "gadgetron_xml.h"
 #include "Gadget.h"
@@ -17,7 +18,7 @@ typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
  */
 namespace Gadgetron {
 
-  class GadgetStreamInterface
+  class EXPORTGADGETBASE GadgetStreamInterface
   {
   public:
     GadgetStreamInterface();
