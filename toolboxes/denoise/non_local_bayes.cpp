@@ -1,13 +1,13 @@
 //
 // Created by dchansen on 6/20/18.
 //
+// Needless comment
 
 #include "non_local_bayes.h"
 #include "hoNDArray.h"
 #include "vector_td_utilities.h"
 #include <GadgetronTimer.h>
 #include "hoArmadillo.h"
-
 
 namespace Gadgetron {
     namespace Denoise {
@@ -230,7 +230,7 @@ namespace Gadgetron {
 
                     }
                 }
-//
+
                 for (size_t i = 0; i < result.get_number_of_elements(); i++) {
                     result[i] /= count[i];
                 }
@@ -262,6 +262,15 @@ namespace Gadgetron {
             }
         }
 
+        // I'm pretty sure you can just have non_local_bayes be a templated function, here in the cpp file. You can
+        // then simply generate the function for each type by declaring them. No need to have this extra step in
+        // between.
+        // I.e.:
+        // template<class T>
+        // hoNDArray<T> non_local_bayes(const hoNDArray<T> &image, float noise_std, unsigned int search_window) { ... }
+        //
+        // template hoNDArray<float> non_local_bayes(const hoNDArray<float> &image, float noise_std, unsigned int search_window);
+        // template hoNDArray<std::complex<float>> non_local_bayes(const hoNDArray<std::complex<float>> &image, float noise_std, unsigned int search_window);
 
         hoNDArray<float> non_local_bayes(const hoNDArray<float> &image, float noise_std, unsigned int search_window) {
             return non_local_bayes_T(image, noise_std, search_window);

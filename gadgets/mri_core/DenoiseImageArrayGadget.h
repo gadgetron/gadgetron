@@ -12,6 +12,9 @@
 #include "gadgetron_mricore_export.h"
 
 namespace Gadgetron {
+    // What is up with the code duplication here. We need to have a fairly serious chat about why you need two different
+    // classes to do the same thing. Why on earth doesn't the DenoiseGadget know how to denoise Image Arrays?
+
     class EXPORTGADGETSMRICORE DenoiseImageArrayGadget : public Gadget1<IsmrmrdImageArray> {
 
         using super = Gadget1<IsmrmrdImageArray>;

@@ -73,6 +73,9 @@ namespace Gadgetron {
 
         template<class T> hoNDArray<T> non_local_means_T(const hoNDArray<T>& image, float noise_std, unsigned int search_radius){
 
+            // This function is EXACTLY the same as the one in non_local_bayes, except it calls a different function
+            // in the loop. A function with the same signature, I might add. This is code duplication.
+
                 GadgetronTimer("Non local means");
             size_t n_images = image.get_number_of_elements()/(image.get_size(0)*image.get_size(1));
 
@@ -91,10 +94,10 @@ namespace Gadgetron {
             }
             return result;
         }
-        }
+    } // Indentation.
 
 
-
+        // See parallel comment in non_local_bayes.cpp
 
         hoNDArray<float> non_local_means(const hoNDArray<float>& image, float noise_std, unsigned int search_radius){
             return non_local_means_T(image, noise_std,search_radius);

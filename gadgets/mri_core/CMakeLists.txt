@@ -228,6 +228,7 @@ add_library(gadgetron_mricore SHARED
     ${OPTIMIZED_GADGETS}
     ${OPTIMIZED_GADGET_HEADERS}
         DenoiseGadget.cpp DenoiseGadget.h DenoiseImageArrayGadget.cpp)
+# Above: Whitespace misaligned, and one file on each line please.
 
 set_target_properties(gadgetron_mricore PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 
