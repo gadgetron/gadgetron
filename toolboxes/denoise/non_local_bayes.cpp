@@ -8,6 +8,7 @@
 #include "vector_td_utilities.h"
 #include <GadgetronTimer.h>
 #include "hoArmadillo.h"
+#include <numeric>
 
 namespace Gadgetron {
     namespace Denoise {
@@ -129,7 +130,7 @@ namespace Gadgetron {
                           [&](auto patch) { return distance(patch.patch, reference_patch); });
 
                 std::vector<size_t> patch_indices(patches.size());
-                iota(patch_indices.begin(), patch_indices.end(), 0);
+                std::iota(patch_indices.begin(), patch_indices.end(), 0);
 
                 sort(patch_indices.begin(), patch_indices.end(),
                      [&](auto v1, auto v2) { return distances[v1] < distances[v2]; });

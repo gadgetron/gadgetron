@@ -5,7 +5,7 @@
 #include "GadgetMessageInterface.h"
 
 namespace Gadgetron{
-    class EndGadget : public Gadget
+    class EXPORTGADGETBASE EndGadget : public Gadget
     {
         virtual int close(unsigned long flags);
 

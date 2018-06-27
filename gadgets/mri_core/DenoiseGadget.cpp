@@ -2,8 +2,8 @@
 // Created by dchansen on 6/19/18.
 //
 
-#include <GadgetronTimer.h>
 #include "DenoiseGadget.h"
+#include "GadgetronTimer.h"
 #include "non_local_means.h"
 #include "non_local_bayes.h"
 

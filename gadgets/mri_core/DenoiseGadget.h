@@ -5,13 +5,13 @@
 #ifndef GADGETRON_DENOISEGADGET_H
 #define GADGETRON_DENOISEGADGET_H
 
+#include "Gadget.h"
+#include "hoNDArray.h"
+#include "gadgetron_mricore_export.h"
 
 #include <ismrmrd/ismrmrd.h>
 #include <string>
 #include <mri_core_data.h>
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
 
 namespace Gadgetron {
     class EXPORTGADGETSMRICORE DenoiseGadget : public BasicPropertyGadget{
