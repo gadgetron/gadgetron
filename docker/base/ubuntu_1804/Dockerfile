@@ -3,7 +3,7 @@ FROM ubuntu:18.04
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     software-properties-common apt-utils wget build-essential cython emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf\
-5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev sup\
+5-tools liblapack-dev libopenblas-base libopenblas-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev sup\
 ervisor cmake-curses-gui neofetch supervisor net-tools cpio
 
 RUN pip3 install --upgrade pip
@@ -26,32 +26,6 @@ RUN pip3 install tensorboardx visdom
 
 # fix the  qhull reentrant problem
 # RUN pip uninstall -y scipy
-
-#OpenBLAS with OpenMP
-RUN cd /opt && \
-    mkdir debsource && \
-    cd debsource && \
-    apt-get --no-install-recommends --no-install-suggests --yes build-dep libopenblas-base && \
-    apt-get install --no-install-recommends --no-install-suggests --yes build-essential fakeroot devscripts && \
-    apt-get source libopenblas-base && \
-    cd openblas-0.2.20+ds/ && \
-    sed -i "s/NO_WARMUP=1/NO_WARMUP=1 OPENMP=1/g" debian/rules && \
-    debchange -i "Compiling with OpenMP support" && \
-    debuild -us -uc -i -I && \
-    debi && \
-    cd /opt && \
-    rm -rf debsource
-
-#Install Openblas
-RUN rm /usr/lib/x86_64-linux-gnu/libblas.so
-RUN rm /usr/lib/x86_64-linux-gnu/libblas.so.3
-RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3 /usr/lib/x86_64-linux-gnu/libblas.so
-RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3 /usr/lib/x86_64-linux-gnu/libblas.so.3
-
-RUN rm /usr/lib/x86_64-linux-gnu/liblapack.so
-RUN rm /usr/lib/x86_64-linux-gnu/liblapack.so.3
-RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/liblapack.so.3 /usr/lib/x86_64-linux-gnu/liblapack.so
-RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/liblapack.so.3 /usr/lib/x86_64-linux-gnu/liblapack.so.3
 
 #ZFP
 RUN cd /opt && \
