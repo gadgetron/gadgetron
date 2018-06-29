@@ -9,6 +9,7 @@ endif()
 
 include_directories( 
   ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_BINARY_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CUDA_INCLUDE_DIRS}

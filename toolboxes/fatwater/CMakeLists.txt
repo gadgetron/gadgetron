@@ -16,6 +16,7 @@ include_directories(
   ${CERES_INCLUDE_DIR}
   ${FFTW3_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_BINARY_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
