@@ -27,9 +27,9 @@ add_executable(gadgetron
   GadgetServerAcceptor.h
   GadgetServerAcceptor.cpp 
   GadgetStreamController.h
-  # EndGadget.h
-  # EndGadget.cpp
-  # GadgetStreamInterface.cpp
+  EndGadget.h
+  EndGadget.cpp
+  GadgetStreamInterface.cpp
   Gadget.h 
   GadgetContainerMessage.h 
   GadgetMessageInterface.h
