@@ -2063,5 +2063,95 @@ namespace Gadgetron {
         }
     }
 
+    bool GenericImageReconGadget::fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
+    {
+        try
+        {
+            size_t N = buf.get_number_of_elements();
+            size_t ii;
+            for (ii = 0; ii < N; ii++)
+            {
+                buf(ii) = NULL;
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors happened in GenericImageReconGadget::fillWithNULL(buf) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
+    {
+        try
+        {
+            size_t N = buf.get_number_of_elements();
+            size_t ii;
+            for (ii = 0; ii < N; ii++)
+            {
+                hoMRImage<ValueType, 2>* pImage = buf(ii);
+                if (buf.delete_data_on_destruct() && pImage != NULL)
+                {
+                    delete pImage;
+                    buf(ii) = NULL;
+                }
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors happened in GenericImageReconGadget::releaseImageBuffer(buf) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool GenericImageReconGadget::fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf)
+    {
+        try
+        {
+            size_t N = buf.get_number_of_elements();
+            size_t ii;
+            for (ii = 0; ii < N; ii++)
+            {
+                buf(ii) = NULL;
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors happened in GenericImageReconGadget::fillWithNULL(buf) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf)
+    {
+        try
+        {
+            size_t N = buf.get_number_of_elements();
+            size_t ii;
+            for (ii = 0; ii < N; ii++)
+            {
+                hoMRImage<ValueType, 3>* pImage = buf(ii);
+                if (buf.delete_data_on_destruct() && pImage != NULL)
+                {
+                    delete pImage;
+                    buf(ii) = NULL;
+                }
+            }
+        }
+        catch (...)
+        {
+            GERROR_STREAM("Errors happened in GenericImageReconGadget::releaseImageBuffer(buf) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
     GADGET_FACTORY_DECLARE(GenericImageReconGadget)
 }

@@ -251,51 +251,10 @@ namespace Gadgetron {
 
         bool sendOutImageBuffer(Image3DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
 
-        template <int D>
-        bool fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, D> >& buf)
-        {
-            try
-            {
-                size_t N = buf.get_number_of_elements();
-                size_t ii;
-                for (ii = 0; ii < N; ii++)
-                {
-                    buf(ii) = NULL;
-                }
-            }
-            catch (...)
-            {
-                GERROR_STREAM("Errors happened in GenericImageReconGadget::fillWithNULL(buf) ... ");
-                return false;
-            }
+        bool fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf);
+        bool releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf);
 
-            return true;
-        }
-
-        template <int D>
-        bool releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, D> >& buf)
-        {
-            try
-            {
-                size_t N = buf.get_number_of_elements();
-                size_t ii;
-                for (ii = 0; ii < N; ii++)
-                {
-                    hoMRImage<ValueType, D>* pImage = buf(ii);
-                    if (buf.delete_data_on_destruct() && pImage != NULL)
-                    {
-                        delete pImage;
-                        buf(ii) = NULL;
-                    }
-                }
-            }
-            catch (...)
-            {
-                GERROR_STREAM("Errors happened in GenericImageReconGadget::releaseImageBuffer(buf) ... ");
-                return false;
-            }
-
-            return true;
-        }
+        bool fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf);
+        bool releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf);
     };
 }
