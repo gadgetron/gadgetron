@@ -207,6 +207,7 @@ namespace Gadgetron {
                 const vector_td<int, 2> image_dims = vector_td<int, 2>(
                         from_std_vector<size_t, 2>(*image.get_dimensions()));
 
+#pragma omp parallel for
                 for (int ky = 0; ky < image.get_size(1); ky++) {
                     for (int kx = 0; kx < image.get_size(0); kx++) {
 
@@ -222,6 +223,7 @@ namespace Gadgetron {
 
 
                             for (auto &patch : patches) {
+                                #pragma omp critical
                                 add_patch(patch, result, count, patch_size, image_dims);
                                 mask(patch.center_x, patch.center_y) = false;
                             }
