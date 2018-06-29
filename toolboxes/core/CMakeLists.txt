@@ -7,7 +7,7 @@ configure_file(core_defines.h.in ${CMAKE_BINARY_DIR}/toolboxes/core/core_defines
 
 include_directories(${CMAKE_BINARY_DIR}/toolboxes/core/)
 install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/toolboxes/core/core_defines.h
+  ${CMAKE_BINARY_DIR}/toolboxes/core/core_defines.h
   NDArray.h
   complext.h
   vector_td.h
