@@ -1784,8 +1784,9 @@ namespace Gadgetron {
             GERROR_STREAM("Errors happened in GenericImageReconGadget::sendOutImageBuffer(images, seriesNum, processStr, dataRole) ... ");
             return false;
         }
-    }
 
+        return true;
+    }
 
     bool GenericImageReconGadget::sendOutImages(Image3DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole,
         const std::vector<float>& windowCenter, const std::vector<float>& windowWidth, bool resetImageCommentsParametricMaps, Gadget* anchor)
@@ -2061,6 +2062,8 @@ namespace Gadgetron {
             GERROR_STREAM("Errors happened in GenericImageReconGadget::sendOutImageBuffer(images, seriesNum, processStr, dataRole) ... ");
             return false;
         }
+
+        return true;
     }
 
     bool GenericImageReconGadget::fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
