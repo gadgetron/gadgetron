@@ -13,6 +13,7 @@ include_directories(
     ${ISMRMRD_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+    ${CMAKE_BINARY_DIR}/toolboxes/core/
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math

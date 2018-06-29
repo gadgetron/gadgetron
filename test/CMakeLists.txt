@@ -8,6 +8,7 @@ endif()
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_BINARY_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu

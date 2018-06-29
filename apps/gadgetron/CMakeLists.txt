@@ -27,9 +27,9 @@ add_executable(gadgetron
   GadgetServerAcceptor.h
   GadgetServerAcceptor.cpp 
   GadgetStreamController.h
-  EndGadget.h
-  EndGadget.cpp
-  GadgetStreamInterface.cpp
+  # EndGadget.h
+  # EndGadget.cpp
+  # GadgetStreamInterface.cpp
   Gadget.h 
   GadgetContainerMessage.h 
   GadgetMessageInterface.h
@@ -73,10 +73,16 @@ if (CUDA_FOUND)
 endif()
 
 add_library(gadgetron_gadgetbase SHARED
+  Gadget.h
   Gadget.cpp
+  GadgetStreamController.h
   GadgetStreamController.cpp
   gadgetron_xml.cpp
   pugixml.cpp  
+  GadgetStreamInterface.h 
+  GadgetStreamInterface.cpp 
+  EndGadget.h
+  EndGadget.cpp
 )
 
 target_link_libraries(gadgetron_gadgetbase
@@ -88,9 +94,9 @@ target_link_libraries(gadgetron_gadgetbase
 
 if (GPERFTOOLS_PROFILER)
   message("Adding gperftools cpu profiler to gadgetron link assemblage.")
-  target_link_libraries(gadgetron ${GPERFTOOLS_PROFILER})
+  target_link_libraries(gadgetron ${GPERFTOOLS_PROFILER} ${GPERFTOOLS_TCMALLOC})
 endif()
-  
+
 
 set_target_properties(gadgetron_gadgetbase PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 set_target_properties (gadgetron_gadgetbase PROPERTIES COMPILE_DEFINITIONS "__BUILD_GADGETRON_GADGETBASE__")
