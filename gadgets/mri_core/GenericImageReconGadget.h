@@ -241,343 +241,61 @@ namespace Gadgetron {
         virtual int processImageBuffer(Image2DBufferType& ori);
         virtual int processImageBuffer(Image3DBufferType& ori);
 
-        /// fill image buffer with null point
-        template <int D> bool fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, D> >& buf);
+        ///// send out the images as a Gadget3 message
+        ///// windowCenter and windowWidth is for every SLC
+        bool sendOutImages(Image2DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
 
-        /// release the image buffer
-        template <int D> bool releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, D> >& buf);
+        bool sendOutImageBuffer(Image2DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
 
-        /// send out the images as a Gadget3 message
-        /// windowCenter and windowWidth is for every SLC
-        template <int D>  bool sendOutImages(hoNDObjectArray< hoMRImage<ValueType, D> >& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
+        bool sendOutImages(Image3DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
 
-        template <int D> bool sendOutImageBuffer(hoNDObjectArray< hoMRImage<ValueType, D> >& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
-    };
+        bool sendOutImageBuffer(Image3DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
 
-    template <int D>
-    bool GenericImageReconGadget::fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, D> >& buf)
-    {
-        try
+        template <int D>
+        bool fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, D> >& buf)
         {
-            size_t N = buf.get_number_of_elements();
-            size_t ii;
-            for (ii = 0; ii < N; ii++)
+            try
             {
-                buf(ii) = NULL;
-            }
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Errors happened in GenericImageReconGadget::fillWithNULL(buf) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <int D>
-    bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, D> >& buf)
-    {
-        try
-        {
-            size_t N = buf.get_number_of_elements();
-            size_t ii;
-            for (ii = 0; ii < N; ii++)
-            {
-                hoMRImage<ValueType, D>* pImage = buf(ii);
-                if (buf.delete_data_on_destruct() && pImage != NULL)
+                size_t N = buf.get_number_of_elements();
+                size_t ii;
+                for (ii = 0; ii < N; ii++)
                 {
-                    delete pImage;
                     buf(ii) = NULL;
                 }
             }
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Errors happened in GenericImageReconGadget::releaseImageBuffer(buf) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <int D>
-    bool GenericImageReconGadget::sendOutImages(hoNDObjectArray< hoMRImage<ValueType, D> >& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole,
-        const std::vector<float>& windowCenter, const std::vector<float>& windowWidth, bool resetImageCommentsParametricMaps, Gadget* anchor)
-    {
-        try
-        {
-            size_t CHA = images.get_size(0);
-            size_t SLC = images.get_size(1);
-            size_t CON = images.get_size(2);
-            size_t PHS = images.get_size(3);
-            size_t REP = images.get_size(4);
-            size_t SET = images.get_size(5);
-            size_t AVE = images.get_size(6);
-
-            std::string dataRoleString;
-            if (!dataRole.empty())
+            catch (...)
             {
-                std::ostringstream ostr;
-                for (size_t n = 0; n < dataRole.size(); n++)
-                {
-                    ostr << dataRole[n] << " - ";
-                }
-
-                dataRoleString = ostr.str();
+                GERROR_STREAM("Errors happened in GenericImageReconGadget::fillWithNULL(buf) ... ");
+                return false;
             }
 
-            GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
-                << CHA << " " << SLC << " " << CON << " " << PHS << " " << REP << " " << SET << " " << AVE << "] ");
+            return true;
+        }
 
-            size_t ave(0), set(0), rep(0), phs(0), con(0), slc(0), cha(0);
-            std::vector<size_t> dim3D(3);
-
-            for (ave = 0; ave < AVE; ave++)
+        template <int D>
+        bool releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, D> >& buf)
+        {
+            try
             {
-                for (set = 0; set < SET; set++)
+                size_t N = buf.get_number_of_elements();
+                size_t ii;
+                for (ii = 0; ii < N; ii++)
                 {
-                    for (rep = 0; rep < REP; rep++)
+                    hoMRImage<ValueType, D>* pImage = buf(ii);
+                    if (buf.delete_data_on_destruct() && pImage != NULL)
                     {
-                        for (phs = 0; phs < PHS; phs++)
-                        {
-                            for (con = 0; con < CON; con++)
-                            {
-                                for (slc = 0; slc < SLC; slc++)
-                                {
-                                    for (cha = 0; cha < CHA; cha++)
-                                    {
-                                        hoMRImage<ValueType, D>* pImage = images(cha, slc, con, phs, rep, set, ave);
-                                        if (pImage != NULL)
-                                        {
-                                            T v = Gadgetron::norm2(*pImage);
-                                            if (v < FLT_EPSILON) continue; // do not send out empty image
-
-                                            Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
-                                            Gadgetron::GadgetContainerMessage<ImgArrayType>* cm2 = new Gadgetron::GadgetContainerMessage<ImgArrayType>();
-                                            Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* cm3 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
-
-                                            try
-                                            {
-                                                cm1->cont(cm2);
-                                                cm2->cont(cm3);
-
-                                                // set the ISMRMRD image header
-                                                memcpy(cm1->getObjectPtr(), &pImage->header_, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
-
-                                                long long imageNum(0);
-                                                if (pImage->attrib_.length(GADGETRON_IMAGENUMBER) == 0)
-                                                {
-                                                    imageNum = this->computeSeriesImageNumber(*cm1->getObjectPtr(), CHA, cha, 1, 0);
-                                                    cm1->getObjectPtr()->image_index = (uint16_t)imageNum;
-                                                    pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
-                                                }
-                                                else
-                                                {
-                                                    imageNum = pImage->attrib_.as_long(GADGETRON_IMAGENUMBER);
-                                                    if (imageNum > 0)
-                                                    {
-                                                        cm1->getObjectPtr()->image_index = imageNum;
-                                                    }
-                                                    else
-                                                    {
-                                                        imageNum = this->computeSeriesImageNumber(*cm1->getObjectPtr(), CHA, cha, 1, 0);
-                                                        cm1->getObjectPtr()->image_index = (uint16_t)imageNum;
-                                                        pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
-                                                    }
-                                                }
-
-                                                cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-                                                cm1->getObjectPtr()->image_series_index = seriesNum;
-
-                                                // set the image data
-                                                size_t RO = pImage->get_size(0);
-                                                size_t E1 = pImage->get_size(1);
-                                                size_t E2 = pImage->get_size(2);
-
-                                                dim3D[0] = RO;
-                                                dim3D[1] = E1;
-                                                dim3D[2] = E2;
-
-                                                cm1->getObjectPtr()->matrix_size[0] = RO;
-                                                cm1->getObjectPtr()->matrix_size[1] = E1;
-                                                cm1->getObjectPtr()->matrix_size[2] = E2;
-
-                                                cm2->getObjectPtr()->create(dim3D);
-                                                memcpy(cm2->getObjectPtr()->get_data_ptr(), pImage->get_data_ptr(), pImage->get_number_of_bytes());
-
-                                                // set the attributes
-                                                *cm3->getObjectPtr() = pImage->attrib_;
-
-                                                this->decorateImageHeader(*cm1->getObjectPtr(), *cm3->getObjectPtr(), seriesNum, processStr, dataRole, windowCenter, windowWidth, resetImageCommentsParametricMaps, slc, SLC);
-
-                                                if (anchor != NULL)
-                                                {
-                                                    if (anchor->putq(cm1) < 0)
-                                                    {
-                                                        cm1->release();
-                                                        return false;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    if (this->next()->putq(cm1) < 0)
-                                                    {
-                                                        cm1->release();
-                                                        return false;
-                                                    }
-                                                }
-                                            }
-                                            catch (...)
-                                            {
-                                                cm1->release();
-                                                throw;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        delete pImage;
+                        buf(ii) = NULL;
                     }
                 }
             }
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Errors happened in GenericImageReconGadget::sendOutImages(images, seriesNum, processStr, dataRole) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <int D>
-    bool GenericImageReconGadget::sendOutImageBuffer(hoNDObjectArray< hoMRImage<ValueType, D> >& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole,
-        const std::vector<float>& windowCenter, const std::vector<float>& windowWidth, bool resetImageCommentsParametricMaps, Gadget* anchor)
-    {
-        try
-        {
-            size_t CHA = images.get_size(0);
-            size_t SLC = images.get_size(1);
-            size_t CON = images.get_size(2);
-            size_t PHS = images.get_size(3);
-            size_t REP = images.get_size(4);
-            size_t SET = images.get_size(5);
-            size_t AVE = images.get_size(6);
-
-            std::string dataRoleString;
-            if (!dataRole.empty())
+            catch (...)
             {
-                std::ostringstream ostr;
-                for (size_t n = 0; n < dataRole.size(); n++)
-                {
-                    ostr << dataRole[n] << " - ";
-                }
-
-                dataRoleString = ostr.str();
+                GERROR_STREAM("Errors happened in GenericImageReconGadget::releaseImageBuffer(buf) ... ");
+                return false;
             }
 
-            GDEBUG_CONDITION_STREAM(verbose.value(), "--> GenericImageReconGadget, sending out image array " << dataRoleString << " images for series " << seriesNum << ", array boundary [CHA SLC CON PHS REP SET AVE] = ["
-                << CHA << " " << SLC << " " << CON << " " << PHS << " " << REP << " " << SET << " " << AVE << "] ");
-
-            size_t ave(0), set(0), rep(0), phs(0), con(0), slc(0), cha(0);
-            std::vector<size_t> dim3D(3);
-
-            for (ave = 0; ave < AVE; ave++)
-            {
-                for (set = 0; set < SET; set++)
-                {
-                    for (rep = 0; rep < REP; rep++)
-                    {
-                        for (phs = 0; phs < PHS; phs++)
-                        {
-                            for (con = 0; con < CON; con++)
-                            {
-                                for (slc = 0; slc < SLC; slc++)
-                                {
-                                    for (cha = 0; cha < CHA; cha++)
-                                    {
-                                        hoMRImage<ValueType, D>* pImage = images(cha, slc, con, phs, rep, set, ave);
-                                        if (pImage != NULL)
-                                        {
-                                            T v = Gadgetron::norm2(*pImage);
-                                            if (v < FLT_EPSILON) continue; // do not send out empty image
-
-                                            try
-                                            {
-                                                long long imageNum(0);
-                                                if (pImage->attrib_.length(GADGETRON_IMAGENUMBER) == 0)
-                                                {
-                                                    imageNum = this->computeSeriesImageNumber(pImage->header_, CHA, cha, 1, 0);
-                                                    pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
-                                                }
-                                                else
-                                                {
-                                                    imageNum = pImage->attrib_.as_long(GADGETRON_IMAGENUMBER);
-                                                    if (imageNum <= 0)
-                                                    {
-                                                        imageNum = this->computeSeriesImageNumber(pImage->header_, CHA, cha, 1, 0);
-                                                        pImage->attrib_.set(GADGETRON_IMAGENUMBER, (long)imageNum);
-                                                    }
-                                                }
-
-                                                pImage->header_.data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-                                                pImage->header_.image_series_index = seriesNum;
-
-                                                // set the image data
-                                                size_t RO = pImage->get_size(0);
-                                                size_t E1 = pImage->get_size(1);
-                                                size_t E2 = pImage->get_size(2);
-
-                                                dim3D[0] = RO;
-                                                dim3D[1] = E1;
-                                                dim3D[2] = E2;
-
-                                                pImage->header_.matrix_size[0] = RO;
-                                                pImage->header_.matrix_size[1] = E1;
-                                                pImage->header_.matrix_size[2] = E2;
-
-                                                this->decorateImageHeader(pImage->header_, pImage->attrib_, seriesNum, processStr, dataRole, windowCenter, windowWidth, resetImageCommentsParametricMaps, slc, SLC);
-                                            }
-                                            catch (...)
-                                            {
-                                                throw;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<ValueType, D> > >* cm1 = new Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<ValueType, D> > >();
-            cm1->getObjectPtr()->copyFrom(images);
-
-            if (anchor != NULL)
-            {
-                if (anchor->putq(cm1) < 0)
-                {
-                    cm1->release();
-                    return false;
-                }
-            }
-            else
-            {
-                if (this->next()->putq(cm1) < 0)
-                {
-                    cm1->release();
-                    return false;
-                }
-            }
+            return true;
         }
-        catch (...)
-        {
-            GERROR_STREAM("Errors happened in GenericImageReconGadget::sendOutImageBuffer(images, seriesNum, processStr, dataRole) ... ");
-            return false;
-        }
-
-        return true;
-    }
+    };
 }
