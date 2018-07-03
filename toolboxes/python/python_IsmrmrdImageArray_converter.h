@@ -44,10 +44,15 @@ namespace Gadgetron {
 
             auto pyHeaders = boost::python::object(arrayData.headers_);
             auto pyMeta = boost::python::object(arrayData.meta_);
+            auto pyWaveform = boost::python::object(arrayData.waveform_);
+            auto pyAcqHeaders = boost::python::object(arrayData.acq_headers_);
 
             bp::incref(pyHeaders.ptr());
             bp::incref(pyMeta.ptr());
-            auto buffer = pygadgetron.attr("IsmrmrdImageArray")(data, pyHeaders, pyMeta);
+            bp::incref(pyWaveform.ptr());
+            bp::incref(pyAcqHeaders.ptr());
+
+            auto buffer = pygadgetron.attr("IsmrmrdImageArray")(data, pyHeaders, pyMeta, pyWaveform, pyAcqHeaders);
 
             // increment the reference count so it exists after `return`
             return bp::incref(buffer.ptr());
@@ -80,12 +85,15 @@ namespace Gadgetron {
             IsmrmrdImageArray* reconData = new (storage) IsmrmrdImageArray;
             data->convertible = storage;
 
-            try {
+            try
+            {
                 bp::object pyImageArray((bp::handle<>(bp::borrowed(obj))));
 
                 reconData->data_ = bp::extract<hoNDArray<std::complex<float>>>(pyImageArray.attr("data"));
                 reconData->headers_ = bp::extract<hoNDArray<ISMRMRD::ImageHeader>>(pyImageArray.attr("headers"));
                 reconData->meta_ = bp::extract<std::vector<ISMRMRD::MetaContainer>>(pyImageArray.attr("meta"));
+                reconData->waveform_ = bp::extract<std::vector<ISMRMRD::Waveform>>(pyImageArray.attr("waveform"));
+                reconData->acq_headers_ = bp::extract<hoNDArray< ISMRMRD::AcquisitionHeader >>(pyImageArray.attr("acq_headers"));
             }
             catch (const bp::error_already_set&)
             {

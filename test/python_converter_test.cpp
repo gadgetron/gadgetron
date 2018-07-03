@@ -133,10 +133,10 @@ TEST_F(python_converter_test, ismrmrd_waveformheader)
 
     GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
     GDEBUG_STREAM("Test converter for ISMRMRD::WaveformHeader");
-    ISMRMRD::WaveformHeader wav_head, wav_head2;
+    ISMRMRD::ISMRMRD_WaveformHeader wav_head, wav_head2;
     wav_head.version = 41;
     std::cout << "version before: " << wav_head.version << std::endl;
-    PythonFunction<ISMRMRD::WaveformHeader> modify_wav_header("__main__", "modify");
+    PythonFunction<ISMRMRD::ISMRMRD_WaveformHeader> modify_wav_header("__main__", "modify");
     wav_head2 = modify_wav_header(wav_head);
     std::cout << "version after: " << wav_head2.version << std::endl;
     EXPECT_EQ(wav_head2.version, 42);

@@ -25,11 +25,13 @@ namespace Gadgetron {
            static bp::object module = bp::import("ismrmrd");
            return module.attr("AcquisitionHeader");
        }
-      template<> bp::object python_module<ISMRMRD::ImageHeader>(){
+
+       template<> bp::object python_module<ISMRMRD::ImageHeader>(){
            static bp::object module = bp::import("ismrmrd");
            return module.attr("ImageHeader");
        }
-              template<> bp::object python_module<ISMRMRD::WaveformHeader>(){
+
+      template<> bp::object python_module<ISMRMRD::ISMRMRD_WaveformHeader>(){
            static bp::object module = bp::import("ismrmrd");
            return module.attr("WaveformHeader");
        }
@@ -156,15 +158,115 @@ struct MetaContainer_from_PythonMetaContainer
     }
 };
 
+// ---------------------
+struct Waveform_to_PythonWaveform
+{
+    static PyObject* convert(const ISMRMRD::Waveform& meta)
+    {
+        try
+        {
+            bp::object module = bp::import("ismrmrd");
+            bp::object pyWav = module.attr("Waveform")();
+
+            hoNDArray<float> data;
+            if (meta.data && meta.head.channels*meta.head.number_of_samples > 0)
+            {
+                data.create(meta.head.channels*meta.head.number_of_samples);
+                // memcpy(data.begin(), meta.data, data.get_number_of_bytes());
+                for (size_t n = 0; n < meta.head.channels*meta.head.number_of_samples; n++)
+                    data[n] = meta.data[n];
+            }
+
+            auto header = boost::python::object(meta.head);
+            pyWav.attr("_Waveform__head") = header;
+
+            auto d = boost::python::object(data);
+
+            /*pyWav.attr("channels") = meta.head.channels;
+            pyWav.attr("sample_time_us") = meta.head.sample_time_us;
+            pyWav.attr("waveform_id") = meta.head.waveform_id;
+            pyWav.attr("number_of_samples") = meta.head.number_of_samples;
+            pyWav.attr("version") = meta.head.version;
+            pyWav.attr("flags") = meta.head.flags;
+            pyWav.attr("measurement_uid") = meta.head.measurement_uid;
+            pyWav.attr("scan_counter") = meta.head.scan_counter;
+            pyWav.attr("time_stamp") = meta.head.time_stamp;*/
+
+            pyWav.attr("_Waveform__data") = d;
+
+            // increment the reference count so it exists after `return`
+            return bp::incref(pyWav.ptr());
+        }
+        catch (const bp::error_already_set&)
+        {
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
+        }
+    }
+};
+
+struct Waveform_from_PythonWaveform
+{
+    Waveform_from_PythonWaveform()
+    {
+        bp::converter::registry::push_back(
+            &convertible,
+            &construct,
+            bp::type_id<ISMRMRD::Waveform>());
+    }
+
+    static void* convertible(PyObject* obj)
+    {
+        return obj;
+    }
+
+    /// Construct an ISMRMRD::MetaContainer in-place
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data* data)
+    {
+        void* storage = ((bp::converter::rvalue_from_python_storage<ISMRMRD::Waveform>*)data)->storage.bytes;
+
+        ISMRMRD::Waveform* wav = new (storage) ISMRMRD::Waveform;
+        data->convertible = storage;
+
+        try
+        {
+            bp::object pyWav((bp::handle<>(bp::borrowed(obj))));
+            ISMRMRD::ISMRMRD_WaveformHeader head = bp::extract<ISMRMRD::ISMRMRD_WaveformHeader>(pyWav.attr("_Waveform__head"));
+            wav->head = head;
+
+            //wav->head.version = bp::extract<uint16_t>(pyWav.attr("version"));
+            //wav->head.flags = bp::extract<uint64_t>(pyWav.attr("flags"));
+            //wav->head.measurement_uid = bp::extract<uint32_t>(pyWav.attr("measurement_uid"));
+            //wav->head.scan_counter = bp::extract<uint32_t>(pyWav.attr("scan_counter"));
+            //wav->head.time_stamp = bp::extract<uint32_t>(pyWav.attr("time_stamp"));
+            //wav->head.number_of_samples = bp::extract<uint16_t>(pyWav.attr("number_of_samples"));
+            //wav->head.channels = bp::extract<uint16_t>(pyWav.attr("channels"));
+            //wav->head.sample_time_us = bp::extract<float>(pyWav.attr("sample_time_us"));
+            //wav->head.waveform_id = bp::extract<uint16_t>(pyWav.attr("waveform_id"));
+
+            hoNDArray<float> data = bp::extract<hoNDArray<float>>(pyWav.attr("_Waveform__data"));
+            wav->data = new uint32_t[data.get_number_of_elements()];
+            for (size_t n = 0; n < data.get_number_of_elements(); n++) wav->data[n] = data(n);
+        }
+        catch (const bp::error_already_set&)
+        {
+            std::string err = pyerr_to_string();
+            GERROR(err.c_str());
+            throw std::runtime_error(err);
+        }
+    }
+};
+
 // -------------------------------------------------------------------------------------------------------
 /// Create and register WaveformHeader converter as necessary
 inline void create_ismrmrd_WaveformHeader_converter() {
-    bp::type_info info = bp::type_id<ISMRMRD::WaveformHeader>();
+    bp::type_info info = bp::type_id<ISMRMRD::ISMRMRD_WaveformHeader>();
     const bp::converter::registration* reg = bp::converter::registry::query(info);
     // only register if not already registered!
     if (nullptr == reg || nullptr == (*reg).m_to_python) {
-        bp::to_python_converter<ISMRMRD::WaveformHeader,Header_to_PythonHeader<ISMRMRD::WaveformHeader>>();
-        Header_from_PythonHeader<ISMRMRD::WaveformHeader>();
+        bp::to_python_converter<ISMRMRD::ISMRMRD_WaveformHeader,Header_to_PythonHeader<ISMRMRD::ISMRMRD_WaveformHeader>>();
+        Header_from_PythonHeader<ISMRMRD::ISMRMRD_WaveformHeader>();
     }
 }
 /// Create and register AcquisitionHeader converter as necessary
@@ -205,8 +307,22 @@ inline void create_ismrmrd_MetaContainer_converter()
 }
 
 // -------------------------------------------------------------------------------------------------------
+/// Create and register Waveform converter as necessary
+inline void create_ismrmrd_Waveform_converter()
+{
+    bp::type_info info = bp::type_id<ISMRMRD::Waveform>();
+    const bp::converter::registration* reg = bp::converter::registry::query(info);
+    // only register if not already registered!
+    if (nullptr == reg || nullptr == (*reg).m_to_python)
+    {
+        bp::to_python_converter<ISMRMRD::Waveform, Waveform_to_PythonWaveform>();
+        Waveform_from_PythonWaveform();
+    }
+}
+
+// -------------------------------------------------------------------------------------------------------
 /// Partial specialization of `python_converter` for ISMRMRD::AcquisitionHeader
-template<> struct python_converter<ISMRMRD::WaveformHeader> {
+template<> struct python_converter<ISMRMRD::ISMRMRD_WaveformHeader> {
     static void create()
     {
         create_ismrmrd_WaveformHeader_converter();
@@ -236,6 +352,15 @@ template<> struct python_converter<ISMRMRD::MetaContainer> {
     static void create()
     {
         create_ismrmrd_MetaContainer_converter();
+    }
+};
+
+// -------------------------------------------------------------------------------------------------------
+/// Partial specialization of `python_converter` for ISMRMRD::Waveform
+template<> struct python_converter<ISMRMRD::Waveform> {
+    static void create()
+    {
+        create_ismrmrd_Waveform_converter();
     }
 };
 
