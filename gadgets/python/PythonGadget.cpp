@@ -41,6 +41,15 @@ namespace Gadgetron {
             }
         }
 
+        {
+            if (auto waveform_header = AsContainerMessage<ISMRMRD::WaveformHeader>(mb)){
+                if (auto waveform_data = AsContainerMessage<hoNDArray<uint32_t>>(mb->cont())){
+                    return this->process(waveform_header,waveform_data);
+                }
+
+            }
+        }
+
         if (pass_on_undesired_data.value()) {
             return this->next()->putq(mb);
         }
