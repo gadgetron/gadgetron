@@ -99,6 +99,28 @@ TEST_F(python_converter_test, numpy_hoNDArray)
     EXPECT_EQ(evens.get_number_of_elements(), 50);
 }
 
+TEST_F(python_converter_test, ismrmrd_acquisitionheader)
+{
+    {
+        GILLock gl;     // this is needed
+        boost::python::object main(boost::python::import("__main__"));
+        boost::python::object global(main.attr("__dict__"));
+        boost::python::exec("def modify(head): head.version = head.version+1; return head",
+            global, global);
+    }
+
+
+    GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+    GDEBUG_STREAM("Test converter for ISMRMRD::AcquisitionHeader");
+    ISMRMRD::AcquisitionHeader acq_head, acq_head2;
+    acq_head.version = 41;
+    std::cout << "version before: " << acq_head.version << std::endl;
+    PythonFunction<ISMRMRD::AcquisitionHeader> modify_acq_header("__main__", "modify");
+    acq_head2 = modify_acq_header(acq_head);
+    std::cout << "version after: " << acq_head2.version << std::endl;
+    EXPECT_EQ(acq_head2.version, 42);
+}
+
 TEST_F(python_converter_test, ismrmrd_imageheader)
 {
     {
