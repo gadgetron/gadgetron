@@ -99,6 +99,49 @@ TEST_F(python_converter_test, numpy_hoNDArray)
     EXPECT_EQ(evens.get_number_of_elements(), 50);
 }
 
+TEST_F(python_converter_test, ismrmrd_acquisitionheader)
+{
+    {
+        GILLock gl;     // this is needed
+        boost::python::object main(boost::python::import("__main__"));
+        boost::python::object global(main.attr("__dict__"));
+        boost::python::exec("def modify(head): head.version = head.version+1; return head",
+            global, global);
+    }
+
+
+    GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+    GDEBUG_STREAM("Test converter for ISMRMRD::AcquisitionHeader");
+    ISMRMRD::AcquisitionHeader acq_head, acq_head2;
+    acq_head.version = 41;
+    std::cout << "version before: " << acq_head.version << std::endl;
+    PythonFunction<ISMRMRD::AcquisitionHeader> modify_acq_header("__main__", "modify");
+    acq_head2 = modify_acq_header(acq_head);
+    std::cout << "version after: " << acq_head2.version << std::endl;
+    EXPECT_EQ(acq_head2.version, 42);
+}
+TEST_F(python_converter_test, ismrmrd_waveformheader)
+{
+    {
+        GILLock gl;     // this is needed
+        boost::python::object main(boost::python::import("__main__"));
+        boost::python::object global(main.attr("__dict__"));
+        boost::python::exec("def modify(head): head.version = head.version+1; return head",
+            global, global);
+    }
+
+
+    GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+    GDEBUG_STREAM("Test converter for ISMRMRD::WaveformHeader");
+    ISMRMRD::WaveformHeader wav_head, wav_head2;
+    wav_head.version = 41;
+    std::cout << "version before: " << wav_head.version << std::endl;
+    PythonFunction<ISMRMRD::WaveformHeader> modify_wav_header("__main__", "modify");
+    wav_head2 = modify_wav_header(wav_head);
+    std::cout << "version after: " << wav_head2.version << std::endl;
+    EXPECT_EQ(wav_head2.version, 42);
+}
+
 TEST_F(python_converter_test, ismrmrd_imageheader)
 {
     {
@@ -118,16 +161,6 @@ TEST_F(python_converter_test, ismrmrd_imageheader)
     img_head2 = modify_img_header(img_head);
     std::cout << "version after: " << img_head2.version << std::endl;
     EXPECT_EQ(img_head2.version, 42);
-
-    GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
-    GDEBUG_STREAM("Test converter for ISMRMRD::AcquisitionHeader");
-    ISMRMRD::AcquisitionHeader acq_head, acq_head2;
-    acq_head.version = 0;
-    std::cout << "version before: " << img_head.version << std::endl;
-    PythonFunction<ISMRMRD::AcquisitionHeader> modify_acq_header("__main__", "modify");
-    acq_head2 = modify_acq_header(acq_head);
-    std::cout << "version after: " << acq_head2.version << std::endl;
-    EXPECT_EQ(acq_head2.version, 42);
 }
 
 TEST_F(python_converter_test, std_vec_complex)
@@ -409,4 +442,25 @@ TEST_F(python_converter_test, ismrmrd_image_array)
         EXPECT_STREQ(array_res.meta_[5].as_str("TestString", 1), "is");
         EXPECT_STREQ(array_res.meta_[5].as_str("TestString", 2), "a test!");
     }
+}
+
+TEST_F(python_converter_test,acquisition_test){
+
+    {
+        GILLock gl;     // this is needed
+        boost::python::object main(boost::python::import("__main__"));
+        boost::python::object global(main.attr("__dict__"));
+        boost::python::exec("import ismrmrd\n"
+                            "def base_test(acq): \n"
+                            "   return acq\n",
+                            global, global);
+    }
+    ISMRMRD::Acquisition acq;
+
+    PythonFunction<ISMRMRD::Acquisition> base_test("__main__", "base_test");
+    ISMRMRD::Acquisition acq2  = base_test(acq);
+
+
+
+
 }

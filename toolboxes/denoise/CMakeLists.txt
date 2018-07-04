@@ -12,7 +12,8 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
 )
 
-add_library(gadgetron_toolbox_denoise SHARED
+add_library(gadgetron_toolbox_denoise SHARED 
+        denoise_export.h
         non_local_means.cpp
         non_local_means.h
         non_local_bayes.cpp non_local_bayes.h)
@@ -30,5 +31,7 @@ target_link_libraries(gadgetron_toolbox_denoise
 install(TARGETS gadgetron_toolbox_denoise DESTINATION lib COMPONENT main)
 
 install(FILES
+        denoise_export.h
         non_local_means.h
+        non_local_bayes.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

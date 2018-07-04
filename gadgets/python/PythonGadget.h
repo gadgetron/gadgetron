@@ -50,12 +50,14 @@ namespace Gadgetron {
             register_converter<hoNDArray< std::complex<float> > >();
             register_converter<hoNDArray< float > >();
             register_converter<hoNDArray< unsigned short > >();
+            register_converter<hoNDArray< uint32_t > >();
             register_converter<hoNDArray< ISMRMRD::AcquisitionHeader > >();
             register_converter<hoNDArray< ISMRMRD::ImageHeader > >();
 
             // ensure boost can convert ISMRMRD headers automatically
             register_converter<ISMRMRD::ImageHeader>();
             register_converter<ISMRMRD::AcquisitionHeader>();
+            register_converter<ISMRMRD::WaveformHeader>();
 
             register_converter<IsmrmrdReconData>();
             register_converter<IsmrmrdImageArray>();
@@ -235,7 +237,7 @@ namespace Gadgetron {
 
         template <typename H, typename D> int process(GadgetContainerMessage<H>* hmb,
             GadgetContainerMessage< hoNDArray< D > >* dmb,
-            GadgetContainerMessage< ISMRMRD::MetaContainer>* mmb)
+            GadgetContainerMessage< ISMRMRD::MetaContainer>* mmb = nullptr)
         {
             if (!dmb) {
                 GERROR("Received null pointer to data block");
@@ -290,6 +292,8 @@ namespace Gadgetron {
             }
             return GADGET_OK;
         }
+
+
 
         virtual int process(ACE_Message_Block* mb);
 

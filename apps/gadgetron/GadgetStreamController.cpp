@@ -61,7 +61,7 @@ int GadgetStreamController::open (void)
 
   this->writer_task_.open();
 
-  return this->activate( THR_NEW_LWP | THR_JOINABLE, 1);
+  return this->activate( THR_NEW_LWP | THR_DETACHED, 1);
 
 }
 
