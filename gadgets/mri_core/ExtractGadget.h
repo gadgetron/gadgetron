@@ -9,15 +9,7 @@
 #include <ismrmrd/ismrmrd.h>
 #include <complex>
 
-#define MAX_UNSIGNED_SHORT_IMAGE_VALUE
 
-//Extract flags
-//#define GADGET_EXTRACT_NONE                   (0)      //0
-//#define GADGET_EXTRACT_MAGNITUDE              (1 << 0) //1
-//#define GADGET_EXTRACT_REAL                   (1 << 1) //2
-//#define GADGET_EXTRACT_IMAG                   (1 << 2) //4
-//#define GADGET_EXTRACT_PHASE                  (1 << 3) //8
-//#define GADGET_EXTRACT_MAX                    (1 << 4) //16
 
 namespace Gadgetron {
 
@@ -50,6 +42,8 @@ namespace Gadgetron {
 
 
     virtual int process_config(ACE_Message_Block* mb) override;
+
+    float minimum_component(const hoNDArray<std::complex<float>>&);
 
     std::vector<ISMRMRD::ISMRMRD_ImageTypes> image_types;
 };
