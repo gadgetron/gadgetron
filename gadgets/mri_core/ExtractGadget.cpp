@@ -61,8 +61,17 @@ namespace Gadgetron {
         return GADGET_OK;
     }
 
+    float ExtractGadget::minimum_component(const Gadgetron::hoNDArray<std::complex<float>> & image) {
+        float* float_start = (float*)image.get_data_ptr();
+        float* float_end = (float*) image.end();
+
+        return *std::min_element(float_start,float_end);
+    }
+
     int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1,
                                GadgetContainerMessage<hoNDArray<std::complex<float>>> *m2) {
+
+        float min_val = minimum_component(*m2->getObjectPtr());
 
         for (IMTYPE image_type : image_types) {
 
@@ -81,9 +90,10 @@ namespace Gadgetron {
                 dst[i] = extract_functions.at(image_type)(src[i]);
             }
 
-            if (force_positive){
-                *cm2->getObjectPtr() -=  min(cm2->getObjectPtr());
+            if (force_positive && (image_type == IMTYPE::ISMRMRD_IMTYPE_REAL || image_type == IMTYPE::ISMRMRD_IMTYPE_IMAG)) {
+                *cm2->getObjectPtr() -= min_val;
             }
+
 
 
             cm1->cont(cm2);
