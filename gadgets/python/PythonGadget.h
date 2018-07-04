@@ -67,6 +67,7 @@ namespace Gadgetron {
             register_converter< std::vector< float > >();
             register_converter< std::vector< unsigned short > >();
             register_converter< std::vector<ISMRMRD::MetaContainer> >();
+            register_converter< std::vector<ISMRMRD::Waveform> >();
 
             std::string pypath = python_path.value();
             std::string pymod = python_module.value();
