@@ -17,10 +17,7 @@ class ImageArrayRecon(Gadget):
 
         #Parallel imaging factor
         self.acc_factor = self.enc.parallelImaging.accelerationFactor.kspace_encoding_step_1
-
         self.slc = self.enc.encodingLimits.slice.maximum+1
-        self.phs = self.enc.encodingLimits.phase.maximum+1
-        self.phs_retro = int(self.params["phase"])
 
         self.array_data = IsmrmrdImageArray()
 
@@ -38,30 +35,40 @@ class ImageArrayRecon(Gadget):
         S = ndim[5]
         SLC = ndim[6]
 
+        print("\nImageArrayRecon, receiving image array, ", ndim)
+        
+        # self.put_next(array_data)
+
+        print("ImageArrayRecon, parse meta ... ")
+        mt = list()
+        for x in array_data.meta:
+            curr_meta = ismrmrd.Meta.deserialize(x)
+            mt.append(curr_meta)
+
+        print("ImageArrayRecon, convert %d meta containers ... ", len(mt))
+        print("ImageArrayRecon, receive %d waveforms ... ", len(array_data.waveform))
+
+        if len(array_data.waveform)>0:
+            print(array_data.waveform[0].version)
+            
+        for slc in range(0,SLC):
+            for s in range(0,S):
+                for phs in range(0,PHS):
+                    print("send out image %d-%d-%d" % (phs, s, slc))
+                    a = array_data.data[:,:,:,:,phs,s,slc]
+                    print(a.shape)
+                    self.put_next(array_data.headers[phs,s,slc], a)
+        
+        """
         print("ImageArrayRecon, receiving image array, ", ndim)
 
-        has_suffcient_image=False
+        print("ImageArrayRecon, buffer incoming array ... ")
+        self.array_data=array_data
 
-        if self.slc == 1 and self.phs_retro==PHS:
-            print("ImageArrayRecon, maximal 1 slice is expected ... ")
-            self.array_data=array_data
-            self.put_next(array_data)
-            has_sufficient_image=True
-        elif SLC<self.slc:
-            print("ImageArrayRecon, pass this array down the chain ... ")
-            self.put_next(array_data)
-            has_sufficient_image=False
-        else:
-            print("ImageArrayRecon, sufficient images are received ... ")
-            self.array_data=array_data
-            self.put_next(array_data)
-            has_sufficient_image=True
+        print("ImageArrayRecon, pass down incoming array ... ") 
+        self.put_next(array_data)
 
-        if has_sufficient_image is False:
-            return 0
-
-        # enough images received
-        # convert Meta
+        print("ImageArrayRecon, parse meta ... ")
         mt = list()
         for x in self.array_data.meta:
             curr_meta = ismrmrd.Meta.deserialize(x)
@@ -74,12 +81,13 @@ class ImageArrayRecon(Gadget):
             print(self.array_data.waveform[0].version)
 
         for slc in range(0,SLC-1):
-            for phs in range(0,PHS-1):
-                h = np.ravel(self.array_data.headers)[phs, 0, slc]
-                print(h)
-                h.image_series_index += 100
+            h = np.ravel(self.array_data.headers)[0, 0, slc]
+            print(h)
+            h.image_series_index += 100
 
-        print(mt[0])
+        if len(mt)>0:
+            print(mt[0])
+            
         print(self.array_data.headers[0, 0, 0])
-
+        """
         return 0
