@@ -11,6 +11,7 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "ExtractGadget.h"
 
+#include <boost/math/constants/constants.hpp>
 
 namespace Gadgetron {
 
@@ -22,7 +23,7 @@ namespace Gadgetron {
                 {IMTYPE::ISMRMRD_IMTYPE_MAGNITUDE, [](std::complex<float> v) { return std::abs(v); }},
                 {IMTYPE::ISMRMRD_IMTYPE_REAL,[](std::complex<float> v) { return std::real(v); }},
                 {IMTYPE::ISMRMRD_IMTYPE_IMAG,[](std::complex<float> v) { return std::imag(v); }},
-                {IMTYPE::ISMRMRD_IMTYPE_PHASE,[](std::complex<float> v) { return std::arg(v); }}
+                {IMTYPE::ISMRMRD_IMTYPE_PHASE,[](std::complex<float> v) { return std::arg(v)+boost::math::constants::pi<float>(); }}
         };
 
         static const std::unordered_map<IMTYPE,size_t> series_offset{
@@ -90,8 +91,8 @@ namespace Gadgetron {
                 dst[i] = extract_functions.at(image_type)(src[i]);
             }
 
-            if (force_positive && (image_type == IMTYPE::ISMRMRD_IMTYPE_REAL || image_type == IMTYPE::ISMRMRD_IMTYPE_IMAG)) {
-                *cm2->getObjectPtr() -= min_val;
+            if (real_imag_offset != 0 && (image_type == IMTYPE::ISMRMRD_IMTYPE_REAL || image_type == IMTYPE::ISMRMRD_IMTYPE_IMAG)) {
+                *cm2->getObjectPtr() += float(real_imag_offset);
             }
 
 
