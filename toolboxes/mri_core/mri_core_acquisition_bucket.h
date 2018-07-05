@@ -165,6 +165,7 @@ namespace Gadgetron
     std::vector< IsmrmrdAcquisitionData > ref_;
     std::vector< IsmrmrdAcquisitionBucketStats > datastats_;
     std::vector< IsmrmrdAcquisitionBucketStats > refstats_;
+    std::vector< ISMRMRD::Waveform > waveform_;
   };
   
 }

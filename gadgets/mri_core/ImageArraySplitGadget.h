@@ -7,6 +7,8 @@
 
 #include "mri_core_data.h"
 
+// this gadget will not copy the waveform data down the chain for every image
+
 namespace Gadgetron{
 
   class EXPORTGADGETSMRICORE ImageArraySplitGadget : 

@@ -3,6 +3,7 @@
 
 #include "ismrmrd/ismrmrd.h"
 #include "ismrmrd/meta.h"
+#include "ismrmrd/waveform.h"
 #include <vector>
 #include <set>
 #include "hoNDArray.h"
@@ -148,13 +149,16 @@ namespace Gadgetron
   public:
     //7D, fixed order [E0, E1, E2, CHA, N, S, LOC]
     hoNDArray< std::complex<float> > data_;
-    
+
     //7D, fixed order [TRAJ, E0, E1, E2, N, S, LOC]
     boost::optional<hoNDArray<float>> trajectory_;
-    
+
     //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
-    
+
+    // waveform
+    std::vector<ISMRMRD::Waveform> waveform_;
+
     SamplingDescription sampling_;
 
     IsmrmrdDataBuffered() {}
@@ -175,6 +179,8 @@ namespace Gadgetron
         
         this->headers_.copyFrom(obj.headers_);
         this->sampling_ = obj.sampling_;
+
+        this->waveform_ = obj.waveform_;
     }
 
     ~IsmrmrdDataBuffered() {}
@@ -244,13 +250,11 @@ namespace Gadgetron
     //This element is optional (length is 0 if not present)
     std::vector< ISMRMRD::MetaContainer > meta_;
 
-//    IsmrmrdImageArray() {}
-//    IsmrmrdImageArray(const IsmrmrdImageArray& obj)
-//    {
-//        this->data_.copyFrom(obj.data_);
-//        this->headers_.copyFrom(obj.headers_);
-//        this->meta_ = obj.meta_;
-//    }
+    // waveform, linearly stored waveform
+    std::vector<ISMRMRD::Waveform> waveform_;
+
+    // acqusition header is carried downstream here
+    hoNDArray< ISMRMRD::AcquisitionHeader > acq_headers_;
 
     ~IsmrmrdImageArray() = default;
   };

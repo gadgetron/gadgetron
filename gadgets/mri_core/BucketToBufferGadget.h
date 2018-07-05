@@ -21,6 +21,9 @@ namespace Gadgetron{
     // For the cartesian sampling, the filled kspace ensures its center (N/2) is aligned with the specified center in the encoding limits
     // For the non-cartesian sampling, this "center alignment" constraint is not applied and kspace lines are filled as their E1 and E2 indexes
 
+    // Since the order of data can be changed from its acquried time order, there is no easy way to resort waveform data
+    // Therefore, the waveform data was copied and passed with every buffer
+
   class EXPORTGADGETSMRICORE BucketToBufferGadget : 
   public Gadget1<IsmrmrdAcquisitionBucket>
     {

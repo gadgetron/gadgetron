@@ -205,7 +205,7 @@ set( gadgetron_mricore_config_files
     config/Generic_Cartesian_Grappa.xml
     config/Generic_Cartesian_Grappa_SNR.xml
     config/Generic_Cartesian_Grappa_T2W.xml
-        config/Generic_Cartesian_Grappa_RealTimeCine.xml
+    config/Generic_Cartesian_Grappa_RealTimeCine.xml
     config/Generic_Cartesian_Grappa_RealTimeCine_Cloud.xml
     config/Generic_Cartesian_Grappa_EPI.xml
     config/Generic_Cartesian_Grappa_EPI_AVE.xml
