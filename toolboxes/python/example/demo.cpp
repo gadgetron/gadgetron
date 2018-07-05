@@ -267,100 +267,100 @@ int main(int argc, char** argv)
         std::cout << acq_head_array(2, 4).version << std::endl;
     }
 
-    {
-        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
-        GDEBUG_STREAM("Test for ISMRMRD::MetaContainer")
-        {
-            GILLock gl;     // this is needed
-            boost::python::object main(boost::python::import("__main__"));
-            boost::python::object global(main.attr("__dict__"));
-            boost::python::exec("import ismrmrd\n"
-                "def mk_meta(meta): \n"
-                "   mt = ismrmrd.Meta.deserialize(meta)\n"
-                "   print(mt['TestLong'])\n"
-                "   print(mt['TestDouble'])\n"
-                "   print(mt['TestString'])\n"
-                "   mt_str = ismrmrd.Meta.serialize(mt)\n"
-                "   return mt_str\n",
-                global, global);
-        }
+    //{
+    //    GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+    //    GDEBUG_STREAM("Test for ISMRMRD::MetaContainer")
+    //    {
+    //        GILLock gl;     // this is needed
+    //        boost::python::object main(boost::python::import("__main__"));
+    //        boost::python::object global(main.attr("__dict__"));
+    //        boost::python::exec("import ismrmrd\n"
+    //            "def mk_meta(meta): \n"
+    //            "   mt = ismrmrd.Meta.deserialize(meta)\n"
+    //            "   print(mt['TestLong'])\n"
+    //            "   print(mt['TestDouble'])\n"
+    //            "   print(mt['TestString'])\n"
+    //            "   mt_str = ismrmrd.Meta.serialize(mt)\n"
+    //            "   return mt_str\n",
+    //            global, global);
+    //    }
 
-        ISMRMRD::MetaContainer meta;
-        meta.set("TestLong", (long)1);
-        meta.append("TestLong", (long)2);
-        meta.append("TestLong", (long)3);
+    //    ISMRMRD::MetaContainer meta;
+    //    meta.set("TestLong", (long)1);
+    //    meta.append("TestLong", (long)2);
+    //    meta.append("TestLong", (long)3);
 
-        meta.set("TestDouble", 1.0);
-        meta.append("TestDouble", 2.1);
-        meta.append("TestDouble", 3.2);
+    //    meta.set("TestDouble", 1.0);
+    //    meta.append("TestDouble", 2.1);
+    //    meta.append("TestDouble", 3.2);
 
-        meta.set("TestString", "This");
-        meta.append("TestString", "is");
-        meta.append("TestString", "a test!");
+    //    meta.set("TestString", "This");
+    //    meta.append("TestString", "is");
+    //    meta.append("TestString", "a test!");
 
-        PythonFunction<ISMRMRD::MetaContainer> make_meta("__main__", "mk_meta");
-        ISMRMRD::MetaContainer meta_res = make_meta(meta);
-        std::stringstream meta_res_str;
-        ISMRMRD::serialize(meta_res, meta_res_str);
-        GDEBUG_STREAM(meta_res_str.str());
-    }
+    //    PythonFunction<ISMRMRD::MetaContainer> make_meta("__main__", "mk_meta");
+    //    ISMRMRD::MetaContainer meta_res = make_meta(meta);
+    //    std::stringstream meta_res_str;
+    //    ISMRMRD::serialize(meta_res, meta_res_str);
+    //    GDEBUG_STREAM(meta_res_str.str());
+    //}
 
-    {
-        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
-        GDEBUG_STREAM("Test converter for std::vector<ISMRMRD::MetaContainer>");
-        {
-            GILLock gl;     // this is needed
-            boost::python::object main(boost::python::import("__main__"));
-            boost::python::object global(main.attr("__dict__"));
-            boost::python::exec("import ismrmrd\n"
-                "def mk_vector_meta(meta_str): \n"
-                "   print(len(meta_str))\n"
-                "   mt = list()\n"
-                "   for x in meta_str:\n"
-                "       mt.append(ismrmrd.Meta.deserialize(x))\n"
-                "   print(mt[0]['TestLong'])\n"
-                "   print(mt[0]['TestDouble'])\n"
-                "   print(mt[0]['TestString'])\n"
-                "   print(mt[11]['TestLong'])\n"
-                "   print(mt[11]['TestDouble'])\n"
-                "   print(mt[11]['TestString'])\n"
-                "   res_str = list()\n"
-                "   for x in mt:\n"
-                "       res_str_curr=ismrmrd.Meta.serialize(x)\n"
-                "       res_str.append(res_str_curr)\n"
-                "   return res_str\n",
-                global, global);
-        }
+    //{
+    //    GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+    //    GDEBUG_STREAM("Test converter for std::vector<ISMRMRD::MetaContainer>");
+    //    {
+    //        GILLock gl;     // this is needed
+    //        boost::python::object main(boost::python::import("__main__"));
+    //        boost::python::object global(main.attr("__dict__"));
+    //        boost::python::exec("import ismrmrd\n"
+    //            "def mk_vector_meta(meta_str): \n"
+    //            "   print(len(meta_str))\n"
+    //            "   mt = list()\n"
+    //            "   for x in meta_str:\n"
+    //            "       mt.append(ismrmrd.Meta.deserialize(x))\n"
+    //            "   print(mt[0]['TestLong'])\n"
+    //            "   print(mt[0]['TestDouble'])\n"
+    //            "   print(mt[0]['TestString'])\n"
+    //            "   print(mt[11]['TestLong'])\n"
+    //            "   print(mt[11]['TestDouble'])\n"
+    //            "   print(mt[11]['TestString'])\n"
+    //            "   res_str = list()\n"
+    //            "   for x in mt:\n"
+    //            "       res_str_curr=ismrmrd.Meta.serialize(x)\n"
+    //            "       res_str.append(res_str_curr)\n"
+    //            "   return res_str\n",
+    //            global, global);
+    //    }
 
-        std::vector<ISMRMRD::MetaContainer> meta(12);
+    //    std::vector<ISMRMRD::MetaContainer> meta(12);
 
-        for (int n = 0; n<meta.size(); n++)
-        {
-            meta[n].set("TestLong", (long)1 * n);
-            meta[n].append("TestLong", (long)2 * n);
-            meta[n].append("TestLong", (long)3 * n);
+    //    for (int n = 0; n<meta.size(); n++)
+    //    {
+    //        meta[n].set("TestLong", (long)1 * n);
+    //        meta[n].append("TestLong", (long)2 * n);
+    //        meta[n].append("TestLong", (long)3 * n);
 
-            meta[n].set("TestDouble", 1.0 * n);
-            meta[n].append("TestDouble", 2.1 * n);
-            meta[n].append("TestDouble", 3.2 * n);
+    //        meta[n].set("TestDouble", 1.0 * n);
+    //        meta[n].append("TestDouble", 2.1 * n);
+    //        meta[n].append("TestDouble", 3.2 * n);
 
-            meta[n].set("TestString", "This");
-            meta[n].append("TestString", "is");
-            meta[n].append("TestString", "a test!");
-        }
+    //        meta[n].set("TestString", "This");
+    //        meta[n].append("TestString", "is");
+    //        meta[n].append("TestString", "a test!");
+    //    }
 
-        PythonFunction< std::vector<ISMRMRD::MetaContainer> > mk_vector_meta("__main__", "mk_vector_meta");
-        std::vector<ISMRMRD::MetaContainer> meta_res = mk_vector_meta(meta);
+    //    PythonFunction< std::vector<ISMRMRD::MetaContainer> > mk_vector_meta("__main__", "mk_vector_meta");
+    //    std::vector<ISMRMRD::MetaContainer> meta_res = mk_vector_meta(meta);
 
-        for (int n = 0; n<meta.size(); n++)
-        {
-            GDEBUG_STREAM("Meta data : " << n);
-            GDEBUG_STREAM("-------------------------------------------------");
-            std::stringstream meta_res_str;
-            ISMRMRD::serialize(meta_res[n], meta_res_str);
-            GDEBUG_STREAM(meta_res_str.str());
-        }
-    }
+    //    for (int n = 0; n<meta.size(); n++)
+    //    {
+    //        GDEBUG_STREAM("Meta data : " << n);
+    //        GDEBUG_STREAM("-------------------------------------------------");
+    //        std::stringstream meta_res_str;
+    //        ISMRMRD::serialize(meta_res[n], meta_res_str);
+    //        GDEBUG_STREAM(meta_res_str.str());
+    //    }
+    //}
 
     char* gt_home = std::getenv("GADGETRON_HOME");
     if (gt_home != NULL)
@@ -375,6 +375,59 @@ int main(int argc, char** argv)
         GILLock gl;
         boost::python::exec(add_path_cmd.c_str(),
             boost::python::import("__main__").attr("__dict__"));
+    }
+
+    if (gt_home != NULL)
+    {
+        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+        GDEBUG_STREAM("Test converter for ISDMRMRD::IsmrmrdReconData");
+
+        {
+            GILLock gl;     // this is needed
+            boost::python::object main(boost::python::import("__main__"));
+            boost::python::object global(main.attr("__dict__"));
+            boost::python::exec("import ismrmrd\n"
+                "def mk_ismrmrd_recon_data(array_data): \n"
+                "   print(array_data.data.data.shape)\n"
+                "   print(array_data.data.headers[3, 4, 0])\n"
+                "   array_data.data.headers[3, 4, 0].version=345\n"
+                "   array_data.data.waveform[2].version=34500\n"
+                "   return array_data\n",
+                global, global);
+        }
+
+        Gadgetron::IsmrmrdReconData array_data;
+        array_data.rbit_.resize(1);
+        array_data.rbit_[0].data_.data_.create(192, 144, 1, 32, 4, 5, 2); // [RO E1 E2 CHA N S SLC]
+        array_data.rbit_[0].data_.headers_.create(4, 5, 2);
+        array_data.rbit_[0].data_.waveform_.resize(10);
+
+        size_t n;
+        for (n = 0; n<array_data.rbit_[0].data_.data_.get_number_of_elements(); n++)
+        {
+            array_data.rbit_[0].data_.data_(n) = std::complex<float>(3.0, 124.2);
+        }
+
+        memset(array_data.rbit_[0].data_.headers_.get_data_ptr(), 0, sizeof(ISMRMRD::AcquisitionHeader) * 8);
+
+        for (n = 0; n<array_data.rbit_[0].data_.headers_.get_number_of_elements(); n++)
+        {
+            array_data.rbit_[0].data_.headers_(n).version = 123;
+        }
+
+        for (n = 0; n < 10; n++)
+        {
+            array_data.rbit_[0].data_.waveform_[n].head.version = 42;
+        }
+
+        PythonFunction< Gadgetron::IsmrmrdReconData > mk_ismrmrd_recon_data("__main__", "mk_ismrmrd_recon_data");
+        Gadgetron::IsmrmrdReconData array_res = mk_ismrmrd_recon_data(array_data);
+
+        GDEBUG_STREAM(array_data.rbit_[0].data_.data_(65558));
+        GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(2, 2, 0).version);
+        GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(1, 2, 0).version);
+
+        GDEBUG_STREAM(array_data.rbit_[0].data_.waveform_[2].head.version);
     }
 
     if (gt_home != NULL)
@@ -467,58 +520,7 @@ int main(int argc, char** argv)
         GDEBUG_STREAM(meta_res_str.str());
     }
 
-    if (gt_home != NULL)
-    {
-        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
-        GDEBUG_STREAM("Test converter for ISDMRMRD::IsmrmrdReconData");
-
-        {
-            GILLock gl;     // this is needed
-            boost::python::object main(boost::python::import("__main__"));
-            boost::python::object global(main.attr("__dict__"));
-            boost::python::exec("import ismrmrd\n"
-                "def mk_ismrmrd_recon_data(array_data): \n"
-                "   print(array_data.data.data.shape)\n"
-                "   print(array_data.data.headers[3, 4, 0])\n"
-                "   array_data.data.headers[3, 4, 0].version=345\n"
-                "   array_data.data.waveform[2].version=34500\n"
-                "   return array_data\n",
-                global, global);
-        }
-
-        Gadgetron::IsmrmrdReconData array_data;
-        array_data.rbit_.resize(1);
-        array_data.rbit_[0].data_.data_.create(192, 144, 1, 32, 4, 5, 2); // [RO E1 E2 CHA N S SLC]
-        array_data.rbit_[0].data_.headers_.create(4, 5, 2);
-        array_data.rbit_[0].data_.waveform_.resize(10);
-
-        size_t n;
-        for (n = 0; n<array_data.rbit_[0].data_.data_.get_number_of_elements(); n++)
-        {
-            array_data.rbit_[0].data_.data_(n) = std::complex<float>(3.0, 124.2);
-        }
-
-        memset(array_data.rbit_[0].data_.headers_.get_data_ptr(), 0, sizeof(ISMRMRD::AcquisitionHeader) * 8);
-
-        for (n = 0; n<array_data.rbit_[0].data_.headers_.get_number_of_elements(); n++)
-        {
-            array_data.rbit_[0].data_.headers_(n).version = 123;
-        }
-
-        for (n = 0; n < 10; n++)
-        {
-            array_data.rbit_[0].data_.waveform_[n].head.version = 42;
-        }
-
-        PythonFunction< Gadgetron::IsmrmrdReconData > mk_ismrmrd_recon_data("__main__", "mk_ismrmrd_recon_data");
-        Gadgetron::IsmrmrdReconData array_res = mk_ismrmrd_recon_data(array_data);
-
-        GDEBUG_STREAM(array_data.rbit_[0].data_.data_(65558));
-        GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(2, 2, 0).version);
-        GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(1, 2, 0).version);
-
-        GDEBUG_STREAM(array_data.rbit_[0].data_.waveform_[2].head.version);
-    }
+    
 
     return 0;
 }
