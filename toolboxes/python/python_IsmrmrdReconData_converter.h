@@ -41,7 +41,7 @@ namespace Gadgetron {
             auto trajectory = dataBuffer.trajectory_ ? bp::object(*dataBuffer.trajectory_) : bp::object();
             auto waveform = bp::object(dataBuffer.waveform_);
             auto sampling = SamplingDescriptionToPython(dataBuffer.sampling_);
-            auto buffer = pygadgetron.attr("IsmrmrdDataBuffered")(data, headers, waveform, sampling, trajectory);
+            auto buffer = pygadgetron.attr("IsmrmrdDataBuffered")(data, headers, sampling, trajectory, waveform);
             return buffer;
         }
 
