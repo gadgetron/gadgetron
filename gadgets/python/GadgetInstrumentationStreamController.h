@@ -67,6 +67,7 @@ namespace Gadgetron {
             register_converter<IsmrmrdReconData>();
             register_converter<IsmrmrdImageArray>();
             // ensure other types are converted
+            register_converter<hoNDArray<ISMRMRD::AcquisitionHeader>>();
             register_converter<hoNDArray<ISMRMRD::ImageHeader> >();
             register_converter<std::vector<ISMRMRD::MetaContainer> >();
             register_converter<std::vector<ISMRMRD::Waveform> >();

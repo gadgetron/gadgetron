@@ -1,4 +1,5 @@
 #pragma once
+#include "python_export.h"
 #include "python_toolbox.h"
 #include "python_numpy_wrappers.h"
 
@@ -11,7 +12,7 @@ namespace bp = boost::python;
 
 namespace Gadgetron {
 
-    class IsmrmrdReconData_to_python_object
+    class EXPORTPYTHON IsmrmrdReconData_to_python_object
     {
     public:
         static PyObject* convert(const IsmrmrdReconData & reconData) {
@@ -36,10 +37,10 @@ namespace Gadgetron {
         static bp::object DataBufferedToPython(const IsmrmrdDataBuffered & dataBuffer)
         {
             bp::object pygadgetron = bp::import("gadgetron");
-            auto data = bp::object(dataBuffer.data_);
+            auto data = boost::python::object(dataBuffer.data_);
             auto headers = boost::python::object(dataBuffer.headers_);
             auto trajectory = dataBuffer.trajectory_ ? bp::object(*dataBuffer.trajectory_) : bp::object();
-            auto waveform = bp::object(dataBuffer.waveform_);
+            auto waveform = boost::python::object(dataBuffer.waveform_);
             auto sampling = SamplingDescriptionToPython(dataBuffer.sampling_);
             auto buffer = pygadgetron.attr("IsmrmrdDataBuffered")(data, headers, sampling, trajectory, waveform);
             return buffer;
@@ -78,7 +79,7 @@ namespace Gadgetron {
 
 
     /// Used for making an hoNDArray from a NumPy array
-    struct IsmrmrdReconData_from_python_object
+    struct EXPORTPYTHON IsmrmrdReconData_from_python_object
     {
         IsmrmrdReconData_from_python_object() {
             // actually register this converter with Boost

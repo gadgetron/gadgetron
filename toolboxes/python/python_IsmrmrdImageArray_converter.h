@@ -5,6 +5,7 @@
 */
 
 #pragma once
+#include "python_export.h"
 #include "python_toolbox.h"
 #include "python_numpy_wrappers.h"
 
@@ -17,7 +18,7 @@ namespace bp = boost::python;
 
 namespace Gadgetron {
 
-    class IsmrmrdImageArray_to_python_object
+    class EXPORTPYTHON IsmrmrdImageArray_to_python_object
     {
     public:
         static PyObject* convert(const IsmrmrdImageArray & arrayData)
@@ -43,9 +44,9 @@ namespace Gadgetron {
             }*/
 
             auto pyHeaders = boost::python::object(arrayData.headers_);
-            auto pyMeta = boost::python::object(arrayData.meta_);
             auto pyWaveform = boost::python::object(arrayData.waveform_);
             auto pyAcqHeaders = boost::python::object(arrayData.acq_headers_);
+            auto pyMeta = boost::python::object(arrayData.meta_);
 
             bp::incref(pyHeaders.ptr());
             bp::incref(pyMeta.ptr());
@@ -60,7 +61,7 @@ namespace Gadgetron {
     };
 
     // ------------------------------------------------------------------------
-    struct IsmrmrdImageArray_from_python_object
+    struct EXPORTPYTHON IsmrmrdImageArray_from_python_object
     {
         IsmrmrdImageArray_from_python_object()
         {
