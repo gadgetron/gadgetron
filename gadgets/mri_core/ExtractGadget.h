@@ -35,7 +35,7 @@ namespace Gadgetron {
     GADGET_PROPERTY(extract_real, bool, "Extract real components", false);
     GADGET_PROPERTY(extract_imag, bool, "Extract imaginary component", false);
     GADGET_PROPERTY(extract_phase, bool, "Extract phase", false);
-    GADGET_PROPERTY(force_positive, bool, "Subtract smallest value from image", false);
+    GADGET_PROPERTY(real_imag_offset, float, "Offset to add to real and imag images", 0.0f);
 
     virtual int process(GadgetContainerMessage <ISMRMRD::ImageHeader> *m1,
                         GadgetContainerMessage <hoNDArray<std::complex<float> >> *m2) override;
