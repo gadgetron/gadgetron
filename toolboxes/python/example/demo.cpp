@@ -82,6 +82,93 @@ int main(int argc, char** argv)
             GILLock gl;     // this is needed
             boost::python::object main(boost::python::import("__main__"));
             boost::python::object global(main.attr("__dict__"));
+            boost::python::exec("def modify(head): head.version = head.version+1; return head",
+                global, global);
+        }
+
+
+        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+        GDEBUG_STREAM("Test converter for ISMRMRD::WaveformHeader");
+        ISMRMRD::WaveformHeader wav_head, wav_head2;
+        wav_head.version = 41;
+        std::cout << "version before: " << wav_head.version << std::endl;
+        PythonFunction<ISMRMRD::WaveformHeader> modify_wav_header("__main__", "modify");
+        wav_head2 = modify_wav_header(wav_head);
+        std::cout << "version after: " << wav_head2.version << std::endl;
+    }
+
+    {
+        {
+            GILLock gl;     // this is needed
+            boost::python::object main(boost::python::import("__main__"));
+            boost::python::object global(main.attr("__dict__"));
+            boost::python::exec("def modify(head): head.version = head.version+1; return head",
+                global, global);
+        }
+
+
+        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+        GDEBUG_STREAM("Test converter for ISMRMRD::Waveform");
+        ISMRMRD::Waveform wav1, wav2;
+        wav1.head.version = 41;
+        wav1.head.channels = 1;
+        wav1.head.number_of_samples = 12;
+        wav1.data = new uint32_t[wav1.head.channels*wav1.head.number_of_samples];
+        for (size_t n = 0; n < wav1.head.channels*wav1.head.number_of_samples; n++)
+            wav1.data[n] = n;
+
+        std::cout << "version before: " << wav1.head.version << std::endl;
+        PythonFunction<ISMRMRD::Waveform> modify_wav_header("__main__", "modify");
+        wav2 = modify_wav_header(wav1);
+        std::cout << "version after: " << wav2.head.version << std::endl;
+        std::cout << "contents: " << std::endl;
+        for (size_t n = 0; n < wav1.head.channels*wav1.head.number_of_samples; n++)
+            std::cout << wav2.data[n] << " ";
+        std::cout << std::endl;
+    }
+
+    {
+        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+        GDEBUG_STREAM("Test converter for std::vector<ISMRMRD::Waveform>");
+        {
+            GILLock gl;     // this is needed
+            boost::python::object main(boost::python::import("__main__"));
+            boost::python::object global(main.attr("__dict__"));
+            boost::python::exec("import ismrmrd\n"
+                "def mk_vector_waveform(wav): \n"
+                "   print(len(wav))\n"
+                "   for x in wav:\n"
+                "       print(x.version)\n"
+                "       x.version=121\n"
+                "   return wav\n",
+                global, global);
+        }
+
+        std::vector<ISMRMRD::Waveform> wav(3);
+        for (size_t n = 0; n < wav.size(); n++)
+        {
+            wav[n].head.version = 41;
+            wav[n].head.channels = 1;
+            wav[n].head.number_of_samples = 12;
+            wav[n].data = new uint32_t[wav[n].head.channels*wav[n].head.number_of_samples];
+            for (size_t k = 0; k < wav[n].head.channels*wav[n].head.number_of_samples; k++)
+                wav[n].data[k] = k;
+        }
+
+        PythonFunction<std::vector<ISMRMRD::Waveform>> modify_vector_wav("__main__", "mk_vector_waveform");
+        wav = modify_vector_wav(wav);
+        std::cout << "version after: " << wav[0].head.version << std::endl;
+        std::cout << "contents: " << std::endl;
+        for (size_t n = 0; n < wav[0].head.channels*wav[0].head.number_of_samples; n++)
+            std::cout << wav[0].data[n] << " ";
+        std::cout << std::endl;
+    }
+
+    {
+        {
+            GILLock gl;     // this is needed
+            boost::python::object main(boost::python::import("__main__"));
+            boost::python::object global(main.attr("__dict__"));
             boost::python::exec("def modify(head): head.version = 42; return head",
                     global, global);
         }
