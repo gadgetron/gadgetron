@@ -46,10 +46,12 @@ class ImageArrayRecon(Gadget):
             mt.append(curr_meta)
 
         print("ImageArrayRecon, convert %d meta containers ... ", len(mt))
-        print("ImageArrayRecon, receive %d waveforms ... ", len(array_data.waveform))
 
-        if len(array_data.waveform)>0:
-            print(array_data.waveform[0].version)
+        if array_data.waveform is not None:
+            print("ImageArrayRecon, receive %d waveforms ... ", len(array_data.waveform))
+
+            if len(array_data.waveform)>0:
+                print(array_data.waveform[0].version)
             
         for slc in range(0,SLC):
             for s in range(0,S):
