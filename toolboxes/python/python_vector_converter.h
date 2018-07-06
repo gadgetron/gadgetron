@@ -236,6 +236,7 @@ struct vector_to_numpy_array<ISMRMRD::Waveform>
             for (size_t n = 0; n<vec.size(); n++)
             {
                 auto curr_wav = bp::object(vec[n]);
+                bp::incref(curr_wav.ptr());
                 pyVecWav.append(curr_wav);
 
             }

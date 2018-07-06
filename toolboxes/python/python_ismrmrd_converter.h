@@ -167,6 +167,18 @@ struct Waveform_to_PythonWaveform
             bp::object module = bp::import("ismrmrd");
             bp::object pyWav = module.attr("Waveform")();
 
+            bool has_data = false;
+            //hoNDArray<float> data;
+            //if (meta.data && meta.head.channels*meta.head.number_of_samples > 0)
+            //{
+            //    data.create(meta.head.channels*meta.head.number_of_samples);
+            //    // memcpy(data.begin(), meta.data, data.get_number_of_bytes());
+            //    for (size_t n = 0; n < meta.head.channels*meta.head.number_of_samples; n++)
+            //        data[n] = meta.data[n];
+
+            //    has_data = true;
+            //}
+
             hoNDArray<float> data;
             if (meta.data && meta.head.channels*meta.head.number_of_samples > 0)
             {
@@ -174,12 +186,16 @@ struct Waveform_to_PythonWaveform
                 // memcpy(data.begin(), meta.data, data.get_number_of_bytes());
                 for (size_t n = 0; n < meta.head.channels*meta.head.number_of_samples; n++)
                     data[n] = meta.data[n];
+
+                has_data = true;
             }
 
             auto header = boost::python::object(meta.head);
+            bp::incref(header.ptr());
             pyWav.attr("_Waveform__head") = header;
 
-            auto d = boost::python::object(data);
+            auto d = has_data ? boost::python::object(data) : boost::python::object();
+            bp::incref(d.ptr());
 
             /*pyWav.attr("channels") = meta.head.channels;
             pyWav.attr("sample_time_us") = meta.head.sample_time_us;
@@ -247,6 +263,10 @@ struct Waveform_from_PythonWaveform
             hoNDArray<float> data = bp::extract<hoNDArray<float>>(pyWav.attr("_Waveform__data"));
             wav->data = new uint32_t[data.get_number_of_elements()];
             for (size_t n = 0; n < data.get_number_of_elements(); n++) wav->data[n] = data(n);
+
+            //hoNDArray<uint32_t > data = bp::extract<hoNDArray<uint32_t>>(pyWav.attr("_Waveform__data"));
+            //wav->data = data.begin();
+            //data.delete_data_on_destruct(false);
         }
         catch (const bp::error_already_set&)
         {

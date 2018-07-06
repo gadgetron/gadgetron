@@ -2,6 +2,7 @@
 #define MRI_CORE_DATA_H
 
 #include "ismrmrd/ismrmrd.h"
+#include "ismrmrd/waveform.h"
 #include "ismrmrd/meta.h"
 #include <vector>
 #include <set>
@@ -154,7 +155,9 @@ namespace Gadgetron
     
     //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
-    
+
+    std::vector<ISMRMRD::Waveform> waveform_;
+
     SamplingDescription sampling_;
 
     IsmrmrdDataBuffered() {}
@@ -175,6 +178,7 @@ namespace Gadgetron
         
         this->headers_.copyFrom(obj.headers_);
         this->sampling_ = obj.sampling_;
+        this->waveform_ = obj.waveform_;
     }
 
     ~IsmrmrdDataBuffered() {}
@@ -243,6 +247,12 @@ namespace Gadgetron
     //3D, fixed order [N, S, LOC]
     //This element is optional (length is 0 if not present)
     std::vector< ISMRMRD::MetaContainer > meta_;
+
+    // wave form
+    std::vector< ISMRMRD::Waveform> waveform_;
+
+    // acquisition header, [Y, Z, N, S, LOC]
+    hoNDArray< ISMRMRD::AcquisitionHeader > acq_headers_;
 
 //    IsmrmrdImageArray() {}
 //    IsmrmrdImageArray(const IsmrmrdImageArray& obj)

@@ -257,6 +257,34 @@ int main(int argc, char** argv)
     }
 
     {
+        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+        GDEBUG_STREAM("Test for hoNDArray<ISMRMRD::AcquisitionHeader>")
+        {
+            GILLock gl;     // this is needed
+            boost::python::object main(boost::python::import("__main__"));
+            boost::python::object global(main.attr("__dict__"));
+            boost::python::exec("import ismrmrd\n"
+                "def mk_acq_headers(acq_head_array): \n"
+                "   acq_head_array[2,4].version=120\n"
+                "   print(acq_head_array[0,0])\n"
+                "   print(acq_head_array[2,4])\n"
+                "   return acq_head_array\n",
+                global, global);
+        }
+
+        hoNDArray<ISMRMRD::AcquisitionHeader> acq_head_array;
+        acq_head_array.create(30, 10);
+        for (int n = 0; n<acq_head_array.get_number_of_elements(); n++)
+            acq_head_array(n).version = 345;
+
+        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+        GDEBUG_STREAM("Test converter for PythonFunction<hoNDArray<ISMRMRD::AcquisitionHeader> >");
+        PythonFunction<hoNDArray<ISMRMRD::AcquisitionHeader> > mk_acq_headers("__main__", "mk_acq_headers");
+        acq_head_array = mk_acq_headers(acq_head_array);
+        std::cout << acq_head_array(2, 4).version << std::endl;
+    }
+
+    {
         ISMRMRD::MetaContainer meta;
         meta.set("TestLong", (long)1);
         meta.append("TestLong", (long)2);
@@ -363,6 +391,7 @@ int main(int argc, char** argv)
                 "   print(array_data.data.shape)\n"
                 "   print(array_data.data[128, 56, 0, 12, 3, 4, 1])\n"
                 "   print(array_data.headers[3, 4, 0])\n"
+                "   print(array_data.acq_headers[3, 4, 0])\n"
                 "   mt = list()\n"
                 "   for x in array_data.meta:\n"
                 "       curr_meta = ismrmrd.Meta.deserialize(x)\n"
@@ -382,6 +411,8 @@ int main(int argc, char** argv)
         array_data.data_.create(192, 144, 1, 32, 4, 5, 2); // [RO E1 E2 CHA N S SLC]
         array_data.headers_.create(4, 5, 2);
         array_data.meta_.resize(4*5*2);
+        array_data.waveform_.resize(10);
+        array_data.acq_headers_.create(4, 5, 2);
 
         size_t n;
         for (n=0; n<array_data.data_.get_number_of_elements(); n++)
@@ -394,6 +425,7 @@ int main(int argc, char** argv)
         for (n = 0; n<array_data.headers_.get_number_of_elements(); n++)
         {
             array_data.headers_(n).version = 123;
+            array_data.acq_headers_(n).version = 12300;
         }
 
         for (int n=0; n<4 * 5 * 2; n++)
@@ -411,16 +443,91 @@ int main(int argc, char** argv)
             array_data.meta_[n].append("TestString", "a test!");
         }
 
+        for (n = 0; n < 10; n++)
+        {
+            array_data.waveform_[n].head.version = 42;
+            array_data.waveform_[n].head.channels = 1;
+            array_data.waveform_[n].head.number_of_samples = 12;
+            array_data.waveform_[n].data = new uint32_t[12];
+            for (size_t k = 0; k<12; k++)
+            {
+                array_data.waveform_[n].data[k] = k;
+            }
+        }
+
         PythonFunction< Gadgetron::IsmrmrdImageArray > mk_ismrmrd_image_array("__main__", "mk_ismrmrd_image_array");
         Gadgetron::IsmrmrdImageArray array_res = mk_ismrmrd_image_array(array_data);
 
         GDEBUG_STREAM(array_data.data_(65558));
         GDEBUG_STREAM(array_data.headers_(2, 2, 0).version);
         GDEBUG_STREAM(array_data.headers_(1, 2, 0).version);
+        GDEBUG_STREAM(array_data.acq_headers_(1, 2, 0).version);
 
         std::stringstream meta_res_str;
         ISMRMRD::serialize(array_res.meta_[6], meta_res_str);
         GDEBUG_STREAM(meta_res_str.str());
+
+        GDEBUG_STREAM(array_data.waveform_[1].head.version);
+    }
+
+    if (gt_home != NULL)
+    {
+        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+        GDEBUG_STREAM("Test converter for ISDMRMRD::IsmrmrdReconData");
+
+        {
+            GILLock gl;     // this is needed
+            boost::python::object main(boost::python::import("__main__"));
+            boost::python::object global(main.attr("__dict__"));
+            boost::python::exec("import ismrmrd\n"
+                "def mk_ismrmrd_recon_data(array_data): \n"
+                "   print(array_data[0].data.data.shape)\n"
+                "   print(array_data[0].data.headers[3, 4, 0])\n"
+                "   array_data[0].data.headers[3, 4, 0].version=345\n"
+                "   return array_data\n",
+                global, global);
+        }
+
+        Gadgetron::IsmrmrdReconData array_data;
+        array_data.rbit_.resize(1);
+        array_data.rbit_[0].data_.data_.create(192, 144, 1, 2, 4, 5, 2); // [RO E1 E2 CHA N S SLC]
+        array_data.rbit_[0].data_.headers_.create(4, 5, 2);
+        array_data.rbit_[0].data_.waveform_.resize(10);
+
+        size_t n;
+        for (n = 0; n<array_data.rbit_[0].data_.data_.get_number_of_elements(); n++)
+        {
+            array_data.rbit_[0].data_.data_(n) = std::complex<float>(3.0, 124.2);
+        }
+
+        memset(array_data.rbit_[0].data_.headers_.get_data_ptr(), 0, sizeof(ISMRMRD::AcquisitionHeader) * 8);
+
+        for (n = 0; n<array_data.rbit_[0].data_.headers_.get_number_of_elements(); n++)
+        {
+            array_data.rbit_[0].data_.headers_(n).version = 123;
+        }
+
+        for (n = 0; n < 10; n++)
+        {
+            array_data.rbit_[0].data_.waveform_[n].head.version = 42;
+            array_data.rbit_[0].data_.waveform_[n].head.channels = 1;
+            array_data.rbit_[0].data_.waveform_[n].head.number_of_samples = 12;
+            array_data.rbit_[0].data_.waveform_[n].data = new uint32_t[12];
+            for(size_t k=0; k<12; k++)
+            {
+                array_data.rbit_[0].data_.waveform_[n].data[k] = k;
+            }
+        }
+
+        PythonFunction< Gadgetron::IsmrmrdReconData > mk_ismrmrd_recon_data("__main__", "mk_ismrmrd_recon_data");
+        Gadgetron::IsmrmrdReconData array_res = mk_ismrmrd_recon_data(array_data);
+
+        GDEBUG_STREAM(array_data.rbit_[0].data_.data_(65558));
+        GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(2, 2, 0).version);
+        GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(1, 2, 0).version);
+        GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(3, 4, 0).version);
+
+        GDEBUG_STREAM(array_data.rbit_[0].data_.waveform_[2].head.version);
     }
 
     return 0;
