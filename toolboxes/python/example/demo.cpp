@@ -509,13 +509,13 @@ int main(int argc, char** argv)
 
         for (n = 0; n < 10; n++)
         {
-            (*array_data.rbit_[0].data_.waveform_)[n].head.version = 42;
-            (*array_data.rbit_[0].data_.waveform_)[n].head.channels = 1;
-            (*array_data.rbit_[0].data_.waveform_)[n].head.number_of_samples = 12;
-            (*array_data.rbit_[0].data_.waveform_)[n].data = new uint32_t[12];
+            (array_data.rbit_[0].data_.waveform_)[n].head.version = 42;
+            (array_data.rbit_[0].data_.waveform_)[n].head.channels = 1;
+            (array_data.rbit_[0].data_.waveform_)[n].head.number_of_samples = 12;
+            (array_data.rbit_[0].data_.waveform_)[n].data = new uint32_t[12];
             for(size_t k=0; k<12; k++)
             {
-                (*array_data.rbit_[0].data_.waveform_)[n].data[k] = k;
+                (array_data.rbit_[0].data_.waveform_)[n].data[k] = k;
             }
         }
 
@@ -527,7 +527,7 @@ int main(int argc, char** argv)
         GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(1, 2, 0).version);
         GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(3, 4, 0).version);
 
-        GDEBUG_STREAM( (*array_data.rbit_[0].data_.waveform_)[2].head.version);
+        GDEBUG_STREAM( (array_data.rbit_[0].data_.waveform_)[2].head.version);
     }
 
     return 0;

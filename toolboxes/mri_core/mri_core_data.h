@@ -157,7 +157,7 @@ namespace Gadgetron
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
 
     // waveform
-    boost::optional<std::vector<ISMRMRD::Waveform>> waveform_;
+    std::vector<ISMRMRD::Waveform> waveform_;
 
     SamplingDescription sampling_;
 
