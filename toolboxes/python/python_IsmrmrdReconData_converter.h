@@ -38,7 +38,7 @@ private:
     auto headers = boost::python::object(dataBuffer.headers_);
     auto trajectory = dataBuffer.trajectory_ ? bp::object(*dataBuffer.trajectory_) : bp::object();
     auto sampling = SamplingDescriptionToPython(dataBuffer.sampling_);
-    auto waveform = boost::python::object(dataBuffer.waveform_);
+    auto waveform = dataBuffer.waveform_ ? boost::python::object(*dataBuffer.waveform_) : bp::object();
     auto buffer = pygadgetron.attr("IsmrmrdDataBuffered")(data,headers,sampling,trajectory,waveform);
 
     bp::incref(data.ptr());
@@ -130,7 +130,9 @@ struct IsmrmrdReconData_from_python_object {
       result.trajectory_ = bp::extract<hoNDArray<float>>(pyDataBuffered.attr("trajectory"));
 
     result.headers_ = bp::extract<hoNDArray<ISMRMRD::AcquisitionHeader>>(pyDataBuffered.attr("headers"));
-    result.waveform_ = bp::extract<std::vector<ISMRMRD::Waveform>>(pyDataBuffered.attr("waveform"));
+
+    if(PyObject_HasAttrString(pyDataBuffered.ptr(), "waveform"))
+        result.waveform_ = bp::extract<std::vector<ISMRMRD::Waveform>>(pyDataBuffered.attr("waveform"));
 
     auto pySampling = pyDataBuffered.attr("sampling");
     SamplingDescription sampling;

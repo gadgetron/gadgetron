@@ -44,8 +44,8 @@ namespace Gadgetron {
 
             auto pyHeaders = boost::python::object(arrayData.headers_);
             auto pyMeta = boost::python::object(arrayData.meta_);
-            auto pyWav = boost::python::object(arrayData.waveform_);
-            auto pyAcqHeaders = boost::python::object(arrayData.acq_headers_);
+            auto pyWav = arrayData.waveform_ ? boost::python::object(*arrayData.waveform_) : boost::python::object();
+            auto pyAcqHeaders = arrayData.acq_headers_ ? boost::python::object(*arrayData.acq_headers_) : boost::python::object();
 
             bp::incref(data.ptr());
             bp::incref(pyHeaders.ptr());
@@ -85,14 +85,19 @@ namespace Gadgetron {
             IsmrmrdImageArray* reconData = new (storage) IsmrmrdImageArray;
             data->convertible = storage;
 
-            try {
+            try
+            {
                 bp::object pyImageArray((bp::handle<>(bp::borrowed(obj))));
 
                 reconData->data_ = bp::extract<hoNDArray<std::complex<float>>>(pyImageArray.attr("data"));
                 reconData->headers_ = bp::extract<hoNDArray<ISMRMRD::ImageHeader>>(pyImageArray.attr("headers"));
                 reconData->meta_ = bp::extract<std::vector<ISMRMRD::MetaContainer>>(pyImageArray.attr("meta"));
-                reconData->waveform_ = bp::extract<std::vector<ISMRMRD::Waveform>>(pyImageArray.attr("waveform"));
-                reconData->acq_headers_ = bp::extract<hoNDArray<ISMRMRD::AcquisitionHeader>>(pyImageArray.attr("acq_headers"));
+
+                if (PyObject_HasAttrString(pyImageArray.ptr(), "waveform"))
+                    reconData->waveform_ = bp::extract<std::vector<ISMRMRD::Waveform>>(pyImageArray.attr("waveform"));
+
+                if (PyObject_HasAttrString(pyImageArray.ptr(), "acq_headers"))
+                    reconData->acq_headers_ = bp::extract<hoNDArray<ISMRMRD::AcquisitionHeader>>(pyImageArray.attr("acq_headers"));
             }
             catch (const bp::error_already_set&)
             {

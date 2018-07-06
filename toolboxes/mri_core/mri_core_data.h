@@ -157,7 +157,7 @@ namespace Gadgetron
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
 
     // waveform
-    std::vector<ISMRMRD::Waveform> waveform_;
+    boost::optional<std::vector<ISMRMRD::Waveform>> waveform_;
 
     SamplingDescription sampling_;
 
@@ -250,10 +250,10 @@ namespace Gadgetron
     std::vector< ISMRMRD::MetaContainer > meta_;
 
     // wave form
-    std::vector< ISMRMRD::Waveform> waveform_;
+    boost::optional<std::vector< ISMRMRD::Waveform>> waveform_;
 
     // acquisition header, [Y, Z, N, S, LOC]
-    hoNDArray< ISMRMRD::AcquisitionHeader > acq_headers_;
+    boost::optional<hoNDArray< ISMRMRD::AcquisitionHeader >> acq_headers_;
 
 
     ~IsmrmrdImageArray() = default;

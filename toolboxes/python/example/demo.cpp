@@ -411,8 +411,8 @@ int main(int argc, char** argv)
         array_data.data_.create(192, 144, 1, 32, 4, 5, 2); // [RO E1 E2 CHA N S SLC]
         array_data.headers_.create(4, 5, 2);
         array_data.meta_.resize(4*5*2);
-        array_data.waveform_.resize(10);
-        array_data.acq_headers_.create(4, 5, 2);
+        array_data.waveform_ = std::vector<ISMRMRD::Waveform>(10);
+        array_data.acq_headers_ = hoNDArray<ISMRMRD::AcquisitionHeader>(4, 5, 2);
 
         size_t n;
         for (n=0; n<array_data.data_.get_number_of_elements(); n++)
@@ -425,7 +425,7 @@ int main(int argc, char** argv)
         for (n = 0; n<array_data.headers_.get_number_of_elements(); n++)
         {
             array_data.headers_(n).version = 123;
-            array_data.acq_headers_(n).version = 12300;
+            (*array_data.acq_headers_)(n).version = 12300;
         }
 
         for (int n=0; n<4 * 5 * 2; n++)
@@ -445,13 +445,13 @@ int main(int argc, char** argv)
 
         for (n = 0; n < 10; n++)
         {
-            array_data.waveform_[n].head.version = 42;
-            array_data.waveform_[n].head.channels = 1;
-            array_data.waveform_[n].head.number_of_samples = 12;
-            array_data.waveform_[n].data = new uint32_t[12];
+            (*array_data.waveform_)[n].head.version = 42;
+            (*array_data.waveform_)[n].head.channels = 1;
+            (*array_data.waveform_)[n].head.number_of_samples = 12;
+            (*array_data.waveform_)[n].data = new uint32_t[12];
             for (size_t k = 0; k<12; k++)
             {
-                array_data.waveform_[n].data[k] = k;
+                (*array_data.waveform_)[n].data[k] = k;
             }
         }
 
@@ -461,13 +461,13 @@ int main(int argc, char** argv)
         GDEBUG_STREAM(array_data.data_(65558));
         GDEBUG_STREAM(array_data.headers_(2, 2, 0).version);
         GDEBUG_STREAM(array_data.headers_(1, 2, 0).version);
-        GDEBUG_STREAM(array_data.acq_headers_(1, 2, 0).version);
+        GDEBUG_STREAM( (*array_data.acq_headers_)(1, 2, 0).version);
 
         std::stringstream meta_res_str;
         ISMRMRD::serialize(array_res.meta_[6], meta_res_str);
         GDEBUG_STREAM(meta_res_str.str());
 
-        GDEBUG_STREAM(array_data.waveform_[1].head.version);
+        GDEBUG_STREAM( (*array_data.waveform_)[1].head.version);
     }
 
     if (gt_home != NULL)
@@ -492,7 +492,7 @@ int main(int argc, char** argv)
         array_data.rbit_.resize(1);
         array_data.rbit_[0].data_.data_.create(192, 144, 1, 2, 4, 5, 2); // [RO E1 E2 CHA N S SLC]
         array_data.rbit_[0].data_.headers_.create(4, 5, 2);
-        array_data.rbit_[0].data_.waveform_.resize(10);
+        array_data.rbit_[0].data_.waveform_ = std::vector<ISMRMRD::Waveform>(10);
 
         size_t n;
         for (n = 0; n<array_data.rbit_[0].data_.data_.get_number_of_elements(); n++)
@@ -509,13 +509,13 @@ int main(int argc, char** argv)
 
         for (n = 0; n < 10; n++)
         {
-            array_data.rbit_[0].data_.waveform_[n].head.version = 42;
-            array_data.rbit_[0].data_.waveform_[n].head.channels = 1;
-            array_data.rbit_[0].data_.waveform_[n].head.number_of_samples = 12;
-            array_data.rbit_[0].data_.waveform_[n].data = new uint32_t[12];
+            (*array_data.rbit_[0].data_.waveform_)[n].head.version = 42;
+            (*array_data.rbit_[0].data_.waveform_)[n].head.channels = 1;
+            (*array_data.rbit_[0].data_.waveform_)[n].head.number_of_samples = 12;
+            (*array_data.rbit_[0].data_.waveform_)[n].data = new uint32_t[12];
             for(size_t k=0; k<12; k++)
             {
-                array_data.rbit_[0].data_.waveform_[n].data[k] = k;
+                (*array_data.rbit_[0].data_.waveform_)[n].data[k] = k;
             }
         }
 
@@ -527,7 +527,7 @@ int main(int argc, char** argv)
         GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(1, 2, 0).version);
         GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(3, 4, 0).version);
 
-        GDEBUG_STREAM(array_data.rbit_[0].data_.waveform_[2].head.version);
+        GDEBUG_STREAM( (*array_data.rbit_[0].data_.waveform_)[2].head.version);
     }
 
     return 0;
