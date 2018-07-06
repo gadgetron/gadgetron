@@ -19,6 +19,7 @@ class BucketRecon(Gadget):
 
     def process(self, recondata,*args):
 
+        print("\nHaving %d waveform" % len(recondata[0].data.waveform))
         print(np.shape(recondata[0].data.data))
 
         image = transform.transform_kspace_to_image(recondata[0].data.data,dim=(0,1,2))
@@ -45,6 +46,7 @@ class BucketRecon(Gadget):
         #Return image to Gadgetron
         self.put_next(img_head,image)
         print("Slice ", img_head.slice)
+        print("----------------------------------------------")
         return 0    
         #print "Returning to Gadgetron"
  

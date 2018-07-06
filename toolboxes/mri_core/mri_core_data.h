@@ -156,6 +156,7 @@ namespace Gadgetron
     //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
 
+    // waveform
     std::vector<ISMRMRD::Waveform> waveform_;
 
     SamplingDescription sampling_;
@@ -254,13 +255,6 @@ namespace Gadgetron
     // acquisition header, [Y, Z, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > acq_headers_;
 
-//    IsmrmrdImageArray() {}
-//    IsmrmrdImageArray(const IsmrmrdImageArray& obj)
-//    {
-//        this->data_.copyFrom(obj.data_);
-//        this->headers_.copyFrom(obj.headers_);
-//        this->meta_ = obj.meta_;
-//    }
 
     ~IsmrmrdImageArray() = default;
   };
