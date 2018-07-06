@@ -29,10 +29,16 @@ namespace Gadgetron {
            static bp::object module = bp::import("ismrmrd");
            return module.attr("ImageHeader");
        }
-              template<> bp::object python_module<ISMRMRD::WaveformHeader>(){
+
+      template<> bp::object python_module<ISMRMRD::WaveformHeader>(){
            static bp::object module = bp::import("ismrmrd");
            return module.attr("WaveformHeader");
-       }
+      }
+
+      template<> bp::object python_module<ISMRMRD::ISMRMRD_WaveformHeader>() {
+          static bp::object module = bp::import("ismrmrd");
+          return module.attr("WaveformHeader");
+      }
     }
 // -------------------------------------------------------------------------------------------------------
 // ISMRMRD::AcquisitionHeader
@@ -267,6 +273,17 @@ inline void create_ismrmrd_WaveformHeader_converter() {
         Header_from_PythonHeader<ISMRMRD::WaveformHeader>();
     }
 }
+
+inline void create_ismrmrd_ISMRMRD_WaveformHeader_converter() {
+    bp::type_info info = bp::type_id<ISMRMRD::ISMRMRD_WaveformHeader>();
+    const bp::converter::registration* reg = bp::converter::registry::query(info);
+    // only register if not already registered!
+    if (nullptr == reg || nullptr == (*reg).m_to_python) {
+        bp::to_python_converter<ISMRMRD::ISMRMRD_WaveformHeader,Header_to_PythonHeader<ISMRMRD::ISMRMRD_WaveformHeader>>();
+        Header_from_PythonHeader<ISMRMRD::ISMRMRD_WaveformHeader>();
+    }
+}
+
 /// Create and register AcquisitionHeader converter as necessary
 inline void create_ismrmrd_AcquisitionHeader_converter() {
     bp::type_info info = bp::type_id<ISMRMRD::AcquisitionHeader>();
@@ -324,6 +341,13 @@ template<> struct python_converter<ISMRMRD::WaveformHeader> {
     static void create()
     {
         create_ismrmrd_WaveformHeader_converter();
+    }
+};
+
+template<> struct python_converter<ISMRMRD::ISMRMRD_WaveformHeader> {
+    static void create()
+    {
+        create_ismrmrd_ISMRMRD_WaveformHeader_converter();
     }
 };
 // -------------------------------------------------------------------------------------------------------

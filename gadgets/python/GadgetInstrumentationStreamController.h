@@ -62,15 +62,17 @@ namespace Gadgetron {
             register_converter<ISMRMRD::ImageHeader>();
             register_converter<ISMRMRD::AcquisitionHeader>();
             register_converter<ISMRMRD::WaveformHeader>();
+            register_converter<ISMRMRD::ISMRMRD_WaveformHeader>();
             register_converter<ISMRMRD::Waveform>();
             register_converter<ISMRMRD::MetaContainer>();
-            register_converter<IsmrmrdReconData>();
-            register_converter<IsmrmrdImageArray>();
             // ensure other types are converted
             register_converter<hoNDArray<ISMRMRD::AcquisitionHeader>>();
             register_converter<hoNDArray<ISMRMRD::ImageHeader> >();
             register_converter<std::vector<ISMRMRD::MetaContainer> >();
             register_converter<std::vector<ISMRMRD::Waveform> >();
+
+            register_converter<IsmrmrdReconData>();
+            register_converter<IsmrmrdImageArray>();
 
             cntrl_ = new GadgetInstrumentationStreamController;
         }

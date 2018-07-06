@@ -58,16 +58,17 @@ namespace Gadgetron {
             register_converter<ISMRMRD::ImageHeader>();
             register_converter<ISMRMRD::AcquisitionHeader>();
             register_converter<ISMRMRD::WaveformHeader>();
+            register_converter<ISMRMRD::ISMRMRD_WaveformHeader>();
             register_converter<ISMRMRD::Waveform>();
-
-            register_converter<IsmrmrdReconData>();
-            register_converter<IsmrmrdImageArray>();
 
             register_converter< std::vector< std::complex<float> > >();
             register_converter< std::vector< float > >();
             register_converter< std::vector< unsigned short > >();
             register_converter< std::vector<ISMRMRD::MetaContainer> >();
             register_converter< std::vector<ISMRMRD::Waveform> >();
+
+            register_converter<IsmrmrdReconData>();
+            register_converter<IsmrmrdImageArray>();
 
             std::string pypath = python_path.value();
             std::string pymod = python_module.value();
