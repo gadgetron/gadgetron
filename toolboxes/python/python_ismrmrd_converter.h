@@ -30,14 +30,9 @@ namespace Gadgetron {
            return module.attr("ImageHeader");
        }
 
-      template<> bp::object python_module<ISMRMRD::WaveformHeader>(){
+      template<> bp::object python_module<ISMRMRD::ISMRMRD_WaveformHeader>(){
            static bp::object module = bp::import("ismrmrd");
            return module.attr("WaveformHeader");
-      }
-
-      template<> bp::object python_module<ISMRMRD::ISMRMRD_WaveformHeader>() {
-          static bp::object module = bp::import("ismrmrd");
-          return module.attr("WaveformHeader");
       }
     }
 // -------------------------------------------------------------------------------------------------------
@@ -265,16 +260,6 @@ struct Waveform_from_PythonWaveform
 // -------------------------------------------------------------------------------------------------------
 /// Create and register WaveformHeader converter as necessary
 inline void create_ismrmrd_WaveformHeader_converter() {
-    bp::type_info info = bp::type_id<ISMRMRD::WaveformHeader>();
-    const bp::converter::registration* reg = bp::converter::registry::query(info);
-    // only register if not already registered!
-    if (nullptr == reg || nullptr == (*reg).m_to_python) {
-        bp::to_python_converter<ISMRMRD::WaveformHeader,Header_to_PythonHeader<ISMRMRD::WaveformHeader>>();
-        Header_from_PythonHeader<ISMRMRD::WaveformHeader>();
-    }
-}
-
-inline void create_ismrmrd_ISMRMRD_WaveformHeader_converter() {
     bp::type_info info = bp::type_id<ISMRMRD::ISMRMRD_WaveformHeader>();
     const bp::converter::registration* reg = bp::converter::registry::query(info);
     // only register if not already registered!
@@ -337,19 +322,13 @@ inline void create_ismrmrd_Waveform_converter()
 
 // -------------------------------------------------------------------------------------------------------
 /// Partial specialization of `python_converter` for ISMRMRD::AcquisitionHeader
-template<> struct python_converter<ISMRMRD::WaveformHeader> {
+template<> struct python_converter<ISMRMRD::ISMRMRD_WaveformHeader> {
     static void create()
     {
         create_ismrmrd_WaveformHeader_converter();
     }
 };
 
-template<> struct python_converter<ISMRMRD::ISMRMRD_WaveformHeader> {
-    static void create()
-    {
-        create_ismrmrd_ISMRMRD_WaveformHeader_converter();
-    }
-};
 // -------------------------------------------------------------------------------------------------------
 /// Partial specialization of `python_converter` for ISMRMRD::AcquisitionHeader
 template<> struct python_converter<ISMRMRD::AcquisitionHeader> {

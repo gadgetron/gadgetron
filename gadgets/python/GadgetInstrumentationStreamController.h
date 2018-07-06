@@ -61,7 +61,6 @@ namespace Gadgetron {
             // ensure boost can convert ISMRMRD headers automatically
             register_converter<ISMRMRD::ImageHeader>();
             register_converter<ISMRMRD::AcquisitionHeader>();
-            register_converter<ISMRMRD::WaveformHeader>();
             register_converter<ISMRMRD::ISMRMRD_WaveformHeader>();
             register_converter<ISMRMRD::Waveform>();
             register_converter<ISMRMRD::MetaContainer>();
