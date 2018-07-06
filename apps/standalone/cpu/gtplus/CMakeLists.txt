@@ -7,6 +7,7 @@ if (MATLAB_FOUND)
     set(CMAKE_DEBUG_POSTFIX)
 
     include_directories( 
+        ${CMAKE_BINARY_DIR}/toolboxes/core
         ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/klt/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/mri_core

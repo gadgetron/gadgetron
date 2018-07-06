@@ -20,14 +20,17 @@ if ( WIN32 )
 
     find_file(PYTHON_EXECUTABLE NAMES python.exe HINTS "#{PATHON3_PATH}")
     if (PYTHON_EXECUTABLE)
+        message("PYTHON_EXECUTABLE is ${PYTHON_EXECUTABLE}")
         set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Where the python3 exe are stored")
         set(PYTHONLIBS_FOUND 1)
         set(PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Where the python3 exe are stored")
         set(PYTHON_INCLUDE_DIRS ${PATHON3_PATH}/include CACHE FILEPATH "Path to python.h")
+        set(PYTHON_INCLUDE_DIR ${PYTHON_INCLUDE_DIRS})
 
         FILE(GLOB var "${PATHON3_PATH}/libs/python*.lib")
 
         set(PYTHON_INCLUDE_PATH "${PYTHON_INCLUDE_DIR}")
+        message("PYTHON_INCLUDE_PATH is ${PYTHON_INCLUDE_PATH}")
         if(PYTHON_INCLUDE_DIR AND EXISTS "${PYTHON_INCLUDE_DIR}/patchlevel.h")
             file(STRINGS "${PYTHON_INCLUDE_DIR}/patchlevel.h" python_version_str
                 REGEX "^#define[ \t]+PY_VERSION[ \t]+\"[^\"]+\"")

@@ -161,6 +161,9 @@ namespace Gadgetron {
                 this->compute_image_header(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
+                recon_obj_[e].recon_res_.waveform_ = recon_bit_->rbit_[e].data_.waveform_;
+                recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
+
                 // ---------------------------------------------------------------
 
                 // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(recon_obj_[e].recon_res_.data_, debug_folder_full_path_ + "recon_res" + os.str()); }

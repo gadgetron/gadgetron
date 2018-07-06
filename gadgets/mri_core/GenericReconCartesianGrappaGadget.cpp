@@ -234,6 +234,8 @@ namespace Gadgetron {
                         res.data_ = snr_map;
                         res.headers_ = recon_obj_[e].recon_res_.headers_;
                         res.meta_ = recon_obj_[e].recon_res_.meta_;
+                        res.waveform_ = recon_bit_->rbit_[e].data_.waveform_;
+                        res.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
 
                         this->send_out_image_array(recon_bit_->rbit_[e], res, e,
                                                    image_series.value() + 100 * ((int) e + 3), GADGETRON_IMAGE_SNR_MAP);

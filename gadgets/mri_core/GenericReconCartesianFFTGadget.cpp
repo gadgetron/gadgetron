@@ -159,12 +159,12 @@ namespace Gadgetron {
                     this->gt_exporter_.export_array_complex(recon_obj_[e].recon_res_.data_, debug_folder_full_path_ + "recon_res" + os.str());
                 }
 
+                recon_obj_[e].recon_res_.waveform_ = recon_bit_->rbit_[e].data_.waveform_;
+                recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
+
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianFFTGadget::send_out_image_array"); }
                 this->send_out_image_array(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
                 if (perform_timing.value()) { gt_timer_.stop(); }
-
-              
-
             }
 
             recon_obj_[e].recon_res_.data_.clear();
