@@ -65,6 +65,9 @@ namespace Gadgetron {
             GDEBUG_CONDITION_STREAM(verbose.value(),
                                     "======================================================================");
 
+	    GDEBUG_CONDITION_STREAM(verbose.value(),
+                "Coming with wave form data  " << recon_bit_->rbit_[e].data_.waveform_.size() << " , encoding space : " << e);
+	    
             // ---------------------------------------------------------------
             // export incoming data
 
@@ -178,6 +181,9 @@ namespace Gadgetron {
                 this->compute_image_header(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e);
                 if (perform_timing.value()) { gt_timer_.stop(); }
 
+                recon_obj_[e].recon_res_.waveform_ = recon_bit_->rbit_[e].data_.waveform_;
+                recon_obj_[e].recon_res_.acq_headers_ = recon_bit_->rbit_[e].data_.headers_;
+		
                 // ---------------------------------------------------------------
 
                 if (!debug_folder_full_path_.empty()) {

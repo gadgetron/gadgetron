@@ -58,17 +58,26 @@ class Gadget(object):
                     header = args[0]
                     if (args[1].dtype == np.uint16):
                         if len(args) == 3:
-                            self.next_gadget.return_image_ushort_attr(header,args[1], args[2].serialize())
+                            if isinstance(args[2], ismrmrd.Meta):
+                                self.next_gadget.return_image_ushort_attr(header,args[1], args[2].serialize())
+                            else:
+                                self.next_gadget.return_image_ushort_attr(header,args[1], str(args[2]))
                         else:
                             self.next_gadget.return_image_ushort(header,args[1])
                     elif (args[1].dtype == np.float32):
                         if len(args) == 3:
-                            self.next_gadget.return_image_float_attr(header, args[1], args[2].serialize())
+                            if isinstance(args[2], ismrmrd.Meta):
+                                self.next_gadget.return_image_float_attr(header, args[1], args[2].serialize())
+                            else:
+                                self.next_gadget.return_image_float_attr(header, args[1], str(args[2]))
                         else:
                             self.next_gadget.return_image_float(header,args[1])
                     else:
                         if len(args) == 3:
-                            self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), str(args[2].serialize()))
+                            if isinstance(args[2], ismrmrd.Meta):
+                                self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), str(args[2].serialize()))
+                            else:
+                                self.next_gadget.return_image_cplx_attr(header, args[1].astype('complex64'), str(args[2]))
                         else:
                             self.next_gadget.return_image_cplx(header,args[1].astype('complex64'))
                 elif len(args[0]) > 0 and isinstance(args[0][0],IsmrmrdReconBit): 
