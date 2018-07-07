@@ -41,14 +41,18 @@ namespace Gadgetron {
             }
         }
 
-        {
+        // since most python gadgets do not handle waveform yet 
+        // and by default, waveform is passed down the chain (this is special), 
+        // these lines can cause failure of python recon
+        // TODO: a better solution for python waveform handling
+        /*{
             if (auto waveform_header = AsContainerMessage<ISMRMRD::ISMRMRD_WaveformHeader>(mb)){
                 if (auto waveform_data = AsContainerMessage<hoNDArray<uint32_t>>(mb->cont())){
                     return this->process(waveform_header,waveform_data);
                 }
 
             }
-        }
+        }*/
 
         if (pass_on_undesired_data.value()) {
             return this->next()->putq(mb);
