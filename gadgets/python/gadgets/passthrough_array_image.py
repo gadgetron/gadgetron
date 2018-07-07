@@ -4,7 +4,7 @@ from gadgetron import Gadget
 
 class ArrayImagePassThrough(Gadget):
     def __init__(self,next_gadget=None):
-        super(ArrayImage,self).__init__(next_gadget=next_gadget)
+        super(ArrayImagePassThrough,self).__init__(next_gadget=next_gadget)
         self.counter = []
 
     def process_config(self, cfg):
