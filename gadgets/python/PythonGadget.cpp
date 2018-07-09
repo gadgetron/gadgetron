@@ -27,7 +27,7 @@ namespace Gadgetron {
         {
             auto recon_data = AsContainerMessage<IsmrmrdReconData>(mb);
             if (recon_data) {
-                GDEBUG("Calling into python gadget with IsmrmrdReconData");
+                GDEBUG("Calling into python gadget with IsmrmrdReconData\n");
                 return this->process(recon_data);
             }
         }
@@ -36,7 +36,7 @@ namespace Gadgetron {
             auto array_data = AsContainerMessage<IsmrmrdImageArray>(mb);
             if (array_data)
             {
-                GDEBUG("Calling into python gadget with IsmrmrdImageArray");
+                GDEBUG("Calling into python gadget with IsmrmrdImageArray\n");
                 return this->process(array_data);
             }
         }
