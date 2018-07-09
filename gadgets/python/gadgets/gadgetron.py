@@ -209,13 +209,12 @@ class SamplingDescription:
         self.sampling_limits = (SamplingLimit(),SamplingLimit(),SamplingLimit())
 
 class IsmrmrdDataBuffered:
-    def __init__(self,data,headers,sampling=SamplingDescription(),trajectory=None,waveform=None):
+    def __init__(self,data,headers,sampling=SamplingDescription(),trajectory=None):
         self.data = data 
         if (trajectory is not None): 
             self.trajectory =trajectory 
         self.headers =headers 
         self.sampling = sampling
-        self.waveform = waveform
 
 class IsmrmrdReconBit:
     def __init__(self,data,ref=None):

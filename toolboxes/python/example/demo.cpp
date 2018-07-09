@@ -492,7 +492,6 @@ int main(int argc, char** argv)
         array_data.rbit_.resize(1);
         array_data.rbit_[0].data_.data_.create(192, 144, 1, 2, 4, 5, 2); // [RO E1 E2 CHA N S SLC]
         array_data.rbit_[0].data_.headers_.create(4, 5, 2);
-        array_data.rbit_[0].data_.waveform_ = std::vector<ISMRMRD::Waveform>(10);
 
         size_t n;
         for (n = 0; n<array_data.rbit_[0].data_.data_.get_number_of_elements(); n++)
@@ -507,18 +506,6 @@ int main(int argc, char** argv)
             array_data.rbit_[0].data_.headers_(n).version = 123;
         }
 
-        for (n = 0; n < 10; n++)
-        {
-            (array_data.rbit_[0].data_.waveform_)[n].head.version = 42;
-            (array_data.rbit_[0].data_.waveform_)[n].head.channels = 1;
-            (array_data.rbit_[0].data_.waveform_)[n].head.number_of_samples = 12;
-            (array_data.rbit_[0].data_.waveform_)[n].data = new uint32_t[12];
-            for(size_t k=0; k<12; k++)
-            {
-                (array_data.rbit_[0].data_.waveform_)[n].data[k] = k;
-            }
-        }
-
         PythonFunction< Gadgetron::IsmrmrdReconData > mk_ismrmrd_recon_data("__main__", "mk_ismrmrd_recon_data");
         Gadgetron::IsmrmrdReconData array_res = mk_ismrmrd_recon_data(array_data);
 
@@ -526,8 +513,6 @@ int main(int argc, char** argv)
         GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(2, 2, 0).version);
         GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(1, 2, 0).version);
         GDEBUG_STREAM(array_data.rbit_[0].data_.headers_(3, 4, 0).version);
-
-        GDEBUG_STREAM( (array_data.rbit_[0].data_.waveform_)[2].head.version);
     }
 
     return 0;
