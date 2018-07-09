@@ -18,22 +18,16 @@ RUN apt-get install --no-install-recommends --no-install-suggests --yes linux-he
 
 RUN mkdir /opt/code
 RUN cd /opt/code
-RUN wget https://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda-repo-ubuntu1704-9-0-local_9.0.176-1_amd64-deb
-RUN dpkg -i cuda-repo-ubuntu1704-9-0-local_9.0.176-1_amd64-deb
-RUN apt-key add /var/cuda-repo-9-0-local/7fa2af80.pub
-RUN apt-get update --quiet && apt-get install cuda --no-install-recommends --no-install-suggests --yes
 
-RUN wget https://developer.nvidia.com/compute/cuda/9.0/Prod/patches/1/cuda-repo-ubuntu1704-9-0-local-cublas-performance-update_1.0-1_amd64-deb
-RUN dpkg -i cuda-repo-ubuntu1704-9-0-local-cublas-performance-update_1.0-1_amd64-deb
-RUN apt-get update --quiet && apt-get upgrade --yes cuda
+RUN wget https://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda_9.0.176_384.81_linux-run
+RUN sh ./cuda_9.0.176_384.81_linux-run --silent --driver --toolkit --samples --override
 
-RUN wget https://developer.nvidia.com/compute/cuda/9.0/Prod/patches/2/cuda-repo-ubuntu1704-9-0-local-cublas-performance-update-2_1.0-1_amd64-deb
-RUN dpkg -i cuda-repo-ubuntu1704-9-0-local-cublas-performance-update-2_1.0-1_amd64-deb
-RUN apt-get update --quiet && apt-get upgrade --yes cuda
-
-RUN wget https://developer.nvidia.com/compute/cuda/9.0/Prod/patches/3/cuda-repo-ubuntu1704-9-0-local-cublas-performance-update-3_1.0-1_amd64-deb
-RUN dpkg -i cuda-repo-ubuntu1704-9-0-local-cublas-performance-update-3_1.0-1_amd64-deb
-RUN apt-get update --quiet && apt-get upgrade --yes cuda
+RUN wget https://developer.nvidia.com/compute/cuda/9.0/Prod/patches/1/cuda_9.0.176.1_linux-run
+RUN sh ./cuda_9.0.176.1_linux-run --silent
+RUN wget https://developer.nvidia.com/compute/cuda/9.0/Prod/patches/2/cuda_9.0.176.2_linux-run
+RUN sh ./cuda_9.0.176.2_linux-run --silent
+RUN wget https://developer.nvidia.com/compute/cuda/9.0/Prod/patches/3/cuda_9.0.176.3_linux-run
+RUN sh ./cuda_9.0.176.3_linux-run --silent  
 
 COPY /docker/cudnn-9.0-linux-x64-v7.tgz /opt/code/
 
