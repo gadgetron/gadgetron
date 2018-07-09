@@ -49,10 +49,12 @@ class ImageArrayRecon(Gadget):
 
         if array_data.waveform is not None:
             print("ImageArrayRecon, receive %d waveforms ... ", len(array_data.waveform))
-
             if len(array_data.waveform)>0:
                 print(array_data.waveform[0].version)
-            
+
+        if array_data.acq_headers is not None:
+            print("ImageArrayRecon, receive acq headers ... ", array_data.acq_headers.shape)
+
         for slc in range(0,SLC):
             for s in range(0,S):
                 for phs in range(0,PHS):
