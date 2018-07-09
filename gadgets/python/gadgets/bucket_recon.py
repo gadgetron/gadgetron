@@ -17,10 +17,7 @@ class BucketRecon(Gadget):
         self.header = ismrmrd.xsd.CreateFromDocument(conf)
         self.enc = self.header.encoding[0]
 
-    def process(self, recondata,waveform=None):
-
-        if waveform is not None:
-            print("\nHaving %d waveform" % len(waveform))
+    def process(self, recondata):
 
         print(np.shape(recondata[0].data.data))
 

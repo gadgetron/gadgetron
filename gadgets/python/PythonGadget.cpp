@@ -26,10 +26,9 @@ namespace Gadgetron {
 
         {
             auto recon_data = AsContainerMessage<IsmrmrdReconData>(mb);
-            auto wav_data = AsContainerMessage< std::vector<ISMRMRD::Waveform> >(mb->cont());
             if (recon_data) {
                 GDEBUG("Calling into python gadget with IsmrmrdReconData");
-                return this->process(recon_data, wav_data);
+                return this->process(recon_data);
             }
         }
 

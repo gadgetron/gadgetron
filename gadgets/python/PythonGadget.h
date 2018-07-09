@@ -157,7 +157,7 @@ namespace Gadgetron {
             return GADGET_OK;
         }
 
-        int process(GadgetContainerMessage<IsmrmrdReconData>* recon_data, GadgetContainerMessage< std::vector<ISMRMRD::Waveform> >* wav_data)
+        int process(GadgetContainerMessage<IsmrmrdReconData>* recon_data)
         {
             if (!recon_data) {
                 GERROR("Received null pointer to data block");
@@ -182,8 +182,7 @@ namespace Gadgetron {
             try {
                 boost::python::object process_fn = class_.attr("process");
                 auto pyrecon_data = boost::python::object(*recon_data->getObjectPtr());
-                auto pyrecon_wav_data = wav_data ? boost::python::object(*wav_data->getObjectPtr()) : boost::python::object();
-                int res = boost::python::extract<int>(process_fn(pyrecon_data, pyrecon_wav_data));
+                int res = boost::python::extract<int>(process_fn(pyrecon_data));
                 if (res != GADGET_OK) {
                     GDEBUG("Gadget (%s) Returned from python call with error\n",
                         this->module()->name());
@@ -191,7 +190,6 @@ namespace Gadgetron {
                 }
                 //Else we are done with this now.
                 recon_data->release();
-                if (!wav_data) wav_data->release();
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Passing data on to python module failed\n");
