@@ -156,9 +156,6 @@ namespace Gadgetron
     //5D, fixed order [E1, E2, N, S, LOC]
     hoNDArray< ISMRMRD::AcquisitionHeader > headers_;
 
-    // waveform
-    std::vector<ISMRMRD::Waveform> waveform_;
-
     SamplingDescription sampling_;
 
     IsmrmrdDataBuffered() {}
@@ -179,7 +176,6 @@ namespace Gadgetron
         
         this->headers_.copyFrom(obj.headers_);
         this->sampling_ = obj.sampling_;
-        this->waveform_ = obj.waveform_;
     }
 
     ~IsmrmrdDataBuffered() {}

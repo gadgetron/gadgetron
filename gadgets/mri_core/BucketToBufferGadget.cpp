@@ -238,7 +238,18 @@ namespace Gadgetron {
                     std::vector<ISMRMRD::Waveform>& wav = m1->getObjectPtr()->waveform_;
                     if (!wav.empty())
                     {
-                        it->second->getObjectPtr()->rbit_[0].data_.waveform_ = wav;
+                        GadgetContainerMessage< std::vector<ISMRMRD::Waveform> >* m3 = new GadgetContainerMessage< std::vector<ISMRMRD::Waveform> >();
+                        if (m3)
+                        {
+                            *m3->getObjectPtr() = wav;
+                            it->second->cont(m3);
+                        }
+                        else
+                        {
+                            GWARN_STREAM("Create wave form message failed ... ");
+                        }
+
+                        // it->second->getObjectPtr()->rbit_[0].data_.waveform_ = wav;
                     }
 
                     if (this->next()->putq(it->second) == -1) {
