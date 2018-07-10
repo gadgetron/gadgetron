@@ -37,6 +37,8 @@ RUN pip3 install tensorboardx visdom
 # fix the  qhull reentrant problem
 # RUN pip uninstall -y scipy
 
+RUN mkdir /opt/code
+
 #OpenBLAS with OpenMP
 RUN cd /opt && \
     mkdir debsource && \
