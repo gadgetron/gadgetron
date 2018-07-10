@@ -11,6 +11,7 @@ namespace Gadgetron
 {
     ComplexToFloatGadget::ComplexToFloatGadget()
     {
+      this->msg_queue()->high_water_mark((size_t)(12.0 * 1024 * 1024 * 1024));
     }
 
     ComplexToFloatGadget::~ComplexToFloatGadget()
