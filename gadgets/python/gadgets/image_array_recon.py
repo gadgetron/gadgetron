@@ -45,12 +45,10 @@ class ImageArrayRecon(Gadget):
             curr_meta = ismrmrd.Meta.deserialize(x)
             mt.append(curr_meta)
 
-        print("ImageArrayRecon, convert %d meta containers ... ", len(mt))
+        print("ImageArrayRecon, convert %d meta containers ... " % len(mt))
 
         if array_data.waveform is not None:
-            print("ImageArrayRecon, receive %d waveforms ... ", len(array_data.waveform))
-            if len(array_data.waveform)>0:
-                print(array_data.waveform[0].version)
+            print("ImageArrayRecon, receive %d waveforms ... " % len(array_data.waveform))
 
         if array_data.acq_headers is not None:
             print("ImageArrayRecon, receive acq headers ... ", array_data.acq_headers.shape)
@@ -60,7 +58,7 @@ class ImageArrayRecon(Gadget):
                 for phs in range(0,PHS):
                     print("send out image %d-%d-%d" % (phs, s, slc))
                     a = array_data.data[:,:,:,:,phs,s,slc]
-                    print(a.shape)
+                    # print(a.shape)
                     self.put_next(array_data.headers[phs,s,slc], a)
         
         """
