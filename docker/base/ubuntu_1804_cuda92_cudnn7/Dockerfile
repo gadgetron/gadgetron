@@ -26,7 +26,8 @@ RUN pip3 install Cython tk-tools matplotlib scikit-image opencv_python pydicom s
 RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
 
-RUN pip3 install --upgrade tensorflow tensorflow-gpu
+# tensorflow does not work with cuda92
+RUN pip3 install --upgrade tensorflow 
 RUN pip3 install http://download.pytorch.org/whl/cu91/torch-0.4.0-cp36-cp36m-linux_x86_64.whl 
 RUN pip3 install torchvision
 RUN pip3 install tensorboardx visdom
