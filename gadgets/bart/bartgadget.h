@@ -20,7 +20,7 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
-
+#include "gadgetron_home.h"
 
 #if defined (WIN32)
 #ifdef __BUILD_GADGETRON_bartgadget__
