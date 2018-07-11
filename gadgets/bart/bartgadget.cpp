@@ -8,7 +8,6 @@
 ****************************************************************************************************************************/
 
 #include "bartgadget.h"
-#include <gadgetron_paths.h>
 #include <boost/tokenizer.hpp>
 #include <sstream>
 #include <utility>

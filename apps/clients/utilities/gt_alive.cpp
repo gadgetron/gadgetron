@@ -1,7 +1,6 @@
 #include "GadgetronConnector.h"
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
-#include "FileInfo.h"
 
 #include <ace/SOCK_Acceptor.h>
 #include <ace/Addr.h>
