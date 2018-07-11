@@ -8,8 +8,6 @@
 #include <boost/algorithm/string.hpp>
 
 // #include "Gadget.h"             // for GADGET_OK/FAIL
-#include "gadgetron_paths.h"    // for get_gadgetron_home()
-#include "gadgetron_config.h"   // for GADGETRON_PYTHON_PATH
 
 #define GADGET_FAIL -1
 #define GADGET_OK    0
@@ -45,17 +43,6 @@ int initialize_python(void)
 
         PyEval_ReleaseThread(tstate);
         python_initialized = true; // interpreter successfully initialized
-
-        //Let's first get the path set for the library folder
-        std::string gadgetron_home = get_gadgetron_home();
-        std::string path_name = gadgetron_home + std::string("/") + std::string(GADGETRON_PYTHON_PATH);
-
-        if (gadgetron_home.size() != 0) {
-            if (add_python_path(path_name) == GADGET_FAIL) {
-                GDEBUG("python_toolbox failed to add path %s\n", path_name.c_str());
-                return GADGET_FAIL;
-            }
-        }
     }
     return GADGET_OK;
 }

@@ -13,7 +13,6 @@
 #include "GenericReconGadget.h"
 #include "gadgetron_mricore_export.h"
 #include "mri_core_data.h"
-#include <gadgetron_paths.h>
 #include <boost/filesystem.hpp>
 #include <vector>
 #include <cassert>

@@ -3,7 +3,6 @@
 #include <mutex>
 #include "gadgetron_matlab_export.h"
 #include "Gadget.h"
-#include "gadgetron_paths.h"
 #include "hoNDArray.h"
 #include "ismrmrd/ismrmrd.h"
 #include "engine.h"     // Matlab Engine header

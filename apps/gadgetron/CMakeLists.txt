@@ -78,6 +78,7 @@ add_library(gadgetron_gadgetbase SHARED
   GadgetStreamController.h
   GadgetStreamController.cpp
   gadgetron_xml.cpp
+  gadgetron_home.cpp
   pugixml.cpp  
   GadgetStreamInterface.h 
   GadgetStreamInterface.cpp 
@@ -111,7 +112,7 @@ install(FILES
   GadgetContainerMessage.h
   GadgetMessageInterface.h
   GadgetronExport.h
-  gadgetron_paths.h
+  gadgetron_home.h
   gadgetron_xml.h
   GadgetServerAcceptor.h
   GadgetStreamController.h

@@ -1,12 +1,14 @@
 #ifndef GADGETSTREAMINTERFACE_H
 #define GADGETSTREAMINTERFACE_H
 
+#include <boost/filesystem.hpp>
+
 #include "ace/Stream.h"
 #include "ace/DLL.h"
 #include "ace/DLL_Manager.h"
 
 #include "gadgetbase_export.h"
-#include "gadgetron_paths.h"
+#include "gadgetron_home.h"
 #include "gadgetron_xml.h"
 #include "Gadget.h"
 
@@ -87,7 +89,7 @@ namespace Gadgetron {
     bool stream_configured_;  
     std::vector<ACE_DLL_Handle*> dll_handles_;
     std::map<std::string, std::string> global_gadget_parameters_;
-    std::string gadgetron_home_;
+    boost::filesystem::path gadgetron_home_;
     GadgetronXML::GadgetStreamConfiguration stream_configuration_;
 
     virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name);

@@ -4,7 +4,7 @@
 #include "ace/DLL.h"
 #include "ace/DLL_Manager.h"
 
-#include "gadgetron_paths.h"
+#include "gadgetron_home.h"
 #include "gadgetron_xml.h"
 #include "Gadget.h"
 #include "EndGadget.h"

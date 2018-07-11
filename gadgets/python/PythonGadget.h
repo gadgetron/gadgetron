@@ -8,9 +8,13 @@
 #include "gadgetronpython_export.h"
 #include "python_toolbox.h"
 
+#include "gadgetron_home.h" // for get_gadgetron_home
+#include "gadgetron_config.h"   // for GADGETRON_PYTHON_PATH
+
 #include <ismrmrd/ismrmrd.h>
 #include <ismrmrd/meta.h>
 #include <boost/python.hpp>
+#include <boost/filesystem.hpp>
 
 namespace Gadgetron {
 
@@ -77,9 +81,13 @@ namespace Gadgetron {
             GDEBUG("Python Module          : %s\n", pymod.c_str());
             GDEBUG("Python Class           : %s\n", pyclass.c_str());
 
-            if (add_python_path(pypath) != GADGET_OK) {
-                GDEBUG("Failed to add paths in Gadget %s\n", this->module()->name());
-                return GADGET_FAIL;
+            boost::filesystem::path gadgetron_python_path = get_gadgetron_home() / std::string(GADGETRON_PYTHON_PATH);
+
+            for (std::string path : {pypath, gadgetron_python_path.generic_string()}) {
+                if (add_python_path(path) == GADGET_FAIL) {
+                    GDEBUG_STREAM("python_toolbox failed to add path: " << path << std::endl);
+                    return GADGET_FAIL;
+                }
             }
 
             std::string module_name = pymod;
