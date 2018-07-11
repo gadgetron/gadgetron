@@ -62,7 +62,7 @@ namespace Gadgetron
     Gadget* g = dynamic_cast<Gadget*>(m->writer());//Get the gadget out of the module
 
     //We will set this very high to prevent race conditions in "mixed environments" such as when using Python or Matlab in Gadgets
-    g->msg_queue()->high_water_mark(ACE_Message_Queue_Base::DEFAULT_HWM*1024*1024*100);
+    g->msg_queue()->high_water_mark( (size_t)ACE_Message_Queue_Base::DEFAULT_HWM*1024*1024*100 );
     
     if (!m) {
       GERROR("Failed to create GadgetModule from %s:%s\n",
