@@ -56,10 +56,10 @@ namespace Gadgetron {
                             {
                                 for (cha = 0; cha < CHA; cha++)
                                 {
-                                    Image2DType* pImage = ori(cha, slc, con, phs, rep, set, ave);
-                                    if (pImage != NULL)
+                                    Image2DType& img = ori(cha, slc, con, phs, rep, set, ave);
+                                    if (img.get_number_of_elements()>0)
                                     {
-                                        T v = Gadgetron::norm2(*pImage);
+                                        T v = Gadgetron::norm2(img);
                                         if (v < FLT_EPSILON) continue; // do not send out empty image
 
                                         Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
@@ -70,22 +70,22 @@ namespace Gadgetron {
                                         cm2->cont(cm3);
 
                                         // set the ISMRMRD image header
-                                        memcpy(cm1->getObjectPtr(), &pImage->header_, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
+                                        memcpy(cm1->getObjectPtr(), &img.header_, sizeof(ISMRMRD::ISMRMRD_ImageHeader));
 
                                         // set the image data
-                                        size_t RO = pImage->get_size(0);
-                                        size_t E1 = pImage->get_size(1);
-                                        size_t E2 = pImage->get_size(2);
+                                        size_t RO = img.get_size(0);
+                                        size_t E1 = img.get_size(1);
+                                        size_t E2 = img.get_size(2);
 
                                         dim3D[0] = RO;
                                         dim3D[1] = E1;
                                         dim3D[2] = E2;
 
                                         cm2->getObjectPtr()->create(dim3D);
-                                        memcpy(cm2->getObjectPtr()->get_data_ptr(), pImage->get_data_ptr(), pImage->get_number_of_bytes());
+                                        memcpy(cm2->getObjectPtr()->get_data_ptr(), img.get_data_ptr(), img.get_number_of_bytes());
 
                                         // set the attributes
-                                        *cm3->getObjectPtr() = pImage->attrib_;
+                                        *cm3->getObjectPtr() = img.attrib_;
 
                                         if (this->next()->putq(cm1) < 0)
                                         {

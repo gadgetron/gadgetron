@@ -16,7 +16,6 @@
 #include "gadgetron_mricore_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "hoNDObjectArray.h"
 
 #include "GadgetronTimer.h"
 
@@ -53,7 +52,7 @@ public:
     typedef Gadgetron::GenericReconBase< IsmrmrdImageArray > BaseClass;
 
     typedef hoMRImage<ValueType, D> ImageType;
-    typedef hoNDObjectArray<ImageType> ImageBufferType;
+    typedef hoNDArray<ImageType> ImageBufferType;
     typedef hoNDArray<bool> ImageSentFlagBufferType;
 
     GenericReconAccumulateImageTriggerGadget();
