@@ -289,6 +289,9 @@ namespace Gadgetron
         n.last_recon = 0;
 	nodes.push_back(n);
       }
+
+      infile.close();
+      
     } else {
         update_node_info();
 	{
