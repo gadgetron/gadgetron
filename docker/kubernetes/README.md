@@ -32,12 +32,27 @@ kubectl apply -f gadgetron-clusterrole.yaml
 kubectl create clusterrolebinding service-reader-pod --clusterrole=service-reader --serviceaccount=default:default
 ```
 
+5. Deploy SSH jump server:
+
+See [https://github.com/kubernetes-contrib/jumpserver](https://github.com/kubernetes-contrib/jumpserver) for details.
+
+```bash
+SSHKEY=$(cat ~/.ssh/id_rsa.pub |base64 -w 0)
+sed "s/PUBLIC_KEY/$SSHKEY/" gadgetron-ssh-secret.yaml.tmpl > gadgetron-ssh-secret.yaml
+kubectl create -f gadgetron-ssh-secret.yaml
+kubectl apply -f gadgetron-ssh-jump-server.yaml
+```
+
 To Do:
 ------
 
-* Add SSH server pod.
+* Update SSH jump box:
+    * Internalize Dockerfile and other artifacts in Gadgetron repository
+    * Generate Gadgetron specific Docker image (Ubuntu)
+    * Set "UseDNS no" in /etc/ssh/sshd_config to avoid slow login
 * Shared storage for dependencies (Azure Files)
 * Enable horizontal pod scaling
+    * Define resource requirements for the pods
 * Enable cluster scaling
 
 

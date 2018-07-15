@@ -17,11 +17,12 @@ spec:
     spec:
       containers:
       - name: gadgetron
-        image: gadgetron/ubuntu_1804_no_cuda:latest
+        image: hansenms/gadgetron_ubuntu1804_no_cuda:kub1
         command: ["gadgetron"]
-        preStop:
-        exec:
-          command: ["bash","-C","/opt/code/gadgetron/docker/kubernetes/gadgetron_kubernetes_prestop.sh"]
+        lifecycle:
+          preStop:
+            exec:
+              command: ["bash","-C","/opt/code/gadgetron/docker/kubernetes/gadgetron_kubernetes_prestop.sh"]
         ports:
         - containerPort: 9002
         - containerPort: 9080
