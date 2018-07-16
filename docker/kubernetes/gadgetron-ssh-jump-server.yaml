@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
       - name: sshd-jumpserver
-        image: kubernetesio/sshd-jumpserver
+        image: hansenms/gadgetron_ssh_jumpserver
         ports:
           - containerPort: 22
         env:

@@ -46,10 +46,6 @@ kubectl apply -f gadgetron-ssh-jump-server.yaml
 To Do:
 ------
 
-* Update SSH jump box:
-    * Internalize Dockerfile and other artifacts in Gadgetron repository
-    * Generate Gadgetron specific Docker image (Ubuntu)
-    * Set "UseDNS no" in /etc/ssh/sshd_config to avoid slow login
 * Shared storage for dependencies (Azure Files)
 * Enable horizontal pod scaling
     * Define resource requirements for the pods
