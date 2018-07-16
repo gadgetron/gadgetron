@@ -10,14 +10,12 @@ The [`gadgetron_kubernetes_prestop.sh`](gadgetron_kubernetes_prestop.sh) script 
 Deployment Instructions
 -----------------------
 
-1. Set up Kubernets cluster 
-
-(TODO: Add detailed instructions)
+1. Set up Kubernets cluster in Azure using `acs-engine`. See [detailed instructions](acs-engine/README.md).
 
 2. Deploy gadgetron kubernetes:
 
 ```
-kubectl apply -f gadgetron_kubernetes.yaml
+kubectl apply -f gadgetron-kubernetes.yaml
 ```
 
 3. Create a cluster role to allow quering services information from the containers:
@@ -37,9 +35,14 @@ kubectl create clusterrolebinding service-reader-pod --clusterrole=service-reade
 See [https://github.com/kubernetes-contrib/jumpserver](https://github.com/kubernetes-contrib/jumpserver) for details.
 
 ```bash
+#Get an SSH key, here we are using the one for the current user
 SSHKEY=$(cat ~/.ssh/id_rsa.pub |base64 -w 0)
 sed "s/PUBLIC_KEY/$SSHKEY/" gadgetron-ssh-secret.yaml.tmpl > gadgetron-ssh-secret.yaml
+
+#Create a secret with the key
 kubectl create -f gadgetron-ssh-secret.yaml
+
+#Deploy the jump server
 kubectl apply -f gadgetron-ssh-jump-server.yaml
 ```
 
