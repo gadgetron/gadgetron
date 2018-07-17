@@ -35,7 +35,7 @@ sp=$(az ad sp create-for-rbac --role contributor --scopes $rgid)
 Convert API Template
 --------------------
 
-The acs-engine ([acs-engine project](https://github.com/Azure/acs-engine)) api model needs to be populated with details, e.g. service principle, etc. In this repository, there is a [script](convert-api.sh) for that. You can use it like this:
+The acs-engine ([acs-engine project](https://github.com/Azure/acs-engine)) api model contains the definition of the cluster. You can edit the node vm types, etc., in the file [`kubernetes.json`](kubernetes.json). The file also needs to be populated with details, e.g. service principle, etc. In this repository, there is a [script](convert-api.sh) for that. You can use it like this:
 
 ```bash
 ./convert-api.sh -c $(echo $sp | jq -r .appId) \

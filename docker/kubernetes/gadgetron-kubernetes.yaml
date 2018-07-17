@@ -29,7 +29,23 @@ spec:
         ports:
         - containerPort: 9002
         - containerPort: 9080
+        volumeMounts:
+        - mountPath: "/tmp/gadgetron"
+          name: gtdependencies
+        - mountPath: "/tmp/gadgetron_data"
+          name: gtdata
       terminationGracePeriodSeconds: 600
+      volumes:
+      - name: gtdependencies
+        azureFile:
+          secretName: azure-gtstorage-secret
+          shareName: gtdependencies
+          readOnly: false
+      - name: gtdata
+        azureFile:
+          secretName: azure-gtstorage-secret
+          shareName: gtdata
+          readOnly: false
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
