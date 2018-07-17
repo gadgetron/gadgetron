@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: sshd-jumpserver-rc
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sshd-jumpserver
+    spec:
+      containers:
+      - name: sshd-jumpserver
+        image: hansenms/gadgetron_ssh_jumpserver
+        ports:
+          - containerPort: 22
+        env:
+          - name: PUBLIC_KEY
+            valueFrom:
+              secretKeyRef:
+                name: sshkey
+                key: authorizedkeys
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sshd-jumpserver-svc
+  labels:
+    name: sshd-jumpserver-svc
+spec:
+  ports:
+    - name: ssh
+      port: 22
+  type: "LoadBalancer"
+  selector:
+    app: sshd-jumpserver
+

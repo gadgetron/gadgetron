@@ -1,5 +1,6 @@
 #include "CloudBus.h"
 #include "log.h"
+#include <fstream>
 
 namespace Gadgetron
 {
@@ -254,6 +255,7 @@ namespace Gadgetron
   
   void CloudBus::get_node_info(std::vector<GadgetronNodeInfo>& nodes)
   {
+
     if (use_lb_endpoint_) {
         GadgetronNodeInfo n;
         n.port = lb_port_;
@@ -264,6 +266,32 @@ namespace Gadgetron
         n.last_recon = 0;
         nodes.clear();
         nodes.push_back(n);
+    } else if (const char* env_p = std::getenv("KUBERNETES_SERVICE_HOST")) {
+      //We are in Kubernetes. Use Kubernetes fabric to discover endpoints
+      int ret = std::system("bash -C /opt/code/gadgetron/docker/kubernetes/gadgetron_kubernetes_node_info.sh > /tmp/node_info.txt");
+      if (ret) {
+	GERROR("Unable to run Kubernetes node info command\n");
+	return;
+      }
+ 
+      std::ifstream infile("/tmp/node_info.txt");
+      std::string address;
+      int active_recons;
+
+      nodes.clear();
+      while (infile >> address >> active_recons) {
+        GadgetronNodeInfo n;
+        n.port = 9002;
+        n.address = address;
+        n.rest_port = 9080;
+        n.compute_capability = 1;
+        n.active_reconstructions = active_recons;
+        n.last_recon = 0;
+	nodes.push_back(n);
+      }
+
+      infile.close();
+      
     } else {
         update_node_info();
 	{
