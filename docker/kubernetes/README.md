@@ -64,6 +64,22 @@ Deployment Instructions
     kubectl apply -f gadgetron-ssh-jump-server.yaml
     ```
 
+Connecting with SSH to the jump server
+--------------------------------------
+
+The jump sever enables the "standard" Gadgetron connection paradigm through an SSH tunnel. The Gadgetron instances themselves are not directly accessible. Discover the relvant IPs and open a tunnel with:
+
+```bash
+#Public (external) IP:
+EXTERNALIP=$(kubectl get svc sshd-jumpserver-svc --output=json | jq -r .status.loadBalancer.ingress[0].ip)
+
+#Internal (cluster) IP:
+GTCLUSTERIP=$(kubectl get svc gadgetron-frontend --output=json | jq -r .spec.clusterIP)
+
+#Open tunnel:
+ssh -L 9022:${GTCLUSTERIP}:9002 root@${EXTERNALIP}
+```
+
 Updates and Maintenance
 -----------------------
 
