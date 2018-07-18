@@ -312,7 +312,6 @@ namespace Gadgetron {
         }
 
         imageSentBuffer_.create(dim_limit_under_trigger_);
-        imageSentBuffer_.delete_data_on_destruct(false);
     }
 
     template <typename T, int D>
@@ -363,7 +362,7 @@ namespace Gadgetron {
                 size_t nElem = imageBuffer_.get_number_of_elements();
                 for (ii = 0; ii<nElem; ii++)
                 {
-                    imageBuffer_(ii) = NULL;
+                    imageBuffer_(ii) = ImageType();
                     imageSent_(ii) = false;
                 }
             }
@@ -383,7 +382,7 @@ namespace Gadgetron {
                 size_t nElem = otherBuffer_.get_number_of_elements();
                 for (ii = 0; ii<nElem; ii++)
                 {
-                    otherBuffer_(ii) = NULL;
+                    otherBuffer_(ii) = ImageType();
                     otherSent_(ii) = false;
                 }
             }
@@ -418,13 +417,11 @@ namespace Gadgetron {
                             Gadgetron::GadgetContainerMessage<ImageBufferType>* cm1 = new Gadgetron::GadgetContainerMessage<ImageBufferType>();
                             ImageBufferType& imgBuf = *(cm1->getObjectPtr());
                             imgBuf.create(dim);
-                            imgBuf(0) = new ImageType();
-                            GADGET_CHECK_RETURN(imgBuf(0) != NULL, GADGET_FAIL);
 
                             // set image content
-                            imgBuf(0)->create(dimIm);
-                            ValueType* pIm = imgBuf(0)->begin();
-                            size_t numPixel = imgBuf(0)->get_number_of_elements();
+                            imgBuf(0).create(dimIm);
+                            ValueType* pIm = imgBuf(0).begin();
+                            size_t numPixel = imgBuf(0).get_number_of_elements();
 
                             std::complex<float>* pData = &(recon_res_->data_(0, 0, 0, cha, n, s, slc));
 
@@ -435,20 +432,20 @@ namespace Gadgetron {
                             }
 
                             // set image attrib
-                            imgBuf(0)->header_ = recon_res_->headers_(n, s, slc);
-                            imgBuf(0)->attrib_ = recon_res_->meta_[n + s*N + slc*N*S];
+                            imgBuf(0).header_ = recon_res_->headers_(n, s, slc);
+                            imgBuf(0).attrib_ = recon_res_->meta_[n + s*N + slc*N*S];
 
-                            imgBuf(0)->set_pixel_size(0, imgBuf(0)->header_.field_of_view[0] / RO);
-                            if (D>1) imgBuf(0)->set_pixel_size(1, imgBuf(0)->header_.field_of_view[1] / E1);
-                            if (D>2) imgBuf(0)->set_pixel_size(2, imgBuf(0)->header_.field_of_view[2] / E2);
+                            imgBuf(0).set_pixel_size(0, imgBuf(0).header_.field_of_view[0] / RO);
+                            if (D>1) imgBuf(0).set_pixel_size(1, imgBuf(0).header_.field_of_view[1] / E1);
+                            if (D>2) imgBuf(0).set_pixel_size(2, imgBuf(0).header_.field_of_view[2] / E2);
 
-                            imgBuf(0)->set_image_position((float*)(imgBuf(0)->header_.position));
+                            imgBuf(0).set_image_position((float*)(imgBuf(0).header_.position));
 
-                            imgBuf(0)->set_image_orientation(0, (float*)(imgBuf(0)->header_.read_dir));
-                            imgBuf(0)->set_image_orientation(1, (float*)(imgBuf(0)->header_.phase_dir));
-                            imgBuf(0)->set_image_orientation(2, (float*)(imgBuf(0)->header_.slice_dir));
+                            imgBuf(0).set_image_orientation(0, (float*)(imgBuf(0).header_.read_dir));
+                            imgBuf(0).set_image_orientation(1, (float*)(imgBuf(0).header_.phase_dir));
+                            imgBuf(0).set_image_orientation(2, (float*)(imgBuf(0).header_.slice_dir));
 
-                            imgBuf(0)->attrib_.set(GADGETRON_PASS_IMMEDIATE, (long)1);
+                            imgBuf(0).attrib_.set(GADGETRON_PASS_IMMEDIATE, (long)1);
 
                             if (this->next()->putq(cm1) < 0)
                             {
@@ -472,7 +469,7 @@ namespace Gadgetron {
         try
         {
             // scan the buffered images, if the trigger dimensions are complete, sent out this package
-            if(buf.get_number_of_elements()==0 || !buf.dimensions_equal(&this->dimensions_))
+            if(buf.get_number_of_elements()==0 || !buf.dimensions_equal(this->dimensions_))
             {
                 return GADGET_OK;
             }
@@ -488,7 +485,7 @@ namespace Gadgetron {
 
             size_t numOfElem = imageSentBuffer_.get_number_of_elements();
             size_t ii;
-            for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = NULL; }
+            for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = ImageType(); }
 
             for ( ave=0; ave<dim_limit_not_under_trigger_[6]; ave++ )
             {
@@ -527,7 +524,7 @@ namespace Gadgetron {
                                         }
 
                                         {
-                                            for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = NULL; }
+                                            for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = ImageType(); }
 
                                             // =================================================
 
@@ -567,25 +564,24 @@ namespace Gadgetron {
                                                                         image_sent_ind[0] = cha_t;
                                                                         // -------------------
 
-                                                                        ImageType* pImage = buf(image_ind);
+                                                                        ImageType& img = buf(image_ind);
                                                                         bool sentFlag = sentFlagBuf(image_ind);
 
                                                                         if ( inClose )
                                                                         {
                                                                             // if in close call, send out all unsent images
-                                                                            if ( pImage != NULL && !sentFlag )
+                                                                            if ( img.get_number_of_elements()>0 && !sentFlag )
                                                                             {
-                                                                                imageSentBuffer_(image_sent_ind) = pImage;
-                                                                                buf(image_ind) = NULL;
+                                                                                imageSentBuffer_(image_sent_ind) = img;
+                                                                                buf(image_ind) = ImageType();
                                                                                 needTrigger = true;
                                                                             }
                                                                         }
                                                                         else
                                                                         {
-                                                                            if ( pImage != NULL && !sentFlag )
+                                                                            if (img.get_number_of_elements()>0 && !sentFlag )
                                                                             {
-                                                                                imageSentBuffer_(image_sent_ind) = pImage;
-                                                                                // buf(image_ind) = NULL;
+                                                                                imageSentBuffer_(image_sent_ind) = img;
                                                                             }
                                                                             else
                                                                             {
@@ -636,14 +632,14 @@ namespace Gadgetron {
                                                                             bool sentFlag = sentFlagBuf(image_ind);
                                                                             if ( sentFlag )
                                                                             {
-                                                                                imageSentBuffer_(cha_t, slc_t, con_t, phs_t, rep_t, set_t, ave_t) = NULL;
+                                                                                imageSentBuffer_(cha_t, slc_t, con_t, phs_t, rep_t, set_t, ave_t) = ImageType();
                                                                             }
                                                                             else
                                                                             {
                                                                                 sentFlagBuf(image_ind) = true;
                                                                             }
 
-                                                                            buf(image_ind) = NULL;
+                                                                            buf(image_ind) = ImageType();
                                                                         }
                                                                     }
                                                                 }
@@ -664,7 +660,6 @@ namespace Gadgetron {
                                                 Gadgetron::GadgetContainerMessage<ImageBufferType>* cm1 = new Gadgetron::GadgetContainerMessage<ImageBufferType>();
                                                 ImageBufferType& imgBuf = *(cm1->getObjectPtr());
                                                 imgBuf = imageSentBuffer_;
-                                                imgBuf.delete_data_on_destruct(true);
 
                                                 if (this->next()->putq(cm1) < 0) 
                                                 {
@@ -676,7 +671,7 @@ namespace Gadgetron {
                                             {
                                                 for ( ii=0; ii<numOfElem; ii++ )
                                                 {
-                                                    imageSentBuffer_(ii) = NULL;
+                                                    imageSentBuffer_(ii) = ImageType();
                                                 }
                                             }
 
@@ -747,12 +742,11 @@ namespace Gadgetron {
                             }
 
                             // create image
-                            ImageType* storedImage = new ImageType();
-                            GADGET_CHECK_RETURN(storedImage != NULL, GADGET_FAIL);
-                            storedImage->create(dimIm);
+                            ImageType storedImage;
+                            storedImage.create(dimIm);
 
-                            ValueType* pIm = storedImage->begin();
-                            size_t numPixel = storedImage->get_number_of_elements();
+                            ValueType* pIm = storedImage.begin();
+                            size_t numPixel = storedImage.get_number_of_elements();
 
                             const std::complex<float>* pData = &(img.data_(0, 0, 0, cha, n, s, slc));
                             for (size_t ii = 0; ii < numPixel; ii++)
@@ -760,22 +754,22 @@ namespace Gadgetron {
                                 pIm[ii] = (ValueType)(pData[ii]);
                             }
 
-                            storedImage->attrib_ = img.meta_[n + s*N + slc*N*S];
-                            storedImage->header_ = img.headers_(n, s, slc);
+                            storedImage.attrib_ = img.meta_[n + s*N + slc*N*S];
+                            storedImage.header_ = img.headers_(n, s, slc);
 
-                            storedImage->set_pixel_size(0, img.headers_(n, s, slc).field_of_view[0] / RO);
-                            if (D>1) storedImage->set_pixel_size(1, img.headers_(n, s, slc).field_of_view[1] / E1);
-                            if (D>2) storedImage->set_pixel_size(2, img.headers_(n, s, slc).field_of_view[2] / E2);
+                            storedImage.set_pixel_size(0, img.headers_(n, s, slc).field_of_view[0] / RO);
+                            if (D>1) storedImage.set_pixel_size(1, img.headers_(n, s, slc).field_of_view[1] / E1);
+                            if (D>2) storedImage.set_pixel_size(2, img.headers_(n, s, slc).field_of_view[2] / E2);
 
-                            storedImage->set_image_position(0, img.headers_(n, s, slc).position[0]);
-                            storedImage->set_image_position(1, img.headers_(n, s, slc).position[1]);
-                            storedImage->set_image_position(2, img.headers_(n, s, slc).position[2]);
+                            storedImage.set_image_position(0, img.headers_(n, s, slc).position[0]);
+                            storedImage.set_image_position(1, img.headers_(n, s, slc).position[1]);
+                            storedImage.set_image_position(2, img.headers_(n, s, slc).position[2]);
 
-                            storedImage->set_image_orientation(0, (float*)(img.headers_(n, s, slc).read_dir));
-                            storedImage->set_image_orientation(1, (float*)(img.headers_(n, s, slc).phase_dir));
-                            storedImage->set_image_orientation(2, (float*)(img.headers_(n, s, slc).slice_dir));
+                            storedImage.set_image_orientation(0, (float*)(img.headers_(n, s, slc).read_dir));
+                            storedImage.set_image_orientation(1, (float*)(img.headers_(n, s, slc).phase_dir));
+                            storedImage.set_image_orientation(2, (float*)(img.headers_(n, s, slc).slice_dir));
 
-                            storedImage->attrib_.set(GADGETRON_PASS_IMMEDIATE, (long)0);
+                            storedImage.attrib_.set(GADGETRON_PASS_IMMEDIATE, (long)0);
 
                             buf(cha, slice, con, phs, rep, set, ave) = storedImage;
                         }

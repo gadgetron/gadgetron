@@ -27,7 +27,7 @@ namespace Gadgetron {
 
     hoMRImage<std::complex<float>, 3>* GenericImageReconGadgetBase::getImage3DFromImage2D(Image2DBufferType& ori, size_t cha, size_t slc, size_t con, size_t phs, size_t rep, size_t set, size_t ave)
     {
-        Image2DType* pImage2D = ori(cha, slc, 0, con, phs, rep, set, ave);
+        Image2DType* pImage2D = &ori(cha, slc, 0, con, phs, rep, set, ave);
         GADGET_CHECK_THROW(pImage2D != NULL);
 
         size_t RO = pImage2D->get_size(0);
@@ -42,7 +42,7 @@ namespace Gadgetron {
         size_t e2;
         for (e2 = 0; e2 < E2; e2++)
         {
-            pImage2D = ori(cha, slc, e2, con, phs, rep, set, ave);
+            pImage2D = &ori(cha, slc, e2, con, phs, rep, set, ave);
             GADGET_CHECK_THROW(pImage2D != NULL);
 
             memcpy(pImage3D->begin() + e2 * RO*E1, pImage2D->begin(), sizeof(ValueType)*RO*E1);
@@ -69,7 +69,7 @@ namespace Gadgetron {
 
             memcpy(pImage2D->begin(), image3D.begin() + e2 * RO*E1, sizeof(ValueType)*RO*E1);
 
-            image2DBuf(e2) = pImage2D;
+            image2DBuf(e2) = *pImage2D;
         }
 
         return true;
@@ -1202,23 +1202,24 @@ namespace Gadgetron {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
 
-        Image2DBufferType& ori = *m1->getObjectPtr();
+        Image2DBufferType ori = *m1->getObjectPtr();
+        m1->release();
 
         if (ori.get_number_of_elements() == 1)
         {
-            size_t num = (*ori(0)).attrib_.length(GADGETRON_DATA_ROLE);
+            size_t num = ori(0).attrib_.length(GADGETRON_DATA_ROLE);
             GADGET_CHECK_RETURN(num > 0, GADGET_FAIL);
 
             dataRole.resize(num);
 
             for (size_t ii = 0; ii < num; ii++)
             {
-                dataRole[ii] = std::string((*ori(0)).attrib_.as_str(GADGETRON_DATA_ROLE, ii));
+                dataRole[ii] = std::string(ori(0).attrib_.as_str(GADGETRON_DATA_ROLE, ii));
             }
 
             if (dataRole[0] == GADGETRON_IMAGE_GFACTOR)
             {
-                GADGET_CHECK_RETURN(this->storeGFactorMap((*ori(0))), GADGET_FAIL);
+                GADGET_CHECK_RETURN(this->storeGFactorMap(ori(0)), GADGET_FAIL);
 
                 if (send_out_gfactor_map_)
                 {
@@ -1293,10 +1294,10 @@ namespace Gadgetron {
                 return GADGET_OK;
             }
 
-            num = (*ori(0)).attrib_.length(GADGETRON_PASS_IMMEDIATE);
+            num = ori(0).attrib_.length(GADGETRON_PASS_IMMEDIATE);
             if (num > 0)
             {
-                long pass_image_immediately = (*ori(0)).attrib_.as_long(GADGETRON_PASS_IMMEDIATE, 0);
+                long pass_image_immediately = ori(0).attrib_.as_long(GADGETRON_PASS_IMMEDIATE, 0);
                 if (pass_image_immediately)
                 {
                     dataRole.clear();
@@ -1317,8 +1318,6 @@ namespace Gadgetron {
         this->processImageBuffer(ori);
 
         this->releaseImageBuffer(ori);
-
-        m1->release();
 
         return GADGET_OK;
     }
@@ -1328,23 +1327,24 @@ namespace Gadgetron {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
 
-        Image3DBufferType& ori = *m1->getObjectPtr();
+        Image3DBufferType ori = *m1->getObjectPtr();
+        m1->release();
 
         if (ori.get_number_of_elements() == 1)
         {
-            size_t num = (*ori(0)).attrib_.length(GADGETRON_DATA_ROLE);
+            size_t num = ori(0).attrib_.length(GADGETRON_DATA_ROLE);
             GADGET_CHECK_RETURN(num > 0, GADGET_FAIL);
 
             dataRole.resize(num);
 
             for (size_t ii = 0; ii < num; ii++)
             {
-                dataRole[ii] = std::string((*ori(0)).attrib_.as_str(GADGETRON_DATA_ROLE, ii));
+                dataRole[ii] = std::string(ori(0).attrib_.as_str(GADGETRON_DATA_ROLE, ii));
             }
 
             if (dataRole[0] == GADGETRON_IMAGE_GFACTOR)
             {
-                GADGET_CHECK_RETURN(this->storeGFactorMap((*ori(0))), GADGET_FAIL);
+                GADGET_CHECK_RETURN(this->storeGFactorMap(ori(0)), GADGET_FAIL);
 
                 if (send_out_gfactor_map_)
                 {
@@ -1419,10 +1419,10 @@ namespace Gadgetron {
                 return GADGET_OK;
             }
 
-            num = (*ori(0)).attrib_.length(GADGETRON_PASS_IMMEDIATE);
+            num = ori(0).attrib_.length(GADGETRON_PASS_IMMEDIATE);
             if (num > 0)
             {
-                long pass_image_immediately = (*ori(0)).attrib_.as_long(GADGETRON_PASS_IMMEDIATE, 0);
+                long pass_image_immediately = ori(0).attrib_.as_long(GADGETRON_PASS_IMMEDIATE, 0);
                 if (pass_image_immediately)
                 {
                     dataRole.clear();
@@ -1444,8 +1444,6 @@ namespace Gadgetron {
 
         this->releaseImageBuffer(ori);
 
-        m1->release();
-
         return GADGET_OK;
     }
 
@@ -1454,16 +1452,16 @@ namespace Gadgetron {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
 
-        size_t RO = ori(0)->get_size(0);
-        size_t E1 = ori(0)->get_size(1);
-        size_t E2 = ori(0)->get_size(2);
+        size_t RO = ori(0).get_size(0);
+        size_t E1 = ori(0).get_size(1);
+        size_t E2 = ori(0).get_size(2);
 
-        boost::shared_ptr< std::vector<size_t> > dims = ori.get_dimensions();
+        std::vector<size_t> dims = ori.get_dimensions();
         GDEBUG_CONDITION_STREAM(verbose.value(), "[RO E1 E2 Cha Slice Con Phase Rep Set Ave] = ["
             << RO << " " << E1 << " " << E2 << " "
-            << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " "
-            << (*dims)[3] << " " << (*dims)[4] << " " << (*dims)[5] << " "
-            << (*dims)[6] << " " << (*dims)[7] << "]");
+            << dims[0] << " " << dims[1] << " " << dims[2] << " "
+            << dims[3] << " " << dims[4] << " " << dims[5] << " "
+            << dims[6] << " " << dims[7] << "]");
 
         this->sendOutImages(ori, image_series_num_++, processStr, dataRole);
 
@@ -1475,16 +1473,16 @@ namespace Gadgetron {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
 
-        size_t RO = ori(0)->get_size(0);
-        size_t E1 = ori(0)->get_size(1);
-        size_t E2 = ori(0)->get_size(2);
+        size_t RO = ori(0).get_size(0);
+        size_t E1 = ori(0).get_size(1);
+        size_t E2 = ori(0).get_size(2);
 
-        boost::shared_ptr< std::vector<size_t> > dims = ori.get_dimensions();
+        std::vector<size_t> dims = ori.get_dimensions();
         GDEBUG_CONDITION_STREAM(verbose.value(), "[RO E1 E2 Cha Slice Con Phase Rep Set Ave] = ["
             << RO << " " << E1 << " " << E2 << " "
-            << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " "
-            << (*dims)[3] << " " << (*dims)[4] << " " << (*dims)[5] << " "
-            << (*dims)[6] << " " << (*dims)[7] << "]");
+            << dims[0] << " " << dims[1] << " " << dims[2] << " "
+            << dims[3] << " " << dims[4] << " " << dims[5] << " "
+            << dims[6] << " " << dims[7] << "]");
 
         this->sendOutImages(ori, image_series_num_++, processStr, dataRole);
 
@@ -1555,7 +1553,7 @@ namespace Gadgetron {
                                 {
                                     for (cha = 0; cha < CHA; cha++)
                                     {
-                                        hoMRImage<ValueType, 2>* pImage = images(cha, slc, con, phs, rep, set, ave);
+                                        hoMRImage<ValueType, 2>* pImage = &images(cha, slc, con, phs, rep, set, ave);
                                         if (pImage != NULL)
                                         {
                                             T v = Gadgetron::norm2(*pImage);
@@ -1704,7 +1702,7 @@ namespace Gadgetron {
                                 {
                                     for (cha = 0; cha < CHA; cha++)
                                     {
-                                        hoMRImage<ValueType, 2>* pImage = images(cha, slc, con, phs, rep, set, ave);
+                                        hoMRImage<ValueType, 2>* pImage = &images(cha, slc, con, phs, rep, set, ave);
                                         if (pImage != NULL)
                                         {
                                             T v = Gadgetron::norm2(*pImage);
@@ -1833,7 +1831,7 @@ namespace Gadgetron {
                                 {
                                     for (cha = 0; cha < CHA; cha++)
                                     {
-                                        hoMRImage<ValueType, 3>* pImage = images(cha, slc, con, phs, rep, set, ave);
+                                        hoMRImage<ValueType, 3>* pImage = &images(cha, slc, con, phs, rep, set, ave);
                                         if (pImage != NULL)
                                         {
                                             T v = Gadgetron::norm2(*pImage);
@@ -1982,7 +1980,7 @@ namespace Gadgetron {
                                 {
                                     for (cha = 0; cha < CHA; cha++)
                                     {
-                                        hoMRImage<ValueType, 3>* pImage = images(cha, slc, con, phs, rep, set, ave);
+                                        hoMRImage<ValueType, 3>* pImage = &images(cha, slc, con, phs, rep, set, ave);
                                         if (pImage != NULL)
                                         {
                                             T v = Gadgetron::norm2(*pImage);
@@ -2066,41 +2064,11 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
-    {
-        try
-        {
-            size_t N = buf.get_number_of_elements();
-            size_t ii;
-            for (ii = 0; ii < N; ii++)
-            {
-                buf(ii) = NULL;
-            }
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Errors happened in GenericImageReconGadget::fillWithNULL(buf) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
     bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
     {
         try
         {
-            size_t N = buf.get_number_of_elements();
-            size_t ii;
-            for (ii = 0; ii < N; ii++)
-            {
-                hoMRImage<ValueType, 2>* pImage = buf(ii);
-                if (buf.delete_data_on_destruct() && pImage != NULL)
-                {
-                    delete pImage;
-                    buf(ii) = NULL;
-                }
-            }
+            buf.clear();
         }
         catch (...)
         {
@@ -2111,41 +2079,11 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf)
-    {
-        try
-        {
-            size_t N = buf.get_number_of_elements();
-            size_t ii;
-            for (ii = 0; ii < N; ii++)
-            {
-                buf(ii) = NULL;
-            }
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Errors happened in GenericImageReconGadget::fillWithNULL(buf) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
     bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf)
     {
         try
         {
-            size_t N = buf.get_number_of_elements();
-            size_t ii;
-            for (ii = 0; ii < N; ii++)
-            {
-                hoMRImage<ValueType, 3>* pImage = buf(ii);
-                if (buf.delete_data_on_destruct() && pImage != NULL)
-                {
-                    delete pImage;
-                    buf(ii) = NULL;
-                }
-            }
+            buf.clear();
         }
         catch (...)
         {

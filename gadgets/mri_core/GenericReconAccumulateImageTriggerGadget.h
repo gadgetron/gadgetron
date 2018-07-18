@@ -16,7 +16,6 @@
 #include "gadgetron_mricore_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "hoNDObjectArray.h"
 
 #include "GadgetronTimer.h"
 
@@ -30,6 +29,7 @@
 
 #include "hoNDArray_utils.h"
 #include "hoMRImage.h"
+#include "hoNDObjectArray.h"
 
 #include "GenericReconBase.h"
 
