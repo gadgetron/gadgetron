@@ -40,7 +40,6 @@ namespace Gadgetron
         bool dimensions_equal(const std::vector<size_t>& d) const;
 
         std::vector<size_t> get_dimensions() const;
-        void get_dimensions(std::vector<size_t>*& dim) const;
         void get_dimensions(std::vector<size_t>& dim) const;
 
         size_t get_number_of_elements() const;
@@ -256,12 +255,6 @@ namespace Gadgetron
     inline std::vector<size_t> hoNDObjectArray<TObjectType>::get_dimensions() const
     {
         return this->dimensions_;
-    }
-
-    template <typename TObjectType>
-    inline void hoNDObjectArray<TObjectType>::get_dimensions(std::vector<size_t>*& dim) const
-    {
-        dim = this->dimensions_.get();
     }
 
     template <typename TObjectType>
