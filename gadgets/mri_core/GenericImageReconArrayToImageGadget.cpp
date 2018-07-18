@@ -25,10 +25,10 @@ namespace Gadgetron {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
 
-        boost::shared_ptr< std::vector<size_t> > dims = ori.get_dimensions();
-        GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericImageReconArrayToImageGadget, [Cha Slice Con Phase Rep Set Ave] = [" << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " "
-            << (*dims)[3] << " " << (*dims)[4] << " " << (*dims)[5] << " "
-            << (*dims)[6] << "]");
+        std::vector<size_t> dims = ori.get_dimensions();
+        GDEBUG_CONDITION_STREAM(this->verbose.value(), "GenericImageReconArrayToImageGadget, [Cha Slice Con Phase Rep Set Ave] = [" << dims[0] << " " << dims[1] << " " << dims[2] << " "
+            << dims[3] << " " << dims[4] << " " << dims[5] << " "
+            << dims[6] << "]");
 
         // sending out image array
         size_t CHA = ori.get_size(0);

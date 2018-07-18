@@ -1175,8 +1175,8 @@ namespace Gadgetron {
 
     int GenericImageReconGadget::process(ACE_Message_Block *mb)
     {
-        GadgetContainerMessage< hoNDArray< hoMRImage<ValueType, 2> > >* m1 = nullptr;
-        GadgetContainerMessage< hoNDArray< hoMRImage<ValueType, 3> > >* m2 = nullptr;
+        GadgetContainerMessage< hoNDObjectArray< hoMRImage<ValueType, 2> > >* m1 = nullptr;
+        GadgetContainerMessage< hoNDObjectArray< hoMRImage<ValueType, 3> > >* m2 = nullptr;
 
         if (m1 = AsContainerMessage<Image2DBufferType>(mb))
         {
@@ -1458,12 +1458,12 @@ namespace Gadgetron {
         size_t E1 = ori(0).get_size(1);
         size_t E2 = ori(0).get_size(2);
 
-        boost::shared_ptr< std::vector<size_t> > dims = ori.get_dimensions();
+        std::vector<size_t> dims = ori.get_dimensions();
         GDEBUG_CONDITION_STREAM(verbose.value(), "[RO E1 E2 Cha Slice Con Phase Rep Set Ave] = ["
             << RO << " " << E1 << " " << E2 << " "
-            << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " "
-            << (*dims)[3] << " " << (*dims)[4] << " " << (*dims)[5] << " "
-            << (*dims)[6] << " " << (*dims)[7] << "]");
+            << dims[0] << " " << dims[1] << " " << dims[2] << " "
+            << dims[3] << " " << dims[4] << " " << dims[5] << " "
+            << dims[6] << " " << dims[7] << "]");
 
         this->sendOutImages(ori, image_series_num_++, processStr, dataRole);
 
@@ -1479,12 +1479,12 @@ namespace Gadgetron {
         size_t E1 = ori(0).get_size(1);
         size_t E2 = ori(0).get_size(2);
 
-        boost::shared_ptr< std::vector<size_t> > dims = ori.get_dimensions();
+        std::vector<size_t> dims = ori.get_dimensions();
         GDEBUG_CONDITION_STREAM(verbose.value(), "[RO E1 E2 Cha Slice Con Phase Rep Set Ave] = ["
             << RO << " " << E1 << " " << E2 << " "
-            << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " "
-            << (*dims)[3] << " " << (*dims)[4] << " " << (*dims)[5] << " "
-            << (*dims)[6] << " " << (*dims)[7] << "]");
+            << dims[0] << " " << dims[1] << " " << dims[2] << " "
+            << dims[3] << " " << dims[4] << " " << dims[5] << " "
+            << dims[6] << " " << dims[7] << "]");
 
         this->sendOutImages(ori, image_series_num_++, processStr, dataRole);
 
@@ -1759,7 +1759,7 @@ namespace Gadgetron {
                 }
             }
 
-            Gadgetron::GadgetContainerMessage<hoNDArray< hoMRImage<ValueType, 2> > >* cm1 = new Gadgetron::GadgetContainerMessage<hoNDArray< hoMRImage<ValueType, 2> > >();
+            Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<ValueType, 2> > >* cm1 = new Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<ValueType, 2> > >();
             cm1->getObjectPtr()->copyFrom(images);
 
             if (anchor != NULL)
@@ -2037,7 +2037,7 @@ namespace Gadgetron {
                 }
             }
 
-            Gadgetron::GadgetContainerMessage<hoNDArray< hoMRImage<ValueType, 3> > >* cm1 = new Gadgetron::GadgetContainerMessage<hoNDArray< hoMRImage<ValueType, 3> > >();
+            Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<ValueType, 3> > >* cm1 = new Gadgetron::GadgetContainerMessage<hoNDObjectArray< hoMRImage<ValueType, 3> > >();
             cm1->getObjectPtr()->copyFrom(images);
 
             if (anchor != NULL)
@@ -2066,7 +2066,7 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::fillWithNULL(hoNDArray< hoMRImage<ValueType, 2> >& buf)
+    bool GenericImageReconGadget::fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
     {
         try
         {
@@ -2085,7 +2085,7 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::releaseImageBuffer(hoNDArray< hoMRImage<ValueType, 2> >& buf)
+    bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
     {
         try
         {
@@ -2104,7 +2104,7 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::fillWithNULL(hoNDArray< hoMRImage<ValueType, 3> >& buf)
+    bool GenericImageReconGadget::fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf)
     {
         try
         {
@@ -2123,7 +2123,7 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::releaseImageBuffer(hoNDArray< hoMRImage<ValueType, 3> >& buf)
+    bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf)
     {
         try
         {

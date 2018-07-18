@@ -29,6 +29,7 @@
 
 #include "hoNDArray_utils.h"
 #include "hoMRImage.h"
+#include "hoNDObjectArray.h"
 
 #include "GenericReconBase.h"
 
@@ -52,7 +53,7 @@ public:
     typedef Gadgetron::GenericReconBase< IsmrmrdImageArray > BaseClass;
 
     typedef hoMRImage<ValueType, D> ImageType;
-    typedef hoNDArray<ImageType> ImageBufferType;
+    typedef hoNDObjectArray<ImageType> ImageBufferType;
     typedef hoNDArray<bool> ImageSentFlagBufferType;
 
     GenericReconAccumulateImageTriggerGadget();

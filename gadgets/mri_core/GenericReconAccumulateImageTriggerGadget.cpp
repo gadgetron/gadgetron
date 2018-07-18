@@ -312,7 +312,6 @@ namespace Gadgetron {
         }
 
         imageSentBuffer_.create(dim_limit_under_trigger_);
-        imageSentBuffer_.delete_data_on_destruct(false);
     }
 
     template <typename T, int D>
@@ -470,7 +469,7 @@ namespace Gadgetron {
         try
         {
             // scan the buffered images, if the trigger dimensions are complete, sent out this package
-            if(buf.get_number_of_elements()==0 || !buf.dimensions_equal(&this->dimensions_))
+            if(buf.get_number_of_elements()==0 || !buf.dimensions_equal(this->dimensions_))
             {
                 return GADGET_OK;
             }
@@ -661,7 +660,6 @@ namespace Gadgetron {
                                                 Gadgetron::GadgetContainerMessage<ImageBufferType>* cm1 = new Gadgetron::GadgetContainerMessage<ImageBufferType>();
                                                 ImageBufferType& imgBuf = *(cm1->getObjectPtr());
                                                 imgBuf = imageSentBuffer_;
-                                                imgBuf.delete_data_on_destruct(true);
 
                                                 if (this->next()->putq(cm1) < 0) 
                                                 {

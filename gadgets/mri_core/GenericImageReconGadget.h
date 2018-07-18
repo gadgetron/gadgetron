@@ -21,6 +21,7 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_reductions.h"
 #include "hoMRImage.h"
+#include "hoNDObjectArray.h"
 #include "mri_core_def.h"
 #include "mri_core_kspace_filter.h"
 #include "mri_core_data.h"
@@ -51,8 +52,8 @@ namespace Gadgetron {
         typedef hoMRImage<T, 3> Image3DMagType;
         typedef hoMRImage<T, 2> Image2DMagType;
 
-        typedef hoNDArray<Image3DType> Image3DBufferType;
-        typedef hoNDArray<Image2DType> Image2DBufferType;
+        typedef hoNDObjectArray<Image3DType> Image3DBufferType;
+        typedef hoNDObjectArray<Image2DType> Image2DBufferType;
 
         typedef hoNDArray<ValueType> ImgArrayType;
 
@@ -250,10 +251,10 @@ namespace Gadgetron {
 
         bool sendOutImageBuffer(Image3DBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter = std::vector<float>(), const std::vector<float>& windowWidth = std::vector<float>(), bool resetImageCommentsParametricMaps = true, Gadget* anchor = NULL);
 
-        bool fillWithNULL(hoNDArray< hoMRImage<ValueType, 2> >& buf);
-        bool releaseImageBuffer(hoNDArray< hoMRImage<ValueType, 2> >& buf);
+        bool fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf);
+        bool releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf);
 
-        bool fillWithNULL(hoNDArray< hoMRImage<ValueType, 3> >& buf);
-        bool releaseImageBuffer(hoNDArray< hoMRImage<ValueType, 3> >& buf);
+        bool fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf);
+        bool releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf);
     };
 }
