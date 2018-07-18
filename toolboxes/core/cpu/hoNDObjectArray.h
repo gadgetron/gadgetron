@@ -20,8 +20,8 @@ namespace Gadgetron
         hoNDObjectArray();
         virtual ~hoNDObjectArray();
 
-        hoNDObjectArray(std::vector<size_t> *dimensions);
-        hoNDObjectArray(std::vector<size_t> &dimensions);
+        hoNDObjectArray(const std::vector<size_t> *dimensions);
+        hoNDObjectArray(const std::vector<size_t> &dimensions);
         hoNDObjectArray(boost::shared_ptr< std::vector<size_t> > dimensions);
 
         hoNDObjectArray(const hoNDObjectArray<TObjectType>* a);
@@ -30,8 +30,8 @@ namespace Gadgetron
 
         void copyFrom(const hoNDObjectArray<TObjectType>& aArray);
 
-        virtual void create(std::vector<size_t> &dimensions);
-        virtual void create(std::vector<size_t> *dimensions);
+        virtual void create(const std::vector<size_t> &dimensions);
+        virtual void create(const std::vector<size_t> *dimensions);
         virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
 
         size_t get_number_of_dimensions() const;
@@ -116,51 +116,51 @@ namespace Gadgetron
         std::vector<TObjectType> data_;
     };
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     hoNDObjectArray<TObjectType>::hoNDObjectArray() : elements_(0)
     {
     }
 
-    template <typename TObjectType> 
-    hoNDObjectArray<TObjectType>::hoNDObjectArray(std::vector<size_t> *dimensions)
+    template <typename TObjectType>
+    hoNDObjectArray<TObjectType>::hoNDObjectArray(const std::vector<size_t> *dimensions)
     {
         this->create(dimensions);
     }
 
-    template <typename TObjectType> 
-    hoNDObjectArray<TObjectType>::hoNDObjectArray(std::vector<size_t> &dimensions)
+    template <typename TObjectType>
+    hoNDObjectArray<TObjectType>::hoNDObjectArray(const std::vector<size_t> &dimensions)
     {
         this->create(dimensions);
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     hoNDObjectArray<TObjectType>::hoNDObjectArray(boost::shared_ptr< std::vector<size_t> > dimensions)
     {
         this->create(dimensions);
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     hoNDObjectArray<TObjectType>::~hoNDObjectArray()
     {
         this->clear();
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     hoNDObjectArray<TObjectType>::hoNDObjectArray(const hoNDObjectArray<TObjectType>* a)
     {
         this->copyFrom(*a);
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     hoNDObjectArray<TObjectType>::hoNDObjectArray(const hoNDObjectArray<TObjectType> &a)
     {
         this->copyFrom(a);
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     hoNDObjectArray<TObjectType>& hoNDObjectArray<TObjectType>::operator=(const hoNDObjectArray<TObjectType>& rhs)
     {
-        if ( &rhs == this ) return *this;
+        if (&rhs == this) return *this;
 
         this->copyFrom(rhs);
 
@@ -168,7 +168,7 @@ namespace Gadgetron
     }
 
     template <typename TObjectType>
-    void hoNDObjectArray<TObjectType>::create(std::vector<size_t>& dimensions)
+    void hoNDObjectArray<TObjectType>::create(const std::vector<size_t>& dimensions)
     {
         this->dimensions_ = dimensions;
         this->calculate_offset_factors(dimensions_);
@@ -185,13 +185,13 @@ namespace Gadgetron
         this->data_.resize(this->elements_);
     }
 
-    template <typename TObjectType> 
-    void hoNDObjectArray<TObjectType>::create(std::vector<size_t> *dimensions)
+    template <typename TObjectType>
+    void hoNDObjectArray<TObjectType>::create(const std::vector<size_t> *dimensions)
     {
         this->create(*dimensions);
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     void hoNDObjectArray<TObjectType>::create(boost::shared_ptr< std::vector<size_t> > dimensions)
     {
         this->create(*dimensions);
@@ -219,13 +219,13 @@ namespace Gadgetron
         }
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::get_number_of_dimensions() const
     {
         return (size_t)dimensions_.size();
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::get_size(size_t dimension) const
     {
         if (dimension >= dimensions_.size())
@@ -258,25 +258,25 @@ namespace Gadgetron
         return this->dimensions_;
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline void hoNDObjectArray<TObjectType>::get_dimensions(std::vector<size_t>*& dim) const
     {
         dim = this->dimensions_.get();
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline void hoNDObjectArray<TObjectType>::get_dimensions(std::vector<size_t>& dim) const
     {
         dim = this->dimensions_;
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::get_number_of_elements() const
     {
         return elements_;
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     size_t hoNDObjectArray<TObjectType>::calculate_offset(const std::vector<size_t>& ind, const std::vector<size_t>& offsetFactors)
     {
         size_t offset = ind[0];
@@ -289,7 +289,7 @@ namespace Gadgetron
         return offset;
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::calculate_offset(const std::vector<size_t>& ind) const
     {
         size_t offset = ind[0];
@@ -298,55 +298,55 @@ namespace Gadgetron
         return offset;
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::calculate_offset(size_t x, size_t y) const
     {
         return x + y * offsetFactors_[1];
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::calculate_offset(size_t x, size_t y, size_t z) const
     {
         return x + y * offsetFactors_[1] + z * offsetFactors_[2];
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::calculate_offset(size_t x, size_t y, size_t z, size_t s) const
     {
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3];
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p) const
     {
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4];
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r) const
     {
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5];
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a) const
     {
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5] + a * offsetFactors_[6];
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q) const
     {
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5] + a * offsetFactors_[6] + q * offsetFactors_[7];
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::calculate_offset(size_t x, size_t y, size_t z, size_t s, size_t p, size_t r, size_t a, size_t q, size_t u) const
     {
         return x + y * offsetFactors_[1] + z * offsetFactors_[2] + s * offsetFactors_[3] + p * offsetFactors_[4] + r * offsetFactors_[5] + a * offsetFactors_[6] + q * offsetFactors_[7] + u * offsetFactors_[8];
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::get_offset_factor(size_t dim) const
     {
         if (dim >= dimensions_.size())
@@ -354,13 +354,13 @@ namespace Gadgetron
         return offsetFactors_[dim];
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline void hoNDObjectArray<TObjectType>::get_offset_factor(std::vector<size_t>& offset) const
     {
         offset = std::vector<size_t>(offsetFactors_.begin(), offsetFactors_.end());
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline size_t hoNDObjectArray<TObjectType>::get_offset_factor_lastdim() const
     {
         if (dimensions_.size() == 0)
@@ -369,7 +369,7 @@ namespace Gadgetron
         return get_offset_factor(dimensions_.size() - 1);
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     void hoNDObjectArray<TObjectType>::calculate_offset_factors(const std::vector<size_t>& dimensions, std::vector<size_t>& offsetFactors)
     {
         offsetFactors.resize(dimensions.size());
@@ -385,7 +385,7 @@ namespace Gadgetron
         }
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline void hoNDObjectArray<TObjectType>::calculate_offset_factors(const std::vector<size_t>& dimensions)
     {
         this->offsetFactors_.resize(dimensions.size());
@@ -402,7 +402,7 @@ namespace Gadgetron
         }
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline std::vector<size_t> hoNDObjectArray<TObjectType>::calculate_index(size_t offset) const
     {
         if (dimensions_.size() == 0)
@@ -417,7 +417,7 @@ namespace Gadgetron
         return index;
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     inline void hoNDObjectArray<TObjectType>::calculate_index(size_t offset, std::vector<size_t>& index) const
     {
         if (dimensions_.size() == 0)
@@ -431,7 +431,7 @@ namespace Gadgetron
         }
     }
 
-    template <typename TObjectType> 
+    template <typename TObjectType>
     void hoNDObjectArray<TObjectType>::calculate_index(size_t offset, const std::vector<size_t>& offsetFactors, std::vector<size_t>& index)
     {
         index.resize(offsetFactors.size(), 0);
