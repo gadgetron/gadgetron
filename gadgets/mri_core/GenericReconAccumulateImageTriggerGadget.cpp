@@ -362,7 +362,7 @@ namespace Gadgetron {
                 size_t nElem = imageBuffer_.get_number_of_elements();
                 for (ii = 0; ii<nElem; ii++)
                 {
-                    imageBuffer_(ii) = NULL;
+                    imageBuffer_(ii) = ImageType();
                     imageSent_(ii) = false;
                 }
             }
@@ -382,7 +382,7 @@ namespace Gadgetron {
                 size_t nElem = otherBuffer_.get_number_of_elements();
                 for (ii = 0; ii<nElem; ii++)
                 {
-                    otherBuffer_(ii) = NULL;
+                    otherBuffer_(ii) = ImageType();
                     otherSent_(ii) = false;
                 }
             }
@@ -485,7 +485,7 @@ namespace Gadgetron {
 
             size_t numOfElem = imageSentBuffer_.get_number_of_elements();
             size_t ii;
-            for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = NULL; }
+            for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = ImageType(); }
 
             for ( ave=0; ave<dim_limit_not_under_trigger_[6]; ave++ )
             {
@@ -524,7 +524,7 @@ namespace Gadgetron {
                                         }
 
                                         {
-                                            for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = NULL; }
+                                            for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = ImageType(); }
 
                                             // =================================================
 
@@ -632,7 +632,7 @@ namespace Gadgetron {
                                                                             bool sentFlag = sentFlagBuf(image_ind);
                                                                             if ( sentFlag )
                                                                             {
-                                                                                imageSentBuffer_(cha_t, slc_t, con_t, phs_t, rep_t, set_t, ave_t) = NULL;
+                                                                                imageSentBuffer_(cha_t, slc_t, con_t, phs_t, rep_t, set_t, ave_t) = ImageType();
                                                                             }
                                                                             else
                                                                             {
@@ -671,7 +671,7 @@ namespace Gadgetron {
                                             {
                                                 for ( ii=0; ii<numOfElem; ii++ )
                                                 {
-                                                    imageSentBuffer_(ii) = NULL;
+                                                    imageSentBuffer_(ii) = ImageType();
                                                 }
                                             }
 

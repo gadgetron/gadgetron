@@ -1202,7 +1202,8 @@ namespace Gadgetron {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
 
-        Image2DBufferType& ori = *m1->getObjectPtr();
+        Image2DBufferType ori = *m1->getObjectPtr();
+        m1->release();
 
         if (ori.get_number_of_elements() == 1)
         {
@@ -1317,8 +1318,6 @@ namespace Gadgetron {
         this->processImageBuffer(ori);
 
         this->releaseImageBuffer(ori);
-
-        m1->release();
 
         return GADGET_OK;
     }
@@ -1328,7 +1327,8 @@ namespace Gadgetron {
         std::vector<std::string> processStr;
         std::vector<std::string> dataRole;
 
-        Image3DBufferType& ori = *m1->getObjectPtr();
+        Image3DBufferType ori = *m1->getObjectPtr();
+        m1->release();
 
         if (ori.get_number_of_elements() == 1)
         {
@@ -1443,8 +1443,6 @@ namespace Gadgetron {
         this->processImageBuffer(ori);
 
         this->releaseImageBuffer(ori);
-
-        m1->release();
 
         return GADGET_OK;
     }
@@ -2066,34 +2064,11 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
-    {
-        try
-        {
-            size_t N = buf.get_number_of_elements();
-            size_t ii;
-            for (ii = 0; ii < N; ii++)
-            {
-            }
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Errors happened in GenericImageReconGadget::fillWithNULL(buf) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
     bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 2> >& buf)
     {
         try
         {
-            size_t N = buf.get_number_of_elements();
-            size_t ii;
-            for (ii = 0; ii < N; ii++)
-            {
-            }
+            buf.clear();
         }
         catch (...)
         {
@@ -2104,34 +2079,11 @@ namespace Gadgetron {
         return true;
     }
 
-    bool GenericImageReconGadget::fillWithNULL(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf)
-    {
-        try
-        {
-            size_t N = buf.get_number_of_elements();
-            size_t ii;
-            for (ii = 0; ii < N; ii++)
-            {
-            }
-        }
-        catch (...)
-        {
-            GERROR_STREAM("Errors happened in GenericImageReconGadget::fillWithNULL(buf) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
     bool GenericImageReconGadget::releaseImageBuffer(hoNDObjectArray< hoMRImage<ValueType, 3> >& buf)
     {
         try
         {
-            size_t N = buf.get_number_of_elements();
-            size_t ii;
-            for (ii = 0; ii < N; ii++)
-            {
-            }
+            buf.clear();
         }
         catch (...)
         {
