@@ -251,14 +251,10 @@ namespace Gadgetron
         if(!a) throw std::runtime_error("hoNDArray<T>::hoNDArray(): 0x0 pointer provided");
         this->data_ = 0;
 
-        std::vector<size_t>* tmp = new std::vector<size_t>;
-        this->dimensions_ = boost::shared_ptr< std::vector<size_t> >(tmp);
-        *(this->dimensions_) = *(a->dimensions_);
-
-
+        this->dimensions_ = a->dimensions_;
         this->offsetFactors_ = a->offsetFactors_;
 
-        if ( !this->dimensions_->empty() )
+        if ( !this->dimensions_.empty() )
         {
             allocate_memory();
             memcpy( this->data_, a->data_, this->elements_*sizeof(T) );
@@ -273,16 +269,10 @@ namespace Gadgetron
     hoNDArray<T>::hoNDArray(const hoNDArray<T> &a)
     {
         this->data_ = 0;
-
-        std::vector<size_t>* tmp = new std::vector<size_t>;
-        this->dimensions_ = boost::shared_ptr< std::vector<size_t> >(tmp);
-        *(this->dimensions_) = *(a.dimensions_);
-
-
+        this->dimensions_ = a.dimensions_;
         offsetFactors_ = a.offsetFactors_;
 
-
-        if ( !this->dimensions_->empty() )
+        if ( !this->dimensions_.empty() )
         {
             allocate_memory();
             memcpy( this->data_, a.data_, this->elements_*sizeof(T) );
@@ -296,15 +286,14 @@ namespace Gadgetron
 #if __cplusplus > 199711L
     template <typename T>
     hoNDArray<T>::hoNDArray(hoNDArray<T>&& a) : NDArray<T>::NDArray(){
-    	data_ = a.data_;
-    	*this->dimensions_ = *a.dimensions_;
-    	this->elements_ = a.elements_;
-    	a.dimensions_.reset();
-    	a.data_ = nullptr;
-    	this->offsetFactors_ = a.offsetFactors_;
-
+        data_ = a.data_;
+        this->dimensions_ = a.dimensions_;
+        this->elements_ = a.elements_;
+        a.data_ = nullptr;
+        this->offsetFactors_ = a.offsetFactors_;
     }
 #endif
+
     template <typename T> 
     hoNDArray<T>& hoNDArray<T>::operator=(const hoNDArray<T>& rhs)
     {
@@ -322,7 +311,7 @@ namespace Gadgetron
         else{
             deallocate_memory();
             this->data_ = 0;
-            *(this->dimensions_) = *(rhs.dimensions_);
+            this->dimensions_ = rhs.dimensions_;
             offsetFactors_ = rhs.offsetFactors_;
             allocate_memory();
             memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
@@ -341,10 +330,9 @@ namespace Gadgetron
         }
 
         this->clear();
-        *this->dimensions_ = *rhs.dimensions_;
+        this->dimensions_ = rhs.dimensions_;
         this->offsetFactors_ = rhs.offsetFactors_;
         this->elements_ = rhs.elements_;
-        rhs.dimensions_.reset();
 
         data_ = rhs.data_;
         rhs.data_ = nullptr;
@@ -802,7 +790,7 @@ namespace Gadgetron
             BOOST_THROW_EXCEPTION( runtime_error("hoNDArray<>::get_sub_array failed"));
         }
 
-        if ( start.size() != (*dimensions_).size() ){
+        if ( start.size() != dimensions_.size() ){
             BOOST_THROW_EXCEPTION( runtime_error("hoNDArray<>::get_sub_array failed"));
         }
 
@@ -818,7 +806,7 @@ namespace Gadgetron
         size_t ii;
         for ( ii=0; ii<start.size(); ii++ ){
             end[ii] = start[ii] + size[ii] - 1;
-            if ( end[ii] >= (*dimensions_)[ii] ){
+            if ( end[ii] >= dimensions_[ii] ){
                 BOOST_THROW_EXCEPTION( runtime_error("hoNDArray<>::get_sub_array failed"));
             }
         }
@@ -860,11 +848,11 @@ namespace Gadgetron
 
         size_t i;
 
-        os << "Array dimension is : " << dimensions_->size() << endl;
+        os << "Array dimension is : " << dimensions_.size() << endl;
 
         os << "Array size is : ";
-        for (i=0; i<dimensions_->size(); i++ ) 
-            os << (*dimensions_)[i] << " "; 
+        for (i=0; i<dimensions_.size(); i++ ) 
+            os << dimensions_[i] << " "; 
         os << endl;
 
         int elemTypeSize = sizeof(T);
@@ -905,12 +893,12 @@ namespace Gadgetron
     {
         deallocate_memory();
 
-        if ( !this->dimensions_->empty() )
+        if ( !this->dimensions_.empty() )
         {
-            this->elements_ = (*this->dimensions_)[0];
-            for (size_t i = 1; i < this->dimensions_->size(); i++)
+            this->elements_ = this->dimensions_[0];
+            for (size_t i = 1; i < this->dimensions_.size(); i++)
             {
-                this->elements_ *= (*this->dimensions_)[i];
+                this->elements_ *= this->dimensions_[i];
             }
 
             if ( this->elements_ > 0 )
@@ -1023,7 +1011,7 @@ namespace Gadgetron
     {
         if ( buf != NULL ) delete[] buf;
 
-        size_t NDim = dimensions_->size();
+        size_t NDim = dimensions_.size();
 
         // number of dimensions + dimension vector + contents
         len = sizeof(size_t) + sizeof(size_t)*NDim + sizeof(T)*elements_;
@@ -1033,7 +1021,7 @@ namespace Gadgetron
         memcpy(buf, &NDim, sizeof(size_t));
         if ( NDim > 0 )
         {
-            memcpy(buf+sizeof(size_t), &((*dimensions_)[0]), sizeof(size_t)*NDim);
+            memcpy(buf+sizeof(size_t), &(dimensions_[0]), sizeof(size_t)*NDim);
             memcpy(buf+sizeof(size_t)+sizeof(size_t)*NDim, this->data_, sizeof(T)*elements_);
         }
 

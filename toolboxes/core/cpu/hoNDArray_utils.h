@@ -17,18 +17,13 @@ namespace Gadgetron {
 
     ArrayIterator(std::vector<size_t> *dimensions, std::vector<size_t> *order)
     {
-      dimensions_  = boost::shared_ptr< std::vector<size_t> > (new std::vector<size_t>);
-      order_       = boost::shared_ptr< std::vector<size_t> > (new std::vector<size_t>);
-      current_     = boost::shared_ptr< std::vector<size_t> > (new std::vector<size_t>);
-      block_sizes_ = boost::shared_ptr< std::vector<size_t> > (new std::vector<size_t>);
-
-      block_sizes_->push_back(1);
+      block_sizes_.push_back(1);
       for (size_t i = 0; i < order->size(); i++) {
-        dimensions_->push_back((*dimensions)[i]);
-        order_->push_back((*order)[i]);
-        current_->push_back(0);
+        dimensions_.push_back((*dimensions)[i]);
+        order_.push_back((*order)[i]);
+        current_.push_back(0);
         if (i > 0) {
-          block_sizes_->push_back((*block_sizes_)[i-1]*(*dimensions_)[i-1]);
+          block_sizes_.push_back(block_sizes_[i-1]*dimensions_[i-1]);
         }
       }
       current_idx_ = 0;
@@ -37,16 +32,16 @@ namespace Gadgetron {
     inline size_t advance()
     {
       size_t order_index = 0;
-      (*current_)[(*order_)[order_index]]++;
-      while ((*current_)[(*order_)[order_index]] >= (*dimensions_)[(*order_)[order_index]]) {
-        (*current_)[(*order_)[order_index]] = 0;
-        order_index = (order_index+1)%dimensions_->size();
-        (*current_)[(*order_)[order_index]]++;
+      current_[order_[order_index]]++;
+      while (current_[order_[order_index]] >= dimensions_[order_[order_index]]) {
+        current_[order_[order_index]] = 0;
+        order_index = (order_index+1)%dimensions_.size();
+        current_[order_[order_index]]++;
       }
 
       current_idx_ = 0;
-      for (size_t i = 0; i < dimensions_->size(); i++) {
-        current_idx_ += (*current_)[i]*(*block_sizes_)[i];
+      for (size_t i = 0; i < dimensions_.size(); i++) {
+        current_idx_ += current_[i]*block_sizes_[i];
       }	
       return current_idx_;
     }
@@ -55,15 +50,15 @@ namespace Gadgetron {
       return current_idx_;
     }
 
-    boost::shared_ptr< std::vector<size_t> > get_current_sub() {
+    std::vector<size_t> get_current_sub() {
       return current_;
     }
 
   protected:
-    boost::shared_ptr< std::vector<size_t> > dimensions_;
-    boost::shared_ptr< std::vector<size_t> > order_;
-    boost::shared_ptr< std::vector<size_t> > current_;
-    boost::shared_ptr< std::vector<size_t> > block_sizes_;
+    std::vector<size_t> dimensions_;
+    std::vector<size_t> order_;
+    std::vector<size_t> current_;
+    std::vector<size_t> block_sizes_;
     size_t current_idx_;
   };
 
