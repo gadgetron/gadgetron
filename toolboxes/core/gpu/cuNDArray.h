@@ -146,7 +146,7 @@ namespace Gadgetron{
     {
         cudaGetDevice(&this->device_);
         this->data_ = 0;
-        this->dimensions_ = a->get_dimensions();
+        this->dimensions_ = a->dimensions_;
         allocate_memory();
         if (a->device_ == this->device_) {
             CUDA_CALL(cudaMemcpy(this->data_, a->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));
@@ -181,7 +181,7 @@ namespace Gadgetron{
     cuNDArray<T>::cuNDArray(const hoNDArray<T> &a) : NDArray<T>::NDArray() 
     {
         cudaGetDevice(&this->device_);
-        this->dimensions_ = a.get_dimensions();
+        a.get_dimensions(this->dimensions_);
         allocate_memory();
         if (cudaMemcpy(this->data_, a.get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {
             deallocate_memory();
@@ -194,7 +194,7 @@ namespace Gadgetron{
     cuNDArray<T>::cuNDArray(hoNDArray<T> *a) : NDArray<T>::NDArray() 
     {
         cudaGetDevice(&this->device_);
-        this->dimensions_ = a->get_dimensions();
+	a->get_dimensions(this->dimensions_);
         allocate_memory();
         if (cudaMemcpy(this->data_, a->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {
             deallocate_memory();
@@ -446,7 +446,7 @@ namespace Gadgetron{
             if( !dimensions_match ){
                 deallocate_memory();
                 this->elements_ = rhs.get_number_of_elements();
-                this->dimensions_ = rhs.get_dimensions();
+                rhs.get_dimensions(this->dimensions_);
                 allocate_memory();
             }
             if (cudaMemcpy(this->get_data_ptr(), rhs.get_data_ptr(), this->get_number_of_elements()*sizeof(T),
