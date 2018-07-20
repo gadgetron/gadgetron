@@ -122,7 +122,7 @@ namespace Gadgetron{
     {
         cudaGetDevice(&this->device_);
         this->data_ = 0;
-        this->dimensions_ = a.get_dimensions();
+        this->dimensions_ = a.dimensions_;
         allocate_memory();
         if (a.device_ == this->device_) {
             CUDA_CALL(cudaMemcpy(this->data_, a.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));
@@ -402,7 +402,7 @@ namespace Gadgetron{
             if( !dimensions_match ){
                 deallocate_memory();
                 this->elements_ = rhs.elements_;
-                this->dimensions_ = rhs.get_dimensions();
+                this->dimensions_ = rhs.dimensions_;
                 allocate_memory();
             }
             if (this->device_ == rhs.device_) {
@@ -687,12 +687,9 @@ namespace Gadgetron{
     template <typename T> 
     inline boost::shared_ptr< hoNDArray<T> > cuNDArray<T>::to_host() const
     {
-        boost::shared_ptr< hoNDArray<T> > ret(new hoNDArray<T>(this->dimensions_));
-        if (cudaMemcpy(ret->get_data_ptr(), this->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) != cudaSuccess) {
-            throw cuda_error("cuNDArray::to_host(): failed to copy memory from device");
-        }
-
-        return ret;
+      boost::shared_ptr< hoNDArray<T> > ret(new hoNDArray<T>());
+      this->to_host(ret.get());
+      return ret;
     }
 
     template <typename T> 
