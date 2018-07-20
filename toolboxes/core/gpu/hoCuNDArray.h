@@ -23,12 +23,11 @@ namespace Gadgetron{
 
 #if __cplusplus > 199711L
     hoCuNDArray(hoCuNDArray<T>&& other) : hoNDArray<T>::hoNDArray(){
-    	this->data_ = other.data_;
-    	this->dimensions_ = other.dimensions_;
-    	this->elements_ = other.elements_;
-    	this->offsetFactors_ = std::move(other.offsetFactors_);
-    	other.dimensions_.reset();
-    	other.data_ = nullptr;
+        this->data_ = other.data_;
+        this->dimensions_ = other.dimensions_;
+        this->elements_ = other.elements_;
+        this->offsetFactors_ = std::move(other.offsetFactors_);
+        other.data_ = nullptr;
     }
 #endif
 
@@ -115,7 +114,7 @@ namespace Gadgetron{
         else{
             deallocate_memory();
             this->data_ = 0;
-            *(this->dimensions_) = *(rhs.dimensions_);
+            this->dimensions_ = rhs.dimensions_;
             this->offsetFactors_ = rhs.offsetFactors_;
             this->allocate_memory();
             memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
@@ -134,7 +133,7 @@ namespace Gadgetron{
 
         // Are the dimensions the same? Then we can just memcpy
         if (!this->dimensions_equal(&rhs)){
-        	this->create(rhs.get_dimensions());
+            this->create(rhs.get_dimensions());
         }
 
           cudaMemcpy(this->data_, rhs.get_data_ptr(), this->elements_*sizeof(T),cudaMemcpyDeviceToHost);
@@ -149,7 +148,6 @@ namespace Gadgetron{
         this->dimensions_ = rhs.dimensions_;
         this->offsetFactors_ = rhs.offsetFactors_;
         this->elements_ = rhs.elements_;
-        rhs.dimensions_.reset();
         this->data_ = rhs.data_;
         rhs.data_ = nullptr;
         return *this;
@@ -161,10 +159,10 @@ namespace Gadgetron{
     {
       this->deallocate_memory();
       this->elements_ = 1;
-      if (this->dimensions_->empty())
+      if (this->dimensions_.empty())
         throw std::runtime_error("hoCuNDArray::allocate_memory() : dimensions is empty.");
-      for (size_t i = 0; i < this->dimensions_->size(); i++) {
-        this->elements_ *= (*this->dimensions_)[i];
+      for (size_t i = 0; i < this->dimensions_.size(); i++) {
+        this->elements_ *= this->dimensions_[i];
       }
 
       size_t size = this->elements_ * sizeof(T);

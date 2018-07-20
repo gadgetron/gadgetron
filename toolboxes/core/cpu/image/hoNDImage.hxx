@@ -10,8 +10,7 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     hoNDImage<T, D>::hoNDImage () : BaseClass()
     {
-        dimensions_->resize(D, 0);
-
+        dimensions_.resize(D, 0);
 
         unsigned int ii;
         for (ii=0;ii<D; ii++)
@@ -299,9 +298,6 @@ namespace Gadgetron
             return *this;
         }
 
-        if ( !this->dimensions_ ) this->dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-
-
         if ( this->dimensions_equal(rhs) && this->data_!=NULL )
         {
             memcpy(this->data_, rhs.data_, rhs.elements_*sizeof(T));
@@ -311,9 +307,9 @@ namespace Gadgetron
             this->deallocate_memory();
             this->data_ = 0;
 
-            *(this->dimensions_) = *(rhs.dimensions_);
+            this->dimensions_ = rhs.dimensions_;
             this->allocate_memory();
-            this->calculate_offset_factors( *(this->dimensions_) );
+            this->calculate_offset_factors( this->dimensions_ );
             memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
         }
 
@@ -356,8 +352,7 @@ namespace Gadgetron
 
         unsigned int ii;
 
-        dimensions_->clear();
-
+        dimensions_.clear();
 
         for (ii=0;ii<D; ii++)
         {
@@ -382,13 +377,7 @@ namespace Gadgetron
     {
         if ( !this->dimensions_equal(dimensions) )
         {
-            if ( !dimensions_ )
-            {
-                dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-            }
-
-
-            *dimensions_ = dimensions;
+            dimensions_ = dimensions;
             this->allocate_memory();
             this->calculate_offset_factors(dimensions);
         }
@@ -423,13 +412,7 @@ namespace Gadgetron
     {
         if ( !this->dimensions_equal(dimensions) )
         {
-            if ( !dimensions_ )
-            {
-                dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-            }
-
-
-            *dimensions_ = dimensions;
+            dimensions_ = dimensions;
             this->allocate_memory();
             this->calculate_offset_factors(dimensions);
         }
@@ -458,12 +441,7 @@ namespace Gadgetron
     {
         if ( !this->dimensions_equal(dimensions) )
         {
-            if ( !dimensions_ )
-            {
-                dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-            }
-
-            *dimensions_ = dimensions;
+            dimensions_ = dimensions;
             this->allocate_memory();
             this->calculate_offset_factors(dimensions);
         }
@@ -508,13 +486,7 @@ namespace Gadgetron
     {
         if ( !this->dimensions_equal(dimensions) )
         {
-            if ( !dimensions_ )
-            {
-                dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-            }
-
-
-            *dimensions_ = dimensions;
+            dimensions_ = dimensions;
             this->allocate_memory();
             this->calculate_offset_factors(dimensions);
         }
@@ -568,21 +540,14 @@ namespace Gadgetron
 
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
-
-        if ( !dimensions_ )
-        {
-            dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-        }
-
-
-        *dimensions_ = dimensions;
+        this->dimensions_ = dimensions;
 
         unsigned int ii;
 
         this->elements_ = 1;
         for (ii=0; ii<D; ii++)
         {
-            this->elements_ *= (*dimensions_)[ii];
+            this->elements_ *= dimensions_[ii];
         }
         this->calculate_offset_factors(dimensions);
 
@@ -615,22 +580,14 @@ namespace Gadgetron
 
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
-
-        if ( !dimensions_ )
-        {
-            dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-        }
-
-
-
-        *dimensions_ = dimensions;
+        this->dimensions_ = dimensions;
 
         unsigned int ii;
 
         this->elements_ = 1;
         for (ii=0; ii<D; ii++)
         {
-            this->elements_ *= (*dimensions_)[ii];
+            this->elements_ *= dimensions_[ii];
         }
         this->calculate_offset_factors(dimensions);
 
@@ -663,21 +620,14 @@ namespace Gadgetron
 
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
-
-        if ( !dimensions_ )
-        {
-            dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-        }
-
-
-        *dimensions_ = dimensions;
+        this->dimensions_ = dimensions;
 
         unsigned int ii;
 
         this->elements_ = 1;
         for (ii=0; ii<D; ii++)
         {
-            this->elements_ *= (*dimensions_)[ii];
+            this->elements_ *= dimensions_[ii];
         }
         this->calculate_offset_factors(dimensions);
 
@@ -727,21 +677,14 @@ namespace Gadgetron
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
 
-        if ( !dimensions_ )
-        {
-            dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
-        }
-
-
-
-        *dimensions_ = dimensions;
+        dimensions_ = dimensions;
 
         unsigned int ii;
 
         this->elements_ = 1;
         for (ii=0; ii<D; ii++)
         {
-            this->elements_ *= (*dimensions_)[ii];
+            this->elements_ *= dimensions_[ii];
         }
         this->calculate_offset_factors(dimensions);
 
@@ -843,12 +786,12 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline bool hoNDImage<T, D>::dimensions_equal(const std::vector<size_t>& dimensions) const
     {
-        if ( (!dimensions_) || (dimensions.size() != D) || ( dimensions_->size() != dimensions.size() ) ) return false;
+        if ( (dimensions.size() != D) || ( dimensions_.size() != dimensions.size() ) ) return false;
 
         unsigned int ii;
         for ( ii=0; ii<D; ii++ )
         {
-            if ( (*dimensions_)[ii] != dimensions[ii] ) return false;
+            if ( dimensions_[ii] != dimensions[ii] ) return false;
         }
 
         return true;
@@ -2629,7 +2572,7 @@ namespace Gadgetron
 
             if ( NDim > 0 )
             {
-                memcpy(buf+offset, &((*dimensions_)[0]), sizeof(size_t)*D);
+                memcpy(buf+offset, &(dimensions_[0]), sizeof(size_t)*D);
                 offset += sizeof(size_t)*D;
 
                 memcpy(buf+offset, this->pixelSize_, sizeof(coord_type)*D);
@@ -2742,7 +2685,7 @@ namespace Gadgetron
 
         os << "Image size is : ";
         for (i=0; i<D; i++ ) 
-            os << (*dimensions_)[i] << " "; 
+            os << dimensions_[i] << " "; 
         os << endl;
 
         int elemTypeSize = sizeof(T);

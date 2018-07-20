@@ -122,7 +122,7 @@ namespace Gadgetron{
     {
         cudaGetDevice(&this->device_);
         this->data_ = 0;
-        this->dimensions_ = a.get_dimensions();
+        this->dimensions_ = a.dimensions_;
         allocate_memory();
         if (a.device_ == this->device_) {
             CUDA_CALL(cudaMemcpy(this->data_, a.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));
@@ -135,7 +135,7 @@ namespace Gadgetron{
             if (err !=cudaSuccess) {
                 deallocate_memory();
                 this->data_ = 0;
-                this->dimensions_->clear();
+                this->dimensions_.clear();
                 throw cuda_error(err);
             }
         }
@@ -146,7 +146,7 @@ namespace Gadgetron{
     {
         cudaGetDevice(&this->device_);
         this->data_ = 0;
-        this->dimensions_ = a->get_dimensions();
+        this->dimensions_ = a->dimensions_;
         allocate_memory();
         if (a->device_ == this->device_) {
             CUDA_CALL(cudaMemcpy(this->data_, a->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));
@@ -159,7 +159,7 @@ namespace Gadgetron{
             if (err !=cudaSuccess) {
                 deallocate_memory();
                 this->data_ = 0;
-                this->dimensions_->clear();
+                this->dimensions_.clear();
                 throw cuda_error(err);
             }
         }
@@ -170,24 +170,23 @@ namespace Gadgetron{
     template <typename T>
     cuNDArray<T>::cuNDArray(cuNDArray<T>&& a) : NDArray<T>::NDArray()
     {
-    	device_ = a.device_;
-    	this->data_ = a.data_;
-    	*this->dimensions_ = *a.dimensions_;
-    	this->elements_ = a.elements_;
-    	a.dimensions_.reset();
-    	a.data_=nullptr;
+        device_ = a.device_;
+        this->data_ = a.data_;
+        this->dimensions_ = a.dimensions_;
+        this->elements_ = a.elements_;
+        a.data_=nullptr;
     }
 #endif
     template <typename T> 
     cuNDArray<T>::cuNDArray(const hoNDArray<T> &a) : NDArray<T>::NDArray() 
     {
         cudaGetDevice(&this->device_);
-        this->dimensions_ = a.get_dimensions();
+        a.get_dimensions(this->dimensions_);
         allocate_memory();
         if (cudaMemcpy(this->data_, a.get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {
             deallocate_memory();
             this->data_ = 0;
-            this->dimensions_->clear();
+            this->dimensions_.clear();
         }
     }
 
@@ -195,12 +194,12 @@ namespace Gadgetron{
     cuNDArray<T>::cuNDArray(hoNDArray<T> *a) : NDArray<T>::NDArray() 
     {
         cudaGetDevice(&this->device_);
-        this->dimensions_ = a->get_dimensions();
+	a->get_dimensions(this->dimensions_);
         allocate_memory();
         if (cudaMemcpy(this->data_, a->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {
             deallocate_memory();
             this->data_ = 0;
-            this->dimensions_->clear();
+            this->dimensions_.clear();
         }
     }
 
@@ -378,15 +377,14 @@ namespace Gadgetron{
     template <typename T>
     cuNDArray<T>& cuNDArray<T>::operator=(cuNDArray<T>&& rhs){
 
-    	if (&rhs == this) return *this;
-    	this->clear();
-    	*this->dimensions_ = *rhs.dimensions_;
-    	this->elements_ = rhs.elements_;
-    	rhs.dimensions_.reset();
-    	device_ = rhs.device_;
-    	this->data_ = rhs.data_;
-    	rhs.data_ = nullptr;
-    	return *this;
+        if (&rhs == this) return *this;
+        this->clear();
+        this->dimensions_ = rhs.dimensions_;
+        this->elements_ = rhs.elements_;
+        device_ = rhs.device_;
+        this->data_ = rhs.data_;
+        rhs.data_ = nullptr;
+        return *this;
     }
 #endif
 
@@ -404,7 +402,7 @@ namespace Gadgetron{
             if( !dimensions_match ){
                 deallocate_memory();
                 this->elements_ = rhs.elements_;
-                this->dimensions_ = rhs.get_dimensions();
+                this->dimensions_ = rhs.dimensions_;
                 allocate_memory();
             }
             if (this->device_ == rhs.device_) {
@@ -448,7 +446,7 @@ namespace Gadgetron{
             if( !dimensions_match ){
                 deallocate_memory();
                 this->elements_ = rhs.get_number_of_elements();
-                this->dimensions_ = rhs.get_dimensions();
+                rhs.get_dimensions(this->dimensions_);
                 allocate_memory();
             }
             if (cudaMemcpy(this->get_data_ptr(), rhs.get_data_ptr(), this->get_number_of_elements()*sizeof(T),
@@ -689,12 +687,9 @@ namespace Gadgetron{
     template <typename T> 
     inline boost::shared_ptr< hoNDArray<T> > cuNDArray<T>::to_host() const
     {
-        boost::shared_ptr< hoNDArray<T> > ret(new hoNDArray<T>(this->dimensions_.get()));
-        if (cudaMemcpy(ret->get_data_ptr(), this->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) != cudaSuccess) {
-            throw cuda_error("cuNDArray::to_host(): failed to copy memory from device");
-        }
-
-        return ret;
+      boost::shared_ptr< hoNDArray<T> > ret(new hoNDArray<T>());
+      this->to_host(ret.get());
+      return ret;
     }
 
     template <typename T> 
@@ -808,10 +803,10 @@ namespace Gadgetron{
         deallocate_memory();
 
         this->elements_ = 1;
-        if (this->dimensions_->empty())
+        if (this->dimensions_.empty())
             throw std::runtime_error("cuNDArray::allocate_memory() : dimensions is empty.");
-        for (size_t i = 0; i < this->dimensions_->size(); i++) {
-            this->elements_ *= (*this->dimensions_)[i];
+        for (size_t i = 0; i < this->dimensions_.size(); i++) {
+            this->elements_ *= this->dimensions_[i];
         } 
 
         size_t size = this->elements_ * sizeof(T);
@@ -834,8 +829,8 @@ namespace Gadgetron{
             err << "CUDA Memory: " << free << " (" << total << ")";
 
             err << "   memory requested: " << size << "( ";
-            for (size_t i = 0; i < this->dimensions_->size(); i++) {
-                std::cerr << (*this->dimensions_)[i] << " ";
+            for (size_t i = 0; i < this->dimensions_.size(); i++) {
+                std::cerr << this->dimensions_[i] << " ";
             }
             err << ")";
             this->data_ = 0;
@@ -867,8 +862,4 @@ namespace Gadgetron{
             this->data_ = 0;
         }
     }
-
-
-
 }
-
