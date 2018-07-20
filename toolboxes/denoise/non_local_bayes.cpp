@@ -188,6 +188,9 @@ namespace Gadgetron {
                     throw std::invalid_argument("non_local_bayes: image must be 2 dimensional");
 
 
+                size_t SX = image.get_size(0);
+                size_t SY = image.get_size(1);
+
                 constexpr int patch_size = 5;
 
                 const int n_patches = 50;
@@ -220,13 +223,13 @@ namespace Gadgetron {
 
                 std::vector<ImagePatch<T>> all_patches(num_all_patches);
 
-#pragma omp parallel default(none) private(ky) shared(image, patch_size, image_dims, search_window, noise_std, result, count, all_patches)
+#pragma omp parallel default(none) private(ky) shared(SX, SY, image, search_window, noise_std, result, count, mask, all_patches)
                 {
                     std::vector<ImagePatch<T>> patches;
                     arma::Col<T> reference_patch;
 #pragma omp for 
-                    for (ky = 0; ky < image.get_size(1); ky++) {
-                        for (int kx = 0; kx < image.get_size(0); kx++) {
+                    for (ky = 0; ky < SY; ky++) {
+                        for (int kx = 0; kx < SX; kx++) {
 
                             if (mask(kx, ky)) {
 
@@ -237,12 +240,13 @@ namespace Gadgetron {
 
                                 denoise_patches(patches, noise_std);
 
-                                for (auto &patch : patches) {
 #pragma omp critical
-                                    add_patch(patch, result, count, patch_size, image_dims);
-                                    mask(patch.center_x, patch.center_y) = false;
+                                {
+                                    for (size_t ii = 0; ii < patches.size(); ii++) {
+                                        add_patch(patches[ii], result, count, patch_size, image_dims);
+                                        mask(patches[ii].center_x, patches[ii].center_y) = false;
+                                    }
                                 }
-
                             }
 
                         }
