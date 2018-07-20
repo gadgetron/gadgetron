@@ -223,7 +223,7 @@ namespace Gadgetron {
 
                 std::vector<ImagePatch<T>> all_patches(num_all_patches);
 
-#pragma omp parallel default(none) private(ky) shared(SX, SY, image, search_window, noise_std, result, count, mask, all_patches)
+#pragma omp parallel default(none) private(ky) shared(SX, SY, image, search_window, noise_std, result, count, mask, all_patches) num_threads(4)
                 {
                     std::vector<ImagePatch<T>> patches;
                     arma::Col<T> reference_patch;
