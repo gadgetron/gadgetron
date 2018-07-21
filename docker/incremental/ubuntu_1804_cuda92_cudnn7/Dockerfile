@@ -17,7 +17,6 @@ RUN pip3 install tensorflow matplotlib opencv-python scikit-image
 # RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py36.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
 
 #ISMRMRD
-RUN mkdir /opt/code
 RUN cd /opt/code && \
     git clone https://github.com/ismrmrd/ismrmrd.git && \
     cd ismrmrd && \
