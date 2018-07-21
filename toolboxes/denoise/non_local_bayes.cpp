@@ -207,7 +207,7 @@ namespace Gadgetron {
                 const vector_td<int, 2> image_dims = vector_td<int, 2>(
                         from_std_vector<size_t, 2>(*image.get_dimensions()));
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(4)
                 for (int ky = 0; ky < image.get_size(1); ky++) {
                     for (int kx = 0; kx < image.get_size(0); kx++) {
 
