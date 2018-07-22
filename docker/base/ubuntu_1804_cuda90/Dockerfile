@@ -102,14 +102,14 @@ RUN cd /opt && \
     mkdir lib && \
     make && \
     make shared && \
-    make -j 16 install
+    make -j $(nproc) install
 
 #BART
 RUN cd /opt && \
     wget https://github.com/mrirecon/bart/archive/v0.4.03.tar.gz && \
     tar -xzf v0.4.03.tar.gz && \
     cd bart-0.4.03 && \
-    make -j 16 && \
+    make -j $(nproc) && \
     ln -s /opt/bart-v0.4.03/bart /usr/local/bin/bart 
 
 # ceres

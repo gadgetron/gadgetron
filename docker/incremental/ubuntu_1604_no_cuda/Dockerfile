@@ -11,7 +11,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make -j 16 && \
+    make -j $(nproc) && \
     make install
 
 #GADGETRON
@@ -21,7 +21,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake -DBUILD_WITH_PYTHON3=ON ../ && \
-    make -j 16 && \
+    make -j $(nproc) && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.gadgetron.sha1 --value `git rev-parse HEAD` && \
     cp ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml.example ${GADGETRON_HOME}/share/gadgetron/config/gadgetron.xml && \
@@ -54,7 +54,7 @@ RUN cd /opt/code && \
     mkdir build && \
     cd build && \
     cmake ../ && \
-    make -j 16 && \
+    make -j $(nproc) && \
     make install && \
     /opt/code/gadgetron/docker/manifest --key .io.gadgetron.siemens_to_ismrmrd.sha1 --value `git rev-parse HEAD` 
 
