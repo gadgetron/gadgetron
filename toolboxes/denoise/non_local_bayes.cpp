@@ -207,52 +207,99 @@ namespace Gadgetron {
                 size_t SX = image.get_size(0);
                 size_t SY = image.get_size(1);
 
-                std::vector< std::vector<ImagePatch<T>> > all_patches(SX*SY);
+                // ------------------------------------------------------
+// TODO: further optimize these code to improve performance at different number of cores
+                int num_procs = 0;
+#ifdef USE_OMP
+                num_procs = omp_get_num_procs();
+#endif // USE_OMP
 
-                int ky;
-
-#pragma omp parallel default(none) private(ky) shared(SX, SY, image, search_window, noise_std, result, count, mask, all_patches)
+                if (num_procs < 8)
                 {
-                    std::vector<ImagePatch<T>> patches;
-                    arma::Col<T> reference_patch;
-#pragma omp for 
+                    #pragma omp parallel num_threads(4)
+                    {
+                        std::vector<ImagePatch<T>> patches;
+                        arma::Col<T> reference_patch;
+
+                        #pragma omp for
+                        for (int ky = 0; ky < image.get_size(1); ky++) {
+                            for (int kx = 0; kx < image.get_size(0); kx++) {
+
+                                if (mask(kx, ky)) {
+
+                                    get_patch(image, kx, ky, patch_size, image_dims, reference_patch);
+                                    create_patches(image, kx, ky, patch_size, search_window, image_dims, patches);
+
+                                    filter_patches(patches, n_patches, reference_patch);
+
+
+                                    denoise_patches(patches, noise_std);
+
+
+                                    for (auto &patch : patches) {
+                                        #pragma omp critical
+                                        add_patch(patch, result, count, patch_size, image_dims);
+                                        mask(patch.center_x, patch.center_y) = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // ------------------------------------------------------
+
+                    std::vector< std::vector<ImagePatch<T>> > all_patches(SX*SY);
+
+                    int ky;
+
+                    #pragma omp parallel default(none) private(ky) shared(SX, SY, image, search_window, noise_std, result, count, mask, all_patches)
+                    {
+                        std::vector<ImagePatch<T>> patches;
+                        arma::Col<T> reference_patch;
+
+                        #pragma omp for 
+                        for (ky = 0; ky < SY; ky++)
+                        {
+                            for (int kx = 0; kx < SX; kx++)
+                            {
+                                if (mask(kx, ky))
+                                {
+                                    get_patch(image, kx, ky, patch_size, image_dims, reference_patch);
+                                    create_patches(image, kx, ky, patch_size, search_window, image_dims, patches);
+
+                                    filter_patches(patches, n_patches, reference_patch);
+
+                                    denoise_patches(patches, noise_std);
+                                    all_patches[kx + ky * SX] = patches;
+
+                                    for (auto &patch : patches)
+                                    {
+                                        mask(patch.center_x, patch.center_y) = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     for (ky = 0; ky < SY; ky++)
                     {
                         for (int kx = 0; kx < SX; kx++)
                         {
-                            if (mask(kx, ky))
+                            std::vector<ImagePatch<T>>& patches = all_patches[kx + ky * SX];
+                            if (patches.size() > 0)
                             {
-                                get_patch(image, kx, ky, patch_size, image_dims, reference_patch);
-                                create_patches(image, kx, ky, patch_size, search_window, image_dims, patches);
-
-                                filter_patches(patches, n_patches, reference_patch);
-
-                                denoise_patches(patches, noise_std);
-                                all_patches[kx + ky * SX] = patches;
-
                                 for (auto &patch : patches)
                                 {
-                                    mask(patch.center_x, patch.center_y) = false;
+                                    add_patch(patch, result, count, patch_size, image_dims);
                                 }
                             }
                         }
                     }
                 }
 
-                for (ky = 0; ky < SY; ky++)
-                {
-                    for (int kx = 0; kx < SX; kx++)
-                    {
-                        std::vector<ImagePatch<T>>& patches = all_patches[kx + ky * SX];
-                        if (patches.size()>0)
-                        {
-                            for (auto &patch : patches)
-                            {
-                                add_patch(patch, result, count, patch_size, image_dims);
-                            }
-                        }
-                    }
-                }
+                // ------------------------------------------------------
 
                 for (size_t i = 0; i < result.get_number_of_elements(); i++) {
                     result[i] /= count[i];
