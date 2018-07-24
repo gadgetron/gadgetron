@@ -8,11 +8,12 @@ using namespace Gadgetron;
 int main(int argc, char** argv)
 {
     char* gt_home = std::getenv("GADGETRON_HOME");
+    std::string path_name;
     if (gt_home != NULL)
     {
         size_t pos = std::string(gt_home).rfind("gadgetron");
         gt_home[pos - 1] = '\0';
-        std::string path_name = std::string(gt_home) + std::string("/share/gadgetron/python");
+        path_name = std::string(gt_home) + std::string("/share/gadgetron/python");
 
         std::string add_path_cmd = std::string("import sys;\nsys.path.insert(0, \"") + path_name + std::string("\")\n");
         GDEBUG_STREAM(add_path_cmd);
@@ -22,15 +23,21 @@ int main(int argc, char** argv)
             boost::python::import("__main__").attr("__dict__"));
     }
 
+    if (gt_home != NULL)
     {
         GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
         GDEBUG_STREAM("Test converter for CMR ML");
+
+        // load model
+        PythonFunction<bp::object> load_model_aif_lv("perf_aif_lv_detection", "load_model_aif_lv_mask");
+        bp::object model = load_model_aif_lv(path_name + "/" + "perf_aif_lv.pbt");
+
         hoNDArray<float> test;
         test.create(2, 2, 4);
         Gadgetron::fill(test, float(1));
 
         PythonFunction<hoNDArray<float>> seg_aif_lv("perf_aif_lv_detection", "compute_aif_lv_mask");
-        hoNDArray<float> segmentation = seg_aif_lv(test);
+        hoNDArray<float> segmentation = seg_aif_lv(test, model);
     }
 
     {
