@@ -7,7 +7,7 @@
 #endif // MATLAB_DLL_EXPORT_SYM
 #include <mex.h>
 
-#include <strstream>
+#include <sstream>
 #include "mri_core_coil_map_estimation.h"
 #include "GadgetronTimer.h"
 #include "MatlabUtils.h"

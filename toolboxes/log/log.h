@@ -46,7 +46,7 @@ namespace Gadgetron
      Logging/Debug messages should be done with the convenience macros:
 
      GDEBUG
-     GDINFO
+     GINFO
      GWARN
      GERROR
      GVERBOSE
