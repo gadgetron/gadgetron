@@ -29,12 +29,8 @@ int main(int argc, char** argv)
         test.create(2, 2, 4);
         Gadgetron::fill(test, float(1));
 
-        {
-            GILLock gl;     // this is needed
-            auto module = boost::python::import("perf_aif_lv_detection.py");
-            auto function = module.attr("compute_aif_lv_mask");
-            hoNDArray<float> segmentation = boost::python::extract<hoNDArray<float>>(function(test));
-        }
+        PythonFunction<hoNDArray<float>> seg_aif_lv("perf_aif_lv_detection", "compute_aif_lv_mask");
+        hoNDArray<float> segmentation = seg_aif_lv(test);
     }
 
     {
