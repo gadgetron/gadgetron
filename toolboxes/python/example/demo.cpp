@@ -1,10 +1,42 @@
 #include "python_toolbox.h"
 #include "ismrmrd/ismrmrd.h"
+#include "hoNDArray_utils.h"
+#include "hoNDArray_elemwise.h"
 
 using namespace Gadgetron;
 
 int main(int argc, char** argv)
 {
+    char* gt_home = std::getenv("GADGETRON_HOME");
+    if (gt_home != NULL)
+    {
+        size_t pos = std::string(gt_home).rfind("gadgetron");
+        gt_home[pos - 1] = '\0';
+        std::string path_name = std::string(gt_home) + std::string("/share/gadgetron/python");
+
+        std::string add_path_cmd = std::string("import sys;\nsys.path.insert(0, \"") + path_name + std::string("\")\n");
+        GDEBUG_STREAM(add_path_cmd);
+
+        GILLock gl;
+        boost::python::exec(add_path_cmd.c_str(),
+            boost::python::import("__main__").attr("__dict__"));
+    }
+
+    {
+        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+        GDEBUG_STREAM("Test converter for CMR ML");
+        hoNDArray<float> test;
+        test.create(2, 2, 4);
+        Gadgetron::fill(test, float(1));
+
+        {
+            GILLock gl;     // this is needed
+            auto module = boost::python::import("perf_aif_lv_detection.py");
+            auto function = module.attr("compute_aif_lv_mask");
+            hoNDArray<float> segmentation = boost::python::extract<hoNDArray<float>>(function(test));
+        }
+    }
+
     {
         GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
         GDEBUG_STREAM("Call a function with no return value (print all arguments)");
@@ -360,21 +392,6 @@ int main(int argc, char** argv)
             ISMRMRD::serialize(meta_res[n], meta_res_str);
             GDEBUG_STREAM(meta_res_str.str());
         }
-    }
-
-    char* gt_home = std::getenv("GADGETRON_HOME");
-    if (gt_home != NULL)
-    {
-        size_t pos = std::string(gt_home).rfind("gadgetron");
-        gt_home[pos-1] = '\0';
-        std::string path_name = std::string(gt_home) + std::string("/share/gadgetron/python");
-
-        std::string add_path_cmd = std::string("import sys;\nsys.path.insert(0, \"") + path_name + std::string("\")\n");
-        GDEBUG_STREAM(add_path_cmd);
-
-        GILLock gl;
-        boost::python::exec(add_path_cmd.c_str(),
-            boost::python::import("__main__").attr("__dict__"));
     }
 
     if (gt_home != NULL)
