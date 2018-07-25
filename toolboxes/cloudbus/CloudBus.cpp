@@ -1,4 +1,5 @@
 #include "CloudBus.h"
+#include "node_discovery.h"
 #include "log.h"
 
 namespace Gadgetron
@@ -264,6 +265,27 @@ namespace Gadgetron
         n.last_recon = 0;
         nodes.clear();
         nodes.push_back(n);
+    } else if (IsNodeDiscoveryConfigured()) {
+        std::vector<NodeDiscoveryEntry> node_entries;
+
+	nodes.clear();
+
+	if (DiscoverNodes(node_entries)) {
+	  for (const NodeDiscoveryEntry& e: node_entries) {
+	    GadgetronNodeInfo n;
+	    n.port = e.port;
+	    n.address = e.host;
+	    n.rest_port = e.restPort;
+	    n.compute_capability = 1;
+	    n.active_reconstructions = e.activeReconstructions;
+	    n.last_recon = 0;
+	    nodes.push_back(n);
+	  }
+	} else {
+	  GERROR("Failed to run NodeDiscovery\n");
+	  return;
+	}
+
     } else {
         update_node_info();
 	{
