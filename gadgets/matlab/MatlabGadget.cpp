@@ -34,13 +34,21 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
     mwSize dims[4] = {img->matrix_size[0], img->matrix_size[1], img->matrix_size[2], img->channels};
     mxArray *img_data = mxCreateNumericArray(ndim, dims, mxSINGLE_CLASS, mxCOMPLEX);
 
+    unsigned long num_elements = m2->getObjectPtr()->get_number_of_elements();
+#ifdef MX_HAS_INTERLEAVED_COMPLEX
+    mxComplexSingle* data = mxGetComplexSingles(img_data);
+    for (int i = 0; i < num_elements; i++) {
+        data[i].real = raw_data[i].real();
+        data[i].imag = raw_data[i].imag();
+    }
+#else
     float *real_data = (float *)mxGetData(img_data);
     float *imag_data = (float *)mxGetImagData(img_data);
-    unsigned long num_elements = m2->getObjectPtr()->get_number_of_elements();
     for (int i = 0; i < num_elements; i++) {
         real_data[i] = raw_data[i].real();
         imag_data[i] = raw_data[i].imag();
     }
+#endif /* MX_HAS_INTERLEAVED_COMPLEXX */
 
     engPutVariable(engine_, "hdr_bytes", img_hdr_bytes);
     engPutVariable(engine_, "data", img_data);
@@ -91,11 +99,18 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
                 return GADGET_FAIL;
             }
 
+#ifdef MX_HAS_INTERLEAVED_COMPLEX
+	    mxComplexSingle* data = mxGetComplexSingles(res_data);
+            for (int i = 0; i < m4->getObjectPtr()->get_number_of_elements(); i++) {
+                m4->getObjectPtr()->get_data_ptr()[i] = std::complex<float>(data[i].real,data[i].imag);
+            }
+#else
             float *real_data = (float *)mxGetData(res_data);
             float *imag_data = (float *)mxGetImagData(res_data);
             for (int i = 0; i < m4->getObjectPtr()->get_number_of_elements(); i++) {
                 m4->getObjectPtr()->get_data_ptr()[i] = std::complex<float>(real_data[i],imag_data[i]);
             }
+#endif /* MX_HAS_INTERLEAVED_COMPLEX */
 
             if (this->next()->putq(m3) < 0) {
                 GDEBUG("Failed to put Image message on queue\n");

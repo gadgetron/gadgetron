@@ -28,6 +28,54 @@ template<>	struct MatlabClassID<int64_t>{ static constexpr mxClassID value =  mx
 template<>	struct MatlabClassID<unsigned long>{ static constexpr mxClassID value =  mxUINT64_CLASS;};
 template<>	struct MatlabClassID<unsigned long long>{ static constexpr mxClassID value =  mxUINT64_CLASS;};
 
+#ifdef MX_HAS_INTERLEAVED_COMPLEX
+template <typename T> struct matlab_type_traits {};
+template<> struct matlab_type_traits<double> {
+     static constexpr mxDouble* (*get_real)(const mxArray*) = mxGetDoubles;
+     static constexpr mxComplexDouble* (*get_cmplx)(const mxArray*) = mxGetComplexDoubles;
+};
+template<> struct matlab_type_traits<float> {
+     static constexpr mxSingle* (*get_real)(const mxArray*) = mxGetSingles;
+     static constexpr mxComplexSingle* (*get_cmplx)(const mxArray*) = mxGetComplexSingles;
+};
+template<> struct matlab_type_traits<int8_t> {
+     static constexpr mxInt8* (*get_real)(const mxArray*) = mxGetInt8s;
+     static constexpr mxComplexInt8* (*get_cmplx)(const mxArray*) = mxGetComplexInt8s;
+};
+template<> struct matlab_type_traits<uint8_t> {
+     static constexpr mxUint8* (*get_real)(const mxArray*) = mxGetUint8s;
+     static constexpr mxComplexUint8* (*get_cmplx)(const mxArray*) = mxGetComplexUint8s;
+};
+template<> struct matlab_type_traits<int16_t> {
+     static constexpr mxInt16* (*get_real)(const mxArray*) = mxGetInt16s;
+     static constexpr mxComplexInt16* (*get_cmplx)(const mxArray*) = mxGetComplexInt16s;
+};
+template<> struct matlab_type_traits<uint16_t> {
+     static constexpr mxUint16* (*get_real)(const mxArray*) = mxGetUint16s;
+     static constexpr mxComplexUint16* (*get_cmplx)(const mxArray*) = mxGetComplexUint16s;
+};
+template<> struct matlab_type_traits<int32_t> {
+     static constexpr mxInt32* (*get_real)(const mxArray*) = mxGetInt32s;
+     static constexpr mxComplexInt32* (*get_cmplx)(const mxArray*) = mxGetComplexInt32s;
+};
+template<> struct matlab_type_traits<uint32_t> {
+     static constexpr mxUint32* (*get_real)(const mxArray*) = mxGetUint32s;
+     static constexpr mxComplexUint32* (*get_cmplx)(const mxArray*) = mxGetComplexUint32s;
+};
+template<> struct matlab_type_traits<int64_t> {
+     static constexpr mxInt64* (*get_real)(const mxArray*) = mxGetInt64s;
+     static constexpr mxComplexInt64* (*get_cmplx)(const mxArray*) = mxGetComplexInt64s;
+};
+template<> struct matlab_type_traits<unsigned long> {
+     static constexpr mxUint64* (*get_real)(const mxArray*) = mxGetUint64s;
+     static constexpr mxComplexUint64* (*get_cmplx)(const mxArray*) = mxGetComplexUint64s;
+};
+template<> struct matlab_type_traits<unsigned long long> {
+     static constexpr mxUint64* (*get_real)(const mxArray*) = mxGetUint64s;
+     static constexpr mxComplexUint64* (*get_cmplx)(const mxArray*) = mxGetComplexUint64s;
+};
+#endif /* MX_HAS_INTERLEAVED_COMPLEX */
+
 // ------------------------
 // hoNDArray
 // ------------------------
@@ -42,8 +90,7 @@ template<class T> struct MatlabConverter {
 
 		T* raw_data = (T*) mxCalloc(input->get_number_of_elements(),sizeof(T));
 		memcpy(raw_data,input->get_data_ptr(),input->get_number_of_bytes());
-		auto result =  mxCreateNumericMatrix(0,0,MatlabClassID<T>::value,isComplex<T>::value);
-		mxSetDimensions(result,dims,ndim);
+		auto result =  mxCreateNumericArray(ndim,dims,MatlabClassID<T>::value,isComplex<T>::value);
 		mxSetData(result,raw_data);
 		return result;
 
@@ -57,7 +104,7 @@ template<class T> struct MatlabConverter {
 
 		auto result =  hoNDArray<T>(dimensions);
 
-		if (mxGetImagData(input)) //This is for REAL data only
+		if (mxIsComplex(input)) //This is for REAL data only
 			throw std::runtime_error("Trying to convert complex matlab data to non-complex c++ type");
 		if (mxGetClassID(input) == MatlabClassID<T>::value ){ //Same type, so we can just memcpy
 			T* raw_data = (T*) mxGetData(input);
@@ -156,19 +203,26 @@ template<class REAL> struct MatlabConverter<complext<REAL>> {
 		for (size_t i = 0; i < ndim; i++)
 			dims[i] = input->get_size(i);
 
+		complext<REAL>* raw_data = input->get_data_ptr();
+		auto result = mxCreateNumericArray(ndim,dims,MatlabClassID<REAL>::value,isComplex<complext<REAL>>::value);
+#ifdef MX_HAS_INTERLEAVED_COMPLEX
+		auto data = matlab_type_traits<REAL>::get_cmplx(result);
+		for (size_t i = 0; i < input->get_number_of_elements(); i++){
+			data[i].real = real(raw_data[i]);
+			data[i].imag = imag(raw_data[i]);
+		}
+#else
 		REAL* real_data = (REAL*) mxCalloc(input->get_number_of_elements(),sizeof(REAL));
 		REAL* imag_data = (REAL*) mxCalloc(input->get_number_of_elements(),sizeof(REAL));
 
-		complext<REAL>* raw_data = input->get_data_ptr();
 		for (size_t i = 0; i < input->get_number_of_elements(); i++){
 			real_data[i] = real(raw_data[i]);
 			imag_data[i] = imag(raw_data[i]);
 		}
 
-		auto result  =  mxCreateNumericMatrix(0,0,MatlabClassID<REAL>::value,isComplex<complext<REAL>>::value);
-		mxSetDimensions(result,dims,ndim);
 		mxSetData(result,real_data);
 		mxSetImagData(result,imag_data);
+#endif /* MX_HAS_INTERLEAVED_COMPLEX */
 
 		auto ndims_test = mxGetNumberOfDimensions(result);
 
@@ -230,6 +284,21 @@ template<class REAL> struct MatlabConverter<complext<REAL>> {
 
 	}
 
+#ifdef MX_HAS_INTERLEAVED_COMPLEX
+	template<class R> static void copyMatlabdata(mxArray* input, complext<REAL>* output,size_t len){
+		if (mxIsComplex(input)) {
+			auto* data = matlab_type_traits<R>::get_cmplx(input);
+			for (size_t i = 0; i < len; i++) {
+			        output[i]._real = data[i].real;
+			        output[i]._imag = data[i].imag;
+			}
+		} else{
+			auto* data = matlab_type_traits<R>::get_real(input);
+			for (size_t i = 0; i < len; i++)
+				output[i] = data[i];
+		}
+	}
+#else
 	template<class R> static void copyMatlabdata(mxArray* input, complext<REAL>* output,size_t len){
 		R* real_ptr = (R*) mxGetData(input);
 		R* imag_ptr = (R*) mxGetImagData(input);
@@ -241,6 +310,7 @@ template<class REAL> struct MatlabConverter<complext<REAL>> {
 				output[i] = complext<REAL>(REAL(real_ptr[i]),0);
 		}
 	}
+#endif /* MX_HAS_INTERLEAVED_COMPLEX */
 
 };
 
