@@ -83,13 +83,13 @@ namespace Gadgetron {
 		
 		// Write BART files
 		template<typename T>
-		void write_BART_hdr(const char* filename, std::vector<T> &DIMS);
+		void write_BART_hdr(const std::string& filename, std::vector<T> &DIMS);
 		template<typename T, typename U>
-		void write_BART_Files(const char* filename, std::vector<T> &DIMS, std::vector<U> &DATA);
+		void write_BART_Files(const std::string& filename, std::vector<T> &DIMS, std::vector<U> &DATA);
 
 		// Read BART files
-		std::vector<size_t> read_BART_hdr(const char *filename);
-		std::pair< std::vector<size_t>, std::vector<std::complex<float> > > read_BART_files(const char *filename);
+		std::vector<size_t> read_BART_hdr(const std::string& filename);
+		std::pair< std::vector<size_t>, std::vector<std::complex<float> > > read_BART_files(const std::string& filename);
 
 		// Utility functions
 		std::string &getOutputFilename(const std::string &bartCommandLine);
@@ -102,32 +102,27 @@ namespace Gadgetron {
 
 
 	template<typename T>
-	void BartGadget::write_BART_hdr(const char* filename, std::vector<T> &DIMS)
+	void BartGadget::write_BART_hdr(const std::string& filename, std::vector<T> &DIMS)
 	{
-		const size_t MAX_DIMS = 16;
-		std::string filename_s = std::string(filename) + std::string(".hdr");
+		constexpr size_t MAX_DIMS = 16;
 		std::vector<size_t> v(MAX_DIMS, 1);
 		assert(DIMS.size() < MAX_DIMS);
 		std::copy(DIMS.cbegin(), DIMS.cend(), v.begin());
-		std::ofstream pFile;
-		pFile.open(filename_s, std::ofstream::out);
+		std::ofstream pFile(filename + ".hdr");
 		if (!pFile.is_open())
-			GERROR("Failed to write into file: %s\n", filename);
+			GERROR("Failed to write into HDR file: %s\n", filename);
 		pFile << "# Dimensions\n";
 		std::copy(v.cbegin(), v.cend(), std::ostream_iterator<size_t>(pFile, " "));
-		pFile.close();
 	}
 
 	template<typename T, typename U>
-	void BartGadget::write_BART_Files(const char* filename, std::vector<T> &DIMS, std::vector<U> &DATA)
+	void BartGadget::write_BART_Files(const std::string& filename, std::vector<T> &DIMS, std::vector<U> &DATA)
 	{
 		write_BART_hdr(filename, DIMS);
-		std::string filename_s = std::string(filename) + std::string(".cfl");
-		std::ofstream pFile(filename_s, std::ofstream::out | std::ofstream::binary);
+		std::ofstream pFile(filename + ".cfl", std::ofstream::binary);
 		if (!pFile.is_open())
-			GERROR("Failed to write into file: %s\n", filename);
-		pFile.write(reinterpret_cast<char*>(&DATA[0]), DATA.size() * sizeof(float));
-		pFile.close();
+			GERROR("Failed to write into CFL file: %s\n", filename);
+		pFile.write(reinterpret_cast<const char*>(&DATA[0]), DATA.size() * sizeof(U));
 	}
 } // namespace Gadgetron
 #endif //BART_GADGET_H

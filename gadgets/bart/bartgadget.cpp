@@ -30,15 +30,12 @@ namespace Gadgetron {
 		dp{}
 	{}
 
-	std::vector<size_t> BartGadget::read_BART_hdr(const char *filename)
+	std::vector<size_t> BartGadget::read_BART_hdr(const std::string& filename)
 	{
-		std::string filename_s = std::string(filename) + std::string(".hdr");
-		std::ifstream infile(filename_s);
-		if (!infile.is_open())
-			GERROR("Failed to open file: %s\n", filename_s.c_str());
-
 		std::vector<size_t> DIMS;
-		if (infile.is_open())
+
+		std::ifstream infile(filename + ".hdr");
+		if (infile)
 		{
 			std::vector<std::string> tokens;
 			std::string line;
@@ -49,45 +46,47 @@ namespace Gadgetron {
 			}
 
 			// Parse the dimensions
-			const std::string s = tokens[1];
-			std::stringstream ss(s);
+			std::stringstream ss(tokens[1]);
 			std::string items;
 			while (getline(ss, items, ' ')) {
-				DIMS.push_back(std::stoi(items, nullptr, 10));
+				DIMS.push_back(std::stoi(items));
 			}
-			infile.close();
+		}
+		else
+		{
+			GERROR("Failed to open file: %s\n", filename.c_str());
 		}
 
-		return(DIMS);
+		return DIMS;
 	}
 
 
 	std::pair< std::vector<size_t>, std::vector<std::complex<float> > >
-		BartGadget::read_BART_files(const char *filename)
+		BartGadget::read_BART_files(const std::string& filename)
 	{
 		// Load the header file
 		auto DIMS = read_BART_hdr(filename);
 
 		// Load the cfl file
-		std::string filename_s = std::string(filename) + std::string(".cfl");
-		std::ifstream infile(filename_s, std::ifstream::binary);
-		if (!infile.is_open())
-			GERROR("Failed to open file: %s\n", filename_s.c_str());
-
-		infile.seekg(0, infile.end);
-		size_t size = static_cast<long>(infile.tellg());
-		infile.seekg(0);
-		std::vector<float> buffer(size);
-		infile.read(reinterpret_cast<char*>(&buffer[0]), size);
-		infile.close();
-		// Reformat the data
-		std::vector< std::complex<float> > Data;
-		Data.reserve(buffer.size() / 2);
-
-		for (size_t count = 0, buffer_size = buffer.size(); count != buffer_size; count += 2)
-			Data.push_back(std::complex<float>(buffer[count], buffer[count + 1]));
-
-		return (std::pair< std::vector<size_t>, std::vector< std::complex<float> > >(DIMS, Data));
+		std::ifstream infile(filename + ".cfl", std::ifstream::binary);
+		if (!infile)
+		{
+			GERROR("Failed to open data of file: %s\n", filename.c_str());
+			return std::make_pair(DIMS, std::vector<std::complex<float>>());
+		}
+		else
+		{
+			// First determine data size
+			infile.seekg(0, infile.end);
+			size_t size(infile.tellg());
+			
+			// Now read data from file
+			infile.seekg(0);
+			std::vector<std::complex<float>> Data(size/sizeof(float)/2.);
+			infile.read(reinterpret_cast<char*>(Data.data()), size);
+			
+			return std::make_pair(DIMS, Data);
+		}
 	}
 
 	std::string & BartGadget::getOutputFilename(const std::string & bartCommandLine)

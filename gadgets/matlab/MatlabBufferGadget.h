@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mutex>
+#include "gadgetron_home.h"
 #include "gadgetron_matlab_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
@@ -81,7 +82,7 @@ protected:
 
 	    // Add the necessary paths to the matlab environment
 	    // Java matlab command server
-	    std::string gadgetron_matlab_path = get_gadgetron_home() + "/share/gadgetron/matlab";
+	    std::string gadgetron_matlab_path = get_gadgetron_home().string() + "/share/gadgetron/matlab";
 	    std::string add_path_cmd = std::string("addpath('") + gadgetron_matlab_path + std::string("');");
             // Gadgetron matlab scripts
 	    engEvalString(engine_, add_path_cmd.c_str());
