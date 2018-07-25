@@ -1,14 +1,20 @@
 install(FILES 	
-FindACE.cmake
-FindFFTW3.cmake
-FindGLEW.cmake
-FindNumPy.cmake
-FindGadgetron.cmake
-FindGMatlab.cmake
-FindDCMTK.cmake
-FindMKL.cmake
-FindPLplot.cmake
-DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
+    FindACE.cmake
+    FindArmadillo.cmake
+    FindCUDA_advanced.cmake
+    FindDCMTK.cmake
+    FindFFTW3.cmake
+    FindGadgetron.cmake
+    FindGLEW.cmake
+    FindGMatlab.cmake
+    FindGperftools.cmake
+    FindMKL.cmake
+    FindNumPy.cmake
+    FindOctave.cmake
+    FindPLplot.cmake
+    FindPython3.cmake
+    FindZFP.cmake
+    DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
 
 if (WIN32)
     install(FILES InstallWinGadgetron.bat DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
