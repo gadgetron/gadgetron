@@ -7,6 +7,8 @@ using namespace Gadgetron;
 
 int main(int argc, char** argv)
 {
+    initialize_python();
+  
     char* gt_home = std::getenv("GADGETRON_HOME");
     std::string path_name;
     if (gt_home != NULL)
@@ -23,22 +25,6 @@ int main(int argc, char** argv)
             boost::python::import("__main__").attr("__dict__"));
     }
 
-    if (gt_home != NULL)
-    {
-        GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
-        GDEBUG_STREAM("Test converter for CMR ML");
-
-        // load model
-        PythonFunction<bp::object> load_model_aif_lv("perf_aif_lv_detection", "load_model_aif_lv_mask");
-        bp::object model = load_model_aif_lv(path_name + "/" + "perf_aif_lv.pbt");
-
-        hoNDArray<float> test;
-        test.create(2, 2, 4);
-        Gadgetron::fill(test, float(1));
-
-        PythonFunction<hoNDArray<float>> seg_aif_lv("perf_aif_lv_detection", "compute_aif_lv_mask");
-        hoNDArray<float> segmentation = seg_aif_lv(test, model);
-    }
 
     {
         GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
