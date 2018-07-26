@@ -12,6 +12,7 @@ docker push gadgetron/ubuntu_1604_cuda80_base
 docker push gadgetron/ubuntu_1604_cuda80_cudnn6_base
 docker push gadgetron/ubuntu_1604_cuda80_cudnn7_base
 docker push gadgetron/ubuntu_1604_cuda90_cudnn7_base
+docker push gadgetron/ubuntu_1604_cuda92_cudnn7_base
 docker push gadgetron/ubuntu_1804_base
 # docker push gadgetron/ubuntu_1804_cuda90_base
 docker push gadgetron/ubuntu_1804_cuda92_cudnn7_base
