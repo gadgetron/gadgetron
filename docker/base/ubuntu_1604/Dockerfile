@@ -8,7 +8,7 @@ RUN add-apt-repository ppa:lkoppel/ceres
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     apt-utils wget build-essential emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core \
-    libboost-all-dev libfftw3-dev h5utils jq libzmq-dev \
+    libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libarmadillo-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libopenblas-base libplplot-dev libdcmtk-dev \
@@ -45,6 +45,18 @@ RUN pip3 install tensorboardx visdom
 
 # since cmake has problems to find python3 and boost-python3
 RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py35.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
+
+# Compile boost
+RUN apt-get -–purge remove libboost-dev
+RUN apt-get --purge remove libboost-all-dev
+
+RUN cd /opt && \
+    wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz && \
+    tar -xzvf boost_1_67_0.tar.gz && \
+    cd boost_1_67_0 && \
+    ./bootstrap.sh --with-python=/usr/bin/python3 --prefix=/usr && \
+    ./b2 -j$(nproc) address-model=64 stage && \
+    ./b2 install
 
 #ZFP
 RUN cd /opt && \
