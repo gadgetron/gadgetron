@@ -28,7 +28,7 @@ RUN apt-get install -y python3-h5py
 
 # tensorflow does not work with cuda92
 RUN pip3 install --upgrade tensorflow 
-RUN pip3 install http://download.pytorch.org/whl/cu91/torch-0.4.0-cp36-cp36m-linux_x86_64.whl 
+RUN pip3 install http://download.pytorch.org/whl/cu92/torch-0.4.1-cp36-cp36m-linux_x86_64.whl 
 RUN pip3 install torchvision
 RUN pip3 install tensorboardx visdom
 
