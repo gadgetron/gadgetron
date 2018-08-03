@@ -24,7 +24,6 @@ RUN apt-get --yes remove *-dev
 RUN add-apt-repository ppa:lkoppel/ceres
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get -y install libplplot-dev libceres-dev
-RUN apt-get autoremove -y
 RUN rm -rf /opt/*.tar.gz
 RUN rm -rf /usr/local/cuda/bin
 RUN rm -rf /usr/local/cuda/doc
