@@ -22,13 +22,6 @@ RUN apt-get -y install gcc-6 g++-6
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
 
 #Python stuff
-RUN pip install --upgrade pip
-RUN pip install setuptools
-RUN pip install Cython
-RUN pip install numpy 
-RUN pip install pyxb psutil lxml pydicom
-RUN pip install 'h5py==2.5.0' 
-
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
@@ -50,7 +43,8 @@ RUN cd /opt && \
     cd boost_1_67_0 && \
     ./bootstrap.sh --with-python=/usr/bin/python3 --prefix=/usr && \
     ./b2 -j$(nproc) address-model=64 stage && \
-    ./b2 install
+    ./b2 install && \ 
+    cd /opt && rm -rf ./boost_1_67_0
 
 # since cmake has problems to find python3 and boost-python3
 RUN ln -s /usr/lib/libboost_python35.so /usr/lib/libboost_python3.so
@@ -63,7 +57,8 @@ RUN cd /opt && \
     mkdir build && cd build && \
     cmake -DCMAKE_BUILD_TYPE=Release ../ && \
     make -j$(nproc) && \
-    make install
+    make install && \ 
+    cd /opt && rm -rf ./armadillo-8.600.0
 
 #ZFP
 RUN cd /opt && \
