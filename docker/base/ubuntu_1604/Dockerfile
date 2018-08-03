@@ -4,7 +4,6 @@ FROM ubuntu:16.04
 
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
-RUN add-apt-repository ppa:lkoppel/ceres
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     apt-utils wget build-essential emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core \
@@ -12,7 +11,7 @@ RUN apt-get update --quiet && \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libopenblas-base libplplot-dev libdcmtk-dev \
-    libceres-dev libopenblas-dev\
+    libopenblas-dev\
     supervisor net-tools cpio
 
 #Update gcc to something remotely recent
@@ -77,6 +76,17 @@ RUN cd /opt && \
     make -j $(nproc) && \
     ln -s /opt/bart-v0.4.03/bart /usr/local/bin/bart
 
+# Ceres
+RUN apt-get install --yes libgoogle-glog-dev libeigen3-dev libsuitesparse-dev
+RUN cd /opt && \
+    wget http://ceres-solver.org/ceres-solver-1.14.0.tar.gz && \
+    tar zxf ceres-solver-1.14.0.tar.gz && \
+    mkdir ceres-bin && \
+    cd ceres-bin && \
+    cmake ../ceres-solver-1.14.0 && \
+    make -j16 && \
+    make install
+    
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \
     ISMRMRD_HOME=/usr/local
