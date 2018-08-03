@@ -22,13 +22,6 @@ RUN apt-get -y install gcc-6 g++-6
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
 
 #Python stuff
-RUN pip install --upgrade pip
-RUN pip install setuptools
-RUN pip install Cython
-RUN pip install numpy 
-RUN pip install pyxb psutil lxml pydicom
-RUN pip install 'h5py==2.5.0' 
-
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
@@ -39,7 +32,7 @@ RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
 
 RUN pip3 install --upgrade tensorflow
-RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl 
+RUN pip3 install http://download.pytorch.org/whl/cu92/torch-0.4.0-cp35-cp35m-linux_x86_64.whl 
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom
 
