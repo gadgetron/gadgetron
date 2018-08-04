@@ -3,28 +3,14 @@ FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     software-properties-common apt-utils wget build-essential cython emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf\
-5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev sup\
+5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libopenblas-base libopenblas-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev sup\
 ervisor cmake-curses-gui neofetch supervisor net-tools cpio gpg-agent
 
 #Python stuff
-RUN pip install --upgrade pip
-RUN pip install setuptools
-RUN pip install Cython
-RUN pip install numpy 
-RUN pip install pyxb psutil lxml pydicom
-RUN pip install 'h5py==2.5.0' 
-
 RUN apt-get update && apt-get install -y libgtk2.0-dev
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
-RUN pip3 uninstall h5py
-RUN apt-get install -y python3-h5py
 
 # tensorflow does not work with cuda92
 RUN pip3 install --upgrade tensorflow 
@@ -33,6 +19,14 @@ RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp36-cp36m-linu
 RUN pip3 install torchvision
 RUN pip3 install tensorboardx visdom
 
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
+RUN pip3 install Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
+RUN pip3 uninstall h5py
+RUN apt-get install -y python3-h5py
+
 # since cmake has problems to find python3 and boost-python3
 # RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py36.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
 
@@ -40,32 +34,6 @@ RUN pip3 install tensorboardx visdom
 # RUN pip uninstall -y scipy
 
 RUN mkdir /opt/code
-
-#OpenBLAS with OpenMP
-RUN cd /opt && \
-    mkdir debsource && \
-    cd debsource && \
-    apt-get --no-install-recommends --no-install-suggests --yes build-dep libopenblas-base && \
-    apt-get install --no-install-recommends --no-install-suggests --yes build-essential fakeroot devscripts && \
-    apt-get source libopenblas-base && \
-    cd openblas-0.2.20+ds/ && \
-    sed -i "s/NO_WARMUP=1/NO_WARMUP=1 OPENMP=1/g" debian/rules && \
-    debchange -i "Compiling with OpenMP support" && \
-    debuild -us -uc -i -I && \
-    debi && \
-    cd /opt && \
-    rm -rf debsource
-
-#Install Openblas
-RUN rm /usr/lib/x86_64-linux-gnu/libblas.so
-RUN rm /usr/lib/x86_64-linux-gnu/libblas.so.3
-RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3 /usr/lib/x86_64-linux-gnu/libblas.so
-RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3 /usr/lib/x86_64-linux-gnu/libblas.so.3
-
-RUN rm /usr/lib/x86_64-linux-gnu/liblapack.so
-RUN rm /usr/lib/x86_64-linux-gnu/liblapack.so.3
-RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/liblapack.so.3 /usr/lib/x86_64-linux-gnu/liblapack.so
-RUN ln -s /usr/lib/x86_64-linux-gnu/openblas/liblapack.so.3 /usr/lib/x86_64-linux-gnu/liblapack.so.3
 
 #ZFP
 RUN cd /opt && \
