@@ -205,9 +205,9 @@ endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-  find_package(Boost COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED)
+  find_package(Boost 1.64.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED)
 else()
-  find_package(Boost COMPONENTS system thread program_options filesystem timer REQUIRED)
+  find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED)
 endif()
 
 find_package(ACE REQUIRED)
