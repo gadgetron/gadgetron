@@ -7,7 +7,6 @@
 #include "MatlabUtils.h"
 
 
-
 std::mutex mutex_MBRG_;
 
 namespace Gadgetron{
@@ -164,7 +163,8 @@ int MatlabBucketReconGadget::send_matlab_command(std::string& command)
 int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBucket>* m1)
 {
     
-    
+       std::lock_guard<std::mutex> lock(mutex_MBRG_);
+ 
 //     std::clock_t time1 = std::clock();
     high_resolution_clock::time_point time1 = high_resolution_clock::now();
     
@@ -187,12 +187,15 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     std::map<size_t, GadgetContainerMessage<IsmrmrdReconData>* > recon_data_buffers;    
     
     // boolean for packet labelling
-    uint8_t isLastPacket;
-    
+    uint8_t isLastPacket=0;
+    uint8_t isFirstPacket=1;
+
     // Iterate over the RO lines of the bucket, copy them into raw_data
 //     IsmrmrdDataBuffered* pCurrDataBuffer = NULL;
     Gadgetron::GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* headersToMatlab = NULL;
-    
+
+    //GDEBUG("xxx1\n");
+
     for (std::vector<IsmrmrdAcquisitionData>::iterator it = bucket->data_.begin(); it != bucket->data_.end(); ++it)
     {
         //Get a reference to the header and data for this acquisition
@@ -228,12 +231,14 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         
         // Here we're accessing at the 24th bit of flags. 24th is the bit index of ACQ_LAST_IN_MEASUREMENT
         uint64_t flags = it->head_->getObjectPtr()->flags;
-        if(((flags & ( 1 << 24 )) >> 24))  
+	if((flags & ( 1 << 24 )) >> 24)  
         {
-            isLastPacket = 1;
-            headersToMatlab = it->head_;
+	   isLastPacket = 1;
         }
-        
+	if(isFirstPacket)
+	{
+	   headersToMatlab = it->head_;
+        }
         
         //Copy this RO line into raw_data
         for (uint16_t cha = 0; cha < NCHA; cha++)
@@ -254,6 +259,8 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 
         ++RO_counter;
     }
+
+    //GDEBUG("xxx2\n");
     
     for (std::vector<IsmrmrdAcquisitionData>::iterator it = bucket->ref_.begin(); it != bucket->ref_.end(); ++it)
     {
@@ -293,10 +300,14 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
         
         // Here we're accessing at the 24th bit of flags. 24th is the bit index of ACQ_LAST_IN_MEASUREMENT
         uint64_t flags = it->head_->getObjectPtr()->flags;
-        if(RO_counter == 0/*((flags & ( 1 << 24 )) >> 24)*/)  
+        if((flags & ( 1 << 24 )) >> 24)  // JAC: we need to find a workaround for (RO_counter == 0) to prevent setting isLastPacket=1 too soon for non-EPI data
         {
             isLastPacket = 1;
-            headersToMatlab = it->head_;
+        }
+        //headersToMatlab = it->head_;
+	if(isFirstPacket)
+	{
+	   headersToMatlab = it->head_;
         }
         
         //Copy this RO line into raw_data
@@ -316,8 +327,9 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     
     high_resolution_clock::time_point time2 = high_resolution_clock::now();
     
-    std::lock_guard<std::mutex> lock(mutex_MBRG_); 
+    // std::lock_guard<std::mutex> lock(mutex_MBRG_); 
     
+    //GDEBUG("xxx3\n");
     
     ///////////////////////// RAWDATA TO MXSTRUCT //////////////////////////
 //     const char * field_names[] = {"data","trajectory","headers","samplingdescription", "kspace_encode_step"};
@@ -334,10 +346,14 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     packet_dims[0] = NE0;
     packet_dims[1] = RO_counter*NCHA; // this is thus echo x line x partition
 
+    //GDEBUG("xxx4\n");
+
     // recon data
     auto mxdata =  mxCreateUninitNumericArray(packet_ndim, packet_dims, mxSINGLE_CLASS, mxCOMPLEX);
     float* real_data=(float *)mxGetData(mxdata);
     float* imag_data=(float *)mxGetImagData(mxdata);
+
+    //GDEBUG("xxx5\n");
 
     // Copy from C++ to matlab
     for(size_t i = 0; i<packet_n_elem; ++i)
@@ -349,12 +365,16 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
     
     mxSetField(mxstruct,0,"data",mxdata);
     
+    //GDEBUG("xxx6\n");
+
     // encode
     auto mxstep = mxCreateUninitNumericMatrix((mwSize) RO_counter*NCHA, 1, mxUINT32_CLASS, mxREAL);
     mxFree(mxGetData(mxstep));
     mxSetData(mxstep, phase_coordinates);
     mxSetField(mxstruct,0,"kspace_encode_step",mxstep);
     
+    //GDEBUG("xxx7\n");
+
     /*
 	//Add trajectory if available
 	if (pCurrDataBuffer->trajectory_){
@@ -381,23 +401,30 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 //     
 //     std::cout << "nelem: "<< headersToMatlab->getObjectPtr()->get_number_of_elements() << std::endl;
     
-    if(isLastPacket) {
-        mwSize num_headers = 1; //headersToMatlab->size();
+    if(isFirstPacket)
+	{   isFirstPacket = 0;
+        mwSize num_headers = 1; //headersToMatlab->size(); //= 1;
         auto mxheaders = mxCreateUninitNumericMatrix(sizeof(ISMRMRD::AcquisitionHeader),num_headers,mxUINT8_CLASS,mxREAL);
         memcpy(mxGetData(mxheaders),headersToMatlab->getObjectPtr(),sizeof(ISMRMRD::AcquisitionHeader)*num_headers);
-        mxSetField(mxstruct,0,"headers",mxheaders);
+	mxSetField(mxstruct,0,"headers",mxheaders);
     }
- 
+
+    //GDEBUG("xxx8\n");
+
     // Create matlab boolean and set value to C++
     auto mxIsLastPacket = mxCreateUninitNumericMatrix(1, 1, mxINT8_CLASS, mxREAL); // destroyed by recon_array destroy later
     *(uint8_t *)mxGetData(mxIsLastPacket)=isLastPacket;
         
+    //GDEBUG("xxx9\n");
+
 	// Initialize a string for matlab commands
 	std::string cmd;
 
 	mwSize nencoding_spaces = 1;
 	const char* fieldnames[3] = {"data","reference", "isLastPacket"};
 	auto reconArray = mxCreateStructArray(1,&nencoding_spaces,3,fieldnames);
+
+    //GDEBUG("xxx10\n");
 
     ///////////////////////////////////
 
@@ -483,7 +510,12 @@ int MatlabBucketReconGadget::process(GadgetContainerMessage<IsmrmrdAcquisitionBu
 		if (ref){
 			GDEBUG("Adding reference");
 			bit.ref_ = MatlabStructToBuffer(ref);
+			
 		}
+		/*else {
+		isLastPacket = 0;
+		}*/
+
 		output_data.rbit_.push_back(bit);
 		auto m3 = new GadgetContainerMessage<IsmrmrdReconData>(output_data);
 		if (this->next()->putq(m3) < 0){
