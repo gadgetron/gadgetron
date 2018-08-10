@@ -14,10 +14,14 @@ foreach(test ${TEST_CASE})
     file(APPEND ./test_cases.txt "${test}\n")
 endforeach()
 
-find_program(BARTCMD bart)
-if (BARTCMD)
-  set(TEST_CASE_BART ${TEST_CASE_BART})
-  foreach(test ${TEST_CASE_BART})
-    file(APPEND ./test_cases.txt "${test}\n")
-  endforeach()
+# The USE_BART option is defined in gadgets/CMakeLists.txt
+if(USE_BART) 
+  # If we need to include BART tests, BART_SOURCE_DIR should be defined by now...
+  if(EXISTS ${BART_SOURCE_DIR}/CMakeLists.txt)
+    set(TEST_CASE_BART ${TEST_CASE_BART})
+    foreach(test ${TEST_CASE_BART})
+      file(APPEND ./test_cases.txt "${test}\n")
+    endforeach()
+  endif()
 endif()
+
