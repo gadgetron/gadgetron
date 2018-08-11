@@ -81,12 +81,15 @@ set(test_src_files tests.cpp
       image_morphology_test.cpp 
       pattern_recognition_test.cpp 
       cmr_mapping_test.cpp
-      node_discovery_test.cpp
       )
 
 if (PYTHONLIBS_FOUND)
     set(test_src_files ${test_src_files} python_converter_test.cpp )
 endif ()
+
+if ( USE_NODE_DISCOVERY )
+    set(test_src_files ${test_src_files} node_discovery_test.cpp)
+endif()
 
 if ( CUDA_FOUND )
 

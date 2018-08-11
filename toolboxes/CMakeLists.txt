@@ -9,7 +9,10 @@ if (MKL_FOUND)
 endif ()
 
 add_subdirectory(log)
-add_subdirectory(node_discovery)
+
+if (USE_NODE_DISCOVERY)
+  add_subdirectory(node_discovery)
+endif()
 
 add_subdirectory(operators)
 add_subdirectory(solvers)
