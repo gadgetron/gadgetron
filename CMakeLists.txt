@@ -205,9 +205,18 @@ endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-  find_package(Boost 1.64.0 COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED)
+  find_package(Boost COMPONENTS system thread date_time chrono program_options filesystem timer REQUIRED)
 else()
-  find_package(Boost 1.64.0 COMPONENTS system thread program_options filesystem timer REQUIRED)
+  find_package(Boost COMPONENTS system thread program_options filesystem timer REQUIRED)
+endif()
+
+if (Boost_VERSION GREATER 106400)
+  option(USE_NODE_DISCOVERY "Build node_discovery" ON)
+  MESSAGE("Enabling node_discovery library")
+  add_definitions(-DUSE_NODE_DISCOVERY)
+else()
+  option(USE_NODE_DISCOVERY "Build node_discovery" OFF)
+  MESSAGE("OLD Boost version < 1.64.0, disabling node_discovery")
 endif()
 
 find_package(ACE REQUIRED)

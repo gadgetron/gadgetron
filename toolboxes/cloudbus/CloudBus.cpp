@@ -1,5 +1,9 @@
 #include "CloudBus.h"
-#include "node_discovery.h"
+
+#ifdef USE_NODE_DISCOVERY
+    #include "node_discovery.h"
+#endif
+
 #include "log.h"
 
 namespace Gadgetron
@@ -265,6 +269,7 @@ namespace Gadgetron
         n.last_recon = 0;
         nodes.clear();
         nodes.push_back(n);
+#ifdef USE_NODE_DISCOVERY
     } else if (IsNodeDiscoveryConfigured()) {
         std::vector<NodeDiscoveryEntry> node_entries;
 
@@ -285,7 +290,7 @@ namespace Gadgetron
 	  GERROR("Failed to run NodeDiscovery\n");
 	  return;
 	}
-
+#endif //USE_NODE_DISCOVERY
     } else {
         update_node_info();
 	{
