@@ -56,6 +56,9 @@ namespace Gadgetron {
 	  uint16_t acc_factor_PE2;
 	  uint16_t reference_lines_PE1;
 	  uint16_t reference_lines_PE2;
+	  std::string reference_data;
+	  std::string input_data;
+	  std::string traj_data;		
      };
 
      class EXPORTGADGETS_bartgadget BartGadget final : public GenericReconGadget
@@ -87,10 +90,20 @@ namespace Gadgetron {
 	  int process(GadgetContainerMessage<IsmrmrdReconData>* m1);		
 
      private:
+
+	  static constexpr auto memonly_cfl = 
+#ifdef MEMONLY_CFL
+	       true
+#else
+	       false
+#endif /* MEMONLY_CFL */
+	       ;
+	
+
 	  Default_parameters dp;
 	  bart_memory_behaviour memory_behaviour_;
 	  fs::path command_script_;
-		
+
 	  void replace_default_parameters(std::string &str);
 	  
      };

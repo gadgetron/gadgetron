@@ -179,6 +179,12 @@ namespace Gadgetron {
 		    str.replace(pos, pos_diff, std::to_string(dp.reference_lines_PE1));
 	       else if (tmp == std::string("reference_lines_PE2"))
 		    str.replace(pos, pos_diff, std::to_string(dp.reference_lines_PE2));
+	       else if (tmp == std::string("input_data"))
+		    str.replace(pos, pos_diff, dp.input_data);
+	       else if (tmp == std::string("reference_data"))
+		    str.replace(pos, pos_diff, dp.reference_data);
+	       else if (tmp == std::string("traj_data"))
+		    str.replace(pos, pos_diff, dp.traj_data);
 	       else {
 		    GERROR( "Unknown default parameter, please see the complete list of available parameters...");
 	       }
@@ -200,6 +206,23 @@ namespace Gadgetron {
 	       GDEBUG("BartGadget::process_config: Failed to parse incoming ISMRMRD Header");
 	  }
 
+	  // ===================================================================
+	  /* Data provided to the user might or might not be in-memory
+	   *
+	   * - if -DMEMONLY_CFL then we're always in-memory without extension
+	   * - otherwise we add the *.mem extension if
+	   *     + if the memory behaviour is BART_ALL_IN_MEM
+	   *     + or if the memory behaviour is BART_MIX_DISK_MEM and the user requests it
+	   */
+	  const auto append_mem_ext_in(!memonly_cfl
+				       && (memory_behaviour_ == BART_ALL_IN_MEM
+					   || (memory_behaviour_ == BART_MIX_DISK_MEM
+					       && BartStoreGadgetronInputInMemory.value())));
+	  
+	  dp.reference_data  = std::string("reference_data") + (append_mem_ext_in ? ".mem" : "");
+	  dp.input_data = std::string("input_data")     + (append_mem_ext_in ? ".mem" : "");
+	  dp.traj_data = std::string("traj_data")      + (append_mem_ext_in ? ".mem" : "");
+	  
 	  // ===================================================================
 	  // Adjust BART's debug level
 	  
@@ -350,6 +373,9 @@ namespace Gadgetron {
 #endif /* MEMONLY_CFL */
 	       ;
 	  
+	  GINFO_STREAM("Process start");
+
+  
 	  auto generated_files_folder(internal::generate_unique_folder(BartWorkingDirectory_path.value()));
 
 	  bool create_folder(!memonly_cfl
@@ -376,23 +402,6 @@ namespace Gadgetron {
 	  const auto ref_filename_src  = std::string("meas_gadgetron_ref")   + (!memonly_cfl ? ".mem" : "");
 	  const auto data_filename_src = std::string("meas_gadgetron_input") + (!memonly_cfl ? ".mem" : "");
 	  const auto traj_filename_src = std::string("meas_gadgetron_traj")  + (!memonly_cfl ? ".mem" : "");
-
-
-	  /* Data provided to the user might or might not be in-memory
-	   *
-	   * - if -DMEMONLY_CFL then we're always in-memory without extension
-	   * - otherwise we add the *.mem extension if
-	   *     + if the memory behaviour is BART_ALL_IN_MEM
-	   *     + or if the memory behaviour is BART_MIX_DISK_MEM and the user requests it
-	   */
-	  const auto append_mem_ext_in(!memonly_cfl
-				       && (memory_behaviour_ == BART_ALL_IN_MEM
-					   || (memory_behaviour_ == BART_MIX_DISK_MEM
-					       && BartStoreGadgetronInputInMemory.value())));
-	  
-	  const auto ref_filename  = std::string("reference_data") + (append_mem_ext_in ? ".mem" : "");
-	  const auto data_filename = std::string("input_data")     + (append_mem_ext_in ? ".mem" : "");
-	  const auto traj_filename = std::string("traj_data")      + (append_mem_ext_in ? ".mem" : "");
 
 	  
 	  /*** PROCESS EACH DATASET ***/
@@ -459,10 +468,10 @@ namespace Gadgetron {
 	       {
 		    std::ostringstream cmd;
 		    cmd << "bart resize -c 0 " << DIMS[0] << " 1 " << DIMS[1] << " 2 " << DIMS[2]
-			<< " " << ref_filename_src << " " << ref_filename;
+			<< " " << ref_filename_src << " " << dp.reference_data;
 
 		    GDEBUG_STREAM("Gadgetron data is loaded to " << ref_filename_src);
-		    GDEBUG_STREAM("BART filename for reference data is " << ref_filename);
+		    GDEBUG_STREAM("BART filename for reference data is " << dp.reference_data);
 		    
 		    if (!call_BART(cmd.str()))
 		    {
@@ -476,10 +485,10 @@ namespace Gadgetron {
 	       else	
 		    cmd2 << "bart copy";
 
-	       cmd2 << " " << data_filename_src << " " << data_filename;
+	       cmd2 << " " << data_filename_src << " " << dp.input_data;
 	       
 	       GDEBUG_STREAM("Gadgetron data is loaded to " << data_filename_src);
-	       GDEBUG_STREAM("BART filename for data is " << data_filename);
+	       GDEBUG_STREAM("BART filename for data is " << dp.input_data);
 	       
 	       if (!call_BART(cmd2.str()))
 	       {
@@ -493,10 +502,10 @@ namespace Gadgetron {
 		    else	
 			 cmd3 << "bart copy";
 		    
-		    cmd3 << " " << traj_filename_src << " " << traj_filename;
+		    cmd3 << " " << traj_filename_src << " " << dp.traj_data;
 	       
 		    GDEBUG_STREAM("Gadgetron trajectory is loaded to " << traj_filename_src);
-		    GDEBUG_STREAM("BART filename for trajectory is " << traj_filename);
+		    GDEBUG_STREAM("BART filename for trajectory is " << dp.traj_data);
 		    
 		    if (!call_BART(cmd3.str()))
 		    {
