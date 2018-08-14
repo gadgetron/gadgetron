@@ -11,7 +11,7 @@
         Recon N is phase and S is set
 
         Author: Hui Xue
-        Magnetic Resonance Technology Program, National Heart, Lung and Blood Institute, National Institutes of Health
+        National Heart, Lung and Blood Institute, National Institutes of Health
         10 Center Drive, Bethesda, MD 20814, USA
         Email: hui.xue@nih.gov
     -->
@@ -202,6 +202,7 @@
         <classname>PythonGadget</classname>
         <property><name>python_module</name><value>image_array_recon</value></property>
         <property><name>python_class</name><value>ImageArrayRecon</value></property>
+        <property><name>debug_folder</name><value></value></property>
     </gadget>
 
     <!-- after recon processing -->
