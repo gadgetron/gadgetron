@@ -1,5 +1,8 @@
 FROM nvidia/cuda:8.0-cudnn6-devel-ubuntu16.04
 
+ARG BART_URL=https://github.com/mrirecon/bart
+ARG BART_BRANCH=master
+
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes software-properties-common
 RUN add-apt-repository ppa:lkoppel/ceres
@@ -74,13 +77,15 @@ RUN cd /opt && \
     make shared && \
     make -j $(nproc) install
 
-#BART
-RUN cd /opt && \
-    wget https://github.com/mrirecon/bart/archive/v0.3.01.tar.gz && \
-    tar -xzf v0.3.01.tar.gz && \
-    cd bart-0.3.01 && \
+# BART
+RUN cd /opt/code && \
+    git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
+    cd bart && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
     make -j $(nproc) && \
-    ln -s /opt/bart-0.3.01/bart /usr/local/bin/bart 
+    make install
 
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \
