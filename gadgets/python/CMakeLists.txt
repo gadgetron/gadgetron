@@ -64,6 +64,7 @@ set(gadgetron_python_gadgets_files
                             gadgets/array_image.py
                             gadgets/image_array_recon.py
                             gadgets/passthrough_array_image.py
+                            gadgets/image_array_recon_rtcine_plotting.py
         )
 
 set(gadgetron_python_examples_files 

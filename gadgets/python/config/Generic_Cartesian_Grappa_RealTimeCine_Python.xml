@@ -200,8 +200,8 @@
         <name>PythonImageArray</name>
         <dll>gadgetron_python</dll>
         <classname>PythonGadget</classname>
-        <property><name>python_module</name><value>image_array_recon</value></property>
-        <property><name>python_class</name><value>ImageArrayRecon</value></property>
+        <property><name>python_module</name><value>image_array_recon_rtcine_plotting</value></property>
+        <property><name>python_class</name><value>ImageArrayReconRTCinePlotting</value></property>
         <property><name>debug_folder</name><value></value></property>
     </gadget>
 

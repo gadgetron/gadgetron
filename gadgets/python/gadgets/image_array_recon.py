@@ -73,6 +73,7 @@ class ImageArrayRecon(Gadget):
 
         if array_data.waveform is not None:
             print("ImageArrayRecon, receive %d waveforms ... " % len(array_data.waveform))
+            print("ImageArrayRecon, receive waveforms ", array_data.waveform)
 
         if array_data.acq_headers is not None:
             print("ImageArrayRecon, receive acq headers ... ", array_data.acq_headers.shape)
@@ -83,7 +84,7 @@ class ImageArrayRecon(Gadget):
                     print("send out image %d-%d-%d" % (phs, s, slc))
                     a = array_data.data[:,:,:,:,phs,s,slc]
                     # print(a.shape)
-                    self.put_next(array_data.headers[phs,s,slc], a)
+                    self.put_next(array_data.headers[phs,s,slc], a, array_data.meta[phs+s*PHS + slc*S*PHS])
         
         """
         print("ImageArrayRecon, receiving image array, ", ndim)
