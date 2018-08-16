@@ -85,9 +85,9 @@ class ImageArrayReconRTCinePlotting(Gadget):
 
         self.data[:,:,:,:,:,:,curr_slc] = array_data.data
         self.headers[:,:,curr_slc] = array_data.headers
-        self.waveforms.append(array_data.waveform)
+        self.waveforms.extend(array_data.waveform)
         self.acq_headers[:,:, :,:,curr_slc] = array_data.acq_headers
-        self.meta.append(array_data.meta)
+        self.meta.extend(array_data.meta)
 
         if (self.debug_folder is not None):
             save_file = os.path.join(self.debug_folder, "image_array"+str(self.num_processed_)+".dat")
