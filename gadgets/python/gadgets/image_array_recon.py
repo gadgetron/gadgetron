@@ -1,6 +1,10 @@
+import os
+import sys
+import pickle
 import ismrmrd
 import ismrmrd.xsd
 import numpy as np
+import platform
 # from ismrmrdtools import transform, coils, grappa
 from gadgetron import Gadget,IsmrmrdImageArray
 import copy 
@@ -21,7 +25,21 @@ class ImageArrayRecon(Gadget):
 
         self.array_data = IsmrmrdImageArray()
 
+        try:
+            self.debug_folder = self.params["debug_folder"]
+
+            if (len(self.debug_folder)==0):
+                if platform.system() == "Windows":
+                    self.debug_folder = "C:/temp/gadgetron"
+                else:
+                    self.debug_folder = "/tmp/gadgetron"
+        except:
+            self.debug_folder = None
+
+        self.num_processed_ = 0
+
         print("ImageArrayRecon, maximal number of slice ", self.slc)
+        print("ImageArrayRecon, find debug folder ", self.debug_folder)
 
     def process(self, array_data):
 
@@ -36,7 +54,13 @@ class ImageArrayRecon(Gadget):
         SLC = ndim[6]
 
         print("\nImageArrayRecon, receiving image array, ", ndim)
-        
+
+        if (self.debug_folder is not None):
+            save_file = os.path.join(self.debug_folder, "image_array"+str(self.num_processed_)+".dat")
+            with open(save_file, "wb") as f:
+                pickle.dump(array_data, f, pickle.HIGHEST_PROTOCOL)
+                print("Save incoming array data to %s" % save_file)
+
         # self.put_next(array_data)
 
         print("ImageArrayRecon, parse meta ... ")
@@ -49,6 +73,7 @@ class ImageArrayRecon(Gadget):
 
         if array_data.waveform is not None:
             print("ImageArrayRecon, receive %d waveforms ... " % len(array_data.waveform))
+            print("ImageArrayRecon, receive waveforms ", array_data.waveform)
 
         if array_data.acq_headers is not None:
             print("ImageArrayRecon, receive acq headers ... ", array_data.acq_headers.shape)
@@ -59,7 +84,7 @@ class ImageArrayRecon(Gadget):
                     print("send out image %d-%d-%d" % (phs, s, slc))
                     a = array_data.data[:,:,:,:,phs,s,slc]
                     # print(a.shape)
-                    self.put_next(array_data.headers[phs,s,slc], a)
+                    self.put_next(array_data.headers[phs,s,slc], a, array_data.meta[phs+s*PHS + slc*S*PHS])
         
         """
         print("ImageArrayRecon, receiving image array, ", ndim)
