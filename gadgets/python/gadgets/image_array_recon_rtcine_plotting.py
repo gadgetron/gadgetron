@@ -97,8 +97,10 @@ class ImageArrayReconRTCinePlotting(Gadget):
             self.meta.extend(array_data.meta)
 
             if (self.num_processed_>0):
-                self.headers.append(array_data.headers, axis=2)
-                self.acq_headers.append(array_data.acq_headers, axis=3)
+                print("Incoming headers ", array_data.headers.shape)
+                self.headers = np.append(self.headers, array_data.headers, axis=2)
+                print("Incoming acq headers ", array_data.acq_headers.shape)
+                self.acq_headers = np.append(self.acq_headers, array_data.acq_headers, axis=3)
 
             if (self.debug_folder is not None):
                 save_file = os.path.join(self.debug_folder, "image_array"+str(self.num_processed_)+".dat")
@@ -110,7 +112,7 @@ class ImageArrayReconRTCinePlotting(Gadget):
         for slc in range(0,SLC):
             for s in range(0,S):
                 for phs in range(0,PHS):
-                    print("send out image %d-%d-%d" % (phs, s, slc))
+                    # print("send out image %d-%d-%d" % (phs, s, slc))
                     a = array_data.data[:,:,:,:,phs,s,slc]
                     # print(a.shape)
                     self.put_next(array_data.headers[phs,s,slc], a, array_data.meta[phs+s*PHS + slc*S*PHS])
@@ -126,25 +128,29 @@ class ImageArrayReconRTCinePlotting(Gadget):
                 with open(save_file, "wb") as f:
                     pickle.dump(self.data, f)
                     print("Save incoming array data to %s" % save_file)
+                    f.close()
 
                 save_file = os.path.join(self.debug_folder, "image_array_all_headers.dat")
                 with open(save_file, "wb") as f:
                     pickle.dump(self.headers, f)
                     print("Save incoming array headers to %s" % save_file)
-
+                    f.close()
+                    
                 save_file = os.path.join(self.debug_folder, "image_array_all_waveforms.dat")
                 with open(save_file, "wb") as f:
                     pickle.dump(self.waveforms, f)
                     print("Save incoming array waveforms to %s" % save_file)
-
+                    f.close()
+                    
                 save_file = os.path.join(self.debug_folder, "image_array_all_acq_headers.dat")
                 with open(save_file, "wb") as f:
                     pickle.dump(self.acq_headers, f)
                     print("Save incoming array acq_headers to %s" % save_file)
-
+                    f.close()
+                    
                 save_file = os.path.join(self.debug_folder, "image_array_all_acq_meta.dat")
                 with open(save_file, "wb") as f:
                     pickle.dump(self.meta, f)
                     print("Save incoming array meta to %s" % save_file)
-
+                    f.close()
         return 0
