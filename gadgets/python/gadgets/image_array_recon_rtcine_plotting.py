@@ -82,7 +82,7 @@ class ImageArrayReconRTCinePlotting(Gadget):
             buffer_for_plotting = False
             print("Will not buffer for plotting ... ")
 
-        if buffer_for_plotting:            
+        if buffer_for_plotting:
             if (self.num_processed_==0):
                 # allocate data buffer
                 self.data = np.zeros([RO, E1, E2, CHA, PHS, S, self.slc])
@@ -135,22 +135,22 @@ class ImageArrayReconRTCinePlotting(Gadget):
                     pickle.dump(self.headers, f)
                     print("Save incoming array headers to %s" % save_file)
                     f.close()
-                    
+
                 save_file = os.path.join(self.debug_folder, "image_array_all_waveforms.dat")
                 with open(save_file, "wb") as f:
                     pickle.dump(self.waveforms, f)
                     print("Save incoming array waveforms to %s" % save_file)
                     f.close()
-                    
+
                 save_file = os.path.join(self.debug_folder, "image_array_all_acq_headers.dat")
                 with open(save_file, "wb") as f:
                     pickle.dump(self.acq_headers, f)
                     print("Save incoming array acq_headers to %s" % save_file)
                     f.close()
-                    
                 save_file = os.path.join(self.debug_folder, "image_array_all_acq_meta.dat")
                 with open(save_file, "wb") as f:
                     pickle.dump(self.meta, f)
                     print("Save incoming array meta to %s" % save_file)
                     f.close()
+
         return 0
