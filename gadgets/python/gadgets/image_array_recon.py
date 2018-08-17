@@ -84,7 +84,7 @@ class ImageArrayRecon(Gadget):
                     print("send out image %d-%d-%d" % (phs, s, slc))
                     a = array_data.data[:,:,:,:,phs,s,slc]
                     # print(a.shape)
-                    self.put_next(array_data.headers[phs,s,slc], a, array_data.meta[phs+s*PHS + slc*S*PHS])
+                    self.put_next(array_data.headers[phs,s,slc], a)
         
         """
         print("ImageArrayRecon, receiving image array, ", ndim)
