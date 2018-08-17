@@ -120,7 +120,7 @@ namespace {
     }
 
     template<unsigned int DIMS>
-    boost::default_color_type *
+    std::vector<boost::default_color_type>
     graph_cut(const hoNDArray<uint16_t> &field_map_index, const hoNDArray<uint16_t> &proposed_field_map_index,
               const hoNDArray<float> &lambda_map, const hoNDArray<float> &residual_diff_map) {
 
@@ -129,8 +129,7 @@ namespace {
 
         float flow = boost::boykov_kolmogorov_max_flow(graph, graph.source_vertex, graph.sink_vertex);
 
-        auto color_map = get(boost::vertex_color, graph);
-        return color_map;
+        return std::move(graph.color_map);
     }
 
 }
@@ -159,7 +158,7 @@ namespace Gadgetron {
         }
 
 
-        boost::default_color_type *color_map;
+        std::vector<boost::default_color_type> color_map;
         if (Z == 1) {
             color_map = graph_cut<2>(field_map_index, proposed_field_map_index, lambda_map,
                                      residual_diff_map);
@@ -172,7 +171,7 @@ namespace Gadgetron {
         auto result = field_map_index;
         size_t updated_voxels = 0;
         for (size_t i = 0; i < field_map_index.get_number_of_elements(); i++) {
-            if (boost::get(color_map, i) != boost::default_color_type::black_color) {
+            if (color_map[i] != boost::default_color_type::black_color) {
                 updated_voxels++;
                 result[i] = proposed_field_map_index[i];
             }
