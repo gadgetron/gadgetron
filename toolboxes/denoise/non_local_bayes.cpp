@@ -17,7 +17,7 @@ namespace Gadgetron {
         namespace {
 
 
-            //GCC has decided that fast_norm should be really slow, so here we have our own implementation. *sigh*
+            //GCC has decided that std::norm should be really slow, so here we have our own implementation. *sigh*
             double fast_norm(const double x){
                 return x*x;
             }
