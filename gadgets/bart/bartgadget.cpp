@@ -21,11 +21,8 @@
 #include <ctime>
 #include <chrono>
 #include <memory>
-#include <random>
 #include <functional>
 #include <mutex>
-#include <boost/thread.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include <errno.h>
 #ifdef _WIN32
@@ -36,97 +33,9 @@
     #include <unistd.h>
 #endif
 
-#include "bart/bart_embed_api.h"
+#include "bart_helpers.h"
 
 enum bart_debug_levels { BART_DP_ERROR, BART_DP_WARN, BART_DP_INFO, BART_DP_DEBUG1, BART_DP_DEBUG2, BART_DP_DEBUG3, BART_DP_DEBUG4, BART_DP_TRACE, BART_DP_ALL };
-
-namespace internal {
-     namespace fs = Gadgetron::fs;
-     
-     class ScopeGuard
-     {
-     public:
-	  ScopeGuard(fs::path p) : p_(std::move(p))
-	       {
-		    char buf[1024] = { '\0' };
-		    auto* ptr = getcwd(buf, 1024);
-		    cwd_ = std::string(ptr);
-		    auto r = chdir(p_.c_str());
-	       }
-	  ~ScopeGuard()
-	       {
-		    if (is_active_) {
-			 fs::remove_all(p_);
-		    }
-		    auto r = chdir(cwd_.c_str());
-		    deallocate_all_mem_cfl();
-	       }
-
-	  void dismiss() { is_active_ = false; }
-     private:
-	  bool is_active_;
-	  const fs::path p_;
-	  fs::path cwd_;
-     };
-     
-     // ========================================================================
-
-     fs::path generate_unique_folder(const fs::path& working_directory)
-     {
-	  typedef std::chrono::system_clock clock_t;
-	  
-	  char buff[80];
-	  auto now = clock_t::to_time_t(clock_t::now());
-	  std::strftime(buff, sizeof(buff), "%H_%M_%S__", std::localtime(&now));
-	  std::random_device rd;
-	  auto time_id(buff + std::to_string(std::uniform_int_distribution<>(1, 10000)(rd)));
-	  // Get the current process ID
-	  auto threadId = boost::lexical_cast<std::string>(boost::this_thread::get_id());
-	  auto threadNumber(0UL);
-	  sscanf(threadId.c_str(), "%lx", &threadNumber);
-	  return  working_directory / ("bart_"
-				       + time_id
-				       + "_"
-				       + std::to_string(threadNumber));
-     }
-
-     // ========================================================================
-
-     void ltrim(std::string &str)
-     {
-	  str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](int s) {return !std::isspace(s); }));
-     }
-
-     void rtrim(std::string &str)
-     {
-	  str.erase(std::find_if(str.rbegin(), str.rend(), [](int s) {return !std::isspace(s);}).base(), str.end());
-     }
-
-     void trim(std::string &str)
-     {
-	  ltrim(str);
-	  rtrim(str);
-     }
-	
-     std::string get_output_filename(const std::string& bartCommandLine)
-     {
-	  boost::char_separator<char> sep(" ");
-#if 1
-	  boost::tokenizer<boost::char_separator<char>,
-			   std::string::const_reverse_iterator> tokens(bartCommandLine.crbegin(),
-								       bartCommandLine.crend(),
-								       sep);
-	  const auto tok(*tokens.begin());
-	  return std::string(tok.crbegin(), tok.crend());
-#else 
-	  std::string outputFile;
-	  boost::tokenizer<boost::char_separator<char> > tokens(bartCommandLine, sep);
-	  for (auto tok: tokens)
-	       outputFile = tok;
-	  return outputFile;
-#endif /* 1 */
-     }
-}
 
 // =============================================================================
 

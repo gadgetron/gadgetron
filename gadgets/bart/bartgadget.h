@@ -42,7 +42,7 @@
 
 namespace Gadgetron {
      namespace fs = boost::filesystem;
-	
+
      // The user is free to add more parameters as the need arises.
      struct Default_parameters 
      {
@@ -99,7 +99,6 @@ namespace Gadgetron {
 #endif /* MEMONLY_CFL */
 	       ;
 	
-
 	  Default_parameters dp;
 	  bart_memory_behaviour memory_behaviour_;
 	  fs::path command_script_;

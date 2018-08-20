@@ -13,6 +13,8 @@ find_package(BART REQUIRED CONFIG)
 set(GADGET_FILES
   bartgadget.h
   bartgadget.cpp
+  bart_helpers.h
+  bart_helpers.cpp
   bart_logger.cpp
   BART_Recon.xml
   BART_Recon_cloud.xml
