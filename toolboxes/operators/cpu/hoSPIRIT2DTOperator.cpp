@@ -394,8 +394,7 @@ typename hoSPIRIT2DTOperator<T>::REAL hoSPIRIT2DTOperator<T>::magnitude(ARRAY_TY
         this->apply_forward_kernel(complexIm_);
 
         // L2 norm
-        T obj(0);
-        Gadgetron::dotc(res_after_apply_kernel_sum_over_, res_after_apply_kernel_sum_over_, obj);
+        T obj = Gadgetron::dot(res_after_apply_kernel_sum_over_, res_after_apply_kernel_sum_over_);
 
         return std::abs(obj);
     }

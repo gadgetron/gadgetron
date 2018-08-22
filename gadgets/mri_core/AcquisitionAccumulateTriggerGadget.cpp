@@ -451,9 +451,6 @@ namespace Gadgetron {
                     return GADGET_FAIL;
                 }
                 buckets_.erase(it->first);
-                
-                if (buckets_.empty())
-                    break;
             }
         }
 

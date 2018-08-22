@@ -998,7 +998,7 @@ namespace Gadgetron {
 
         if (ignore_empty_image)
         {
-            T v = Gadgetron::norm2(im);
+            T v = Gadgetron::nrm2(im);
             if (v < FLT_EPSILON) return true;
         }
 
@@ -1032,7 +1032,7 @@ namespace Gadgetron {
 
         if (ignore_empty_image)
         {
-            T v = Gadgetron::norm2(im);
+            T v = Gadgetron::nrm2(im);
             if (v < FLT_EPSILON) return true;
         }
 
@@ -1556,7 +1556,7 @@ namespace Gadgetron {
                                         hoMRImage<ValueType, 2>* pImage = &images(cha, slc, con, phs, rep, set, ave);
                                         if (pImage != NULL)
                                         {
-                                            T v = Gadgetron::norm2(*pImage);
+                                            T v = Gadgetron::nrm2(*pImage);
                                             if (v < FLT_EPSILON) continue; // do not send out empty image
 
                                             Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
@@ -1594,7 +1594,7 @@ namespace Gadgetron {
                                                 }
 
                                                 cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-                                                if (seriesNum>=0) cm1->getObjectPtr()->image_series_index = seriesNum;
+                                                cm1->getObjectPtr()->image_series_index = seriesNum;
 
                                                 // set the image data
                                                 size_t RO = pImage->get_size(0);
@@ -1705,7 +1705,7 @@ namespace Gadgetron {
                                         hoMRImage<ValueType, 2>* pImage = &images(cha, slc, con, phs, rep, set, ave);
                                         if (pImage != NULL)
                                         {
-                                            T v = Gadgetron::norm2(*pImage);
+                                            T v = Gadgetron::nrm2(*pImage);
                                             if (v < FLT_EPSILON) continue; // do not send out empty image
 
                                             try
@@ -1834,7 +1834,7 @@ namespace Gadgetron {
                                         hoMRImage<ValueType, 3>* pImage = &images(cha, slc, con, phs, rep, set, ave);
                                         if (pImage != NULL)
                                         {
-                                            T v = Gadgetron::norm2(*pImage);
+                                            T v = Gadgetron::nrm2(*pImage);
                                             if (v < FLT_EPSILON) continue; // do not send out empty image
 
                                             Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
@@ -1983,7 +1983,7 @@ namespace Gadgetron {
                                         hoMRImage<ValueType, 3>* pImage = &images(cha, slc, con, phs, rep, set, ave);
                                         if (pImage != NULL)
                                         {
-                                            T v = Gadgetron::norm2(*pImage);
+                                            T v = Gadgetron::nrm2(*pImage);
                                             if (v < FLT_EPSILON) continue; // do not send out empty image
 
                                             try

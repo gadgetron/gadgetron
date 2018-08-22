@@ -250,7 +250,7 @@ void kmeans<T>::get_initial_guess_kmeansplusplus(const ArrayType& X, size_t K, A
 
             ArrayType aC;
             aC.create(P, C.begin());
-            norm_C[0] = Gadgetron::dotu(aC, aC);
+            norm_C[0] = Gadgetron::dot(aC, aC,false);
 
             for (i = 1; i < K; i++)
             {
@@ -296,7 +296,7 @@ void kmeans<T>::get_initial_guess_kmeansplusplus(const ArrayType& X, size_t K, A
                 memcpy(&C(0, i), &X(0, t), sizeof(T)*P);
 
                 aC.create(P, &C(0, i));
-                norm_C[i] = Gadgetron::dotu(aC, aC);
+                norm_C[i] = Gadgetron::dot(aC, aC,false);
 
                 // update the IDX
                 ArrayType curr_C;

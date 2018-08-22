@@ -63,7 +63,7 @@ void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<T>& input, size_t& key_fr
 
                     Gadgetron::subtract(a, b, diff);
 
-                    Gadgetron::norm2(diff, v);
+                    v = Gadgetron::nrm2(diff);
                     SSD(m, n) = v;
                     SSD(n, m) = v;
                 }
@@ -130,7 +130,7 @@ void find_key_frame_SSD_2DT(const Gadgetron::hoNDArray<T>& input, size_t& key_fr
 
                     Gadgetron::subtract(a, b, diff);
 
-                    Gadgetron::norm2(diff, v);
+                    v = Gadgetron::nrm2(diff);
                     SSD(m, n) = v;
                     SSD(n, m) = v;
                 }
@@ -210,7 +210,7 @@ void compute_SSD_2DT(const Gadgetron::hoNDArray<T>& input, size_t key_frame, std
             {
                 hoNDArray<T> b(RO, E1, pInput + m*RO*E1);
                 Gadgetron::subtract(a, b, diff);
-                Gadgetron::norm2(diff, v);
+                v = Gadgetron::nrm2(diff);
                 moco_quality[m].first = v;
             }
 

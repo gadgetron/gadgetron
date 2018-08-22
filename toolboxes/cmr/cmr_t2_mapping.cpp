@@ -9,6 +9,7 @@
 #include "hoNDArray_reductions.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_math.h"
+#include "hoNDArray_linalg.h"
 
 #include "simplexLagariaSolver.h"
 #include "twoParaExpDecayOperator.h"

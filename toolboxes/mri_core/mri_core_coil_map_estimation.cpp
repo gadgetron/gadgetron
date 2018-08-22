@@ -348,7 +348,7 @@ void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t k
 
                         // compute V1
                         D.sumOverCol(V1);
-                        norm2(V1, v1Norm);
+                        v1Norm = nrm2(V1);
                         scal((value_type)1.0 / v1Norm, V1);
 
                         memcpy(DC.begin(), D.begin(), sizeof(T)*kss*CHA);
@@ -359,7 +359,7 @@ void coil_map_3d_Inati(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t k
                         {
                             gemm(V, DH_D, false, V1, false);
                             V1 = V;
-                            norm2(V1, v1Norm);
+                            v1Norm = nrm2(V1);
                             scal((value_type)1.0 / v1Norm, V1);
                         }
 
@@ -435,7 +435,7 @@ void coil_map_2d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
 
         GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(data, D_sum, 0));
         GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(D_sum, D_sum_1st_2nd, 1));
-        Gadgetron::norm2(D_sum_1st_2nd, v);
+        v = Gadgetron::nrm2(D_sum_1st_2nd);
         Gadgetron::scal((value_type)1.0 / v, D_sum_1st_2nd);
 
         Gadgetron::clear(R);
@@ -443,7 +443,7 @@ void coil_map_2d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
         {
             hoNDArray<T> dataCHA(RO, E1, const_cast<T*>(data.begin()) + cha*RO*E1);
             vCha = D_sum_1st_2nd(cha);
-            Gadgetron::axpy(std::conj(vCha), dataCHA, R, R);
+            Gadgetron::axpy(std::conj(vCha), dataCHA, R);
         }
 
         for (iter = 0; iter<iterNum; iter++)
@@ -475,7 +475,7 @@ void coil_map_2d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
             GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(D, D_sum, 0));
             GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(D_sum, D_sum_1st_2nd, 1));
 
-            Gadgetron::norm2(D_sum_1st_2nd, v);
+            v = Gadgetron::nrm2(D_sum_1st_2nd);
             Gadgetron::scal((value_type)1.0 / v, D_sum_1st_2nd);
 
             Gadgetron::clear(imT);
@@ -483,7 +483,7 @@ void coil_map_2d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
             {
                 hoNDArray<T> coilMapCHA(RO, E1, coilMap.begin() + cha*RO*E1);
                 vCha = D_sum_1st_2nd(cha);
-                Gadgetron::axpy(std::conj(vCha), coilMapCHA, imT, imT);
+                Gadgetron::axpy(std::conj(vCha), coilMapCHA, imT);
             }
 
             Gadgetron::abs(imT, magT);
@@ -494,8 +494,8 @@ void coil_map_2d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
             GADGET_CATCH_THROW(Gadgetron::multiply(coilMap, imT, coilMap));
 
             Gadgetron::subtract(prevR, R, diffR);
-            Gadgetron::norm2(diffR, vDiffR);
-            Gadgetron::norm2(R, vR);
+            vDiffR = Gadgetron::nrm2(diffR);
+            vR = Gadgetron::nrm2(R);
 
             if (vDiffR / vR < thres) break;
         }
@@ -548,7 +548,7 @@ void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
 
         hoNDArray<T> dataByCha(RO*E1*E2, CHA, const_cast<T*>(data.begin()));
         GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(dataByCha, D_sum, 0));
-        Gadgetron::norm2(D_sum, v);
+        v = Gadgetron::nrm2(D_sum);
         Gadgetron::scal((value_type)1.0 / v, D_sum);
 
         Gadgetron::clear(R);
@@ -556,7 +556,7 @@ void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
         {
             hoNDArray<T> dataCHA(RO, E1, E2, const_cast<T*>(data.begin()) + cha*RO*E1*E2);
             vCha = D_sum(cha);
-            Gadgetron::axpy(std::conj(vCha), dataCHA, R, R);
+            Gadgetron::axpy(std::conj(vCha), dataCHA, R);
         }
 
         for (iter = 0; iter<iterNum; iter++)
@@ -586,7 +586,7 @@ void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
             hoNDArray<T> DByCha(RO*E1*E2, CHA, D.begin());
             GADGET_CATCH_THROW(Gadgetron::sum_over_dimension(DByCha, D_sum, 0));
 
-            Gadgetron::norm2(D_sum, v);
+            v= Gadgetron::nrm2(D_sum);
             Gadgetron::scal((value_type)1.0 / v, D_sum);
 
             Gadgetron::clear(imT);
@@ -594,7 +594,7 @@ void coil_map_3d_Inati_Iter(const hoNDArray<T>& data, hoNDArray<T>& coilMap, siz
             {
                 hoNDArray<T> coilMapCHA(RO, E1, E2, 1, coilMap.begin() + cha*RO*E1*E2);
                 vCha = D_sum(cha);
-                Gadgetron::axpy(std::conj(vCha), coilMapCHA, imT, imT);
+                Gadgetron::axpy(std::conj(vCha), coilMapCHA, imT);
             }
 
             Gadgetron::abs(imT, magT);
