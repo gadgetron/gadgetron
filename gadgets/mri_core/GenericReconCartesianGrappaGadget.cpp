@@ -317,8 +317,7 @@ namespace Gadgetron {
 #pragma omp for
                 for (cha = 0; cha < (long long) CHA; cha++) {
                     dataCha.create(RO, E1, E2, pRef + cha * RO * E1 * E2);
-                    float v;
-                    Gadgetron::norm2(dataCha, v);
+                    float v = Gadgetron::nrm2(dataCha);
                     E[cha] = v * v;
                 }
             }

@@ -88,4 +88,12 @@ void getrf(hoNDArray<T>& A, hoNDArray<lapack_int>& ipiv);
 template<typename T> EXPORTCPUCOREMATH 
 void getri(hoNDArray<T>& A);
 
+
+
+/**
+* @brief linear fitting, y = a*x + b
+  compute linear fit for y to x
+*/
+template <typename T> EXPORTCPUCOREMATH void linFit(const hoNDArray<T>& x, const hoNDArray<T>& y, T& a, T& b);
+
 }

@@ -59,7 +59,7 @@ namespace Gadgetron {
                                     Image2DType& img = ori(cha, slc, con, phs, rep, set, ave);
                                     if (img.get_number_of_elements()>0)
                                     {
-                                        T v = Gadgetron::norm2(img);
+                                        T v = Gadgetron::nrm2(img);
                                         if (v < FLT_EPSILON) continue; // do not send out empty image
 
                                         Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();

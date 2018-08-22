@@ -392,11 +392,10 @@ namespace Gadgetron
 
                 // compute threshold to stop the iteration
                 Gadgetron::subtract(complexImPOCS, complexIm, buffer_partial_fourier);
-                typename realType<T>::Type diff, prev;
-                Gadgetron::norm2(complexIm, prev);
-                Gadgetron::norm2(buffer_partial_fourier, diff);
+                auto prev = Gadgetron::nrm2(complexIm);
+                auto diff = Gadgetron::nrm2(buffer_partial_fourier);
 
-                typename realType<T>::Type t = diff / prev;
+                auto t = diff / prev;
 
                 if (t < thres)
                 {

@@ -307,7 +307,7 @@ void CmrKSpaceBinning<T>::perform_raw_data_recon()
             for (cha = 0; cha < (long long)CHA; cha++)
             {
                 dataCha.create(RO, E1, pRef + cha*RO*E1);
-                T v = Gadgetron::norm2(dataCha);
+                T v = Gadgetron::nrm2(dataCha);
                 E[cha] = v*v;
             }
 

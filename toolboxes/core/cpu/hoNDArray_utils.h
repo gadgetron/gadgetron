@@ -796,7 +796,7 @@ namespace Gadgetron {
       dims.push_back(_in->get_size(d));
     }
   
-    REAL *in = _in->get_data_ptr();
+    const REAL *in = _in->get_data_ptr();
 
     boost::shared_ptr< hoNDArray<REAL> > _out( new hoNDArray<REAL>(&dims) );
     REAL *out = _out->get_data_ptr();
@@ -864,7 +864,7 @@ namespace Gadgetron {
       dims.push_back(_in->get_size(d));
     }
 
-    REAL *in = _in->get_data_ptr();
+    const REAL *in = _in->get_data_ptr();
 
     boost::shared_ptr< hoNDArray<REAL> > _out( new hoNDArray<REAL>(&dims) );
     REAL *out = _out->get_data_ptr();

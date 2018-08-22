@@ -381,7 +381,7 @@ namespace Gadgetron {
                     }
                 }
 
-                float v = Gadgetron::norm1(noise_covariance_matrixf_);
+                float v = Gadgetron::asum(noise_covariance_matrixf_);
                 if (v <= 0)
                 {
                     GDEBUG("Accumulated noise prewhietner is empty\n");
@@ -527,8 +527,8 @@ namespace Gadgetron {
                             }
                         }
 
-                        float v = Gadgetron::norm2(noise_covariance_matrixf_);
-                        float v2 = Gadgetron::norm2(noise_covariance_reordered);
+                        float v = Gadgetron::nrm2(noise_covariance_matrixf_);
+                        float v2 = Gadgetron::nrm2(noise_covariance_reordered);
 
                         GDEBUG_STREAM("noise_covariance_matrixf_ = " << v);
                         GDEBUG_STREAM("noise_covariance_reordered = " << v2);

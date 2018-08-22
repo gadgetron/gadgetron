@@ -479,7 +479,7 @@ bool BSplineFFD2D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
         totalResidual = 0;
         GADGET_CHECK_RETURN_FALSE(this->evaluateFFDArray(pos, approxValue));
         GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::subtract(value, approxValue, residual));
-        GADGET_CHECK_EXCEPTION_RETURN_FALSE(Gadgetron::norm2(residual, totalResidual));
+        totalResidual = Gadgetron::nrm2(residual);
         totalResidual = totalResidual / (real_value_type)N;
     }
     catch(...)

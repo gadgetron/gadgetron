@@ -16,37 +16,6 @@ namespace Gadgetron {
 
         namespace {
 
-
-            //GCC has decided that std::norm should be really slow, so here we have our own implementation. *sigh*
-            double fast_norm(const double x){
-                return x*x;
-            }
-
-           float fast_norm(const float x){
-                return x*x;
-            }
-
-            float fast_norm(const std::complex<float> x){
-                return x.real()*x.real()+x.imag()*x.imag();
-            }
-
-            double fast_norm(const std::complex<double> x){
-                return x.real()*x.real()+x.imag()*x.imag();
-            }
-
-
-            template<class T> auto fast_var(const arma::Col<T>& m){
-                T mean = arma::mean(m);
-
-                decltype(fast_norm(mean)) result(0);
-
-                for (auto& x : m){
-                    result += fast_norm(x-mean);
-                }
-                return result;
-
-            }
-
             template<class T>
             arma::Col<T> get_patch(const hoNDArray<T> &image, int x, int y, int patch_size,
                                    const vector_td<int, 2> &image_dims) {
@@ -75,7 +44,7 @@ namespace Gadgetron {
 
             template<class T>
             std::vector<ImagePatch<T>>
-            create_patches(const hoNDArray<arma::Col<T>> &all_patches, int kx, int ky, int patch_size, int search_window,
+            create_patches(const hoNDArray<T> &image, int kx, int ky, int patch_size, int search_window,
                            const vector_td<int, 2> &image_dims) {
 
                 std::vector<ImagePatch<T>> result;
@@ -86,7 +55,7 @@ namespace Gadgetron {
                     for (int dx = std::max(kx - search_window / 2, 0);
                          dx < std::min(search_window / 2 + kx, image_dims[0]); dx++) {
 
-                        result.push_back(ImagePatch<T>{all_patches(dx,dy), dx, dy});
+                        result.push_back(ImagePatch<T>{get_patch(image, dx, dy, patch_size, image_dims), dx, dy});
                     }
                 }
 
@@ -117,7 +86,7 @@ namespace Gadgetron {
                 arma::Col<T> diff = patch1 - patch2;
 
                 float result = 0;
-                for (auto d : diff) result += fast_norm(d);
+                for (auto d : diff) result += std::norm(d);
 
                 result /= patch1.size() * patch1.size();
                 return result;
@@ -181,8 +150,8 @@ namespace Gadgetron {
 
                 float std2 = std::accumulate(patches.begin(), patches.end(), 0.0f,
                                              [](auto cur, auto patch) {
-                                                 float var = fast_var(patch.patch);
-                                                 return cur + var;
+                                                 float std = arma::stddev(patch.patch);
+                                                 return cur + std * std;
                                              }
                 ) * patches.size() / float(patches.size() - 1);
 
@@ -238,26 +207,14 @@ namespace Gadgetron {
                 const vector_td<int, 2> image_dims = vector_td<int, 2>(
                         from_std_vector<size_t, 2>(*image.get_dimensions()));
 
-
-                hoNDArray<arma::Col<T>> all_patches(image.get_size(0),image.get_size(1));
-                for (int ky = 0; ky < image.get_size(1); ky++){
-                    for (int kx = 0; kx < image.get_size(0); kx++)
-                        all_patches(kx,ky) = get_patch(image,kx,ky,patch_size,image_dims);
-                }
-
-
-#ifdef USE_OMP
-                auto number_of_threads = std::min(omp_get_max_threads(),8);
-#endif
-
-#pragma omp parallel for num_threads(number_of_threads)
+#pragma omp parallel for num_threads(4)
                 for (int ky = 0; ky < image.get_size(1); ky++) {
                     for (int kx = 0; kx < image.get_size(0); kx++) {
 
                         if (mask(kx, ky)) {
 
-                            auto& reference_patch = all_patches(kx,ky);
-                            auto patches = create_patches(all_patches, kx, ky, patch_size, search_window, image_dims);
+                            auto reference_patch = get_patch(image, kx, ky, patch_size, image_dims);
+                            auto patches = create_patches(image, kx, ky, patch_size, search_window, image_dims);
 
                             filter_patches(patches, n_patches, reference_patch);
 
@@ -288,7 +245,6 @@ namespace Gadgetron {
             template<class T>
             hoNDArray<T> non_local_bayes_T(const hoNDArray<T> &image, float noise_std, unsigned int search_window) {
 
-                GadgetronTimer timer("Non local Bayes");
                 size_t n_images = image.get_number_of_elements() / (image.get_size(0) * image.get_size(1));
 
                 std::vector<size_t> image_dims = {image.get_size(0), image.get_size(1)};
@@ -297,7 +253,7 @@ namespace Gadgetron {
                 auto result = hoNDArray<T>(image.get_dimensions());
                 for (int i = 0; i < n_images; i++) {
 
-                    auto image_view = hoNDArray<T>(image_dims, image.get_data_ptr() + i * image_elements);
+                    auto image_view = hoNDArray<T>(image_dims, const_cast<T*>(image.get_data_ptr() + i * image_elements));
                     auto result_view = hoNDArray<T>(image_dims, result.get_data_ptr() + i * image_elements);
 
                     result_view = non_local_bayes_single_image(image_view, noise_std, search_window);

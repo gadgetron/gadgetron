@@ -375,8 +375,7 @@ typename hoSPIRITOperator<T>::REAL hoSPIRITOperator<T>::magnitude(ARRAY_TYPE* x)
         this->sum_over_src_channel(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
 
         // L2 norm
-        T obj(0);
-        Gadgetron::dotc(res_after_apply_kernel_sum_over_, res_after_apply_kernel_sum_over_, obj);
+        T obj = Gadgetron::dot(res_after_apply_kernel_sum_over_, res_after_apply_kernel_sum_over_, true);
 
         return std::abs(obj);
     }
