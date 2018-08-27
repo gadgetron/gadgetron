@@ -3,8 +3,10 @@ FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     software-properties-common apt-utils wget build-essential cython emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf\
-5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libopenblas-base libopenblas-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev sup\
+5-tools libatlas-base-dev liblapack-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev sup\
 ervisor cmake-curses-gui neofetch supervisor net-tools cpio gpg-agent
+
+RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
 
 #Python stuff
 RUN apt-get update && apt-get install -y libgtk2.0-dev
