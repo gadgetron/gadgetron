@@ -16,14 +16,22 @@ include_directories(
                     ${ISMRMRD_INCLUDE_DIR} )
 
 add_executable(cpu_denoise_TV denoise_TV.cpp)
-
 target_link_libraries(cpu_denoise_TV 
                     gadgetron_toolbox_cpucore 
                     gadgetron_toolbox_cpucore_math 
                     gadgetron_toolbox_hostutils
-                    ${ARMADILLO_LIBRARIES}
-                    ${BLAS_LIBRARIES}
-                    ${CBLAS_LIBRARIES}
-               )
+                    ${ARMADILLO_LIBRARIES})
+
+if (MKL_FOUND)
+    target_link_libraries(cpu_denoise_TV 
+                    ${MKL_LIBRARIES})
+else ()
+    target_link_libraries(cpu_denoise_TV 
+        ${BLAS_LIBRARIES}
+        ${CBLAS_LIBRARY}
+    )
+endif ()
+
+
 
 install(TARGETS cpu_denoise_TV DESTINATION bin COMPONENT main)

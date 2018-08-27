@@ -1594,7 +1594,7 @@ namespace Gadgetron {
                                                 }
 
                                                 cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-                                                cm1->getObjectPtr()->image_series_index = seriesNum;
+                                                if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index = seriesNum;
 
                                                 // set the image data
                                                 size_t RO = pImage->get_size(0);

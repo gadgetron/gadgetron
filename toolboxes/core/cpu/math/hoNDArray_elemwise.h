@@ -657,17 +657,17 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDAr
  * @param[in] x Array
  * @param[in,out] y Array
  */
-template<class T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray<T> *x, hoNDArray<T> *y ){ BLAS::axpy(x->get_number_of_elements(),a,x->get_data_ptr(),1,y->get_data_ptr(),1);}
+template<class T> void axpy(T a, const hoNDArray<T> *x, hoNDArray<T> *y ){ BLAS::axpy(x->get_number_of_elements(),a,x->get_data_ptr(),1,y->get_data_ptr(),1);}
 
 /**
 * @brief compute r = a*x + y
 */
-template <typename T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray<T>& x, hoNDArray<T>& y){ axpy(a,&x,&y);}
+template <typename T> void axpy(T a, const hoNDArray<T>& x, hoNDArray<T>& y){ axpy(a,&x,&y);}
 
 /**
 * @brief compute x *= a
 */
-template <typename R, typename T> EXPORTCPUCOREMATH void scal(R a, hoNDArray<T>& x) {BLAS::scal(x.get_number_of_elements(),a,x.get_data_ptr(),1);}
+template <typename R, typename T> void scal(R a, hoNDArray<T>& x) {BLAS::scal(x.get_number_of_elements(),a,x.get_data_ptr(),1);}
 
 /**
 * @brief 2D convolution
