@@ -1,7 +1,13 @@
 #include "cpp_blas.h"
-extern "C" {
-    #include "cblas.h"
-}
+
+#ifdef USE_MKL
+    #include "mkl.h"
+#else
+    extern "C" {
+        #include "cblas.h"
+    }
+#endif // MKL_FOUND
+
 float Gadgetron::BLAS::asum(size_t N, const float *x, size_t incx) {
     return cblas_sasum(N,x,incx);
 }

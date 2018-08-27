@@ -85,7 +85,7 @@ set(test_src_files tests.cpp
       )
 
 if (PYTHONLIBS_FOUND)
-    set(test_src_files ${test_src_files} python_converter_test.cpp hoNDArray_linalg_test.cpp)
+    set(test_src_files ${test_src_files} python_converter_test.cpp )
 endif ()
 
 if ( CUDA_FOUND )

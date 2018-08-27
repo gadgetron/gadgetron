@@ -1986,10 +1986,21 @@ namespace Gadgetron{
         }
     }
 
-    namespace {
+    // --------------------------------------------------------------------------------
+    //template<class T> void axpy(T a, const hoNDArray<T> *x, hoNDArray<T> *y)
+    //{
+    //    BLAS::axpy(x->get_number_of_elements(), a, x->get_data_ptr(), 1, y->get_data_ptr(), 1);
+    //}
 
+    //template <typename T> void axpy(T a, const hoNDArray<T>& x, hoNDArray<T>& y)
+    //{
+    //    axpy(a, &x, &y);
+    //}
 
-    }
+    //template <typename R, typename T> void scal(R a, hoNDArray<T>& x)
+    //{
+    //    BLAS::scal(x.get_number_of_elements(), a, x.get_data_ptr(), 1);
+    //}
 
     // --------------------------------------------------------------------------------
 
