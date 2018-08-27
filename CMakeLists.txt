@@ -140,7 +140,8 @@ if (WIN32)
   #  set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE")
   #  set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /FORCE:MULTIPLE")
 else ()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+  # to allow cblas call to work with multiple blas libraries, such as openblas or mkl
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -fpermissive")
 
   include(CheckCXXCompilerFlag)
   set(CXX_STANDARDS 20 17 14 11)
