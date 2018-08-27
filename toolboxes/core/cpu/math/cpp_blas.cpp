@@ -173,7 +173,7 @@ Gadgetron::BLAS::dotc(size_t N, const std::complex<double> *x, size_t incx, cons
 std::complex<float>
 Gadgetron::BLAS::dotc(size_t N, const std::complex<float> *x, size_t incx, const std::complex<float> *y, size_t incy) {
     std::complex<float> result;
-    cblas_cdotc_sub(N,(float*) x,incx,(float*) y,incy,(float*) &result);
+    cblas_cdotc_sub(N,(const float*) x,incx,(const float*) y,incy, (void*)&result);
     return result;
 }
 
@@ -181,7 +181,7 @@ Gadgetron::complext<float>
 Gadgetron::BLAS::dotc(size_t N, const Gadgetron::complext<float> *x, size_t incx, const Gadgetron::complext<float> *y,
                      size_t incy) {
     complext<float> result;
-    cblas_cdotc_sub(N,(float*) x,incx,(float*) y,incy,(float*) &result);
+    cblas_cdotc_sub(N,(const float*) x,incx,(const float*) y,incy, (void*)&result);
     return result;
 }
 
@@ -189,7 +189,7 @@ Gadgetron::complext<double>
 Gadgetron::BLAS::dotc(size_t N, const Gadgetron::complext<double> *x, size_t incx, const Gadgetron::complext<double> *y,
                      size_t incy) {
     complext<double> result;
-    cblas_zdotc_sub(N,(double*)x,incx,(double*)y,incy,&result);
+    cblas_zdotc_sub(N,(const double*)x,incx,(const double*)y,incy, (void*)&result);
     return result;
 }
 
