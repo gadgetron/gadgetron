@@ -39,7 +39,7 @@ namespace Gadgetron {
 
     template<class T>
      size_t amax(const hoNDArray<T> *x) {
-        return BLAS::amax(x->get_number_of_elements(), x->get_data_ptr(), 1) - 1;
+        return BLAS::amax(x->get_number_of_elements(), x->get_data_ptr(), 1);
     }
 
     template<class T>
