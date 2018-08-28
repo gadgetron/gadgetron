@@ -127,8 +127,12 @@ TYPED_TEST(hoNDArray_blas_Cplx,aminTest){
   fill(&this->Array,TypeParam(100,101));
   this->Array.get_data_ptr()[23]=TypeParam(-50,-51);
   EXPECT_EQ(23,amin(&this->Array));
+
+  fill(&this->Array, TypeParam(100, 101));
   this->Array.get_data_ptr()[48]=TypeParam(2,100);
-  EXPECT_EQ(23,amin(&this->Array));
+  EXPECT_EQ(48,amin(&this->Array));
+
+  fill(&this->Array, TypeParam(100, 101));
   this->Array.get_data_ptr()[1000]=TypeParam(-2,-76);
   EXPECT_EQ(1000,amin(&this->Array));
 }

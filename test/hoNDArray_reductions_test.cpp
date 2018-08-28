@@ -67,30 +67,4 @@ TYPED_TEST(hoNDArray_reductions_TestReal, sortTest)
     EXPECT_EQ(ind[4] , 4);
 }
 
-TYPED_TEST(hoNDArray_reductions_TestReal, linFitTest)
-{
-    hoNDArray<TypeParam> x, y;
-    x.create(5);
 
-    x(0) = 0;
-    x(1) = 1;
-    x(2) = 2;
-    x(3) = 3;
-    x(4) = 4;
-
-    TypeParam a = 2.0, b=4.0;
-
-    y.create(5);
-
-    size_t n;
-    for (n=0; n<y.get_number_of_elements(); n++)
-    {
-        y(n) = a*x(n) + b;
-    }
-
-    TypeParam ra, rb;
-    Gadgetron::linFit(x, y, ra, rb);
-
-    EXPECT_LT(std::abs(ra - a)/a, 1e-3);
-    EXPECT_LT(std::abs(rb - b) / a, 1e-3);
-}

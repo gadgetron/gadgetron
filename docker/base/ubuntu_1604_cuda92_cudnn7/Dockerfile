@@ -11,9 +11,10 @@ RUN apt-get update --quiet && \
     libfftw3-dev h5utils jq libzmq-dev \
     hdf5-tools liblapack-dev libxml2-dev libfreetype6-dev pkg-config \
     libxslt-dev libace-dev gcc-multilib  \
-    libgtest-dev python-dev liblapack-dev liblapacke-dev libopenblas-base libplplot-dev libdcmtk-dev \
-    libceres-dev libopenblas-dev\
+    libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
     supervisor net-tools cpio
+
+RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
 
 #Update gcc to something remotely recent
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
@@ -28,6 +29,7 @@ RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
 RUN pip3 install Cython scipy tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
 

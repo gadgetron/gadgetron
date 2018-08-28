@@ -44,7 +44,7 @@ void perform_hole_filling(hoNDArray<T>& map, T hole, size_t max_size_of_holes, b
             hoNDImage<T, 2> curr_map;
             curr_map.create(dim, map.begin() + t*RO*E1);
 
-            T v = Gadgetron::norm2(curr_map);
+            T v = Gadgetron::nrm2(curr_map);
             if (v <= 1e-3) continue; // empty map
 
             T maxV;

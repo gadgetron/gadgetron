@@ -27,6 +27,7 @@
 
 #include "hoNDArray.h"
 #include "cpucore_math_export.h"
+#include "cpp_blas.h"
 
 #include <complex>
 
@@ -656,22 +657,17 @@ template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDAr
  * @param[in] x Array
  * @param[in,out] y Array
  */
-template<class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray<T> *x, hoNDArray<T> *y );
-template<class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray< std::complex<T> > *x, hoNDArray< std::complex<T> > *y);
-template<class T> EXPORTCPUCOREMATH void axpy(T a, hoNDArray< complext<T> > *x, hoNDArray< complext<T> > *y );
+template<class T> void axpy(T a, const hoNDArray<T> *x, hoNDArray<T> *y ){ BLAS::axpy(x->get_number_of_elements(),a,x->get_data_ptr(),1,y->get_data_ptr(),1);}
 
 /**
 * @brief compute r = a*x + y
 */
-template <typename T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
-template <typename T> EXPORTCPUCOREMATH void axpy(T a, const hoNDArray< std::complex<T> >& x, const hoNDArray< std::complex<T> >& y, hoNDArray< std::complex<T> >& r);
+template <typename T> void axpy(T a, const hoNDArray<T>& x, hoNDArray<T>& y){ axpy(a,&x,&y);}
 
 /**
 * @brief compute x *= a
 */
-template <typename T> EXPORTCPUCOREMATH void scal(T a, hoNDArray<T>& x);
-template <typename T> EXPORTCPUCOREMATH void scal(T a, hoNDArray< std::complex<T> >& x);
-template <typename T> EXPORTCPUCOREMATH void scal(T a, hoNDArray< complext<T> >& x);
+template <typename R, typename T> void scal(R a, hoNDArray<T>& x) {BLAS::scal(x.get_number_of_elements(),a,x.get_data_ptr(),1);}
 
 /**
 * @brief 2D convolution
