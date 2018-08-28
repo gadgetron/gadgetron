@@ -2,34 +2,11 @@ FROM ubuntu:18.04
 
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
-    software-properties-common apt-utils wget build-essential cython emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf\
+    software-properties-common apt-utils wget build-essential cython3 emacs python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf\
 5-tools liblapack-dev libatlas-base-dev libxml2-dev libfreetype6-dev pkg-config libxslt-dev libarmadillo-dev libace-dev gcc-multilib libgtest-dev python3-dev liblapack-dev liblapacke-dev libplplot-dev libdcmtk-dev sup\
 ervisor cmake-curses-gui neofetch supervisor net-tools cpio
 
 RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev 
-
-RUN pip3 install --upgrade pip
-RUN pip3 install -U pip setuptools
-
-RUN pip3 install --upgrade tensorflow
-RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp36-cp36m-linux_x86_64.whl 
-RUN pip3 install torchvision 
-RUN pip3 install tensorboardx visdom
-
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
-RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
-RUN pip3 uninstall h5py
-RUN apt-get install -y python3-h5py
-
-# since cmake has problems to find python3 and boost-python3
-# RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py36.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
-
-# fix the  qhull reentrant problem
-# RUN pip uninstall -y scipy
 
 #ZFP
 RUN cd /opt && \
@@ -58,6 +35,32 @@ RUN cd /opt && \
     cmake ../ceres-solver-1.14.0 && \
     make -j16 && \
     make install
+
+
+RUN pip3 install --upgrade pip
+RUN pip3 install -U pip setuptools
+
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse python3-matplotlib python3-tk python3-sklearn python3-skimage python3-dicom python3-opencv
+
+# RUN pip3 install Cython
+
+RUN pip3 install --upgrade tensorflow
+RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp36-cp36m-linux_x86_64.whl 
+RUN pip3 install torchvision 
+RUN pip3 install tensorboardx visdom
+
+RUN pip3 uninstall h5py
+RUN apt-get install -y python3-h5py
+
+# since cmake has problems to find python3 and boost-python3
+# RUN ln -s /usr/lib/x86_64-linux-gnu/libboost_python-py36.so /usr/lib/x86_64-linux-gnu/libboost_python3.so
+
+# fix the  qhull reentrant problem
+# RUN pip uninstall -y scipy
+
 
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \
