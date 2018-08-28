@@ -13,13 +13,7 @@ RUN apt-get update --quiet && \
     libgtest-dev python-dev liblapack-dev liblapacke-dev libatlas-base-dev libplplot-dev libdcmtk-dev \
     supervisor net-tools cpio
 
-RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
-
-#Update gcc to something remotely recent
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test
-RUN apt-get update
-RUN apt-get -y install gcc-6 g++-6
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+# RUN apt-get install --no-install-recommends --no-install-suggests --yes libopenblas-base libopenblas-dev
 
 #Python stuff
 RUN pip3 install --upgrade pip
@@ -36,6 +30,28 @@ RUN pip3 install --upgrade tensorflow
 RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linux_x86_64.whl 
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom
+
+#OpenBLAS with OpenMP
+RUN cd /opt && \
+    mkdir debsource && \
+    cd debsource && \
+    apt-get --no-install-recommends --no-install-suggests --yes build-dep libopenblas-base && \
+    apt-get install --no-install-recommends --no-install-suggests --yes build-essential fakeroot devscripts && \
+    apt-get source libopenblas-base && \
+    cd openblas-0.2.18/ && \
+    sed -i "s/NO_WARMUP=1/NO_WARMUP=1 OPENMP=1/g" debian/rules && \
+    debchange -i "Compiling with OpenMP support" && \
+    debuild -us -uc -i -I && \
+    debi && \
+    update-alternatives --set libblas.so.3 /usr/lib/openblas-base/libblas.so.3 && \
+    cd /opt && \
+    rm -rf debsource
+
+#Update gcc to something remotely recent
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN apt-get update
+RUN apt-get -y install gcc-6 g++-6
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
 
 # Compile boost
 RUN cd /opt && \
