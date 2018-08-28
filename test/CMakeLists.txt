@@ -82,6 +82,7 @@ set(test_src_files tests.cpp
       pattern_recognition_test.cpp 
       cmr_mapping_test.cpp
       node_discovery_test.cpp
+      hoNDArray_linalg_test.cpp
       )
 
 if (PYTHONLIBS_FOUND)
