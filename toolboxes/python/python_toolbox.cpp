@@ -22,7 +22,7 @@ static boost::mutex numpy_initialize_mtx;
 
 int initialize_python(void)
 {
-    // lock here so only one thread can initialize Python
+    // lock here so only one thread can initialize/finalize Python
     boost::mutex::scoped_lock lock(python_initialize_mtx);
 
     if (!python_initialized) {
@@ -55,6 +55,18 @@ int initialize_numpy(void)
     if (!numpy_initialized) {
         _import_array();    // import NumPy
         numpy_initialized = true; // numpy successfully initialized
+    }
+    return GADGET_OK;
+}
+
+int finalize_python(void)
+{
+    // lock here so only one thread can initialize/finalize Python
+    boost::mutex::scoped_lock lock(python_initialize_mtx);
+
+    if (python_initialized) {
+        Py_Finalize();
+        python_initialized = false;
     }
     return GADGET_OK;
 }
