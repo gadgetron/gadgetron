@@ -25,7 +25,7 @@ RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
-RUN pip3 install Cython tk-tools matplotlib scikit-image opencv_python pydicom scikit-learn
+RUN pip3 install Cython tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
