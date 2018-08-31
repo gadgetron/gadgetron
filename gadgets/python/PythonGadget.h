@@ -128,7 +128,8 @@ namespace Gadgetron {
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Error loading python modules in Gadget %s\n", this->module()->name());
-                PyErr_Print();
+                std::string err  = pyerr_to_string();
+                GDEBUG("%s\n", err.c_str());
                 return GADGET_FAIL;
             }
 
@@ -144,7 +145,8 @@ namespace Gadgetron {
                 }
                 catch (boost::python::error_already_set const &) {
                     GERROR("Error setting PythonGadget parameters in Gadget %s\n", this->module()->name());
-                    PyErr_Print();
+                    std::string err = pyerr_to_string();
+                    GDEBUG("%s\n", err.c_str());
                     return GADGET_FAIL;
                 }
                 it++;
@@ -158,7 +160,8 @@ namespace Gadgetron {
             }
             catch (boost::python::error_already_set const &) {
                 GERROR("Error calling process_config in Gadget %s\n", this->module()->name());
-                PyErr_Print();
+                std::string err = pyerr_to_string();
+                GDEBUG("%s\n", err.c_str());
                 return GADGET_FAIL;
             }
 
@@ -201,7 +204,8 @@ namespace Gadgetron {
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Passing data on to python module failed\n");
-                PyErr_Print();
+                std::string err = pyerr_to_string();
+                GDEBUG("%s\n", err.c_str());
                 return GADGET_FAIL;
             }
             return GADGET_OK;
@@ -238,7 +242,7 @@ namespace Gadgetron {
             catch (boost::python::error_already_set const &)
             {
                 GDEBUG("Passing IsmrmrdImageArray on to python module failed\n");
-                PyErr_Print();
+                std::string err = pyerr_to_string(); GDEBUG("%s\n", err.c_str());
                 return GADGET_FAIL;
             }
 
@@ -297,7 +301,7 @@ namespace Gadgetron {
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Passing data on to python module failed\n");
-                PyErr_Print();
+                std::string err = pyerr_to_string(); GDEBUG("%s\n", err.c_str());
                 return GADGET_FAIL;
             }
             return GADGET_OK;
