@@ -10,7 +10,7 @@
 namespace Gadgetron{
 
   class EXPORTGADGETSMRICORE ImageArraySplitGadget : 
-  public Gadget1<IsmrmrdImageArray>
+  public Gadget1Of2<IsmrmrdImageArray, ISMRMRD::ImageHeader >
     {
     public:
       GADGET_DECLARE(ImageArraySplitGadget)
@@ -18,6 +18,7 @@ namespace Gadgetron{
 	
     protected:
       virtual int process(GadgetContainerMessage<IsmrmrdImageArray>* m1);
+      virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1);
     };
 }
 #endif //IMAGEARRAYSPLIT_H
