@@ -12,6 +12,8 @@ namespace Gadgetron
 EXPORTPYTHON int initialize_python(void);
 /// Initialize NumPy
 EXPORTPYTHON int initialize_numpy(void);
+/// Finalize Python, Called by user expclictly
+EXPORTPYTHON int finalize_python(void);
 /// Add a path to the PYTHONPATH
 EXPORTPYTHON int add_python_path(const std::string& path);
 

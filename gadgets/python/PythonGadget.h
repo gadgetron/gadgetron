@@ -41,13 +41,26 @@ namespace Gadgetron {
             return GADGET_OK;
         }
 
+        GADGET_PROPERTY(error_ignored_mode, bool, "If true, failure of this python gadget will not stop the entire chain", false);
+
     protected:
+
+        bool config_success_;
+
         int process_config(ACE_Message_Block* mb)
         {
+            int err_ret = GADGET_FAIL;
+            config_success_ = false;
+            if(this->error_ignored_mode.value())
+            {
+                // do not stop entire chain
+                err_ret = GADGET_OK;
+            }
+
             // start python interpreter
             if (initialize_python() != GADGET_OK) {
                 GDEBUG("Failed to initialize Python in Gadget %s\n", this->module()->name());
-                return GADGET_FAIL;
+                return err_ret;
             }
 
             // ensure boost can convert between hoNDArrays and NumPy arrays automatically
@@ -86,7 +99,7 @@ namespace Gadgetron {
             for (std::string path : {pypath, gadgetron_python_path.generic_string()}) {
                 if (add_python_path(path) == GADGET_FAIL) {
                     GDEBUG_STREAM("python_toolbox failed to add path: " << path << std::endl);
-                    return GADGET_FAIL;
+                    return err_ret;
                 }
             }
 
@@ -95,11 +108,11 @@ namespace Gadgetron {
 
             if (module_name.size() == 0) {
                 GDEBUG("Null module name received in Gadget %s\n", this->module()->name());
-                return GADGET_FAIL;
+                return err_ret;
             }
             if (class_name.size() == 0) {
                 GDEBUG("Null class name received in Gadget %s\n", this->module()->name());
-                return GADGET_FAIL;
+                return err_ret;
             }
 
             GILLock lock;
@@ -128,8 +141,9 @@ namespace Gadgetron {
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Error loading python modules in Gadget %s\n", this->module()->name());
-                PyErr_Print();
-                return GADGET_FAIL;
+                std::string err  = pyerr_to_string();
+                GERROR(err.c_str());
+                return err_ret;
             }
 
             //Transfer all properties/parameters to Python gadget
@@ -144,8 +158,9 @@ namespace Gadgetron {
                 }
                 catch (boost::python::error_already_set const &) {
                     GERROR("Error setting PythonGadget parameters in Gadget %s\n", this->module()->name());
-                    PyErr_Print();
-                    return GADGET_FAIL;
+                    std::string err = pyerr_to_string();
+                    GERROR(err.c_str());
+                    return err_ret;
                 }
                 it++;
             }
@@ -158,15 +173,37 @@ namespace Gadgetron {
             }
             catch (boost::python::error_already_set const &) {
                 GERROR("Error calling process_config in Gadget %s\n", this->module()->name());
-                PyErr_Print();
-                return GADGET_FAIL;
+                std::string err = pyerr_to_string();
+                GERROR(err.c_str());
+                return err_ret;
             }
+
+            config_success_ = true;
 
             return GADGET_OK;
         }
 
         int process(GadgetContainerMessage<IsmrmrdReconData>* recon_data)
         {
+            int err_ret = GADGET_FAIL;
+            if (this->error_ignored_mode.value())
+            {
+                // do not stop entire chain
+                err_ret = GADGET_OK;
+            }
+
+            if(!config_success_)
+            {
+                GERROR_STREAM("PythonGadget, process_config failed ... ");
+                if (this->next()->putq(recon_data) == -1)
+                {
+                    GERROR("PythonGadget::process, passing data on to next gadget");
+                    recon_data->release();
+                    return err_ret;
+                }
+                return err_ret;
+            }
+
             if (!recon_data) {
                 GERROR("Received null pointer to data block");
                 return GADGET_FAIL;
@@ -201,7 +238,8 @@ namespace Gadgetron {
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Passing data on to python module failed\n");
-                PyErr_Print();
+                std::string err = pyerr_to_string();
+                GERROR(err.c_str());
                 return GADGET_FAIL;
             }
             return GADGET_OK;
@@ -238,7 +276,7 @@ namespace Gadgetron {
             catch (boost::python::error_already_set const &)
             {
                 GDEBUG("Passing IsmrmrdImageArray on to python module failed\n");
-                PyErr_Print();
+                std::string err = pyerr_to_string(); GERROR(err.c_str());
                 return GADGET_FAIL;
             }
 
@@ -297,7 +335,7 @@ namespace Gadgetron {
             }
             catch (boost::python::error_already_set const &) {
                 GDEBUG("Passing data on to python module failed\n");
-                PyErr_Print();
+                std::string err = pyerr_to_string(); GERROR(err.c_str());
                 return GADGET_FAIL;
             }
             return GADGET_OK;
