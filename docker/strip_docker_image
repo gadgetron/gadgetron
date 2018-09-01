@@ -24,6 +24,7 @@ RUN apt-get --yes remove *-dev
 #RUN add-apt-repository ppa:lkoppel/ceres
 RUN apt-get update
 RUN apt-get install --no-install-recommends --no-install-suggests --yes libplplot-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 RUN rm -rf /opt/*.tar.gz
 RUN rm -rf /usr/local/cuda/bin
 RUN rm -rf /usr/local/cuda/doc
