@@ -120,10 +120,16 @@ namespace Gadgetron {
                 return err_ret;
             }
 
+            ACE_Time_Value tv(0, 500000);
+            ACE_OS::sleep(tv);
+
             GILLock lock;
             try {
                 module_ = boost::python::import(module_name.c_str());
                 GDEBUG_STREAM("Successfully import module : " << module_name)
+
+                ACE_Time_Value tv2(0, 500000);
+                ACE_OS::sleep(tv2);
 
                 // Reload the module so changes take place at Gadgetron runtime
                 boost::python::import("__main__").attr("__dict__")[module_name.c_str()] = module_;
