@@ -95,11 +95,16 @@ namespace Gadgetron {
             GDEBUG("Python Class           : %s\n", pyclass.c_str());
 
             boost::filesystem::path gadgetron_python_path = get_gadgetron_home() / std::string(GADGETRON_PYTHON_PATH);
+            GDEBUG("Python folder          : %s\n", gadgetron_python_path.generic_string().c_str());
 
             for (std::string path : {pypath, gadgetron_python_path.generic_string()}) {
                 if (add_python_path(path) == GADGET_FAIL) {
                     GDEBUG_STREAM("python_toolbox failed to add path: " << path << std::endl);
                     return err_ret;
+                }
+                else
+                {
+                    GDEBUG_STREAM("Successfully added gadgetron python path ... ");
                 }
             }
 
@@ -121,6 +126,8 @@ namespace Gadgetron {
 
                 // Reload the module so changes take place at Gadgetron runtime
                 boost::python::import("__main__").attr("__dict__")[module_name.c_str()] = module_;
+                GDEBUG_STREAM("Successfully import module : " << module_name)
+
                 std::string tmp = std::string("reload(") + std::string(module_name.c_str()) + std::string(")\n");
 #if defined PYVER && PYVER == 3
                 // prefix reload call for Python 3
@@ -128,6 +135,7 @@ namespace Gadgetron {
 #endif
                 //GDEBUG("Reloading with command: %s\n", tmp.c_str());
                 boost::python::exec(tmp.c_str(), boost::python::import("__main__").attr("__dict__"));
+                GDEBUG_STREAM("Successfully reload module : " << module_name)
 
                 gadget_ref_ = boost::shared_ptr<GadgetReference>(new GadgetReference());
                 gadget_ref_->set_gadget(this);
@@ -137,6 +145,7 @@ namespace Gadgetron {
                 // Increment reference count of Python class so that both the C++
                 // destructor and the interpreter can decrement its reference count
                 boost::python::incref(class_.ptr());
+                GDEBUG_STREAM("Successfully declare class : " << class_name)
 
             }
             catch (boost::python::error_already_set const &) {
@@ -167,6 +176,7 @@ namespace Gadgetron {
 
             try {
                 // retrieve and call python gadget's process_config method
+                GDEBUG_STREAM("Call process_config ... ")
                 boost::python::object process_config_fn = class_.attr("process_config");
                 boost::python::object ignored = process_config_fn(
                     boost::python::object(std::string(mb->rd_ptr())));
@@ -177,6 +187,8 @@ namespace Gadgetron {
                 GERROR(err.c_str());
                 return err_ret;
             }
+
+            GDEBUG_STREAM("Call process_config completed without error ")
 
             config_success_ = true;
 
