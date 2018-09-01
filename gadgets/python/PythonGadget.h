@@ -104,7 +104,7 @@ namespace Gadgetron {
                 }
                 else
                 {
-                    GDEBUG_STREAM("Successfully added gadgetron python path ... ");
+                    GDEBUG_STREAM("Successfully added gadgetron python path : " << path);
                 }
             }
 
