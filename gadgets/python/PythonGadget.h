@@ -123,10 +123,11 @@ namespace Gadgetron {
             GILLock lock;
             try {
                 module_ = boost::python::import(module_name.c_str());
+                GDEBUG_STREAM("Successfully import module : " << module_name)
 
                 // Reload the module so changes take place at Gadgetron runtime
                 boost::python::import("__main__").attr("__dict__")[module_name.c_str()] = module_;
-                GDEBUG_STREAM("Successfully import module : " << module_name)
+                GDEBUG_STREAM("Successfully set module : " << module_name)
 
                 std::string tmp = std::string("reload(") + std::string(module_name.c_str()) + std::string(")\n");
 #if defined PYVER && PYVER == 3
