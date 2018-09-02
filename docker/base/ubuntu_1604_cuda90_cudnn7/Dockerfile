@@ -44,6 +44,10 @@ RUN pip3 install http://download.pytorch.org/whl/cu90/torch-0.4.0-cp35-cp35m-lin
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom
 
+# for embedded python plot, we need agg backend
+RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
+RUN echo "backend : agg" >> /root/.config/matplotlib/matplotlibrc
+
 # Compile boost
 RUN cd /opt && \
     wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz && \
