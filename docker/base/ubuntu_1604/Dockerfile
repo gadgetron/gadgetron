@@ -31,6 +31,10 @@ RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.0-cp35-cp35m-linu
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom
 
+# for embedded python plot, we need agg backend
+RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
+RUN echo "backend : agg" >> /root/.config/matplotlib/matplotlibrc
+
 #OpenBLAS with OpenMP
 RUN cd /opt && \
     mkdir debsource && \
