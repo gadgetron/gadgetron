@@ -58,7 +58,7 @@ def main():
                 gadgetron_outfile.flush()
 
         client_outfile.write("==============================================\n")
-        client_outfile.write("   GADGETRON TEST CASE: " + t + "\n")
+        client_outfile.write(gt_out_str + "\n")
         client_outfile.write("==============================================\n")
         with open(client_log_filename) as infile:
             client_outfile.write(infile.read())
