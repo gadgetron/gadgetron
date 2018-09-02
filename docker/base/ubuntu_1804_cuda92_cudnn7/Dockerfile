@@ -36,6 +36,10 @@ RUN apt-get install -y python3-h5py
 # fix the  qhull reentrant problem
 # RUN pip uninstall -y scipy
 
+# for embedded python plot, we need agg backend
+RUN mkdir -p /root/.config/matplotlib && touch /root/.config/matplotlib/matplotlibrc 
+RUN echo "backend : agg" >> /root/.config/matplotlib/matplotlibrc
+
 RUN mkdir /opt/code
 
 #ZFP
