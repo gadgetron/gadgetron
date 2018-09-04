@@ -20,7 +20,7 @@ include_directories(
   )
 
 cuda_add_library(gadgetron_toolbox_hyper SHARED 
-    CSIOperator.cpp
+    CSIOperator.cu
     CSI_utils.cu
 	CSIOperator.h
 	CSI_utils.h

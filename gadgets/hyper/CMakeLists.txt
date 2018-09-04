@@ -30,7 +30,7 @@ add_library(gadgetron_hyper SHARED
   NFFT2DGadget.h NFFT2DGadget.cpp
   CMRT3DGadget.h CMRT3DGadget.cpp
   CMRTGadget.h CMRTGadget.cpp
-  CSIGadget.h CSIGadget.cpp
+  CSIGadget.h CSIGadget.cu
   gpuCSICoilEstimationGadget.cpp
   
   )
