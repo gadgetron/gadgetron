@@ -129,5 +129,3 @@ endif ()
 add_test(test_all test_all)
 
 endif ()
-
-add_subdirectory(integration)
