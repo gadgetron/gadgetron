@@ -330,7 +330,11 @@ if(ARMADILLO_FOUND)
 
 endif()
 
+if (WIN32)
+find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
+else()
 find_package(HDF5 1.8 COMPONENTS C CXX HL REQUIRED)
+endif()
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 find_package(ISMRMRD REQUIRED)
 link_directories(${ISMRMRD_LIBRARY_DIRS})
@@ -412,7 +416,24 @@ endif()
 find_package(OpenGL)
 find_package(GLEW)
 find_package(GLUT)
-find_package(Qt4 4.6)
+
+# Qt
+option(BUILD_GUI "Build GUI modules with QT" On)
+
+if (${BUILD_GUI})
+  set(QtVersions 4 5)
+  set(QtVersion 4 CACHE STRING "Major version of Qt")
+  set_property(CACHE QtVersion PROPERTY STRINGS ${QtVersions})
+
+  if (${QtVersion} EQUAL 4)
+    find_package(Qt4 4.6)
+    include( ${QT_USE_FILE} )
+  else()
+    set(CMAKE_AUTOMOC ON)
+    find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL REQUIRED QUIET)
+  endif()
+endif()
+
 find_package(PLplot)
 
 add_subdirectory(toolboxes)

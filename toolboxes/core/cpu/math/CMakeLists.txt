@@ -60,7 +60,7 @@ else ()
         gadgetron_toolbox_cpucore
         gadgetron_toolbox_log
         ${ARMADILLO_LIBRARIES}
-        ${BLAS_LIBRARIES}
+		${BLAS_LIBRARIES}
         ${LAPACK_LIBRARIES}
         ${FFTW3_LIBRARIES}
         ${CBLAS_LIBRARY}
