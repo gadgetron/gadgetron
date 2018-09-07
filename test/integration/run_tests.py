@@ -12,7 +12,7 @@ import subprocess
 
 
 def output_csv(stats, filename):
-    print(f"Writing stats to: {filename}")
+    print("Writing stats to: {}".format(filename))
 
     with open(filename, 'w') as f:
         writer = csv.DictWriter(f, ['test', 'processing_time'])
@@ -60,10 +60,10 @@ def main():
     skipped = []
     handlers = {0: pass_handler, 1: fail_handler, 2: skip_handler}
 
-    tests = set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests]))
+    tests = sorted(set(itertools.chain(*[glob.glob(pattern) for pattern in args.tests])))
 
     for i, test in enumerate(tests, start=1):
-        print(f"\nTest {i} of {len(tests)}: {test}\n")
+        print("\nTest {} of {}: {}\n".format(i, len(tests), test))
         proc = subprocess.run(['python3', 'run_gadgetron_test.py',
                                '-G', args.gadgetron_home,
                                '-I', args.ismrmrd_home,
@@ -75,8 +75,8 @@ def main():
     if args.stats:
         output_csv(stats, args.stats)
 
-    print(f"\n{len(passed)} tests passed. {len(skipped)} tests skipped.")
-    print(f"Total processing time: {sum(stat['processing_time'] for stat in stats):.2f} seconds")
+    print("\n{} tests passed. {} tests skipped.".format(len(passed), len(skipped)))
+    print("Total processing time: {:.2f} seconds.".format(sum(stat['processing_time'] for stat in stats)))
 
 
 if __name__ == '__main__':
