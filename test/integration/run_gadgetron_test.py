@@ -56,7 +56,7 @@ def siemens_to_ismrmrd(*, input, output, parameters, schema, measurement, flag=N
 
 
 def send_dependency_to_gadgetron(gadgetron, dependency):
-    print(f"Passing dependency to Gadgetron: {dependency}")
+    print("Passing dependency to Gadgetron: {}".format(dependency))
     subprocess.run(["gadgetron_ismrmrd_client",
                     "-a", gadgetron.host,
                     "-p", gadgetron.port,
@@ -68,7 +68,7 @@ def send_dependency_to_gadgetron(gadgetron, dependency):
 
 
 def send_data_to_gadgetron(gadgetron, *, input, output, configuration):
-    print(f"Passing data to Gadgetron: {input} -> {output}")
+    print("Passing data to Gadgetron: {} -> {}".format(input, output))
     subprocess.run(["gadgetron_ismrmrd_client",
                     "-a", gadgetron.host,
                     "-p", gadgetron.port,
@@ -139,7 +139,7 @@ def validate_output(*, output_file, reference_file, output_dataset, reference_da
     reference = numpy.squeeze(h5py.File(reference_file)[reference_dataset])
 
     if not output.shape == reference.shape:
-        return Failure, f"Data dimensions do not match: {output.shape} != {reference.shape}"
+        return Failure, "Data dimensions do not match: {} != {}".format(output.shape, reference.shape)
 
     output = output[...].flatten().astype('float32')
     reference = reference[...].flatten().astype('float32')
@@ -148,12 +148,12 @@ def validate_output(*, output_file, reference_file, output_dataset, reference_da
     scale = numpy.dot(output, output) / numpy.dot(output, reference)
 
     if value_threshold < norm_diff:
-        return Failure, f"Comparing values, norm diff: {norm_diff} (threshold: {value_threshold})"
+        return Failure, "Comparing values, norm diff: {} (threshold: {})".format(norm_diff, value_threshold)
 
     if value_threshold < abs(1 - scale):
-        return Failure, f"Comparing image scales, ratio: {scale} ({abs(1 - scale)}) (threshold: {scale_threshold})"
+        return Failure, "Comparing image scales, ratio: {} ({}) (threshold: {})".format(scale, abs(1 - scale), scale_threshold)
 
-    return None, f"Norm: {norm_diff:.1e} [{value_threshold}] Scale: {abs(1 - scale):.1e} [{scale_threshold}]"
+    return None, "Norm: {:.1e} [{}] Scale: {:.1e} [{}]".format(norm_diff, value_threshold, abs(1 - scale), scale_threshold)
 
 
 def error_handlers(args, config):
@@ -162,7 +162,8 @@ def error_handlers(args, config):
         try:
             return cont(**state)
         except subprocess.CalledProcessError as e:
-            print(f"An error occurred in a subprocess with the following command: {' '.join(e.cmd)}")
+            print("An error occurred in a subprocess with the following command:")
+            print(' '.join(e.cmd))
             return Failure
 
     yield handle_subprocess_errors
@@ -270,8 +271,8 @@ def prepare_siemens_input_data(args, config):
 
     def convert_siemens_dependency_action(dependency, measurement, cont, *, siemens_source, dependencies=[], **state):
 
-        destination_file = os.path.join(args.test_folder, f"{dependency}.h5")
-        print(f"Converting Siemens dependency measurement: {dependency} {measurement} -> {destination_file}")
+        destination_file = os.path.join(args.test_folder, "{}.h5".format(dependency))
+        print("Converting Siemens dependency measurement: {} {} -> {}".format(dependency, measurement, destination_file))
 
         siemens_to_ismrmrd(input=siemens_source,
                            output=destination_file,
@@ -315,12 +316,12 @@ def start_additional_nodes(args, config):
                     relay.kill()
 
     def start_gadgetron_node_action(node, cont, *, relay_port, **state):
-        print(f"Starting gadgetron node: {node}")
+        print("Starting gadgetron node: {}".format(node))
 
         node_port = int(config['DISTRIBUTED']['node_port_base']) + node
         node_rest_port = int(config['DISTRIBUTED']['node_rest_port_base']) + node
 
-        with open(os.path.join(args.test_folder, f"gadgetron.{node}.log"), 'w') as log:
+        with open(os.path.join(args.test_folder, "gadgetron.{}.log".format(node)), 'w') as log:
             with start_gadgetron_instance(log=log,
                                           port=str(node_port),
                                           rest_port=str(node_rest_port),
@@ -357,7 +358,7 @@ def run_gadgetron_client(args, config):
 
         processing_time = end_time - start_time
 
-        print(f"Gadgetron processing time: {processing_time:.2f} s")
+        print("Gadgetron processing time: {:.2f} s".format(processing_time))
 
         return cont(gadgetron=gadgetron,
                     processing_time=processing_time,
@@ -384,10 +385,10 @@ def validate_client_output(args, config):
                                          scale_threshold=float(config[section]['scale_comparison_threshold']))
 
         if result is not None:
-            print(f"{section:<26} [FAILED] ({reason})")
+            print("{:<26} [FAILED] ({})".format(section, reason))
             return result
         else:
-            print(f"{section:<26} [OK] ({reason})")
+            print("{:<26} [OK] ({})".format(section, reason))
             return cont(client_output=client_output, **state)
 
     yield from (functools.partial(validate_output_action, test)
@@ -461,11 +462,10 @@ def main():
 
     args = parser.parse_args()
 
-    print(f"Running Gadgetron test {args.test} with:")
-    print(f"  -- ISMRMRD_HOME    : {args.ismrmrd_home}")
-    print(f"  -- GADGETRON_HOME  : {args.gadgetron_home}")
-    print(f"  -- PATH            : {os.environ.get('PATH')}")
-    print(f"  -- TEST CASE       : {args.test}")
+    print("Running Gadgetron test {} with:".format(args.test))
+    print("  -- ISMRMRD_HOME    : {}".format(args.ismrmrd_home))
+    print("  -- GADGETRON_HOME  : {}".format(args.gadgetron_home))
+    print("  -- TEST CASE       : {}".format(args.test))
 
     config_parser = configparser.ConfigParser()
     config_parser.read_dict(default_config_values)
@@ -474,7 +474,7 @@ def main():
     action_chain = chain_actions(build_actions(args, config_parser))
     result, return_code = action_chain(test=args.test)
 
-    print(f"Test status: {result}")
+    print("Test status: {}".format(result))
     return return_code
 
 
