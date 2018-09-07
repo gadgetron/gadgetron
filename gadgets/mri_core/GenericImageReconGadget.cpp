@@ -1594,7 +1594,15 @@ namespace Gadgetron {
                                                 }
 
                                                 cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-                                                if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index = seriesNum;
+
+                                                if(add_original_series_num.value())
+                                                {
+                                                    if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index += seriesNum;
+                                                }
+                                                else
+                                                {
+                                                    if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index = seriesNum;
+                                                }
 
                                                 // set the image data
                                                 size_t RO = pImage->get_size(0);
@@ -1727,7 +1735,14 @@ namespace Gadgetron {
                                                 }
 
                                                 pImage->header_.data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-                                                pImage->header_.image_series_index = seriesNum;
+                                                if (add_original_series_num.value())
+                                                {
+                                                    if (seriesNum >= 0) pImage->header_.image_series_index += seriesNum;
+                                                }
+                                                else
+                                                {
+                                                    if (seriesNum >= 0) pImage->header_.image_series_index = seriesNum;
+                                                }
 
                                                 // set the image data
                                                 size_t RO = pImage->get_size(0);
@@ -1872,7 +1887,14 @@ namespace Gadgetron {
                                                 }
 
                                                 cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-                                                cm1->getObjectPtr()->image_series_index = seriesNum;
+                                                if (add_original_series_num.value())
+                                                {
+                                                    if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index += seriesNum;
+                                                }
+                                                else
+                                                {
+                                                    if (seriesNum >= 0) cm1->getObjectPtr()->image_series_index = seriesNum;
+                                                }
 
                                                 // set the image data
                                                 size_t RO = pImage->get_size(0);
@@ -2005,7 +2027,14 @@ namespace Gadgetron {
                                                 }
 
                                                 pImage->header_.data_type = ISMRMRD::ISMRMRD_CXFLOAT;
-                                                pImage->header_.image_series_index = seriesNum;
+                                                if (add_original_series_num.value())
+                                                {
+                                                    if (seriesNum >= 0) pImage->header_.image_series_index += seriesNum;
+                                                }
+                                                else
+                                                {
+                                                    if (seriesNum >= 0) pImage->header_.image_series_index = seriesNum;
+                                                }
 
                                                 // set the image data
                                                 size_t RO = pImage->get_size(0);

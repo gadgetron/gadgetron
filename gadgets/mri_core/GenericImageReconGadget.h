@@ -213,6 +213,8 @@ namespace Gadgetron {
         virtual int close(unsigned long flags);
 
         GADGET_PROPERTY(image_series_num, int, "Image series number", 100);
+        GADGET_PROPERTY(add_original_series_num, bool, "If true, the original image series index is added to the set seriesNum", false);
+
         GADGET_PROPERTY(verbose, bool, "Whether to print more information", false);
         GADGET_PROPERTY(debug_folder, std::string, "If set, the debug output will be written out", "");
         GADGET_PROPERTY(perform_timing, bool, "Whether to perform timing on some computational steps", false);
