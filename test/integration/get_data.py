@@ -1,85 +1,90 @@
+#!/usr/bin/python3
+
 import os
+import os.path
+
 import sys
+import time
+import json
 import hashlib
-import subprocess
+import argparse
 
-if sys.version_info[0] >= 3:
-    import urllib.request
-    import urllib.error
-    HTTPError = urllib.error.HTTPError
-    URLError = urllib.error.URLError
-    urlopen = urllib.request.urlopen
-else:
-    import urllib2
-    HTTPError = urllib2.HTTPError
-    URLError = urllib2.URLError
-    urlopen = urllib2.urlopen
-
-DATAFILE = "data.txt"
-DATADIR = "data"
-HOST = 'http://gadgetrondata.blob.core.windows.net/gadgetrontestdata'
+import urllib.request
 
 
-def md5sum(filename, blocksize=64*1024):
-    res = subprocess.check_output(["md5sum", filename])
-    res = res.split()
-    if sys.platform == "win32":
-        md5_str = str(res[0])[2:-1]
-    else:
-        md5_str = str(res[0].decode('UTF-8'))
-    return md5_str
+class Progress:
+
+    def __init__(self):
+        self.start = time.time()
+        self.end = None
+
+    def notify(self, blocks, block_size, total_size):
+
+        current_size = blocks * block_size
+
+        if total_size <= current_size:
+            self.end = time.time()
+            duration = self.end - self.start
+            print(' ' * 96, end='\r')
+            print(f"Downloaded {total_size:n} bytes at {int(total_size / duration):n} bytes per second.")
+        else:
+            print(' ' * 96, end='\r')
+            print(f"\t{current_size:n} of {total_size:n} bytes [{current_size/total_size:.2%}]", end='\r')
 
 
-def load_checksums(datafile):
-    checksums = {}
-    with open(datafile) as f:
-        for line in f:
-            if len(line.strip()) > 0 :
-                filepath, checksum = line.split(':')
-                checksums[filepath.strip()] = checksum.strip()
-    return checksums
+def is_valid(file, digest):
 
+    if not os.path.isfile(file):
+        return False
 
-def download(url, dest):
-    furl = urlopen(url)
-    with open(dest, 'wb') as fdest:
-        fdest.write(furl.read())
+    md5 = hashlib.new('md5')
+
+    with open(file, 'rb') as f:
+        for chunk in iter(lambda: f.read(65536), b''):
+            md5.update(chunk)
+
+    return digest == md5.hexdigest()
 
 
 def main():
-    # determine test dir from full path to this script
-    testdir = os.path.dirname(os.path.realpath(sys.argv[0]))
-    datadir = os.path.join(testdir, DATADIR)
-    datafile = os.path.join(testdir, DATAFILE)
-    if not os.path.isdir(datadir):
-        os.mkdir(datadir)
 
-    print("Reading list of data from %s" % datafile)
-    try:
-        checksums = load_checksums(datafile)
-    except IOError:
-        print("Failed to read %s" % datafile)
-        return
+    parser = argparse.ArgumentParser(description="Gadgetron Integration Test Data Download Script",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    print("Storing test data in %s" % datadir)
+    parser.add_argument('-l', '--list', type=str, default='data.json',
+                        help="List of data files to download.")
 
-    for dataname, checksum in checksums.items():
-        datapath = os.path.join(datadir, dataname)
-        parent = os.path.dirname(datapath)
-        if not os.path.isdir(parent):
-            os.makedirs(parent)
-        url = '%s/%s' % (HOST, dataname)
+    parser.add_argument('-d', '--destination', type=str, default='data',
+                        help="Folder in which to write downloaded data.")
 
-        print("Verifying: %s..." % dataname)
-        # if file is missing or its checksum doesn't match, download it
-        if not os.path.isfile(datapath) or md5sum(datapath) != checksum:
-            print("Downloading: %s..." % dataname)
-            try:
-                download(url, datapath)
-            except HTTPError as e:
-                print("HTTP Error: %d %s" % (e.code, url))
-            except URLError as e:
-                print("URL Error: %s - %s" % (e.reason, url))
+    parser.add_argument('-H', '--host', default='http://gadgetrondata.blob.core.windows.net/gadgetrontestdata/',
+                        help="Host from which to download the data.")
+
+    args = parser.parse_args()
+
+    with open(args.list, 'r') as list:
+        entries = json.load(list)
+
+    for entry in entries:
+
+        url = f"{args.host}{entry['file']}"
+        destination = os.path.join(args.destination, entry['file'])
+
+        if is_valid(destination, entry['md5']):
+            print(f"Verified: {destination}")
+            continue
+
+        print(f"Downloading file: {destination}")
+
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        urllib.request.urlretrieve(url, destination, reporthook=Progress().notify)
+
+        if not is_valid(destination, entry['md5']):
+            print(f"Downloaded file {destination} failed validation.")
+            sys.exit(1)
+
+    sys.exit(0)
+
 
 if __name__ == '__main__':
     main()
