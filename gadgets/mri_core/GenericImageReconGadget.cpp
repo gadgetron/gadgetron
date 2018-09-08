@@ -127,6 +127,8 @@ namespace Gadgetron {
                 bool isParametricPerfPSMap = false;
                 bool isParametricAIFGd = false;
                 bool isParametricPerfGd = false;
+                bool isParametricWater = false;
+                bool isParametricFat = false;
 
                 if (!dataRole.empty())
                 {
@@ -160,6 +162,8 @@ namespace Gadgetron {
                             || (dataRole[n] == GADGETRON_IMAGE_PERF_PERMEABILITY_SURFACE_AREA_MAP)
                             || (dataRole[n] == GADGETRON_IMAGE_AIF_Gd_CONCENTRATION)
                             || (dataRole[n] == GADGETRON_IMAGE_PERF_Gd_CONCENTRATION)
+                            || (dataRole[n] == GADGETRON_IMAGE_FAT)
+                            || (dataRole[n] == GADGETRON_IMAGE_WATER)
                             )
                         {
                             isParametricMap = true;
@@ -258,6 +262,16 @@ namespace Gadgetron {
                         if (dataRole[n] == GADGETRON_IMAGE_PERF_Gd_CONCENTRATION)
                         {
                             isParametricPerfGd = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_FAT)
+                        {
+                            isParametricFat = true;
+                        }
+
+                        if (dataRole[n] == GADGETRON_IMAGE_WATER)
+                        {
+                            isParametricWater = true;
                         }
                     }
 
@@ -451,6 +465,18 @@ namespace Gadgetron {
 
                     // seq description
                     Gadgetron::append_ismrmrd_meta_values(attrib, GADGETRON_SEQUENCEDESCRIPTION, dataRole);
+
+                    if(isParametricFat)
+                    {
+                        std::vector<std::string> dstr(1, GADGETRON_IMAGE_FAT);
+                        Gadgetron::append_ismrmrd_meta_values(attrib, GADGETRON_SEQUENCEDESCRIPTION, dstr);
+                    }
+
+                    if (isParametricWater)
+                    {
+                        std::vector<std::string> dstr(1, GADGETRON_IMAGE_WATER);
+                        Gadgetron::append_ismrmrd_meta_values(attrib, GADGETRON_SEQUENCEDESCRIPTION, dstr);
+                    }
                 }
 
                 // image processing history
@@ -465,8 +491,8 @@ namespace Gadgetron {
 
                 if (windowCenter.size() == SLC && windowWidth.size() == SLC)
                 {
-                    attrib.set(GADGETRON_IMAGE_WINDOWCENTER, (long)windowCenter[slc]);
-                    attrib.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)windowWidth[slc]);
+                    if(windowCenter[slc]>0) attrib.set(GADGETRON_IMAGE_WINDOWCENTER, (long)windowCenter[slc]);
+                    if(windowWidth[slc]>0) attrib.set(GADGETRON_IMAGE_WINDOWWIDTH, (long)windowWidth[slc]);
                 }
             }
         }
