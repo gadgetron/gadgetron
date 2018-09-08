@@ -32,7 +32,7 @@ endif()
 
 
 
-option(USE_BART "Build support for BART using BartGadget" ON)
+option(USE_BART "Build support for BART using BartGadget" OFF)
 if(USE_BART)
   add_subdirectory(bart)
 endif()
