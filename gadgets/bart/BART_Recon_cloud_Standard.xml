@@ -81,24 +81,30 @@
         <property><name>prepare_ref_always</name><value>true</value></property>
     </gadget>
 
-	<!-- This is where we insert our new Gadget -->
-	<gadget>
-	  <name>bartgadget</name>
-	  <dll>gadgetron_bart</dll>
-	  <classname>BartGadget</classname>
-	  <property><name>isVerboseON</name><value>false</value></property>
-	  <property><name>BartCommandScript_name</name><value>Sample_Grappa_Recon_Standard.sh</value></property>
-          <!--Enable and provide the absolute path to the bart working directory different from the default path-->
-          <!--property><name>BartWorkingDirectory_path</name><value></value></property-->
-	  <property><name>isBartFileBeingStored</name><value>false</value></property>
+    <!-- This is where we insert our new Gadget -->
+    <gadget>
+      <name>bartgadget</name>
+      <dll>gadgetron_bart</dll>
+      <classname>BartGadget</classname>
+      <property><name>isVerboseON</name><value>false</value></property>
+      <property><name>BartCommandScript_name</name><value>Sample_Grappa_Recon_Standard.sh</value></property>
+      <!--Enable and provide the absolute path to the bart working directory different from the default path-->
+      <!--property><name>BartWorkingDirectory_path</name><value></value></property-->
+      <property><name>isBartFileBeingStored</name><value>false</value></property>
       <property><name>image_series</name><value>0</value></property>
-	  <!--CACHE BART FILES FOR BETTER PERFORMANCE  -->
-      <!---THIS FEATURE SHOULD BE ENABLE ONLY IF THE USER HAS THE ROOT PRIVILEGE AND KNOWS HIS/HER HARDWIRE
-          WELL ENOUGH TO ALLOCATE VIRTUAL MEMORY -->
-	  <!--ONE HAS TO SET "isBartFileBeingStored" TO FALSE-->	  
-      <property><name>isBartFolderBeingCachedToVM</name><value>false</value></property>
-	  <property><name>AllocateMemorySizeInMegabytes</name><value>50</value></property>
-	</gadget>
+      <!-- Controls the behaviour of BART with regards to files 
+	   Possible values are: 
+	   - BART_ALL_IN_MEM: store everything in memory (beware of large datasets!)
+	   - BART_ALL_ON_DISK: store everything on-disk (might not be available if BartGadget was compiled with -DMEMONLY_CFL)
+	   - BART_MIX_DISK_MEM: mixed on-disk/in-memory storage
+                                user can control whether a file is stored in-memory by appending
+                                the ".mem" extension to any BART output as well as using
+				the BartStoreIncomingInMemory property.
+	   NB: if BartGadget is compiled with -DMEMONLY_CFL, this setting has no effect -->
+      <property><name>BartFileBehaviour</name><value>BART_MIX_DISK_MEM</value></property>
+      <!-- This is ignored if BartFileBehaviour is not BART_MIX_DISK_MEM -->
+      <property><name>BartStoreGadgetronInputInMemory</name><value>false</value></property>
+    </gadget>
 
     <!-- Partial fourier handling -->
     <gadget>

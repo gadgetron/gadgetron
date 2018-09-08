@@ -1,5 +1,8 @@
 FROM nvidia/cuda:9.2-cudnn7-devel-ubuntu18.04
 
+ARG BART_URL=https://github.com/mrirecon/bart
+ARG BART_BRANCH=master
+
 RUN apt-get update --quiet && \
     apt-get install --no-install-recommends --no-install-suggests --yes  \
     software-properties-common apt-utils wget build-essential cython emacs python-dev python-pip python3-dev python3-pip libhdf5-serial-dev cmake git-core libboost-all-dev libfftw3-dev h5utils jq hdf\
@@ -52,12 +55,15 @@ RUN cd /opt && \
     make -j $(nproc) install
 
 #BART
-RUN cd /opt && \
-    wget https://github.com/mrirecon/bart/archive/v0.4.03.tar.gz && \
-    tar -xzf v0.4.03.tar.gz && \
-    cd bart-0.4.03 && \
+# BART
+RUN cd /opt/code && \
+    git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
+    cd bart && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
     make -j $(nproc) && \
-    ln -s /opt/bart-v0.4.03/bart /usr/local/bin/bart 
+    make install
 
 # ceres
 RUN apt-get install --yes libgoogle-glog-dev libeigen3-dev libsuitesparse-dev
