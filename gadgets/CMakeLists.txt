@@ -30,15 +30,18 @@ if (ARMADILLO_FOUND)
   add_subdirectory(cmr)
 endif()
 
-find_program(BARTCMD bart)
-if (BARTCMD)
-	add_subdirectory(bart)
+
+
+option(USE_BART "Build support for BART using BartGadget" OFF)
+if(USE_BART)
+  add_subdirectory(bart)
 endif()
 
+
 if (ARMADILLO_FOUND)
-    add_subdirectory(epi)
+  add_subdirectory(epi)
 elseif (ARMADILLO_FOUND)
-    message("Armadillo not found, NOT compiling EPI Gadgets")
+  message("Armadillo not found, NOT compiling EPI Gadgets")
 endif ()
 
 

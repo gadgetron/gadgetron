@@ -1,5 +1,8 @@
 FROM ubuntu:16.04
 
+ARG BART_URL=https://github.com/mrirecon/bart
+ARG BART_BRANCH=master
+
 #Fix default ceres package on 16.04 is broken
 
 RUN apt-get update --quiet && \
@@ -90,13 +93,15 @@ RUN cd /opt && \
     make shared && \
     make install
 
-#BART
-RUN cd /opt && \
-    wget https://github.com/mrirecon/bart/archive/v0.4.03.tar.gz && \
-    tar -xzf v0.4.03.tar.gz && \
-    cd bart-0.4.03 && \
+# BART
+RUN cd /opt/code && \
+    git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
+    cd bart && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DBART_FPIC=ON -DBART_ENABLE_MEM_CFL=ON -DBART_REDEFINE_PRINTF_FOR_TRACE=ON -DBART_LOG_BACKEND=ON -DBART_LOG_GADGETRON_BACKEND=ON && \
     make -j $(nproc) && \
-    ln -s /opt/bart-v0.4.03/bart /usr/local/bin/bart
+    make install
 
 # Ceres
 RUN apt-get install --yes libgoogle-glog-dev libeigen3-dev libsuitesparse-dev
