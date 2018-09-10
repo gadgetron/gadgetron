@@ -3,17 +3,11 @@ if (WIN32)
 endif ()
 
 
-#Bypass for ancient cmake on Ubuntu
-if (NOT DEFINED ${EIGEN_INCLUDE_DIRS})
-  SET(EIGEN_INCLUDE_DIRS ${CERES_INCLUDE_DIR}/eigen3)
-endif()
+
 
 include_directories(
   ${Boost_INCLUDE_DIR} 
   ${ARMADILLO_INCLUDE_DIRS}
-  ${EIGEN_INCLUDE_DIR}
-  ${MKL_INCLUDE_DIR}
-  ${CERES_INCLUDE_DIR}
   ${FFTW3_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_BINARY_DIR}/toolboxes/core
@@ -43,7 +37,6 @@ target_link_libraries(gadgetron_toolbox_fatwater
   gadgetron_toolbox_cpufft
   ${ARMADILLO_LIBRARIES}
   ${Boost_LIBRARIES}
-        ${CERES_LIBRARIES}
   )
 
 install(TARGETS gadgetron_toolbox_fatwater DESTINATION lib COMPONENT main)

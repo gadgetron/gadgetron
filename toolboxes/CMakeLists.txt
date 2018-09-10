@@ -35,6 +35,7 @@ endif()
 
 if(ARMADILLO_FOUND)
   add_subdirectory(klt)
+  add_subdirectory(fatwater)
 endif()
 add_subdirectory(nfft)
 add_subdirectory(dwt)
@@ -56,14 +57,6 @@ add_subdirectory(image_io)
 find_package(BLAS)
 find_package(LAPACK)
 
-
-
-if (CERES_FOUND)
-  message("Ceres found, compiling fat/water toolbox")
-  add_subdirectory(fatwater)
-else()
-  message("Ceres not found, skipping fat/water toolbox")
-endif()
 
 if (MATLAB_FOUND)
   message("Compiling MATLAB toolbox")
