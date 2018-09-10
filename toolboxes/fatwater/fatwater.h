@@ -24,6 +24,7 @@ namespace Gadgetron
             float lambda = 0.02;
             float lambda_extra = 0.01;
             bool do_gradient_descent = true;
+            unsigned int downsamples = 0;
 
 
         };
