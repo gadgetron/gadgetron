@@ -5,6 +5,9 @@
 #include "hoNDArray.h"
 #include "vector_td_utilities.h"
 
+#include <boost/math/interpolators/cubic_b_spline.hpp>
+#include <boost/range/adaptor/strided.hpp>
+
 #ifdef USE_OMP
 #include <omp.h>
 #endif
@@ -758,7 +761,7 @@ namespace Gadgetron {
 
   // Downsample
   template<class REAL, unsigned int D> 
-  boost::shared_ptr< hoNDArray<REAL> > downsample(const  hoNDArray<REAL> *_in )
+   hoNDArray<REAL>  downsample(const  hoNDArray<REAL> *_in )
   {
     // A few sanity checks 
 
@@ -798,8 +801,8 @@ namespace Gadgetron {
   
     const REAL *in = _in->get_data_ptr();
 
-    boost::shared_ptr< hoNDArray<REAL> > _out( new hoNDArray<REAL>(&dims) );
-    REAL *out = _out->get_data_ptr();
+     hoNDArray<REAL>  _out( &dims );
+    REAL *out = _out.get_data_ptr();
     
     typedef vector_td<size_t,D> uint64d;
 
@@ -830,113 +833,173 @@ namespace Gadgetron {
     return _out;
   }
 
+  namespace {
+          template<class T> hoNDArray<T> upsample_along_dimension(const hoNDArray<T>& array,int dim){
+              auto new_dims = *array.get_dimensions();
+              auto old_dim = new_dims[dim];
+              new_dims[dim] *= 2;
+              hoNDArray<T> result(new_dims);
+              size_t stride = std::accumulate(new_dims.begin(),new_dims.begin()+dim,size_t(1),std::multiplies<size_t>());
+
+              size_t nbatches = result.get_number_of_elements()/stride/new_dims[dim];
+              size_t batch_size = stride*new_dims[dim];
+              size_t old_batch_size = batch_size/2;
+
+#pragma omp parallel for
+              for (size_t batch = 0; batch < nbatches; batch++){
+                  T* result_ptr = result.get_data_ptr()+batch_size*batch;
+                  const T* input_ptr = array.get_data_ptr()+batch*old_batch_size;
+                  for (size_t i = 0; i < old_dim-1; i++){
+                      for (size_t k = 0; k < stride; k++){
+                        result_ptr[2*i*stride+k] = input_ptr[i*stride+k];
+                        result_ptr[(2*i+1)*stride+k] = (input_ptr[i*stride+k]+input_ptr[i*stride+k])/2;
+                      }
+                  }
+
+                  size_t i = old_dim-1;
+                  for (size_t k = 0; k < stride; k++){
+                    result_ptr[2*i*stride+k] = input_ptr[i*stride+k];
+                    result_ptr[(2*i+1)*stride+k] = input_ptr[i*stride+k];
+                  }
+
+              }
+              return result;
+
+
+
+          }
+
+
+          template<class T> hoNDArray<T> upsample_spline_along_dimension(const hoNDArray<T>& array,int dim,int scale){
+              namespace ba = boost::adaptors;
+              namespace bm = boost::math;
+              auto new_dims = *array.get_dimensions();
+              auto old_dim = new_dims[dim];
+              new_dims[dim] *= 2;
+              hoNDArray<T> result(new_dims);
+              size_t stride = std::accumulate(new_dims.begin(),new_dims.begin()+dim,size_t(1),std::multiplies<size_t>());
+
+              size_t nbatches = result.get_number_of_elements()/stride/new_dims[dim];
+              size_t batch_size = stride*new_dims[dim];
+              size_t old_batch_size = batch_size/2;
+
+#pragma omp parallel for
+              for (size_t batch = 0; batch < nbatches; batch++){
+                  T* result_ptr = result.get_data_ptr()+batch_size*batch;
+                  const T* input_ptr = array.get_data_ptr()+batch*old_batch_size;
+
+                  for (size_t k = 0; k < stride; k++){
+                      auto strided_iterator = std::make_pair(input_ptr+k,input_ptr+k+old_batch_size) | ba::strided(stride);
+                      auto spline = bm::cubic_b_spline<T>(boost::begin(strided_iterator),boost::end(strided_iterator),T(0.25)*scale,T(scale),T(0),T(0));
+                      for (int i = 0; i < new_dims[dim]; i++){
+                          result_ptr[k+i*stride] = spline(i);
+                      }
+
+                  }
+
+              }
+              return result;
+
+
+
+          }
+      }
   // Linear interpolation upsampling
-  template<class REAL, unsigned int D> boost::shared_ptr< hoNDArray<REAL> >
-  upsample( const  hoNDArray<REAL> *_in )
+  template<class T, unsigned int D> hoNDArray<T>
+  upsample( const  hoNDArray<T> *in )
   {
     // A few sanity checks 
 
-    if( _in == 0x0 ){
+    if( in == 0x0 ){
       throw std::runtime_error("upsample(): illegal input provided.");
     }
 
-    if( _in->get_number_of_dimensions() < D ){
+    if( in->get_number_of_dimensions() < D ){
       throw std::runtime_error( "upsample(): the number of array dimensions should be at least D");
     }
-    
-    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *_in->get_dimensions() );
+
+    hoNDArray<T> result = *in;
+    for (int i = D-1; i >= 0; i--){
+        result = upsample_along_dimension<T>(result,i);
+    }
+    return result;
+
+  }
+
+    template<class T, unsigned int D> hoNDArray<T>
+  upsample_spline( const  hoNDArray<T> *in, int scale = 2 )
+  {
+    // A few sanity checks
+
+    if( in == 0x0 ){
+      throw std::runtime_error("upsample(): illegal input provided.");
+    }
+
+    if( in->get_number_of_dimensions() < D ){
+      throw std::runtime_error( "upsample(): the number of array dimensions should be at least D");
+    }
+
+    hoNDArray<T> result = *in;
+    for (int i = D-1; i >= 0; i--){
+        result = upsample_spline_along_dimension<T>(result,i,scale);
+    }
+    return result;
+
+  }
+
+
+  // Linear interpolation upsampling
+  template<class T, unsigned int D> hoNDArray<T>
+  upsample_nearest( const  hoNDArray<T> _in )
+  {
+    // A few sanity checks
+
+    if( _in.get_number_of_dimensions() < D ){
+      throw std::runtime_error( "upsample(): the number of array dimensions should be at least D");
+    }
+
+    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *_in.get_dimensions() );
     typename uint64d<D>::Type matrix_size_out = matrix_size_in << 1;
 
     for( size_t d=0; d<D; d++ ){
       if( matrix_size_in[d] == 1 )
 	matrix_size_out[d] = 1;
     }
-  
+
     size_t num_elements = prod(matrix_size_out);
     size_t num_batches = 1;
 
-    for( size_t d=D; d<_in->get_number_of_dimensions(); d++ ){
-      num_batches *= _in->get_size(d);
+    for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
+      num_batches *= _in.get_size(d);
     }
-  
+
     std::vector<size_t> dims = to_std_vector(matrix_size_out);
-    for( size_t d=D; d<_in->get_number_of_dimensions(); d++ ){
-      dims.push_back(_in->get_size(d));
+    for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
+      dims.push_back(_in.get_size(d));
     }
 
-    const REAL *in = _in->get_data_ptr();
+    const T *in = _in.get_data_ptr();
 
-    boost::shared_ptr< hoNDArray<REAL> > _out( new hoNDArray<REAL>(&dims) );
-    REAL *out = _out->get_data_ptr();
-    
+    hoNDArray<T> _out(&dims);
+    T *out = _out.get_data_ptr();
+
     typedef vector_td<size_t,D> uint64d;
 
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
     for( long long idx=0; idx < num_elements*num_batches; idx++ ){
-      
-      REAL res = REAL(0);
 
-      const size_t num_neighbors = 1 << D;
       const size_t frame_idx = idx/num_elements;
       const uint64d co_out = idx_to_co<D>( idx-frame_idx*num_elements, matrix_size_out );
+      uint64d co_in = co_out/uint64_t(2);
 
-      // We will only proceed if all neighbours exist (this adds a zero-boundary to the upsampled image/vector field)
-      //
-    
-      if( !is_border_pixel<REAL,D>(co_out, matrix_size_out) ){
-      
-	for( size_t i=0; i<num_neighbors; i++ ){
-	
-	  // Determine coordinate of neighbor in input
-	  //
-
-	  const uint64d twos(2);
-	  const uint64d stride = idx_to_co<D>( i, twos );
-
-	  if( weak_greater_equal( stride, matrix_size_out ) ) continue; // To allow array dimensions of 1
-
-	  // Be careful about dimensions of size 1
-	  uint64d ones(1);
-	  for( size_t d=0; d<D; d++ ){
-	    if( matrix_size_out[d] == 1 )
-	      ones[d] = 0;
-	  }
-	  uint64d co_in = ((co_out-ones)>>1)+stride;
-	
-	  // Read corresponding pixel value
-	  //
-	
-	  const size_t in_idx = co_to_idx<D>(co_in, matrix_size_in)+frame_idx*prod(matrix_size_in);
-	  REAL value = in[in_idx];
-	
-	  // Determine weight
-	  //
-	
-	  REAL weight = REAL(1);
-	
-	  for( size_t dim=0; dim<D; dim++ ){	  
-	    if( matrix_size_in[dim] > 1 ){
-	      if( stride.vec[dim] == (co_out.vec[dim]%2) ) {
-		weight *= REAL(0.25);
-	      }
-	      else{
-		weight *= REAL(0.75);
-	      }
-	    }
-	  }
-	
-	  // Accumulate result
-	  //
-	
-	  res += weight*value;
+      const size_t in_idx = co_to_idx<D>(co_in, matrix_size_in)+frame_idx*prod(matrix_size_in);
+      out[idx] = in[in_idx];
 	}
-      }
-      out[idx] = res;
-    }
-    
+
+
+
     return _out;
   }
-
 }

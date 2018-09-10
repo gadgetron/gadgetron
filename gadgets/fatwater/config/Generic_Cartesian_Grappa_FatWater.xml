@@ -216,17 +216,17 @@
         <name>FatWater</name>
         <dll>gadgetron_fatwater</dll>
         <classname>FatWaterGadget</classname>
-        <property><name>range_frequency_offset</name><value>[-500,500]</value></property>
         <property><name>number_of_frequency_offsets</name><value>200</value></property>
-        <property><name>range_r2star</name><value>[5,500]</value></property>
+        <property><name>range_r2star</name><value>[5,144]</value></property>
         <property><name>number_of_r2stars</name><value>5</value></property>
-        <property><name>number_of_r2stars_fine</name><value>200</value></property>
-        <property><name>graph_cut_iterations</name><value>40</value></property>
+        <property><name>number_of_r2stars_fine</name><value>144</value></property>
+        <property><name>graph_cut_iterations</name><value>100</value></property>
         <property><name>do_gradient_descent</name><value>true</value></property>
-        <property><name>regularization_lambda</name><value>0.02</value></property>
+        <property><name>regularization_lambda</name><value>0.1</value></property>
         <property><name>regularization_offset</name><value>0.01</value></property>
         <property><name>save_field_map</name><value>true</value></property>
         <property><name>save_r2star_map</name><value>true</value></property>
+        <property><name>downsample_data</name><value>1</value></property>
         <property><name>sample_time_us</name><value>0</value></property>
     </gadget>
 

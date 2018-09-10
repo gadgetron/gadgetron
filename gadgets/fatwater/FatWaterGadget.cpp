@@ -44,7 +44,9 @@ namespace Gadgetron {
         }
 
 
-        config.frequency_range = {range_frequency_offset.value()[0],range_frequency_offset.value()[1]};
+//        config.frequency_range = {range_frequency_offset.value()[0],range_frequency_offset.value()[1]};
+        float omega = 1/(this->echoTimes_[1]-this->echoTimes_[0]);
+        config.frequency_range = {-omega,omega};
         config.lambda = regularization_lambda;
         config.lambda_extra = regularization_offset;
         config.number_of_frequency_samples = number_of_frequency_offsets;
@@ -52,6 +54,7 @@ namespace Gadgetron {
         config.number_of_r2_samples = number_of_r2stars;
         config.number_of_r2_fine_samples = number_of_r2stars_fine;
         config.do_gradient_descent = do_gradient_descent;
+        config.downsamples = downsample_data;
 
 
         return GADGET_OK;
@@ -96,6 +99,15 @@ namespace Gadgetron {
                                                {0.08490f - 0.0244if,  0.5260}
                                        }};
 
+//        FatWater::ChemicalSpecies fat = {"fat",
+//                                         {
+//                                                 {0.048, 5.3-4.7},
+//                                                 {0.039           , 4.31-4.7},
+//                                                 {0.004, 2.76-4.7},
+//                                                 {0.128, 2.1-4.7},
+//                                                 {0.693, 1.3-4.7},
+//                                                 {0.087, 0.9-4.7}
+//                                         }};
         parameters.species = {water, fat};
 
 
@@ -107,7 +119,6 @@ namespace Gadgetron {
         auto& r2star_map = output.r2star_map;
 
         if (sample_time_us > 0){
-
             correct_frequency_shift(wfimages,parameters);
         }
 
@@ -125,8 +136,6 @@ namespace Gadgetron {
             m1->release();
             return GADGET_FAIL;
         }
-
-
 
 
         GadgetContainerMessage<IsmrmrdImageArray> *m2 = FatWaterImageArray(parameters, std::move(wfimages),
