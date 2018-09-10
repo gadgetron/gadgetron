@@ -334,7 +334,12 @@ find_package(HDF5 1.8 COMPONENTS C CXX HL REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 find_package(ISMRMRD REQUIRED)
 link_directories(${ISMRMRD_LIBRARY_DIRS})
-find_package(MKL)
+
+option(USE_MKL OFF)
+if (USE_MKL)
+  find_package(MKL)
+endif()
+
 if (MKL_FOUND)
   if ( MKL_VERSION_STRING VERSION_LESS 11.2.0 )
     message(FATAL_ERROR "Gadgetron requires Intel MKL version >= 11.2.0")
@@ -357,8 +362,6 @@ if (LAPACK_FOUND)
   add_definitions(-DUSE_LAPACK)
 endif ()
 
-find_package(Eigen3)
-find_package(Ceres)
 
 option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 

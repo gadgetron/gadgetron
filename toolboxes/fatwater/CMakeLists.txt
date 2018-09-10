@@ -32,7 +32,7 @@ add_library(gadgetron_toolbox_fatwater SHARED
   fatwater_export.h 
   fatwater.h
   fatwater.cpp
-        FatWaterFitting.cpp FatWaterFitting.h graph_cut.cpp ImageGraph.cpp correct_frequency_shift.h correct_frequency_shift.cpp)
+        graph_cut.cpp ImageGraph.cpp correct_frequency_shift.h correct_frequency_shift.cpp bounded_field_map.cpp)
 
 set_target_properties(gadgetron_toolbox_fatwater PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

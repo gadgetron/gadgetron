@@ -8,7 +8,6 @@
 #include "hoArmadillo.h"
 
 #include <boost/config.hpp>
-#include <boost/graph/push_relabel_max_flow.hpp>
 
 #include <boost/graph/graph_utility.hpp>
 #include <boost/graph/boykov_kolmogorov_max_flow.hpp>
@@ -28,19 +27,18 @@
 #include <GadgetronTimer.h>
 #include <complex>
 #include <cpu/math/hoNDImage_util.h>
-#include "FatWaterFitting.h"
 
 #ifdef max
-    #undef max
+#undef max
 #endif // max
 #ifdef min
-    #undef min
+#undef min
 #endif // min
 
 #include <algorithm>
+#include "bounded_field_map.h"
 
 using namespace boost;
-
 
 
 namespace Gadgetron {
@@ -50,7 +48,7 @@ namespace Gadgetron {
         static std::mt19937 rng_state(4242);
 
 
-        hoNDArray<std::vector<uint16_t>> find_local_minima(const hoNDArray<float> &residuals, float threshold = 0.06f) {
+        hoNDArray<std::vector<uint16_t>> find_local_minima(const hoNDArray<float> &residuals, float threshold = 0.00f) {
 
 
             auto threshold_signal = std::move(*sum(&residuals, 0));
@@ -65,24 +63,26 @@ namespace Gadgetron {
             const auto X = residuals.get_size(1);
             hoNDArray<std::vector<uint16_t>> result(X, Y);
             const auto steps = residuals.get_size(0);
+            size_t count = 0;
             for (size_t k2 = 0; k2 < Y; k2++) {
                 for (size_t k1 = 0; k1 < X; k1++) {
 
                     std::vector<uint16_t> minima;
-                    if (threshold_signal(k1, k2) > threshold) {
-                        for (size_t k0 = 1; k0 < steps - 1; k0++) {
-                            if ((residuals(k0, k1, k2) < residuals(k0 - 1, k1, k2)) &&
-                                (residuals(k0 + 1, k1, k2) >= residuals(k0, k1, k2)) &&
-                                residuals(k0, k1, k2) <
-                                min_residuals(k1, k2) + 0.3 * (max_residuals(k1, k2) - min_residuals(k1, k2))) {
-                                minima.push_back(k0);
-                            }
-
+//                    if (threshold_signal(k1, k2) > threshold) {
+                    for (size_t k0 = 1; k0 < steps - 1; k0++) {
+                        if ((residuals(k0, k1, k2) < residuals(k0 - 1, k1, k2)) &&
+                            (residuals(k0 + 1, k1, k2) >= residuals(k0, k1, k2))) {
+                            minima.push_back(k0);
                         }
+
                     }
+//                    }
+                    if (minima.size() < 2) count++;
                     result(k1, k2) = std::move(minima);
                 }
             }
+
+            GDEBUG("COUNT DRACULA %i\n", count);
             return result;
         }
 
@@ -124,7 +124,6 @@ namespace Gadgetron {
                            [&](uint16_t i) { return field_map_strengths[std::min(i, max_val)]; });
             return field_map;
         }
-
 
 
         hoNDArray<uint16_t> create_field_map_proposal1(const hoNDArray<uint16_t> &field_map_index,
@@ -239,10 +238,10 @@ namespace Gadgetron {
 
         arma::Mat<std::complex<float>>
         calculate_psi_matrix(const std::vector<float> &echoTimes,
-                             const arma::Mat<std::complex<float>> &phiMatrix, float fm, float r2star) {
+                             const arma::Mat<std::complex<float>> &phiMatrix,  float r2star) {
             arma::Mat<std::complex<float>> psiMatrix(phiMatrix.n_rows, phiMatrix.n_cols);
             for (int k1 = 0; k1 < phiMatrix.n_rows; k1++) {
-                auto curModulation = exp(-r2star * echoTimes[k1] + 2if * PI * echoTimes[k1] * fm);
+                auto curModulation = exp(-r2star * (echoTimes[k1] - echoTimes[0]));
                 for (int k2 = 0; k2 < phiMatrix.n_cols; k2++) {
                     psiMatrix(k1, k2) = phiMatrix(k1, k2) * curModulation;
                 }
@@ -252,10 +251,50 @@ namespace Gadgetron {
             return psiMatrix;
         }
 
+
+        hoNDArray<arma::Mat<std::complex<float>>>
+        calculate_projection_matrices(const std::vector<float> &echo_times,
+                                      const arma::Mat<std::complex<float>> &phiMatrix,
+                                      const std::vector<float> &field_map_strengths,
+                                      const std::vector<float> &r2stars) {
+
+            auto num_fm = field_map_strengths.size();
+            auto num_r2star = r2stars.size();
+            hoNDArray<arma::Mat<std::complex<float>>> Ps(num_fm, num_r2star);
+            size_t nte = echo_times.size();
+
+#ifdef WIN32
+#pragma omp parallel for
+#else
+#pragma omp parallel for
+#endif
+            for (int k3 = 0; k3 < num_fm; k3++) {
+
+                float fm = field_map_strengths[k3];
+                arma::Col<std::complex<float>> b_shifts(nte);
+                for (int kt = 0; kt < nte; kt++)
+                    b_shifts[kt] = std::exp(2if * PI * (echo_times[kt] - echo_times[0]) * fm);
+                for (int k4 = 0; k4 < num_r2star; k4++) {
+                    float r2star = r2stars[k4];
+
+                    arma::Mat<std::complex<float>> psiMatrix = calculate_psi_matrix(echo_times, phiMatrix,
+                                                                                    r2star);
+                    Ps(k3, k4) = arma::diagmat(b_shifts) * (arma::eye<arma::Mat<std::complex<float>>>(nte, nte) -
+                                                            psiMatrix * arma::pinv(psiMatrix)) *
+                                 arma::diagmat(arma::conj(b_shifts));
+
+                }
+            }
+            return Ps;
+        }
+
+
+
+
         hoNDArray<float>
-        calculate_r2star_map(const hoNDArray<std::complex<float> > &data, const hoNDArray<uint16_t> &fm_index,
-                             const std::vector<float> &r2star_values, const std::vector<float> &field_map_strenghts,
-                             const arma::Mat<std::complex<float>> &phiMatrix, std::vector<float> &echoTimes) {
+        calculate_r2star_map(const hoNDArray<std::complex<float> > &data, const hoNDArray<float> &field_map,
+                             const std::vector<float> &r2star_values,
+                             const arma::Mat<std::complex<float>> &phiMatrix, const std::vector<float> &echoTimes) {
             using cMat = arma::Mat<std::complex<float>>;
             uint16_t X = data.get_size(0);
             uint16_t Y = data.get_size(1);
@@ -264,44 +303,52 @@ namespace Gadgetron {
             uint16_t N = data.get_size(4);
             uint16_t S = data.get_size(5);
             uint16_t LOC = data.get_size(6);
-            std::unordered_map<uint16_t, std::vector<arma::Mat<std::complex<float>>>> Ps;
             auto nte = phiMatrix.n_rows;
-            for (auto fm : fm_index) {
-                if (!Ps.count(fm)) {
-                    std::vector<arma::Mat<std::complex<float>>> projection_matrices(r2star_values.size());
-                    std::transform(r2star_values.begin(), r2star_values.end(), projection_matrices.begin(),
-                                   [&](float r2star) {
-                                       auto psiMatrix = calculate_psi_matrix(echoTimes, phiMatrix,
-                                                                             field_map_strenghts[fm],
-                                                                             r2star);
-                                       arma::Mat<std::complex<float>> result =
-                                               arma::eye<arma::Mat<std::complex<float>>>(nte, nte) - psiMatrix *
-                                                                                                     arma::solve(
-                                                                                                             psiMatrix.t() *
-                                                                                                             psiMatrix,
-                                                                                                             psiMatrix.t());
-                                       return result;
-                                   });
-                    Ps.emplace(fm, std::move(projection_matrices));
+
+
+            auto data_corrected = data;
+
+            for (int kS = 0; kS < S; kS++) {
+                for (int kN = 0; kN < N; kN++) {
+                    for (int kcha = 0; kcha < CHA; kcha++) {
+                        for (int ky = 0; ky < Y; ky++) {
+                            for (int kx = 0; kx < X; kx++) {
+                                data_corrected(kx, ky, 0, kcha, kN, kS) *= std::exp(
+                                        -2if * PI * field_map(kx, ky) * echoTimes[kS]);
+                            }
+                        }
+                    }
                 }
             }
 
-            hoNDArray<float> r2star_map(fm_index.get_dimensions());
 
+            std::vector<arma::Mat<std::complex<float>>> Ps;
+            for (auto r2star : r2star_values) {
+
+                auto psiMatrix = calculate_psi_matrix(echoTimes, phiMatrix,
+                                                      r2star);
+                Ps.emplace_back(
+                        arma::eye<arma::Mat<std::complex<float>>>(nte, nte) - psiMatrix * arma::pinv(psiMatrix)
+                );
+
+            }
+
+
+            hoNDArray<float> r2star_map(field_map.get_dimensions());
 #ifdef WIN32
-    #pragma omp parallel for 
+#pragma omp parallel for
 #else
-    #pragma omp parallel for collapse(2)
+#pragma omp parallel for collapse(2)
 #endif
-            for (int k1 = 0; k1 < X; k1++) {
-                for (int k2 = 0; k2 < Y; k2++) {
+            for (int k2 = 0; k2 < Y; k2++) {
+                for (int k1 = 0; k1 < X; k1++) {
                     // Get current signal
                     std::vector<cMat> signals(CHA, cMat(S, N));
                     for (int cha = 0; cha < CHA; cha++) {
                         auto &tempSignal = signals[cha];
                         for (int k4 = 0; k4 < N; k4++) {
                             for (int k5 = 0; k5 < S; k5++) {
-                                tempSignal(k5, k4) = data(k1, k2, 0, cha, k4, k5, 0);
+                                tempSignal(k5, k4) = data_corrected(k1, k2, 0, cha, k4, k5, 0);
 
                             }
                         }
@@ -309,7 +356,7 @@ namespace Gadgetron {
 
 
                     float minResidual = std::numeric_limits<float>::max();
-                    auto &P = Ps[fm_index(k1, k2)];
+                    std::vector<float> field_map_strengths = {field_map(k1, k2)};
 
 
                     for (int kr2 = 0; kr2 < r2star_values.size(); kr2++) {
@@ -318,7 +365,7 @@ namespace Gadgetron {
 
                         for (int cha = 0; cha < CHA; cha++) {
                             // Apply projector
-                            arma::Mat<std::complex<float>> projected = P[kr2] * signals[cha];
+                            arma::Mat<std::complex<float>> projected = Ps[kr2] * signals[cha];
                             curResidual += std::accumulate(projected.begin(), projected.end(), 0.0f,
                                                            [](auto v1, auto v2) {
                                                                return v1 +
@@ -340,38 +387,6 @@ namespace Gadgetron {
         }
 
 
-        hoNDArray<arma::Mat<std::complex<float>>>
-        calculate_projection_matrices(const Parameters &parameters,
-                                      const arma::Mat<std::complex<float>> &phiMatrix,
-                                      const std::vector<float> &field_map_strengths,
-                                      const std::vector<float> &r2stars) {
-
-            auto num_fm = field_map_strengths.size();
-            auto num_r2star = r2stars.size();
-            hoNDArray<arma::Mat<std::complex<float>>> Ps(num_fm, num_r2star);
-            size_t nte = parameters.echo_times_s.size();
-
-#ifdef WIN32
-#pragma omp parallel for 
-#else
-#pragma omp parallel for collapse(2)
-#endif
-            for (int k3 = 0; k3 < num_fm; k3++) {
-                for (int k4 = 0; k4 < num_r2star; k4++) {
-                    float fm = field_map_strengths[k3];
-                    float r2star = r2stars[k4];
-
-                    arma::Mat<std::complex<float>> psiMatrix = calculate_psi_matrix(parameters.echo_times_s, phiMatrix,
-                                                                                    fm,
-                                                                                    r2star);
-                    Ps(k3, k4) = arma::eye<arma::Mat<std::complex<float>>>(nte, nte) -
-                                 psiMatrix * arma::pinv(psiMatrix);
-
-                }
-            }
-            return Ps;
-        }
-
         std::tuple<hoNDArray<float>, hoNDArray<uint16_t>>
         calculate_residual_and_r2star(const hoNDArray<std::complex<float>> &data, const Parameters &parameters,
                                       const arma::Mat<std::complex<float>> &phi,
@@ -387,7 +402,8 @@ namespace Gadgetron {
             uint16_t LOC = data.get_size(6);
 
 
-            auto projection_matrices = calculate_projection_matrices(parameters, phi, field_strengths, r2star_values);
+            auto projection_matrices = calculate_projection_matrices(parameters.echo_times_s, phi, field_strengths,
+                                                                     r2star_values);
 
             auto result = std::make_tuple(hoNDArray<float>(field_strengths.size(), X, Y, Z),
                                           hoNDArray<uint16_t>(X, Y, Z, field_strengths.size()));
@@ -461,7 +477,6 @@ namespace Gadgetron {
             hoNDArray<std::complex<float> > out(X, Y, Z, CHA, N, parameters.species.size(),
                                                 LOC); // S dimension gets replaced by water/fat stuff
 
-
 #ifdef WIN32
 #pragma omp parallel for 
 #else
@@ -486,9 +501,14 @@ namespace Gadgetron {
                         auto r2star = r2star_map(kx, ky);
 
                         arma::Mat<std::complex<float>> psiMatrix = calculate_psi_matrix(parameters.echo_times_s,
-                                                                                        phiMatrix, fm,
-                                                                                        r2star);
+                                                                                        phiMatrix,r2star);
 
+                        auto nte = parameters.echo_times_s.size();
+                        arma::Col<std::complex<float>> b_shifts(nte);
+                        for (int kt = 0; kt < nte; kt++)
+                            b_shifts[kt] = std::exp(
+                                    2if * PI * (parameters.echo_times_s[kt] - parameters.echo_times_s[0]) * fm);
+                        psiMatrix = arma::diagmat(b_shifts) * psiMatrix;
                         // Solve for water and fat
 
                         for (int cha = 0; cha < CHA; cha++) {
@@ -557,6 +577,12 @@ namespace Gadgetron {
             return average_fat_freq;
         }
 
+        std::tuple<hoNDArray<float>, hoNDArray<float>>
+        calculate_field_map(const hoNDArray<std::complex<float>> &data, const Parameters &parameters,
+                            const Config &config,
+                            const std::complex<float> &average_fat_freq, const arma::Mat<std::complex<float>> &phi,
+                            const std::vector<float> &field_map_strengths);
+
         FatWater::Output
         fatwater_separation(const hoNDArray<std::complex<float> > &data, Parameters parameters,
                             Config config) {
@@ -586,12 +612,41 @@ namespace Gadgetron {
 
             std::vector<float> field_map_strengths = linspace(config.frequency_range,
                                                               config.number_of_frequency_samples);
-            std::vector<float> r2stars = linspace(config.r2_range, config.number_of_r2_samples);
+
+
+            hoNDArray<float> field_map, r2star_map;
+            std::tie(field_map, r2star_map) = calculate_field_map(data, parameters, config, average_fat_freq, phi,
+                                                                  field_map_strengths);
+
+
+            auto species = separate_species(data, phi, r2star_map, field_map, parameters);
+
+            if (config.do_gradient_descent) {
+                bounded_field_map(field_map, data, parameters, (field_map_strengths[1] - field_map_strengths[0])*2);
+                species = separate_species(data, phi, r2star_map, field_map, parameters);
+            }
+
+            return Output{std::move(species), std::move(field_map), std::move(r2star_map)};
+        }
+
+        std::tuple<hoNDArray<float>, hoNDArray<float>>
+        calculate_field_map(const hoNDArray<std::complex<float>> &data, const Parameters &parameters,
+                            const Config &config,
+                            const std::complex<float> &average_fat_freq, const arma::Mat<std::complex<float>> &phi,
+                            const std::vector<float> &field_map_strengths) {
+
+
             std::vector<float> r2stars_fine = linspace(config.r2_range, config.number_of_r2_fine_samples);
+            std::vector<float> r2stars = linspace(config.r2_range, config.number_of_r2_samples);
+
+            auto data_scaled = data;
+            for (int downsamples = 0; downsamples < config.downsamples; downsamples++)
+                data_scaled = downsample<std::complex<float>, 2>(&data_scaled);
 
             hoNDArray<float> residual;
             hoNDArray<uint16_t> r2starIndex;
-            std::tie(residual, r2starIndex) = calculate_residual_and_r2star(data, parameters, phi, field_map_strengths,
+            std::tie(residual, r2starIndex) = calculate_residual_and_r2star(data_scaled, parameters, phi,
+                                                                            field_map_strengths,
                                                                             r2stars);
 
             auto dF = field_map_strengths[1] - field_map_strengths[0];
@@ -603,28 +658,23 @@ namespace Gadgetron {
             lambda_map *= config.lambda * dF * dF;
 
             hoNDArray<uint16_t> fmIndex = solve_MRF(config, field_map_strengths, residual, local_min_indices,
-                                                    lambda_map, std::abs(average_fat_freq), dF,
+                                                    lambda_map, abs(average_fat_freq), dF,
                                                     parameters.echo_times_s[1] - parameters.echo_times_s[0]);
 
 
-            auto r2star_map = calculate_r2star_map(data, fmIndex, r2stars_fine, field_map_strengths, phi,
-                                                   parameters.echo_times_s);
-
             hoNDArray<float> field_map = create_field_map(fmIndex, field_map_strengths);
 
-
-            auto species = separate_species(data, phi, r2star_map, field_map, parameters);
-
-            if (config.do_gradient_descent) {
-                sqrt_inplace(&lambda_map);
-                lambda_map /= dF;
-
-                fat_water_fitting(field_map, r2star_map, species, data, lambda_map, parameters);
-
-                species = separate_species(data, phi, r2star_map, field_map, parameters);
+            if (config.downsamples) {
+                field_map = upsample_spline<float, 2>(&field_map,std::pow(2,config.downsamples));
             }
+//            fmIndex = upsample<uint16_t,2>(&fmIndex);
 
-            return Output{std::move(species), std::move(field_map), std::move(r2star_map)};
+            auto r2star_map = calculate_r2star_map(data, field_map, r2stars_fine, phi,
+                                                   parameters.echo_times_s);
+
+
+//            r2star_map = upsample<float,2>(&r2star_map);
+            return std::make_tuple(std::move(field_map), std::move(r2star_map));
         }
 
 
