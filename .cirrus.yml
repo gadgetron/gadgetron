@@ -1,0 +1,76 @@
+build_task:
+  container:
+    image: gadgetron/ubuntu_1604_base
+    cpu: 8
+    memory: 16
+
+
+  mtime_script:
+    - apt-get update
+    - apt-get install ruby-full -y
+    - gem install mtime_cache
+
+
+  mdkir_script:
+    - mkdir /opt/code
+  ismrmrd_cache:
+    folder: /opt/code/ismrmrd
+    populate_script:
+      - cd /opt/code
+      - git clone https://github.com/ismrmrd/ismrmrd.git
+      - cd ismrmrd
+      - mkdir build
+      - cd build
+      - cmake ..
+      - make -j
+    fingerprint_script:
+      - git ls-remote https://github.com/ismrmrd/ismrmrd.git  | grep HEAD | awk '{ print $1}'
+
+  install_ismrmrmd_script:
+    - cd /opt/code/ismrmrd/build
+    - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
+    - make install
+
+  siemens_to_ismrmrd_cache:
+    folder: /opt/code/siemens_to_ismrmrd
+    populate_script:
+    - cd /opt/code
+    - git clone https://github.com/ismrmrd/siemens_to_ismrmrd.git
+    - cd siemens_to_ismrmrd
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make -j
+    fingerprint_script:
+      - git ls-remote https://github.com/ismrmrd/siemens_to_ismrmrd.git  | grep HEAD | awk '{ print $1}'
+
+
+  ismrmrd_python_script:
+    - pip3 install  git+https://github.com/ismrmrd/ismrmrd-python.git
+    - pip3 install  git+https://github.com/ismrmrd/ismrmrd-python-tools.git
+
+  install_siemens_to_ismrmrd_script:
+  - cd /opt/code/siemens_to_ismrmrd/build
+  - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
+  - make install
+
+
+
+  make_build_cache:
+    folder: build
+    fingerprint_script:
+      - git branch | grep \* | cut -d ' ' -f2
+    populate_script:
+    - mkdir build
+
+  make_script:
+    - cd build
+    - cmake .. -DBUILD_WITH_PYTHON3=ON
+    - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
+    - make -j
+    - make install
+    - cd /usr/local/share/gadgetron/config
+    - cp gadgetron.xml.example gadgetron.xml
+
+
+
