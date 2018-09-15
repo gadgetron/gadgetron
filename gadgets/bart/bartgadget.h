@@ -107,11 +107,11 @@ namespace Gadgetron {
 	  
      };
 
-     bool call_BART(std::string cmdline);
+     bool call_BART(const std::string &cmdline);
 
      // Read BART files     
      template <typename int_t>
-     std::vector<int_t> read_BART_hdr(fs::path filename)
+     std::vector<int_t> read_BART_hdr(fs::path &filename)
      {
 	  std::vector<int_t> DIMS;
 	  
@@ -143,7 +143,7 @@ namespace Gadgetron {
 
      template <typename int_t>
      std::pair<std::vector<int_t>, std::vector<std::complex<float>>>
-     read_BART_files(fs::path filename)
+     read_BART_files(fs::path &filename)
      {
 	  // Load the header file
 	  auto DIMS = read_BART_hdr<int_t>(filename);
@@ -171,8 +171,8 @@ namespace Gadgetron {
      }
      
      // For convenience
-     std::vector<size_t> read_BART_hdr(fs::path filename);
-     std::pair< std::vector<size_t>, std::vector<std::complex<float> > > read_BART_files(fs::path filename);
+     std::vector<size_t> read_BART_hdr(boost::filesystem::path &filename);
+     std::pair< std::vector<size_t>, std::vector<std::complex<float> > > read_BART_files(fs::path &filename);
 
      // ------------------------------------------------------------------------
      // Write BART files

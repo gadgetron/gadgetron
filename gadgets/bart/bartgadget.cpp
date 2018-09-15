@@ -24,7 +24,7 @@
 #include <functional>
 #include <mutex>
 
-#include <errno.h>
+#include <cerrno>
 #ifdef _WIN32
     #include <direct.h>
     #define getcwd _getcwd
@@ -39,13 +39,13 @@ enum bart_debug_levels { BART_DP_ERROR, BART_DP_WARN, BART_DP_INFO, BART_DP_DEBU
 
 // =============================================================================
 
-std::vector<size_t> Gadgetron::read_BART_hdr(fs::path filename)
+std::vector<size_t> Gadgetron::read_BART_hdr(fs::path &filename)
 {
      return read_BART_hdr<size_t>(filename);
 }
 
 std::pair<std::vector<size_t>, std::vector<std::complex<float>>>
-Gadgetron::read_BART_files(fs::path filename)
+Gadgetron::read_BART_files(fs::path &filename)
 {
      return read_BART_files<size_t>(filename);
 }
@@ -55,7 +55,6 @@ Gadgetron::read_BART_files(fs::path filename)
 namespace Gadgetron {
 
      BartGadget::BartGadget() :
-	  BaseClass(),
 	  dp{}
      {}
 
@@ -234,11 +233,11 @@ namespace Gadgetron {
 		    }
 
 		    auto calib = *p_imaging.calibrationMode;
-		    auto separate = (calib.compare("separate") == 0);
-		    auto embedded = (calib.compare("embedded") == 0);
-		    auto external = (calib.compare("external") == 0);
-		    auto interleaved = (calib.compare("interleaved") == 0);
-		    auto other = (calib.compare("other") == 0);
+            auto separate = (calib == std::string("separate"));
+            auto embedded = (calib == std::string("embedded"));
+            auto external = (calib == std::string("external"));
+            auto interleaved = (calib == std::string("interleaved"));
+            auto other = (calib == std::string("other"));
 
 		    if (p_imaging.accelerationFactor.kspace_encoding_step_1 > 1 || p_imaging.accelerationFactor.kspace_encoding_step_2 > 1)
 		    {
@@ -426,14 +425,14 @@ namespace Gadgetron {
 	       GDEBUG("Starting processing user script\n");
 
 	       std::string Commands_Line;
-	       std::fstream inputFile(command_script_.string());
-	       if (inputFile)
+           std::ifstream inputFile(command_script_.string());
+           if (inputFile.is_open())
 	       {
 		    std::string Line;
 		    while (getline(inputFile, Line))
 		    {
 			 // crop comment
-			 Line = Line.substr(0, Line.find_first_of("#"));
+             Line = Line.substr(0, Line.find_first_of('#'));
 
 			 internal::trim(Line);
 			 if (Line.empty() || Line.compare(0, 4, "bart") != 0)
@@ -474,7 +473,8 @@ namespace Gadgetron {
 		    load_mem_cfl(outputFile.c_str(), header.size(), header.data()); 
 	       }
 	       else {
-		    header = read_BART_hdr<long>(generated_files_folder / outputFile);
+            auto tmp(generated_files_folder / outputFile);
+            header = read_BART_hdr<long>(tmp);
 	       }
 	       
 	       std::ostringstream cmd4;
@@ -490,7 +490,7 @@ namespace Gadgetron {
 	       std::vector<long> DIMS_OUT(16);
 	       auto data = reinterpret_cast<std::complex<float>*>(load_mem_cfl(outputFileReshape.c_str(), DIMS_OUT.size(), DIMS_OUT.data()));
 	       
-	       if (data == 0 || data == nullptr) {
+           if (data == nullptr) {
 		    GERROR("Failed to retrieve data from in-memory CFL file!");
 		    return GADGET_FAIL;
 	       }
@@ -551,7 +551,7 @@ namespace Gadgetron {
 	  return GADGET_OK;
      }
 
-     bool call_BART(std::string cmdline)
+     bool call_BART(const std::string &cmdline)
      {
 	  GINFO_STREAM("Executing BART command: " << cmdline);
 	  enum { MAX_ARGS = 256 };
@@ -566,7 +566,7 @@ namespace Gadgetron {
 	  while (p2 && argc < MAX_ARGS-1)
 	  {
 	       argv[argc++] = p2;
-	       p2 = strtok(0, " ");
+           p2 = strtok(nullptr, " ");
 	  }
 	  argv[argc] = nullptr;
 	  
@@ -591,10 +591,10 @@ namespace Gadgetron {
 	       }
 	       return true;
 	  }
-	  else {
+     // else {
 	       GERROR_STREAM("BART command failed with return code: " << ret);
 	       return false;
-	  }
+     // }
      }
 
      GADGET_FACTORY_DECLARE(BartGadget)
