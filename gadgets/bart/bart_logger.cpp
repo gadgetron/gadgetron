@@ -6,7 +6,7 @@ enum debug_levels { DP_ERROR, DP_WARN, DP_INFO, DP_DEBUG1, DP_DEBUG2, DP_DEBUG3,
 
 extern "C"
 void vendor_log(int level,
-		const char* func_name,
+        const char* /*func_name*/,
 		const char* file,
 		unsigned int line,
 		const char* message)
