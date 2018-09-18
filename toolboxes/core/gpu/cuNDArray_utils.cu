@@ -583,15 +583,15 @@ namespace Gadgetron {
   // - based on Briggs et al, A Multigrid Tutorial 2nd edition, pp. 34-35
   // 
   
-  template<class T, unsigned int D> boost::shared_ptr< cuNDArray<T> > upsample( cuNDArray<T>* in )
+  template<class T, unsigned int D>  cuNDArray<T> upsample( cuNDArray<T>* in )
 	{
     if( in == 0x0 )
       throw std::runtime_error("upsample: illegal input pointer");
 
     std::vector<size_t> dims_out = *in->get_dimensions();
     for( unsigned int i=0; i<D; i++ ) dims_out[i] <<= 1;
-    boost::shared_ptr< cuNDArray<T> > out(new cuNDArray<T>(&dims_out));
-    upsample<T,D>( in, out.get() );
+    cuNDArray<T> out(&dims_out);
+    upsample<T,D>( in, &out );
     return out;
 	}
 
@@ -686,15 +686,15 @@ namespace Gadgetron {
     }
   }
 
-  template<class T, unsigned int D> boost::shared_ptr< cuNDArray<T> > downsample( cuNDArray<T>* in )
+  template<class T, unsigned int D>  cuNDArray<T> downsample( cuNDArray<T>* in )
   {
     if( in == 0x0 )
       throw std::runtime_error("downsample: illegal input pointer");
     
     std::vector<size_t> dims_out = *in->get_dimensions();
     for( unsigned int i=0; i<D; i++ ) dims_out[i] >>= 1;
-    boost::shared_ptr< cuNDArray<T> > out(new cuNDArray<T>(&dims_out));
-    downsample<T,D>( in, out.get() );
+    cuNDArray<T> out(&dims_out);
+    downsample<T,D>( in, &out );
     return out;
   }
 
@@ -874,25 +874,25 @@ namespace Gadgetron {
 	template EXPORTGPUCORE void fill_border<double_complext,4>(double, cuNDArray<double_complext>*,double_complext);
 
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,1>(cuNDArray<float>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,2>(cuNDArray<float>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,3>(cuNDArray<float>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,4>(cuNDArray<float>*);
+  template EXPORTGPUCORE  cuNDArray<float > upsample<float,1>(cuNDArray<float>*);
+  template EXPORTGPUCORE  cuNDArray<float > upsample<float,2>(cuNDArray<float>*);
+  template EXPORTGPUCORE  cuNDArray<float > upsample<float,3>(cuNDArray<float>*);
+  template EXPORTGPUCORE  cuNDArray<float > upsample<float,4>(cuNDArray<float>*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > upsample<float_complext,1>(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > upsample<float_complext,2>(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > upsample<float_complext,3>(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > upsample<float_complext,4>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE  cuNDArray<float_complext > upsample<float_complext,1>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE  cuNDArray<float_complext > upsample<float_complext,2>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE  cuNDArray<float_complext > upsample<float_complext,3>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE  cuNDArray<float_complext > upsample<float_complext,4>(cuNDArray<float_complext>*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > upsample<double,1>(cuNDArray<double>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > upsample<double,2>(cuNDArray<double>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > upsample<double,3>(cuNDArray<double>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > upsample<double,4>(cuNDArray<double>*);
+  template EXPORTGPUCORE  cuNDArray<double > upsample<double,1>(cuNDArray<double>*);
+  template EXPORTGPUCORE  cuNDArray<double > upsample<double,2>(cuNDArray<double>*);
+  template EXPORTGPUCORE  cuNDArray<double > upsample<double,3>(cuNDArray<double>*);
+  template EXPORTGPUCORE  cuNDArray<double > upsample<double,4>(cuNDArray<double>*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > upsample<double_complext,1>(cuNDArray<double_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > upsample<double_complext,2>(cuNDArray<double_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > upsample<double_complext,3>(cuNDArray<double_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > upsample<double_complext,4>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE  cuNDArray<double_complext > upsample<double_complext,1>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE  cuNDArray<double_complext > upsample<double_complext,2>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE  cuNDArray<double_complext > upsample<double_complext,3>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE  cuNDArray<double_complext > upsample<double_complext,4>(cuNDArray<double_complext>*);
 
   template EXPORTGPUCORE void upsample<float,1>(cuNDArray<float>*, cuNDArray<float>*);
   template EXPORTGPUCORE void upsample<float,2>(cuNDArray<float>*, cuNDArray<float>*);
@@ -914,25 +914,25 @@ namespace Gadgetron {
   template EXPORTGPUCORE void upsample<double_complext,3>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
   template EXPORTGPUCORE void upsample<double_complext,4>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > downsample<float,1>(cuNDArray<float>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > downsample<float,2>(cuNDArray<float>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > downsample<float,3>(cuNDArray<float>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > downsample<float,4>(cuNDArray<float>*);
+  template EXPORTGPUCORE  cuNDArray<float > downsample<float,1>(cuNDArray<float>*);
+  template EXPORTGPUCORE  cuNDArray<float > downsample<float,2>(cuNDArray<float>*);
+  template EXPORTGPUCORE  cuNDArray<float > downsample<float,3>(cuNDArray<float>*);
+  template EXPORTGPUCORE  cuNDArray<float > downsample<float,4>(cuNDArray<float>*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > downsample<float_complext,1>(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > downsample<float_complext,2>(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > downsample<float_complext,3>(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > downsample<float_complext,4>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE  cuNDArray<float_complext > downsample<float_complext,1>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE  cuNDArray<float_complext > downsample<float_complext,2>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE  cuNDArray<float_complext > downsample<float_complext,3>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE  cuNDArray<float_complext > downsample<float_complext,4>(cuNDArray<float_complext>*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > downsample<double,1>(cuNDArray<double>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > downsample<double,2>(cuNDArray<double>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > downsample<double,3>(cuNDArray<double>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > downsample<double,4>(cuNDArray<double>*);
+  template EXPORTGPUCORE  cuNDArray<double > downsample<double,1>(cuNDArray<double>*);
+  template EXPORTGPUCORE  cuNDArray<double > downsample<double,2>(cuNDArray<double>*);
+  template EXPORTGPUCORE  cuNDArray<double > downsample<double,3>(cuNDArray<double>*);
+  template EXPORTGPUCORE  cuNDArray<double > downsample<double,4>(cuNDArray<double>*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > downsample<double_complext,1>(cuNDArray<double_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > downsample<double_complext,2>(cuNDArray<double_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > downsample<double_complext,3>(cuNDArray<double_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > downsample<double_complext,4>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE  cuNDArray<double_complext > downsample<double_complext,1>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE  cuNDArray<double_complext > downsample<double_complext,2>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE  cuNDArray<double_complext > downsample<double_complext,3>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE  cuNDArray<double_complext > downsample<double_complext,4>(cuNDArray<double_complext>*);
 
   template EXPORTGPUCORE void downsample<float,1>(cuNDArray<float>*, cuNDArray<float>*);
   template EXPORTGPUCORE void downsample<float,2>(cuNDArray<float>*, cuNDArray<float>*);

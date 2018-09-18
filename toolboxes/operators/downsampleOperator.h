@@ -26,8 +26,8 @@ namespace Gadgetron{
     virtual void mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
     {
       if( accumulate ){
-        boost::shared_ptr<ARRAY_TYPE> tmp = downsample<T,D>(in);
-        *out += *tmp;
+        auto tmp = downsample<T,D>(in);
+        *out += tmp;
       }
       else
         downsample<T,D>(in,out);
@@ -36,8 +36,8 @@ namespace Gadgetron{
     virtual void mult_MH( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
     {
       if( accumulate ){
-        boost::shared_ptr<ARRAY_TYPE> tmp = upsample<T,D>(in);
-        *out += *tmp;
+        auto tmp = upsample<T,D>(in);
+        *out += tmp;
       }
       else
         upsample<T,D>(in,out);

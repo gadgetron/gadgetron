@@ -101,7 +101,7 @@ expand(cuNDArray<T> *data, size_t added_dim_size );
  * @param[in] in Array to upsample
  */
 template<class T, unsigned int D> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<T> > upsample( cuNDArray<T>* in );
+ cuNDArray<T> upsample( cuNDArray<T>* in );
 
 /**
  * @brief Creates an array of 2 times the size, created via linear interpolation
@@ -116,7 +116,7 @@ void upsample( cuNDArray<T> *in, cuNDArray<T> *out );
  * @param[in] in Array to downsample
  */
 template<class T, unsigned int D> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<T> > downsample( cuNDArray<T>* in );
+ cuNDArray<T> downsample( cuNDArray<T>* in );
 
 /**
  * @brief Creates an array of half the size, created via linear interpolation
