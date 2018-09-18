@@ -8,28 +8,28 @@ import time
 import json
 import hashlib
 import argparse
+import functools
 
 import urllib.request
 
 
-class Progress:
+def __update_handler(current_size, total_size):
+    print(' ' * 64, end='\r')
+    print("\t{:n} of {:n} bytes [{:.2%}]".format(current_size, total_size, current_size / total_size), end='\r')
 
-    def __init__(self):
-        self.start = time.time()
-        self.end = None
 
-    def notify(self, blocks, block_size, total_size):
+def __finish_handler(total_size, duration):
+    print(' ' * 64, end='\r')
+    print("Downloaded {:n} bytes at {:n} bytes per second.".format(total_size, int(total_size / duration)))
 
-        current_size = blocks * block_size
 
-        if total_size <= current_size:
-            self.end = time.time()
-            duration = self.end - self.start
-            print(' ' * 96, end='\r')
-            print("Downloaded {:n} bytes at {:n} bytes per second.".format(current_size, int(total_size / duration)))
-        else:
-            print(' ' * 96, end='\r')
-            print("\t{:n} of {:n} bytes [{:.2%}]".format(current_size, total_size, current_size / total_size), end='\r')
+def __progress_notification_handler(on_update, on_finish, start, blocks, block_size, total_size):
+    current_size = blocks * block_size
+
+    if total_size <= current_size:
+        on_finish(total_size, time.time() - start)
+    else:
+        on_update(current_size, total_size)
 
 
 def is_valid(file, digest):
@@ -60,6 +60,11 @@ def main():
     parser.add_argument('-H', '--host', default='http://gadgetrondata.blob.core.windows.net/gadgetrontestdata/',
                         help="Host from which to download the data.")
 
+    parser.add_argument('--mute-download-progress', dest='progress', action='store_const',
+                        const=functools.partial(__progress_notification_handler, lambda *_: None, __finish_handler),
+                        default=functools.partial(__progress_notification_handler, __update_handler, __finish_handler),
+                        help="Mute download progress messages.")
+
     args = parser.parse_args()
 
     with open(args.list, 'r') as list:
@@ -77,7 +82,7 @@ def main():
         print("Downloading file: {}".format(destination))
 
         os.makedirs(os.path.dirname(destination), exist_ok=True)
-        urllib.request.urlretrieve(url, destination, reporthook=Progress().notify)
+        urllib.request.urlretrieve(url, destination, reporthook=functools.partial(args.progress, time.time()))
 
         if not is_valid(destination, entry['md5']):
             print("Downloaded file {} failed validation.".format(destination))
