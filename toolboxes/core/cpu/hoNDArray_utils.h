@@ -846,7 +846,7 @@ namespace Gadgetron {
               size_t old_batch_size = batch_size/2;
 
 #pragma omp parallel for
-              for (size_t batch = 0; batch < nbatches; batch++){
+              for (int batch = 0; batch < nbatches; batch++){
                   T* result_ptr = result.get_data_ptr()+batch_size*batch;
                   const T* input_ptr = array.get_data_ptr()+batch*old_batch_size;
                   for (size_t i = 0; i < old_dim-1; i++){
@@ -884,7 +884,7 @@ namespace Gadgetron {
               size_t old_batch_size = batch_size/2;
 
 #pragma omp parallel for
-              for (size_t batch = 0; batch < nbatches; batch++){
+              for (int batch = 0; batch < (int)nbatches; batch++){
                   T* result_ptr = result.get_data_ptr()+batch_size*batch;
                   const T* input_ptr = array.get_data_ptr()+batch*old_batch_size;
 
