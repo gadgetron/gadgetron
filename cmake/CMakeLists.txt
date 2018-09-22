@@ -14,6 +14,7 @@ install(FILES
     FindPLplot.cmake
     FindPython3.cmake
     FindZFP.cmake
+    FindBART.cmake
     DESTINATION ${GADGETRON_INSTALL_CMAKE_PATH} COMPONENT main)
 
 if (WIN32)
