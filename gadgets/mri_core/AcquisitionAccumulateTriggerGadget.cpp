@@ -435,24 +435,23 @@ namespace Gadgetron {
 
         GDEBUG("Trigger (%d) occurred, sending out %d buckets\n", trigger_events_, buckets_.size());
         //Pass all buckets down the chain
-        for (map_type_::iterator it = buckets_.begin(); it != buckets_.end(); it++) {
-            if (it->second) {
-
+        for (const auto& it : buckets_)
+        {
+            if (it.second)
+            {
                 // attach the waveform
                 if (!this->wav_buf_.empty())
                 {
-                    it->second->getObjectPtr()->waveform_ = this->wav_buf_;
+                    it.second->getObjectPtr()->waveform_ = this->wav_buf_;
                     this->wav_buf_.clear();
                 }
 
-                if (this->next()->putq(it->second) == -1) {
-                    it->second->release();
+                if (this->next()->putq(it.second) == -1)
+                {
+                    it.second->release();
                     GDEBUG("Failed to pass bucket down the chain\n");
                     return GADGET_FAIL;
                 }
-                buckets_.erase(it->first);
-
-                if (buckets_.empty()) break;
             }
         }
 
