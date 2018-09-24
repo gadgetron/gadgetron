@@ -32,8 +32,9 @@ namespace Gadgetron {
 		std::vector<size_t> image_dims_;
 		uint64d2 image_dims_os_;
 
-		virtual int process_config(ACE_Message_Block* mb);
-		virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1);
+		virtual int process_config(ACE_Message_Block* mb) override;
+		virtual int process(Gadgetron::GadgetContainerMessage< IsmrmrdReconData >* m1) override;
+		virtual void compute_image_header(IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t e) override;
 
 		boost::shared_ptr<cuNDArray<float_complext> > reconstruct(
 			cuNDArray<float_complext>* data,
