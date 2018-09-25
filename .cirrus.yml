@@ -1,6 +1,6 @@
 build_task:
   container:
-    image: gadgetron/ubuntu_1604_base
+    image: gadgetron/ubuntu_1604_cuda92_cudnn7_base
     cpu: 8
     memory: 24
 
