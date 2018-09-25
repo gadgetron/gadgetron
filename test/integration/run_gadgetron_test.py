@@ -135,8 +135,15 @@ def build_rules(requirements):
 def validate_output(*, output_file, reference_file, output_dataset, reference_dataset,
                     value_threshold, scale_threshold):
 
-    output = numpy.squeeze(h5py.File(output_file)[output_dataset])
-    reference = numpy.squeeze(h5py.File(reference_file)[reference_dataset])
+    try:
+        output = numpy.squeeze(h5py.File(output_file)[output_dataset])
+    except KeyError:
+        return Failure, "Missing output data: {}".format(output_dataset)
+
+    try:
+        reference = numpy.squeeze(h5py.File(reference_file)[reference_dataset])
+    except KeyError:
+        return Failure, "Missing reference data"
 
     if not output.shape == reference.shape:
         return Failure, "Data dimensions do not match: {} != {}".format(output.shape, reference.shape)
