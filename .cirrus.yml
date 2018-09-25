@@ -2,7 +2,7 @@ build_task:
   container:
     image: gadgetron/ubuntu_1604_base
     cpu: 8
-    memory: 16
+    memory: 24
 
 
   mtime_script:
@@ -22,7 +22,7 @@ build_task:
       - mkdir build
       - cd build
       - cmake ..
-      - make -j
+      - make -j8
     fingerprint_script:
       - git ls-remote https://github.com/ismrmrd/ismrmrd.git  | grep HEAD | awk '{ print $1}'
 
@@ -40,7 +40,7 @@ build_task:
     - mkdir build
     - cd build
     - cmake ..
-    - make -j
+    - make -j8
     fingerprint_script:
       - git ls-remote https://github.com/ismrmrd/siemens_to_ismrmrd.git  | grep HEAD | awk '{ print $1}'
 
@@ -67,7 +67,7 @@ build_task:
     - cd build
     - cmake .. -DBUILD_WITH_PYTHON3=ON
     - mtime_cache ../**/*.{%{cpp}} -c .mtime_cache/cache.json
-    - make -j
+    - make -j8
     - make install
     - cd /usr/local/share/gadgetron/config
     - cp gadgetron.xml.example gadgetron.xml
