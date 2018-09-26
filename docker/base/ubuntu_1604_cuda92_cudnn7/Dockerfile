@@ -80,7 +80,7 @@ RUN cd /opt && \
     make -j $(nproc) install
 
 # BART
-RUN cd /opt/code && \
+RUN cd /opt && \
     git clone ${BART_URL} --branch ${BART_BRANCH} --single-branch && \
     cd bart && \
     mkdir build && \
