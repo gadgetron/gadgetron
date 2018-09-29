@@ -33,7 +33,7 @@ RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-configargparse
 RUN pip3 install Cython scipy tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
-RUN pip3 uninstall h5py
+RUN pip3 uninstall -y h5py
 RUN apt-get install -y python3-h5py
 
 RUN pip3 install --upgrade tensorflow
