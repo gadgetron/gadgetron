@@ -42,23 +42,22 @@ RUN cd /opt && \
     make install
 
 
-RUN pip3 install --upgrade pip
+# RUN pip3 install --upgrade pip
 RUN pip3 install -U pip setuptools
 
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml python3-numpy
+RUN pip3 install numpy scipy Cython tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
+RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-psutil python3-pyxb python3-lxml
 RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-pil
-RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-scipy
-RUN pip3 install Cython tk-tools matplotlib==2.2.3 scikit-image opencv_python pydicom scikit-learn
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --no-install-suggests --yes python3-tk
 
 # RUN pip3 install Cython
 
-RUN pip3 install --upgrade tensorflow
 RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.1-cp36-cp36m-linux_x86_64.whl
 RUN pip3 install torchvision 
+RUN pip3 install --upgrade tensorflow
 RUN pip3 install tensorboardx visdom
 
-RUN pip3 uninstall h5py
+RUN pip3 uninstall -y h5py
 RUN apt-get install -y python3-h5py
 
 # since cmake has problems to find python3 and boost-python3
