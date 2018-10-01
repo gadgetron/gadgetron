@@ -102,14 +102,21 @@ namespace Gadgetron
 
     /// calculation comments
     #define GADGETRON_SUBTRACTION                           "SUB"
-  
+    #define GADGETRON_AI                                    "AI"
+
     /// control flags for image recon and other processing
     /// if set, skip the processing steps after the recon, e.g. partial fourier handling and kspace filter
     #define GADGETRON_SKIP_PROCESSING_AFTER_RECON           "Skip_processing_after_recon"
     #define GADGETRON_USE_DEDICATED_SCALING_FACTOR          "Use_dedicated_scaling_factor"
 
+    /// if set, auto correct image orientation by MR convention
+    #define GADGETRON_CORRECT_IMAGE_ORIENTATION             "Correct_image_orientation"
+
     /// instruct the client to keep image geometry
     #define GADGETRON_KEEP_IMAGE_GEOMETRY                   "Keep_image_geometry"
+
+    /// instruct the client to send images to database without further processing
+    #define GADGETRON_DIRECT_IMGAE_SEND                     "Gadgetron_ImageDirectSend"
 
     /// data flow tag
     /// if this flag is set to be 1 for a image, the image is immediately passed to the next gadget
