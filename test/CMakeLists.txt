@@ -128,4 +128,7 @@ endif ()
 
 add_test(test_all test_all)
 
+set_target_properties(test_all PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
+install(TARGETS test_all DESTINATION bin COMPONENT main)
+
 endif ()

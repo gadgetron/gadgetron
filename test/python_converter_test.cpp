@@ -2,6 +2,8 @@
 #include "GadgetronTimer.h"
 #include <gtest/gtest.h>
 #include "ismrmrd/ismrmrd.h"
+#include "hoNDArray_utils.h"
+#include "hoNDArray_elemwise.h"
 
 using namespace Gadgetron;
 using testing::Types;
@@ -97,6 +99,74 @@ TEST_F(python_converter_test, numpy_hoNDArray)
     EXPECT_FLOAT_EQ(evens(1), 2);
     EXPECT_FLOAT_EQ(evens(2), 4);
     EXPECT_EQ(evens.get_number_of_elements(), 50);
+}
+
+TEST_F(python_converter_test, numpy_hoNDArray_two_inputs)
+{
+    GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+    GDEBUG_STREAM("Test return mutltiple hoNDArray arrays");
+    {
+        GILLock gl;     // this is needed
+        boost::python::object main(boost::python::import("__main__"));
+        boost::python::object global(main.attr("__dict__"));
+        boost::python::exec("import numpy as np\n"
+            "def scale_array(a): \n"
+            "   print(len(a))\n"
+            "   b = a + 100\n"
+            "   return a,b\n",
+            global, global);
+    }
+
+    hoNDArray<float> a, a2, b;
+    a.create(32, 64);
+    Gadgetron::fill(a, float(45));
+
+    PythonFunction< hoNDArray<float>, hoNDArray<float> > scale_array_test("__main__", "scale_array");
+    std::tie(a2, b) = scale_array_test(a);
+    std::cout << "a2[0] = " << a2[0] << std::endl;
+    std::cout << "b[12] = " << b[12] << std::endl;
+    std::cout << std::endl;
+
+    EXPECT_FLOAT_EQ(a2[0], 45);
+    EXPECT_FLOAT_EQ(b[12], 145);
+}
+
+TEST_F(python_converter_test, numpy_hoNDArray_three_outputs)
+{
+    GDEBUG_STREAM(" --------------------------------------------------------------------------------------------------");
+    GDEBUG_STREAM("Test return mutltiple hoNDArray arrays reutrn and multi-inputs");
+    {
+        GILLock gl;     // this is needed
+        boost::python::object main(boost::python::import("__main__"));
+        boost::python::object global(main.attr("__dict__"));
+        boost::python::exec("import numpy as np\n"
+            "def scale_array(a, b): \n"
+            "   print(len(a))\n"
+            "   print(len(b))\n"
+            "   c = a + b\n"
+            "   return a,b,c\n",
+            global, global);
+    }
+
+    hoNDArray<float> a, b;
+    a.create(32, 64);
+    Gadgetron::fill(a, float(45));
+
+    b.create(32, 64);
+    Gadgetron::fill(b, float(210));
+
+    hoNDArray<float> a2, b2, c;
+
+    PythonFunction< hoNDArray<float>, hoNDArray<float>, hoNDArray<float> > scale_array_test("__main__", "scale_array");
+    std::tie(a2, b2, c) = scale_array_test(a, b);
+    std::cout << "a2[0]  = " << a2[0] << std::endl;
+    std::cout << "b2[12] = " << b[12] << std::endl;
+    std::cout << "c[20]  = " << c[20] << std::endl;
+    std::cout << std::endl;
+
+    EXPECT_FLOAT_EQ(a2[0], 45);
+    EXPECT_FLOAT_EQ(b2[12], 210);
+    EXPECT_FLOAT_EQ(c[20], 255);
 }
 
 TEST_F(python_converter_test, ismrmrd_acquisitionheader)
