@@ -334,7 +334,10 @@ find_package(HDF5 1.8 COMPONENTS C CXX HL REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 find_package(ISMRMRD REQUIRED)
 link_directories(${ISMRMRD_LIBRARY_DIRS})
-find_package(BART)
+if (CUDA_FOUND AND USE_CUDA)
+	# bart needs cuda
+	find_package(BART)
+endif()
 
 option(USE_MKL OFF)
 if (USE_MKL)
