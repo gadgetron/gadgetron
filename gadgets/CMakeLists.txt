@@ -31,10 +31,10 @@ if (ARMADILLO_FOUND)
 endif()
 
 
-
-option(USE_BART "Build support for BART using BartGadget" OFF)
-if(USE_BART)
+if(BART_FOUND)
   add_subdirectory(bart)
+else()
+  message("BART not found, NOT compiling bartgadget")
 endif()
 
 
