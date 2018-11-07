@@ -71,10 +71,12 @@ else ()
 #
 
 
-    find_path(PYTHON_INCLUDE_DIR3 NAMES python3.6/patchlevel.h python3.6m/patchlevel.h python3.5/patchlevel.h python3.5m/patchlevel.h  PATHS /usr/include /usr/local/include )
-    if (EXISTS ${PYTHON_INCLUDE_DIR3}/python3.6m/patchlevel.h)
+    find_path(PYTHON_INCLUDE_DIR3 NAMES python3.7/patchlevel.h python3.7m/patchlevel.h python3.6/patchlevel.h python3.6m/patchlevel.h python3.5/patchlevel.h python3.5m/patchlevel.h  PATHS /usr/include /usr/local/include )
+        if (EXISTS ${PYTHON_INCLUDE_DIR3}/python3.7m/patchlevel.h)
+        set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR3}/python3.7m)
+    elseif (EXISTS ${PYTHON_INCLUDE_DIR3}/python3.6m/patchlevel.h)
         set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR3}/python3.6m)
-    elseif(EXISTS ${PYTHON_INCLUDE_DIR3}/python3.5m/patchlevel.h)
+    elseif (EXISTS ${PYTHON_INCLUDE_DIR3}/python3.5m/patchlevel.h)
         set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR3}/python3.5m)
     endif()
             # find the python version
