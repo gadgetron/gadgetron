@@ -1,0 +1,10 @@
+#ifndef GADGETRON_CONVERGENODE_H
+#define GADGETRON_CONVERGENODE_H
+
+
+class ConvergeNode {
+
+};
+
+
+#endif //GADGETRON_CONVERGENODE_H

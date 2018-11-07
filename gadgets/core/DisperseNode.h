@@ -1,0 +1,12 @@
+#ifndef GADGETRON_DISTRIBUTENODE_H
+#define GADGETRON_DISTRIBUTENODE_H
+
+
+class DisperseNode {
+
+
+
+};
+
+
+#endif //GADGETRON_DISTRIBUTENODE_H

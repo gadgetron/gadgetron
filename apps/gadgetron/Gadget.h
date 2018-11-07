@@ -241,7 +241,6 @@ namespace Gadgetron{
           continue;
         }
 
-
         int success;
 #ifdef NDEBUG //We actually want a full stack trace in debug mode, so only catch in release.
         try{ success = this->process(m); }
