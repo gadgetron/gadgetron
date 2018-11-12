@@ -101,7 +101,7 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
     res.create(2* dims[0], 2* dims[1], CHA);
     Gadgetron::clear(res);
 
-    hoNFFT_plan<T, 2> plan(dims, 2.0, 3.0);
+    hoNFFT_plan<T, 2> plan(dims, dims*size_t(2), 3.0);
     plan.preprocess(traj);
 
     hoNDArray< std::complex<T> > dataCha;
@@ -113,7 +113,7 @@ TYPED_TEST(hoNFFT_2D_NC2C_BACKWARDS, randomTestOne)
         dataCha.create(num, data.begin()+cha*num);
         resCha.create(res.get_size(0), res.get_size(1), res.begin()+cha*res.get_size(0)*res.get_size(1));
 
-        plan.compute(dataCha, resCha, w_spiral, hoNFFT_plan<T, 2>::NFFT_BACKWARDS_NC2C);
+        plan.compute(dataCha, resCha, &w_spiral,NFFT_comp_mode::BACKWARDS_NC2C);
     }
     this->timer_.stop();
 

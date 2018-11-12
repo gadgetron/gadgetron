@@ -9,6 +9,7 @@ endif()
 
 include_directories( 
     ${CMAKE_SOURCE_DIR}/toolboxes/core
+    ${CMAKE_SOURCE_DIR}/toolboxes/nfft
     ${CMAKE_BINARY_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
@@ -23,7 +24,7 @@ add_library(gadgetron_toolbox_cpunfft SHARED
     hoNFFT.h
     cpunfft_export.h
     hoNFFT.cpp
-  )
+        hoNFFT_sparseMatrix.cpp hoNFFT_sparseMatrix.h hoNFFTOperator.cpp)
 
 set_target_properties(gadgetron_toolbox_cpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

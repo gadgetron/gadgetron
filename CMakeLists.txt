@@ -19,7 +19,7 @@ if(CCACHE_FOUND)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif(CCACHE_FOUND)
 # --- Provide good defaults for searching for packages (i.e. ismrmrd)
-set(CMAKE_PREFIX_PATH "")
+#set(CMAKE_PREFIX_PATH "")
 if(CMAKE_PREFIX_PATH)
   list(APPEND CMAKE_PREFIX_PATH "/usr/local")
 endif()
@@ -80,7 +80,15 @@ set(GADGETRON_INSTALL_PYTHON_MODULE_PATH share/gadgetron/python)
 set(GADGETRON_INSTALL_SCHEMA_PATH share/gadgetron/schema)
 set(GADGETRON_INSTALL_INCLUDE_PATH include/gadgetron)
 set(GADGETRON_INSTALL_CHROOT_SCRIPTS_PATH share/gadgetron/chroot)
+if (WIN32)
+  set(GADGETRON_VAR_DIR $ENV{APPDATA}/gadgetron CACHE PATH "Path where Gadgetron will store calibration data, etc" FORCE)
+else()
+set(GADGETRON_VAR_DIR /var/lib/gadgetron/ CACHE PATH "Path where Gadgetron will store calibration data, etc" FORCE)
+endif()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+
+
 
 #Set the build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -146,7 +154,6 @@ else ()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
   endif()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 
   include(CheckCXXCompilerFlag)
 
@@ -372,6 +379,7 @@ option(BUILD_PYTHON_SUPPORT "Build Python gadgets etc" On)
 if (BUILD_PYTHON_SUPPORT)
 
   option(BUILD_WITH_PYTHON3 "Build with Python 3.x" Off)
+
 
   if (BUILD_WITH_PYTHON3)
     find_package(Python3)

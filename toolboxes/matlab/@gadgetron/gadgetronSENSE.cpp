@@ -1,4 +1,4 @@
-#include "cuNFFTOperator.h"
+#include "../../nfft/NFFTOperator.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "mex.h"
 #include "MatlabUtils.h"

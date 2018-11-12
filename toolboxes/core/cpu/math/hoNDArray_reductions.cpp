@@ -21,45 +21,60 @@ namespace Gadgetron{
 
     // --------------------------------------------------------------------------------
 
-    template<class REAL> REAL max(const hoNDArray<REAL>* data){
+    template<class REAL> REAL max(const hoNDArray<REAL>& data){
         return as_arma_col(data).max();
     }
 
+    template<class REAL> REAL max(const hoNDArray<REAL>* data){ return max(*data);}
+
     // --------------------------------------------------------------------------------
 
-    template<class REAL> REAL min(const hoNDArray<REAL>* data){
+    template<class REAL> REAL min(const hoNDArray<REAL>& data){
         return as_arma_col(data).min();
     }
 
+    template<class REAL> REAL min(const hoNDArray<REAL>* data){ return min(*data);}
     // --------------------------------------------------------------------------------
 
-    template<class T> T mean(const hoNDArray<T>* data){
+    template<class T> T mean(const hoNDArray<T>& data){
         return (typename stdType<T>::Type) arma::mean(as_arma_col(data));
     }
 
+    template<class T> T mean(const hoNDArray<T>* data){ return mean(*data);}
     // --------------------------------------------------------------------------------
 
-    template<class T> T sum(const hoNDArray<T>* data){
+    template<class T> T sum(const hoNDArray<T>& data){
         return (typename stdType<T>::Type) arma::sum(as_arma_col(data));
     }
 
+    template<class T> T sum(const hoNDArray<T>* data) {
+        return sum(*data);
+    }
+
     // --------------------------------------------------------------------------------
 
-    template<class T> T stddev(const hoNDArray<T>* data){
+    template<class T> T stddev(const hoNDArray<T>& data){
         return (typename stdType<T>::Type) arma::stddev(as_arma_col(data));
     }
 
+    template<class T> T stddev(const hoNDArray<T>* data){ return stddev(*data);}
+
     // --------------------------------------------------------------------------------
 
-    template<class T> T var(const hoNDArray<T>* data) {
+    template<class T> T var(const hoNDArray<T>& data) {
         return (typename stdType<T>::Type) arma::var(as_arma_col(data));
     }
 
+    template<class T> T var(const hoNDArray<T>* data) { return var(*data);}
+
     // --------------------------------------------------------------------------------
 
-     template<class T> T median(const hoNDArray<T>* data){
+     template<class T> T median(const hoNDArray<T>& data){
         return (typename stdType<T>::Type) arma::median(as_arma_col(data));
     }
+
+    template<class T> T median(const hoNDArray<T>* data){ return median(*data);}
+
 
     // --------------------------------------------------------------------------------
 
@@ -110,7 +125,7 @@ namespace Gadgetron{
             throw std::runtime_error("Gadgetron::amin(): Invalid input array");
 
         typedef typename realType<T>::Type realT;
-        arma::Col<realT> xM = arma::abs(as_arma_col(x));
+        arma::Col<realT> xM = arma::abs(as_arma_col(*x));
         arma::uword idx;
         realT min = xM.min(idx);
         return idx;

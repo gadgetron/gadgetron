@@ -19,7 +19,7 @@ namespace Gadgetron{
   const int kernel_width = 7;
 
   template<class REAL, unsigned int D> static void smooth_correlation_matrices( cuNDArray<complext<REAL> >*, cuNDArray<complext<REAL> >*);
-  template<class REAL> static boost::shared_ptr< cuNDArray<complext<REAL> > > extract_csm( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
+  template<class REAL> static cuNDArray<complext<REAL>> extract_csm(const cuNDArray<complext<REAL> >&, unsigned int, unsigned int);
   template<class REAL> static void set_phase_reference( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
   template<class T> static void find_stride( cuNDArray<T> *in, unsigned int dim, unsigned int *stride, std::vector<size_t> *dims );
   template<class T> static boost::shared_ptr< cuNDArray<T> > correlation( cuNDArray<T> *in );
@@ -29,23 +29,21 @@ namespace Gadgetron{
   // Main method
   //
 
-  template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<complext<REAL> > >
-  estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
+  template<class REAL, unsigned int D> cuNDArray<complext<REAL> >
+  estimate_b1_map( const cuNDArray<complext<REAL> >& data_in, int target_coils)
   {
 
-    if( data_in->get_number_of_dimensions() < 2 ){
-      cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
-      return boost::shared_ptr< cuNDArray<complext<REAL> > >();
+    if( data_in.get_number_of_dimensions() < 2 ){
+      throw std::runtime_error("estimate_b1_map:: dimensionality mismatch.");
     }
 
-    if( data_in->get_number_of_dimensions()-1 != D ){
-      cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
-      return boost::shared_ptr< cuNDArray<complext<REAL> > >();
+    if( data_in.get_number_of_dimensions()-1 != D ){
+      throw std::runtime_error("estimate_b1_map:: dimensionality mismatch.");
     }
 
     int target_coils_int = 0;
-    if ((target_coils <= 0) || (target_coils > data_in->get_size(D))) {
-      target_coils_int = data_in->get_size(D);
+    if ((target_coils <= 0) || (target_coils > data_in.get_size(D))) {
+      target_coils_int = data_in.get_size(D);
     } else {
       target_coils_int = target_coils;
     }
@@ -54,56 +52,46 @@ namespace Gadgetron{
     unsigned int pixels_per_coil = 1;
   
     for( unsigned int i=0; i<D; i++ ){
-      image_dims.push_back(data_in->get_size(i));
+      image_dims.push_back(data_in.get_size(i));
       dims_to_xform.push_back(i);
-      pixels_per_coil *= data_in->get_size(i);
+      pixels_per_coil *= data_in.get_size(i);
     }
   
-    unsigned int ncoils = data_in->get_size(D);
+    unsigned int ncoils = data_in.get_size(D);
 
     // Make a copy of input data, but only the target coils
-    boost::shared_ptr< cuNDArray<complext<REAL> > > data_out;
-    if (0 && target_coils_int == ncoils) {
-      cuNDArray<complext<REAL> > *_data_out = new cuNDArray<complext<REAL> >(*data_in);
-      data_out = boost::shared_ptr< cuNDArray<complext<REAL> > >(_data_out);
-    } else {
-      std::vector<size_t> odims = *(data_in->get_dimensions().get());
+      std::vector<size_t> odims = *(data_in.get_dimensions().get());
       odims[D] = target_coils_int;
-      cuNDArray<complext<REAL> > *_data_out = new cuNDArray<complext<REAL> >(&odims);
-      data_out = boost::shared_ptr< cuNDArray<complext<REAL> > >(_data_out);
+      auto data_out = cuNDArray<complext<REAL> >(&odims);
 
       //Now copy one coil at a time
-      unsigned int elements_per_coil = data_in->get_number_of_elements()/ncoils;
+      unsigned int elements_per_coil = data_in.get_number_of_elements()/ncoils;
       for (unsigned int i = 0; i < target_coils_int; i++) {
-	cudaMemcpy(data_out.get()->get_data_ptr()+i*elements_per_coil,
-		   data_in->get_data_ptr()+i*elements_per_coil,
+	cudaMemcpy(data_out.get_data_ptr()+i*elements_per_coil,
+		   data_in.get_data_ptr()+i*elements_per_coil,
 		   elements_per_coil*sizeof(complext<REAL>),
 		   cudaMemcpyDeviceToDevice);
       }
       ncoils = target_coils_int;
-    }
-  
+
     // Normalize by the RSS of the coils
-    rss_normalize( data_out.get(), D );
+    rss_normalize( &data_out, D );
   
     // Now calculate the correlation matrices
-    boost::shared_ptr<cuNDArray<complext<REAL> > > corrm = correlation( data_out.get() );
-    data_out.reset();
-  
+    boost::shared_ptr<cuNDArray<complext<REAL> > > corrm = correlation( &data_out );
+
     // Smooth (onto copy of corrm)
-    cuNDArray<complext<REAL> > *_corrm_smooth = new cuNDArray<complext<REAL> >();
-    _corrm_smooth->create(corrm->get_dimensions().get());
-    boost::shared_ptr<cuNDArray<complext<REAL> > > corrm_smooth(_corrm_smooth);
+    auto corrm_smooth = boost::make_shared<cuNDArray<complext<REAL>>>(corrm->get_dimensions());
 
     smooth_correlation_matrices<REAL,D>( corrm.get(), corrm_smooth.get() );
     corrm.reset();
 
     // Get the dominant eigenvector for each correlation matrix.
-    boost::shared_ptr<cuNDArray<complext<REAL> > > csm = extract_csm<REAL>( corrm_smooth.get(), ncoils, pixels_per_coil );
+    auto csm = extract_csm<REAL>( corrm_smooth.get(), ncoils, pixels_per_coil );
     corrm_smooth.reset();
   
     // Set phase according to reference (coil 0)
-    set_phase_reference<REAL>( csm.get(), ncoils, pixels_per_coil );
+    set_phase_reference<REAL>( &csm, ncoils, pixels_per_coil );
   
     return csm;
   }
@@ -647,37 +635,28 @@ namespace Gadgetron{
 
   // Extract CSM
   template<class REAL> __host__ static
-  boost::shared_ptr<cuNDArray<complext<REAL> > > extract_csm(cuNDArray<complext<REAL> > *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
+  cuNDArray<complext<REAL>> extract_csm(const cuNDArray<complext<REAL> >& corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
   {
     vector<size_t> image_dims;
 
-    for( unsigned int i=0; i<corrm_in->get_number_of_dimensions()-1; i++ ){
-      image_dims.push_back(corrm_in->get_size(i));
+    for( unsigned int i=0; i<corrm_in.get_number_of_dimensions()-1; i++ ){
+      image_dims.push_back(corrm_in.get_size(i));
     }
   
     // Allocate output
-    cuNDArray<complext<REAL> > *out = new cuNDArray<complext<REAL> >; out->create(&image_dims);
+    cuNDArray<complext<REAL> > out = cuNDArray<complext<REAL> >(&image_dims);
 
     dim3 blockDim(256);
     dim3 gridDim((unsigned int) std::ceil((double)number_of_elements/blockDim.x));
 
-    /*  
-	if( out != 0x0 )
-	extract_csm_kernel<REAL><<< gridDim, blockDim, number_of_batches*blockDim.x*2*sizeof(complext<REAL>) >>>
-	( corrm_in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
-    */
+    cuNDArray<complext<REAL> > tmp_v = cuNDArray<complext<REAL> >(&image_dims);
 
-    // Temporary buffer. TODO: use shared memory
-    cuNDArray<complext<REAL> > *tmp_v = new cuNDArray<complext<REAL> >; tmp_v->create(&image_dims);
-
-    if( out != 0x0 && tmp_v != 0x0 )
       extract_csm_kernel<REAL><<< gridDim, blockDim >>>
-	( corrm_in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements, tmp_v->get_data_ptr() );
+	( corrm_in.get_data_ptr(), out.get_data_ptr(), number_of_batches, number_of_elements, tmp_v.get_data_ptr() );
 
     CHECK_FOR_CUDA_ERROR();
   
-    delete tmp_v;
-    return boost::shared_ptr<cuNDArray<complext<REAL> > >(out);
+    return out;
   }
 
   // Set refence phase
@@ -722,12 +701,12 @@ namespace Gadgetron{
   //
 
   //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,1>(cuNDArray<complext<float> >*, int);
-  template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,2>(cuNDArray<complext<float> >*, int);
+  template EXPORTGPUPMRI  cuNDArray<complext<float>> estimate_b1_map<float,2>(const cuNDArray<complext<float> >&, int);
   //template boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,3>(cuNDArray<complext<float> >*, int);
   //template boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,4>(cuNDArray<complext<float> >*, int);
 
   //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,1>(cuNDArray<complext<double> >*, int);
-  template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,2>(cuNDArray<complext<double> >*, int);
+  template EXPORTGPUPMRI cuNDArray<complext<double>> estimate_b1_map<double,2>(const cuNDArray<complext<double>>&, int);
   //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,3>(cuNDArray<complext<double> >*, int);
   //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,4>(cuNDArray<complext<double> >*, int);
 }

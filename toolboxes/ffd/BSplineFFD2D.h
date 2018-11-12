@@ -456,7 +456,7 @@ bool BSplineFFD2D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
             crop_size[0] = size[0];
             crop_size[1] = size[1];
 
-            Gadgetron::crop(crop_offset, crop_size, &tmpCtrlPt, &ctrlPtWithoutPadding);
+            Gadgetron::crop(crop_offset, crop_size, tmpCtrlPt, ctrlPtWithoutPadding);
             Gadgetron::add(ctrlPtWithoutPadding, dx2D, ctrlPtWithoutPadding);
             Gadgetron::fill(ctrlPtWithoutPadding, crop_offset, tmpCtrlPt);
         }

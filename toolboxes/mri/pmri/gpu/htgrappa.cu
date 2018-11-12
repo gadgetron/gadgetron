@@ -524,16 +524,14 @@ namespace Gadgetron {
       boost::shared_ptr< hoNDArray<T> > AHA_h = AHA.to_host();
       boost::shared_ptr< hoNDArray<T> > AHrhs_h = AHrhs.to_host();
 
-      std::vector<size_t> perm_dim;
-      perm_dim.push_back(1);
-      perm_dim.push_back(0);
+      std::vector<size_t> perm_dim ={1,0};
 
-      permute(AHA_h.get(),&perm_dim);
-      permute(AHrhs_h.get(),&perm_dim);
+      permute(*AHA_h,perm_dim);
+      permute(*AHrhs_h,perm_dim);
 
       ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());
 
-      permute(AHrhs_h.get(),&perm_dim);
+      permute(*AHrhs_h,perm_dim);
       AHrhs = cuNDArray<T>(*AHrhs_h);
     }
 
@@ -797,12 +795,12 @@ namespace Gadgetron {
       perm_dim.push_back(1);
       perm_dim.push_back(0);
 
-      permute(AHA_h.get(),&perm_dim);
-      permute(AHrhs_h.get(),&perm_dim);
+      permute(*AHA_h,perm_dim);
+      permute(*AHrhs_h,perm_dim);
 
       ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());
 
-      permute(AHrhs_h.get(),&perm_dim);
+      permute(*AHrhs_h,perm_dim);
       *coeff = cuNDArray<T>(*AHrhs_h);
     }
 
