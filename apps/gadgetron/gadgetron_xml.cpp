@@ -1,6 +1,6 @@
 #include "gadgetron_xml.h"
 #include "log.h"
-#include "pugixml.hpp"
+#include <pugixml.hpp>
 #include <stdexcept>
 #include <cstdlib>
 #include <iostream>

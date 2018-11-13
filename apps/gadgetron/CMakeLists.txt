@@ -42,8 +42,9 @@ target_link_libraries(gadgetron
   gadgetron_toolbox_log
   gadgetron_toolbox_rest
   gadgetron_toolbox_gadgettools gadgetron_toolbox_cloudbus 
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
- )
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+  pugixml
+)
 
 if (BUILD_PYTHON_SUPPORT)
     add_definitions("-DCOMPILING_WITH_PYTHON_SUPPORT")
@@ -58,8 +59,9 @@ add_executable(gadgetron_info
 target_link_libraries(gadgetron_info 
   gadgetron_toolbox_log
   gadgetron_gadgetbase
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
- )
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+  pugixml
+)
 
 if (CUDA_FOUND)
   target_link_libraries(gadgetron_info ${CUDA_LIBRARIES})
@@ -75,8 +77,7 @@ add_library(gadgetron_gadgetbase SHARED
   gadgetron_xml.cpp
   gadgetron_home.h
   gadgetron_home.cpp
-  pugixml.cpp  
-  GadgetStreamInterface.h 
+        GadgetStreamInterface.h
   GadgetStreamInterface.cpp 
   EndGadget.h
   EndGadget.cpp

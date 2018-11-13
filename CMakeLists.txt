@@ -416,6 +416,7 @@ if(WIN32)
   message("For Windows users in particular, for ease of installation we do not reccomend installing these libraries.")
 endif()
 
+find_package(pugixml REQUIRED)
 find_package(OpenGL)
 find_package(GLEW)
 find_package(GLUT)

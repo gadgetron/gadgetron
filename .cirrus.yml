@@ -4,9 +4,13 @@ build_task:
     cpu: 8
     memory: 24
 
+  update_apt_script:
+    - apt-get update
+
+  install_pugi_script:
+    - apt-get install -y libpugixml-dev
 
   mtime_script:
-    - apt-get update
     - apt-get install ruby-full -y
     - gem install mtime_cache
 
