@@ -22,7 +22,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
-
+add_subdirectory(core)
 add_subdirectory(mri_core)
 
 add_subdirectory(interventional_mri)
