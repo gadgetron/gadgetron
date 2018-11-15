@@ -93,11 +93,10 @@ namespace Gadgetron{
   //Forward declarations
   class GadgetStreamInterface;
 
-  class EXPORTGADGETBASE Gadget : public ACE_Task<ACE_MT_SYNCH>
+  class EXPORTGADGETBASE Gadget
   {
 
   public:
-    typedef ACE_Task<ACE_MT_SYNCH> inherited;
 
     enum
     {
@@ -105,8 +104,7 @@ namespace Gadgetron{
     };
 
     Gadget()
-    : inherited()
-    , desired_threads_(1)
+    : desired_threads_(1)
     , pass_on_undesired_data_(false)
     , controller_(0)
     , parameter_mutex_("GadgetParameterMutex")
@@ -119,9 +117,7 @@ namespace Gadgetron{
 
     virtual ~Gadget()
     {
-      if (this->module()) {
-        GDEBUG("Shutting down Gadget (%s)\n", this->module()->name());
-      }
+
     }
 
 
@@ -189,80 +185,7 @@ namespace Gadgetron{
       return rval;
     }
 
-    virtual int svc(void)
-    {
-      for (ACE_Message_Block *m = 0; ;) {
 
-        //GDEBUG("Waiting for message in Gadget (%s)\n", this->module()->name());
-        if (this->getq(m) == -1) {
-          GDEBUG("Gadget (%s) failed to get message from queue\n", this->module()->name());
-          return GADGET_FAIL;
-        }
-        //GDEBUG("Message Received in Gadget (%s)\n", this->module()->name());
-
-        //If this is a hangup message, we are done, put the message back on the queue before breaking
-        if (m->msg_type() == ACE_Message_Block::MB_HANGUP) {
-          //GDEBUG("Gadget (%s) Hangup message encountered\n", this->module()->name());
-          if (this->putq(m) == -1) {
-            GDEBUG("Gadget (%s) failed to put hang up message on queue (for other threads)\n", this->module()->name());
-            return GADGET_FAIL;
-          }
-          //GDEBUG("Gadget (%s) breaking loop\n", this->module()->name());
-          break;
-        }
-
-
-        //Is this config info, if so call appropriate process function
-        if (m->flags() & GADGET_MESSAGE_CONFIG) {
-
-          int success;
-          try{ success = this->process_config(m); }
-          catch (std::runtime_error& err){
-            GEXCEPTION(err,"Gadget::process_config() failed\n");
-            success = -1;
-          }
-
-          if (success == -1) {
-            m->release();
-            this->flush();
-            GDEBUG("Gadget (%s) process config failed\n", this->module()->name());
-            return GADGET_FAIL;
-
-          }
-
-          //Push this onto next gadgets queue, other gadgets may need this configuration information
-          if (this->next()) {
-            if (this->next()->putq(m) == -1) {
-              m->release();
-              GDEBUG("Gadget (%s) process config failed to put config on dowstream gadget\n", this->module()->name());
-              return GADGET_FAIL;
-            }
-          }
-          continue;
-        }
-
-
-        int success;
-#ifdef NDEBUG //We actually want a full stack trace in debug mode, so only catch in release.
-        try{ success = this->process(m); }
-        catch (std::runtime_error& err){
-          GEXCEPTION(err,"Gadget::process() failed\n");
-          success = -1;
-        }
-#else
-        success = this->process(m);
-#endif
-        if (success == -1){
-          m->release();
-          this->flush();
-          GERROR("Gadget (%s) process failed\n", this->module()->name());
-          return GADGET_FAIL;
-        }
-
-
-      }
-      return 0;
-    }
 
     virtual int set_parameter(const char* name, const char* val, bool trigger = true) {
       boost::shared_ptr<std::string> old_value = get_string_value(name);
@@ -356,11 +279,6 @@ namespace Gadgetron{
 
   protected:
     std::vector<GadgetPropertyBase*> properties_;
-
-    virtual int next_step(ACE_Message_Block *m)
-    {
-      return this->put_next(m);//next()->putq(m);
-    }
 
     virtual int process(ACE_Message_Block * m) = 0;
 

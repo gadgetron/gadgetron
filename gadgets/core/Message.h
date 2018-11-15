@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include <memory>
 namespace Gadgetron{ namespace Core {
 
     class Message {
