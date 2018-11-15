@@ -52,9 +52,14 @@
     "md5":"f1b4e505d3172975570f002e35401d64"
   },
   {
-    "file":"spiral/simple_spiral_out.h5",
-    "md5":"44be83612c69f008ee71a47fecd3c7ed"
+    "file":"spiral/simple_spiral_out_v2.h5",
+    "md5":"7ab538094cb4aefa329da75a3190a948"
   },
+ {
+    "file":"spiral/simple_spiral_out_sb_v2.h5",
+    "md5":"e86610f38fe302a5c264e0d23270c16d"
+  },
+
   {
     "file":"spiral/meas_MID1132_MiniIRT_spiral_16int_tr500_acc1_10reps_FID13142.dat",
     "md5":"763baf3d7d0acff185ec9a3c85d5a3f3"
@@ -88,8 +93,8 @@
     "md5":"8f80f50ccaf3d16872f4bbe78410a287"
   },
   {
-    "file":"hyper/Kidney4cmSlice_sb_outV2.h5",
-    "md5":"e7b7b97dae3811ed9afae1e0c4eb5a02"
+    "file":"hyper/Kidney4cmSlice_sb_outV3.h5",
+    "md5":"db227671b136adbf7a12b051df2ef46c"
   },
   {
     "file":"tse/meas_MID00450_FID76726_SAX_TE62_DIR_TSE/meas_MID00450_FID76726_SAX_TE62_DIR_TSE.dat",

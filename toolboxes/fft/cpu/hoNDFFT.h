@@ -174,6 +174,8 @@ template<> struct fftw_types<double>{
         void fft3c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
         void ifft3c(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, hoNDArray< ComplexType >& buf);
 
+
+        void timeswitch(hoNDArray<ComplexType>* a, int transform_dim);
     protected:
 
         //We are making these protected since this class is a singleton
@@ -192,7 +194,6 @@ template<> struct fftw_types<double>{
 
         void fft_int(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign);
 
-        void fft_int_uneven(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign);
 
         int   fftw_import_wisdom_from_file_(FILE*);
         void  fftw_export_wisdom_to_file_(FILE*);
@@ -273,7 +274,6 @@ template<> struct fftw_types<double>{
         /**
          * Multiplies array k'th element by -1^k, causing the result of an FFT to have the frequencies centered
          */
-        void timeswitch(hoNDArray<ComplexType>* a, int transform_dim);
 
         void phaseshift(hoNDArray<ComplexType>* a, T phase, int transform_dim);
     };

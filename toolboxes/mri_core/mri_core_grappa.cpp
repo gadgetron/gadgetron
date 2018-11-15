@@ -390,7 +390,7 @@ void grappa2d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t
     {
         hoNDArray<T> convKerScaled(convKer);
         Gadgetron::scal((typename realType<T>::Type)(std::sqrt((double)(RO*E1))), convKerScaled);
-        Gadgetron::pad(RO, E1, &convKerScaled, &kIm);
+        Gadgetron::pad(RO, E1, convKerScaled, kIm);
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(kIm);
     }
     catch(...)
@@ -1000,10 +1000,10 @@ void grappa3d_calib_convolution_kernel(const hoNDArray<T>& acsSrc, const hoNDArr
             cropSize[2] = endE2-startE2+1;
             cropSize[3] = srcCHA;
 
-            Gadgetron::crop(cropOffset, cropSize, const_cast<hoNDArray<T>*>(&acsSrc), &acsSrcFullSampled);
+            Gadgetron::crop(cropOffset, cropSize, acsSrc, acsSrcFullSampled);
 
             cropSize[3] = dstCHA;
-            Gadgetron::crop(cropOffset, cropSize, const_cast<hoNDArray<T>*>(&acsDst), &acsDstFullSampled);
+            Gadgetron::crop(cropOffset, cropSize, acsDst, acsDstFullSampled);
 
             grappa3d_calib_convolution_kernel(acsSrcFullSampled, acsDstFullSampled, accelFactorE1, accelFactorE2, thres, overDetermineRatio, kRO, kNE1, kNE2, convKer);
         }
@@ -1138,7 +1138,7 @@ void grappa3d_image_domain_kernel(const hoNDArray<T>& convKer, size_t RO, size_t
         convKerScaled = convKer;
 
         Gadgetron::scal((typename realType<T>::Type)(std::sqrt((double)(RO*E1*E2))), convKerScaled);
-        Gadgetron::pad(RO, E1, E2, &convKerScaled, &kIm, preset_kIm_with_zeros);
+        Gadgetron::pad(RO, E1, E2, convKerScaled, kIm, preset_kIm_with_zeros);
 
         long long n;
 
@@ -1236,7 +1236,7 @@ void grappa3d_unmixing_coeff(const hoNDArray<T>& convKer, const hoNDArray<T>& co
                 for (size_t dcha = 0; dcha < dstCHA; dcha++)
                 {
                     convKerCha.create(kRO, kE1, kE2, convKerScaled.begin() + scha*kRO*kE1*kE2 + dcha*kRO*kE1*kE2*srcCHA);
-                    Gadgetron::pad(RO, E1, E2, &convKerCha, &convKerChaPadded, true);
+                    Gadgetron::pad(RO, E1, E2, convKerCha, convKerChaPadded, true);
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(convKerChaPadded, kImCha, kImTmp);
 
                     hoNDArray<T> coilMapCha;
@@ -1345,7 +1345,7 @@ void grappa3d_image_domain_unwrapping(const hoNDArray<T>& convKer, const hoNDArr
                 for (size_t scha = 0; scha < srcCHA; scha++)
                 {
                     convKerCha.create(kRO, kE1, kE2, convKerScaled.begin() + scha*kRO*kE1*kE2 + dcha*kRO*kE1*kE2*srcCHA);
-                    Gadgetron::pad(RO, E1, E2, &convKerCha, &convKerChaPadded, true);
+                    Gadgetron::pad(RO, E1, E2, convKerCha, convKerChaPadded, true);
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(convKerChaPadded, kImCha, kImTmp);
 
                     for (size_t n = 0; n < N; n++)
@@ -1431,7 +1431,7 @@ void grappa3d_image_domain_unwrapping_aliasedImage(const hoNDArray<T>& convKer, 
                 for (size_t scha = 0; scha < srcCHA; scha++)
                 {
                     convKerCha.create(kRO, kE1, kE2, convKerScaled.begin() + scha*kRO*kE1*kE2 + dcha*kRO*kE1*kE2*srcCHA);
-                    Gadgetron::pad(RO, E1, E2, &convKerCha, &convKerChaPadded, true);
+                    Gadgetron::pad(RO, E1, E2, convKerCha, convKerChaPadded, true);
                     Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(convKerChaPadded, kImCha, kImTmp);
 
                     for (size_t n = 0; n < N; n++)

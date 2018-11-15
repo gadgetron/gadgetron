@@ -178,7 +178,7 @@ namespace Gadgetron {
                 // if (!debug_folder_full_path_.empty()) { this->gt_exporter_.export_array_complex(recon_obj_[e].recon_res_.data_, debug_folder_full_path_ + "recon_res" + os.str()); }
 
                 if (perform_timing.value()) { gt_timer_.start("GenericReconCartesianSpiritGadget::send_out_image_array"); }
-                this->send_out_image_array(recon_bit_->rbit_[e], recon_obj_[e].recon_res_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
+                this->send_out_image_array(recon_obj_[e].recon_res_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
                 if (perform_timing.value()) { gt_timer_.stop(); }
             }
 

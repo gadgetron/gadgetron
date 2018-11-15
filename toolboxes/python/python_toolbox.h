@@ -187,4 +187,7 @@ public:
 
 }
 
+namespace boost { namespace python {
+bool hasattr(object o, const char* name);
+} }
 

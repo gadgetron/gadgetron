@@ -49,6 +49,7 @@ namespace Gadgetron {
 
       ACE_TCHAR factoryname[1024];
       ACE_OS::sprintf(factoryname, "make_%s", component_name);
+
       
       dll = dllmgr->open_dll (dllname, ACE_DEFAULT_SHLIB_MODE, dll_handle );
       

@@ -542,7 +542,7 @@ namespace Gadgetron{
         		csm_ = boost::make_shared<cuNDArray<float_complext>>(csm_data->get_dimensions());
         		fill(csm_.get(),float_complext(1.0,0));
         	} else
-        		csm_ = estimate_b1_map<float,2>( csm_data.get() );
+        		csm_ = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float,2>(*csm_data));
         }
         else{
           GDEBUG("Set %d is reusing the csm from set %d\n", set, propagate_csm_from_set_);
@@ -855,14 +855,14 @@ namespace Gadgetron{
     std::vector<size_t> order;
     order.push_back(1); order.push_back(2); order.push_back(0);
     
-    boost::shared_ptr< hoNDArray<float> > host_traj_dcw_shifted =
-      permute( host_traj_dcw.get(), &order );
+    auto host_traj_dcw_shifted =
+      permute( *host_traj_dcw, order );
     
     std::vector<size_t> dims_1d;
-    dims_1d.push_back(host_traj_dcw_shifted->get_size(0)*host_traj_dcw_shifted->get_size(1));
+    dims_1d.push_back(host_traj_dcw_shifted.get_size(0)*host_traj_dcw_shifted.get_size(1));
     
     {
-      hoNDArray<float> tmp(&dims_1d, host_traj_dcw_shifted->get_data_ptr()+2*dims_1d[0]);
+      hoNDArray<float> tmp(&dims_1d, host_traj_dcw_shifted.get_data_ptr()+2*dims_1d[0]);
       *dcw = tmp;
     }
     
@@ -872,11 +872,11 @@ namespace Gadgetron{
     order.clear();
     order.push_back(1); order.push_back(0);
 
-    hoNDArray<float> tmp(&dims_2d, host_traj_dcw_shifted->get_data_ptr());
+    hoNDArray<float> tmp(&dims_2d, host_traj_dcw_shifted.get_data_ptr());
     cuNDArray<float> __traj(&tmp);
-    boost::shared_ptr< cuNDArray<float> > _traj = permute( &__traj, &order );
+    cuNDArray<float> _traj = permute( __traj, order );
     
-    cuNDArray<floatd2> tmp2(&dims_1d, (floatd2*)_traj->get_data_ptr());
+    cuNDArray<floatd2> tmp2(&dims_1d, (floatd2*)_traj.get_data_ptr());
     
     *traj = tmp2;
     

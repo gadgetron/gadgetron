@@ -2,6 +2,7 @@ if (WIN32)
     add_definitions(-D__BUILD_GADGETRON_CPUCORE_MATH__)
 endif ()
 
+set(CMAKE_CXX_FLAGS -fpermissive)
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image

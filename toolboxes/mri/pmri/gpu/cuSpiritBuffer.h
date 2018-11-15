@@ -2,21 +2,21 @@
 
 #include "cuBuffer.h"
 #include "cuCgSolver.h"
-#include "cuNFFTOperator.h"
+#include "../../../nfft/NFFTOperator.h"
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D, bool ATOMICS = false> 
-  class EXPORTGPUPMRI cuSpiritBuffer : public cuBuffer<REAL,D,ATOMICS>
+      template<class REAL, unsigned int D = false>
+  class EXPORTGPUPMRI cuSpiritBuffer : public cuBuffer<REAL,D>
   {
   public:
     
-    typedef typename cuBuffer<REAL,D,ATOMICS>::_complext _complext;
-    typedef typename cuBuffer<REAL,D,ATOMICS>::_uint64d  _uint64d;
-    typedef typename cuBuffer<REAL,D,ATOMICS>::_reald    _reald;
+    typedef typename cuBuffer<REAL,D>::_complext _complext;
+    typedef typename cuBuffer<REAL,D>::_uint64d  _uint64d;
+    typedef typename cuBuffer<REAL,D>::_reald    _reald;
 
-    cuSpiritBuffer() : cuBuffer<REAL,D,ATOMICS>() {
-      E_ = boost::shared_ptr< cuNFFTOperator<REAL,D> >(new cuNFFTOperator<REAL,D>() );
+    cuSpiritBuffer() : cuBuffer<REAL,D>() {
+      E_ = boost::make_shared< NFFTOperator<cuNDArray,REAL,D> >();
     }
     
     virtual ~cuSpiritBuffer() {}
@@ -35,9 +35,7 @@ namespace Gadgetron{
     
   protected:
     cuCgSolver<_complext> cg_;
-    boost::shared_ptr< cuNFFTOperator<REAL,D> > E_;
+    boost::shared_ptr< NFFTOperator<cuNDArray,REAL,D> > E_;
   };
   
-  // To prevent the use of atomics with doubles.
-  template<unsigned int D> class EXPORTGPUPMRI cuSpiritBuffer<double,D,true>{};  
 }
