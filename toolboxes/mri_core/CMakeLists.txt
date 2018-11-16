@@ -9,8 +9,6 @@ include_directories(
     ${ISMRMRD_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
     ${MKL_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/apps/gadgetron
-    ${CMAKE_BINARY_DIR}/apps/gadgetron
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_BINARY_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -38,8 +36,7 @@ set( mri_core_header_files
         mri_core_spirit.h 
         mri_core_coil_map_estimation.h 
         mri_core_dependencies.h 
-        mri_core_acquisition_bucket.h
-        mri_core_girf_correction.h
+        mri_core_acquisition_bucket.h 
         mri_core_partial_fourier.h )
 
 set( mri_core_source_files
@@ -49,7 +46,7 @@ set( mri_core_source_files
         mri_core_kspace_filter.cpp
         mri_core_coil_map_estimation.cpp 
         mri_core_dependencies.cpp 
-        mri_core_partial_fourier.cpp mri_core_girf_correction.cpp )
+        mri_core_partial_fourier.cpp )
 
 add_library(gadgetron_toolbox_mri_core SHARED 
      ${mri_core_header_files} ${mri_core_source_files} )
@@ -59,7 +56,7 @@ set_target_properties(gadgetron_toolbox_mri_core PROPERTIES LINKER_LANGUAGE CXX)
 
 target_link_libraries(gadgetron_toolbox_mri_core 
                     gadgetron_toolbox_cpucore 
-                    gadgetron_toolbox_cpucore_math
+                    gadgetron_toolbox_cpucore_math 
                     ${ARMADILLO_LIBRARIES} 
                     gadgetron_toolbox_cpufft 
                     gadgetron_toolbox_cpuklt )

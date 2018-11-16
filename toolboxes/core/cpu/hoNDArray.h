@@ -24,17 +24,15 @@ namespace Gadgetron{
     typedef NDArray<T> BaseClass;
     typedef float coord_type;
     typedef T value_type;
-    using iterator = T*;
-    using const_iterator = const T*;
 
     hoNDArray();
 
-    explicit hoNDArray(const std::vector<size_t> &dimensions);
-    explicit hoNDArray(const std::vector<size_t> *dimensions);
+    explicit hoNDArray(std::vector<size_t> &dimensions);
+    explicit hoNDArray(std::vector<size_t> *dimensions);
     explicit hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions);
 
-    hoNDArray(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
-    hoNDArray(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
     hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
 #if __cplusplus > 199711L
@@ -77,8 +75,8 @@ namespace Gadgetron{
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);
 
-    virtual void create(const std::vector<size_t>& dimensions);
-    virtual void create(const std::vector<size_t> *dimensions);
+    virtual void create(std::vector<size_t>& dimensions);
+    virtual void create(std::vector<size_t> *dimensions);
     virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
 
 #if __cplusplus > 199711L
@@ -86,8 +84,8 @@ namespace Gadgetron{
     virtual void create(std::initializer_list<size_t> dimensions,T* data, bool delete_data_on_destruct = false);
 #endif
 
-    virtual void create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
-    virtual void create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    virtual void create(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+    virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
     virtual void create(boost::shared_ptr<std::vector<size_t>  > dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual void create(size_t len);

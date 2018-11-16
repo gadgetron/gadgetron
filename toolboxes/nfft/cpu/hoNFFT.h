@@ -14,13 +14,10 @@
 #include "vector_td.h"
 #include "complext.h"
 #include <complex>
-#include "../NFFT.h"
 
 #include <boost/shared_ptr.hpp>
-#include "hoArmadillo.h"
 
-#include "../nfft_export.h"
-#include "hoNFFT_sparseMatrix.h"
+#include "cpunfft_export.h"
 
 namespace Gadgetron{
 
@@ -28,14 +25,14 @@ namespace Gadgetron{
         NFFT class declaration
         ----------------------
 
-        REAL: desired precision : float or double only
+        Real: desired precision : float or double only 
         D: dimensionality: 1D, 2D, and 3D supported
     */
 
-    template<class REAL, unsigned int D>
-    class EXPORTNFFT hoNFFT_plan : public NFFT_plan<hoNDArray,REAL,D>
+    template<class Real, unsigned int D>
+    class EXPORTCPUNFFT hoNFFT_plan
     {
-        using ComplexType = std::complex<REAL>;
+        typedef std::complex<Real> ComplexType;
 
         /**
             Main interface
@@ -43,23 +40,33 @@ namespace Gadgetron{
 
         public:
 
+            /**
+                Default constructor
+            */
 
+            hoNFFT_plan();
 
+            /**
+                Constructor defining the required NFFT parameters
 
+                Note: Dimensions of n must be equal.
+
+                /param n: the non-oversampled matrix size to use for NFFT
+                /param osf: the oversampling factor
+                /param wg: the width of the oversampled kernel
+            */
 
             hoNFFT_plan(
-                    const vector_td<size_t,D>& matrix_size,
-                    const vector_td<size_t,D>& matrix_size_os,
-                    REAL W
+                typename uint64d<D>::Type n,
+                Real osf,
+                Real wg
             );
 
-             hoNFFT_plan(
-                    const vector_td<size_t,D>& matrix_size,
-                    REAL oversampling_factor,
-                    REAL W
-            );
+            /** 
+                Destructor
+            */
 
-
+            ~hoNFFT_plan();
 
             /** 
                 Perform NFFT preprocessing for a given trajectory
@@ -68,23 +75,44 @@ namespace Gadgetron{
                 \param mode: enum specifying the preprocessing mode
             */
 
-            virtual void preprocess(
-                const hoNDArray<vector_td<REAL, D>>& k, NFFT_prep_mode prep_mode = NFFT_prep_mode::ALL
-            ) override;
+            void preprocess(
+                const hoNDArray<typename reald<Real, D>::Type>& k
+            );
 
+            /**
+                Enum defining the desired NFFT operation
+            */
+
+            enum NFFT_comp_mode{
+                NFFT_FORWARDS_C2NC, /** forwards cartesian to non */
+                NFFT_BACKWARDS_NC2C, /** backwards non to cartesian */
+                NFFT_BACKWARDS_C2NC, /** backwards cartesian to non */
+                NFFT_FORWARDS_NC2C /** forwards non to cartesian */
+            };
+
+            /**
+                Execute the NFFT
+
+                \param d: the input data array
+                \param m: the output matrix
+                \param w: optional density compensation if not iterative 
+                    provide a 0x0 if non density compensation
+                \param mode: enum specifyiing the mode of operation
+            */
 
             void compute(
-                const hoNDArray<ComplexType > &d,
-                hoNDArray<ComplexType > &m,
-                const hoNDArray<REAL>* dcw,
+                hoNDArray<ComplexType> &d,
+                hoNDArray<ComplexType> &m,
+                hoNDArray<Real>& w,
                 NFFT_comp_mode mode
             );
-            virtual void compute(
-                const hoNDArray<complext<REAL>> &d,
-                hoNDArray<complext<REAL>> &m,
-                const hoNDArray<REAL>* dcw,
+
+            void compute(
+                hoNDArray<complext<Real>> &d,
+                hoNDArray<complext<Real>> &m,
+                hoNDArray<Real>& w,
                 NFFT_comp_mode mode
-            ) override;
+            );
 
             /**
                 To be used by an operator for iterative reconstruction 
@@ -95,16 +123,14 @@ namespace Gadgetron{
                 Note: dimensions of in and out should be the same
             */
             void mult_MH_M(
-                const hoNDArray<ComplexType> &in,
-                hoNDArray<ComplexType> &out,
-                const hoNDArray<REAL>* dcw
+                hoNDArray<ComplexType> &in,
+                hoNDArray<ComplexType> &out
             );
 
-            virtual void mult_MH_M(
-                const hoNDArray<complext<REAL>> &in,
-                hoNDArray<complext<REAL>> &out,
-                const hoNDArray<REAL>* dcw
-            ) override;
+            void mult_MH_M(
+                hoNDArray<complext<Real>> &in,
+                hoNDArray<complext<Real>> &out
+            );
 
         /**
             Utilities
@@ -112,6 +138,14 @@ namespace Gadgetron{
 
         public:
 
+            /**
+                Enum specifying the direction of the NFFT convolution 
+            */
+
+            enum NFFT_conv_mode{
+                NFFT_CONV_C2NC, /** cartesian to non convolution */
+                NFFT_CONV_NC2C /** non to cartesian convolution */
+            };
 
             /** 
                 Perform standalone convolution
@@ -122,18 +156,20 @@ namespace Gadgetron{
             */
 
             void convolve(
-                const hoNDArray<ComplexType> &d,
+                hoNDArray<ComplexType> &d,
                 hoNDArray<ComplexType> &m,
-                NFFT_conv_mode mode,
-                bool accumulate = false
+                NFFT_conv_mode mode
             );
 
-            virtual void convolve(
-                const hoNDArray<complext<REAL>> &d,
-                hoNDArray<complext<REAL>> &m,
-                NFFT_conv_mode mode,
-                bool accumulate = false
-            ) override;
+            /** 
+                enum specifying the direction of the NFFT fft
+            */
+
+            enum NFFT_fft_mode{
+                NFFT_FORWARDS,
+                NFFT_BACKWARDS
+            };
+
             /**
                 Cartesian fft. Making use of the hoNDFFT class.
 
@@ -143,15 +179,8 @@ namespace Gadgetron{
 
             void fft(
                 hoNDArray<ComplexType> &d,
-                NFFT_fft_mode mode,
-                bool do_scale=true
+                NFFT_fft_mode mode
             );
-
-            virtual void fft(
-                hoNDArray<complext<REAL>> &d,
-                NFFT_fft_mode mode,
-                bool do_scale=true
-            ) override;
 
             /**
                 NFFT deapodization
@@ -165,16 +194,17 @@ namespace Gadgetron{
                 bool fourierDomain = false
             );
 
-            virtual void deapodize(
-                hoNDArray<complext<REAL>> &d,
-                bool fourierDomain = false
-            ) override;
-
         /**
             Private implementation methods
         */
 
         private:
+
+            /**
+                Initialize variables and compute tables
+            */
+
+            void initialize();
 
             /**
                 Dedicated convolutions
@@ -185,18 +215,20 @@ namespace Gadgetron{
             */
 
             void convolve_NFFT_C2NC(
-                const hoNDArray<ComplexType> &d,
-                hoNDArray<ComplexType> &m, bool accumulate
+                hoNDArray<ComplexType> &d,
+                hoNDArray<ComplexType> &m
             );
 
             void convolve_NFFT_NC2C(
-                const hoNDArray<ComplexType> &d,
-                hoNDArray<ComplexType> &m, bool accumulate
+                hoNDArray<ComplexType> &d,
+                hoNDArray<ComplexType> &m
             );
 
+            /**
+                Bessel function
+            */
 
-            static vector_td<REAL,D> compute_beta(REAL W, const vector_td<size_t,D>& matrix_size, const vector_td<size_t,D>& matrix_size_os);
-
+            Real bessi0(Real x);
 
         /** 
             Implementation variables
@@ -204,21 +236,16 @@ namespace Gadgetron{
 
         private:
 
-        vector_td<REAL,D> beta;
-        std::vector<NFFT_internal::NFFT_Matrix<REAL>> convolution_matrix;
-        std::vector<NFFT_internal::NFFT_Matrix<REAL>> convolution_matrix_T;
+            typename uint64d<D>::Type n;
 
-        hoNDArray<ComplexType> deapodization_filter_IFFT;
-        hoNDArray<ComplexType> deapodization_filter_FFT;
+            Real wg, kw, kosf, kwidth, beta, osf;
 
-    };
+            hoNDArray<Real> p, daf, nx, ny, nz;
 
+            hoNDArray<ComplexType> da;
 
-    template<class REAL, unsigned int D> struct NFFT<hoNDArray,REAL,D>{
+            hoNDArray<typename reald<Real, D>::Type> k;
 
-        using NFFT_plan = hoNFFT_plan<REAL,D>;
-         static boost::shared_ptr<hoNFFT_plan<REAL,D>> make_plan(const vector_td<size_t,D>& matrix_size, const vector_td<size_t,D>& matrix_size_os,
-                    REAL W);
     };
 
 }

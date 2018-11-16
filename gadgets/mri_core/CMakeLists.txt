@@ -134,9 +134,7 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     WhiteNoiseInjectorGadget.h
                                     NoiseSummaryGadget.h 
                                     NHLBICompression.h
-                                    ImageAccumulatorGadget.h
-                                    ImageArraySendMixin.h
-                                    ImageArraySendMixin.hpp )
+                                    ImageAccumulatorGadget.h)
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -194,8 +192,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 WhiteNoiseInjectorGadget.cpp
                                 RateLimitGadget.cpp
                                 NoiseSummaryGadget.cpp
-                                ImageAccumulatorGadget.cpp
-        )
+                                ImageAccumulatorGadget.cpp )
 
 set( gadgetron_mricore_config_files
     config/default.xml

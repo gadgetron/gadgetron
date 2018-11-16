@@ -1,4 +1,4 @@
-#include "../../nfft/NFFTOperator.h"
+#include "cuNFFTOperator.h"
 
 #include "mex.h"
 #include "MatlabUtils.h"

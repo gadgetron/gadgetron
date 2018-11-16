@@ -15,8 +15,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu    
-    ${CMAKE_SOURCE_DIR}/toolboxes/nfft/cpu
-    ${CMAKE_SOURCE_DIR}/toolboxes/nfft
+		${CMAKE_SOURCE_DIR}/toolboxes/nfft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/operators
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
@@ -30,26 +29,20 @@ include_directories(
     ${ISMRMRD_INCLUDE_DIR}
     ${HDF5_C_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
-)
+)   
 
 set( gadgetron_mri_noncartesian_header_files
-	CPUGriddingReconGadget.h NonCartesianTools.h GriddingReconGadgetBase.h GriddingReconGadgetBase.hpp)
+  GriddingReconGadget.h
+	CPUGriddingReconGadget.h)
 
 set( gadgetron_mri_noncartesian_src_files
-	CPUGriddingReconGadget.cpp NonCartesianTools.cpp)
+  GriddingReconGadget.cpp
+	CPUGriddingReconGadget.cpp) 
 
 set( gadgetron_mri_noncartesian_config_files
 	config/Generic_CPU_Gridding_Recon.xml
- )
-
-
-if(CUDA_FOUND)
-	list(APPEND gadgetron_mri_noncartesian_header_files GriddingReconGadget.h)
-	list(APPEND gadgetron_mri_noncartesian_src_files GriddingReconGadget.cpp)
-
-	list(APPEND gadgetron_mri_noncartesian_config_files config/Generic_Spiral.xml config/Generic_Spiral_SNR.xml)
-
-endif()
+  config/Generic_Spiral.xml
+  config/Generic_Spiral_SNR.xml)
 
 add_library(gadgetron_mri_noncartesian SHARED 
   gadgetron_mri_noncartesian_export.h 
@@ -67,11 +60,14 @@ target_link_libraries(gadgetron_mri_noncartesian
     gadgetron_mricore
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpufft
-    gadgetron_toolbox_cpunfft
+		gadgetron_toolbox_cpunfft
     gadgetron_toolbox_mri_core
     gadgetron_toolbox_cpuoperator
     gadgetron_toolbox_image_analyze_io
-
+    gadgetron_toolbox_gpucore
+    gadgetron_toolbox_gpusolvers
+    gadgetron_toolbox_gpuoperators
+    gadgetron_toolbox_gpuparallelmri
     ${ISMRMRD_LIBRARIES} 
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
@@ -79,18 +75,10 @@ target_link_libraries(gadgetron_mri_noncartesian
     ${Boost_LIBRARIES}
 
 )
-if(CUDA_FOUND)
-    target_link_libraries(gadgetron_mri_noncartesian
-	gadgetron_toolbox_gpucore
-    gadgetron_toolbox_gpusolvers
-    gadgetron_toolbox_gpuoperators
-    gadgetron_toolbox_gpuparallelmri
-	)
-endif()
 
 install(FILES 
     gadgetron_mri_noncartesian_export.h
-    ${gadgetron_mri_noncartesian_header_files}
+    ${gadgetron_mricore_header_files}
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(TARGETS gadgetron_mri_noncartesian DESTINATION lib COMPONENT main)

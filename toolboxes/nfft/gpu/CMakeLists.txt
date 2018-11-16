@@ -10,8 +10,6 @@ endif()
 include_directories( 
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_BINARY_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/nfft
-  ${CMAKE_SOURCE_DIR}/toolboxes/nfft/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
@@ -22,9 +20,10 @@ include_directories(
 
 cuda_add_library(gadgetron_toolbox_gpunfft SHARED 
     cuNFFT.h
+    cuNFFTOperator.h
     gpunfft_export.h
-    cuNFFT.cu
-        cuNFFTOperator.cpp
+    cuNFFT.cu 
+    cuNFFTOperator.cu
   )
 
 set_target_properties(gadgetron_toolbox_gpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
@@ -42,7 +41,7 @@ target_link_libraries(gadgetron_toolbox_gpunfft
 install(TARGETS gadgetron_toolbox_gpunfft DESTINATION lib COMPONENT main)
 
 install(FILES 
-  cuNFFT.h
-        ../NFFTOperator.h
+  cuNFFT.h 
+  cuNFFTOperator.h 
   gpunfft_export.h 
   DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)

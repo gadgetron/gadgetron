@@ -543,7 +543,7 @@ namespace Gadgetron {
 	       std::copy(DATA_Final.begin(), DATA_Final.end(), imarray.data_.begin());
 
 	       compute_image_header(recon_bit, imarray, it);
-	       send_out_image_array(imarray, it, image_series.value() + (static_cast<int>(it) + 1), GADGETRON_IMAGE_REGULAR);
+	       send_out_image_array(recon_bit, imarray, it, image_series.value() + (static_cast<int>(it) + 1), GADGETRON_IMAGE_REGULAR);
 	       ++it;
 	  }
 

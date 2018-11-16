@@ -40,7 +40,6 @@
 #include <condition_variable>
 
 #include "NHLBICompression.h"
-#include "log.h"
 
 #if defined GADGETRON_COMPRESSION_ZFP
 #include "zfp/zfp.h"

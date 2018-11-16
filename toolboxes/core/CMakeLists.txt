@@ -9,7 +9,6 @@ include_directories(${CMAKE_BINARY_DIR}/toolboxes/core/)
 install(FILES
   ${CMAKE_BINARY_DIR}/toolboxes/core/core_defines.h
   NDArray.h
-  NDArray_utils.h
   complext.h
   vector_td.h
   vector_td_operators.h
