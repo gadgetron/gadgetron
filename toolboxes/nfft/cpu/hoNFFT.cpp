@@ -413,29 +413,29 @@ namespace Gadgetron {
 }
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<float, 1>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<float, 1>;
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<float, 2>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<float, 2>;
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<float, 3>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<float, 3>;
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<double, 1>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<double, 1>;
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<double, 2>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<double, 2>;
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<double, 3>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<double, 3>;
 
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,1>;
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,2>;
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,3>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,1>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,2>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,3>;
 
 
 
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,1>;
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,2>;
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,3>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,1>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,2>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,3>;

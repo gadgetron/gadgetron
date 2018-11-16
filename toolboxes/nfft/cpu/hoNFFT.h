@@ -19,7 +19,7 @@
 #include <boost/shared_ptr.hpp>
 #include "hoArmadillo.h"
 
-#include "cpunfft_export.h"
+#include "nfft_export.h"
 #include "hoNFFT_sparseMatrix.h"
 
 namespace Gadgetron{
@@ -33,7 +33,7 @@ namespace Gadgetron{
     */
 
     template<class REAL, unsigned int D>
-    class EXPORTCPUNFFT hoNFFT_plan : public NFFT_plan<hoNDArray,REAL,D>
+    class EXPORTNFFT hoNFFT_plan : public NFFT_plan<hoNDArray,REAL,D>
     {
         using ComplexType = std::complex<REAL>;
 

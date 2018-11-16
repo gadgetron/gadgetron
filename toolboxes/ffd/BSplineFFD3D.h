@@ -576,6 +576,7 @@ bool BSplineFFD3D<T, CoordType, DOut>::ffdApprox(const CoordArrayType& pos, Valu
             Gadgetron::fill(ctrlPtWithoutPadding, crop_offset, tmpCtrlPt);
         }
 
+
         /// calculate residual error
         totalResidual = 0;
         GADGET_CHECK_RETURN_FALSE(this->evaluateFFDArray(pos, approxValue));

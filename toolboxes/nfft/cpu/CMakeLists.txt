@@ -1,5 +1,5 @@
 if (WIN32)
-  add_definitions(-D__BUILD_GADGETRON_CPUNFFT__)
+  add_definitions(-D__BUILD_GADGETRON_NFFT__)
   add_definitions(-D_USE_MATH_DEFINES)
 endif ()
 
@@ -24,7 +24,7 @@ include_directories(
 
 add_library(gadgetron_toolbox_cpunfft SHARED 
     hoNFFT.h
-    cpunfft_export.h
+    ../nfft_export.h
     ../NFFT.h
     ../NFFTOperator.h
     ../NFFTOperator.hpp
