@@ -73,6 +73,17 @@ namespace Gadgetron {
         virtual int process(GadgetContainerMessage<T>* m1);
     };
 
+    class EXPORTGADGETSMRICORE GenericReconKSpaceReadoutBase :public GenericReconBase < ISMRMRD::AcquisitionHeader >
+    {
+    public:
+        GADGET_DECLARE(GenericReconKSpaceReadoutBase);
+
+        typedef GenericReconBase < ISMRMRD::AcquisitionHeader > BaseClass;
+
+        GenericReconKSpaceReadoutBase();
+        virtual ~GenericReconKSpaceReadoutBase();
+    };
+
     class EXPORTGADGETSMRICORE GenericReconDataBase :public GenericReconBase < IsmrmrdReconData >
     {
     public:

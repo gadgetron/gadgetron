@@ -7,7 +7,7 @@
 #include "hoNDArray.h"
 
 
-#include <armadillo>
+#include "armadillo"
 
 /** \file hoArmadillo.h
 \brief Utilities to create an Armadillo matrix or column vector from an hoNDArray.

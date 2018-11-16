@@ -329,7 +329,10 @@ namespace Gadgetron {
             for (size_t i = 0; i < matrix.n_cols; i++) {
                 auto &row_indices = matrix.indices[i];
                 auto &weights = matrix.weights[i];
-#pragma omp simd
+
+#ifndef WIN32
+    #pragma omp simd
+#endif // WIN32
                 for (size_t n = 0; n < row_indices.size(); n++) {
                     result[i] += vector[row_indices[n]] * weights[n];
                 }
@@ -349,7 +352,7 @@ namespace Gadgetron {
         if (!accumulate) clear(&non_cartesian);
 
 #pragma omp parallel for
-        for (size_t b = 0; b < nbatches; b++) {
+        for (int b = 0; b < (int)nbatches; b++) {
 
             const ComplexType* cartesian_view = cartesian.get_data_ptr()+b*convolution_matrix.front().n_rows;
             ComplexType* non_cartesian_view = non_cartesian.get_data_ptr()+b*convolution_matrix.front().n_cols;
@@ -369,7 +372,7 @@ namespace Gadgetron {
         GadgetronTimer timer("Convolution");
         if (!accumulate) clear(&cartesian);
 #pragma omp parallel for
-        for (size_t b = 0; b < nbatches; b++) {
+        for (int b = 0; b < (int)nbatches; b++) {
 
             ComplexType *cartesian_view = cartesian.get_data_ptr() + b * convolution_matrix.front().n_rows;
             const ComplexType *non_cartesian_view = non_cartesian.get_data_ptr() + b * convolution_matrix.front().n_cols;
@@ -410,29 +413,29 @@ namespace Gadgetron {
 }
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<float, 1>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<float, 1>;
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<float, 2>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<float, 2>;
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<float, 3>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<float, 3>;
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<double, 1>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<double, 1>;
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<double, 2>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<double, 2>;
 
 template
-class EXPORTCPUNFFT Gadgetron::hoNFFT_plan<double, 3>;
+class EXPORTNFFT Gadgetron::hoNFFT_plan<double, 3>;
 
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,1>;
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,2>;
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,3>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,1>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,2>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,float,3>;
 
 
 
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,1>;
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,2>;
-template class EXPORTCPUNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,3>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,1>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,2>;
+template class EXPORTNFFT Gadgetron::NFFT<Gadgetron::hoNDArray,double,3>;

@@ -3,10 +3,12 @@
 //
 
 #include <GadgetronTimer.h>
+#include <numeric>
 #include "hoNFFT_sparseMatrix.h"
 #include "KaiserBessel_kernel.h"
 #include "vector_td_utilities.h"
 #include <boost/range/irange.hpp>
+
 namespace {
     using namespace Gadgetron;
 
@@ -86,7 +88,7 @@ Gadgetron::NFFT_internal::make_NFFT_matrix(const Gadgetron::hoNDArray<Gadgetron:
 
     NFFT_Matrix<REAL> matrix(trajectories.get_number_of_elements(),prod(image_dims));
 #pragma omp parallel for 
-    for (size_t i = 0; i < trajectories.get_number_of_elements(); i++) {
+    for (int i = 0; i < (int)trajectories.get_number_of_elements(); i++) {
         std::tie(matrix.indices[i], matrix.weights[i]) = get_indices(trajectories[i], image_dims, W, beta);
     }
     return matrix;

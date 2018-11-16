@@ -11,6 +11,7 @@
 #include <random>
 #include "NonCartesianTools.h"
 #include "NFFTOperator.h"
+
 namespace Gadgetron {
 
 template<template<class> class ARRAY> 	GriddingReconGadgetBase<ARRAY>::GriddingReconGadgetBase() : Gadget1() {}

@@ -102,10 +102,16 @@ namespace Gadgetron {
                                                 float girf_samp_us, const float *read_dir, const float *phase_dir,
                                                 const float *slice_dir) {
 
-            arma::fmat33 rotation_matrix{{read_dir[0],  read_dir[1],  read_dir[2]},
-                                         {phase_dir[0], phase_dir[1], phase_dir[2]},
-                                         {slice_dir[0], slice_dir[1], slice_dir[2]}
-            };
+            arma::fmat33 rotation_matrix;
+            rotation_matrix(0, 0) = read_dir[0];
+            rotation_matrix(0, 1) = read_dir[1];
+            rotation_matrix(0, 2) = read_dir[2];
+            rotation_matrix(1, 0) = phase_dir[0];
+            rotation_matrix(1, 1) = phase_dir[1];
+            rotation_matrix(1, 2) = phase_dir[2];
+            rotation_matrix(2, 0) = slice_dir[0];
+            rotation_matrix(2, 1) = slice_dir[1];
+            rotation_matrix(2, 2) = slice_dir[2];
 
             return GIRF::girf_correct(gradients, *girf_kernel, rotation_matrix, grad_samp_us, girf_samp_us, TE_);
 
