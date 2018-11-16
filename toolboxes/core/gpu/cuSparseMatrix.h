@@ -14,6 +14,8 @@
 
 namespace Gadgetron{
 
+
+
 EXPORTGPUCORE std::string gadgetron_getCusparseErrorString(cusparseStatus_t err);
 
 template<class T> struct cuCsrMatrix {
@@ -23,15 +25,50 @@ template<class T> struct cuCsrMatrix {
 	}
 
 	~cuCsrMatrix(){
-		CUSPARSE_CALL(cusparseDestroyMatDescr(descr));
+		cusparseDestroyMatDescr(descr);
 	}
 
+
+	cuCsrMatrix(cuCsrMatrix&& other){
+		CUSPARSE_CALL(cusparseCreateMatDescr(&descr));
+		*this = std::move(other);
+	}
+
+	cuCsrMatrix(const cuCsrMatrix& other){
+		CUSPARSE_CALL(cusparseCreateMatDescr(&descr));
+		*this = other;
+	}
+
+	cuCsrMatrix& operator=(cuCsrMatrix&& other){
+		CUSPARSE_CALL(cusparseCopyMatDescr(descr,other.descr));
+		csrRow = std::move(other.csrRow);
+		csrColdnd = std::move(other.csrColdnd);
+		data = std::move(other.data);
+		m = other.m;
+		n = other.n;
+		nnz = other.nnz;
+		return *this;
+	}
+
+	cuCsrMatrix& operator=(const cuCsrMatrix& other){
+		CUSPARSE_CALL(cusparseCopyMatDescr(descr,other.descr));
+		csrRow = other.csrRow;
+		csrColdnd = other.csrColdnd;
+		data = other.data;
+		m = other.m;
+		n = other.n;
+		nnz = other.nnz;
+		return *this;
+	}
 
 	int m,n, nnz;
 	thrust::device_vector<int> csrRow, csrColdnd;
 	thrust::device_vector<T> data;
 	cusparseMatDescr_t descr;
 };
+
+
+
 
 /**
  * Performs a sparse matrix vector multiplication: vec_out = alpha*Mat * beta*vec_in
@@ -44,6 +81,8 @@ template<class T> struct cuCsrMatrix {
  */
 template<class T> EXPORTGPUCORE void sparseMV(T alpha,T beta, const cuCsrMatrix<T> & mat, const cuNDArray<T> & vec_in, cuNDArray<T>& vec_out, bool adjoint=false);
 
+template<class T> EXPORTGPUCORE void sparseMM(T alpha,T beta, const cuCsrMatrix<T> & mat, const cuNDArray<T> & mat_in, cuNDArray<T>& mat_out, bool adjoint=false);
 
+template<class T> EXPORTGPUCORE cuCsrMatrix<T> transpose(const cuCsrMatrix<T>& matrix);
 
 }

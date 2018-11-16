@@ -201,7 +201,7 @@ namespace Gadgetron {
                 if(this->send_out_raw.value())
                 {
                     if (perform_timing.value()) { gt_timer_.start("CmrCartesianKSpaceBinningCineGadget::send_out_image_array, raw"); }
-                    this->send_out_image_array(recon_bit_->rbit_[e], res_raw_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
+                    this->send_out_image_array(res_raw_, e, image_series.value() + ((int)e + 1), GADGETRON_IMAGE_REGULAR);
                     if (perform_timing.value()) { gt_timer_.stop(); }
                 }
 
@@ -215,7 +215,7 @@ namespace Gadgetron {
                 }
 
                 if (perform_timing.value()) { gt_timer_.start("CmrCartesianKSpaceBinningCineGadget::send_out_image_array, binning"); }
-                this->send_out_image_array(recon_bit_->rbit_[e], res_binning_, e, image_series.value() + (int)e + 2, GADGETRON_IMAGE_RETRO);
+                this->send_out_image_array(res_binning_, e, image_series.value() + (int)e + 2, GADGETRON_IMAGE_RETRO);
                 if (perform_timing.value()) { gt_timer_.stop(); }
             }
         }
@@ -398,7 +398,7 @@ namespace Gadgetron {
     {
         try
         {
-            BaseClass::prep_image_header_send_out(res, n, s, slc, encoding, series_num, data_role);
+            ImageArraySendMixin::prep_image_header_send_out(res, n, s, slc, encoding, series_num, data_role);
 
             size_t RO = res.data_.get_size(0);
             size_t E1 = res.data_.get_size(1);

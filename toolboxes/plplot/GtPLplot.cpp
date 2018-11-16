@@ -62,7 +62,7 @@ void outputPlotIm(const hoNDArray<unsigned char>& im, bool trueColor, hoNDArray<
 
         plotIm.create(xsize, ysize, 3);
 
-        Gadgetron::permute(&plotImPermuted, &plotIm, &dim_order);
+        Gadgetron::permute(plotImPermuted, plotIm, dim_order);
     }
     else
     {
@@ -76,7 +76,7 @@ void outputPlotIm(const hoNDArray<unsigned char>& im, bool trueColor, hoNDArray<
         dim_order[1] = 1;
 
         plotIm.create(xsize, ysize);
-        Gadgetron::permute(&plotIm2D, &plotIm, &dim_order);
+        Gadgetron::permute(plotIm2D, plotIm, dim_order);
     }
 }
 

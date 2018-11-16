@@ -10,7 +10,7 @@
 #include "cuNDArray_operators.h"
 #include "radial_utilities.h"
 #include "vector_td_operators.h"
-#include "cuNFFTOperator.h"
+#include "../../toolboxes/nfft/NFFTOperator.h"
 #include "multiplicationOperatorContainer.h"
 #include "cuCgSolver.h"
 #include "cuTvOperator.h"
@@ -437,23 +437,23 @@ void CMRTGadget::extract_trajectory_and_dcw_from_queue
 		std::vector<size_t> order;
 		order.push_back(1); order.push_back(2); order.push_back(0);
 
-		boost::shared_ptr< hoNDArray<float> > host_traj_dcw_shifted = permute( host_traj_dcw.get(), &order );
+		auto host_traj_dcw_shifted = permute( *host_traj_dcw, order );
 
 		std::vector<size_t> dims_1d;
-		dims_1d.push_back(host_traj_dcw_shifted->get_size(0)*host_traj_dcw_shifted->get_size(1));
+		dims_1d.push_back(host_traj_dcw_shifted.get_size(0)*host_traj_dcw_shifted.get_size(1));
 
-		dcw = boost::shared_ptr<hoNDArray<float> > (new hoNDArray<float>(&dims_1d, host_traj_dcw_shifted->get_data_ptr()+2*dims_1d[0]));
+		dcw = boost::shared_ptr<hoNDArray<float> > (new hoNDArray<float>(&dims_1d, host_traj_dcw_shifted.get_data_ptr()+2*dims_1d[0]));
 
 
 		std::vector<size_t> dims_2d = dims_1d; dims_2d.push_back(2);
 		order.clear(); order.push_back(1); order.push_back(0);
 
 
-		hoNDArray<float> tmp(&dims_2d, host_traj_dcw_shifted->get_data_ptr());
+		hoNDArray<float> tmp(&dims_2d, host_traj_dcw_shifted.get_data_ptr());
 
-		boost::shared_ptr< hoNDArray<float> > _traj = permute( &tmp, &order );
+		auto _traj = permute( tmp, order );
 
-		traj = boost::shared_ptr<hoNDArray<floatd2> > (new hoNDArray<floatd2>(&dims_1d, (floatd2*)_traj->get_data_ptr()));
+		traj = boost::shared_ptr<hoNDArray<floatd2> > (new hoNDArray<floatd2>(&dims_1d, (floatd2*)_traj.get_data_ptr()));
 	}
 
 	std::vector<size_t >dims_2d;

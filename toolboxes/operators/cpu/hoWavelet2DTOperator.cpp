@@ -111,7 +111,7 @@ void hoWavelet2DTOperator<T>::forward_wav(const hoNDArray<T>& x, hoNDArray<T>& y
                 for (t = 0; t<num; t++)
                 {
                     hoNDArray<T> in(RO, E1, CHA, E2, pX + t*RO*E1*CHA*E2);
-                    Gadgetron::permute(&in, &forward_buf_, &dimOrder);
+                    Gadgetron::permute(in, forward_buf_, dimOrder);
 
                     long long cha;
 
@@ -204,7 +204,7 @@ void hoWavelet2DTOperator<T>::adjoint_wav(const hoNDArray<T>& x, hoNDArray<T>& y
                         p_active_wav_->transform(in, out_idwt, 3, num_of_wav_levels_, false);
                     }
 
-                    Gadgetron::permute(&adjoint_buf_, &out, &dimOrder);
+                    Gadgetron::permute(adjoint_buf_, out, dimOrder);
                 }
             }
         }

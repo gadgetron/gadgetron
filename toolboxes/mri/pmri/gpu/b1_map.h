@@ -18,8 +18,8 @@ namespace Gadgetron{
    * \param data Reconstructed reference images from the individual coils. Dimensionality is D+1 where the latter dimensions denotes the coil images.
    * \param taget_coils Denotes the number of target coils. Cannot exceed the size of dimension D of the data. A negative value indicates that sensitivity maps are computed for the full coil image dimension.
    */
-  template<class REAL, unsigned int D> EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<REAL> > >
-  estimate_b1_map( cuNDArray<complext<REAL> > *data, int target_coils = -1 );
+  template<class REAL, unsigned int D> EXPORTGPUPMRI  cuNDArray<complext<REAL> >
+  estimate_b1_map(const cuNDArray<complext<REAL>>& data, int target_coils = -1 );
 
     /** 
    * \brief Estimate b1 map (coil sensitivities) of single or double precision using the NIH Souheil method

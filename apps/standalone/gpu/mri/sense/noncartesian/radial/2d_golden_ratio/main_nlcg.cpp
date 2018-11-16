@@ -155,7 +155,7 @@ int main(int argc, char** argv)
 	// Estimate csm
 	boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_accumulated_coil_images();
 	*acc_images *= rhs_buffer->get_normalization_factor();
-	boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
+	auto csm = boost::make_shared<cuNDArray<_complext>>(estimate_b1_map<_real,2>( *acc_images.get() ));
 
 
 	// Define encoding matrix for non-Cartesian SENSE
@@ -171,7 +171,7 @@ int main(int argc, char** argv)
 	E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
 
 	// Duplicate the regularization image to 'frames_per_reconstruction' frames
-	boost::shared_ptr<cuNDArray<_complext> > reg_image = expand( &_reg_image, frames_per_reconstruction );
+	auto reg_image = boost::make_shared<cuNDArray<_complext>>(expand( _reg_image, frames_per_reconstruction ));
 
 	acc_images.reset();
 

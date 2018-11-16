@@ -6,12 +6,12 @@
 
 namespace Gadgetron {
 
-  template<class REAL, unsigned int D, bool ATOMICS>
-  void cuSpiritBuffer<REAL,D,ATOMICS>::
+  template<class REAL, unsigned int D>
+  void cuSpiritBuffer<REAL,D>::
   setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W, 
 	 unsigned int num_coils, unsigned int num_cycles, unsigned int num_sub_cycles )
   {      
-    cuBuffer<REAL,D,ATOMICS>::setup( matrix_size, matrix_size_os, W, num_coils, num_cycles, num_sub_cycles );
+    cuBuffer<REAL,D>::setup( matrix_size, matrix_size_os, W, num_coils, num_cycles, num_sub_cycles );
     
     E_->setup( this->matrix_size_, this->matrix_size_os_, W );
 
@@ -21,21 +21,21 @@ namespace Gadgetron {
     cg_.set_output_mode( cuCgSolver<_complext>::OUTPUT_VERBOSE);
   }
 
-  template<class REAL, unsigned int D, bool ATOMICS>
-  void cuSpiritBuffer<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj ) {
+  template<class REAL, unsigned int D>
+  void cuSpiritBuffer<REAL,D>::preprocess( cuNDArray<_reald> *traj ) {
     E_->preprocess(traj);
     std::vector<size_t> dims = *traj->get_dimensions();
     dims.push_back(this->num_coils_);
     E_->set_codomain_dimensions(&dims);
   }
 
-  template<class REAL, unsigned int D, bool ATOMICS>
-  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSpiritBuffer<REAL,D,ATOMICS>::get_accumulated_coil_images()
+  template<class REAL, unsigned int D>
+  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSpiritBuffer<REAL,D>::get_accumulated_coil_images()
   {
     // Apply adjoint operator to get the rhs
     //
 
-    boost::shared_ptr< cuNDArray<_complext> > rhs = cuBuffer<REAL,D,ATOMICS>::get_accumulated_coil_images();
+    boost::shared_ptr< cuNDArray<_complext> > rhs = cuBuffer<REAL,D>::get_accumulated_coil_images();
 
     // Invert by cg solver
     //
@@ -52,8 +52,8 @@ namespace Gadgetron {
     return this->acc_image_;
   }
 
-  template<class REAL, unsigned int D, bool ATOMICS>
-  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSpiritBuffer<REAL,D,ATOMICS>::get_combined_coil_image()
+  template<class REAL, unsigned int D>
+  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSpiritBuffer<REAL,D>::get_combined_coil_image()
   {
     // Get the individual coil images
     //
@@ -74,16 +74,11 @@ namespace Gadgetron {
   // Instantiations
   //
 
-  template class EXPORTGPUPMRI cuSpiritBuffer<float,2,true>;
-  template class EXPORTGPUPMRI cuSpiritBuffer<float,2,false>;
+  template class EXPORTGPUPMRI cuSpiritBuffer<float,2>;
+  template class EXPORTGPUPMRI cuSpiritBuffer<float,3>;
+  template class EXPORTGPUPMRI cuSpiritBuffer<float,4>;
 
-  template class EXPORTGPUPMRI cuSpiritBuffer<float,3,true>;
-  template class EXPORTGPUPMRI cuSpiritBuffer<float,3,false>;
-
-  template class EXPORTGPUPMRI cuSpiritBuffer<float,4,true>;
-  template class EXPORTGPUPMRI cuSpiritBuffer<float,4,false>;
-
-  template class EXPORTGPUPMRI cuSpiritBuffer<double,2,false>;
-  template class EXPORTGPUPMRI cuSpiritBuffer<double,3,false>;
-  template class EXPORTGPUPMRI cuSpiritBuffer<double,4,false>;
+  template class EXPORTGPUPMRI cuSpiritBuffer<double,2>;
+  template class EXPORTGPUPMRI cuSpiritBuffer<double,3>;
+  template class EXPORTGPUPMRI cuSpiritBuffer<double,4>;
 }

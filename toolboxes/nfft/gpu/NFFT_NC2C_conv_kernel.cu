@@ -40,11 +40,12 @@ NFFT_H_output( unsigned int number_of_batches, complext<REAL>* __restrict__ imag
 template<class REAL, unsigned int D> __inline__ __device__ void
 NFFT_H_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, REAL W, 
 		 unsigned int number_of_samples, unsigned int number_of_batches, unsigned int number_of_domains,
-		 const vector_td<REAL,D> * __restrict__ traj_positions, complext<REAL>*samples, const unsigned int * __restrict__ tuples_last,
+		 const vector_td<REAL,D> * __restrict__ traj_positions, const  complext<REAL>* __restrict__ samples, const unsigned int * __restrict__ tuples_last,
 		 const unsigned int * __restrict__ bucket_begin, const unsigned int * __restrict__ bucket_end,
 		 unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real, 
 		 unsigned int globalThreadId, vector_td<unsigned int,D> domainPos, unsigned int sharedMemFirstCellIdx )
 {
+    using namespace thrust::cuda_cub;
 
   REAL *shared_mem = (REAL*) _shared_mem;
 
@@ -77,13 +78,15 @@ NFFT_H_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Typ
       	continue;
       
       // Apply Kaiser-Bessel filter to input images
-      for( unsigned int batch=0; batch<number_of_batches; batch++ ){
+      for( int batch=0; batch<number_of_batches; batch++ ){
 	
-	complext<REAL>sample_val = samples[sampleIdx+batch*gridDim.y*number_of_samples];
+//	complext<REAL>sample_val = samples[sampleIdx+batch*gridDim.y*number_of_samples];
+       unsigned int idx = sampleIdx*number_of_batches+batch;
+	// Apply filter to shared memory domain.
 
-	// Apply filter to shared memory domain. 
-	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)] += (weight*sample_val._real);
-	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize] += (weight*sample_val._imag);
+	    complext<REAL> sample_val  = cub::ThreadLoad<cub::LOAD_CS>(samples+idx);
+	    shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)] += (weight*sample_val._real);
+	    shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize] += (weight*sample_val._imag);
       }
     }
 }
@@ -95,7 +98,7 @@ NFFT_H_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Typ
 template<class REAL, unsigned int D> __global__ void
 NFFT_H_convolve_kernel( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, REAL W,
 			vector_td<unsigned int,D> domain_count_grid, unsigned int number_of_samples, unsigned int number_of_batches,
-			const vector_td<REAL,D> * __restrict__ traj_positions, complext<REAL>* __restrict__ image, complext<REAL>* __restrict__ samples,
+			const vector_td<REAL,D> * __restrict__ traj_positions, complext<REAL>* __restrict__ image, const complext<REAL>* __restrict__ samples,
 			const unsigned int * __restrict__ tuples_last, const unsigned int * __restrict__ bucket_begin, const unsigned int * __restrict__ bucket_end,
 			unsigned int double_warp_size_power,
 			REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real )
@@ -122,7 +125,7 @@ NFFT_H_convolve_kernel( typename reald<REAL,D>::Type alpha, typename reald<REAL,
 
   // All shared memory floats corresponding to domain 'threadIdx.x' is located in bank threadIdx.x%warp_size to limit bank conflicts
   const unsigned int scatterSharedMemStart = (threadIdx.x/warpSize)*warpSize;
-  const unsigned int scatterSharedMemStartOffset = threadIdx.x&(warpSize-1); // a faster way of saying (threadIdx.x%warpSize) 
+  const unsigned int scatterSharedMemStartOffset = threadIdx.x&(warpSize-1); // a faster way of saying (threadIdx.x%warpSize)
   const unsigned int sharedMemFirstCellIdx = scatterSharedMemStart*num_reals + scatterSharedMemStartOffset;
 
   REAL *shared_mem = (REAL*) _shared_mem;

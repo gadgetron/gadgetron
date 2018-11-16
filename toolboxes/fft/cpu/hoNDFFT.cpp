@@ -19,154 +19,13 @@ template<typename T> hoNDFFT<T>* hoNDFFT<T>::instance()
 template<class T> hoNDFFT<T>* hoNDFFT<T>::instance_ = NULL;
 
 
-template<class T> void hoNDFFT<T>::fft_int_uneven(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign)
-   {
-       if (sign != -1 && sign != 1) return;
-       if (dim_to_transform >= input->get_number_of_dimensions()) return;
-
-       int stride     = 1;           //Distance between points in transform
-       int dist       = 1;           //Distance between vectors
-       int trafos     = 1;           //Transformations per chunk
-       int chunks     = 1;           //Number of chunks
-       int chunk_size = 1;           //Points per chunk
-       int length     = 1;           //Length of each transform
-       int total_dist = 1;
-
-
-
-       typename fftw_types<T>::plan * fft_plan        = 0;
-       ComplexType*    fft_storage     = 0;
-
-       ComplexType* fft_buffer = 0;
-       ComplexType* data_ptr = 0;
-
-       //Set sizes
-       length = (int)input->get_size(dim_to_transform);
-
-
-       T scale = std::sqrt((T)length);
-
-
-       if (dim_to_transform != 0)
-       {
-           for (size_t i = 0; i < dim_to_transform; i++)
-           {
-               chunk_size *= (int)input->get_size(i);
-           }
-           stride = chunk_size;
-           trafos = chunk_size;
-           chunk_size *= length;
-
-           for (size_t i = dim_to_transform+1; i < input->get_number_of_dimensions(); i++)
-           {
-               chunks *= (int)input->get_size(i);
-           }
-       }
-       else
-       {
-           for (size_t i = 1; i < input->get_number_of_dimensions(); i++)
-           {
-               trafos *= (int)input->get_size(i);
-           }
-           chunk_size = trafos*length;
-
-           dist = length;
-       }
-
-       total_dist = trafos*dist;
-
-
-       //Allocate storage and make plan
-       {
-           std::lock_guard<std::mutex> guard(mutex_);
-           fft_storage = (ComplexType*)fftw_malloc_(sizeof(T)*length*2);
-           if (fft_storage == 0)
-           {
-               GDEBUG_STREAM("Failed to allocate buffer for FFT" << std::endl);
-               return;
-           }
-           fft_buffer = fft_storage;
-
-           unsigned planner_flags = FFTW_MEASURE | FFTW_DESTROY_INPUT;
-
-           fft_plan = fftw_plan_dft_1d_(length, fft_storage, fft_storage, sign, planner_flags);
-
-           if (fft_plan == 0)
-           {
-               fftw_free_(fft_storage);
-               GDEBUG_STREAM("Failed to create plan for FFT" << std::endl);
-               return;
-           }
-       }
-
-       //Grab address of data
-       data_ptr = input->get_data_ptr();
-
-       int idx1_max = chunks*chunk_size;
-       int idx1, idx2;       //Index variables
-       int idx2_limit;
-       int middle_point = ((length+1)/2);
-
-       for (idx1 = 0; idx1 < idx1_max; idx1+=chunk_size) //Loop over all chunks
-       {
-           idx2_limit = idx1+total_dist;
-           for (idx2 = idx1; idx2 < idx2_limit; idx2+=dist) //Loop over all transformations
-           {
-               ///Copy data to buffer.
-               {
-                   int j, idx3 = idx2;
-                   for (j = middle_point; j < length; idx3+=stride)
-                   {
-                       fft_buffer[j++] = data_ptr[idx3  ];
-                   }
-                   for (j = 0; j < middle_point; idx3+=stride)
-                   {
-                       fft_buffer[j++] = data_ptr[idx3  ];
-                   }
-               }
-
-               fftw_execute_(fft_plan);
-
-               {
-                   int j, idx3 = idx2;
-
-                   for (j = middle_point; j < length; idx3+=stride)
-                   {
-                       data_ptr[idx3  ] = fft_buffer[j++]*scale;
-                   }
-                   for (j = 0; j < middle_point; idx3+=stride)
-                   {
-                       data_ptr[idx3  ] = fft_buffer[j++]*scale;
-                       data_ptr[idx3] = fft_buffer[j++]*scale;
-                   }
-               }
-
-           } //Loop over transformations
-       } //Loop over chunks
-
-       //clean up
-       {
-           std::lock_guard<std::mutex> guard(mutex_);
-           if (fft_plan != 0)
-           {
-               fftw_destroy_plan_(fft_plan);
-           }
-
-           if (fft_storage != 0)
-           {
-               fftw_free_(fft_storage);
-           }
-       }
-   }
-
 template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign)	{
 	if (sign != -1 && sign != 1) throw std::runtime_error("hoNDFFT::fft_int: illegal sign provided");
 	if (dim_to_transform >= input->get_number_of_dimensions()) throw std::runtime_error("hoNDFFT::fft_int: ransform dimension larger than dimension of input array ");
 
 	//Only works for even dimensions. Fall back to slow version
 	if (input->get_size(dim_to_transform)%2 == 1){
-		fft_int_uneven(input,dim_to_transform,sign);
-		return;
+	    throw std::runtime_error("fft_int only works for even input");
 	}
 	int stride     = 1;           //Distance between points in transform
 	int dist       = 1;           //Distance between vectors
@@ -175,7 +34,6 @@ template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size
 	int chunk_size = 1;           //Points per chunk
 	int length     = 1;           //Length of each transform
 	int total_dist = 1;
-
 
 	typename fftw_types<T>::plan * fft_plan        = 0;
 
@@ -214,8 +72,7 @@ template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size
 	total_dist = trafos*dist;
 
 	//Flip frequencies to center image
-	if (sign == FFTW_BACKWARD)
-		timeswitch(input,dim_to_transform);
+    timeswitch(input,dim_to_transform);
 //Grab address of data
 	ComplexType* data_ptr = input->get_data_ptr();
 
@@ -236,8 +93,7 @@ template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size
 		fftw_execute_dft_(fft_plan,data_ptr+k*chunk_size,data_ptr+k*chunk_size);
 
 //Flip frequencies to center DC freq
-	if (sign == FFTW_FORWARD)
-		timeswitch(input,dim_to_transform);
+    timeswitch(input,dim_to_transform);
 
 
 	//clean up

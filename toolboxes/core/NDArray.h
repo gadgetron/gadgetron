@@ -35,12 +35,12 @@ namespace Gadgetron{
 
         virtual ~NDArray() {}
 
-        virtual void create(std::vector<size_t> &dimensions);
-        virtual void create(std::vector<size_t> *dimensions);
+        virtual void create(const std::vector<size_t> &dimensions);
+        virtual void create(const std::vector<size_t> *dimensions);
         virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
 
-        virtual void create(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
-        virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+        virtual void create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+        virtual void create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
         virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
         void squeeze();
@@ -48,8 +48,10 @@ namespace Gadgetron{
         void reshape(const std::vector<size_t> *dims);
         void reshape(const std::vector<size_t> & dims){ this->reshape(&dims);}
         void reshape(boost::shared_ptr< std::vector<size_t> > dims);
+        void reshape(std::initializer_list<size_t> dims){ this->reshape(std::vector<size_t>(dims));}
 
-        bool dimensions_equal(std::vector<size_t> *d) const;
+        bool dimensions_equal(const std::vector<size_t> *d) const;
+        bool dimensions_equal(const std::vector<size_t>& d) const;
 
         template<class S> bool dimensions_equal(const NDArray<S> *a) const
         {
@@ -168,7 +170,7 @@ namespace Gadgetron{
     };
 
     template <typename T> 
-    inline void NDArray<T>::create(std::vector<size_t> *dimensions) 
+    inline void NDArray<T>::create(const std::vector<size_t> *dimensions)
     {
         if(!dimensions) throw std::runtime_error("NDArray<T>::create(): 0x0 pointer provided");
         dimensions_ = *dimensions;
@@ -177,7 +179,7 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline void NDArray<T>::create(std::vector<size_t>& dimensions) 
+    inline void NDArray<T>::create(const std::vector<size_t>& dimensions)
     {
         dimensions_ = dimensions;
         allocate_memory();
@@ -191,7 +193,7 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    void NDArray<T>::create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct) 
+    void NDArray<T>::create(const std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct)
     {
         if (!dimensions) throw std::runtime_error("NDArray<T>::create(): 0x0 pointer provided");
         if (!data) throw std::runtime_error("NDArray<T>::create(): 0x0 pointer provided");    
@@ -206,7 +208,7 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    void NDArray<T>::create(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct) 
+    void NDArray<T>::create(const std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct)
     {
         if (!data) throw std::runtime_error("NDArray<T>::create(): 0x0 pointer provided");    
         dimensions_ = dimensions;
@@ -262,20 +264,25 @@ namespace Gadgetron{
     }
 
     template <typename T> 
-    inline bool NDArray<T>::dimensions_equal(std::vector<size_t> *d) const
+    inline bool NDArray<T>::dimensions_equal(const std::vector<size_t>& d) const
     {
-        if ( this->dimensions_.size() != d->size() ) return false;
+        if ( this->dimensions_.size() != d.size() ) return false;
 
         size_t NDim = this->dimensions_.size();
         for ( size_t ii=0; ii<NDim; ii++ )
         {
-            if ( this->dimensions_[ii] != (*d)[ii] ) return false;
+            if ( this->dimensions_[ii] != d[ii] ) return false;
         }
 
         return true;
     }
 
-    template <typename T> 
+    template <typename T>
+    inline bool NDArray<T>::dimensions_equal(const std::vector<size_t>* d) const
+    {
+        return this->dimensions_equal(*d);
+    }
+    template <typename T>
     inline size_t NDArray<T>::get_number_of_dimensions() const
     {
         return (size_t)dimensions_.size();

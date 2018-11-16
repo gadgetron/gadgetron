@@ -91,7 +91,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
             boost::shared_ptr< cuNDArray<float_complext> > csm;
             {
                 //GPUTimer timer("GRAPPA CSM");
-                csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
+                csm = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float,2>( device_data, target_coils_ ));
 
                 // estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power, D, DH_D, V1, U1 );
 
