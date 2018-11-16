@@ -90,7 +90,6 @@ namespace Gadgetron {
     std::vector<ACE_DLL_Handle*> dll_handles_;
     std::map<std::string, std::string> global_gadget_parameters_;
     boost::filesystem::path gadgetron_home_;
-    GadgetronXML::GadgetStreamConfiguration stream_configuration_;
 
     virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name);
 

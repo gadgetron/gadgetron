@@ -213,6 +213,12 @@ int GadgetStreamController::configure_from_file(std::string filename)
 
 int GadgetStreamController::configure(std::istream& config_file_stream)
 {
+    //StreamConfiguration stream_config = parse_stream_config(config_file_stream);
+
+
+    //Stream stream = stream_config.assemble_stream();
+
+
   GadgetronXML::GadgetStreamConfiguration cfg;
   try {
     deserialize(config_file_stream, cfg);
@@ -221,7 +227,7 @@ int GadgetStreamController::configure(std::istream& config_file_stream)
     return GADGET_FAIL;
   }
 
-  stream_configuration_ = cfg;
+  // stream_configuration_ = cfg;
 
   GINFO("Found %d readers\n", cfg.reader.size());
   GINFO("Found %d writers\n", cfg.writer.size());

@@ -1,15 +1,19 @@
 
 add_library(gadgetron_core SHARED
+    Context.cpp
     Gadget.cpp
+    Stream.cpp
     Node.cpp
-    ConvergeNode.cpp
-    DisperseNode.cpp)
+    MergeNode.cpp
+    BranchNode.cpp)
 
 install(FILES
+        Context.h
         Gadget.h
+        Stream.h
         Node.h
-        ConvergeNode.h
-        DisperseNode.h
+        MergeNode.h
+        BranchNode.h
         DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
 
 install(FILES

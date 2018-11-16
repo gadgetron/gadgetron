@@ -332,6 +332,7 @@ endif()
 
 find_package(HDF5 1.8 COMPONENTS C CXX HL REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
+find_package(PUGIXML REQUIRED)
 find_package(ISMRMRD REQUIRED)
 link_directories(${ISMRMRD_LIBRARY_DIRS})
 if (CUDA_FOUND AND USE_CUDA)
