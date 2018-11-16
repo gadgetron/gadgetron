@@ -10,6 +10,7 @@ endif()
 include_directories( 
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/nfft
+    ${CMAKE_SOURCE_DIR}/toolboxes/nfft/cpu
     ${CMAKE_BINARY_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/math
