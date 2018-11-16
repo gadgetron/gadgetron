@@ -10,7 +10,7 @@
 #include "cuNDArray.h"
 #include "vector_td_utilities.h"
 #include "parameterparser.h"
-#include "../../../../../../toolboxes/nfft/NFFTOperator.h"
+#include "cuNFFTOperator.h"
 #include "cuCgSolver.h"
 #include "GPUTimer.h"
 
@@ -93,7 +93,7 @@ int main( int argc, char** argv)
   samples *= *dcw;
 
   // Define and setup NFFT encoding operator
-  auto  E = boost::make_shared<NFFTOperator<cuNDArray,_real,2>>();
+  boost::shared_ptr< cuNFFTOperator<_real,2> > E( new cuNFFTOperator<_real,2>() );
   
   E->setup( matrix_size, matrix_size_os, kernel_width );
 

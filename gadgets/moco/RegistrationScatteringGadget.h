@@ -346,9 +346,7 @@ namespace Gadgetron{
         order.push_back(3);
         
         GDEBUG("Writing out displacement field with dimensions: %d %d %d %d %d\n", order[0], order[1], order[2], order[3], order[4]);
-        auto displacement_field = permute(reg_field,order);
-        write_displacement_field( &displacement_field );
-
+        write_displacement_field( permute(&reg_field, &order).get() );
       }
       
       return Gadget::close(flags);

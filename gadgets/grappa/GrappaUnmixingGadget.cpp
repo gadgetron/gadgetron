@@ -1,6 +1,7 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "GrappaUnmixingGadget.h"
 #include "hoNDFFT.h"
+
 namespace Gadgetron{
 
   GrappaUnmixingGadget::GrappaUnmixingGadget() {
@@ -35,7 +36,6 @@ namespace Gadgetron{
 
     m1->cont(0);
     m2->cont(cm2);
-
 
     hoNDFFT<float>::instance()->ifft3c(*m3->getObjectPtr());
     /*

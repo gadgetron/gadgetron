@@ -83,7 +83,6 @@ set(test_src_files tests.cpp
       cmr_mapping_test.cpp
       node_discovery_test.cpp
       hoNDArray_linalg_test.cpp
-      parse_girf_test.cpp
       )
 
 if (PYTHONLIBS_FOUND)

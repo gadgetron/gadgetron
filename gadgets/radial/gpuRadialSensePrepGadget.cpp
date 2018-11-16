@@ -21,7 +21,8 @@ namespace Gadgetron{
       return boost::shared_ptr< hoNDArray<float_complext> >();
     }
     
-    auto csm = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float,2>( *csm_data ));
+    boost::shared_ptr< cuNDArray<float_complext> > csm = 
+      estimate_b1_map<float,2>( csm_data.get() );
   
     if( !csm.get() ){
       GDEBUG("Error during coil estimation\n");
