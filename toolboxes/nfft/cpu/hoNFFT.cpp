@@ -329,7 +329,10 @@ namespace Gadgetron {
             for (size_t i = 0; i < matrix.n_cols; i++) {
                 auto &row_indices = matrix.indices[i];
                 auto &weights = matrix.weights[i];
-#pragma omp simd
+
+#ifndef WIN32
+    #pragma omp simd
+#endif // WIN32
                 for (size_t n = 0; n < row_indices.size(); n++) {
                     result[i] += vector[row_indices[n]] * weights[n];
                 }
@@ -349,7 +352,7 @@ namespace Gadgetron {
         if (!accumulate) clear(&non_cartesian);
 
 #pragma omp parallel for
-        for (size_t b = 0; b < nbatches; b++) {
+        for (int b = 0; b < (int)nbatches; b++) {
 
             const ComplexType* cartesian_view = cartesian.get_data_ptr()+b*convolution_matrix.front().n_rows;
             ComplexType* non_cartesian_view = non_cartesian.get_data_ptr()+b*convolution_matrix.front().n_cols;
@@ -369,7 +372,7 @@ namespace Gadgetron {
         GadgetronTimer timer("Convolution");
         if (!accumulate) clear(&cartesian);
 #pragma omp parallel for
-        for (size_t b = 0; b < nbatches; b++) {
+        for (int b = 0; b < (int)nbatches; b++) {
 
             ComplexType *cartesian_view = cartesian.get_data_ptr() + b * convolution_matrix.front().n_rows;
             const ComplexType *non_cartesian_view = non_cartesian.get_data_ptr() + b * convolution_matrix.front().n_cols;

@@ -11,7 +11,5 @@ namespace Gadgetron{
     template EXPORTCPUNFFT class NFFTOperator<hoNDArray,double,1>;
     template EXPORTCPUNFFT class NFFTOperator<hoNDArray,double,2>;
     template EXPORTCPUNFFT class NFFTOperator<hoNDArray,double,3>;
-
-
 }
 

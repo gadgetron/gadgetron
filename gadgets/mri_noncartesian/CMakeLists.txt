@@ -15,8 +15,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu    
-	${CMAKE_SOURCE_DIR}/toolboxes/nfft/cpu
-	${CMAKE_SOURCE_DIR}/toolboxes/nfft
+    ${CMAKE_SOURCE_DIR}/toolboxes/nfft/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/nfft
     ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/operators
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
@@ -67,7 +67,7 @@ target_link_libraries(gadgetron_mri_noncartesian
     gadgetron_mricore
     gadgetron_toolbox_cpucore
     gadgetron_toolbox_cpufft
-		gadgetron_toolbox_cpunfft
+    gadgetron_toolbox_cpunfft
     gadgetron_toolbox_mri_core
     gadgetron_toolbox_cpuoperator
     gadgetron_toolbox_image_analyze_io

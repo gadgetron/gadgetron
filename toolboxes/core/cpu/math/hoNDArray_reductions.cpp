@@ -173,6 +173,7 @@ namespace Gadgetron{
     // --------------------------------------------------------------------------------
 
     template EXPORTCPUCOREMATH float max(const hoNDArray<float>*);
+    template EXPORTCPUCOREMATH float max(const hoNDArray<float>&);
     template EXPORTCPUCOREMATH float min(const hoNDArray<float>*);
     template EXPORTCPUCOREMATH float mean(const hoNDArray<float>*);
     template EXPORTCPUCOREMATH float median(const hoNDArray<float>*);
@@ -181,6 +182,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH float var(const hoNDArray<float>*);
 
     template EXPORTCPUCOREMATH double max(const hoNDArray<double>*);
+    template EXPORTCPUCOREMATH double max(const hoNDArray<double>&);
     template EXPORTCPUCOREMATH double min(const hoNDArray<double>*);
     template EXPORTCPUCOREMATH double mean(const hoNDArray<double>*);
     template EXPORTCPUCOREMATH double median(const hoNDArray<double>*);

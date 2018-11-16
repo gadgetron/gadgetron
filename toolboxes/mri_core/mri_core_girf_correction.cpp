@@ -88,7 +88,11 @@ namespace Gadgetron {
                 arma::fmat33 inv_rotation = arma::inv(rotation_matrix);
 
                 for (size_t i = 0; i < nlines; i++) {
-                    arma::cx_vec3 gradient_vector = {rotated(i, 0), rotated(i, 1), rotated(i, 2)};
+                    // arma::cx_vec3 gradient_vector = {rotated(i, 0), rotated(i, 1), rotated(i, 2)};
+                    arma::cx_vec3 gradient_vector;
+                    gradient_vector[0] = rotated(i, 0);
+                    gradient_vector[1] = rotated(i, 1);
+                    gradient_vector[2] = rotated(i, 2);
                     gradient_vector = inv_rotation * gradient_vector;
                     for (size_t k = 0; k < D; k++) {
                         result(i,batch)[k] = std::copysign(std::abs(gradient_vector[k]), std::real(gradient_vector[k]));

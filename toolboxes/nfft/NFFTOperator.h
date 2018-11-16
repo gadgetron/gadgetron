@@ -1,12 +1,14 @@
 #pragma once
 
+#include "cpunfft_export.h"
 #include "linearOperator.h"
 #include "NFFT.h"
 #include "vector_td.h"
 
 namespace Gadgetron{
 
-  template<template<class> class ARRAY, class REAL, unsigned int D> class NFFTOperator : public virtual linearOperator<ARRAY< complext<REAL> > >
+  template<template<class> class ARRAY, class REAL, unsigned int D> 
+  class EXPORTCPUNFFT NFFTOperator : public virtual linearOperator<ARRAY< complext<REAL> > >
   {  
   public:
 

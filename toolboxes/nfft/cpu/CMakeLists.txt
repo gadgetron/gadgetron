@@ -18,13 +18,21 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/operators
     ${Boost_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
+    ${ARMADILLO_INCLUDE_DIRS}
   )
 
 add_library(gadgetron_toolbox_cpunfft SHARED 
     hoNFFT.h
     cpunfft_export.h
+    ../NFFT.h
+    ../NFFTOperator.h
+    ../NFFTOperator.hpp
+    ../NFFT.hpp
+    ../KaiserBessel_kernel.h
     hoNFFT.cpp
-        hoNFFT_sparseMatrix.cpp hoNFFT_sparseMatrix.h hoNFFTOperator.cpp)
+    hoNFFT_sparseMatrix.cpp 
+    hoNFFT_sparseMatrix.h 
+    hoNFFTOperator.cpp)
 
 set_target_properties(gadgetron_toolbox_cpunfft PROPERTIES VERSION ${GADGETRON_VERSION_STRING} SOVERSION ${GADGETRON_SOVERSION})
 

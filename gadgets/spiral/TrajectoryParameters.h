@@ -5,7 +5,7 @@
 #include "Gadget.h"
 #include "mri_core_utility.h"
 #include "vds.h"
-#include <armadillo>
+#include "armadillo"
 #include <mri_core_girf_correction.h>
 
 namespace Gadgetron {

@@ -843,6 +843,8 @@ namespace {
     template EXPORTCPUCOREMATH void inv(const hoNDArray<double>& x, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH void inv(const hoNDArray< std::complex<float> >& x, hoNDArray< std::complex<float> >& r);
     template EXPORTCPUCOREMATH void inv(const hoNDArray< std::complex<double> >& x, hoNDArray< std::complex<double> >& r);
+    template EXPORTCPUCOREMATH void inv(const hoNDArray< complext<float> >& x, hoNDArray< complext<float> >& r);
+    template EXPORTCPUCOREMATH void inv(const hoNDArray< complext<double> >& x, hoNDArray< complext<double> >& r);
 
     // --------------------------------------------------------------------------------
 

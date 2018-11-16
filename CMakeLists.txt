@@ -29,7 +29,7 @@ endif()
 if(EXISTS $ENV{ISMRMRD_HOME})
   list(APPEND CMAKE_PREFIX_PATH $ENV{ISMRMRD_HOME})
 endif()
-list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+# list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 message(STATUS "Looking for packages in : ${CMAKE_PREFIX_PATH}")
 # ---
 
@@ -87,9 +87,6 @@ set(GADGETRON_VAR_DIR /var/lib/gadgetron/ CACHE PATH "Path where Gadgetron will 
 endif()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-
-
-
 #Set the build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -138,6 +135,7 @@ if (WIN32)
   endif ()
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /bigobj")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /EHsc /MP /bigobj /w3")
   set (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} /INCREMENTAL:NO")
   set (CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} /INCREMENTAL:NO")
   set (CMAKE_EXE_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:NO")
@@ -251,11 +249,7 @@ set(Boost_NO_BOOST_CMAKE ON)
 if(WIN32)
   add_definitions( -DBOOST_ALL_NO_LIB )
   add_definitions( -DBOOST_ALL_DYN_LINK )
-endif()
-
-if(WIN32)
-  add_definitions( -DBOOST_ALL_NO_LIB )
-  add_definitions( -DBOOST_ALL_DYN_LINK )
+  add_definitions( -DBOOST_NO_EXCEPTIONS )
 endif()
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono

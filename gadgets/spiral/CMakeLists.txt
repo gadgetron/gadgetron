@@ -10,6 +10,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
+  ${ARMADILLO_INCLUDE_DIRS}
   )
 
 set(SPIRAL_HEADER_FILES gadgetron_spiral_export.h SpiralToGenericGadget.h vds.h TrajectoryParameters.h)
