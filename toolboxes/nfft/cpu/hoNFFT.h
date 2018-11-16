@@ -19,7 +19,7 @@
 #include <boost/shared_ptr.hpp>
 #include "hoArmadillo.h"
 
-#include "nfft_export.h"
+#include "../nfft_export.h"
 #include "hoNFFT_sparseMatrix.h"
 
 namespace Gadgetron{
