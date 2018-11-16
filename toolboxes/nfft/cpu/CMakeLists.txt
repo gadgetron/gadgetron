@@ -47,6 +47,5 @@ target_link_libraries(gadgetron_toolbox_cpunfft
 install(TARGETS gadgetron_toolbox_cpunfft DESTINATION lib COMPONENT main)
 
 install(FILES 
-    hoNFFT.h 
-    cpunfft_export.h 
+    hoNFFT.h      
     DESTINATION ${GADGETRON_INSTALL_INCLUDE_PATH} COMPONENT main)
