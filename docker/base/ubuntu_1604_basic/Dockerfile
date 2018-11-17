@@ -1,8 +1,5 @@
 FROM ubuntu:16.04
 
-ARG BART_URL=https://github.com/mrirecon/bart
-ARG BART_BRANCH=master
-
 #Fix default ceres package on 16.04 is broken
 
 RUN apt-get update --quiet && \
@@ -27,6 +24,7 @@ RUN apt-get install --no-install-recommends --no-install-suggests --yes python3-
 RUN pip3 uninstall h5py
 RUN apt-get install -y python3-h5py
 
+RUN pip3 install --upgrade tensorflow
 RUN pip3 install http://download.pytorch.org/whl/cpu/torch-0.4.1-cp35-cp35m-linux_x86_64.whl 
 RUN pip3 install torchvision 
 RUN pip3 install tensorboardx visdom
@@ -80,6 +78,9 @@ RUN cd /opt && \
     make -j$(nproc) && \
     make install && \ 
     cd /opt && rm -rf ./armadillo-8.600.0
+
+# Clean up downloads
+RUN rm -rf /opt/*
 
 #Set more environment variables in preparation for Gadgetron installation
 ENV GADGETRON_HOME=/usr/local \
