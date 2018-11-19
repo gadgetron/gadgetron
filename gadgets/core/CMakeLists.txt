@@ -1,4 +1,6 @@
-
+include_directories(
+    ${ISMRMRD_INCLUDE_DIR}
+)
 set(core_header_files
     Channel.h
     Channel.hpp

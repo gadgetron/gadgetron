@@ -1,13 +1,15 @@
 #pragma once
 
-#include "ismrmrd.h"
+#include <ismrmrd/xml.h>
+
+#include "Channel.h"
 namespace Gadgetron { namespace Core {
 
-    class Gadget {
+    template<class T> class Gadget {
     public:
-        Gadget(const ISMRMRD:IsmrmrdHeader& header){};
+        Gadget(const ISMRMRD::IsmrmrdHeader& header){};
 
-        virtual void process(Channel& in, Channel& out) = 0;
+        virtual void process(InputChannel<T>& in, OutputChannel& out) = 0;
 
 
 

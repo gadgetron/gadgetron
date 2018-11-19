@@ -4,12 +4,13 @@
 namespace Gadgetron{ namespace Core {
 
     class Message {
-
+    public:
         virtual ~Message(){};
 
     };
 
     template<class T> class TypedMessage : public Message {
+    public:
 
         TypedMessage(T input) : data(std::make_unique<T>(input)) {
 

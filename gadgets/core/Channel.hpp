@@ -6,15 +6,15 @@ namespace Gadgetron {
     class InputChannel<T>::Iterator {
     public:
         Iterator(InputChannel<T> *c) : channel(*c) {
-
+            this->operator*();
         }
 
         Iterator() : channel(nullptr) {}
 
         Iterator &operator++() {
-            if (channel->is_open()) {
+            try {
                 element = channel->pop();
-            } else {
+            } catch(ChannelClosedError err) {
                 channel = nullptr;
             }
             return *this;
@@ -93,7 +93,25 @@ namespace Gadgetron {
     }
 
     template<class T> void  OutputChannel::push(std::unique_ptr<T>&& ptr) {
-    this->push_message(std::unique_ptr<Message>(new TypedMessage<T>(ptr)));
+        this->push_message(std::unique_ptr<Message>(new TypedMessage<T>(ptr)));
 
     }
+
+
+    template<class T> InputMessageChannel<T>::InputMessageChannel(std::shared_ptr<InputChannel<Message>> input,
+                                             std::shared_ptr<Gadgetron::Core::OutputChannel> output):
+                                             in(input), out(output){}
+
+    template<class T> std::unique_ptr<T> InputMessageChannel<T>::pop() {
+
+        std::unique_ptr<Message> message = in->pop();
+
+        while (typeid(*message) != typeid(T)) {
+            out->push(std::move(message));
+            message = in->pop();
+        }
+
+        return message;
+    }
+
 }}
