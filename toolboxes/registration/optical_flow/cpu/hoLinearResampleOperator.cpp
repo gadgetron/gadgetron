@@ -19,8 +19,8 @@ namespace Gadgetron{
       throw std::runtime_error("hoLinearResampleOperator::mult_M(): illegal input/output array." );
     }
   
-    arma::Row<typename stdType<T>::Type > in_vec = as_arma_row(in);
-    arma::Row<typename stdType<T>::Type > out_vec = as_arma_row(out);
+    arma::Row<typename stdType<T>::Type > in_vec = as_arma_row(*in);
+    arma::Row<typename stdType<T>::Type > out_vec = as_arma_row(*out);
     out_vec = in_vec*R_T_;
   }
 
@@ -35,8 +35,8 @@ namespace Gadgetron{
       throw std::runtime_error("hoLinearResampleOperator::mult_M(): illegal input/output array." );
     }
 
-    arma::Col<typename stdType<T>::Type > in_vec = as_arma_col(in);
-    arma::Col<typename stdType<T>::Type > out_vec = as_arma_col(out);
+    arma::Col<typename stdType<T>::Type > in_vec = as_arma_col(*in);
+    arma::Col<typename stdType<T>::Type > out_vec = as_arma_col(*out);
     out_vec = R_T_ * in_vec;
   }
   

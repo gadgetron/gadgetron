@@ -157,21 +157,11 @@ namespace Gadgetron {
 
     template<typename T>
     inline std::ostream &operator<<(std::ostream &os, const complext<T> &a) {
-        os << a.real() << ' ' << a.imag() << "i";
+        os << a.real() << (a.imag() > 0 ? "+" : " " )  << a.imag() << "i";
         return os;
     }
 
-    template<>
-    inline std::ostream &operator<<(std::ostream &os, const complext<float> &a) {
-        os << a.real() << ' ' << a.imag() << "i";
-        return os;
-    }
 
-    template<>
-    inline std::ostream &operator<<(std::ostream &os, const complext<double> &a) {
-        os << a.real() << ' ' << a.imag() << "i";
-        return os;
-    }
 
     typedef complext<float> float_complext;
     typedef complext<double> double_complext;

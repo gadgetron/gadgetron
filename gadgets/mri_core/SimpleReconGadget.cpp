@@ -1,7 +1,6 @@
 #include "SimpleReconGadget.h"
 #include "hoNDFFT.h"
 #include "hoNDArray_math.h"
-
 namespace Gadgetron{
 
 SimpleReconGadget::SimpleReconGadget()

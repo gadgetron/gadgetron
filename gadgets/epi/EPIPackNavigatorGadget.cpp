@@ -71,7 +71,7 @@ int EPIPackNavigatorGadget::process(
   // We have data from encoding space 0.
 
   // Make an armadillo matrix of the data
-  arma::cx_fmat adata = as_arma_matrix(m2->getObjectPtr());
+  arma::cx_fmat adata = as_arma_matrix(*m2->getObjectPtr());
 
   // Check to see if the data is a navigator line or an imaging line
   if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA))

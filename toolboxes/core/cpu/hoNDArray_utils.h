@@ -65,90 +65,73 @@ namespace Gadgetron {
     size_t current_idx_;
   };
 
-  template<class T> boost::shared_ptr< hoNDArray<T> > shift_dim( hoNDArray<T> *in, int shift )  
+  template<class T> hoNDArray<T> shift_dim( const hoNDArray<T>& in, int shift )
   {
-    if( in == 0x0 ) {
-      throw std::runtime_error("shift_dim(): invalid input pointer provided");;
-    }    
     std::vector<size_t> order;
-    for (size_t i = 0; i < in->get_number_of_dimensions(); i++) {
-      order.push_back(static_cast<size_t>((i+shift)%in->get_number_of_dimensions()));
+    for (size_t i = 0; i < in.get_number_of_dimensions(); i++) {
+      order.push_back(static_cast<size_t>((i+shift)%in.get_number_of_dimensions()));
     }
-    return permute(in,&order);
+    return permute(in,order);
   }
 
-  template<class T> void shift_dim( hoNDArray<T> *in, hoNDArray<T> *out, int shift )
+  template<class T> void shift_dim(const hoNDArray<T>& in, hoNDArray<T>& out, int shift )
   {
-    if( in == 0x0 || out == 0x0 ) {
-      throw std::runtime_error("shift_dim(): invalid pointer provided");;
-    }    
     std::vector<size_t> order;
-    for (size_t i = 0; i < in->get_number_of_dimensions(); i++) {
-      order.push_back(static_cast<size_t>((i+shift)%in->get_number_of_dimensions()));
+    for (size_t i = 0; i < in.get_number_of_dimensions(); i++) {
+      order.push_back(static_cast<size_t>((i+shift)%in.get_number_of_dimensions()));
     }
-    permute(in,out,&order);
+    permute(in,out,order);
   }
 
-  template<class T> boost::shared_ptr< hoNDArray<T> > 
-  permute( hoNDArray<T> *in, std::vector<size_t> *dim_order, int shift_mode = 0) 
+  template<class T>  hoNDArray<T>
+  permute( const hoNDArray<T>& in, const std::vector<size_t>& dim_order)
   {
-    if( in == 0x0 || dim_order == 0x0 ) {
-      throw std::runtime_error("permute(): invalid pointer provided");;
-    }    
 
     std::vector<size_t> dims;
-    for (size_t i = 0; i < dim_order->size(); i++)
-      dims.push_back(in->get_dimensions()->at(dim_order->at(i)));
-    boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>() );    
-    out->create(&dims);
-    permute( in, out.get(), dim_order, shift_mode );
+    for (size_t i = 0; i < dim_order.size(); i++)
+      dims.push_back(in.get_dimensions()->at(dim_order[i]));
+    hoNDArray<T> out(&dims);
+    permute( in, out, dim_order);
     return out;
   }
 
   template<class T> void 
-  permute( hoNDArray<T> *in, hoNDArray<T> *out, std::vector<size_t> *dim_order, int shift_mode = 0) 
+  permute(const  hoNDArray<T>& in, hoNDArray<T>& out, const std::vector<size_t>& dim_order)
   {
-    if( in == 0x0 || out == 0x0 || dim_order == 0x0 ) {
-      throw std::runtime_error("permute(): invalid pointer provided");;
-    }    
-
-    if( in == out ){
-      throw std::runtime_error("permute(): in-place permutation not supported");;
-    }   
 
     // Check ordering array
-    if (dim_order->size() > in->get_number_of_dimensions()) {
+    if (dim_order.size() > in.get_number_of_dimensions()) {
       throw std::runtime_error("hoNDArray::permute - Invalid length of dimension ordering array");;
     }
 
-    std::vector<size_t> dim_count(in->get_number_of_dimensions(),0);
-    for (size_t i = 0; i < dim_order->size(); i++) {
-      if ((*dim_order)[i] >= in->get_number_of_dimensions()) {
+    std::vector<size_t> dim_count(in.get_number_of_dimensions(),0);
+    for (size_t i = 0; i < dim_order.size(); i++) {
+      if (dim_order[i] >= in.get_number_of_dimensions()) {
         throw std::runtime_error("hoNDArray::permute - Invalid dimension order array");;
       }
-      dim_count[(*dim_order)[i]]++;
+      dim_count[dim_order[i]]++;
     }
 
     // Create an internal array to store the dimensions
     std::vector<size_t> dim_order_int;
 
     // Check that there are no duplicate dimensions
-    for (size_t i = 0; i < dim_order->size(); i++) {
-      if (dim_count[(*dim_order)[i]] != 1) {
+    for (size_t i = 0; i < dim_order.size(); i++) {
+      if (dim_count[dim_order[i]] != 1) {
         throw std::runtime_error("hoNDArray::permute - Invalid dimension order array (duplicates)");;
 
       }
-      dim_order_int.push_back((*dim_order)[i]);
+      dim_order_int.push_back(dim_order[i]);
     }
 
     for (size_t i = 0; i < dim_order_int.size(); i++) {
-      if ((*in->get_dimensions())[dim_order_int[i]] != out->get_size(i)) {
+      if ((*in.get_dimensions())[dim_order_int[i]] != out.get_size(i)) {
         throw std::runtime_error("permute(): dimensions of output array do not match the input array");;
       }
     }
 
     // Pad dimension order array with dimension not mentioned in order array
-    if (dim_order_int.size() < in->get_number_of_dimensions()) {
+    if (dim_order_int.size() < in.get_number_of_dimensions()) {
       for (size_t i = 0; i < dim_count.size(); i++) {
         if (dim_count[i] == 0) {
           dim_order_int.push_back(i);
@@ -156,14 +139,14 @@ namespace Gadgetron {
       }
     }
 
-    T* o = out->get_data_ptr();
+    T* o = out.get_data_ptr();
 
     // if memcpy can be used during permute
     size_t stride = 1;
     size_t num_dim_memcpy = 0;
     for (size_t i = 0; i < dim_order_int.size(); i++) {
         if (dim_order_int[i]==i){
-            stride *= in->get_size(i);
+            stride *= in.get_size(i);
             num_dim_memcpy = i;
         }
         else{
@@ -173,32 +156,32 @@ namespace Gadgetron {
 
     if (stride == 1) {
         // point by point assignment is needed
-        ArrayIterator it(in->get_dimensions().get(), &dim_order_int);
-        for (size_t i = 0; i < in->get_number_of_elements(); i++) {
-            o[i] = in->get_data_ptr()[it.get_current_idx()];
+        ArrayIterator it(in.get_dimensions().get(), &dim_order_int);
+        for (size_t i = 0; i < in.get_number_of_elements(); i++) {
+            o[i] = in.get_data_ptr()[it.get_current_idx()];
             it.advance();
         }
     }
     else {
         // memcpy can be used
 
-        size_t nDim = in->get_number_of_dimensions();
-        size_t num_memcpy = in->get_number_of_elements() / stride;
+        size_t nDim = in.get_number_of_dimensions();
+        size_t num_memcpy = in.get_number_of_elements() / stride;
 
         if (num_dim_memcpy == nDim - 1){
-            memcpy(out->begin(), in->begin(), in->get_number_of_bytes());
+            memcpy(out.begin(), in.begin(), in.get_number_of_bytes());
             return;
         }
 
         // for the array index calculation
         std::vector<size_t> dim_permute(nDim-num_dim_memcpy-1);
         for (size_t i = num_dim_memcpy+1; i < dim_order_int.size(); i++) {
-            dim_permute[i - num_dim_memcpy - 1] = in->get_size(i);
+            dim_permute[i - num_dim_memcpy - 1] = in.get_size(i);
         }
 
         size_t n;
 
-        hoNDArray<T> permuteArray(dim_permute, in->begin(), false);
+        const hoNDArray<T> permuteArray(dim_permute, const_cast<T*>(in.get_data_ptr()), false);
 
         // starting index for in and out array for every permute memcpy operation
         std::vector<size_t> ind_permute_in(dim_permute.size(), 0), ind_in(nDim, 0), ind_out(nDim, 0);
@@ -212,83 +195,76 @@ namespace Gadgetron {
                 ind_out[i] = ind_in[dim_order_int[i]];
             }
 
-            size_t offset_in = in->calculate_offset(ind_in);
-            size_t offset_out = out->calculate_offset(ind_out);
+            size_t offset_in = in.calculate_offset(ind_in);
+            size_t offset_out = out.calculate_offset(ind_out);
 
-            memcpy(o + offset_out, in->begin() + offset_in, sizeof(T)*stride);
+            memcpy(o + offset_out, in.begin() + offset_in, sizeof(T)*stride);
         }
     }
   }
 
   // Expand array to new dimension
-  template<class T> boost::shared_ptr<hoNDArray<T> > 
-  expand(hoNDArray<T> *in, size_t new_dim_size )
+  template<class T> hoNDArray<T>
+  expand(const hoNDArray<T>& in, size_t new_dim_size )
   {
-    if( in == 0x0 ){
-      throw std::runtime_error("expand(): illegal input pointer.");;
-    }
 
-    const size_t number_of_elements_in = in->get_number_of_elements();    
+    const size_t number_of_elements_in = in.get_number_of_elements();
 
-    std::vector<size_t> dims = *in->get_dimensions(); 
+    std::vector<size_t> dims = *in.get_dimensions();
     dims.push_back(new_dim_size);
 
-    boost::shared_ptr< hoNDArray<T> > out(new hoNDArray<T>(&dims));
+    auto out = hoNDArray<T>(&dims);
 
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
     for( long long int idx=0; idx<number_of_elements_in*new_dim_size; idx++ ){
-      (*out)[idx] = in->at(idx%number_of_elements_in);
+      out[idx] = in[idx%number_of_elements_in];
     }
     return out;
   }
 
   namespace {
-      template<class T, class ACCUMULATOR> boost::shared_ptr<hoNDArray<T> >
-      accumulate(const hoNDArray<T> *in, size_t dim, ACCUMULATOR acc )
+      template<class T, class ACCUMULATOR> hoNDArray<T>
+      accumulate(const hoNDArray<T>& in, size_t dim, ACCUMULATOR acc )
       {
-          if( in == 0x0 ){
-              throw std::runtime_error("sum(): illegal input pointer.");;
-          }
-
-          if( !(in->get_number_of_dimensions()>1) ){
+          if( !(in.get_number_of_dimensions()>1) ){
               throw std::runtime_error("sum(): underdimensioned.");;
           }
 
-          if( dim > in->get_number_of_dimensions()-1 ){
+          if( dim > in.get_number_of_dimensions()-1 ){
               throw std::runtime_error( "sum(): dimension out of range.");;
           }
 
-          size_t number_of_batches = in->get_size(dim);
-          size_t number_of_elements = in->get_number_of_elements()/number_of_batches;
+          size_t number_of_batches = in.get_size(dim);
+          size_t number_of_elements = in.get_number_of_elements()/number_of_batches;
           std::vector<size_t> dims;
-          for (auto i = 0; i < in->get_number_of_dimensions(); i++){
-              if (i != dim) dims.push_back(in->get_size(i));
+          for (auto i = 0; i < in.get_number_of_dimensions(); i++){
+              if (i != dim) dims.push_back(in.get_size(i));
           }
 
-          auto  out = boost::make_shared<hoNDArray<T>>(&dims);
-          auto orig_dims = *in->get_dimensions();
+          auto  out = hoNDArray<T>(&dims);
+          auto orig_dims = *in.get_dimensions();
           auto stride = std::accumulate(orig_dims.begin(),orig_dims.begin()+dim,1,std::multiplies<size_t>());
 
 
 
           size_t inner_elements = stride;
-          size_t outer_elements = out->get_number_of_elements()/inner_elements;
+          size_t outer_elements = out.get_number_of_elements()/inner_elements;
 //#ifdef USE_OMP
 //#pragma omp parallel for schedule(dynamic,1) collapse(2)
 //#endif
           for (size_t outer_idx = 0; outer_idx < outer_elements; outer_idx++) {
 
-              for (long long idx = 0; idx < (long long) inner_elements; idx++) {
+              for (size_t idx = 0; idx < inner_elements; idx++) {
                   size_t offset = outer_idx*inner_elements;
                   size_t old_offset = offset*number_of_batches;
-                  T val = in->at(idx+old_offset);
+                  T val = in.at(idx+old_offset);
                   for (size_t j = 1; j < number_of_batches; j++) {
                       size_t in_idx = j * stride + idx+ old_offset;
-                      val = acc(val,in->at(in_idx));
+                      val = acc(val,in.at(in_idx));
                   }
-                  out->at(idx + offset) = val;
+                  out.at(idx + offset) = val;
               }
           }
           return out;
@@ -296,20 +272,25 @@ namespace Gadgetron {
   }
 
   // Sum over dimension
-  template<class T> boost::shared_ptr<hoNDArray<T> > 
-  sum(const hoNDArray<T> *in, size_t dim )
+  template<class T> hoNDArray<T>
+  sum(const hoNDArray<T>& in, size_t dim )
   {
       return accumulate(in, dim, std::plus<T>());
   }
+    template<class T> boost::shared_ptr<hoNDArray<T>>
+  sum(const hoNDArray<T>* in, size_t dim )
+  {
+      return boost::make_shared<hoNDArray<T>>(accumulate(*in, dim, std::plus<T>()));
+  }
 
-    template<class T> boost::shared_ptr<hoNDArray<T> >
-    max(const hoNDArray<T> *in, size_t dim )
+    template<class T> hoNDArray<T>
+    max(const hoNDArray<T>& in, size_t dim )
     {
         return accumulate(in, dim, [](auto v1, auto v2){ return std::max(v1,v2);});
     }
 
-    template<class T> boost::shared_ptr<hoNDArray<T> >
-    min(const hoNDArray<T> *in, size_t dim )
+    template<class T> hoNDArray<T>
+    min(const hoNDArray<T>& in, size_t dim )
     {
         return accumulate(in, dim,  [](auto v1, auto v2){ return std::min(v1,v2);});
     }
@@ -321,45 +302,38 @@ namespace Gadgetron {
   * @param[out] out Output array after cropping
   */
   template<class T, unsigned int D> void
-  crop(const vector_td<size_t, D>& crop_offset, const vector_td<size_t, D>& crop_size, hoNDArray<T> *in, hoNDArray<T> *out)
+  crop(const vector_td<size_t, D>& crop_offset, const vector_td<size_t, D>& crop_size, const hoNDArray<T>& in, hoNDArray<T>& out)
   {
-      if (in == 0x0){
-          throw std::runtime_error("crop: 0x0 array provided");;
-      }
 
-      if (in->get_number_of_dimensions() < D){
+      if (in.get_number_of_dimensions() < D){
           std::stringstream ss;
           ss << "crop: number of image dimensions should be at least " << D;
           throw std::runtime_error(ss.str());;
       }
 
-      if (out == 0x0){
-          throw std::runtime_error("crop: 0x0 array provided");;
-      }
-
       std::vector<size_t> dims = to_std_vector(crop_size);
-      for (unsigned int d = D; d<in->get_number_of_dimensions(); d++){
-          dims.push_back(in->get_size(d));
+      for (unsigned int d = D; d<in.get_number_of_dimensions(); d++){
+          dims.push_back(in.get_size(d));
       }
 
-      if (!out->dimensions_equal(&dims)){
-          out->create(dims);
+      if (!out.dimensions_equal(&dims)){
+          out.create(dims);
       }
 
-      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(*in->get_dimensions());
-      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(*out->get_dimensions());
+      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(*in.get_dimensions());
+      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(*out.get_dimensions());
 
       if (weak_greater(crop_offset + matrix_size_out, matrix_size_in)){
           throw std::runtime_error("crop: cropping size mismatch");;
       }
 
-      size_t len = out->get_size(0);
-      size_t num = out->get_number_of_elements() / len;
+      size_t len = out.get_size(0);
+      size_t num = out.get_number_of_elements() / len;
 
       long long k;
 
-      T *in_ptr = in->get_data_ptr();
-      T *out_ptr = out->get_data_ptr();
+      const T *in_ptr = in.get_data_ptr();
+      T *out_ptr = out.get_data_ptr();
 
       #pragma omp parallel default(none) private(k) shared(in_ptr, out_ptr, num, len, in, out, crop_offset)
       {
@@ -367,69 +341,64 @@ namespace Gadgetron {
 
       #pragma omp for 
           for (k = 0; k < (long long)num; k++){
-              ind = out->calculate_index(k*len);
+              ind = out.calculate_index(k*len);
               for (unsigned int d = 0; d < D; d++){
                   ind[d] += crop_offset[d];
               }
 
-              T* in_ptr_curr = in_ptr + in->calculate_offset(ind);
+              const T* in_ptr_curr = in_ptr + in.calculate_offset(ind);
               memcpy(out_ptr + k*len, in_ptr_curr, sizeof(T)*len);
           }
       }
   }
 
   /**
-  * @param[in] crop_size Size of cropped array
+  * @param[in] crop_size
   * @param[in] in input array
-  * @param[out] out Output array after cropping
-
   * Crop the input array around its center N/2; that is, the center pixel of in array is the center pixel of out array
   */
-  template<class T, unsigned int D> void
-  crop(const vector_td<size_t, D>& crop_size, hoNDArray<T> *in, hoNDArray<T> *out)
+  template<class T, unsigned int D> hoNDArray<T>
+  crop(const vector_td<size_t, D>& crop_size, const hoNDArray<T>& in)
   {
     // compute crop offset, perserving the center
-    if (in == 0x0){
-        throw std::runtime_error("crop: 0x0 array provided");;
-    }
-
-    vector_td<size_t, D> crop_offset;
-
-    unsigned int d;
-    for (d = 0; d < D; d++)
-    {
-        crop_offset[d] = in->get_size(d) / 2 - crop_size[d] / 2;
-    }
-
+    hoNDArray<T> out;
+    auto crop_offset = (from_std_vector<size_t,D>(*in.get_dimensions())-crop_size)/size_t(2);
     crop(crop_offset, crop_size, in, out);
+    return out;
   }
 
   template<class T> void
-  crop(size_t x, hoNDArray<T> *in, hoNDArray<T> *out)
+  crop(size_t x, const hoNDArray<T>& in, hoNDArray<T>& out)
   {
       vector_td<size_t, 1> crop_size(x);
-      crop(crop_size, in, out);
+
+      auto crop_offset = (from_std_vector<size_t,1>(*in.get_dimensions())-crop_size)/size_t(2);
+      crop(crop_offset, crop_size, in, out);
   }
 
   template<class T> void
-  crop(size_t x, size_t y, hoNDArray<T> *in, hoNDArray<T> *out)
+  crop(size_t x, size_t y, const hoNDArray<T>& in, hoNDArray<T>& out)
   {
       vector_td<size_t, 2> crop_size(x, y);
-      crop(crop_size, in, out);
+
+      auto crop_offset = (from_std_vector<size_t,2>(*in.get_dimensions())-crop_size)/size_t(2);
+      crop(crop_offset,crop_size, in, out);
   }
 
   template<class T> void
-  crop(size_t x, size_t y, size_t z, hoNDArray<T> *in, hoNDArray<T> *out)
+  crop(size_t x, size_t y, size_t z, const hoNDArray<T>& in, hoNDArray<T>& out)
   {
       vector_td<size_t, 3> crop_size(x, y, z);
-      crop(crop_size, in, out);
+
+      auto crop_offset = (from_std_vector<size_t,3>(*in.get_dimensions())-crop_size)/size_t(2);
+      crop(crop_offset, crop_size, in, out);
   }
 
-  template<class T, unsigned int D> boost::shared_ptr< hoNDArray<T> >
-  crop( const vector_td<size_t, D>& crop_offset, const vector_td<size_t, D>& crop_size, hoNDArray<T> *in )
+  template<class T, unsigned int D> hoNDArray<T>
+  crop( const vector_td<size_t, D>& crop_offset, const vector_td<size_t, D>& crop_size, const hoNDArray<T>& in )
   {
-    boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>() );
-    crop(crop_offset, crop_size, in, out.get());
+    auto out =  hoNDArray<T>();
+    crop(crop_offset, crop_size, in, out);
     return out;
   }
 
@@ -587,17 +556,10 @@ namespace Gadgetron {
    * The padding operations keep the center of array unchanged, e.g. the center is always N/2
    */
   template<class T, unsigned int D> void
-  pad(const typename uint64d<D>::Type& size, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
+  pad(const typename uint64d<D>::Type& size, const hoNDArray<T>& in, hoNDArray<T>& out, bool preset_out_with_val = true, T val = T(0))
   {
-      if (in == 0x0){
-          throw std::runtime_error("pad: 0x0 array provided");;
-      }
 
-      if (out == 0x0){
-          throw std::runtime_error("pad: 0x0 array provided");;
-      }
-
-      if (in->get_number_of_dimensions() < D){
+      if (in.get_number_of_dimensions() < D){
           std::stringstream ss;
           ss << "pad: number of image dimensions should be at least " << D;
           throw std::runtime_error(ss.str());;
@@ -606,28 +568,28 @@ namespace Gadgetron {
       unsigned int d;
 
       std::vector<size_t> dims = to_std_vector(size);
-      for (d = D; d<in->get_number_of_dimensions(); d++){
-          dims.push_back(in->get_size(d));
+      for (d = D; d<in.get_number_of_dimensions(); d++){
+          dims.push_back(in.get_size(d));
       }
 
-      if (!out->dimensions_equal(&dims)){
-          out->create(dims);
+      if (!out.dimensions_equal(&dims)){
+          out.create(dims);
       }
 
-      if (in->dimensions_equal(&dims)){
-          memcpy(out->begin(), in->begin(), in->get_number_of_bytes());
+      if (in.dimensions_equal(&dims)){
+          memcpy(out.begin(), in.begin(), in.get_number_of_bytes());
           return;
       }
 
-      T *in_ptr = in->get_data_ptr();
-      T *out_ptr = out->get_data_ptr();
+      const T *in_ptr = in.get_data_ptr();
+      T *out_ptr = out.get_data_ptr();
 
       if (preset_out_with_val){
           if (val == T(0)){
-              memset(out_ptr, 0, out->get_number_of_bytes());
+              memset(out_ptr, 0, out.get_number_of_bytes());
           }
           else{
-                size_t N = out->get_number_of_elements();
+                size_t N = out.get_number_of_elements();
                 long long n;
                 #pragma omp parallel for default(none) private(n) shared(N, out_ptr, val)
                 for (n = 0; n<(long long)N; n++)
@@ -637,8 +599,8 @@ namespace Gadgetron {
           }
       }
 
-      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(*in->get_dimensions());
-      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(*out->get_dimensions());
+      typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t, D>(*in.get_dimensions());
+      typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t, D>(*out.get_dimensions());
 
       if (weak_greater(matrix_size_in, matrix_size_out)){
           throw std::runtime_error("pad: size mismatch, cannot expand");
@@ -649,8 +611,8 @@ namespace Gadgetron {
           offset[d] = matrix_size_out[d]/2 - matrix_size_in[d]/2;
       }
 
-      size_t len = in->get_size(0);
-      size_t num = in->get_number_of_elements() / len;
+      size_t len = in.get_size(0);
+      size_t num = in.get_number_of_elements() / len;
 
       long long k;
 
@@ -660,33 +622,38 @@ namespace Gadgetron {
 
 #pragma omp for 
           for (k = 0; k < (long long)num; k++){
-              ind = in->calculate_index(k*len);
+              ind = in.calculate_index(k*len);
               for (d = 0; d < D; d++){
                   ind[d] += offset[d];
               }
 
-              T* out_ptr_curr = out_ptr + out->calculate_offset(ind);
+              T* out_ptr_curr = out_ptr + out.calculate_offset(ind);
               memcpy(out_ptr_curr, in_ptr + k*len, sizeof(T)*len);
           }
       }
   }
 
+  template<class T, unsigned int D> void pad(const hoNDArray<T>& in, hoNDArray<T>& out, T val = T(0)){
+        vector_td<size_t,D> dims = from_std_vector<size_t,D>(*out.get_dimensions());
+        pad<T,D>(dims,in,out,true, val);
+  }
+
   template<class T> void
-  pad(size_t x, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
+  pad(size_t x, const hoNDArray<T>& in, hoNDArray<T>& out, bool preset_out_with_val = true, T val = T(0))
   {
       typename uint64d<1>::Type padSize(x);
       pad<T, 1>(padSize, in, out, preset_out_with_val, val);
   }
 
   template<class T> void
-  pad(size_t x, size_t y, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
+  pad(size_t x, size_t y, const hoNDArray<T>& in, hoNDArray<T>& out, bool preset_out_with_val = true, T val = T(0))
   {
       typename uint64d<2>::Type padSize(x, y);
       pad<T, 2>(padSize, in, out, preset_out_with_val, val);
   }
 
   template<class T> void
-  pad(size_t x, size_t y, size_t z, hoNDArray<T> *in, hoNDArray<T>* out, bool preset_out_with_val = true, T val = T(0))
+  pad(size_t x, size_t y, size_t z, const hoNDArray<T> &in, hoNDArray<T>& out, bool preset_out_with_val = true, T val = T(0))
   {
       typename uint64d<3>::Type padSize(x, y, z);
       pad<T, 3>(padSize, in, out, preset_out_with_val, val);
@@ -698,11 +665,11 @@ namespace Gadgetron {
   * @param[in] val Value to use for padding
   * @returns New array of the specified size, containing the original input array in the center and val outside.
   */
-  template<class T, unsigned int D> boost::shared_ptr< hoNDArray<T> >
-  pad(const typename uint64d<D>::Type& size, hoNDArray<T> *in, T val = T(0))
+  template<class T, unsigned int D>  hoNDArray<T>
+  pad(const typename uint64d<D>::Type& size, const hoNDArray<T> & in, T val = T(0))
   {
-    boost::shared_ptr< hoNDArray<T> > out(new hoNDArray<T>());
-    pad<T,D>(size, in, out.get(), true, val);
+    auto out = hoNDArray<T>();
+    pad<T,D>(size, in, out, true, val);
     return out;
   }
 
@@ -761,25 +728,20 @@ namespace Gadgetron {
 
   // Downsample
   template<class REAL, unsigned int D> 
-   hoNDArray<REAL>  downsample(const  hoNDArray<REAL> *_in )
+   hoNDArray<REAL>  downsample(const  hoNDArray<REAL>& _in )
   {
     // A few sanity checks 
-
-    if( _in == 0x0 ){
-      throw std::runtime_error( "downsample(): illegal input provided.");
-    }
-    
-    if( _in->get_number_of_dimensions() < D ){
+    if( _in.get_number_of_dimensions() < D ){
       throw std::runtime_error( "downsample(): the number of array dimensions should be at least D");
     }
     
     for( size_t d=0; d<D; d++ ){
-      if( (_in->get_size(d)%2) == 1 && _in->get_size(d) != 1 ){
+      if( (_in.get_size(d)%2) == 1 && _in.get_size(d) != 1 ){
 	throw std::runtime_error( "downsample(): uneven array dimensions larger than one not accepted");
       }
     }
     
-    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *_in->get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *_in.get_dimensions() );
     typename uint64d<D>::Type matrix_size_out = matrix_size_in >> 1;
 
     for( size_t d=0; d<D; d++ ){
@@ -790,16 +752,16 @@ namespace Gadgetron {
     size_t num_elements = prod(matrix_size_out);
     size_t num_batches = 1;
 
-    for( size_t d=D; d<_in->get_number_of_dimensions(); d++ ){
-      num_batches *= _in->get_size(d);
+    for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
+      num_batches *= _in.get_size(d);
     }
   
     std::vector<size_t> dims = to_std_vector(matrix_size_out);
-    for( size_t d=D; d<_in->get_number_of_dimensions(); d++ ){
-      dims.push_back(_in->get_size(d));
+    for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
+      dims.push_back(_in.get_size(d));
     }
   
-    const REAL *in = _in->get_data_ptr();
+    const REAL *in = _in.get_data_ptr();
 
      hoNDArray<REAL>  _out( &dims );
     REAL *out = _out.get_data_ptr();
@@ -906,19 +868,15 @@ namespace Gadgetron {
       }
   // Linear interpolation upsampling
   template<class T, unsigned int D> hoNDArray<T>
-  upsample( const  hoNDArray<T> *in )
+  upsample( const  hoNDArray<T>& in )
   {
-    // A few sanity checks 
 
-    if( in == 0x0 ){
-      throw std::runtime_error("upsample(): illegal input provided.");
-    }
 
-    if( in->get_number_of_dimensions() < D ){
+    if( in.get_number_of_dimensions() < D ){
       throw std::runtime_error( "upsample(): the number of array dimensions should be at least D");
     }
 
-    hoNDArray<T> result = *in;
+    hoNDArray<T> result = in;
     for (int i = D-1; i >= 0; i--){
         result = upsample_along_dimension<T>(result,i);
     }
@@ -927,19 +885,14 @@ namespace Gadgetron {
   }
 
     template<class T, unsigned int D> hoNDArray<T>
-  upsample_spline( const  hoNDArray<T> *in, int scale = 2 )
+  upsample_spline( const  hoNDArray<T>& in, int scale = 2 )
   {
-    // A few sanity checks
 
-    if( in == 0x0 ){
-      throw std::runtime_error("upsample(): illegal input provided.");
-    }
-
-    if( in->get_number_of_dimensions() < D ){
+    if( in.get_number_of_dimensions() < D ){
       throw std::runtime_error( "upsample(): the number of array dimensions should be at least D");
     }
 
-    hoNDArray<T> result = *in;
+    hoNDArray<T> result = in;
     for (int i = D-1; i >= 0; i--){
         result = upsample_spline_along_dimension<T>(result,i,scale);
     }
@@ -950,15 +903,15 @@ namespace Gadgetron {
 
   // Linear interpolation upsampling
   template<class T, unsigned int D> hoNDArray<T>
-  upsample_nearest( const  hoNDArray<T> _in )
+  upsample_nearest( const  hoNDArray<T>& in )
   {
     // A few sanity checks
 
-    if( _in.get_number_of_dimensions() < D ){
+    if( in.get_number_of_dimensions() < D ){
       throw std::runtime_error( "upsample(): the number of array dimensions should be at least D");
     }
 
-    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *_in.get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in.get_dimensions() );
     typename uint64d<D>::Type matrix_size_out = matrix_size_in << 1;
 
     for( size_t d=0; d<D; d++ ){
@@ -969,19 +922,19 @@ namespace Gadgetron {
     size_t num_elements = prod(matrix_size_out);
     size_t num_batches = 1;
 
-    for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
-      num_batches *= _in.get_size(d);
+    for( size_t d=D; d<in.get_number_of_dimensions(); d++ ){
+      num_batches *= in.get_size(d);
     }
 
     std::vector<size_t> dims = to_std_vector(matrix_size_out);
-    for( size_t d=D; d<_in.get_number_of_dimensions(); d++ ){
-      dims.push_back(_in.get_size(d));
+    for( size_t d=D; d<in.get_number_of_dimensions(); d++ ){
+      dims.push_back(in.get_size(d));
     }
 
-    const T *in = _in.get_data_ptr();
+    const T *in_ptr = in.get_data_ptr();
 
-    hoNDArray<T> _out(&dims);
-    T *out = _out.get_data_ptr();
+    hoNDArray<T> out(&dims);
+    T *out_ptr = out.get_data_ptr();
 
     typedef vector_td<size_t,D> uint64d;
 
@@ -995,11 +948,26 @@ namespace Gadgetron {
       uint64d co_in = co_out/uint64_t(2);
 
       const size_t in_idx = co_to_idx<D>(co_in, matrix_size_in)+frame_idx*prod(matrix_size_in);
-      out[idx] = in[in_idx];
+      out_ptr[idx] = in_ptr[in_idx];
 	}
 
 
 
-    return _out;
+    return out;
+  }
+
+
+
+  template<class T> hoNDArray<T> repeat(const hoNDArray<T>& array,unsigned int repeats){
+      auto dims = *array.get_dimensions();
+      dims.push_back(repeats);
+
+      hoNDArray<T> output(dims);
+      T* out_ptr = output.get_data_ptr();
+
+      for (int i =0; i < repeats; i++){
+          std::copy(array.begin(),array.end(),out_ptr+i*array.get_number_of_elements());
+      }
+      return output;
   }
 }
