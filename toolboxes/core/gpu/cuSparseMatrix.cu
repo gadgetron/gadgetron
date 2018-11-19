@@ -25,19 +25,9 @@ static cusparseStatus_t  sparseCSRMV(cusparseHandle_t handle, cusparseOperation_
 		const complext<float> * alpha, const cusparseMatDescr_t descrA, const complext<float> * csrValA,
 		const int * csrRowPtrA, const int * csrColndA, const complext<float> *x, const complext<float>* beta, complext<float>* y){
 
-    auto datatype = CUDA_C_32F;
-    auto datatypeR = CUDA_C_32F;
 
-	size_t buffersize;
-	cusparseCsrmvEx_bufferSize(handle,CUSPARSE_ALG_MERGE_PATH,transA,m,n,nnz,alpha,datatype,descrA,csrValA,datatype,csrRowPtrA,csrColndA,x,datatype,beta,datatype,y,datatype,datatypeR,&buffersize);
-	void* buffer;
 
-	cudaMalloc(&buffer,buffersize);
-    auto result = cusparseCsrmvEx(handle,CUSPARSE_ALG_MERGE_PATH,transA,m,n,nnz,alpha,datatype,descrA,csrValA,datatype,csrRowPtrA,csrColndA,x,datatype,beta,datatype,y,datatype,datatypeR,buffer);
-    cudaFree(buffer);
-    return result;
-
-//	return cusparseCcsrmv_mp( handle, transA,m, n, nnz,  (cuComplex*) alpha, descrA,  (cuComplex*) csrValA,  csrRowPtrA,  csrColndA, (cuComplex*) x,  (cuComplex*) beta,  (cuComplex*)y);
+	return cusparseCcsrmv_mp( handle, transA,m, n, nnz,  (cuComplex*) alpha, descrA,  (cuComplex*) csrValA,  csrRowPtrA,  csrColndA, (cuComplex*) x,  (cuComplex*) beta,  (cuComplex*)y);
 }
 
 
