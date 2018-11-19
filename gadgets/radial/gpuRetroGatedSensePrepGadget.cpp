@@ -446,13 +446,9 @@ namespace Gadgetron{
         // Estimate CSM
         //
 
-        boost::shared_ptr< cuNDArray<float_complext> > csm = estimate_b1_map<float,2>( csm_data.get() );
+        auto csm = boost::make_shared<cuNDArray<float_complext>>(estimate_b1_map<float,2>( csm_data.get() ));
 
-        if( !csm.get() ){
-          GDEBUG("Error during coil estimation\n");
-          return GADGET_FAIL;
-        }            
-      
+
         acc_buffer->set_csm(csm);
         csm_host_[set*slices_+slice] = *(csm->to_host());
       

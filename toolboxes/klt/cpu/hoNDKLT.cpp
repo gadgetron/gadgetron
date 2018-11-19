@@ -91,15 +91,15 @@ void hoNDKLT<T>::compute_eigen_vector(const hoNDArray<T>& data, bool remove_mean
                 }
             }
 
-            Am = as_arma_matrix(&data2DNoMean);
+            Am = as_arma_matrix(data2DNoMean);
         }
         else
         {
-            Am = as_arma_matrix(&data2D);
+            Am = as_arma_matrix(data2D);
         }
 
         // call svd
-        arma::Mat<T> Vm = as_arma_matrix(&V_);
+        arma::Mat<T> Vm = as_arma_matrix(V_);
         arma::Mat<T> Um;
         arma::Col<value_type> Sv;
 
@@ -223,7 +223,7 @@ void hoNDKLT<T>::prepare(const hoNDArray<T>& data, size_t dim, size_t output_len
 
             hoNDArray<T> dataP;
             dataP.create(dimPermuted);
-            Gadgetron::permute( const_cast<hoNDArray<T>* >(&data), &dataP, &dimOrder);
+            Gadgetron::permute( data, dataP, dimOrder);
 
             this->compute_eigen_vector(dataP, remove_mean);
         }
@@ -543,7 +543,7 @@ void hoNDKLT<T>::transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim
 
             hoNDArray<T> inP;
             inP.create(dimPermuted);
-            Gadgetron::permute(const_cast< hoNDArray<T>* >(&in), &inP, &dimOrder);
+            Gadgetron::permute(in, inP, dimOrder);
             hoNDArray<T> inP2D;
             inP2D.create(num, N, inP.begin());
 
@@ -555,7 +555,7 @@ void hoNDKLT<T>::transform(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim
 
             Gadgetron::gemm(outP2D, inP2D, false, M_, false);
 
-            Gadgetron::permute(&outP, &out, &dimOrder);
+            Gadgetron::permute(outP, out, dimOrder);
         }
     }
     catch (...)
@@ -636,7 +636,7 @@ void hoNDKLT<T>::KL_filter(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim
 
             hoNDArray<T> inP;
             inP.create(dimPermuted);
-            Gadgetron::permute(const_cast< hoNDArray<T>* >(&in), &inP, &dimOrder);
+            Gadgetron::permute(in, inP, dimOrder);
             hoNDArray<T> inP2D;
             inP2D.create(num, N, inP.begin());
 
@@ -647,7 +647,7 @@ void hoNDKLT<T>::KL_filter(const hoNDArray<T>& in, hoNDArray<T>& out, size_t dim
 
             Gadgetron::gemm(outP2D, inP2D, false, EET, false);
 
-            Gadgetron::permute(&outP, &out, &dimOrder);
+            Gadgetron::permute(outP, out, dimOrder);
         }
     }
     catch (...)

@@ -42,7 +42,7 @@ using namespace Gadgetron;
 typedef float _real; 
 typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
-typedef cuNFFT_plan<_real,2> plan_type;
+typedef cuNFFT_impl<_real,2> plan_type;
 
 int main( int argc, char** argv) 
 {
@@ -134,7 +134,7 @@ int main( int argc, char** argv)
 
     // Preprocess
     timer = new GPUTimer("NFFT preprocessing");
-    plan.preprocess( &trajectory, plan_type::NFFT_PREP_NC2C );
+    plan.preprocess( &trajectory, NFFT_prep_mode::NC2C );
     delete timer;
     
     std::vector<size_t> image_dims = to_std_vector(matrix_size); 
@@ -143,7 +143,7 @@ int main( int argc, char** argv)
 
     // Gridder
     timer = new GPUTimer("Computing adjoint nfft (gridding)");
-    plan.compute( &samples, &tmp_image, &dcw, plan_type::NFFT_BACKWARDS_NC2C );
+    plan.compute( samples, tmp_image, &dcw, NFFT_comp_mode::BACKWARDS_NC2C );
     delete timer;
   }
   

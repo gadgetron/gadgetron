@@ -164,3 +164,7 @@ PyObject* NumPyArray_EMPTY(int nd, npy_intp* dims, int typenum, int fortran)
 }
 
 }
+
+bool boost::python::hasattr(object o, const char* name) {
+    return PyObject_HasAttrString(o.ptr(), name);
+}

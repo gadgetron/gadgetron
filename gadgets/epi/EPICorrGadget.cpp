@@ -105,7 +105,7 @@ namespace Gadgetron {
         // Check to see if the data is a navigator line or an imaging line
         if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA)) {
 
-            arma::cx_fmat adata = as_arma_matrix(m2->getObjectPtr());
+            arma::cx_fmat adata = as_arma_matrix(*m2->getObjectPtr());
             process_phase_correction_data(hdr, adata);
             m1->release();
 
@@ -117,7 +117,7 @@ namespace Gadgetron {
 
                 for (auto data : unprocessed_data) {
 
-                    arma::cx_fmat adata = as_arma_matrix(data.second->getObjectPtr());
+                    arma::cx_fmat adata = as_arma_matrix(*data.second->getObjectPtr());
 
                     ISMRMRD::AcquisitionHeader &hdr = *data.first->getObjectPtr();
                     apply_epi_correction(hdr, adata);

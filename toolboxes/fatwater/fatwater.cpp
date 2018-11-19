@@ -51,12 +51,12 @@ namespace Gadgetron {
         hoNDArray<std::vector<uint16_t>> find_local_minima(const hoNDArray<float> &residuals, float threshold = 0.00f) {
 
 
-            auto threshold_signal = std::move(*sum(&residuals, 0));
-            threshold_signal /= max(&threshold_signal);
+            auto threshold_signal = sum(residuals, 0);
+            threshold_signal /= max(threshold_signal);
             sqrt_inplace(&threshold_signal);
 
-            auto min_residuals = std::move(*min(&residuals, 0));
-            auto max_residuals = std::move(*max(&residuals, 0));
+            auto min_residuals = min(residuals, 0);
+            auto max_residuals = max(residuals, 0);
 
 
             const auto Y = residuals.get_size(2);
@@ -641,7 +641,7 @@ namespace Gadgetron {
 
             auto data_scaled = data;
             for (int downsamples = 0; downsamples < config.downsamples; downsamples++)
-                data_scaled = downsample<std::complex<float>, 2>(&data_scaled);
+                data_scaled = downsample<std::complex<float>, 2>(data_scaled);
 
             hoNDArray<float> residual;
             hoNDArray<uint16_t> r2starIndex;
@@ -665,7 +665,7 @@ namespace Gadgetron {
             hoNDArray<float> field_map = create_field_map(fmIndex, field_map_strengths);
 
             if (config.downsamples) {
-                field_map = upsample_spline<float, 2>(&field_map,std::pow(2,config.downsamples));
+                field_map = upsample_spline<float, 2>(field_map,std::pow(2,config.downsamples));
             }
 //            fmIndex = upsample<uint16_t,2>(&fmIndex);
 

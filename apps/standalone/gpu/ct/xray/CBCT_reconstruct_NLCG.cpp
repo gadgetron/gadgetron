@@ -180,7 +180,7 @@ int main(int argc, char** argv)
     Ep->mult_M(prior3d.get(),&tmp_proj);
     float s = dot(ps->get_projections().get(),&tmp_proj)/dot(&tmp_proj,&tmp_proj);
     *prior3d *= s;
-    boost::shared_ptr<hoCuNDArray<float> > prior(new hoCuNDArray<float>(*expand( prior3d.get(), is_dims.back() )));
+    boost::shared_ptr<hoCuNDArray<float> > prior(new hoCuNDArray<float>(expand( *prior3d, is_dims.back() )));
     boost::shared_ptr<hoCuTvPicsOperator<float,3> > pics (new hoCuTvPicsOperator<float,3>);
     pics->set_prior(prior);
     pics->set_weight(vm["PICS"].as<float>());

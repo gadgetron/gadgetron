@@ -18,36 +18,43 @@ namespace Gadgetron{
     * Finds the maximum element of the array
     */
     template<class REAL> EXPORTCPUCOREMATH REAL max(const hoNDArray<REAL>* data);
+    template<class REAL> EXPORTCPUCOREMATH REAL max(const hoNDArray<REAL>& data);
 
     /***
     * Finds the minimum element of the array
     */
     template<class REAL> EXPORTCPUCOREMATH REAL min(const hoNDArray<REAL>* data);
+    template<class REAL> EXPORTCPUCOREMATH REAL min(const hoNDArray<REAL>& data);
 
     /***
     * Finds the mean of the array
     */
     template<class T> EXPORTCPUCOREMATH T mean(const hoNDArray<T>* data);
+    template<class T> EXPORTCPUCOREMATH T mean(const hoNDArray<T>& data);
 
     /***
     * Calculates the sum of the array
     */
     template<class T> EXPORTCPUCOREMATH T sum(const hoNDArray<T>* data);
+    template<class T> EXPORTCPUCOREMATH T sum(const hoNDArray<T>& data);
 
     /***
     * Calculates the std of the array
     */
     template<class T> EXPORTCPUCOREMATH T stddev(const hoNDArray<T>* data);
+    template<class T> EXPORTCPUCOREMATH T stddev(const hoNDArray<T>& data);
 
     /***
     * Calculates the variance of the array
     */
     template<class T> EXPORTCPUCOREMATH T var(const hoNDArray<T>* data);
+    template<class T> EXPORTCPUCOREMATH T var(const hoNDArray<T>& data);
 
     /***
      * Calulates the median of the array
      */
     template<class T> EXPORTCPUCOREMATH T median(const hoNDArray<T>* data);
+    template<class T> EXPORTCPUCOREMATH T median(const hoNDArray<T>& data);
 
     /**
     * @brief Calculates the dot product of two arrays (as vectors).

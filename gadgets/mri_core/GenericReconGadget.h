@@ -13,11 +13,11 @@
 #include "hoNDFFT.h"
 
 #include "mri_core_coil_map_estimation.h"
+#include "ImageArraySendMixin.h"
 
 namespace Gadgetron {
 
-    class EXPORTGADGETSMRICORE GenericReconGadget : public GenericReconDataBase
-    {
+    class EXPORTGADGETSMRICORE GenericReconGadget : public ImageArraySendMixin<GenericReconGadget>, public GenericReconDataBase{
     public:
         GADGET_DECLARE(GenericReconGadget);
 
@@ -51,9 +51,6 @@ namespace Gadgetron {
 
         // calibration mode
         std::vector<Gadgetron::ismrmrdCALIBMODE> calib_mode_;
-
-        // encoding space limits
-        std::vector<ISMRMRD::EncodingCounters> meas_max_idx_;
 
         // --------------------------------------------------
         // variable for recon
@@ -92,19 +89,8 @@ namespace Gadgetron {
         // compute image header
         virtual void compute_image_header(IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t encoding);
 
-        // prepare header for sending out
-        virtual int prep_image_header_send_out(IsmrmrdImageArray& res, size_t n, size_t s, size_t slc, size_t encoding, int series_num, const std::string& data_role);
-
-        // send out the recon results
-        virtual int send_out_image_array(IsmrmrdReconBit& recon_bit, IsmrmrdImageArray& res, size_t encoding, int series_num, const std::string& data_role);
-
         // compute snr scaling factor from effective acceleration rate and sampling region
         void compute_snr_scaling_factor(IsmrmrdReconBit& recon_bit, float& effective_acce_factor, float& snr_scaling_ratio);
 
-        // --------------------------------------------------
-        // utility functions
-        // --------------------------------------------------
-        // compute image number
-        virtual size_t compute_image_number(ISMRMRD::ImageHeader& imheader, size_t encoding = 0, size_t CHA = 1, size_t cha = 0, size_t E2 = 1);
     };
 }
