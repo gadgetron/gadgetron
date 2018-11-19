@@ -8,7 +8,7 @@
     }
 #endif // MKL_FOUND
 
-#ifdef OPENBLAS_COMPLEX_STRUCT
+#ifdef openblas_make_complex_float
 #define COMPLEX_RETURN_FLOAT openblas_complex_float
 #define COMPLEX_RETURN_DOUBLE openblas_complex_double
 #else

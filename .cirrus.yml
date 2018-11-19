@@ -3,6 +3,7 @@ build_task:
     matrix:
       image: gadgetron/ubuntu_1604_cuda92_cudnn7_base
       image: gadgetron/ubuntu_1604_cuda90_cudnn7_base
+      image: gadgetron/ubuntu_1804_cuda92_cudnn7_base
     cpu: 8
     memory: 24
 
